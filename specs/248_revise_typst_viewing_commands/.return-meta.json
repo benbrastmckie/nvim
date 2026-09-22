@@ -1,1 +1,15 @@
-{"status":"planned","artifacts":[{"type":"plan","path":"specs/248_revise_typst_viewing_commands/plans/01_typst-viewing-commands-revision.md","summary":"5-phase plan: shared neotex.util.typst helper (content-aware main-file, unified root, project pin), wire ftplugin/preview, tinymist auto-pin via client:exec_cmd, drop <leader>lw and fix preview registry desync, docs + smoke test."}],"phase_count":5,"estimated_hours":6.5,"dependency_waves":5,"next_steps":"Run /implement 248 to execute the plan","memory_candidates":[],"metadata":{"session_id":"sess_1790055369_87ec14_248","agent_type":"planner-agent","delegation_depth":1,"delegation_path":["orchestrator","plan","planner-agent"]},"dispatch_seq":6}
+{
+  "status": "in_progress",
+  "started_at": "2026-09-22T06:01:02Z",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Agent started, parsing delegation context for task 248 implement phase"
+  },
+  "metadata": {
+    "session_id": "sess_1790055369_87ec14",
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"]
+  }
+}

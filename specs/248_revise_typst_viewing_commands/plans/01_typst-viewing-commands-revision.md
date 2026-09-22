@@ -1,7 +1,7 @@
 # Implementation Plan: Task #248
 
 - **Task**: 248 - Revise Typst document viewing commands
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/248_revise_typst_viewing_commands/reports/01_typst-viewing-commands-audit.md
@@ -104,13 +104,13 @@ No ROADMAP.md consulted (no roadmap_path in dispatch).
 Phases run sequentially because each one edits files the previous phase touched
 (`after/ftplugin/typst.lua` is edited in phases 2-4).
 
-### Phase 1: Shared Typst helper module with spec [NOT STARTED]
+### Phase 1: Shared Typst helper module with spec [COMPLETED]
 
 **Goal**: Create `lua/neotex/util/typst.lua` as the single source of truth for root, main file
 and pin state, and test it with fixtures.
 
 **Tasks**:
-- [ ] Create `lua/neotex/util/typst.lua` (local functions, 2-space indent, `pcall` around file
+- [x] Create `lua/neotex/util/typst.lua` (local functions, 2-space indent, `pcall` around file
       IO) exporting:
   - `project_root(path)`: `TYPST_ROOT` env, else the directory of the nearest `typst.toml` or
     `.git` found upward from `path`'s directory (`vim.fs.find`/`vim.fs.root`), else `path`'s
@@ -130,9 +130,9 @@ and pin state, and test it with fixtures.
   - `pin(root, file)`, `unpin(root)`, `pinned(root)`: a module-level table keyed by
     normalized root.
   - `pdf_path(main)`: `fnamemodify(main, ":r") .. ".pdf"`.
-- [ ] Memoize the content scan per (candidate path, `vim.uv.fs_stat` mtime) so repeated calls
+- [x] Memoize the content scan per (candidate path, `vim.uv.fs_stat` mtime) so repeated calls
       stay cheap.
-- [ ] Write `lua/neotex/util/typst_spec.lua` (plenary busted, adjacent to the source, same
+- [x] Write `lua/neotex/util/typst_spec.lua` (plenary busted, adjacent to the source, same
       header style as `lua/neotex/plugins/ai/shared/picker/config_spec.lua`). Build temp
       fixture trees under `vim.fn.tempname()`:
   - `A.typ` (not including the chapter) and `Z.typ` (which `#include`s `chapters/c.typ`):

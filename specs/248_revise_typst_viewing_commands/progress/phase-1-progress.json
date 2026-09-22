@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Shared Typst helper module with spec",
+  "started_at": "2026-09-22T06:03:24Z",
+  "last_updated": "2026-09-22T06:12:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Shared Typst helper module with spec -- file changes",
+      "status": "completed",
+      "files_touched": [
+        "lua/neotex/util/typst.lua",
+        "lua/neotex/util/typst_spec.lua"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}
