@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Fold candidates into an admitted-set-aware greedy walk",
+  "started_at": "2026-09-22T17:50:00Z",
+  "last_updated": "2026-09-22T17:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Restructure the jq program's top-level generator into a reduce over ascending-sorted candidates, narrow the in_batch collision predicate to admitted peers only, re-emit NDJSON in caller-argument order, update the Determinism header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"
+      ],
+      "note": "All Phase 1 suite cases now green (3/3). test-conflict-predicate.sh non-regression suite green (33/33). bash -n clean. git diff confirmed every branch body moved verbatim (pure indentation shift) with only one select(...) predicate changed. $schema string occurrence count unchanged (11) -- verdict schema untouched."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -285,6 +285,14 @@
 # first-match: the FIRST critical-path entry (in the data file's declared order, expanded across
 # scope_roots) that overlaps any of the candidate's own file_scope entries wins.
 #
+# Admitted-set-only in_batch narrowing (candidate-level ordering, distinct from the
+# within-comparison-set ordering above): candidates are folded in ASCENDING project_number order
+# into a running admitted-set lookup, and an in_batch collision blocks a candidate only when the
+# lower-numbered peer's OWN verdict, already decided by the time this candidate is folded, is
+# itself "admit" -- not merely that the peer appears somewhere in this invocation's argument
+# list. NDJSON is still emitted in the original caller-argument order regardless of this
+# decision-computation order; see docs/architecture/batch-admit-schema.md for the full narrative.
+#
 # Why this check is evidence-gated between blocking and advisory (REWRITTEN in v5 — the pre-v5
 # text asserted blanket blocking for the cross_batch case and is gone; it self-contradicted by
 # arguing concurrent-write harm from a task it simultaneously conceded "is not running"): the
@@ -543,159 +551,181 @@ if verdicts=$(jq -n -c \
    | if length > 0 then min else null end
   ) as $designated_sm_candidate |
 
-  $cands[] as $c |
-  ([$all[] | select(.project_number == $c)] | first) as $entry |
+  (
+    reduce ($cands | sort)[] as $c (
+      {results: {}};
+      . as $acc |
+      (
+    ([$all[] | select(.project_number == $c)] | first) as $entry |
 
-  if ($entry == null) then
-    {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
-     self_modifying: (if $is_degraded then null else false end)}
-  elif (($entry.status // "") | is_terminal) then
-    {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
-     self_modifying: (if $is_degraded then null else (self_mod_match($entry.file_scope; $crit) != null) end)}
-  elif (($entry.file_scope // []) | length) == 0 then
-    {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
-     self_modifying: (if $is_degraded then null else false end)}
-  else
-    ($entry.dependencies // []) as $c_deps |
-    ($entry.file_scope) as $c_scope |
-    (if $is_degraded then null else self_mod_match($c_scope; $crit) end) as $sm_hit |
-    (if $is_degraded then null else ($sm_hit != null) end) as $sm_flag |
-    ($phase_map[($c|tostring)] // null) as $phase_group |
-    if ($sm_flag == true) then
-      if ($phase_group == "research" or $phase_group == "plan") then
-        # Phase-aware gate (D-phase, NEW): a research or plan dispatch touches only the own
-        # reports/ or plans/ subdirectory of the task, plus its own
-        # .return-meta.json/.orchestrator-handoff.json -- never orchestrator machinery -- so
-        # deferring it merely because the IMPLEMENTATION footprint of the task names a critical
-        # path is a pure false positive. Exempt unconditionally from both
-        # the tie-breaker and the raw inv_count check; self_modifying stays true (hazard visible).
-        {
-          "$schema": "orchestrate-batch-admit-v5",
-          task_number: $c,
-          decision: "admit",
-          self_modifying: true
-        }
-      elif ($inv_count > 1 and $c != $designated_sm_candidate) then
-        {
-          "$schema": "orchestrate-batch-admit-v5",
-          task_number: $c,
-          decision: "defer",
-          self_modifying: true,
-          defer_reason: "self_modifying",
-          critical_path: $sm_hit.path,
-          critical_label: $sm_hit.label,
-          reason: ("candidate #" + ($c|tostring) + " file_scope names orchestrator-critical path \"" + $sm_hit.path + "\" (" + $sm_hit.label + "); deferred this wave/cycle in favor of designated self-modifying candidate #" + ($designated_sm_candidate|tostring) + " (lowest task number among the self-modifying candidates in this cycle) -- this is an ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($designated_sm_candidate|tostring) + " clears, or pass --allow-self-modifying to override")
-        }
-      else
-        {
-          "$schema": "orchestrate-batch-admit-v5",
-          task_number: $c,
-          decision: "admit",
-          self_modifying: true
-        }
-      end
+    if ($entry == null) then
+      {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
+       self_modifying: (if $is_degraded then null else false end)}
+    elif (($entry.status // "") | is_terminal) then
+      {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
+       self_modifying: (if $is_degraded then null else (self_mod_match($entry.file_scope; $crit) != null) end)}
+    elif (($entry.file_scope // []) | length) == 0 then
+      {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
+       self_modifying: (if $is_degraded then null else false end)}
     else
-      (
-        [
-          $all[] | . as $t | select(
-            ($t.project_number != $c) and
-            ((($t.status // "") | is_terminal) | not) and
-            (($c_deps | index($t.project_number)) == null) and
-            ((($t.dependencies // []) | index($c)) == null)
-          )
-        ] | sort_by(.project_number)
-      ) as $comparison_set |
-      (
-        [
-          $comparison_set[] as $other |
-          ($other.project_number) as $other_num |
-          ($cands | index($other_num)) as $in_batch_idx |
-          (if $in_batch_idx == null then "cross_batch" else "in_batch" end) as $scope_kind |
-          select($scope_kind == "cross_batch" or $other_num < $c) |
-          scopes_overlap_first($c_scope; ($other.file_scope // [])) as $ov_path |
-          select($ov_path != null and $ov_path != "") |
+      ($entry.dependencies // []) as $c_deps |
+      ($entry.file_scope) as $c_scope |
+      (if $is_degraded then null else self_mod_match($c_scope; $crit) end) as $sm_hit |
+      (if $is_degraded then null else ($sm_hit != null) end) as $sm_flag |
+      ($phase_map[($c|tostring)] // null) as $phase_group |
+      if ($sm_flag == true) then
+        if ($phase_group == "research" or $phase_group == "plan") then
+          # Phase-aware gate (D-phase, NEW): a research or plan dispatch touches only the own
+          # reports/ or plans/ subdirectory of the task, plus its own
+          # .return-meta.json/.orchestrator-handoff.json -- never orchestrator machinery -- so
+          # deferring it merely because the IMPLEMENTATION footprint of the task names a critical
+          # path is a pure false positive. Exempt unconditionally from both
+          # the tie-breaker and the raw inv_count check; self_modifying stays true (hazard visible).
           {
-            other_num: $other_num,
-            other_status: ($other.status // ""),
-            ov_path: $ov_path,
-            scope_kind: $scope_kind,
-            in_flight: (($other.status // "") | is_in_flight)
+            "$schema": "orchestrate-batch-admit-v5",
+            task_number: $c,
+            decision: "admit",
+            self_modifying: true
           }
-        ]
-      ) as $overlaps |
-      ($overlaps | map(select(.scope_kind == "in_batch" or .in_flight)) | first) as $hit |
-      ($overlaps | map(select(.scope_kind == "cross_batch" and (.in_flight | not))) | first) as $idle_overlap |
-      (
-        if $idle_overlap == null then {} else
+        elif ($inv_count > 1 and $c != $designated_sm_candidate) then
           {
-            idle_overlap_advisory: {
-              colliding_task_number: $idle_overlap.other_num,
-              colliding_task_status: $idle_overlap.other_status,
-              overlapping_path: $idle_overlap.ov_path,
-              collision_scope: $idle_overlap.scope_kind,
-              reason: ("file_scope overlap with IDLE (not in-flight) task #" + ($idle_overlap.other_num | tostring) +
-                       " (status \"" + $idle_overlap.other_status + "\", not in this batch) at " + $idle_overlap.ov_path +
-                       "; admitted because no execution evidence exists — add a dependencies[] edge if ordering between them matters")
-            }
+            "$schema": "orchestrate-batch-admit-v5",
+            task_number: $c,
+            decision: "defer",
+            self_modifying: true,
+            defer_reason: "self_modifying",
+            critical_path: $sm_hit.path,
+            critical_label: $sm_hit.label,
+            reason: ("candidate #" + ($c|tostring) + " file_scope names orchestrator-critical path \"" + $sm_hit.path + "\" (" + $sm_hit.label + "); deferred this wave/cycle in favor of designated self-modifying candidate #" + ($designated_sm_candidate|tostring) + " (lowest task number among the self-modifying candidates in this cycle) -- this is an ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($designated_sm_candidate|tostring) + " clears, or pass --allow-self-modifying to override")
+          }
+        else
+          {
+            "$schema": "orchestrate-batch-admit-v5",
+            task_number: $c,
+            decision: "admit",
+            self_modifying: true
           }
         end
-      ) as $idle_advisory_frag |
-      if $hit == null then
-        # No state.json collision found -- the session-registry input (D3 precedence: reached
-        # only here) gets its turn. Every input that defers via the branch above is UNCHANGED by
-        # this addition; this new flavor fires strictly where the predicate used to admit.
-        session_contention($c_scope; $c; $own_sid; $all; $sess_list) as $sess_hit |
-        if $sess_hit == null then
-          {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag
+      else
+        (
+          [
+            $all[] | . as $t | select(
+              ($t.project_number != $c) and
+              ((($t.status // "") | is_terminal) | not) and
+              (($c_deps | index($t.project_number)) == null) and
+              ((($t.dependencies // []) | index($c)) == null)
+            )
+          ] | sort_by(.project_number)
+        ) as $comparison_set |
+        (
+          [
+            $comparison_set[] as $other |
+            ($other.project_number) as $other_num |
+            ($cands | index($other_num)) as $in_batch_idx |
+            (if $in_batch_idx == null then "cross_batch" else "in_batch" end) as $scope_kind |
+            # NARROWED (admitted-set-only in_batch deferral): an in_batch peer blocks the
+            # candidate only when that peer is ITSELF admitted this cycle -- its already-folded
+            # verdict (this fold visits strictly ascending project_number, so every in_batch peer
+            # with a lower project_number has already been folded by the time $c is reached) must
+            # read decision == "admit". A lookup miss degrades to "admit-the-peer" (does not
+            # block), matching the existing degrade-to-admit posture used elsewhere in this
+            # script; it is unreachable
+            # by construction here because $in_batch_idx != null is exactly the guard that reached
+            # this branch. Duplicate positional task numbers (pre-existing edge case, deliberately
+            # unchanged): a duplicate folded twice looks itself up and finds its own
+            # first-occurrence verdict.
+            select($scope_kind == "cross_batch" or ($other_num < $c and ((($acc.results[($other_num|tostring)].decision) // "admit") == "admit"))) |
+            scopes_overlap_first($c_scope; ($other.file_scope // [])) as $ov_path |
+            select($ov_path != null and $ov_path != "") |
+            {
+              other_num: $other_num,
+              other_status: ($other.status // ""),
+              ov_path: $ov_path,
+              scope_kind: $scope_kind,
+              in_flight: (($other.status // "") | is_in_flight)
+            }
+          ]
+        ) as $overlaps |
+        ($overlaps | map(select(.scope_kind == "in_batch" or .in_flight)) | first) as $hit |
+        ($overlaps | map(select(.scope_kind == "cross_batch" and (.in_flight | not))) | first) as $idle_overlap |
+        (
+          if $idle_overlap == null then {} else
+            {
+              idle_overlap_advisory: {
+                colliding_task_number: $idle_overlap.other_num,
+                colliding_task_status: $idle_overlap.other_status,
+                overlapping_path: $idle_overlap.ov_path,
+                collision_scope: $idle_overlap.scope_kind,
+                reason: ("file_scope overlap with IDLE (not in-flight) task #" + ($idle_overlap.other_num | tostring) +
+                         " (status \"" + $idle_overlap.other_status + "\", not in this batch) at " + $idle_overlap.ov_path +
+                         "; admitted because no execution evidence exists — add a dependencies[] edge if ordering between them matters")
+              }
+            }
+          end
+        ) as $idle_advisory_frag |
+        if $hit == null then
+          # No state.json collision found -- the session-registry input (D3 precedence: reached
+          # only here) gets its turn. Every input that defers via the branch above is UNCHANGED by
+          # this addition; this new flavor fires strictly where the predicate used to admit.
+          session_contention($c_scope; $c; $own_sid; $all; $sess_list) as $sess_hit |
+          if $sess_hit == null then
+            {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag
+          else
+            {
+              "$schema": "orchestrate-batch-admit-v5",
+              task_number: $c,
+              decision: "defer",
+              self_modifying: $sm_flag,
+              defer_reason: "session_active",
+              session_id: $sess_hit.session_id,
+              colliding_task_number: $sess_hit.covered_task_number,
+              overlapping_path: $sess_hit.overlapping_path,
+              session_liveness_reason: $sess_hit.liveness_reason,
+              reason: ("session " + $sess_hit.session_id + " (liveness: " + $sess_hit.liveness_reason +
+                       ") covers non-terminal task #" + ($sess_hit.covered_task_number | tostring) +
+                       " whose registered file_scope overlaps this candidate at " + $sess_hit.overlapping_path)
+            } + $idle_advisory_frag
+          end
         else
+          # corroborated_by (D2/v4): always names the state.json signal that produced this verdict;
+          # additionally names the session registry when a live, non-self session independently
+          # covers the SAME colliding task number -- evidentiary corroboration, not a second
+          # detection path (D4 contention-exclusion rules do not gate this check; the question
+          # here is only "does independent live evidence exist", not "does this session contend").
+          (
+            [
+              $sess_list[] | select(.live == true and .session_id != $own_sid) |
+              select((.task_numbers // []) | index($hit.other_num) != null)
+            ] | length > 0
+          ) as $session_corroborates |
+          (
+            ["non_terminal_status"] + (if $session_corroborates then ["session_registry"] else [] end)
+          ) as $corroborated_by |
           {
             "$schema": "orchestrate-batch-admit-v5",
             task_number: $c,
             decision: "defer",
             self_modifying: $sm_flag,
-            defer_reason: "session_active",
-            session_id: $sess_hit.session_id,
-            colliding_task_number: $sess_hit.covered_task_number,
-            overlapping_path: $sess_hit.overlapping_path,
-            session_liveness_reason: $sess_hit.liveness_reason,
-            reason: ("session " + $sess_hit.session_id + " (liveness: " + $sess_hit.liveness_reason +
-                     ") covers non-terminal task #" + ($sess_hit.covered_task_number | tostring) +
-                     " whose registered file_scope overlaps this candidate at " + $sess_hit.overlapping_path)
+            defer_reason: "file_scope_collision",
+            colliding_task_number: $hit.other_num,
+            colliding_task_status: $hit.other_status,
+            overlapping_path: $hit.ov_path,
+            collision_scope: $hit.scope_kind,
+            corroborated_by: $corroborated_by,
+            reason: ("file_scope overlap with non-terminal task #" + ($hit.other_num | tostring) +
+                     " (" + (if $hit.scope_kind == "in_batch" then "in this batch" else "not in this batch" end) +
+                     ") at " + $hit.ov_path + "; no dependencies[] edge between them")
           } + $idle_advisory_frag
         end
-      else
-        # corroborated_by (D2/v4): always names the state.json signal that produced this verdict;
-        # additionally names the session registry when a live, non-self session independently
-        # covers the SAME colliding task number -- evidentiary corroboration, not a second
-        # detection path (D4 contention-exclusion rules do not gate this check; the question
-        # here is only "does independent live evidence exist", not "does this session contend").
-        (
-          [
-            $sess_list[] | select(.live == true and .session_id != $own_sid) |
-            select((.task_numbers // []) | index($hit.other_num) != null)
-          ] | length > 0
-        ) as $session_corroborates |
-        (
-          ["non_terminal_status"] + (if $session_corroborates then ["session_registry"] else [] end)
-        ) as $corroborated_by |
-        {
-          "$schema": "orchestrate-batch-admit-v5",
-          task_number: $c,
-          decision: "defer",
-          self_modifying: $sm_flag,
-          defer_reason: "file_scope_collision",
-          colliding_task_number: $hit.other_num,
-          colliding_task_status: $hit.other_status,
-          overlapping_path: $hit.ov_path,
-          collision_scope: $hit.scope_kind,
-          corroborated_by: $corroborated_by,
-          reason: ("file_scope overlap with non-terminal task #" + ($hit.other_num | tostring) +
-                   " (" + (if $hit.scope_kind == "in_batch" then "in this batch" else "not in this batch" end) +
-                   ") at " + $hit.ov_path + "; no dependencies[] edge between them")
-        } + $idle_advisory_frag
       end
     end
-  end
+      ) as $v |
+      $acc | .results[($c|tostring)] = $v
+    )
+  ) as $folded |
+
+  $cands[] as $orig |
+  ($folded.results[($orig|tostring)])
   ' 2>&1); then
   jq_exit=0
 else

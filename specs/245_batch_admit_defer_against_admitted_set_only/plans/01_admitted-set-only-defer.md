@@ -172,45 +172,50 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Fold candidates into an admitted-set-aware greedy walk [NOT STARTED]
+### Phase 2: Fold candidates into an admitted-set-aware greedy walk [COMPLETED]
 
 - **Goal:** Replace the order-independent top-level generator with a `reduce` over ascending-sorted
   candidates, threading a running admitted-set lookup that narrows the `in_batch` collision test,
   while re-emitting NDJSON in caller-argument order.
 - **Tasks:**
-  - [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` immediately
-        before editing (concurrent siblings are dispatching on this working tree).
-  - [ ] Restructure the jq program: keep every `--argjson`/`--arg` binding and every `def` intact;
+  - [x] Re-read `agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` immediately
+        before editing (concurrent siblings are dispatching on this working tree). *(completed)*
+  - [x] Restructure the jq program: keep every `--argjson`/`--arg` binding and every `def` intact;
         keep `$designated_sm_candidate` computed exactly as today (a global, order-independent
         reduction over the full `$cands` set, unaffected by and not interacting with the new walk
         — a self-modifying candidate short-circuits before the collision scan and never reaches it).
-  - [ ] Replace `$cands[] as $c | ...` with
+        *(completed)*
+  - [x] Replace `$cands[] as $c | ...` with
         `reduce ($cands | sort)[] as $c ({results: {}}; ...)`, accumulating each candidate's
-        finished verdict object at `.results[($c|tostring)]`.
-  - [ ] Move every existing branch body into the fold **verbatim**: the four early-exit admits
+        finished verdict object at `.results[($c|tostring)]`. *(completed)*
+  - [x] Move every existing branch body into the fold **verbatim**: the four early-exit admits
         (unknown task, terminal status, empty `file_scope`, and the non-self-mod path's
         precedence), the self-modification branch with its `--phase-map` research/plan exemption
         and tie-breaker defer, the `$comparison_set` derivation, `$idle_overlap` /
         `$idle_advisory_frag`, `session_contention`, `$session_corroborates` /
         `$corroborated_by`, and both terminal verdict shapes. Only one predicate changes.
-  - [ ] Narrow the single changed predicate. The `in_batch` disjunct of
+        *(completed: verified by end-to-end git diff read — every branch body hunk is a pure
+        indentation shift, no key added/removed)*
+  - [x] Narrow the single changed predicate. The `in_batch` disjunct of
         `select($scope_kind == "cross_batch" or $other_num < $c)` becomes: `cross_batch`
         unchanged, or (`$other_num < $c` **and** that peer's already-recorded decision in the
         accumulator is `"admit"`). Keep a defensive fallback that treats a lookup miss as
         *admit-the-candidate* (i.e. does not block), matching the script's existing degrade-to-admit
         posture; add a one-line comment stating the miss is unreachable by construction because
         `$in_batch_idx != null` is exactly the guard that reached this branch and every strictly
-        lower candidate has already been folded.
-  - [ ] Add a one-line comment at the lookup site recording the duplicate-positional-argument
+        lower candidate has already been folded. *(completed)*
+  - [x] Add a one-line comment at the lookup site recording the duplicate-positional-argument
         edge case: a duplicate task number folded twice looks itself up and finds its own
-        first-occurrence verdict. Pre-existing behavior, deliberately unchanged.
-  - [ ] Re-emit in caller-argument order: after the fold, bind `.results` and iterate the original
+        first-occurrence verdict. Pre-existing behavior, deliberately unchanged. *(completed)*
+  - [x] Re-emit in caller-argument order: after the fold, bind `.results` and iterate the original
         `$candidates` array (`$candidates[] as $orig | $by_num[($orig|tostring)]`), never the
-        sorted array.
-  - [ ] Update the `# Determinism:` header comment block to state the ascending-order greedy walk
+        sorted array. *(completed: re-emits via `$cands[] as $orig | ($folded.results[($orig|tostring)])`,
+        `$cands` being the original, unsorted `--argjson candidates` binding)*
+  - [x] Update the `# Determinism:` header comment block to state the ascending-order greedy walk
         and the admitted-set narrowing (the deeper prose rewrite is Phase 3; this is the minimum
-        needed to keep the code and its adjacent comment consistent at commit time).
-  - [ ] Run the Phase 1 suite: Case 1 must now be fully green, Case 2 must still be green.
+        needed to keep the code and its adjacent comment consistent at commit time). *(completed)*
+  - [x] Run the Phase 1 suite: Case 1 must now be fully green, Case 2 must still be green.
+        *(completed: all 3 cases green, 3 passed / 0 failed)*
 - **Timing:** 1.25 hours
 - **Depends on:** 1
 - **Verification Tier:** full
