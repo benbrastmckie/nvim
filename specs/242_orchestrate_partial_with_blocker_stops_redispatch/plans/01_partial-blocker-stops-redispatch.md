@@ -223,29 +223,35 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 3: Blocked-vs-partial guidance in the shared handoff contract [NOT STARTED]
+### Phase 3: Blocked-vs-partial guidance in the shared handoff contract [COMPLETED]
 
 - **Goal:** State the decision rule for `blocked` vs `partial`-with-blockers once, in the shared
   H9 wrap-up contract, and point the implementer agent contract at it.
 - **Tasks:**
-  - [ ] Re-read `context/contracts/wrap-up.md` around its `status` field documentation (~line 43).
-  - [ ] Add a short subsection giving the rule: use `blocked` when no further implementation effort
+  - [x] Re-read `context/contracts/wrap-up.md` around its `status` field documentation (~line 43). *(completed)*
+  - [x] Add a short subsection giving the rule: use `blocked` when no further implementation effort
         of any kind can proceed; use `partial` with a populated `blockers[]` entry and no
         continuation pointer when some phases completed but a specific remaining phase is blocked
         by a cause outside the agent's control (e.g. an external service or release asset that is
         unavailable) that no further attempt on that phase can close; do not use `failed`, which
-        implies non-recoverable and discards credit for the completed phases.
-  - [ ] Note in that subsection that a blocker-bearing `partial` now stops same-run redispatch and
+        implies non-recoverable and discards credit for the completed phases. *(completed)*
+  - [x] Note in that subsection that a blocker-bearing `partial` now stops same-run redispatch and
         raises a blocker-research aux signal, so returning it is the correct signal rather than a
-        degraded one.
-  - [ ] Add a one-line pointer from `agents/general-implementation-agent.md`'s existing
+        degraded one. *(completed)*
+  - [x] Add a one-line pointer from `agents/general-implementation-agent.md`'s existing
         `.orchestrator-handoff.json` section (which already says "Use the shape defined by ...") to
-        the new wrap-up.md subsection. Do not duplicate the rule text there.
-  - [ ] Do not edit `docs/architecture/handoff-schema.md` — a concurrent sibling task owns it this
-        cycle, and the schema already permits `blockers[]` on a `partial` handoff.
-  - [ ] Do not edit the other ~60 implementer/research agent files; they already reference
-        wrap-up.md by pointer.
-  - [ ] Keep every task number out of both files (deliverables outside `specs/**`).
+        the new wrap-up.md subsection. Do not duplicate the rule text there. *(completed)*
+  - [x] Do not edit `docs/architecture/handoff-schema.md` — a concurrent sibling task owns it this
+        cycle, and the schema already permits `blockers[]` on a `partial` handoff. *(completed:
+        not touched)*
+  - [x] Do not edit the other ~60 implementer/research agent files; they already reference
+        wrap-up.md by pointer. *(completed: not touched; confirmed via
+        `grep -rl "orchestrator-handoff.json" agent-system/extensions/*/agents/*.md` — 64 hits,
+        spot-checked general-research-agent.md, planner-agent.md,
+        cslib/pr-review-implementation-agent.md — all three reference wrap-up.md's "Write
+        location" and their own `status` vocabulary line, none restate a blocked-vs-partial rule
+        inline (it did not previously exist anywhere), confirming the Scope Hypothesis)*
+  - [x] Keep every task number out of both files (deliverables outside `specs/**`). *(completed)*
 - **Timing:** 0.75 hours
 - **Depends on:** none
 - **Verification Tier:** prose
@@ -254,13 +260,14 @@ Phases within the same wave can execute in parallel.
   `grep -rl "orchestrator-handoff.json" agent-system/extensions/*/agents/*.md` and by spot-checking
   two or three of the hits for a pointer rather than an inline copy; if any file restates the
   status vocabulary inline, record the finding rather than silently widening the edit set.
+  *(confirmed holds — see task list above)*
 - **Files to modify:**
   - `agent-system/extensions/core/context/contracts/wrap-up.md` - new blocked-vs-partial subsection
   - `agent-system/extensions/core/agents/general-implementation-agent.md` - one-line pointer
 - **Verification:**
-  - Diff read-through confirms both hunks are prose only.
+  - Diff read-through confirms both hunks are prose only. *(confirmed)*
   - `bash .claude/scripts/check-task-references.sh` (or the equivalent repo lint) reports no new
-    task-number occurrences.
+    task-number occurrences. *(confirmed: 0 occurrences in both scoped subtrees)*
 
 ---
 

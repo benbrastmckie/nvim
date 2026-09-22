@@ -110,6 +110,21 @@ Required fields:
 | `implemented` | `true` | Build-green with only tracked strategic sorries — "implemented (skeleton)" |
 | `partial` / `blocked` | `true` | **Invalid combination.** `skeleton: true` requires `status: "implemented"` |
 
+### `blocked` vs. `partial`-with-`blockers`
+
+Use `blocked` when no further implementation effort of any kind can proceed on this task right
+now (the task is stuck at the outset, or entirely). Use `partial` with a populated `blockers[]`
+entry and no `continuation_path` when some phases completed successfully but a specific
+remaining phase is blocked by a cause outside the agent's control — for example, an external
+service or release asset that is unavailable — that no further attempt on THAT phase can close.
+Do not report `failed` in this situation: `failed` implies non-recoverable and discards credit
+for the phases that did complete.
+
+A blocker-bearing `partial` reported this way now stops same-run redispatch (the orchestrator
+writes `status: "partial"` to state.json, which routes the task to a visible human-escalation row
+instead of an immediate retry) and raises a blocker-research aux signal for the next cycle — so
+returning it is the correct signal for this case, not a degraded one.
+
 ## Continuation Handoff Markdown
 
 When `status = "partial"` or `status = "blocked"`, the agent MUST also write a handoff

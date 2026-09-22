@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Blocked-vs-partial guidance in the shared handoff contract",
+  "started_at": "2026-09-22T00:35:00Z",
+  "last_updated": "2026-09-22T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add blocked-vs-partial subsection to wrap-up.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/wrap-up.md"]},
+    {"id": 2, "description": "One-line pointer in general-implementation-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

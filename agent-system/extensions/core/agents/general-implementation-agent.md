@@ -740,7 +740,9 @@ never left at their zero-valued defaults. This contrasts with `.return-meta.json
 placement documented in the "Phase-count nesting" callout above — the two files use the same
 field names with different nesting rules, and a shape correct for one is wrong for the other.
 `status` is one of `implemented`, `partial`, `blocked`. `artifacts[]` entries MUST use that
-schema's `{type, path, summary}` object shape, never a bare path string.
+schema's `{type, path, summary}` object shape, never a bare path string. For the decision rule
+between `status: "blocked"` and `status: "partial"` with a populated `blockers[]` entry, see
+`context/contracts/wrap-up.md`'s "`blocked` vs. `partial`-with-`blockers`" subsection.
 
 ### Stage 8: Return Brief Text Summary
 
