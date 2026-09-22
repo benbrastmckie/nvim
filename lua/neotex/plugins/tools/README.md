@@ -230,47 +230,31 @@ ds{               -- Delete surrounding braces
 cs"'              -- Change double quotes to single
 ```
 
-Filetype-specific surrounds are configured in ftplugin files:
+Filetype-specific surrounds are defined in one table in `surround.lua` and applied
+per buffer on `FileType`. Markup filetypes share one key vocabulary:
 
-#### Markdown Surrounds (markdown.lua)
-Available in .md files only:
+| Key | Meaning | Markdown | LaTeX | Typst |
+|-----|---------|----------|-------|-------|
+| `b` | Bold | `**x**` | `\textbf{x}` | `*x*` |
+| `i` | Italic | `*x*` | `\textit{x}` | `_x_` |
+| `c` | Inline code | `` `x` `` | `\texttt{x}` | `` `x` `` |
+| `C` | Code block (prompts language) | ` ```lang ` | - | ` ```lang ` |
+| `m` / `$` | Inline math | `$x$` | `$x$` | `$x$` |
+| `M` | Display math | `$$x$$` | `\[x\]` | `$ x $` |
+| `l` | Link (prompts URL) | `[x](url)` | `\href{url}{x}` | `#link("url")[x]` |
+| `e` | Environment / function (prompts) | - | `\begin{env}` | `#fn[x]` |
+| `~` | Strikethrough | `~~x~~` | - | `#strike[x]` |
+| `q` / `Q` | Quotes | - | `` `x' `` / ``` ``x'' ``` | - |
 
-| Key | Surround | Example |
-|-----|----------|---------|
-| `b` | Bold | `**text**` |
-| `i` | Italic | `*text*` |
-| `` ` `` | Inline code | `` `text` `` |
-| `c` | Code block | `` ```language\ntext\n``` `` (prompts for language) |
-| `l` | Link | `[text](url)` (prompts for URL) |
-| `~` | Strikethrough | `~~text~~` |
+Legacy keys `t` (LaTeX) and `r` (Typst) remain as aliases for `c` and `C`.
+In all other filetypes the nvim-surround defaults apply (e.g. `b` -> `()`).
 
-#### LaTeX Surrounds (tex.lua)
-Available in .tex files only:
+nvim-surround resolves its default aliases (`b` -> `)`, `r` -> `]`, `q` -> any quote)
+*before* custom surrounds, so a custom key is unreachable unless its alias is cleared.
+`surround.lua` clears the alias for every key a filetype defines, automatically.
 
-| Key | Surround | Example |
-|-----|----------|---------|
-| `e` | Environment | `\begin{env}...\end{env}` (prompts for environment) |
-| `b` | Bold | `\textbf{text}` |
-| `i` | Italic | `\textit{text}` |
-| `t` | Typewriter | `\texttt{text}` |
-| `q` | Single quotes | `` `text' `` |
-| `Q` | Double quotes | `` ``text'' `` |
-| `$` | Math mode | `$text$` |
-
-**Usage Example:**
-```
--- In a markdown file:
-ysiw + b  ->  **word**    (bold)
-ysiw + i  ->  *word*      (italic)
-ysiw + `  ->  `word`      (code)
-
--- In a LaTeX file:
-ysiw + b  ->  \textbf{word}    (bold)
-ysiw + i  ->  \textit{word}    (italic)
-ysiw + $  ->  $word$           (math)
-```
-
-This filetype isolation ensures that the same keys produce appropriate output for each file type, preventing cross-filetype pollution.
+To add a filetype or key, extend `filetype_surrounds` in `surround.lua`; do not call
+`buffer_setup` from `after/ftplugin/`.
 
 ### List Management
 ```markdown

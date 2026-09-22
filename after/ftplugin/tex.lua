@@ -1,50 +1,3 @@
--- We're now using nvim-surround instead of mini.surround
--- LaTeX-specific surround configurations are in lua/neotex/plugins/coding/surround.lua
-
--- This file includes buffer-specific surround configuration
-require("nvim-surround").buffer_setup({
-  surrounds = {
-    -- LaTeX environments
-    ["e"] = {
-      add = function()
-        local env = vim.fn.input("Environment: ")
-        return { { "\\begin{" .. env .. "}" }, { "\\end{" .. env .. "}" } }
-      end,
-    },
-    -- LaTeX quotes
-    ["Q"] = {
-      add = { "``", "''" },
-      find = "%b``.-''",
-      delete = "^(``)().-('')()$",
-    },
-    -- LaTeX single quotes
-    ["q"] = {
-      add = { "`", "'" },
-      find = "`.-'",
-      delete = "^(`)().-(')()$",
-    },
-    -- LaTeX text formatting
-    ["b"] = {
-      add = { "\\textbf{", "}" },
-      find = "\\%a-bf%b{}",
-      delete = "^(\\%a-bf{)().-(})()$",
-    },
-    ["i"] = {
-      add = { "\\textit{", "}" },
-      find = "\\%a-it%b{}",
-      delete = "^(\\%a-it{)().-(})()$",
-    },
-    ["t"] = {
-      add = { "\\texttt{", "}" },
-      find = "\\%a-tt%b{}",
-      delete = "^(\\%a-tt{)().-(})()$",
-    },
-    ["$"] = {
-      add = { "$", "$" },
-    },
-  },
-})
-
 -- PdfAnnots
 function PdfAnnots()
   local ok, pdf = pcall(vim.api.nvim_eval,
@@ -139,20 +92,27 @@ if ok_wk then
   -- LaTeX commands
   wk.add({
     { "<leader>l", group = "latex", icon = "󰙩", buffer = 0 },
-    { "<leader>la", "<cmd>lua PdfAnnots()<CR>", desc = "annotate", icon = "󰏪", buffer = 0 },
-    { "<leader>lb", function() run_bibexport() end, desc = "bib export", icon = "󰈝", buffer = 0 },
-    { "<leader>lc", "<cmd>VimtexCompile<CR>", desc = "compile", icon = "󰖷", buffer = 0 },
-    { "<leader>ld", "<cmd>terminal LATEXMK_DRAFT_MODE=1 latexmk -pdf -e '$draft_mode=1' %:p<CR>", desc = "draft mode", icon = "󰌶", buffer = 0 },
+
+    -- Shared core verbs (same meaning in the typst and slidev groups)
+    { "<leader>ll", "<cmd>VimtexCompile<CR>", desc = "live compile", icon = "󰖷", buffer = 0 },
+    { "<leader>lb", "<cmd>terminal latexmk -pdf %:p<CR>", desc = "build once", icon = "󰸞", buffer = 0 },
+    { "<leader>lv", "<cmd>VimtexView<CR>", desc = "view pdf", icon = "󰛓", buffer = 0 },
     { "<leader>le", "<cmd>VimtexErrors<CR>", desc = "errors", icon = "󰅚", buffer = 0 },
-    { "<leader>lf", "<cmd>terminal latexmk -pdf %:p<CR>", desc = "final build", icon = "󰸞", buffer = 0 },
-    { "<leader>lg", "<cmd>e ~/.config/nvim/templates/Glossary.tex<CR>", desc = "glossary", icon = "󰈚", buffer = 0 },
-    { "<leader>lh", "<cmd>terminal latexindent -w %:p:r.tex<CR>", desc = "format", icon = "󰉣", buffer = 0 },
+    { "<leader>lf", "<cmd>terminal latexindent -w %:p:r.tex<CR>", desc = "format", icon = "󰉣", buffer = 0 },
+    -- Both recovery steps at once: VimtexClean drops the aux files, VimtexClearCache
+    -- drops vimtex's parse cache. They were separate keys (lk / lx) but are only ever
+    -- wanted together, and splitting them cost a letter for no benefit.
+    { "<leader>lk", "<cmd>VimtexClean<CR><cmd>VimtexClearCache All<CR>", desc = "clean aux + cache", icon = "󰩺", buffer = 0 },
+    { "<leader>lx", "<cmd>VimtexStop<CR>", desc = "stop compiler", icon = "󰃢", buffer = 0 },
     { "<leader>li", "<cmd>VimtexTocOpen<CR>", desc = "index", icon = "󰋽", buffer = 0 },
-    { "<leader>lk", "<cmd>VimtexClean<CR>", desc = "kill aux", icon = "󰩺", buffer = 0 },
+
+    -- LaTeX-specific extras
+    { "<leader>la", "<cmd>lua PdfAnnots()<CR>", desc = "annotate", icon = "󰏪", buffer = 0 },
+    { "<leader>lr", function() run_bibexport() end, desc = "bib export (references)", icon = "󰈝", buffer = 0 },
+    { "<leader>ld", "<cmd>terminal LATEXMK_DRAFT_MODE=1 latexmk -pdf -e '$draft_mode=1' %:p<CR>", desc = "draft mode", icon = "󰌶", buffer = 0 },
+    { "<leader>lg", "<cmd>e ~/.config/nvim/templates/Glossary.tex<CR>", desc = "glossary", icon = "󰈚", buffer = 0 },
     { "<leader>lm", "<plug>(vimtex-context-menu)", desc = "menu", icon = "󰍉", buffer = 0 },
-    { "<leader>lv", "<cmd>VimtexView<CR>", desc = "view", icon = "󰛓", buffer = 0 },
     { "<leader>lw", "<cmd>VimtexCountWords!<CR>", desc = "word count", icon = "󰆿", buffer = 0 },
-    { "<leader>lx", "<cmd>:VimtexClearCache All<CR>", desc = "clear cache", icon = "󰃢", buffer = 0 },
     { "<leader>ls", function()
       local vimtex = vim.b.vimtex
       if vimtex and vim.fn.expand('%:p') == vimtex.tex then

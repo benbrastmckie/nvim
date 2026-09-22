@@ -36,20 +36,23 @@ All Typst keybindings use the `<leader>l` prefix (same as LaTeX). Filetype isola
 
 | Key | Action | Description |
 |-----|--------|-------------|
-| `<leader>lc` | Compile (watch) | Start continuous compilation on save (like LaTeX `\ll`) |
-| `<leader>lr` | Run (compile once) | Single compilation run |
-| `<leader>lw` | Stop watch | Stop continuous compilation |
+| `<leader>ll` | Live preview (web) | Toggle browser preview with sync |
+| `<leader>lb` | Build once | Single compilation run |
+| `<leader>lv` | View PDF (Sioyek) | Open compiled PDF in external viewer |
 | `<leader>le` | Errors | Show diagnostics for current line |
 | `<leader>lf` | Format | Format via tinymist LSP (using typstyle) |
-| `<leader>ll` | Live preview (web) | Toggle browser preview with sync |
-| `<leader>lp` | Preview (web) | Open browser preview |
+| `<leader>lk` | Clean artifacts | Delete compiled svg/pdf and restart tinymist |
+| `<leader>lx` | Stop (watch + preview) | Stop whichever background processes are live |
+| `<leader>lw` | Watch (toggle) | Continuous compilation on save |
+| `<leader>lq` | Quickfix (compile) | Open the compile-error quickfix list |
 | `<leader>ls` | Sync cursor (web) | Manually sync preview to cursor position |
-| `<leader>lv` | View PDF (Sioyek) | Open compiled PDF in external viewer |
-| `<leader>lx` | Stop preview | Close browser preview |
-| `<leader>lP` | Pin main file | Pin current file as main (multi-file projects) |
+| `<leader>lp` | Pin main file | Pin current file as main (multi-file projects) |
 | `<leader>lu` | Unpin main file | Return to automatic main file detection |
 
-**Note**: Sync features (forward/backward) only work with web preview (`<leader>ll`/`<leader>lp`), not with external PDF viewers.
+`ll`, `lb`, `lv`, `le`, `lf`, `lk` and `lx` are the shared core verbs and mean the same thing in
+the LaTeX and Slidev groups -- see [MAPPINGS.md](MAPPINGS.md#document-leaderl).
+
+**Note**: Sync features (forward/backward) only work with the web preview (`<leader>ll`), not with external PDF viewers.
 
 ---
 
@@ -75,7 +78,7 @@ typst/
 ```
 
 When editing `chapters/00-introduction.typ`:
-- `<leader>lc` compiles `BimodalReference.typ`
+- `<leader>lw` watches `BimodalReference.typ`
 - `<leader>lv` opens `BimodalReference.pdf`
 - Preview shows the full document
 
@@ -84,7 +87,7 @@ When editing `chapters/00-introduction.typ`:
 For non-standard structures or when auto-detection fails:
 
 1. Open the main file (e.g., `BimodalReference.typ`)
-2. Press `<leader>lP` to pin it as main
+2. Press `<leader>lp` to pin it as main
 3. Notification confirms: "Pinned BimodalReference.typ as main file"
 4. Now editing any subfile will use the pinned main file
 
@@ -317,37 +320,28 @@ Comprehensive SnipMate-format snippets at `~/.config/nvim/snippets/typst.snippet
 
 nvim-surround configured with Typst-specific delimiter pairs.
 
-### Operations
+Typst shares the markup surround vocabulary used for markdown and LaTeX; see
+`lua/neotex/plugins/tools/README.md` (Surround Operations) for the cross-filetype table.
 
-| Command | Action | Example |
-|---------|--------|---------|
-| `ysiwb` | Add bold | `word` → `*word*` |
-| `ysiwi` | Add italic | `word` → `_word_` |
-| `ysiw$` | Add inline math | `expr` → `$expr$` |
-| `ysiwc` | Add inline code | `code` → `` `code` `` |
-| `ysiwm` | Add display math | `expr` → `$ expr $` |
-| `ysiwe` | Add function | Prompts for function name → `#fn[text]` |
-| `ysiwr` | Add raw block | Prompts for language → `\`\`\`lang\ntext\n\`\`\`` |
-| `csb*` | Change bold to emphasis | `*text*` → `_text_` |
-| `ds$` | Delete math delimiters | `$expr$` → `expr` |
+| Key | Add Delimiter | Description |
+|-----|---------------|-------------|
+| `b` | `*...*` | Bold (strong emphasis) |
+| `i` | `_..._` | Italic (emphasis) |
+| `c` | `` `...` `` | Inline code |
+| `C` (or `r`) | ` ```lang ` block | Raw block (prompts for language) |
+| `m` (or `$`) | `$...$` | Inline math |
+| `M` | `$ ... $` | Display math (with spaces) |
+| `l` | `#link("url")[...]` | Link (prompts for URL) |
+| `e` | `#fn[...]` | Function call (prompts for name) |
+| `~` | `#strike[...]` | Strikethrough |
 
-### Surround Mappings
-
-| Key | Add Delimiter | Find Pattern | Description |
-|-----|---------------|--------------|-------------|
-| `b` | `*...*` | `%*[^*]+%*` | Bold (strong emphasis) |
-| `i` | `_..._` | `_[^_]+_` | Italic (emphasis) |
-| `$` | `$...$` | `%$[^$]+%$` | Inline math |
-| `m` | `$ ... $` | `%$ .-%$` | Display math (with spaces) |
-| `c` | `` `...` `` | `` `[^`]+` `` | Inline code |
-| `e` | `#fn[...]` | `#%w+%b[]` | Function/environment (prompts) |
-| `r` | `\`\`\`lang\n...\n\`\`\`` | N/A | Raw block (prompts for lang) |
+Examples: `ysiwb` -> `*word*`, `ds$` -> removes math delimiters, `csbi` -> bold to italic.
 
 ### Visual Mode
 
 1. Select text (visual mode)
 2. Press `S` followed by surround key
-3. Example: `viwSb` → wraps word in `*...*`
+3. Example: `viwSb` (or `viw<leader>ssb`) → wraps word in `*...*`
 
 ---
 
@@ -447,7 +441,7 @@ dependencies_bin = {
 
 1. Check subdirectory name is recognized: `chapters`, `sections`, `parts`, `includes`, `content`
 2. Verify main file exists in parent directory
-3. Manually pin: Open main file → `<leader>lP`
+3. Manually pin: Open main file → `<leader>lp`
 
 **Check detection**:
 ```vim
@@ -524,7 +518,6 @@ svg rect[fill="#ffffff"] {
 - **Ftplugin**: `~/.config/nvim/after/ftplugin/typst.lua`
   - Keybindings
   - Main file detection
-  - nvim-surround setup
   - Buffer-local settings
 
 ### Snippets

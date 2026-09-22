@@ -22,23 +22,55 @@ function M.setup()
   -- from caching the default wl-copy provider (which steals Wayland focus
   -- on GNOME, causing title bar flicker -- see Neovim #12622, wl-clipboard #90).
   -- OSC 52 writes through the terminal escape sequence (no external process).
-  -- Paste reads from Neovim's internal register (no wl-paste timeout risk).
+  -- Paste reads the system clipboard via wl-paste so text copied in other apps works.
+  -- OSC 52 and wl-paste carry only text, not the register type, so the last yank's
+  -- lines and regtype are cached: if the clipboard still holds that yank, its type
+  -- (e.g. linewise "V" from yy) is restored; otherwise the content is pasted charwise.
   if vim.env.WAYLAND_DISPLAY then
+    local osc52 = require("vim.ui.clipboard.osc52")
+    local last_yank = {}
+
+    -- Linewise yanks arrive as { ..., "" }; wl-paste --no-newline drops that trailing
+    -- line, so compare without it.
+    local function strip_trailing_empty(lines)
+      local copy = vim.deepcopy(lines)
+      if #copy > 1 and copy[#copy] == "" then
+        table.remove(copy)
+      end
+      return copy
+    end
+
+    local function make_copy(reg)
+      local send = osc52.copy(reg)
+      return function(lines, regtype)
+        last_yank[reg] = { lines = strip_trailing_empty(lines), regtype = regtype }
+        send(lines)
+      end
+    end
+
+    local function make_paste(reg, cmd)
+      return function()
+        local output = vim.fn.systemlist(cmd)
+        if vim.v.shell_error ~= 0 then
+          output = {}
+        end
+        local cached = last_yank[reg]
+        if cached and vim.deep_equal(cached.lines, strip_trailing_empty(output)) then
+          return { output, cached.regtype }
+        end
+        return { output, "v" }
+      end
+    end
+
     vim.g.clipboard = {
       name = "osc52",
       copy = {
-        ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-        ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+        ["+"] = make_copy("+"),
+        ["*"] = make_copy("*"),
       },
       paste = {
-        ["+"] = function()
-          local output = vim.fn.systemlist("wl-paste --no-newline")
-          return { output, "v" }
-        end,
-        ["*"] = function()
-          local output = vim.fn.systemlist("wl-paste --no-newline --primary")
-          return { output, "v" }
-        end,
+        ["+"] = make_paste("+", "wl-paste --no-newline"),
+        ["*"] = make_paste("*", "wl-paste --no-newline --primary"),
       },
     }
   end

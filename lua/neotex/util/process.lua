@@ -781,6 +781,40 @@ M._find_external_deck_server = _find_external_deck_server
 M._make_ring_buffer = _make_ring_buffer
 M._is_slidev_project = _is_slidev_project
 
+--- Check whether a file is a Slidev *deck entry file*.
+---
+--- Stricter than _is_slidev_project(): that one accepts any markdown carrying a
+--- frontmatter `theme:`/`layout:`/`drawings:` key, which matches ordinary Jekyll and
+--- Hugo posts, and it describes the project rather than the file, so it also matches
+--- the README sitting next to a deck. This requires both a package.json depending on
+--- @slidev/cli (in the file's directory or its parent) and frontmatter on line 1.
+---
+--- Shared by after/ftplugin/markdown.lua, which registers the <leader>l slidev group,
+--- and the which-key document group, which hides pandoc conversion on decks.
+---@param filepath string|nil Absolute path to a markdown file
+---@return boolean
+function M.is_slidev_deck(filepath)
+  if not filepath or filepath == "" or vim.fn.filereadable(filepath) ~= 1 then
+    return false
+  end
+
+  local first = vim.fn.readfile(filepath, "", 1)
+  if not first or first[1] ~= "---" then
+    return false
+  end
+
+  local dir = vim.fn.fnamemodify(filepath, ":h")
+  for _, d in ipairs({ dir, vim.fn.fnamemodify(dir, ":h") }) do
+    local pkg = d .. "/package.json"
+    if vim.fn.filereadable(pkg) == 1 then
+      if table.concat(vim.fn.readfile(pkg), "\n"):find("@slidev/cli", 1, true) then
+        return true
+      end
+    end
+  end
+  return false
+end
+
 -- Auto-initialize on first require
 M.setup()
 

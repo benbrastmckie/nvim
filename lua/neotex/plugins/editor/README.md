@@ -147,10 +147,11 @@ Alongside the existing text manipulation mappings (`xa`, `xA`, `xd`, `xs`, `xw`)
 
 | Keymap | Description |
 |--------|-------------|
-| `<leader>xl` | Launch current file (filetype-aware: slidev for `.md`, typst-preview for `.typ`) |
 | `<leader>xp` | Open telescope process picker (view/kill running processes) |
 | `<leader>xk` | Kill all background processes |
-| `<leader>xo` | Open current file's process port in browser |
+
+Per-document launch and stop live at `<leader>ll` / `<leader>lx` in the filetype's own group, not
+here; `<leader>x` keeps only the session-wide operations.
 
 The launch action auto-detects available ports (starting from 3030), opens the browser automatically, and prevents duplicate launches. See `lua/neotex/util/process.lua` for the underlying process manager API.
 

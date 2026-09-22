@@ -121,65 +121,6 @@ local function unpin_main_file()
   vim.notify("Unpinned main file", vim.log.levels.INFO)
 end
 
--- Configure nvim-surround for Typst-specific surrounds
-local ok_surround, surround = pcall(require, "nvim-surround")
-if ok_surround then
-  surround.buffer_setup({
-    surrounds = {
-      -- Bold: *text*
-      ["b"] = {
-        add = { "*", "*" },
-        find = "%*[^*]+%*",
-        delete = "^(%*)().-(%*)()$",
-      },
-      -- Italic: _text_
-      ["i"] = {
-        add = { "_", "_" },
-        find = "_[^_]+_",
-        delete = "^(_)().-(_)()$",
-      },
-      -- Inline math: $expr$
-      ["$"] = {
-        add = { "$", "$" },
-        find = "%$[^$]+%$",
-        delete = "^(%$)().-(%$)()$",
-      },
-      -- Inline code: `code`
-      ["c"] = {
-        add = { "`", "`" },
-        find = "`[^`]+`",
-        delete = "^(`)().--(`)()$",
-      },
-      -- Function/environment: #fn[content]
-      ["e"] = {
-        add = function()
-          local fn = vim.fn.input("Function: ")
-          return { { "#" .. fn .. "[" }, { "]" } }
-        end,
-        find = "#%w+%b[]",
-        delete = "^(#%w+%[)().-(%])()$",
-      },
-      -- Raw block: ```lang content ```
-      ["r"] = {
-        add = function()
-          local lang = vim.fn.input("Language (or empty): ")
-          if lang ~= "" then
-            return { { "```" .. lang .. "\n" }, { "\n```" } }
-          else
-            return { { "```\n" }, { "\n```" } }
-          end
-        end,
-      },
-      -- Display math: $ expr $ (with spaces)
-      ["m"] = {
-        add = { "$ ", " $" },
-        find = "%$ .-%$",
-        delete = "^(%$ )().-( %$)()$",
-      },
-    },
-  })
-end
-
 -- Parse typst short diagnostic format: file:line:col: level: message
 -- Example: chapters/foo.typ:10:5: error: undefined variable
 local function parse_typst_error(line, project_root)
@@ -315,15 +256,6 @@ local function typst_watch()
   })
 end
 
-local function typst_watch_stop()
-  local entry = process.find_by_name("typst-watch")
-  if entry then
-    process.stop(entry.id)
-  else
-    vim.notify("No watch process running", vim.log.levels.WARN)
-  end
-end
-
 local function typst_view_pdf()
   local main_file = detect_main_file()
   local pdf = vim.fn.fnamemodify(main_file, ":r") .. ".pdf"
@@ -332,7 +264,7 @@ local function typst_view_pdf()
     vim.fn.jobstart({ "sioyek", pdf }, { detach = true })
   else
     local pdf_name = vim.fn.fnamemodify(pdf, ":t")
-    vim.notify("PDF not found: " .. pdf_name .. ". Compile first with <leader>lc", vim.log.levels.WARN)
+    vim.notify("PDF not found: " .. pdf_name .. ". Build one first with <leader>lb", vim.log.levels.WARN)
   end
 end
 
@@ -370,7 +302,7 @@ local function tinymist_clear_cache()
   if #deleted > 0 then
     msg = msg .. " | deleted: " .. table.concat(deleted, ", ")
   end
-  vim.notify(msg .. " | run <leader>lp to reopen", vim.log.levels.INFO)
+  vim.notify(msg .. " | run <leader>ll to reopen", vim.log.levels.INFO)
 end
 
 -- TypstPreview wrappers with process registry tracking
@@ -393,27 +325,53 @@ local function typst_preview_toggle()
   end
 end
 
+-- Stop every background process this document owns. Typst runs two independent ones
+-- (a `typst watch` compiler and the tinymist web preview); <leader>lx stops whichever
+-- are live, so the shared "stop" verb does not need the caller to know which is which.
+local function typst_stop_all()
+  local stopped = {}
+
+  local watch = process.find_by_name("typst-watch")
+  if watch then
+    process.stop(watch.id)
+    table.insert(stopped, "watch")
+  end
+
+  if process.find_by_name("typst-preview") then
+    typst_preview_stop()
+    table.insert(stopped, "preview")
+  end
+
+  if #stopped == 0 then
+    vim.notify("Nothing running for this document", vim.log.levels.WARN)
+  else
+    vim.notify("Stopped " .. table.concat(stopped, " + "), vim.log.levels.INFO)
+  end
+end
+
 -- Register which-key bindings for Typst (uses <leader>l like LaTeX)
--- NOTE: Sync features (forward/backward) only work with web preview (<leader>ll/<leader>lp)
+-- NOTE: Sync features (forward/backward) only work with the web preview (<leader>ll)
 --       PDF viewer (<leader>lv) does not support sync (similar to LaTeX without SyncTeX)
 local ok_wk, wk = pcall(require, "which-key")
 if ok_wk then
   wk.add({
     { "<leader>l", group = "typst", icon = "󰬛", buffer = 0 },
-    { "<leader>lC", tinymist_clear_cache, desc = "clear cache", icon = "󰃢", buffer = 0 },
-    { "<leader>lc", typst_watch, desc = "compile (watch)", icon = "", buffer = 0 },
+
+    -- Shared core verbs (same meaning in the latex and slidev groups)
+    { "<leader>ll", typst_preview_toggle, desc = "live preview (web)", icon = "", buffer = 0 },
+    { "<leader>lb", typst_compile, desc = "build once", icon = "", buffer = 0 },
+    { "<leader>lv", typst_view_pdf, desc = "view pdf (Sioyek)", icon = "", buffer = 0 },
     { "<leader>le", show_diagnostics, desc = "errors (LSP)", icon = "", buffer = 0 },
     { "<leader>lf", typst_format, desc = "format", icon = "", buffer = 0 },
+    { "<leader>lk", tinymist_clear_cache, desc = "clean artifacts", icon = "󰃢", buffer = 0 },
+    { "<leader>lx", typst_stop_all, desc = "stop (watch + preview)", icon = "󰅚", buffer = 0 },
+
+    -- Typst-specific extras
+    { "<leader>lw", typst_watch, desc = "watch (toggle)", icon = "", buffer = 0 },
     { "<leader>lq", show_compilation_errors, desc = "quickfix (compile)", icon = "", buffer = 0 },
-    { "<leader>ll", typst_preview_toggle, desc = "live preview (web)", icon = "", buffer = 0 },
-    { "<leader>lp", typst_preview_start, desc = "preview (web)", icon = "", buffer = 0 },
-    { "<leader>lP", pin_main_file, desc = "pin main file", icon = "", buffer = 0 },
-    { "<leader>lr", typst_compile, desc = "run (compile once)", icon = "", buffer = 0 },
     { "<leader>ls", "<cmd>TypstPreviewSyncCursor<CR>", desc = "sync cursor (web)", icon = "", buffer = 0 },
+    { "<leader>lp", pin_main_file, desc = "pin main file", icon = "", buffer = 0 },
     { "<leader>lu", unpin_main_file, desc = "unpin main file", icon = "", buffer = 0 },
-    { "<leader>lv", typst_view_pdf, desc = "view pdf (Sioyek)", icon = "", buffer = 0 },
-    { "<leader>lw", typst_watch_stop, desc = "stop watch", icon = "󰅚", buffer = 0 },
-    { "<leader>lx", typst_preview_stop, desc = "stop preview", icon = "󰅚", buffer = 0 },
   })
 end
 

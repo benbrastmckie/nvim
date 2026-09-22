@@ -6,11 +6,13 @@ This document provides a comprehensive overview of all keybindings configured in
 
 **Important Note**: Many of the leader-based mappings listed below are **filetype-dependent** and only appear when working with relevant file types. This configuration uses a hybrid approach in which-key.nvim to provide context-aware keybindings:
 
-- **LaTeX** (`<leader>l*`): Only available in `.tex`, `.latex`, `.bib`, `.cls`, `.sty` files
-- **Typst** (`<leader>l*`): Only available in `.typ` files (same prefix as LaTeX, filetype-isolated)
+- **Document** (`<leader>l*`): The single prefix for acting on the current document, in every
+  filetype. Which commands appear depends on the file: LaTeX in `.tex`/`.latex`/`.bib`/`.cls`/`.sty`,
+  Typst in `.typ`, Slidev in a deck's `.md`, and a pandoc conversion fallback in the remaining
+  convertible formats (markdown, org, rst, html, docx). The core verbs mean the same thing in all
+  of them -- see [DOCUMENT](#document-leaderl).
 - **Jupyter** (`<leader>j*`): Only available in `.ipynb` files
 - **Markdown** (`<leader>m*`): Only available in `.md`, `.markdown` files
-- **Pandoc** (`<leader>p*`): Available in convertible formats (markdown, tex, org, rst, html, docx)
 - **Templates** (`<leader>T*`): Only available in LaTeX files
 - **Lean Actions**: Only available in `.lean` files
 - **Markdown Actions** (`<leader>ar`): Only available in markdown files
@@ -233,24 +235,52 @@ See [Claude Code documentation](../lua/neotex/plugins/ai/claude/README.md) for c
 | `<leader>jr` | Clear REPL | Clear the REPL screen |
 | `<leader>jv` | Send visual selection to REPL | Send selected text to REPL |
 
+### DOCUMENT (`<leader>l`)
+
+`<leader>l` is the only prefix for document commands. Each document filetype registers its own
+buffer-local group under it, and these core verbs carry the same meaning in every one of them, so
+the habit transfers between LaTeX, Typst and Slidev:
+
+| Key | Verb | LaTeX | Typst | Slidev |
+|-----|------|-------|-------|--------|
+| `<leader>ll` | live / compile / preview | VimtexCompile | web preview (toggle) | dev server (toggle) |
+| `<leader>lb` | build the artifact `lv` opens | latexmk | compile once | export PDF |
+| `<leader>lv` | view output | VimtexView | Sioyek | Sioyek |
+| `<leader>le` | errors | VimtexErrors | LSP diagnostics | -- |
+| `<leader>lf` | format | latexindent | tinymist | -- |
+| `<leader>lk` | clean artifacts | aux + cache | artifacts | -- |
+| `<leader>lx` | stop background process | VimtexStop | watch + preview | dev server |
+| `<leader>li` | index / outline | VimtexTocOpen | -- | -- |
+| `<leader>lc` | convert (pandoc) | prompts for format | -- | -- |
+
+Filetypes with no group of their own (org, rst, html, docx, and plain markdown) fall back to a
+global `document` group offering just `<leader>lc` (convert) and `<leader>lv` (view pdf).
+
+All bindings are two keys and lowercase; `<leader>lc` prompts for the target format rather than
+spending a key on each one.
+
 ### LATEX (`<leader>l`)
 
 **Availability**: Only available in `.tex`, `.latex`, `.bib`, `.cls`, `.sty` files.
 
 | Key | Action | Description |
 |-----|--------|-------------|
-| `<leader>la` | PDF annotations | Work with PDF annotations |
-| `<leader>lb` | Export bibliography | Export BibTeX to separate file |
-| `<leader>lc` | Compile LaTeX document | Build/compile current document |
-| `<leader>le` | Show VimTeX errors | Display LaTeX error messages |
-| `<leader>lf` | Format tex file | Format LaTeX using latexindent |
-| `<leader>lg` | Edit glossary | Open LaTeX glossary template |
-| `<leader>li` | Open LaTeX table of contents | Show document structure |
-| `<leader>lk` | Clean VimTeX aux files | Remove LaTeX auxiliary files |
-| `<leader>lm` | VimTeX context menu | Show VimTeX context actions |
-| `<leader>lv` | View compiled LaTeX document | Preview PDF output |
-| `<leader>lw` | Count words | Count words in LaTeX document |
-| `<leader>lx` | Clear VimTeX cache | Clear LaTeX compilation cache |
+| `<leader>ll` | Live compile | VimtexCompile (continuous) |
+| `<leader>lb` | Build once | Single latexmk run |
+| `<leader>lv` | View pdf | Preview PDF output |
+| `<leader>le` | Errors | Display LaTeX error messages |
+| `<leader>lf` | Format | Format LaTeX using latexindent |
+| `<leader>lk` | Clean aux + cache | Remove aux files and clear the vimtex cache |
+| `<leader>lx` | Stop compiler | VimtexStop |
+| `<leader>li` | Index | Show document structure (TOC) |
+| `<leader>lc` | Convert... | Pandoc conversion, prompts for format |
+| `<leader>la` | Annotate | Work with PDF annotations |
+| `<leader>ld` | Draft mode | Build with draft mode enabled |
+| `<leader>lg` | Glossary | Open LaTeX glossary template |
+| `<leader>lm` | Menu | Show VimTeX context actions |
+| `<leader>lr` | Bib export (references) | Export BibTeX to separate file |
+| `<leader>ls` | Subfile toggle | Toggle between subfile and main file |
+| `<leader>lw` | Word count | Count words in LaTeX document |
 
 ### TYPST (`<leader>l`)
 
@@ -260,18 +290,34 @@ See [Claude Code documentation](../lua/neotex/plugins/ai/claude/README.md) for c
 
 | Key | Action | Description |
 |-----|--------|-------------|
-| `<leader>lc` | Compile (watch) | Start continuous compilation on save |
-| `<leader>lr` | Run (compile once) | Single compilation run |
-| `<leader>lw` | Stop watch | Stop continuous compilation |
-| `<leader>le` | Errors | Show diagnostics for current line |
-| `<leader>lf` | Format | Format via tinymist LSP (using typstyle) |
 | `<leader>ll` | Live preview (web) | Toggle browser preview with sync |
-| `<leader>lp` | Preview (web) | Open browser preview |
+| `<leader>lb` | Build once | Single compilation run |
+| `<leader>lv` | View pdf (Sioyek) | Open compiled PDF in external viewer |
+| `<leader>le` | Errors (LSP) | Show diagnostics for current line |
+| `<leader>lf` | Format | Format via tinymist LSP (using typstyle) |
+| `<leader>lk` | Clean artifacts | Delete compiled svg/pdf and restart tinymist |
+| `<leader>lx` | Stop (watch + preview) | Stop whichever background processes are live |
+| `<leader>lw` | Watch (toggle) | Continuous compilation on save |
+| `<leader>lq` | Quickfix (compile) | Open the compile-error quickfix list |
 | `<leader>ls` | Sync cursor (web) | Manually sync preview to cursor position |
-| `<leader>lv` | View PDF (Sioyek) | Open compiled PDF in external viewer |
-| `<leader>lx` | Stop preview | Close browser preview |
-| `<leader>lP` | Pin main file | Pin current file as main (multi-file projects) |
+| `<leader>lp` | Pin main file | Pin current file as main (multi-file projects) |
 | `<leader>lu` | Unpin main file | Return to automatic main file detection |
+
+### SLIDEV (`<leader>l`)
+
+**Availability**: Only in a Slidev deck's markdown -- a file whose first line opens YAML
+frontmatter and whose directory (or its parent) has a `package.json` depending on `@slidev/cli`.
+Ordinary markdown gets the global `document` group instead.
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<leader>ll` | Live preview (toggle) | Start the dev server and open it, or stop it |
+| `<leader>lb` | Build pdf (export) | `slidev export` to a PDF beside the deck |
+| `<leader>lv` | View pdf (Sioyek) | Open the exported PDF |
+| `<leader>lx` | Stop server | Stop this deck's dev server |
+| `<leader>lo` | Open in browser | Reopen a running server's deck |
+| `<leader>lp` | Presenter view | Open the presenter URL |
+| `<leader>ls` | Build site (dist/) | `slidev build` static output |
 
 ### MARKDOWN (`<leader>m`)
 
@@ -300,19 +346,6 @@ See [Claude Code documentation](../lua/neotex/plugins/ai/claude/README.md) for c
 | `<leader>nh` | Home-manager switch | Apply home-manager changes |
 | `<leader>nr` | Rebuild nix | Run update.sh script |
 | `<leader>nu` | Update flake | Update flake dependencies |
-
-### PANDOC (`<leader>p`)
-
-**Availability**: Available in convertible formats (`.md`, `.markdown`, `.tex`, `.latex`, `.org`, `.rst`, `.html`, `.docx`).
-
-| Key | Action | Description |
-|-----|--------|-------------|
-| `<leader>pw` | Convert to Word | Convert to .docx format |
-| `<leader>pm` | Convert to Markdown | Convert to .md format |
-| `<leader>ph` | Convert to HTML | Convert to .html format |
-| `<leader>pl` | Convert to LaTeX | Convert to .tex format |
-| `<leader>pp` | Convert to PDF | Convert to .pdf format |
-| `<leader>pv` | View PDF | Open PDF in document viewer |
 
 ### RUN (`<leader>r`)
 

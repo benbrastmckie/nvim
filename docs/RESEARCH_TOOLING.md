@@ -127,17 +127,20 @@ VimTeX provides custom text objects for LaTeX structures:
 
 ### LaTeX Surrounds
 
-Custom surrounds for LaTeX (via nvim-surround + ftplugin):
+Custom surrounds for LaTeX (via nvim-surround, defined in
+`lua/neotex/plugins/tools/surround.lua`):
 
 | Key | Result | Description |
 |-----|--------|-------------|
 | `e` | `\begin{env}...\end{env}` | Environment (prompts for name) |
 | `b` | `\textbf{text}` | Bold text |
 | `i` | `\textit{text}` | Italic text |
-| `t` | `\texttt{text}` | Typewriter (monospace) |
+| `c` (or `t`) | `\texttt{text}` | Typewriter (monospace) |
+| `l` | `\href{url}{text}` | Link (prompts for URL) |
+| `M` | `\[text\]` | Display math |
 | `q` | `` `text' `` | LaTeX single quotes |
 | `Q` | `` ``text'' `` | LaTeX double quotes |
-| `$` | `$text$` | Math mode |
+| `m` (or `$`) | `$text$` | Inline math |
 
 **Usage**: `ysiw + e` prompts for environment name, then surrounds word
 

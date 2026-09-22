@@ -195,7 +195,16 @@ return {
     end
 
     local function is_pandoc_compatible()
-      return vim.tbl_contains({ "markdown", "md", "tex", "latex", "org", "rst", "html", "docx" }, vim.bo.filetype)
+      if not vim.tbl_contains({ "markdown", "md", "tex", "latex", "org", "rst", "html", "docx" }, vim.bo.filetype) then
+        return false
+      end
+      -- A Slidev deck is markdown, but running pandoc over one produces garbage. Its
+      -- own <leader>l group (after/ftplugin/markdown.lua) is the whole story there.
+      local ok, process = pcall(require, "neotex.util.process")
+      if ok and process.is_slidev_deck(vim.api.nvim_buf_get_name(0)) then
+        return false
+      end
+      return true
     end
 
 
@@ -665,21 +674,55 @@ return {
       { "<leader>nu", "<cmd>TermExec cmd='cd ~/.dotfiles && ./scripts/update.sh --update'<CR><C-w>j", desc = "update inputs + rebuild", icon = "󰚰" },
     })
 
+    local pandoc_targets = {
+      { label = "pdf", cmd = "pandoc %:p -o %:p:r.pdf", background = true },
+      { label = "html", cmd = "pandoc %:p -o %:p:r.html" },
+      { label = "latex", cmd = "pandoc %:p -o %:p:r.tex" },
+      { label = "markdown", cmd = "pandoc %:p -o %:p:r.md" },
+      { label = "word", cmd = "pandoc %:p -o %:p:r.docx" },
+    }
+
+    local function pandoc_convert()
+      vim.ui.select(pandoc_targets, {
+        prompt = "Convert to:",
+        format_item = function(target) return target.label end,
+      }, function(target)
+        if not target then
+          return
+        end
+        local cmd = "TermExec cmd='" .. target.cmd .. "'"
+        if target.background then
+          cmd = cmd .. " open=0"
+        end
+        vim.cmd(cmd)
+      end)
+    end
+
     -- ============================================================================
-    -- <leader>p - PANDOC GROUP
+    -- <leader>l - DOCUMENT GROUP (global fallback)
     -- ============================================================================
+    --
+    -- <leader>l is the single home for "act on this document" commands across every
+    -- filetype. The rich per-filetype groups are registered buffer-locally by
+    -- after/ftplugin/{tex,typst,markdown}.lua and take precedence over everything
+    -- here; these global entries cover the remaining pandoc-compatible filetypes
+    -- (org, rst, html, docx, and plain markdown) that have no ftplugin of their own.
+    --
+    -- Pandoc conversion sits at <leader>lc as a sub-group rather than at the old
+    -- top-level <leader>p, which duplicated "make a PDF" and "view the PDF" against
+    -- the LaTeX group in every .tex buffer.
 
     wk.add({
-      -- Group header (static name, conditional visibility)
-      { "<leader>p", group = "pandoc", icon = "󰈙", cond = is_pandoc_compatible },
+      { "<leader>l", group = "document", icon = "󰈙", cond = is_pandoc_compatible },
 
-      -- Pandoc-specific mappings
-      { "<leader>ph", "<cmd>TermExec cmd='pandoc %:p -o %:p:r.html'<CR>", desc = "html", icon = "󰌝", cond = is_pandoc_compatible },
-      { "<leader>pl", "<cmd>TermExec cmd='pandoc %:p -o %:p:r.tex'<CR>", desc = "latex", icon = "󰐺", cond = is_pandoc_compatible },
-      { "<leader>pm", "<cmd>TermExec cmd='pandoc %:p -o %:p:r.md'<CR>", desc = "markdown", icon = "󱀈", cond = is_pandoc_compatible },
-      { "<leader>pp", "<cmd>TermExec cmd='pandoc %:p -o %:p:r.pdf' open=0<CR>", desc = "pdf", icon = "󰈙", cond = is_pandoc_compatible },
-      { "<leader>pv", "<cmd>TermExec cmd='sioyek %:p:r.pdf &' open=0<CR>", desc = "view", icon = "󰛓", cond = is_pandoc_compatible },
-      { "<leader>pw", "<cmd>TermExec cmd='pandoc %:p -o %:p:r.docx'<CR>", desc = "word", icon = "󰈭", cond = is_pandoc_compatible },
+      -- lv: shared core verb, view the produced output. Filetypes with a real viewer
+      -- integration (tex -> VimtexView) override this buffer-locally.
+      { "<leader>lv", "<cmd>TermExec cmd='sioyek %:p:r.pdf &' open=0<CR>", desc = "view pdf", icon = "󰛓", cond = is_pandoc_compatible },
+
+      -- Conversion targets are a list, not a key each: five formats as <leader>lc{h,l,m,p,w}
+      -- meant three-key sequences and crowded out single letters the per-filetype groups
+      -- need. One prompt scales to new formats without spending more of the namespace.
+      { "<leader>lc", pandoc_convert, desc = "convert...", icon = "󱀈", cond = is_pandoc_compatible },
     })
 
     -- ============================================================================
@@ -775,17 +818,12 @@ return {
     -- <leader>x - PROCESS MANAGEMENT (within text group)
     -- ============================================================================
 
-    local function process_launch()
-      local ok, process = pcall(require, "neotex.util.process")
-      if ok then
-        process.launch()
-      else
-        vim.notify("Process manager not available", vim.log.levels.WARN)
-      end
-    end
+    -- Note: there is deliberately no <leader>xl "launch" here. Starting a document's
+    -- preview or dev server is a document command and lives at <leader>ll in each
+    -- filetype's group. What remains under <leader>x is session-wide process
+    -- management, which is not per-document and has no <leader>l equivalent.
 
     wk.add({
-      { "<leader>xl", process_launch, desc = "launch", icon = "" },
       { "<leader>xp", function()
         local ok, picker = pcall(require, "neotex.plugins.tools.process-picker")
         if ok then

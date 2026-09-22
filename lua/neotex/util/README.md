@@ -161,10 +161,12 @@ process.deregister("typst-preview")
 
 | Keymap | Description |
 |--------|-------------|
-| `<leader>xl` | Launch current file (filetype-aware) |
 | `<leader>xp` | Open telescope process picker |
 | `<leader>xk` | Kill all background processes |
-| `<leader>xo` | Open current file's process port in browser |
+
+Starting and stopping a *document's* own server is not here: that is a document command and lives
+at `<leader>ll` / `<leader>lx` in each filetype's group. `<leader>x` keeps only the session-wide
+process operations.
 
 ### Telescope Process Picker
 
