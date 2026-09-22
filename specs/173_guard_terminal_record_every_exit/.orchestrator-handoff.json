@@ -1,16 +1,18 @@
 {
-  "status": "researched",
-  "phase": "research",
-  "dispatch_seq": 4,
-  "summary": "Researched task 173: confirmed finalize_record() is unreached on a killed holder (no trap), while decide_sharing()/flock already prevent unsafe sharing/blocking; recommended a trap-based terminal 'aborted' state plus the absorbed result-subcommand design, with bash deferred-trap and SIGKILL limits documented as risks.",
+  "task_number": 173,
+  "phase": "plan",
+  "status": "planned",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 5,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/173_guard_terminal_record_every_exit/reports/01_guard-terminal-record-and-result.md",
-      "summary": "Findings and recommendations for the trap-based terminal record fix and the absorbed result-subcommand/--expect-pid/--expect-scope/STATUS-line feature."
+      "type": "plan",
+      "path": "specs/173_guard_terminal_record_every_exit/plans/01_guard-terminal-record-result.md",
+      "summary": "5-phase plan for terminal record trap and result subcommand."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 0,
-  "blockers": []
+  "summary": "Plan written: trap-based aborted record, result subcommand (exit band 0/20-24), ownership assertions, STATUS line, docs, final gate with shellcheck via nix shell.",
+  "blockers": [],
+  "next_action_hint": "implement"
 }
