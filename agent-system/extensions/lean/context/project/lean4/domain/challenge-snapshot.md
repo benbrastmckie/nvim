@@ -17,8 +17,8 @@ exist as committed `.lean` source in the target project's git tree at the checke
 
 Before this task, this system's plans record goal *identifiers* only
 (`- **Goals**: ... proves \`comm\` ...`), never the *statement*. `lean-implementation-agent.md`'s
-own compliance check is a name-existence grep over `Theories/`, not a statement check — a
-same-named, weakened restatement passes it silently. Nothing upstream of that check has ever
+own compliance check is a name-existence grep over the roots resolved by `lean-src-roots.sh`,
+not a statement check — a same-named, weakened restatement passes it silently. Nothing upstream of that check has ever
 recorded what the theorem was supposed to say. This gap is closed by fixing the intended
 statement *before* the implementation agent runs, and by making it immutable thereafter — a
 Challenge the agent can rewrite certifies nothing.

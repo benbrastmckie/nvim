@@ -272,21 +272,31 @@ This verification happens at the END of implementation, after all phases are com
 
 ### Verification Steps
 
+0. **Resolve source roots** (run once, before any check below — no step in this stage names a
+   literal source-root directory; every one of them consumes `"${lean_roots[@]}"` instead):
+   ```bash
+   lean_roots_raw="$(bash .claude/scripts/lean-src-roots.sh)" || {
+     echo "lean-src-roots.sh failed (exit $?); aborting final verification -- cannot verify without real source roots" >&2
+     exit 1
+   }
+   mapfile -t lean_roots <<< "$lean_roots_raw"
+   ```
+
 1. **Check for sorries in modified files**:
    ```bash
-   bash .claude/scripts/lean-sorry-census.sh Theories/
+   bash .claude/scripts/lean-sorry-census.sh "${lean_roots[@]}"
    ```
    Record: `sorry_count` (must be 0 for implemented status)
 
 2. **Check for vacuous definitions (PROHIBITED patterns)**:
    ```bash
-   vacuous_count=$(grep -rn "^\s*\(noncomputable \)\?\(def\|theorem\|lemma\|instance\).*:= \(True\|Unit\|trivial\|Trivial\)\s*$" Theories/ 2>/dev/null | wc -l)
+   vacuous_count=$(grep -rn "^\s*\(noncomputable \)\?\(def\|theorem\|lemma\|instance\).*:= \(True\|Unit\|trivial\|Trivial\)\s*$" "${lean_roots[@]}" 2>/dev/null | wc -l)
    ```
    Record: `vacuous_count` (must be 0 for implemented status). Vacuous definitions are semantically equivalent to sorry. Note: this grep covers single-line patterns; multi-line vacuous definitions require manual review.
 
 3. **Check for new axioms**:
    ```bash
-   grep -rn "^axiom " Theories/ | wc -l
+   grep -rn "^axiom " "${lean_roots[@]}" | wc -l
    ```
    Record: `axiom_count` (compare to baseline, must not increase)
 
@@ -324,10 +334,10 @@ This verification happens at the END of implementation, after all phases are com
        else
            compliance_failed=false
            for name in $goal_names; do
-               if grep -rq "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${name}\b" Theories/ 2>/dev/null; then
-                   echo "  [OK] $name — found in Theories/"
+               if grep -rq "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${name}\b" "${lean_roots[@]}" 2>/dev/null; then
+                   echo "  [OK] $name — found in the resolved source roots"
                else
-                   echo "  [MISSING] $name — not found in Theories/"
+                   echo "  [MISSING] $name — not found in the resolved source roots"
                    compliance_failed=true
                fi
            done
@@ -335,7 +345,7 @@ This verification happens at the END of implementation, after all phases are com
                | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`')
            for replaced in $replacement_targets; do
                for new_name in $goal_names; do
-                   new_file=$(grep -rl "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${new_name}\b" Theories/ 2>/dev/null | head -1)
+                   new_file=$(grep -rl "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${new_name}\b" "${lean_roots[@]}" 2>/dev/null | head -1)
                    if [ -n "$new_file" ] && grep -q "\b${replaced}\b" "$new_file"; then
                        echo "  [INTEGRITY FAIL] $new_name delegates to $replaced"
                        compliance_failed=true
@@ -403,7 +413,7 @@ This verification happens at the END of implementation, after all phases are com
          # zero -> solution_module_unresolved; two or more -> solution_module_ambiguous.
          comparator_candidate_files=""
          for name in $(echo "$comparator_theorem_names_json" | jq -r '.[]'); do
-           matches=$(grep -rl "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${name}\b" Theories/ 2>/dev/null || true)
+           matches=$(grep -rl "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${name}\b" "${lean_roots[@]}" 2>/dev/null || true)
            comparator_candidate_files="${comparator_candidate_files}
 ${matches}"
          done
@@ -414,7 +424,7 @@ ${matches}"
            comparator_ran=false
            comparator_verdict_source="preflight"
            comparator_verdict="solution_module_unresolved"
-           comparator_reason_detail="No file under Theories/ declares any of the manifest's theorem_names: $(echo "$comparator_theorem_names_json" | jq -r 'join(", ")')."
+           comparator_reason_detail="No file under the resolved source roots declares any of the manifest's theorem_names: $(echo "$comparator_theorem_names_json" | jq -r 'join(", ")')."
          elif [ "$comparator_candidate_count" -gt 1 ]; then
            comparator_ran=false
            comparator_verdict_source="preflight"

@@ -241,28 +241,28 @@ research). Confirm by the audit grep; fix any extra site it surfaces.
 
 ---
 
-### Phase 4: Half 2(a)(b)(d) -- route every taught snippet through the resolver [NOT STARTED]
+### Phase 4: Half 2(a)(b)(d) -- route every taught snippet through the resolver [COMPLETED]
 
 **Goal**: No taught snippet names a literal root. All of them get roots from `lean-src-roots.sh`.
 
 **Tasks**:
-- [ ] Re-derive sites: `grep -rn "Theories/" agent-system/extensions/lean/ | grep -v scripts/tests/`
-- [ ] `agents/lean-implementation-agent.md`: add one "resolve source roots" step at the top of
+- [x] Re-derive sites: `grep -rn "Theories/" agent-system/extensions/lean/ | grep -v scripts/tests/` *(completed)*
+- [x] `agents/lean-implementation-agent.md`: add one "resolve source roots" step at the top of
       final verification, using the guarded capture from the Phase 2 header. Point the census,
       vacuous-def grep, axiom grep, plan-compliance grep and echo text, replacement-target grep,
       and both comparator-preflight blocks at `"${lean_roots[@]}"`. Reword echo and reason text
-      to "the resolved source roots"
-- [ ] `agents/lean-implementation-hard-agent.md`: the same for the census, vacuous-def grep,
+      to "the resolved source roots" *(completed)*
+- [x] `agents/lean-implementation-hard-agent.md`: the same for the census, vacuous-def grep,
       axiom grep, the plan-compliance prose (~421), and both comparator-preflight blocks. Apply
-      the neutral sample path per D7
-- [ ] `skills/skill-lean-implementation/SKILL.md` and `skills/skill-lean-implementation-hard/SKILL.md`
+      the neutral sample path per D7 *(completed: sorry_inventory sample "file" now "<src-root>/Foo.lean")*
+- [x] `skills/skill-lean-implementation/SKILL.md` and `skills/skill-lean-implementation-hard/SKILL.md`
       Stage 8: replace `-- "Theories/"` with the resolved roots. On resolver failure the commit
-      step must abort loudly, never commit without the sources
-- [ ] `context/project/lean4/domain/challenge-snapshot.md:20`: describe the check as a grep over
-      the roots resolved by `lean-src-roots.sh`
-- [ ] Leave the D7 prose sites alone, and record the decision in the summary
-- [ ] Do not restate the exit-code or build-verdict contract. Any build-related wording points
-      at `long-builds.md`'s "Reading the build's verdict"
+      step must abort loudly, never commit without the sources *(completed: guarded resolve step added immediately before each commit)*
+- [x] `context/project/lean4/domain/challenge-snapshot.md:20`: describe the check as a grep over
+      the roots resolved by `lean-src-roots.sh` *(completed)*
+- [x] Leave the D7 prose sites alone, and record the decision in the summary *(completed: verified unchanged by final grep)*
+- [x] Do not restate the exit-code or build-verdict contract. Any build-related wording points
+      at `long-builds.md`'s "Reading the build's verdict" *(completed: no build-verdict wording touched)*
 
 **Timing**: 1.5 hours
 

@@ -294,6 +294,17 @@ fi
 
 ### Stage 8: Git Commit
 
+Resolve source roots first — on resolver failure the commit MUST abort loudly rather than commit
+without the sources:
+
+```bash
+lean_roots_raw="$(bash .claude/scripts/lean-src-roots.sh)" || {
+  echo "lean-src-roots.sh failed (exit $?); aborting commit -- refusing to commit without the resolved source roots" >&2
+  exit 1
+}
+mapfile -t lean_roots <<< "$lean_roots_raw"
+```
+
 Commit changes with session ID:
 
 ```bash
@@ -301,7 +312,7 @@ bash .claude/scripts/git-commit-scoped.sh \
   --message "task ${task_number}: complete implementation" \
   --session "${session_id}" \
   --honest-index-rows "${task_number}" \
-  -- "Theories/" \
+  -- "${lean_roots[@]}" \
      "specs/${padded_num}_${project_name}/summaries/" \
      "specs/${padded_num}_${project_name}/plans/" \
      "specs/TODO.md" \

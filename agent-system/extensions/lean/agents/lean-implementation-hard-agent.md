@@ -310,7 +310,7 @@ Stage 5 of both orchestrate engines compares against the value it minted for thi
   "dispatch_seq": N,
   "sorry_inventory": [
     {
-      "file": "Theories/Foo.lean",
+      "file": "<src-root>/Foo.lean",
       "line": 42,
       "statement": "theorem Foo.bar : P x",
       "strategic": false,
@@ -377,9 +377,19 @@ bash .claude/scripts/git-commit-scoped.sh \
 
 Before writing final metadata, run the complete verification suite:
 
+0. **Resolve source roots** (run once, before any check below — no step in this stage names a
+   literal source-root directory; every one of them consumes `"${lean_roots[@]}"` instead):
+   ```bash
+   lean_roots_raw="$(bash .claude/scripts/lean-src-roots.sh)" || {
+     echo "lean-src-roots.sh failed (exit $?); aborting final verification -- cannot verify without real source roots" >&2
+     exit 1
+   }
+   mapfile -t lean_roots <<< "$lean_roots_raw"
+   ```
+
 1. **Check for sorries**:
    ```bash
-   bash .claude/scripts/lean-sorry-census.sh Theories/ --cross-check
+   bash .claude/scripts/lean-sorry-census.sh "${lean_roots[@]}" --cross-check
    ```
    Record: `sorry_count`. `sorry_count` must be 0 OR every remaining sorry is tracked in
    `sorry_inventory` with `strategic: true` and satisfies the five-condition strategic-sorry
@@ -390,13 +400,13 @@ Before writing final metadata, run the complete verification suite:
 
 2. **Check for vacuous definitions** (PROHIBITED patterns):
    ```bash
-   grep -rn "^\s*\(noncomputable \)\?\(def\|theorem\|lemma\|instance\).*:= \(True\|Unit\|trivial\|Trivial\)\s*$" Theories/ 2>/dev/null | wc -l
+   grep -rn "^\s*\(noncomputable \)\?\(def\|theorem\|lemma\|instance\).*:= \(True\|Unit\|trivial\|Trivial\)\s*$" "${lean_roots[@]}" 2>/dev/null | wc -l
    ```
    Record: `vacuous_count` (must be 0)
 
 3. **Check for new axioms**:
    ```bash
-   grep -rn "^axiom " Theories/ | wc -l
+   grep -rn "^axiom " "${lean_roots[@]}" | wc -l
    ```
    Record: `axiom_count` (must not increase from baseline)
 
@@ -418,7 +428,8 @@ Before writing final metadata, run the complete verification suite:
    Reporting".
    Record: `build_passed` (true/false)
 
-5. **Plan compliance spot-check**: Verify all named theorems/lemmas from plan exist in Theories/.
+5. **Plan compliance spot-check**: Verify all named theorems/lemmas from plan exist in the
+   resolved source roots (`"${lean_roots[@]}"`, from Step 0 above).
 
 6. **Comparator gate (advisory, opt-in)**: **Gate condition first** — if `compare_flag` (from the
    delegation context) is not `true`, do nothing at all: no invocation, no `comparator` block, no
@@ -472,7 +483,7 @@ Before writing final metadata, run the complete verification suite:
          # resolved; zero -> solution_module_unresolved; two or more -> solution_module_ambiguous.
          comparator_candidate_files=""
          for name in $(echo "$comparator_theorem_names_json" | jq -r '.[]'); do
-           matches=$(grep -rl "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${name}\b" Theories/ 2>/dev/null || true)
+           matches=$(grep -rl "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${name}\b" "${lean_roots[@]}" 2>/dev/null || true)
            comparator_candidate_files="${comparator_candidate_files}
 ${matches}"
          done
@@ -483,7 +494,7 @@ ${matches}"
            comparator_ran=false
            comparator_verdict_source="preflight"
            comparator_verdict="solution_module_unresolved"
-           comparator_reason_detail="No file under Theories/ declares any of the manifest's theorem_names: $(echo "$comparator_theorem_names_json" | jq -r 'join(", ")')."
+           comparator_reason_detail="No file under the resolved source roots declares any of the manifest's theorem_names: $(echo "$comparator_theorem_names_json" | jq -r 'join(", ")')."
          elif [ "$comparator_candidate_count" -gt 1 ]; then
            comparator_ran=false
            comparator_verdict_source="preflight"
