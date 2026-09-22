@@ -5,12 +5,12 @@
     {
       "project_number": 248,
       "project_name": "revise_typst_viewing_commands",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "neovim",
       "description": "Research and revise the Typst document viewing commands (<leader>l group in after/ftplugin/typst.lua, lua/neotex/plugins/text/typst-preview.lua) into a sturdy, minimal set without losing functionality that matters. Make main-file detection robust: prefer the root .typ file that actually #includes/#imports the current chapter (e.g. BimodalLogic/typst/BimodalReference.typ includes chapters/ax-lean-appendix.typ) over the current alphabetical fallback, and consolidate the duplicated detect_main_file/get_main_file and project-root logic (which currently disagree: ftplugin uses typst/ subdir, plugin uses git root) into one shared helper. Also review: <leader>lp pin semantics (pins current file, buffer-local only, uses deprecated vim.lsp.buf.execute_command), tinymist exportPdf=onSave not using the pinned/detected main, overlap between watch/build/preview/view-pdf verbs, and forward/backward sync behavior (web preview only). Preview is occasionally unreliable; identify causes. Avoid needless complication",
       "topic": "neovim",
       "created": "2026-09-21T21:54:04Z",
-      "last_updated": "2026-09-22T05:59:45Z",
+      "last_updated": "2026-09-22T07:01:17Z",
       "session_id": "sess_1790055369_87ec14",
       "artifacts": [
         {
@@ -26,10 +26,11 @@
         {
           "path": "lua/neotex/util/typst.lua",
           "type": "implementation",
-          "summary": "New shared Typst helper: project_root, content-aware main_file, pin/unpin/pinned, pdf_path"
+          "summary": "Shared Typst helper: project_root, content-aware main_file, pin/unpin/pinned, pdf_path, sync_pin, setup_autocmds"
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Unified Typst main-file/root detection into one content-aware shared module, removed the redundant watch command, made tinymist pinning project-wide and auto-synced across LSP restarts, and made the preview toggle authoritative against the plugin's own server registry. Verified against three real multi-file projects and a plenary spec."
     },
     {
       "project_number": 241,

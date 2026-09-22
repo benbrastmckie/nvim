@@ -1,0 +1,8 @@
+[orchestrate] dispatch_seq match (13) — handoff confirmed as this dispatch's own report.
+[orchestrate] Dispatch result: implemented — Unified Typst main-file/root detection into a shared, content-aware lua/neotex/util/typst.lua module used by the ftplugin, the web preview plugin, and tinymist pin sync; removed the redundant watch command; made tinymist pinning project-wide and auto-synced across LSP restarts; made the preview toggle authoritative against the plugin's own server registry. All 5 plan phases complete, 8/8 spec assertions pass, and three real multi-file projects smoke-compile successfully.
+[orchestrate] Phase progress: 5/5
+[orchestrate] COMPLETION-CLAIM GATE case 2/3 (phase accounting present and complete) task 248: 5/5 — allowing completion.
+[phase-check] Task 248: 5/5 phases closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in 01_typst-viewing-commands-revision.md -- proceeding.
+[deploy-check] Task 248: modified_files do not overlap agent-system/extensions/** -- not applicable, passing through.
+specs/248_revise_typst_viewing_commands/plans/01_typst-viewing-commands-revision.md
+OK: task 248 status -> completed

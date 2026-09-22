@@ -11,7 +11,7 @@ next_project_number: 249
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,177,184,185,199,202,207,210,217,223,224,227,241,242,243,244,245,248 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,139,162,163,166,167,170,177,184,185,199,202,207,210,217,223,224,227,241,242,243,244,245 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,136,140,165,208 | 29,139,162,163,166,167,207,210 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,190 | 74,165 | core-agent-system, extensions |
 
@@ -64,7 +64,6 @@ next_project_number: 249
 
 45 [NOT STARTED] — TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task...
 202 [NOT STARTED] — Make the picker's Reload All] and Regenerate] entries honest...
-248 [IMPLEMENTING] — Research and revise the Typst document viewing commands...
 
 ### Opencode
 
@@ -85,7 +84,7 @@ next_project_number: 249
 ## Tasks
 
 ### 248. Revise typst viewing commands
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: neovim
 - **Dependencies**: None

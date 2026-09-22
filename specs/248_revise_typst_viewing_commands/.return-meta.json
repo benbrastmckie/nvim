@@ -1,15 +1,68 @@
 {
-  "status": "in_progress",
-  "started_at": "2026-09-22T06:41:47Z",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "phase_2_resuming",
-    "details": "Resuming at Phase 2 per orchestrator note. Phase 1 complete and committed (9e0c21812). Prior blocker (unrelated keymap-renaming diff) resolved by user: committed separately as 5c7dc15dc. Target files now clean."
+  "status": "implemented",
+  "summary": "Collapsed duplicated Typst main-file/root detection into a shared lua/neotex/util/typst.lua module used by the ftplugin, the web preview plugin, and tinymist pin sync. Main-file detection is now content-aware (prefers the file that actually #include/#imports the current chapter). Removed the redundant <leader>lw watch command in favor of tinymist's exportPdf=onSave, made the project-wide pin auto-sync across :LspRestart via client:exec_cmd (no deprecated APIs), and made the preview toggle/stop authoritative against typst-preview.nvim's own server registry. All 5 phases complete, 8/8 spec assertions pass, and all three real multi-file projects (BimodalLogic, cslib MPL, Logos/Theory manual) smoke-compile successfully via the new helper.",
+  "artifacts": [
+    {
+      "type": "implementation",
+      "path": "lua/neotex/util/typst.lua",
+      "summary": "Shared Typst helper: project_root, content-aware main_file, pin/unpin/pinned, pdf_path, sync_pin, setup_autocmds"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/util/typst_spec.lua",
+      "summary": "Plenary busted spec, 8 passing assertions"
+    },
+    {
+      "type": "implementation",
+      "path": "after/ftplugin/typst.lua",
+      "summary": "Routed through shared helper; removed watch command and deprecated LSP execute_command; registry-authoritative preview control; 11-binding <leader>l surface"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/text/typst-preview.lua",
+      "summary": "get_main_file/get_root delegate to the shared helper"
+    },
+    {
+      "type": "implementation",
+      "path": "docs/TYPST.md",
+      "summary": "Rewrote Multi-File Projects section, removed watch references, fixed stale command references"
+    },
+    {
+      "type": "implementation",
+      "path": "docs/MAPPINGS.md",
+      "summary": "Removed <leader>lw, renamed <leader>lx to stop preview"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/util/README.md",
+      "summary": "Added typst.lua module entry and Typst Helper API section"
+    },
+    {
+      "type": "summary",
+      "path": "specs/248_revise_typst_viewing_commands/summaries/01_typst-viewing-commands-revision-summary.md",
+      "summary": "Full implementation summary with verification and smoke test results"
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Unified Typst main-file/root detection into one content-aware shared module, removed the redundant watch command, made tinymist pinning project-wide and auto-synced across LSP restarts, and made the preview toggle authoritative against the plugin's own server registry. Verified against three real multi-file projects and a plenary spec.",
+    "roadmap_items": []
   },
+  "modified_files": [
+    "after/ftplugin/typst.lua",
+    "docs/MAPPINGS.md",
+    "docs/TYPST.md",
+    "lua/neotex/plugins/text/typst-preview.lua",
+    "lua/neotex/util/README.md",
+    "lua/neotex/util/typst.lua",
+    "lua/neotex/util/typst_spec.lua"
+  ],
   "metadata": {
     "session_id": "sess_1790055369_87ec14",
     "agent_type": "neovim-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"]
-  }
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
+  "next_steps": "Optional: interactively verify the <leader>lk / :LspRestart pin-persistence path in a live editing session (structurally verified here, not via a live restart cycle). Otherwise the task is ready for postflight."
 }
