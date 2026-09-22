@@ -1,6 +1,6 @@
 {
   "status": "implemented",
-  "dispatch_seq": 16,
+  "dispatch_seq": 17,
   "phase": "implement",
   "summary": "Reconciled the research-agent handoff-writer contract: all 21 research-agent contract files now carry the canonical 'research agents never write one' prohibition, and handoff-schema.md's misattributed citation is corrected.",
   "artifacts": [
