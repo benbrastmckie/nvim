@@ -14,6 +14,11 @@ This document and `manage-topics.sh` replace all inline implementations. Command
 call `manage-topics.sh` for state.json operations and copy the AskUserQuestion templates
 from this document for user interaction.
 
+The `AskUserQuestion` schema used throughout this document (`question`, `header`, `multiSelect`,
+`options: [{label, description}]`) is a copy, not the source of truth — see
+`context/standards/interactive-selection.md` for the authoritative tool schema definition. Check
+against that file before editing any template here.
+
 ### Mandatory Assignment Guarantee
 
 Every new-task-creation path MUST end with a non-empty topic. **Mode A is the universal
@@ -22,7 +27,10 @@ fallback**: whenever a topic cannot be inherited (Mode B, parent has no topic) o
 There is no option to bypass topic assignment with no topic on any new-task-creation path —
 the only escape hatch permitted anywhere in the system is the single, explicitly-labeled
 **"Defer (leave uncategorized for now)"** option in `/task --sync`'s backfill loop, which
-remediates *pre-existing* topicless tasks and is not a creation-time bypass. See
+remediates *pre-existing* topicless tasks and is not a creation-time bypass. This guarantee
+covers the **zero-existing-topics branch** (Mode A Step 1) too: when no topics exist yet, the
+picker is skipped but free-text collection is not — there is no Skip and no Defer on that
+branch either. See
 `specs/796_mandatory_topic_assignment/plans/01_mandatory-topic-assignment.md` Decision (a) for
 the rationale; future edits to this document or its callers must not re-introduce a bypass
 option outside that one carve-out.
@@ -59,38 +67,60 @@ rather than leaving the task topicless.
 ```bash
 # Get existing active topics from state.json
 mapfile -t existing_topics < <(bash .claude/scripts/manage-topics.sh list)
+```
 
-# Build AskUserQuestion options: existing + "New topic..." (no Skip option)
-options=()
-for t in "${existing_topics[@]}"; do
-  options+=("$t")
-done
-options+=("New topic...")
+**Zero-existing-topics branch**: if `${#existing_topics[@]} -eq 0` (every fresh repo's first
+task), skip the picker entirely — `AskUserQuestion` requires 2-4 options, and "New topic..."
+alone would under-shoot that floor. Go straight to Step 3's free-text prompt, reusing its
+empty-input re-prompt rule. This branch offers no Skip and no Defer; topic assignment is still
+mandatory, it is simply collected without an options picker.
+
+```bash
+if [[ ${#existing_topics[@]} -eq 0 ]]; then
+  # Skip Step 2 entirely; go straight to Step 3's free-text prompt.
+  :
+else
+  # Build AskUserQuestion options: existing + "New topic..." (no Skip option)
+  options=()
+  for t in "${existing_topics[@]}"; do
+    options+=("$t")
+  done
+  options+=("New topic...")
+fi
 ```
 
 ### Step 2: Show picker
 
+Skipped entirely when `existing_topics` is empty (see Step 1's zero-existing-topics branch) —
+go directly to Step 3. Otherwise, show the real `AskUserQuestion` schema (see
+`context/standards/interactive-selection.md` for the authoritative schema definition):
+
 ```json
 {
   "question": "Assign a topic to this task?",
-  "type": "select",
-  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic..."]
+  "header": "Topic",
+  "multiSelect": false,
+  "options": [
+    {"label": "<existing-topic-1>", "description": "Existing topic"},
+    {"label": "<existing-topic-2>", "description": "Existing topic"},
+    {"label": "New topic...", "description": "Free-text follow-up to name a new topic"}
+  ]
 }
 ```
 
 ### Step 3: Handle "New topic..." branch
 
-If the user selects "New topic...", show a follow-up free-text question:
+If the user selects "New topic..." (Step 2), or the zero-existing-topics branch (Step 1) skipped
+straight here, prompt for free-text input in the next conversational turn. This is a natural-
+language follow-up, not a second tool schema — `AskUserQuestion` has no `freeText` variant:
 
-```json
-{
-  "question": "Enter new topic name (lowercase, kebab-case, e.g. 'agent-system'):",
-  "type": "freeText"
-}
+```
+Enter new topic name (lowercase, kebab-case, e.g. 'agent-system'):
 ```
 
 Validate: non-empty, no spaces (suggest replacing spaces with hyphens if entered). Re-prompt
-on empty input — an empty free-text response is not a valid escape from topic assignment.
+on empty input — an empty free-text response is not a valid escape from topic assignment. This
+is the same re-prompt rule the zero-existing-topics branch reuses.
 
 ### Step 4: Update state
 
@@ -109,8 +139,14 @@ gatekeeping new-task creation. Its picker adds exactly one extra option, clearly
 ```json
 {
   "question": "Assign a topic to this task?",
-  "type": "select",
-  "options": ["<existing-topic-1>", "<existing-topic-2>", "New topic...", "Defer (leave uncategorized for now)"]
+  "header": "Topic Backfill",
+  "multiSelect": false,
+  "options": [
+    {"label": "<existing-topic-1>", "description": "Existing topic"},
+    {"label": "<existing-topic-2>", "description": "Existing topic"},
+    {"label": "New topic...", "description": "Free-text follow-up to name a new topic"},
+    {"label": "Defer (leave uncategorized for now)", "description": "The one exception to mandatory topic assignment: leaves this pre-existing task topicless for now"}
+  ]
 }
 ```
 
@@ -130,6 +166,9 @@ proposed tasks, or `/fix-it`'s per-`topic_groups[]` fallback). The picker and op
 same as Step 1-3 above but the question wording is pluralized (e.g. "Assign a topic to these N
 tasks?") and the selection loops per group. No Skip option here either — a batch entry that
 cannot be grouped by heuristic still routes through this picker before task creation completes.
+It also inherits Steps 1-3's corrected `AskUserQuestion` schema and zero-existing-topics branch
+verbatim: a batch invocation with no existing topics skips straight to free-text collection the
+same way a single-task invocation does.
 
 ---
 

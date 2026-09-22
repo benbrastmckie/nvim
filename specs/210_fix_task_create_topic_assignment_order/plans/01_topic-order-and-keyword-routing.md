@@ -229,33 +229,33 @@ differ, report the discrepancy rather than silently widening or narrowing the ed
 
 ---
 
-### Phase 2: Rewrite topic-assignment-pattern.md templates and zero-topics branch [NOT STARTED]
+### Phase 2: Rewrite topic-assignment-pattern.md templates and zero-topics branch [COMPLETED]
 
 **Goal**: The pattern doc's `AskUserQuestion` templates are valid tool inputs, and Mode A has a
 defined, mandatory-preserving path when `active_topics` is empty.
 
 **Tasks**:
-- [ ] Rewrite Mode A **Step 2**'s JSON block to the real schema:
+- [x] Rewrite Mode A **Step 2**'s JSON block to the real schema:
       `{question, header, multiSelect: false, options: [{label, description}]}`. Give each
       existing-topic option a description (e.g. its current task count or a short gloss) and give
-      "New topic..." a description naming the free-text follow-up.
-- [ ] Replace Mode A **Step 3**'s `{"type": "freeText"}` JSON block with prose: selecting
+      "New topic..." a description naming the free-text follow-up. *(completed)*
+- [x] Replace Mode A **Step 3**'s `{"type": "freeText"}` JSON block with prose: selecting
       "New topic..." triggers a natural-language free-text follow-up in the next turn; it is not a
       second tool schema. Keep the existing validation rules (non-empty, kebab-case, re-prompt on
-      empty).
-- [ ] Rewrite the `/task --sync` backfill template (Mode A Step 4's exception block) to the same
+      empty). *(completed)*
+- [x] Rewrite the `/task --sync` backfill template (Mode A Step 4's exception block) to the same
       real schema, keeping its single "Defer (leave uncategorized for now)" option and its
-      explicit "this is the ONE exception to no-Skip" framing.
-- [ ] Add a **zero-existing-topics** branch to Mode A Step 1 per D4: when
+      explicit "this is the ONE exception to no-Skip" framing. *(completed)*
+- [x] Add a **zero-existing-topics** branch to Mode A Step 1 per D4: when
       `${#existing_topics[@]} -eq 0`, skip the picker entirely and go straight to the free-text
       prompt of Step 3, reusing its empty-input re-prompt rule. State explicitly that this branch
-      offers no Skip and no Defer.
-- [ ] Update the **Mandatory Assignment Guarantee** section so its "no bypass" language covers the
-      new zero-topics branch by name.
-- [ ] Note in the batch-variant subsection that it inherits the corrected schema and the
-      zero-topics branch from Steps 1-3.
-- [ ] Add a one-line pointer to `context/standards/interactive-selection.md` as the schema's
-      source of truth, so a future edit has somewhere to check against.
+      offers no Skip and no Defer. *(completed)*
+- [x] Update the **Mandatory Assignment Guarantee** section so its "no bypass" language covers the
+      new zero-topics branch by name. *(completed)*
+- [x] Note in the batch-variant subsection that it inherits the corrected schema and the
+      zero-topics branch from Steps 1-3. *(completed)*
+- [x] Add a one-line pointer to `context/standards/interactive-selection.md` as the schema's
+      source of truth, so a future edit has somewhere to check against. *(completed)*
 
 **Timing**: 1 hour
 
