@@ -11,7 +11,7 @@ next_project_number: 249
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,174,177,184,185,199,202,207,210,223,240,241,242,243,244,245,247,248 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,45,51,89,127,129,162,163,166,167,170,174,177,184,185,199,202,207,210,223,240,241,242,243,244,245,248 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 30,44,74,139,165,208,217,224,227 | 29,162,163,167,174,207,210,240 | core-agent-system, extensions, literature, ... |
 | 3 | 75,76,136,140,190 | 74,139,165,166 | core-agent-system, extensions |
 
@@ -83,7 +83,6 @@ next_project_number: 249
 
 177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
-247 [IMPLEMENTING] — Fix two taught lean-extension snippets that silently no-op:...
 
 ## Tasks
 
@@ -99,12 +98,13 @@ next_project_number: 249
 
 ### 247. Fix two taught lean-extension snippets that silently no-op: the guard invocation missing its lake subcommand, and the hardcoded Theories/ source root
 - **Effort**: 3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 221
 - **Research**: [247_taught_lean_verification_snippets_that_noop/reports/01_taught-lean-snippets-noop.md]
 - **Plan**: [247_taught_lean_verification_snippets_that_noop/plans/01_taught-lean-snippets-noop.md]
+- **Summary**: [247_taught_lean_verification_snippets_that_noop/summaries/01_taught-lean-snippets-noop-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/ (never .claude/**, a disposable deploy artifact regenerated from it).
 

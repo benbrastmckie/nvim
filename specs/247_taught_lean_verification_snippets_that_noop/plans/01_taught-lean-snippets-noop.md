@@ -1,7 +1,7 @@
 # Implementation Plan: Task #247
 
 - **Task**: 247 - Taught Lean verification snippets that no-op
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: 221, 173 (both landed; re-derive every line number against the current tree)
 - **Research Inputs**: specs/247_taught_lean_verification_snippets_that_noop/reports/01_taught-lean-snippets-noop.md
