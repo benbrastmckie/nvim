@@ -167,19 +167,22 @@ point.
 
 ---
 
-### Phase 3: Full deploy verification [NOT STARTED]
+### Phase 3: Full deploy verification [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Confirm the whole deploy pipeline is green end to end.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` (long-running) and capture the full output to
+- [x] Run `bash .claude/scripts/deploy-headless.sh` (long-running) and capture the full output to
   a log in the scratchpad. Wait with a bounded waiter, following
-  `context/patterns/bounded-build-waiter.md`.
+  `context/patterns/bounded-build-waiter.md`. *(completed)*
 - [ ] Confirm RESULT is `landed` (exit 0) and `verify-deploy.sh` reports 0 failed checks.
-- [ ] Confirm Gate 17 and Gate 20 Sub-check B specifically report PASS.
-- [ ] If another gate fails, check `git log` and `git status` for attribution. Fix it only if
+  *(deviation: skipped — RESULT was `landed_verify_red` with 1 of 33 checks failed; see Reasoned
+  Exclusions below)*
+- [x] Confirm Gate 17 and Gate 20 Sub-check B specifically report PASS. *(completed: both PASS)*
+- [x] If another gate fails, check `git log` and `git status` for attribution. Fix it only if
   this task's edits caused it. If a sibling's in-flight work caused it, record the finding in the
-  summary and handoff and do not edit foreign files.
+  summary and handoff and do not edit foreign files. *(completed: attributed to sibling task's
+  in-flight work; see Reasoned Exclusions below)*
 
 **Timing**: 0.5 hours
 
@@ -191,7 +194,14 @@ point.
 - None (verification only; `.claude/` regeneration by the deploy script is by design)
 
 **Verification**:
-- `deploy-headless.sh` exits 0 with RESULT `landed` and 0 failed checks.
+- `deploy-headless.sh` exits 0 with RESULT `landed` and 0 failed checks. Not met in full; see
+  Reasoned Exclusions. This task's own scoped gates (17, 20) are both confirmed PASS.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `deploy-headless.sh` overall RESULT `landed` with 0 failed checks | `verify-deploy.sh` Gate 5 (manifest-driven category parity + content-hash equality) reported 1 finding: "core: Content differs from source: scripts/claude-refresh.sh". `git status --short` shows `agent-system/extensions/core/scripts/claude-refresh.sh` modified and uncommitted; `git log` shows no commit for it from this task (task 240's own commits are `0f7c10087` and `68ed32a81`, unrelated files). This exact path is declared in the concurrent sibling task's (refresh_orphan_waiter_reaper) territory `file_scope` for this same orchestrate cycle, and `specs/state.json` shows that sibling's status as `implementing` (actively in flight). Per the plan's own risk mitigation and `context/contracts/territory.md`, an unexpected failure in a file outside this task's own scope, attributable to a live sibling's in-progress uncommitted edit, is reported rather than fixed. | `git status --short agent-system/extensions/core/scripts/claude-refresh.sh` -> ` M ...claude-refresh.sh`; `git log --oneline -3` shows no task-240 commit touching that file; `jq` on `specs/state.json` shows the sibling task's `status: "implementing"`; full `deploy-headless.sh` log (scratchpad) shows Gate 17 PASS, Gate 20 PASS, and Gate 5's single finding naming exactly that file. |
 
 ## Testing & Validation
 
