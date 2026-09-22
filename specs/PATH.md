@@ -169,7 +169,7 @@ hard-mode contract (H2) already names.
 
 | Task | What lands | After |
 |---|---|---|
-| **250** | A standing script-inventory probe (lines, inbound callers, test coverage, cross-script duplicate blocks, `provides.scripts` drift), registered beside `assess-repo-health.sh`; then a behaviour-preserving decomposition of `orchestrate-cycle-plan.sh` into `lib/`, gated on byte-identical `--dry-run` output | 199, 245 |
+| **250** | A standing script-inventory probe, registered beside `assess-repo-health.sh`; then **cut `run-all.sh`'s 9.3-minute runtime** (see below); then a behaviour-preserving decomposition of `orchestrate-cycle-plan.sh` into `lib/`, gated on byte-identical `--dry-run` output | 199, 245, 249 |
 | **251** | A context-reachability probe that understands all three reference styles — filename, **directory**, `index.json` — plus eager/lazy classification reusing `measure-eager-context.sh`'s channel model; then telemetry cross-check and removal of what is genuinely dead | 249, 44, 127 |
 
 Measured 2026-09-22: 182 non-test scripts / 63,740 lines; the orchestrate engine is 8,207 lines
@@ -181,6 +181,27 @@ lines. The context corpus is 523 files / 3.6 MB.
 present-extension slide templates referenced by *directory* (`talk/contents/title/`). The finding
 is that the check was inadequate and no adequate one exists — not that anything should be deleted.
 251 carries those 16 as its regression fixture: a correct probe reports all of them reachable.
+
+**The `run-all.sh` profile, measured 2026-09-22** — the worked example 250 carries, and the
+reason its ordering is not negotiable:
+
+| | |
+|---|---|
+| Full suite | 92 suites, **557.1 s (9.3 min)**, strictly serial |
+| `test-verify-deploy-context-budget.sh` | **329.0 s — 59.1% of the whole run**, and the one failing suite |
+| Concentration | top 5 = 76.0%, top 10 = 83.7%; **56 of 92 suites finish under 1 s** |
+| Cause of the long pole | `rsync`s the whole 17 MB `extensions/` tree as its fixture (a *correct* choice — a minimal fixture makes gates 3-13 SKIP into vacuity), then runs `verify-deploy.sh` over that mirror several times at ~55 s each |
+| Highest-leverage fix | `verify-deploy.sh` has **no gate selector**. That suite asserts on gate 20 alone but pays for ~19 others. A selector should take it to tens of seconds and `run-all.sh` to ~250 s |
+
+**Fix the long pole before parallelising.** Parallelism cannot go below the longest single suite,
+so while that suite is 329 s even infinite parallelism caps out at a 41% gain. Order: gate
+selector → re-measure → per-suite output files (a single shared `SUITE_OUT` mktemp at
+`run-all.sh:145` is the structural blocker) → `--jobs` → selective execution.
+
+**`--jobs` ships opt-in, serial by default.** 170 documents, with live evidence, suites whose
+wall-clock assertions hold on an idle machine and break under load. Parallelism increases exactly
+that contention, and 170 depends on 250 — so flipping the default is 170's call, not this task's.
+A fast flaky gate is worse than a slow honest one.
 
 ```
 /orchestrate 250

@@ -37,11 +37,12 @@ next_project_number: 252
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then decompose the 2,279-line...
+  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-249 [RESEARCHED] — Restore the eager-context budget: trim the source-store rule...
+249 [PLANNING] — Restore the eager-context budget: trim the source-store rule...
+  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh... (see above)
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
 
 ### Extensions
@@ -173,11 +174,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 
 ---
 
-### 250. Script-corpus inventory probe, then decompose the 2,279-line orchestrate-cycle-plan.sh into lib/
+### 250. Script-corpus inventory probe, then cut tests/run-all.sh runtime and decompose orchestrate-cycle-plan.sh
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 199, Task 245
+- **Dependencies**: Task 199, Task 245, Task 249
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -253,10 +254,112 @@ DEPENDENCIES AND WHY.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).
 
+=== WORKED EXAMPLE ADDED 2026-09-22: tests/run-all.sh IS THE FIRST PHASE-2 TARGET ===
+
+Reported by the user as "runs very slow", then profiled. This is the concrete exemplar for what
+Phase 1's probe should surface and what Phase 2 should do about it. Every number below was
+measured on 2026-09-22 by timing each suite individually; re-measure before acting (standing
+rule 3).
+
+MEASUREMENT: 92 suites, 557.1 s (9.3 min) end to end, strictly serial.
+
+  329,016 ms  test-verify-deploy-context-budget.sh   <- 59.1% OF THE ENTIRE RUN, and it is the
+   39,778 ms  test-orchestrate-cycle-plan.sh             one suite currently FAILING
+   21,828 ms  test-literature-convert.sh
+   19,160 ms  test-git-commit-scoped.sh
+   13,835 ms  test-roadmap-argv-ceiling.sh
+   11,728 ms  test-orchestrate-cycle-postflight.sh
+   11,086 ms  test-state-write-concurrency.sh
+
+  Top 5 = 76.0% of total. Top 10 = 83.7%. 56 of the 92 suites finish in under 1 second.
+
+This is an extreme long-tail profile, and it dictates the ORDER of the work.
+
+FINDING 1 -- THE LONG POLE, AND WHY IT COSTS 329 s.
+test-verify-deploy-context-budget.sh builds its fixture by rsync-ing the ENTIRE
+agent-system/extensions/ tree (17 MB) into a mktemp mirror (its line 74). It does this because a
+minimal fixture makes verify-deploy.sh's gates 3-13 SKIP, which would make the suite vacuous --
+that is a deliberate, correct design decision, documented in the suite's own header, and it must
+NOT be "fixed" by shrinking the fixture back into vacuity. It then runs verify-deploy.sh over
+that full-size mirror several times; verify-deploy's own header measures a --skip-slow run at
+roughly 50-70 s, and N x ~55 s accounts for the observed 329 s almost exactly. The suite already
+uses --skip-slow correctly (its header notes gate 8 "would otherwise recurse"), and it has
+already been hand-optimized once (three fixture mutations combined into a single invocation).
+The remaining cost is structural, not sloppiness.
+
+FINDING 2 -- THE HIGHEST-LEVERAGE FIX: verify-deploy.sh HAS NO GATE SELECTOR.
+verify-deploy.sh accepts [--quiet] [--findings] [--skip-slow] [--minimal-init DIR] [TARGET_REPO]
+and nothing else -- there is no --only-gate / --gate / GATE_FILTER. This suite exercises GATE 20
+(the orchestrator context budget) and needs the other ~19 gates only so they do not SKIP the
+fixture into vacuity. Adding a gate selector to verify-deploy.sh, and having this suite request
+only the gate it asserts on, is the single largest available win in the whole harness: it should
+take the suite from ~329 s toward tens of seconds, and run-all.sh from ~557 s to roughly ~250 s
+on its own. Confirm by measurement, not by assumption, and confirm the suite stays non-vacuous
+(the selector must not become a way to skip the gates that give the fixture its realism).
+
+FINDING 3 -- SERIAL BY CONSTRUCTION, WITH ONE STRUCTURAL BLOCKER.
+The runner loop (run-all.sh:148) executes `bash "$suite"` one suite at a time: no `&`, no `wait`,
+no `xargs -P`, no job control anywhere in the file. The blocker to changing that is concrete: a
+SINGLE shared `SUITE_OUT="$(mktemp)"` (line 145) is written by every suite (line 157) and
+truncated between them (line 169). Per-suite output files are the prerequisite for any
+parallelism. The runner also accepts only `--quiet` -- there is no `--jobs`, no `--filter`, no
+`--changed`, so a developer touching one script cannot run only its suite and must pay the full
+9.3 minutes.
+
+ORDERING IS LOAD-BEARING -- DO NOT PARALLELIZE FIRST. Parallelism cannot reduce total wall time
+below the longest single suite. While the long pole is 329 s, even infinite parallelism leaves
+run-all.sh at 329 s -- a 41% improvement at best. Fix the long pole FIRST (Finding 2): that takes
+the serial total to ~228 s, after which parallelism has a ~40 s floor (the next-longest suite)
+and becomes worth doing. Sequence: gate selector -> re-measure -> per-suite output files ->
+parallelism -> selective execution.
+
+PARALLELISM MUST SHIP OPT-IN, SERIAL BY DEFAULT. The shell-test-isolation task in this backlog
+already documents, with live evidence, that some suites pass in isolation and fail in a full run
+because their assertions are coupled to ambient host state on the TIMING axis (a wall-clock
+window that holds on an idle machine and breaks under load). Parallel execution increases
+exactly that contention. That task DEPENDS on this one, so this task lands first -- therefore
+ship `--jobs` defaulting to 1 (serial, today's behavior byte for byte) and leave flipping the
+default to the isolation work. Do NOT make parallel the default here; doing so converts a slow
+but honest gate into a fast flaky one, which the isolation task's own description argues is
+strictly worse.
+
+WHY THIS MATTERS BEYOND DEVELOPER PATIENCE. run-all.sh is verify-deploy.sh's gate 8. A slow or
+flaky gate 8 slows verify-deploy, which gates deploy-headless.sh, which makes the orchestrator's
+inter-cycle redeploy checkpoint defer an entire batch. Test-harness latency is on the critical
+path for throughput, not merely on developer comfort.
+
+METHOD WARNING -- THREE PLAUSIBLE-LOOKING LEADS THAT ARE FALSE. All three were checked and
+refuted on 2026-09-22. Do not re-derive them, and do not let the probe in Phase 1 emit them:
+  1. "~225 s of hard-coded sleeps across 32 call sites." FALSE. Those are fixture STRING LITERALS
+     -- test-claude-refresh-matcher.sh synthesizes fake `ps` output containing `sleep 10`, and
+     test-detect-noop-bash.sh passes "sleep 30" as a CLASSIFIER INPUT. The suite with the largest
+     apparent sleep total (158 s) measures 6.9 s. A static `grep sleep` sum is meaningless here.
+  2. "43 verify-deploy invocations across the suites." FALSE. That counted every textual mention
+     including comments. Real executable invocations are single digits, roughly half already pass
+     --skip-slow, and all target fixtures rather than the real source store -- so gate 8 never
+     re-enters and there is no recursion bug to find.
+  3. "Gate 8 is 43-83% of verify-deploy's runtime." FALSE. That comment in
+     test-claude-refresh-matcher.sh states the FAILURE RATE of a flaky reap mechanism, not a
+     runtime share.
+  The general lesson, which Phase 1's probe must honor: counting occurrences of a token in shell
+  source over-reports, because comments, heredocs and fixture literals are indistinguishable from
+  code to grep. Where the probe reports a cost, it must measure it.
+
+ACCEPTANCE ADDITIONS FOR THIS EXAMPLE.
+  a. run-all.sh total wall time is re-measured before and after, with the per-suite breakdown
+     recorded, and the improvement stated as a measured ratio rather than an estimate.
+  b. Suite PASS/FAIL outcomes are identical before and after for all 92 suites -- a speedup that
+     changes an outcome is a regression, not an optimization.
+  c. `--jobs` (if added) defaults to 1 and serial output is byte-identical to today's.
+  d. The long-pole suite remains non-vacuous: it must still fail when the eager budget is
+     breached and pass when it is not. Demonstrate both directions explicitly.
+  e. run-all.sh's exit code still propagates failure (it correctly exits 1 today; a parallel
+     rewrite must not lose that through a pipeline or a subshell).
+
 ---
 
 ### 249. Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
