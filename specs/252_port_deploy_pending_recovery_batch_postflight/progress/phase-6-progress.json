@@ -1,0 +1,17 @@
+{
+  "phase": 6,
+  "phase_name": "Document the Replay Path After an Unwind",
+  "started_at": "2026-09-23T02:06:00Z",
+  "last_updated": "2026-09-23T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add what-to-run-afterwards passage to orchestrate-state-machine.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 2, "description": "Name the concrete failure of a direct re-run", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 3, "description": "State explicitly the gate is working as designed", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 4, "description": "Mirror one-sentence pointer in SKILL.md Move 1", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "Append one-line hint to orchestrate-unwind-dispatch.sh success message", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "phase_notes": "Fully independent of Phases 1-3 as the plan stated -- no shared file, no shared mechanism. The 'Recovering the True Outcome' heading I initially referenced in orchestrate-state-machine.md did not exist in that doc (this mechanism has no dedicated subsection there, only in-script implementation); corrected the cross-reference to name orchestrate-cycle-postflight.sh's own stale-mtime and dispatch_seq-mismatch checks directly instead of a fictitious heading pointer.\n\nVerification: `bash -n scripts/orchestrate-unwind-dispatch.sh` clean. `git diff --stat` on that script shows exactly one line added (1 insertion, 0 deletions) -- no control-flow change, matching the plan's 'a printed line only' constraint. `bash scripts/tests/test-orchestrate-unwind-dispatch.sh` still 21/21 green, confirming the five refusal-gate conditions and --dry-run behavior are byte-identical apart from the added success-path line. Both docs (orchestrate-state-machine.md and SKILL.md) cross-reference each other and name reconcile-task-status.sh."
+}

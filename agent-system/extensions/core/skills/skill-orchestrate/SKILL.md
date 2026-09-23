@@ -107,7 +107,11 @@ the plan, or this process is about to be killed): `scripts/orchestrate-unwind-di
 <task_number> --session SID [--dry-run] [--commit]` is the sanctioned hand-recovery path, never
 called automatically from this loop — see `docs/architecture/orchestrate-state-machine.md`'s
 "Unwinding an Unconsumed Dispatch" subsection for what it reverses, the refusal gate, and the
-by-hand-only rationale.
+by-hand-only rationale. If the unwind was run because the underlying work was already complete
+(a `summaries/*.md` exists), follow it with `reconcile-task-status.sh <task_number> <session_id>`
+— NOT a direct re-run of `orchestrate-cycle-postflight.sh` or `/orchestrate`, which opens a fresh
+dispatch window the existing handoff predates and trips the (working-as-designed) handoff-
+identity staleness gate; see that same subsection's "What to run afterwards" paragraph.
 
 **MUST NOT**: never re-invoke `orchestrate-cycle-plan.sh` LIVE just to inspect state — a live
 call mutates (task lock, `dispatch_seq`, preflight status, a real dispatch file). `--dry-run`

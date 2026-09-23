@@ -396,4 +396,5 @@ if [ "$do_commit" = "true" ]; then
 fi
 
 echo "[orchestrate-unwind-dispatch] task $task_number unwound: status/last_updated/session_id restored, dispatch_seq_counter reset to $restore_dsc, pending_dispatch cleared, dispatch file removed, lock released."
+echo "[orchestrate-unwind-dispatch] If the underlying work was already complete (a summaries/*.md exists for this round), the likely next step is: bash $SCRIPT_DIR/reconcile-task-status.sh $task_number $session_id -- not a direct re-run of orchestrate-cycle-postflight.sh or /orchestrate, which would open a fresh dispatch window this task's existing handoff predates. See docs/architecture/orchestrate-state-machine.md's \"Unwinding an Unconsumed Dispatch\" subsection."
 exit 0

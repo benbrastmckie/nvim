@@ -303,6 +303,29 @@ particular dispatch). `orchestrate-unwind-dispatch.sh` instead reverses one SPEC
 dispatch's own recorded mutations, keyed by its `pending_dispatch` record — it never inspects or
 infers from artifact staleness.
 
+**What to run afterwards, when the underlying work was actually already complete.** An unwind is
+sometimes run not because the prepared dispatch is unwanted, but because the task's real work
+(summary artifact already present, plan phases already closed) finished through some other path
+(hand-completion, a since-superseded session) and the stranded Move 1 mutations are simply in the
+way. In that specific case — a `summaries/*.md` file already exists for this round — do **not**
+follow the unwind with a direct re-run of `orchestrate-cycle-postflight.sh` or with `/orchestrate`
+itself. Either one opens a FRESH dispatch window that the task's existing (and still valid)
+`.orchestrator-handoff.json`/`.return-meta.json` predate, and `orchestrate-cycle-postflight.sh`'s
+own handoff-identity staleness gate (its stale-mtime and `dispatch_seq`-mismatch checks) —
+working exactly as designed, against a timestamp the unwind never touches — then rejects that
+genuinely-complete outcome as untrustworthy. Observed
+concretely: an `ERROR: STALE HANDOFF` notice, a false `verdict: failed` on work that was in fact
+complete, a spurious `HANDOFF_STALE_OR_ABSENT` row in `detected_defects` attributed to
+`skills/skill-orchestrate/SKILL.md`, and a misleading "orchestration dispatch off-schema" commit.
+None of this is a bug in the staleness gate; it is the gate correctly refusing to trust a handoff
+that predates the window a fresh dispatch just opened.
+
+The correct replay path is `reconcile-task-status.sh <task_number> <session_id>` — the same
+script named in the paragraph immediately above, used here in its OTHER role: reading the task's
+already-complete artifacts directly and reconciling `state.json` to match them, without opening a
+new dispatch window at all. Run it right after the unwind, in place of a direct postflight/
+`/orchestrate` re-run, whenever the artifacts show the work was already done.
+
 ---
 
 ## Blocker Escalation: 5-Step Sequence

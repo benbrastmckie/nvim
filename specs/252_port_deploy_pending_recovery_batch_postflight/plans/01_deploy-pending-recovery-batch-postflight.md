@@ -466,33 +466,35 @@ Phase 3 lands.
 
 ---
 
-### Phase 6: Document the Replay Path After an Unwind [NOT STARTED]
+### Phase 6: Document the Replay Path After an Unwind [COMPLETED]
 
 **Goal**: Part 3. Close the documented gap between `orchestrate-unwind-dispatch.sh` succeeding and
 the operator knowing what to run next. Fully independent of Parts 1 and 2 — no shared file, no
 shared mechanism.
 
 **Tasks**:
-- [ ] In `docs/architecture/orchestrate-state-machine.md`'s
+- [x] In `docs/architecture/orchestrate-state-machine.md`'s
       `## Unwinding an Unconsumed Dispatch` section (~lines 255-302), add a short "what to run
       afterwards" passage: when the task's artifacts show the work already completed (a
       `summaries/*.md` exists), run
       `reconcile-task-status.sh <task_number> <session_id>` — **not** a direct re-run of
-      `orchestrate-cycle-postflight.sh` or `/orchestrate`.
-- [ ] Name the concrete failure the direct re-run produces, since that is what makes the guidance
+      `orchestrate-cycle-postflight.sh` or `/orchestrate`. *(completed)*
+- [x] Name the concrete failure the direct re-run produces, since that is what makes the guidance
       stick: a fresh dispatch window the existing handoff predates, yielding
       `ERROR: STALE HANDOFF`, a false `verdict: failed` on complete work, a spurious
       `HANDOFF_STALE_OR_ABSENT` row in `detected_defects`, and a misleading
-      "orchestration dispatch off-schema" commit.
-- [ ] State explicitly that this is the handoff-identity gate **working as designed** against a
+      "orchestration dispatch off-schema" commit. *(completed)*
+- [x] State explicitly that this is the handoff-identity gate **working as designed** against a
       timestamp the unwind never touches — so no reader mistakes the passage for a bug report and
-      "fixes" the gate.
-- [ ] Mirror the pointer in `skills/skill-orchestrate/SKILL.md`'s Move 1 unwind pointer
+      "fixes" the gate. *(completed)*
+- [x] Mirror the pointer in `skills/skill-orchestrate/SKILL.md`'s Move 1 unwind pointer
       (~lines 104-109): one sentence plus the cross-reference, not a second copy of the passage.
-- [ ] Append a one-line hint to `scripts/orchestrate-unwind-dispatch.sh`'s existing success
+      *(completed)*
+- [x] Append a one-line hint to `scripts/orchestrate-unwind-dispatch.sh`'s existing success
       message (~line 398, immediately before `exit 0`) naming `reconcile-task-status.sh` as the
       likely next step. A printed line only — no branching, no new exit code, no change to the
-      refusal gate or to the handoff-identity gate.
+      refusal gate or to the handoff-identity gate. *(completed: exactly one line added, verified
+      via `git diff --stat`; test-orchestrate-unwind-dispatch.sh 21/21 green, unaffected)*
 
 **Timing**: 0.5 hours
 
