@@ -1,7 +1,7 @@
 # Implementation Plan: Task #252
 
 - **Task**: 252 - Port the deploy-pending (exit 6) recovery into the batch postflight, and fix `cycle_modified_files` accumulation on a refused postflight
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md

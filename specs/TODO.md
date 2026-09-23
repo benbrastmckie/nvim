@@ -11,7 +11,7 @@ next_project_number: 253
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,252 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199 | core-agent-system, neovim, file-scope-lifecycle |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
@@ -41,7 +41,6 @@ next_project_number: 253
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-252 [IMPLEMENTING] — Port the deploy-pending (exit 6) recovery into the batch...
 
 ### Extensions
 
@@ -78,7 +77,7 @@ next_project_number: 253
 ## Tasks
 
 ### 252. Port deploy pending recovery batch postflight
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
