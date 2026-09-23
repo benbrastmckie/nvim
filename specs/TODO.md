@@ -6,7 +6,7 @@ next_project_number: 253
 
 ## Task Order
 
-*Updated 2026-09-22. Generated from state.json dependency graph.*
+*Updated 2026-09-23. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -84,6 +84,7 @@ next_project_number: 253
 - **Dependencies**: None
 - **Research**: [252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md]
 - **Plan**: [252_port_deploy_pending_recovery_batch_postflight/plans/01_deploy-pending-recovery-batch-postflight.md]
+- **Summary**: [252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md]
 
 **Description**: Port the deploy-pending (exit 6) recovery into the batch postflight, and fix cycle_modified_files accumulation on a refused postflight
 

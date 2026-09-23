@@ -32,9 +32,15 @@
           "path": "specs/252_port_deploy_pending_recovery_batch_postflight/plans/01_deploy-pending-recovery-batch-postflight.md",
           "type": "plan",
           "summary": "6-phase plan closing the deploy-pending completion loop: honest exit-6 bookkeeping in the batch postflight, guaranteed cycle_modified_files accumulation, and a widened Inter-Cycle Redeploy Checkpoint predicate instead of a third automated deploy-trigger site."
+        },
+        {
+          "path": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
+          "type": "summary",
+          "summary": "6-phase closure of the deploy-pending completion loop; see modified_files and the Phase 4 demonstration transcript for evidence."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the deploy-pending (exit 6) completion loop for the batch /orchestrate engine: the postflight now honestly reports a deploy-pending refusal (verdict=defer, paused commit) instead of falsely claiming completion, cycle_modified_files accumulation across a refusal was characterized and confirmed already-sound, and the Inter-Cycle Redeploy Checkpoint's trigger predicate was widened so any agent-system/extensions/** touch converges automatically on the following cycle -- demonstrated end to end with no manual deploy or reconcile step, and with no new automated deploy-trigger site added."
     },
     {
       "project_number": 250,

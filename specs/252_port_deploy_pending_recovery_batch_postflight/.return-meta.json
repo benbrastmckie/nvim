@@ -30,29 +30,53 @@
       "category": "PATTERN",
       "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["hoist-and-widen", "trigger-predicate", "concurrency-posture", "orchestrate-cycle-plan", "deploy-pending"]
+      "suggested_keywords": [
+        "hoist-and-widen",
+        "trigger-predicate",
+        "concurrency-posture",
+        "orchestrate-cycle-plan",
+        "deploy-pending"
+      ]
     },
     {
       "content": "Before implementing a fix for a suspected accumulation/gating bug, write a characterization test against UNMODIFIED code first and record the result. In this task, the dispatch assumed cycle_modified_files accumulation was gated on a refused postflight write, but a real exit-6-refusal fixture test proved the block was already ungated (no `set -e`, no dispatch_status/verdict guard) -- the bug hypothesis was wrong, and a redundant fix was avoided. The characterization test itself became permanent regression-anchor coverage rather than throwaway diagnostic work.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["characterization-test", "red-green-first", "regression-anchor", "bash-set-e", "test-driven-diagnosis"]
+      "suggested_keywords": [
+        "characterization-test",
+        "red-green-first",
+        "regression-anchor",
+        "bash-set-e",
+        "test-driven-diagnosis"
+      ]
     },
     {
       "content": "For an 'end-to-end, not asserted' acceptance criterion on a bash-orchestrated batch engine, build a scripted demonstration harness that copies the REAL production scripts (not stubs of the logic under test) into an isolated mktemp -d fixture repo, stubs only the genuinely external boundary (deploy-headless.sh/verify-deploy.sh), and chains multiple real script invocations to reproduce the multi-cycle sequence. A deploy-headless.sh stub that performs a behaviorally realistic action (e.g. syncing .claude-extensions.json's recorded source_git_head to match the fixture source repo's actual HEAD) makes the demonstration prove the SAME re-evaluation logic a real redeploy would trigger, not just that a stub was called.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["end-to-end-demonstration", "scripted-transcript", "fixture-harness", "deploy-headless-stub", "acceptance-evidence"]
+      "suggested_keywords": [
+        "end-to-end-demonstration",
+        "scripted-transcript",
+        "fixture-harness",
+        "deploy-headless-stub",
+        "acceptance-evidence"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790118971_a4e2f8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
