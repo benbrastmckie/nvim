@@ -41,7 +41,7 @@ next_project_number: 253
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-252 [PLANNED] — Port the deploy-pending (exit 6) recovery into the batch...
+252 [IMPLEMENTING] — Port the deploy-pending (exit 6) recovery into the batch...
 
 ### Extensions
 
@@ -78,7 +78,7 @@ next_project_number: 253
 ## Tasks
 
 ### 252. Port deploy pending recovery batch postflight
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
