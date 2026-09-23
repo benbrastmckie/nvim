@@ -10,7 +10,7 @@
     {"id": 4, "description": "Preserve routing through deploy_ledger_decide and deployed_critical_paths guard", "status": "done", "files_touched": []},
     {"id": 5, "description": "Reuse deploy_findings_snapshot/deploy_baseline_new_findings, no third copy", "status": "done", "files_touched": []},
     {"id": 6, "description": "Preserve unconditional cycle_modified_files reset", "status": "done", "files_touched": []},
-    {"id": 7, "description": "Add concurrency-posture comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Add concurrency-posture comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
     {"id": 8, "description": "Extend test-postflight-deploy-gate.sh with refusal-then-recovery case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh"]},
     {"id": 9, "description": "Confirm no edit outside checkpoint block", "status": "done", "files_touched": []}
   ],

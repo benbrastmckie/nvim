@@ -1,7 +1,7 @@
 # Implementation Plan: Task #252
 
 - **Task**: 252 - Port the deploy-pending (exit 6) recovery into the batch postflight, and fix `cycle_modified_files` accumulation on a refused postflight
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md
@@ -520,19 +520,31 @@ shared mechanism.
 
 ## Testing & Validation
 
-- [ ] `bash scripts/tests/test-orchestrate-cycle-postflight.sh` green, extended with: exit-6
+- [x] `bash scripts/tests/test-orchestrate-cycle-postflight.sh` green, extended with: exit-6
       refusal preserves `cycle_modified_files`; `deploy_pending` marker present; `verdict=defer`
       and paused commit message on refusal; `verdict=ok` and completion message when unrefused
-- [ ] `bash scripts/tests/test-postflight-deploy-gate.sh` green, extended with the
+      *(110/110 passed)*
+- [x] `bash scripts/tests/test-postflight-deploy-gate.sh` green, extended with the
       refusal-then-recovery path for a non-allowlisted `agent-system/extensions/**` path
-- [ ] Both suites extended in place — no parallel suite created (Acceptance #4)
-- [ ] No test weakened or deleted: additive-only diff confirmed in Phase 4 (Acceptance #5)
-- [ ] `bash -n` clean on all three modified scripts
-- [ ] End-to-end demonstration transcript captured in the summary artifact (Acceptance #1, #2)
-- [ ] Concurrency posture present in both the script comment and
-      `batch-orchestration-guardrails.md` (Acceptance #3)
-- [ ] No edit anywhere under `.claude/**`: `git status --short` shows changes only under
-      `agent-system/extensions/core/` and `specs/`
+      *(23/23 passed; Case 8)*
+- [x] Both suites extended in place — no parallel suite created (Acceptance #4) *(confirmed; also
+      extended test-orchestrate-cycle-plan.sh Group 11 case (s) — 248/248 passed — for the
+      checkpoint-side widened-predicate mechanics, which live in orchestrate-cycle-plan.sh, not
+      update-task-status.sh)*
+- [x] No test weakened or deleted: additive-only diff confirmed in Phase 4 (Acceptance #5)
+      *(verified)*
+- [x] `bash -n` clean on all three modified scripts *(clean, including
+      orchestrate-unwind-dispatch.sh from Phase 6; test-orchestrate-unwind-dispatch.sh 21/21
+      passed, unaffected)*
+- [x] End-to-end demonstration transcript captured in the summary artifact (Acceptance #1, #2)
+      *(progress/phase-4-demonstration-transcript.txt, referenced from the summary)*
+- [x] Concurrency posture present in both the script comment and
+      `batch-orchestration-guardrails.md` (Acceptance #3) *(confirmed)*
+- [x] No edit anywhere under `.claude/**`: `git status --short` shows changes only under
+      `agent-system/extensions/core/` and `specs/` *(confirmed via
+      `git diff --stat 435d44751^..HEAD -- agent-system/ specs/252_port_deploy_pending_recovery_batch_postflight/`;
+      the two other dirty files in git status, `.claude-extensions.json` and
+      `.memory/memory-index.json`, predate this task's first commit)*
 
 ## Artifacts & Outputs
 

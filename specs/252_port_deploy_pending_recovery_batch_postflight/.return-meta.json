@@ -1,13 +1,58 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
+      "summary": "6-phase closure of the deploy-pending completion loop: honest exit-6 bookkeeping in the batch postflight, guaranteed cycle_modified_files accumulation (already-satisfied, characterized live), a widened Inter-Cycle Redeploy Checkpoint predicate, an end-to-end demonstration transcript, D6 residual retirement, and the post-unwind replay-path documentation -- with no third automated deploy-trigger site added."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the deploy-pending (exit 6) completion loop for the batch /orchestrate engine: the postflight now honestly reports a deploy-pending refusal (verdict=defer, paused commit) instead of falsely claiming completion, cycle_modified_files accumulation across a refusal was characterized and confirmed already-sound, and the Inter-Cycle Redeploy Checkpoint's trigger predicate was widened so any agent-system/extensions/** touch converges automatically on the following cycle -- demonstrated end to end with no manual deploy or reconcile step, and with no new automated deploy-trigger site added."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/252_port_deploy_pending_recovery_batch_postflight/progress/phase-4-demonstration-transcript.txt"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a gated automation site already has the override signal it needs but the signal is scoped too narrowly (e.g. computed only inside a narrower conditional branch), the fix is often to HOIST the existing computation out of that branch and WIDEN the branch condition with an OR -- not to add a new trigger site. This closes the gap while reusing all existing downstream machinery (ledger consults, idempotence guards) unchanged. Concretely: orchestrate-cycle-plan.sh's deploy_pending_any override already existed and already forced the ledger decision to run, but was computed only inside `matched_count -gt 0`; hoisting it out and widening to `matched_count -gt 0 OR deploy_pending_any` closed the D6 residual with zero new deploy-trigger sites.",
+      "category": "PATTERN",
+      "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["hoist-and-widen", "trigger-predicate", "concurrency-posture", "orchestrate-cycle-plan", "deploy-pending"]
+    },
+    {
+      "content": "Before implementing a fix for a suspected accumulation/gating bug, write a characterization test against UNMODIFIED code first and record the result. In this task, the dispatch assumed cycle_modified_files accumulation was gated on a refused postflight write, but a real exit-6-refusal fixture test proved the block was already ungated (no `set -e`, no dispatch_status/verdict guard) -- the bug hypothesis was wrong, and a redundant fix was avoided. The characterization test itself became permanent regression-anchor coverage rather than throwaway diagnostic work.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["characterization-test", "red-green-first", "regression-anchor", "bash-set-e", "test-driven-diagnosis"]
+    },
+    {
+      "content": "For an 'end-to-end, not asserted' acceptance criterion on a bash-orchestrated batch engine, build a scripted demonstration harness that copies the REAL production scripts (not stubs of the logic under test) into an isolated mktemp -d fixture repo, stubs only the genuinely external boundary (deploy-headless.sh/verify-deploy.sh), and chains multiple real script invocations to reproduce the multi-cycle sequence. A deploy-headless.sh stub that performs a behaviorally realistic action (e.g. syncing .claude-extensions.json's recorded source_git_head to match the fixture source repo's actual HEAD) makes the demonstration prove the SAME re-evaluation logic a real redeploy would trigger, not just that a stub was called.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["end-to-end-demonstration", "scripted-transcript", "fixture-harness", "deploy-headless-stub", "acceptance-evidence"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790118971_a4e2f8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

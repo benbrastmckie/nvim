@@ -1,20 +1,31 @@
 {
-  "task_number": 252,
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 6,
-  "session_id": "sess_1790118971_a4e2f8_252",
-  "dispatch_seq": 2,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phase": "implement",
+  "summary": "Closed the deploy-pending (exit 6) completion loop for the batch /orchestrate engine across 6 phases: honest exit-6 bookkeeping in orchestrate-cycle-postflight.sh, characterized/confirmed cycle_modified_files accumulation, a widened Inter-Cycle Redeploy Checkpoint trigger predicate in orchestrate-cycle-plan.sh, an end-to-end demonstration transcript, D6 residual retirement in the two guardrail docs, and post-unwind replay-path documentation -- no third automated deploy-trigger site added.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/252_port_deploy_pending_recovery_batch_postflight/plans/01_deploy-pending-recovery-batch-postflight.md",
-      "summary": "6-phase plan closing the deploy-pending completion loop: honest exit-6 bookkeeping in the batch postflight, guaranteed cycle_modified_files accumulation, and a widened Inter-Cycle Redeploy Checkpoint predicate instead of a third automated deploy-trigger site."
+      "type": "summary",
+      "path": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
+      "summary": "6-phase closure of the deploy-pending completion loop; see modified_files and the Phase 4 demonstration transcript for evidence."
     }
   ],
-  "modified_files": [
-    "specs/252_port_deploy_pending_recovery_batch_postflight/plans/01_deploy-pending-recovery-batch-postflight.md"
-  ],
+  "phases_completed": 6,
+  "phases_total": 6,
   "blockers": [],
-  "next_steps": "Run /implement 252 to execute the plan"
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/252_port_deploy_pending_recovery_batch_postflight/progress/phase-4-demonstration-transcript.txt"
+  ],
+  "continuation_path": null,
+  "next_action_hint": "Task complete. Note for the postflight completion-deploy gate: this dispatch's own modified_files overlap agent-system/extensions/core/**, so the standard deploy-pending recovery this task just implemented may itself apply to this very completion write."
 }
