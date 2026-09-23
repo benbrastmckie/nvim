@@ -1,31 +1,21 @@
 {
   "status": "implemented",
-  "dispatch_seq": 3,
+  "dispatch_seq": 4,
   "phase": "implement",
-  "summary": "Closed the deploy-pending (exit 6) completion loop for the batch /orchestrate engine across 6 phases: honest exit-6 bookkeeping in orchestrate-cycle-postflight.sh, characterized/confirmed cycle_modified_files accumulation, a widened Inter-Cycle Redeploy Checkpoint trigger predicate in orchestrate-cycle-plan.sh, an end-to-end demonstration transcript, D6 residual retirement in the two guardrail docs, and post-unwind replay-path documentation -- no third automated deploy-trigger site added.",
+  "summary": "All 6 plan phases were already complete and committed as of dispatch_seq 3. This dispatch (seq 4) was re-issued because dispatch_seq 3's postflight write hit the exact completion-deploy-gate refusal (exit 6) this task fixes: modified_files overlapped agent-system/extensions/core/** while the deployed .claude/ tree was stale. No new code changes were needed -- verified all 6 phase headings remain [COMPLETED], re-ran all three named test suites (110+248+23 passed, 0 failed), confirmed check-deploy-freshness.sh now reports the tree fresh (the sanctioned single-task redeploy trigger already landed the regeneration in the working tree between dispatch_seq 3 and 4), and appended a live-corroboration addendum to the existing summary. The plan-level Status field is managed by update-task-status.sh/update-plan-status.sh at the actual completed transition, not hand-edited here.",
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md",
-      "summary": "6-phase closure of the deploy-pending completion loop; see modified_files and the Phase 4 demonstration transcript for evidence."
+      "summary": "6-phase closure of the deploy-pending completion loop, now with a live-corroboration addendum documenting this task's own dispatch_seq-3-to-4 refusal-then-recovery cycle."
     }
   ],
   "phases_completed": 6,
   "phases_total": 6,
   "blockers": [],
   "modified_files": [
-    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
-    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
-    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
-    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-    "specs/252_port_deploy_pending_recovery_batch_postflight/progress/phase-4-demonstration-transcript.txt"
+    "specs/252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md"
   ],
   "continuation_path": null,
-  "next_action_hint": "Task complete. Note for the postflight completion-deploy gate: this dispatch's own modified_files overlap agent-system/extensions/core/**, so the standard deploy-pending recovery this task just implemented may itself apply to this very completion write."
+  "next_action_hint": "Task implementation is complete and unchanged from dispatch_seq 3. The deploy is now fresh (check-deploy-freshness.sh exit 0), so the pending postflight completion write for task 252 should succeed on retry without further manual deploy or reconcile. Note for observation: .claude-extensions.json, .memory/memory-index.json, and agent-system/extensions/core/index-entries.json are dirty in the working tree as a byproduct of the sanctioned redeploy trigger that already ran between dispatch_seq 3 and 4 -- outside this task's file_scope, left uncommitted per regeneration-is-manual-only.md's manual-commit posture."
 }

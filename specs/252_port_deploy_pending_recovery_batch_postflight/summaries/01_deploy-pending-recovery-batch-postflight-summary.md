@@ -107,7 +107,15 @@ Phase 4.
 
 ## Follow-ups
 
-- None
+- **Live corroboration, on this task itself.** This task's own postflight (dispatch_seq 3) hit
+  the exact completion-deploy-gate refusal (exit 6) it fixes: `modified_files` overlapped
+  `agent-system/extensions/core/**` while the deployed `.claude/` tree was still stale, so
+  `state.json` stayed at `implementing` and a fresh `implement` dispatch (this one, dispatch_seq
+  4) was issued. By dispatch_seq 4, `check-deploy-freshness.sh` reported the deploy already fresh
+  (the sanctioned single-task redeploy trigger in `command-gate-out.sh` had already fired and
+  landed the regeneration in the working tree), so the pending postflight retry is expected to
+  succeed without further manual intervention — real-world confirmation of Acceptance #1 layered
+  on top of the Phase 4 fixture-based demonstration.
 
 ## References
 
