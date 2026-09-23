@@ -886,27 +886,56 @@ not a newly-introduced abort hazard for any of them.
 
 **Classification**: this gate is BLOCKING, not advisory — see the Classification Table below.
 
-**Residual — the `/orchestrate` path (D6, not fixed by this mechanism)**: `/orchestrate` is
-covered by the backstop's refusal (a refused task simply stays non-completed) but has NO
-serialized trigger of its own analogous to the two above; it relies entirely on the pre-existing
-Inter-Cycle Redeploy Checkpoint mechanism documented earlier in this file. A refused task under
-`/orchestrate` therefore defers loudly (named via the `deploy_pending` reason surfaced in its
-`.return-meta.json`) rather than converging within that same invocation. Widening Stage MT-3 step
-7's trigger predicate from `orchestrator-critical-paths.json`'s critical-path keying to a broader
-`agent-system/extensions/**` predicate is the proper fix and is named here as explicit follow-up
-work, not attempted by this mechanism — it would change the meaning of a heavily cross-referenced
-mechanism. (The cross-invocation durable ledger this predicate's *skip* decision now consults —
-see "Durable redeploy ledger" above — already exists; widening WHICH cycles fire the checkpoint at
-all remains the open, separate residual named here. This D6 residual is NOT resolved by the
-ledger's existence.)
+**Residual — the `/orchestrate` path (D6) — CLOSED**: `/orchestrate` is covered by the backstop's
+refusal (a refused task simply stays non-completed); it has no serialized trigger of its own
+analogous to the two single-task/multi-task sites above, and relies entirely on the Inter-Cycle
+Redeploy Checkpoint mechanism documented earlier in this file. This residual is now closed by two
+changes, landed together:
+
+1. `orchestrate-cycle-postflight.sh`'s `implemented)` arm now captures `skill_postflight_update`'s
+   return code (previously discarded) instead of silently swallowing it. On a `postflight_rc == 6`
+   deploy-pending refusal, `verdict` resolves to `defer` (not `ok`) and the commit message reads
+   `orchestration paused (cycle N)` (not `complete implementation`) — the refusal is now HONEST at
+   the postflight layer, matching what actually happened to state.json.
+2. The Inter-Cycle Redeploy Checkpoint's own `deploy_pending_any` computation — which already
+   existed and already forced `deploy_ledger_decide`'s decision to `run` — was HOISTED out of the
+   `matched_count -gt 0` branch and the branch condition widened to
+   `matched_count -gt 0 OR deploy_pending_any`. A `meta` task touching ANY file under
+   `agent-system/extensions/**`, not only a curated critical path, now reaches the override. The
+   checkpoint's announcement names its own reason (the `deploy_pending` marker) on the widened
+   path, rather than the old misleading "touched 0 orchestrator-critical path(s)" line.
+
+Both changes route through the SAME already-sanctioned checkpoint call site — no new automated
+`deploy-headless.sh` trigger was added anywhere (see the Concurrency Posture paragraph
+immediately below). The `deployed_critical_paths` idempotence guard and the durable
+`deploy_ledger_decide` ledger (with its hash/attributed skip rules) are consulted on the widened
+path exactly as on the pre-existing matched-allowlist path — unchanged, not bypassed.
+
+**Concurrency posture (why the redeploy still lives at the checkpoint boundary, never in
+per-task postflight)**: `command-gate-out.sh`'s single-task trigger licenses itself on the grounds
+that its call site has NO concurrency — the true single-task `/implement` completion path.
+`skills/skill-orchestrate/SKILL.md`'s Move 2 issues every `dispatch[]` row's Agent call in ONE
+message (genuinely simultaneous); a redeploy fired from inside `orchestrate-cycle-postflight.sh`
+would therefore race the fail-open `specs/.deploy-lock` mutex against a sibling task's own
+still-in-flight dispatch. The Inter-Cycle Redeploy Checkpoint, by contrast, runs at the START of
+`orchestrate-cycle-plan.sh`, strictly BEFORE Move 2 issues that cycle's own dispatch batch — the
+one point in the loop with no dispatch in flight — so widening its predicate closes this residual
+without opening a third trigger site. **Cost, stated plainly**: convergence for a deploy-pending
+refusal is deferred by one cycle (the checkpoint redeploys this cycle; the FOLLOWING cycle's
+postflight retry then succeeds) rather than resolved within the same postflight. This is the
+argued, deliberate trade this residual's closure makes — strictly preferable to an unserialized
+redeploy racing a live batch, which would be a worse defect than the one being fixed. An
+end-to-end scripted transcript tracing this exact one-cycle deferral (refusal → checkpoint fires
+on the following cycle → retry succeeds → no fresh dispatch against an already-complete plan) is
+preserved as a durable artifact alongside the change that closed this residual.
+
 **Explicitly re-considered and re-confirmed split-out** while this same subsection's own
 confirmation/attribution filters and Gate depth statement were added above: that work changed the
 checkpoint's *verdict* logic (which candidate new findings may defer a batch, and how the
-fast/full depth disagreement is reported) — a disjoint mechanism from THIS residual, which is
-about the checkpoint's *trigger* predicate (which cycles fire the checkpoint at all) and the
-`deployed_critical_paths` idempotence backing store that predicate depends on. No edit shared
-between the two, so widening the trigger predicate remains owed, separate follow-up work rather
-than something the verdict-logic task could naturally absorb.
+fast/full depth disagreement is reported) — a disjoint mechanism from what D6 was, which concerned
+the checkpoint's *trigger* predicate (which cycles fire the checkpoint at all) and the
+`deployed_critical_paths` idempotence backing store that predicate depends on. No edit was shared
+between the two.
 
 **Commit-granularity residual**: like the Inter-Cycle Redeploy Checkpoint's own freshness signal,
 this backstop's freshness comparison is commit-granular, not per-file — an uncommitted

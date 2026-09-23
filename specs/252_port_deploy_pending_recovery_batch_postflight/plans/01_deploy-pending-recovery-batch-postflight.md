@@ -411,32 +411,35 @@ explicit that "demonstrated end to end, not asserted" is the bar.
 
 ---
 
-### Phase 5: Document the Concurrency Posture and Retire the D6 Residual [NOT STARTED]
+### Phase 5: Document the Concurrency Posture and Retire the D6 Residual [COMPLETED]
 
 **Goal**: Acceptance #3. Record the deferred-convergence posture where future readers will look
 for it, and retire the two documentation paragraphs that will otherwise be stale the moment
 Phase 3 lands.
 
 **Tasks**:
-- [ ] In `context/patterns/batch-orchestration-guardrails.md`'s
+- [x] In `context/patterns/batch-orchestration-guardrails.md`'s
       `### The Postflight Completion-Deploy Gate` subsection: rewrite the
       **"Residual — the `/orchestrate` path (D6, not fixed by this mechanism)"** paragraph
       (~line 889) to record that the residual is now closed, by what change, and with what posture.
       Its two "not attempted here" / "not attempted by this mechanism" phrasings both become false
-      on landing and must go.
-- [ ] Add to that same subsection a short, explicit statement of the concurrency posture and its
+      on landing and must go. *(completed)*
+- [x] Add to that same subsection a short, explicit statement of the concurrency posture and its
       cost: convergence is deferred by one cycle in exchange for never firing a redeploy while a
-      Move 2 dispatch may be in flight.
-- [ ] In `context/patterns/regeneration-is-manual-only.md`: update the explicit non-exception
+      Move 2 dispatch may be in flight. *(completed)*
+- [x] In `context/patterns/regeneration-is-manual-only.md`: update the explicit non-exception
       paragraph (~lines 129-142), which currently says widening Stage MT-3 step 7's predicate is
-      "the proper fix ... not attempted here", to record that it **was** done.
-- [ ] **Preserve the "exactly two" sanctioned-site count** in that file and state in the prose
+      "the proper fix ... not attempted here", to record that it **was** done. *(completed)*
+- [x] **Preserve the "exactly two" sanctioned-site count** in that file and state in the prose
       that the count is deliberately unchanged because this task added no third trigger site —
       so a later reader does not mistake the unchanged count for an oversight. This is the one
       point where the dispatch's "update the count if it changes" instruction resolves to a
-      deliberate non-change, and it must be said out loud.
-- [ ] Cross-check every other reference to the D6 residual
-      (`grep -rn 'D6' context/ docs/`) and update any that the change falsifies.
+      deliberate non-change, and it must be said out loud. *(completed)*
+- [x] Cross-check every other reference to the D6 residual
+      (`grep -rn 'D6' context/ docs/`) and update any that the change falsifies. *(completed: the
+      only other "D6" hits, in task-lock.md and batch-admit-schema.md, are an unrelated
+      degradation-numbering coincidence -- --session-id omission handling, nothing to do with the
+      deploy-pending recovery residual -- and were correctly left untouched)*
 
 **Timing**: 1.5 hours
 

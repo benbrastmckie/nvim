@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Document the Concurrency Posture and Retire the D6 Residual",
+  "started_at": "2026-09-23T01:46:00Z",
+  "last_updated": "2026-09-23T02:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite the D6 residual paragraph in batch-orchestration-guardrails.md to closed", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 2, "description": "Add concurrency posture and cost statement to the same subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Update regeneration-is-manual-only.md's non-exception paragraph to record it was done", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 4, "description": "Preserve the exactly-two count with explicit deliberate-non-change note", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 5, "description": "Cross-check every other D6 reference in context/ and docs/", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "phase_notes": "grep -rn 'D6' context/ docs/ confirmed exactly two files carry this task's D6 residual (batch-orchestration-guardrails.md, regeneration-is-manual-only.md), both updated. Two OTHER files (context/patterns/task-lock.md, docs/architecture/batch-admit-schema.md) also contain the literal string 'D6' but for a completely unrelated concept -- a --session-id-omission degradation numbering scheme in orchestrate-batch-admit.sh -- confirmed by reading context and correctly left untouched.\n\nVerification: `grep -n 'not attempted here\\|not attempted by this mechanism' context/patterns/*.md` returns no hits (both stale phrasings retired). `grep -n 'exactly two' context/patterns/regeneration-is-manual-only.md` still finds the count, now with an explicit deliberate-non-change rationale adjacent. `bash .claude/scripts/check-task-references.sh agent-system/extensions/core/context/patterns` passes clean (0 unexempted occurrences) -- both edited files stay compliant with the no-task-references rule despite the added prose."
+}

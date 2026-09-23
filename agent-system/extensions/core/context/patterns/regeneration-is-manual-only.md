@@ -126,15 +126,29 @@ since it runs once per task after that task's own dispatch has already returned)
 path -- already serial, since it runs once, after all of Step 3's parallel dispatches have
 returned). No other automated caller is sanctioned by this subsection.
 
-An explicit non-exception, named so a later pass does not go looking for one:
-`skill-orchestrate`'s Stage MT-3 step 7 is UNTOUCHED by this mechanism and needs no new exception
-here -- it remains covered exclusively by the Inter-Cycle Self-Modification Checkpoint exception
-above. A task refused by the postflight completion-deploy gate under `/orchestrate` defers loudly
-(via the `deploy_pending` marker `skill_postflight_update` records into its `.return-meta.json`)
-rather than being redeployed by a THIRD trigger site; widening Stage MT-3 step 7's own predicate
-is the proper fix for that residual and is named as follow-up work in
+**Update -- the D6 residual named below is now closed, WITHOUT adding a third trigger site.**
+`skill-orchestrate`'s Stage MT-3 step 7 (the Inter-Cycle Redeploy Checkpoint, covered exclusively
+by the Inter-Cycle Self-Modification Checkpoint exception above) had its own `deploy_pending_any`
+override -- which already existed and already forced the ledger decision to `run` -- hoisted out
+of the narrow `matched_count -gt 0` branch its trigger predicate was previously confined to, and
+that branch condition widened to `matched_count -gt 0 OR deploy_pending_any`. A task refused by
+the postflight completion-deploy gate under `/orchestrate` now converges automatically on the
+FOLLOWING cycle's checkpoint run, whether or not its touched `agent-system/extensions/**` path
+happens to also be one of `orchestrator-critical-paths.json`'s curated entries -- still through
+this SAME already-sanctioned checkpoint call site, never through a new one. See
 `context/patterns/batch-orchestration-guardrails.md`'s `### The Postflight Completion-Deploy
-Gate` subsection, not attempted here.
+Gate` subsection for the full closure record and its concurrency-posture argument (why the
+redeploy still fires from the checkpoint boundary and not from per-task postflight itself).
+
+**The "exactly and only" sanctioned-site count immediately above is deliberately UNCHANGED by
+this closure** -- still exactly two (`command-gate-out.sh`'s `rc == 6` branch and
+`commands/implement.md` Step 4's batch-refusal trigger). Widening Stage MT-3 step 7's predicate
+did not create a third automated `deploy-headless.sh` trigger site: that checkpoint was already
+counted as sanctioned automated-deploy machinery under the Inter-Cycle Self-Modification
+Checkpoint exception above, before this widening, and remains so after it -- only the REACH of
+its existing trigger predicate changed, not the fact that it is one sanctioned site. A future
+reader must not mistake this unchanged count for an oversight; it is the intended, argued outcome
+of closing D6 without adding a new trigger.
 
 **Why this is not a side effect of an unrelated operation**: exactly as the exception above
 argues for its own single call site, the fix that triggers each of these two redeploys is
