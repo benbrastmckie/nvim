@@ -114,6 +114,18 @@ Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status*
   lint) exactly as a `typst compile` failure would. `[WARN]` advisory findings (remark item
   count, remark density) do not block the phase, but MUST be reported in the phase's output —
   silently ignoring a `[WARN]` is not acceptable.
+- **Mechanical chapter-quality gate (executed, not a reminder; alongside — never replacing —
+  the placement/density lint and the prose self-review above)**: for every `.typ` file created or
+  modified in this phase where the content is chapter prose (not pure formatting/structure work),
+  run `bash .claude/scripts/chapter-quality-check.sh --verbose {changed .typ file}`. This is the
+  mechanical backstop for
+  `context/project/typst/standards/chapter-quality.md`'s SOURCE GROUNDING, ANTI-FLUFF DENSITY,
+  PRESENTATION CLARITY, and OPEN-QUESTION HONESTY dimensions. A BLOCKING finding blocks marking
+  the phase complete (fix the file, then re-run the check) exactly as a `typst compile` failure
+  would. ADVISORY findings do not block the phase, but MUST be reported in the phase's output.
+  Every `[JUDGED]` reviewer prompt the check emits MUST be answered by this agent before the
+  phase is marked complete, not skipped — a green (0 BLOCKING) result asserts mechanical coverage
+  only, never full coverage of the standard.
 
 **D. Mark Phase Complete**
 Edit plan file heading to show the phase is finished.
@@ -156,6 +168,16 @@ bash .claude/scripts/typst-element-lint.sh --verbose {every .typ file touched by
 A placement `[FAIL]` here is the same blocking condition as at Stage 4C. `[WARN]` advisory
 findings are reported, not silently dropped, in the implementation summary's Verification
 section.
+
+Alongside — never replacing — the two checks above, run one whole-document chapter-quality pass
+over every `.typ` file touched by this task that is chapter prose, guarding the same resumed-run
+gap Stage 4C's chapter-quality gate covers per phase:
+```bash
+bash .claude/scripts/chapter-quality-check.sh --verbose {every .typ file touched by this task}
+```
+A BLOCKING finding here is the same blocking condition as at Stage 4C. ADVISORY findings, and the
+answers to every `[JUDGED]` reviewer prompt, are reported in the implementation summary's
+Verification section — never silently dropped.
 
 ### Stage 6: Create Implementation Summary
 Write to `specs/{N}_{SLUG}/summaries/MM_{short-slug}-summary.md`. Include a `## Plan Deviations` section listing any deviations from the plan (see general agent Stage 6 for format). Use `- None (implementation followed plan)` when no deviations occurred.
@@ -238,6 +260,10 @@ for the other.
    or modified, both at Stage 4C (per phase) and Stage 5 (whole-document final pass) -- a
    placement `[FAIL]` blocks completion the same way a compilation failure does; `[WARN]`
    advisory findings must be reported, not silently dropped
+8. Run `bash .claude/scripts/chapter-quality-check.sh --verbose` against every `.typ` file created
+   or modified that is chapter prose, both at Stage 4C (per phase) and Stage 5 (whole-document
+   final pass) -- a BLOCKING finding blocks completion the same way a compilation failure does;
+   ADVISORY findings and `[JUDGED]` reviewer-prompt answers must be reported, not silently dropped
 
 **MUST NOT**:
 1. Return JSON to console

@@ -483,30 +483,30 @@ lands, not from the research report's pre-amendment 336.
 
 ---
 
-### Phase 8: Agent Contract Wiring [NOT STARTED]
+### Phase 8: Agent Contract Wiring [COMPLETED]
 
 **Goal**: the checker is a pre-completion gate in `typst-implementation-agent.md` at all three
 element-lint precedent sites, and the standard is named at `typst-research-agent.md`'s Stage 2.
 
 **Tasks**:
-- [ ] `typst-implementation-agent.md` Stage 4C "Verify Phase Completion": add a
+- [x] `typst-implementation-agent.md` Stage 4C "Verify Phase Completion": add a
       chapter-quality sub-bullet parallel to (never replacing) the existing element-lint bullet,
       running `bash .claude/scripts/chapter-quality-check.sh --verbose {changed .typ file}` for
       every `.typ` file created or modified in the phase; a BLOCKING finding blocks marking the
       phase complete exactly as a `typst compile` failure would; ADVISORY findings do not block but
-      MUST be reported in the phase output; judged reviewer prompts must be answered, not skipped.
-- [ ] `typst-implementation-agent.md` Stage 5 final verification: add the same invocation over
+      MUST be reported in the phase output; judged reviewer prompts must be answered, not skipped. *(completed)*
+- [x] `typst-implementation-agent.md` Stage 5 final verification: add the same invocation over
       every `.typ` file touched by the task, alongside - never replacing - `typst compile` and the
       element lint, with BLOCKING as the same blocking condition and ADVISORY findings reported in
-      the implementation summary's Verification section.
-- [ ] `typst-implementation-agent.md` Critical Requirements: add a MUST DO item stating the
-      obligation at both stages, mirroring existing item 7's wording for the element lint.
-- [ ] `typst-research-agent.md` Stage 2 ("Analyze Task and Load Context"): name
+      the implementation summary's Verification section. *(completed)*
+- [x] `typst-implementation-agent.md` Critical Requirements: add a MUST DO item stating the
+      obligation at both stages, mirroring existing item 7's wording for the element lint. *(completed: item 8)*
+- [x] `typst-research-agent.md` Stage 2 ("Analyze Task and Load Context"): name
       `context/project/typst/standards/chapter-quality.md` as a context file to load when the
       research feeds chapter content, so research is calibrated to the bar the chapter will be
       measured against. (The `index-entries.json` `load_when` addition in Phase 7 already makes it
-      auto-loadable; this inline mention is for discoverability parity.)
-- [ ] No task-number references anywhere in these files.
+      auto-loadable; this inline mention is for discoverability parity.) *(completed)*
+- [x] No task-number references anywhere in these files. *(completed: prose-only diff, no task refs)*
 
 **Timing**: 45 minutes
 

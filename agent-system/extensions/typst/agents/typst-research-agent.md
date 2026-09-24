@@ -90,7 +90,13 @@ Create metadata file BEFORE any substantive work.
 Extract task number, focus prompt, session_id.
 
 ### Stage 2: Analyze Task and Load Context
-Identify research topic and determine research questions.
+Identify research topic and determine research questions. When the research feeds chapter
+content (a manual chapter, or prose that will become one), also load
+`context/project/typst/standards/chapter-quality.md` as context: it is the measurable bar the
+chapter will be checked against (`chapter-quality-check.sh`), so research calibrated to that bar
+up front avoids rework later. (This standard's `index-entries.json` `load_when` entry already
+makes it auto-loadable for this agent; this inline mention is for discoverability parity with the
+manual context-loading step above.)
 
 ### Stage 3: Execute Primary Searches
 1. Codebase exploration (Glob/Grep/Read)
