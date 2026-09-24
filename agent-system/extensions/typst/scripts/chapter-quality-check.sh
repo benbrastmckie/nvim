@@ -144,6 +144,33 @@ VERBOSE=false
 # The standard's own 7 MECHANICAL rules (excludes the delegated, non-numbered placement check).
 MECH_RULES=(1.2 1.3 1.5 3.2 2.1 2.3 3.3)
 
+# Rule 2.1 threshold: warn when a section's words-per-claim ratio exceeds this (a "claim" is a
+# `@key` citation or a semantic-element invocation within the section). UNREVIEWED -- no corpus
+# observation behind this number yet; see chapter-quality.md's Rule 2.1 disclosure.
+CLAIM_RATIO_THRESHOLD=150
+
+# Rule 3.3 threshold: warn when a blank-line-delimited paragraph exceeds this many words.
+# UNREVIEWED -- no corpus observation behind this number yet; see chapter-quality.md's Rule 3.3
+# disclosure.
+PARAGRAPH_WORD_THRESHOLD=150
+
+# Rule 2.3 seed phrase list: UNREVIEWED and extensible (chapter-quality.md's own disclosure).
+# Drawn from standards/textbook-standards.md's Professional Tone "Avoid" column (obviously,
+# clearly, trivial, easy) plus chapter-quality.md Rule 2.3's own stated examples (it seems,
+# arguably, it is worth noting that, needless to say). Add phrases here as false positives and
+# misses are observed; bump HEDGING_LIST_VERSION when the list changes.
+HEDGING_LIST_VERSION="v1"
+HEDGING_SEED_LIST=(
+  "obviously"
+  "clearly"
+  "trivial"
+  "easy"
+  "it seems"
+  "arguably"
+  "it is worth noting that"
+  "needless to say"
+)
+
 usage() {
   cat <<'EOF'
 Usage: chapter-quality-check.sh [--verbose] [--help] PATH...
@@ -391,6 +418,110 @@ check_bib_keys() {
   done < <(grep -n '@' "$cleanf" 2>/dev/null || true)
 }
 
+# check_claim_ratio FILE CLEANFILE -- Rule 2.1 [ADVISORY / MECHANICAL]. Per `==`/`===` section, a
+# "claim" is a `@key` citation or a semantic-element invocation within that section; warns when
+# the section's words-per-claim ratio exceeds CLAIM_RATIO_THRESHOLD (or has zero claims and more
+# than CLAIM_RATIO_THRESHOLD words). Never increments TOTAL_BLOCKING -- see emit_advisory.
+check_claim_ratio() {
+  local f="$1" cleanf="$2" lnum content ratio
+  while IFS= read -r rawline; do
+    [[ -z "$rawline" ]] && continue
+    lnum="${rawline%%$'\t'*}"
+    content="${rawline#*$'\t'}"
+    emit_advisory "ANTI-FLUFF DENSITY" "2.1" "${f}:${lnum}" \
+      "section \"${content}\" has a low claim-to-word ratio (threshold ${CLAIM_RATIO_THRESHOLD} words/claim, unreviewed). This rule never blocks."
+  done < <(awk -v threshold="$CLAIM_RATIO_THRESHOLD" '
+    function flush() {
+      if (started) {
+        if (claim_count == 0) {
+          if (words > threshold) printf "%d\t%s\n", start_line, heading_text
+        } else if ((words / claim_count) > threshold) {
+          printf "%d\t%s\n", start_line, heading_text
+        }
+      }
+    }
+    BEGIN { started = 0; words = 0; claim_count = 0; start_line = 0; heading_text = "" }
+    {
+      line = $0
+      clean = line
+      gsub(/"[^"]*"/, "", clean)
+      sub(/\/\/.*/, "", clean)
+      trimmed = clean
+      sub(/^[ \t]+/, "", trimmed)
+      sub(/[ \t]+$/, "", trimmed)
+      if (trimmed ~ /^=+[ \t]/) {
+        flush()
+        started = 1
+        words = 0
+        claim_count = 0
+        start_line = FNR
+        heading_text = trimmed
+        next
+      }
+      if (!started) next
+      if (trimmed == "") next
+      n = split(trimmed, warr, /[ \t]+/)
+      words += n
+      tmp = trimmed
+      c = gsub(/@[A-Za-z][A-Za-z0-9_:.-]*/, "&", tmp)
+      claim_count += c
+      if (trimmed ~ /^#(definition|theorem|lemma|corollary|example|proof|remark|rule-block|rule-list)[ \t]*(\(|\[)/) {
+        claim_count++
+      }
+    }
+    END { flush() }
+  ' "$cleanf" 2>/dev/null || true)
+}
+
+# check_hedging_filler FILE CLEANFILE -- Rule 2.3 [ADVISORY / MECHANICAL]. Never increments
+# TOTAL_BLOCKING -- see emit_advisory.
+check_hedging_filler() {
+  local f="$1" cleanf="$2" phrase rawline lnum content
+  for phrase in "${HEDGING_SEED_LIST[@]}"; do
+    while IFS= read -r rawline; do
+      lnum="${rawline%%:*}"
+      content="${rawline#*:}"
+      emit_advisory "ANTI-FLUFF DENSITY" "2.3" "${f}:${lnum}" \
+        "hedging/filler phrase \"${phrase}\" (seed list ${HEDGING_LIST_VERSION}) in: \"${content}\". This rule never blocks."
+    done < <(grep -inF -- "$phrase" "$cleanf" 2>/dev/null || true)
+  done
+}
+
+# check_paragraph_length FILE CLEANFILE -- Rule 3.3 [ADVISORY / MECHANICAL]. A "paragraph" is a
+# blank-line-delimited block of the comment/quote-stripped file (KNOWN LIMITATION: not prose-aware
+# -- a heading or a run of declarations counts as a paragraph too). Never increments
+# TOTAL_BLOCKING -- see emit_advisory.
+check_paragraph_length() {
+  local f="$1" cleanf="$2" lnum words
+  while IFS= read -r rawline; do
+    [[ -z "$rawline" ]] && continue
+    lnum="${rawline%%$'\t'*}"
+    words="${rawline#*$'\t'}"
+    emit_advisory "PRESENTATION CLARITY" "3.3" "${f}:${lnum}" \
+      "paragraph spans ${words} words (threshold ${PARAGRAPH_WORD_THRESHOLD}, unreviewed). This rule never blocks."
+  done < <(awk -v threshold="$PARAGRAPH_WORD_THRESHOLD" '
+    function flush() {
+      if (words > threshold) printf "%d\t%d\n", start_line, words
+      words = 0
+      start_line = 0
+    }
+    {
+      line = $0
+      clean = line
+      gsub(/"[^"]*"/, "", clean)
+      sub(/\/\/.*/, "", clean)
+      trimmed = clean
+      sub(/^[ \t]+/, "", trimmed)
+      sub(/[ \t]+$/, "", trimmed)
+      if (trimmed == "") { flush(); next }
+      if (start_line == 0) start_line = FNR
+      n = split(trimmed, warr, /[ \t]+/)
+      words += n
+    }
+    END { flush() }
+  ' "$cleanf" 2>/dev/null || true)
+}
+
 # process_file FILE -- runs every implemented check against FILE and prints its score line.
 # Rule-check bodies are added phase by phase (see the plan this script was implemented from).
 process_file() {
@@ -409,6 +540,9 @@ process_file() {
   check_heading_depth "$f" "$clean_tmp"
   check_confirm_comment "$f"
   check_backtick_paths "$f" "$clean_tmp" "$root"
+  check_claim_ratio "$f" "$clean_tmp"
+  check_hedging_filler "$f" "$clean_tmp"
+  check_paragraph_length "$f" "$clean_tmp"
 
   if bibfile="$(resolve_bibliography "$f" "$root")"; then
     $VERBOSE && emit_info "$f" "Rule 1.3 evaluated against ${bibfile}"

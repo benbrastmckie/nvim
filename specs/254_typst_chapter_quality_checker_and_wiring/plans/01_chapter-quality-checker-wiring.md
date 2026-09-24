@@ -257,26 +257,27 @@ the returned rule numbers one-for-one against the implemented set.
 
 ---
 
-### Phase 3: MECHANICAL ADVISORY Rules (2.1, 2.3, 3.3) [NOT STARTED]
+### Phase 3: MECHANICAL ADVISORY Rules (2.1, 2.3, 3.3) [COMPLETED]
 
 **Goal**: the three mechanical advisory rules are implemented, report their thresholds inline, and
 provably cannot change the exit code.
 
 **Tasks**:
-- [ ] Declare thresholds as named constants near the top of the script, mirroring
+- [x] Declare thresholds as named constants near the top of the script, mirroring
       `typst-element-lint.sh`'s `ITEM_THRESHOLD`/`DENSITY_FLOOR` pattern, each carrying an
-      `UNREVIEWED` comment matching the standard's own disclosure language.
-- [ ] Rule 2.1 (claim-to-word ratio per section): compute per `==`/`===` section, warn below the
+      `UNREVIEWED` comment matching the standard's own disclosure language. *(completed)*
+- [x] Rule 2.1 (claim-to-word ratio per section): compute per `==`/`===` section, warn below the
       threshold, and report the threshold used in the finding message as the standard requires.
-      ADVISORY.
-- [ ] Rule 2.3 (hedging/filler seed list): declare the seed list as a named array drawn from
+      ADVISORY. *(completed)*
+- [x] Rule 2.3 (hedging/filler seed list): declare the seed list as a named array drawn from
       `standards/textbook-standards.md`'s Professional Tone "Avoid" column (including the
       standard's own examples: "it seems", "arguably", "it is worth noting that", "needless to
-      say"); report the list contents or version alongside each finding. ADVISORY.
-- [ ] Rule 3.3 (paragraph length bounded): per-paragraph word/line count against the named
-      constant, reporting the threshold used. ADVISORY.
-- [ ] Assert at the emission layer that these three rules increment `TOTAL_ADVISORY` only, never
-      `TOTAL_BLOCKING`.
+      say"); report the list contents or version alongside each finding. ADVISORY. *(completed)*
+- [x] Rule 3.3 (paragraph length bounded): per-paragraph word/line count against the named
+      constant, reporting the threshold used. ADVISORY. *(completed)*
+- [x] Assert at the emission layer that these three rules increment `TOTAL_ADVISORY` only, never
+      `TOTAL_BLOCKING`. *(completed: verified via emit_advisory's implementation and an
+      ANTI-FLUFF-only fixture that exits 0 while printing 8 advisory findings)*
 
 **Timing**: 1 hour
 
