@@ -306,6 +306,30 @@
       ]
     },
     {
+      "path": "project/typst/standards/chapter-quality.md",
+      "line_count": 359,
+      "load_when": {
+        "agents": [
+          "typst-implementation-agent",
+          "typst-research-agent"
+        ],
+        "task_types": [
+          "typst"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typst",
+      "summary": "Measurable BLOCKING/ADVISORY, MECHANICAL/JUDGED quality bar for hand-built Typst manual chapters (source grounding, anti-fluff density, presentation clarity, open-question honesty), enforced by chapter-quality-check.sh",
+      "keywords": [
+        "typst",
+        "chapter-quality",
+        "source-grounding",
+        "anti-fluff",
+        "presentation-clarity",
+        "open-question-honesty"
+      ]
+    },
+    {
       "path": "project/typst/standards/compilation-standards.md",
       "line_count": 142,
       "load_when": {

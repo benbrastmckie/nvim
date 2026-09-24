@@ -442,22 +442,22 @@ rule left uncovered.
 
 ---
 
-### Phase 7: Registration - manifest.json and index-entries.json [NOT STARTED]
+### Phase 7: Registration - manifest.json and index-entries.json [COMPLETED]
 
 **Goal**: both new scripts are registered in `provides.scripts`, and the standard is registered as
 a loadable context entry for both typst agents.
 
 **Tasks**:
-- [ ] Add `"chapter-quality-check.sh"` and `"tests/test-chapter-quality-check.sh"` to
+- [x] Add `"chapter-quality-check.sh"` and `"tests/test-chapter-quality-check.sh"` to
       `manifest.json`'s `provides.scripts`, matching the existing element-lint pair's
-      subdirectory-qualified convention.
-- [ ] Add an `index-entries.json` entry for `project/typst/standards/chapter-quality.md` with
+      subdirectory-qualified convention. *(completed)*
+- [x] Add an `index-entries.json` entry for `project/typst/standards/chapter-quality.md` with
       `path`, `line_count` (the actual `wc -l` value at edit time - re-measure, do not copy an
       estimate, since Phase 1 amended the file), `load_when.agents`:
       `["typst-implementation-agent", "typst-research-agent"]`, `load_when.task_types`:
       `["typst"]`, `domain`: `"project"`, `subdomain`: `"typst"`, a one-sentence `summary`, and
-      3-6 `keywords`.
-- [ ] `jq . manifest.json` and `jq . index-entries.json` to confirm well-formedness.
+      3-6 `keywords`. *(completed: line_count=359, re-measured after Phase 1's amendment)*
+- [x] `jq . manifest.json` and `jq . index-entries.json` to confirm well-formedness. *(completed)*
 
 **Timing**: 30 minutes
 
