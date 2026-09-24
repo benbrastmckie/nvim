@@ -889,12 +889,12 @@
     {
       "project_number": 254,
       "project_name": "typst_chapter_quality_checker_and_wiring",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index",
       "created": "2026-09-24T18:20:14Z",
-      "last_updated": "2026-09-24T20:09:52Z",
+      "last_updated": "2026-09-24T20:31:17Z",
       "dependencies": [
         253
       ],
@@ -920,9 +920,15 @@
           "path": "specs/254_typst_chapter_quality_checker_and_wiring/plans/01_chapter-quality-checker-wiring.md",
           "type": "plan",
           "summary": "10-phase implementation plan for chapter-quality-check.sh, its test harness, and the six wiring surfaces."
+        },
+        {
+          "path": "specs/254_typst_chapter_quality_checker_and_wiring/summaries/01_chapter-quality-checker-wiring-summary.md",
+          "type": "summary",
+          "summary": "10-phase implementation: chapter-quality-check.sh (15-rule mechanical/judged checker delegating placement to typst-element-lint.sh) plus its 59-case test harness, then all six wiring surfaces (manifest, index, both typst agents, the implementation skill, EXTENSION.md)."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented chapter-quality-check.sh and its test harness (59 passed, 0 failed), and wired the checker and the chapter-quality standard into manifest.json, index-entries.json, both typst agents, the typst implementation skill, and EXTENSION.md. All nine dispatch acceptance criteria verified with recorded evidence, including a scratch-repo deploy confirming all six wiring surfaces reproduce cleanly."
     }
   ],
   "completed_projects": [],

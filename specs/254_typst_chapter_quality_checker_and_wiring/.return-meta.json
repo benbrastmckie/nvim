@@ -1,11 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/254_typst_chapter_quality_checker_and_wiring/summaries/01_chapter-quality-checker-wiring-summary.md",
+      "summary": "10-phase implementation: chapter-quality-check.sh (15-rule mechanical/judged checker delegating placement to typst-element-lint.sh) plus its 59-case test harness, then all six wiring surfaces (manifest, index, both typst agents, the implementation skill, EXTENSION.md)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented chapter-quality-check.sh and its test harness (59 passed, 0 failed), and wired the checker and the chapter-quality standard into manifest.json, index-entries.json, both typst agents, the typst implementation skill, and EXTENSION.md. All nine dispatch acceptance criteria verified with recorded evidence, including a scratch-repo deploy confirming all six wiring surfaces reproduce cleanly."
+  },
+  "modified_files": [
+    "agent-system/extensions/typst/scripts/chapter-quality-check.sh",
+    "agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh",
+    "agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md",
+    "agent-system/extensions/typst/manifest.json",
+    "agent-system/extensions/typst/index-entries.json",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-research-agent.md",
+    "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
+    "agent-system/extensions/typst/EXTENSION.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Bash `read` silently drops a trailing empty field when splitting delimited text: `IFS=: read -r a b <<< \"4:foo:\"` yields b=\"foo\" not \"foo:\" -- the trailing colon and everything after it vanishes. This corrupts any line-parsing loop over `grep -n` output where the matched content can itself end in the delimiter (e.g. a `// CONFIRM:` marker with an empty payload). Fix: use `IFS= read -r rawline` (no field splitting) then extract fields manually via `lnum=\"${rawline%%:*}\"` / `content=\"${rawline#*:}\"`, which preserves trailing delimiters exactly.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/254_typst_chapter_quality_checker_and_wiring/summaries/01_chapter-quality-checker-wiring-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "read", "IFS", "field-splitting", "grep -n", "shell-scripting"]
+    },
+    {
+      "content": "When adding a second mechanical checker to an extension that already has one (e.g. typst-element-lint.sh -> chapter-quality-check.sh), delegate shared territory to the existing script rather than re-implementing it, and grep-verify the delegation held (e.g. `grep -nE '<element-name-list>' new-checker.sh` should return only header prose, never matching logic). Also watch for an unrelated rule in the new checker reusing the same name list for its own heuristic (e.g. counting semantic-element invocations as 'claims') -- that collides with the delegation-verification grep even though it isn't a second placement implementation, and is worth simplifying away to keep the grep's signal clean.",
+      "category": "PATTERN",
+      "source_artifact": "specs/254_typst_chapter_quality_checker_and_wiring/summaries/01_chapter-quality-checker-wiring-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["shell-checker", "delegation", "territory", "grep-regression-guard", "typst"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790279276_cb422e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 10,
+    "phases_total": 10
   }
 }

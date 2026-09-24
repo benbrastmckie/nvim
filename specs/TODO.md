@@ -11,7 +11,7 @@ next_project_number: 255
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,254 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199 | core-agent-system, neovim, file-scope-lifecycle |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
@@ -48,7 +48,6 @@ next_project_number: 255
 43 [NOT STARTED] — Decide and implement how email safety context actually...
 167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
-254 [PLANNED] — Implement chapter-quality-check.sh with its test harness,...
 
 ### Literature
 
@@ -78,12 +77,13 @@ next_project_number: 255
 ## Tasks
 
 ### 254. Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 253
 - **Research**: [254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md]
 - **Plan**: [254_typst_chapter_quality_checker_and_wiring/plans/01_chapter-quality-checker-wiring.md]
+- **Summary**: [254_typst_chapter_quality_checker_and_wiring/summaries/01_chapter-quality-checker-wiring-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**, which is a
 disposable deploy artifact regenerated from the source store).

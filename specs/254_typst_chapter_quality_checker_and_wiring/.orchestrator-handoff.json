@@ -1,15 +1,21 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 10,
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phase": "implement",
+  "summary": "Implemented chapter-quality-check.sh and its 59-case test harness, then wired the checker and the chapter-quality standard into manifest.json, index-entries.json, both typst agents, the typst implementation skill, and EXTENSION.md. All 10 plan phases and all 9 dispatch acceptance criteria verified with recorded evidence.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/254_typst_chapter_quality_checker_and_wiring/summaries/01_chapter-quality-checker-wiring-summary.md",
+      "summary": "10-phase implementation: chapter-quality-check.sh (15-rule mechanical/judged checker delegating placement to typst-element-lint.sh) plus its 59-case test harness, then all six wiring surfaces (manifest, index, both typst agents, the implementation skill, EXTENSION.md)."
+    },
     {
       "type": "plan",
       "path": "specs/254_typst_chapter_quality_checker_and_wiring/plans/01_chapter-quality-checker-wiring.md",
-      "summary": "10-phase implementation plan for chapter-quality-check.sh, its test harness, and the six wiring surfaces."
+      "summary": "All 10 phases marked [COMPLETED]; plan-level Status set to [COMPLETED]."
     }
   ],
-  "session_id": "sess_1790279276_cb422e_254",
-  "dispatch_seq": 5,
-  "next_steps": "Run /implement 254 to execute the plan"
+  "phases_completed": 10,
+  "phases_total": 10,
+  "blockers": []
 }
