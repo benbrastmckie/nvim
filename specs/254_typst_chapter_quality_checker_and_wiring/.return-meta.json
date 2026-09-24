@@ -1,0 +1,36 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md",
+      "summary": "Transcribes the chapter-quality standard's 15 dual-tagged rules, maps the typst-element-lint.sh structural precedent onto chapter-quality-check.sh, names the six wiring sites and their exact element-lint analogs, and flags two open risks (bib/repo-root resolution for Rules 1.2/1.3, and deploy verification since the typst extension is not currently active in this repo)."
+    }
+  ],
+  "next_steps": "Run /plan 254 to create implementation plan",
+  "proposed_file_scope": [],
+  "metadata": {
+    "session_id": "sess_1790279276_cb422e_254",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 15
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent-system, an extension's own standard file can define an 'Interface Contract for Repo-Local Checks' section that names checks a *consuming repository* must implement locally (never duplicated by the extension's own mechanical checker), while still requiring the extension's checker to implement other, superficially similar rules directly (e.g. path-existence and citation-key resolution). When transcribing such a standard into a checker script, explicitly separate 'rules this checker owns' from 'checks explicitly deferred to a consumer' in the script's own header comment, or the two categories get conflated during implementation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["interface-contract", "repo-local-check", "standard-deferral", "mechanical-checker", "typst"]
+    },
+    {
+      "content": "deploy-headless.sh's default (non---wipe) mode only force-resyncs extensions already marked active in a repo's .claude-extensions.json (plus core unconditionally); it will NOT deploy an extension that has never been loaded into that repo. To verify a not-yet-active extension's manifest/index wiring actually deploys correctly, use the scratch-git-repo pattern already proven by scripts/tests/test-deploy-propagation.sh (a mktemp -d throwaway target + the real deploy-headless.sh + the real Lua manager.load engine) rather than attempting to load the extension permanently into the working repo's own .claude-extensions.json.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless", "extension-loading", "scratch-repo", "verify-deploy", "test-deploy-propagation"]
+    }
+  ],
+  "dispatch_seq": 4
+}

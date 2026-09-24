@@ -48,7 +48,7 @@ next_project_number: 255
 43 [NOT STARTED] — Decide and implement how email safety context actually...
 167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
-254 [NOT STARTED] — Implement chapter-quality-check.sh with its test harness,...
+254 [RESEARCHED] — Implement chapter-quality-check.sh with its test harness,...
 
 ### Literature
 
@@ -78,10 +78,11 @@ next_project_number: 255
 ## Tasks
 
 ### 254. Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 253
+- **Research**: [254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**, which is a
 disposable deploy artifact regenerated from the source store).
