@@ -66,6 +66,12 @@ with `status: "implemented"`, re-read every `.typ` section this inline path touc
 against `context/project/typst/standards/semantic-element-usage.md` and answer that standard's
 Self-Review Questions verbatim (see the **MUST NOT (Document Structure)** section below for the
 enforceable items this check protects). `typst compile` succeeding does NOT satisfy this check.
+When the inline path touched chapter prose, also run
+`bash .claude/scripts/chapter-quality-check.sh --verbose` over the `.typ` content it touched --
+this is the same mechanical chapter-quality gate `typst-implementation-agent`'s own Stage 4C and
+Stage 5 apply, bypassed here for the identical reason the placement/density lint is bypassed. A
+BLOCKING finding must be fixed before writing `status: "implemented"`; ADVISORY findings and
+`[JUDGED]` reviewer-prompt answers must be reported, not silently dropped.
 
 ## Postflight (ALWAYS EXECUTE)
 
@@ -99,7 +105,12 @@ division-of-labor rule, and it applies specifically to the Stage 5b self-executi
 `typst-implementation-agent`'s own Stage 4C verification). See
 `agents/typst-implementation-agent.md`'s Critical Requirements MUST NOT items 7-8 for the
 identical prohibitions enforced on the agent's own authoring path; the two lists are kept in
-correspondence deliberately so neither path is left ungated.
+correspondence deliberately so neither path is left ungated. The correspondence now also covers
+the chapter-quality gate: `agents/typst-implementation-agent.md`'s MUST DO item 8 (the
+`chapter-quality-check.sh` gate at Stage 4C/Stage 5) has its Stage 5b analog in the
+**Self-review before writing metadata** paragraph above, not in this list -- it is a BLOCKING/
+ADVISORY/JUDGED mechanical+reader gate rather than a binary structural prohibition, so it is
+enforced there rather than added as a ninth item below.
 
 Whenever Stage 5b authors or modifies `.typ` content directly, this skill MUST NOT:
 

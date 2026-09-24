@@ -37,3 +37,8 @@ document content. Content-creation work (proofs, theorems, chapters, textbook pr
 - Element-placement/density lint: `bash .claude/scripts/typst-element-lint.sh --verbose FILE...`
   (mechanical backstop for `standards/semantic-element-usage.md`'s Universal Placement Rule;
   placement findings block, item-count and density findings are advisory-only)
+- Chapter-quality check: `bash .claude/scripts/chapter-quality-check.sh --verbose FILE...`
+  (mechanical backstop for `standards/chapter-quality.md`'s SOURCE GROUNDING, ANTI-FLUFF DENSITY,
+  PRESENTATION CLARITY, and OPEN-QUESTION HONESTY dimensions, plus structured reviewer prompts
+  for its JUDGED rules; BLOCKING findings block, ADVISORY findings -- including every ANTI-FLUFF
+  DENSITY finding -- are advisory-only and never affect the exit code)

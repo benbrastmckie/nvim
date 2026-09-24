@@ -535,24 +535,24 @@ chapter-quality mention at each returned site, no more and no fewer.
 
 ---
 
-### Phase 9: Skill and EXTENSION.md Wiring [NOT STARTED]
+### Phase 9: Skill and EXTENSION.md Wiring [COMPLETED]
 
 **Goal**: the Stage 5b self-execution fallback reflects the new verification step, and the
 capability is advertised in the extension's CLAUDE.md merge source.
 
 **Tasks**:
-- [ ] `skills/skill-typst-implementation/SKILL.md` Stage 5b "Self-review before writing metadata":
+- [x] `skills/skill-typst-implementation/SKILL.md` Stage 5b "Self-review before writing metadata":
       extend the existing paragraph so the inline authoring path also runs
       `bash .claude/scripts/chapter-quality-check.sh --verbose` over the `.typ` content it touched
       when that content is chapter prose, with the same BLOCKING-blocks / ADVISORY-reported split,
-      keeping the paragraph's existing `semantic-element-usage.md` self-review intact.
-- [ ] `skills/skill-typst-implementation/SKILL.md` "MUST NOT (Document Structure)": extend the
+      keeping the paragraph's existing `semantic-element-usage.md` self-review intact. *(completed)*
+- [x] `skills/skill-typst-implementation/SKILL.md` "MUST NOT (Document Structure)": extend the
       cross-reference sentence so the correspondence with the agent's Critical Requirements covers
-      the chapter-quality gate too.
-- [ ] `EXTENSION.md` "Common Operations": add a bullet mirroring the element-lint bullet's exact
+      the chapter-quality gate too. *(completed)*
+- [x] `EXTENSION.md` "Common Operations": add a bullet mirroring the element-lint bullet's exact
       shape - command line, one-line description of what it backstops, and the blocking/advisory
-      split summary (naming that ANTI-FLUFF findings never block).
-- [ ] No task-number references anywhere in these files.
+      split summary (naming that ANTI-FLUFF findings never block). *(completed)*
+- [x] No task-number references anywhere in these files. *(completed: check-task-references.sh --quiet agent-system/extensions/typst -> 0 occurrences)*
 
 **Timing**: 30 minutes
 
