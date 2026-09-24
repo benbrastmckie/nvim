@@ -348,21 +348,25 @@ and matching the returned rule ids one-for-one against `JUDGED_RULES`.
 
 ---
 
-### Phase 5: Placement Composition with typst-element-lint.sh [NOT STARTED]
+### Phase 5: Placement Composition with typst-element-lint.sh [COMPLETED]
 
 **Goal**: the Universal Placement Rule is enforced by delegating to the existing lint, with its
 findings aggregated into this checker's severity semantics - and no second implementation exists.
 
 **Tasks**:
-- [ ] Resolve the sibling as `$(dirname "$0")/typst-element-lint.sh`; a missing sibling is an
-      environment error (exit 2) with a named message, never a silent pass.
-- [ ] Invoke the sibling per checked file with `--verbose`; map `[FAIL]` to a BLOCKING placement
+- [x] Resolve the sibling as `$(dirname "$0")/typst-element-lint.sh`; a missing sibling is an
+      environment error (exit 2) with a named message, never a silent pass. *(completed)*
+- [x] Invoke the sibling per checked file with `--verbose`; map `[FAIL]` to a BLOCKING placement
       finding and `[WARN]` to an ADVISORY finding, re-emitted in this checker's finding-record
-      shape with the delegated source named in the message.
-- [ ] Document the delegation in the header's `CHECKS.` and `SCOPE BOUNDARY` sections, stating
-      that two independent placement implementations would diverge.
-- [ ] Confirm no placement regex was added to this checker: `grep -nE 'definition|theorem|lemma|corollary|remark|rule-block|rule-list' scripts/chapter-quality-check.sh`
-      returns only header prose and the delegation call, no matching logic.
+      shape with the delegated source named in the message. *(completed)*
+- [x] Document the delegation in the header's `CHECKS.` and `SCOPE BOUNDARY` sections, stating
+      that two independent placement implementations would diverge. *(completed: already stated
+      in Phase 1's header, re-verified consistent)*
+- [x] Confirm no placement regex was added to this checker: `grep -nE 'definition|theorem|lemma|corollary|remark|rule-block|rule-list' scripts/chapter-quality-check.sh`
+      returns only header prose and the delegation call, no matching logic. *(completed: this
+      phase also removed a Rule 2.1 claim-counting heuristic that reused the semantic-element
+      name list and collided with this exact grep -- see Plan Deviations; the grep now returns
+      only one header-prose line)*
 
 **Timing**: 45 minutes
 

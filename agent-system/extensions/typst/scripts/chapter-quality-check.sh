@@ -436,9 +436,14 @@ check_bib_keys() {
 }
 
 # check_claim_ratio FILE CLEANFILE -- Rule 2.1 [ADVISORY / MECHANICAL]. Per `==`/`===` section, a
-# "claim" is a `@key` citation or a semantic-element invocation within that section; warns when
-# the section's words-per-claim ratio exceeds CLAIM_RATIO_THRESHOLD (or has zero claims and more
-# than CLAIM_RATIO_THRESHOLD words). Never increments TOTAL_BLOCKING -- see emit_advisory.
+# "claim" is a `@key` citation occurrence within that section (a claim traceable to a cited
+# source, per this standard's SOURCE GROUNDING dimension); warns when the section's
+# words-per-claim ratio exceeds CLAIM_RATIO_THRESHOLD (or has zero claims and more than
+# CLAIM_RATIO_THRESHOLD words). Deliberately does NOT pattern-match on the semantic-element
+# inventory (definition/theorem/.../rule-list) -- that inventory belongs to
+# semantic-element-usage.md and to the delegated placement check only; reusing it here as a second
+# "claim" signal would blur the boundary this script's SCOPE BOUNDARY draws. Never increments
+# TOTAL_BLOCKING -- see emit_advisory.
 check_claim_ratio() {
   local f="$1" cleanf="$2" lnum content ratio
   while IFS= read -r rawline; do
@@ -482,9 +487,6 @@ check_claim_ratio() {
       tmp = trimmed
       c = gsub(/@[A-Za-z][A-Za-z0-9_:.-]*/, "&", tmp)
       claim_count += c
-      if (trimmed ~ /^#(definition|theorem|lemma|corollary|example|proof|remark|rule-block|rule-list)[ \t]*(\(|\[)/) {
-        claim_count++
-      }
     }
     END { flush() }
   ' "$cleanf" 2>/dev/null || true)
@@ -579,6 +581,32 @@ emit_judged_prompts() {
   done
 }
 
+# check_placement FILE -- Placement (BLOCKING, delegated). Decision 5: locates the sibling as
+# $(dirname "$0")/typst-element-lint.sh and invokes it per file with --verbose, mapping its
+# [FAIL] to a BLOCKING placement finding and [WARN] to an ADVISORY finding. A missing sibling is
+# an environment error (exit 2), never a silent pass -- this is the ONLY placement implementation
+# in this script; the Universal Placement Rule itself is never re-implemented here (see SCOPE
+# BOUNDARY in the header).
+check_placement() {
+  local f="$1" sibling out line clean
+  sibling="${SCRIPT_DIR}/typst-element-lint.sh"
+  if [[ ! -x "$sibling" ]]; then
+    echo "Error: sibling typst-element-lint.sh not found or not executable at ${sibling}" >&2
+    exit 2
+  fi
+  out=$(bash "$sibling" --verbose "$f" 2>&1)
+  while IFS= read -r line; do
+    clean=$(printf '%s' "$line" | sed -E 's/\x1b\[[0-9;]*m//g')
+    if [[ "$clean" == '[FAIL]'* ]]; then
+      emit_blocking "PLACEMENT (delegated)" "element-lint:placement" "$f" \
+        "delegated from typst-element-lint.sh: ${clean#'[FAIL] '}"
+    elif [[ "$clean" == '[WARN]'* ]]; then
+      emit_advisory "PLACEMENT (delegated)" "element-lint:advisory" "$f" \
+        "delegated from typst-element-lint.sh: ${clean#'[WARN] '}"
+    fi
+  done <<< "$out"
+}
+
 # process_file FILE -- runs every implemented check against FILE and prints its score line.
 # Rule-check bodies are added phase by phase (see the plan this script was implemented from).
 process_file() {
@@ -594,6 +622,7 @@ process_file() {
   awk '{ gsub(/"[^"]*"/,""); sub(/\/\/.*/,""); gsub(/^[ \t]+/,""); gsub(/[ \t]+$/,""); print }' "$f" > "$clean_tmp"
   root="$(resolve_repo_root "$f")"
 
+  check_placement "$f"
   check_heading_depth "$f" "$clean_tmp"
   check_confirm_comment "$f"
   check_backtick_paths "$f" "$clean_tmp" "$root"

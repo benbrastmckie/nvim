@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Placement Composition with typst-element-lint.sh",
+  "started_at": "2026-09-24T20:21:12Z",
+  "last_updated": "2026-09-24T20:21:12Z",
+  "objectives": [
+    {"id": 1, "description": "Delegate placement to sibling lint, map FAIL/WARN to BLOCKING/ADVISORY, environment-error on missing sibling", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/chapter-quality-check.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3 (retroactive fix during Phase 5)",
+      "description": "Rule 2.1's claim-counting heuristic originally also counted semantic-element invocations (definition/theorem/.../rule-list) as claims, alongside @key citations.",
+      "type": "altered",
+      "reason": "That element-name list collided textually with Phase 5/10's placement-regression grep (grep -nE 'definition|theorem|lemma|corollary|remark|rule-block|rule-list'), which is meant to prove no second placement implementation exists. Removed the element-based claim heuristic; Rule 2.1's claim count is now @key citations only, which is simpler, avoids the ambiguity, and keeps the placement/claim-ratio boundary this script's SCOPE BOUNDARY draws.",
+      "annotation": "*(deviation: altered -- Rule 2.1 claim heuristic simplified to citation-only during Phase 5)*"
+    }
+  ]
+}
