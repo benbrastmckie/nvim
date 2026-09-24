@@ -854,12 +854,12 @@
     {
       "project_number": 253,
       "project_name": "typst_chapter_quality_standard",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Define the Typst chapter-quality standard across the four dimensions, with per-rule blocking/advisory and mechanical/judged classification",
       "created": "2026-09-24T18:20:14Z",
-      "last_updated": "2026-09-24T19:55:30Z",
+      "last_updated": "2026-09-24T19:55:42Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md"
