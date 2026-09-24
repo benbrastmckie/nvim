@@ -11,8 +11,8 @@ next_project_number: 255
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,253 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251,254 | 22,44,127,129,162,163,199,253 | core-agent-system, extensions, neovim, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,254 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199 | core-agent-system, neovim, file-scope-lifecycle |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -48,8 +48,7 @@ next_project_number: 255
 43 [NOT STARTED] — Decide and implement how email safety context actually...
 167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
-253 [IMPLEMENTING] — Define the Typst chapter-quality standard across the four...
-  └─ 254 [NOT STARTED] — Implement chapter-quality-check.sh with its test harness,...
+254 [NOT STARTED] — Implement chapter-quality-check.sh with its test harness,...
 
 ### Literature
 
@@ -206,12 +205,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 253. Define the Typst chapter-quality standard across the four dimensions, with per-rule blocking/advisory and mechanical/judged classification
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [253_typst_chapter_quality_standard/reports/01_chapter-quality-standard-research.md]
 - **Plan**: [253_typst_chapter_quality_standard/plans/01_chapter-quality-standard.md]
+- **Summary**: [253_typst_chapter_quality_standard/summaries/01_chapter-quality-standard-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**, which is a
 disposable deploy artifact regenerated from the source store).

@@ -1,10 +1,36 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/253_typst_chapter_quality_standard/summaries/01_chapter-quality-standard-summary.md",
+      "summary": "Implementation summary for the Typst chapter-quality standard: all five plan phases completed in one pass, acceptance criteria verified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md defining the four settled dimensions (SOURCE GROUNDING, ANTI-FLUFF DENSITY, PRESENTATION CLARITY, OPEN-QUESTION HONESTY) with 15 dual-tagged rules (BLOCKING-or-ADVISORY x MECHANICAL-or-JUDGED), cross-references to three existing standards, an interface contract for two repo-local checks, and a rationale section."
+  },
+  "modified_files": [
+    "agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md",
+    "specs/253_typst_chapter_quality_standard/plans/01_chapter-quality-standard.md",
+    "specs/253_typst_chapter_quality_standard/summaries/01_chapter-quality-standard-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In the typst extension's context/project/typst/standards/ directory, sibling standards cross-reference each other using a 'standards/<file>.md' prefix (relative to context/project/typst/), not bare filenames -- e.g. semantic-element-usage.md writes `standards/textbook-standards.md`, and scripts/typst-element-lint.sh's own header does the same. Patterns files use a parallel 'patterns/<file>.md' prefix. When authoring a new standard in this directory, match this prefix convention for any backticked cross-reference so path-resolution rules (e.g. 'every backticked path resolves against the live tree') hold true against the established convention rather than against a bare filename that only resolves by accident of directory context.",
+      "category": "PATTERN",
+      "source_artifact": "specs/253_typst_chapter_quality_standard/summaries/01_chapter-quality-standard-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["typst", "standards", "cross-reference", "path-prefix", "context/project"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790279276_cb422e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

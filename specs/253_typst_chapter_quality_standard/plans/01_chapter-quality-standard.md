@@ -1,7 +1,7 @@
 # Implementation Plan: Task #253
 
 - **Task**: 253 - Define the Typst chapter-quality standard across the four dimensions, with per-rule blocking/advisory and mechanical/judged classification
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/253_typst_chapter_quality_standard/reports/01_chapter-quality-standard-research.md

@@ -854,12 +854,12 @@
     {
       "project_number": 253,
       "project_name": "typst_chapter_quality_standard",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Define the Typst chapter-quality standard across the four dimensions, with per-rule blocking/advisory and mechanical/judged classification",
       "created": "2026-09-24T18:20:14Z",
-      "last_updated": "2026-09-24T19:55:42Z",
+      "last_updated": "2026-09-24T20:00:08Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md"
@@ -876,9 +876,15 @@
           "path": "specs/253_typst_chapter_quality_standard/plans/01_chapter-quality-standard.md",
           "type": "plan",
           "summary": "5-phase plan to author the Typst chapter-quality standard as a single source-store file."
+        },
+        {
+          "path": "specs/253_typst_chapter_quality_standard/summaries/01_chapter-quality-standard-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the Typst chapter-quality standard."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Created agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md defining the four settled dimensions (SOURCE GROUNDING, ANTI-FLUFF DENSITY, PRESENTATION CLARITY, OPEN-QUESTION HONESTY) with 15 dual-tagged rules (BLOCKING-or-ADVISORY x MECHANICAL-or-JUDGED), cross-references to three existing standards, an interface contract for two repo-local checks, and a rationale section."
     },
     {
       "project_number": 254,

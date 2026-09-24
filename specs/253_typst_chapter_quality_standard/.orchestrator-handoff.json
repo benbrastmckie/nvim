@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "task_number": 253,
-  "phase": "plan",
-  "session_id": "sess_1790279276_cb422e_253",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
-  "phases_total": 5,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phase": "implement",
+  "summary": "Wrote agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md, the four-dimension Typst chapter-quality standard with 15 dual-tagged rules, cross-references, an interface contract, and rationale. All five plan phases completed and verified against all eight acceptance criteria.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/253_typst_chapter_quality_standard/summaries/01_chapter-quality-standard-summary.md",
+      "summary": "Implementation summary for the Typst chapter-quality standard."
+    },
     {
       "type": "plan",
       "path": "specs/253_typst_chapter_quality_standard/plans/01_chapter-quality-standard.md",
-      "summary": "5-phase plan to author the Typst chapter-quality standard as a single source-store file."
+      "summary": "Implementation plan, all five phases marked COMPLETED."
     }
   ],
-  "next_steps": "Run /implement 253 to execute the plan"
+  "phases_completed": 5,
+  "phases_total": 5,
+  "blockers": [],
+  "plan_markers_verified": true
 }
