@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 10,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/254_typst_chapter_quality_checker_and_wiring/plans/01_chapter-quality-checker-wiring.md",
+      "summary": "10-phase implementation plan for chapter-quality-check.sh, its test harness, and the six wiring surfaces."
+    }
+  ],
+  "session_id": "sess_1790279276_cb422e_254",
+  "dispatch_seq": 5,
+  "next_steps": "Run /implement 254 to execute the plan"
+}

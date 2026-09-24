@@ -889,12 +889,12 @@
     {
       "project_number": 254,
       "project_name": "typst_chapter_quality_checker_and_wiring",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index",
       "created": "2026-09-24T18:20:14Z",
-      "last_updated": "2026-09-24T20:04:57Z",
+      "last_updated": "2026-09-24T20:09:52Z",
       "dependencies": [
         253
       ],
@@ -915,6 +915,11 @@
           "path": "specs/254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md",
           "type": "report",
           "summary": "Transcribes the chapter-quality standard's 15 dual-tagged rules, maps the typst-element-lint.sh structural precedent onto chapter-quality-check.sh, names the six wiring sites and their exact element-lint analogs, and flags two open risks (bib/repo-root resolution for Rules 1.2/1.3, and deploy verification since the typst extension is not currently active in this repo)."
+        },
+        {
+          "path": "specs/254_typst_chapter_quality_checker_and_wiring/plans/01_chapter-quality-checker-wiring.md",
+          "type": "plan",
+          "summary": "10-phase implementation plan for chapter-quality-check.sh, its test harness, and the six wiring surfaces."
         }
       ],
       "next_artifact_number": 2
