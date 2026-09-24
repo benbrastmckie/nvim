@@ -1,7 +1,7 @@
 # Implementation Plan: Task #254
 
 - **Task**: 254 - Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: Task 253 (chapter-quality standard) - complete
 - **Research Inputs**: specs/254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md
@@ -579,33 +579,46 @@ capability is advertised in the extension's CLAUDE.md merge source.
 
 ---
 
-### Phase 10: Deploy Verification and Acceptance Sweep [NOT STARTED]
+### Phase 10: Deploy Verification and Acceptance Sweep [COMPLETED]
 
 **Goal**: all nine acceptance criteria are demonstrated, including a clean deploy of the six
 wiring files into a `.claude/` tree.
 
 **Tasks**:
-- [ ] Deploy check: following `scripts/tests/test-deploy-propagation.sh`'s pattern, create a
+- [x] Deploy check: following `scripts/tests/test-deploy-propagation.sh`'s pattern, create a
       scratch `mktemp -d` git repo, load the `typst` extension into it via the real deploy path,
       and confirm both new scripts land under `.claude/scripts/`, the index entry merges into
       `.claude/context/index.json`, and the `EXTENSION.md` section merges into `.claude/CLAUDE.md`.
-      Do NOT add `typst` to this repo's own `.claude-extensions.json`.
-- [ ] Criterion 1: confirm both new files exist in the source store and
-      `git status --short .claude/` shows no hand-authored additions.
-- [ ] Criterion 2: `bash scripts/tests/test-chapter-quality-check.sh` green, with the
-      blocking/advisory cases both present.
-- [ ] Criterion 3: re-run the blocking fixture (exit 1) and the advisory-only fixture (exit 0 with
-      findings printed) and record both outputs.
-- [ ] Criterion 4: re-run the ANTI-FLUFF-only fixture and record exit 0 explicitly.
-- [ ] Criterion 5: diff the emitted judged rule-id set against the standard's JUDGED set; record
-      the comparison.
-- [ ] Criterion 6: run the Phase 5 placement grep and record that no second implementation exists.
-- [ ] Criterion 7: `jq` assertions from Phase 7 re-run.
-- [ ] Criterion 8: the deploy result above.
-- [ ] Criterion 9: run `bash .claude/scripts/check-task-references.sh` (or the repo's task-reference
-      lint) over the touched `agent-system/extensions/typst/**` paths; zero findings.
-- [ ] Record each criterion's evidence for the implementation summary's Verification section,
-      including any `EXTENSION.md` Scope tension noted as a follow-up candidate.
+      Do NOT add `typst` to this repo's own `.claude-extensions.json`. *(completed: scratch repo
+      deployed via deploy-headless.sh [core] then manager.load('typst', {force=true}); both
+      scripts, the index entry, and the CLAUDE.md merge all confirmed present; this repo's own
+      .claude-extensions.json was left untouched -- verified via `git status --short` showing no
+      typst entry added)*
+- [x] Criterion 1: confirm both new files exist in the source store and
+      `git status --short .claude/` shows no hand-authored additions. *(completed: both files
+      exist under agent-system/extensions/typst/scripts/; .claude/ is gitignored in this repo, and
+      the scratch-repo deploy check above is the direct evidence for "no hand-authored .claude/
+      additions")*
+- [x] Criterion 2: `bash scripts/tests/test-chapter-quality-check.sh` green, with the
+      blocking/advisory cases both present. *(completed: 59 passed, 0 failed)*
+- [x] Criterion 3: re-run the blocking fixture (exit 1) and the advisory-only fixture (exit 0 with
+      findings printed) and record both outputs. *(completed: blocking fixture exit=1; advisory-only
+      fixture exit=0 with 2 [WARN] lines printed)*
+- [x] Criterion 4: re-run the ANTI-FLUFF-only fixture and record exit 0 explicitly. *(completed:
+      exit=0, 0 [FAIL] lines)*
+- [x] Criterion 5: diff the emitted judged rule-id set against the standard's JUDGED set; record
+      the comparison. *(completed: `grep -c '/ JUDGED\]' chapter-quality.md` = 8; JUDGED_RULES
+      table = {1.1, 1.4, 2.2, 3.1, 3.4, 4.1, 4.2, 4.3}, exact match)*
+- [x] Criterion 6: run the Phase 5 placement grep and record that no second implementation exists. *(completed: 1 hit, header prose only)*
+- [x] Criterion 7: `jq` assertions from Phase 7 re-run. *(completed: both files well-formed; 4
+      scripts listed; chapter-quality.md entry present with both agents in load_when.agents)*
+- [x] Criterion 8: the deploy result above. *(completed)*
+- [x] Criterion 9: run `bash .claude/scripts/check-task-references.sh` (or the repo's task-reference
+      lint) over the touched `agent-system/extensions/typst/**` paths; zero findings. *(completed:
+      `check-task-references.sh --quiet agent-system/extensions/typst` -> 0 occurrences)*
+- [x] Record each criterion's evidence for the implementation summary's Verification section,
+      including any `EXTENSION.md` Scope tension noted as a follow-up candidate. *(completed: see
+      the implementation summary's Verification and Follow-ups sections)*
 
 **Timing**: 1 hour
 
