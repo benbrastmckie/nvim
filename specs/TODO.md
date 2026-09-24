@@ -48,7 +48,7 @@ next_project_number: 255
 43 [NOT STARTED] — Decide and implement how email safety context actually...
 167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
-253 [RESEARCHED] — Define the Typst chapter-quality standard across the four...
+253 [PLANNED] — Define the Typst chapter-quality standard across the four...
   └─ 254 [NOT STARTED] — Implement chapter-quality-check.sh with its test harness,...
 
 ### Literature
@@ -206,11 +206,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 253. Define the Typst chapter-quality standard across the four dimensions, with per-rule blocking/advisory and mechanical/judged classification
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [253_typst_chapter_quality_standard/reports/01_chapter-quality-standard-research.md]
+- **Plan**: [253_typst_chapter_quality_standard/plans/01_chapter-quality-standard.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**, which is a
 disposable deploy artifact regenerated from the source store).

@@ -1,35 +1,22 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/253_typst_chapter_quality_standard/reports/01_chapter-quality-standard-research.md",
-      "summary": "Draft rule inventory (15 rules) for the four-dimension Typst chapter-quality standard, with blocking/advisory and mechanical/judged classification, deferral map to three existing standards, and an interface-contract draft for the two per-repo checks."
+      "type": "plan",
+      "path": "specs/253_typst_chapter_quality_standard/plans/01_chapter-quality-standard.md",
+      "summary": "5-phase plan to author the Typst chapter-quality standard (4 settled dimensions, ~15 dual-tagged rules, internal deferrals, per-repo interface contract, rationale) as a single source-store file."
     }
   ],
-  "next_steps": "Run /plan 253 to create implementation plan",
+  "memory_candidates": [],
+  "next_steps": "Run /implement 253 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 2.5,
+  "dependency_waves": [[1], [2], [3], [4], [5]],
   "metadata": {
     "session_id": "sess_1790279276_cb422e_253",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "findings_count": 15,
-  "memory_candidates": [
-    {
-      "content": "In the typst extension, scripts/typst-element-lint.sh's header (SEVERITY SPLIT section) is the canonical, citable precedent for the BLOCKING/ADVISORY axis used elsewhere in this extension: an unreviewed hard threshold that fires on correct documents gets switched off, so any fresh numeric threshold introduced without a corpus observation must start ADVISORY and say so explicitly. Reuse this rationale verbatim rather than re-deriving it whenever a new typst standard introduces a scored/thresholded rule.",
-      "category": "PATTERN",
-      "source_artifact": "specs/253_typst_chapter_quality_standard/reports/01_chapter-quality-standard-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["typst", "severity-split", "blocking-advisory", "chapter-quality", "unreviewed-threshold"]
-    },
-    {
-      "content": "No 'CONFIRM comment' authoring convention exists anywhere in this repository prior to the typst chapter-quality standard (verified by repo-wide grep across agent-system/ and .claude/). When a task description references such a convention as if it already exists, check first -- it may actually be asking the new standard to define it, not merely cite it.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/253_typst_chapter_quality_standard/reports/01_chapter-quality-standard-research.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["typst", "confirm-comment", "source-grounding", "convention-discovery"]
-    }
-  ],
-  "dispatch_seq": 1
+  "dispatch_seq": 2
 }
