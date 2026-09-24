@@ -392,32 +392,32 @@ to the element lint.
 
 ---
 
-### Phase 6: Test Harness [NOT STARTED]
+### Phase 6: Test Harness [COMPLETED]
 
 **Goal**: `tests/test-chapter-quality-check.sh` exists, is green, and demonstrates the
 blocking/advisory split in both directions plus judged-prompt emission.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh` following
+- [x] Create `agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh` following
       `tests/test-typst-element-lint.sh`'s shape: `set -uo pipefail`, `SCRIPT_DIR` via
       `$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)`, `CHECKER="${SCRIPT_DIR}/../chapter-quality-check.sh"`,
       `PASSED`/`FAILED` counters with `pass()`/`fail()`/`info()` helpers per
       `context/standards/shell-script-testing.md`, `WORKDIR="$(mktemp -d)"` with
-      `trap 'rm -rf "$WORKDIR"' EXIT`, inline-heredoc fixtures only (no committed fixture files).
-- [ ] Implement `assert_exit`, `assert_contains`, `assert_not_contains` parameterized by case name,
-      printing actual output on failure.
-- [ ] Case: compliant fixture -> exit 0, no `[FAIL]`.
-- [ ] Case per MECHANICAL BLOCKING rule (1.2, 1.3, 1.5, 3.2) -> `[FAIL]` naming that rule, exit 1.
-- [ ] Case: advisory-only fixture -> exit 0 AND the advisory findings ARE printed (the non-vacuity
-      guard; assert both the exit code and the presence of the `[WARN]` text).
-- [ ] Case: ANTI-FLUFF-only fixture (2.1 and 2.3 firing, nothing else) -> exit 0 explicitly,
-      proving no ANTI-FLUFF finding can change the exit code.
-- [ ] Case: judged-prompt emission - all eight prompts present on a compliant fixture, asserted by
-      rule id.
-- [ ] Case: placement delegation - element-first-after-heading fixture -> BLOCKING, exit 1.
-- [ ] Case: unresolvable bibliography -> NOT EVALUATED `[INFO]` printed, exit 0.
-- [ ] CLI-contract cases: no PATH -> 2, nonexistent PATH -> 2, `--help` -> 0, directory scan works.
-- [ ] Final `echo "$PASSED passed, $FAILED failed"`; exit 0 iff `FAILED == 0`.
+      `trap 'rm -rf "$WORKDIR"' EXIT`, inline-heredoc fixtures only (no committed fixture files). *(completed)*
+- [x] Implement `assert_exit`, `assert_contains`, `assert_not_contains` parameterized by case name,
+      printing actual output on failure. *(completed)*
+- [x] Case: compliant fixture -> exit 0, no `[FAIL]`. *(completed: case-a)*
+- [x] Case per MECHANICAL BLOCKING rule (1.2, 1.3, 1.5, 3.2) -> `[FAIL]` naming that rule, exit 1. *(completed: cases b/c/d/e, plus a case-c-ok negative control for 1.5)*
+- [x] Case: advisory-only fixture -> exit 0 AND the advisory findings ARE printed (the non-vacuity
+      guard; assert both the exit code and the presence of the `[WARN]` text). *(completed: case-g, Rule 3.3)*
+- [x] Case: ANTI-FLUFF-only fixture (2.1 and 2.3 firing, nothing else) -> exit 0 explicitly,
+      proving no ANTI-FLUFF finding can change the exit code. *(completed: case-h)*
+- [x] Case: judged-prompt emission - all eight prompts present on a compliant fixture, asserted by
+      rule id. *(completed: case-i)*
+- [x] Case: placement delegation - element-first-after-heading fixture -> BLOCKING, exit 1. *(completed: case-j, plus case-j2 advisory-density delegation and case-k grep regression check)*
+- [x] Case: unresolvable bibliography -> NOT EVALUATED `[INFO]` printed, exit 0. *(completed: case-f)*
+- [x] CLI-contract cases: no PATH -> 2, nonexistent PATH -> 2, `--help` -> 0, directory scan works. *(completed)*
+- [x] Final `echo "$PASSED passed, $FAILED failed"`; exit 0 iff `FAILED == 0`. *(completed: 59 passed, 0 failed)*
 
 **Timing**: 1.5 hours
 

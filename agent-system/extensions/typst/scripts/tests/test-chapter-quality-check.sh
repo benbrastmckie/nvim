@@ -1,0 +1,317 @@
+#!/usr/bin/env bash
+# test-chapter-quality-check.sh - Narrow, fixture-driven suite for chapter-quality-check.sh.
+#
+# Per context/standards/shell-script-testing.md: fixtures are constructed inline via heredocs
+# into a mktemp -d workdir created at suite start; nothing here depends on the external
+# Logos/Theory repository or on any real specs/ tree. Class B strict mode (this is a
+# PASSED/FAILED-counter harness that must report every case, not abort on the first failure).
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHECKER="${SCRIPT_DIR}/../chapter-quality-check.sh"
+
+PASSED=0
+FAILED=0
+
+pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
+fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
+info() { echo "[INFO] $1"; }
+
+WORKDIR="$(mktemp -d)"
+trap 'rm -rf "$WORKDIR"' EXIT
+
+if [[ ! -x "$CHECKER" ]]; then
+  fail "prerequisite: $CHECKER is not executable (or does not exist)"
+  echo ""
+  echo "$PASSED passed, $FAILED failed"
+  exit 1
+fi
+
+# assert_exit CASE_NAME EXPECTED_EXIT ACTUAL_EXIT
+assert_exit() {
+  local name="$1" expected="$2" actual="$3"
+  if [[ "$actual" -eq "$expected" ]]; then
+    pass "${name}: exit code ${actual} (expected ${expected})"
+  else
+    fail "${name}: exit code ${actual}, expected ${expected}"
+  fi
+}
+
+# assert_contains CASE_NAME OUTPUT NEEDLE
+assert_contains() {
+  local name="$1" output="$2" needle="$3"
+  if [[ "$output" == *"$needle"* ]]; then
+    pass "${name}: output contains '${needle}'"
+  else
+    fail "${name}: output does NOT contain '${needle}'"
+    info "  --- actual output ---"
+    while IFS= read -r line; do info "  $line"; done <<< "$output"
+  fi
+}
+
+# assert_not_contains CASE_NAME OUTPUT NEEDLE
+assert_not_contains() {
+  local name="$1" output="$2" needle="$3"
+  if [[ "$output" != *"$needle"* ]]; then
+    pass "${name}: output does NOT contain '${needle}'"
+  else
+    fail "${name}: output unexpectedly contains '${needle}'"
+    info "  --- actual output ---"
+    while IFS= read -r line; do info "  $line"; done <<< "$output"
+  fi
+}
+
+# ----------------------------------------------------------------------------------------------
+# Case (a): compliant fixture with a resolvable bibliography and a resolvable path -- exit 0,
+# no [FAIL].
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/compliant"
+cat > "$WORKDIR/compliant/refs.bib" <<'EOF'
+@article{smith2020,
+  author = {Smith, John},
+  title = {An Important Paper},
+  year = {2020},
+}
+EOF
+cat > "$WORKDIR/compliant/case-a.typ" <<'EOF'
+#bibliography("refs.bib")
+
+= Chapter One
+
+This chapter cites @smith2020 and points to `refs.bib` for the full reference list.
+EOF
+out_a=$(bash "$CHECKER" "$WORKDIR/compliant/case-a.typ" 2>&1); ec_a=$?
+assert_exit "case-a (compliant fixture)" 0 "$ec_a"
+assert_not_contains "case-a (compliant fixture)" "$out_a" "[FAIL]"
+
+# ----------------------------------------------------------------------------------------------
+# Case (b): Rule 3.2 violation -- a level-4 heading. [FAIL] naming the rule, exit 1.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/rule32"
+cat > "$WORKDIR/rule32/case-b.typ" <<'EOF'
+= Chapter Two
+
+==== Too Deep
+
+Some prose here.
+EOF
+out_b=$(bash "$CHECKER" "$WORKDIR/rule32/case-b.typ" 2>&1); ec_b=$?
+assert_exit "case-b (Rule 3.2 heading depth)" 1 "$ec_b"
+assert_contains "case-b (Rule 3.2 heading depth)" "$out_b" "[FAIL]"
+assert_contains "case-b (Rule 3.2 heading depth)" "$out_b" "3.2"
+
+# ----------------------------------------------------------------------------------------------
+# Case (c): Rule 1.5 violation -- an empty CONFIRM payload. [FAIL] naming the rule, exit 1.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/rule15"
+cat > "$WORKDIR/rule15/case-c.typ" <<'EOF'
+= Chapter Three
+
+This chapter has a gap.
+// CONFIRM:
+EOF
+out_c=$(bash "$CHECKER" "$WORKDIR/rule15/case-c.typ" 2>&1); ec_c=$?
+assert_exit "case-c (Rule 1.5 empty CONFIRM payload)" 1 "$ec_c"
+assert_contains "case-c (Rule 1.5 empty CONFIRM payload)" "$out_c" "[FAIL]"
+assert_contains "case-c (Rule 1.5 empty CONFIRM payload)" "$out_c" "1.5"
+
+# A well-formed CONFIRM marker (non-empty payload) must NOT fire.
+cat > "$WORKDIR/rule15/case-c-ok.typ" <<'EOF'
+= Chapter Three
+
+This chapter has a gap.
+// CONFIRM: the exact version number used in benchmark X
+EOF
+out_c_ok=$(bash "$CHECKER" "$WORKDIR/rule15/case-c-ok.typ" 2>&1); ec_c_ok=$?
+assert_exit "case-c-ok (Rule 1.5 well-formed CONFIRM)" 0 "$ec_c_ok"
+assert_not_contains "case-c-ok (Rule 1.5 well-formed CONFIRM)" "$out_c_ok" "[FAIL]"
+
+# ----------------------------------------------------------------------------------------------
+# Case (d): Rule 1.2 violation -- a backticked path that does not resolve. [FAIL], exit 1.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/rule12"
+cat > "$WORKDIR/rule12/case-d.typ" <<'EOF'
+= Chapter Four
+
+See `nonexistent/path/file.sh` for details.
+EOF
+out_d=$(bash "$CHECKER" "$WORKDIR/rule12/case-d.typ" 2>&1); ec_d=$?
+assert_exit "case-d (Rule 1.2 unresolved backtick path)" 1 "$ec_d"
+assert_contains "case-d (Rule 1.2 unresolved backtick path)" "$out_d" "[FAIL]"
+assert_contains "case-d (Rule 1.2 unresolved backtick path)" "$out_d" "1.2"
+
+# ----------------------------------------------------------------------------------------------
+# Case (e): Rule 1.3 violation -- a citation key that does not resolve in the declared .bib.
+# [FAIL], exit 1.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/rule13"
+cat > "$WORKDIR/rule13/refs.bib" <<'EOF'
+@article{smith2020,
+  author = {Smith, John},
+  title = {An Important Paper},
+  year = {2020},
+}
+EOF
+cat > "$WORKDIR/rule13/case-e.typ" <<'EOF'
+#bibliography("refs.bib")
+
+= Chapter Five
+
+This cites @doesnotexist2099 as evidence.
+EOF
+out_e=$(bash "$CHECKER" "$WORKDIR/rule13/case-e.typ" 2>&1); ec_e=$?
+assert_exit "case-e (Rule 1.3 unresolved citation key)" 1 "$ec_e"
+assert_contains "case-e (Rule 1.3 unresolved citation key)" "$out_e" "[FAIL]"
+assert_contains "case-e (Rule 1.3 unresolved citation key)" "$out_e" "1.3"
+
+# ----------------------------------------------------------------------------------------------
+# Case (f): unresolvable bibliography -- no #bibliography(...) declaration and no .bib file in
+# the checked file's own directory. NOT EVALUATED [INFO] printed, exit 0 (never a blocking
+# failure).
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/nobib"
+cat > "$WORKDIR/nobib/case-f.typ" <<'EOF'
+= Chapter Six
+
+Nothing special here, just prose with no citations.
+EOF
+out_f=$(bash "$CHECKER" "$WORKDIR/nobib/case-f.typ" 2>&1); ec_f=$?
+assert_exit "case-f (unresolvable bibliography)" 0 "$ec_f"
+assert_contains "case-f (unresolvable bibliography)" "$out_f" "NOT EVALUATED"
+assert_contains "case-f (unresolvable bibliography)" "$out_f" "1.3"
+
+# ----------------------------------------------------------------------------------------------
+# Case (g): advisory-only fixture (Rule 3.3, paragraph length) -- exit 0 AND the advisory
+# finding IS printed. The non-vacuity guard: a checker that passes silently on a fixture with a
+# real defect is the failure mode being guarded against.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/advisory"
+python3 -c "
+words = ' '.join(['word'] * 200)
+print('= Chapter Seven')
+print()
+print(words)
+" > "$WORKDIR/advisory/case-g.typ"
+out_g=$(bash "$CHECKER" "$WORKDIR/advisory/case-g.typ" 2>&1); ec_g=$?
+assert_exit "case-g (advisory-only, Rule 3.3 paragraph length)" 0 "$ec_g"
+assert_not_contains "case-g (advisory-only, Rule 3.3 paragraph length)" "$out_g" "[FAIL]"
+assert_contains "case-g (advisory-only, Rule 3.3 paragraph length)" "$out_g" "[WARN]"
+assert_contains "case-g (advisory-only, Rule 3.3 paragraph length)" "$out_g" "3.3"
+
+# ----------------------------------------------------------------------------------------------
+# Case (h): ANTI-FLUFF-only fixture (Rules 2.1 and 2.3 firing, nothing else) -- exit 0
+# explicitly, proving no ANTI-FLUFF finding can ever change the exit code. Three short
+# paragraphs (each under the Rule 3.3 threshold) summing above the Rule 2.1 threshold, with zero
+# citations and several hedging phrases; no backtick paths, no CONFIRM markers, heading depth
+# bounded, no semantic elements (avoids placement).
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/antifluff"
+python3 -c "
+para = lambda n, extra: ' '.join(['filler'] * n) + ' ' + extra
+print('= Chapter Eight')
+print()
+print(para(55, 'Clearly this point is obviously trivial and easy to see.'))
+print()
+print(para(55, 'It seems arguably true, and it is worth noting that the pattern holds.'))
+print()
+print(para(55, 'Needless to say, the conclusion follows without further comment.'))
+" > "$WORKDIR/antifluff/case-h.typ"
+out_h=$(bash "$CHECKER" "$WORKDIR/antifluff/case-h.typ" 2>&1); ec_h=$?
+assert_exit "case-h (ANTI-FLUFF-only: 2.1 + 2.3, no blocking)" 0 "$ec_h"
+assert_not_contains "case-h (ANTI-FLUFF-only: 2.1 + 2.3, no blocking)" "$out_h" "[FAIL]"
+assert_contains "case-h (ANTI-FLUFF-only: 2.1 + 2.3, no blocking)" "$out_h" "2.1"
+assert_contains "case-h (ANTI-FLUFF-only: 2.1 + 2.3, no blocking)" "$out_h" "2.3"
+assert_not_contains "case-h (ANTI-FLUFF-only: 2.1 + 2.3, no blocking)" "$out_h" "3.3"
+
+# ----------------------------------------------------------------------------------------------
+# Case (i): judged-prompt emission -- all eight prompts present on a compliant fixture, asserted
+# by rule id.
+# ----------------------------------------------------------------------------------------------
+out_i="$out_a"
+for rule in 1.1 1.4 2.2 3.1 3.4 4.1 4.2 4.3; do
+  assert_contains "case-i (judged prompt ${rule} present)" "$out_i" "[JUDGED]"
+  assert_contains "case-i (judged rule id ${rule} present)" "$out_i" "[${rule} /"
+done
+assert_contains "case-i (judged prompt count)" "$out_i" "JUDGED 8 prompts pending"
+
+# ----------------------------------------------------------------------------------------------
+# Case (j): placement delegation -- a semantic element standing as the first body content after
+# a heading. BLOCKING (delegated from typst-element-lint.sh), exit 1.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/placement"
+cat > "$WORKDIR/placement/case-j.typ" <<'EOF'
+= Chapter Nine
+
+#theorem("Immediate")[
+  A claim with no motivating prose.
+]
+EOF
+out_j=$(bash "$CHECKER" "$WORKDIR/placement/case-j.typ" 2>&1); ec_j=$?
+assert_exit "case-j (placement delegation, element as chapter opener)" 1 "$ec_j"
+assert_contains "case-j (placement delegation, element as chapter opener)" "$out_j" "[FAIL]"
+assert_contains "case-j (placement delegation, element as chapter opener)" "$out_j" "delegated from typst-element-lint.sh"
+
+# A placement-advisory delegated finding (density warning) is exit 0 with the advisory printed.
+mkdir -p "$WORKDIR/placement-advisory"
+cat > "$WORKDIR/placement-advisory/case-j2.typ" <<'EOF'
+= Chapter Ten
+
+This chapter has one theorem and several short remarks.
+
+#theorem("Result")[
+  A claim.
+]
+
+#remark[ Aside one. ]
+
+#remark[ Aside two. ]
+
+#remark[ Aside three. ]
+
+#remark[ Aside four. ]
+
+#remark[ Aside five. ]
+EOF
+out_j2=$(bash "$CHECKER" "$WORKDIR/placement-advisory/case-j2.typ" 2>&1); ec_j2=$?
+assert_exit "case-j2 (placement delegation, density advisory only)" 0 "$ec_j2"
+assert_not_contains "case-j2 (placement delegation, density advisory only)" "$out_j2" "[FAIL]"
+assert_contains "case-j2 (placement delegation, density advisory only)" "$out_j2" "[WARN]"
+assert_contains "case-j2 (placement delegation, density advisory only)" "$out_j2" "delegated from typst-element-lint.sh"
+
+# Confirm no second placement implementation exists in this checker (only header prose and the
+# delegation call should match).
+placement_regex_hits=$(grep -cE 'definition|theorem|lemma|corollary|remark|rule-block|rule-list' "${SCRIPT_DIR}/../chapter-quality-check.sh")
+if [[ "$placement_regex_hits" -le 1 ]]; then
+  pass "case-k (no second placement implementation: ${placement_regex_hits} regex hit(s), header prose only)"
+else
+  fail "case-k (unexpected element-name regex hits in chapter-quality-check.sh: ${placement_regex_hits})"
+fi
+
+# ----------------------------------------------------------------------------------------------
+# CLI contract: no PATH -> exit 2; nonexistent PATH -> exit 2; --help -> exit 0; directory scan.
+# ----------------------------------------------------------------------------------------------
+bash "$CHECKER" >/dev/null 2>&1; ec_nopath=$?
+assert_exit "CLI: no PATH given" 2 "$ec_nopath"
+
+bash "$CHECKER" "$WORKDIR/does-not-exist.typ" >/dev/null 2>&1; ec_badpath=$?
+assert_exit "CLI: nonexistent PATH" 2 "$ec_badpath"
+
+bash "$CHECKER" --help >/dev/null 2>&1; ec_help=$?
+assert_exit "CLI: --help" 0 "$ec_help"
+
+mkdir -p "$WORKDIR/dirscan/nested"
+cp "$WORKDIR/compliant/case-a.typ" "$WORKDIR/dirscan/clean.typ"
+cp "$WORKDIR/compliant/refs.bib" "$WORKDIR/dirscan/refs.bib"
+cp "$WORKDIR/rule32/case-b.typ" "$WORKDIR/dirscan/nested/violation.typ"
+out_dir=$(bash "$CHECKER" "$WORKDIR/dirscan" 2>&1); ec_dir=$?
+assert_exit "CLI: directory scan (one clean, one violating, nested)" 1 "$ec_dir"
+assert_contains "CLI: directory scan (one clean, one violating, nested)" "$out_dir" "[FAIL]"
+assert_contains "CLI: directory scan (one clean, one violating, nested)" "$out_dir" "Files checked: 2"
+
+echo ""
+echo "$PASSED passed, $FAILED failed"
+if [[ "$FAILED" -eq 0 ]]; then
+  exit 0
+else
+  exit 1
+fi
