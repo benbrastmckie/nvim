@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "JUDGED Rule Reviewer Prompts",
+  "started_at": "2026-09-24T20:19:53Z",
+  "last_updated": "2026-09-24T20:19:53Z",
+  "objectives": [
+    {"id": 1, "description": "Declare JUDGED_RULES table and emit one structured reviewer prompt per rule per file", "status": "done", "files_touched": ["agent-system/extensions/typst/scripts/chapter-quality-check.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

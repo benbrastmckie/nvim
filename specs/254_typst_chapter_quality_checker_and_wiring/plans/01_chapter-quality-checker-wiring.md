@@ -303,24 +303,25 @@ confirming the ANTI-FLUFF dimension preamble's blanket advisory statement still 
 
 ---
 
-### Phase 4: JUDGED Rule Reviewer Prompts (1.1, 1.4, 2.2, 3.1, 3.4, 4.1, 4.2, 4.3) [NOT STARTED]
+### Phase 4: JUDGED Rule Reviewer Prompts (1.1, 1.4, 2.2, 3.1, 3.4, 4.1, 4.2, 4.3) [COMPLETED]
 
 **Goal**: every rule the standard classifies as JUDGED is emitted as a structured prompt naming
 the rule, the location, and what the reviewer must decide - never silently skipped.
 
 **Tasks**:
-- [ ] Declare a single `JUDGED_RULES` table (rule id, dimension, severity, decision question)
+- [x] Declare a single `JUDGED_RULES` table (rule id, dimension, severity, decision question)
       transcribed verbatim from the standard, with the same "update in the same commit"
-      instruction the rule inventory carries.
-- [ ] Emit one structured prompt per judged rule per checked file, in the shared finding-record
-      shape, with an explicit reviewer-prompt marker distinguishing it from `[FAIL]`/`[WARN]`.
-- [ ] Give location-bearing judged rules a concrete anchor where one is derivable without judging
+      instruction the rule inventory carries. *(completed)*
+- [x] Emit one structured prompt per judged rule per checked file, in the shared finding-record
+      shape, with an explicit reviewer-prompt marker distinguishing it from `[FAIL]`/`[WARN]`. *(completed: `[JUDGED]` marker)*
+- [x] Give location-bearing judged rules a concrete anchor where one is derivable without judging
       (e.g. 2.2 anchors each `==`/`===` heading line; 4.2 anchors the file when no dedicated
-      open-questions location is found); otherwise anchor the file.
-- [ ] Ensure judged prompts increment neither `TOTAL_BLOCKING` nor `TOTAL_ADVISORY`, and are
-      counted in their own `TOTAL_JUDGED` reported in the score line.
-- [ ] State in the header that a green exit asserts mechanical coverage only, with judged rules
-      pending reviewer adjudication.
+      open-questions location is found); otherwise anchor the file. *(completed)*
+- [x] Ensure judged prompts increment neither `TOTAL_BLOCKING` nor `TOTAL_ADVISORY`, and are
+      counted in their own `TOTAL_JUDGED` reported in the score line. *(completed)*
+- [x] State in the header that a green exit asserts mechanical coverage only, with judged rules
+      pending reviewer adjudication. *(completed: already stated in Phase 1's EXIT CODES/PASSED
+      banner text, re-verified consistent)*
 
 **Timing**: 1 hour
 

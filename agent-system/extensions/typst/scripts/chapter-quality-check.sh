@@ -171,6 +171,21 @@ HEDGING_SEED_LIST=(
   "needless to say"
 )
 
+# JUDGED_RULES table -- rule id | dimension | severity | decision question, one entry per JUDGED
+# rule. Transcribed verbatim from chapter-quality.md's JUDGED rule statements and axis tags;
+# update BOTH in the same commit if either changes (see RULE INVENTORY above). Every rule here is
+# emitted as a structured reviewer prompt, never silently skipped.
+JUDGED_RULES=(
+  "1.1|SOURCE GROUNDING|BLOCKING|Does every substantive claim in this file trace to a cited source (a repo path, a paper, or an explicitly verified fact)?"
+  "1.4|SOURCE GROUNDING|BLOCKING|Is every hand-typed count, version, or hash in this file derived from a cited, checkable source at the time it was written, rather than typed from memory or guessed?"
+  "2.2|ANTI-FLUFF DENSITY|ADVISORY|Does this section's opening prose state a reader need (why the section exists, what it lets the reader do afterward)?"
+  "3.1|PRESENTATION CLARITY|BLOCKING|Is every notation symbol and every glossary term defined before its first use?"
+  "3.4|PRESENTATION CLARITY|ADVISORY|Does every non-obvious concept introduced in this file have an accompanying example or figure?"
+  "4.1|OPEN-QUESTION HONESTY|BLOCKING|Is every speculative claim in this file explicitly marked with a Speculative: tag, distinct from a CONFIRM marker?"
+  "4.2|OPEN-QUESTION HONESTY|BLOCKING|Are open questions listed in a dedicated, discoverable location (for example an == Open Questions section) rather than buried inline in ordinary prose?"
+  "4.3|OPEN-QUESTION HONESTY|BLOCKING|Does any future-tense claim in this file get stated as settled fact, rather than honestly marked as unsettled?"
+)
+
 usage() {
   cat <<'EOF'
 Usage: chapter-quality-check.sh [--verbose] [--help] PATH...
@@ -290,11 +305,13 @@ emit_not_evaluated() {
   emit_info "$loc" "Rule ${rule} NOT EVALUATED: ${msg}"
 }
 
-# emit_judged RULE DIMENSION LOCATION QUESTION -- structured reviewer prompt for a JUDGED rule.
-# Never counted toward BLOCKING or ADVISORY; counted only in its own JUDGED total.
+# emit_judged RULE DIMENSION SEVERITY LOCATION QUESTION -- structured reviewer prompt for a
+# JUDGED rule. SEVERITY is the rule's own BLOCKING/ADVISORY axis-1 tag (informational only here --
+# it tells the reviewer what the rule counts as once adjudicated). Never counted toward
+# TOTAL_BLOCKING or TOTAL_ADVISORY; counted only in its own JUDGED total.
 emit_judged() {
-  local rule="$1" dim="$2" loc="$3" question="$4"
-  echo -e "${BLUE}[JUDGED]${NC} ${loc}: [${rule} / ${dim}] REVIEWER PROMPT: ${question}"
+  local rule="$1" dim="$2" sev="$3" loc="$4" question="$5"
+  echo -e "${BLUE}[JUDGED]${NC} ${loc}: [${rule} / ${dim} / ${sev} once resolved] REVIEWER PROMPT: ${question}"
   TOTAL_JUDGED=$((TOTAL_JUDGED + 1))
   file_judged=$((file_judged + 1))
 }
@@ -522,6 +539,46 @@ check_paragraph_length() {
   ' "$cleanf" 2>/dev/null || true)
 }
 
+# emit_judged_prompts FILE CLEANFILE -- emits one structured reviewer prompt per JUDGED_RULES
+# entry per checked file (never silently skipped). A green (0 BLOCKING) mechanical result asserts
+# mechanical coverage only -- these prompts still require a reviewing agent's adjudication.
+# Location-bearing rules get a concrete anchor where one is derivable without judging (2.2 anchors
+# each ==/=== heading line; 4.2 anchors an "== Open Questions" heading when one is found);
+# otherwise a rule is anchored at the file.
+emit_judged_prompts() {
+  local f="$1" cleanf="$2" entry rule dim sev question
+  for entry in "${JUDGED_RULES[@]}"; do
+    IFS='|' read -r rule dim sev question <<< "$entry"
+    case "$rule" in
+      2.2)
+        local found_heading=0 rawline lnum content
+        while IFS= read -r rawline; do
+          found_heading=1
+          lnum="${rawline%%:*}"
+          content="${rawline#*:}"
+          emit_judged "$rule" "$dim" "$sev" "${f}:${lnum}" "${question} (section: \"${content}\")"
+        done < <(grep -nE '^(==|===)[[:space:]]' "$cleanf" 2>/dev/null || true)
+        if [[ "$found_heading" -eq 0 ]]; then
+          emit_judged "$rule" "$dim" "$sev" "$f" "$question"
+        fi
+        ;;
+      4.2)
+        local oq_line
+        oq_line=$(grep -niE '^==+[[:space:]]+open[[:space:]]+questions[[:space:]]*$' "$cleanf" 2>/dev/null | head -1 | cut -d: -f1)
+        if [[ -n "$oq_line" ]]; then
+          emit_judged "$rule" "$dim" "$sev" "${f}:${oq_line}" "$question"
+        else
+          emit_judged "$rule" "$dim" "$sev" "$f" \
+            "${question} (no '== Open Questions' heading found in this file -- confirm open questions are not scattered inline elsewhere)"
+        fi
+        ;;
+      *)
+        emit_judged "$rule" "$dim" "$sev" "$f" "$question"
+        ;;
+    esac
+  done
+}
+
 # process_file FILE -- runs every implemented check against FILE and prints its score line.
 # Rule-check bodies are added phase by phase (see the plan this script was implemented from).
 process_file() {
@@ -543,6 +600,7 @@ process_file() {
   check_claim_ratio "$f" "$clean_tmp"
   check_hedging_filler "$f" "$clean_tmp"
   check_paragraph_length "$f" "$clean_tmp"
+  emit_judged_prompts "$f" "$clean_tmp"
 
   if bibfile="$(resolve_bibliography "$f" "$root")"; then
     $VERBOSE && emit_info "$f" "Rule 1.3 evaluated against ${bibfile}"
