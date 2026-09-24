@@ -1,7 +1,7 @@
 # Implementation Plan: Task #254
 
 - **Task**: 254 - Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: Task 253 (chapter-quality standard) - complete
 - **Research Inputs**: specs/254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md
@@ -144,39 +144,39 @@ sets (JSON registration / agent contracts / skill+EXTENSION) and are territory-c
 
 ---
 
-### Phase 1: Checker Skeleton, Header Contract and Emission Framework [NOT STARTED]
+### Phase 1: Checker Skeleton, Header Contract and Emission Framework [COMPLETED]
 
 **Goal**: `chapter-quality-check.sh` exists with its full documented header, the mandated CLI,
 file/directory resolution, the finding-emission framework with separated blocking/advisory
 counters, the per-chapter score, and the exit-code logic - before any rule is implemented.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/typst/scripts/chapter-quality-check.sh`, `chmod +x`,
+- [x] Create `agent-system/extensions/typst/scripts/chapter-quality-check.sh`, `chmod +x`,
       `#!/usr/bin/env bash`, `set -uo pipefail` with the Class B admission comment citing
-      `context/standards/shell-strict-mode.md`, mirroring `typst-element-lint.sh`'s opening.
-- [ ] Write the header block in `typst-element-lint.sh`'s section order: `PURPOSE.` (why prose
+      `context/standards/shell-strict-mode.md`, mirroring `typst-element-lint.sh`'s opening. *(completed)*
+- [x] Write the header block in `typst-element-lint.sh`'s section order: `PURPOSE.` (why prose
       alone was insufficient), `CHECKS.` (numbered, each tagged BLOCKING/ADVISORY inline),
       `SEVERITY SPLIT (do not change without a documented review pass against real chapters)`
       stating that no ANTI-FLUFF rule ever blocks, `RULE INVENTORY` sourced verbatim from
       `context/project/typst/standards/chapter-quality.md` with the instruction that the two are
       updated in the same commit, `SCOPE BOUNDARY` stating Rules 1.2/1.3 are implemented here
       while `local:name-resolution` and `local:chapter-source-coverage` are NOT,
-      `KNOWN LIMITATIONS`, `CLI.`, `EXIT CODES.`
-- [ ] Seed `KNOWN LIMITATIONS` with the carried-over element-lint limitations that apply
+      `KNOWN LIMITATIONS`, `CLI.`, `EXIT CODES.` *(completed)*
+- [x] Seed `KNOWN LIMITATIONS` with the carried-over element-lint limitations that apply
       unchanged (no Typst math-mode parsing, no raw-block parsing, start-of-line matching only)
-      plus Decisions 2-3's limitations.
-- [ ] Implement the arg loop: `--verbose|-v`, `--help|-h`, `--`, positional `PATH...`; unknown
-      `-*` -> usage + exit 2; empty PATHS -> exit 2; nonexistent PATH -> exit 2.
-- [ ] Implement path resolution: a file used directly; a directory via
-      `find "$p" -type f -name '*.typ' -print0 | sort -z`.
-- [ ] Implement the finding emitter carrying `{dimension, rule, severity, location, message}`
+      plus Decisions 2-3's limitations. *(completed)*
+- [x] Implement the arg loop: `--verbose|-v`, `--help|-h`, `--`, positional `PATH...`; unknown
+      `-*` -> usage + exit 2; empty PATHS -> exit 2; nonexistent PATH -> exit 2. *(completed)*
+- [x] Implement path resolution: a file used directly; a directory via
+      `find "$p" -type f -name '*.typ' -print0 | sort -z`. *(completed)*
+- [x] Implement the finding emitter carrying `{dimension, rule, severity, location, message}`
       (the standard's shared finding-record shape), with `[FAIL]`/`[WARN]`/`[INFO]` colored
-      output and SEPARATE `TOTAL_BLOCKING` / `TOTAL_ADVISORY` counters.
-- [ ] Implement the per-chapter score line per Decision 1 and the final summary banner.
-- [ ] Implement exit: `1` iff `TOTAL_BLOCKING > 0`; `0` otherwise regardless of advisory count;
-      `2` for usage/environment errors.
-- [ ] Add the non-rule `## Per-Chapter Score` reporting subsection to
-      `context/project/typst/standards/chapter-quality.md` per Decision 1, in THIS phase's commit.
+      output and SEPARATE `TOTAL_BLOCKING` / `TOTAL_ADVISORY` counters. *(completed)*
+- [x] Implement the per-chapter score line per Decision 1 and the final summary banner. *(completed)*
+- [x] Implement exit: `1` iff `TOTAL_BLOCKING > 0`; `0` otherwise regardless of advisory count;
+      `2` for usage/environment errors. *(completed)*
+- [x] Add the non-rule `## Per-Chapter Score` reporting subsection to
+      `context/project/typst/standards/chapter-quality.md` per Decision 1, in THIS phase's commit. *(completed)*
 
 **Timing**: 1.5 hours
 

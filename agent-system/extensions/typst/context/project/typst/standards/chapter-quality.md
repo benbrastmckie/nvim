@@ -302,6 +302,29 @@ document) are aggregated together at the repository layer, using the same Axis 1
 semantics uniformly: a BLOCKING finding from either source fails the aggregate check; an ADVISORY
 finding from either source is reported and counted but never fails it.
 
+## Per-Chapter Score
+
+**This section is a reporting convention, not a rule.** It introduces no new rule and re-tags
+nothing above; it exists only so the mechanical checker's output is consistently readable across
+files. A conforming checker built against this standard prints one score line per checked file:
+
+```
+MECHANICAL <passed>/<evaluated> | BLOCKING <n> | ADVISORY <n> | JUDGED <n> prompts pending
+```
+
+`<evaluated>` counts this standard's 7 MECHANICAL rules (1.2, 1.3, 1.5, 3.2, 2.1, 2.3, 3.3) for
+that file, minus any rule the checker marks NOT EVALUATED for that file (for example, Rule 1.3
+when no `.bib` file resolves — see the checker's own KNOWN LIMITATIONS for the exact resolution
+procedure). `<passed>` is `<evaluated>` minus the MECHANICAL rules that produced at least one
+finding (BLOCKING or ADVISORY) for that file. `<n>` after JUDGED is the count of structured
+reviewer prompts emitted for that file.
+
+The JUDGED count is always printed alongside the mechanical ratio for one reason: a checker
+reporting `MECHANICAL 7/7` with zero BLOCKING findings is not full coverage. Eight of this
+standard's fifteen rules are JUDGED and require a reviewing agent's adjudication regardless of
+how clean the mechanical ratio looks — a green mechanical score can never be read as a green
+chapter on its own.
+
 ## Rationale
 
 This section records why each dimension exists, so a future editor cannot quietly delete a rule
