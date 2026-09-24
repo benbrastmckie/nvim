@@ -204,30 +204,32 @@ section list against `sed -n '1,70p' scripts/typst-element-lint.sh` before closi
 
 ---
 
-### Phase 2: MECHANICAL BLOCKING Rules (1.2, 1.3, 1.5, 3.2) [NOT STARTED]
+### Phase 2: MECHANICAL BLOCKING Rules (1.2, 1.3, 1.5, 3.2) [COMPLETED]
 
 **Goal**: the four mechanical rules the standard tags BLOCKING are implemented and drive exit 1.
 
 **Tasks**:
-- [ ] Implement the shared line pre-processing pass mirroring `typst-element-lint.sh`: strip
+- [x] Implement the shared line pre-processing pass mirroring `typst-element-lint.sh`: strip
       double-quoted string contents, strip `// ` comment tails, trim - matching against the
-      stripped/trimmed line, except where a rule explicitly needs the comment text (1.5).
-- [ ] Rule 3.2 (heading depth bounded at `===`, no level-4+): per-line start-of-line marker-depth
-      grep. BLOCKING.
-- [ ] Rule 1.5 (`CONFIRM` comment well-formed): a `// CONFIRM:` marker with an empty payload after
+      stripped/trimmed line, except where a rule explicitly needs the comment text (1.5). *(completed)*
+- [x] Rule 3.2 (heading depth bounded at `===`, no level-4+): per-line start-of-line marker-depth
+      grep. BLOCKING. *(completed)*
+- [x] Rule 1.5 (`CONFIRM` comment well-formed): a `// CONFIRM:` marker with an empty payload after
       the prefix is a finding; a marker with non-empty claim text passes. Open markers are legal -
-      the rule checks shape only. BLOCKING.
-- [ ] Implement repo-root resolution per Decision 2 (`git rev-parse --show-toplevel` from the
-      checked file's directory, fallback to that directory).
-- [ ] Rule 1.2 (backticked path resolves against the live tree): extract backtick-delimited
+      the rule checks shape only. BLOCKING. *(completed)*
+- [x] Implement repo-root resolution per Decision 2 (`git rev-parse --show-toplevel` from the
+      checked file's directory, fallback to that directory). *(completed)*
+- [x] Rule 1.2 (backticked path resolves against the live tree): extract backtick-delimited
       tokens, keep only path-shaped ones per Decision 3, test existence relative to repo root and
-      to the checked file's directory; resolving under either counts as resolved. BLOCKING.
-- [ ] Implement bibliography resolution per Decision 2, including the NOT EVALUATED `[INFO]`
-      branch for zero/multiple unresolvable candidates.
-- [ ] Rule 1.3 (`@key` resolves in the project `.bib`): extract `@key` occurrences per
+      to the checked file's directory; resolving under either counts as resolved. BLOCKING. *(completed)*
+- [x] Implement bibliography resolution per Decision 2, including the NOT EVALUATED `[INFO]`
+      branch for zero/multiple unresolvable candidates. *(completed)*
+- [x] Rule 1.3 (`@key` resolves in the project `.bib`): extract `@key` occurrences per
       `patterns/bibliography.md`'s citation syntax, grep the resolved `.bib` for a matching entry
-      key. BLOCKING when the bib resolved; NOT EVALUATED otherwise.
-- [ ] Record every heuristic introduced here in the header's `KNOWN LIMITATIONS`.
+      key. BLOCKING when the bib resolved; NOT EVALUATED otherwise. *(completed)*
+- [x] Record every heuristic introduced here in the header's `KNOWN LIMITATIONS`. *(completed:
+      KNOWN LIMITATIONS was already written in Phase 1's header to cover these heuristics up
+      front; re-verified consistent with the Phase 2 implementation.)*
 
 **Timing**: 1.5 hours
 

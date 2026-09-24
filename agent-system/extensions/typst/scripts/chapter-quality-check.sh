@@ -156,7 +156,8 @@ structured reviewer prompt for every JUDGED rule (never silently skipped). Place
 delegated to the sibling typst-element-lint.sh, never re-implemented here.
 
 Options:
-  --verbose, -v   Print per-file NOT EVALUATED/environment notes even when nothing else fires.
+  --verbose, -v   Print additional [INFO] detail (e.g. which .bib file a chapter's citations
+                  were resolved against) beyond what is required for a finding.
   --help, -h      Show this help and exit 0.
 
 Exit codes: 0 = no BLOCKING findings, 1 = BLOCKING findings found, 2 = usage/environment error.
@@ -287,9 +288,111 @@ print_score() {
   echo "SCORE ${f}: MECHANICAL ${passed}/${evaluated} | BLOCKING ${file_blocking} | ADVISORY ${file_advisory} | JUDGED ${file_judged} prompts pending"
 }
 
+# resolve_repo_root FILE -- Decision 2: git rev-parse --show-toplevel from the checked file's
+# own directory, falling back to that directory when the file is not inside a git work tree.
+resolve_repo_root() {
+  local f="$1" dir root
+  dir="$(cd "$(dirname "$f")" && pwd)"
+  root="$(cd "$dir" && git rev-parse --show-toplevel 2>/dev/null)" || root="$dir"
+  printf '%s\n' "$root"
+}
+
+# resolve_bibliography FILE ROOT -- Decision 2: (a) the filename argument of a
+# #bibliography("...") call in FILE if present, else (b) the single *.bib file found under ROOT.
+# Prints the resolved path and returns 0 on success; returns 1 (no output) when unresolvable.
+resolve_bibliography() {
+  local f="$1" root="$2" decl filedir
+  filedir="$(cd "$(dirname "$f")" && pwd)"
+  decl=$(grep -m1 -oE '#bibliography\("[^"]*"\)' "$f" 2>/dev/null | sed -E 's/#bibliography\("([^"]*)"\)/\1/')
+  if [[ -n "$decl" ]]; then
+    if [[ -f "${root}/${decl}" ]]; then
+      printf '%s\n' "${root}/${decl}"
+      return 0
+    elif [[ -f "${filedir}/${decl}" ]]; then
+      printf '%s\n' "${filedir}/${decl}"
+      return 0
+    fi
+    return 1
+  fi
+  local -a candidates=()
+  while IFS= read -r -d '' bibf; do
+    candidates+=("$bibf")
+  done < <(find "$root" -type f -name '*.bib' -print0 2>/dev/null)
+  if [[ ${#candidates[@]} -eq 1 ]]; then
+    printf '%s\n' "${candidates[0]}"
+    return 0
+  fi
+  return 1
+}
+
+# check_heading_depth FILE CLEANFILE -- Rule 3.2 [BLOCKING / MECHANICAL].
+check_heading_depth() {
+  local f="$1" cleanf="$2" rawline lnum content
+  while IFS= read -r rawline; do
+    lnum="${rawline%%:*}"
+    content="${rawline#*:}"
+    emit_blocking "PRESENTATION CLARITY" "3.2" "${f}:${lnum}" \
+      "heading depth exceeds level 3 (===): \"${content}\". A level-4+ heading is prohibited; restructure into level-1/2/3 sections (standards/document-structure.md)."
+  done < <(grep -nE '^={4,}[[:space:]]' "$cleanf" 2>/dev/null || true)
+}
+
+# check_confirm_comment FILE -- Rule 1.5 [BLOCKING / MECHANICAL]. Operates on the RAW file (not
+# the comment-stripped clean copy) because the CONFIRM marker IS the comment text being checked.
+check_confirm_comment() {
+  local f="$1" rawline lnum content payload
+  while IFS= read -r rawline; do
+    lnum="${rawline%%:*}"
+    content="${rawline#*:}"
+    payload="${content#*CONFIRM:}"
+    payload="${payload#"${payload%%[![:space:]]*}"}"
+    payload="${payload%"${payload##*[![:space:]]}"}"
+    if [[ -z "$payload" ]]; then
+      emit_blocking "SOURCE GROUNDING" "1.5" "${f}:${lnum}" \
+        "CONFIRM comment has an empty payload after the 'CONFIRM:' prefix. Add the specific claim that needs a source, e.g. \`// CONFIRM: <claim>\`."
+    fi
+  done < <(grep -nE '//[[:space:]]*CONFIRM:' "$f" 2>/dev/null || true)
+}
+
+# check_backtick_paths FILE CLEANFILE ROOT -- Rule 1.2 [BLOCKING / MECHANICAL]. Decision 3:
+# path-shaped tokens only (contains '/' or ends in a recognized extension), biased to under-fire.
+check_backtick_paths() {
+  local f="$1" cleanf="$2" root="$3" filedir rawline lnum content token
+  filedir="$(cd "$(dirname "$f")" && pwd)"
+  while IFS= read -r rawline; do
+    lnum="${rawline%%:*}"
+    content="${rawline#*:}"
+    while IFS= read -r token; do
+      [[ -z "$token" ]] && continue
+      if [[ "$token" == */* ]] || [[ "$token" =~ \.(sh|md|typ|json|lua|py|lean|bib|ya?ml|toml|txt|jsonl)$ ]]; then
+        if [[ ! -e "${root}/${token}" && ! -e "${filedir}/${token}" ]]; then
+          emit_blocking "SOURCE GROUNDING" "1.2" "${f}:${lnum}" \
+            "backticked path \`${token}\` does not resolve against the live tree (checked relative to repo root ${root} and to ${filedir})."
+        fi
+      fi
+    done < <(grep -oE '`[^`]+`' <<<"$content" | sed -E 's/^`(.*)`$/\1/')
+  done < <(grep -n '`' "$cleanf" 2>/dev/null || true)
+}
+
+# check_bib_keys FILE CLEANFILE BIBFILE -- Rule 1.3 [BLOCKING / MECHANICAL]. Citation syntax per
+# patterns/bibliography.md: @key, optionally followed by [...] page-ref, not part of a longer
+# identifier.
+check_bib_keys() {
+  local f="$1" cleanf="$2" bibfile="$3" rawline lnum content key
+  while IFS= read -r rawline; do
+    lnum="${rawline%%:*}"
+    content="${rawline#*:}"
+    while IFS= read -r key; do
+      [[ -z "$key" ]] && continue
+      if ! grep -qE "^@[A-Za-z]+\{[[:space:]]*${key}[[:space:]]*," "$bibfile" 2>/dev/null; then
+        emit_blocking "SOURCE GROUNDING" "1.3" "${f}:${lnum}" \
+          "citation key @${key} does not resolve in ${bibfile}."
+      fi
+    done < <(grep -oE '(^|[^A-Za-z0-9_@])@[A-Za-z][A-Za-z0-9_:.-]*' <<<"$content" | sed -E 's/^.*@//')
+  done < <(grep -n '@' "$cleanf" 2>/dev/null || true)
+}
+
 # process_file FILE -- runs every implemented check against FILE and prints its score line.
-# Rule-check bodies are added phase by phase (see the plan this script was implemented from);
-# this framework phase wires the per-file reset/dispatch/score/summary machinery only.
+# Rule-check bodies are added phase by phase (see the plan this script was implemented from).
 process_file() {
   local f="$1"
   file_blocking=0
@@ -297,6 +400,25 @@ process_file() {
   file_judged=0
   FILE_RULE_FIRED=()
   FILE_RULE_NOTEVAL=()
+
+  local clean_tmp root bibfile
+  clean_tmp="$(mktemp)"
+  awk '{ gsub(/"[^"]*"/,""); sub(/\/\/.*/,""); gsub(/^[ \t]+/,""); gsub(/[ \t]+$/,""); print }' "$f" > "$clean_tmp"
+  root="$(resolve_repo_root "$f")"
+
+  check_heading_depth "$f" "$clean_tmp"
+  check_confirm_comment "$f"
+  check_backtick_paths "$f" "$clean_tmp" "$root"
+
+  if bibfile="$(resolve_bibliography "$f" "$root")"; then
+    $VERBOSE && emit_info "$f" "Rule 1.3 evaluated against ${bibfile}"
+    check_bib_keys "$f" "$clean_tmp" "$bibfile"
+  else
+    emit_not_evaluated "1.3" "${f}" \
+      "no resolvable .bib file (no #bibliography(...) declaration and zero or multiple *.bib candidates under ${root})"
+  fi
+
+  rm -f "$clean_tmp"
 
   if [[ "$file_blocking" -eq 0 && "$file_advisory" -eq 0 ]]; then
     echo -e "${GREEN}[PASS]${NC} ${f}"
