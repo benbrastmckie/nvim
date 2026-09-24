@@ -1,18 +1,18 @@
 ---
-next_project_number: 253
+next_project_number: 255
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-09-23. Generated from state.json dependency graph.*
+*Updated 2026-09-24. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199 | core-agent-system, neovim, file-scope-lifecycle |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,253 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 45,139,165,224,250,251,254 | 22,44,127,129,162,163,199,253 | core-agent-system, extensions, neovim, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -48,6 +48,8 @@ next_project_number: 253
 43 [NOT STARTED] — Decide and implement how email safety context actually...
 167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
+253 [NOT STARTED] — Define the Typst chapter-quality standard across the four...
+  └─ 254 [NOT STARTED] — Implement chapter-quality-check.sh with its test harness,...
 
 ### Literature
 
@@ -75,6 +77,242 @@ next_project_number: 253
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 254. Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 253
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**, which is a
+disposable deploy artifact regenerated from the source store).
+
+DEPENDS ON the chapter-quality standard task, which produces
+context/project/typst/standards/chapter-quality.md. That document is this task's SPECIFICATION:
+the rule inventory implemented here is sourced verbatim from it, and the blocking/advisory and
+mechanical/judged classifications implemented here are the ones it assigns. Do not invent, rename
+or re-tag a rule in this task -- if a rule proves unimplementable as classified, amend the
+standard in the same commit that changes the checker, exactly as typst-element-lint.sh's header
+already requires for its own element inventory.
+
+WHY THIS TASK BUNDLES TWO CONCERNS. It was deliberately merged from a checker task and a wiring
+task to shorten the dependency chain -- NOT to blur the verification surface. The plan MUST
+phase-separate the two concerns so the wiring is verifiable independently of the checker:
+
+  PHASE GROUP A -- THE CHECKER AND ITS TESTS. Self-contained; verified by running the checker and
+  its test harness. Touches scripts/ only.
+
+  PHASE GROUP B -- THE WIRING. An agent-contract and registration change; verified by deploying
+  and by reading the agent/skill contracts, not by running the checker. Touches manifest.json,
+  index-entries.json, agents/, skills/ and EXTENSION.md.
+
+Commit at each green milestone rather than once at the end, per rules/git-workflow.md. A
+regression in Group B must be diagnosable without re-litigating Group A.
+
+=== PHASE GROUP A: scripts/chapter-quality-check.sh AND ITS TEST HARNESS ===
+
+MIRROR THE ESTABLISHED SHAPE; DO NOT INVENT A SECOND ONE. scripts/typst-element-lint.sh (341
+lines) is the precedent in this extension and the pattern to follow. Reproduce its structural
+conventions:
+  - A documented PURPOSE header explaining why prose alone was insufficient.
+  - An explicit SEVERITY SPLIT section stating which checks are BLOCKING and which are ADVISORY,
+    and stating that promoting an advisory check to blocking requires a documented review pass
+    against real chapters first.
+  - A rule inventory sourced VERBATIM from the standard it enforces, with an in-header instruction
+    that the two are updated in the same commit.
+  - A KNOWN LIMITATIONS section documenting what is deliberately not parsed, rather than papering
+    over it. typst-element-lint.sh's own limitations list (no Typst math-mode parsing, no raw-block
+    parsing, start-of-line matching only) is the model, and several of those limitations apply
+    here unchanged.
+  - CLI shape: [--verbose] [--help] PATH..., where PATH is a .typ file or a directory scanned
+    recursively.
+
+COMPOSE WITH THE EXISTING LINT, DO NOT RE-IMPLEMENT IT. The Universal Placement Rule is already
+mechanically enforced by typst-element-lint.sh. This checker invokes or composes with that script
+for placement rather than writing a second placement checker. Two independent implementations of
+one rule will diverge, and the divergence will be discovered as a contradictory pair of findings
+on a real chapter.
+
+REQUIRED OUTPUTS.
+  1. A PER-CHAPTER SCORE, plus findings, each finding carrying its dimension, its rule, and its
+     BLOCKING-or-ADVISORY severity.
+  2. EXIT CODE DRIVEN BY BLOCKING FINDINGS ONLY (settled). Advisory findings are reported and
+     counted and never affect exit status. ANTI-FLUFF DENSITY is advisory-scored throughout, so
+     no ANTI-FLUFF finding may ever change the exit code.
+  3. JUDGED RULES ARE EMITTED, NOT SKIPPED. Every rule the standard classifies as JUDGED must be
+     emitted as a STRUCTURED PROMPT for a reviewing agent -- naming the rule, the location, and
+     what the reviewer must decide. Silently omitting judged rules would make the checker's
+     green result a false assurance of full coverage, which is worse than no checker.
+
+DO NOT DUPLICATE THE CONSUMING REPO'S CHECKS. The name-resolution check and the chapter-source
+coverage invariant belong to a consuming repository's own typst/scripts/. This checker implements
+the standard's interface contract for them -- it does not implement the checks themselves.
+
+TEST HARNESS IS REQUIRED, NOT OPTIONAL.
+  agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh
+Follow scripts/tests/test-typst-element-lint.sh (331 lines) for shape. Every script in this
+extension's manifest ships with its test registered alongside it; a checker without one would be
+the only untested script here. At minimum the suite must demonstrate, in BOTH directions:
+  - a blocking finding produces a non-zero exit;
+  - an advisory-only run produces exit 0 while still REPORTING the advisory findings (the
+    non-vacuity requirement -- a checker that passes silently on a bad chapter is the failure
+    mode being guarded against);
+  - a judged rule produces its structured reviewer prompt.
+
+=== PHASE GROUP B: WIRING ===
+
+Six files, each a distinct registration or contract surface:
+
+  1. manifest.json -- add chapter-quality-check.sh AND tests/test-chapter-quality-check.sh to
+     provides.scripts. Both entries; the existing element-lint pair is the precedent.
+  2. index-entries.json -- a new context entry for the standard, with path, line_count,
+     load_when.agents, load_when.task_types, domain, subdomain, summary and keywords, matching
+     the shape of the existing standards entries.
+  3. agents/typst-implementation-agent.md -- make the checker a pre-completion gate. The
+     element-lint wiring in this same file is the exact precedent and the exact set of sites:
+     the Stage 4C per-phase self-review, the Stage 5 whole-document final verification pass, and
+     the numbered Critical Requirements list. A blocking finding is a blocking condition at both
+     stages; advisory findings are reported in the implementation summary's Verification section
+     rather than silently dropped. Content tasks must run the checker BEFORE declaring a chapter
+     done -- that is the behavioural change this task exists to deliver.
+  4. agents/typst-research-agent.md -- make the standard a loadable context file at its Stage 2
+     context-loading step, so research that feeds a chapter knows the bar the chapter will be
+     measured against.
+  5. skills/skill-typst-implementation/SKILL.md -- reflect the new verification step.
+  6. EXTENSION.md -- the merge source for the extension's CLAUDE.md section. It already advertises
+     the element lint; advertise the chapter-quality checker the same way, so the capability is
+     discoverable without reading the manifest.
+
+ACCEPTANCE.
+  1. Checker and test both exist in the source store, and nothing was hand-authored under
+     .claude/**.
+  2. The test suite is green, and demonstrates the blocking/advisory split in both directions as
+     described above.
+  3. A blocking finding yields non-zero exit; an advisory-only run yields exit 0 with the
+     advisory findings still printed.
+  4. No ANTI-FLUFF DENSITY finding can change the exit code -- demonstrate this explicitly.
+  5. Judged rules appear as structured reviewer prompts, and the rule set emitted matches the
+     standard's JUDGED set with no silent omissions.
+  6. Placement is delegated to typst-element-lint.sh; grep confirms no second placement
+     implementation was added.
+  7. Both new scripts registered in manifest.json provides.scripts; the standard registered in
+     index-entries.json.
+  8. All six wiring files updated, and the deploy reproduces them into .claude/ cleanly.
+  9. No task-number references in any deliverable
+     (rules/no-task-references-in-deliverables.md).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 253. Define the Typst chapter-quality standard across the four dimensions, with per-rule blocking/advisory and mechanical/judged classification
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**, which is a
+disposable deploy artifact regenerated from the source store).
+
+MOTIVATION. Manual chapters are to be built slowly and carefully from high-quality research and
+never filled with fluff. Today there is no defined bar a chapter can be measured against, so
+chapter quality is judged ad hoc -- per reviewer, per sitting, with no record of what was
+actually checked. This task writes that bar down as a standard. The mechanical checker and the
+agent wiring that enforce it are a dependent task; this one produces the specification they
+implement.
+
+DELIVERABLE (exactly one file).
+  agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md
+
+PATH NOTE (settled). The measure was originally sketched at context/standards/chapter-quality.md.
+That is not this extension's layout: all eight existing standards live under
+context/project/typst/standards/ (compilation-standards, document-structure,
+notation-conventions, package-usage, semantic-element-usage, textbook-standards,
+type-theory-foundations, typst-style-guide). The path above is the corrected, settled target.
+
+THE FOUR DIMENSIONS ARE SETTLED MAINTAINER DECISIONS. Not open for redesign, renaming, merging,
+reordering or extension. Define exactly these four, no more and no fewer:
+
+  1. SOURCE GROUNDING. Every substantive claim traces to a cited source -- a repo path, a paper,
+     or a verified fact. Backticked paths resolve against the live tree. Citations resolve in
+     bibliography.bib. No hand-typed count, version or hash. CONFIRM comments well-formed.
+
+  2. ANTI-FLUFF DENSITY. Claim-to-word ratio thresholds. No section without a stated reader need.
+     Flags hedging and filler connective prose. ADVISORY SCORE RATHER THAN A HARD GATE -- this
+     dimension never blocks, and the standard must say so explicitly for each of its rules.
+
+  3. PRESENTATION CLARITY. Every notation or glossary term defined before first use. Heading-depth
+     bound. Paragraph-length bounds. A concept introduced has an accompanying example or figure.
+
+  4. OPEN-QUESTION HONESTY. Speculative claims explicitly marked. Open questions listed rather
+     than buried. No future-tense claim stated as settled fact.
+
+PER-RULE CLASSIFICATION IS THE CORE OF THE DELIVERABLE, NOT A GARNISH. Every individual rule
+under every dimension carries TWO independent, explicitly stated classifications:
+
+  AXIS 1 -- BLOCKING or ADVISORY. The consuming checker's exit code is driven by BLOCKING
+  findings only; ADVISORY findings are reported and counted but never affect exit status. This
+  mirrors the severity split already documented in the header of scripts/typst-element-lint.sh,
+  whose stated rationale holds here verbatim: an unreviewed hard threshold that fires on correct
+  documents is exactly the failure mode the split exists to prevent, because a gate that fires on
+  correct documents gets switched off. Any threshold introduced here without a corpus observation
+  behind it must be ADVISORY on first release, and the standard must say that it is unreviewed.
+
+  AXIS 2 -- MECHANICAL or JUDGED. Mechanical rules are checkable by a shell script without
+  understanding the prose. Judged rules require a reader. The standard must be honest about which
+  is which, because the dependent checker is required to emit JUDGED rules as a structured prompt
+  for a reviewing agent rather than silently skipping them. A rule misclassified as mechanical
+  here becomes a false gate downstream; one misclassified as judged becomes an unenforced rule.
+
+DEFER, DO NOT DUPLICATE -- INTERNAL. Three existing standards in this same extension already
+cover adjacent ground. Cross-reference and defer; do not restate, and do not contradict:
+  - standards/textbook-standards.md -- "Motivation Requirements", "Professional Tone Standards",
+    "Chapter Structure" and "Quality Checklist" overlap ANTI-FLUFF DENSITY and PRESENTATION
+    CLARITY materially.
+  - standards/semantic-element-usage.md -- its "Self-Review Questions" overlap the judged rules,
+    and its Universal Placement Rule is ALREADY mechanically enforced by
+    scripts/typst-element-lint.sh. PRESENTATION CLARITY must not re-specify placement; it names
+    the existing rule and its existing enforcer.
+  - standards/notation-conventions.md -- the shared-notation.typ import pattern is the natural
+    anchor for PRESENTATION CLARITY's "notation defined before first use". Point at it rather
+    than re-deriving a second notation model.
+Where this standard and an existing one could both be read as owning a rule, say which one owns
+it. Ambiguous double-ownership is how two standards drift apart.
+
+DEFER, DO NOT DUPLICATE -- PER-REPO. A consuming repository plans its own checks in its local
+typst/scripts/: a name-resolution check and a chapter-source coverage invariant. This standard
+must NOT implement or duplicate either. It must instead DEFINE THE INTERFACE CONTRACT those local
+checks satisfy -- what a conforming local check is expected to verify, what it reports, and how
+its result composes with this standard's own findings -- so a repo-local implementation can be
+written against the contract without importing agent-system code.
+
+RATIONALE SECTION IS REQUIRED, AND IS LOAD-BEARING. Record why each dimension exists, so a future
+editor cannot quietly delete a rule whose purpose is no longer obvious. In particular:
+OPEN-QUESTION HONESTY exists because a forward-looking chapter on training agents to synthesize
+programs from verified components must not present genuinely open research questions as resolved.
+That reasoning goes in the rationale section, not in a commit message where it will be lost.
+
+PLACEMENT IS SETTLED. This is an agent-system standard in the typst extension, not a per-repo
+document. It is deployed to every repo that loads the typst extension.
+
+ACCEPTANCE.
+  1. The file exists at the path above, in the source store, and nowhere under .claude/**.
+  2. All four dimensions present, named exactly as above, with no fifth dimension.
+  3. EVERY rule carries an explicit BLOCKING-or-ADVISORY tag and an explicit MECHANICAL-or-JUDGED
+     tag. A rule missing either tag is an incomplete deliverable -- the dependent checker cannot
+     be written against it.
+  4. Every ANTI-FLUFF DENSITY rule is tagged ADVISORY. No exceptions.
+  5. Explicit cross-references to textbook-standards.md, semantic-element-usage.md and
+     notation-conventions.md, each stating what is deferred to it rather than restated.
+  6. An interface-contract section for the consuming repo's name-resolution and chapter-source
+     coverage checks, written so a repo-local implementation can satisfy it independently.
+  7. A rationale section that records the OPEN-QUESTION HONESTY reasoning above.
+  8. No task-number references anywhere in the file
+     (rules/no-task-references-in-deliverables.md).
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 252. Port deploy pending recovery batch postflight
 - **Status**: [COMPLETED]

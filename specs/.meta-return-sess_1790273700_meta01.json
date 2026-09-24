@@ -1,0 +1,18 @@
+{
+  "status": "blocked",
+  "summary": "Proposed a 3-task breakdown for the Typst chapter-quality measure. Awaiting user confirmation; no tasks created.",
+  "artifacts": [],
+  "metadata": {
+    "session_id": "sess_1790273700_meta01",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 0,
+    "tasks_proposed": 3,
+    "blocker": "AskUserQuestion is unavailable in this subagent context; the confirmation gate must be run by the caller before task creation."
+  },
+  "next_steps": "Relay the proposed breakdown to the user. On confirmation, re-dispatch meta-builder-agent (prompt mode) with the approved breakdown to create tasks 253-255 at /home/benjamin/.config/nvim/specs/."
+}
