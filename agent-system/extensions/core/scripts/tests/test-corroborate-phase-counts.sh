@@ -150,6 +150,14 @@ if skill_gate_completion_claim 968 "$CPC_COMPLETED" "$CPC_TOTAL" "$CPC_VERIFIED"
 else
   fail "Fixture A: gate refused despite corroborated evidence"
 fi
+# Verification arm (1): a linear, all-[COMPLETED] plan with a matching complete handoff --
+# ALLOWED, emitting the case 2/3 label exactly as today (the widened trigger does not change this
+# shape's outcome or label).
+if grep -q "COMPLETION-CLAIM GATE case 2/3" "$WORKDIR/fixture-a.stderr"; then
+  pass "Fixture A (arm 1): the case 2/3 label is emitted for a linear, fully-complete plan"
+else
+  fail "Fixture A (arm 1): expected the case 2/3 label on stderr, got: $(cat "$WORKDIR/fixture-a.stderr")"
+fi
 
 # =====================================================================
 # Fixture B (verification bar item 2): plan with a partial close. Assert non-corroborated,
@@ -349,6 +357,174 @@ if [[ "$CPC_VERIFIED" == "true" && "$CPC_COMPLETED" == "1" && "$CPC_TOTAL" == "1
   pass "Fixture H: output unaffected by the non-gating validate-handoff.sh diagnostic"
 else
   fail "Fixture H: unexpected output ($cpc_out_h)"
+fi
+
+# =====================================================================
+# corroborate_and_gate <plan_path> <handoff_completed> <handoff_total> <log_prefix>
+# <stderr_capture_file> -- replicates orchestrate-cycle-postflight.sh's OWN widened corroboration
+# block verbatim in shape: call skill_corroborate_phase_counts unconditionally for an
+# "implemented" dispatch, then gate the phases_completed/phases_total overwrite on
+# plan_markers_verified=="true", leaving both untouched on any non-corroborating result. Then
+# feeds the resulting (possibly-corrected) counts into skill_gate_completion_claim, exactly as
+# the real caller does. Sets COG_COMPLETED/COG_TOTAL/COG_VERIFIED/COG_GATE_RC in the caller's
+# scope. This is the arms (1)-(4) harness: the real production functions, called in the real
+# widened sequence, without needing test-orchestrate-cycle-postflight.sh's full git/filesystem
+# harness (which carries a large, pre-existing, unrelated flakiness surface -- confirmed via
+# `git stash` bisection to already fail 34/110 cases before this change's first edit).
+# =====================================================================
+corroborate_and_gate() {
+  local plan_path="$1" handoff_completed="$2" handoff_total="$3" log_prefix="$4" stderr_file="$5"
+  local cpc_line cpc_a cpc_b cpc_c cog_cpc_completed cog_cpc_total cog_cpc_verified
+  COG_COMPLETED="$handoff_completed"
+  COG_TOTAL="$handoff_total"
+  COG_VERIFIED="absent"
+  cpc_line=$(skill_corroborate_phase_counts 968 "$plan_path" "$log_prefix" 2>>"$stderr_file")
+  read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
+  cog_cpc_completed="${cpc_a#phases_completed=}"
+  cog_cpc_total="${cpc_b#phases_total=}"
+  cog_cpc_verified="${cpc_c#plan_markers_verified=}"
+  if [[ "$cog_cpc_verified" == "true" ]]; then
+    COG_COMPLETED="$cog_cpc_completed"
+    COG_TOTAL="$cog_cpc_total"
+  fi
+  COG_VERIFIED="$cog_cpc_verified"
+  if skill_gate_completion_claim 968 "$COG_COMPLETED" "$COG_TOTAL" "$COG_VERIFIED" "$log_prefix" 2>>"$stderr_file"; then
+    COG_GATE_RC=0
+  else
+    COG_GATE_RC=1
+  fi
+}
+
+# =====================================================================
+# Fixture I (verification arm 2, plan-fixture half): a branched plan modeled on the observed
+# incident -- seven phases, three of them [COMPLETED WITH EXCLUSIONS] with a full
+# `#### Reasoned Exclusions` record, against a handoff reporting phases_completed=4
+# phases_total=7 (the understated Case 1 shape). Assert ALLOWED, the case 2/3 label, and that the
+# count reaches 7/7 through skill_corroborate_phase_counts -- not through any new field.
+# =====================================================================
+fixture_i_plan="$WORKDIR/fixture-i-plan.md"
+cat > "$fixture_i_plan" << 'EOF'
+### Phase 1: Rerunnable Harness and Pre-Change Baseline [COMPLETED]
+### Phase 2: Twenty-Plus-Seed Sweep of the Renamed Construction [COMPLETED]
+### Phase 3: Land the Alpha-Rename in core.py [COMPLETED WITH EXCLUSIONS]
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Land the alpha-rename | Phase 2's gate failed (5/25 undecided vs. 2/25 baseline); contingency branch taken instead | Sweep measurement in Phase 2's own report |
+
+### Phase 4: Full Example-Set Regression Diff [COMPLETED WITH EXCLUSIONS]
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Regression diff | Bypassed by the same gate failure as Phase 3 | Sweep measurement in Phase 2's own report |
+
+### Phase 5: Full Bimodal Suite and Gating Oracle Suite [COMPLETED WITH EXCLUSIONS]
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Full suite run | Bypassed by the same gate failure as Phase 3 | Sweep measurement in Phase 2's own report |
+
+### Phase 6: Correct the Stale Claims and Record the History [COMPLETED]
+### Phase 7: CONDITIONAL -- Revert and Author an UNSTABLE entry [COMPLETED]
+EOF
+
+: > "$WORKDIR/fixture-i.stderr"
+corroborate_and_gate "$fixture_i_plan" 4 7 "[test]" "$WORKDIR/fixture-i.stderr"
+
+if [[ "$COG_VERIFIED" == "true" && "$COG_COMPLETED" == "7" && "$COG_TOTAL" == "7" ]]; then
+  pass "Fixture I: the branched-plan incident shape corroborates to 7/7 through skill_corroborate_phase_counts (no new field)"
+else
+  fail "Fixture I: expected 7/7 verified=true, got completed=$COG_COMPLETED total=$COG_TOTAL verified=$COG_VERIFIED"
+fi
+if [[ "$COG_GATE_RC" -eq 0 ]]; then
+  pass "Fixture I: skill_gate_completion_claim ALLOWS completion on the corrected 7/7 count"
+else
+  fail "Fixture I: gate refused despite the corroborated 7/7 count"
+fi
+if grep -q "COMPLETION-CLAIM GATE case 2/3" "$WORKDIR/fixture-i.stderr"; then
+  pass "Fixture I: the case 2/3 label is emitted (arm 2's caller-level label assertion)"
+else
+  fail "Fixture I: expected the case 2/3 label on stderr, got: $(cat "$WORKDIR/fixture-i.stderr")"
+fi
+if grep -q "\[UNVERIFIED PHASES CORROBORATED\].*7/7 phases closed" "$WORKDIR/fixture-i.stderr"; then
+  pass "Fixture I: the corroboration banner names 7/7 phases closed"
+else
+  fail "Fixture I: expected the 7/7 corroboration banner, got: $(cat "$WORKDIR/fixture-i.stderr")"
+fi
+
+# =====================================================================
+# Fixture J (verification arm 3): a bare shortfall -- the handoff reports phases_completed=4
+# phases_total=7, and the PLAN ALSO shows only 4 of 7 phases closed (no exclusions anywhere).
+# Assert REFUSED, the case 1/3 label, phases_total NOT zeroed, and -- replicating
+# orchestrate-cycle-postflight.sh's own downstream defect-recording predicate verbatim -- that the
+# condition guarding META_MISSING_AFTER_NARRATION (`phases_total == 0 && plan_markers_verified !=
+# "true"`) evaluates FALSE, proving no false-positive defect record would be written. Fail-closed
+# is preserved: a genuine shortfall is not silently reclassified as Case 3.
+# =====================================================================
+fixture_j_plan="$WORKDIR/fixture-j-plan.md"
+cat > "$fixture_j_plan" << 'EOF'
+### Phase 1: Alpha [COMPLETED]
+### Phase 2: Beta [COMPLETED]
+### Phase 3: Gamma [COMPLETED]
+### Phase 4: Delta [COMPLETED]
+### Phase 5: Epsilon [NOT STARTED]
+### Phase 6: Zeta [NOT STARTED]
+### Phase 7: Eta [NOT STARTED]
+EOF
+
+: > "$WORKDIR/fixture-j.stderr"
+corroborate_and_gate "$fixture_j_plan" 4 7 "[test]" "$WORKDIR/fixture-j.stderr"
+
+if [[ "$COG_COMPLETED" == "4" && "$COG_TOTAL" == "7" ]]; then
+  pass "Fixture J: a bare shortfall leaves the handoff's own counts (4/7) untouched -- phases_total NOT zeroed"
+else
+  fail "Fixture J: expected the handoff's own 4/7 to survive untouched, got completed=$COG_COMPLETED total=$COG_TOTAL"
+fi
+if [[ "$COG_GATE_RC" -ne 0 ]]; then
+  pass "Fixture J: skill_gate_completion_claim REFUSES on the genuine shortfall"
+else
+  fail "Fixture J: gate unexpectedly ALLOWED a genuine 4/7 shortfall"
+fi
+if grep -q "COMPLETION-CLAIM GATE case 1/3" "$WORKDIR/fixture-j.stderr"; then
+  pass "Fixture J: the case 1/3 label is emitted -- refused as an ordinary Case 1, not reclassified"
+else
+  fail "Fixture J: expected the case 1/3 label on stderr, got: $(cat "$WORKDIR/fixture-j.stderr")"
+fi
+if [[ "$COG_TOTAL" -eq 0 && "$COG_VERIFIED" != "true" ]]; then
+  fail "Fixture J: the caller's own defect-recording predicate (phases_total==0 && plan_markers_verified!=true) would WRONGLY fire -- false-positive META_MISSING_AFTER_NARRATION risk"
+else
+  pass "Fixture J: the caller's own defect-recording predicate does not fire (phases_total=$COG_TOTAL, plan_markers_verified=$COG_VERIFIED) -- no false-positive defect record"
+fi
+
+# =====================================================================
+# Fixture K (verification arm 4): an agent under-reporting phases_total (handoff reports
+# phases_completed=0 phases_total=0) against the SAME incomplete plan as Fixture J. Assert
+# REFUSED, the case 3/3 label, and that the pre-existing defect-recording predicate DOES fire --
+# regression guard proving an agent cannot escape the gate by under-reporting phases_total.
+# =====================================================================
+: > "$WORKDIR/fixture-k.stderr"
+corroborate_and_gate "$fixture_j_plan" 0 0 "[test]" "$WORKDIR/fixture-k.stderr"
+
+if [[ "$COG_GATE_RC" -ne 0 ]]; then
+  pass "Fixture K: skill_gate_completion_claim REFUSES an under-reported 0/0 against an incomplete plan"
+else
+  fail "Fixture K: gate unexpectedly ALLOWED an under-reported 0/0"
+fi
+if grep -q "COMPLETION-CLAIM GATE case 3/3" "$WORKDIR/fixture-k.stderr"; then
+  pass "Fixture K: the case 3/3 label is emitted"
+else
+  fail "Fixture K: expected the case 3/3 label on stderr, got: $(cat "$WORKDIR/fixture-k.stderr")"
+fi
+if [[ "$COG_TOTAL" -eq 0 && "$COG_VERIFIED" != "true" ]]; then
+  pass "Fixture K: the caller's own defect-recording predicate DOES fire (phases_total=0, plan_markers_verified=$COG_VERIFIED) -- unchanged pre-existing behavior"
+else
+  fail "Fixture K: expected the defect-recording predicate to fire for an under-reported 0/0, got phases_total=$COG_TOTAL plan_markers_verified=$COG_VERIFIED"
 fi
 
 # =====================================================================

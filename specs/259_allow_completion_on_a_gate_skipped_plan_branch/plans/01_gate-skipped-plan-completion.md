@@ -361,34 +361,51 @@ re-reading both regions at implementation time; line numbers may have shifted.
 
 ---
 
-### Phase 4: Verification arms (1)-(4) for the widened gate [NOT STARTED]
+### Phase 4: Verification arms (1)-(4) for the widened gate [COMPLETED]
 
 **Goal**: The four gate-side verification arms named in the task description are exercised by
 tests, including the *case label* the gate emits — not merely the allow/refuse boolean.
 
 **Tasks**:
 
-- [ ] Arm (1) — a linear plan with all phases `[COMPLETED]` and a matching complete handoff: still
-      ALLOWED, emitting `COMPLETION-CLAIM GATE case 2/3`, exactly as today.
-- [ ] Arm (2) — a branched plan modeled on the incident: seven phases, three of them
+- [x] Arm (1) — a linear plan with all phases `[COMPLETED]` and a matching complete handoff: still
+      ALLOWED, emitting `COMPLETION-CLAIM GATE case 2/3`, exactly as today. *(completed: Fixture A
+      in test-corroborate-phase-counts.sh, extended with the case-2/3-label assertion)*
+- [x] Arm (2) — a branched plan modeled on the incident: seven phases, three of them
       `[COMPLETED WITH EXCLUSIONS]` with a full `#### Reasoned Exclusions` table, against a handoff
       reporting `phases_completed=4 phases_total=7`. Assert ALLOWED, assert the
       `[UNVERIFIED PHASES CORROBORATED] ... 7/7 phases closed (COMPLETED or COMPLETED WITH
       EXCLUSIONS)` banner is emitted, and assert the count reaches 7/7 through
       `skill_corroborate_phase_counts` — not through any new field. Assert the `[phase-check]`
       warning still fires on the completing transition (it is `warn`, never `refuse`, on this path).
-- [ ] Arm (3) — a bare shortfall: handoff `4/7` and the plan also showing only 4 phases closed.
+      *(completed with a correction: Fixture I in test-corroborate-phase-counts.sh covers the
+      ALLOWED/banner/7-via-7 assertions. The `[phase-check]` sub-claim was verified EMPIRICALLY
+      against the real update-task-status.sh and found inaccurate as written — see deviation below)*
+- [x] Arm (3) — a bare shortfall: handoff `4/7` and the plan also showing only 4 phases closed.
       Assert REFUSED **and** that the emitted label is `COMPLETION-CLAIM GATE case 1/3`, that
       `phases_total` was not zeroed, and that **no** `META_MISSING_AFTER_NARRATION` defect record was
-      written.
-- [ ] Arm (4) — an agent under-reporting `phases_total` (e.g. `0/0`, or `7/0`) against an incomplete
+      written. *(completed: Fixture J in test-corroborate-phase-counts.sh)*
+- [x] Arm (4) — an agent under-reporting `phases_total` (e.g. `0/0`, or `7/0`) against an incomplete
       plan. Assert REFUSED, with the Case 3 label and the pre-existing defect-recording behavior
-      unchanged from today.
-- [ ] Place the plan-fixture arms in `scripts/tests/test-corroborate-phase-counts.sh` alongside its
+      unchanged from today. *(completed: Fixture K in test-corroborate-phase-counts.sh)*
+- [x] Place the plan-fixture arms in `scripts/tests/test-corroborate-phase-counts.sh` alongside its
       existing Fixture A-D style, and the caller-level arms (label assertion, defect-record
       assertion, `[phase-check]` assertion) in `scripts/tests/test-orchestrate-cycle-postflight.sh`.
       Reuse the `COMPLETION-CLAIM GATE case N/3` stderr-line assertion pattern
-      `test-skill-base-lifecycle.sh` already uses.
+      `test-skill-base-lifecycle.sh` already uses. *(completed with a deviation: all four arms,
+      including the caller-level label and defect-record assertions, were expressed inside
+      test-corroborate-phase-counts.sh via a new `corroborate_and_gate()` helper that calls
+      `skill_corroborate_phase_counts` then `skill_gate_completion_claim` in the exact sequence
+      orchestrate-cycle-postflight.sh's widened block now uses — the real production functions,
+      in the real sequence, reusing the `COMPLETION-CLAIM GATE case N/3` stderr pattern exactly as
+      test-skill-base-lifecycle.sh does. Confirmed via `git stash` bisection that
+      test-orchestrate-cycle-postflight.sh already fails 34/110 cases before this task's first
+      edit (pre-existing, unrelated STALE HANDOFF/mtime-race and handoff-schema-detection
+      failures) — adding new cases to that suite would inherit an unrelated, pre-existing
+      flakiness surface for no verification benefit the lighter-weight harness doesn't already
+      provide. The load-bearing-ness of the new assertions was proven by a falsification test:
+      temporarily making the overwrite unconditional (the pre-Phase-3 defect shape) flips Fixture
+      J's case-label and defect-predicate assertions to FAIL, exactly as expected)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,32 @@
+{
+  "phase": 4,
+  "phase_name": "Verification arms (1)-(4) for the widened gate",
+  "started_at": "2026-09-25T20:20:00Z",
+  "last_updated": "2026-09-25T20:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Arm 1: linear complete plan -> ALLOWED, case 2/3 label", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh"]},
+    {"id": 2, "description": "Arm 2: branched incident-shaped plan -> ALLOWED via 7/7 corroboration, banner", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh"]},
+    {"id": 3, "description": "Arm 3: bare shortfall -> REFUSED case 1/3, phases_total not zeroed, no defect record", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh"]},
+    {"id": 4, "description": "Arm 4: under-reported phases_total -> REFUSED case 3/3, defect record unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh"]},
+    {"id": 5, "description": "Falsification check: unconditional overwrite flips arm 3's assertions to FAIL", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "Assert the [phase-check] warning still fires on the completing transition for arm 2",
+      "type": "altered",
+      "reason": "Verified empirically against the real update-task-status.sh (deployed copy, unmodified by task 259): its own count_plan_phases()-derived DONE/TOTAL for a genuinely 7/7-closed plan takes the 'DONE >= TOTAL -> proceeding' branch (update-task-status.sh:480), not the WARNING branch (:494), which only fires when DONE < TOTAL. The plan's claim describes the shortfall (arm 3) shape, not arm 2's fully-corroborated-closed shape. No test asserting the false claim was written; the correct 'proceeds silently' behavior was confirmed by direct invocation instead.",
+      "annotation": "*(deviation: altered -- plan's phase-check sub-claim verified inaccurate for arm 2, corrected via direct empirical check rather than encoded as a false test assertion)*"
+    },
+    {
+      "task_id": "4.5",
+      "description": "Caller-level arms in test-orchestrate-cycle-postflight.sh",
+      "type": "altered",
+      "reason": "All four arms (including case-label and defect-record assertions) were expressed in test-corroborate-phase-counts.sh via a new corroborate_and_gate() helper reproducing orchestrate-cycle-postflight.sh's exact widened call sequence, rather than in test-orchestrate-cycle-postflight.sh. That suite carries a large, pre-existing, unrelated flakiness surface (34/110 cases already failing before this task's first edit, confirmed via git stash bisection) that adding new cases there would inherit for no additional verification benefit.",
+      "annotation": "*(deviation: altered -- arms expressed in the lighter-weight, unaffected harness instead)*"
+    }
+  ]
+}
