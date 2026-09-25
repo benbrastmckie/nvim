@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Widen the corroboration trigger to the Case 1 shape",
+  "started_at": "2026-09-25T19:50:00Z",
+  "last_updated": "2026-09-25T20:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the corroboration block before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Widen trigger precondition to dispatch_status==implemented alone", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Gate the three-variable overwrite on plan_markers_verified==true", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Update the corroboration block's header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Correct skill-base.sh D3/D4 stale invariant comments (comment-only)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 6, "description": "Confirm skill_gate_completion_claim body and dead stage5 scripts untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.verification",
+      "description": "test-orchestrate-cycle-postflight.sh passes with every pre-existing case unchanged",
+      "type": "altered",
+      "reason": "34 of 110 cases in this suite were ALREADY failing before any task 259 edit (confirmed via git stash: identical 34 failures, byte-for-byte identical after normalizing tmpdir paths/mtimes/event ids). These are a pre-existing environmental/timing defect unrelated to the corroboration-trigger widening (STALE HANDOFF mtime races, HANDOFF_STALE_OR_ABSENT defect-record ordering) -- not introduced or worsened by this change. The remaining 76 cases pass.",
+      "annotation": "*(deviation: altered -- pre-existing failures confirmed unrelated, not introduced by this phase)*"
+    }
+  ]
+}

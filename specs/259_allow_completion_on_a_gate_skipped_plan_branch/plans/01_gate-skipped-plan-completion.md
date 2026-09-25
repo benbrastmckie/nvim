@@ -289,7 +289,7 @@ nothing else remains to dispatch. This is verification arm (5).
 
 ---
 
-### Phase 3: Widen the corroboration trigger to the Case 1 shape [NOT STARTED]
+### Phase 3: Widen the corroboration trigger to the Case 1 shape [COMPLETED]
 
 **Goal**: `orchestrate-cycle-postflight.sh` consults the plan's own phase markers whenever a
 dispatch reports `implemented`, not only when `phases_total == 0` — while leaving the handoff's
@@ -298,33 +298,37 @@ executable surface.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/orchestrate-cycle-postflight.sh`'s handoff-present branch (the corroboration
+- [x] Re-read `scripts/orchestrate-cycle-postflight.sh`'s handoff-present branch (the corroboration
       block currently at ~lines 478-486) immediately before editing — a sibling task is scheduled
-      on this same tree this cycle.
-- [ ] Change the trigger precondition from
+      on this same tree this cycle. *(completed)*
+- [x] Change the trigger precondition from
       `[ "$dispatch_status" = "implemented" ] && [ "$phases_total" -eq 0 ]` to
       `[ "$dispatch_status" = "implemented" ]` alone, so both the Case 3 shape and the Case 1 shape
-      reach `skill_corroborate_phase_counts`.
-- [ ] **Gate the three-variable overwrite on corroboration succeeding.** Parse `cpc_line` into
+      reach `skill_corroborate_phase_counts`. *(completed)*
+- [x] **Gate the three-variable overwrite on corroboration succeeding.** Parse `cpc_line` into
       locals first, then assign `phases_completed` / `phases_total` / `plan_markers_verified` only
       when the parsed `plan_markers_verified` is exactly `true`. On any non-corroborating result
       leave all three at their handoff-derived values. Record the reason in a comment: the function
       returns `phases_completed=0 phases_total=0` on every non-corroborating branch, so an
       unconditional overwrite would zero a genuinely-nonzero `phases_total`, flip an ordinary Case 1
       refusal into a Case 3 refusal, and trip the caller's `META_MISSING_AFTER_NARRATION` recorder
-      at ~lines 803-812 with a false positive.
-- [ ] Update the block's own header comment (currently "matches skill_gate_completion_claim's own
+      at ~lines 803-812 with a false positive. *(completed)*
+- [x] Update the block's own header comment (currently "matches skill_gate_completion_claim's own
       Case 3 precondition exactly") to describe the new two-shape trigger and the
-      corroboration-gated overwrite.
-- [ ] Correct the now-stale invariant claims in `scripts/skill-base.sh`'s
+      corroboration-gated overwrite. *(completed)*
+- [x] Correct the now-stale invariant claims in `scripts/skill-base.sh`'s
       `skill_corroborate_phase_counts` header — **comment text only, no functional change**: the D3
       block's "This function's sole consumer is skill_gate_completion_claim's Case 3 above" and
       "each caller gates on it BEFORE invoking this function", and the D4 block's "Case 1 ... is
       UNREACHABLE from any caller of this function by construction". Replace with an accurate
       description of the two-shape trigger and of why a corroborated correction can now legitimately
       raise a Case 1 shape to Case 2, while a non-corroborating result can never lower anything.
-- [ ] Leave `skill_gate_completion_claim`'s body byte-unchanged. Leave
+      *(completed)*
+- [x] Leave `skill_gate_completion_claim`'s body byte-unchanged. Leave
       `orchestrate-stage5-gates.sh` and `orchestrate-stage5-postflight.sh` untouched (dead code).
+      *(completed: verified via `git diff --stat` showing zero changes to both dead scripts, and a
+      manual diff read confirming `skill_gate_completion_claim`'s body is comment-only-adjacent,
+      not itself touched)*
 
 **Timing**: 1.5 hours
 

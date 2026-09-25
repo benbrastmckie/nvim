@@ -1310,28 +1310,30 @@ skill_gate_completion_claim() {
 # this function rather than keep their own copy; see skill-orchestrate/SKILL.md's Stage 5 / Stage
 # MT-4 for the call sites, and the "Evidence corroboration" comment they still carry.
 #
-# ── D3 (deliberate divergence): trigger precondition is `phases_total -eq 0` ALONE ──────────────
-# This differs on purpose from the recovery path's `PHASES_ZERO_ON_SUCCESS` signature, which
-# requires BOTH counts to be zero. This function's sole consumer is skill_gate_completion_claim's
-# Case 3 above, whose own precondition is `phases_total == 0` and which ignores
-# phases_completed entirely once that holds. Matching the consumer's precondition exactly means
-# the trigger and the gate cannot drift apart; matching the recovery path's both-zero signature
-# instead would leave a real gap — a handoff with phases_completed=7, phases_total=null would
-# take Case 3, be refused, and never get a chance at corroboration. This function does not
-# re-derive the `phases_total -eq 0` precondition internally: each caller gates on it BEFORE
-# invoking this function (see the handoff-present branch of Stage 5 / Stage MT-4 in both
-# SKILL.md files for the call-site precondition). This asymmetry is deliberate design, recorded
-# here in the same "this is a DESIGN, not an undocumented assertion" style the multi-task
-# `blocked`-row divergence in skill-orchestrate/SKILL.md uses.
+# ── D3 (deliberate divergence, UPDATED): trigger precondition is now `dispatch_status ==
+# "implemented"` alone, not `phases_total -eq 0` alone ───────────────────────────────────────────
+# This function's ORIGINAL sole caller was orchestrate-cycle-postflight.sh's Case 3 shape
+# (`phases_total == 0`); the corroboration-trigger widening described in
+# context/standards/status-markers.md's "Decision gates and contingency branches" subsection
+# extended that caller's own precondition to ALSO cover the Case 1 shape (`phases_total > 0` but
+# `phases_completed < phases_total`), so this function is now reached for BOTH shapes. This
+# function itself is unchanged: it still writes only phases_completed / phases_total /
+# plan_markers_verified, and only from an INDEPENDENT artifact (the plan file's own headings) —
+# never from the handoff's own values. It does not re-derive its caller's trigger precondition
+# internally; the caller alone decides when to invoke it (see orchestrate-cycle-postflight.sh's
+# own corroboration-block comment for the current, full precondition).
 #
 # ── D4 (structural, not a promise): the completion gate is never weakened ────────────────────────
-# This function writes only phases_completed / phases_total / plan_markers_verified, and only
-# from an INDEPENDENT artifact (the plan file's own headings) — never from the handoff's own
-# values. skill_gate_completion_claim's Case 1 (phase accounting present and incomplete -> always
-# refuse) is UNREACHABLE from any caller of this function by construction: every caller only
-# invokes this function when phases_total is already 0 (see D3 above), and Case 1 requires
-# phases_total > 0. A corroborated correction therefore never overrides a refusal — it only
-# supplies independent evidence where the handoff supplied none.
+# The gate itself (skill_gate_completion_claim) still refuses UNCONDITIONALLY on
+# `phases_total > 0 && phases_completed < phases_total` (Case 1) — that refusal logic is
+# byte-unchanged. What changed is only which INPUTS the gate sees: its caller now corroborates the
+# plan's own markers BEFORE invoking it, and gates the resulting overwrite on
+# `plan_markers_verified == "true"`, so a non-corroborating result never touches
+# phases_completed/phases_total at all — the caller's Case 1 refusal is then reached with the
+# handoff's own (unmodified, honestly understated or accurate) counters, exactly as before this
+# function existed. A corroborated correction therefore never OVERRIDES a refusal; it can only
+# supply independent evidence that moves an otherwise-Case-1-shaped call into Case 2 when the
+# plan's own markers genuinely show every phase closed.
 skill_corroborate_phase_counts() {
   local task_number="$1"
   local plan_path="$2"

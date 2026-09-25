@@ -476,18 +476,39 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
   [ "$phases_total" -gt 0 ] && echo "${notice_prefix} Phase progress: $phases_completed/$phases_total" >&2
 
   # ── WORK (c): evidence corroboration (handoff-present branch), D3/D4 precondition ─────────────
-  # phases_total -eq 0 ALONE (not the recovered path's both-zero PHASES_ZERO_ON_SUCCESS signature)
-  # — matches skill_gate_completion_claim's own Case 3 precondition exactly.
-  if [ "$dispatch_status" = "implemented" ] && [ "$phases_total" -eq 0 ]; then
+  # Widened from the original `phases_total -eq 0` ALONE (the Case 3 shape) to
+  # `dispatch_status = "implemented"` alone, so a Case 1 shape (phases_total > 0 but
+  # phases_completed < phases_total -- e.g. a branched plan whose gate-skipped phases are marked
+  # `[COMPLETED WITH EXCLUSIONS]` but whose handoff still reports a bare shortfall like 4/7) also
+  # reaches skill_corroborate_phase_counts, not only the original phases_total==0 shape. This is
+  # what lets a plan's own markers supply completion evidence the handoff understated -- see
+  # context/standards/status-markers.md's "Decision gates and contingency branches" subsection.
+  #
+  # The overwrite below is gated on plan_markers_verified == "true", never unconditional: parse
+  # cpc_line into locals FIRST, then only assign phases_completed/phases_total/
+  # plan_markers_verified when corroboration actually succeeded. skill_corroborate_phase_counts
+  # returns phases_completed=0 phases_total=0 on EVERY non-corroborating branch (missing plan,
+  # unreadable plan, disputed heading, etc.) -- an unconditional overwrite under this widened
+  # trigger would zero a genuinely-nonzero phases_total, silently reclassifying an ordinary Case 1
+  # refusal (explicitly documented as NOT a defect) into a Case 3 refusal that records
+  # META_MISSING_AFTER_NARRATION at ~803-812 below. Gating on the corroboration outcome keeps the
+  # fail-closed posture: a bare shortfall whose plan ALSO shows the phases open leaves the
+  # handoff's own (accurate) counters untouched, so the refusal remains a Case 1 refusal.
+  if [ "$dispatch_status" = "implemented" ]; then
     corroboration_plan_path="${plan_path:-}"
     if [ -z "$corroboration_plan_path" ]; then
       corroboration_plan_path=$(ls -1 "${TASK_DIR}/plans/"*.md 2>/dev/null | sort -V | tail -1)
     fi
     cpc_line=$(skill_corroborate_phase_counts "$task_number" "$corroboration_plan_path" "$notice_prefix" "$handoff_file")
     IFS=' ' read -r cpc_a cpc_b cpc_c <<< "$cpc_line"
-    phases_completed="${cpc_a#phases_completed=}"
-    phases_total="${cpc_b#phases_total=}"
-    plan_markers_verified="${cpc_c#plan_markers_verified=}"
+    cpc_phases_completed="${cpc_a#phases_completed=}"
+    cpc_phases_total="${cpc_b#phases_total=}"
+    cpc_plan_markers_verified="${cpc_c#plan_markers_verified=}"
+    if [ "$cpc_plan_markers_verified" = "true" ]; then
+      phases_completed="$cpc_phases_completed"
+      phases_total="$cpc_phases_total"
+    fi
+    plan_markers_verified="$cpc_plan_markers_verified"
   fi
 
   # ── Advisory ARTIFACTS_SHAPE_MISMATCH probe (handoff-present path) ─────────────────────────────
