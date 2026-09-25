@@ -411,22 +411,22 @@ deciding which block is which — the handoff and return-meta blocks are easy to
 
 ---
 
-### Phase 7: Category C — pipe-placeholder rewrites, including grant-agent's bespoke case [NOT STARTED]
+### Phase 7: Category C — pipe-placeholder rewrites, including grant-agent's bespoke case [COMPLETED]
 
 **Goal**: Replace the two remaining pipe-alternatives placeholders with concrete, copyable values
 — without flattening `grant-agent`'s genuinely workflow-conditioned terminal states.
 
 **Tasks**:
-- [ ] `web/agents/web-implementation-agent.md:396` — rewrite
+- [x] `web/agents/web-implementation-agent.md:396` — rewrite *(completed)*
       `"status": "implemented|partial|failed"` to the concrete `"status": "implemented"`, moving
       `partial`/`failed` into adjacent prose. MUST-NOT bullet already present; do not duplicate.
-- [ ] `present/agents/grant-agent.md:413` — **do not collapse to a single value.** Its Stage 6
+- [x] `present/agents/grant-agent.md:413` — **do not collapse *(completed)* to a single value.** Its Stage 6
       already documents a `workflow_type -> status` table at `:437-439`
       (`funder_research -> researched`; `proposal_draft`/`budget_develop -> drafted`). Replace the
       single pipe-joined fence with one concrete primary example carrying `"status": "researched"`
       (its canonical branch), plus explicit prose cross-referencing the existing table for the
       `drafted` branches. Do not delete or weaken the table.
-- [ ] Add a note in `grant-agent.md` near the table recording that `"drafted"` is an agent-local
+- [x] Add a note in `grant-agent.md` near the table recording *(completed)* that `"drafted"` is an agent-local
       value outside the canonical 8-value vocabulary, and that whether it should be promoted (or
       moved to a distinct `workflow_status` sub-field) is an open follow-up question — not
       decided here.

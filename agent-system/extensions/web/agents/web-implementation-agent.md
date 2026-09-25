@@ -389,11 +389,13 @@ Populate `## Plan Deviations` from any deviation annotations made in plan checkl
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/{NNN}_{SLUG}/.return-meta.json`. `status` is `implemented` on success; use
+`partial` or `failed` instead on those respective outcomes — never a pipe-joined placeholder.
+The example below shows the `implemented` case:
 
 ```json
 {
-  "status": "implemented|partial|failed",
+  "status": "implemented",
   "summary": "Brief 2-5 sentence summary (<100 tokens)",
   "artifacts": [
     {

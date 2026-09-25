@@ -406,11 +406,16 @@ Structure:
 
 **CRITICAL**: Write metadata to the specified file path, NOT to console.
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
+Write to `specs/{NNN}_{SLUG}/.return-meta.json`. `status` is workflow-conditioned — see the
+**Status Values by Workflow** table below for the concrete value per `workflow_type`, never a
+pipe-joined placeholder. The example below shows the `funder_research` branch (`"researched"`,
+the only branch whose status is a member of the canonical 8-value `.return-meta.json` vocabulary
+per `context/formats/return-metadata-file.md`); substitute the table's value for any other
+branch:
 
 ```json
 {
-  "status": "researched|drafted|partial|failed",
+  "status": "researched",
   "artifacts": [
     {
       "type": "report|draft|budget|summary",
@@ -439,6 +444,18 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
 | budget_develop | `drafted` | `partial` |
 | progress_track | `tracked` | `partial` |
 | assemble | `assembled` | `partial` |
+
+**`drafted`/`tracked`/`assembled` are agent-local values, outside the canonical 8-value
+`.return-meta.json` status vocabulary** (`in_progress`, `researched`, `planned`, `implemented`,
+`needs_research`, `partial`, `failed`, `blocked` — see
+`context/formats/return-metadata-file.md`). Only `researched`, `partial`, and `failed` in the
+table above are canonical members. This is a recorded, deliberate choice, not an oversight:
+promoting `drafted` (and, by the same reasoning, `tracked`/`assembled`) into the canonical
+vocabulary, versus moving these workflow-conditioned outcomes to a distinct `workflow_status`
+sub-field, versus leaving them exactly as they are today, is an open follow-up question — not
+decided here. `orchestrate-recover-outcome.sh`'s success-outcome arm does not currently treat
+any of these three as a recovered-success signal; see that script's own deferred-follow-up
+comment at its success arm.
 
 Use the Write tool to create this file.
 
