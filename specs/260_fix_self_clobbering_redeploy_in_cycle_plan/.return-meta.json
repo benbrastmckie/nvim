@@ -1,10 +1,55 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/summaries/01_function-wrap-deploy-callers-summary.md",
+      "summary": "6-phase closure of the self-clobbering redeploy hazard: function-wraps both genuine deploy-headless.sh call sites, a red-first regression test proving the mechanism deterministically, a mechanical lint enforcing the wrap for any future caller, and documentation corrections recording the sibling-task verify-depth baseline."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the mid-execution self-overwrite hazard by wrapping orchestrate-cycle-plan.sh's Inter-Cycle Redeploy Checkpoint and command-gate-out.sh's rc==6 branch (the two genuine deploy-headless.sh call sites, confirmed via a re-derived classification lint out of 194 scanned source-store scripts) in single top-level functions extending to true EOF, added a deterministic red-first regression test reproducing the observed incident via a synthetic mid-run self-rewrite, a mechanical structural-wrap lint to close the hazard class for future callers, and recorded the deployed-copy/verify-depth baseline the sibling redundant-verify-deploy-passes task depends on."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
+    "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/summaries/01_function-wrap-deploy-callers-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a bash script must invoke a command that regenerates its own on-disk (deployed) copy while it is still executing, the reliable mitigation is to wrap EVERYTHING from that call through the file's true EOF inside one top-level function, defined in full (and therefore fully parsed/consumed by bash before any of it runs) and invoked as the file's last physical statement with nothing after it. A partial wrap that closes before EOF re-opens the identical hazard a few hundred lines later. This generalizes cleanly to any 'a subprocess rewrites the currently-executing script' scenario, not just deploy engines.",
+      "category": "PATTERN",
+      "source_artifact": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/summaries/01_function-wrap-deploy-callers-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["self-overwrite", "bash", "function-wrap", "mid-run-rewrite", "deploy"]
+    },
+    {
+      "content": "A lint that must verify a bash function's true closing brace in a codebase full of jq '{...}' single-quoted program literals should NOT use character-level brace-counting -- literal { and } inside quoted strings corrupt the count. Instead, adopt (and check for) the convention of a LONE, UNINDENTED closing brace alone on its own line as the function's true end marker (paired with 'do not re-indent the wrapped body' at authoring time). This sidesteps needing a real shell parser for a structural lint.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/summaries/01_function-wrap-deploy-callers-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash-lint", "brace-matching", "jq", "structural-verification"]
+    },
+    {
+      "content": "When building a deterministic regression harness for a 'file rewritten mid-read' bash hazard using a prepended byte-shifting banner: (1) avoid banner sizes that are exact multiples of common internal read-buffer sizes (e.g. 64KB) -- such sizes can coincidentally re-align the corrupted byte stream onto a safe parse boundary and produce a false pre-fix PASS; prefer a non-round size. (2) Reset the target file to a pristine copy before EVERY test case that rewrites it -- a prior case's leftover rewritten copy compounds into the next case's byte offsets in an uncontrolled way, making results depend on suite ordering rather than the mechanism under test.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/summaries/01_function-wrap-deploy-callers-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-harness", "self-rewrite", "determinism", "buffer-alignment", "red-first"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790372264_d11531",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

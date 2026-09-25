@@ -1,16 +1,19 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 260,
   "session_id": "sess_1790372264_d11531_260",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
+  "dispatch_seq": 3,
+  "phases_completed": 6,
   "phases_total": 6,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
-      "summary": "6-phase plan: function-wrap both genuine deploy-headless.sh caller sites, red-first regression test, mechanical class-guard lint, two doc corrections."
+      "type": "summary",
+      "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/summaries/01_function-wrap-deploy-callers-summary.md",
+      "summary": "6-phase closure of the self-clobbering redeploy hazard: function-wraps both genuine deploy-headless.sh call sites, a red-first regression test proving the mechanism deterministically, a mechanical lint enforcing the wrap for any future caller, and documentation corrections recording the sibling-task verify-depth baseline."
     }
   ],
-  "next_steps": "Run /implement 260 to execute the plan"
+  "blockers": [],
+  "plan_markers_verified": true,
+  "summary": "Closed the self-clobbering redeploy hazard by wrapping both genuine deploy-headless.sh call sites (orchestrate-cycle-plan.sh, command-gate-out.sh) in single top-level functions extending to true EOF, with a deterministic red-first regression test, a mechanical structural-wrap lint, and documentation corrections recording the sibling task's verify-depth baseline.",
+  "next_steps": "Task 260 complete; the sibling redundant-verify-deploy-passes task can now build on the recorded deployed-copy/verify-depth decision."
 }

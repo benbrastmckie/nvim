@@ -408,27 +408,33 @@ correct the guardrails prose that currently reads as though this hazard were alr
 
 ---
 
-### Phase 6: Full Gate Sweep [NOT STARTED]
+### Phase 6: Full Gate Sweep [COMPLETED]
 
 **Goal**: Confirm nothing regressed anywhere, with no test weakened or deleted, and hand the change
 off for the sanctioned deploy rather than triggering one by hand.
 
 **Tasks**:
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` (source-store mode) — full sweep.
-- [ ] Explicitly re-run the dispatch-named deploy suites: `test-deploy-orphans.sh`,
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` (source-store mode) — full sweep.
+      *(completed: 90 passed, 5 failed, 0 skipped, 95 total. All 5 failures verified PRE-EXISTING
+      via a detached git worktree at this task's own pre-Phase-1 commit — see phase 6 progress
+      file notes for the full verification and the exact failing suite names)*
+- [x] Explicitly re-run the dispatch-named deploy suites: `test-deploy-orphans.sh`,
       `test-deploy-verify-wiring.sh`, plus `test-deploy-propagation.sh` and
-      `test-orchestrate-cycle-plan.sh`.
-- [ ] Confirm via `git diff` that no test file lost a case, an assertion, or a `fail` call in the
-      course of this task. Any test change must be additive.
-- [ ] Do NOT invoke `deploy-headless.sh` manually. Propagation to `.claude/**` is owned by the
+      `test-orchestrate-cycle-plan.sh`. *(completed: 5/5, 20/20, 4/4, 285/285 — all pass)*
+- [x] Confirm via `git diff` that no test file lost a case, an assertion, or a `fail` call in the
+      course of this task. Any test change must be additive. *(completed: `git diff` against this
+      task's pre-Phase-1 commit shows 434 insertions, 0 deletions across the two touched test
+      files)*
+- [x] Do NOT invoke `deploy-headless.sh` manually. Propagation to `.claude/**` is owned by the
       sanctioned automated triggers (the postflight completion-deploy gate and the inter-cycle
-      checkpoint) — the same two sites this task just made safe.
-- [ ] Record in the implementation summary: (i) the pre-fix failure text observed in Phase 1;
+      checkpoint) — the same two sites this task just made safe. *(completed: not invoked)*
+- [x] Record in the implementation summary: (i) the pre-fix failure text observed in Phase 1;
       (ii) the classification result from Phase 4's lint (which callers are genuine); (iii) the
       sibling-task decision (deployed copy unchanged, verify depth untouched); (iv) the one-time
       residual exposure — the first deploy that lands this fix is still triggered from the old,
       unprotected deployed callers, so if it dies mid-run, re-running it is the expected remedy and
-      the second run is protected.
+      the second run is protected. *(completed: recorded in phase 6 progress file notes and in the
+      implementation summary)*
 
 **Timing**: 1 hour
 
