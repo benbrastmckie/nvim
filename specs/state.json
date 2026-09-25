@@ -1127,12 +1127,12 @@
     {
       "project_number": 260,
       "project_name": "fix_self_clobbering_redeploy_in_cycle_plan",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Fix self-clobbering redeploy in the orchestrator cycle-plan checkpoint",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-25T21:54:20Z",
+      "last_updated": "2026-09-25T21:54:33Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
@@ -1154,9 +1154,15 @@
           "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
           "type": "plan",
           "summary": "6-phase plan: function-wrap both genuine deploy-headless.sh caller sites, red-first regression test, mechanical class-guard lint, two doc corrections."
+        },
+        {
+          "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/summaries/01_function-wrap-deploy-callers-summary.md",
+          "type": "summary",
+          "summary": "6-phase closure of the self-clobbering redeploy hazard: function-wraps both genuine deploy-headless.sh call sites, a red-first regression test proving the mechanism deterministically, a mechanical lint enforcing the wrap for any future caller, and documentation corrections recording the sibling-task verify-depth baseline."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the mid-execution self-overwrite hazard by wrapping orchestrate-cycle-plan.sh's Inter-Cycle Redeploy Checkpoint and command-gate-out.sh's rc==6 branch (the two genuine deploy-headless.sh call sites, confirmed via a re-derived classification lint out of 194 scanned source-store scripts) in single top-level functions extending to true EOF, added a deterministic red-first regression test reproducing the observed incident via a synthetic mid-run self-rewrite, a mechanical structural-wrap lint to close the hazard class for future callers, and recorded the deployed-copy/verify-depth baseline the sibling redundant-verify-deploy-passes task depends on."
     },
     {
       "project_number": 261,
