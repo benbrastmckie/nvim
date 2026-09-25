@@ -1,7 +1,7 @@
 # Implementation Plan: Task #260
 
 - **Task**: 260 - Fix self-clobbering redeploy in cycle-plan
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.25 hours
 - **Dependencies**: None (the sibling redundant-verify-deploy-passes task depends on THIS one; land this first)
 - **Research Inputs**: specs/260_fix_self_clobbering_redeploy_in_cycle_plan/reports/01_self-clobbering-redeploy-hazard.md
@@ -107,34 +107,56 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Red-First Regression Test for the Mid-Run Rewrite [NOT STARTED]
+### Phase 1: Red-First Regression Test for the Mid-Run Rewrite [COMPLETED]
 
 **Goal**: Add a Group 11 case to the existing cycle-plan suite whose `deploy-headless.sh` stub
 rewrites the script under test mid-run, and demonstrate it FAILS against the current, unfixed
 script — establishing the test actually detects this hazard before any fix is applied.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` around
+- [x] Read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` around
       `write_g11_deploy_headless_stub` (currently ~line 1187) and the Group 11 fixture helpers
       (`g11_seed_state_and_mt`, `g11_reset_mt`) to match the suite's existing conventions.
-- [ ] Add a sibling helper `write_g11_self_rewriting_deploy_stub <exit_code>` that does everything
+      *(completed)*
+- [x] Add a sibling helper `write_g11_self_rewriting_deploy_stub <exit_code>` that does everything
       the existing stub does (bump `G11_DEPLOY_CALL_MARKER`, emit its stderr line, exit `rc`) and
       additionally rewrites `$WORKDIR/.claude/scripts/orchestrate-cycle-plan.sh` in place with a
       byte-shifted copy of `$SUT_SRC` — a large comment banner prepended, so every byte offset
       after the rewrite point moves. This mirrors the incident, where the deployed and source
       copies were content-identical yet the byte stream was still invalidated.
-- [ ] Add case `(s)` using that stub with exit 3 (the ordinary deploy-landed path) and assert:
+      *(completed: truncate+rewrite the same inode via a plain `>` redirection, not a rename —
+      matches the real deploy engine's io.open(path,"w") write, which is what actually invalidates
+      an already-open reader's byte stream; a rename would leave the running fd's old inode
+      untouched and would not reproduce the hazard)*
+- [x] Add case `(s)` using that stub with exit 3 (the ordinary deploy-landed path) and assert:
       the SUT exits 0; its stdout plan JSON parses and is non-empty; stderr contains no
       `unbound variable`, `syntax error`, or `unexpected` text; the deploy stub was called exactly
-      once.
-- [ ] Add case `(t)` using that stub with exit 1 (the deploy-failure branch) and assert the
+      once. *(deviation: altered — implemented as case (t), not (s): the sibling
+      redundant-verify-deploy-passes task's own already-landed work claimed letter (s) for an
+      unrelated "WIDENED TRIGGER PREDICATE" case in the same Group 11 block before this task's
+      dispatch executed. Also strengthened beyond the plan's literal ask: the fixture adds a
+      second, genuinely eligible candidate (project 9111) alongside the terminal fixture task, so
+      the assertion covers a REAL non-empty `.dispatch` row, not just a well-formed-but-empty JSON
+      shape, per this task's own dispatch acceptance criterion #2)*
+- [x] Add case `(t)` using that stub with exit 1 (the deploy-failure branch) and assert the
       remaining tasks are still deferred and the `defer_ledger` entry is intact — i.e. the wrap
-      does not weaken the deploy-failure defer even when the rewrite happens.
-- [ ] Run the suite against the UNFIXED script; confirm the two new cases fail. Record the exact
-      observed failure text (truncation vs. spurious parse error) in the phase notes.
-- [ ] If a new case unexpectedly passes pre-fix, enlarge the prepended banner and re-run until the
+      does not weaken the deploy-failure defer even when the rewrite happens. *(deviation: altered
+      — implemented as case (u), not (t), for the same letter-collision reason as above)*
+- [x] Run the suite against the UNFIXED script; confirm the two new cases fail. Record the exact
+      observed failure text (truncation vs. spurious parse error) in the phase notes. *(completed:
+      recorded in `progress/phase-1-progress.json`'s `notes` field — both cases fail with SUT exit
+      2 and stderr `ERROR: orchestrate-cycle-plan.sh: --state-file is required.`, i.e. execution
+      resumes at a stale offset back inside the script's own argument-parsing logic)*
+- [x] If a new case unexpectedly passes pre-fix, enlarge the prepended banner and re-run until the
       pre-fix failure is deterministic across 3 consecutive runs; do not proceed on a green
-      pre-fix result.
+      pre-fix result. *(completed: see `approaches_tried` in the phase 1 progress file for the
+      full investigation — the deploy-failure case initially passed pre-fix at a 64KB banner
+      because 64KB coincidentally re-aligns bash's internal read buffering, AND because a prior
+      case's leftover rewritten `$SUT` was never reset between cases, compounding the coincidence;
+      fixed by (a) resetting `$SUT` to a pristine copy before every case via
+      `g11_setup_dispatch_candidate`, and (b) choosing a non-power-of-two default banner size
+      (70KB) that does not coincide with common buffer boundaries. Both cases now fail
+      deterministically across 3 consecutive runs)*
 
 **Timing**: 1.25 hours
 

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
-      "summary": "6-phase plan generalizing deploy-headless.sh's own function-wrap self-overwrite mitigation to both genuine deploy-caller sites, plus a red-first regression test, a mechanical class-guard lint, and two doc corrections."
-    }
-  ],
-  "next_steps": "Run /implement 260 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "Bash reads a running script incrementally by byte offset, so any deployed script that triggers a redeploy overwriting its own file has its remaining top-level statements corrupted mid-execution (silent truncation, or a spurious error such as 'unbound variable' pointing at a line that contains no such variable). The mitigation that works deterministically is structural, not path-based: wrap the invocation and ALL code textually after it -- through true EOF -- in a single function defined before it runs and invoked as the file's last physical statement, so the whole body is parsed before any overwrite can occur. A partial wrap merely relocates the hazard to the first top-level statement after the closing brace. Switching WHICH copy of the deploying script is invoked (source store vs deployed) does not help: the victim is the caller, not the deployer.",
-      "category": "PATTERN",
-      "source_artifact": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["bash", "self-overwrite", "deploy", "byte-offset", "function-wrap", "script-hazard"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1790372264_d11531_260",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7.25,
-    "dependency_waves": 4
-  },
-  "dispatch_seq": 2
+    "session_id": "sess_1790372264_d11531",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

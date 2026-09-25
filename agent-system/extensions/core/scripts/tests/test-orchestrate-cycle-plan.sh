@@ -1199,6 +1199,74 @@ EOF
   chmod +x "$WORKDIR/.claude/scripts/deploy-headless.sh"
 }
 
+# write_g11_self_rewriting_deploy_stub <exit_code> [banner_kb] -- SELF-OVERWRITE HAZARD regression
+# fixture. Identical call-counting/exit-code contract to write_g11_deploy_headless_stub above, but
+# ALSO rewrites the staged SUT ($SUT) IN PLACE -- truncate + rewrite the SAME inode via a plain
+# output redirection, matching the real deploy engine's io.open(path, "w") write, never a
+# rename/mv -- while the SUT process invoking this stub is still mid-execution. This reproduces
+# the observed incident (deploy-headless.sh regenerates the very script that invoked it)
+# deterministically, independent of the orchestrator's real timing. The prepended comment banner
+# is large enough that every byte offset in the file after the rewrite point moves, so a
+# stale-offset resume (the actual bash behavior under test) is forced to read content that no
+# longer lines up with a statement boundary, instead of getting lucky and re-aligning. Bump
+# banner_kb (default $G11_SELF_REWRITE_BANNER_KB_DEFAULT KiB, set below) if a pre-fix run is ever
+# observed to pass despite the unfixed script.
+G11_SELF_REWRITE_BANNER_KB_DEFAULT=70
+write_g11_self_rewriting_deploy_stub() {
+  local rc="$1"
+  local banner_kb="${2:-$G11_SELF_REWRITE_BANNER_KB_DEFAULT}"
+  local banner_bytes=$((banner_kb * 1024))
+  cat > "$WORKDIR/.claude/scripts/deploy-headless.sh" <<EOF
+#!/usr/bin/env bash
+marker="$G11_DEPLOY_CALL_MARKER"
+count=0
+[ -f "\$marker" ] && count=\$(cat "\$marker")
+count=\$((count + 1))
+echo "\$count" > "\$marker"
+echo "[deploy-headless] (stub) simulated run, exit $rc" >&2
+banner=\$(head -c $banner_bytes /dev/zero | tr '\\0' '#')
+{
+  printf '# %s\n' "\$banner"
+  cat "$SUT_SRC"
+} > "$SUT"
+exit $rc
+EOF
+  chmod +x "$WORKDIR/.claude/scripts/deploy-headless.sh"
+}
+
+# g11_setup_dispatch_candidate <session_id> <candidate_status> -- like g11_seed_state_and_mt, but
+# adds a SECOND, genuinely eligible candidate (project 9111) alongside the terminal fixture task
+# 9101, so a case can assert the checkpoint still produces a real, non-empty .dispatch row for a
+# live candidate after a mid-run self-rewrite -- not just checkpoint bookkeeping on a terminal-only
+# batch, which is all cases (a)-(s) above exercise. Fresh invocation: clears the ledger, same as
+# g11_seed_state_and_mt.
+g11_setup_dispatch_candidate() {
+  local session="$1" status="$2"
+  write_state <<EOF
+{
+  "active_projects": [
+    {"project_number": 9101, "project_name": "g11_terminal", "task_type": "general", "status": "abandoned", "description": "terminal fixture task, unrelated to the checkpoint under test", "dependencies": [], "file_scope": []},
+    {"project_number": 9111, "project_name": "g11_rewrite_candidate", "task_type": "general", "status": "$status", "description": "eligible candidate proving the checkpoint still produces a real dispatch row after a mid-run self-rewrite", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+  reset_lock_dirs
+  rm -f "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
+  rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+  local mt_file="$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+  rm -f "$mt_file"
+  jq -n --argjson tn "[9101,9111]" --argjson cmf '[".claude/scripts/orchestrate-cycle-plan.sh"]' '{
+    task_numbers: $tn,
+    cycle_modified_files: $cmf
+  }' > "$mt_file"
+  # Restore $SUT to a pristine copy of $SUT_SRC before every case, so a self-rewriting stub
+  # (write_g11_self_rewriting_deploy_stub) always starts from a known, uncorrupted baseline
+  # instead of compounding on whatever a PRIOR self-rewriting case already left on disk -- a
+  # leftover banner prefix from an earlier case shifts every subsequent case's byte offsets in a
+  # way that is not the hazard under test and would make results depend on suite ordering.
+  cp "$SUT_SRC" "$SUT"
+}
+
 # g11_reset_mt <session_id> <cycle_modified_files_json> -- the state.json + mt_state half of
 # g11_seed_state_and_mt below, factored out so cases (q) and (r) can simulate a FRESH
 # `/orchestrate` invocation (new session, fresh mt_state) while the durable, specs-root-scoped
@@ -1791,6 +1859,93 @@ rm -f "$WORKDIR/specs/9101_g11_terminal/.return-meta.json"
 rmdir "$WORKDIR/specs/9101_g11_terminal" 2>/dev/null || true
 rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
 rm -rf "$G11_SOURCE_ROOT"
+rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+
+# ── Case (t): SELF-OVERWRITE HAZARD, deploy-landed branch (exit 3, clean gate) -- the redeploy
+# checkpoint's own deploy-headless.sh call rewrites the staged SUT IN PLACE, mid-execution, exactly
+# as the observed incident did (bash resumes reading the rewritten file at a stale byte offset and
+# dies with a spurious "unbound variable"/syntax error). Pre-fix (this script not yet function-
+# wrapped) this case is expected to FAIL -- that failure is the red-first proof the fixture actually
+# detects the hazard, not evidence of a fixture defect. Post-fix (Phase 2's function-wrap) it must
+# PASS: SUT exits 0, stdout is valid non-empty JSON carrying a REAL dispatch row for the live
+# candidate (9111, not just checkpoint bookkeeping on the terminal-only fixture every other case in
+# this group uses), and stderr carries none of the incident's crash signatures. ─────────────────
+g11_setup_dispatch_candidate "g11_t" "researched"
+write_g11_verify_stub "" "" 0
+write_g11_self_rewriting_deploy_stub 3
+run_sut --session g11_t -- 9101 9111
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "checkpoint (t): SUT exits 0 despite the mid-run self-rewrite (deploy-landed branch)"
+else
+  fail "checkpoint (t): SUT exited $LAST_EXIT after the mid-run self-rewrite (stderr: $LAST_STDERR)"
+fi
+if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
+  pass "checkpoint (t): stdout is valid, non-empty JSON after the mid-run self-rewrite"
+else
+  fail "checkpoint (t): stdout did not parse as JSON after the mid-run self-rewrite (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 9111)) | length')" = "1" ] && \
+   [ "$(jqf '.dispatch | map(select(.task == 9111)) | .[0].phase')" = "plan" ]; then
+  pass "checkpoint (t): a real, non-empty dispatch row for the live candidate survives the mid-run self-rewrite"
+else
+  fail "checkpoint (t): expected a dispatch row for candidate #9111 (phase plan), got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDERR" | grep -qiE 'unbound variable|syntax error|unexpected (token|EOF)'; then
+  fail "checkpoint (t): stderr carries a crash signature from the mid-run self-rewrite: $LAST_STDERR"
+else
+  pass "checkpoint (t): stderr carries none of the incident's crash signatures"
+fi
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
+  pass "checkpoint (t): deploy-headless.sh was called exactly once"
+else
+  fail "checkpoint (t): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
+fi
+rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
+rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+
+# ── Case (u): SELF-OVERWRITE HAZARD, deploy-failure branch (exit 1) -- the same mid-run self-
+# rewrite, but on the branch that must defer remaining tasks rather than proceed. Confirms the
+# wrap does not weaken the deploy-failure defer contract even when the rewrite happens: both the
+# terminal fixture task (9101) and the live candidate (9111) must land in
+# deferred_deploy_checkpoint with an intact defer_ledger entry, and the SUT must still complete
+# (exit 0, valid JSON) rather than dying mid-read. ────────────────────────────────────────────────
+g11_setup_dispatch_candidate "g11_u" "researched"
+write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
+write_g11_self_rewriting_deploy_stub 1
+run_sut --session g11_u -- 9101 9111
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "checkpoint (u): SUT exits 0 despite the mid-run self-rewrite (deploy-failure branch)"
+else
+  fail "checkpoint (u): SUT exited $LAST_EXIT after the mid-run self-rewrite (stderr: $LAST_STDERR)"
+fi
+if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
+  pass "checkpoint (u): stdout is valid, non-empty JSON after the mid-run self-rewrite"
+else
+  fail "checkpoint (u): stdout did not parse as JSON after the mid-run self-rewrite (stdout: $LAST_STDOUT)"
+fi
+if echo "$LAST_STDERR" | grep -qiE 'unbound variable|syntax error|unexpected (token|EOF)'; then
+  fail "checkpoint (u): stderr carries a crash signature from the mid-run self-rewrite: $LAST_STDERR"
+else
+  pass "checkpoint (u): stderr carries none of the incident's crash signatures"
+fi
+mt_u="$WORKDIR/specs/.orchestrator-multi-state-g11_u.json"
+if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_u" 2>/dev/null)" = "true" ] && \
+   [ "$(jq -r '.deferred_deploy_checkpoint | index(9111) != null' "$mt_u" 2>/dev/null)" = "true" ]; then
+  pass "checkpoint (u): both the terminal fixture task and the live candidate are deferred (deploy-failure defer not weakened by the rewrite)"
+else
+  fail "checkpoint (u): deferred_deploy_checkpoint missing an expected task (mt_state: $(cat "$mt_u" 2>/dev/null))"
+fi
+if [ "$(jq -r '.defer_ledger[-1].detail' "$mt_u" 2>/dev/null | grep -c "deploy-headless.sh exit 1")" -ge "1" ]; then
+  pass "checkpoint (u): defer_ledger[].detail is intact (names the deploy-headless.sh exit code)"
+else
+  fail "checkpoint (u): defer_ledger[].detail missing/incorrect (mt_state: $(cat "$mt_u" 2>/dev/null))"
+fi
+if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
+  pass "checkpoint (u): deploy-headless.sh was called exactly once"
+else
+  fail "checkpoint (u): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
+fi
+rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
 rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

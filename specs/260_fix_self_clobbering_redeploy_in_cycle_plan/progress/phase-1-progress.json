@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "Red-First Regression Test for the Mid-Run Rewrite",
+  "started_at": "2026-09-25T00:00:00Z",
+  "last_updated": "2026-09-25T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read test-orchestrate-cycle-plan.sh Group 11 stub/fixture conventions", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add write_g11_self_rewriting_deploy_stub helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Add case (t) exit 3 deploy-landed with rewrite (plan's case (s), renamed: (s) was already claimed by sibling task's landed work)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add case (u) exit 1 deploy-failure with rewrite (plan's case (t), renamed for the same reason)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Run suite against unfixed script, confirm (t)/(u) fail deterministically; record failure text", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "banner_kb=64 (power-of-two, matches a common stdio/bash internal read-buffer size) as the self-rewrite banner default", "result": "failed", "reason": "case (t) failed reliably but case (u) passed reliably (3/3) -- the exact 64KB size coincidentally re-aligned the corrupted byte stream onto a safe parse boundary for that branch's shorter continuation"},
+    {"approach": "banner_kb=512 default", "result": "failed", "reason": "no change vs 64KB -- confirmed the coincidence was about exact alignment, not overall magnitude"},
+    {"approach": "leaving $SUT un-reset between cases (t) and (u) in the same suite run", "result": "failed", "reason": "case (t)'s rewrite left a leftover banner prefix on $SUT that case (u) then rewrote again on top of, compounding an uncontrolled cross-case byte-offset coupling; discovered via a banner_kb sweep that showed near-arbitrary override values all failing (u) EXCEPT when the override exactly matched case (t)'s own banner size"},
+    {"approach": "restore $SUT = cp $SUT_SRC before every g11_setup_dispatch_candidate call, plus banner_kb=70 (a non-power-of-two default, avoiding the 64KB coincidence)", "result": "passed", "reason": "both (t) and (u) now fail deterministically pre-fix across 3 consecutive runs, with no leftover cross-case coupling"}
+  ],
+  "handoff_count": 0,
+  "notes": "Pre-fix observed failure text for case (t) (exit 3, deploy-landed): SUT exits 2 with stderr containing 'ERROR: orchestrate-cycle-plan.sh: --state-file is required.' plus the full usage banner -- i.e. execution resumes at a stale byte offset that lands back inside the script's OWN argument-parsing logic, which then correctly (from its own local perspective) rejects the CLI invocation as malformed because run_sut's original arguments are no longer where this second, spurious pass expects them. This is a different literal message than the live incident's 'line 998: o: unbound variable', but is the SAME root-cause class: bash resuming a rewritten file at a stale offset and executing content that does not correspond to the position it was at before the rewrite. Pre-fix observed failure text for case (u) (exit 1, deploy-failure branch): identical SUT-exit-2/--state-file-required signature. Both confirmed failing deterministically across 3 consecutive runs pre-fix at banner_kb=70; both are the target for Phase 2 to flip green."
+}
