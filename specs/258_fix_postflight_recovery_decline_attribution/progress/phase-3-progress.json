@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Discriminate the WORK (d) branch on .reason",
+  "started_at": "2026-09-25T21:17:00Z",
+  "last_updated": "2026-09-25T21:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source lib/return-meta-status-vocabulary.sh near top of orchestrate-cycle-postflight.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Read decline_reason from recover_json via jq -r '.reason // \"NONE\"' inside WORK (d)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Hoist the .status read above the record block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Add 4-line local agent-path glob mirroring system-defect-record.sh's resolver", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Split the handoff_expected=true body on decline_reason into two arms", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Build message from the vocabulary library in the new arm", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 7, "description": "Replace stderr ERROR line on the new arm", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 8, "description": "Call system-defect-record.sh with --defect-class RECOVERY_DECLINED and --dispatched-agent only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 9, "description": "Pass locally-resolved agent path to skill_orchestrate_append_detected_defect's 4th positional arg", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 10, "description": "Add dry-run 'would record RECOVERY_DECLINED' line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 11, "description": "Confirm have_outcome stays false and verdict remains failed on new arm", "status": "done", "note": "Confirmed structurally: have_outcome is initialized false at the top of WORK (b) and only ever set true on the recovered/handoff-present success paths, never touched anywhere in WORK (d).", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -291,47 +291,49 @@ and re-grep after to prove none survives.
 
 ---
 
-### Phase 3: Discriminate the WORK (d) branch on `.reason` [NOT STARTED]
+### Phase 3: Discriminate the WORK (d) branch on `.reason` [COMPLETED]
 
 **Goal**: Split the absent-handoff record into the two shapes, emitting a correctly-classed,
 correctly-attributed, correctly-worded record for the status-shaped reasons while leaving the
 existing record byte-identical for the rest.
 
 **Tasks**:
-- [ ] Source `lib/return-meta-status-vocabulary.sh` near the top of
+- [x] Source `lib/return-meta-status-vocabulary.sh` near the top of
       `orchestrate-cycle-postflight.sh`, copying `orchestrate-recover-outcome.sh`'s
       dual-candidate (`.claude/scripts/lib/` then
       `agent-system/extensions/core/scripts/lib/`) resolution and its hard-fail-with-exit-2
-      behavior verbatim
-- [ ] Inside WORK (d), read `decline_reason` from `recover_json` via `jq -r '.reason // "NONE"'`,
-      guarded the same way the neighboring reads are
-- [ ] Hoist the `recover_json_for_status` / `out_recovered_reported_status` read from below the
+      behavior verbatim *(completed)*
+- [x] Inside WORK (d), read `decline_reason` from `recover_json` via `jq -r '.reason // "NONE"'`,
+      guarded the same way the neighboring reads are *(completed)*
+- [x] Hoist the `recover_json_for_status` / `out_recovered_reported_status` read from below the
       record block to above it, leaving its existing NOTE comment attached (it documents a real
       parameter-expansion landmine). Do not duplicate the read — the later consumer reuses the
-      same variable
-- [ ] Add the 4-line local agent-path glob mirroring `system-defect-record.sh`'s resolver, using
+      same variable *(completed)*
+- [x] Add the 4-line local agent-path glob mirroring `system-defect-record.sh`'s resolver, using
       the already-computed `PROJECT_ROOT`, with `${attributed_path}` as the fallback when the
-      glob does not resolve
-- [ ] Split the `if [ "$handoff_expected" = "true" ]` body on `decline_reason`:
+      glob does not resolve *(completed)*
+- [x] Split the `if [ "$handoff_expected" = "true" ]` body on `decline_reason`:
       `STATUS_IN_PROGRESS|STATUS_NOT_SUCCESS|META_DISPATCH_SEQ_MISMATCH` → the new arm; every
       other value (including `NONE` and the `USAGE`/exit-2 fall-through) → the existing arm,
-      unchanged
-- [ ] In the new arm, build the message from the library: when the reported status equals
+      unchanged *(completed)*
+- [x] In the new arm, build the message from the library: when the reported status equals
       `$RETURN_META_FORBIDDEN_STATUS`, append `$RETURN_META_FORBIDDEN_STATUS_MESSAGE` verbatim;
       otherwise name the reported status and the accepted
       `${RETURN_META_SUCCESS_STATUSES[*]}` set. Phrase `STATUS_IN_PROGRESS` as a terminal write
-      that never happened, not as a vocabulary violation
-- [ ] Replace the stderr ERROR line on the new arm — "Skill did not write orchestrator handoff"
-      is false when a `.return-meta.json` exists and was read
-- [ ] Call `system-defect-record.sh` with `--defect-class RECOVERY_DECLINED`, detecting site
+      that never happened, not as a vocabulary violation *(completed)*
+- [x] Replace the stderr ERROR line on the new arm — "Skill did not write orchestrator handoff"
+      is false when a `.return-meta.json` exists and was read *(completed)*
+- [x] Call `system-defect-record.sh` with `--defect-class RECOVERY_DECLINED`, detecting site
       `${detecting_site_prefix}:cycle-postflight-recovery-declined`, and **only**
       `--dispatched-agent "$agent_name"` — never also `--attributed-path`, which takes precedence
-      and would silently defeat the fix
-- [ ] Pass the locally-resolved agent path to `skill_orchestrate_append_detected_defect`'s 4th
-      positional argument
-- [ ] Add a `[dry-run] would record RECOVERY_DECLINED` line matching the existing dry-run idiom
-- [ ] Confirm `have_outcome` stays `false` and the verdict remains `failed` on the new arm — this
-      is a corrected diagnostic, not a silencing
+      and would silently defeat the fix *(completed)*
+- [x] Pass the locally-resolved agent path to `skill_orchestrate_append_detected_defect`'s 4th
+      positional argument *(completed)*
+- [x] Add a `[dry-run] would record RECOVERY_DECLINED` line matching the existing dry-run idiom *(completed)*
+- [x] Confirm `have_outcome` stays `false` and the verdict remains `failed` on the new arm — this
+      is a corrected diagnostic, not a silencing *(completed: verified structurally — have_outcome
+      is initialized false and only ever set true on the recovered/handoff-present success paths,
+      never touched in WORK (d))*
 
 **Timing**: 1.5 hours
 

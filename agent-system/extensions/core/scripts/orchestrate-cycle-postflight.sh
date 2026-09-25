@@ -24,11 +24,19 @@
 #       dispatch_seq identity gate.
 #   (b) Return-meta recovery via orchestrate-recover-outcome.sh (now dispatch_seq-aware, D2).
 #   (c) Phase-count corroboration via skill_corroborate_phase_counts (count-only greps).
-#   (d) Dispatch-derived handoff-expectation recording (D1): an absent handoff records
-#       HANDOFF_STALE_OR_ABSENT whenever this dispatch expected one (the default — every caller
-#       today is a `dispatch[]` row per skill-orchestrate Move 2/3), unless the caller passed
-#       `--handoff-expected false`; a present-but-stale/mismatched handoff always records,
-#       regardless of expectation.
+#   (d) Dispatch-derived handoff-expectation recording (D1): an absent handoff, when this dispatch
+#       expected one (the default — every caller today is a `dispatch[]` row per skill-orchestrate
+#       Move 2/3, unless the caller passed `--handoff-expected false`), records one of two classes
+#       discriminated on the declined return-meta recovery's `.reason`: HANDOFF_STALE_OR_ABSENT,
+#       attributed to skill-orchestrate/SKILL.md, when nothing usable was produced at all
+#       (META_MISSING/META_STALE/META_UNPARSEABLE, or the USAGE/exit-2 fall-through); or
+#       RECOVERY_DECLINED, attributed to the dispatched agent's own file, when a
+#       `.return-meta.json` exists and was read but carried a terminal marker the orchestrator
+#       could not accept (STATUS_IN_PROGRESS/STATUS_NOT_SUCCESS/META_DISPATCH_SEQ_MISMATCH) — see
+#       context/patterns/system-defect-discrimination.md's `RECOVERY_DECLINED` Signal A row for
+#       the full rationale. A present-but-stale/mismatched handoff always records
+#       HANDOFF_STALE_OR_ABSENT unconditionally, before this branch is ever reached, regardless of
+#       expectation.
 #   (e) user_decision relay: verdict=ask_user, payload relayed verbatim, status left as-is. This
 #       script NEVER asks and NEVER writes .decisions.json.
 #   (f) Status transition via skill_postflight_update, with the monotonic-max clamp for forced
@@ -147,6 +155,33 @@ exec 3>&1 1>&2
 
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
+
+# ─── Shared status vocabulary library (deploy-tree-first / source-store-fallback) ──────────────
+# Same dual-candidate resolution as orchestrate-recover-outcome.sh's own copy of this block (see
+# that script's header for the full rationale) — a hard dependency, source-or-exit-2, never a
+# silent fallback. Needed by the WORK (d) recovery-declined branch below to build a
+# correctly-worded RECOVERY_DECLINED message from $RETURN_META_FORBIDDEN_STATUS(_MESSAGE) and
+# $RETURN_META_SUCCESS_STATUSES rather than hand-rolling a second copy of the vocabulary.
+_RETURN_META_STATUS_LIB_CANDIDATES=(
+  "$PROJECT_ROOT/.claude/scripts/lib/return-meta-status-vocabulary.sh"
+  "$PROJECT_ROOT/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
+)
+_RETURN_META_STATUS_LIB_FILE=""
+for _candidate in "${_RETURN_META_STATUS_LIB_CANDIDATES[@]}"; do
+  if [ -f "$_candidate" ]; then
+    _RETURN_META_STATUS_LIB_FILE="$_candidate"
+    break
+  fi
+done
+if [ -z "$_RETURN_META_STATUS_LIB_FILE" ]; then
+  echo "ERROR: orchestrate-cycle-postflight.sh: shared library return-meta-status-vocabulary.sh not found at any of:" >&2
+  for _candidate in "${_RETURN_META_STATUS_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 2
+fi
+# shellcheck disable=SC1090
+. "$_RETURN_META_STATUS_LIB_FILE"
 
 usage() {
   cat <<'USAGE'
@@ -609,39 +644,27 @@ else
       meta_touched=false
     fi
 
-    if [ ! -f "$handoff_file" ]; then
-      if [ "$handoff_expected" = "true" ]; then
-        echo "${notice_prefix} ERROR: Skill did not write orchestrator handoff (agent '${agent_name}', dispatch expected a handoff)." >&2
-        if is_live; then
-          record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
-            --defect-class HANDOFF_STALE_OR_ABSENT \
-            --detecting-site "${detecting_site_prefix}:cycle-postflight-absent-expected-writer" \
-            --task "$task_number" --session "$session_id" \
-            --message "agent '${agent_name}' produced no handoff and return-meta recovery also declined (transport_error=${transport_error:-false}, meta_touched=${meta_touched})" \
-            --attributed-path "$attributed_path" \
-            2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
-          skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-            "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
-            "${detecting_site_prefix}:cycle-postflight-absent-expected-writer" \
-            "agent '${agent_name}' produced no handoff and return-meta recovery also declined (transport_error=${transport_error:-false}, meta_touched=${meta_touched})" \
-            "$record_result"
-        else
-          echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (absent, handoff expected) — no write performed." >&2
-        fi
-      else
-        echo "${notice_prefix} handoff not expected for this dispatch (--handoff-expected false); no defect recorded." >&2
-      fi
-    fi
-
     # NOTE: default via `[ -z ] && recover_json_for_status='{}'`, never `"${recover_json:-{}}"` —
     # bash parameter-expansion default-word matching stops at the FIRST unescaped `}`, so that
     # inline idiom silently appends a stray trailing `}` to any non-empty value, corrupting the
     # JSON and forcing this read to fail closed to "unknown" via `2>/dev/null` even when
     # recover_json correctly carried a real status. See skill_orchestrate_propagate_completion's
     # own header comment in scripts/skill-base.sh for the same landmine, documented once there.
+    #
+    # HOISTED above the WORK (d) absent-handoff record block below (it used to sit after it) so
+    # decline_reason/out_recovered_reported_status are in scope where the recovery-declined
+    # message is built — see the RECOVERY_DECLINED case arm below.
     recover_json_for_status="$recover_json"
     [ -z "$recover_json_for_status" ] && recover_json_for_status='{}'
     out_recovered_reported_status=$(echo "$recover_json_for_status" | jq -r '.status // "unknown"' 2>/dev/null) || out_recovered_reported_status="unknown"
+    # decline_reason is orchestrate-recover-outcome.sh's `.reason` field: NONE (recovered=true,
+    # unreachable here), META_MISSING|META_STALE|META_UNPARSEABLE|META_DISPATCH_SEQ_MISMATCH|
+    # STATUS_IN_PROGRESS|STATUS_NOT_SUCCESS (recovered=false), or "NONE" as the fallback default
+    # when recover_json itself is empty (the USAGE/exit-2 fall-through, where orchestrate-recover-
+    # outcome.sh never reached its own `emit` call at all). Never `evidence_reason`, which is
+    # hardcoded to the literal string "NONE" on every recovered=false path and cannot discriminate
+    # anything here — see this task's own research report.
+    decline_reason=$(echo "$recover_json_for_status" | jq -r '.reason // "NONE"' 2>/dev/null) || decline_reason="NONE"
     if [ "$out_recovered_reported_status" != "unknown" ]; then
       # Diagnostic only — this does NOT make the outcome "recovered" (have_outcome stays false,
       # so no status transition is ever attempted on the strength of this value alone). It only
@@ -651,6 +674,82 @@ else
       # agent's own reported status, not blank.
       dispatch_status="$out_recovered_reported_status"
       echo "${notice_prefix} .return-meta.json reports status=${out_recovered_reported_status} (not recovered as a successful outcome)." >&2
+    fi
+
+    if [ ! -f "$handoff_file" ]; then
+      if [ "$handoff_expected" = "true" ]; then
+        case "$decline_reason" in
+          STATUS_IN_PROGRESS|STATUS_NOT_SUCCESS|META_DISPATCH_SEQ_MISMATCH)
+            # ─── RECOVERY_DECLINED: a .return-meta.json exists, was read, and recovery declined
+            # because the reported status could not be accepted as a terminal outcome — this is
+            # NOT "the skill did not write a handoff" (this phase's writer may be contractually
+            # forbidden to write one at all; an absent handoff here is expected, not a defect).
+            # The real fault is agent-side, so attribution goes to the dispatched agent's own
+            # file via --dispatched-agent, never to skill-orchestrate/SKILL.md's $attributed_path.
+            # The sibling META_MISSING/META_STALE/META_UNPARSEABLE reasons (nothing usable was
+            # produced at all) fall through to the unchanged HANDOFF_STALE_OR_ABSENT arm below.
+            if [ "$decline_reason" = "STATUS_IN_PROGRESS" ]; then
+              recovery_declined_detail="agent '${agent_name}' wrote a .return-meta.json but its terminal write never happened (status=${out_recovered_reported_status}) and produced no orchestrator handoff"
+            elif [ "$decline_reason" = "META_DISPATCH_SEQ_MISMATCH" ]; then
+              recovery_declined_detail="agent '${agent_name}' produced no orchestrator handoff and its .return-meta.json carries a mismatched dispatch_seq — not this dispatch's own report (a still-live predecessor, or a git-restored file)"
+            elif [ "$out_recovered_reported_status" = "$RETURN_META_FORBIDDEN_STATUS" ]; then
+              recovery_declined_detail="agent '${agent_name}' produced no orchestrator handoff; its .return-meta.json ${RETURN_META_FORBIDDEN_STATUS_MESSAGE}"
+            else
+              recovery_declined_detail="agent '${agent_name}' produced no orchestrator handoff; its .return-meta.json reports status='${out_recovered_reported_status}', which is not in the accepted ${RETURN_META_SUCCESS_STATUSES[*]} vocabulary"
+            fi
+            echo "${notice_prefix} ERROR: return-meta recovery declined (${decline_reason}): ${recovery_declined_detail}." >&2
+            # Local agent-name -> agent-file resolver, mirroring system-defect-record.sh's own
+            # --dispatched-agent glob (agent-system/extensions/*/agents/NAME.md) verbatim, so the
+            # loop-guard-side detected_defects[] row carries the same resolved source-store path
+            # the recorder itself attributes to. $attributed_path (skill-orchestrate/SKILL.md) is
+            # deliberately NOT used as the row's path here — only as the unresolved fallback.
+            recovery_declined_agent_path="$attributed_path"
+            shopt -s nullglob
+            _rd_agent_matches=("$PROJECT_ROOT"/agent-system/extensions/*/agents/"${agent_name}.md")
+            shopt -u nullglob
+            if [ "${#_rd_agent_matches[@]}" -gt 0 ] && [ -f "${_rd_agent_matches[0]}" ]; then
+              recovery_declined_agent_path="${_rd_agent_matches[0]#"$PROJECT_ROOT"/}"
+            fi
+            if is_live; then
+              record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+                --defect-class RECOVERY_DECLINED \
+                --detecting-site "${detecting_site_prefix}:cycle-postflight-recovery-declined" \
+                --task "$task_number" --session "$session_id" \
+                --message "$recovery_declined_detail" \
+                --dispatched-agent "$agent_name" \
+                2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+              skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+                "RECOVERY_DECLINED" "$recovery_declined_agent_path" \
+                "${detecting_site_prefix}:cycle-postflight-recovery-declined" \
+                "$recovery_declined_detail" \
+                "$record_result"
+            else
+              echo "${notice_prefix} [dry-run] would record RECOVERY_DECLINED (${decline_reason}) — no write performed." >&2
+            fi
+            ;;
+          *)
+            echo "${notice_prefix} ERROR: Skill did not write orchestrator handoff (agent '${agent_name}', dispatch expected a handoff)." >&2
+            if is_live; then
+              record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+                --defect-class HANDOFF_STALE_OR_ABSENT \
+                --detecting-site "${detecting_site_prefix}:cycle-postflight-absent-expected-writer" \
+                --task "$task_number" --session "$session_id" \
+                --message "agent '${agent_name}' produced no handoff and return-meta recovery also declined (transport_error=${transport_error:-false}, meta_touched=${meta_touched})" \
+                --attributed-path "$attributed_path" \
+                2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+              skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+                "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
+                "${detecting_site_prefix}:cycle-postflight-absent-expected-writer" \
+                "agent '${agent_name}' produced no handoff and return-meta recovery also declined (transport_error=${transport_error:-false}, meta_touched=${meta_touched})" \
+                "$record_result"
+            else
+              echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (absent, handoff expected) — no write performed." >&2
+            fi
+            ;;
+        esac
+      else
+        echo "${notice_prefix} handoff not expected for this dispatch (--handoff-expected false); no defect recorded." >&2
+      fi
     fi
 
     # ── Infra-failure discrimination (single-task: scalar; multi-task: per-task map) ─────────────
