@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Extend the fixture suite across all three sub-cases",
+  "started_at": "2026-09-25T21:36:00Z",
+  "last_updated": "2026-09-25T21:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add sandbox helper stubbing an agent file for resolver glob to resolve", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Add sub-case (iii) fixture: STATUS_NOT_SUCCESS / status=completed", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Add sub-case (ii) fixture: STATUS_IN_PROGRESS", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Add explicit assertions to sub-case (i) path (META_MISSING unchanged)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Confirm genuinely-stale-handoff fixture still records HANDOFF_STALE_OR_ABSENT", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Do not weaken fixture (A)", "status": "done", "note": "Fixture A only gained additional assertions; no existing assertion was removed or loosened."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

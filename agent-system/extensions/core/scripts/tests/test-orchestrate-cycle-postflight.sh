@@ -119,6 +119,23 @@ commit_fixture() {
   ( cd "$WORKDIR" && git add specs/ .claude/ >/dev/null 2>&1 && git commit -q -m "fixture" >/dev/null 2>&1 )
 }
 
+# stub_agent_file <name>: stubs $WORKDIR/agent-system/extensions/core/agents/<name>.md so BOTH
+# system-defect-record.sh's own --dispatched-agent glob and the SUT's local agent-path glob (the
+# RECOVERY_DECLINED discrimination added by this task) resolve inside the sandbox rather than
+# falling back to the unresolved $attributed_path (skill-orchestrate/SKILL.md). PROJECT_ROOT
+# resolves to $WORKDIR (two levels up from $WORKDIR/.claude/scripts), so this path is exactly
+# what both globs match.
+stub_agent_file() {
+  local name="$1"
+  mkdir -p "$WORKDIR/agent-system/extensions/core/agents"
+  cat > "$WORKDIR/agent-system/extensions/core/agents/${name}.md" <<EOF
+---
+name: ${name}
+---
+stub
+EOF
+}
+
 now_ts() { date -u +%s; }
 
 run_sut() {
@@ -179,6 +196,15 @@ if jq -e '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSE
   pass "acceptance (1): HANDOFF_STALE_OR_ABSENT recorded in the loop guard"
 else
   fail "acceptance (1): no HANDOFF_STALE_OR_ABSENT recorded"
+fi
+# Dispatch's arm (c): the genuinely-stale-handoff path fires the stale-handoff gate,
+# unconditionally, before WORK (d) is ever reached (recovery here is recovered=true) -- this
+# task's RECOVERY_DECLINED discrimination must record nothing on this path.
+if jq -e '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length == 0' \
+     "$WORKDIR/specs/701_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "acceptance (1): zero RECOVERY_DECLINED rows on the genuinely-stale-handoff path"
+else
+  fail "acceptance (1): unexpected RECOVERY_DECLINED row on the stale-handoff path"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -612,6 +638,22 @@ if [ "$a_defect_count" = "1" ]; then
 else
   fail "fixture (A): expected exactly 1 HANDOFF_STALE_OR_ABSENT defect, got $a_defect_count"
 fi
+# Sub-case (i), META_MISSING: this task's WORK (d) discrimination must not touch this arm at
+# all -- attribution stays skill-orchestrate/SKILL.md and zero RECOVERY_DECLINED rows are
+# recorded, made an assertion rather than an assumption per the dispatch's arm (b).
+if jq -e '.detected_defects[] | select(.defect_class == "HANDOFF_STALE_OR_ABSENT") | .attributed_source_path == "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"' \
+     "$WORKDIR/specs/910_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "fixture (A): HANDOFF_STALE_OR_ABSENT still attributed to skill-orchestrate/SKILL.md, unchanged"
+else
+  fail "fixture (A): HANDOFF_STALE_OR_ABSENT attribution changed unexpectedly"
+fi
+a_recovery_declined_count=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
+  "$WORKDIR/specs/910_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$a_recovery_declined_count" = "0" ]; then
+  pass "fixture (A): zero RECOVERY_DECLINED rows recorded for the META_MISSING sub-case"
+else
+  fail "fixture (A): expected 0 RECOVERY_DECLINED rows, got $a_recovery_declined_count"
+fi
 if echo "$LAST_STDERR" | grep -q "not on the contractual handoff-writer allowlist"; then
   fail "fixture (A): stale allowlist WARN text still present on stderr"
 else
@@ -684,6 +726,21 @@ if [ "$c_defect_count" = "1" ]; then
 else
   fail "fixture (C): expected exactly 1 HANDOFF_STALE_OR_ABSENT defect, got $c_defect_count"
 fi
+# Sub-case (i), META_MISSING (research phase, this task's own observed incident's sibling
+# shape): attribution stays skill-orchestrate/SKILL.md and zero RECOVERY_DECLINED rows.
+if jq -e '.detected_defects[] | select(.defect_class == "HANDOFF_STALE_OR_ABSENT") | .attributed_source_path == "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"' \
+     "$WORKDIR/specs/912_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "fixture (C): HANDOFF_STALE_OR_ABSENT still attributed to skill-orchestrate/SKILL.md, unchanged"
+else
+  fail "fixture (C): HANDOFF_STALE_OR_ABSENT attribution changed unexpectedly"
+fi
+c_recovery_declined_count=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
+  "$WORKDIR/specs/912_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$c_recovery_declined_count" = "0" ]; then
+  pass "fixture (C): zero RECOVERY_DECLINED rows recorded for the META_MISSING sub-case"
+else
+  fail "fixture (C): expected 0 RECOVERY_DECLINED rows, got $c_recovery_declined_count"
+fi
 new_status_912=$(jq -r --argjson n 912 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_912" = "researching" ]; then
   pass "fixture (C): task status unchanged (still researching, never advanced to researched)"
@@ -694,6 +751,133 @@ if [ "$(jqf '.report_missing')" = "true" ]; then
   pass "fixture (G): fixture C's double-miss also surfaces report_missing=true for the message-recovery consumer"
 else
   fail "fixture (G): expected report_missing=true for fixture C's double-miss, got: $(jqf '.report_missing') ($LAST_STDOUT)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (H): sub-case (iii), STATUS_NOT_SUCCESS -- a research dispatch writes no handoff (as
+# contractually required) but its .return-meta.json carries an out-of-vocabulary terminal status
+# ("completed", explicitly forbidden). This is the task's own observed incident: recovery
+# declines, but a .return-meta.json genuinely exists and was read -- the fix must record
+# RECOVERY_DECLINED attributed to the dispatched agent's own file, never HANDOFF_STALE_OR_ABSENT
+# attributed to skill-orchestrate/SKILL.md.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (H): STATUS_NOT_SUCCESS (status=completed) records RECOVERY_DECLINED attributed to the dispatched agent"
+setup_sandbox
+stub_agent_file general-research-agent
+mkdir -p "$WORKDIR/specs/913_candidate/reports"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 913, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #913 -- STATUS_NOT_SUCCESS fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/913_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+cat > "$WORKDIR/specs/913_candidate/.return-meta.json" <<'EOF'
+{"status":"completed","dispatch_seq":1,"artifacts":[]}
+EOF
+run_sut specs/913_candidate --session sess_913 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/913_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 913
+
+if [ "$(jqf '.verdict')" = "failed" ]; then
+  pass "fixture (H): verdict=failed"
+else
+  fail "fixture (H): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+h_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
+  "$WORKDIR/specs/913_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$h_recovery_declined" = "1" ]; then
+  pass "fixture (H): exactly one RECOVERY_DECLINED defect row recorded"
+else
+  fail "fixture (H): expected exactly 1 RECOVERY_DECLINED defect, got $h_recovery_declined"
+fi
+h_stale_absent=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length' \
+  "$WORKDIR/specs/913_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$h_stale_absent" = "0" ]; then
+  pass "fixture (H): zero HANDOFF_STALE_OR_ABSENT rows recorded"
+else
+  fail "fixture (H): expected 0 HANDOFF_STALE_OR_ABSENT rows, got $h_stale_absent"
+fi
+if jq -e '.detected_defects[] | select(.defect_class == "RECOVERY_DECLINED") | .attributed_source_path == "agent-system/extensions/core/agents/general-research-agent.md"' \
+     "$WORKDIR/specs/913_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "fixture (H): RECOVERY_DECLINED attributed to the dispatched agent's own file, not skill-orchestrate/SKILL.md"
+else
+  fail "fixture (H): RECOVERY_DECLINED attribution did not resolve to the dispatched agent's file"
+fi
+if echo "$LAST_STDERR" | grep -q "Skill did not write orchestrator handoff"; then
+  fail "fixture (H): stale 'Skill did not write orchestrator handoff' text still present on stderr"
+else
+  pass "fixture (H): no longer claims the skill failed to write a handoff"
+fi
+if echo "$LAST_STDERR" | grep -q "status value is 'completed', which is explicitly forbidden"; then
+  pass "fixture (H): stderr names the forbidden status value, sourced from the shared vocabulary library"
+else
+  fail "fixture (H): expected the forbidden-status message on stderr, got: $LAST_STDERR"
+fi
+new_status_913=$(jq -r --argjson n 913 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_913" = "researching" ]; then
+  pass "fixture (H): task status unchanged (never advanced on the strength of an unaccepted status)"
+else
+  fail "fixture (H): expected status to remain researching, got: $new_status_913"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Fixture (I): sub-case (ii), STATUS_IN_PROGRESS -- a research dispatch writes no handoff and its
+# .return-meta.json's terminal write never happened (status=in_progress, a valid non-terminal
+# vocabulary member, not itself a violation). Same class and attribution as fixture (H); the
+# message must read as an interrupted write, not a vocabulary violation.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Fixture (I): STATUS_IN_PROGRESS records RECOVERY_DECLINED attributed to the dispatched agent"
+setup_sandbox
+stub_agent_file general-research-agent
+mkdir -p "$WORKDIR/specs/914_candidate/reports"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 914, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #914 -- STATUS_IN_PROGRESS fixture", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/914_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+cat > "$WORKDIR/specs/914_candidate/.return-meta.json" <<'EOF'
+{"status":"in_progress","dispatch_seq":1,"artifacts":[]}
+EOF
+run_sut specs/914_candidate --session sess_914 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/914_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 914
+
+if [ "$(jqf '.verdict')" = "failed" ]; then
+  pass "fixture (I): verdict=failed"
+else
+  fail "fixture (I): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+i_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
+  "$WORKDIR/specs/914_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$i_recovery_declined" = "1" ]; then
+  pass "fixture (I): exactly one RECOVERY_DECLINED defect row recorded"
+else
+  fail "fixture (I): expected exactly 1 RECOVERY_DECLINED defect, got $i_recovery_declined"
+fi
+i_stale_absent=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length' \
+  "$WORKDIR/specs/914_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$i_stale_absent" = "0" ]; then
+  pass "fixture (I): zero HANDOFF_STALE_OR_ABSENT rows recorded"
+else
+  fail "fixture (I): expected 0 HANDOFF_STALE_OR_ABSENT rows, got $i_stale_absent"
+fi
+if jq -e '.detected_defects[] | select(.defect_class == "RECOVERY_DECLINED") | .attributed_source_path == "agent-system/extensions/core/agents/general-research-agent.md"' \
+     "$WORKDIR/specs/914_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "fixture (I): RECOVERY_DECLINED attributed to the dispatched agent's own file, not skill-orchestrate/SKILL.md"
+else
+  fail "fixture (I): RECOVERY_DECLINED attribution did not resolve to the dispatched agent's file"
+fi
+if echo "$LAST_STDERR" | grep -q "terminal write never happened"; then
+  pass "fixture (I): stderr phrases the failure as a terminal write that never happened, not a vocabulary violation"
+else
+  fail "fixture (I): expected the terminal-write-never-happened phrasing on stderr, got: $LAST_STDERR"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

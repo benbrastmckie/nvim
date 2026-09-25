@@ -363,7 +363,7 @@ exactly one file for this phase.
 
 ---
 
-### Phase 4: Extend the fixture suite across all three sub-cases [NOT STARTED]
+### Phase 4: Extend the fixture suite across all three sub-cases [COMPLETED]
 
 **Goal**: Pin the new behavior and prove the old behavior survives, in the existing suite rather
 than a parallel one.
@@ -371,23 +371,26 @@ than a parallel one.
 **Tasks**:
 - [ ] Add a sandbox helper that stubs an agent file at
       `$WORKDIR/agent-system/extensions/core/agents/<name>.md` so both the recorder's glob and
-      the new local glob resolve inside the fixture tree
-- [ ] Add the sub-case (iii) fixture: research phase, `--agent general-research-agent`, no
+      the new local glob resolve inside the fixture tree *(completed: stub_agent_file helper)*
+- [x] Add the sub-case (iii) fixture: research phase, `--agent general-research-agent`, no
       handoff, a `.return-meta.json` with a fresh mtime, matching `dispatch_seq`, and
       `"status":"completed"`. Assert: exactly one `RECOVERY_DECLINED` row and **zero**
       `HANDOFF_STALE_OR_ABSENT` rows; `attributed_source_path` is the agent's own file, not
       `skill-orchestrate/SKILL.md`; the stderr message names the status and no longer claims the
-      skill failed to write a handoff; `verdict=failed`; task status never advances
-- [ ] Add the sub-case (ii) fixture: same shape with `"status":"in_progress"`. Assert the same
-      class and attribution, with the terminal-write-never-happened wording
-- [ ] Add explicit assertions to the sub-case (i) path that fixtures (A) and (C) still record
+      skill failed to write a handoff; `verdict=failed`; task status never advances *(completed:
+      fixture H)*
+- [x] Add the sub-case (ii) fixture: same shape with `"status":"in_progress"`. Assert the same
+      class and attribution, with the terminal-write-never-happened wording *(completed: fixture I)*
+- [x] Add explicit assertions to the sub-case (i) path that fixtures (A) and (C) still record
       exactly one `HANDOFF_STALE_OR_ABSENT` attributed to `skill-orchestrate/SKILL.md` and zero
       `RECOVERY_DECLINED` rows — the dispatch's (b) arm, made an assertion rather than an
-      assumption
-- [ ] Confirm the genuinely-stale-handoff fixture (the dispatch's (c) arm) still records
+      assumption *(completed)*
+- [x] Confirm the genuinely-stale-handoff fixture (the dispatch's (c) arm) still records
       `HANDOFF_STALE_OR_ABSENT` from its own earlier, unconditional gate; add the assertion if
-      the existing acceptance case does not already make it
-- [ ] Do not weaken fixture (A) in any way to accommodate the change
+      the existing acceptance case does not already make it *(completed: added zero-
+      RECOVERY_DECLINED assertion to acceptance (1))*
+- [x] Do not weaken fixture (A) in any way to accommodate the change *(completed: only additive
+      assertions)*
 
 **Timing**: 1.5 hours
 
