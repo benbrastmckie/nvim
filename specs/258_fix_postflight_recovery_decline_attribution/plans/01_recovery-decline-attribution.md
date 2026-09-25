@@ -1,7 +1,7 @@
 # Implementation Plan: Task #258
 
 - **Task**: 258 - Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: Task 257 (return-meta status vocabulary library) — CONFIRMED COMPLETE; `scripts/lib/return-meta-status-vocabulary.sh` exists on disk and is reusable today
 - **Research Inputs**: specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md
@@ -197,21 +197,21 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 touch disjoi
 
 ---
 
-### Phase 1: Restore the fixture suite to green [NOT STARTED]
+### Phase 1: Restore the fixture suite to green [COMPLETED]
 
 **Goal**: Make `test-orchestrate-cycle-postflight.sh` pass at baseline so fixtures (A) and (C)
 can serve as this task's regression guard. Pure repair of a predecessor's omission; no behavior
 change to any production script.
 
 **Tasks**:
-- [ ] Add `return-meta-status-vocabulary.sh` to the `require_file` preflight loop over
-      `$CORE_DIR/lib/` near the top of the suite
-- [ ] Add the same filename to the `setup_sandbox` copy loop that populates
-      `$WORKDIR/.claude/scripts/lib/`
-- [ ] Run the full suite and confirm 0 failures
-- [ ] Add a one-line comment at the copy loop naming why this lib is mandatory
+- [x] Add `return-meta-status-vocabulary.sh` to the `require_file` preflight loop over
+      `$CORE_DIR/lib/` near the top of the suite *(completed)*
+- [x] Add the same filename to the `setup_sandbox` copy loop that populates
+      `$WORKDIR/.claude/scripts/lib/` *(completed)*
+- [x] Run the full suite and confirm 0 failures *(completed: 110 passed, 0 failed)*
+- [x] Add a one-line comment at the copy loop naming why this lib is mandatory
       (`orchestrate-recover-outcome.sh` hard-fails with exit 2 without it), so the next
-      lib-extraction does not silently reintroduce the same breakage
+      lib-extraction does not silently reintroduce the same breakage *(completed)*
 
 **Timing**: 0.3 hours
 

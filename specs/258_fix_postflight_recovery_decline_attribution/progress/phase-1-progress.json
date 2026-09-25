@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Restore the fixture suite to green",
+  "started_at": "2026-09-25T21:00:00Z",
+  "last_updated": "2026-09-25T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add return-meta-status-vocabulary.sh to require_file preflight loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Add same filename to setup_sandbox copy loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Run full suite and confirm 0 failures", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Add one-line comment naming why lib is mandatory", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

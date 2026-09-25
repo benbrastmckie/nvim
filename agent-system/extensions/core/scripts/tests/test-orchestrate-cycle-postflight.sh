@@ -45,7 +45,8 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
   require_file "$CORE_DIR/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
-         phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh; do
+         phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
+         return-meta-status-vocabulary.sh; do
   require_file "$CORE_DIR/lib/$f"
 done
 
@@ -68,8 +69,13 @@ setup_sandbox() {
            errors-append.sh events-append.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
+  # return-meta-status-vocabulary.sh is a HARD dependency of orchestrate-recover-outcome.sh
+  # (source-or-exit-2): omitting it here does not fail loudly -- recover-outcome silently
+  # exits 2, its caller treats that as recovered=false, and fixtures fall through into an
+  # unrelated branch, recording spurious defects. See plans/01_recovery-decline-attribution.md.
   for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
-           phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh; do
+           phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
+           return-meta-status-vocabulary.sh; do
     cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
   done
   cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
