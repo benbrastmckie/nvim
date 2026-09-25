@@ -1,5 +1,5 @@
 ---
-next_project_number: 257
+next_project_number: 259
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 257
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,257,258 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,224,250,251,256 | 22,44,127,129,162,163,199,244 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
@@ -41,6 +41,8 @@ next_project_number: 257
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
+257 [NOT STARTED] — Inline the correct terminal status value and the...
+258 [NOT STARTED] — Stop recording a declined return-meta recovery as...
 
 ### Extensions
 
@@ -77,6 +79,163 @@ next_project_number: 257
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 258. Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+=== DIAGNOSTICS DEFECT (MISATTRIBUTION, NOT CAUSAL) ===
+When a research dispatch's return-meta recovery DECLINES, orchestrate-cycle-postflight.sh falls
+through its `have_outcome` else-arm into WORK (d), the absent-handoff branch, and records defect
+class HANDOFF_STALE_OR_ABSENT attributed to
+agent-system/extensions/core/skills/skill-orchestrate/SKILL.md with the message "Skill did not
+write orchestrator handoff".
+
+For a research phase that attribution is wrong twice over:
+1. Research agents are CONTRACTUALLY FORBIDDEN to write a handoff. Every research agent body
+   carries a '### `.orchestrator-handoff.json` -- research agents never write one' section
+   stating that an absent handoff after a research dispatch is 'the expected, non-defective
+   case'. The postflight's own happy path already says exactly this correctly: its RECOVERY line
+   reads 'no handoff written for this dispatch -- expected outcome for this phase's writer'.
+2. The actual fault in the observed incident was agent-side status vocabulary (a return-meta
+   carrying "status": "completed"), which is the separate agent-contract task's subject. The
+   orchestrator skill did nothing wrong and is blamed anyway.
+
+Mechanism: handoff_expected defaults to "true" with no phase-awareness, and skill-orchestrate's
+Move 3 never passes --handoff-expected false. VERIFIED: zero occurrences of 'handoff-expected'
+in skill-orchestrate/SKILL.md or orchestrate-cycle-plan.sh, so the default is always in force.
+
+=== NUANCE THAT MUST BE PRESERVED ===
+This branch is reachable ONLY after recovery has ALREADY declined -- it is the else-arm of the
+`recovered = true` test inside the else-arm of `have_outcome`. It is therefore NOT firing
+spuriously on every research dispatch; the ordinary successful research dispatch takes the
+RECOVERY path and is logged correctly. Any fix that suppresses the branch wholesale would
+throw away a genuine signal: reaching it still means something went wrong, just not the thing
+currently named.
+
+=== FIX DIRECTION ===
+Make the failure-path diagnostic name the REAL fault rather than blaming the orchestrator for a
+handoff the agent was forbidden to write. The information needed is already in hand at that
+point: orchestrate-recover-outcome.sh's returned JSON carries `status` and `evidence_reason`
+(NONE | PHASES_ZERO_ON_SUCCESS | ARTIFACTS_SHAPE_MISMATCH | STATUS_NOT_SUCCESS in the
+not-recovered arm), and the branch already reads the reported status into
+`out_recovered_reported_status` a few lines below purely for the output JSON. Hoist or reuse that
+read so the defect record can say, for example, 'return-meta recovery declined: agent reported
+status=completed, which is not in the accepted researched|planned|implemented vocabulary'.
+Consider whether this warrants a distinct defect class (e.g. RECOVERY_DECLINED or
+STATUS_VOCABULARY_VIOLATION) rather than reusing HANDOFF_STALE_OR_ABSENT, and attribute it to
+the dispatched agent's own file rather than to skill-orchestrate's SKILL.md.
+
+A phase-aware --handoff-expected false threaded from skill-orchestrate's Move 3 is a plausible
+second mechanism, but evaluate it against the simpler in-script fix first: the else-arm already
+prints 'handoff not expected for this dispatch; no defect recorded', so merely flipping the flag
+would SILENCE the branch entirely and lose the recovery-declined signal described above. Naming
+the real fault is preferred over silencing.
+
+=== DO NOT DISTURB THE STALE-MTIME PATH ===
+specs/events.jsonl in the Verification consumer repo holds 10 HANDOFF_STALE_OR_ABSENT records.
+The previous 9 are all the distinct stale-mtime / dispatch_seq-mismatch sub-case, recorded
+unconditionally EARLIER in the script (before this branch is ever reached) and correctly. Only
+the 10th is this absent-plus-recovery-declined variant, the first of its kind. The fix must be
+confined to the WORK (d) absent-handoff branch and must leave the stale and dispatch_seq-mismatch
+recording sites untouched.
+
+=== VERIFICATION ===
+Exercise both arms: (a) a research dispatch whose return-meta carries a bad status -> expect the
+new, correctly-attributed record; (b) a genuinely stale handoff -> expect the existing
+HANDOFF_STALE_OR_ABSENT record, unchanged. The script's own --dry-run mode prints 'would record'
+lines and is the cheapest way to check both without writing to the defect store.
+
+---
+
+### 257. Inline the correct terminal status value and the never-use-completed warning into every dispatchable agent's return-meta example
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ (never .claude/**).
+
+=== CAUSAL DEFECT, OBSERVED IN A REAL DISPATCH ===
+typst-research-agent wrote "status": "completed" into .return-meta.json after a research
+dispatch whose report file was written correctly. orchestrate-recover-outcome.sh accepts only
+researched|planned|implemented in its success `case` arm; "completed" fell through to the
+default arm, which emits STATUS_NOT_SUCCESS -> recovered=false -> no status transition ->
+verdict=failed. A fully successful research phase was charged as a failure, and the deeper
+consequence is that the same wrong value silently converts ANY successful dispatch into a
+failed one wherever it occurs.
+
+The normative vocabulary at context/formats/return-metadata-file.md states explicitly: 'Never
+use "completed" - it triggers Claude stop behavior.' The pointer exists; the failure mode is
+that an agent body which only POINTS at that file (with an 'always load before writing final
+metadata' instruction) leaves the model free to skip the load and fall back on the ordinary
+English sense of 'completed'.
+
+=== ROOT CAUSE: STRUCTURAL INCONSISTENCY, NOT A TYPST BUG ===
+Agent bodies fall into two shapes. The protected shape wraps the canonical artifacts fragment
+inside a fuller JSON object that carries the concrete correct status inline, e.g.
+lean-research-agent.md:321-337 opens its fenced block with `{ "status": "researched",` before
+the artifacts array. The unprotected shape emits ONLY the bare `"artifacts": [...]` fragment
+with no enclosing object and no status key anywhere in the example.
+
+VERIFIED IN THE SOURCE STORE 2026-09-25 by grep -c over each agent file. The unprotected set is
+WIDER than the four files originally reported -- do not stop at four:
+
+Research agents MISSING an inline "status": "researched" (6):
+  core/general-research-agent.md, latex/latex-research-agent.md,
+  python/python-research-agent.md, rust/rust-research-agent.md,
+  typst/typst-research-agent.md, z3/z3-research-agent.md
+Research agents already protected (11, leave alone; copy their wording):
+  lean, math, logic, formal, physics, cslib, pr-review, epi, deck, neovim, nix, slides, web
+
+Implementation agents MISSING an inline "status": "implemented" (7):
+  email, latex, python, rust, typst, web, z3
+Implementation agents already protected (4): core/general-implementation-agent.md,
+  cslib (x2), lean, nix, nvim
+
+Note general-research-agent.md is only PARTIALLY unprotected: it already carries the correct
+value in prose ('with status `researched`') and already carries a MUST NOT line reading 'Use
+status value "completed" (triggers Claude stop behavior)'. It lacks only the inline JSON. Do not
+duplicate what is already there. Symmetrically, email-implementation-agent.md and
+web-implementation-agent.md already carry the never-use-completed warning but lack the inline
+status. Check each file before editing rather than applying a uniform patch.
+
+Because general-research-agent is in the unprotected set, this is the DEFAULT path for the
+general, meta, and markdown task types -- not a typst-only issue.
+
+=== FIX ===
+Bring each unprotected agent up to the shape the protected ones already use: (a) wrap the
+existing bare artifacts fragment in a full JSON object whose first key is the concrete correct
+terminal status for that agent's phase ("researched" for research agents, "implemented" for
+implementation agents), matching lean-research-agent.md's existing block byte-for-byte in
+structure; (b) add the never-use-"completed" warning where absent, reusing the wording already
+present in general-research-agent.md rather than inventing a new form. Do NOT invent a new
+template shape.
+
+COMPATIBILITY, ALREADY CHECKED: lint-agent-contracts.sh Check F extracts the REQUIRED KEY SET
+(type/path/summary) from context/contracts/return-meta-artifacts-template.md and checks each
+agent carries those keys. It does not forbid an enclosing object, which is why the protected
+agents pass today. Wrapping is therefore safe. Re-run the lint to confirm rather than assuming.
+
+=== REGRESSION GUARD (in scope) ===
+Add a check to extensions/core/scripts/lint/lint-agent-contracts.sh (alongside the existing
+Check F, reusing its is_dispatchable_agent detector and its recorded-exclusion mechanism) that
+fails any dispatchable agent whose terminal-metadata example does not carry a status value drawn
+from the accepted vocabulary, and that flags any occurrence of "status": "completed" in an agent
+body. Without this the consistency achieved here drifts back the moment a new extension agent is
+added. Derive the accepted vocabulary from a single source (orchestrate-recover-outcome.sh's
+case arm / return-metadata-file.md) rather than hardcoding a second list that can drift.
+
+=== OUT OF SCOPE ===
+Changing orchestrate-recover-outcome.sh to ACCEPT "completed" as a success synonym. That would
+paper over the vocabulary violation and re-import the stop-behavior hazard the vocabulary exists
+to avoid. The status vocabulary is correct; the agent bodies are what is wrong.
+
+---
 
 ### 256. Audit residual .opencode wiring in the core source store against the standing frozen-mirror policy
 - **Status**: [NOT STARTED]
