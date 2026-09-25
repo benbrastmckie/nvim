@@ -236,25 +236,33 @@ the real file.
 
 ---
 
-### Phase 2: Add `RECOVERY_DECLINED` to the closed enum and the pattern registry [NOT STARTED]
+### Phase 2: Add `RECOVERY_DECLINED` to the closed enum and the pattern registry [COMPLETED]
 
 **Goal**: Make the new class accepted by the recorder and documented in the contract that the
 recorder's own error message points readers at.
 
 **Tasks**:
-- [ ] Add `RECOVERY_DECLINED` to `system-defect-record.sh`'s `case "$defect_class" in` arm
-- [ ] Update the validation error message and the usage/header text from "fourteen" to "fifteen"
-      (grep the whole file — the count appears in more than one place)
-- [ ] Add a Signal A table row in `system-defect-discrimination.md` defining the class: a
+- [x] Add `RECOVERY_DECLINED` to `system-defect-record.sh`'s `case "$defect_class" in` arm *(completed)*
+- [x] Update the validation error message and the usage/header text from "fourteen" to "fifteen"
+      (grep the whole file — the count appears in more than one place) *(completed)*
+- [x] Add a Signal A table row in `system-defect-discrimination.md` defining the class: a
       dispatch whose `.return-meta.json` exists and was read but whose status could not be
       accepted as a terminal outcome, distinguished from `HANDOFF_STALE_OR_ABSENT` (which remains
-      handoff-shaped)
-- [ ] Add the corresponding detection-point registry row naming
-      `cycle-postflight-recovery-declined` as the detecting site
-- [ ] Update any count-of-classes wording in the pattern doc that says fourteen
-- [ ] Take the research report's free suggestion: add a one-line pointer from the Signal B /
+      handoff-shaped) *(completed)*
+- [x] Add the corresponding detection-point registry row naming
+      `cycle-postflight-recovery-declined` as the detecting site *(completed)*
+- [x] Update any count-of-classes wording in the pattern doc that says fourteen
+      *(deviation: altered — no live/current-count assertion of "fourteen" existed to update;
+      the two remaining occurrences are historical narrative ("A fourteenth instance ... was
+      added", "None of the fourteen pre-existing instances") describing the state immediately
+      before this change, in the exact idiom the document already establishes at line 175
+      ("None of the thirteen pre-existing instances"), which itself survived unchanged when the
+      fourteenth instance was added. Rewriting or deleting these would break historical accuracy
+      and break the document's own established convention. A parallel "A fifteenth instance,
+      RECOVERY_DECLINED, was added..." paragraph was added following the same idiom.)*
+- [x] Take the research report's free suggestion: add a one-line pointer from the Signal B /
       attribution discussion to `system-defect-record.sh`'s `--dispatched-agent` resolver, so the
-      next reader does not conclude (as this dispatch did) that no resolver exists
+      next reader does not conclude (as this dispatch did) that no resolver exists *(completed)*
 
 **Timing**: 0.7 hours
 

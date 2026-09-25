@@ -94,6 +94,7 @@ decision, not silently done by a detection site):
 | `HOOK_REGEX_BOUNDARY_DEFECT` — a validation hook's regex or path-depth pattern encodes an unstated boundary assumption (e.g. a fixed digit-count quantifier) that silently breaks once real inputs cross that boundary, wrongly rejecting (or wrongly accepting) otherwise-valid inputs | **not currently computed anywhere** |
 | `DEPLOY_ORPHAN_DRIFT` — a file or index entry present in the deployed tree with no corresponding source-store owner, surviving indefinitely because the deploy/merge routine is purely additive with no stale-entry pruning step | **not currently computed anywhere** |
 | `AMBIENT_BINDING_MISMATCH` — a downstream guard keyed to an ambient/global shell variable that only some callers populate, so the guard's condition silently evaluates false instead of erroring, and the guarded behavior is skipped without any signal | **not currently computed anywhere** |
+| `RECOVERY_DECLINED` — a dispatch wrote no handoff, but `orchestrate-recover-outcome.sh`'s `.return-meta.json` recovery declined for a reason that means a terminal marker was written and read, not that nothing was produced: `STATUS_IN_PROGRESS` (a terminal write never happened — the interrupted-fan-out shape) or `STATUS_NOT_SUCCESS` (an out-of-vocabulary terminal status value, e.g. `"completed"`). Distinguished from `HANDOFF_STALE_OR_ABSENT`, which stays handoff-shaped and covers the case where recovery declines because nothing usable exists at all (`META_MISSING`, `META_STALE`, `META_DISPATCH_SEQ_MISMATCH`, or the genuinely stale-mtime handoff) | `orchestrate-cycle-postflight.sh`'s WORK (d) absent-handoff branch, discriminated on `recover_json`'s `.reason` field — see registry below |
 
 Not every instance above yet has a working detector — see the `ARTIFACTS_MISSING_ON_SUCCESS` row:
 it defines what counts as a violation of this kind, not what currently fires everywhere it could.
@@ -175,6 +176,23 @@ never set, is the concrete instance that motivated naming this shape. None of th
 pre-existing instances was reworded or reinterpreted to cover it; this paragraph is where this
 document first names it.
 
+A fifteenth instance, `RECOVERY_DECLINED`, was added deliberately, to correct a misattribution
+rather than to name a wholly new site. The WORK (d) absent-handoff branch in
+`orchestrate-cycle-postflight.sh` previously recorded every dispatch that wrote no handoff and
+whose `.return-meta.json` recovery declined as `HANDOFF_STALE_OR_ABSENT`, attributed to
+`skill-orchestrate/SKILL.md` — correct when nothing usable was produced at all (`META_MISSING`),
+but wrong when the dispatched agent's own `.return-meta.json` exists, was read, and carries a
+terminal marker the orchestrator could not accept (`STATUS_IN_PROGRESS`, `STATUS_NOT_SUCCESS`,
+`META_DISPATCH_SEQ_MISMATCH`): the research agent involved is contractually forbidden to write a
+handoff at all, so "the skill did not write a handoff" is actively false, and the real fault is
+agent-side status vocabulary. `HANDOFF_STALE_OR_ABSENT`'s own definition above is handoff-shaped
+("a handoff whose mtime predates the dispatch window, or is otherwise absent when expected"); a
+`.return-meta.json` carrying `status: "completed"` is status-shaped, and no rewording of the
+existing class name would make it accurate. None of the fourteen pre-existing instances was
+reworded or reinterpreted to cover this shape; this paragraph is where this document first names
+it. The predecessor absent-handoff site (`META_MISSING`) keeps `HANDOFF_STALE_OR_ABSENT`
+unchanged — see the registry row below for the discriminating detail.
+
 ### Signal B — attribution
 
 Detection alone is not enough: the violation must resolve to a **named** file under
@@ -187,6 +205,12 @@ for core files, or the matching `agent-system/extensions/<ext>/**` for extension
 dispatch failure, the attributed file is the dispatched agent's own definition file (e.g. a
 research-agent status violation attributes to that agent's `.md` definition under
 `agent-system/extensions/<ext>/agents/`).
+
+An agent-name → agent-file resolver for this already exists — a caller does not need to build
+one. `scripts/system-defect-record.sh --dispatched-agent NAME` globs
+`agent-system/extensions/*/agents/NAME.md` and refuses with exit 3 if it does not resolve;
+`--attributed-path` takes precedence when both are passed. `RECOVERY_DECLINED`'s recording site
+uses this resolver directly rather than hand-deriving the agent's path.
 
 **Detection without attribution must log only and never offer a task.** Unattributable detections
 are the main noise vector this predicate exists to suppress — a violation that cannot be pinned to
@@ -235,6 +259,7 @@ beside the existing banner** — the diagnosis is already in hand.
 | Stale-handoff gate | `scripts/orchestrate-cycle-postflight.sh` (mtime staleness gate, before the handoff-present branch) | handoff mtime predates the dispatch window — may indicate a stale write, a hung writer, or a writer bug | `HANDOFF_STALE_OR_ABSENT` |
 | Stray-handoff sweep | `scripts/orchestrate-cycle-postflight.sh` (`--defect-class HANDOFF_MISLOCATED` site) | `HANDOFF_MISLOCATED` — a writer produced the handoff outside its task directory (moved to `.stray-handoff-{ts}.json` for inspection, never actioned further) | `HANDOFF_MISLOCATED` |
 | Completion-claim gate, Case 3/3 refuse | `scripts/skill-base.sh:729` | `META_MISSING_AFTER_NARRATION`-shaped: phase accounting absent/malformed AND no corroborating plan-marker signal — already logs the phrase `handoff-writer defect suspected` verbatim | `META_MISSING_AFTER_NARRATION` |
+| Recovery-declined sub-branch, detecting site `cycle-postflight-recovery-declined` | `scripts/orchestrate-cycle-postflight.sh` (WORK (d) absent-handoff branch, discriminated on `recover_json`'s `.reason`) | a `.return-meta.json` exists, was read, and recovery declined because the reported status could not be accepted as terminal (`STATUS_IN_PROGRESS`, `STATUS_NOT_SUCCESS`, `META_DISPATCH_SEQ_MISMATCH`) — attributed to the dispatched agent's own file via `--dispatched-agent`, never to `skill-orchestrate/SKILL.md`. The sibling `META_MISSING` sub-case (nothing usable produced at all) stays on the pre-existing `HANDOFF_STALE_OR_ABSENT` row above, unchanged | `RECOVERY_DECLINED` |
 
 ### Class (b) — computed but discarded
 

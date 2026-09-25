@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Add RECOVERY_DECLINED to the closed enum and the pattern registry",
+  "started_at": "2026-09-25T21:06:00Z",
+  "last_updated": "2026-09-25T21:16:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add RECOVERY_DECLINED to system-defect-record.sh's case arm", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/system-defect-record.sh"]},
+    {"id": 2, "description": "Update validation error message and usage/header text from fourteen to fifteen", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/system-defect-record.sh"]},
+    {"id": 3, "description": "Add Signal A table row in system-defect-discrimination.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 4, "description": "Add detection-point registry row naming cycle-postflight-recovery-declined", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 5, "description": "Update count-of-classes wording in pattern doc", "status": "done", "note": "No live count assertion needed updating; remaining 'fourteen' occurrences are historical narrative, kept per the document's own established convention (see deviations).", "files_touched": []},
+    {"id": 6, "description": "Add pointer from Signal B/attribution discussion to --dispatched-agent resolver", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Update any count-of-classes wording in the pattern doc that says fourteen",
+      "type": "altered",
+      "reason": "No live/current-count claim of 'fourteen' existed. The two surviving occurrences are historical narrative describing the state immediately before this change ('A fourteenth instance ... was added', 'None of the fourteen pre-existing instances'), in the exact idiom the document already establishes for the prior addition (line 175's 'None of the thirteen pre-existing instances', which itself survived unchanged when the fourteenth instance was added). Rewriting or deleting them would break historical accuracy and the document's own established convention; a parallel fifteenth-instance paragraph was added using the same idiom instead.",
+      "annotation": "*(deviation: altered — no live/current-count assertion of \"fourteen\" existed to update; the two remaining occurrences are historical narrative preserved per the document's own established convention)*"
+    }
+  ],
+  "handoff_count": 0
+}
