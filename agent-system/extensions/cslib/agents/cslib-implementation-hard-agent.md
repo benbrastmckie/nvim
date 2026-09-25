@@ -319,9 +319,15 @@ your delegation context carries a `dispatch_seq` field, copy its value into the 
 too. This is the orchestrator-minted per-dispatch identity Stage 5 of both orchestrate engines
 compares against the value it minted for this cycle — see
 `context/patterns/dispatch-report-not-termination.md`.
+
+`status` is one of `implemented`, `partial`, or `blocked` — see `docs/architecture/handoff-schema.md`'s
+`### status (required)` field definition for the full six-value enum this is drawn from and when
+each applies. The example below shows the `implemented` case; substitute `partial`/`blocked`
+per that definition, never a pipe-joined placeholder.
+
 ```json
 {
-  "status": "implemented | partial | blocked",
+  "status": "implemented",
   "skeleton": false,
   "summary": "Brief summary of what was proven",
   "phases_completed": N,
@@ -385,10 +391,13 @@ copyable skeleton adapted to CSLib's CI pipeline.
 
 ### Stage 7: Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`.
-Include `phases_completed`, `phases_total`, `memory_candidates`, and verification results:
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented`, `partial`, or `failed`
+(never `completed` — see the MUST NOT list below). Include `phases_completed`, `phases_total`,
+`memory_candidates`, and verification results. Copy this exact shape, matching
+`cslib-implementation-agent.md`'s protected base shape:
 ```json
 {
+  "status": "implemented",
   "verification": {
     "verification_passed": true,
     "sorry_count": 0,
@@ -396,7 +405,14 @@ Include `phases_completed`, `phases_total`, `memory_candidates`, and verificatio
     "axiom_count": 0,
     "build_passed": true,
     "ci_pipeline_passed": true
-  }
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+      "summary": "One-line description of what was proven or implemented."
+    }
+  ]
 }
 ```
 

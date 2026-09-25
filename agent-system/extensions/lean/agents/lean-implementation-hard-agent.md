@@ -300,9 +300,14 @@ or recompute one; if absent, omit it too. This is the orchestrator-minted per-di
 Stage 5 of both orchestrate engines compares against the value it minted for this cycle — see
 `context/patterns/dispatch-report-not-termination.md`.
 
+`status` is one of `implemented`, `partial`, or `blocked` — see `docs/architecture/handoff-schema.md`'s
+`### status (required)` field definition for the full six-value enum this is drawn from and when
+each applies. The example below shows the `implemented` case; substitute `partial`/`blocked`
+per that definition, never a pipe-joined placeholder.
+
 ```json
 {
-  "status": "implemented | partial | blocked",
+  "status": "implemented",
   "skeleton": false,
   "summary": "Brief summary of what was accomplished",
   "phases_completed": N,
@@ -627,13 +632,16 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial
 exact shape (source: `@.claude/context/contracts/return-meta-artifacts-template.md`):
 
 ```json
-"artifacts": [
-  {
-    "type": "summary",
-    "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
-    "summary": "One-line description of what was proved or implemented."
-  }
-]
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+      "summary": "One-line description of what was proved or implemented."
+    }
+  ]
+}
 ```
 
 Include `sorry_inventory` at top level (mirrors `.orchestrator-handoff.json`).

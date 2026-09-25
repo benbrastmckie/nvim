@@ -357,32 +357,32 @@ per-file bullet/status-key audit. Confirm each file's bullet presence by grep be
 
 ---
 
-### Phase 6: Hard-mode twins — 4 files, 6 edit sites [NOT STARTED]
+### Phase 6: Hard-mode twins — 4 files, 6 edit sites [COMPLETED]
 
 **Goal**: Close the `-hard` twins of four agents whose base versions are already protected.
 Fixing a base agent and leaving its twin unprotected **is** the recorded recurring twin-file
 defect class; all four are done together, in one phase.
 
 **Tasks**:
-- [ ] `lean/agents/lean-research-hard-agent.md` — wrap the bare fragment at `:348` with
+- [x] `lean/agents/lean-research-hard-agent.md` — wrap the bare fragment at `:348` *(completed)* with
       `"status": "researched"`.
-- [ ] `cslib/agents/cslib-research-hard-agent.md` — wrap the bare fragment at `:315` with
+- [x] `cslib/agents/cslib-research-hard-agent.md` — wrap the bare fragment at `:315` *(completed)* with
       `"status": "researched"`.
-- [ ] `lean/agents/lean-implementation-hard-agent.md` — **two sites**: (a) the
+- [x] `lean/agents/lean-implementation-hard-agent.md` — **two sites**: *(completed)* (a) the
       `.orchestrator-handoff.json` block at `:305`, rewriting the pipe placeholder
       `"implemented | partial | blocked"` to the concrete `"implemented"`, covering
       `partial`/`blocked` in surrounding prose as `handoff-schema.md` itself does; (b) the Stage 8
       `.return-meta.json` block at `:630`, wrapping the bare artifacts fragment with
       `"status": "implemented"`.
-- [ ] `cslib/agents/cslib-implementation-hard-agent.md` — **two sites**: (a) the
+- [x] `cslib/agents/cslib-implementation-hard-agent.md` — **two sites**: *(completed)* (a) the
       `.orchestrator-handoff.json` block at `:324`, same pipe-to-concrete rewrite; (b) Stage 7
       (`:387` onward), whose fenced block currently carries only a `verification` object and no
       status or artifacts at all — add a status-carrying `.return-meta.json` example there,
       matching `cslib-implementation-agent.md`'s protected base shape.
-- [ ] Locate every site **by content** (the enclosing `### Stage N` heading and the target
+- [x] Locate every site **by content** *(completed)* (the enclosing `### Stage N` heading and the target
       filename named just above each fence), never by line symmetry between the two files — the
       two twins' stage numbering already differs (Stage 8 vs Stage 7).
-- [ ] MUST-NOT bullets are already present in all four (`lean-implementation-hard` via its base
+- [x] MUST-NOT bullets are already present in all four *(completed)* (`lean-implementation-hard` via its base
       conventions, `cslib-implementation-hard-agent.md:460`,
       `cslib-research-hard-agent.md:385`) — verify per file, add only where genuinely absent.
 

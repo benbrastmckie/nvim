@@ -312,13 +312,16 @@ Include `memory_candidates` array. Set `next_steps` to `"Run /plan {N} to create
 exact shape (source: `@.claude/context/contracts/return-meta-artifacts-template.md`):
 
 ```json
-"artifacts": [
-  {
-    "type": "report",
-    "path": "specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md",
-    "summary": "One-line description of the report's scope and key findings."
-  }
-]
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/{NNN}_{SLUG}/reports/{NN}_{short-slug}.md",
+      "summary": "One-line description of the report's scope and key findings."
+    }
+  ]
+}
 ```
 
 ### Stage 8: Return Brief Text Summary
