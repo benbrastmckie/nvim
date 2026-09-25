@@ -11,9 +11,10 @@ next_project_number: 260
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,257,258,259 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251,256 | 22,44,127,129,162,163,199,244 | core-agent-system, neovim, opencode, ... |
-| 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
+| 1 | 22,29,39,44,51,89,127,129,162,163,177,185,207,217,223,241,244,255,257,259 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 43,45,139,165,166,167,199,224,251,256,258 | 22,44,127,129,162,163,244,257,259 | core-agent-system, extensions, neovim, ... |
+| 3 | 136,184,250 | 139,166,199,258,259 | core-agent-system |
+| 4 | 170 | 51,129,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -32,26 +33,27 @@ next_project_number: 260
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
   └─ 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
-166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
-  └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
-184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
-    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 257 [NOT STARTED] — Inline the correct terminal status value and the...
-258 [NOT STARTED] — Stop recording a declined return-meta recovery as...
+  └─ 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
+    └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
+  └─ 258 [NOT STARTED] — Stop recording a declined return-meta recovery as...
+    └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
 259 [NOT STARTED] — Allow completion when a plan branch deliberately skips...
+  └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the... (see above)
+  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+    └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
+      └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 
 ### Extensions
 
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
-43 [NOT STARTED] — Decide and implement how email safety context actually...
-167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
 255 [NOT STARTED] — Reconcile typst extension scope ownership and fix...
+43 [NOT STARTED] — Decide and implement how email safety context actually...
+167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 
 ### Literature
 
@@ -240,9 +242,17 @@ undone by a second refusal downstream.
     ModelChecker consumer repo) for want of anything better, which is a poor fit -- the artifacts
     array was correct; the phase counters were the problem. Consider whether a
     PHASE_ACCOUNTING_MISMATCH class earns its place, weighed against enum growth for its own sake.
-    COLLISION WARNING: the sibling recovery-decline-attribution task also contemplates adding a
-    class to that same closed enum. If both do, they overlap on system-defect-record.sh and must
-    not be dispatched in the same batch wave.
+    ENUM COLLISION WITH THE SIBLING RECOVERY-DECLINE-ATTRIBUTION TASK -- ALREADY SERIALIZED, NO
+    MANUAL SEQUENCING NEEDED. That task also contemplates adding a class to this same closed
+    enum. VERIFIED 2026-09-25: BOTH tasks are SELF-MODIFYING under
+    context/reference/orchestrator-critical-paths.json -- this task declares
+    scripts/skill-base.sh and scripts/orchestrate-cycle-plan.sh, both listed critical paths, and
+    the sibling declares scripts/orchestrate-cycle-postflight.sh plus system-defect-record.sh
+    itself. Per orchestrate-batch-admit.sh's designated-self-modifying-candidate rule (:93-101)
+    only the LOWEST-numbered self-modifying candidate is admitted per cycle, so the two can
+    never co-dispatch and no dependencies[] edge is warranted (an edge would also exempt the
+    pair from the collision scan, losing a check for no gain). Land whichever runs first and
+    rebase the second onto the enum as it then stands.
 
 === RELATIONSHIP TO THE TWO SIBLING META TASKS ===
 Same subsystem, three distinct gaps in the postflight adjudication chain, all found in one day:
@@ -279,7 +289,7 @@ warning still fires in arm (2). No test may be weakened or deleted to make the c
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 257
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -405,14 +415,38 @@ the 10th is this absent-plus-recovery-declined variant, the first of its kind. T
 confined to the WORK (d) absent-handoff branch and must leave the stale and dispatch_seq-mismatch
 recording sites untouched.
 
+=== DEPENDENCY: THE SIBLING AGENT-CONTRACT TASK MUST LAND FIRST ===
+dependencies[] carries that task's number. Two independent reasons, both load-bearing:
+  1. ARTIFACT DEPENDENCY. The cheaper path above reuses the 8-value return-meta vocabulary
+     library that task extracts out of validate-return-meta.sh:175. Running this task first
+     means either hand-rolling a second copy of the vocabulary (the drift this system's
+     one-sourced-library convention exists to prevent) or falling back to reading the hardcoded
+     array directly.
+  2. CAUSE BEFORE DIAGNOSTIC. That task fixes the CAUSE (agent bodies emitting an
+     out-of-vocabulary status); this one fixes how the resulting failure is REPORTED. Fixing the
+     report first leaves the cause live and makes this task's own verification harder to stage,
+     since arm (a) needs an agent that still emits a bad status.
+Note the edge's admission-control side effect, which is intended here: a successor is not
+eligible while its predecessor is non-terminal, so this task waits a cycle rather than
+co-dispatching. That also keeps it out of the same cycle as the phase-accounting sibling.
+
 === FILE SCOPE NOTE ===
 Current file_scope lists only orchestrate-cycle-postflight.sh and is incomplete. It must also
 cover scripts/tests/test-orchestrate-cycle-postflight.sh (three fixtures assert exactly-one
 HANDOFF_STALE_OR_ABSENT and will need updating), and -- only if a new defect class is chosen --
 scripts/system-defect-record.sh and context/patterns/system-defect-discrimination.md. NOTE A
-POSSIBLE COLLISION: the sibling phase-accounting-deadlock task also contemplates adding a class
-(PHASE_ACCOUNTING_MISMATCH) to that same closed enum. If both tasks add a class, they overlap on
-system-defect-record.sh and must not be dispatched in the same batch wave.
+ENUM COLLISION WITH THE SIBLING PHASE-ACCOUNTING TASK -- ALREADY SERIALIZED BY THE MACHINERY, NO
+MANUAL SEQUENCING NEEDED. That task also contemplates adding a class (PHASE_ACCOUNTING_MISMATCH)
+to this same closed enum. VERIFIED 2026-09-25: both tasks are SELF-MODIFYING under
+context/reference/orchestrator-critical-paths.json -- this task declares
+scripts/orchestrate-cycle-postflight.sh, scripts/system-defect-record.sh and
+context/patterns/system-defect-discrimination.md, all three of which are listed critical paths,
+and the sibling declares scripts/skill-base.sh and scripts/orchestrate-cycle-plan.sh. Per
+orchestrate-batch-admit.sh's designated-self-modifying-candidate rule (:93-101) only the
+LOWEST-numbered self-modifying candidate is admitted per cycle and every other one defers, so
+the two can never co-dispatch. Do NOT add a dependencies[] edge between them for this reason:
+an edge would additionally EXEMPT the pair from the collision scan (:219), removing a check for
+no gain. Land whichever runs first and rebase the second onto the enum as it then stands.
 
 === VERIFICATION ===
 Exercise all three sub-cases plus the untouched path: (a) a research dispatch whose return-meta
@@ -1148,7 +1182,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 199, Task 245, Task 249
+- **Dependencies**: Task 199, Task 245, Task 249, Task 259
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -1847,7 +1881,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243
+- **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243, Task 259
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
@@ -1978,7 +2012,7 @@ ACCEPTANCE: every citation that refers to a LIVE section names the correct Move;
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 242, Task 243
+- **Dependencies**: Task 242, Task 243, Task 258, Task 259
 
 **Description**: === RULED 2026-09-22 (eighth-pass phase 0) ===
 Disposition: option (a), narrowed to what was actually lost. The single-task engine's skeleton-exhaustion branch did three things: (1) routed the task to completion via the pr_ready target, (2) propagated a completion summary, (3) derived and reported follow-up tasks from sorry_inventory[].follow_up_task. Under the batch engine (1) is moot: pr_ready is a type=pr-only terminus, and every other task completes through orchestrate-cycle-postflight.sh's completion-claim gate, which a skeleton plan with all phases complete already reaches (orchestrate-cycle-plan.sh's 'no OPEN heading' fallthrough, ~line 2003, and the porting note at ~line 1921). (2) is owned by postflight generally. Only (3) is lost: a skeleton plan completes with its sorry_inventory silently dropped, so the strategic sorries never become tasks.
@@ -2273,7 +2307,7 @@ Contemporaneous context that plausibly supplied the load: the same run-all.sh in
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: None
+- **Dependencies**: Task 257, Task 259
 
 **Description**: Make continuous-build (vimtex `latexmk -pvc`) safety guidance always-in-effect for every agent and command, not only latex-typed dispatches, by extending the latex extension's EXISTING deployed rule file rather than adding a new mechanism.
 
@@ -2528,7 +2562,7 @@ ACCEPTANCE: a task-type-independent path exists by which an agent about to compi
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 194, Task 196
+- **Dependencies**: Task 194, Task 196, Task 257
 
 **Description**: DEFECT: a produced research report used section headings that are semantically correct but lexically non-conforming, so validate-artifact.sh's required-section check failed on an artifact whose authoring agent ALREADY carries a conforming skeleton. This is NOT the "agent has no skeleton at all" class addressed by the lean/formal skeleton work -- here the skeleton is present and correct, and the produced artifact drifted from it.
 
@@ -2834,7 +2868,7 @@ DEPENDENCY RATIONALE. Depends on its predecessor task on two grounds: that task 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 91, Task 139, Task 146, Task 166, Task 194
+- **Dependencies**: Task 91, Task 139, Task 146, Task 166, Task 194, Task 257
 
 **Description**: PRODUCER-SIDE root cause of the malformed plan-level Status line that task 91 handles from the consumer side. Task 91 makes update-plan-status.sh diagnose the malformed line loudly; this task stops the line being written in the first place, and makes the validator catch it if it ever is.
 
@@ -3203,7 +3237,7 @@ second should make sure all three entries read as a coherent set.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 194
+- **Dependencies**: Task 194, Task 257
 
 **Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is email-extension-internal context-loading work, classified extension-internal by the consolidation audit, and is unrelated to the orchestrate-engine collapse. Original description follows.LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.
 
