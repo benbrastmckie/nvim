@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Category A content fix - core lifecycle agents and email",
+  "started_at": "2026-09-25T01:10:00Z",
+  "last_updated": "2026-09-25T01:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "planner-agent.md: wrap happy-path bare artifacts fragment with status planned + metadata + dispatch_seq placeholder, matching needs_research block's completeness",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"]
+    },
+    {
+      "id": 2,
+      "description": "general-research-agent.md, spawn-agent.md, email-implementation-agent.md: minimal 2-key wrap (status + artifacts), no MUST-NOT duplication",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-research-agent.md",
+        "agent-system/extensions/core/agents/spawn-agent.md",
+        "agent-system/extensions/email/agents/email-implementation-agent.md"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

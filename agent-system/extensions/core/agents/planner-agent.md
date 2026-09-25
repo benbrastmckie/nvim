@@ -407,13 +407,23 @@ array silently breaks the orchestrator's `.artifacts[0].path` read. Copy this ex
 `@.claude/context/contracts/return-meta-artifacts-template.md`):
 
 ```json
-"artifacts": [
-  {
-    "type": "plan",
-    "path": "specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md",
-    "summary": "One-line description of the plan's scope and phase count."
-  }
-]
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/{NNN}_{SLUG}/plans/{NN}_{short-slug}.md",
+      "summary": "One-line description of the plan's scope and phase count."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_...",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": <echoed verbatim, same rule as documented below>
+}
 ```
 
 **`dispatch_seq` (sibling top-level field)**: echo the delegation context's `dispatch_seq` value

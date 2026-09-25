@@ -310,7 +310,7 @@ individually and say so in the summary.
 
 ---
 
-### Phase 5: Category A content fix — core lifecycle agents and email [NOT STARTED]
+### Phase 5: Category A content fix — core lifecycle agents and email [COMPLETED]
 
 **Goal**: Close the two highest-blast-radius files in the system. `planner-agent.md` is the
 default plan agent for **every** task type and its only complete JSON example today is the
@@ -318,18 +318,18 @@ default plan agent for **every** task type and its only complete JSON example to
 `general`/`meta`/`markdown`.
 
 **Tasks**:
-- [ ] `core/agents/planner-agent.md` — **do this file first**. Wrap the bare `"artifacts": [...]`
+- [x] `core/agents/planner-agent.md` — **do this file first**. *(completed)* Wrap the bare `"artifacts": [...]`
       at `:410` in a full object opening with `"status": "planned"`, so the happy path finally has
       a complete worked example alongside the existing `needs_research` one at `:434`. Leave the
       `needs_research` block and the prose at `:401` unchanged; the MUST-NOT bullet is already
       present at `:530` — do not duplicate it.
-- [ ] `core/agents/general-research-agent.md` — wrap the bare fragment at `:384` with
+- [x] `core/agents/general-research-agent.md` — wrap the bare fragment at `:384` *(completed)* with
       `"status": "researched"`. Prose and the MUST-NOT bullet (`:433`) are already correct; add
       nothing else.
-- [ ] `core/agents/spawn-agent.md` — wrap the bare fragment at `:212` with
+- [x] `core/agents/spawn-agent.md` — wrap the bare fragment at `:212` *(completed)* with
       `"status": "researched"`, matching the prose at `:203`. MUST-NOT bullet already present at
       `:248`.
-- [ ] `email/agents/email-implementation-agent.md` — wrap the bare fragment at `:164` with
+- [x] `email/agents/email-implementation-agent.md` — wrap the bare fragment at `:164` *(completed)* with
       `"status": "implemented"`. MUST-NOT bullet already present at `:228` in its own local
       wording — leave it as-is rather than re-wording it.
 

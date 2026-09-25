@@ -161,13 +161,16 @@ also touched any repo-tracked source file. Copy this exact shape (source:
 `@.claude/context/contracts/return-meta-artifacts-template.md`):
 
 ```json
-"artifacts": [
-  {
-    "type": "summary",
-    "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
-    "summary": "One-line description of what the triage/cleanup run accomplished."
-  }
-]
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+      "summary": "One-line description of what the triage/cleanup run accomplished."
+    }
+  ]
+}
 ```
 
 **`modified_files`**: always emit this top-level field, per the "How Implementation Agents

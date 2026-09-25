@@ -209,13 +209,16 @@ array silently breaks the orchestrator's `.artifacts[0].path` read. Copy this ex
 `@.claude/context/contracts/return-meta-artifacts-template.md`):
 
 ```json
-"artifacts": [
-  {
-    "type": "report",
-    "path": "specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md",
-    "summary": "One-line description of the blocker analysis and proposed task count."
-  }
-]
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md",
+      "summary": "One-line description of the blocker analysis and proposed task count."
+    }
+  ]
+}
 ```
 
 ### Stage 7: Return Brief Text Summary

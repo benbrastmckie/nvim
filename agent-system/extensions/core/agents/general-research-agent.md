@@ -381,13 +381,16 @@ parses as valid JSON but silently breaks the orchestrator's artifact-linking rea
 object. Minimal example:
 
 ```json
-"artifacts": [
-  {
-    "type": "report",
-    "path": "specs/{NNN}_{SLUG}/reports/{NN}_{slug}.md",
-    "summary": "One-line description of what the report covers."
-  }
-]
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/{NNN}_{SLUG}/reports/{NN}_{slug}.md",
+      "summary": "One-line description of what the report covers."
+    }
+  ]
+}
 ```
 
 See `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)` section for the
