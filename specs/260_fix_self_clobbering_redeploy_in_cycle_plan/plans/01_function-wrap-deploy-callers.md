@@ -242,26 +242,29 @@ by line number, and confirm the file's last physical statement before editing.
 
 ---
 
-### Phase 3: Function-Wrap `command-gate-out.sh` [NOT STARTED]
+### Phase 3: Function-Wrap `command-gate-out.sh` [COMPLETED]
 
 **Goal**: Apply the identical wrap to the second genuine call site, whose `rc==6` redeploy-trigger
 branch has ~90 lines of top-level work still to do after the deploy returns.
 
 **Tasks**:
-- [ ] Insert `command_gate_out_main() {` immediately after the two top-of-file `source` lines
+- [x] Insert `command_gate_out_main() {` immediately after the two top-of-file `source` lines
       (`skill-base.sh`, `lib/deploy-baseline-lib.sh`, currently ~lines 36-41), leaving `set -e` and
-      both `source` statements at top level where they are today.
-- [ ] Append the closing `}` at EOF followed by `command_gate_out_main "$@"` as the file's last
+      both `source` statements at top level where they are today. *(completed)*
+- [x] Append the closing `}` at EOF followed by `command_gate_out_main "$@"` as the file's last
       physical statement. Argument forwarding IS required here: the body reads `$1`/`$2`/`$3`
-      (`task_number`, `operation`, `session_id`).
-- [ ] Do not re-indent the wrapped body, for the same reasons as Phase 2.
-- [ ] Confirm the invocation is a plain statement (not in a condition, `if`, or `||` context) so
+      (`task_number`, `operation`, `session_id`). *(completed)*
+- [x] Do not re-indent the wrapped body, for the same reasons as Phase 2. *(completed)*
+- [x] Confirm the invocation is a plain statement (not in a condition, `if`, or `||` context) so
       `set -e` behavior inside the function is identical to today's top-level behavior.
-- [ ] Verify the trailing non-executable content (the closing `NOTE:` comment block about never
+      *(completed: `command_gate_out_main "$@"` is a bare statement, not inside any condition)*
+- [x] Verify the trailing non-executable content (the closing `NOTE:` comment block about never
       deleting `.return-meta.json`) ends up either inside the wrap or after the invocation — a
       comment is inert either way, but keep it readable and adjacent to what it describes.
-- [ ] Add the same `SELF-OVERWRITE HAZARD` header note, pointing at `deploy-headless.sh`'s header
-      and naming the `rc==6` branch as the reason this file is in the hazard class.
+      *(completed: the NOTE block stays inside the wrap, immediately before the closing brace,
+      exactly where it was relative to the code it describes)*
+- [x] Add the same `SELF-OVERWRITE HAZARD` header note, pointing at `deploy-headless.sh`'s header
+      and naming the `rc==6` branch as the reason this file is in the hazard class. *(completed)*
 
 **Timing**: 1 hour
 

@@ -41,6 +41,22 @@ source .claude/scripts/skill-base.sh
 # convention as the skill-base.sh source immediately above.
 source .claude/scripts/lib/deploy-baseline-lib.sh
 
+# SELF-OVERWRITE HAZARD wrap starts here (see deploy-headless.sh's own "SELF-OVERWRITE HAZARD"
+# header comment for the origin of this pattern, and orchestrate-cycle-plan.sh's own header for
+# the sibling instance of the same fix): the rc==6 branch below can invoke deploy-headless.sh,
+# which regenerates this very file's deployed copy while this script is still executing. bash
+# reads a script incrementally by byte offset, so a flat top-level statement sequence would
+# resume reading at a stale offset into the newly-written file after that overwrite. Everything
+# from this point through true EOF lives inside command_gate_out_main, defined in full (and
+# therefore fully parsed by bash) BEFORE any of it runs, invoked with "$@" as this file's last
+# physical statement -- unlike orchestrate-cycle-plan.sh's sibling wrap, this one DOES forward
+# arguments, since the body reads $1/$2/$3 (task_number/operation/session_id). Deliberately NOT
+# re-indented, for the same reasons as that sibling wrap. Do not undo this structure by moving
+# logic back to top level; see context/patterns/regeneration-is-manual-only.md's `Automated
+# Exception` subsections and scripts/tests/test-lint-deploy-caller-wrap.sh, which enforces this
+# structurally for every genuine deploy-headless.sh caller, not just this one.
+command_gate_out_main() {
+
 task_number="$1"
 operation="$2"
 session_id="$3"
@@ -263,3 +279,5 @@ fi
 # same class of bug this file's lifecycle-ordering fix was written to eliminate. Deletion is
 # owned exclusively by each calling command's own last step; see
 # context/patterns/skill-postflight-flow.md's reader table for the full per-command mapping.
+}
+command_gate_out_main "$@"

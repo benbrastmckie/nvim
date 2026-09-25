@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Function-Wrap command-gate-out.sh",
+  "started_at": "2026-09-25T01:50:00Z",
+  "last_updated": "2026-09-25T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert command_gate_out_main() { after the two source lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 2, "description": "Append closing } + command_gate_out_main \"$@\" at EOF", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 3, "description": "Do not re-indent", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm plain-statement invocation (set -e semantics preserved)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify trailing NOTE comment inert either way", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Add SELF-OVERWRITE HAZARD header note naming rc==6 branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "git diff --stat: +18 lines only, no deletions -- the rc==6 three-branch (a)/(b)/(c) body is textually unchanged apart from the enclosing braces. test-gate-out-repair-reporting.sh 19/19, test-postflight-deploy-gate.sh 23/23, test-deploy-baseline-lib.sh 7/7, all pass."
+}
