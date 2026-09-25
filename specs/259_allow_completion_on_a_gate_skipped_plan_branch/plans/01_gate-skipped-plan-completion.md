@@ -435,7 +435,7 @@ caller-level assertions; if it cannot, the arm belongs wholly in
 
 ---
 
-### Phase 5: Document the decision-gate to exclusion-marker mapping [NOT STARTED]
+### Phase 5: Document the decision-gate to exclusion-marker mapping [COMPLETED]
 
 **Goal**: A planner or implementation agent reading `plan-format.md` or `status-markers.md` can
 discover that a gate-skipped contingency branch is represented with `[COMPLETED WITH EXCLUSIONS]`.
@@ -443,10 +443,11 @@ This closes Gap 1, the gap the incident's agent actually fell into.
 
 **Tasks**:
 
-- [ ] Confirm the gap still holds: `grep -n -i "decision gate\|contingency branch\|gate-skipped"`
+- [x] Confirm the gap still holds: `grep -n -i "decision gate\|contingency branch\|gate-skipped"`
       over `context/formats/plan-format.md` and `context/standards/status-markers.md` returns
-      nothing but the unrelated `## Rollback/Contingency` section heading.
-- [ ] Add a subsection to `context/formats/plan-format.md` immediately after
+      nothing but the unrelated `## Rollback/Contingency` section heading. *(completed: confirmed
+      empty before this phase's edits)*
+- [x] Add a subsection to `context/formats/plan-format.md` immediately after
       `## Reasoned Exclusions (format)` — e.g. `### Decision gates and contingency branches` —
       stating: a plan may and routinely should carry a decision gate; when the gate's criterion
       fails and the plan's contingency branch is taken instead, the phases the branch bypasses are
@@ -455,14 +456,16 @@ This closes Gap 1, the gap the incident's agent actually fell into.
       modeled on the observed seven-phase shape (gate phase `[COMPLETED]`, bypassed phases
       `[COMPLETED WITH EXCLUSIONS]`, contingency phase `[COMPLETED]`). State plainly that leaving
       the bypassed phases `[NOT STARTED]` is what deadlocks the completion gate, and that
-      `[PARTIAL]` is wrong here because nothing is resumable.
-- [ ] Add a cross-reference from `context/standards/status-markers.md`'s
+      `[PARTIAL]` is wrong here because nothing is resumable. *(completed)*
+- [x] Add a cross-reference from `context/standards/status-markers.md`'s
       `[COMPLETED WITH EXCLUSIONS]` subsection — naturally placed beside the existing "Whole-phase
       exclusion is a valid, intended case" paragraph — pointing at the new `plan-format.md`
-      subsection as the canonical worked example of the shape.
-- [ ] Do not restate the five-condition admission test in `plan-format.md`; cross-reference it, so
-      the two files cannot drift.
-- [ ] Do not edit any file under `agents/` (sibling task territory this cycle).
+      subsection as the canonical worked example of the shape. *(completed)*
+- [x] Do not restate the five-condition admission test in `plan-format.md`; cross-reference it, so
+      the two files cannot drift. *(completed: plan-format.md's new subsection cross-references
+      status-markers.md's admission test rather than restating it)*
+- [x] Do not edit any file under `agents/` (sibling task territory this cycle). *(completed:
+      confirmed via git diff --stat -- agents/ showing no changes)*
 
 **Timing**: 1 hour
 

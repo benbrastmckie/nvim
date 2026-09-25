@@ -231,6 +231,19 @@ is satisfied identically either way, since none of its conditions distinguish "s
 A plan author facing a whole-phase exclusion should reach for `[COMPLETED WITH EXCLUSIONS]` here,
 not invent a fourth marker.
 
+**The canonical whole-phase-exclusion shape is a decision-gate/contingency-branch plan**: a phase
+whose verification measures a criterion that decides which of two downstream branches the rest of
+the plan takes, where the criterion fails and the plan's own contingency branch runs instead of
+the phases the gate would otherwise have unlocked. See `context/formats/plan-format.md`'s
+"Decision gates and contingency branches" subsection for the full mapping and a worked seven-phase
+example — the canonical worked example of this shape, cross-referenced rather than restated here
+so the two files cannot drift.
+
+**Do not leave the bypassed phases `[NOT STARTED]`.** That deadlocks the completion gate: a task
+whose contingency branch has already run and will never revisit the bypassed branch is held open
+forever, since `[NOT STARTED]` reads as "not yet begun, resumable" to every phase-accounting
+consumer.
+
 **`[DESCOPED]` is rejected as a phase-heading marker.** It is not a member of the closed
 status-marker enum and must not be used, including for the whole-phase case above — use
 `[COMPLETED WITH EXCLUSIONS]` with a full `#### Reasoned Exclusions` record instead. Admitting a

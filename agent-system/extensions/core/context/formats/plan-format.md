@@ -389,6 +389,51 @@ written at plan time, as a pre-emptive declaration alongside the phase's Scope H
 discovered mid-phase at implement time, with implement-time entries confirming or superseding any
 plan-time hypothesis.
 
+### Decision gates and contingency branches
+
+A plan may — and routinely should — carry a **decision gate**: a phase whose own verification
+measures a criterion (a sweep result, a benchmark, a comparison against a baseline) that decides
+which of two downstream branches the rest of the plan takes. When the gate's criterion fails and
+the plan's own contingency branch is taken instead of the phases the gate would otherwise have
+unlocked, those bypassed phases are closed as `[COMPLETED WITH EXCLUSIONS]`, each with a
+`#### Reasoned Exclusions` record (above) whose `Evidence` column cites the gate's own failing
+measurement.
+
+This is the intended representation, not a workaround — see status-markers.md's
+`[COMPLETED WITH EXCLUSIONS]` subsection for the outcome's full five-condition admission test and
+its "whole-phase exclusion is a valid, intended case" paragraph. A decision-gate/contingency-branch
+plan is exactly the shape that test satisfies: the gate's failure is a deliberate decision (not
+abandonment), tightly scoped to the bypassed phases, reasoned, evidenced by the gate's own
+measurement, and leaves no residual work once the contingency branch runs instead.
+
+**Worked example** (a seven-phase plan whose gate fails):
+
+```
+### Phase 1: Rerunnable Harness and Pre-Change Baseline [COMPLETED]
+### Phase 2: Twenty-Plus-Seed Sweep of the Renamed Construction [COMPLETED]
+### Phase 3: Land the Alpha-Rename in core.py [COMPLETED WITH EXCLUSIONS]
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Land the alpha-rename | Phase 2's gate failed (5/25 undecided vs. 2/25 baseline); the plan's own contingency branch (Phase 7) was taken instead | Sweep measurement recorded in Phase 2's own report |
+
+### Phase 4: Full Example-Set Regression Diff [COMPLETED WITH EXCLUSIONS]
+### Phase 5: Full Bimodal Suite and Gating Oracle Suite [COMPLETED WITH EXCLUSIONS]
+### Phase 6: Correct the Stale Claims and Record the History [COMPLETED]
+### Phase 7: CONDITIONAL -- Revert and Author an UNSTABLE entry [COMPLETED]
+```
+
+(Phases 4 and 5 each carry their own `#### Reasoned Exclusions` record, omitted above for
+brevity, each citing the same Phase 2 measurement.)
+
+**Do not leave the bypassed phases `[NOT STARTED]`.** A `[NOT STARTED]` phase is exactly what
+deadlocks the completion gate: it reads as "not yet begun, resumable" to every phase-accounting
+consumer, so a task whose contingency branch has already run and will never revisit that branch
+is held open forever. `[PARTIAL]` is equally wrong here — nothing about the bypassed phases is
+resumable or in progress; they were decided against, not interrupted.
+
 ## Status Marker Requirements
 - Use markers exactly as defined in status-markers.md.
 - Every phase starts as `[NOT STARTED]` and progresses through valid transitions.
