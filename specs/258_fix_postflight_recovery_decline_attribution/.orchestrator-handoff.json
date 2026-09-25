@@ -1,0 +1,18 @@
+{
+  "task": 258,
+  "phase": "plan",
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "session_id": "sess_1790360491_c3a705_258",
+  "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/258_fix_postflight_recovery_decline_attribution/plans/01_recovery-decline-attribution.md",
+      "summary": "5-phase plan discriminating the WORK (d) absent-handoff branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class with agent-file attribution, and first restoring the already-red postflight fixture suite to green."
+    }
+  ],
+  "next_steps": "Run /implement 258 to execute the plan",
+  "notes": "Planning verified a pre-existing 34-failure regression in test-orchestrate-cycle-postflight.sh (return-meta-status-vocabulary.sh missing from setup_sandbox's copy list); a two-line fix was proven to restore 110 passed / 0 failed and is Phase 1. Research's corrections adopted: .reason is the discriminating field, and system-defect-record.sh's --dispatched-agent already provides the agent-name resolver."
+}

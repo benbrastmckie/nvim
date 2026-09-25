@@ -1043,12 +1043,12 @@
     {
       "project_number": 258,
       "project_name": "fix_postflight_recovery_decline_attribution",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-25T20:52:05Z",
+      "last_updated": "2026-09-25T20:58:09Z",
       "dependencies": [
         257
       ],
@@ -1065,6 +1065,11 @@
           "path": "specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md",
           "type": "report",
           "summary": "Confirms the dependency (task 257) landed and its return-meta-status-vocabulary.sh library is reusable; corrects the dispatch's own prerequisite claim by finding that system-defect-record.sh already has an agent-name-to-path resolver via --dispatched-agent, so only ~4 lines of local glue are needed rather than a new resolver; verifies the .reason vocabulary and current (drifted) line numbers in orchestrate-cycle-postflight.sh; confirms no enum collision with the completed sibling task 259; and lays out the discrimination, defect-class, and test-fixture options for the plan to decide."
+        },
+        {
+          "path": "specs/258_fix_postflight_recovery_decline_attribution/plans/01_recovery-decline-attribution.md",
+          "type": "plan",
+          "summary": "5-phase plan discriminating the WORK (d) absent-handoff branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class with agent-file attribution, and first restoring the already-red postflight fixture suite to green."
         }
       ],
       "next_artifact_number": 2

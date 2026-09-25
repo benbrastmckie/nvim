@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790360491_c3a705_258",
-  "dispatch_seq": 7,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md",
-      "summary": "Confirms the dependency (task 257) landed and its return-meta-status-vocabulary.sh library is reusable; corrects the dispatch's own prerequisite claim by finding that system-defect-record.sh already has an agent-name-to-path resolver via --dispatched-agent, so only ~4 lines of local glue are needed rather than a new resolver; verifies the .reason vocabulary and current (drifted) line numbers in orchestrate-cycle-postflight.sh; confirms no enum collision with the completed sibling task 259; and lays out the discrimination, defect-class, and test-fixture options for the plan to decide."
+      "type": "plan",
+      "path": "specs/258_fix_postflight_recovery_decline_attribution/plans/01_recovery-decline-attribution.md",
+      "summary": "5-phase plan discriminating the WORK (d) absent-handoff branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class with agent-file attribution, and first restoring the already-red postflight fixture suite to green."
     }
   ],
-  "next_steps": "Run /plan 258 to create implementation plan",
+  "next_steps": "Run /implement 258 to execute the plan",
   "memory_candidates": [
     {
-      "content": "scripts/system-defect-record.sh already resolves a dispatched agent's source-store file path via --dispatched-agent NAME (nullglob over agent-system/extensions/*/agents/NAME.md), as an alternative to --attributed-path. Before concluding a task needs a new agent-name-to-file resolver, check this flag first -- it is undocumented outside the script's own header/comments (not mentioned in context/patterns/system-defect-discrimination.md's Signal B section).",
+      "content": "When a shared library is extracted and made a HARD dependency of a script (source-or-exit-2), every test harness that copies collaborator scripts into a synthetic sandbox must also copy the new library. Omitting it does not fail loudly at the seam: the dependent script exits non-zero, its caller treats that as a normal negative result, and the suite falls through into an unrelated error branch and records spurious defects. Observed concretely: return-meta-status-vocabulary.sh was extracted into orchestrate-recover-outcome.sh but never added to test-orchestrate-cycle-postflight.sh's setup_sandbox copy list, silently turning 34 of 110 fixtures red while every failure message pointed at a misleading downstream branch. Check: after any lib extraction, grep every tests/ sandbox copy list for the new filename in the same change.",
       "category": "PATTERN",
-      "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md",
+      "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/plans/01_recovery-decline-attribution.md",
       "confidence": 0.85,
-      "suggested_keywords": ["system-defect-record", "dispatched-agent", "attribution", "resolver", "orchestrate"]
-    },
-    {
-      "content": "agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh is the single sourced library for the 8-value .return-meta.json status enum (RETURN_META_STATUS_VALUES, RETURN_META_SUCCESS_STATUSES, is_return_meta_status, is_return_meta_success_status, RETURN_META_FORBIDDEN_STATUS/_MESSAGE for 'completed'). orchestrate-recover-outcome.sh and validate-return-meta.sh already source it; orchestrate-cycle-postflight.sh does not yet, as of task 258's research.",
-      "category": "CONFIG",
-      "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["return-meta", "status-vocabulary", "shared-library", "orchestrate-recover-outcome"]
+      "suggested_keywords": ["shared-library-extraction", "test-sandbox", "hard-dependency", "silent-fixture-breakage", "copy-list", "setup_sandbox"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1790360491_c3a705_258",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 4.5,
+    "dependency_waves": 4
+  },
+  "dispatch_seq": 8
 }
