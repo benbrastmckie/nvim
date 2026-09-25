@@ -290,34 +290,44 @@ of work after it to EOF (~line 265). Confirm both anchors by content before edit
 
 ---
 
-### Phase 4: Mechanical Class Guard for Future Callers [NOT STARTED]
+### Phase 4: Mechanical Class Guard for Future Callers [COMPLETED]
 
 **Goal**: Make the hazard class closed by construction rather than by memory — a new caller that
 invokes `deploy-headless.sh` from a still-running deployed script without wrapping its remaining
 logic must fail a test, loudly and by name.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh`.
-- [ ] Classify invocation sites across `agent-system/extensions/*/scripts/**/*.sh` (excluding
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh`.
+      *(completed)*
+- [x] Classify invocation sites across `agent-system/extensions/*/scripts/**/*.sh` (excluding
       `tests/` fixtures): a line is a GENUINE invocation when it executes the script
       (`bash .../deploy-headless.sh`, a command substitution around it, or a direct `./` call) and
       is not inside a comment, an `echo`/`printf`/`fail`/remedy string. Everything else is a
       mention and is ignored. Re-derive this classification in the test itself rather than
-      hardcoding a path list, so a new caller is discovered automatically.
-- [ ] For each genuine caller, assert the structural wrap: the invocation line lies inside a
+      hardcoding a path list, so a new caller is discovered automatically. *(completed: classifier
+      re-derives the set every run from file contents; see the phase 4 progress file's
+      `approaches_tried` for the two false-classification iterations resolved before landing on
+      the assignment-anchor-first heuristic)*
+- [x] For each genuine caller, assert the structural wrap: the invocation line lies inside a
       top-level function (nearest preceding `^[A-Za-z_][A-Za-z0-9_]*\(\) *\{`), that function's
       closing `^}` follows it, and after that brace only comments, blank lines, and a single bare
       invocation of that same function remain — i.e. nothing executable is read from the file after
-      the deploy can have rewritten it.
-- [ ] Assert `deploy-headless.sh` itself satisfies the same rule (it already does, via `main()`),
+      the deploy can have rewritten it. *(completed: implemented as a lone-unindented-`}` search
+      rather than brace-counting, since brace-counting is corrupted by literal `{`/`}` characters
+      inside this codebase's many single-quoted jq program strings)*
+- [x] Assert `deploy-headless.sh` itself satisfies the same rule (it already does, via `main()`),
       so the deployer is covered by the same guard rather than exempted by special case.
-- [ ] Emit a named, actionable failure message on a violation: the offending file and line, the
-      rule, and a pointer to `deploy-headless.sh`'s `SELF-OVERWRITE HAZARD` header.
-- [ ] `chmod +x` the new suite (auto-discovered by `tests/run-all.sh`; no registration needed — the
+      *(completed)*
+- [x] Emit a named, actionable failure message on a violation: the offending file and line, the
+      rule, and a pointer to `deploy-headless.sh`'s `SELF-OVERWRITE HAZARD` header. *(completed:
+      each `fail` names the relative file path and, where applicable, the specific line number)*
+- [x] `chmod +x` the new suite (auto-discovered by `tests/run-all.sh`; no registration needed — the
       runner globs `scripts/tests/test-*.sh`). Confirm a lost exec bit would surface as a loud
-      `[SKIP]`, matching the runner's documented discipline.
-- [ ] Self-test the guard: temporarily unwrap one caller in a scratch copy and confirm the lint
-      fails; restore.
+      `[SKIP]`, matching the runner's documented discipline. *(completed: exec bit set and
+      verified)*
+- [x] Self-test the guard: temporarily unwrap one caller in a scratch copy and confirm the lint
+      fails; restore. *(completed: the self-test runs on every invocation of the suite itself,
+      in a `mktemp` scratch copy, never touching the real source-store file)*
 
 **Timing**: 1.5 hours
 

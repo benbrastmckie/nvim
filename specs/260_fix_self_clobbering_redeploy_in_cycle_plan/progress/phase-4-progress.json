@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Mechanical Class Guard for Future Callers",
+  "started_at": "2026-09-25T02:10:00Z",
+  "last_updated": "2026-09-25T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-lint-deploy-caller-wrap.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh"]},
+    {"id": 2, "description": "Classify invocation sites (genuine vs mention), re-derived not hardcoded", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh"]},
+    {"id": 3, "description": "For each genuine caller, assert structural wrap", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Assert deploy-headless.sh itself satisfies the same rule", "status": "done", "files_touched": []},
+    {"id": 5, "description": "chmod +x new suite", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Self-test the guard against a deliberately-unwrapped scratch copy", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "quote-parity veto computed relative to the first 'deploy-headless.sh' text occurrence", "result": "failed", "reason": "the genuine cycle-plan/gate-out invocations also quote their own path argument (e.g. bash \"$SCRIPT_DIR/deploy-headless.sh\"), which produced a false odd-quote-count veto misclassifying both genuine sites as mentions"},
+    {"approach": "quote-parity veto computed relative to the full anchor+command REGEX MATCH (BASH_REMATCH[0]), trying the punctuation anchor (bash-2, `(;&|{`) before the assignment anchor", "result": "failed", "reason": "the punctuation anchor's bare `(` alternative greedily matched the `(` inside gate-out's own `\"$(bash ...)\"` command substitution, producing a truncated match that started mid-string and re-introduced the same false veto for command-gate-out.sh specifically"},
+    {"approach": "try the assignment anchor (always ^-anchored at true line start) FIRST, falling back to the punctuation anchor only when the assignment anchor does not match", "result": "passed", "reason": "eliminates the mid-string match; both genuine sites now match with an empty prefix (vetoes correctly bypassed) while every real mention line (validate-state.sh's parenthetical remedy text, and 14 others) is still correctly vetoed or fails the anchor test outright"}
+  ],
+  "handoff_count": 0,
+  "notes": "Classification result (printed by the lint, auditable): exactly 2 genuine caller files (orchestrate-cycle-plan.sh line 870, command-gate-out.sh line 192) out of 194 scanned .sh files across agent-system/extensions/*/scripts/** (excluding tests/), 15 mention-only files. Matches research's claim of exactly two genuine sites. Structural verification: all three files (the two callers plus deploy-headless.sh itself) pass. Self-test: a deliberately unwrapped scratch copy of orchestrate-cycle-plan.sh correctly fails verify_wrap. Deterministic across 3 runs, 7/7 pass each time."
+}
