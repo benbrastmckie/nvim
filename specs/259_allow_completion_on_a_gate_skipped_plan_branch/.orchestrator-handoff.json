@@ -1,0 +1,20 @@
+{
+  "status": "planned",
+  "summary": "Authored a seven-phase implementation plan for the gate-skipped-plan-branch deadlock and the identical-redispatch loop. Adopts the research report's three corrections over the dispatch's own framing: the Gap 2 edit site is orchestrate-cycle-postflight.sh (not skill-base.sh, which gets a comment-only fix), the corroboration overwrite must be gated on plan_markers_verified=true to avoid false-positive META_MISSING_AFTER_NARRATION records on ordinary Case 1 refusals, and handoff-schema.md must be corrected regardless of any schema addition. Adjacent items (a) new marker and (b) new defect-enum class are both explicitly decided OUT.",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md",
+      "summary": "Seven-phase plan across two independent fixes (convergence guard; corroboration-trigger widening) plus three documentation strands."
+    }
+  ],
+  "modified_files": [
+    "specs/259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md"
+  ],
+  "dispatch_seq": 4,
+  "blockers": [],
+  "sorry_inventory": [],
+  "continuation_path": null
+}
