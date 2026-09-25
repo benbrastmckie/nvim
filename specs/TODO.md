@@ -41,7 +41,7 @@ next_project_number: 260
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
   └─ 258 [NOT STARTED] — Stop recording a declined return-meta recovery as...
     └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
-259 [RESEARCHING] — Allow completion when a plan branch deliberately skips...
+259 [RESEARCHED] — Allow completion when a plan branch deliberately skips...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the... (see above)
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
     └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
@@ -84,10 +84,11 @@ next_project_number: 260
 ## Tasks
 
 ### 259. Allow completion when a plan branch deliberately skips phases, and stop the identical-redispatch loop
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

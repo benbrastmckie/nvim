@@ -1,0 +1,50 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md",
+      "summary": "Confirms the [COMPLETED WITH EXCLUSIONS]-based no-schema-change fix works end to end but pinpoints the actual Case 1 corroboration-trigger defect in scripts/orchestrate-cycle-postflight.sh (not skill-base.sh as the dispatch's file-scope note assumed), flags orchestrate-stage5-gates.sh/orchestrate-stage5-postflight.sh as dead code to avoid editing, flags a false-positive-defect-record pitfall in a naive fix, and confirms the convergence-guard Fix 2 and phase-check-mode caution independently."
+    }
+  ],
+  "next_steps": "Run /plan 259 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1790360491_c3a705_259",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 12,
+  "memory_candidates": [
+    {
+      "content": "In this agent system, skill_gate_completion_claim (scripts/skill-base.sh) is a deliberately pure decision function that never reads a plan file -- corroboration against the plan (skill_corroborate_phase_counts) is invoked by its CALLER, and today the only live caller (scripts/orchestrate-cycle-postflight.sh) gates that call on phases_total==0 only (Case 3), never on Case 1 (phases_total>0, incomplete). When extending corroboration to Case 1, only overwrite the handoff's phases_completed/phases_total/plan_markers_verified when skill_corroborate_phase_counts reports plan_markers_verified=true -- otherwise a genuinely-incomplete plan gets its nonzero phases_total zeroed out by the function's own non-corroborating return shape, silently reclassifying an ordinary Case 1 refusal as a Case 3 refusal and triggering a false-positive META_MISSING_AFTER_NARRATION defect record (Case 1 is explicitly documented as NOT a defect).",
+      "category": "PATTERN",
+      "source_artifact": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["skill_gate_completion_claim", "skill_corroborate_phase_counts", "phase-accounting", "orchestrate-cycle-postflight", "COMPLETED WITH EXCLUSIONS"]
+    },
+    {
+      "content": "orchestrate-stage5-gates.sh and orchestrate-stage5-postflight.sh in agent-system/extensions/core/scripts/ are confirmed dead code (zero call sites after the Phase 7 single-task/multi-task engine merge into orchestrate-cycle-postflight.sh) -- documented at docs/architecture/orchestrate-cycle-postflight.md:237. Any future task touching skill_gate_completion_claim's call sites should target orchestrate-cycle-postflight.sh only and must not edit the two orphaned stage5 scripts.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["dead code", "orchestrate-stage5-gates", "orchestrate-stage5-postflight", "orchestrate-cycle-postflight", "Phase 7 cutover"]
+    },
+    {
+      "content": "scripts/lib/deploy-ledger-lib.sh establishes this codebase's precedent for content hashing: sha256sum with an explicit `command -v sha256sum || return 2` degrade path surfaced as a named CANNOTVERIFY state rather than a silent skip. Any future dispatch-content-hashing mechanism (e.g. a convergence guard for identical redispatch) should reuse this idiom rather than inventing a new one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["sha256sum", "content hashing", "deploy-ledger-lib", "CANNOTVERIFY", "convergence guard"]
+    }
+  ],
+  "modified_files": [
+    "specs/259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh"
+  ],
+  "dispatch_seq": 2
+}
