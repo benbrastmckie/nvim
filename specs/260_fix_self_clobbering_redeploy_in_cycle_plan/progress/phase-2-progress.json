@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Function-Wrap orchestrate-cycle-plan.sh",
+  "started_at": "2026-09-25T01:10:00Z",
+  "last_updated": "2026-09-25T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert orchestrate_cycle_plan_main() { before budget-guard comment anchor", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Append closing } + bare invocation at EOF; verify no top-level $1/$2/$@/$# reads after anchor", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Do not re-indent; add comment explaining why", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Confirm terminal statement path always exits (emit_and_exit)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add SELF-OVERWRITE HAZARD header note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Re-run Phase 1 cases (t)/(u): both must now pass", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "grep confirmed no top-level $1/$2/$@/$# reads after the wrap anchor outside an already-local function scope. Full suite: 285/285 pass, deterministic across 3 runs. git diff --stat: +29 lines only (no re-indentation). test-force-phases.sh: 33/33 pass. test-orchestrate-cycle-postflight.sh: 127/127 pass."
+}

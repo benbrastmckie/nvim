@@ -182,33 +182,39 @@ the SUT from a different path, retarget the rewrite to whatever path `$SUT` reso
 
 ---
 
-### Phase 2: Function-Wrap `orchestrate-cycle-plan.sh` [NOT STARTED]
+### Phase 2: Function-Wrap `orchestrate-cycle-plan.sh` [COMPLETED]
 
 **Goal**: Wrap the redeploy checkpoint and everything textually after it, through true EOF, inside
 one function defined before it runs — so no byte read after the deploy call can be a stale-offset
 read.
 
 **Tasks**:
-- [ ] Insert `orchestrate_cycle_plan_main() {` immediately before the
+- [x] Insert `orchestrate_cycle_plan_main() {` immediately before the
       `# ── (k, part 1) Budget guard` comment block (currently ~line 698), i.e. at or before the
-      first statement that could still be pending when the deploy fires.
-- [ ] Append the closing `}` at EOF followed by a bare `orchestrate_cycle_plan_main` as the file's
+      first statement that could still be pending when the deploy fires. *(completed: inserted
+      immediately before that comment, at what was line 714 after the header note was added)*
+- [x] Append the closing `}` at EOF followed by a bare `orchestrate_cycle_plan_main` as the file's
       last physical statement, with nothing after it. No `"$@"` forwarding: confirm again by grep
       that no top-level code after the anchor reads `$1`/`$2`/`$@`/`$#` outside an already-`local`
-      function scope (research verified this; re-verify because it is load-bearing).
-- [ ] Do NOT re-indent the wrapped body. Record the reason in a short comment at the wrap: quoted
+      function scope (research verified this; re-verify because it is load-bearing). *(completed:
+      re-verified by grep — every `$1`/`$2`/etc. match after the anchor is inside a function body
+      with its own `local`-scoped parameters)*
+- [x] Do NOT re-indent the wrapped body. Record the reason in a short comment at the wrap: quoted
       heredoc bodies must not gain leading whitespace, the behavioral diff must stay reviewable as
       three added lines, and `git blame` continuity matters for a 1,700-line region. Note that this
       deliberately differs in cosmetics — not in mechanism — from `deploy-headless.sh`'s own
-      originally-authored indented `main()`.
-- [ ] Confirm the wrapper's terminal statement path still always `exit`s: the file's last call is
+      originally-authored indented `main()`. *(completed)*
+- [x] Confirm the wrapper's terminal statement path still always `exit`s: the file's last call is
       `emit_and_exit "$new_cycle_count"`, and `emit_and_exit` ends in `exit 0`. No `return`
-      followed by further reads.
-- [ ] Add a `SELF-OVERWRITE HAZARD` note to the file's top header comment: why the wrap exists,
+      followed by further reads. *(completed: confirmed emit_and_exit has exactly one `exit`
+      statement, unconditional, at its own end)*
+- [x] Add a `SELF-OVERWRITE HAZARD` note to the file's top header comment: why the wrap exists,
       that it must extend to true EOF, and a pointer to `deploy-headless.sh`'s own header comment
       as the origin of the pattern. State explicitly: do not undo this structure by moving logic
-      back to top level.
-- [ ] Re-run Phase 1's cases (s) and (t): both must now pass.
+      back to top level. *(completed)*
+- [x] Re-run Phase 1's cases (s) and (t): both must now pass. *(completed: cases (t) and (u) —
+      see Phase 1's deviation note on the letter rename — both pass; full suite 285/285, 0 failed,
+      deterministic across 3 runs)*
 
 **Timing**: 1.5 hours
 

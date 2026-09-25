@@ -10,6 +10,23 @@
 # job — that is a separate, not-yet-built postflight composer. This script only ever DECIDES and
 # PREPARES a dispatch plan; it never invokes the Agent or Skill tool itself.
 #
+# SELF-OVERWRITE HAZARD: this script's own Inter-Cycle Redeploy Checkpoint (the "(k, part 2)"
+# section below) can invoke deploy-headless.sh, which regenerates this very file's deployed copy
+# WHILE this script is still executing. bash reads a script incrementally by byte offset, not by
+# loading the whole file into memory upfront, so a flat sequence of top-level statements would
+# resume reading at a stale offset into the newly-written file after such an overwrite --
+# undefined behavior (observed live as a spurious mid-file "unbound variable" error, and
+# reproduced deterministically in this file's own test suite as a spurious "--state-file is
+# required" argument-parsing error — two different symptoms of the identical root cause). The
+# fix, generalized from deploy-headless.sh's own header comment (search that file for
+# "SELF-OVERWRITE HAZARD" for the origin of this pattern): everything from the checkpoint onward,
+# through true EOF, lives inside one `orchestrate_cycle_plan_main` function, defined in full (and
+# therefore fully parsed by bash) BEFORE any of it runs, invoked as this file's last physical
+# statement with nothing following it. Do not undo this structure by moving logic back to top
+# level; see `context/patterns/regeneration-is-manual-only.md`'s `Automated Exception` subsections
+# and `scripts/tests/test-lint-deploy-caller-wrap.sh`, which enforces this structurally for every
+# genuine deploy-headless.sh caller, not just this one.
+#
 # --focus "<text>" carries the user's own free-form "$2+" text typed on the /orchestrate command
 # line (see commands/orchestrate.md); it is composed with any task's research_questions field
 # (neither silently replaces the other — see section (l)) and threaded into every dispatched
@@ -693,6 +710,16 @@ emit_and_exit() {
   fi
   exit 0
 }
+
+# SELF-OVERWRITE HAZARD wrap starts here (see the file header's own "SELF-OVERWRITE HAZARD"
+# paragraph): everything from this point through true EOF is inside orchestrate_cycle_plan_main,
+# so the Inter-Cycle Redeploy Checkpoint's own deploy-headless.sh call below (which can regenerate
+# this very file's deployed copy) cannot invalidate bash's read of any statement that runs after
+# it. Deliberately NOT re-indented -- the wrapped body's heredocs must not gain leading
+# whitespace, the diff must stay reviewable as this comment plus the brace/invocation lines added
+# at the two ends, and git blame continuity matters for this ~1,700-line region. This differs in
+# cosmetics, not in mechanism, from deploy-headless.sh's own originally-authored indented main().
+orchestrate_cycle_plan_main() {
 
 # ── (k, part 1) Budget guard — Decision 1: no longer a single whole-invocation check here. Each
 # task's OWN cycle_counts[t]/max_cycles_per_task[t] is checked per candidate inside (c) Eligibility
@@ -2406,3 +2433,5 @@ mt_set --argjson c "$new_cycle_count" '.cycle_count = $c'
 mt_save
 
 emit_and_exit "$new_cycle_count"
+}
+orchestrate_cycle_plan_main
