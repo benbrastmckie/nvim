@@ -11,7 +11,7 @@ next_project_number: 259
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,257,258 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,257,258,259 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,224,250,251,256 | 22,44,127,129,162,163,199,244 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
@@ -43,6 +43,7 @@ next_project_number: 259
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 257 [NOT STARTED] — Inline the correct terminal status value and the...
 258 [NOT STARTED] — Stop recording a declined return-meta recovery as...
+259 [NOT STARTED] — Allow completion when a plan branch deliberately...
 
 ### Extensions
 
@@ -79,6 +80,135 @@ next_project_number: 259
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 259. Allow completion when a plan branch deliberately skips phases, and stop the identical-redispatch loop
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+=== OBSERVED DEADLOCK, IN A REAL RUN ===
+/orchestrate 184,188 in the ModelChecker consumer repo. Task 188's implement dispatch succeeded
+completely: source changes landed, four phase commits were made, and the handoff was written
+fresh with a matching dispatch_seq and a correct "status": "implemented". Recovery SUCCEEDED --
+this is NOT the declined-recovery path that the return-meta-vocabulary and
+recovery-decline-attribution tasks address, and neither of those fixes would touch it.
+
+The refusal came from skill_gate_completion_claim (scripts/skill-base.sh:1244), Case 1:
+
+    if [ "$phases_total" -gt 0 ]; then
+      # Case 1: phase accounting present but incomplete -- always refuse.
+
+The handoff reported phases_completed=4, phases_total=7, so completion was refused and the task
+was held at `implementing`. The next cycle re-dispatched. Cycles 3 and 4 wrote BYTE-IDENTICAL
+dispatch files (.dispatch/6.md and .dispatch/7.md differ only in dispatch_seq and
+dispatch_start_ts). Cycle 4's implementation agent independently worked out that it was a
+re-fire, verified the work was already complete, correctly refused to redo the expensive
+25-seed sweep, and returned the same 4/7 handoff -- producing the same refusal. Each such cycle
+cost roughly 40 minutes of agent time for a provably empty result. The loop was halted by hand.
+
+=== ROOT CAUSE 1: THE HANDOFF CANNOT EXPRESS A BRANCHED PLAN ===
+The planner may author a plan with a DECISION GATE, and routinely should. Task 188's plan has
+seven phases of which 3-5 are explicitly conditional on Phase 2's gate passing:
+
+  Phase 1: Rerunnable Harness and Pre-Change Baseline            [COMPLETED]
+  Phase 2: Twenty-Plus-Seed Sweep of the Renamed Construction    [COMPLETED]
+  Phase 3: Land the Alpha-Rename in core.py                      [NOT STARTED]  <- gate-skipped
+  Phase 4: Full Example-Set Regression Diff                      [NOT STARTED]  <- gate-skipped
+  Phase 5: Full Bimodal Suite and Gating Oracle Suite            [NOT STARTED]  <- gate-skipped
+  Phase 6: Correct the Stale Claims and Record the History       [COMPLETED]
+  Phase 7: CONDITIONAL -- Revert and Author an UNSTABLE entry    [COMPLETED]
+
+Phase 2's gate FAILED (the candidate fix measured worse than baseline: 5/25 undecided draws
+against 2/25), so the plan's own contingency branch was taken, correctly. The agent then had
+exactly two integer fields in which to describe this. "4 of 7" is the only literally true thing
+it could write, and it is unconditionally refused. The planner can express branching; the
+handoff cannot express having branched. That asymmetry is the defect.
+
+Note this gate was deliberately TIGHTENED recently -- its own header records that base mode
+"LOSES its `phases_total == 0` blind allow". Failing closed is the right instinct; the
+tightening simply assumed every plan is linear. Do not revert it.
+
+=== ROOT CAUSE 2: THE CONVERGENCE GUARD CANNOT SEE THIS ===
+scripts/orchestrate-cycle-plan.sh's convergence guard fires only when a cycle dispatches
+NOTHING:
+
+    if [ "${#probed_dispatch[@]}" -eq 0 ] && [ "${#eligible_tasks[@]}" -gt 0 ]; then
+
+A cycle that dispatches and is then refused at postflight looks like forward progress, so
+consecutive_no_dispatch_cycles stays 0 and the guard never trips. The only bound on the retry is
+MAX_CYCLES. This is independently worth fixing: it is the general protection against any
+dispatch-refuse-redispatch loop, of which the phase-accounting case is only one instance.
+
+=== FIX 1 (handoff schema + gate) ===
+Give the handoff a way to declare gate-skipped phases and teach the gate to honour it. The
+shape applied BY HAND to unblock the observed incident, offered as a starting point and not as a
+settled design:
+
+    "phases_completed": 4,
+    "phases_total": 4,
+    "phases_skipped": [3, 4, 5],
+    "phase_accounting_note": "<why the branch was taken>"
+
+with the note stating explicitly that phases 3-5 were gate-skipped by design and remain
+[NOT STARTED] in the plan. Decide deliberately between that (phases_total means "phases this
+branch authorizes") and the alternative (phases_total stays 7 and the gate computes
+completed + |skipped| >= total). The second keeps phases_total meaning "phases authored", which
+is likely the better invariant and keeps the plan and handoff numerically comparable -- evaluate
+it first. Whichever is chosen, document it in docs/architecture/handoff-schema.md, because the
+current silence is what let the agent guess.
+
+The gate then needs a case that ALLOWS completion when the skipped phases account for the
+shortfall, and must keep refusing a bare 4/7 with no skip declaration -- an agent must not be
+able to escape the gate merely by under-reporting phases_total.
+
+=== FIX 2 (convergence guard) ===
+Make the guard count IDENTICAL dispatches, not just absent ones: hash each dispatch file's
+content modulo dispatch_seq/dispatch_start_ts and stop after N consecutive identical dispatches
+for the same task/phase. N=2 would have capped the observed incident at one wasted cycle instead
+of two, with MAX_CYCLES as the outer bound behind it.
+
+=== ALREADY CORRECT -- DO NOT DUPLICATE OR SILENCE ===
+A `[phase-check]` warning already fires on the completing transition and says precisely the
+right thing:
+
+    WARNING: [phase-check] task 188 is being marked completed with only 4/7 phases closed
+
+It warns without blocking, which is the correct posture for a branched plan. Keep it. The fix
+belongs at the gate and the schema, not here.
+
+=== ADJACENT, DECIDE IN OR OUT EXPLICITLY ===
+(a) There is no sanctioned phase marker for "deliberately not executed". Neither
+    context/standards/status-markers.md nor context/standards/plan-format.md defines one, so
+    gate-skipped phases sit at [NOT STARTED], indistinguishable from pending work. A
+    [SKIPPED] or [NOT APPLICABLE] marker would make plan and handoff agree, but it touches the
+    plan-format lint and the phase-heading regexes in
+    scripts/lib/phase-heading-patterns.sh (PHASE_HEADING_DONE_ERE in particular). Scope it in
+    only if the lint and both regexes are updated together; otherwise split it out.
+(b) scripts/system-defect-record.sh's fourteen-value enum has no class that fits this. The
+    incident was recorded as ARTIFACTS_SHAPE_MISMATCH (event evt_1790355986580_8B8Ntt in the
+    ModelChecker consumer repo) for want of anything better, which is a poor fit -- the
+    artifacts array was correct; the phase counters were the problem. Consider whether a
+    PHASE_ACCOUNTING_MISMATCH class earns its place, weighed against enum growth for its own
+    sake.
+
+=== RELATIONSHIP TO THE TWO SIBLING META TASKS ===
+Same subsystem, three distinct gaps in the postflight adjudication chain, all found in one day:
+a status-value gap (agent writes "completed", recovery declines), an attribution gap (the
+declined-recovery path blames skill-orchestrate for a handoff research agents are forbidden to
+write), and this phase-accounting gap. This one is reachable only when recovery SUCCEEDS, so it
+is independent of both: landing either sibling leaves this deadlock exactly as it is, and
+landing this one does not address either of them. If there is a systemic signal worth acting on,
+it is that the chain has been hardened faster than its schemas have been widened.
+
+=== VERIFICATION ===
+Exercise all four arms: (1) a linear plan completing all phases -> allowed, as today; (2) a
+branched plan with a correct skip declaration -> allowed; (3) a bare shortfall with no skip
+declaration -> still refused; (4) the same dispatch fired twice with identical content -> the
+convergence guard stops the run. Re-run scripts/tests/ for skill-base.sh and
+orchestrate-cycle-plan.sh, and confirm the [phase-check] warning still fires in arm (2).
 
 ### 258. Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate
 - **Status**: [NOT STARTED]
