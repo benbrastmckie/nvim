@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Make orchestrate-recover-outcome.sh's success arm read the same definition",
+  "started_at": "2026-09-25T00:35:00Z",
+  "last_updated": "2026-09-25T00:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read orchestrate-recover-outcome.sh in full; source the library; restructure case arm into if/elif chain using is_return_meta_success_status, preserving every arm's behavior and exit code",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add deferral comment; leave ARTIFACTS_SHAPE_MISMATCH detector and raw-read block untouched; update stale test header comment",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

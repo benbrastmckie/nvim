@@ -135,6 +135,38 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
+# ─── Shared status vocabulary library (deploy-tree-first / source-store-fallback) ──────────────
+# This is a side-effect-free constants/predicates library, not skill-base.sh -- sourcing it does
+# not violate this script's deliberate "does not source skill-base.sh" posture documented above
+# (that posture is about artifacts NORMALIZATION; this is a status-vocabulary lookup, an
+# unrelated concern). Never scripts/lib/status-vocabulary.sh -- the unrelated 12-value TASK-LEVEL
+# enum that legitimately contains "completed"; see return-meta-status-vocabulary.sh's own header.
+_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_REPO_ROOT="$(git -C "$_SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -z "$_REPO_ROOT" ]; then
+  _REPO_ROOT="$(cd "$_SCRIPT_DIR/../.." && pwd)"
+fi
+_STATUS_LIB_CANDIDATES=(
+  "$_REPO_ROOT/.claude/scripts/lib/return-meta-status-vocabulary.sh"
+  "$_REPO_ROOT/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
+)
+_STATUS_LIB_FILE=""
+for _candidate in "${_STATUS_LIB_CANDIDATES[@]}"; do
+  if [ -f "$_candidate" ]; then
+    _STATUS_LIB_FILE="$_candidate"
+    break
+  fi
+done
+if [ -z "$_STATUS_LIB_FILE" ]; then
+  echo "ERROR: orchestrate-recover-outcome.sh: shared library return-meta-status-vocabulary.sh not found at any of:" >&2
+  for _candidate in "${_STATUS_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 2
+fi
+# shellcheck disable=SC1090
+. "$_STATUS_LIB_FILE"
+
 # Fail-closed default: an empty/non-numeric window_start_ts becomes "never fresh."
 case "$window_start_ts" in
   ''|*[!0-9]*) window_start="9999999999" ;;
@@ -238,50 +270,60 @@ fi
 completion_summary=$(echo "$meta_json" | jq -r '.completion_data.completion_summary // ""')
 roadmap_items=$(echo "$meta_json" | jq -c '.completion_data.roadmap_items // []')
 
-case "$status" in
-  researched|planned|implemented)
-    # General empty-value detection signal (evaluated only on this recovered=true path — see
-    # the script header's "General empty-value detection signal" section for the full rationale
-    # and the Item C decision this is the alternative to).
-    artifacts_length=$(echo "$meta_json" | jq -r '(.artifacts // []) | length' 2>/dev/null) || artifacts_length=0
-    jq_artifact_failure=false
-    if [ "$artifact_path_rc" -ne 0 ] || [ "$artifact_type_rc" -ne 0 ] || [ "$artifact_summary_rc" -ne 0 ]; then
-      jq_artifact_failure=true
-    fi
-    evidence_suspect=false
-    evidence_reason="NONE"
-    if [ "$status" = "implemented" ] && [ "$phases_completed" -eq 0 ] && [ "$phases_total" -eq 0 ]; then
-      # PHASES_ZERO_ON_SUCCESS takes precedence when both signatures fire — recorded in the
-      # header's field-doc table, not just here.
-      evidence_suspect=true
-      evidence_reason="PHASES_ZERO_ON_SUCCESS"
-    elif { [ "$artifacts_length" -gt 0 ] && [ -z "$artifact_path" ]; } || [ "$jq_artifact_failure" = true ]; then
-      evidence_suspect=true
-      evidence_reason="ARTIFACTS_SHAPE_MISMATCH"
-    fi
-    emit true "$status" "NONE" "$artifact_path" "$artifact_type" "$artifact_summary" \
-      "$phases_completed" "$phases_total" "$meta_mtime" "$completion_summary" "$roadmap_items" \
-      "$evidence_suspect" "$evidence_reason"
-    exit 0
-    ;;
-  needs_research)
-    # needs_research is a planner-only outcome carrying an empty artifacts array by design (no
-    # plan is written on this path). It deliberately does NOT share the
-    # researched|planned|implemented arm's artifacts-evidence-mismatch logic above: an empty
-    # artifacts array is the correct and expected shape here, not evidence of a writer bug, so
-    # this arm short-circuits directly to recovered=true, evidence_suspect=false without
-    # evaluating ARTIFACTS_SHAPE_MISMATCH or PHASES_ZERO_ON_SUCCESS.
-    emit true "$status" "NONE" "$artifact_path" "$artifact_type" "$artifact_summary" \
-      "$phases_completed" "$phases_total" "$meta_mtime" "$completion_summary" "$roadmap_items" \
-      false "NONE"
-    exit 0
-    ;;
-  in_progress)
-    emit false "$status" "STATUS_IN_PROGRESS" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
-    exit 1
-    ;;
-  *)
-    emit false "$status" "STATUS_NOT_SUCCESS" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
-    exit 1
-    ;;
-esac
+# ─── Success-arm dispatch, sourced from lib/return-meta-status-vocabulary.sh ────────────────────
+# Restructured from a `case "$status" in researched|planned|implemented) ... ;; ...` literal
+# match into this `if`/`elif` chain reading `is_return_meta_success_status` so the accepted
+# success set has exactly one definition, shared with validate-return-meta.sh and
+# lint-agent-contracts.sh's Check E — semantics-preserving only, every arm's body and exit code
+# unchanged from the case statement it replaces.
+#
+# DEFERRED FOLLOW-UP (recorded, not acted on here): the 3-value success subset
+# (researched|planned|implemented) is narrower than the set of intentionally-designed
+# non-canonical success vocabularies used by bona fide registered phase-routing targets (e.g.
+# "consulted", "converted", "assembled"). Any such agent dispatched under `orchestrator_mode:
+# true` has a genuinely successful outcome misclassified as STATUS_NOT_SUCCESS today — the same
+# defect class the inline-terminal-status-contracts plan fixes, triggered by an intentional value
+# instead of an accidental one. Widening this arm (or formalizing a per-extension accepted-status
+# registry) is that plan's recorded Deferred Follow-Up item 2 — not decided or acted on here.
+if is_return_meta_success_status "$status"; then
+  # General empty-value detection signal (evaluated only on this recovered=true path — see
+  # the script header's "General empty-value detection signal" section for the full rationale
+  # and the Item C decision this is the alternative to).
+  artifacts_length=$(echo "$meta_json" | jq -r '(.artifacts // []) | length' 2>/dev/null) || artifacts_length=0
+  jq_artifact_failure=false
+  if [ "$artifact_path_rc" -ne 0 ] || [ "$artifact_type_rc" -ne 0 ] || [ "$artifact_summary_rc" -ne 0 ]; then
+    jq_artifact_failure=true
+  fi
+  evidence_suspect=false
+  evidence_reason="NONE"
+  if [ "$status" = "implemented" ] && [ "$phases_completed" -eq 0 ] && [ "$phases_total" -eq 0 ]; then
+    # PHASES_ZERO_ON_SUCCESS takes precedence when both signatures fire — recorded in the
+    # header's field-doc table, not just here.
+    evidence_suspect=true
+    evidence_reason="PHASES_ZERO_ON_SUCCESS"
+  elif { [ "$artifacts_length" -gt 0 ] && [ -z "$artifact_path" ]; } || [ "$jq_artifact_failure" = true ]; then
+    evidence_suspect=true
+    evidence_reason="ARTIFACTS_SHAPE_MISMATCH"
+  fi
+  emit true "$status" "NONE" "$artifact_path" "$artifact_type" "$artifact_summary" \
+    "$phases_completed" "$phases_total" "$meta_mtime" "$completion_summary" "$roadmap_items" \
+    "$evidence_suspect" "$evidence_reason"
+  exit 0
+elif [ "$status" = "needs_research" ]; then
+  # needs_research is a planner-only outcome carrying an empty artifacts array by design (no
+  # plan is written on this path). It deliberately does NOT share the success arm's
+  # artifacts-evidence-mismatch logic above: an empty artifacts array is the correct and expected
+  # shape here, not evidence of a writer bug, so this arm short-circuits directly to
+  # recovered=true, evidence_suspect=false without evaluating ARTIFACTS_SHAPE_MISMATCH or
+  # PHASES_ZERO_ON_SUCCESS.
+  emit true "$status" "NONE" "$artifact_path" "$artifact_type" "$artifact_summary" \
+    "$phases_completed" "$phases_total" "$meta_mtime" "$completion_summary" "$roadmap_items" \
+    false "NONE"
+  exit 0
+elif [ "$status" = "in_progress" ]; then
+  emit false "$status" "STATUS_IN_PROGRESS" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
+  exit 1
+else
+  emit false "$status" "STATUS_NOT_SUCCESS" "" "" "" 0 0 "$meta_mtime" "" "[]" false "NONE"
+  exit 1
+fi

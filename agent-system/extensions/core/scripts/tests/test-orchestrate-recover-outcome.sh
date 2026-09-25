@@ -5,8 +5,10 @@
 # degradation (WARN + mtime-only fallback), match, mismatch, and the git-restored-predecessor
 # shape (fresh in-window mtime + predecessor dispatch_seq) that mtime alone cannot reject.
 #
-# orchestrate-recover-outcome.sh is a standalone, read-only script (no `source`d collaborators, no
-# calls to sibling scripts) so this suite needs no synthetic `.claude/scripts/` sandbox -- it
+# orchestrate-recover-outcome.sh is a standalone, read-only script that sources exactly one
+# side-effect-free constants library (lib/return-meta-status-vocabulary.sh, resolved via the
+# real repo's git toplevel -- not the scratch task directory passed as an argument) and makes no
+# calls to sibling scripts, so this suite needs no synthetic `.claude/scripts/` sandbox -- it
 # invokes the real script directly against a scratch task directory per case.
 #
 # Fixture numbers below are synthetic, referred to as "case N" -- never "task N" -- per

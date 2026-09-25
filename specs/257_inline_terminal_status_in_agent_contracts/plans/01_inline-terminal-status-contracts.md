@@ -223,25 +223,25 @@ consumer and cannot silently drift.
 
 ---
 
-### Phase 3: Make orchestrate-recover-outcome.sh's success arm read the same definition [NOT STARTED]
+### Phase 3: Make orchestrate-recover-outcome.sh's success arm read the same definition [COMPLETED]
 
 **Goal**: The third consumer named in the task description reads the shared definition instead of
 a fourth private copy — strictly semantics-preserving.
 
 **Tasks**:
-- [ ] Re-read `orchestrate-recover-outcome.sh` in full before editing; it is a hot dispatch-path
+- [x] Re-read `orchestrate-recover-outcome.sh` in full before editing; *(completed)* it is a hot dispatch-path
       script with a deliberate "does not source skill-base.sh" posture documented inline. Sourcing
       a side-effect-free constants library does not violate that posture (which is about
       artifacts *normalization*), but record that reading in the commit message.
-- [ ] Source `lib/return-meta-status-vocabulary.sh` and restructure the `case "$status"` at `:242`
+- [x] Source `lib/return-meta-status-vocabulary.sh` and restructure the `case "$status"` at `:242` *(completed)*
       into an equivalent `if is_return_meta_success_status "$status"` / `elif` chain, preserving
       every existing arm's behavior exactly — including the `in_progress` arm and the `*` default
       that emits `STATUS_NOT_SUCCESS`.
-- [ ] Add a comment at the arm naming the recorded deferral: the success set is deliberately the
+- [x] Add a comment at the arm naming the recorded deferral: *(completed)* the success set is deliberately the
       3-value subset, and widening it to admit intentional non-canonical extension vocabularies
       (`consulted`, `converted`, `assembled`) is the follow-up task's first question — not this
       task's change.
-- [ ] Leave the `ARTIFACTS_SHAPE_MISMATCH` detector and the raw-read block untouched.
+- [x] Leave the `ARTIFACTS_SHAPE_MISMATCH` detector and the raw-read block untouched. *(completed)*
 
 **Timing**: 1 hour
 
