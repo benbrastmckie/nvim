@@ -357,16 +357,46 @@ phase headings in the plan file carry `[COMPLETED]` after the final verification
   agent did not implement Stage 5a (behavior predating Stage 5a's introduction)
 
 **Orchestrator behavior — the completion-claim verification gate**: `plan_markers_verified` is
-the Case 3 corroborating signal consumed by `skill_gate_completion_claim` (defined once, in
+a corroborating signal consumed by `skill_gate_completion_claim` (defined once, in
 `skill-base.sh`, and called identically from all three sites: base Stage 5, base Stage MT-4, and
-hard Stage 5). The gate has three fail-closed cases, evaluated in this order:
+hard Stage 5). The gate itself has three fail-closed cases, evaluated in this order, and its own
+refusal logic is unconditional and unchanged:
 
 1. **Case 1 — phase accounting present, incomplete** (`phases_total > 0` and
-   `phases_completed < phases_total`): always REFUSES. `plan_markers_verified` is not consulted.
+   `phases_completed < phases_total`): always REFUSES.
 2. **Case 2 — phase accounting present and complete** (`phases_total > 0` and
-   `phases_completed >= phases_total`): always ALLOWS. `plan_markers_verified` is not consulted.
+   `phases_completed >= phases_total`): always ALLOWS.
 3. **Case 3 — phase accounting absent or malformed** (`phases_total == 0`): falls back to
    `plan_markers_verified`. `true` ALLOWS; `false`, absent, `null`, or any other value REFUSES.
+
+**What changed is only which INPUTS the gate sees, not the gate itself.** Its caller
+(`orchestrate-cycle-postflight.sh`) now corroborates the plan's own phase markers via
+`skill_corroborate_phase_counts` BEFORE calling the gate, for every `implemented` dispatch — not
+only when `phases_total == 0` as originally scoped. When corroboration succeeds
+(`plan_markers_verified == "true"`, i.e. the plan's own headings show every phase closed via
+`[COMPLETED]` or `[COMPLETED WITH EXCLUSIONS]`), the caller supplies the corroborated
+`phases_completed`/`phases_total` counts to the gate instead of the handoff's own — which can move
+a call that would otherwise land in Case 1 (a handoff understating progress, e.g. a
+decision-gate/contingency-branch plan whose handoff still reports the pre-branch counters) into
+Case 2. This is the mechanism that lets a branched plan — see
+`context/formats/plan-format.md`'s "Decision gates and contingency branches" subsection for the
+full shape and a worked example — complete without a new handoff field, a new phase-heading
+marker, or a new gate case.
+
+**The fail-closed guarantee is unchanged.** When corroboration does NOT succeed (the plan is
+missing, unreadable, has non-conforming headings, or genuinely does not show every phase closed),
+the caller leaves the handoff's own `phases_completed`/`phases_total` counters completely
+untouched — the call reaches the gate exactly as it would have before this corroboration step
+existed, so a genuine shortfall still refuses, and still refuses as an ordinary Case 1 (never
+silently reclassified into Case 3's defect-recording path). An agent cannot escape the gate by
+under-reporting `phases_total` against an incomplete plan: with no plan to corroborate against
+(or a plan that itself confirms the shortfall), the counters and the refusal are exactly what the
+handoff reported.
+
+**No handoff field was added.** `phases_total` continues to mean "phases the handoff reports
+authored" in every case; it is never redefined to mean something else for a corroborated call. The
+evidence for a gate-skipped branch travels entirely through the plan's own phase-heading markers —
+an artifact the orchestrator already reads — not through any new field on this schema.
 
 A refusal means the `completed` transition does NOT happen this cycle: the task stays
 `implementing`, `cycle_count` still increments, and the existing MAX_CYCLES / MAX_CYCLES_MT caps

@@ -491,24 +491,25 @@ This closes Gap 1, the gap the incident's agent actually fell into.
 
 ---
 
-### Phase 6: Correct handoff-schema.md's Case 1 description [NOT STARTED]
+### Phase 6: Correct handoff-schema.md's Case 1 description [COMPLETED]
 
 **Goal**: `docs/architecture/handoff-schema.md` no longer asserts as fact behavior that Phase 3
 changed.
 
 **Tasks**:
 
-- [ ] Rewrite the `plan_markers_verified` subsection's three-case list so Case 1 reads accurately:
+- [x] Rewrite the `plan_markers_verified` subsection's three-case list so Case 1 reads accurately:
       the gate itself still refuses unconditionally on `phases_total > 0 && phases_completed <
       phases_total`, but the orchestrator now corroborates the plan's markers *before* calling the
       gate and, when corroboration succeeds, supplies corrected counts that can move the call into
       Case 2. State explicitly that a non-corroborating plan leaves the handoff's counters untouched
       so the refusal remains a Case 1 refusal, and that this is the fail-closed guarantee.
-- [ ] Add a one-line pointer to `plan-format.md`'s new decision-gate subsection as the plan-authoring
-      side of the same mechanism.
-- [ ] State that no handoff field was added: `phases_total` continues to mean "phases the handoff
+      *(completed)*
+- [x] Add a one-line pointer to `plan-format.md`'s new decision-gate subsection as the plan-authoring
+      side of the same mechanism. *(completed)*
+- [x] State that no handoff field was added: `phases_total` continues to mean "phases the handoff
       reports authored", and the evidence for a gate-skipped branch travels through the plan's own
-      markers.
+      markers. *(completed)*
 
 **Timing**: 0.5 hours
 
