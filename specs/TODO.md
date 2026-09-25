@@ -86,73 +86,51 @@ next_project_number: 257
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
-=== PREMISE CONFLICT -- RESOLVE BEFORE REMOVING ANYTHING ===
-The request that produced this task asserts "OpenCode is retired" and proposes removing dead
-wiring. That premise CONTRADICTS a settled user decision already recorded in the backlog under
-"Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy"
-(revised 2026-09-01): ".opencode/ is FROZEN -- not maintained, not generated, not deleted. No
-sync mechanism will be built; the tree is preserved intact for possible future refactoring."
-The tree is still present and non-trivial (22M, verified 2026-09-25).
+=== PREMISE RESOLVED 2026-09-25 -- SCOPE NARROWED, DO NOT RE-BROADEN ===
+This task originally proposed auditing ~32 .opencode references across core scripts on the
+premise that "OpenCode is retired". The user has now settled that premise directly: .opencode/
+in the nvim agent-system repo STAYS FROZEN, exactly as the standing frozen-mirror policy
+records -- not maintained, not generated, not deleted. The blanket reference audit is therefore
+CANCELLED: those references are correct and must stay. Removing the .opencode arm from
+deploy-root-guard.sh or validate-state.sh in particular would narrow a deliberately general
+"this must be a deploy tree, whichever kind" guard into a single-system one -- a regression
+dressed as a cleanup, and the specific outcome this note exists to prevent.
 
-The two scopes are NOT identical, which is why this task is separable rather than a duplicate:
-the frozen-mirror policy governs the .opencode/ TREE ITSELF; this task governs REFERENCES TO IT
-from core agent-system scripts, hooks and docs. But the policy still constrains the outcome --
-a deliberately preserved tree can be an argument for KEEPING the checks that operate on it.
-First deliverable is therefore to confirm with the user whether "retired" now supersedes
-"frozen", or whether the tree stays frozen and only genuinely dead references are pruned. Do
-not assume retirement and start deleting.
+What separately DID happen: the ModelChecker consumer repo deleted its own stale .opencode/
+DEPLOY (351 files, 2.9M, context files already drifted) plus its root opencode.json. That is a
+consumer-local deploy deletion, orthogonal to the frozen mirror, and it is already done.
 
-=== VERIFIED INVENTORY (measured 2026-09-25, supersedes the requester's estimate) ===
-32 files under agent-system/extensions/core reference `.opencode`; 6 carry the OC_ task-prefix
-convention. The requester's "33 files" figure is close on the first count but their scan method
-admits false positives: a naive OC_ grep matches PROC_ROOT in claude-refresh.sh, which has
-nothing to do with OpenCode. Re-measure before trusting any count, including this one.
+=== THE ONE REAL REMAINING DEFECT ===
+That deletion exposed a genuine, narrow bug, which is now this task entire:
 
-=== CLASSIFICATION ALREADY PERFORMED (do not redo; verify and extend) ===
-A. LIVE EXECUTABLE LOGIC -- 4 sites, the only ones with behavioral risk:
-   - scripts/validate-wiring.sh:286-287 -- actively validates .opencode as a system
-     (validate_core_system / validate_extensions_loaded against agent/subagents).
-   - scripts/deploy-root-guard.sh:19,24 -- case arm accepts */.opencode as a valid deploy root.
-   - scripts/validate-state.sh:238,244 -- accepts */.opencode/scripts/ as a location for a
-     DEPLOYED state-write.sh.
-   - hooks/validate-handoff-location.sh:65 -- live (OC_)? in the handoff-location regex.
-B. COMMENT-ONLY / COSMETIC -- no behavior: scripts/generate-task-order.sh:38,
-   scripts/check-extension-docs.sh:99, scripts/audit-deletion-references.sh:53,
-   scripts/lib/deploy-ledger-lib.sh:44.
-C. DOCS AND CONVENTION: merge-sources/claudemd.md ("System-Specific Naming", the
-   specs/OC_{NNN}_{SLUG} prefix), rules/artifact-formats.md,
-   context/reference/state-management-schema.md, skills/skill-todo/SKILL.md,
-   commands/README.md, context/reference/orchestrator-critical-paths.json.
+scripts/validate-wiring.sh does not gracefully skip a MISSING .opencode tree. Its `all` arm
+unconditionally calls validate_core_system/validate_extensions_loaded against
+"$PROJECT_ROOT/.opencode" and reports hard [FAIL] rows ("index.json not found", "Agent
+missing: ...", "Rule missing: ...") when that directory simply is not deployed in this
+consumer. Measured in ModelChecker on 2026-09-25, immediately after the deletion:
+`validate-wiring.sh all` -> exit 1, 15 failures, every one attributable to the absent
+.opencode arm; `validate-wiring.sh --claude` -> exit 0, 20 passed, 0 failed.
 
-=== THE NON-OBVIOUS RISK ===
-Several Category A sites are GENERALIZATIONS, not OpenCode-specific code: deploy-root-guard.sh
-and validate-state.sh both express "this must be a deploy tree, whichever kind". Deleting the
-.opencode arm narrows a general guard into a single-system one. That is a regression dressed as
-a cleanup. Judge each site on whether the abstraction still earns its keep, not on whether the
-string ".opencode" appears.
+A consumer repo that never deploys OpenCode is a NORMAL, supported configuration, not an
+error. The script should treat an absent tree root the way check-task-references.sh already
+does -- skip it with an informational line (its existing "[SKIP] lua does not exist under
+..." output is the exact precedent to mirror) -- rather than emitting failures that mask the
+real .claude-side result. Note this masking was severe before the deletion: ModelChecker
+`validate-wiring.sh all` reported 89 failures, ALL from the stale .opencode arm, while the
+.claude side was in fact completely clean.
 
-=== EXPLICITLY OUT OF SCOPE ===
-scripts/check-task-references.sh's TREE_ROOTS `.opencode` entry. That array is rewritten
-wholesale by the task "check-task-references.sh: scan repo-appropriate roots instead of a
-hard-coded nvim-repo TREE_ROOTS list", which this task depends on. Do not touch that file here;
-audit the result after that task lands.
+Scope: (1) make validate-wiring.sh skip a non-existent tree root for BOTH the .claude and
+.opencode arms, emitting a SKIP line rather than failures, so the exit status reflects only
+trees actually present; (2) confirm the same missing-tree-root assumption does not bite the
+other scripts that reference .opencode -- deploy-root-guard.sh and validate-state.sh were
+checked on 2026-09-25 and are SAFE (both match the running script own path against
+*/.claude/scripts/ or */.opencode/scripts/, so an absent sibling tree is irrelevant), and
+hooks/validate-handoff-location.sh is SAFE (its OC_ regex concerns specs/ path shapes, not the
+tree); re-verify rather than trusting this note; (3) add a regression test covering a
+consumer layout with .claude present and .opencode absent.
 
-=== DELIVERABLE ===
-1. Confirm the retired-vs-frozen policy question with the user; record the answer.
-2. Per-site disposition for every Category A and B site: remove as dead, or keep with a written
-   justification of the generalization it preserves.
-3. Update the Category C dual-system documentation to match the decision -- in particular the
-   "System-Specific Naming" section and the specs/OC_{NNN}_{SLUG} convention, which must either
-   be retired coherently everywhere or stated as retained.
-4. Keep scripts/tests/test-validate-handoff-location.sh in sync with any regex change.
-
-=== ACCEPTANCE ===
-The policy question is answered in writing; no Category A site changes without a recorded
-rationale; no general-purpose deploy-tree guard is narrowed to a single system as a side effect;
-the dual-system documentation and the shipped behavior agree; the test suite passes.
-
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**
-(no-task-references-in-deliverables.md) -- cite the task titles, not their numbers.
+Explicitly OUT of scope now: removing any .opencode reference, editing the frozen-mirror
+policy, and check-task-references.sh TREE_ROOTS (owned wholesale by the dependency task).
 
 ---
 

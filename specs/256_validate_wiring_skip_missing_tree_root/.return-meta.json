@@ -1,0 +1,28 @@
+{
+  "status": "tasks_created",
+  "summary": "Item (2) filed as task 256. Item (1) was NOT duplicated: it already exists as task 244, which was enriched with second-consumer evidence and two new requirements.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "specs/256_audit_residual_opencode_wiring/",
+      "summary": "New task: audit residual .opencode wiring in the core source store against the standing frozen-mirror policy"
+    },
+    {
+      "type": "task_entry",
+      "path": "specs/TODO.md",
+      "summary": "Task 256 added; task 244 entry refreshed"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790352661_77259f",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "tasks_enriched": 1
+  },
+  "next_steps": "Run /orchestrate 244 first (task 256 depends on it)"
+}
