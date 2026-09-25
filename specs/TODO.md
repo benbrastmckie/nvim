@@ -41,7 +41,7 @@ next_project_number: 263
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-260 [NOT STARTED] — Fix self-clobbering redeploy in the orchestrator cycle-plan...
+260 [RESEARCHED] — Fix self-clobbering redeploy in the orchestrator cycle-plan...
   └─ 262 [NOT STARTED] — Reduce redundant verify-deploy passes in the redeploy checkpoint
 261 [NOT STARTED] — Reduce process-spawn amplification in the shell test suite
 
@@ -269,10 +269,11 @@ less. Identify the load-sensitive set before parallelizing anything.
 ---
 
 ### 260. Fix self-clobbering redeploy in the orchestrator cycle-plan checkpoint
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [260_fix_self_clobbering_redeploy_in_cycle_plan/reports/01_self-clobbering-redeploy-hazard.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
