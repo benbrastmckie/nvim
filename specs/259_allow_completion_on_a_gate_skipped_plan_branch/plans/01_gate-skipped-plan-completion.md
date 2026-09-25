@@ -1,7 +1,7 @@
 # Implementation Plan: Task #259
 
 - **Task**: 259 - Allow completion when a plan branch deliberately skips phases, and stop the identical-redispatch loop
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md
