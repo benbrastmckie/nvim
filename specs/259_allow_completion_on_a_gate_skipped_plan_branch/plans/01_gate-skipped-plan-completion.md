@@ -1,7 +1,7 @@
 # Implementation Plan: Task #259
 
 - **Task**: 259 - Allow completion when a plan branch deliberately skips phases, and stop the identical-redispatch loop
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md
@@ -153,7 +153,7 @@ independent of how Fix 1 resolves), then 3 -> 4, then 5 -> 6, then 7.
 
 ---
 
-### Phase 1: Dispatch-content hashing and per-task identical-dispatch accounting [NOT STARTED]
+### Phase 1: Dispatch-content hashing and per-task identical-dispatch accounting [COMPLETED]
 
 **Goal**: `orchestrate-cycle-plan.sh` computes a normalized content hash of each dispatch file it
 builds and maintains a per-task consecutive-identical-dispatch streak in the run's multi-state
@@ -162,33 +162,37 @@ its own and is a strict no-op for every existing test.
 
 **Tasks**:
 
-- [ ] Enumerate every per-cycle-varying interpolation in `scripts/orchestrate-build-dispatch.sh`'s
+- [x] Enumerate every per-cycle-varying interpolation in `scripts/orchestrate-build-dispatch.sh`'s
       dispatch-file writer block (currently ~lines 387-430+). Confirm by reading the writer, not by
       assumption, that within one `/orchestrate` run only `- dispatch_seq: N` and
       `- dispatch_start_ts: N` vary for an otherwise-unchanged task/phase. Record the enumerated
       set in a comment at the normalizer. If any other varying line is found, add it to the
-      normalizer's strip set and note it in the phase's Verification below.
-- [ ] Add a `cycle_plan_dispatch_hash <dispatch_file>` helper to `scripts/orchestrate-cycle-plan.sh`
+      normalizer's strip set and note it in the phase's Verification below. *(completed: confirmed
+      by reading the writer end to end -- only those two lines vary; enumerated in a comment on
+      `cycle_plan_dispatch_hash()`)*
+- [x] Add a `cycle_plan_dispatch_hash <dispatch_file>` helper to `scripts/orchestrate-cycle-plan.sh`
       that strips the enumerated varying lines and emits a `sha256sum` digest. Reuse
       `scripts/lib/deploy-ledger-lib.sh`'s degrade idiom verbatim in spirit:
       `command -v sha256sum >/dev/null 2>&1 || return 2`, surfaced by the caller as a **named
       stderr notice that disables the guard for this run**, never a silent skip and never a fatal.
-- [ ] Add three fields to the multi-state defaults block (alongside `.cycle_counts //= {}` /
+      *(completed)*
+- [x] Add three fields to the multi-state defaults block (alongside `.cycle_counts //= {}` /
       `.max_cycles_per_task //= {}`): `.last_dispatch_hash //= {}`, `.last_dispatch_phase //= {}`,
       `.identical_dispatch_streak //= {}`. All keyed by task number as strings, matching the
-      existing per-task map convention.
-- [ ] In the live-only dispatch loop, immediately after `orchestrate-build-dispatch.sh` succeeds
+      existing per-task map convention. *(completed)*
+- [x] In the live-only dispatch loop, immediately after `orchestrate-build-dispatch.sh` succeeds
       and `dispatch_file` is resolved (and BEFORE the budget-charge block), compute the hash and
       update the streak: if the hash and the phase both match this task's recorded values,
-      `streak = streak + 1`; otherwise `streak = 1` and record the new hash/phase.
-- [ ] Emit one greppable stderr line per repeat, e.g.
+      `streak = streak + 1`; otherwise `streak = 1` and record the new hash/phase. *(completed)*
+- [x] Emit one greppable stderr line per repeat, e.g.
       `[orchestrate] IDENTICAL DISPATCH: task #<t> <phase> dispatch content matches the previous
-      one (streak=<n>) -- ...`. Do not emit anything on a streak of 1.
-- [ ] Add test coverage to `scripts/tests/test-orchestrate-cycle-plan.sh`: (i) the normalizer
+      one (streak=<n>) -- ...`. Do not emit anything on a streak of 1. *(completed)*
+- [x] Add test coverage to `scripts/tests/test-orchestrate-cycle-plan.sh`: (i) the normalizer
       yields the same digest for two dispatch files differing only in the enumerated varying lines
       and a different digest when any other line differs; (ii) the streak increments across two
       identical live compositions and resets on a differing one; (iii) the `sha256sum`-absent
       degrade path emits the named notice and leaves every dispatch decision unchanged.
+      *(completed: Group 27 Cases A-E in test-orchestrate-cycle-plan.sh)*
 
 **Timing**: 1.5 hours
 

@@ -1,33 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md",
-      "summary": "Seven-phase plan: convergence guard (identical-dispatch hashing, then halt+back-out) in orchestrate-cycle-plan.sh; corroboration-trigger widening with a corroboration-gated overwrite in orchestrate-cycle-postflight.sh plus a comment-only skill-base.sh correction; the four gate verification arms; and the decision-gate documentation in plan-format.md/status-markers.md/handoff-schema.md. No new marker, no handoff-schema field, no defect-enum class."
-    }
-  ],
-  "next_steps": "Run /implement 259 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1790360491_c3a705_259",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "phase_count": 7,
-  "estimated_hours": 9,
-  "dependency_waves": 3,
-  "memory_candidates": [
-    {
-      "content": "orchestrate-unwind-dispatch.sh is BY-HAND-ONLY by its own header contract ('never invoked automatically by the orchestrate loop'), so any in-loop guard in orchestrate-cycle-plan.sh that must abort a dispatch AFTER orchestrate-build-dispatch.sh has already run cannot delegate the back-out to it. The six side effects taken before the dispatch row is built are: task-dir mkdir, task-lock acquire, dispatch_seq mint (mt_state), forced-phase pop, skill_preflight_update status write, and the .dispatch/{seq}.md file. An inline back-out reverses them from the pre-image already captured in scope (_pd_prior_status/_pd_prior_last_updated/_pd_prior_session_id, captured immediately before skill_preflight_update) via state-write.sh --regen-todo, plus task-lock.sh release and deleting the dispatch file -- while simply SKIPPING the not-yet-taken budget charge, --flush-seq and pending_dispatch record.",
-      "category": "PATTERN",
-      "source_artifact": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrate-unwind-dispatch", "orchestrate-cycle-plan", "dispatch back-out", "convergence guard", "pre-image", "state-write"]
-    }
-  ],
-  "modified_files": [
-    "specs/259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md"
-  ],
-  "dispatch_seq": 4
+    "session_id": "sess_1790360491_c3a705",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 7
+  }
 }

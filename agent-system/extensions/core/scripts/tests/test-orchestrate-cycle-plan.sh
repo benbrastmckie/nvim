@@ -3367,6 +3367,167 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 27: Fix 2 (Phase 1) -- identical-dispatch content hashing and per-task streak accounting.
+# Log-only: no dispatch is blocked and no behavior changes (Phase 2 adds the halt).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 27: identical-dispatch content hashing and streak accounting (log-only)"
+
+# Restore the REAL orchestrate-build-dispatch.sh -- Group 25 (immediately prior) installs its own
+# stub (a fixed "/fake/<n>-<phase>.md" dispatch_file that never exists on disk) for its own
+# sibling-territory assertions and never restores the real one afterward. Cases C-E below need the
+# REAL script so the dispatch file it writes actually exists on disk for cycle_plan_dispatch_hash
+# to hash, same precaution Group 21 already takes for itself against Groups 13/15/16.
+cp "$CORE_DIR/orchestrate-build-dispatch.sh" "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+
+# ── Case A: the normalizer -- byte-extracts the REAL cycle_plan_dispatch_hash() function from the
+# SUT source (isolated unit test of the normalizer's own behavior, independent of the full live
+# dispatch pipeline exercised in Cases C-E below). Same digest when only the two per-cycle-varying
+# lines (dispatch_seq, dispatch_start_ts) differ; a different digest when any other line differs.
+g27_hash_fn=$(sed -n '/^cycle_plan_dispatch_hash() {/,/^}/p' "$SUT_SRC")
+if [ -n "$g27_hash_fn" ]; then
+  pass "Group 27 Case A: cycle_plan_dispatch_hash() found in SUT source"
+else
+  fail "Group 27 Case A: could not extract cycle_plan_dispatch_hash() from $SUT_SRC"
+fi
+
+g27_f1="$WORKDIR/g27_dispatch_a.md"
+cat > "$g27_f1" <<'EOF'
+# Dispatch Context: candidate 9001, phase=implement
+
+## Identity
+
+- candidate_number: 9001
+- phase: implement
+- candidate_type: general
+- session_id: sess_abc
+- dispatch_seq: 4
+- dispatch_start_ts: 1000000
+
+## Description
+
+Some description.
+EOF
+g27_f2="$WORKDIR/g27_dispatch_b.md"
+sed -e 's/dispatch_seq: 4/dispatch_seq: 5/' -e 's/dispatch_start_ts: 1000000/dispatch_start_ts: 1000099/' "$g27_f1" > "$g27_f2"
+g27_f3="$WORKDIR/g27_dispatch_c.md"
+sed 's/Some description\./A different description./' "$g27_f1" > "$g27_f3"
+
+g27_h1=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f1")
+g27_h2=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f2")
+g27_h3=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f3")
+if [ -n "$g27_h1" ] && [ "$g27_h1" = "$g27_h2" ]; then
+  pass "Group 27 Case A: identical digest for two files differing only in dispatch_seq/dispatch_start_ts"
+else
+  fail "Group 27 Case A: expected matching digests, got '$g27_h1' vs '$g27_h2'"
+fi
+if [ -n "$g27_h3" ] && [ "$g27_h3" != "$g27_h1" ]; then
+  pass "Group 27 Case A: different digest when a non-varying line (Description) differs"
+else
+  fail "Group 27 Case A: expected a different digest for a genuinely different dispatch, got '$g27_h3' (same as '$g27_h1')"
+fi
+
+# ── Case B: sha256sum-absent degrade path -- returns exit 2 (never a crash, never a fatal), no
+# digest emitted. An absolute path to bash bypasses the emptied PATH for the interpreter itself;
+# PATH="" inside that bash instance is what makes `command -v sha256sum` fail.
+g27_bash_abs="$(command -v bash)"
+g27_degrade_out=$(PATH="" "$g27_bash_abs" -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f1" 2>/dev/null)
+g27_degrade_rc=$?
+if [ "$g27_degrade_rc" -eq 2 ] && [ -z "$g27_degrade_out" ]; then
+  pass "Group 27 Case B: cycle_plan_dispatch_hash returns 2 (degrade, not crash) when sha256sum is unavailable"
+else
+  fail "Group 27 Case B: expected exit 2 and empty output with sha256sum unavailable, got rc=$g27_degrade_rc out='$g27_degrade_out'"
+fi
+
+# ── Cases C-E: full LIVE pipeline -- `--no-plan-cache` forces a genuinely fresh composition on
+# each call (mirroring orchestrate-cycle-postflight.sh clearing plan_cache unconditionally after
+# any real postflight, so a same-content redispatch is never short-circuited by the in-session
+# cache the way two bare back-to-back calls in this same process otherwise would be).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2703, "project_name": "g27_live", "task_type": "general", "status": "implementing", "description": "live streak test", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/2703_g27_live"
+mkdir -p "$WORKDIR/specs/2703_g27_live/plans"
+printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2703_g27_live/plans/01_fixture-plan.md"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g27live.json"
+
+run_sut --session g27live --no-plan-cache -- 2703
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | length')" = "1" ]; then
+  pass "Group 27 Case C: cycle 1 dispatches candidate #2703 normally"
+else
+  fail "Group 27 Case C: cycle 1 did not dispatch candidate #2703 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+g27_streak_after_1=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g27live.json")
+if [ "$g27_streak_after_1" = "1" ]; then
+  pass "Group 27 Case C: streak recorded as 1 after the first dispatch"
+else
+  fail "Group 27 Case C: expected streak 1 after cycle 1, got '$g27_streak_after_1'"
+fi
+
+run_sut --session g27live --no-plan-cache -- 2703
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | length')" = "1" ]; then
+  pass "Group 27 Case C: cycle 2 (identical content) STILL dispatches normally -- Phase 1 is log-only, no behavior change"
+else
+  fail "Group 27 Case C: cycle 2 unexpectedly changed dispatch behavior (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+g27_streak_after_2=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g27live.json")
+if [ "$g27_streak_after_2" = "2" ]; then
+  pass "Group 27 Case C: streak increments to 2 across two content-identical live compositions"
+else
+  fail "Group 27 Case C: expected streak 2 after cycle 2, got '$g27_streak_after_2'"
+fi
+if [[ "$LAST_STDERR" == *"IDENTICAL DISPATCH:"* ]] && \
+   [[ "$LAST_STDERR" == *"dispatch content matches the previous one"* ]] && \
+   [[ "$LAST_STDERR" == *"streak=2)"* ]]; then
+  pass "Group 27 Case C: the named IDENTICAL DISPATCH notice fires on stderr with streak=2"
+else
+  fail "Group 27 Case C: expected the IDENTICAL DISPATCH notice on stderr, got: $LAST_STDERR"
+fi
+
+# ── Case D: a genuinely different dispatch (description changed) resets the streak to 1 ─────────
+g27_desc_filter='(.active_projects[] | select(.project_number == 2703)).description = "a genuinely different description"'
+jq "$g27_desc_filter" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
+run_sut --session g27live --no-plan-cache -- 2703
+g27_streak_after_3=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g27live.json")
+if [ "$g27_streak_after_3" = "1" ]; then
+  pass "Group 27 Case D: streak resets to 1 when the dispatch content genuinely differs"
+else
+  fail "Group 27 Case D: expected streak to reset to 1, got '$g27_streak_after_3'"
+fi
+if [[ "$LAST_STDERR" != *"IDENTICAL DISPATCH:"* ]]; then
+  pass "Group 27 Case D: no IDENTICAL DISPATCH notice on a streak of 1"
+else
+  fail "Group 27 Case D: unexpected IDENTICAL DISPATCH notice on a genuinely different dispatch: $LAST_STDERR"
+fi
+
+# ── Case E: --dry-run composition is untouched -- the guard lives entirely in the live-only half.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2704, "project_name": "g27_dryrun", "task_type": "general", "status": "not_started", "description": "dry-run must be byte-unaffected by the accounting guard", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g27dry.json"
+run_sut --session g27dry --dry-run -- 2704
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2704 and .phase == "research")) | length')" = "1" ]; then
+  pass "Group 27 Case E: --dry-run still dispatches normally"
+else
+  fail "Group 27 Case E: --dry-run behavior changed (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+if [ ! -f "$WORKDIR/specs/.orchestrator-multi-state-g27dry.json" ]; then
+  pass "Group 27 Case E: --dry-run never persists a multi-state file (no accounting side effect)"
+else
+  fail "Group 27 Case E: --dry-run unexpectedly wrote a multi-state file"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

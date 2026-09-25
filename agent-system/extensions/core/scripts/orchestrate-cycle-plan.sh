@@ -518,6 +518,9 @@ mt_json=$(jq -c \
   | .blocker_escalation_count //= {}
   | .drift_inspection_count //= {}
   | .plan_cache //= null
+  | .last_dispatch_hash //= {}
+  | .last_dispatch_phase //= {}
+  | .identical_dispatch_streak //= {}
   ' <<<"$mt_json")
 
 # ─── Item (b): in-session plan cache — replay check (must run before ANY composition side ────
@@ -1734,6 +1737,29 @@ fi
 # call site below is updated to pass task_number as the new third positional argument;
 # command-route-agent.sh (the `research`/`implement` path) is UNCHANGED and never consulted for
 # `plan` -- confirmed by this arm's own early `return` before reaching that source line.
+# ── cycle_plan_dispatch_hash <dispatch_file> ────────────────────────────────────────────────────
+# Fix 2 (identical-dispatch convergence guard): normalizes a dispatch file's content and emits a
+# sha256sum digest, so two dispatch files for the same task/phase that differ ONLY in the
+# per-cycle-varying lines orchestrate-build-dispatch.sh's Identity-section writer emits can be
+# recognized as content-identical. Confirmed by reading that writer's Identity block end to end
+# (scripts/orchestrate-build-dispatch.sh, "## Identity" section): within one /orchestrate run,
+# for an otherwise-unchanged task/phase, ONLY `- dispatch_seq: N` and `- dispatch_start_ts: N`
+# vary — every other line (task_number, phase, task_type, session_id, the Description body, the
+# Territory block, etc.) is reproduced byte-for-byte across cycles. This enumerated set is exactly
+# what the strip pattern below removes; a real behavioral change to the dispatch (a different
+# phase_number, a different territory payload, a different focus string) changes some OTHER line
+# and therefore still changes the digest.
+#
+# Reuses lib/deploy-ledger-lib.sh's degrade idiom verbatim in spirit: `sha256sum` unavailable (or
+# the file unreadable) returns exit 2, never a silent skip and never fatal — the caller surfaces a
+# named stderr notice and disables the guard for the run.
+cycle_plan_dispatch_hash() {
+  local f="$1"
+  command -v sha256sum >/dev/null 2>&1 || return 2
+  [ -f "$f" ] || return 2
+  grep -v -E '^- dispatch_seq: [0-9]+$|^- dispatch_start_ts: [0-9]+$' "$f" | sha256sum | awk '{print $1}'
+}
+
 resolve_agent() {
   local op="$1" ttype="$2" tasknum="${3:-}"
   case "$op" in
@@ -2230,6 +2256,30 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   dispatch_file=$(echo "$dispatch_json" | jq -r '.dispatch_file')
   dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
   [ -z "$dispatch_model" ] && dispatch_model_json="null" || dispatch_model_json="\"$dispatch_model\""
+
+  # ── Fix 2: identical-dispatch content hashing and per-task streak accounting ───────────────────
+  # Runs immediately after dispatch_file is resolved and BEFORE any budget-charge side effect
+  # below, so a halt (streak >= 2, just below) can back out cleanly without having charged
+  # anything yet. `_idh_streak` stays 0 (never halts) when the hash degrades (sha256sum missing or
+  # the just-written file unreadable) -- disabling the guard for this run rather than failing it.
+  _idh_streak=0
+  if _idh_hash=$(cycle_plan_dispatch_hash "$dispatch_file"); then
+    _idh_prev_hash=$(mt_get --arg t "$t" '.last_dispatch_hash[$t] // ""')
+    _idh_prev_phase=$(mt_get --arg t "$t" '.last_dispatch_phase[$t] // ""')
+    if [ -n "$_idh_hash" ] && [ "$_idh_hash" = "$_idh_prev_hash" ] && [ "$g" = "$_idh_prev_phase" ]; then
+      _idh_streak=$(( $(mt_get --arg t "$t" '.identical_dispatch_streak[$t] // 0') + 1 ))
+    else
+      _idh_streak=1
+    fi
+    mt_set --arg t "$t" --arg h "$_idh_hash" '.last_dispatch_hash[$t] = $h'
+    mt_set --arg t "$t" --arg p "$g" '.last_dispatch_phase[$t] = $p'
+    mt_set --arg t "$t" --argjson s "$_idh_streak" '.identical_dispatch_streak[$t] = $s'
+    if [ "$_idh_streak" -gt 1 ]; then
+      echo "[orchestrate] IDENTICAL DISPATCH: task #$t $g dispatch content matches the previous one (streak=$_idh_streak) -- ${dispatch_file}" >&2
+    fi
+  elif [ "$?" -eq 2 ]; then
+    echo "[orchestrate] NOTICE: identical-dispatch convergence guard disabled for this run (sha256sum unavailable, or task #$t's just-written dispatch file was unreadable)." >&2
+  fi
 
   agent=$(resolve_agent "$g" "${task_types[$t]}" "$t")
   if [ "$g" = "research" ]; then
