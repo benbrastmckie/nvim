@@ -1,7 +1,7 @@
 # Implementation Plan: Task #258
 
 - **Task**: 258 - Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: Task 257 (return-meta status vocabulary library) — CONFIRMED COMPLETE; `scripts/lib/return-meta-status-vocabulary.sh` exists on disk and is reusable today
 - **Research Inputs**: specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md
@@ -415,21 +415,22 @@ the phase done; if an arm has no assertion, add one.
 
 ---
 
-### Phase 5: Full regression gate and boundary confirmation [NOT STARTED]
+### Phase 5: Full regression gate and boundary confirmation [COMPLETED]
 
 **Goal**: Confirm the change is complete, confined, and leaves every untouched path intact.
 
 **Tasks**:
-- [ ] Run the full postflight suite; require 0 failures
-- [ ] Run `test-orchestrate-cycle-plan.sh` and the recover-outcome suite if one exists, to catch
-      collateral damage from the new lib sourcing
-- [ ] Run `lint-agent-contracts.sh` and any defect-class or contract lint that reads the enum or
-      the pattern doc
-- [ ] Review `git diff` against the Attribution Boundary table above: confirm exactly one record
-      site changed and the other five are byte-identical
-- [ ] Confirm every edited path is under `agent-system/extensions/**` and nothing was written
-      under `.claude/**`
-- [ ] Confirm no task-number reference leaked into any deliverable outside `specs/**`
+- [x] Run the full postflight suite; require 0 failures *(completed: 127 passed, 0 failed)*
+- [x] Run `test-orchestrate-cycle-plan.sh` and the recover-outcome suite if one exists, to catch
+      collateral damage from the new lib sourcing *(completed: 274/0 and 7/0 respectively)*
+- [x] Run `lint-agent-contracts.sh` and any defect-class or contract lint that reads the enum or
+      the pattern doc *(completed: 173 passed, 0 warnings, 0 failed; check-task-references.sh
+      also run, 0 unexempted occurrences)*
+- [x] Review `git diff` against the Attribution Boundary table above: confirm exactly one record
+      site changed and the other five are byte-identical *(completed)*
+- [x] Confirm every edited path is under `agent-system/extensions/**` and nothing was written
+      under `.claude/**` *(completed)*
+- [x] Confirm no task-number reference leaked into any deliverable outside `specs/**` *(completed)*
 
 **Timing**: 0.5 hours
 

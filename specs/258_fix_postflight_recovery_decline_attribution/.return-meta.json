@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md",
+      "summary": "5-phase implementation discriminating orchestrate-cycle-postflight.sh's WORK (d) absent-handoff branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class attributed to the dispatched agent's own file, and first repairing a predecessor regression in the fixture suite (110/110 -> 127/127 passed after the extension)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Discriminated orchestrate-cycle-postflight.sh's WORK (d) branch on recover_json's .reason so a declined return-meta recovery with a status-shaped cause (STATUS_IN_PROGRESS/STATUS_NOT_SUCCESS/META_DISPATCH_SEQ_MISMATCH) records a new RECOVERY_DECLINED defect attributed to the dispatched agent's own file, while the nothing-produced case (META_MISSING) keeps the original HANDOFF_STALE_OR_ABSENT behavior attributed to skill-orchestrate/SKILL.md unchanged. Also repaired a predecessor regression that had silently broken 34 of 110 fixtures in the test suite (missing sandbox lib copy), restoring it as a reliable regression guard before extending it to 127 passing fixtures covering all three sub-cases."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/system-defect-record.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Regression-proof technique for a test-suite extension: after adding new/extended fixtures that assert a behavior change, temporarily restore the PRE-fix version of the production file (e.g. via `git show <pre-fix-commit>:path > path`), rerun the suite, and confirm the new/extended assertions flip red (never green) before restoring the fix. This proves the new fixtures genuinely exercise the change rather than passing tautologically (e.g. asserting a count that happens to already be zero). Concretely used: reverting orchestrate-cycle-postflight.sh's WORK (d) discrimination flipped exactly 9 of the newly-added/extended assertions from pass to fail, confirming they were load-bearing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["regression-proof", "test-fixture", "revert-and-check", "tautological-assertion", "verification"]
+    },
+    {
+      "content": "When a diagnostic branch collapses 'nothing was produced' and 'something was produced but rejected' into one defect class/attribution, the attribution is systematically wrong for the second sub-case: an agent-side artifact that exists and was read gets blamed on the orchestrator/caller instead of the agent that produced it. The fix pattern is to discriminate on an already-available diagnostic field (here, orchestrate-recover-outcome.sh's `.reason`, distinct from the always-'NONE' `evidence_reason` field that looks similar but never discriminates on the recovered=false path) rather than adding a new detector — the data needed to route correctly was already being computed and discarded.",
+      "category": "PATTERN",
+      "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["defect-attribution", "diagnostic-discrimination", "reason-field", "misattribution", "orchestrate-recover-outcome"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790360491_c3a705",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

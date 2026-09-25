@@ -1,18 +1,19 @@
 {
-  "task": 258,
-  "phase": "plan",
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 5,
-  "session_id": "sess_1790360491_c3a705_258",
-  "dispatch_seq": 8,
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "phase": "implement",
+  "summary": "Discriminated orchestrate-cycle-postflight.sh's WORK (d) branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class attributed to the dispatched agent's own file for status-shaped decline reasons, while leaving the META_MISSING/HANDOFF_STALE_OR_ABSENT behavior unchanged; also repaired a predecessor regression in the fixture suite (76/34 -> 127/0 after the full task).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/258_fix_postflight_recovery_decline_attribution/plans/01_recovery-decline-attribution.md",
-      "summary": "5-phase plan discriminating the WORK (d) absent-handoff branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class with agent-file attribution, and first restoring the already-red postflight fixture suite to green."
+      "type": "summary",
+      "path": "specs/258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md",
+      "summary": "5-phase implementation discriminating orchestrate-cycle-postflight.sh's WORK (d) absent-handoff branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class attributed to the dispatched agent's own file, and first repairing a predecessor regression in the fixture suite."
     }
   ],
-  "next_steps": "Run /implement 258 to execute the plan",
-  "notes": "Planning verified a pre-existing 34-failure regression in test-orchestrate-cycle-postflight.sh (return-meta-status-vocabulary.sh missing from setup_sandbox's copy list); a two-line fix was proven to restore 110 passed / 0 failed and is Phase 1. Research's corrections adopted: .reason is the discriminating field, and system-defect-record.sh's --dispatched-agent already provides the agent-name resolver."
+  "phases_completed": 5,
+  "phases_total": 5,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete. Deploy the source-store change (bash .claude/scripts/deploy-headless.sh, or the picker's Reload All/Regenerate) before the next /orchestrate cycle runs the deployed orchestrate-cycle-postflight.sh copy, since this is a self-modifying task whose edits landed in the source store only."
 }
