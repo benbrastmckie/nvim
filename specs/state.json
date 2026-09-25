@@ -1030,9 +1030,15 @@
           "path": "specs/257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md",
           "type": "plan",
           "summary": "9-phase plan fixing 20 agent files (22 edit sites) to carry a concrete inline terminal status, extracting the canonical 8-value return-meta vocabulary into a shared sourced library, and adding lint Check E as the regression guard."
+        },
+        {
+          "path": "specs/257_inline_terminal_status_in_agent_contracts/summaries/01_inline-terminal-status-contracts-summary.md",
+          "type": "summary",
+          "summary": "Brought 20 dispatchable agent files up to a concrete inline terminal status shape and added a permanent lint regression guard."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed 20 agent contract files (22 edit sites) to carry a concrete inline .return-meta.json terminal status and the never-use-\"completed\" warning; extracted the canonical 8-value status vocabulary into a shared library consumed by the validator, the recovery arm, and a new lint Check E; full gate green aside from 4 pre-existing failures confirmed unrelated to this task's file scope."
     },
     {
       "project_number": 258,

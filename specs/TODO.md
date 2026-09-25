@@ -468,6 +468,7 @@ not weaken fixture (A) to make the change pass.
 - **Dependencies**: None
 - **Research**: [257_inline_terminal_status_in_agent_contracts/reports/01_terminal-status-vocabulary.md]
 - **Plan**: [257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md]
+- **Summary**: [257_inline_terminal_status_in_agent_contracts/summaries/01_inline-terminal-status-contracts-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ (never .claude/**).
 
