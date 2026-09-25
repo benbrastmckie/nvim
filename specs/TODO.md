@@ -1,5 +1,5 @@
 ---
-next_project_number: 259
+next_project_number: 260
 ---
 
 # TODO
@@ -43,7 +43,7 @@ next_project_number: 259
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 257 [NOT STARTED] — Inline the correct terminal status value and the...
 258 [NOT STARTED] — Stop recording a declined return-meta recovery as...
-259 [NOT STARTED] — Allow completion when a plan branch deliberately...
+259 [NOT STARTED] — Allow completion when a plan branch deliberately skips...
 
 ### Extensions
 
@@ -96,7 +96,7 @@ fresh with a matching dispatch_seq and a correct "status": "implemented". Recove
 this is NOT the declined-recovery path that the return-meta-vocabulary and
 recovery-decline-attribution tasks address, and neither of those fixes would touch it.
 
-The refusal came from skill_gate_completion_claim (scripts/skill-base.sh:1244), Case 1:
+The refusal came from skill_gate_completion_claim (scripts/skill-base.sh:1224), Case 1:
 
     if [ "$phases_total" -gt 0 ]; then
       # Case 1: phase accounting present but incomplete -- always refuse.
@@ -109,7 +109,7 @@ re-fire, verified the work was already complete, correctly refused to redo the e
 25-seed sweep, and returned the same 4/7 handoff -- producing the same refusal. Each such cycle
 cost roughly 40 minutes of agent time for a provably empty result. The loop was halted by hand.
 
-=== ROOT CAUSE 1: THE HANDOFF CANNOT EXPRESS A BRANCHED PLAN ===
+=== THE PLAN SHAPE THAT PRODUCED IT ===
 The planner may author a plan with a DECISION GATE, and routinely should. Task 188's plan has
 seven phases of which 3-5 are explicitly conditional on Phase 2's gate passing:
 
@@ -122,77 +122,127 @@ seven phases of which 3-5 are explicitly conditional on Phase 2's gate passing:
   Phase 7: CONDITIONAL -- Revert and Author an UNSTABLE entry    [COMPLETED]
 
 Phase 2's gate FAILED (the candidate fix measured worse than baseline: 5/25 undecided draws
-against 2/25), so the plan's own contingency branch was taken, correctly. The agent then had
-exactly two integer fields in which to describe this. "4 of 7" is the only literally true thing
-it could write, and it is unconditionally refused. The planner can express branching; the
-handoff cannot express having branched. That asymmetry is the defect.
+against 2/25), so the plan's own contingency branch was taken, correctly.
 
-Note this gate was deliberately TIGHTENED recently -- its own header records that base mode
-"LOSES its `phases_total == 0` blind allow". Failing closed is the right instinct; the
-tightening simply assumed every plan is linear. Do not revert it.
+Note the gate was deliberately TIGHTENED recently -- its own header records that base mode
+"LOSES its `phases_total == 0` blind allow". Failing closed is the right instinct. Do not revert
+it.
 
-=== ROOT CAUSE 2: THE CONVERGENCE GUARD CANNOT SEE THIS ===
-scripts/orchestrate-cycle-plan.sh's convergence guard fires only when a cycle dispatches
-NOTHING:
+=== CORRECTION: THE MARKER THIS TASK PROPOSED TO INVENT ALREADY EXISTS ===
+THIS IS THE MOST IMPORTANT ITEM IN THIS DESCRIPTION AND IT REDIRECTS THE WHOLE FIX. An earlier
+draft asserted that 'there is no sanctioned phase marker for deliberately not executed' and
+proposed inventing [SKIPPED] or [NOT APPLICABLE], plus new `phases_skipped` /
+`phase_accounting_note` handoff fields. BOTH PREMISES ARE FALSE. Verified 2026-09-25:
+
+  - `[COMPLETED WITH EXCLUSIONS]` is an existing, fully-wired, sanctioned phase-heading marker.
+    context/standards/status-markers.md:186-238 defines it as 'a third terminal phase-heading
+    outcome' meaning 'every remaining item was decided, justified, and will not be revisited --
+    nothing is left for a future dispatch to pick up; the phase is closed, not stalled'.
+  - IT ALREADY COUNTS AS CLOSED IN THE DENOMINATOR AND NUMERATOR. scripts/lib/
+    phase-heading-patterns.sh:104-107 defines
+    PHASE_STATUS_DONE_ALT='COMPLETED|COMPLETED WITH EXCLUSIONS', and its own comment states
+    "`COMPLETED WITH EXCLUSIONS` counting as closed is the fix for the orchestration" case.
+    update-task-status.sh's phase-check block logs '${DONE}/${TOTAL} phases closed (COMPLETED or
+    COMPLETED WITH EXCLUSIONS)'.
+  - WHOLE-PHASE EXCLUSION IS EXPLICITLY THE INTENDED CASE, NOT A DEGENERATE ONE.
+    status-markers.md: 'the excluded set may be a subset of a phase's remaining items or the
+    ENTIRE remainder... A plan author facing a whole-phase exclusion should reach for
+    `[COMPLETED WITH EXCLUSIONS]` here, not invent a fourth marker.'
+  - A FOURTH MARKER IS ALREADY ARGUED AGAINST BY NAME. The same section rejects `[DESCOPED]`
+    because 'admitting a semantically-overlapping fourth marker would require re-touching every
+    site `[COMPLETED WITH EXCLUSIONS]` already wired for no expressive gain.' [SKIPPED] /
+    [NOT APPLICABLE] fall to that identical argument. DROP THAT PROPOSAL.
+  - Phases 3-5 of the observed plan SATISFY the five-condition admission test
+    (status-markers.md:210-228) on their face: (1) a deliberate decision, not abandonment --
+    the gate failed and the contingency branch was taken; (2) tightly scoped to three enumerated
+    phases; (3) reason stated; (4) evidenced by the sweep measurement (5/25 vs 2/25); (5) no
+    residual work -- Phase 7 was executed instead and the branch will not be revisited.
+    Confirm this reading against the test rather than assuming it, but it is the starting point.
+
+=== REFRAMED FIX 1: EVALUATE THE NO-SCHEMA-CHANGE PATH FIRST ===
+If phases 3-5 are marked `[COMPLETED WITH EXCLUSIONS]` with the `#### Reasoned Exclusions` record
+that context/formats/plan-format.md:353-420 already specifies, then count_plan_phases() yields
+7 closed of 7, skill_corroborate_phase_counts reports 7/7, and skill_gate_completion_claim takes
+Case 2 ('the only unconditional allow'). The deadlock dissolves with NO handoff-schema change, NO
+new marker, and NO new gate case. Establish whether that is true end to end BEFORE designing any
+schema addition; if it is, the schema work is not merely unnecessary but actively harmful --
+`phases_skipped` would be a second, competing mechanism inside the documented family
+'documented incompleteness that still counts as success' that status-markers.md and
+context/contracts/anti-analysis.md deliberately keep to one.
+
+On that reading the real gaps are narrower and different from the earlier draft's:
+
+  GAP 1 (documentation / agent contract). Nothing tells a planner or an implementation agent that
+  a gate-skipped phase is represented as `[COMPLETED WITH EXCLUSIONS]`. plan-format.md:166
+  mentions descoping uses that marker, and status-markers.md carries the admission test, but
+  neither connects it to the DECISION-GATE / contingency-branch shape, which is the form the
+  planner actually emits. The agent in the incident had a correct mechanism available and no way
+  to know it applied. Document the branched-plan -> exclusion-marker mapping where the planner and
+  the implementation agents will read it.
+    SCOPE CAUTION: do NOT edit agent bodies in this task. The sibling agent-contract task owns
+    agent-body edits (planner-agent.md among them) and a collision would force a batch deferral.
+    Put this guidance in plan-format.md / status-markers.md and, if agent-body wording is truly
+    required, sequence after that task rather than overlapping its file_scope.
+
+  GAP 2 (the gate, and this one IS a real script defect). Case 1 refuses on the agent's
+  SELF-REPORTED counters and never consults the plan. skill_corroborate_phase_counts exists and
+  reads the plan markers, but it is invoked only on the phases_total == 0 precondition -- Case 3's
+  path (orchestrate-cycle-postflight.sh:480-486, 'matches skill_gate_completion_claim's own
+  Case 3 precondition exactly'). So when the handoff says 4/7 and the plan says 7/7 closed,
+  nothing ever notices the disagreement. Extend corroboration to the Case 1 path so plan markers
+  can carry a completion claim the handoff counters understate. This keeps the fail-closed
+  posture -- a bare 4/7 with the plan ALSO showing 4/7 closed must still refuse, so an agent
+  cannot escape the gate by under-reporting phases_total or by leaving markers open.
+
+Only if the above is shown insufficient should a handoff-schema addition be designed. If it is,
+prefer the variant where phases_total keeps meaning 'phases authored' and the gate computes
+completed + |excluded| >= total, so plan and handoff stay numerically comparable; document it in
+docs/architecture/handoff-schema.md.
+
+=== FIX 2 (convergence guard) -- VERIFIED, KEEP AS SCOPED ===
+scripts/orchestrate-cycle-plan.sh's convergence guard fires only when a cycle dispatches NOTHING
+(:1715):
 
     if [ "${#probed_dispatch[@]}" -eq 0 ] && [ "${#eligible_tasks[@]}" -gt 0 ]; then
 
 A cycle that dispatches and is then refused at postflight looks like forward progress, so
-consecutive_no_dispatch_cycles stays 0 and the guard never trips. The only bound on the retry is
-MAX_CYCLES. This is independently worth fixing: it is the general protection against any
-dispatch-refuse-redispatch loop, of which the phase-accounting case is only one instance.
+consecutive_no_dispatch_cycles (:1716-1725) stays 0 and the guard never trips. The only bound on
+the retry is MAX_CYCLES. Make the guard count IDENTICAL dispatches, not just absent ones: hash
+each dispatch file's content modulo dispatch_seq/dispatch_start_ts and stop after N consecutive
+identical dispatches for the same task/phase. N=2 would have capped the observed incident at one
+wasted cycle instead of two, with MAX_CYCLES as the outer bound behind it.
 
-=== FIX 1 (handoff schema + gate) ===
-Give the handoff a way to declare gate-skipped phases and teach the gate to honour it. The
-shape applied BY HAND to unblock the observed incident, offered as a starting point and not as a
-settled design:
-
-    "phases_completed": 4,
-    "phases_total": 4,
-    "phases_skipped": [3, 4, 5],
-    "phase_accounting_note": "<why the branch was taken>"
-
-with the note stating explicitly that phases 3-5 were gate-skipped by design and remain
-[NOT STARTED] in the plan. Decide deliberately between that (phases_total means "phases this
-branch authorizes") and the alternative (phases_total stays 7 and the gate computes
-completed + |skipped| >= total). The second keeps phases_total meaning "phases authored", which
-is likely the better invariant and keeps the plan and handoff numerically comparable -- evaluate
-it first. Whichever is chosen, document it in docs/architecture/handoff-schema.md, because the
-current silence is what let the agent guess.
-
-The gate then needs a case that ALLOWS completion when the skipped phases account for the
-shortfall, and must keep refusing a bare 4/7 with no skip declaration -- an agent must not be
-able to escape the gate merely by under-reporting phases_total.
-
-=== FIX 2 (convergence guard) ===
-Make the guard count IDENTICAL dispatches, not just absent ones: hash each dispatch file's
-content modulo dispatch_seq/dispatch_start_ts and stop after N consecutive identical dispatches
-for the same task/phase. N=2 would have capped the observed incident at one wasted cycle instead
-of two, with MAX_CYCLES as the outer bound behind it.
+This is independently valuable and is the general protection against ANY
+dispatch-refuse-redispatch loop, of which the phase-accounting case is only one instance. It
+survives intact regardless of how Fix 1 resolves -- size it as its own phase and commit it green
+on its own, first if convenient.
 
 === ALREADY CORRECT -- DO NOT DUPLICATE OR SILENCE ===
-A `[phase-check]` warning already fires on the completing transition and says precisely the
-right thing:
+A `[phase-check]` warning already fires on the completing transition and says precisely the right
+thing (update-task-status.sh:494):
 
     WARNING: [phase-check] task 188 is being marked completed with only 4/7 phases closed
 
-It warns without blocking, which is the correct posture for a branched plan. Keep it. The fix
-belongs at the gate and the schema, not here.
+Keep it. NOTE A DETAIL THE EARLIER DRAFT MISSED: this block has TWO modes. `--phase-check=refuse`
+(:485-489) is a hard refusal with its own exit code, and command-gate-out.sh:133 passes exactly
+that for the implement token, while reconcile-task-status.sh:591,641 do too. So the phase-check
+is not unconditionally advisory -- establish which mode is in force on the batch postflight path
+before concluding the warning is the only phase-accounting check in play, or a Case 1 fix may be
+undone by a second refusal downstream.
 
 === ADJACENT, DECIDE IN OR OUT EXPLICITLY ===
-(a) There is no sanctioned phase marker for "deliberately not executed". Neither
-    context/standards/status-markers.md nor context/standards/plan-format.md defines one, so
-    gate-skipped phases sit at [NOT STARTED], indistinguishable from pending work. A
-    [SKIPPED] or [NOT APPLICABLE] marker would make plan and handoff agree, but it touches the
-    plan-format lint and the phase-heading regexes in
-    scripts/lib/phase-heading-patterns.sh (PHASE_HEADING_DONE_ERE in particular). Scope it in
-    only if the lint and both regexes are updated together; otherwise split it out.
-(b) scripts/system-defect-record.sh's fourteen-value enum has no class that fits this. The
-    incident was recorded as ARTIFACTS_SHAPE_MISMATCH (event evt_1790355986580_8B8Ntt in the
-    ModelChecker consumer repo) for want of anything better, which is a poor fit -- the
-    artifacts array was correct; the phase counters were the problem. Consider whether a
-    PHASE_ACCOUNTING_MISMATCH class earns its place, weighed against enum growth for its own
-    sake.
+(a) DROPPED. The 'no sanctioned marker for deliberately not executed' premise is false and the
+    proposed [SKIPPED]/[NOT APPLICABLE] marker is already argued against by name -- see the
+    correction section above. No change to phase-heading-patterns.sh's regexes or the
+    plan-format lint is needed, which removes the largest risk item the earlier draft carried.
+(b) scripts/system-defect-record.sh's fourteen-value enum (:164-170) has no class that fits this.
+    The incident was recorded as ARTIFACTS_SHAPE_MISMATCH (event evt_1790355986580_8B8Ntt in the
+    ModelChecker consumer repo) for want of anything better, which is a poor fit -- the artifacts
+    array was correct; the phase counters were the problem. Consider whether a
+    PHASE_ACCOUNTING_MISMATCH class earns its place, weighed against enum growth for its own sake.
+    COLLISION WARNING: the sibling recovery-decline-attribution task also contemplates adding a
+    class to that same closed enum. If both do, they overlap on system-defect-record.sh and must
+    not be dispatched in the same batch wave.
 
 === RELATIONSHIP TO THE TWO SIBLING META TASKS ===
 Same subsystem, three distinct gaps in the postflight adjudication chain, all found in one day:
@@ -200,15 +250,30 @@ a status-value gap (agent writes "completed", recovery declines), an attribution
 declined-recovery path blames skill-orchestrate for a handoff research agents are forbidden to
 write), and this phase-accounting gap. This one is reachable only when recovery SUCCEEDS, so it
 is independent of both: landing either sibling leaves this deadlock exactly as it is, and
-landing this one does not address either of them. If there is a systemic signal worth acting on,
-it is that the chain has been hardened faster than its schemas have been widened.
+landing this one does not address either of them. The systemic signal worth acting on is that the
+chain has been hardened faster than its schemas and its DOCUMENTATION have been widened -- and in
+this instance the schema was in fact already wide enough; only the documentation was not.
+
+=== FILE SCOPE NOTE ===
+Under the reframed Fix 1 the scope shifts away from handoff-schema.md toward
+context/formats/plan-format.md and context/standards/status-markers.md (Gap 1) and
+scripts/skill-base.sh (Gap 2, the Case 1 corroboration), with
+scripts/orchestrate-cycle-plan.sh retained for Fix 2. Keep docs/architecture/handoff-schema.md
+only if a schema addition survives the evaluation above. Plus the test suites named below.
+Harvest the final set at plan postflight.
 
 === VERIFICATION ===
-Exercise all four arms: (1) a linear plan completing all phases -> allowed, as today; (2) a
-branched plan with a correct skip declaration -> allowed; (3) a bare shortfall with no skip
-declaration -> still refused; (4) the same dispatch fired twice with identical content -> the
-convergence guard stops the run. Re-run scripts/tests/ for skill-base.sh and
-orchestrate-cycle-plan.sh, and confirm the [phase-check] warning still fires in arm (2).
+Exercise all five arms: (1) a linear plan completing all phases -> allowed, as today; (2) a
+branched plan whose gate-skipped phases are marked [COMPLETED WITH EXCLUSIONS] with the required
+Reasoned Exclusions record -> allowed, and demonstrate the count reaches 7/7 through
+count_plan_phases/skill_corroborate_phase_counts rather than through any new field; (3) a bare
+shortfall with the plan ALSO showing the phases open -> still refused, fail-closed preserved;
+(4) an agent under-reporting phases_total against an incomplete plan -> still refused; (5) the
+same dispatch fired twice with identical content -> the convergence guard stops the run. Re-run
+scripts/tests/ for skill-base.sh and orchestrate-cycle-plan.sh, and confirm the [phase-check]
+warning still fires in arm (2). No test may be weakened or deleted to make the change pass.
+
+---
 
 ### 258. Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate
 - **Status**: [NOT STARTED]
@@ -220,8 +285,8 @@ orchestrate-cycle-plan.sh, and confirm the [phase-check] warning still fires in 
 
 === DIAGNOSTICS DEFECT (MISATTRIBUTION, NOT CAUSAL) ===
 When a research dispatch's return-meta recovery DECLINES, orchestrate-cycle-postflight.sh falls
-through its `have_outcome` else-arm into WORK (d), the absent-handoff branch, and records defect
-class HANDOFF_STALE_OR_ABSENT attributed to
+through its `have_outcome` else-arm into WORK (d), the absent-handoff branch (:591-612), and
+records defect class HANDOFF_STALE_OR_ABSENT attributed to
 agent-system/extensions/core/skills/skill-orchestrate/SKILL.md with the message "Skill did not
 write orchestrator handoff".
 
@@ -235,9 +300,43 @@ For a research phase that attribution is wrong twice over:
    carrying "status": "completed"), which is the separate agent-contract task's subject. The
    orchestrator skill did nothing wrong and is blamed anyway.
 
-Mechanism: handoff_expected defaults to "true" with no phase-awareness, and skill-orchestrate's
-Move 3 never passes --handoff-expected false. VERIFIED: zero occurrences of 'handoff-expected'
-in skill-orchestrate/SKILL.md or orchestrate-cycle-plan.sh, so the default is always in force.
+Mechanism: handoff_expected defaults to "true" (:180) with no phase-awareness, and
+skill-orchestrate's Move 3 never passes --handoff-expected false. VERIFIED: zero occurrences of
+'handoff-expected' in skill-orchestrate/SKILL.md or orchestrate-cycle-plan.sh, so the default is
+always in force.
+
+=== CORRECTION: THE FIELD TO READ IS `reason`, NOT `evidence_reason` ===
+THIS IS THE MOST IMPORTANT ITEM IN THIS DESCRIPTION. An earlier draft of this task said to reuse
+`evidence_reason` and listed STATUS_NOT_SUCCESS among its values. That is wrong and an
+implementer following it literally will produce a useless message:
+
+  - `evidence_reason` is ALWAYS the literal string "NONE" on every recovered=false path.
+    orchestrate-recover-outcome.sh:284 emits `evidence_reason="NONE"` on the STATUS_NOT_SUCCESS
+    path, and the script's own header states evidence_suspect is 'Always false on every
+    recovered=false' arm. evidence_suspect/evidence_reason are evaluated ONLY on the
+    recovered=true path (PHASES_ZERO_ON_SUCCESS | ARTIFACTS_SHAPE_MISMATCH).
+  - The field that actually discriminates is `reason`, documented at the same header as one of:
+    NONE (recovered=true), META_MISSING, META_STALE, META_DISPATCH_SEQ_MISMATCH,
+    STATUS_IN_PROGRESS, STATUS_NOT_SUCCESS, USAGE.
+
+Note that `reason` is NOT currently read anywhere in the else-arm -- only
+`out_recovered_reported_status` (from `.status`) is, a few lines below the defect record, purely
+for the output JSON. The fix must ADD a read of `.reason` and may hoist or reuse the existing
+`.status` read.
+
+=== THE BRANCH HAS THREE SUB-CASES; THE FIX MUST DISCRIMINATE, NOT BLANKET ===
+'Recovery declined' is not one condition. Reaching this branch with a given `reason` means
+materially different things, and the existing test suite already pins one of them:
+  (i)  META_MISSING -- no .return-meta.json at all. This is test fixture (A) in
+       scripts/tests/test-orchestrate-cycle-postflight.sh:574-612 (general-implementation-agent
+       context-exhaustion death, writes neither file). For that case 'the agent produced nothing'
+       is a defensible reading and the existing record must keep working -- the fixture asserts
+       EXACTLY ONE HANDOFF_STALE_OR_ABSENT row and verdict=failed. DO NOT BREAK IT.
+  (ii) STATUS_IN_PROGRESS -- return-meta present, terminal write never happened (the
+       interrupted-fan-out shape).
+  (iii) STATUS_NOT_SUCCESS -- return-meta present and fresh, carrying an out-of-vocabulary
+       terminal value. THIS is the observed incident and the case whose attribution is wrong.
+A fix that treats the branch as one thing will either regress fixture (A) or under-fix (iii).
 
 === NUANCE THAT MUST BE PRESERVED ===
 This branch is reachable ONLY after recovery has ALREADY declined -- it is the else-arm of the
@@ -249,22 +348,54 @@ currently named.
 
 === FIX DIRECTION ===
 Make the failure-path diagnostic name the REAL fault rather than blaming the orchestrator for a
-handoff the agent was forbidden to write. The information needed is already in hand at that
-point: orchestrate-recover-outcome.sh's returned JSON carries `status` and `evidence_reason`
-(NONE | PHASES_ZERO_ON_SUCCESS | ARTIFACTS_SHAPE_MISMATCH | STATUS_NOT_SUCCESS in the
-not-recovered arm), and the branch already reads the reported status into
-`out_recovered_reported_status` a few lines below purely for the output JSON. Hoist or reuse that
-read so the defect record can say, for example, 'return-meta recovery declined: agent reported
-status=completed, which is not in the accepted researched|planned|implemented vocabulary'.
+handoff the agent was forbidden to write. Read `.reason` (and the already-available `.status`)
+from recover_json so the defect record can say, for example, 'return-meta recovery declined:
+agent reported status=completed, which is not in the accepted researched|planned|implemented
+vocabulary'.
+
+CHEAPER PATH WORTH EVALUATING FIRST: scripts/validate-return-meta.sh:183 already emits exactly
+that sentence ('status value is 'completed', which is explicitly forbidden (triggers Claude stop
+behavior) -- use "implemented" instead') and currently has no runtime caller at all. Invoking it
+at this point, or reusing the 8-value vocabulary library the sibling agent-contract task extracts
+from it, gets a correctly-worded diagnostic without hand-rolling a second message. Evaluate that
+before writing new message-construction code.
+
 Consider whether this warrants a distinct defect class (e.g. RECOVERY_DECLINED or
 STATUS_VOCABULARY_VIOLATION) rather than reusing HANDOFF_STALE_OR_ABSENT, and attribute it to
 the dispatched agent's own file rather than to skill-orchestrate's SKILL.md.
 
 A phase-aware --handoff-expected false threaded from skill-orchestrate's Move 3 is a plausible
 second mechanism, but evaluate it against the simpler in-script fix first: the else-arm already
-prints 'handoff not expected for this dispatch; no defect recorded', so merely flipping the flag
-would SILENCE the branch entirely and lose the recovery-declined signal described above. Naming
-the real fault is preferred over silencing.
+prints 'handoff not expected for this dispatch; no defect recorded' (:611), so merely flipping
+the flag would SILENCE the branch entirely and lose the recovery-declined signal described above.
+Naming the real fault is preferred over silencing.
+
+=== TWO MECHANICAL PREREQUISITES THE EARLIER DRAFT DID NOT NAME ===
+1. A NEW DEFECT CLASS REQUIRES EDITING A CLOSED ENUM. scripts/system-defect-record.sh validates
+   --defect-class against a closed FOURTEEN-value case arm (:164-170) and exits 1 on anything
+   else, with an error message pointing at
+   context/patterns/system-defect-discrimination.md. Adding RECOVERY_DECLINED or
+   STATUS_VOCABULARY_VIOLATION means editing that enum AND that pattern doc, neither of which is
+   in this task's current file_scope. Weigh the addition against enum growth for its own sake --
+   reusing an existing class with corrected attribution and message is a legitimate outcome.
+2. NO AGENT-NAME -> AGENT-FILE RESOLVER EXISTS. `agent_name` is a required argument and is
+   available (:190), but a grep for any agent-path resolver across scripts/ returns nothing.
+   Attributing to 'the dispatched agent's own file' means building that lookup, and it must
+   handle both trees: the deployed shape (.claude/agents/{name}.md) and the source-store shape
+   (agent-system/extensions/{ext}/agents/{name}.md). lint-agent-contracts.sh's
+   enumerate_dispatchable_agents plus a frontmatter `name:` match is the existing precedent for
+   walking that set.
+
+=== ATTRIBUTION BOUNDARY -- STATE IT DELIBERATELY, DO NOT LEAVE IT BY OMISSION ===
+`attributed_path` is ONE script-wide constant set at :328 and reused by EVERY defect record in
+this script -- the stray-handoff site (:370), the stale site (:401), the recovered-path
+ARTIFACTS_SHAPE_MISMATCH site (:558), and this absent site. ARTIFACTS_SHAPE_MISMATCH in
+particular is just as much an agent-side fault blamed on the orchestrator as the case this task
+fixes. The completed deploy-pending-recovery task's Part 3 recorded the SAME misattribution
+complaint for the stale sub-case and chose documentation over fixing attribution.
+So this task fixes ONE of at least three sites. That is an acceptable scope, but it must be an
+argued boundary in the plan, not an accident: say explicitly which sites keep the shared constant
+and why.
 
 === DO NOT DISTURB THE STALE-MTIME PATH ===
 specs/events.jsonl in the Verification consumer repo holds 10 HANDOFF_STALE_OR_ABSENT records.
@@ -274,11 +405,23 @@ the 10th is this absent-plus-recovery-declined variant, the first of its kind. T
 confined to the WORK (d) absent-handoff branch and must leave the stale and dispatch_seq-mismatch
 recording sites untouched.
 
+=== FILE SCOPE NOTE ===
+Current file_scope lists only orchestrate-cycle-postflight.sh and is incomplete. It must also
+cover scripts/tests/test-orchestrate-cycle-postflight.sh (three fixtures assert exactly-one
+HANDOFF_STALE_OR_ABSENT and will need updating), and -- only if a new defect class is chosen --
+scripts/system-defect-record.sh and context/patterns/system-defect-discrimination.md. NOTE A
+POSSIBLE COLLISION: the sibling phase-accounting-deadlock task also contemplates adding a class
+(PHASE_ACCOUNTING_MISMATCH) to that same closed enum. If both tasks add a class, they overlap on
+system-defect-record.sh and must not be dispatched in the same batch wave.
+
 === VERIFICATION ===
-Exercise both arms: (a) a research dispatch whose return-meta carries a bad status -> expect the
-new, correctly-attributed record; (b) a genuinely stale handoff -> expect the existing
-HANDOFF_STALE_OR_ABSENT record, unchanged. The script's own --dry-run mode prints 'would record'
-lines and is the cheapest way to check both without writing to the defect store.
+Exercise all three sub-cases plus the untouched path: (a) a research dispatch whose return-meta
+carries a bad status (reason=STATUS_NOT_SUCCESS) -> the new, correctly-attributed record;
+(b) reason=META_MISSING -> fixture (A)'s existing behaviour, unchanged; (c) a genuinely stale
+handoff -> the existing HANDOFF_STALE_OR_ABSENT record, unchanged. The script's own --dry-run
+mode prints 'would record' lines and is the cheapest way to check without writing to the defect
+store. Extend test-orchestrate-cycle-postflight.sh rather than writing a parallel suite, and do
+not weaken fixture (A) to make the change pass.
 
 ---
 
@@ -306,59 +449,141 @@ metadata' instruction) leaves the model free to skip the load and fall back on t
 English sense of 'completed'.
 
 === ROOT CAUSE: STRUCTURAL INCONSISTENCY, NOT A TYPST BUG ===
-Agent bodies fall into two shapes. The protected shape wraps the canonical artifacts fragment
-inside a fuller JSON object that carries the concrete correct status inline, e.g.
+Agent bodies fall into THREE shapes, not two. The protected shape wraps the canonical artifacts
+fragment inside a fuller JSON object that carries the concrete correct status inline, e.g.
 lean-research-agent.md:321-337 opens its fenced block with `{ "status": "researched",` before
 the artifacts array. The unprotected shape emits ONLY the bare `"artifacts": [...]` fragment
-with no enclosing object and no status key anywhere in the example.
+with no enclosing object and no status key anywhere in the example. The THIRD shape, found on
+the hard-mode twins, carries a PIPE-ALTERNATIVES PLACEHOLDER rather than a concrete value --
+lean-implementation-hard-agent.md:305 and cslib-implementation-hard-agent.md:324 both read
+`"status": "implemented | partial | blocked"`, which is not a member of the vocabulary as a
+literal string. Decide explicitly how the fix and the lint treat this third shape; do not
+silently conflate it with either of the other two.
 
-VERIFIED IN THE SOURCE STORE 2026-09-25 by grep -c over each agent file. The unprotected set is
-WIDER than the four files originally reported -- do not stop at four:
+=== VERIFIED SET (re-audited 2026-09-25; the earlier audit was INCOMPLETE) ===
+A grep for an inline terminal status drawn from the 8-value return-meta vocabulary over all
+dispatchable agent files (73 files, per lint-agent-contracts.sh's own is_dispatchable_agent
+detector) finds 24 without one. DO NOT STOP AT THE THIRTEEN RESEARCH/IMPLEMENTATION AGENTS the
+first audit named -- the set spans the plan phase and the hard-mode twins as well.
 
 Research agents MISSING an inline "status": "researched" (6):
   core/general-research-agent.md, latex/latex-research-agent.md,
   python/python-research-agent.md, rust/rust-research-agent.md,
   typst/typst-research-agent.md, z3/z3-research-agent.md
-Research agents already protected (11, leave alone; copy their wording):
-  lean, math, logic, formal, physics, cslib, pr-review, epi, deck, neovim, nix, slides, web
 
 Implementation agents MISSING an inline "status": "implemented" (7):
   email, latex, python, rust, typst, web, z3
-Implementation agents already protected (4): core/general-implementation-agent.md,
-  cslib (x2), lean, nix, nvim
 
-Note general-research-agent.md is only PARTIALLY unprotected: it already carries the correct
-value in prose ('with status `researched`') and already carries a MUST NOT line reading 'Use
-status value "completed" (triggers Claude stop behavior)'. It lacks only the inline JSON. Do not
-duplicate what is already there. Symmetrically, email-implementation-agent.md and
-web-implementation-agent.md already carry the never-use-completed warning but lack the inline
-status. Check each file before editing rather than applying a uniform patch.
+NEWLY FOUND, ALL IN SCOPE (7):
+  - core/agents/planner-agent.md -- THE MOST SERIOUS OMISSION AND THE HIGHEST-PRIORITY FILE.
+    Its happy-path terminal block (the fenced JSON at :410) is the bare `"artifacts": [...]`
+    fragment; the prose at :401 says 'with status `planned`' but no fenced example carries it.
+    The ONLY complete JSON object in the file carries `"status": "needs_research"` (:434), i.e.
+    the one worked example the model sees is the FAILURE path. planner-agent is the default plan
+    path for EVERY task type, so the identical defect can charge a successful plan phase as
+    failed -- the same blast radius as general-research-agent, on a phase nobody has audited.
+  - lean/agents/lean-research-hard-agent.md, lean/agents/lean-implementation-hard-agent.md,
+    cslib/agents/cslib-research-hard-agent.md, cslib/agents/cslib-implementation-hard-agent.md
+    -- the hard-mode twins of four files the first audit listed as 'protected, leave alone'.
+    TWIN-FILE DISCIPLINE IS BINDING HERE: a one-sided edit between engine twins is a recorded
+    recurring defect class in this system. Fixing lean/cslib base agents while leaving their
+    -hard twins unprotected IS that defect. Locate each site by content, not by line symmetry.
+  - core/agents/spawn-agent.md (:203 prose 'with status `researched`', no inline value)
+  - present/agents/grant-agent.md (in_progress only)
 
-Because general-research-agent is in the unprotected set, this is the DEFAULT path for the
-general, meta, and markdown task types -- not a typst-only issue.
+LEAVE ALONE -- already recorded exclusions in lint-agent-contracts.sh's
+EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS (:317-320), because they do not write
+.return-meta.json at all: core/agents/code-reviewer-agent.md,
+literature/agents/literature-agent.md.
+
+Research agents already protected (13 -- the earlier count of '11' was wrong, the list was
+right; leave alone and copy their wording): lean, math, logic, formal, physics, cslib,
+pr-review, epi, deck, neovim, nix, slides, web.
+Implementation agents already protected (6, not 4): core/general-implementation-agent.md,
+cslib-implementation-agent.md, pr-review-implementation-agent.md, lean, nix, nvim.
+
+Per-file exceptions, CHECK EACH FILE BEFORE EDITING rather than applying a uniform patch:
+general-research-agent.md is only PARTIALLY unprotected -- it already carries the correct value
+in prose ('with status `researched`') and a MUST NOT line reading 'Use status value "completed"
+(triggers Claude stop behavior)' (:433); it lacks only the inline JSON. email-implementation-agent.md
+(:228) and web-implementation-agent.md already carry the warning and lack only the inline status.
+Do not duplicate what is already there.
+
+Because general-research-agent AND planner-agent are both in the unprotected set, this is the
+DEFAULT path for the general, meta, and markdown task types across BOTH the research and plan
+phases -- not a typst-only issue and not a research-only issue.
 
 === FIX ===
 Bring each unprotected agent up to the shape the protected ones already use: (a) wrap the
 existing bare artifacts fragment in a full JSON object whose first key is the concrete correct
-terminal status for that agent's phase ("researched" for research agents, "implemented" for
-implementation agents), matching lean-research-agent.md's existing block byte-for-byte in
-structure; (b) add the never-use-"completed" warning where absent, reusing the wording already
-present in general-research-agent.md rather than inventing a new form. Do NOT invent a new
-template shape.
+terminal status for that agent's phase ("researched" for research agents, "planned" for
+planner-agent, "implemented" for implementation agents), matching lean-research-agent.md's
+existing block in structure; (b) add the never-use-"completed" warning where absent, reusing the
+wording already present in general-research-agent.md rather than inventing a new form. Do NOT
+invent a new template shape.
 
-COMPATIBILITY, ALREADY CHECKED: lint-agent-contracts.sh Check F extracts the REQUIRED KEY SET
-(type/path/summary) from context/contracts/return-meta-artifacts-template.md and checks each
-agent carries those keys. It does not forbid an enclosing object, which is why the protected
-agents pass today. Wrapping is therefore safe. Re-run the lint to confirm rather than assuming.
+COMPATIBILITY, RE-VERIFIED 2026-09-25: lint-agent-contracts.sh currently passes clean (104
+passed, 0 warnings, 0 failed). Check F extracts only the REQUIRED KEY SET (type/path/summary)
+from context/contracts/return-meta-artifacts-template.md and does not forbid an enclosing
+object, which is why the protected agents pass today. Wrapping is therefore safe. Re-run the
+lint to confirm rather than assuming.
 
-=== REGRESSION GUARD (in scope) ===
+=== REGRESSION GUARD (in scope) -- ITS SCOPE IS AN OPEN DESIGN QUESTION, SETTLE IT IN THE PLAN ===
 Add a check to extensions/core/scripts/lint/lint-agent-contracts.sh (alongside the existing
 Check F, reusing its is_dispatchable_agent detector and its recorded-exclusion mechanism) that
 fails any dispatchable agent whose terminal-metadata example does not carry a status value drawn
 from the accepted vocabulary, and that flags any occurrence of "status": "completed" in an agent
-body. Without this the consistency achieved here drifts back the moment a new extension agent is
-added. Derive the accepted vocabulary from a single source (orchestrate-recover-outcome.sh's
-case arm / return-metadata-file.md) rather than hardcoding a second list that can drift.
+body.
+
+DO NOT WRITE THIS CHECK BEFORE RESOLVING TWO THINGS -- discovering either during implementation
+will produce a lint that fails files this task does not propose to fix:
+
+  1. WHICH AGENTS IT APPLIES TO. is_dispatchable_agent enumerates all 73 agent files, and many
+     carry legitimate extension-local terminal vocabularies that are NOT members of the 8-value
+     return-meta enum: meta-builder-agent (tasks_created, analyzed, cancelled),
+     pptx-assembly-agent and slidev-assembly-agent (assembled), filetypes/* (converted,
+     extracted, scraped, edited, created, skipped, empty), legal-analysis-agent (consulted),
+     project-agent (reviewed). A naive check fails all of them. Choose deliberately between
+     widening the recorded-exclusion list, restricting the check to lifecycle-dispatch agents
+     (the research/plan/implement routing targets), or admitting a per-extension vocabulary
+     extension point -- and record the choice.
+  2. THE PIPE-PLACEHOLDER SHAPE above: decide whether `"implemented | partial | blocked"`
+     passes, fails, or is rewritten to a concrete value.
+
+VOCABULARY SOURCE -- THERE IS A TRAP HERE, READ THIS BEFORE CHOOSING. Three copies of a
+'status vocabulary' exist, and the one NAMED like the single source of truth is the WRONG one:
+  - scripts/lib/status-vocabulary.sh -- the 12-value TASK-LEVEL enum for
+    state.json .active_projects[].status. IT CONTAINS "completed" AS A VALID VALUE. Sourcing
+    this file (the obvious candidate by name) yields a lint that ACCEPTS the exact value this
+    task exists to forbid. DO NOT USE IT.
+  - scripts/validate-return-meta.sh:175 -- a hardcoded 8-value array
+    (in_progress researched planned implemented needs_research partial failed blocked) plus an
+    explicit `completed` rejection at :183. This is the correct vocabulary.
+  - scripts/orchestrate-recover-outcome.sh:242 -- the 3-value success case arm (a subset).
+Derive the lint's vocabulary from the return-meta vocabulary, and prefer EXTRACTING that 8-value
+list out of validate-return-meta.sh into its own sourced library (modeled on
+scripts/lib/phase-heading-patterns.sh's 'one sourced shared library, many consumers' shape) so
+the lint, the validator, and the recover-outcome arm all read one definition. The sibling
+recovery-decline-attribution task needs the same list for its defect message, so this extraction
+is the shared prerequisite between the two -- whichever lands first should perform it.
+
+=== RUNTIME HOLE -- DECIDE IN OR OUT EXPLICITLY, DO NOT LEAVE IT UNADDRESSED ===
+scripts/validate-return-meta.sh:183 ALREADY fails on `status: "completed"` with precisely the
+right message ('explicitly forbidden (triggers Claude stop behavior) -- use "implemented"
+instead'). It has ZERO runtime callers: a grep for `validate-return-meta` across
+agent-system/ returns only comments, docs, and its own test. It would have caught the observed
+typst incident outright, and it did not run.
+
+This matters because the rest of this task is a DOCUMENTATION fix: a static lint over agent
+bodies prevents the examples from drifting, but it cannot stop an agent that writes "completed"
+anyway despite a correct example in front of it. Wiring this validator into the dispatch path
+(at or before the recovery read) is the only change that closes the hole at runtime. Either
+scope it in here, or split it out as its own task and say so -- but record the decision rather
+than leaving the validator dead.
+
+=== FILE SCOPE NOTE ===
+file_scope must grow to cover the seven newly-found agent files above (planner-agent, the four
+hard twins, spawn-agent, grant-agent). Harvest the final set at plan postflight.
 
 === OUT OF SCOPE ===
 Changing orchestrate-recover-outcome.sh to ACCEPT "completed" as a success synonym. That would
