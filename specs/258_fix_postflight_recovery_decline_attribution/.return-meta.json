@@ -23,22 +23,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["regression-proof", "test-fixture", "revert-and-check", "tautological-assertion", "verification"]
+      "suggested_keywords": [
+        "regression-proof",
+        "test-fixture",
+        "revert-and-check",
+        "tautological-assertion",
+        "verification"
+      ]
     },
     {
       "content": "When a diagnostic branch collapses 'nothing was produced' and 'something was produced but rejected' into one defect class/attribution, the attribution is systematically wrong for the second sub-case: an agent-side artifact that exists and was read gets blamed on the orchestrator/caller instead of the agent that produced it. The fix pattern is to discriminate on an already-available diagnostic field (here, orchestrate-recover-outcome.sh's `.reason`, distinct from the always-'NONE' `evidence_reason` field that looks similar but never discriminates on the recovered=false path) rather than adding a new detector — the data needed to route correctly was already being computed and discarded.",
       "category": "PATTERN",
       "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["defect-attribution", "diagnostic-discrimination", "reason-field", "misattribution", "orchestrate-recover-outcome"]
+      "suggested_keywords": [
+        "defect-attribution",
+        "diagnostic-discrimination",
+        "reason-field",
+        "misattribution",
+        "orchestrate-recover-outcome"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790360491_c3a705",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

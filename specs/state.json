@@ -1043,12 +1043,12 @@
     {
       "project_number": 258,
       "project_name": "fix_postflight_recovery_decline_attribution",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-25T20:58:09Z",
+      "last_updated": "2026-09-25T20:58:23Z",
       "dependencies": [
         257
       ],
@@ -1070,9 +1070,15 @@
           "path": "specs/258_fix_postflight_recovery_decline_attribution/plans/01_recovery-decline-attribution.md",
           "type": "plan",
           "summary": "5-phase plan discriminating the WORK (d) absent-handoff branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class with agent-file attribution, and first restoring the already-red postflight fixture suite to green."
+        },
+        {
+          "path": "specs/258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md",
+          "type": "summary",
+          "summary": "5-phase implementation discriminating orchestrate-cycle-postflight.sh's WORK (d) absent-handoff branch on recover_json's .reason, adding a RECOVERY_DECLINED defect class attributed to the dispatched agent's own file, and first repairing a predecessor regression in the fixture suite."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Discriminated orchestrate-cycle-postflight.sh's WORK (d) branch on recover_json's .reason so a declined return-meta recovery with a status-shaped cause (STATUS_IN_PROGRESS/STATUS_NOT_SUCCESS/META_DISPATCH_SEQ_MISMATCH) records a new RECOVERY_DECLINED defect attributed to the dispatched agent's own file, while the nothing-produced case (META_MISSING) keeps the original HANDOFF_STALE_OR_ABSENT behavior attributed to skill-orchestrate/SKILL.md unchanged. Also repaired a predecessor regression that had silently broken 34 of 110 fixtures in the test suite (missing sandbox lib copy), restoring it as a reliable regression guard before extending it to 127 passing fixtures covering all three sub-cases."
     },
     {
       "project_number": 259,

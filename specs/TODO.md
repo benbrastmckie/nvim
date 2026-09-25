@@ -40,7 +40,7 @@ next_project_number: 260
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-258 [PLANNED] — Stop recording a declined return-meta recovery as...
+258 [IMPLEMENTING] — Stop recording a declined return-meta recovery as...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
 
 ### Extensions
@@ -285,12 +285,13 @@ warning still fires in arm (2). No test may be weakened or deleted to make the c
 ---
 
 ### 258. Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 257
 - **Research**: [258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md]
 - **Plan**: [258_fix_postflight_recovery_decline_attribution/plans/01_recovery-decline-attribution.md]
+- **Summary**: [258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
