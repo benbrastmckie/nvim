@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Halt the run for a task after N=2 consecutive identical dispatches",
+  "started_at": "2026-09-25T19:15:00Z",
+  "last_updated": "2026-09-25T19:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add .identical_dispatch_halted default field", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Halt branch: back out dispatch file, state.json status triple, and lock", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Skip budget charge / flush-seq / pending_dispatch on halt", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Append to identical_dispatch_halted and emit blocked[] row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Exclude halted tasks from eligibility for the rest of the run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Confirm empty-probed_dispatch guard still composes", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Test coverage: halt, back-out assertions, subsequent-cycle exclusion, non-repeating regression (Group 28)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

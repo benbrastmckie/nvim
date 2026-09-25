@@ -225,7 +225,7 @@ from the incident); widen the strip set if the reading contradicts the hypothesi
 
 ---
 
-### Phase 2: Halt the run for a task after N=2 consecutive identical dispatches [NOT STARTED]
+### Phase 2: Halt the run for a task after N=2 consecutive identical dispatches [COMPLETED]
 
 **Goal**: When the streak from Phase 1 reaches 2, the dispatch is backed out rather than issued,
 the task is excluded from the remainder of the run with a `blocked[]` row, and the run stops if
@@ -233,31 +233,35 @@ nothing else remains to dispatch. This is verification arm (5).
 
 **Tasks**:
 
-- [ ] Add `.identical_dispatch_halted //= []` to the multi-state defaults block.
-- [ ] At the Phase 1 accounting point, when `streak >= 2`: skip the dispatch row entirely and back
+- [x] Add `.identical_dispatch_halted //= []` to the multi-state defaults block. *(completed)*
+- [x] At the Phase 1 accounting point, when `streak >= 2`: skip the dispatch row entirely and back
       out the side effects already taken for this task this cycle, in this order — (1) delete the
       just-written `.dispatch/{seq}.md`; (2) restore `status`/`last_updated`/`session_id` from the
       already-in-scope `_pd_prior_status` / `_pd_prior_last_updated` / `_pd_prior_session_id`
       pre-image via `scripts/state-write.sh` (the sanctioned writer) with `--regen-todo`, skipping
       the restore when the pre-image triple is empty; (3) release the task lock via
       `task-lock.sh release <task> <session_id>`. Do NOT invoke
-      `orchestrate-unwind-dispatch.sh` — it is by-hand-only by its own contract.
-- [ ] Do not charge the per-task cycle budget, do not call
+      `orchestrate-unwind-dispatch.sh` — it is by-hand-only by its own contract. *(completed)*
+- [x] Do not charge the per-task cycle budget, do not call
       `orchestrate-loop-guard-init.sh --flush-seq`, and do not record a `pending_dispatch` for a
-      backed-out dispatch.
-- [ ] Append the task to `.identical_dispatch_halted` and emit an `out_blocked_rows` entry with a
-      reason naming the guard and the streak.
-- [ ] Exclude any task in `.identical_dispatch_halted` from the eligibility/candidate pass at the
+      backed-out dispatch. *(completed: the halt branch `continue`s before that block is ever
+      reached)*
+- [x] Append the task to `.identical_dispatch_halted` and emit an `out_blocked_rows` entry with a
+      reason naming the guard and the streak. *(completed)*
+- [x] Exclude any task in `.identical_dispatch_halted` from the eligibility/candidate pass at the
       top of the composition for the rest of the run, emitting the same `blocked[]` reason each
-      subsequent cycle so the exclusion is visible rather than silent.
-- [ ] Confirm the existing empty-`probed_dispatch` convergence guard still fires normally when the
+      subsequent cycle so the exclusion is visible rather than silent. *(completed)*
+- [x] Confirm the existing empty-`probed_dispatch` convergence guard still fires normally when the
       halt leaves nothing to dispatch (the two guards must compose, not shadow each other).
-- [ ] Add test coverage to `scripts/tests/test-orchestrate-cycle-plan.sh`: a task whose dispatch
+      *(completed: the halted-set exclusion produces an empty `eligible_tasks`/`probed_dispatch`
+      exactly as any other blocked-out candidate would, so the pre-existing guard at its existing
+      call site is reached unmodified — no new interaction to add)*
+- [x] Add test coverage to `scripts/tests/test-orchestrate-cycle-plan.sh`: a task whose dispatch
       content repeats twice is halted on the second repeat; after the halt its state.json status,
       `last_updated` and `session_id` match the pre-dispatch pre-image, the lock is released, the
       `.dispatch/{seq}.md` file is gone, the durable `dispatch_seq_counter` was not advanced, and
       the per-task cycle budget was not charged; a subsequent cycle emits a `blocked[]` row for it
-      and dispatches nothing for that task.
+      and dispatches nothing for that task. *(completed: Group 28 in test-orchestrate-cycle-plan.sh)*
 
 **Timing**: 2 hours
 

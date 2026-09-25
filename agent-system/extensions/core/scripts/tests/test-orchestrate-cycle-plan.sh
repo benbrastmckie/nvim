@@ -3372,13 +3372,17 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Group 27: identical-dispatch content hashing and streak accounting (log-only)"
 
-# Restore the REAL orchestrate-build-dispatch.sh -- Group 25 (immediately prior) installs its own
-# stub (a fixed "/fake/<n>-<phase>.md" dispatch_file that never exists on disk) for its own
-# sibling-territory assertions and never restores the real one afterward. Cases C-E below need the
-# REAL script so the dispatch file it writes actually exists on disk for cycle_plan_dispatch_hash
-# to hash, same precaution Group 21 already takes for itself against Groups 13/15/16.
+# Restore the REAL orchestrate-build-dispatch.sh AND update-task-status.sh -- Group 25
+# (immediately prior) installs its own stubs (a fixed "/fake/<n>-<phase>.md" dispatch_file that
+# never exists on disk, and a bare `exit 0` in place of the real preflight/postflight status
+# writer) for its own sibling-territory assertions and never restores either afterward. Cases C-E
+# below (and Group 28's) need the REAL scripts: a dispatch file that actually exists on disk for
+# cycle_plan_dispatch_hash to hash, and a real preflight status write for the back-out assertions
+# to have something genuine to restore. Same precaution Group 21 already takes for itself against
+# Groups 13/15/16.
 cp "$CORE_DIR/orchestrate-build-dispatch.sh" "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
-chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+cp "$CORE_DIR/update-task-status.sh" "$WORKDIR/.claude/scripts/update-task-status.sh"
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" "$WORKDIR/.claude/scripts/update-task-status.sh"
 
 # ── Case A: the normalizer -- byte-extracts the REAL cycle_plan_dispatch_hash() function from the
 # SUT source (isolated unit test of the normalizer's own behavior, independent of the full live
@@ -3439,10 +3443,13 @@ else
   fail "Group 27 Case B: expected exit 2 and empty output with sha256sum unavailable, got rc=$g27_degrade_rc out='$g27_degrade_out'"
 fi
 
-# ── Cases C-E: full LIVE pipeline -- `--no-plan-cache` forces a genuinely fresh composition on
+# ── Cases C-D: full LIVE pipeline -- `--no-plan-cache` forces a genuinely fresh composition on
 # each call (mirroring orchestrate-cycle-postflight.sh clearing plan_cache unconditionally after
 # any real postflight, so a same-content redispatch is never short-circuited by the in-session
-# cache the way two bare back-to-back calls in this same process otherwise would be).
+# cache the way two bare back-to-back calls in this same process otherwise would be). Neither case
+# repeats identical content twice in a row -- reaching streak=2 and halting is Group 28's own
+# scope (Fix 2, Phase 2), landing in a later commit; these two cases pin Phase 1's accounting in
+# isolation, one live call at a time.
 write_state <<'EOF'
 {
   "active_projects": [
@@ -3468,36 +3475,27 @@ if [ "$g27_streak_after_1" = "1" ]; then
 else
   fail "Group 27 Case C: expected streak 1 after cycle 1, got '$g27_streak_after_1'"
 fi
-
-run_sut --session g27live --no-plan-cache -- 2703
-if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | length')" = "1" ]; then
-  pass "Group 27 Case C: cycle 2 (identical content) STILL dispatches normally -- Phase 1 is log-only, no behavior change"
+if [[ "$LAST_STDERR" != *"IDENTICAL DISPATCH:"* ]]; then
+  pass "Group 27 Case C: no IDENTICAL DISPATCH notice on a first-ever dispatch (streak=1)"
 else
-  fail "Group 27 Case C: cycle 2 unexpectedly changed dispatch behavior (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
-fi
-g27_streak_after_2=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g27live.json")
-if [ "$g27_streak_after_2" = "2" ]; then
-  pass "Group 27 Case C: streak increments to 2 across two content-identical live compositions"
-else
-  fail "Group 27 Case C: expected streak 2 after cycle 2, got '$g27_streak_after_2'"
-fi
-if [[ "$LAST_STDERR" == *"IDENTICAL DISPATCH:"* ]] && \
-   [[ "$LAST_STDERR" == *"dispatch content matches the previous one"* ]] && \
-   [[ "$LAST_STDERR" == *"streak=2)"* ]]; then
-  pass "Group 27 Case C: the named IDENTICAL DISPATCH notice fires on stderr with streak=2"
-else
-  fail "Group 27 Case C: expected the IDENTICAL DISPATCH notice on stderr, got: $LAST_STDERR"
+  fail "Group 27 Case C: unexpected IDENTICAL DISPATCH notice on the first dispatch: $LAST_STDERR"
 fi
 
-# ── Case D: a genuinely different dispatch (description changed) resets the streak to 1 ─────────
+# ── Case D: a genuinely different dispatch (description changed) still records streak=1 -- never
+# a repeat of cycle 1's own content, so this never reaches the halt threshold. ────────────────────
 g27_desc_filter='(.active_projects[] | select(.project_number == 2703)).description = "a genuinely different description"'
 jq "$g27_desc_filter" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
 run_sut --session g27live --no-plan-cache -- 2703
-g27_streak_after_3=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g27live.json")
-if [ "$g27_streak_after_3" = "1" ]; then
-  pass "Group 27 Case D: streak resets to 1 when the dispatch content genuinely differs"
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | length')" = "1" ]; then
+  pass "Group 27 Case D: a genuinely different dispatch still dispatches normally"
 else
-  fail "Group 27 Case D: expected streak to reset to 1, got '$g27_streak_after_3'"
+  fail "Group 27 Case D: expected a normal dispatch for genuinely different content, got exit=$LAST_EXIT stdout: $LAST_STDOUT"
+fi
+g27_streak_after_2=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g27live.json")
+if [ "$g27_streak_after_2" = "1" ]; then
+  pass "Group 27 Case D: streak stays at 1 when the dispatch content genuinely differs from the previous cycle"
+else
+  fail "Group 27 Case D: expected streak 1, got '$g27_streak_after_2'"
 fi
 if [[ "$LAST_STDERR" != *"IDENTICAL DISPATCH:"* ]]; then
   pass "Group 27 Case D: no IDENTICAL DISPATCH notice on a streak of 1"
@@ -3525,6 +3523,155 @@ if [ ! -f "$WORKDIR/specs/.orchestrator-multi-state-g27dry.json" ]; then
   pass "Group 27 Case E: --dry-run never persists a multi-state file (no accounting side effect)"
 else
   fail "Group 27 Case E: --dry-run unexpectedly wrote a multi-state file"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 28: Fix 2 (Phase 2) -- halt on a second consecutive identical dispatch (N=2). Verification
+# arm (5): the same dispatch fired twice with identical content stops the run for that task.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 28: identical-dispatch halt, inline back-out, and the halted-set exclusion"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2801, "project_name": "g28_halt", "task_type": "general", "status": "not_started", "description": "halt-on-repeat test", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/2801_g28_halt"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g28halt.json"
+
+# Cycle 1: an ordinary, first-ever dispatch -- dispatches ok, streak=1, no halt.
+run_sut --session g28halt --no-plan-cache -- 2801
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2801 and .phase == "research")) | length')" = "1" ]; then
+  pass "Group 28: cycle 1 dispatches candidate #2801 normally"
+else
+  fail "Group 28: cycle 1 did not dispatch candidate #2801 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+g28_status_after_1=$(jq -r '.active_projects[] | select(.project_number == 2801) | .status' "$STATE_FILE")
+if [ "$g28_status_after_1" = "researching" ]; then
+  pass "Group 28: cycle 1's preflight write actually changed status to 'researching'"
+else
+  fail "Group 28: expected status 'researching' after cycle 1's preflight write, got '$g28_status_after_1'"
+fi
+# Snapshot the exact pre-image cycle 2's own halt must restore -- cycle 2's own preflight write
+# would have overwritten last_updated/session_id with ITS OWN fresh values even though status is
+# already 'researching' (a same-value status write still refreshes last_updated/session_id), so
+# the correct restore target is cycle 1's post-write state, not the original not_started fixture.
+g28_entry_after_1=$(jq -c '.active_projects[] | select(.project_number == 2801)' "$STATE_FILE")
+g28_lu_after_1=$(echo "$g28_entry_after_1" | jq -r '.last_updated // ""')
+g28_sid_after_1=$(echo "$g28_entry_after_1" | jq -r '.session_id // ""')
+g28_seq_counter_after_1=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/2801_g28_halt/.orchestrator-loop-guard")
+g28_cycle_count_after_1=$(jq -r '.cycle_counts["2801"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g28halt.json")
+[ -d "$WORKDIR/specs/2801_g28_halt/.dispatch" ] && [ -f "$WORKDIR/specs/2801_g28_halt/.dispatch/1.md" ]
+g28_dispatch_1_present=$?
+[ -d "$WORKDIR/specs/2801_g28_halt/.lock" ]
+g28_lock_present_after_1=$?
+
+# Cycle 2: IDENTICAL content -- must halt: no dispatch row, a blocked[] row instead, every side
+# effect from this cycle backed out.
+run_sut --session g28halt --no-plan-cache -- 2801
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | length')" = "0" ]; then
+  pass "Group 28: cycle 2 (identical content) issues ZERO dispatch rows -- halted, not re-dispatched"
+else
+  fail "Group 28: cycle 2 unexpectedly dispatched (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.blocked | map(select(.task == 2801)) | length')" = "1" ]; then
+  pass "Group 28: cycle 2 reports candidate #2801 in blocked[] -- visible, never a silent skip"
+else
+  fail "Group 28: expected candidate #2801 in blocked[] after the halt, got: $LAST_STDOUT"
+fi
+g28_blocked_reason=$(jqf '.blocked | map(select(.task == 2801)) | .[0].reason // ""')
+if [[ "$g28_blocked_reason" == *"identical-dispatch convergence guard"* ]] && [[ "$g28_blocked_reason" == *"2 times in a row"* ]]; then
+  pass "Group 28: the blocked[] reason names the guard and the streak"
+else
+  fail "Group 28: blocked[] reason missing the expected text, got: '$g28_blocked_reason'"
+fi
+if [[ "$LAST_STDERR" == *"IDENTICAL DISPATCH HALT:"* ]]; then
+  pass "Group 28: the named IDENTICAL DISPATCH HALT notice fires on stderr"
+else
+  fail "Group 28: expected the IDENTICAL DISPATCH HALT notice on stderr, got: $LAST_STDERR"
+fi
+
+# Back-out assertion 1: state.json status/last_updated/session_id restored to the EXACT pre-image
+# cycle 2's own preflight write would otherwise have overwritten -- i.e. byte-identical to cycle
+# 1's own post-write state, not the original not_started fixture (cycle 1 already advanced status
+# to 'researching' before cycle 2 ever ran; cycle 2's back-out only undoes ITS OWN write).
+g28_status_after_2=$(jq -r '.active_projects[] | select(.project_number == 2801) | .status' "$STATE_FILE")
+g28_lu_after_2=$(jq -r '.active_projects[] | select(.project_number == 2801) | .last_updated // ""' "$STATE_FILE")
+g28_sid_after_2=$(jq -r '.active_projects[] | select(.project_number == 2801) | .session_id // ""' "$STATE_FILE")
+if [ "$g28_status_after_2" = "$g28_status_after_1" ] && [ "$g28_lu_after_2" = "$g28_lu_after_1" ] && [ "$g28_sid_after_2" = "$g28_sid_after_1" ]; then
+  pass "Group 28: state.json status/last_updated/session_id restored to cycle 1's exact post-write pre-image"
+else
+  fail "Group 28: expected status='$g28_status_after_1' last_updated='$g28_lu_after_1' session_id='$g28_sid_after_1', got status='$g28_status_after_2' last_updated='$g28_lu_after_2' session_id='$g28_sid_after_2'"
+fi
+
+# Back-out assertion 2: the just-written .dispatch/2.md file is gone.
+if [ ! -f "$WORKDIR/specs/2801_g28_halt/.dispatch/2.md" ]; then
+  pass "Group 28: the halted cycle's .dispatch/2.md file was removed"
+else
+  fail "Group 28: .dispatch/2.md unexpectedly still exists after the halt"
+fi
+# Cycle 1's own dispatch file is untouched -- the back-out only removes THIS cycle's own file.
+if [ "$g28_dispatch_1_present" -eq 0 ] && [ -f "$WORKDIR/specs/2801_g28_halt/.dispatch/1.md" ]; then
+  pass "Group 28: cycle 1's own .dispatch/1.md file is untouched by cycle 2's back-out"
+else
+  fail "Group 28: cycle 1's .dispatch/1.md file was unexpectedly affected"
+fi
+
+# Back-out assertion 3: the task lock is released.
+if [ ! -d "$WORKDIR/specs/2801_g28_halt/.lock" ]; then
+  pass "Group 28: the task lock was released by the halt back-out"
+else
+  fail "Group 28: the task lock is still held after the halt back-out"
+fi
+
+# Back-out assertion 4: the durable dispatch_seq_counter did NOT advance past cycle 1's value --
+# the halted cycle never flushed a second charge.
+g28_seq_counter_after_2=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/2801_g28_halt/.orchestrator-loop-guard")
+if [ "$g28_seq_counter_after_2" = "$g28_seq_counter_after_1" ]; then
+  pass "Group 28: the durable dispatch_seq_counter did not advance past the halted cycle ($g28_seq_counter_after_1 -> $g28_seq_counter_after_2)"
+else
+  fail "Group 28: expected the durable dispatch_seq_counter to stay at $g28_seq_counter_after_1, got $g28_seq_counter_after_2"
+fi
+
+# Back-out assertion 5: the per-task cycle budget was not charged a second time.
+g28_cycle_count_after_2=$(jq -r '.cycle_counts["2801"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g28halt.json")
+if [ "$g28_cycle_count_after_2" = "$g28_cycle_count_after_1" ]; then
+  pass "Group 28: the per-task cycle budget was not charged for the halted cycle ($g28_cycle_count_after_1 -> $g28_cycle_count_after_2)"
+else
+  fail "Group 28: expected cycle_counts unchanged at $g28_cycle_count_after_1, got $g28_cycle_count_after_2"
+fi
+
+# Cycle 3: a subsequent cycle emits the same blocked[] reason and dispatches nothing for this
+# task -- the halted-set exclusion persists for the rest of the run, visible every cycle.
+run_sut --session g28halt --no-plan-cache -- 2801
+if [ "$(jqf '.dispatch | map(select(.task == 2801)) | length')" = "0" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 2801)) | length')" = "1" ]; then
+  pass "Group 28: cycle 3 (a later cycle) still excludes candidate #2801 via blocked[], dispatching nothing"
+else
+  fail "Group 28: cycle 3 did not keep candidate #2801 excluded (stdout: $LAST_STDOUT)"
+fi
+
+# ── Regression guard: a non-repeating multi-task composition is unaffected -- two brand-new
+# candidates, neither repeating, both dispatch normally with no halted rows at all. ───────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2802, "project_name": "g28_norepeat_a", "task_type": "general", "status": "not_started", "description": "first-ever dispatch, never repeated", "dependencies": [], "file_scope": []},
+    {"project_number": 2803, "project_name": "g28_norepeat_b", "task_type": "general", "status": "not_started", "description": "first-ever dispatch, never repeated", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/2802_g28_norepeat_a" "$WORKDIR/specs/2803_g28_norepeat_b"
+rm -f "$WORKDIR/specs/.orchestrator-multi-state-g28norepeat.json"
+run_sut --session g28norepeat --no-plan-cache -- 2802 2803
+if [ "$(jqf '.dispatch | length')" = "2" ] && [ "$(jqf '.blocked | length')" = "0" ]; then
+  pass "Group 28: a non-repeating two-candidate composition dispatches both, with zero blocked[] rows"
+else
+  fail "Group 28: non-repeating composition regression -- expected 2 dispatch rows and 0 blocked rows, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

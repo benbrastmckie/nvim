@@ -521,6 +521,7 @@ mt_json=$(jq -c \
   | .last_dispatch_hash //= {}
   | .last_dispatch_phase //= {}
   | .identical_dispatch_streak //= {}
+  | .identical_dispatch_halted //= []
   ' <<<"$mt_json")
 
 # ─── Item (b): in-session plan cache — replay check (must run before ANY composition side ────
@@ -1315,6 +1316,7 @@ is_terminal_status() {
 
 deferred_deploy_checkpoint_json=$(mt_get_json '.deferred_deploy_checkpoint')
 failed_tasks_json=$(mt_get_json '.failed_tasks')
+identical_dispatch_halted_json=$(mt_get_json '.identical_dispatch_halted')
 in_json_array() {
   # $1 = needle (int), $2 = json array
   jq -e --argjson n "$1" '. as $arr | ($arr | index($n)) != null' >/dev/null 2>&1 <<<"$2"
@@ -1365,6 +1367,13 @@ for t in "${task_args[@]}"; do
   if is_terminal_status "${current_statuses[$t]}" && ! task_has_forced_phase "$t"; then continue; fi
   if in_json_array "$t" "$failed_tasks_json"; then continue; fi
   if in_json_array "$t" "$deferred_deploy_checkpoint_json"; then continue; fi
+  # Fix 2: a task the identical-dispatch convergence guard halted earlier THIS run is excluded
+  # from the rest of the run's eligibility pass, emitting the same blocked[] reason every
+  # subsequent cycle so the exclusion stays visible rather than silent.
+  if in_json_array "$t" "$identical_dispatch_halted_json"; then
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "identical-dispatch convergence guard: dispatch content matched the previous dispatch twice in a row earlier this run; halted for the rest of this run -- re-invoke /orchestrate to continue"}')")
+    continue
+  fi
 
   deps="${dependency_lists[$t]}"
   dep_count=$(echo "$deps" | jq 'length')
@@ -2279,6 +2288,35 @@ for t in "${probed_dispatch_post_h1[@]}"; do
     fi
   elif [ "$?" -eq 2 ]; then
     echo "[orchestrate] NOTICE: identical-dispatch convergence guard disabled for this run (sha256sum unavailable, or task #$t's just-written dispatch file was unreadable)." >&2
+  fi
+
+  # ── Fix 2: halt on a second consecutive identical dispatch (N=2) ────────────────────────────────
+  # Backs out every side effect already taken for this task THIS cycle rather than issuing a
+  # dispatch that would be byte-identical to the one just refused. `orchestrate-unwind-dispatch.sh`
+  # is deliberately NOT invoked here -- its own header declares it a by-hand tool "never invoked
+  # automatically by the orchestrate loop." Nothing below this block runs for a halted task: no
+  # agent resolution, no budget charge, no --flush-seq, no pending_dispatch record, no dispatch row.
+  if [ "$_idh_streak" -ge 2 ]; then
+    echo "[orchestrate] IDENTICAL DISPATCH HALT: task #$t $g dispatch content matched the previous dispatch twice in a row (streak=$_idh_streak) -- halting this task for the rest of the run rather than re-issuing an identical dispatch." >&2
+    rm -f "$dispatch_file"
+    if [ -n "$_pd_prior_status" ]; then
+      _idh_restore_filter='(.active_projects[] | select(.project_number == $num)) |= (
+        .status = $status
+        | (if $lu == "" then del(.last_updated) else .last_updated = $lu end)
+        | (if $sid == "" then del(.session_id) else .session_id = $sid end)
+      )'
+      bash "$SCRIPT_DIR/state-write.sh" "$_idh_restore_filter" \
+        --session-id "$session_id" \
+        --argjson num "$t" \
+        --arg status "$_pd_prior_status" \
+        --arg lu "$_pd_prior_last_updated" \
+        --arg sid "$_pd_prior_session_id" \
+        --regen-todo || echo "WARN: orchestrate-cycle-plan.sh: identical-dispatch halt could not restore task #$t's pre-dispatch status (non-fatal; the halt itself still applies)." >&2
+    fi
+    bash "$SCRIPT_DIR/task-lock.sh" release "$t" "$session_id" >/dev/null 2>&1 || true
+    mt_set --argjson t "$t" '.identical_dispatch_halted = ((.identical_dispatch_halted + [$t]) | unique)'
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "$_idh_streak" '{task: $t, reason: ("identical-dispatch convergence guard: dispatch content matched the previous dispatch " + ($n|tostring) + " times in a row; halted for the rest of this run -- re-invoke /orchestrate to continue")}')")
+    continue
   fi
 
   agent=$(resolve_agent "$g" "${task_types[$t]}" "$t")
