@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "task_number": 260,
+  "session_id": "sess_1790372264_d11531_260",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
+      "summary": "6-phase plan: function-wrap both genuine deploy-headless.sh caller sites, red-first regression test, mechanical class-guard lint, two doc corrections."
+    }
+  ],
+  "next_steps": "Run /implement 260 to execute the plan"
+}

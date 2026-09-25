@@ -1,33 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790372264_d11531_260",
-  "task_number": 260,
-  "dispatch_seq": 1,
-  "findings_count": 8,
-  "next_steps": "Run /plan 260 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/reports/01_self-clobbering-redeploy-hazard.md",
-      "summary": "Confirms the self-clobbering redeploy hazard mechanism via a synthetic bash harness, surveys the hazard class down to two genuine call sites (orchestrate-cycle-plan.sh:843 and command-gate-out.sh:176), evaluates the three candidate fixes, and recommends generalizing deploy-headless.sh's own existing main()-wrap self-overwrite-protection pattern to both sites."
+      "type": "plan",
+      "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
+      "summary": "6-phase plan generalizing deploy-headless.sh's own function-wrap self-overwrite mitigation to both genuine deploy-caller sites, plus a red-first regression test, a mechanical class-guard lint, and two doc corrections."
     }
   ],
+  "next_steps": "Run /implement 260 to execute the plan",
   "memory_candidates": [
     {
-      "content": "bash reads a running script incrementally by byte offset (not fully into memory), so a script that overwrites itself in-place mid-execution (or is overwritten by a subprocess it spawns) resumes at a stale offset -- silent truncation or garbled parsing, depending on the byte-length delta. Deterministic fix: wrap the entire remaining executable body in a single function, defined in full before it runs, invoked as the file's last statement -- bash must fully parse a compound command before executing any of it, so the function's body is already in memory before the overwrite (triggered by code inside it) can occur. A PARTIAL wrap (stopping mid-file) does not work: control returns to flat top-level code that still resumes reading the rewritten file at a stale offset. Verified with a synthetic self-rewriting harness (3/3 protected runs correct vs. 5/5 unprotected runs silently truncated).",
+      "content": "Bash reads a running script incrementally by byte offset, so any deployed script that triggers a redeploy overwriting its own file has its remaining top-level statements corrupted mid-execution (silent truncation, or a spurious error such as 'unbound variable' pointing at a line that contains no such variable). The mitigation that works deterministically is structural, not path-based: wrap the invocation and ALL code textually after it -- through true EOF -- in a single function defined before it runs and invoked as the file's last physical statement, so the whole body is parsed before any overwrite can occur. A partial wrap merely relocates the hazard to the first top-level statement after the closing brace. Switching WHICH copy of the deploying script is invoked (source store vs deployed) does not help: the victim is the caller, not the deployer.",
       "category": "PATTERN",
-      "source_artifact": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/reports/01_self-clobbering-redeploy-hazard.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash", "self-overwrite", "deploy-headless", "main-wrap", "script-clobbering", "byte-offset"]
-    },
-    {
-      "content": "When surveying a hazard class from a `grep -rln <pattern>` starting list, classify each hit by whether it is a genuine invocation (actually executes the risky call from live code) vs. a mention (echo/remedy string, doc comment, or test fixture) before treating the whole list as the hazard set. In this codebase's deploy-headless.sh hazard survey, 13 of 15 starting-list files were mention-only; only 2 were genuine invocation sites, independently corroborated by an existing in-repo doc (regeneration-is-manual-only.md) that already enumerated 'the exact and only sanctioned automated call sites'.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/reports/01_self-clobbering-redeploy-hazard.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["hazard-survey", "grep-classification", "false-positive-filtering", "code-audit"]
+      "source_artifact": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "self-overwrite", "deploy", "byte-offset", "function-wrap", "script-hazard"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1790372264_d11531_260",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7.25,
+    "dependency_waves": 4
+  },
+  "dispatch_seq": 2
 }

@@ -1127,12 +1127,12 @@
     {
       "project_number": 260,
       "project_name": "fix_self_clobbering_redeploy_in_cycle_plan",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Fix self-clobbering redeploy in the orchestrator cycle-plan checkpoint",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-25T21:48:08Z",
+      "last_updated": "2026-09-25T21:54:20Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
@@ -1149,6 +1149,11 @@
           "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/reports/01_self-clobbering-redeploy-hazard.md",
           "type": "report",
           "summary": "Confirms the self-clobbering redeploy hazard mechanism via a synthetic bash harness, surveys the hazard class down to two genuine call sites (orchestrate-cycle-plan.sh:843 and command-gate-out.sh:176), evaluates the three candidate fixes, and recommends generalizing deploy-headless.sh's own existing main()-wrap self-overwrite-protection pattern to both sites."
+        },
+        {
+          "path": "specs/260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md",
+          "type": "plan",
+          "summary": "6-phase plan: function-wrap both genuine deploy-headless.sh caller sites, red-first regression test, mechanical class-guard lint, two doc corrections."
         }
       ],
       "next_artifact_number": 2
