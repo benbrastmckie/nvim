@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "dispatch_seq": 3,
+  "task_number": 257,
+  "phase": "plan",
+  "session_id": "sess_1790360491_c3a705_257",
+  "phases_completed": 0,
+  "phases_total": 9,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md",
+      "summary": "9-phase plan fixing 20 agent files (22 edit sites) to carry a concrete inline terminal status, extracting the canonical 8-value return-meta vocabulary into a shared sourced library, and adding lint Check E as the regression guard."
+    }
+  ],
+  "next_steps": "Run /implement 257 to execute the plan"
+}

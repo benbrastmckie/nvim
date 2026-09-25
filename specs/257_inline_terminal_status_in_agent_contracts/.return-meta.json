@@ -1,35 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
+  "status": "planned",
+  "dispatch_seq": 3,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/257_inline_terminal_status_in_agent_contracts/reports/01_terminal-status-vocabulary.md",
-      "summary": "Verifies the dispatch's incident/taxonomy claims, reconciles the fix set to 20 files/22 edit sites, finds that manifest routing_agents membership does not predict canonical-vocabulary use, finds orchestrate-recover-outcome.sh's success arm is too narrow for several already-designed non-canonical success vocabularies, and settles all five open design questions (lint scope via a new recorded-exclusion list, pipe-placeholder handling incl. grant-agent's bespoke case, vocabulary-extraction target/name, runtime-wiring deferred out of scope, and file_scope for the plan)."
+      "type": "plan",
+      "path": "specs/257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md",
+      "summary": "9-phase plan fixing 20 agent files (22 edit sites) to carry a concrete inline terminal status, extracting the canonical 8-value return-meta vocabulary into a shared sourced library, and adding lint Check E as the regression guard."
     }
   ],
-  "next_steps": "Run /plan 257 to create implementation plan",
-  "findings_count": 5,
+  "next_steps": "Run /implement 257 to execute the plan",
+  "phase_count": 9,
+  "estimated_hours": 10,
+  "dependency_waves": [[1, 4, 5, 6, 7], [2, 3, 8], [9]],
   "memory_candidates": [
     {
-      "content": "When auditing agent-contract status vocabularies across extensions, manifest.json routing_agents membership does NOT predict canonical-vocabulary use: several registered research/plan/implement phase-routing targets (filetypes-router-agent, slidev-assembly-agent, legal-analysis-agent, project-agent, grant-agent) intentionally use non-canonical terminal status values. A lint restricting scope to 'lifecycle-dispatch agents derived from routing tables' will wrongly include these. Use an explicit recorded-exclusion list (mirroring lint-agent-contracts.sh's EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS) instead.",
+      "content": "When a lint enforces a documented vocabulary over agent/contract markdown bodies, the prohibited value almost always appears legitimately in the file's own MUST-NOT prose (e.g. 'Use status value \"completed\" (triggers Claude stop behavior)' appears in ~30 agent bodies). Match the quoted key/value PAIR (\"status\"\\s*:\\s*\"completed\") rather than the bare word, and add an explicit negative test fixture carrying the MUST-NOT prose plus a conformant value -- otherwise the guard fails precisely the files that already document the rule correctly. This mirrors lint-agent-contracts.sh's Check F window-and-key-set precedent over a loose grep.",
       "category": "PATTERN",
-      "source_artifact": "specs/257_inline_terminal_status_in_agent_contracts/reports/01_terminal-status-vocabulary.md",
+      "source_artifact": "specs/257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md",
       "confidence": 0.85,
-      "suggested_keywords": ["routing_agents", "manifest.json", "status-vocabulary", "lint-agent-contracts", "return-meta"]
-    },
-    {
-      "content": "orchestrate-recover-outcome.sh's success case arm (researched|planned|implemented) is narrower than the full set of intentionally-designed per-extension success statuses (e.g. filetypes-router-agent's 'converted', slidev-assembly-agent's 'assembled', legal-analysis-agent's 'consulted'). Any of these agents dispatched under orchestrator_mode:true would have a genuinely successful outcome misclassified as STATUS_NOT_SUCCESS today -- the same defect class as an agent wrongly writing status:'completed', just triggered by an intentional non-canonical value. Widening the recovery arm's acceptance set should be resolved before wiring any stricter rejection validator (e.g. validate-return-meta.sh) into the same read path, or the validator will newly break these working agents.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/257_inline_terminal_status_in_agent_contracts/reports/01_terminal-status-vocabulary.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrate-recover-outcome", "status vocabulary", "return-meta", "runtime validation", "extension agents"]
+      "suggested_keywords": ["lint", "agent-contracts", "false-positive", "status-vocabulary", "test-fixture", "regression-guard"]
     }
   ],
   "metadata": {
     "session_id": "sess_1790360491_c3a705_257",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   }
 }
