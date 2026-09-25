@@ -1,0 +1,30 @@
+{
+  "phase": 1,
+  "phase_name": "Extract the shared return-meta status vocabulary library",
+  "started_at": "2026-09-25T00:00:00Z",
+  "last_updated": "2026-09-25T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create return-meta-status-vocabulary.sh library with RETURN_META_STATUS_VALUES, RETURN_META_FORBIDDEN_STATUS, RETURN_META_SUCCESS_STATUSES, predicates",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Create test-return-meta-status-vocabulary.sh with membership/drift/predicate/success-subset assertions, chmod +x",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Register both new paths in manifest.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -987,12 +987,12 @@
     {
       "project_number": 257,
       "project_name": "inline_terminal_status_in_agent_contracts",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Inline the correct terminal status value and the never-use-completed warning into every dispatchable agent's return-meta example",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-25T18:38:38Z",
+      "last_updated": "2026-09-25T18:38:56Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/agents/general-research-agent.md",
@@ -1060,12 +1060,12 @@
     {
       "project_number": 259,
       "project_name": "allow_completion_on_a_gate_skipped_plan_branch",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Allow completion when a plan branch deliberately skips phases, and stop the identical-redispatch loop",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-25T18:38:43Z",
+      "last_updated": "2026-09-25T18:38:59Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/context/formats/plan-format.md",

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 3,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md",
-      "summary": "9-phase plan fixing 20 agent files (22 edit sites) to carry a concrete inline terminal status, extracting the canonical 8-value return-meta vocabulary into a shared sourced library, and adding lint Check E as the regression guard."
-    }
-  ],
-  "next_steps": "Run /implement 257 to execute the plan",
-  "phase_count": 9,
-  "estimated_hours": 10,
-  "dependency_waves": [[1, 4, 5, 6, 7], [2, 3, 8], [9]],
-  "memory_candidates": [
-    {
-      "content": "When a lint enforces a documented vocabulary over agent/contract markdown bodies, the prohibited value almost always appears legitimately in the file's own MUST-NOT prose (e.g. 'Use status value \"completed\" (triggers Claude stop behavior)' appears in ~30 agent bodies). Match the quoted key/value PAIR (\"status\"\\s*:\\s*\"completed\") rather than the bare word, and add an explicit negative test fixture carrying the MUST-NOT prose plus a conformant value -- otherwise the guard fails precisely the files that already document the rule correctly. This mirrors lint-agent-contracts.sh's Check F window-and-key-set precedent over a loose grep.",
-      "category": "PATTERN",
-      "source_artifact": "specs/257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint", "agent-contracts", "false-positive", "status-vocabulary", "test-fixture", "regression-guard"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 5,
   "metadata": {
-    "session_id": "sess_1790360491_c3a705_257",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1790360491_c3a705",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Inline terminal status in agent contracts
 
 - **Task**: 257 - Inline terminal status in agent contracts
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: None (blocking). Shares one extraction prerequisite with task 258
   (recovery-decline-attribution, currently `not_started`): Phase 1 below performs that
@@ -129,40 +129,40 @@ file sets and never touch a file another phase touches.
 
 ---
 
-### Phase 1: Extract the shared return-meta status vocabulary library [NOT STARTED]
+### Phase 1: Extract the shared return-meta status vocabulary library [COMPLETED]
 
 **Goal**: One sourced, executable definition of the canonical 8-value `.return-meta.json` status
 vocabulary, its explicit `"completed"` prohibition, and its 3-value success subset — so the
 validator, the recovery arm, the new Check E, and task 258 all read the same list.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh`,
+- [x] Create `agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh`, *(completed)*
       modeled on `scripts/lib/phase-heading-patterns.sh` and `scripts/lib/status-vocabulary.sh`:
       no side effects at source time, source-able from either the deployed
       (`.claude/scripts/lib/`) or source-store copy.
-- [ ] Export `RETURN_META_STATUS_VALUES=(in_progress researched planned implemented
+- [x] Export `RETURN_META_STATUS_VALUES=(in_progress researched planned implemented *(completed)*
       needs_research partial failed blocked)` — copied verbatim from
       `validate-return-meta.sh:175`, not re-derived.
-- [ ] Export `RETURN_META_FORBIDDEN_STATUS="completed"` plus the exact rejection message already
+- [x] Export `RETURN_META_FORBIDDEN_STATUS="completed"` plus the exact rejection message already *(completed)*
       used at `validate-return-meta.sh:183` ("explicitly forbidden (triggers Claude stop
       behavior) -- use 'implemented' instead"), so consumers never re-word it.
-- [ ] Export `RETURN_META_SUCCESS_STATUSES=(researched planned implemented)` — the subset
+- [x] Export `RETURN_META_SUCCESS_STATUSES=(researched planned implemented)` — the subset *(completed)*
       `orchestrate-recover-outcome.sh:242` currently hardcodes — with a comment naming it as a
       deliberate subset, not a second vocabulary.
-- [ ] Add predicates `is_return_meta_status <value>` and `is_return_meta_success_status <value>`.
-- [ ] Write the file header to state the vocabulary trap explicitly: `lib/status-vocabulary.sh`
+- [x] Add predicates `is_return_meta_status <value>` and `is_return_meta_success_status <value>`. *(completed)*
+- [x] Write the file header to state the vocabulary trap explicitly: *(completed)* `lib/status-vocabulary.sh`
       is the 12-value **task-level** enum for `state.json .active_projects[].status`, contains
       `"completed"` by design, and MUST NOT be sourced for return-meta purposes. Name
       `context/formats/return-metadata-file.md`'s status table as the prose source of truth.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh` *(completed)*
       modeled on `tests/test-status-vocabulary.sh`, asserting: all 8 members present and in
       order; `"completed"` is NOT a member; `is_return_meta_success_status` accepts exactly the
       3 subset values and rejects `in_progress`/`completed`; and a **drift assertion** that the
       array matches the list literally present in `validate-return-meta.sh` (so the two cannot
       diverge before Phase 2 lands).
-- [ ] `chmod +x` the new test — `run-all.sh` reports a non-executable suite as a loud `[SKIP]`,
+- [x] `chmod +x` the new test *(completed)* — `run-all.sh` reports a non-executable suite as a loud `[SKIP]`,
       never a pass.
-- [ ] Register both new paths in `agent-system/extensions/core/manifest.json`'s scripts list,
+- [x] Register both new paths in `agent-system/extensions/core/manifest.json`'s scripts list, *(completed)*
       preserving the existing ordering convention (`lib/return-meta-status-vocabulary.sh` after
       `lib/return-meta-artifacts-lib.sh`; `tests/test-return-meta-status-vocabulary.sh` in the
       tests block).
