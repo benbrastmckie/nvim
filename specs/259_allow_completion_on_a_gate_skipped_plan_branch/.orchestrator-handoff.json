@@ -1,19 +1,27 @@
 {
-  "status": "planned",
-  "summary": "Authored a seven-phase implementation plan for the gate-skipped-plan-branch deadlock and the identical-redispatch loop. Adopts the research report's three corrections over the dispatch's own framing: the Gap 2 edit site is orchestrate-cycle-postflight.sh (not skill-base.sh, which gets a comment-only fix), the corroboration overwrite must be gated on plan_markers_verified=true to avoid false-positive META_MISSING_AFTER_NARRATION records on ordinary Case 1 refusals, and handoff-schema.md must be corrected regardless of any schema addition. Adjacent items (a) new marker and (b) new defect-enum class are both explicitly decided OUT.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "summary": "Widened the completion-claim gate's corroboration trigger to the Case 1 shape (fail-closed, gated on plan_markers_verified=true), added an identical-dispatch convergence guard (N=2 halt with full inline back-out) to orchestrate-cycle-plan.sh, and documented the decision-gate to [COMPLETED WITH EXCLUSIONS] mapping in plan-format.md/status-markers.md/handoff-schema.md. All seven phases closed (six COMPLETED, Phase 7 COMPLETED WITH EXCLUSIONS for one confirmed pre-existing, unrelated test-suite failure population -- see the plan's Phase 7 Reasoned Exclusions record).",
+  "phases_completed": 7,
   "phases_total": 7,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md",
-      "summary": "Seven-phase plan across two independent fixes (convergence guard; corroboration-trigger widening) plus three documentation strands."
+      "type": "summary",
+      "path": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/summaries/01_gate-skipped-plan-completion-summary.md",
+      "summary": "Full implementation summary across all seven phases, including plan deviations and verification evidence for all five named arms."
     }
   ],
   "modified_files": [
-    "specs/259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md"
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "specs/259_allow_completion_on_a_gate_skipped_plan_branch/summaries/01_gate-skipped-plan-completion-summary.md"
   ],
-  "dispatch_seq": 4,
   "blockers": [],
   "sorry_inventory": [],
   "continuation_path": null

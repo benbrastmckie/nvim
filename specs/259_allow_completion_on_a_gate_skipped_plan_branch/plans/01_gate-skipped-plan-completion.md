@@ -535,28 +535,54 @@ changed.
 
 ---
 
-### Phase 7: Full regression sweep and task wrap-up [NOT STARTED]
+### Phase 7: Full regression sweep and task wrap-up [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Every named test suite is green, all five verification arms are demonstrated, and the
 final file scope is harvested.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`,
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`,
       `test-corroborate-phase-counts.sh`, `test-orchestrate-cycle-postflight.sh`,
       `test-orchestrate-cycle-plan.sh` and `test-orchestrate-context-growth.sh` (the latter exercises
       the cycle-plan -> build-dispatch -> cycle-postflight chain end to end and is the suite most
-      likely to catch an unintended interaction).
-- [ ] Walk the five verification arms explicitly and record the evidence for each: (1) linear plan
+      likely to catch an unintended interaction). *(completed: 35/35, 33/33, 76/110 (34
+      pre-existing unrelated failures — see Reasoned Exclusions below), 274/274, 6/6)*
+- [x] Walk the five verification arms explicitly and record the evidence for each: (1) linear plan
       allowed; (2) branched plan with `[COMPLETED WITH EXCLUSIONS]` allowed via 7/7 corroboration,
       with the `[phase-check]` warning still firing; (3) bare shortfall still refused as Case 1;
       (4) under-reported `phases_total` still refused; (5) identical dispatch fired twice stops the
-      run.
-- [ ] Confirm no test was weakened or deleted: `git diff` over `scripts/tests/` shows additions and
-      no removed or relaxed assertion.
-- [ ] Harvest the final `file_scope` from the actual diff and report it in the handoff's
-      `modified_files`.
-- [ ] Confirm no file under `agents/` was touched and that the two dead stage5 scripts are unchanged.
+      run. *(completed — see the five-arm evidence table below)*
+- [x] Confirm no test was weakened or deleted: `git diff` over `scripts/tests/` shows additions and
+      no removed or relaxed assertion. *(completed: `git diff` over the two touched test files
+      across this task's own commits shows 484 insertions, 0 deletions — pure additions)*
+- [x] Harvest the final `file_scope` from the actual diff and report it in the handoff's
+      `modified_files`. *(completed — see the harvested list below)*
+- [x] Confirm no file under `agents/` was touched and that the two dead stage5 scripts are unchanged.
+      *(completed: confirmed via per-commit `git show --stat` across all six of this task's own
+      phase commits — zero `agents/` or stage5 files appear)*
+
+**Five-arm evidence table**:
+
+| Arm | Shape | Outcome | Evidence |
+|-----|-------|---------|----------|
+| 1 | Linear plan, all `[COMPLETED]`, matching handoff | ALLOWED, case 2/3 | `test-corroborate-phase-counts.sh` Fixture A (incl. its case-2/3-label assertion) |
+| 2 | Branched incident-shaped plan (7 phases, 3 `[COMPLETED WITH EXCLUSIONS]`), handoff 4/7 | ALLOWED via 7/7 corroboration, `[UNVERIFIED PHASES CORROBORATED]` banner | `test-corroborate-phase-counts.sh` Fixture I |
+| 3 | Bare shortfall, handoff 4/7, plan also shows only 4/7 closed | REFUSED, case 1/3, `phases_total` not zeroed, no defect record | `test-corroborate-phase-counts.sh` Fixture J (falsification-tested: reverting the overwrite gate flips this to FAIL) |
+| 4 | Under-reported `phases_total` (0/0) against an incomplete plan | REFUSED, case 3/3, defect-recording predicate fires (unchanged) | `test-corroborate-phase-counts.sh` Fixture K |
+| 5 | Same dispatch fired twice, identical content | Convergence guard halts the task; back-out verified | `test-orchestrate-cycle-plan.sh` Group 28 (halt, back-out, subsequent-cycle exclusion, non-repeating regression) |
+
+**Note on arm 2's `[phase-check]` sub-claim**: verified EMPIRICALLY against the real,
+task-259-unmodified `update-task-status.sh` that a genuinely 7/7-closed plan takes the
+`DONE >= TOTAL -> "proceeding"` branch, not the WARNING branch — see Phase 4's recorded deviation
+for the full finding. The warning fires for arm 3's shortfall shape, not arm 2's fully-corroborated
+shape; this is the plan's own claim corrected against real behavior, not a defect.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-orchestrate-cycle-postflight.sh` exiting 0 | 34 of 110 cases in this suite were ALREADY failing before this task's first edit — a pre-existing, unrelated environmental/timing defect (STALE HANDOFF mtime races, a broad "Skill did not write orchestrator handoff" schema-detection issue affecting most `implemented`/handoff-based fixtures) not introduced or worsened by any phase of this task. Fixing it is out of this task's scope: it is orthogonal to the corroboration-trigger widening and the identical-dispatch guard this task implements. | `git stash` bisection: running the suite with this task's `orchestrate-cycle-postflight.sh` / `skill-base.sh` changes stashed out reproduces the IDENTICAL 34-case failure set (confirmed byte-for-byte identical after normalizing tmpdir paths, mtimes, and event IDs — the only non-deterministic content). The remaining 76 cases pass in both configurations. |
 
 **Timing**: 1 hour
 
@@ -581,22 +607,25 @@ final file scope is harvested.
 
 ## Testing & Validation
 
-- [ ] `test-skill-base-lifecycle.sh` passes with every pre-existing case unchanged.
-- [ ] `test-corroborate-phase-counts.sh` passes, including the new branched-plan and shortfall
-      fixtures.
-- [ ] `test-orchestrate-cycle-postflight.sh` passes, including the case-label, defect-record and
-      `[phase-check]` assertions.
-- [ ] `test-orchestrate-cycle-plan.sh` passes, including the hash-normalizer, streak, degrade-path
-      and halt/back-out cases.
-- [ ] `test-orchestrate-context-growth.sh` passes (end-to-end chain regression).
-- [ ] Arm (1): linear complete plan -> ALLOWED (case 2/3).
-- [ ] Arm (2): branched plan, gate-skipped phases `[COMPLETED WITH EXCLUSIONS]` -> ALLOWED, count
-      reaches 7/7 through corroboration, `[phase-check]` warning still fires.
-- [ ] Arm (3): bare `4/7` shortfall with the plan also open -> REFUSED as case 1/3, no defect record.
-- [ ] Arm (4): under-reported `phases_total` against an incomplete plan -> REFUSED.
-- [ ] Arm (5): two consecutive identical dispatches -> convergence guard halts the task, back-out
+- [x] `test-skill-base-lifecycle.sh` passes with every pre-existing case unchanged. (35/35)
+- [x] `test-corroborate-phase-counts.sh` passes, including the new branched-plan and shortfall
+      fixtures. (33/33)
+- [x] `test-orchestrate-cycle-postflight.sh` — 76/110 pass; the remaining 34 are a confirmed
+      pre-existing, unrelated failure (see Phase 7's Reasoned Exclusions record). The case-label,
+      defect-record and `[phase-check]` assertions this task needed were instead expressed in
+      `test-corroborate-phase-counts.sh` (see Phase 4's recorded deviation).
+- [x] `test-orchestrate-cycle-plan.sh` passes, including the hash-normalizer, streak, degrade-path
+      and halt/back-out cases. (274/274)
+- [x] `test-orchestrate-context-growth.sh` passes (end-to-end chain regression). (6/6)
+- [x] Arm (1): linear complete plan -> ALLOWED (case 2/3).
+- [x] Arm (2): branched plan, gate-skipped phases `[COMPLETED WITH EXCLUSIONS]` -> ALLOWED, count
+      reaches 7/7 through corroboration. (The `[phase-check]` warning does NOT fire for this
+      shape — verified inaccurate as originally claimed; see Phase 4's deviation.)
+- [x] Arm (3): bare `4/7` shortfall with the plan also open -> REFUSED as case 1/3, no defect record.
+- [x] Arm (4): under-reported `phases_total` against an incomplete plan -> REFUSED.
+- [x] Arm (5): two consecutive identical dispatches -> convergence guard halts the task, back-out
       verified.
-- [ ] No test weakened or deleted anywhere in the diff.
+- [x] No test weakened or deleted anywhere in the diff.
 
 ## Artifacts & Outputs
 
