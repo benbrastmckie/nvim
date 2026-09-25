@@ -90,6 +90,7 @@ next_project_number: 260
 - **Dependencies**: None
 - **Research**: [259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md]
 - **Plan**: [259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md]
+- **Summary**: [259_allow_completion_on_a_gate_skipped_plan_branch/summaries/01_gate-skipped-plan-completion-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

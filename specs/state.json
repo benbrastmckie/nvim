@@ -1097,9 +1097,15 @@
           "path": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md",
           "type": "plan",
           "summary": "Seven-phase plan across two independent fixes (convergence guard; corroboration-trigger widening) plus three documentation strands."
+        },
+        {
+          "path": "specs/259_allow_completion_on_a_gate_skipped_plan_branch/summaries/01_gate-skipped-plan-completion-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary across all seven phases, including plan deviations and verification evidence for all five named arms."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed the gate-skipped-plan-branch completion deadlock: orchestrate-cycle-postflight.sh now corroborates a plan's own phase markers for any implemented dispatch (not only phases_total==0), letting a branched plan whose gate-skipped phases are [COMPLETED WITH EXCLUSIONS] complete normally with no new field or marker. Added an identical-dispatch convergence guard to orchestrate-cycle-plan.sh (N=2 halt with inline back-out) and documented the decision-gate to exclusion-marker mapping in plan-format.md/status-markers.md/handoff-schema.md."
     }
   ],
   "completed_projects": [],
