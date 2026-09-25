@@ -5,11 +5,8 @@
 #
 # Assertion families:
 #   (a) Membership: all 8 values present, in order; "completed" is explicitly NOT a member.
-#   (b) Drift assertion (TEMPORARY -- Phase 1 only): the library's array matches the literal
-#       `valid_statuses=(...)` array still present in validate-return-meta.sh at authoring time,
-#       so the two cannot silently diverge before Phase 2 lands. Phase 2 deletes the validator's
-#       private literal array and replaces this assertion with a sourcing check (the validator
-#       sources this library rather than carrying its own copy) -- see that phase's task list.
+#   (b) Sourcing assertion: validate-return-meta.sh carries no private literal copy of the
+#       vocabulary and instead sources this library, so the two cannot silently diverge.
 #   (c) Predicate correctness: is_return_meta_status accepts every enum value and rejects
 #       "completed" and other foreign/fabricated values.
 #   (d) Success-subset correctness: is_return_meta_success_status accepts exactly the 3 subset
@@ -58,8 +55,8 @@ fi
 . "$LIB"
 
 VALIDATOR_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/validate-return-meta.sh"
   "$SCRIPT_DIR/../validate-return-meta.sh"
+  "$REPO_ROOT/.claude/scripts/validate-return-meta.sh"
 )
 VALIDATOR=""
 for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
@@ -100,28 +97,24 @@ else
 fi
 
 # =====================================================================
-# (b) Drift assertion (TEMPORARY -- see header comment; Phase 2 replaces this block).
-# Extracts the literal `valid_statuses=(...)` array straight out of validate-return-meta.sh's
-# source text (not by sourcing it -- the script is not designed to be sourced) and compares it,
-# as a sorted set, against the library's own array. Skipped with an [INFO] line (not a [FAIL])
-# once Phase 2 deletes the literal array, since at that point there is nothing left to extract
-# and the sourcing assertion below takes over as the anti-drift mechanism.
+# (b) Sourcing assertion (Phase 2): validate-return-meta.sh no longer carries a private literal
+# copy of the vocabulary -- it sources this library instead, so the two cannot drift. Replaces
+# Phase 1's temporary drift assertion, which extracted a literal `valid_statuses=(...)` array
+# that Phase 2 deleted from the validator.
 # =====================================================================
-if [[ -n "$VALIDATOR" ]] && grep -q '^valid_statuses=(' "$VALIDATOR"; then
-  validator_line="$(grep '^valid_statuses=(' "$VALIDATOR")"
-  # Extract every double-quoted token on the valid_statuses=( ... ) line.
-  mapfile -t validator_values < <(grep -oE '"[a-z_]+"' <<<"$validator_line" | tr -d '"')
-  validator_sorted="$(printf '%s\n' "${validator_values[@]}" | sort)"
-  lib_sorted="$(printf '%s\n' "${RETURN_META_STATUS_VALUES[@]}" | sort)"
-  if [[ "$validator_sorted" == "$lib_sorted" ]]; then
-    pass "RETURN_META_STATUS_VALUES is byte-equal (as a sorted set) to validate-return-meta.sh's literal valid_statuses array"
+if [[ -n "$VALIDATOR" ]]; then
+  if grep -q '^valid_statuses=(' "$VALIDATOR"; then
+    fail "validate-return-meta.sh still carries a private literal valid_statuses array -- Phase 2 should have deleted it"
   else
-    fail "library/validator literal-array DRIFT detected"
-    info "validator array (sorted): $validator_sorted"
-    info "library array (sorted): $lib_sorted"
+    pass "validate-return-meta.sh's private literal valid_statuses array is gone"
+  fi
+  if grep -q "return-meta-status-vocabulary.sh" "$VALIDATOR"; then
+    pass "validate-return-meta.sh sources return-meta-status-vocabulary.sh"
+  else
+    fail "validate-return-meta.sh does not source return-meta-status-vocabulary.sh"
   fi
 else
-  info "validate-return-meta.sh's literal valid_statuses array not found (already extracted to the library) -- drift assertion retired, relying on the sourcing assertion below"
+  info "validate-return-meta.sh not found at any candidate path; skipping sourcing assertion"
 fi
 
 if is_return_meta_status "completed"; then

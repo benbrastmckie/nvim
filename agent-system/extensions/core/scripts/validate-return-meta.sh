@@ -59,6 +59,31 @@ fi
 # shellcheck disable=SC1090
 . "$LIB_FILE"
 
+# ─── Shared status vocabulary library (deploy-tree-first / source-store-fallback) ──────────────
+# Never scripts/lib/status-vocabulary.sh -- that is the unrelated 12-value TASK-LEVEL enum and
+# legitimately contains "completed". See return-meta-status-vocabulary.sh's own header for the
+# full trap explanation.
+STATUS_LIB_CANDIDATES=(
+  "$REPO_ROOT/.claude/scripts/lib/return-meta-status-vocabulary.sh"
+  "$REPO_ROOT/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
+)
+STATUS_LIB_FILE=""
+for _candidate in "${STATUS_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$_candidate" ]]; then
+    STATUS_LIB_FILE="$_candidate"
+    break
+  fi
+done
+if [[ -z "$STATUS_LIB_FILE" ]]; then
+  echo "Error: shared library return-meta-status-vocabulary.sh not found at any of:" >&2
+  for _candidate in "${STATUS_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 2
+fi
+# shellcheck disable=SC1090
+. "$STATUS_LIB_FILE"
+
 # ─── Argument parsing ───────────────────────────────────────────────────────────────────────────
 META_FILE=""
 FIX_MODE=false
@@ -171,21 +196,20 @@ fi
 status=$(jq -r '.status // ""' "$META_FILE")
 
 # ─── Check 2: status value validation ───────────────────────────────────────────────────────────
-# Normative vocabulary per context/formats/return-metadata-file.md's status table.
-valid_statuses=("in_progress" "researched" "planned" "implemented" "needs_research" "partial" "failed" "blocked")
-status_valid=false
-for valid in "${valid_statuses[@]}"; do
-  if [[ "$status" == "$valid" ]]; then
-    status_valid=true
-    break
-  fi
-done
-if [[ "$status" == "completed" ]]; then
-  log_fail "status value is 'completed', which is explicitly forbidden (triggers Claude stop behavior) -- use 'implemented' instead"
+# Normative vocabulary per context/formats/return-metadata-file.md's status table, sourced from
+# lib/return-meta-status-vocabulary.sh -- never hardcoded here, so this validator, the recovery
+# arm, and lint-agent-contracts.sh's Check E all read one definition.
+if is_return_meta_status "$status"; then
+  status_valid=true
+else
+  status_valid=false
+fi
+if [[ "$status" == "$RETURN_META_FORBIDDEN_STATUS" ]]; then
+  log_fail "$RETURN_META_FORBIDDEN_STATUS_MESSAGE"
 elif [[ "$status_valid" == "true" ]]; then
   log_pass "status value is valid: $status"
 else
-  log_fail "status value invalid: '$status' (expected one of: ${valid_statuses[*]})"
+  log_fail "status value invalid: '$status' (expected one of: ${RETURN_META_STATUS_VALUES[*]})"
 fi
 
 # ─── Check 3: artifacts is present and is a JSON array ─────────────────────────────────────────

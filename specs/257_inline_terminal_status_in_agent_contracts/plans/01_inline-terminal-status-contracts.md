@@ -186,20 +186,20 @@ validator, the recovery arm, the new Check E, and task 258 all read the same lis
 
 ---
 
-### Phase 2: Make validate-return-meta.sh consume the library [NOT STARTED]
+### Phase 2: Make validate-return-meta.sh consume the library [COMPLETED]
 
 **Goal**: Remove the private 8-value copy from the validator so the extraction has a real
 consumer and cannot silently drift.
 
 **Tasks**:
-- [ ] Source `lib/return-meta-status-vocabulary.sh` in `validate-return-meta.sh`, following the
+- [x] Source `lib/return-meta-status-vocabulary.sh` in `validate-return-meta.sh`, following the *(completed)*
       same lib-resolution idiom the file already uses for `lib/return-meta-artifacts-lib.sh`.
-- [ ] Replace the hardcoded `valid_statuses=(...)` array (`:175`) with
+- [x] Replace the hardcoded `valid_statuses=(...)` array (`:175`) with *(completed)*
       `RETURN_META_STATUS_VALUES`, and the hardcoded `"completed"` comparison and message
       (`:183`) with the library constants.
-- [ ] Leave every pass/fail message string byte-identical to what it prints today — the test
+- [x] Leave every pass/fail message string byte-identical to what it prints today *(completed)* — the test
       suite and the deferred runtime-wiring follow-up both key off this wording.
-- [ ] Drop Phase 1's temporary drift assertion from
+- [x] Drop Phase 1's temporary drift assertion from *(completed)*
       `test-return-meta-status-vocabulary.sh` (the literal list is gone from the validator) and
       replace it with an assertion that the validator sources the library.
 
