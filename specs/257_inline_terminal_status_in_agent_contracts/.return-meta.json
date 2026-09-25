@@ -1,10 +1,86 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/257_inline_terminal_status_in_agent_contracts/summaries/01_inline-terminal-status-contracts-summary.md",
+      "summary": "Brought 20 dispatchable agent files (22 edit sites) up to a concrete inline terminal status shape, extracted the canonical 8-value return-meta status vocabulary into a shared sourced library consumed by validate-return-meta.sh/orchestrate-recover-outcome.sh, and added lint Check E as a permanent regression guard."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed 20 agent contract files (22 edit sites) to carry a concrete inline .return-meta.json terminal status and the never-use-\"completed\" warning; extracted the canonical 8-value status vocabulary into a shared library consumed by the validator, the recovery arm, and a new lint Check E; full gate green aside from 4 pre-existing failures confirmed unrelated to this task's file scope."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/agents/spawn-agent.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh",
+    "agent-system/extensions/core/scripts/validate-return-meta.sh",
+    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-research-hard-agent.md",
+    "agent-system/extensions/email/agents/email-implementation-agent.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "agent-system/extensions/latex/agents/latex-research-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
+    "agent-system/extensions/present/agents/grant-agent.md",
+    "agent-system/extensions/python/agents/python-implementation-agent.md",
+    "agent-system/extensions/python/agents/python-research-agent.md",
+    "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+    "agent-system/extensions/rust/agents/rust-research-agent.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-research-agent.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/z3/agents/z3-implementation-agent.md",
+    "agent-system/extensions/z3/agents/z3-research-agent.md",
+    "specs/257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Before seeding an exclusion list for a new lint check from a plan's 'scope hypothesis', re-verify it LIVE against the real corpus rather than trusting the plan's line-number-derived count. On task 257's Check E, the plan hypothesized 13 exclusion entries; live verification found only 5 -- 8 files the plan assumed needed exclusion actually already passed the check on their own merit (they carried a legitimate 'failed'/'partial' branch alongside their non-canonical success vocabulary). Excluding a file that already passes silently hides it from future regression detection -- worse than doing nothing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/257_inline_terminal_status_in_agent_contracts/summaries/01_inline-terminal-status-contracts-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "lint",
+        "exclusion-list",
+        "scope-hypothesis",
+        "live-verification",
+        "agent-contracts",
+        "regression-guard"
+      ]
+    },
+    {
+      "content": "When a source-store shell script starts unconditionally sourcing a new shared library at top level (exit 2 if not found), every existing scratch-repo fixture test for that script must also gain a copy of the library in its scratch tree -- otherwise the test's own fixture setup breaks with an environment error before the check under test ever runs. Check for ALL scratch trees a test suite builds (a fragment-missing negative-path fixture is easy to miss since it looks unrelated to the new library).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/257_inline_terminal_status_in_agent_contracts/summaries/01_inline-terminal-status-contracts-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "shell-testing",
+        "scratch-repo",
+        "fixture",
+        "library-sourcing",
+        "shellcheck"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790360491_c3a705",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 9,
+    "phases_total": 9
   }
 }

@@ -545,12 +545,35 @@ check_e_terminal_metadata_presence() {
 
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
-# still deferred follow-up work -- see this task's plan, "Deferred Follow-Up Tasks" section.
-# Check E (above) is implemented; it is no longer part of this deferral. Check D is expected to
-# call enumerate_dispatchable_agents/is_dispatchable_agent above rather than re-deriving the
+# STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
+# Follow-Up Tasks" section. Check D is expected to call
+# enumerate_dispatchable_agents/is_dispatchable_agent above rather than re-deriving the
 # frontmatter-gated detector.
 #
 # check_d_required_body_sections() { ... }
+#
+# Check E (terminal-metadata status presence + completed-value prohibition) IS IMPLEMENTED,
+# above -- it is no longer part of this deferral. It is a STATIC lint over agent-body examples
+# only: it prevents the WORKED EXAMPLE an agent reads from drifting, but cannot by itself stop
+# an agent that writes "completed" anyway despite a correct example in front of it. Two related,
+# deliberately deferred follow-up questions this check's existence does NOT answer (recorded in
+# the same plan's "Deferred Follow-Up Tasks" section, items 1-2 -- read that section for the
+# full rationale before acting on either):
+#   1. WIRE A RUNTIME VALIDATOR INTO THE DISPATCH READ PATH. validate-return-meta.sh already
+#      rejects "completed" with the right message and has ZERO runtime callers -- it would have
+#      caught the incident this task's plan was written to fix, and did not run. The two live,
+#      currently-unguarded chokepoints are orchestrate-recover-outcome.sh's read and
+#      skill-base.sh's skill_read_metadata() (the base-mode path). Blocked on item 2 below: wiring
+#      the 8-value rejection in today would newly break several registered agents' intentional
+#      non-canonical vocabularies (e.g. legal-analysis-agent's "consulted",
+#      slidev-assembly-agent's "assembled", every filetypes/* vocabulary).
+#   2. WIDEN orchestrate-recover-outcome.sh's SUCCESS-OUTCOME ACCEPTANCE SET. Its 3-value arm
+#      (researched|planned|implemented) is narrower than the set of intentionally-designed
+#      success vocabularies bona fide registered phase-routing targets use. Any such agent
+#      dispatched under orchestrator_mode: true has a genuinely successful outcome misclassified
+#      as STATUS_NOT_SUCCESS today -- the same defect class this task's plan fixes, triggered by
+#      an intentional value instead of an accidental one. See that script's own success-arm
+#      comment (Phase 3 of the same plan) for the seam this would extend.
 
 # ── Main ─────────────────────────────────────────────────────────────────────────────────────
 main() {

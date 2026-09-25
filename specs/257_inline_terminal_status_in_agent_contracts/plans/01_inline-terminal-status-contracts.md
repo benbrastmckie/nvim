@@ -1,7 +1,7 @@
 # Implementation Plan: Inline terminal status in agent contracts
 
 - **Task**: 257 - Inline terminal status in agent contracts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: None (blocking). Shares one extraction prerequisite with task 258
   (recovery-decline-attribution, currently `not_started`): Phase 1 below performs that
@@ -548,23 +548,34 @@ hypothesis)*
 
 ---
 
-### Phase 9: Full gate, and record the deferred follow-ups [NOT STARTED]
+### Phase 9: Full gate, and record the deferred follow-ups [COMPLETED]
 
 **Goal**: Whole-suite green, and the two deliberately-deferred decisions recorded where the next
 reader will find them rather than left as silent gaps.
 
 **Tasks**:
-- [ ] Run the full gate: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` once more over
+- [x] Run the full gate: `bash agent-system/extensions/core/scripts/tests/run-all.sh`. *(completed:
+      90 passed, 4 failed, 0 skipped, 94 total. The 4 failing suites --
+      test-gate-out-repair-reporting.sh, test-lint-json-channel-discipline.sh,
+      test-orchestrate-cycle-postflight.sh, test-verify-deploy-context-budget.sh -- are
+      confirmed pre-existing/out-of-scope by `git log`: three were last touched by unrelated
+      historical tasks (13/142/189/206/235), and the fourth (test-orchestrate-cycle-postflight.sh)
+      correlates with sibling task 259's concurrent orchestrate-cycle-postflight.sh edit, not
+      any file this plan touches. None reference lint-agent-contracts.sh,
+      validate-return-meta.sh, orchestrate-recover-outcome.sh,
+      return-meta-status-vocabulary.sh, or any of the 20 agent files this plan edited. This
+      task's own 4 suites (test-return-meta-status-vocabulary.sh, test-validate-return-meta.sh,
+      test-orchestrate-recover-outcome.sh, test-lint-agent-contracts.sh) all PASS)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` once more over *(completed)*
       the whole source store and confirm the summary shows 0 failures.
-- [ ] Confirm the new test suite is discovered by `run-all.sh` and reported as `[PASS]`, not
+- [x] Confirm the new test suite is discovered by `run-all.sh` and reported as `[PASS]`, not *(completed)*
       `[SKIP]` (exec bit intact).
-- [ ] Extend the Check D/E deferral comment block in `lint-agent-contracts.sh` so it now records:
+- [x] Extend the Check D/E deferral comment block in `lint-agent-contracts.sh` so it now records: *(completed)*
       Check D still deferred; Check E **implemented** by this task; and the two follow-up
       questions below, each named so a future reader can find them.
-- [ ] Record the follow-ups in this plan's "Deferred Follow-Up Tasks" section (below) and in the
+- [x] Record the follow-ups in this plan's "Deferred Follow-Up Tasks" section (below) and in the *(completed)*
       implementation summary, so `/todo`'s harvest and any later `/task` creation can pick them up.
-- [ ] Confirm no file under `.claude/**` was modified: `git status --short` shows changes only
+- [x] Confirm no file under `.claude/**` was modified: *(completed)* `git status --short` shows changes only
       under `agent-system/` and `specs/`.
 
 **Timing**: 0.75 hours
