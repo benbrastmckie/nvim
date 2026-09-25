@@ -1,5 +1,5 @@
 ---
-next_project_number: 256
+next_project_number: 257
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 256
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199 | core-agent-system, neovim, file-scope-lifecycle |
+| 2 | 45,139,165,224,250,251,256 | 22,44,127,129,162,163,199,244 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -62,6 +62,7 @@ next_project_number: 256
 ### Opencode
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
+256 [NOT STARTED] — Audit residual .opencode wiring in the core source store...
 
 ### File Scope Lifecycle
 
@@ -76,6 +77,84 @@ next_project_number: 256
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 256. Audit residual .opencode wiring in the core source store against the standing frozen-mirror policy
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: opencode
+- **Dependencies**: Task 244
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+=== PREMISE CONFLICT -- RESOLVE BEFORE REMOVING ANYTHING ===
+The request that produced this task asserts "OpenCode is retired" and proposes removing dead
+wiring. That premise CONTRADICTS a settled user decision already recorded in the backlog under
+"Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy"
+(revised 2026-09-01): ".opencode/ is FROZEN -- not maintained, not generated, not deleted. No
+sync mechanism will be built; the tree is preserved intact for possible future refactoring."
+The tree is still present and non-trivial (22M, verified 2026-09-25).
+
+The two scopes are NOT identical, which is why this task is separable rather than a duplicate:
+the frozen-mirror policy governs the .opencode/ TREE ITSELF; this task governs REFERENCES TO IT
+from core agent-system scripts, hooks and docs. But the policy still constrains the outcome --
+a deliberately preserved tree can be an argument for KEEPING the checks that operate on it.
+First deliverable is therefore to confirm with the user whether "retired" now supersedes
+"frozen", or whether the tree stays frozen and only genuinely dead references are pruned. Do
+not assume retirement and start deleting.
+
+=== VERIFIED INVENTORY (measured 2026-09-25, supersedes the requester's estimate) ===
+32 files under agent-system/extensions/core reference `.opencode`; 6 carry the OC_ task-prefix
+convention. The requester's "33 files" figure is close on the first count but their scan method
+admits false positives: a naive OC_ grep matches PROC_ROOT in claude-refresh.sh, which has
+nothing to do with OpenCode. Re-measure before trusting any count, including this one.
+
+=== CLASSIFICATION ALREADY PERFORMED (do not redo; verify and extend) ===
+A. LIVE EXECUTABLE LOGIC -- 4 sites, the only ones with behavioral risk:
+   - scripts/validate-wiring.sh:286-287 -- actively validates .opencode as a system
+     (validate_core_system / validate_extensions_loaded against agent/subagents).
+   - scripts/deploy-root-guard.sh:19,24 -- case arm accepts */.opencode as a valid deploy root.
+   - scripts/validate-state.sh:238,244 -- accepts */.opencode/scripts/ as a location for a
+     DEPLOYED state-write.sh.
+   - hooks/validate-handoff-location.sh:65 -- live (OC_)? in the handoff-location regex.
+B. COMMENT-ONLY / COSMETIC -- no behavior: scripts/generate-task-order.sh:38,
+   scripts/check-extension-docs.sh:99, scripts/audit-deletion-references.sh:53,
+   scripts/lib/deploy-ledger-lib.sh:44.
+C. DOCS AND CONVENTION: merge-sources/claudemd.md ("System-Specific Naming", the
+   specs/OC_{NNN}_{SLUG} prefix), rules/artifact-formats.md,
+   context/reference/state-management-schema.md, skills/skill-todo/SKILL.md,
+   commands/README.md, context/reference/orchestrator-critical-paths.json.
+
+=== THE NON-OBVIOUS RISK ===
+Several Category A sites are GENERALIZATIONS, not OpenCode-specific code: deploy-root-guard.sh
+and validate-state.sh both express "this must be a deploy tree, whichever kind". Deleting the
+.opencode arm narrows a general guard into a single-system one. That is a regression dressed as
+a cleanup. Judge each site on whether the abstraction still earns its keep, not on whether the
+string ".opencode" appears.
+
+=== EXPLICITLY OUT OF SCOPE ===
+scripts/check-task-references.sh's TREE_ROOTS `.opencode` entry. That array is rewritten
+wholesale by the task "check-task-references.sh: scan repo-appropriate roots instead of a
+hard-coded nvim-repo TREE_ROOTS list", which this task depends on. Do not touch that file here;
+audit the result after that task lands.
+
+=== DELIVERABLE ===
+1. Confirm the retired-vs-frozen policy question with the user; record the answer.
+2. Per-site disposition for every Category A and B site: remove as dead, or keep with a written
+   justification of the generalization it preserves.
+3. Update the Category C dual-system documentation to match the decision -- in particular the
+   "System-Specific Naming" section and the specs/OC_{NNN}_{SLUG} convention, which must either
+   be retired coherently everywhere or stated as retained.
+4. Keep scripts/tests/test-validate-handoff-location.sh in sync with any regex change.
+
+=== ACCEPTANCE ===
+The policy question is answered in writing; no Category A site changes without a recorded
+rationale; no general-purpose deploy-tree guard is narrowed to a single system as a side effect;
+the dual-system documentation and the shipped behavior agree; the test suite passes.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**
+(no-task-references-in-deliverables.md) -- cite the task titles, not their numbers.
+
+---
 
 ### 255. Reconcile typst extension scope ownership and fix chapter-quality-check.sh Rule 1.3 bib resolution
 - **Effort**: 3-6 hours
@@ -852,6 +931,36 @@ DEFECT. scripts/check-task-references.sh only scans a hard-coded TREE_ROOTS=(age
 DELIVERABLE. Make the scanned roots repo-appropriate: e.g. default to the whole repository minus specs/, .git, .claude and generated/vendored dirs (respecting .gitignore via `git ls-files` is one option), or a per-repo config file, or detection of the nvim source-store layout -- decide in research. Requirements: (1) the nvim repo's scan result is equivalent to today's (same files flagged); (2) a consumer repo like Verification gets its docs/, README.md and source dirs scanned; (3) an explicit PATH_SCOPE anywhere in the repo (outside the exempt trees) is scanned rather than exiting 2; (4) exemption logic stays sourced from scripts/lib/task-reference-patterns.sh; (5) update context/standards/task-reference-exemptions.md if the enforcement narrative describes the roots; (6) add or extend a test covering a consumer-repo-shaped fixture.
 
 DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).
+
+=== CORROBORATED 2026-09-25 from a SECOND consumer repo, ModelChecker (session sess_1790352661_77259f) ===
+The first evidence source was Verification (2026-09-21); this is an independent reproduction.
+In ~/Projects/Logos/ModelChecker the primary source tree is code/, which TREE_ROOTS matches
+nowhere, so the lint scans nothing that repo actually ships. Measured: a manual grep of ONE
+subtheory found ~35 violations, ~20 of them in a single operators.py, plus a literal
+specs/{NNN}_{slug}/reports/ path citation -- every one of them invisible to the lint today.
+Two consumers failing the same way confirms the hard-coded list encodes the nvim repo's own
+layout and generalizes to nothing.
+
+TWO ADDITIONAL REQUIREMENTS beyond the original (1)-(6):
+
+(7) DECIDE BETWEEN COVERAGE AND HONEST SCOPE -- do not assume option (a). The original
+    deliverable presumes the roots get fixed. Research must also weigh the alternative: an
+    explicit, documented carve-out in rules/no-task-references-in-deliverables.md and
+    context/standards/task-reference-exemptions.md declaring consumer source trees out of
+    scope. Option (b) is a legitimate outcome if (a) proves unworkable. The defect being fixed
+    is that the rule's text asserts repo-wide reach ("the entire repository EXCEPT specs/**,
+    commit messages, and PR/branch metadata") that the lint does not deliver. Either close the
+    gap or stop claiming it -- but the claim must not survive unbacked. Whichever is chosen,
+    the rule file itself is a deliverable, which is why it is now in file_scope.
+
+(8) THE TWO PATTERN-LIBRARY CONSUMERS MUST NOT DRIFT. scripts/lib/task-reference-patterns.sh is
+    shared by check-task-references.sh (batch lint) and hooks/validate-no-task-references.sh
+    (blocking write-time gate). Original requirement (4) keeps exemption logic sourced from the
+    shared lib but never names the hook as the second consumer. Any change to scanned scope or
+    exemption semantics must land identically in both: a repo-wide lint paired with a gate that
+    admits or blocks a different set is a new defect, not a fix. The hook is now in file_scope
+    for this reason, and a test should cover lint/hook agreement on a consumer-repo-shaped
+    fixture.
 
 ---
 
