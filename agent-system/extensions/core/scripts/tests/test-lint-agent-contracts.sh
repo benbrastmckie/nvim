@@ -8,6 +8,15 @@
 # on specific [FAIL]/[PASS] lines in its stdout. The lint script is never instrumented or
 # modified for testability -- it never learns it is under test.
 #
+# Check E fixtures (added alongside Check E's implementation): 4 positive fixtures (no status,
+# forbidden "completed" value, in_progress-only, pipe-alternatives placeholder), 1 negative
+# false-positive guard (conformant status + MUST-NOT prose containing the word "completed", to
+# prove Detector B matches only the quoted key/value pair), and 1 negative exclusion-list
+# fixture. The shared ARTIFACTS_TEMPLATE_BLOCK used by every other positive/negative fixture is
+# wrapped in a status-carrying object (a required fixture repair -- see compliant-agent.md's and
+# check-f-conforming-agent.md's "no FAIL" assertions below, which would otherwise break the
+# moment Check E lands) rather than the bare fragment it carried before this task.
+#
 # Follows the core shell-test convention in context/standards/shell-script-testing.md:
 # pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d workdir with a trap
 # EXIT cleanup, exit 0 on all-pass and exit 1 on any-fail.
@@ -20,6 +29,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LINT_SRC="$SCRIPT_DIR/../lint/lint-agent-contracts.sh"
 FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/no-task-references-bullet.md"
 ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifacts-template.md"
+STATUS_LIB_SRC="$SCRIPT_DIR/../lib/return-meta-status-vocabulary.sh"
 
 PASSED=0
 FAILED=0
@@ -40,6 +50,10 @@ if [ ! -f "$ARTIFACTS_FRAGMENT_SRC" ]; then
   echo "ERROR: expected canonical fragment at $ARTIFACTS_FRAGMENT_SRC" >&2
   exit 1
 fi
+if [ ! -f "$STATUS_LIB_SRC" ]; then
+  echo "ERROR: expected shared library at $STATUS_LIB_SRC" >&2
+  exit 1
+fi
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
@@ -49,21 +63,31 @@ trap cleanup EXIT
 mkdir -p "$WORKDIR/agent-system/extensions/core/agents"
 mkdir -p "$WORKDIR/agent-system/extensions/core/context/contracts"
 mkdir -p "$WORKDIR/agent-system/extensions/core/docs/reference/standards"
+mkdir -p "$WORKDIR/agent-system/extensions/core/scripts/lib"
 cp "$FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
 cp "$ARTIFACTS_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
+cp "$STATUS_LIB_SRC" "$WORKDIR/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
 
 BULLET_LINE='Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead'
 
 # A correctly-shaped artifacts template, used by every fixture that should PASS Check F (i.e.
-# every fixture not specifically testing a Check F violation).
+# every fixture not specifically testing a Check F violation). Wrapped in a status-carrying
+# object (Check E's fixture repair -- see the header comment's "Required fixture repair" note):
+# every fixture built from this block also carries a conformant inline "status": "implemented",
+# so it passes Check E's presence detector, not just Check F's shape detector. Any fixture
+# testing a Check E violation specifically defines its own inline block instead of this shared
+# one (see the Check E fixtures below).
 ARTIFACTS_TEMPLATE_BLOCK='```json
-"artifacts": [
-  {
-    "type": "summary",
-    "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md",
-    "summary": "One-line description."
-  }
-]
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md",
+      "summary": "One-line description."
+    }
+  ]
+}
 ```'
 
 # run_lint: invokes the real lint script against the scratch tree, capturing stdout+exit code.
@@ -244,6 +268,191 @@ $ARTIFACTS_TEMPLATE_BLOCK
 1. Do the wrong thing
 EOF
 
+# =====================================================================
+# Positive fixture: artifacts template present, but no status key at all -- must fail Check E's
+# presence detector.
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/check-e-nostatus-agent.md" <<EOF
+---
+name: check-e-nostatus-agent
+description: fixture agent with an artifacts template but no status key anywhere
+model: sonnet
+---
+
+# Check E No-Status Agent
+
+## Write Metadata
+
+\`\`\`json
+"artifacts": [
+  {
+    "type": "summary",
+    "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md",
+    "summary": "One-line description."
+  }
+]
+\`\`\`
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+EOF
+
+# =====================================================================
+# Positive fixture: carries a literal "status": "completed" pair -- must fail Check E by name
+# (Detector B), regardless of whether a conformant status is present elsewhere.
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/check-e-completed-agent.md" <<EOF
+---
+name: check-e-completed-agent
+description: fixture agent carrying the forbidden "status": "completed" pair
+model: sonnet
+---
+
+# Check E Completed Agent
+
+## Write Metadata
+
+\`\`\`json
+{
+  "status": "completed",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md",
+      "summary": "One-line description."
+    }
+  ]
+}
+\`\`\`
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+EOF
+
+# =====================================================================
+# Positive fixture: carries only "status": "in_progress" -- must fail Check E's presence
+# detector (in_progress is never a terminal outcome, so it does not satisfy Detector A).
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/check-e-inprogress-only-agent.md" <<EOF
+---
+name: check-e-inprogress-only-agent
+description: fixture agent carrying only an in_progress status, no terminal status
+model: sonnet
+---
+
+# Check E In-Progress-Only Agent
+
+## Write Metadata
+
+\`\`\`json
+{
+  "status": "in_progress",
+  "artifacts": []
+}
+\`\`\`
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+EOF
+
+# =====================================================================
+# Positive fixture: carries a pipe-alternatives status value -- must fail Check E's presence
+# detector (an exact-match enum lookup never matches a pipe-joined string).
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/check-e-pipeplaceholder-agent.md" <<EOF
+---
+name: check-e-pipeplaceholder-agent
+description: fixture agent carrying a pipe-alternatives status placeholder
+model: sonnet
+---
+
+# Check E Pipe Placeholder Agent
+
+## Write Metadata
+
+\`\`\`json
+{
+  "status": "implemented | partial | blocked",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{NNN}_{SLUG}/summaries/{NN}_{slug}-summary.md",
+      "summary": "One-line description."
+    }
+  ]
+}
+\`\`\`
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+EOF
+
+# =====================================================================
+# Negative fixture: carries a conformant status AND the MUST-NOT bullet, whose own prose
+# contains the word "completed" -- must PASS Check E, proving Detector B matches only the
+# quoted "status": "completed" key/value pair and never the bare word in surrounding prose.
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/check-e-falsepositive-guard-agent.md" <<EOF
+---
+name: check-e-falsepositive-guard-agent
+description: fixture agent carrying a conformant status plus MUST-NOT prose containing "completed"
+model: sonnet
+---
+
+# Check E False-Positive Guard Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Use status value "completed" (triggers Claude stop behavior)
+EOF
+
+# =====================================================================
+# Negative fixture: a file on Check E's exclusion list -- must produce a named [INFO] skipped
+# line, never a FAIL, even though it carries no conformant status at all.
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/meta-builder-agent.md" <<EOF
+---
+name: meta-builder-agent
+description: fixture standing in for the real meta-builder-agent (Check E exclusion-list entry)
+model: opus
+---
+
+# Meta Builder Agent (fixture)
+
+## Write Metadata
+
+\`\`\`json
+{
+  "status": "tasks_created",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "{target_root}/specs/TODO.md",
+      "summary": "Task #{N} added to TODO.md"
+    }
+  ]
+}
+\`\`\`
+
+## Critical Requirements
+
+**MUST NOT**:
+1. $BULLET_LINE
+EOF
+
 result="$(run_lint)"
 code="${result%%$'\x1e'*}"
 out="${result#*$'\x1e'}"
@@ -325,12 +534,77 @@ else
 fi
 
 # =====================================================================
+# Check E assertions
+# =====================================================================
+
+# Positive: check-e-nostatus-agent.md (artifacts template, no status key) fails Check E.
+if echo "$out" | grep -qF "check-e-nostatus-agent.md: no conformant terminal status found"; then
+  pass "positive: check-e-nostatus-agent.md fails Check E (no status key at all)"
+else
+  fail "positive: expected Check E failure for check-e-nostatus-agent.md, not found in output"
+fi
+
+# Positive: check-e-completed-agent.md (literal "status": "completed") fails Check E by name.
+if echo "$out" | grep -qF "check-e-completed-agent.md: carries a literal \"status\": \"completed\""; then
+  pass "positive: check-e-completed-agent.md fails Check E by name (forbidden completed value)"
+else
+  fail "positive: expected Check E failure naming the forbidden completed value, not found in output"
+fi
+
+# Positive: check-e-inprogress-only-agent.md (only in_progress) fails Check E's presence detector.
+if echo "$out" | grep -qF "check-e-inprogress-only-agent.md: no conformant terminal status found"; then
+  pass "positive: check-e-inprogress-only-agent.md fails Check E (in_progress is not a terminal status)"
+else
+  fail "positive: expected Check E failure for check-e-inprogress-only-agent.md, not found in output"
+fi
+
+# Positive: check-e-pipeplaceholder-agent.md (pipe-alternatives value) fails Check E's presence
+# detector -- an exact-match lookup never matches a pipe-joined string.
+if echo "$out" | grep -qF "check-e-pipeplaceholder-agent.md: no conformant terminal status found"; then
+  pass "positive: check-e-pipeplaceholder-agent.md fails Check E (pipe-alternatives placeholder is not a literal member)"
+else
+  fail "positive: expected Check E failure for check-e-pipeplaceholder-agent.md, not found in output"
+fi
+
+# Negative: check-e-falsepositive-guard-agent.md (conformant status + MUST-NOT prose containing
+# "completed") produces no FAIL line against it -- proves Detector B matches only the quoted
+# "status": "completed" pair, never the bare word in prose.
+if echo "$out" | grep -F "check-e-falsepositive-guard-agent.md" | grep -q "FAIL"; then
+  fail "negative: check-e-falsepositive-guard-agent.md unexpectedly failed a check (Detector B false-positived on MUST-NOT prose)"
+else
+  pass "negative: check-e-falsepositive-guard-agent.md produces no FAIL against it (Detector B does not false-positive on prose)"
+fi
+
+# Explicit positive: check-e-falsepositive-guard-agent.md passes Check E by name (not just "no
+# FAIL" -- a genuine pass line naming it).
+if echo "$out" | grep -qF "check-e-falsepositive-guard-agent.md: carries a conformant terminal status"; then
+  pass "positive: check-e-falsepositive-guard-agent.md explicitly passes Check E"
+else
+  fail "positive: expected an explicit Check E PASS line for check-e-falsepositive-guard-agent.md, not found in output"
+fi
+
+# Negative: meta-builder-agent.md fixture (Check E exclusion-list entry, no conformant status at
+# all) produces a named [INFO] skipped line, never a FAIL.
+if echo "$out" | grep -qF "Check E: agent-system/extensions/core/agents/meta-builder-agent.md is a recorded exclusion"; then
+  pass "negative: meta-builder-agent.md fixture produces a named Check E exclusion INFO line"
+else
+  fail "negative: expected a named Check E exclusion INFO line for meta-builder-agent.md, not found in output"
+fi
+if echo "$out" | grep -F "meta-builder-agent.md" | grep -q "FAIL"; then
+  fail "negative: meta-builder-agent.md fixture (Check E exclusion) unexpectedly failed a check"
+else
+  pass "negative: meta-builder-agent.md fixture (Check E exclusion) produces no FAIL against it"
+fi
+
+# =====================================================================
 # Fragment-missing fixture: Check C must fail loudly, by name, when the fragment file itself
 # is absent -- never a silent skip.
 # =====================================================================
 FRAGDIR="$(mktemp -d)"
 mkdir -p "$FRAGDIR/agent-system/extensions/core/agents"
 mkdir -p "$FRAGDIR/agent-system/extensions/core/docs/reference/standards"
+mkdir -p "$FRAGDIR/agent-system/extensions/core/scripts/lib"
+cp "$STATUS_LIB_SRC" "$FRAGDIR/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
 cat > "$FRAGDIR/agent-system/extensions/core/agents/placeholder-agent.md" <<EOF
 ---
 name: placeholder-agent

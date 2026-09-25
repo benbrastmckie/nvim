@@ -21,6 +21,14 @@
 #      read-from-fragment mechanism. A small, explicitly recorded exclusion list (agents that do
 #      NOT write `.return-meta.json` at all -- see that fragment's classification rule) is
 #      skipped, not failed.
+#   E. Terminal-metadata status presence: every non-excluded dispatchable agent must carry a
+#      fenced `"status": "<value>"` line for a value drawn from
+#      scripts/lib/return-meta-status-vocabulary.sh's 8-value canonical enum, other than
+#      `in_progress` (never a terminal outcome). Independently, EVERY dispatchable agent --
+#      excluded or not -- fails if it carries a literal `"status": "completed"` key/value pair
+#      anywhere in its body (the value the vocabulary explicitly forbids). A recorded exclusion
+#      list (agents using a legitimate extension-local, non-canonical terminal vocabulary) is
+#      skipped by the presence detector only, never by the completed-value prohibition.
 #
 # Dispatchable-agent detector (shared, reusable): a file under an `agents/`-named path counts as
 # a dispatchable agent only if its first line is `---` and its frontmatter block contains a
@@ -72,6 +80,7 @@ while [[ $# -gt 0 ]]; do
       echo "  A. Frontmatter key validity (allowed-tools:/mcp-servers: forbidden; unknown keys warned)"
       echo "  B. model: presence and validity (opus|sonnet|haiku)"
       echo "  C. No-task-references MUST-NOT bullet presence for the curated in-scope agent set"
+      echo "  E. Terminal-metadata status presence (conformant inline status) + completed-value prohibition"
       echo "  F. Return-meta artifacts template presence (object-shaped, keys read from the fragment)"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
@@ -103,6 +112,31 @@ if [[ ! -d "$AGENTS_ROOT" ]]; then
   echo "ERROR: agents root not found at $AGENTS_ROOT" >&2
   exit 2
 fi
+
+# ── Shared status vocabulary library (deploy-tree-first / source-store-fallback) ────────────────
+# Check E's accepted values are never hardcoded here, mirroring Check C/F's read-from-source
+# discipline. Never scripts/lib/status-vocabulary.sh -- the unrelated 12-value TASK-LEVEL enum
+# that legitimately contains "completed"; see return-meta-status-vocabulary.sh's own header.
+STATUS_LIB_CANDIDATES=(
+  "$REPO_ROOT/.claude/scripts/lib/return-meta-status-vocabulary.sh"
+  "$REPO_ROOT/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
+)
+STATUS_LIB_FILE=""
+for _candidate in "${STATUS_LIB_CANDIDATES[@]}"; do
+  if [[ -f "$_candidate" ]]; then
+    STATUS_LIB_FILE="$_candidate"
+    break
+  fi
+done
+if [[ -z "$STATUS_LIB_FILE" ]]; then
+  echo "ERROR: shared library return-meta-status-vocabulary.sh not found at any of:" >&2
+  for _candidate in "${STATUS_LIB_CANDIDATES[@]}"; do
+    echo "  $_candidate" >&2
+  done
+  exit 2
+fi
+# shellcheck disable=SC1090
+. "$STATUS_LIB_FILE"
 
 PASSED=0
 FAILED=0
@@ -405,15 +439,118 @@ check_f_artifacts_template() {
   fi
 }
 
+# ── Check E: terminal-metadata status presence + completed-value prohibition ────────────────────
+# Two independent detectors, both reusing enumerate_dispatchable_agents/is_dispatchable_agent
+# above rather than re-deriving the frontmatter-gated detector:
+#   Detector A (presence): FAILs a non-excluded dispatchable agent whose file carries no fenced
+#     `"status": "<member>"` line for any RETURN_META_STATUS_VALUES member OTHER THAN
+#     `in_progress` -- an in_progress-only file (the pre-fix `grant-agent`-style shape) does not
+#     satisfy the terminal-status requirement, since in_progress is never a terminal outcome.
+#   Detector B (prohibition): FAILs ANY dispatchable agent -- excluded or not -- that carries a
+#     literal `"status": "completed"` key/value PAIR. Matches the quoted key/value pair only,
+#     never the bare word `completed`, which appears legitimately inside the MUST-NOT bullet's
+#     own prose (`Use status value "completed" (triggers Claude stop behavior)`) in ~30 agent
+#     bodies -- that prose never matches this pattern because `"status"` is not immediately
+#     followed by a colon and `"completed"` there. This mirrors Check F's window-and-key-set
+#     precedent over a loose grep.
+# The pipe-alternatives placeholder shape (`"implemented | partial | blocked"`) is rejected by
+# construction: Detector A requires an EXACT match against a single enum member, so a
+# pipe-joined string satisfies no single member and fails Detector A. This is the decided
+# treatment (fail, then rewrite to a concrete value at the call site) -- not an accident of the
+# regex.
+#
+# Recorded exclusions: dispatchable agents whose file carries NO canonical-vocabulary status
+# anywhere (Detector A would otherwise FAIL them), confirmed by reading each file's full
+# terminal-metadata behavior -- never inferred from `routing_agents` membership, which does NOT
+# predict canonical-vocabulary use.
+#
+# SCOPE, RE-VERIFIED LIVE against the real source store while authoring this check (the plan's
+# own "13 entries" scope hypothesis was WRONG -- do not trust it uncritically):
+# `filetypes/agents/{filetypes-router,filetypes-spreadsheet,presentation,scrape,docx-edit,sheet,
+# document}-agent.md` and `founder/agents/legal-analysis-agent.md` all use a non-canonical
+# vocabulary for their SUCCESS branch (converted/edited/scraped/consulted/etc.), but every one of
+# them ALSO carries a genuine `"status": "failed"` and/or `"status": "partial"` branch for their
+# error path -- both of which ARE canonical members. Detector A does not distinguish a success
+# branch from a failure branch; it only requires ANY non-`in_progress` canonical member present
+# anywhere. These 8 files therefore already PASS Detector A on their own merit and are
+# deliberately NOT listed below -- adding them would be excluding a file that is not actually
+# unfixed, contradicting the "a file that is merely unfixed gets fixed, never excluded" rule.
+# The same reasoning keeps `founder/agents/project-agent.md` and `present/agents/grant-agent.md`
+# off this list: both carry a passing `"researched"` example alongside their agent-local values.
+#
+# Only 5 files genuinely carry NO canonical-vocabulary status anywhere in the file (confirmed by
+# a full `"status":` occurrence grep against each, not by routing-registration inference):
+EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS=(
+  "agent-system/extensions/core/agents/meta-builder-agent.md"
+  "agent-system/extensions/present/agents/pptx-assembly-agent.md"
+  "agent-system/extensions/present/agents/slidev-assembly-agent.md"
+  "agent-system/extensions/core/agents/code-reviewer-agent.md"
+  "agent-system/extensions/literature/agents/literature-agent.md"
+)
+
+is_excluded_from_terminal_status() {
+  local rel="$1"
+  local ex
+  for ex in "${EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS[@]}"; do
+    [[ "$rel" == "$ex" ]] && return 0
+  done
+  return 1
+}
+
+check_e_terminal_metadata_presence() {
+  echo ""
+  echo "--- Check E: terminal-metadata status presence ---"
+
+  local any_agent=false
+  while IFS= read -r f; do
+    [[ -z "$f" ]] && continue
+    any_agent=true
+    local rel
+    rel="$(rel_path "$f")"
+
+    # Detector B runs unconditionally, before the exclusion check -- "completed" is forbidden
+    # everywhere, regardless of an agent's vocabulary.
+    if grep -qE '"status"[[:space:]]*:[[:space:]]*"completed"' "$f"; then
+      log_fail "$rel: carries a literal \"status\": \"completed\" key/value pair -- forbidden (triggers Claude stop behavior); use \"implemented\" instead"
+      continue
+    fi
+
+    if is_excluded_from_terminal_status "$rel"; then
+      log_info "Check E: $rel is a recorded exclusion (legitimate extension-local terminal vocabulary) -- skipped"
+      continue
+    fi
+
+    log_info "Checking $rel"
+    local found=false member
+    for member in "${RETURN_META_STATUS_VALUES[@]}"; do
+      [[ "$member" == "in_progress" ]] && continue
+      if grep -qE "\"status\"[[:space:]]*:[[:space:]]*\"${member}\"" "$f"; then
+        found=true
+        break
+      fi
+    done
+    if [[ "$found" == "true" ]]; then
+      log_pass "$rel: carries a conformant terminal status"
+    else
+      log_fail "$rel: no conformant terminal status found (expected one of: ${RETURN_META_STATUS_VALUES[*]}, excluding in_progress) -- either add one or add a reasoned exclusion entry to EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS"
+    fi
+  done < <(enumerate_dispatchable_agents)
+
+  if [[ "$any_agent" == false ]]; then
+    log_fail "Check E: no dispatchable agents found under $AGENTS_ROOT"
+  else
+    log_pass "Check E: scanned all dispatchable agents for terminal-metadata status presence"
+  fi
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
-# Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) and
-# Check E (terminal-metadata section presence, keyed off return-metadata-file.md's normative
-# status vocabulary) are deferred follow-up work -- see this task's plan, "Deferred Follow-Up
-# Tasks" section. Both are expected to call enumerate_dispatchable_agents/is_dispatchable_agent
-# above rather than re-deriving the frontmatter-gated detector.
+# Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
+# still deferred follow-up work -- see this task's plan, "Deferred Follow-Up Tasks" section.
+# Check E (above) is implemented; it is no longer part of this deferral. Check D is expected to
+# call enumerate_dispatchable_agents/is_dispatchable_agent above rather than re-deriving the
+# frontmatter-gated detector.
 #
 # check_d_required_body_sections() { ... }
-# check_e_terminal_metadata_presence() { ... }
 
 # ── Main ─────────────────────────────────────────────────────────────────────────────────────
 main() {
@@ -427,6 +564,7 @@ main() {
   check_b_model_presence
   check_c_no_task_references_bullet
   check_f_artifacts_template
+  check_e_terminal_metadata_presence
 
   echo ""
   echo "========================================"

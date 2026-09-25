@@ -1,0 +1,45 @@
+{
+  "phase": 8,
+  "phase_name": "Add Check E to lint-agent-contracts.sh, with fixtures",
+  "started_at": "2026-09-25T02:15:00Z",
+  "last_updated": "2026-09-25T03:00:00Z",
+  "commit_mode": "atomic-batch",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Source the shared vocabulary library; implement check_e_terminal_metadata_presence with Detector A (presence) and Detector B (completed prohibition); wire into main() and --help",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Re-verify the 13-entry exclusion-list scope hypothesis live against the real source store; determine the correct final exclusion set",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Repair compliant-agent.md/check-f-conforming-agent.md fixtures and shared ARTIFACTS_TEMPLATE_BLOCK; add 6 new Check E fixtures and assertions; add status-lib copy to both scratch trees",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Seed EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS with the plan's hypothesized 13-entry list (7 filetypes/* agents, present/{pptx,slidev}-assembly-agent, founder/legal-analysis-agent, plus the 2 Check F exclusions), using short (unprefixed) relative paths matching Check C's IN_SCOPE_RELATIVE_PATHS convention",
+      "result": "failed",
+      "reason": "Two independent bugs: (1) rel_path() output carries the agent-system/extensions/ prefix (matching Check F's convention, not Check C's), so unprefixed paths never matched and 5 genuinely-excludable files FAILed instead of being skipped; (2) live verification showed the 7 filetypes/* agents and legal-analysis-agent all carry a genuine failed/partial canonical status for their error path, so they pass Detector A on their own merit and do not belong on the exclusion list at all -- the plan's 13-entry hypothesis was wrong on both counts. Final list: 5 entries, full agent-system/extensions/-prefixed paths."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.2",
+      "description": "Seed the exclusion list with the plan's hypothesized 13 entries",
+      "type": "altered",
+      "reason": "Live verification against the real source store (explicitly required by the plan's own Scope Hypothesis note) showed only 5 of the 13 hypothesized entries are genuinely unfixable; the other 8 already pass Check E's presence detector via a legitimate failed/partial branch and would have been wrongly excluded",
+      "annotation": "*(deviation: altered — exclusion list is 5 entries, not 13, per live re-verification)*"
+    }
+  ]
+}

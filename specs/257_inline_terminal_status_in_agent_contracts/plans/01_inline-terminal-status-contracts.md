@@ -454,17 +454,17 @@ moved or changed shape, follow the table as found rather than the line numbers q
 
 ---
 
-### Phase 8: Add Check E to lint-agent-contracts.sh, with fixtures [NOT STARTED]
+### Phase 8: Add Check E to lint-agent-contracts.sh, with fixtures [COMPLETED]
 
 **Goal**: The regression guard. Check E fails any non-excluded dispatchable agent whose
 terminal-metadata example carries no vocabulary-member status, and fails any
 `"status": "completed"` key/value pair anywhere in an agent body.
 
 **Tasks**:
-- [ ] Source `lib/return-meta-status-vocabulary.sh` (Phase 1) in `lint-agent-contracts.sh` — the
+- [x] Source `lib/return-meta-status-vocabulary.sh` (Phase 1) in `lint-agent-contracts.sh` *(completed)* — the
       accepted values are never hardcoded in the lint, mirroring Check C/F's read-from-source
       discipline.
-- [ ] Add `EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS`, a second bash array sibling to
+- [x] Add `EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS`, a second bash array sibling to *(completed)*
       `EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS`, with the same per-entry "confirmed by reading
       each file's full terminal-metadata behavior" comment discipline. Seed it with the
       research-confirmed set: `core/agents/meta-builder-agent.md` (own vocabulary; not a
@@ -476,27 +476,27 @@ terminal-metadata example carries no vocabulary-member status, and fails any
       write no `.return-meta.json` at all. Record in the comment **why** the routing-derived
       alternative was rejected: `routing_agents` membership does not predict canonical-vocabulary
       use.
-- [ ] Do **not** exclude `founder/agents/project-agent.md` or `present/agents/grant-agent.md`:
+- [x] Do **not** exclude `founder/agents/project-agent.md` or `present/agents/grant-agent.md`: *(completed)*
       Check E tests for *presence* of a conformant value plus *absence* of a literal
       `"status": "completed"` pair, not that every status literal in the file is canonical. Both
       already carry (or, after Phase 7, will carry) a passing `"researched"` example.
-- [ ] Implement `check_e_terminal_metadata_presence()` at the existing named insertion point
+- [x] Implement `check_e_terminal_metadata_presence()` at the existing named insertion point *(completed)*
       (`:409-415`), reusing `enumerate_dispatchable_agents`/`is_dispatchable_agent` rather than
       re-deriving the detector — exactly as that comment instructs. Leave the Check D deferral
       comment in place and intact.
-- [ ] Detector A (presence): pass a file that contains at least one fenced-block line matching
+- [x] Detector A (presence): pass a file that contains at least one fenced-block line matching *(completed)*
       `"status"\s*:\s*"<member>"` for some member of `RETURN_META_STATUS_VALUES` **other than**
       `in_progress` — an `in_progress`-only file (the `grant-agent`-before-fix shape) must not
       satisfy the terminal-status requirement.
-- [ ] Detector B (prohibition): fail on `"status"\s*:\s*"completed"` (tolerating absent/multiple
+- [x] Detector B (prohibition): fail on `"status"\s*:\s*"completed"` *(completed)* (tolerating absent/multiple
       spaces). Match the quoted key/value **pair only**, never the bare word `completed` — the
       MUST-NOT bullets in ~30 agent bodies contain that word legitimately.
-- [ ] Reject the pipe-alternatives shape by construction: `"implemented | partial | blocked"` is
+- [x] Reject the pipe-alternatives shape by construction: *(completed)* `"implemented | partial | blocked"` is
       not a literal member, so Detector A's exact-match fails it. Add a comment saying this is the
       decided treatment (fail, rewrite to concrete), not an accident.
-- [ ] Wire `check_e_terminal_metadata_presence` into `main()` after `check_f_artifacts_template`,
+- [x] Wire `check_e_terminal_metadata_presence` into `main()` after `check_f_artifacts_template`, *(completed)*
       and add the `E.` line to the `--help` check list.
-- [ ] Update `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh`:
+- [x] Update `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh`: *(completed)*
       - **Required fixture repair** — add a conforming inline status to the `compliant-agent.md`
         and `check-f-conforming-agent.md` fixtures, or their existing "produces no FAIL line
         against it" assertions (`:289`, `:315`) break the moment Check E lands.
@@ -523,6 +523,11 @@ Check F exclusions). This is a hypothesis, not a fact: confirm it at implementat
 running the new check over the whole source store **before** finalizing the list, and add an entry
 only for a file whose full terminal-metadata behavior was read and found to use a legitimate
 extension-local vocabulary. A file that is merely *unfixed* gets fixed, never excluded.
+*(deviation: altered — live re-verification found only 5 entries genuinely need exclusion; the 7
+`filetypes/*` agents and `founder/agents/legal-analysis-agent.md` all already carry a legitimate
+`"failed"`/`"partial"` canonical status for their error path and pass Detector A on their own
+merit, so they were correctly left off the list rather than force-excluded to match the
+hypothesis)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` - Check E, exclusion list,
