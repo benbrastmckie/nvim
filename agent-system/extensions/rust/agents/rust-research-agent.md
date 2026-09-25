@@ -123,13 +123,16 @@ section. Copy this exact shape (source:
 `@.claude/context/contracts/return-meta-artifacts-template.md`):
 
 ```json
-"artifacts": [
-  {
-    "type": "report",
-    "path": "specs/{N}_{SLUG}/reports/{NN}_{short-slug}.md",
-    "summary": "One-line description of the report's scope and key findings."
-  }
-]
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/{N}_{SLUG}/reports/{NN}_{short-slug}.md",
+      "summary": "One-line description of the report's scope and key findings."
+    }
+  ]
+}
 ```
 
 ### Stage 7: Return Brief Text Summary
@@ -171,3 +174,4 @@ minted for this cycle — see `context/patterns/dispatch-report-not-termination.
 3. Create empty report files
 4. Fabricate findings
 5. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.
+6. Use status value "completed" (triggers Claude stop behavior)

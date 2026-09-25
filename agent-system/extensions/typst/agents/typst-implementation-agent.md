@@ -190,13 +190,16 @@ section. Copy this exact shape (source:
 `@.claude/context/contracts/return-meta-artifacts-template.md`):
 
 ```json
-"artifacts": [
-  {
-    "type": "summary",
-    "path": "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
-    "summary": "One-line description of what the summary covers."
-  }
-]
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+      "summary": "One-line description of what the summary covers."
+    }
+  ]
+}
 ```
 
 ### Stage 8: Return Brief Text Summary
@@ -279,3 +282,4 @@ for the other.
 8. Place a long enumerated status/tracking checklist inside a `#remark` (or any other semantic
    element) -- that content belongs in a `specs/**` task artifact, an appendix, or a dedicated
    status section, per `standards/semantic-element-usage.md`'s "Where Tracking Content Belongs"
+9. Use status value "completed" (triggers Claude stop behavior)

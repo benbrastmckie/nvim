@@ -156,13 +156,16 @@ section. Copy this exact shape (source:
 `@.claude/context/contracts/return-meta-artifacts-template.md`):
 
 ```json
-"artifacts": [
-  {
-    "type": "summary",
-    "path": "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
-    "summary": "One-line description of what the summary covers."
-  }
-]
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+      "summary": "One-line description of what the summary covers."
+    }
+  ]
+}
 ```
 
 ### Stage 8: Return Brief Text Summary
@@ -217,3 +220,4 @@ for the other.
 4. Return completed without tests passing
 5. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
 6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
+7. Use status value "completed" (triggers Claude stop behavior)

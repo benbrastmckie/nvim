@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Category B content fix - 10 fully-bare extension agents",
+  "started_at": "2026-09-25T00:50:00Z",
+  "last_updated": "2026-09-25T01:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Wrap bare artifacts fragment in status-carrying object and add MUST-NOT bullet for all 10 Category B files (latex/python/rust/typst/z3 research+implementation agents)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/latex/agents/latex-research-agent.md",
+        "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+        "agent-system/extensions/python/agents/python-research-agent.md",
+        "agent-system/extensions/python/agents/python-implementation-agent.md",
+        "agent-system/extensions/rust/agents/rust-research-agent.md",
+        "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+        "agent-system/extensions/typst/agents/typst-research-agent.md",
+        "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+        "agent-system/extensions/z3/agents/z3-research-agent.md",
+        "agent-system/extensions/z3/agents/z3-implementation-agent.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Regex-driven bulk script to append MUST-NOT bullet as next numbered item",
+      "result": "failed",
+      "reason": "typst-implementation-agent.md's list had a multi-line item 7 (continuation lines without a number prefix); the naive per-line regex inserted the new item between the continuation lines, requiring a manual fix"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

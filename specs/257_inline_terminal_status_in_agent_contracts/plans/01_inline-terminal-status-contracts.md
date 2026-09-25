@@ -262,23 +262,23 @@ a fourth private copy — strictly semantics-preserving.
 
 ---
 
-### Phase 4: Category B content fix — 10 fully-bare extension agents [NOT STARTED]
+### Phase 4: Category B content fix — 10 fully-bare extension agents [COMPLETED]
 
 **Goal**: The files structurally closest to the observed incident (zero `"status"` occurrences
 anywhere, and no MUST-NOT bullet) gain both the inline status and the warning. `typst-research-agent.md`
 — the file that produced the real incident — is in this set.
 
 **Tasks**:
-- [ ] For each file below: read its terminal-metadata section, then wrap the existing bare
+- [x] For each file below: read its terminal-metadata section, then wrap the existing bare *(completed)*
       `"artifacts": [...]` fenced fragment in a full JSON object whose **first** key is the
       concrete status for that agent's phase, matching `lean-research-agent.md:321-337`'s
       existing structure (status, artifacts, metadata). Do not invent a new template shape.
-- [ ] Add the MUST-NOT bullet to each file's "MUST NOT" list, reusing
+- [x] Add the MUST-NOT bullet to each file's "MUST NOT" list, reusing *(completed)*
       `general-research-agent.md:433`'s exact wording: `Use status value "completed" (triggers
       Claude stop behavior)`.
-- [ ] Research agents take `"status": "researched"`; implementation agents take
+- [x] Research agents take `"status": "researched"`; implementation agents take *(completed)*
       `"status": "implemented"`.
-- [ ] Files: `latex/agents/latex-research-agent.md`, `latex/agents/latex-implementation-agent.md`,
+- [x] Files: `latex/agents/latex-research-agent.md`, `latex/agents/latex-implementation-agent.md`, *(completed)*
       `python/agents/python-research-agent.md`, `python/agents/python-implementation-agent.md`,
       `rust/agents/rust-research-agent.md`, `rust/agents/rust-implementation-agent.md`,
       `typst/agents/typst-research-agent.md`, `typst/agents/typst-implementation-agent.md`,
