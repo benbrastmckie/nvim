@@ -1043,12 +1043,12 @@
     {
       "project_number": 258,
       "project_name": "fix_postflight_recovery_decline_attribution",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-25T20:58:23Z",
+      "last_updated": "2026-09-25T21:19:08Z",
       "dependencies": [
         257
       ],

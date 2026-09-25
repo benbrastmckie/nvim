@@ -11,8 +11,8 @@ next_project_number: 260
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,185,199,207,217,223,241,244,255,258 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,184,224,250,251,256 | 22,44,127,129,162,163,199,244,258 | core-agent-system, neovim, opencode, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 45,139,165,224,250,251,256 | 22,44,127,129,162,163,199,244 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -34,14 +34,13 @@ next_project_number: 260
   └─ 224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
 166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
   └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
+184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-258 [IMPLEMENTING] — Stop recording a declined return-meta recovery as...
-  └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
 
 ### Extensions
 
@@ -285,7 +284,7 @@ warning still fires in arm (2). No test may be weakened or deleted to make the c
 ---
 
 ### 258. Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 257
