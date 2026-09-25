@@ -352,32 +352,40 @@ silently widen the allowlist — wrap it the same way and say so in the summary.
 
 ---
 
-### Phase 5: Documentation Corrections [NOT STARTED]
+### Phase 5: Documentation Corrections [COMPLETED]
 
 **Goal**: Make the structural precondition part of what "sanctioned automated call site" means, and
 correct the guardrails prose that currently reads as though this hazard were already covered.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`, update BOTH
+- [x] In `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`, update BOTH
       `Automated Exception` subsections (the Inter-Cycle Redeploy Checkpoint one and the Postflight
       Completion-Deploy Gate one) to state that a sanctioned call site must wrap its own remaining
       logic in a function extending to true EOF, pointing at `deploy-headless.sh`'s
       `SELF-OVERWRITE HAZARD` header for the mechanism and at the Phase 4 lint for enforcement.
-- [ ] In `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`, amend
+      *(completed: added a "Structural precondition" paragraph to each subsection; the second one
+      also notes `commands/implement.md`'s trigger is a markdown prompt, not a bash script, so the
+      byte-offset hazard does not apply to it)*
+- [x] In `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`, amend
       hazard 3's `(iii) The replacement exposure` discussion to distinguish two cases explicitly:
       a *later, fresh* subprocess reading the new bytes (true, and safe) versus the
       *currently executing* invocation that triggered the redeploy having its own byte stream
       invalidated (the real incident; now closed at both call sites by the function-wrap).
-- [ ] In the same file's `### The Inter-Cycle Redeploy Checkpoint` subsection, record the decision
+      *(completed: added as new bullet (iii-a))*
+- [x] In the same file's `### The Inter-Cycle Redeploy Checkpoint` subsection, record the decision
       the sibling redundant-verify-deploy-passes task depends on: the checkpoint continues to invoke
       the DEPLOYED copy (`$SCRIPT_DIR/deploy-headless.sh`), unchanged, so `deploy-headless.sh`'s own
       internal `--skip-slow` verify depth is untouched by this fix and the sibling task can build on
-      today's fast/full split without re-deriving it.
-- [ ] Confirm the three-branch (a)/(b)/(c) contract prose is unchanged in substance — the fix moves
-      code syntactically and must not be described as altering the contract.
-- [ ] Cite durable anchors only (filenames, section headings, the `SELF-OVERWRITE HAZARD` header
+      today's fast/full split without re-deriving it. *(completed: added as a new
+      "Self-overwrite mitigation, and the decision the sibling ... task depends on" paragraph)*
+- [x] Confirm the three-branch (a)/(b)/(c) contract prose is unchanged in substance — the fix moves
+      code syntactically and must not be described as altering the contract. *(completed: verified
+      by re-reading the Failure contract section immediately following the new paragraph -- it is
+      untouched)*
+- [x] Cite durable anchors only (filenames, section headings, the `SELF-OVERWRITE HAZARD` header
       name). No task numbers in any file outside `specs/**`
-      (`.claude/rules/no-task-references-in-deliverables.md`).
+      (`.claude/rules/no-task-references-in-deliverables.md`). *(completed: grep for
+      'task 260'/'Task 260'/'task #260'/bare '260' across both edited docs returned zero hits)*
 
 **Timing**: 1 hour
 

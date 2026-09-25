@@ -108,6 +108,22 @@ the remainder of the invocation rather than proceeding past an unverified deploy
 future reader must not read this subsection as general precedent for scripted deploys elsewhere in
 the system -- it licenses exactly the one call site named above, nothing broader.
 
+**Structural precondition (a SECOND requirement, alongside the sanctioning above, not a
+replacement for it)**: a sanctioned call site must ALSO wrap its own remaining logic -- everything
+from the deploy call through the file's true EOF -- inside one top-level function, defined in full
+before it runs and invoked as the file's last physical statement. The deploy call regenerates the
+DEPLOYED copy of the very script invoking it; bash reads a script incrementally by byte offset, so
+a flat, unwrapped sequence of top-level statements after the call would resume reading a rewritten
+file at a stale offset (observed live as a spurious mid-file "unbound variable" crash, losing an
+entire batch cycle with an empty plan and zero dispatch rows). See `deploy-headless.sh`'s own
+`SELF-OVERWRITE HAZARD` header comment for the origin of this pattern -- it already applies the
+wrap to itself, for the identical reason (it overwrites its own deployed copy while running).
+`orchestrate-cycle-plan.sh` (this checkpoint's host script) now applies the same wrap; enforcement
+is structural, via `scripts/tests/test-lint-deploy-caller-wrap.sh`, which re-derives every genuine
+`deploy-headless.sh` invocation site in the source store and fails loudly, by file and line, if one
+is found unwrapped -- so a THIRD sanctioned site added here in the future is caught immediately if
+it omits the wrap, rather than silently reopening this hazard class.
+
 The full trigger, failure contract, sequencing, and idempotence-guard contract is recorded once,
 authoritatively, in `context/patterns/batch-orchestration-guardrails.md`'s
 `### The Inter-Cycle Redeploy Checkpoint` subsection. It is cross-referenced here, not restated.
@@ -125,6 +141,17 @@ since it runs once per task after that task's own dispatch has already returned)
 `commands/implement.md` Step 4's batch-refusal trigger (the multi-task `/implement` completion
 path -- already serial, since it runs once, after all of Step 3's parallel dispatches have
 returned). No other automated caller is sanctioned by this subsection.
+
+**Structural precondition, for the bash-script call site only**: `scripts/command-gate-out.sh`
+must wrap its own remaining logic (everything from the `rc == 6` branch's deploy call through true
+EOF) inside one top-level function, invoked as the file's last physical statement -- the same
+requirement, for the same reason, recorded in the Inter-Cycle Self-Modification Checkpoint
+exception above; see that subsection and `deploy-headless.sh`'s own `SELF-OVERWRITE HAZARD` header
+for the mechanism. `command-gate-out.sh` now applies this wrap. `commands/implement.md` Step 4's
+trigger is a markdown command prompt, not a bash script bash reads incrementally by byte offset,
+so this specific byte-stream hazard does not apply to it in the same way; it is unaffected by this
+precondition. Enforcement for the bash-script class is the same
+`scripts/tests/test-lint-deploy-caller-wrap.sh` named above.
 
 **Update -- the D6 residual named below is now closed, WITHOUT adding a third trigger site.**
 `skill-orchestrate`'s Stage MT-3 step 7 (the Inter-Cycle Redeploy Checkpoint, covered exclusively

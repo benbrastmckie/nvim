@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Documentation Corrections",
+  "started_at": "2026-09-25T02:50:00Z",
+  "last_updated": "2026-09-25T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add wrap precondition to both Automated Exception subsections in regeneration-is-manual-only.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 2, "description": "Amend hazard 3 (iii) in batch-orchestration-guardrails.md to distinguish the two replacement-exposure sub-cases", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Record sibling-task decision (deployed copy unchanged, verify depth untouched) in Inter-Cycle Redeploy Checkpoint subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 4, "description": "Confirm three-branch contract prose unchanged in substance", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Cite durable anchors only, no task numbers outside specs/**", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "grep for 'task 260'/'Task 260'/'task #260'/bare '260' across both edited docs and all Phase 1-4 source files returned zero hits. check-task-references.sh requires running from a deployed tree (refuses from the source store) and would read the stale deployed copy rather than these source-store edits anyway, since this task must not manually deploy; verified via direct grep instead, consistent with the no-manual-deploy constraint. git diff --stat: both docs are purely additive (+64 lines, 0 deletions) -- no executable or front-matter surface touched."
+}

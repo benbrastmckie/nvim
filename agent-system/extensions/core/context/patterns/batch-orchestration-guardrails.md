@@ -375,6 +375,23 @@ this gate:
      mid-session rather than only cross-session** — not an independent fourth hazard. See
      `### The Inter-Cycle Redeploy Checkpoint` below for the mechanism that retires (ii) and
      contains (iii).
+   - (iii-a) **Two distinct sub-cases of the replacement exposure, now that both are closed**:
+     "swaps executing machinery mid-flight" in (iii) above bundles together two DIFFERENT
+     situations that must not be conflated. The first: a LATER, freshly-started `bash X.sh`
+     subprocess (a future cycle, or a sibling call site) reads the redeployed bytes from disk —
+     this is the intended, correct outcome of a redeploy landing; nothing hazardous about it. The
+     second: the CURRENTLY EXECUTING invocation that itself triggered the redeploy (the checkpoint
+     script calling `deploy-headless.sh`, which then overwrites that very script's own deployed
+     copy) has ITS OWN byte stream invalidated mid-read — this was the real incident (a live
+     `/orchestrate` run died with a spurious mid-file "unbound variable" crash, losing an entire
+     batch cycle), verified independently of timing via a synthetic self-rewriting test harness.
+     This second sub-case is now closed at both genuine call sites
+     (`scripts/orchestrate-cycle-plan.sh` and `scripts/command-gate-out.sh`) by wrapping each
+     script's own remaining logic, from the deploy call through true EOF, inside one top-level
+     function invoked as the file's last physical statement — see `deploy-headless.sh`'s own
+     `SELF-OVERWRITE HAZARD` header for the origin of this pattern, and
+     `scripts/tests/test-lint-deploy-caller-wrap.sh` for the structural enforcement that keeps it
+     closed for any future caller. The first sub-case was never a hazard and needed no fix.
 
 A later maintainer must not read the disproven live-corruption hypothesis as license to relax or
 remove this gate — hazard 1 remains fully live and hazard 3 remains partially live (its
@@ -565,6 +582,26 @@ reach a cycle boundary" is therefore already what happens, by construction, on e
 is no window in which the redeploy could run while a sibling remains mid-dispatch. **No follow-up
 task is owed.** This finding is recorded here specifically so a later pass does not re-propose
 Direction 3 without first re-deriving this cycle-synchronicity argument.
+
+**Self-overwrite mitigation, and the decision the sibling redundant-verify-deploy-passes task
+depends on**: the checkpoint's own `bash "$SCRIPT_DIR/deploy-headless.sh"` call regenerates the
+DEPLOYED `.claude/scripts/` tree, including the deployed copy of `orchestrate-cycle-plan.sh`
+itself -- the script currently executing the checkpoint. This is the SELF-OVERWRITE HAZARD (see
+`deploy-headless.sh`'s own header comment of that name, and `regeneration-is-manual-only.md`'s
+Inter-Cycle Self-Modification Checkpoint exception, which records the matching structural
+precondition): observed live as a spurious mid-file "unbound variable" crash that lost an entire
+batch cycle. The fix wraps `orchestrate-cycle-plan.sh`'s own remaining logic, from the checkpoint
+through true EOF, inside one top-level function invoked as the file's last physical statement --
+closing the hazard WITHOUT changing which copy of `deploy-headless.sh` this checkpoint invokes: it
+is, and remains, the DEPLOYED copy (`$SCRIPT_DIR/deploy-headless.sh`), never the source-store
+copy. Two consequences follow directly, recorded here so the sibling task can build on them rather
+than re-deriving them: (1) `deploy-headless.sh`'s own internal `--skip-slow` verify depth is
+completely untouched by this fix -- the checkpoint's separate, independent full-depth pre/post
+`verify-deploy.sh` snapshot pair (see the Failure contract below) is unaffected by anything in
+this mitigation; (2) today's fast/full verify-depth split (`deploy-headless.sh`'s own inline fast
+check vs. this checkpoint's independent full-depth comparison) is exactly as it was before this
+fix, so the sibling task's own redundant-verify-depth work starts from that same, unchanged
+baseline.
 
 **Failure contract**: the two gates are asymmetric and are evaluated in three branches.
 
