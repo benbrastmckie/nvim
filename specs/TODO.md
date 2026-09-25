@@ -1,17 +1,17 @@
 ---
-next_project_number: 255
+next_project_number: 256
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-09-24. Generated from state.json dependency graph.*
+*Updated 2026-09-25. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,224,250,251 | 22,44,127,129,162,163,199 | core-agent-system, neovim, file-scope-lifecycle |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
@@ -48,6 +48,7 @@ next_project_number: 255
 43 [NOT STARTED] — Decide and implement how email safety context actually...
 167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
+255 [NOT STARTED] — Reconcile typst extension scope ownership and fix...
 
 ### Literature
 
@@ -75,6 +76,99 @@ next_project_number: 255
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 255. Reconcile typst extension scope ownership and fix chapter-quality-check.sh Rule 1.3 bib resolution
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Reconcile the typst extension's declared scope with what it actually owns, and fix chapter-quality-check.sh silently skipping BLOCKING Rule 1.3
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**). This extension deploys to at least 5 repos (Logos/Verification, Logos/ModelChecker, BimodalLogic, SPSDemo, plus the source store), so every edit must land in the source store and reach deployed trees only by regeneration.
+
+WHY THESE TWO DEFECTS ARE ONE TASK. Both make the extension's chapter-quality machinery fail to engage, at two consecutive points in the same pipeline. Defect 1 stops the right agents from being dispatched at all: chapter-content work self-detects as `general`, so general-research-agent/general-implementation-agent run instead of the typst agents, and those agents never execute the chapter-quality gates. Defect 2 stops a BLOCKING rule from being evaluated even once the typst agents DO run. Fixing only one leaves the machinery half-connected: fix routing alone and the gate still under-enforces; fix the gate alone and most chapter work never reaches it. The two halves have disjoint file scopes and should be separate implementation phases, but they share a single acceptance question -- does chapter-quality enforcement actually fire end to end?
+
+=== PART 1: SCOPE NOTE AND keyword_overrides CONTRADICT THE EXTENSION'S OWN STANDARD ===
+
+EXTENSION.md lines 5-9 ("### Scope") currently state: "This extension covers formatting, compilation, styling, and structural concerns for existing document content. Content-creation work (proofs, theorems, chapters, textbook prose) routes to `lean4`, `formal`, or `general` as appropriate, not to `typst`."
+
+This is contradicted by what the extension actually ships.
+
+THE CONTRADICTION IS BROADER THAN chapter-quality.md ALONE -- verified by direct inspection of the source store, and the single most important finding to carry forward. Beyond context/project/typst/standards/chapter-quality.md (which is entirely about chapter CONTENT quality across four dimensions: SOURCE GROUNDING, ANTI-FLUFF DENSITY, PRESENTATION CLARITY, OPEN-QUESTION HONESTY), the extension also ships:
+  - context/project/typst/standards/textbook-standards.md
+  - context/project/typst/standards/type-theory-foundations.md
+  - context/project/typst/patterns/theorem-environments.md
+  - context/project/typst/templates/chapter-template.md
+So the phrase "Content-creation work (proofs, theorems, chapters, textbook prose) ... not to `typst`" contradicts roughly a third of the extension's own context corpus, naming four categories (proofs, theorems, chapters, textbook prose) of which at least three have dedicated context files INSIDE this extension. Do not scope the reconciliation to chapter-quality.md alone; audit the full context/project/typst/ tree and state a boundary that matches it.
+
+The contradiction is also enforced in code, not merely documented: scripts/chapter-quality-check.sh is executed as a gate by agents/typst-implementation-agent.md at Stage 4C and Stage 5 (MUST DO items 7-8), and agents/typst-research-agent.md loads chapter-quality.md as calibration context.
+
+OBSERVED CONSEQUENCE (live, not hypothetical): a task to review and condense typst manual chapters was detected as task_type `general` and had to be re-routed to `typst` by hand.
+
+manifest.json keyword_overrides.typst.keywords currently holds 8 phrases, every one formatting/compilation-shaped:
+  "typst formatting", "typst compile", "typst compilation", "typst package",
+  "typst template", "typst style", "typst layout", "fletcher diagram"
+Nothing matches "typst chapter", "typst manual", "chapter quality", or "chapter prose", which is why detect_task_type() falls through to `general`.
+
+REQUIRED:
+  1. Decide and state the REAL boundary between `typst` and `lean4`/`formal`/`general`. Chapter-quality and chapter-prose work IS in scope for this extension -- the question to answer is where proofs and theorems sit, given that theorem-environments.md and type-theory-foundations.md ship here. A defensible split is likely "typst owns presentation and quality of prose/chapters including their theorem PRESENTATION; lean4/formal own mathematical CONTENT and correctness" -- but argue it, do not assume it.
+  2. Rewrite EXTENSION.md's Scope section to match. NOTE THE DEPLOY PATH: EXTENSION.md is the claudemd merge source (manifest.json merge_targets.claudemd -> .claude/CLAUDE.md, section_id `extension_typst`), so the deployed CLAUDE.md section regenerates from it. Edit EXTENSION.md, never the deployed section.
+  3. Extend manifest.json keyword_overrides.typst.keywords so chapter/manual-quality work self-detects as `typst`.
+
+KEYWORD SAFETY CONSTRAINT: check every added keyword against scripts/lib/task-type-detect.sh's resolution ladder. Extension keyword_overrides are step 2; the FIRST whole-word match in alphabetical directory order wins and is FINAL. An over-broad keyword (e.g. a bare "chapter" or bare "manual") could hijack tasks meant for other extensions, since `typst` sorts early alphabetically. Prefer qualified multi-word phrases ("typst chapter", "chapter quality", "typst manual") over bare nouns, and verify no collision with other loaded extensions' keyword sets.
+
+=== PART 2: chapter-quality-check.sh SILENTLY DISABLES BLOCKING RULE 1.3 ===
+
+Rule 1.3 (citation keys resolve in the .bib) is BLOCKING, but is routinely never evaluated.
+
+Location: scripts/chapter-quality-check.sh -- resolve_bibliography() at lines 347-370, call site at lines 634-640, documented contract in the header at lines 99-101.
+
+Current logic: (a) grep `#bibliography("...")` in the CHECKED FILE; else (b) accept the single *.bib found by `find "$root" -type f -name '*.bib'`. Zero or multiple candidates => Rule 1.3 NOT EVALUATED.
+
+BUG 2a -- MULTI-FILE MANUALS CAN NEVER MATCH BRANCH (a). In any multi-file manual, chapters are `#include`d into a root document that owns the `#bibliography(...)` declaration. The chapter file itself never carries the declaration, so branch (a) can never match for a chapter file -- exactly the file type this checker exists to check. Needs resolution via the including/root document, or a nearest-ancestor search.
+
+BUG 2b -- BRANCH (b) COUNTS VENDORED .bib FILES. The find has no exclusion for vendored or build directories. Reproduced in Logos/Verification: typst/manual/bibliography.bib plus a vendored framed_channel/aeneas/.lake/packages/mathlib/docs/references.bib makes the candidate count 2, so the single-candidate test fails and the rule is skipped. ANY repo with a vendored dependency carrying a .bib hits this. Exclusions likely needed for at least .lake/, .git/, node_modules/, target/, build/.
+
+NARROWING FINDING -- resolve_bibliography() ALREADY HANDLES DECLARED PATHS. Lines 355-358 already contain a `filedir` fallback: when a `#bibliography("...")` declaration IS present but the path does not resolve against the repo root, it retries against the checked file's own directory. That branch is sound and needs no work. ONLY the undeclared and multi-candidate branches need fixing. Do not rewrite the declared-path branch.
+
+VERIFIED REPRODUCTION, from /home/benjamin/Projects/Logos/Verification:
+  bash .claude/scripts/chapter-quality-check.sh --verbose typst/manual/chapters/01-introduction.typ
+Emits:
+  [INFO] Rule 1.3 NOT EVALUATED: no resolvable .bib file (no #bibliography(...) declaration and zero or multiple *.bib candidates under /home/benjamin/Projects/Logos/Verification)
+  SCORE ...: MECHANICAL 4/6 | BLOCKING 0 | ADVISORY 4 | JUDGED 12 prompts pending
+  CHAPTER QUALITY CHECK PASSED
+...and exits 0.
+
+SEVERITY AND THE SURFACING QUESTION: a BLOCKING rule becomes unenforced while the script still prints "CHAPTER QUALITY CHECK PASSED". It is quiet rather than fully silent -- it does emit an [INFO] NOT EVALUATED line and drops the score to MECHANICAL 4/6 -- but the PASSED banner is misleading to anyone reading only the last line, which is the common case in agent gate output. Part of this task is to DECIDE whether an unevaluated BLOCKING rule warrants louder surfacing than [INFO] (e.g. a [WARN] tier, or qualifying the PASSED banner when any BLOCKING rule was skipped). Note this is a judgement call with a real tradeoff: the current [INFO]/never-fail posture is deliberate per the header contract, so any change to it must be argued and the header updated to match.
+
+=== TESTS ===
+
+scripts/tests/test-chapter-quality-check.sh (317 lines) needs cases for both 2a and 2b.
+
+CRITICAL -- AN EXISTING TEST ASSERTS THE BUGGY BEHAVIOR. Case-f at lines 168-181 ("unresolvable bibliography") currently ASSERTS exit 0 plus "NOT EVALUATED" for a file with no declaration and no .bib. That assertion must be REVISITED, not merely supplemented with new cases. A researcher or implementer who only adds new cases will leave a test actively contradicting the fix, and the suite will either fail or silently pin the old behavior. Decide whether case-f remains valid (a genuinely bib-less repo arguably should still be NOT EVALUATED) or must be re-scoped so it no longer covers the multi-candidate/include-root paths the fix now resolves.
+
+Related existing fixtures to check for interaction: case-a (lines 65-81, compliant fixture with declared refs.bib), case-e (lines 144-165, Rule 1.3 violation with a declared bib), and the dirscan fixture at line 304 which copies refs.bib into a second directory -- that last one may already be sensitive to candidate-counting changes.
+
+HEADER CONTRACT MUST BE UPDATED IN THE SAME COMMIT. Header lines 99-101 document the current (a)/(b) resolution contract verbatim. The script header states the rule inventory must never drift from the standard, so any behavior change here requires the header updated in the same commit as the code.
+
+=== ACCEPTANCE ===
+  1. EXTENSION.md's Scope section is consistent with every file under context/project/typst/ -- no category is disclaimed that the extension actually ships context for.
+  2. A task phrased like "review and condense the typst manual chapters" self-detects as task_type `typst` via detect_task_type(), demonstrated by running the detection, not asserted.
+  3. No added keyword hijacks a task belonging to another extension; verified against the alphabetical-first-match ladder in scripts/lib/task-type-detect.sh.
+  4. Rule 1.3 evaluates for a chapter file that is `#include`d into a root document carrying the `#bibliography(...)` declaration.
+  5. Rule 1.3 evaluates in a repo containing a vendored .bib under .lake/ (or equivalent) alongside the real bibliography -- demonstrated against the Logos/Verification reproduction above.
+  6. scripts/tests/test-chapter-quality-check.sh green, with case-f explicitly re-examined and its disposition recorded.
+  7. Header lines 99-101 match the implemented resolution contract.
+  8. No test weakened or deleted to make the change pass.
+
+=== SCOPE DISCIPLINE ===
+  - Edits land ONLY in agent-system/extensions/typst/. Do not edit any deployed .claude/ tree, in this repo or any of the 5 consumer repos.
+  - Do not touch scripts/typst-element-lint.sh or its tests; it is a separate gate with its own contract.
+  - Part 1 and Part 2 have disjoint file scopes (EXTENSION.md + manifest.json vs. scripts/chapter-quality-check.sh + its test). Keep them as separate phases so each can be committed green independently.
+
+---
 
 ### 254. Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index
 - **Status**: [COMPLETED]
