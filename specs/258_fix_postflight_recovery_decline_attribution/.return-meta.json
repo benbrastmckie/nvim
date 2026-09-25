@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790360491_c3a705_258",
+  "dispatch_seq": 7,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md",
+      "summary": "Confirms the dependency (task 257) landed and its return-meta-status-vocabulary.sh library is reusable; corrects the dispatch's own prerequisite claim by finding that system-defect-record.sh already has an agent-name-to-path resolver via --dispatched-agent, so only ~4 lines of local glue are needed rather than a new resolver; verifies the .reason vocabulary and current (drifted) line numbers in orchestrate-cycle-postflight.sh; confirms no enum collision with the completed sibling task 259; and lays out the discrimination, defect-class, and test-fixture options for the plan to decide."
+    }
+  ],
+  "next_steps": "Run /plan 258 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "scripts/system-defect-record.sh already resolves a dispatched agent's source-store file path via --dispatched-agent NAME (nullglob over agent-system/extensions/*/agents/NAME.md), as an alternative to --attributed-path. Before concluding a task needs a new agent-name-to-file resolver, check this flag first -- it is undocumented outside the script's own header/comments (not mentioned in context/patterns/system-defect-discrimination.md's Signal B section).",
+      "category": "PATTERN",
+      "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["system-defect-record", "dispatched-agent", "attribution", "resolver", "orchestrate"]
+    },
+    {
+      "content": "agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh is the single sourced library for the 8-value .return-meta.json status enum (RETURN_META_STATUS_VALUES, RETURN_META_SUCCESS_STATUSES, is_return_meta_status, is_return_meta_success_status, RETURN_META_FORBIDDEN_STATUS/_MESSAGE for 'completed'). orchestrate-recover-outcome.sh and validate-return-meta.sh already source it; orchestrate-cycle-postflight.sh does not yet, as of task 258's research.",
+      "category": "CONFIG",
+      "source_artifact": "specs/258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["return-meta", "status-vocabulary", "shared-library", "orchestrate-recover-outcome"]
+    }
+  ]
+}
