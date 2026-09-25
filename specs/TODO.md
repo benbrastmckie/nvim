@@ -1,5 +1,5 @@
 ---
-next_project_number: 260
+next_project_number: 263
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 260
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251,256 | 22,44,127,129,162,163,199,244 | core-agent-system, neovim, opencode, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,260,261 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 45,139,165,224,250,251,256,262 | 22,44,127,129,162,163,199,244,260 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -41,6 +41,9 @@ next_project_number: 260
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
+260 [NOT STARTED] — Fix self-clobbering redeploy in the orchestrator cycle-plan...
+  └─ 262 [NOT STARTED] — Reduce redundant verify-deploy passes in the redeploy checkpoint
+261 [NOT STARTED] — Reduce process-spawn amplification in the shell test suite
 
 ### Extensions
 
@@ -77,6 +80,329 @@ next_project_number: 260
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 262. Reduce redundant verify-deploy passes in the redeploy checkpoint
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 260
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+DEPENDS ON the self-clobbering-redeploy task, for two independent reasons: (1) file-footprint
+overlap -- both edit the same ~280-line REDEPLOY CHECKPOINT block of
+scripts/orchestrate-cycle-plan.sh (roughly lines 721-1001); (2) semantic -- if that task adopts
+its candidate fix (b) and invokes the SOURCE-STORE copy of deploy-headless.sh, that changes
+which copy runs and therefore what its internal --skip-slow verify covers, which is a direct
+input to the design here. Rebase on whatever it lands.
+
+=== OBSERVED COST ===
+During a live /orchestrate 257-259 run the Inter-Cycle Redeploy Checkpoint spent roughly 17
+minutes of wall time ON THE CRITICAL PATH of a single run. The checkpoint fires on every
+/orchestrate run whose cycle_modified_files touch agent-system/** -- i.e. every agent-system
+task -- so this is a recurring, not incidental, cost.
+
+=== CORRECTION: THE OBVIOUS CANDIDATE FIX IS NOT VIABLE AS STATED ===
+THIS IS THE MOST IMPORTANT ITEM IN THIS DESCRIPTION AND IT REDIRECTS THE WHOLE FIX. The defect
+was reported with the candidate fix "cache and reuse the findings snapshot within a single
+checkpoint rather than recomputing it". That does not work, and the code says why. Verified by
+reading the source 2026-09-25:
+
+  - THE THREE VERIFY PASSES ARE NOT THREE COPIES OF ONE COMPUTATION.
+    pre_findings  (scripts/orchestrate-cycle-plan.sh:840) is taken BEFORE deploy-headless.sh runs.
+    post_findings (:880) is taken AFTER it runs.
+    They deliberately observe DIFFERENT TREE STATES. Reusing one for the other destroys the
+    baseline comparison outright -- the comparison's entire purpose is to tell a finding this
+    deploy introduced from one that predates it.
+
+  - THE CODE ALREADY ARGUES AGAINST TOUCHING THAT PAIR, BY NAME. The comment block at :869-879
+    states the pre/post pair "MUST stay at IDENTICAL depth (both full, no --skip-slow on either
+    side)" and that "an asymmetric pair would make every gate-8 finding look 'new' simply
+    because pre never looked for it, which is a strictly worse bug". Treat that as a constraint
+    to respect, not an obstacle to route around. The full-depth choice is documented as
+    DELIBERATE (the "DEFECT A" note at :868-879), because deploy-headless.sh's own internal
+    verify runs --skip-slow (deploy-headless.sh:402: `local -a VERIFY_ARGS=(--skip-slow)`) and
+    therefore only ever certifies the FAST subset.
+
+  - THE THIRD PASS IS ALREADY GATED AND IS NOT A COMMON-PATH COST. The confirmation re-run
+    (deploy_baseline_confirm_new_findings, :917) sits INSIDE the `new_findings` non-empty branch
+    -- it fires only on the rare would-be-defer path, never on a clean checkpoint. Counting it
+    as one third of a per-checkpoint 3x cost overstates the common-path saving available.
+
+  So the actual COMMON-PATH cost is: two full verify-deploy.sh passes, plus deploy-headless.sh's
+  own internal --skip-slow pass. Start from that measurement, not from "three identical runs".
+
+=== WHERE THE REAL SAVING LIVES: CROSS-CYCLE REUSE ===
+The viable reuse is ACROSS cycles, not within a checkpoint: cycle N's post_findings is, by
+construction, a full-depth snapshot of the same tree state that cycle N+1's pre_findings would
+measure -- PROVIDED nothing changed the tree in between. That proviso is the whole design
+problem and must be established rigorously, not assumed.
+
+There is an existing mechanism to extend rather than a new one to invent. The durable redeploy
+ledger (scripts/lib/deploy-ledger-lib.sh, consulted at roughly :828-838 via
+deploy_ledger_hash_state / deploy_ledger_read / deploy_ledger_decide, backed by
+specs/.orchestrator-deploy-ledger.json) ALREADY does something structurally identical: it
+carries a content-hash state plus an outcome across invocations and can skip the entire
+deploy+verify body on positive evidence. Extending it to carry the findings snapshot itself,
+keyed on the same hash state, is the natural shape. Evaluate that before designing anything
+new. See context/patterns/batch-orchestration-guardrails.md's "Durable redeploy ledger"
+paragraph for its contract.
+
+Preserve the ledger's existing FAIL-SAFE DIRECTION, which is explicit in the code: a
+CANNOTVERIFY hash state or an unreadable ledger both degrade to a "run" decision, never to a
+false skip. Any cache added here must fail the same way -- a stale, missing, or unverifiable
+cached snapshot must cause a fresh verify, never a silently reused one.
+
+=== THE FLAKY-VS-REAL DISCRIMINATION MUST BE PRESERVED, NOT DELETED ===
+It would be easy to "save" the confirmation run by removing it. Do not. It earns its place and
+did so in the observed run: it correctly classified a `gate8 budget-bound` finding as FLAKY,
+which prevented a spurious batch deferral. scripts/lib/deploy-baseline-lib.sh:77-83 documents
+the motivation -- the checkpoint runs a full deploy plus the entire shell test suite
+immediately before taking its post snapshot, which is itself enough ambient load to flake a
+load-sensitive test in that same suite (observed: test-lake-build-guard.sh). "A gate that just
+self-inflicted memory pressure cannot trust a single post-load snapshot to tell flaky from
+real." If the deploy+verify sequence is restructured, check whether that self-inflicted-load
+premise still holds, and say so explicitly either way.
+
+Likewise preserve the ATTRIBUTION filter (deploy_baseline_unattributable_findings) and its
+fail-safe direction: a finding naming no identifier at all is NEVER dropped and stays blocking.
+
+=== ADJACENT, DECIDE IN OR OUT EXPLICITLY ===
+Whether deploy-headless.sh's own internal --skip-slow verify can be suppressed when the
+checkpoint is about to run a full-depth verify of its own anyway. That would remove a whole pass
+from the common path. Weigh it against the fact that deploy-headless.sh's exit 3 (deploy landed,
+inline verify reported failures) is part of the checkpoint's documented branch contract and is
+derived from precisely that internal run -- suppressing it changes an exit code other callers
+may depend on. deploy-headless.sh has many other callers; check them before proposing this.
+
+=== VERIFICATION ===
+1. Measure the checkpoint's wall time before and after, on a checkpoint that actually fires
+   (cycle_modified_files touching agent-system/**). Report both numbers; do not claim an
+   improvement without them.
+2. A clean checkpoint with an unchanged tree reuses the cached snapshot and skips a verify pass.
+3. A checkpoint whose tree DID change between cycles does NOT reuse, and takes a fresh
+   pre-snapshot.
+4. An unreadable/absent/stale cache degrades to a fresh verify (fail-safe), never to a reuse.
+5. A genuinely new finding still defers the batch, with the defer_ledger detail naming it.
+6. A flaky finding is still correctly classified as flaky and does NOT defer -- reproduce the
+   gate8 budget-bound case or an equivalent.
+7. A pre-existing finding present in both snapshots still proceeds loudly via branch (c) with
+   its verify_deploy_baseline_notices entry.
+8. Re-run scripts/tests/ for orchestrate-cycle-plan.sh and the deploy/baseline tests. No test
+   may be weakened or deleted to make the change pass.
+
+---
+
+### 261. Reduce process-spawn amplification in the shell test suite
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+LOWER PRIORITY THAN the self-clobbering-redeploy task and the redundant-verify-deploy-passes
+task. Independent of both -- no file-scope overlap, no dependency edge.
+
+=== SCOPE CORRECTION UP FRONT: THIS IS NOT WHAT MADE THE OBSERVED RUN SLOW ===
+Record this so nobody later mis-attributes the incident. During the live /orchestrate 257-259
+run, roughly 17 minutes was lost in the Inter-Cycle Redeploy Checkpoint. THE SHELL TEST SUITE
+WAS NOT THE CAUSE: it is gate 8, and it is DEFERRED via --skip-slow on the orchestrate critical
+path (deploy-headless.sh:402, `local -a VERIFY_ARGS=(--skip-slow)`, whose own documentation
+says --skip-slow "defers gate 8, the shell test suite, and nothing else"). This task is a
+standalone developer-experience improvement for anyone running the suite directly or running a
+full-depth verify, not a fix for the observed stall.
+
+=== MEASURED CHARACTERISTICS ===
+The suite has heavy process-spawn amplification. Concretely:
+
+  scripts/tests/test-force-phases.sh -- 530 lines, but 46 subprocess invocations of heavy
+  scripts: 14x state-write.sh, 10x orchestrate-cycle-plan.sh, 10x orchestrate-stage5-postflight.sh,
+  plus skill-base.sh, task-lock.sh, parse-command-args.sh. Each re-exec re-sources 5+ libraries
+  and re-parses state.json from scratch.
+
+  Measured wall times: test-force-phases.sh 5.0s; test-orchestrate-triage-classify.sh 2.5s.
+
+  72 test files totalling 1.7MB. Largest: test-orchestrate-cycle-plan.sh at 3,684 lines.
+
+  No fixture reuse. No parallelism.
+
+THE FULL SUITE WAS NOT TIMED. Do not carry forward any total-runtime figure that was not
+measured. Measuring the full suite, and identifying which files actually dominate it, is the
+FIRST piece of work here -- the two timed files above are a sample, and optimizing them
+specifically would be premature without knowing whether they are representative.
+
+=== DIRECTIONS TO EVALUATE (none pre-selected) ===
+  - Fixture reuse: build a state.json fixture once per test file (or per suite) rather than
+    re-deriving it per assertion. Establish what isolation each test actually needs before
+    sharing anything -- a shared fixture that leaks state between assertions trades a slow suite
+    for a flaky one, which is strictly worse.
+  - In-process helpers: for the highest-count callees (state-write.sh at 14 invocations in one
+    file), evaluate sourcing a library function instead of re-exec'ing the script. Note this
+    changes what is under test -- a test that currently exercises the script's full CLI
+    contract would stop doing so. Keep at least one end-to-end invocation per contract.
+  - Parallelism across test FILES (the coarse, safe grain) rather than within them. Check for
+    shared mutable state first: specs/.scope-lock, specs/.deploy-lock, specs/.commit-lock, and
+    any fixed temp paths are the obvious serialization points.
+  - Splitting the 3,684-line test-orchestrate-cycle-plan.sh, if that helps parallel scheduling.
+
+=== HARD CONSTRAINT ===
+No test may be weakened, skipped, or deleted to make the suite faster. Coverage before and after
+must be demonstrably identical. A speedup achieved by testing less is a regression reported as
+an improvement. If a test is genuinely redundant, say so explicitly and justify it as its own
+decision -- do not fold it into a performance change.
+
+Note also that several tests in this suite are known LOAD-SENSITIVE (see
+scripts/lib/deploy-baseline-lib.sh:77-83 on test-lake-build-guard.sh and its "pressured fixture"
+history). Introducing parallelism increases ambient load and may make those flake MORE, not
+less. Identify the load-sensitive set before parallelizing anything.
+
+=== VERIFICATION ===
+1. Full-suite wall time measured BEFORE any change, as the baseline that did not previously
+   exist. Report it.
+2. Full-suite wall time after. Report both; do not claim a speedup without both numbers.
+3. Identical pass/fail results across every one of the 72 files, before and after.
+4. Test count and assertion count unchanged or higher -- demonstrate this, do not assert it.
+5. Run the suite at least three times after the change to surface any flakiness introduced by
+   fixture sharing or parallelism, paying specific attention to the load-sensitive set.
+
+---
+
+### 260. Fix self-clobbering redeploy in the orchestrator cycle-plan checkpoint
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+=== OBSERVED FAILURE, IN A REAL RUN ===
+During a live /orchestrate 257-259 run, the Inter-Cycle Redeploy Checkpoint in
+scripts/orchestrate-cycle-plan.sh invoked deploy-headless.sh, which regenerates
+.claude/scripts/orchestrate-cycle-plan.sh WHILE THAT VERY SCRIPT WAS MID-EXECUTION. bash reads
+scripts incrementally by byte offset, so execution resumed inside the newly-written file at a
+stale offset and died with:
+
+    .claude/scripts/orchestrate-cycle-plan.sh: line 998: o: unbound variable
+
+THIS IS NOT A CODE BUG, AND THAT WAS VERIFIED, NOT ASSUMED. The deployed and source-store copies
+were byte-identical (diff clean), and line 998 is:
+
+    '.redeploy_skip_notices += [$entry]'
+
+-- inside SINGLE quotes, where bash never expands $o. There is no $o anywhere in the file. The
+error is an artifact of bash resuming into a rewritten file, not of any expression in it.
+
+Consequence: the entire cycle was lost. Empty plan JSON, no dispatch rows, cycle_count stuck
+at 3.
+
+INTERMITTENCY IS THE DEFINING PROPERTY AND MUST SHAPE THE VERIFICATION STRATEGY. Observed once;
+a subsequent re-run happened to survive. The failure depends on the byte layout of the rewritten
+file relative to bash's current read offset, so it is NOT reliably reproducible on demand. Do
+NOT treat "I could not reproduce it" as evidence the defect is absent, and do NOT gate the fix
+on producing a reproducer. If a reproducer is wanted, the honest route is a synthetic one: a
+small harness script that rewrites its own file mid-execution with content of a different
+length, which demonstrates the bash behaviour directly without depending on the orchestrator's
+timing.
+
+=== THE CALL SITE ===
+scripts/orchestrate-cycle-plan.sh, inside the REDEPLOY CHECKPOINT block (roughly lines 721-1001):
+
+    bash "$SCRIPT_DIR/deploy-headless.sh" >&2 || deploy_exit=$?
+
+$SCRIPT_DIR here is the DEPLOYED .claude/scripts directory -- the same directory
+deploy-headless.sh is about to overwrite, including the running script itself.
+
+=== PRIOR ART ALREADY IN-TREE -- READ THIS BEFORE DESIGNING ANYTHING ===
+The hazard class is ALREADY RECOGNIZED in this codebase, but was mitigated ad hoc for exactly
+one script. scripts/deploy-headless.sh:140-141 carries:
+
+    # specs/.commit-lock/ (see scripts/git-commit-scoped.sh). Implemented inline, WITHOUT sourcing
+    # scripts/task-lock.sh: this script is about to overwrite the deployed copy of task-lock.sh
+
+and its header at :335-337 records the same reasoning a second time for a second helper. So the
+"a deploy overwrites the files the deploying process still needs" problem was understood and
+worked around case by case. TREAT THAT COMMENT AS PRIOR ART FOR THE MITIGATION, NOT AS A
+PRECEDENT FOR ANOTHER AD HOC PATCH. A third one-off special case at the cycle-plan call site
+would leave the class open for the next caller. Generalize.
+
+=== HAZARD-CLASS SURVEY IS IN SCOPE ===
+Do not fix only the one observed call site. Survey every deployed script that can trigger a
+deploy of itself or of a helper it still needs afterwards. Sites referencing deploy-headless.sh
+in the source store include, at minimum:
+
+    scripts/command-gate-out.sh
+    scripts/skill-base.sh
+    scripts/orchestrate-batch-admit.sh
+    scripts/orchestrate-build-dispatch.sh
+    scripts/task-lock.sh
+    scripts/orchestrate-cycle-plan.sh   (the observed site)
+    scripts/git-snapshot.sh
+    scripts/validate-state.sh
+    scripts/verify-deploy.sh
+    scripts/check-deploy-freshness.sh
+    scripts/check-consumer-freshness.sh
+    scripts/deploy-root-guard.sh
+    scripts/system-defect-record.sh
+    scripts/measure-eager-context.sh
+    scripts/check-extension-docs.sh
+
+That list came from a `grep -rln deploy-headless.sh` and is a STARTING POINT, not a verified
+hazard list -- most of those references are documentation strings, remedy messages, or checks
+that never actually execute a deploy. Part of this task is separating the references that
+GENUINELY INVOKE a deploy from within a running deployed script (the true hazard set) from the
+ones that merely mention the path. Report that classification; do not silently narrow to the
+one site.
+
+=== CANDIDATE FIXES -- EVALUATE, DO NOT ASSUME ===
+None of these is pre-selected. Picking among them, or finding a better one, is the research and
+planning work.
+
+(a) Re-exec the checkpoint from a copy placed outside the deploy tree before deploying, so the
+    running image is never the one being rewritten. Consider where that copy lives, how it is
+    cleaned up, and whether re-exec disturbs the mutex/lock state the checkpoint holds.
+
+(b) Invoke the SOURCE-STORE copy, agent-system/extensions/core/scripts/deploy-headless.sh,
+    instead of the deployed one. THIS IS THE MANUAL WORKAROUND THE OPERATOR USED SUCCESSFULLY
+    during the incident, so it has one real datapoint behind it. But note it only moves the
+    DEPLOYING script out of the rewrite path -- the CALLING script (orchestrate-cycle-plan.sh)
+    is still the deployed copy and is still being overwritten mid-execution, so establish
+    whether this actually closes the hole or merely made one observed run survive. Also note
+    deploy-headless.sh:304-312 documents a deliberate reason some of its internal calls use the
+    DEPLOYED copy (a root-computation assumption valid only two levels under a deployed
+    scripts/ tree); a source-store invocation may violate that assumption. Check it.
+
+(c) Defer the deploy to a point where the cycle-plan script is no longer executing -- e.g. hand
+    it to the caller, or to a detached stage that runs after the script exits. Consider what
+    this does to the checkpoint's failure contract, which currently DEFERS remaining tasks on a
+    failed deploy and needs the deploy's exit code in-band to do so.
+
+Whatever is chosen must preserve the checkpoint's existing three-branch (a)/(b)/(c) failure
+contract documented in context/patterns/batch-orchestration-guardrails.md's
+"### The Inter-Cycle Redeploy Checkpoint" subsection and implemented by command-gate-out.sh's
+rc==6 handler. Do not weaken the deploy-failure defer.
+
+=== RELATIONSHIP TO THE SIBLING PERFORMANCE TASK ===
+The redundant-verify-deploy-passes task edits the SAME ~280-line checkpoint block and depends on
+this one. Land this first. The choice made here -- particularly whether fix (b) changes WHICH
+copy of deploy-headless.sh runs, and therefore what its internal --skip-slow verify covers --
+is a direct input to that task's design. Record the decision and its verify-depth consequences
+explicitly so the sibling can build on it rather than re-deriving it.
+
+=== VERIFICATION ===
+1. Demonstrate the underlying bash behaviour with a synthetic self-rewriting harness, so the
+   mechanism is established independently of the orchestrator's timing.
+2. Show that after the fix the checkpoint completes with a non-empty plan JSON and dispatch
+   rows when a deploy is triggered mid-cycle.
+3. Exercise the deploy-failure branch (deploy-headless.sh exit 1 or 2) and confirm remaining
+   tasks are still deferred with the defer_ledger entry intact.
+4. Exercise the deploy-landed branches (exit 0 and exit 3) and confirm the baseline comparison
+   still runs.
+5. Re-run scripts/tests/ for orchestrate-cycle-plan.sh and the deploy tests
+   (test-deploy-orphans.sh, test-deploy-verify-wiring.sh). No test may be weakened or deleted
+   to make the change pass.
+
+---
 
 ### 259. Allow completion when a plan branch deliberately skips phases, and stop the identical-redispatch loop
 - **Status**: [COMPLETED]
