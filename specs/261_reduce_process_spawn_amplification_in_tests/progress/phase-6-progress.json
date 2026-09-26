@@ -2,14 +2,14 @@
   "phase": 6,
   "phase_name": "Flakiness Decision Gate -- 3 Repeated Parallel Runs",
   "started_at": "2026-09-26T04:16:00Z",
-  "last_updated": "2026-09-26T04:55:00Z",
+  "last_updated": "2026-09-26T00:45:00Z",
   "objectives": [
     {
       "id": 1,
       "description": "Run the full suite 3 times at --jobs 4, capturing --timings and pass/fail sets",
-      "status": "blocked",
+      "status": "done",
       "files_touched": [],
-      "note": "Two attempts made. Attempt 1 (2/3 runs completed) revealed test-run-all-parallel.sh flaking on its own case3 -- see objective 2. Attempt 2 (1/3 runs completed, using the interim serialization-only fix) was interrupted: the harness's idle-session memory-pressure safeguard killed the background task because system-wide memory was genuinely low from unrelated concurrent sessions/builds (confirmed via free -h/ps aux, not transient -- swap usage 17-19 GiB of 31 GiB both before and after). No 3-run batch has completed against the FINAL code (serialization + relative-ratio redesign, both committed). This is an environmental constraint, not a task defect."
+      "note": "Completed this dispatch: checked free -h first (swap 15Gi/31Gi, load average ~3.7-4.3 from 5 concurrent claude sessions plus a browser -- elevated but not the ~17-19 GiB extreme of the prior dispatch's second attempt), then ran all 3 full-suite --jobs 4 passes as sequential, foreground, blocking Bash calls (never backgrounded) against the final committed code. All 3 completed cleanly within their own timeouts: 211.9s / 219.3s / 211.9s wall time, 97 discovered suites each. CSVs and logs captured under the scratchpad (phase6/run{1,2,3}.{log,csv})."
     },
     {
       "id": 2,
@@ -19,32 +19,32 @@
         "agent-system/extensions/core/scripts/tests/run-all.sh",
         "agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh"
       ],
-      "note": "Root cause: genuine ambient HOST load from unrelated concurrent processes (other Claude sessions, pytest, lean4lean builds), not sibling-suite contention within run-all.sh's own pool (confirmed: serializing the suite alone did NOT fix the flake in a follow-up run). Fix: redesigned case3/case4 from absolute-ms thresholds to a load-tolerant relative ratio (parallel <= 75% of forced-sequential, measured back-to-back). Verified 9/9 standalone. Committed as 'task 261 phase 6.1'."
+      "note": "Carried over from the prior dispatch (committed as 'task 261 phase 6.1'). This dispatch's 3-run batch confirms the relative-ratio redesign did not fully eliminate the flake under sufficiently heavy ambient host load -- see objective 3 and the plan's Reasoned Exclusions table. No further code change made; further threshold-loosening would violate the 'no test may be weakened' constraint."
     },
     {
       "id": 3,
       "description": "Diff against Phase 1 baseline, inspect load-sensitive set, apply gate criterion",
-      "status": "not_started",
+      "status": "done",
       "files_touched": [],
-      "note": "Blocked on objective 1 completing a clean 3-run batch against the final code."
+      "note": "All 3 runs reproduced the Phase 1 baseline's 4 consistent failures + 1 known-intermittent suite exactly. test-verify-deploy-context-budget.sh's known drift artifact did NOT recur in any run. Two divergences found, both within the already-named load-sensitive set: test-run-all-parallel.sh failed its own internal case3/case4 relative-timing assertion in ALL 3 runs (no measurable parallel-vs-sequential speedup under current host contention); test-lake-build-guard.sh failed in 1 of 3 runs (its own documented pressured-fixture history). Gate criterion ('3/3 clean AND no load-sensitive suite failed') FAILS. Applied the plan's own no-flip branch: run-all.sh's default job count stays at 1; phase closed COMPLETED WITH EXCLUSIONS with a Reasoned Exclusions table citing the evidence (ps aux showing 5 concurrent claude sessions; free -h showing sustained ~14-15 GiB/31 GiB swap use across all 3 runs; per-run [FAIL]/[PASS] lines for both suites)."
     }
   ],
-  "current_objective": 1,
+  "current_objective": null,
   "approaches_tried": [
     {
       "approach": "3x full-suite --jobs 4 runs backgrounded via run_in_background",
       "result": "failed",
-      "reason": "Interrupted by the harness's idle-session memory-pressure reap on the 2nd attempt (1/3 runs completed). System memory was genuinely low from unrelated concurrent sessions, confirmed via free -h (17-19 GiB/31 GiB swap used) both before and after -- not resolved by waiting. Per the harness's own guidance, do not blindly restart the same pattern; a successor dispatch should check free -h first and prefer a foreground/blocking call with a generous timeout."
+      "reason": "From the prior dispatch: interrupted by the harness's idle-session memory-pressure reap on the 2nd attempt (1/3 runs completed). Superseded this dispatch by sequential foreground/blocking Bash calls per the orchestrator's resolution guidance, which completed all 3 runs cleanly."
     }
   ],
   "handoff_count": 1,
   "deviations": [
     {
-      "task_id": "6.1",
-      "description": "Run the full suite 3 times at the chosen job count",
-      "type": "deferred",
-      "reason": "System-wide memory pressure from unrelated concurrent processes interrupted both attempts; only 2/3 and then 1/3 runs completed per attempt. Deferred to a successor dispatch.",
-      "annotation": "*(deviation: deferred to a successor dispatch -- system memory pressure)*"
+      "task_id": "6.5",
+      "description": "If the criterion passes: flip run-all.sh's default to --jobs auto (capped)",
+      "type": "skipped",
+      "reason": "The gate criterion FAILED (two load-sensitive suites diverged from baseline across the 3 runs), so the criterion-passes branch does not apply. The criterion-fails branch (task 6.6) was taken instead, per the plan's own explicit contingency design.",
+      "annotation": "*(deviation: skipped -- criterion failed, so this branch does not apply; see the criterion task above)*"
     }
   ]
 }

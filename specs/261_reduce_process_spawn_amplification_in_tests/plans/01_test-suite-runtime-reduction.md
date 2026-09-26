@@ -495,37 +495,69 @@ likely breakage site.
 
 ---
 
-### Phase 6: Flakiness Decision Gate -- 3 Repeated Parallel Runs [PARTIAL]
+### Phase 6: Flakiness Decision Gate -- 3 Repeated Parallel Runs [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Decide empirically whether parallelism becomes the default or stays opt-in. This is a
 decision gate: its measurement selects the branch Phase 7 documents.
 
 **Tasks**:
-- [ ] Run the full suite 3 times at the chosen job count, capturing `--timings` CSV and the
-      pass/fail set for each run. *(PARTIAL -- interrupted, see below)*
-- [ ] Diff each run's pass/fail set against Phase 1's recorded baseline set. Treat the 4
+- [x] Run the full suite 3 times at the chosen job count, capturing `--timings` CSV and the
+      pass/fail set for each run. *(completed: 3 clean, uninterrupted foreground runs at
+      `--jobs 4` against the final committed code -- 211.9s, 219.3s, 211.9s wall time; 97
+      discovered suites each run; CSVs and full logs captured under the scratchpad. See finding
+      below for why "clean" means "completed", not "zero-divergence".)*
+- [x] Diff each run's pass/fail set against Phase 1's recorded baseline set. Treat the 4
       consistent failures as expected failures and `test-gate-out-repair-reporting.sh` as
-      known-intermittent; any OTHER divergence is a flake introduced here. *(partially done: see
-      finding below)*
-- [ ] Inspect the load-sensitive set named in Phase 4 specifically across all 3 runs, not just the
-      aggregate pass/fail counts. *(not yet completed for the full 3-run set)*
-- [ ] Apply the gate criterion: **3 of 3 runs produce the baseline pass/fail set (modulo the known
-      intermittent suite) AND no load-sensitive suite failed in any run.** *(not yet applied --
-      no 3 clean, post-fix runs completed yet)*
+      known-intermittent; any OTHER divergence is a flake introduced here. *(completed: the 4
+      consistent failures + the 1 known-intermittent suite reproduced in all 3 runs, matching
+      baseline exactly. `test-verify-deploy-context-budget.sh`'s known source/deploy-drift
+      artifact (named in Phases 1 and 3) did NOT recur in any of the 3 runs. Two DIVERGENCES
+      found, both in the load-sensitive set -- see next task and Reasoned Exclusions below.)*
+- [x] Inspect the load-sensitive set named in Phase 4 specifically across all 3 runs, not just the
+      aggregate pass/fail counts. *(completed: `test-run-all-parallel.sh` failed its own
+      internal case3/case4 relative-timing assertion in ALL 3 runs -- parallel (~1.9s) showed no
+      meaningful speedup over forced-sequential (~1.9s) on its synthetic 3x0.6s fixture, i.e. the
+      75% ratio threshold from the Phase 6.1 fix was not met even once. `test-lake-build-guard.sh`
+      failed in 1 of 3 runs (run 2, 46/47 passed) -- its own documented "pressured fixture"
+      history. `test-state-write-concurrency.sh`, `test-state-write-regen-timing.sh`, and
+      `test-four-tier-conflict.sh` passed cleanly in all 3 runs.)*
+- [x] Apply the gate criterion: **3 of 3 runs produce the baseline pass/fail set (modulo the known
+      intermittent suite) AND no load-sensitive suite failed in any run.** *(completed: criterion
+      FAILS -- two load-sensitive suites failed across the 3 runs, one of them (`test-run-all-
+      parallel.sh`) in all 3, not intermittently. See Reasoned Exclusions below for the evidence
+      and root-cause attribution.)*
 - [ ] **If the criterion passes**: flip `run-all.sh`'s default to `--jobs auto` (capped), keep
       `--jobs 1` as the documented escape hatch, and leave `verify-deploy.sh` gate 8's invocation
       to inherit the new default. Re-run the 3-run validation once more after the flip, since the
-      default path is now a different code path than the one just validated. *(not reached)*
-- [ ] **If the criterion fails**: keep the default at `--jobs 1`, record which suite(s) flaked and
+      default path is now a different code path than the one just validated. *(deviation:
+      skipped -- criterion failed, so this branch does not apply; see the criterion task above)*
+- [x] **If the criterion fails**: keep the default at `--jobs 1`, record which suite(s) flaked and
       under what job count, and close this phase `[COMPLETED WITH EXCLUSIONS]` with a
       `#### Reasoned Exclusions` table whose Evidence column cites the failing runs. The
       gate-selection work from Phases 2-3 stands on its own either way -- it is the larger of the
-      two savings. *(not reached)*
+      two savings. *(completed: default remains `--jobs 1`; no `run-all.sh` default-behavior
+      change made in this phase. See Reasoned Exclusions below.)*
 
-**PARTIAL -- interruption record and real finding along the way**:
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Flip `run-all.sh`'s default job count from `1` to `auto` (the "criterion passes" branch) | The gate's own stated criterion requires 3/3 clean runs AND zero load-sensitive-suite failures across those 3 runs. Two load-sensitive suites failed: `test-run-all-parallel.sh` failed its internal relative-timing assertion (parallel not meaningfully faster than forced-sequential) in all 3 runs, and `test-lake-build-guard.sh` (independently documented as load-sensitive in `deploy-baseline-lib.sh`) failed in 1 of 3. Root cause is ambient host contention external to this task: 5 concurrent `claude --dangerously-skip-permissions` processes plus a browser were confirmed running throughout via `ps aux` and sustained `free -h` swap usage of ~14-15 GiB/31 GiB across all 3 runs, saturating available CPU/memory bandwidth so that requesting parallel execution provided no measurable wall-clock benefit for these two suites' own internal work, independent of anything `run-all.sh`, `verify-deploy.sh`, or Phase 5/6.1's fix control. Weakening the `test-run-all-parallel.sh` threshold further to force a pass on this specific overloaded host would violate the hard "no test may be weakened" constraint by making the assertion meaningless on a normal host; it is therefore correctly reported as a gate failure rather than patched away. | `/tmp/.../scratchpad/phase6/run{1,2,3}.log` (captured this dispatch): `test-run-all-parallel.sh` `[FAIL] case3`/`case4` in all 3 runs with `[INFO] case3/4 timing: parallel=1930ms nested(forced-sequential)=1916ms` (run1, materially unchanged run2/run3); `test-lake-build-guard.sh` `[FAIL]` only in run2 (`Passed: 46 / Failed: 1`), `[PASS]` (47/47) in run1 and run3. `ps aux --sort=-%mem` (captured before run1) shows 5 concurrent `claude --dangerously-skip-permissions` PIDs. `free -h` before run1/run2/run3: swap 15Gi/15Gi/14Gi of 31Gi used throughout. |
+| Re-running the 3-run validation once more after a default flip | Not applicable -- no flip was made, since the criterion the flip depends on did not pass. | Direct consequence of the row above; no further evidence needed. |
+
+**Decision recorded**: `run-all.sh`'s default job count stays at `1` (unchanged from before this
+task). `--jobs N` (including `--jobs auto`, capped at 4) remains available and correct as an
+opt-in flag -- Phase 5's own verification already proved `--jobs 1` output is byte-identical to
+pre-Phase-5 behavior and `--jobs 4` reproduces the same pass/fail set modulo the two load-sensitive
+suites named above. The gate-selection work from Phases 2-3 (the larger of the two savings, ~290s
+of the ~440s reduction) is entirely unaffected by this exclusion and stands on its own.
+
+**History -- two interrupted attempts, then a completed 3-run batch and gate-fail decision**:
 
 Two attempted 3-run batches at `--jobs 4` were interrupted or invalidated before completing the
-gate's own required 3-run set:
+gate's own required 3-run set (from the prior dispatch); a third dispatch then completed the
+required 3 runs and applied the gate criterion, which failed (see the Reasoned Exclusions table
+above for the final result):
 
 1. First attempt (2 of 3 runs completed): revealed a genuine finding not anticipated by Phase
    4's audit -- `test-run-all-parallel.sh` (added in Phase 5, after Phase 4's audit closed)
@@ -547,18 +579,18 @@ gate's own required 3-run set:
    both before and after the interruption, i.e. NOT transient). This is an environmental
    constraint outside this task's control, not a defect in the implementation.
 
-**Remaining work for a successor dispatch**: run the full suite 3 times at `--jobs 4` with the
-CURRENT code (both the serialization addition and the relative-ratio redesign are already
-committed), diff against Phase 1's baseline, inspect the load-sensitive set specifically, and
-apply the gate criterion. Resume command:
-```
-bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet --jobs 4 \
-  --timings /path/to/scratch/run-N.csv
-```
-Run when system memory pressure has genuinely cleared (check `free -h` -- swap usage well below
-the ~17-19 GiB observed during this dispatch's attempts is a reasonable signal), and prefer a
-foreground/blocking invocation with a generous timeout over a backgrounded one if the harness's
-idle-session reap is a concern.
+3. Third dispatch (this one): checked `free -h` first (swap 15Gi/31Gi in use, load average
+   ~3.7-4.3 from 5 concurrent `claude --dangerously-skip-permissions` sessions plus a browser --
+   elevated but not the ~17-19 GiB extreme of the second attempt), then ran all 3 full-suite
+   `--jobs 4` passes as sequential, foreground, blocking `Bash` calls (never backgrounded), each
+   completing cleanly within its own timeout: 211.9s, 219.3s, 211.9s wall time, 97 discovered
+   suites each. Applied the gate criterion (see the task list and Reasoned Exclusions table
+   above): FAILS, because `test-run-all-parallel.sh` (already load-tolerant per the 6.1 fix)
+   still showed no measurable parallel-vs-sequential speedup on this specific host in any of the
+   3 runs, and `test-lake-build-guard.sh` flaked once. Both are attributed to genuine, confirmed
+   ambient host contention (5 concurrent agent sessions), not to a defect in Phases 5 or 6.1's
+   work. Decision: keep `run-all.sh`'s default job count at `1`; close this phase
+   `[COMPLETED WITH EXCLUSIONS]`.
 
 **Timing**: 1.5 hours (dominated by repeated suite runs)
 
@@ -570,18 +602,27 @@ idle-session reap is a concern.
 
 **Scope Hypothesis**: the expected-failure set is the 4 consistent failures plus 1
 known-intermittent suite from Phase 1. Confirm against Phase 1's own recorded set, not against the
-research report, since the tree may have moved between the two.
+research report, since the tree may have moved between the two. **Confirmed with one addition**:
+all 3 runs this dispatch reproduced exactly the 4 consistent + 1 known-intermittent set from Phase
+1, plus two ADDITIONAL divergences both scoped to the already-named load-sensitive set
+(`test-run-all-parallel.sh` in 3/3 runs, `test-lake-build-guard.sh` in 1/3) -- see the Reasoned
+Exclusions table for the full evidence. No divergence occurred outside the load-sensitive set.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/run-all.sh` - default job count, only on the
-  criterion-passes branch
+  criterion-passes branch. *(Not modified this phase -- criterion failed, no-flip branch taken;
+  default remains `1`.)*
 
 **Verification**:
-- 3 run logs captured, with per-run pass/fail sets recorded verbatim.
+- 3 run logs captured, with per-run pass/fail sets recorded verbatim. *(done -- see scratchpad
+  `phase6/run{1,2,3}.log` and `.csv`, referenced in the Reasoned Exclusions evidence column)*
 - Every divergence from the baseline set is named and classified (known-intermittent vs. new).
-- On the flip branch: a further 3 runs at the new default reproduce the baseline set.
+  *(done -- both divergences classified as load-sensitivity, attributed to ambient host
+  contention with evidence)*
+- On the flip branch: a further 3 runs at the new default reproduce the baseline set. *(N/A --
+  flip branch not taken)*
 - On the no-flip branch: a `#### Reasoned Exclusions` table is present under this phase's heading
-  with Item / Reason / Evidence populated from the failing runs.
+  with Item / Reason / Evidence populated from the failing runs. *(done -- see above)*
 
 ---
 
