@@ -28,29 +28,54 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/summaries/01_test-suite-runtime-reduction-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["flaky-test", "wall-clock-assertion", "relative-ratio", "ambient-load", "test-timing", "shared-dev-machine"]
+      "suggested_keywords": [
+        "flaky-test",
+        "wall-clock-assertion",
+        "relative-ratio",
+        "ambient-load",
+        "test-timing",
+        "shared-dev-machine"
+      ]
     },
     {
       "content": "When adding an opt-in gate-selection or scope-reduction flag to a verifier/battery script (e.g. --only-gate N to skip N-1 of N checks), do a full cross-check-variable dependency audit BEFORE wiring the guard -- read every check block and confirm no later check reads a variable an earlier, now-skippable check assigns. If the audit finds zero cross-dependencies (common when each check is written as a self-contained block with uniquely-named local variables), the guard can be added mechanically (wrap each block in 'if selected(N); then ... fi' without reindenting the body) with high confidence and a small, reviewable diff. Verify empirically too: run every individual selection standalone and confirm none crashes with an unbound-variable or unset-path error -- this is the regression net for the audit's own correctness.",
       "category": "PATTERN",
       "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/summaries/01_test-suite-runtime-reduction-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["gate-selection-flag", "cross-check-audit", "verifier-script", "opt-in-flag", "regression-net"]
+      "suggested_keywords": [
+        "gate-selection-flag",
+        "cross-check-audit",
+        "verifier-script",
+        "opt-in-flag",
+        "regression-net"
+      ]
     },
     {
       "content": "A cheap, rigorous coverage-equality proof for 'did this change reduce test coverage' does not require re-running an entire pre-change test suite: git diff --stat against the commit immediately before the change set shows exactly which suite files were touched. Every untouched file is coverage-unchanged BY CONSTRUCTION (its behavior cannot have changed since its bytes did not change), which only needs stating, not re-executing. For the small set of actually-modified files, diff pass/fail assertion call-site counts (e.g. grep -c 'pass \"' / 'fail \"') before (git show <old-commit>:<path>) vs. after (current file) to prove zero assertions were silently dropped. New files are purely additive coverage by definition. This is both cheaper and more rigorous than re-running the full old suite for comparison, since it proves invariance structurally rather than relying on two potentially-flaky executions to agree.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/summaries/01_test-suite-runtime-reduction-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["coverage-equality-proof", "git-diff-stat", "assertion-call-site-count", "regression-proof", "test-suite-refactor"]
+      "suggested_keywords": [
+        "coverage-equality-proof",
+        "git-diff-stat",
+        "assertion-call-site-count",
+        "regression-proof",
+        "test-suite-refactor"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790407301_c7abef",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

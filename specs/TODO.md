@@ -41,7 +41,7 @@ next_project_number: 268
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-261 [PARTIAL] — Reduce process-spawn amplification in the shell test suite
+261 [IMPLEMENTING] — Reduce process-spawn amplification in the shell test suite
 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
   └─ 264 [NOT STARTED] — Route dispatched-agent push requests through the userdecision...
 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
@@ -772,7 +772,7 @@ may depend on. deploy-headless.sh has many other callers; check them before prop
 ---
 
 ### 261. Reduce process-spawn amplification in the shell test suite
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
