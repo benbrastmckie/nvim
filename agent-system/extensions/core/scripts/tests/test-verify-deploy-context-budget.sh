@@ -33,6 +33,16 @@
 # into this very suite -- see test-deploy-verify-wiring.sh's ANTI-RECURSION INVARIANT for the
 # general hazard this avoids).
 #
+# INVOCATION COUNT (historical note, superseded by gate selection): this suite used to keep its
+# wall-clock bounded purely by minimizing the number of full-battery verify-deploy.sh calls (one
+# combined "run B" instead of three separate ones) -- the OTHER 19 gates re-scanning the ~16 MB
+# fixture tree dominated the cost (~100s/call), not Gate 20 itself. That rationale is now
+# superseded: verify-deploy.sh's --only-gate flag (see verify-deploy.sh's own header) lets run B,
+# case 3, and case 4 each pay only for Gate 20, cutting this suite from 4 full-battery invocations
+# (~391s measured) to 1 full-battery baseline + 3 gate-20-only calls (~100s expected). The BASELINE
+# check below is the one deliberate exception: it stays full-battery so the "all twenty gates run
+# together, clean" contract stays covered somewhere in this suite (see its own comment).
+#
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error
 # (verify-deploy.sh, rsync, git, or jq not found).
 
@@ -107,8 +117,13 @@ pad_file() {
 
 run_gate20() {
   # Usage: run_gate20 [ORCHESTRATOR_BUDGET_GATE_MODE=value]
+  # Restricted to gate 20 only (--only-gate 20, from verify-deploy.sh's gate-selection flag) --
+  # run B (cases 1/2/5) and case 3 each exercise gate 20 exclusively, so they no longer pay for
+  # the other 19 gates re-scanning the fixture tree. The BASELINE check below does NOT use this
+  # helper -- it deliberately stays a full-battery invocation (see its own comment) so the
+  # "all twenty gates run together, clean" contract stays covered somewhere in this suite.
   local mode="${1:-warn}"
-  ORCHESTRATOR_BUDGET_GATE_MODE="$mode" bash "$VERIFY_DEPLOY" --skip-slow --findings --quiet "$FIXTURE" 2>&1
+  ORCHESTRATOR_BUDGET_GATE_MODE="$mode" bash "$VERIFY_DEPLOY" --skip-slow --findings --quiet --only-gate 20 "$FIXTURE" 2>&1
 }
 
 # =====================================================================
@@ -117,8 +132,12 @@ run_gate20() {
 # ceiling as of 2026-09-18, so 0 gate20 finding lines is the expected count; the `-le 1`
 # tolerance below is deliberately kept (not tightened) to absorb a single pre-existing WARN a
 # concurrently-landing sibling task's growth could reintroduce before this suite next runs.
+#
+# Deliberately NOT via run_gate20() (which is now --only-gate 20-restricted) -- this is the one
+# invocation in this suite that stays full-battery, so a `baseline_rc -eq 0` here incidentally
+# proves no OTHER gate fails on this fixture, which is real coverage this task must not drop.
 # =====================================================================
-baseline_out="$(run_gate20 warn)"
+baseline_out="$(ORCHESTRATOR_BUDGET_GATE_MODE=warn bash "$VERIFY_DEPLOY" --skip-slow --findings --quiet "$FIXTURE" 2>&1)"
 baseline_rc=$?
 baseline_gate20_lines="$(printf '%s\n' "$baseline_out" | grep -c '^FINDING gate20 ')"
 if [ "$baseline_rc" -eq 0 ] && [ "$baseline_gate20_lines" -le 1 ]; then
@@ -230,9 +249,15 @@ fi
 # pre_findings reuses run B's already-captured findings (commands/orchestrate.md's padding from
 # run B is untouched through case 3, which only toggles the gate mode env var, never mutates
 # ORCH_MD) rather than re-running verify-deploy.sh a fourth time on the identical fixture state.
+#
+# --only-gate 20 passed through deploy_findings_snapshot's existing [extra args...] pass-through
+# position (deploy-baseline-lib.sh itself is NOT modified -- it is a concurrently-scheduled
+# sibling task's declared file_scope this cycle). pre_findings (run B, via run_gate20()) is
+# already gate-20-scoped, so both sides of this diff are gate-20-scoped -- never one full and one
+# filtered, which would make this case trivially pass for the wrong reason.
 # =====================================================================
 pad_file "$ORCH_MD" 777
-post_findings="$(ORCHESTRATOR_BUDGET_GATE_MODE=warn deploy_findings_snapshot "$VERIFY_DEPLOY" --skip-slow "$FIXTURE")"
+post_findings="$(ORCHESTRATOR_BUDGET_GATE_MODE=warn deploy_findings_snapshot "$VERIFY_DEPLOY" --skip-slow --only-gate 20 "$FIXTURE")"
 new_findings="$(deploy_baseline_new_findings "$pre_findings" "$post_findings")"
 if [ -z "$new_findings" ]; then
   pass "case4: a byte-count drift on the still-over-ceiling file introduces no new finding (deploy_baseline_new_findings empty)"

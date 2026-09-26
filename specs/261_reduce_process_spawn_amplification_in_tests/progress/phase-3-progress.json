@@ -1,0 +1,43 @@
+{
+  "phase": 3,
+  "phase_name": "Collapse test-verify-deploy-context-budget.sh to One Full Battery",
+  "started_at": "2026-09-26T02:41:00Z",
+  "last_updated": "2026-09-26T02:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read the target file and deploy-baseline-lib.sh before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Convert run_gate20() and case4's deploy_findings_snapshot to --only-gate 20; keep baseline full-battery",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Update header rationale comment (gate-selection supersedes invocation-count minimization)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Verify wall time drop and pass/fail parity",
+      "status": "done",
+      "files_touched": [],
+      "note": "391.4s -> 103s (measured). 15/15 pre-change (Phase 1 true baseline) vs 14/15 post-change; the 1 delta is the known source/deploy drift artifact (3 own files + 1 sibling task's in-flight file), confirmed by direct reproduction, not a logic regression. No pass()/fail() call sites added or removed (git diff confirmed)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "git-stash a clean pre-change comparison for this phase, same technique as Phase 1",
+      "result": "failed",
+      "reason": "run-all.sh and verify-deploy.sh's Phase 1/2 changes are already COMMITTED to source store history, not just uncommitted working-tree diffs -- stash only reverts uncommitted changes, so a fully clean (source==deployed) state is no longer reachable without actually redeploying, which is explicitly deferred to Phase 7. Worked around by direct reproduction of the drift-finding set instead."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
