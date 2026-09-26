@@ -117,33 +117,50 @@ else
 fi
 
 # =====================================================================
-# Case 3: --jobs 3 is genuinely concurrent -- 3 suites each sleeping ~0.6s should finish in well
-# under the ~1.8s+ sequential floor. Generous threshold (1.3s) to absorb CI/host scheduling noise
-# without being so loose it would pass even if parallelism were silently a no-op.
+# Cases 3+4 (combined, RELATIVE comparison -- not absolute-ms thresholds): --jobs 3 must be
+# genuinely concurrent, and RUN_ALL_NESTED=1 must force it back to sequential.
+#
+# Absolute wall-clock thresholds (e.g. "parallel run must finish under 1300ms") were tried first
+# and found NOT robust to genuine ambient host load: on a shared dev machine running other
+# unrelated heavy processes (other editor/agent sessions, builds), BOTH the parallel and the
+# forced-sequential run get proportionally slower, and an absolute threshold flakes even though
+# the underlying concurrency behavior is completely correct. Confirmed empirically during this
+# suite's own Phase 6 flakiness gate: case3's <1300ms threshold failed twice under real ambient
+# load (parallel run measured ~1.9s both times) even though relative behavior -- parallel
+# meaningfully faster than forced-sequential -- remained correct throughout. Serializing this
+# suite out of run-all.sh's OWN parallel pool did NOT fix it, confirming the contention source is
+# external to this run entirely, not sibling suites in the same pool -- an absolute-threshold
+# design cannot be rescued by scheduling.
+#
+# The fix: measure both runs back-to-back (minimizing the window in which ambient load could
+# differ between them) and assert a RATIO -- parallel_ms must be no more than 75% of nested_ms.
+# An external load multiplier inflates both measurements roughly proportionally, so the ratio
+# stays meaningful regardless of host load, while a genuine "parallelism is a no-op" regression
+# (parallel_ms ~= nested_ms) still fails this ratio check reliably.
 # =====================================================================
 t0=$(date +%s%3N)
 bash "$FIXTURE_RUNNER" --quiet --jobs 3 >/dev/null 2>&1
 t1=$(date +%s%3N)
 parallel_ms=$((t1 - t0))
-if [ "$parallel_ms" -lt 1300 ]; then
-  pass "case3: --jobs 3 completes in ${parallel_ms}ms (< 1300ms threshold -- genuinely concurrent)"
-else
-  fail "case3: --jobs 3 took ${parallel_ms}ms (>= 1300ms threshold -- parallelism may be a no-op)"
-fi
 
-# =====================================================================
-# Case 4: the RUN_ALL_NESTED=1 guard forces sequential execution even when --jobs 3 is requested
-# -- must take close to the sequential floor (>= 1700ms for 3x 0.6s slow suites), not the parallel
-# time from case 3.
-# =====================================================================
 t0=$(date +%s%3N)
 RUN_ALL_NESTED=1 bash "$FIXTURE_RUNNER" --quiet --jobs 3 >/dev/null 2>&1
 t1=$(date +%s%3N)
 nested_ms=$((t1 - t0))
-if [ "$nested_ms" -ge 1700 ]; then
-  pass "case4: RUN_ALL_NESTED=1 --jobs 3 takes ${nested_ms}ms (>= 1700ms -- forced sequential, not parallel)"
+
+info "case3/4 timing: parallel=${parallel_ms}ms nested(forced-sequential)=${nested_ms}ms"
+
+ratio_threshold_ms=$(( nested_ms * 75 / 100 ))
+if [ "$parallel_ms" -le "$ratio_threshold_ms" ]; then
+  pass "case3: --jobs 3 (${parallel_ms}ms) is genuinely concurrent -- <= 75% of the forced-sequential time (${nested_ms}ms)"
 else
-  fail "case4: RUN_ALL_NESTED=1 --jobs 3 took only ${nested_ms}ms -- the nested guard may not be forcing sequential execution"
+  fail "case3: --jobs 3 (${parallel_ms}ms) is not meaningfully faster than forced-sequential (${nested_ms}ms) -- parallelism may be a no-op"
+fi
+
+if [ "$nested_ms" -ge "$parallel_ms" ]; then
+  pass "case4: RUN_ALL_NESTED=1 --jobs 3 (${nested_ms}ms) is not faster than unguarded --jobs 3 (${parallel_ms}ms) -- forced sequential, not parallel"
+else
+  fail "case4: RUN_ALL_NESTED=1 --jobs 3 (${nested_ms}ms) was FASTER than unguarded --jobs 3 (${parallel_ms}ms) -- the nested guard may not be forcing sequential execution"
 fi
 
 # =====================================================================

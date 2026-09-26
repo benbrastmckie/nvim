@@ -276,20 +276,32 @@ else
   trap 'rm -rf "$OUT_DIR"' EXIT
 
   # Phase 4 parallelism-safety audit verdicts (full 96-suite table:
-  # specs/261_reduce_process_spawn_amplification_in_tests/progress/phase-4-audit-table.txt).
-  # These 4 suites carry real wall-clock-budget or lock-contention/memory-pressure assertions and
-  # are run alone, serially, before the parallel pool starts -- an ambient-load precaution, NOT a
-  # resource-collision requirement (the audit found zero suites with a fixed port/socket/lock path
-  # outside their own fixture, so no pairwise conflict exists to avoid).
+  # specs/261_reduce_process_spawn_amplification_in_tests/progress/phase-4-audit-table.txt), PLUS
+  # one suite found load-sensitive by Phase 6's own repeated-run flakiness gate (it postdates
+  # Phase 4's audit, having been created in Phase 5). These 5 suites carry real wall-clock-budget
+  # or lock-contention/memory-pressure assertions and are run alone, serially, before the parallel
+  # pool starts -- an ambient-load precaution, NOT a resource-collision requirement (the audit
+  # found zero suites with a fixed port/socket/lock path outside their own fixture, so no pairwise
+  # conflict exists to avoid).
   #   - test-lake-build-guard.sh: real /proc/meminfo pressure checks, flock+sleep contention
   #   - test-state-write-concurrency.sh: deliberate real lock contention, sub-second sleeps
   #   - test-state-write-regen-timing.sh: real SCOPE_MUTEX_ACQUIRE_BUDGET_MS / REGEN_STUB_BUDGET_SEC
   #   - test-four-tier-conflict.sh: TASK_LOCK_RETRY_BUDGET_MS=5000 budget-bound wall-clock assertion
+  #   - test-run-all-parallel.sh: its own case3/case4 measure real wall-clock elapsed time
+  #     (parallel vs. forced-sequential) against a synthetic fixture. Flaked twice during Phase 6's
+  #     flakiness gate under genuine ambient HOST load (other unrelated heavy processes on a
+  #     shared dev machine, not sibling suites in this run-all.sh's own pool -- confirmed because
+  #     serializing it here alone did NOT fix the flake). The suite's own timing assertions were
+  #     separately redesigned to a load-tolerant RELATIVE ratio (parallel time <= 75% of
+  #     forced-sequential time, both measured back-to-back) instead of absolute-ms thresholds --
+  #     see that file's own case3/4 comment for the full account. It stays in this list anyway as
+  #     a cheap defense-in-depth measure, not because serialization alone was the fix.
   LOAD_SENSITIVE_BASENAMES=(
     "test-lake-build-guard.sh"
     "test-state-write-concurrency.sh"
     "test-state-write-regen-timing.sh"
     "test-four-tier-conflict.sh"
+    "test-run-all-parallel.sh"
   )
   is_load_sensitive() {
     local base

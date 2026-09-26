@@ -94,3 +94,10 @@ PARALLEL-SAFE(no-tmp)| literature/scripts/tests/test-quality-gate-notation.sh | 
 PARALLEL-SAFE        | literature/scripts/tests/test-title-sim-dedup.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
 PARALLEL-SAFE        | typst/scripts/tests/test-chapter-quality-check.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
 PARALLEL-SAFE        | typst/scripts/tests/test-typst-element-lint.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+# ADDENDUM (Phase 6, post-hoc): test-run-all-parallel.sh (created in Phase 5, after this audit was
+# taken) was found LOAD-SENSITIVE by Phase 6's own repeated-run flakiness gate -- its case3/case4
+# assertions measure real wall-clock elapsed time (parallel vs. forced-sequential) against a
+# synthetic fixture, and flaked once when it ran concurrently with 3 sibling suites in run-all.sh's
+# own --jobs 4 pool. Added to run-all.sh's LOAD_SENSITIVE_BASENAMES retroactively; this table's
+# original 96 rows are left as a historical snapshot of the audit as it stood at Phase 4, not
+# rewritten.

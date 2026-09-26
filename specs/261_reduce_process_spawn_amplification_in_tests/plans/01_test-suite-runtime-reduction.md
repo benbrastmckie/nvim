@@ -495,7 +495,7 @@ likely breakage site.
 
 ---
 
-### Phase 6: Flakiness Decision Gate -- 3 Repeated Parallel Runs [NOT STARTED]
+### Phase 6: Flakiness Decision Gate -- 3 Repeated Parallel Runs [IN PROGRESS]
 
 **Goal**: Decide empirically whether parallelism becomes the default or stays opt-in. This is a
 decision gate: its measurement selects the branch Phase 7 documents.
