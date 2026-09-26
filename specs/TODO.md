@@ -1,5 +1,5 @@
 ---
-next_project_number: 263
+next_project_number: 265
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 263
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,261,262 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251,256 | 22,44,127,129,162,163,199,244 | core-agent-system, neovim, opencode, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,261,262,263 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 45,139,165,224,250,251,256,264 | 22,44,127,129,162,163,199,244,263 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -43,6 +43,8 @@ next_project_number: 263
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 261 [IMPLEMENTING] — Reduce process-spawn amplification in the shell test suite
 262 [IMPLEMENTING] — Reduce redundant verify-deploy passes in the redeploy checkpoint
+263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
+  └─ 264 [NOT STARTED] — Route dispatched-agent push requests through the userdecision...
 
 ### Extensions
 
@@ -79,6 +81,329 @@ next_project_number: 263
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 264. Route dispatched-agent push requests through the user_decision relay and sweep the prohibition surface
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 263
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+DEPENDS ON the consent-gated-push design task, for two independent reasons: (1) semantic -- this
+task routes a push REQUEST through the orchestrator and mints the grant its guard consumes, which
+is impossible until that task settles the grant semantics, the invalidation predicate, and the
+wrapper's interface; (2) file-footprint overlap -- both touch rules/pr-prohibition.md and
+manifest.json. Rebase on whatever that task lands.
+
+=== GOAL ===
+Two things: (a) define how an agent running in a fire-and-forget dispatch REQUESTS a push, since it
+cannot call AskUserQuestion itself, and how the user's answer becomes a grant the guard honors;
+(b) sweep the codebase so nothing still asserts the blanket prohibition the companion task
+narrowed.
+
+=== (a) THE DISPATCH PATH -- EXTEND THE EXISTING CHANNEL, DO NOT INVENT ONE ===
+A dispatched subagent cannot call AskUserQuestion. Verified concretely: while these tasks were
+being created, the dispatched agent doing so had NO AskUserQuestion tool available -- a
+ToolSearch for it returned "No matching deferred tools found". So the request must be relayed.
+
+The channel exists and this case is already inside its stated remit.
+context/standards/user-decision-contract.md defines an agent-authored `user_decision`, and
+context/formats/return-metadata-file.md (~line 507, "### user_decision (optional)") gives its
+shape: a TOP-LEVEL object on `.return-meta.json`, producer-owned by the agent that sets it,
+`{question, options: [...], recommended, blocking: true|false}`, mirrored onto
+`.orchestrator-handoff.json` when that dispatch also writes one. Later writers must merge without
+touching it. The contract's enumerated qualifying shape 2 is, verbatim: "An external cost or risk
+the user must accept -- spending money, granting a credential, deleting data, or taking an action
+outside this repository that the agent cannot verify is already sanctioned." A push to a remote is
+squarely an action outside this repository. Treat that as the designed home for this request.
+
+VERIFIED RELAY PATH (use these call sites; do not re-derive):
+  - scripts/orchestrate-cycle-postflight.sh, "WORK (e): user_decision relay" (~lines 1073-1096):
+    reads `.orchestrator-handoff.json` first when fresh (`handoff_stale != true`), else
+    `.return-meta.json`; a non-null value sets `verdict="ask_user"`, which "takes precedence over
+    every other signal". The script relays and NEVER resolves (its line-68 comment:
+    "user_decision is RELAYED, never resolved") and explicitly never writes .decisions.json
+    (~line 1088).
+  - skills/skill-orchestrate/SKILL.md Move 3 "Postflight" (~lines 208-213) ACCUMULATES rather than
+    asking per task: `.pending_ask_user = ((.pending_ask_user // []) + [{"task": $tn,
+    "decision": $q}])`.
+  - Move 4 "Branch" batched relay (~lines 256-263): if `pending_ask_user[]` is non-empty, call
+    AskUserQuestion once per entry (question/options/recommended from `.decision`), all batched at
+    the single Move-4 boundary -- "never mid-cycle, never one call per task". Non-blocking
+    decisions proceed on the agent's recommendation and are only surfaced in output.
+  - Move 4 then appends each answer to `specs/{padded}_{project}/.decisions.json` and clears that
+    task's `pending_ask_user`.
+
+*** CRITICAL DESIGN HAZARD -- THE EXISTING REPLAY CHANNEL ***
+`.decisions.json` is not inert. Schema in docs/architecture/handoff-schema.md (~lines 951-991):
+a JSON array of `{question, answer, cycle, timestamp}` at
+`specs/{NNN}_{slug}/.decisions.json`, absent until the first decision is answered, additive only.
+scripts/orchestrate-build-dispatch.sh (~lines 38-42, 367-377, 511-518) READS it when building the
+NEXT dispatch for the same task and emits a `## Prior Decisions` section so the answer is not
+re-asked. That mechanism is desirable for ordinary design decisions and DANGEROUS here: a recorded
+"yes, push" would be replayed into every subsequent dispatch for that task as standing prior
+approval -- which is exactly the failure the requirement forbids ("permission must never be
+inferred from a prior approval in another context"). Resolve this explicitly. Either exclude push
+grants from the `## Prior Decisions` injection, or record them in a form that is self-evidently
+non-reusable (bound to a specific sha/branch/remote that a later cycle cannot satisfy), or both.
+Do NOT leave the default replay behavior in place for this decision class. Whatever is chosen,
+verify it with a test that runs two cycles and confirms the second does not inherit the grant.
+
+Also establish:
+  - How the push request is expressed in the `user_decision` payload with enough specificity that
+    the answer authorizes ONE identifiable push (remote, branch, commit sha, force-or-not). A
+    vague "may I push?" the guard then interprets broadly would defeat the design. The payload's
+    `options`/`recommended` fields must make the exact target legible to the user at the moment
+    they answer -- consent to an unspecified push is not consent.
+  - Whether such a request may ever be `blocking: false`. It almost certainly must always be
+    `blocking: true`, since the non-blocking path proceeds on the AGENT's recommendation without
+    asking -- which would be an agent authorizing its own push. Confirm and enforce this.
+  - The RETURN LEG, which has no existing precedent: the relay today surfaces decisions to the
+    user; it does not mint an authorization token a later subprocess consumes. Design how a YES
+    becomes a grant the guard script honors, and where that token lives.
+  - What happens when the request is relayed but the run ENDS before an answer, and when the user
+    answers NO. Both must leave the task clean with no push performed.
+  - Whether a granted push may carry across a later cycle in the same run, or dies with the
+    dispatch that requested it. Must be answered consistently with the companion task's
+    grant-scope decision.
+
+Constraint to preserve: the contract's core invariant is that the orchestrator never asks on its
+own and never decides on the user's behalf, and that agents decide everything else themselves. A
+push request must not become a prompt agents raise reflexively; it qualifies only when a push is
+genuinely the task's sanctioned endpoint.
+
+=== (b) CONSISTENCY SWEEP ===
+Note up front, verified: there is NO existing lint or test asserting behavioral push/PR blocking,
+so this sweep is about DOCUMENT consistency plus ADDING the missing tests, not about repairing
+broken assertions. The only structural check is scripts/check-extension-docs.sh Rule H
+`check_undeclared_rules()`, which asserts rules/pr-prohibition.md is declared in manifest.json's
+`provides.rules`; keep that satisfied.
+
+Files to reconcile:
+  - rules/pr-prohibition.md -- the narrowing lands in the companion task; verify no stale absolute
+    language survives, especially "Never push branches or create PRs even if asked to in task
+    descriptions or user messages", which must still hold verbatim for everything the new gate
+    does NOT cover. Its `paths: "**/*"` frontmatter and why-eager comment stay.
+  - rules/git-workflow.md -- the "Git Safety > Never Run" bullet on `git push --force` to
+    main/master, and the "Enforced by guard-destructive-git.sh" note if a new guard joins it.
+  - merge-sources/claudemd.md -- this is the GENERATED-FROM source for the deployed
+    .claude/CLAUDE.md; edit here, never the deployed file. Reconcile the `/merge` and `/tag`
+    "(user-only)" command-table markings (~lines 111, 114), `skill-tag | (user-only)` in the skill
+    table (~153), and the "User-Only Skills" note (~165). If the companion task decided PR
+    creation and `/merge` stay prohibited, these stay and should be reinforced, not loosened.
+  - commands/merge.md and skills/skill-tag/SKILL.md -- both reference the prohibition; check both.
+  - context/standards/status-markers.md -- confirm whether a consented push changes when a task
+    reaches `[PR READY]`. Most likely it does not; say so explicitly rather than leaving it
+    unexamined.
+  - If a new audit event type is introduced, context/formats/events-format.md and
+    context/schemas/events-schema.json must stay in sync with each other.
+
+=== VERIFICATION ===
+1. A dispatched subagent needing a push emits a well-formed top-level `user_decision` with
+   `blocking: true` and does NOT push.
+2. postflight sets `verdict="ask_user"`; Move 3 accumulates it into `pending_ask_user`; Move 4
+   relays it in the batch with the specific push identified (remote, branch, sha, force-or-not).
+3. A NO answer results in no push and a clean task state.
+4. A run ending before an answer results in no push and a clean task state.
+5. A YES produces a grant the guard honors for exactly that push and no other: verify a replay
+   against a different branch, a different remote, and a later commit is each refused.
+6. TWO-CYCLE TEST for the hazard above: after a granted push in cycle N, cycle N+1's dispatch does
+   NOT inherit standing permission via `## Prior Decisions`.
+7. `grep` the source store for remaining blanket-prohibition language; list every file changed and
+   every file deliberately left unchanged, with reasons.
+8. Re-run scripts/tests/ plus the check-*.sh lints, including check-extension-docs.sh Rule H. No
+   test weakened or deleted; any test whose assertion changed is named in the summary with its old
+   and new assertion. New tests must cover items 1-6.
+
+---
+
+### 263. Consent-gated git push: grant semantics and enforcement mechanism
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+=== GOAL ===
+Make `git push` permissible by an agent ONLY after the user answers an interactive
+AskUserQuestion gate granting permission for that specific push. The prohibition stays the
+DEFAULT. Permission must never be inferred from a task description, from a prior approval in
+another context, or from a user message that merely sounds permissive.
+
+=== CURRENT STATE (verified 2026-09-25, source store) ===
+rules/pr-prohibition.md has frontmatter `paths: "**/*"` (with a why-eager comment explaining the
+universal glob is deliberate), so it applies repo-wide. It bans three classes:
+  1. PR/MR creation (`gh pr create`, `glab mr create`, any API/wrapper equivalent)
+  2. `git push` in ALL forms, explicitly including `--force`, `--set-upstream`, `-u`
+  3. autonomous `/merge` invocation
+Its "Required Behavior" section says agents MUST stop at `[PR READY]`, report readiness, and wait
+for the user to invoke `/merge`, and states verbatim: "Never push branches or create PRs even if
+asked to in task descriptions or user messages." That sentence is the one this change must
+narrow -- carefully, because it is also the sentence that currently makes the rule
+un-social-engineerable.
+
+Other places the prohibition is asserted, all of which must stay consistent:
+  - rules/git-workflow.md "Git Safety > Never Run" bullet: "`git push --force` to main/master"
+  - merge-sources/claudemd.md: `/merge` and `/tag` marked "(user-only)" in the command table
+    (lines ~111, ~114), `skill-tag | (user-only)` in the skill table (~153), and the
+    "User-Only Skills" note (~165)
+  - context/standards/git-integration.md and git-safety.md contain NO push references (checked) --
+    so the rule surface is narrower than it might appear; do not assume otherwise without
+    re-checking.
+
+=== MECHANISMS THAT ALREADY EXIST AND SHOULD BE EXTENDED, NOT REINVENTED ===
+  - scripts/git-commit-scoped.sh -- the single sanctioned path-scoped, mutex-serialized committer.
+    This is the structural model for a push wrapper: one sanctioned entry point, everything else
+    blocked.
+  - hooks/guard-destructive-git.sh -- an existing PreToolUse Bash hook that already blocks two
+    command classes (destructive-on-dirty-tree, and over-staging). Read its header in full: it
+    documents that it blocks via `exit 2` + stderr, NOT `permissionDecision: deny`, because the
+    latter is documented-buggy for allow-listed `Bash(git:*)` commands (GH #4669, #13214, #18312).
+    Any new push guard must use the same blocking mechanism for the same reason.
+    It also documents a critical asymmetry to respect: the snapshot-marker exemption applies to
+    the destructive class but is FORBIDDEN from exempting the over-staging class, because a
+    snapshot makes data loss recoverable while over-staging is a scope problem a snapshot does
+    not make acceptable. Decide deliberately which side a push grant resembles.
+  - scripts/git-snapshot.sh -- its marker-file contract is a working precedent for a ONE-SHOT
+    authorization token: a fresh marker (<=120s) authorizes exactly one destructive command and is
+    CONSUMED (deleted) on use. Evaluate this as the grant-token shape before designing a new one.
+    Note its known observation boundary, documented in guard-destructive-git.sh: a hook only ever
+    sees the top-level `tool_input.command` string, so a `git push` run as a subprocess inside a
+    wrapper script is structurally invisible to the hook. That is what makes the
+    wrapper-plus-hook pair work, and it is also the bypass to reason about.
+  - context/standards/interactive-selection.md -- the AskUserQuestion schema and option-
+    construction standard the gate must conform to.
+
+=== DESIGN QUESTIONS TO SETTLE (these are the research/plan work; they are deliberately NOT
+pre-decided) ===
+  1. GRANT SCOPE: one push only, or session-scoped, or task-scoped? What INVALIDATES an existing
+     grant -- new commits after the grant, a different branch, a different remote, a change from
+     non-force to force? State the invalidation predicate precisely enough to implement.
+  2. WHETHER PR/MR CREATION AND `/merge` FOLLOW THE SAME GATE OR STAY FULLY USER-ONLY. Working
+     assumption to ARGUE FOR OR AGAINST, not to assume: push is the narrow case being opened;
+     PR creation and `/merge` stay prohibited. Whichever way this lands, say why.
+  3. CATEGORICAL EXCLUSIONS: are `--force` and `--force-with-lease`, and pushes to the default
+     branch (master), outside what ANY grant can cover? Note the repo's default branch is master
+     and rules/git-workflow.md already singles out force-push-to-master as a "Never Run".
+  4. WHERE THE GATE LIVES SO IT CANNOT BE BYPASSED. A rule edit alone is documentation, not
+     enforcement -- this is the central requirement. Design the enforcement pair: a wrapper/guard
+     script analogous to git-commit-scoped.sh, plus a PreToolUse hook blocking bare `git push`
+     call sites the way guard-destructive-git.sh already blocks its two classes. Confirm the hook
+     registration shape in manifest.json against the existing registered hooks.
+  5. DURABLE AUDIT RECORD: how the grant request and the user's actual answer are recorded so the
+     consent is auditable after the fact. Candidates: a `.decisions.json` entry per the handoff
+     schema's Decisions File Schema, and/or a specs/events.jsonl record. Record enough to
+     reconstruct WHAT was authorized (remote, branch, commit sha, force-or-not) and WHEN, not
+     merely that someone said yes.
+
+=== EXPLICIT NON-GOALS ===
+Do not implement the orchestrator-dispatch path here -- a dispatched subagent cannot call
+AskUserQuestion, and routing that request is the companion task's scope. This task must, however,
+define the grant semantics and guard interface that companion task consumes, and should state
+that interface explicitly rather than leaving it implicit.
+
+=== VERIFICATION ===
+1. A bare `git push` from an agent is BLOCKED by the hook, with a stderr message naming the
+   sanctioned path. Demonstrate the block, do not merely assert it.
+2. A push attempted with NO grant present is blocked.
+3. A push attempted with an INVALID grant (per whichever invalidation predicate is chosen --
+   e.g. stale, wrong branch, wrong remote, commits added since) is blocked. Test each
+   invalidation condition the design defines.
+4. A categorically excluded push (force, and/or default-branch, per decision 3) is blocked EVEN
+   WITH an otherwise-valid grant.
+5. A push with a valid, in-scope grant succeeds through the sanctioned wrapper.
+6. The audit record is written and contains enough to reconstruct what was authorized.
+7. The fail-safe direction is BLOCK: an unreadable, absent, malformed, or unverifiable grant
+   must block, never permit. Test the malformed case explicitly.
+8. `git push` remains prohibited by default with no grant mechanism invoked -- i.e. existing
+   agent behavior is unchanged unless a user actively grants.
+9. Re-run the shell test suite under scripts/tests/. No existing test may be weakened or deleted
+   to make this pass; a test that asserts the OLD blanket prohibition must be updated
+   deliberately, with its new assertion stated in the summary.
+
+=== VERIFIED MECHANISM MAP (surveyed 2026-09-25; use these, do not re-derive) ===
+THE PROHIBITION IS CURRENTLY RULE TEXT ONLY -- THERE IS NO MECHANICAL ENFORCEMENT AT ALL.
+This is the single most important finding and it reframes the work. Verified:
+  - `grep -rln "git push|gh pr create|glab mr create" hooks/ scripts/` over the source store
+    returns EMPTY. No hook, script, or lint blocks any of the three prohibited classes.
+  - No test under scripts/tests/ (76 files) invokes `git push` or `gh pr create` against a hook to
+    assert blocking. Matches for "push" there are incidental (`git stash push`; "push bytes past a
+    ceiling"; an unrelated "hand-patch prohibition" string in test-orchestrate-build-dispatch.sh).
+  - scripts/check-extension-docs.sh Rule H `check_undeclared_rules()` (~line 508-524) asserts only
+    STRUCTURAL registration -- that rules/pr-prohibition.md is declared in manifest.json's
+    `provides.rules` so it propagates to consumers. Its motivating comment records that the rule
+    once existed on disk while absent from provides.rules, so it "never propagated downstream".
+    That is a propagation check, not a behavioral one.
+  So the guard being added here is NET-NEW enforcement, not a modification of existing
+  enforcement. Consequence worth stating plainly in the plan: this change can leave the system
+  STRICTER than it found it (a real hook where there was only text), even while narrowing the
+  rule's stated scope. Design for that outcome deliberately.
+
+HOOK REGISTRATION -- the wiring is NOT where you would first look:
+  - manifest.json `provides.hooks` (~line 260-280) is a FLAT FILENAME LIST only
+    ("guard-destructive-git.sh" among ~19 others). It carries no PreToolUse wiring.
+  - merge-sources/settings-hooks.json (the deep-merge fragment applied into a consumer repo's
+    .claude/settings.json) registers only `matcher: "Write|Edit"` ->
+    validate-no-task-references.sh. It carries NO Bash-matcher entry.
+  - root-files/settings.json is the template that actually carries the Bash-matcher registration
+    for guard-destructive-git.sh (~line 44-52), shaped as a PreToolUse array entry with
+    `matcher: "Bash"` and one `{"type":"command","command":"bash .claude/hooks/<script>.sh"}`.
+  A new push guard must be added in BOTH manifest.json `provides.hooks` (so it deploys) AND the
+  correct settings template (so it is wired). Missing either yields a silently inert hook -- which
+  is precisely the failure mode Rule H exists to catch for rules.
+
+ONE-SHOT MARKER CONTRACT (the reusable grant-token precedent), verified in
+scripts/git-snapshot.sh + hooks/guard-destructive-git.sh:
+  - Path: `specs/{NNN}_{SLUG}/.git-snapshot-marker`, task-scoped, gitignored via
+    `**/.git-snapshot-marker`.
+  - Format: line-oriented KEY=VALUE, minimally `TIMESTAMP=<epoch seconds>`, plus tool-specific
+    payload fields (HEAD_SHA, PATCH_PATH, STASH_REF, BRANCH_NAME, UNTRACKED_BACKUP).
+  - Freshness: `FRESHNESS_WINDOW=120` seconds. The consuming hook does
+    `find specs -maxdepth 3 -name ".git-snapshot-marker" -type f`, picks newest by TIMESTAMP, and
+    honors it only if `0 <= (NOW - TIMESTAMP) <= 120`.
+  - Consumption: `rm -f "$BEST_MARKER"; exit 0` (guard-destructive-git.sh ~line 287-292) -- delete
+    on use, so one marker authorizes exactly one gated command.
+  A push grant token needs MORE payload than this marker does (remote, branch, sha, force-or-not)
+  precisely so it cannot be replayed against a different push. A bare TIMESTAMP-only token would
+  be a blank cheque for any push within the window -- do not reuse the shape uncritically.
+
+scripts/git-commit-scoped.sh interface, for the wrapper to be modeled on:
+  - `git-commit-scoped.sh --message <msg> --session <sid> [--honest-index-rows <task_number>]
+    -- <pathspec>...`
+  - PROJECT_ROOT: `SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)`, source lib/common.sh,
+    `PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"`, then `. deploy-root-guard.sh`.
+  - Mutex: serializes via `specs/.commit-lock/` through `task-lock.sh commit-acquire/commit-release`,
+    released in an EXIT trap; `COMMIT_MUTEX_HELD` lets a nested caller reuse the lock as a guest.
+  - IMPORTANT DIVERGENCE: it fails OPEN on mutex-acquire failure (proceeds unserialized with a loud
+    WARNING), reasoning the worst residual case is a safe index.lock race, not misattribution. A
+    PUSH guard must fail CLOSED -- an unavailable lock or unverifiable grant must refuse the push.
+    Do not inherit the fail-open direction; state this divergence explicitly in the code comments.
+  - Shape to mirror: usage/flag parsing -> PROJECT_ROOT resolution -> mutex acquire/release via
+    task-lock.sh verbs -> guarded git operation -> bounded retry on index.lock. Safety gates
+    V2/V3/V4 (unmatched-path classification, exclude-only-pathspec refusal, nothing-to-commit
+    exit 1) are the precedent for refusing ambiguous input rather than guessing.
+
+AUDIT WRITER: scripts/events-append.sh is the sanctioned specs/events.jsonl writer (analogous to
+state-write.sh): builds the line via `jq -c -n`, appends under `flock` on specs/.events.lock.
+Required flags `--event-type --category --session --message`; optional `--task --checkpoint
+--duration --detail-json --error-ref --cwd --cc-session-id`. `--category` is an enum:
+deviation|blocker|milestone|success -- pick the fitting one and justify it. Record fields and the
+draft-07 schema live in context/formats/events-format.md and context/schemas/events-schema.json,
+which MUST stay in sync with each other. Never hand-append to events.jsonl.
+
+DANGLING REFERENCE TO RESOLVE (small, real, in scope): hooks/guard-destructive-git.sh line 6 says
+it is "Modeled line-for-line on .claude/hooks/block-pr-submission.sh", but NO file named
+block-pr-submission.sh exists anywhere in the source store, and manifest.json has no
+provides.hooks entry for it. It is a deploy-side-only artifact, i.e. either an orphan that
+source-store regeneration will wipe or a stale reference to something already gone. Determine
+which and fix the reference. Do not leave a header comment pointing at a file the source store
+does not contain.
+
+---
 
 ### 262. Reduce redundant verify-deploy passes in the redeploy checkpoint
 - **Status**: [IMPLEMENTING]
