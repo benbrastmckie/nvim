@@ -1,7 +1,9 @@
 # Implementation Plan: Reduce redundant verify-deploy passes in the redeploy checkpoint
 
 - **Task**: 262 - Reduce redundant verify-deploy passes in the redeploy checkpoint
-- **Status**: [NOT STARTED]
+- **Status**: [COMPLETED] — decision-gate/contingency outcome: Phase 1's precondition audit found
+  the design's invariance premise false; Phases 2-6 closed `[COMPLETED WITH EXCLUSIONS]` per the
+  plan's own Rollback/Contingency rather than executed against an unsound premise
 - **Effort**: 6.5 hours
 - **Dependencies**: 260 (self-clobbering redeploy fix) — COMPLETED (`f90061046 task 260: complete implementation`); the REDEPLOY CHECKPOINT block already carries its `orchestrate_cycle_plan_main` wrap, nothing left to rebase
 - **Research Inputs**: `specs/262_reduce_redundant_verify_deploy_passes/reports/01_redeploy-checkpoint-cost-reduction.md`
@@ -119,31 +121,97 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Precondition audit and pre-change baseline measurement [NOT STARTED]
+### Phase 1: Precondition audit and pre-change baseline measurement [COMPLETED]
 
 **Goal**: Establish, before any edit, (i) that gate 8's outcome is genuinely invariant across one
 `deploy-headless.sh` call, and (ii) the "before" wall-time numbers Verification item 1 requires.
 
 **Tasks**:
-- [ ] Enumerate every `agent-system/extensions/core/scripts/tests/*.sh` file and grep each for
+- [x] Enumerate every `agent-system/extensions/core/scripts/tests/*.sh` file and grep each for
       references to the live deployed tree outside its own `mktemp`/`WORKDIR`/`FIXTURE` scope:
       `PROJECT_ROOT/.claude`, `$TARGET/.claude`, `CLAUDE_DIR`, and a bare `.claude/` path.
-- [ ] Additionally grep every test for reads of source files `deploy-headless.sh` itself mutates,
+      *(completed: 73 files enumerated. The literal patterns named in this bullet had zero hits
+      outside fixture scope, but generalizing "a bare `.claude/` path" to any variable-prefixed
+      `.claude/` path that resolves to the live checkout surfaced the real hazard —
+      `$REPO_ROOT/.claude/...`, where `REPO_ROOT="$(git rev-parse --show-toplevel)"` — present in
+      41 of 73 files as a documented "deploy-tree-first / source-store-fallback candidate
+      resolution" pattern: each such test prefers the DEPLOYED copy of its own subject-under-test
+      over the source-store sibling, falling back to source only when the deployed copy is
+      absent. Since `.claude/` is deployed on disk in this repo
+      (`git check-ignore -v .claude/scripts/lint/lint-branch-gated-sections.sh` confirms it is
+      gitignored-but-present), the deployed candidate wins for all 41 files. File list:
+      test-assess-repo-health.sh, test-consumer-freshness.sh, test-corroborate-phase-counts.sh,
+      test-deploy-freshness.sh, test-deploy-orphans.sh, test-deploy-propagation.sh,
+      test-deploy-verify-wiring.sh, test-double-loading-check.sh, test-errors-append.sh,
+      test-force-phases.sh, test-gate-out-repair-reporting.sh, test-generate-task-order.sh,
+      test-handoff-reader-parity.sh, test-index-entries-schema.sh, test-init-specs.sh,
+      test-lint-branch-gated-sections.sh, test-lint-json-channel-discipline.sh,
+      test-lint-lifecycle-status-var.sh, test-lint-postflight-boundary.sh,
+      test-lint-scoped-commit-boundary.sh, test-lint-state-writer-boundary.sh,
+      test-lint-task-lookup-adoption.sh, test-mint-dispatch-seq.sh,
+      test-orchestrate-build-dispatch.sh, test-phase-heading-patterns.sh,
+      test-postflight-deploy-gate.sh, test-postflight-marker-schema.sh,
+      test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh,
+      test-return-meta-status-vocabulary.sh, test-roadmap-items-producer.sh,
+      test-runtime-file-tracking.sh, test-skill-base-lifecycle.sh, test-status-vocabulary.sh,
+      test-task-type-detect.sh, test-update-plan-status.sh, test-update-task-status.sh,
+      test-validate-handoff.sh, test-validate-return-meta.sh, test-validate-state.sh,
+      test-verify-deploy-context-budget.sh (41 total, confirmed by
+      `grep -l '\$REPO_ROOT/\.claude' *.sh | wc -l`).)*
+- [x] Additionally grep every test for reads of source files `deploy-headless.sh` itself mutates,
       i.e. `agent-system/extensions/*/index-entries.json` (the `generate-context-line-counts.sh
       --write` auto-repair at `deploy-headless.sh:312-315`). Confirm each hit is fixture-scoped
       (`test-index-entries-schema.sh` writes its own `$FIXTURE/index-entries.json`;
       `test-double-loading-check.sh` and `test-deploy-orphans.sh` reference it only in comments) —
       re-verify rather than trusting this plan's reading.
-- [ ] Record the audit result explicitly, as a written statement of what was checked and what was
+      *(completed: re-verified directly. Only two files mention `index-entries.json`:
+      `test-index-entries-schema.sh:94` writes its own `$FIXTURE/index-entries.json` (fixture-
+      scoped, confirmed); `test-deploy-orphans.sh:152` mentions it only in a comment. No test
+      reads the live, deploy-mutated `agent-system/extensions/*/index-entries.json`. This
+      sub-check passes; it is the OTHER check (above) that fails.)*
+- [x] Record the audit result explicitly, as a written statement of what was checked and what was
       found, in the phase's commit message and later in the execution summary.
-- [ ] **Decision gate**: if any test reads the live deployed tree or a deploy-mutated source file,
+      *(completed: see this phase's commit message and the execution summary.)*
+- [x] **Decision gate**: if any test reads the live deployed tree or a deploy-mutated source file,
       STOP. Do not proceed to Phase 2; take the Rollback/Contingency fallback and report.
-- [ ] Measure and record, with `time`, from the repo root:
+      *(completed: ANSWERED STOP. 41 of 73 test files read the live deployed tree as their
+      subject-under-test by documented design, which makes Gate 8's outcome NOT invariant across
+      a `deploy-headless.sh` call for any cycle whose changes touch a script one of those 41
+      suites covers — precisely the case this checkpoint exists to catch. Capturing Gate 8 once
+      and reusing it for both `pre_findings` and `post_findings` would make the checkpoint
+      categorically blind to that class of regression. Per this phase's own Rollback/Contingency
+      fallback: Gate 8 stays per-side; Phases 2-6 are closed `[COMPLETED WITH EXCLUSIONS]` rather
+      than executed. See `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`'s
+      new "Resolved: ... single-capture Gate-8 sharing REJECTED" paragraph for the durable record.)*
+- [x] Measure and record, with `time`, from the repo root:
       `bash .claude/scripts/verify-deploy.sh --skip-slow --findings --quiet` and
       `bash .claude/scripts/verify-deploy.sh --findings --quiet`, and
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet` on its own.
-- [ ] Record whether `deploy-headless.sh`'s own wall time can be measured non-destructively in
+      *(completed: `--skip-slow` = 1m34.880s (real); full (no `--skip-slow`, includes Gate 8) =
+      10m53.502s (real); `run-all.sh --quiet` alone = 9m21.299s (real). Implied Gate-8-only cost
+      from the first two numbers: 9m18.622s, consistent with the standalone 9m21.299s measurement
+      within noise. These are close to, and corroborate, the research report's own prior
+      single-sample numbers (1m35.1s / 11m03.6s / ~9m28s implied). Both runs also surfaced the
+      same pre-existing, unrelated findings the research report already catalogued (a `gate3`
+      doc-lint/manifest-drift hit and five pre-existing Gate-8 shell-test failures:
+      test-handoff-dispatch-identity.sh, test-lint-json-channel-discipline.sh,
+      test-orchestrate-context-growth.sh, test-orchestrate-recover-message-findings.sh,
+      test-verify-deploy-context-budget.sh — identical between the full-verify run and the
+      standalone run-all.sh run taken ~90s apart with no deploy in between, confirming they are
+      static baseline noise, not something this measurement introduced). The `test-lint-deploy-
+      caller-wrap.sh` "not in provides.scripts" and `run-all.sh` "content differs from source"
+      gate3 findings are consistent with sibling task 261's declared, in-flight, uncommitted work
+      under this same `scripts/tests/` directory (its `file_scope` covers it) — not attributable
+      to this task; confirmed via `git status`/`git diff` showing no uncommitted change of this
+      task's own to `run-all.sh`.)*
+- [x] Record whether `deploy-headless.sh`'s own wall time can be measured non-destructively in
       this environment; if not, say so rather than guessing a number.
+      *(completed: NOT measured in this session, and this is stated rather than guessed.
+      Running `deploy-headless.sh` for real would redeploy the current working tree, including
+      sibling task 261's own uncommitted, in-flight edits under `scripts/tests/` — risking
+      interference with that concurrently-dispatched task's own work per the territory contract.
+      It was not needed to establish the Phase 1 finding above, which rests on static code
+      reading, not on an observed deploy. No number is reported for it.)*
 
 **Timing**: 0.75 hours (plus ~25 minutes of unattended measurement wall time)
 
@@ -166,12 +234,26 @@ materially different (b) does not block the design but MUST be reported as the a
 - Three wall-time numbers are recorded with their commands.
 - The decision gate is explicitly answered "proceed" or "stop", in writing.
 
+**Result**: Hypothesis (a) is FALSE, not confirmed — 41 of 73 files read the live deployed tree
+as their subject-under-test by documented design (see Tasks above). Hypothesis (b) is confirmed
+close to the research report's prior numbers (1m34.880s / 10m53.502s / 9m21.299s vs. the report's
+1m35.1s / 11m03.6s / ~9m28s). All three verification bullets above are satisfied: the audit is
+100%-complete (73/73 files), three wall-time numbers are recorded with their commands, and the
+decision gate is answered STOP in writing. Per Rollback/Contingency, Phases 2-6 are closed
+`[COMPLETED WITH EXCLUSIONS]` below rather than executed.
+
 ---
 
-### Phase 2: Add `deploy_gate8_snapshot` to `deploy-baseline-lib.sh` [NOT STARTED]
+### Phase 2: Add `deploy_gate8_snapshot` to `deploy-baseline-lib.sh` [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: A single, format-compatible producer of gate-8 `FINDING` lines that can be captured once
 and reused, living beside the three functions that already consume findings text.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Add `deploy_gate8_snapshot` to `deploy-baseline-lib.sh` and every task below it | Phase 1's decision gate (a blocking precondition audit) answered STOP: the invariance premise this function would depend on is false. 41 of 73 files under `scripts/tests/` prefer the DEPLOYED copy of their subject-under-test over the source-store copy, so Gate 8's outcome is not invariant across a `deploy-headless.sh` call. Building this function anyway would be building an unsound mechanism on a decided-false premise | Phase 1's Tasks list (file enumeration, decision-gate answer) and `batch-orchestration-guardrails.md`'s new "Resolved: ... single-capture Gate-8 sharing REJECTED" paragraph |
 
 **Tasks**:
 - [ ] Add `deploy_gate8_snapshot <target_repo>` to
@@ -224,10 +306,16 @@ and reused, living beside the three functions that already consume findings text
 
 ---
 
-### Phase 3: Wire the shared gate-8 snapshot into the checkpoint [NOT STARTED]
+### Phase 3: Wire the shared gate-8 snapshot into the checkpoint [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The checkpoint pays for gate 8 once instead of two or three times, with the pre/post pair
 at identical depth by construction.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Wire `deploy_gate8_snapshot` into `orchestrate-cycle-plan.sh`'s three call sites and rewrite the DEFECT A/DEPTH NOTE comments | Depends on Phase 2, which was excluded because Phase 1's decision gate answered STOP. Wiring a single-capture gate-8 share into the checkpoint would make it categorically blind to any Gate-8 regression a redeploy introduces in the 41 deploy-tree-testing suites Phase 1 identified — a strictly worse defect than the cost being saved | Phase 1's decision-gate finding; `batch-orchestration-guardrails.md`'s new "Resolved: ... REJECTED" paragraph |
 
 **Tasks**:
 - [ ] In `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`, inside the
@@ -290,10 +378,16 @@ drifted, and a fourth in-checkpoint site appearing would change the wiring.
 
 ---
 
-### Phase 4: Test coverage and suite re-run [NOT STARTED]
+### Phase 4: Test coverage and suite re-run [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Lock the new behavior in with tests that would fail if gate 8 were re-executed per side,
 if the shared lines diverged in format, or if any branch of the contract changed.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Add the `write_g11_run_all_stub` helper and four new Group 11 cases to `test-orchestrate-cycle-plan.sh` | There is no shared gate-8 capture (Phase 3 excluded) to write regression coverage for. Writing tests for a mechanism that was not built, against a design decided unsound, would test nothing real and would need to be discarded rather than merely updated if a sound design is found later | Phase 1's decision-gate finding; Phases 2-3's own Reasoned Exclusions rows above |
 
 **Tasks**:
 - [ ] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh`
@@ -358,10 +452,16 @@ rather than by relaxing the case's assertion.
 
 ---
 
-### Phase 5: Document the sharing in `batch-orchestration-guardrails.md` [NOT STARTED]
+### Phase 5: Document the sharing in `batch-orchestration-guardrails.md` [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The authoritative checkpoint contract describes what the code now does, including the
 two things a future reader would otherwise misread.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Amend the Baseline mechanism paragraph to describe a working gate-8 sharing mechanism, the load-premise re-check for a mechanism that runs, and the notice-count semantics change | There is no sharing mechanism to document — Phases 2-4 were excluded. Describing code that does not exist would misinform a future reader. A related, smaller documentation edit was made instead: a new paragraph in the SAME file, immediately after the "Self-overwrite mitigation" paragraph, records the REJECTED decision itself (the 41-file deploy-tree-first finding) plus the two further rejected/deferred alternatives this phase's task list asked to preserve (cross-cycle ledger caching; `deploy-headless.sh` inline-verify suppression) — satisfying this phase's underlying purpose (prevent future rediscovery of a bad idea) without documenting a mechanism that was never built | `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`'s new "Resolved: ... single-capture Gate-8 sharing REJECTED" paragraph and its two following bullets |
 
 **Tasks**:
 - [ ] Amend the **Baseline mechanism** paragraph (~:713-722 of
@@ -413,35 +513,64 @@ two things a future reader would otherwise misread.
 
 ---
 
-### Phase 6: Measure, verify end to end, and close [NOT STARTED]
+### Phase 6: Measure, verify end to end, and close [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Report real before/after numbers and confirm all eight of the dispatch's verification
 items, without claiming anything unmeasured.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Re-measure "post-change" component costs and compute a before/after checkpoint verify-cost delta | There is no post-change state — Phases 2-4 were excluded, so no code changed. A before/after delta would compare the measured baseline against itself, which is not a measurement | Phase 1's decision-gate finding; no diff exists to `orchestrate-cycle-plan.sh` or `deploy-baseline-lib.sh` (`git status` confirms) |
+
 **Tasks**:
 - [ ] Re-measure, with `time`, the post-change component costs: the shared gate-8 run
       (`run-all.sh --quiet`) and `verify-deploy.sh --skip-slow --findings --quiet`.
+      *(deviation: skipped — no post-change state exists; see Reasoned Exclusions above)*
 - [ ] Compute the before/after checkpoint verify cost from Phase 1's and this phase's components:
       before = 2 full runs (+1 on the defer path); after = 1 gate-8 run + 2 fast runs (+1 fast on
       the defer path). Report the raw component numbers alongside any derived total, and label a
       derived total as derived.
-- [ ] If a real `/orchestrate` run whose checkpoint actually fires (`cycle_modified_files` touching
+      *(deviation: skipped — same reason; see Reasoned Exclusions above)*
+- [x] If a real `/orchestrate` run whose checkpoint actually fires (`cycle_modified_files` touching
       `agent-system/**`) occurs while this task is in flight, record its observed checkpoint wall
       time. If none occurs, say so explicitly rather than presenting the derived number as
       observed. Do not stage an artificial multi-task run solely to produce a number.
-- [ ] Walk the dispatch's eight verification items one by one and record, for each, the concrete
+      *(completed: none occurred during this task's own implementation dispatch; stated
+      explicitly rather than fabricated. No derived total was presented as observed, per the
+      exclusion above.)*
+- [x] Walk the dispatch's eight verification items one by one and record, for each, the concrete
       evidence: item 1 the measurements above; items 2-4 restated in the terms this design
       actually implements (the within-checkpoint share, the ledger's unchanged `skip_hash` /
       `skip_attributed` / `run` behavior, and the missing/unreadable-runner fail-safe case from
       Phase 4) rather than the cross-cycle cache the plan rejects; items 5-7 the Phase 4 cases for
       defer, flaky classification, and branch (c); item 8 the full suite re-run.
-- [ ] Run the full gate set once: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`) and
+      *(completed: see the execution summary's "Dispatch Verification Items" section, which
+      restates each of the 8 items against the actual outcome — a rejected design, not an
+      implemented one — rather than fabricating evidence for a mechanism that was not built.)*
+- [x] Run the full gate set once: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`) and
       confirm no finding newly attributable to this task's own files. Pre-existing findings the
       research already catalogued stay pre-existing and are named as such, not silently absorbed.
-- [ ] Write the execution summary, carrying forward: the Phase 1 audit statement, the corrected
+      *(completed: the full run was already taken in Phase 1 (10m53.502s) before any edit in this
+      task. Two subsequent `--skip-slow` re-runs after this task's own edits (batch-orchestration-
+      guardrails.md, plan/summary/state files) found exactly one new gate3 finding — an
+      index-entries.json `line_count` mismatch for the edited doc — fixed immediately via the
+      named remedy (`bash .claude/scripts/generate-context-line-counts.sh --write`, run from the
+      deployed copy per that script's own source-store-only contract) and confirmed resolved on
+      re-run. The one remaining finding attributable to this task's own file
+      (`gate5 core: Content differs from source: context/patterns/batch-orchestration-
+      guardrails.md`) is the expected, self-resolving "pending redeploy" signal every legitimate
+      source-store edit produces until the next redeploy — not a defect, and in fact a direct,
+      unplanned demonstration of the exact deploy/verify asymmetry this task's own subject matter
+      concerns. `scripts/tests/test-lint-deploy-caller-wrap.sh` "not in provides.scripts" is
+      confirmed pre-existing and unrelated to this task's edits (`git status`/`git log` show no
+      diff to that file or to `manifest.json` from this task).)*
+- [x] Write the execution summary, carrying forward: the Phase 1 audit statement, the corrected
       research premise about `deploy-headless.sh`'s source-store write, the measured numbers, and
       the two follow-up recommendations (inline-verify suppression; `verify-deploy.sh`'s stale
       header timings).
+      *(completed: see `specs/262_reduce_redundant_verify_deploy_passes/summaries/01_*-summary.md`.)*
 
 **Timing**: 1.25 hours (plus unattended measurement wall time)
 
@@ -468,35 +597,73 @@ report whatever they actually show — including a smaller or absent saving.
 
 ## Testing & Validation
 
+**Outcome note**: this plan's decision gate (Phase 1) answered STOP; Phases 2-4's code and test
+changes were never made (see each phase's `#### Reasoned Exclusions`). The items below therefore
+describe validation for the mechanism this plan proposed, not one that exists. What was actually
+validated: `deploy-baseline-lib.sh` and `orchestrate-cycle-plan.sh` are byte-for-byte unchanged
+(`git status`/`git diff` show no diff to either); `test-deploy-baseline-lib.sh` and
+`test-orchestrate-cycle-plan.sh` were re-run unmodified and pass, exactly as before this task
+(no test was weakened, skipped, or deleted — none was touched at all); the full
+`verify-deploy.sh` gate set was run (Phase 1's baseline measurement) and reports no finding
+attributable to this task's own files beyond the expected, self-resolving pending-redeploy
+signal for the one doc file this task did edit (see Phase 6).
+
 - [ ] `bash -n` clean on `deploy-baseline-lib.sh` and `orchestrate-cycle-plan.sh`.
+      *(N/A — neither file was modified; both remain exactly as committed before this task.)*
 - [ ] `test-orchestrate-cycle-plan.sh` passes in full, including all four new Group 11 cases.
+      *(deviation: altered — no Group 11 cases were added (Phase 4 excluded); the existing suite
+      was re-run unmodified and passes.)*
 - [ ] The gate-8 invocation-count case proves `run-all.sh` runs exactly once per checkpoint firing,
       even on the three-verify-call confirmation path.
+      *(N/A — no such case was added; there is no shared gate-8 capture to test.)*
 - [ ] A failing gate-8 result present on both sides yields zero new findings (branch (c) loud
       proceed), by construction.
+      *(N/A — unchanged from before this task; branch (c) still relies on two independent
+      full-depth captures, not construction.)*
 - [ ] An absent `run-all.sh` yields a finding on both sides, never a silent clean (fail-safe).
-- [ ] A genuinely new, confirmed, attributable finding still defers the batch with the
+      *(N/A — no new function to test this against.)*
+- [x] A genuinely new, confirmed, attributable finding still defers the batch with the
       `defer_ledger` detail naming it.
-- [ ] A flaky (non-reproducing) candidate finding is still classified flaky and does not defer.
-- [ ] The ledger's `skip_hash` / `skip_attributed` / `run` decisions are unchanged
+      *(unchanged — this logic was not touched by this task.)*
+- [x] A flaky (non-reproducing) candidate finding is still classified flaky and does not defer.
+      *(unchanged — this logic was not touched by this task.)*
+- [x] The ledger's `skip_hash` / `skip_attributed` / `run` decisions are unchanged
       (`deploy-ledger-lib.sh` untouched; cases (l)-(s) pass unmodified).
-- [ ] The full `verify-deploy.sh` gate set reports no finding attributable to this task's files.
-- [ ] No test weakened, skipped, or deleted.
+      *(confirmed — `deploy-ledger-lib.sh` has no diff from this task.)*
+- [x] The full `verify-deploy.sh` gate set reports no finding attributable to this task's files.
+      *(confirmed with one caveat: see Phase 6's completed task for the pending-redeploy signal
+      on the one doc file this task did edit, which is expected and self-resolving, not a defect.)*
+- [x] No test weakened, skipped, or deleted.
+      *(confirmed — no test file was touched by this task at all.)*
 
 ## Artifacts & Outputs
 
-- `agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh` — fifth exported function
-  `deploy_gate8_snapshot` plus an extended header.
-- `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` — one shared gate-8 capture,
-  three call sites at `--skip-slow` + union, four amended comment blocks.
-- `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` — new stub helper,
-  seeded passing `run-all.sh`, four new cases.
-- `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md` — amended
-  Baseline mechanism paragraph and the sharing/load-premise/notice-count/rejected-design records.
+**Outcome note**: the artifact list below is the plan's ORIGINAL projection. What was actually
+produced is different, because the decision gate stopped the design before Phases 2-4:
+
+- `agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh` — **not modified** (Phase 2
+  excluded).
+- `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` — **not modified** (Phase 3
+  excluded).
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` — **not modified**
+  (Phase 4 excluded).
+- `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md` — **actually
+  produced**: a new paragraph (placed after "Self-overwrite mitigation...") recording the
+  REJECTED decision and its evidence, plus the two further rejected/deferred alternatives
+  (cross-cycle ledger caching; `deploy-headless.sh` inline-verify suppression) — not the
+  originally-planned "amended Baseline mechanism paragraph" for a mechanism that was never built.
+- `agent-system/extensions/core/index-entries.json` — **actually produced**: the `line_count`
+  entry for the amended `batch-orchestration-guardrails.md` corrected via
+  `generate-context-line-counts.sh --write` (not in the original plan; a direct consequence of
+  editing that file, per the same `deploy-headless.sh` auto-repair mechanism Phase 1's audit
+  covered).
 - `specs/262_reduce_redundant_verify_deploy_passes/summaries/01_*-summary.md` — execution summary
-  with measured before/after numbers and the two follow-up recommendations.
+  with the Phase 1 measured numbers and the two follow-up recommendations (inline-verify
+  suppression; the researched-but-unimplemented cross-cycle idea), as actually produced.
 - Unchanged by design, and stated so: `scripts/verify-deploy.sh`, `scripts/deploy-headless.sh`,
-  `scripts/lib/deploy-ledger-lib.sh`, `scripts/command-gate-out.sh`.
+  `scripts/lib/deploy-ledger-lib.sh`, `scripts/command-gate-out.sh`, AND (unlike the original
+  projection) `scripts/lib/deploy-baseline-lib.sh`, `scripts/orchestrate-cycle-plan.sh`, and
+  `scripts/tests/test-orchestrate-cycle-plan.sh`.
 
 ## Rollback/Contingency
 

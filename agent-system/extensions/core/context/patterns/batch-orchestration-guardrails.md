@@ -603,6 +603,48 @@ check vs. this checkpoint's independent full-depth comparison) is exactly as it 
 fix, so the sibling task's own redundant-verify-depth work starts from that same, unchanged
 baseline.
 
+**Resolved: the sibling redundant-verify-deploy-passes task's outcome — single-capture Gate-8
+sharing REJECTED, no code changed**: the decision flagged in the paragraph above was resolved by
+that task's own blocking precondition audit, which found the necessary invariance premise FALSE,
+not merely unconfirmed. The candidate design would have captured Gate 8 (`tests/run-all.sh`)
+exactly once, before `deploy-headless.sh` runs, and reused that one capture identically as both
+the pre- and post-redeploy Gate-8 component of the pair described in Gate depth (Defect A) above.
+That is unsound because Gate 8 does not test the source store alone: of the 73 files under
+`agent-system/extensions/core/scripts/tests/`, 41 use a documented "deploy-tree-first /
+source-store-fallback candidate resolution" pattern — each resolves its own repo root via
+`git rev-parse --show-toplevel` and then prefers the DEPLOYED copy of its subject-under-test
+(`$REPO_ROOT/.claude/scripts/...`) over the source-store sibling, falling back to the source-store
+copy only when the deployed copy is absent. Since `.claude/` is always deployed in this
+repository, the deployed candidate wins for all 41 files. A pre-redeploy Gate-8 run therefore
+exercises the STALE, pre-deploy copies of whatever scripts those 41 suites target, while a
+post-redeploy run exercises the FRESH, just-landed copies — precisely the divergence the pre/post
+comparison exists to observe. Reusing one capture for both sides would make the checkpoint
+categorically blind to any Gate-8-detectable regression a redeploy itself introduces across those
+41 suites — a strictly worse defect than the verify cost being saved, and the same asymmetric-pair
+hazard the Gate depth (Defect A) comment above already warns against, generalized from "don't
+compare full against fast" to "don't substitute one side's answer for the other's." No code was
+changed as a result: `deploy-baseline-lib.sh`, this checkpoint's three
+`deploy_findings_snapshot` call sites, `deploy-ledger-lib.sh`, and `command-gate-out.sh` all
+remain exactly as documented elsewhere in this section.
+
+Two further alternatives that same task considered and rejected/deferred, recorded here so a
+later pass does not rediscover them:
+- **Cross-cycle whole-snapshot caching in the durable redeploy ledger** (extending
+  `deploy-ledger-lib.sh` to carry a findings snapshot keyed on its existing hash state, so a
+  later invocation's pre-redeploy capture could be skipped entirely) — rejected. Reaching the
+  ledger's `run` decision (see Durable redeploy ledger below) requires the tracked source hash to
+  have CHANGED, which is precisely when a cached prior snapshot is stale for any source-only lint
+  gate; the one sub-case where reuse would be provably safe (hash unchanged) is already fully free
+  via the ledger's existing `skip_hash`/`skip_attributed` decisions. The mechanism buys nothing
+  where it is safe and is unsafe where it would matter.
+- **Suppressing `deploy-headless.sh`'s own internal `--skip-slow` verify** when this checkpoint is
+  about to run a full-depth verify of its own anyway — decided OUT, not implemented. That script
+  is outside this checkpoint's own file scope, and its exit 3 is derived from precisely that
+  inline run and consumed by several other callers (`scripts/command-gate-out.sh`,
+  `scripts/check-deploy-freshness.sh`, `scripts/orchestrate-batch-admit.sh`, the postflight
+  completion-deploy gate, and others) whose contracts were not audited here. Recorded as a
+  genuine, scoped follow-up for a future task, not folded into this one.
+
 **Failure contract**: the two gates are asymmetric and are evaluated in three branches.
 
 - **(a) `deploy-headless.sh` exit 1 or 2 (the deploy did not land)** — defer all remaining

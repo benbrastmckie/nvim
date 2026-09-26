@@ -1,22 +1,37 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 10,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/262_reduce_redundant_verify_deploy_passes/plans/01_redeploy-checkpoint-cost-reduction.md",
-      "summary": "6-phase plan: capture gate 8 (tests/run-all.sh, ~86% of a full verify run) exactly once per redeploy-checkpoint firing and union it identically into pre/post/confirm findings sets, preserving depth symmetry and the (a)/(b)/(c) contract."
+      "type": "summary",
+      "path": "specs/262_reduce_redundant_verify_deploy_passes/summaries/01_redeploy-checkpoint-cost-reduction-summary.md",
+      "summary": "Phase 1's blocking precondition audit found the plan's core invariance premise false (41/73 scripts/tests/ files prefer the deployed tree over the source store as their subject-under-test); per the plan's own Rollback/Contingency, no code was changed, Phases 2-6 close COMPLETED WITH EXCLUSIONS, and the rejected design is recorded durably in batch-orchestration-guardrails.md."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 262 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1790372264_d11531_262",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6.5,
-    "dependency_waves": [[1], [2], [3], [4, 5], [6]]
+  "completion_data": {
+    "completion_summary": "Precondition audit found the single-capture Gate-8 sharing design unsound (41/73 test files under scripts/tests/ prefer the deployed tree over the source store as their subject-under-test, so Gate 8 is not invariant across a deploy). No code changed; the rejected design and its evidence are recorded in batch-orchestration-guardrails.md so a future pass does not rediscover it. Baseline wall-time numbers were measured and reported."
   },
-  "dispatch_seq": 8
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/262_reduce_redundant_verify_deploy_passes/plans/01_redeploy-checkpoint-cost-reduction.md",
+    "specs/262_reduce_redundant_verify_deploy_passes/summaries/01_redeploy-checkpoint-cost-reduction-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When auditing whether a shared/cached test-suite snapshot can be reused across a deploy boundary, check whether the test suite's own constituent tests prefer the DEPLOYED tree over the source-store copy as their subject-under-test (a common 'deploy-tree-first / source-store-fallback candidate resolution' idiom: REPO_ROOT via `git rev-parse --show-toplevel`, then `$REPO_ROOT/.claude/scripts/X` before `$SCRIPT_DIR/../X`). If so, the suite's outcome is NOT invariant across a deploy for any script such a test targets, and a single-capture-and-reuse design is unsound regardless of how sound it looks from the deploy step's own effects alone. Confirm with `grep -l '\\$REPO_ROOT/\\.claude' *.sh | wc -l` against the total file count, not a sample.",
+      "category": "PATTERN",
+      "source_artifact": "specs/262_reduce_redundant_verify_deploy_passes/summaries/01_redeploy-checkpoint-cost-reduction-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-tree-first", "test-invariance", "gate8", "verify-deploy", "cache-soundness"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790372264_d11531",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

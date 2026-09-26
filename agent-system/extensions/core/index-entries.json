@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 505,
+      "line_count": 550,
       "keywords": [
         "format",
         "plan",
@@ -1057,7 +1057,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, dedup rule, and the live-cycle acceptance-criterion decision",
-      "line_count": 487,
+      "line_count": 512,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -1911,7 +1911,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 441,
+      "line_count": 454,
       "keywords": [
         "standards",
         "status",
@@ -2607,7 +2607,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 625,
+      "line_count": 666,
       "keywords": [
         "regeneration",
         "deploy",
@@ -2631,7 +2631,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 1213,
+      "line_count": 1321,
       "keywords": [
         "patterns",
         "orchestrate",
