@@ -1,0 +1,47 @@
+{
+  "phase": 4,
+  "phase_name": "Parallelism-Safety and Load-Sensitivity Audit",
+  "started_at": "2026-09-26T02:58:00Z",
+  "last_updated": "2026-09-26T03:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Exhaustive per-suite check: fixed temp path, real-tree writes, real git ops, fixed ports/sockets",
+      "status": "done",
+      "files_touched": [],
+      "note": "96 suites (baseline 95 + Phase 2's new suite). 93/96 use mktemp -d; 3 non-mktemp suites are read-only. Zero fixed ports/sockets. Two apparent risk hits individually verified safe (WORKDIR-scoped $TARGET; inert heredoc fixture text)."
+    },
+    {
+      "id": 2,
+      "description": "Name the load-sensitive set explicitly, search for other timing assertions",
+      "status": "done",
+      "files_touched": [],
+      "note": "4 load-sensitive suites confirmed: test-lake-build-guard.sh, test-state-write-concurrency.sh, test-state-write-regen-timing.sh (all named in plan), plus test-four-tier-conflict.sh (new finding, TASK_LOCK_RETRY_BUDGET_MS=5000). 8 other keyword-matching candidates individually ruled out."
+    },
+    {
+      "id": 3,
+      "description": "Note the resource-heavy set",
+      "status": "done",
+      "files_touched": [],
+      "note": "test-verify-deploy-context-budget.sh, test-verify-deploy-gate-selection.sh (both rsync ~16MB); test-orchestrate-cycle-plan.sh (CPU-heavy, sibling territory, no budget assertion). 17 suites git-init a mktemp-scoped fixture repo (moderate, not real-repo)."
+    },
+    {
+      "id": 4,
+      "description": "Produce the full audit table for Phase 5/7 use (not a separate report artifact)",
+      "status": "done",
+      "files_touched": ["specs/261_reduce_process_spawn_amplification_in_tests/progress/phase-4-audit-table.txt"],
+      "note": "96-row verdict table (PARALLEL-SAFE / PARALLEL-SAFE(no-tmp) / RESOURCE-HEAVY / LOAD-SENSITIVE) saved under progress/ as supporting data, not specs/reports/ -- consumed by Phase 5's run-all.sh comment block and Phase 7's summary."
+    },
+    {
+      "id": 5,
+      "description": "Decide whether any suite requires serialization",
+      "status": "done",
+      "files_touched": [],
+      "note": "No suite has a fixed-resource collision against another specific suite (zero fixed ports/sockets/lock paths outside a suite's own fixture). The 4 load-sensitive suites should still be excluded from Phase 5's parallel pool as an ambient-load precaution, not a resource-collision requirement -- this distinction is recorded so Phase 5 does not conflate the two."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,0 +1,96 @@
+PARALLEL-SAFE        | core/scripts/test-conflict-predicate.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+LOAD-SENSITIVE      | core/scripts/test-four-tier-conflict.sh | TASK_LOCK_RETRY_BUDGET_MS=5000 budget-bound wall-clock assertion (elapsed must stay close to budget)
+PARALLEL-SAFE        | core/scripts/test-session-registry.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/test-session-runtime-files.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+LOAD-SENSITIVE      | core/scripts/test-state-write-concurrency.sh | deliberate real lock contention, sub-second sleeps
+PARALLEL-SAFE        | core/scripts/test-state-write-large-payload.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+LOAD-SENSITIVE      | core/scripts/test-state-write-regen-timing.sh | real SCOPE_MUTEX_ACQUIRE_BUDGET_MS / REGEN_STUB_BUDGET_SEC wall-clock budget polling
+PARALLEL-SAFE        | core/scripts/test-state-write-spill-names.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/test-task-lock-reap.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-assess-repo-health.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-census-count.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-claude-refresh-matcher.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-common-lib.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-consumer-freshness.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-corroborate-phase-counts.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-deploy-baseline-lib.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-deploy-freshness.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-deploy-ledger-lib.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-deploy-orphans.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-deploy-propagation.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-deploy-verify-wiring.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-detect-noop-bash.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-double-loading-check.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-errors-append.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-force-phases.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-gate-out-repair-reporting.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-generate-task-order.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-git-commit-scoped.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-git-snapshot.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-guard-destructive-git.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-handoff-dispatch-identity.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-handoff-reader-parity.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-index-entries-schema.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-init-specs.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+LOAD-SENSITIVE      | core/scripts/tests/test-lake-build-guard.sh | real /proc/meminfo pressure checks, flock+sleep contention (case 26)
+PARALLEL-SAFE        | core/scripts/tests/test-lint-agent-contracts.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-lint-branch-gated-sections.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-lint-deploy-caller-wrap.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-lint-json-channel-discipline.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-lint-lifecycle-status-var.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-lint-postflight-boundary.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-lint-scoped-commit-boundary.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-lint-state-writer-boundary.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-lint-task-lookup-adoption.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-manage-topics-create-order.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-mint-dispatch-seq.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-batch-admit.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-build-aux-dispatch.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-build-dispatch.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-churn.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-context-growth.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+RESOURCE-HEAVY       | core/scripts/tests/test-orchestrate-cycle-plan.sh | 3,684 lines, ~44s CPU-heavy but not wall-clock-budget-sensitive (sibling task territory, not modified here)
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-cycle-postflight.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-predispatch-review.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-recover-message-findings.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-recover-outcome.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-triage-classify.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-orchestrate-unwind-dispatch.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-phase-heading-patterns.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-phase-heartbeat.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-postflight-deploy-gate.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-postflight-marker-schema.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-reconcile-handoff-status.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-resume-scan-nonconformance.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE(no-tmp)| core/scripts/tests/test-return-meta-status-vocabulary.sh | read-only against deployed .claude/scripts (no writes)
+PARALLEL-SAFE        | core/scripts/tests/test-roadmap-argv-ceiling.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-roadmap-items-producer.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-routing-resolution.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-runtime-file-tracking.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-skill-base-lifecycle.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE(no-tmp)| core/scripts/tests/test-status-vocabulary.sh | read-only against deployed .claude/scripts/lib + context/schemas (no writes)
+PARALLEL-SAFE        | core/scripts/tests/test-subagent-postflight-marker.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-task-type-detect.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-update-plan-status.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-update-task-status.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-validate-handoff-location.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-validate-handoff.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-validate-no-task-references.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-validate-return-meta.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | core/scripts/tests/test-validate-state.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+RESOURCE-HEAVY       | core/scripts/tests/test-verify-deploy-context-budget.sh | rsync ~16MB real tree + 1 full-battery verify-deploy.sh invocation (~100s)
+RESOURCE-HEAVY       | core/scripts/tests/test-verify-deploy-gate-selection.sh | rsync ~16MB real tree (rich fixture), 20 single-gate verify-deploy.sh invocations (~87s)
+PARALLEL-SAFE        | lean/scripts/tests/test-lean-challenge-snapshot.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | lean/scripts/tests/test-lean-comparator-run.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | lean/scripts/tests/test-lean-mcp-preflight-check.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | lean/scripts/tests/test-lean-mcp-registration.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | lean/scripts/tests/test-lean-sorry-census.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | lean/scripts/tests/test-lean-src-roots.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | literature/scripts/test-lit-pipeline.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | literature/scripts/tests/test-literature-build-index.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | literature/scripts/tests/test-literature-convert.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | literature/scripts/tests/test-literature-discover-tier3.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE(no-tmp)| literature/scripts/tests/test-quality-gate-notation.sh | read-only against fixed real corpus files under ~/Projects/Literature/sources/ (no writes)
+PARALLEL-SAFE        | literature/scripts/tests/test-title-sim-dedup.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | typst/scripts/tests/test-chapter-quality-check.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets
+PARALLEL-SAFE        | typst/scripts/tests/test-typst-element-lint.sh | mktemp -d fixture, no real-path writes, no fixed ports/sockets

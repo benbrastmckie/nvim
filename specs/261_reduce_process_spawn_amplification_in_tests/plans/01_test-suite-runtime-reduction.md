@@ -335,30 +335,61 @@ found before the phase closes.
 
 ---
 
-### Phase 4: Parallelism-Safety and Load-Sensitivity Audit [NOT STARTED]
+### Phase 4: Parallelism-Safety and Load-Sensitivity Audit [COMPLETED]
 
 **Goal**: Determine, before any parallelism is written, which suites cannot safely run
 concurrently and which are wall-clock-sensitive. Read-only; no code changes.
 
 **Tasks**:
-- [ ] For all 95 discovered suites, check each for: a fixed (non-`mktemp`) temp path; any write
+- [x] For all 95 discovered suites, check each for: a fixed (non-`mktemp`) temp path; any write
       under the real `specs/`, `.claude/`, or repo root; any `git` operation against the real repo
       rather than a fixture; any fixed port, socket, or lock path outside its own fixture. The
       research covered only the 3 suites naming `.scope-lock`/`.deploy-lock`/`.commit-lock` and
-      counted `mktemp -d` usage -- this is the exhaustive pass it explicitly did not do.
-- [ ] Name the load-sensitive set explicitly. Known starting members:
+      counted `mktemp -d` usage -- this is the exhaustive pass it explicitly did not do. *(completed:
+      96 suites now discovered (baseline 95 + Phase 2's new suite). 93/96 use `mktemp -d`; the 3
+      that do not (`test-status-vocabulary.sh`, `test-return-meta-status-vocabulary.sh`,
+      `test-quality-gate-notation.sh`) are all read-only against real deployed/corpus content, no
+      writes. Zero fixed ports/sockets found. The two `git -C "$TARGET"` hits outside a fixture
+      grep pattern (`test-deploy-orphans.sh`, `test-deploy-propagation.sh`) resolve `$TARGET` to a
+      `$WORKDIR`-scoped fixture, confirmed by reading their own `TARGET=` assignment. One apparent
+      real-`specs/`-write hit (`test-lint-state-writer-boundary.sh`) is inert heredoc fixture TEXT
+      fed to a lint script, never executed -- confirmed by reading the surrounding 20 lines.)*
+- [x] Name the load-sensitive set explicitly. Known starting members:
       `test-lake-build-guard.sh` (the file `deploy-baseline-lib.sh` documents as load-sensitive),
       `test-state-write-concurrency.sh` (deliberately exercises real lock contention), and
       `test-state-write-regen-timing.sh` (real `SCOPE_MUTEX_ACQUIRE_BUDGET_MS` and
       `REGEN_STUB_BUDGET_SEC` wall-clock assertions). Search for other wall-clock or timeout
-      assertions across all 95.
-- [ ] Note the resource-heavy set: suites that `rsync` a ~16MB fixture tree or `git init` a real
-      repo, since N concurrent copies multiply peak disk and memory.
-- [ ] Produce the audit as a section in the eventual implementation summary and as a comment block
+      assertions across all 95. *(completed: all 3 confirmed with real budget/sleep/pressure
+      mechanics by direct read. ONE ADDITIONAL suite found: `test-four-tier-conflict.sh`
+      (`TASK_LOCK_RETRY_BUDGET_MS=5000`, a budget-bound wall-clock assertion -- "elapsed wall clock
+      stays close to TASK_LOCK_RETRY_BUDGET_MS"). 8 other keyword-matching candidates
+      (test-common-lib.sh, test-deploy-ledger-lib.sh, test-handoff-dispatch-identity.sh,
+      test-phase-heartbeat.sh, test-detect-noop-bash.sh, test-runtime-file-tracking.sh,
+      test-verify-deploy-context-budget.sh, test-lean-comparator-run.sh) were individually
+      inspected and ruled out: `test-phase-heartbeat.sh` explicitly documents "no sleeping --
+      controlled epoch arithmetic"; `test-detect-noop-bash.sh`'s "Elapsed: $SECONDS" is fixture
+      classification text, never executed; `test-lean-comparator-run.sh` uses a coreutils
+      `timeout 3` hard-kill against a 20s-sleeping stub -- a wide margin, robust to load, not a
+      tight budget; the rest were `date +%s`-for-session-id false positives.)*
+- [x] Note the resource-heavy set: suites that `rsync` a ~16MB fixture tree or `git init` a real
+      repo, since N concurrent copies multiply peak disk and memory. *(completed: 2 suites `rsync`
+      the ~16MB tree -- `test-verify-deploy-context-budget.sh` and Phase 2's new
+      `test-verify-deploy-gate-selection.sh`. 17 suites `git init` a `mktemp -d`-scoped fixture
+      repo (moderate, not real-repo). `test-orchestrate-cycle-plan.sh` (3,684 lines, ~44s) is
+      CPU-heavy but has no wall-clock-budget assertion -- sibling task territory, read-only for
+      this audit, not modified.)*
+- [x] Produce the audit as a section in the eventual implementation summary and as a comment block
       in `run-all.sh` (Phase 5) listing any suite that must be serialized -- not as a separate
-      report file.
-- [ ] Decide and record: does any suite actually require serialization? If the answer is "none",
+      report file. *(completed: full 96-row verdict table captured for Phase 5/7 use)*
+- [x] Decide and record: does any suite actually require serialization? If the answer is "none",
       say so explicitly with the evidence, because Phase 5's design simplifies considerably.
+      *(completed: NO suite has a genuine fixed-resource collision against another specific suite
+      -- zero fixed ports/sockets/lock paths outside a suite's own fixture were found, so there is
+      no pairwise conflict to avoid. However, the 4 load-sensitive suites above should still be
+      excluded from Phase 5's parallel pool (run serially/alone) as a precaution against
+      ambient-load-induced flakiness under concurrent execution, per Phase 5's own directive --
+      this is a load-sensitivity precaution, not a resource-collision requirement, and the
+      distinction is recorded here so Phase 5 does not conflate the two.)*
 
 **Timing**: 1.5 hours
 
