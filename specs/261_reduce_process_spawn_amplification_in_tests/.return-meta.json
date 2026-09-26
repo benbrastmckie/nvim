@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790372264_d11531_261",
-  "dispatch_seq": 5,
-  "findings_count": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/261_reduce_process_spawn_amplification_in_tests/reports/01_test-suite-performance-baseline.md",
-      "summary": "Measured the full 95-suite shell test suite for the first time (~650s / ~10m sequential). Found test-verify-deploy-context-budget.sh alone costs 391s (60% of total) via 4 real full-gate-battery verify-deploy.sh invocations, dwarfing the dispatch's named example (test-force-phases.sh, 5.39s, 0.8% of total). Recommends prioritizing a verify-deploy.sh gate-selection flag first, then file-level parallelism, then targeted in-process extraction, with fixture-reuse/file-splitting lowest priority. Also documents a pre-existing intermittent flake and 4 pre-existing unrelated failures for baseline verification purposes."
+      "type": "plan",
+      "path": "specs/261_reduce_process_spawn_amplification_in_tests/plans/01_test-suite-runtime-reduction.md",
+      "summary": "7-phase plan cutting shell-suite wall time via a verify-deploy.sh --only-gate flag (~290s of ~650s) plus opt-in run-all.sh file-level parallelism behind a 3-run flakiness decision gate, with a measured before/after baseline and a per-suite coverage-equality proof."
     }
   ],
+  "next_steps": "Run /implement 261 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1790372264_d11531_261",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 11,
+    "dependency_waves": [[1], [2, 4], [3, 5], [6], [7]]
+  },
   "memory_candidates": [
     {
-      "content": "When measuring shell-test-suite performance, do not assume the file with the most subprocess invocations (highest 'amplification' count) dominates wall time. In this repo, a 530-line file with 46 subprocess calls cost 5.4s (0.8% of a ~650s suite) while a 261-line file cost 391s (60%) because it invoked a full ~20-gate verify script 4 times instead of a single targeted gate. Always measure per-file wall time directly (instrument the suite runner's own discovery loop with date +%s%N around each invocation) before choosing an optimization target.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/reports/01_test-suite-performance-baseline.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["test-performance", "shell-tests", "profiling", "verify-deploy", "bottleneck-measurement"]
-    },
-    {
-      "content": "Bash process-startup and library-sourcing overhead is negligible in this codebase: bare `bash -c ':'` vs. sourcing a real ~200-line common.sh lib showed no measurable difference over 50 iterations (0.115s vs 0.119s), and jq-parsing a 1244-line real state.json took ~5ms. Test-suite slowness from 'process-spawn amplification' claims should be verified against actual per-call cost before assuming subprocess count alone explains wall time -- the called script's own work (mutex locks, git operations, real multi-gate verification scripts) is almost always the actual cost driver, not shell startup.",
+      "content": "Performance planning for a test suite must start from a full-suite measurement, not from a plausible structural story. In the agent-system shell suite the named suspect (process-spawn amplification: 46 subprocess re-execs in one file, 'each re-sources 5+ libraries and re-parses state.json') measured at 0.8% of total wall time, while an unnamed file was 60% of it -- because it invoked the real verify-deploy.sh four times to test ONE of its 20 gates, and verify-deploy.sh had no gate-selection flag. Micro-measurements: sourcing a shared shell lib costs ~0.1ms over bare `bash -c ':'`; a jq read of a 1200-line JSON state file ~5ms. Generalizable pattern: when a test is slow because it exercises one unit of a monolithic production script, the highest-value fix is usually an additive selection flag in the PRODUCTION script (keeping one full-battery invocation somewhere for the all-units-together contract), not test-side fixture reuse or parallelism. Order the work: measure, then gate-select, then parallelize, then micro-optimize.",
       "category": "INSIGHT",
-      "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/reports/01_test-suite-performance-baseline.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["bash-performance", "process-startup", "subprocess-overhead", "benchmarking"]
-    },
-    {
-      "content": "test-orchestrate-cycle-plan.sh (in this repo's core test suite) demonstrates a reusable pattern for de-amplifying tests that need to exercise orchestration logic without paying for the real heavy dependency: it writes a small call-counting stub script into the fixture's .claude/scripts/ in place of the real verify-deploy.sh, and asserts on stub-call counts (e.g. 'verify-deploy.sh called exactly once') rather than invoking the real ~100s-per-call gate battery. Worth reusing as a template whenever a test needs call-count assertions against an expensive real script it doesn't need to fully execute.",
-      "category": "PATTERN",
-      "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/reports/01_test-suite-performance-baseline.md",
+      "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/plans/01_test-suite-runtime-reduction.md",
       "confidence": 0.75,
-      "suggested_keywords": ["test-fixtures", "stubbing", "call-counting", "shell-testing"]
+      "suggested_keywords": ["test-suite-performance", "measure-before-optimizing", "gate-selection-flag", "verify-deploy", "process-spawn-amplification", "shell-test-parallelism"]
     }
   ],
-  "next_steps": "Run /plan 261 to create implementation plan"
+  "dispatch_seq": 7
 }

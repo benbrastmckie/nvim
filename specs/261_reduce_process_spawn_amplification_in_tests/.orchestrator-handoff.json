@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 261,
+  "phase": "plan",
+  "session_id": "sess_1790372264_d11531_261",
+  "dispatch_seq": 7,
+  "phases_completed": 0,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/261_reduce_process_spawn_amplification_in_tests/plans/01_test-suite-runtime-reduction.md",
+      "summary": "7-phase plan: verify-deploy.sh --only-gate flag (~290s saving), opt-in run-all.sh parallelism behind a 3-run flakiness decision gate, measured before/after baseline, per-suite coverage-equality proof."
+    }
+  ],
+  "next_steps": "Run /implement 261 to execute the plan",
+  "notes": "Scope note: task file_scope is agent-system/extensions/core/scripts/tests/ but Phase 2 edits agent-system/extensions/core/scripts/verify-deploy.sh and Phase 7 edits context/standards/shell-script-testing.md -- both intentional and named in the plan. Territory: sibling task 262 owns orchestrate-cycle-plan.sh, deploy-baseline-lib.sh, deploy-ledger-lib.sh, batch-orchestration-guardrails.md, test-orchestrate-cycle-plan.sh; no phase here modifies any of them (deploy-baseline-lib.sh is read/sourced only)."
+}
