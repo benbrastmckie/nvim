@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Record the audit evidence and close out bookkeeping",
+  "started_at": "2026-09-26T13:00:00Z",
+  "last_updated": "2026-09-26T13:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Assemble Phase 1/2 evidence into a per-site table in the summary", "status": "done", "files_touched": ["specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md"]},
+    {"id": 2, "description": "Record explicitly that no WORKING pattern was rewritten; list any repair", "status": "done", "files_touched": ["specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md"]},
+    {"id": 3, "description": "Record the two administrative follow-ups (lean-sorry-census upstream fix, literature-chunk dead code)", "status": "done", "files_touched": ["specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md"]},
+    {"id": 4, "description": "Record the dispatch-framing correction in the summary", "status": "done", "files_touched": ["specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md"]},
+    {"id": 5, "description": "Append the note to this task's file_scope in specs/state.json", "status": "done", "note": "Already present -- appended by planner-agent in commit bf5fc7413 during the plan phase; verified via git log -p, no duplicate append made", "files_touched": []},
+    {"id": 6, "description": "Confirm skill-orchestrate/SKILL.md is untouched across the whole task", "status": "done", "note": "git diff --name-only fd84ef10f..HEAD -- .../skill-orchestrate/SKILL.md returns empty", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

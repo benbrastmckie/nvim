@@ -1,7 +1,7 @@
 # Implementation Plan: Task #129
 
 - **Task**: 129 - Empirically audit `\b` word-boundary grep patterns for compositional failure under the deployed grep
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: 88, 128, 261 (state.json). The sequencing dependency is a file-footprint
   collision avoidance only: `skill-orchestrate/SKILL.md` belongs to the adversarial-gate fix and
@@ -295,18 +295,18 @@ are expected, on the hypothesis that `provides.context` is directory-granular. C
 
 ---
 
-### Phase 5: Record the audit evidence and close out bookkeeping [NOT STARTED]
+### Phase 5: Record the audit evidence and close out bookkeeping [COMPLETED]
 
 **Goal**: Consolidate every per-site empirical result into the task's durable record, and record
 the two administrative follow-ups the audit surfaced without acting outside this repository.
 
 **Tasks**:
-- [ ] Assemble the Phase 1 and Phase 2 evidence into a single per-site table in `specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md`: site, file, full pattern as executed, engine, verification mechanism, positive-input result, negative-input result, classification, and repaired-or-untouched.
-- [ ] Record explicitly in the summary that no WORKING pattern was rewritten, and list any repair with its positive-match and negative-reject evidence.
-- [ ] Record the two administrative follow-ups: (a) `lean-sorry-census.sh` was already fixed upstream in commit `232b05b7f` with fixtures in place, so the cslib consumer repo's local task should be abandoned with a pointer to that commit and this audit once that repo re-syncs its extension copy — no cross-repo edit is made here; (b) `literature-chunk.sh`'s `XREF_PATTERN` is dead code, noted for whoever next touches the file.
-- [ ] Record the dispatch-framing correction in the summary: the "CONFIRMED INSTANCE" text and the unqualified "the deployed grep is ugrep 7.8.4" framing were both stale, and state the corrected version.
-- [ ] Append `agent-system/extensions/core/context/standards/grep-word-boundary-portability.md` to this task's `file_scope` in `specs/state.json`, appending rather than replacing the array.
-- [ ] Confirm `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` is untouched across the whole task (`git diff --name-only` over the task's commits), satisfying the sequencing constraint.
+- [x] Assemble the Phase 1 and Phase 2 evidence into a single per-site table in `specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md`: site, file, full pattern as executed, engine, verification mechanism, positive-input result, negative-input result, classification, and repaired-or-untouched. *(completed)*
+- [x] Record explicitly in the summary that no WORKING pattern was rewritten, and list any repair with its positive-match and negative-reject evidence. *(completed: no repair anywhere)*
+- [x] Record the two administrative follow-ups: (a) `lean-sorry-census.sh` was already fixed upstream in commit `232b05b7f` with fixtures in place, so the cslib consumer repo's local task should be abandoned with a pointer to that commit and this audit once that repo re-syncs its extension copy — no cross-repo edit is made here; (b) `literature-chunk.sh`'s `XREF_PATTERN` is dead code, noted for whoever next touches the file. *(completed)*
+- [x] Record the dispatch-framing correction in the summary: the "CONFIRMED INSTANCE" text and the unqualified "the deployed grep is ugrep 7.8.4" framing were both stale, and state the corrected version. *(completed)*
+- [x] Append `agent-system/extensions/core/context/standards/grep-word-boundary-portability.md` to this task's `file_scope` in `specs/state.json`, appending rather than replacing the array. *(completed: already appended by planner-agent in commit bf5fc7413; verified present, no duplicate append)*
+- [x] Confirm `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` is untouched across the whole task (`git diff --name-only` over the task's commits), satisfying the sequencing constraint. *(completed: confirmed empty diff)*
 
 **Timing**: 0.5 hours
 
@@ -328,17 +328,17 @@ the two administrative follow-ups the audit surfaced without acting outside this
 
 ## Testing & Validation
 
-- [ ] `test-guard-destructive-git.sh` passes at 50/50.
-- [ ] `test-lean-sorry-census.sh` passes at 17/17, including the `set_option warn.sorry false in` fixture and the anti-vacuous guard.
-- [ ] `test-lint-postflight-boundary.sh`, `test-session-runtime-files.sh`, `test-validate-no-task-references.sh`, `test-task-type-detect.sh`, `test-census-count.sh`, and `test-lean-comparator-run.sh` all pass at their recorded counts or better.
-- [ ] `check-extension-docs.sh` reports all extensions OK, with no Rule T findings.
-- [ ] `generate-context-line-counts.sh --check` exits clean.
-- [ ] `validate-context-index.sh` reports no errors.
-- [ ] `check-task-references.sh` reports no findings in the new or edited non-`specs/**` files.
-- [ ] Any pre-existing unrelated failures (`test-lake-build-guard.sh` case 3;
+- [x] `test-guard-destructive-git.sh` passes at 50/50. *(completed)*
+- [x] `test-lean-sorry-census.sh` passes at 17/17, including the `set_option warn.sorry false in` fixture and the anti-vacuous guard. *(completed)*
+- [x] `test-lint-postflight-boundary.sh`, `test-session-runtime-files.sh`, `test-validate-no-task-references.sh`, `test-task-type-detect.sh`, `test-census-count.sh`, and `test-lean-comparator-run.sh` all pass at their recorded counts or better. *(completed: 6/6, 6/6, 31/31, 10/10, 8/8, 22/22+1 skip)*
+- [x] `check-extension-docs.sh` reports all extensions OK, with no Rule T findings. *(completed)*
+- [x] `generate-context-line-counts.sh --check` exits clean. *(completed: 512/512 exact)*
+- [x] `validate-context-index.sh` reports no errors. *(completed: 225 entries, 0 errors)*
+- [x] `check-task-references.sh` reports no findings in the new or edited non-`specs/**` files. *(completed)*
+- [x] Any pre-existing unrelated failures (`test-lake-build-guard.sh` case 3;
   `test-orchestrate-recover-message-findings.sh`'s acceptance-e2e assertions;
   `test-lean-comparator-run.sh`'s binary-availability skip) are recorded as pre-existing with
-  justification, not silently absorbed and not "fixed" opportunistically.
+  justification, not silently absorbed and not "fixed" opportunistically. *(completed: recorded in the summary's Discrepancies and Verification sections; note test-lake-build-guard.sh case 3 in fact passed on this run, recorded as a discrepancy rather than reconciled)*
 
 ## Artifacts & Outputs
 
