@@ -216,23 +216,23 @@ a finding, not a plan error.
 
 ---
 
-### Phase 3: Author the portability guidance note [NOT STARTED]
+### Phase 3: Author the portability guidance note [COMPLETED]
 
 **Goal**: Land `grep-word-boundary-portability.md` under the core standards context directory,
 stating the audit's precise findings, and cross-reference it from the existing defect-vocabulary
 entry.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/context/standards/grep-word-boundary-portability.md`, adapting the report's drafted text, with the invocation-context split as its **first** assertion: `.sh`/hook subprocess execution resolves to GNU grep; a command typed or pasted into an agent's own Bash-tool shell (including a fenced `bash` block copied out of an agent-instruction Markdown file) runs under ugrep.
-- [ ] State the defect compositionally, not as a missing feature: ugrep's `-E` engine mis-evaluates a `\b` appearing downstream of an earlier `\b`-anchored subexpression separated by a wildcard run; every fragment can match in isolation while the composed pattern fails; `-P` on the identical unmodified pattern matches correctly. Include the bisection evidence shape as a worked example.
-- [ ] State the shape rule: a lone `\b`, or a single `\b...\b` bracket around one token or alternation, is not known to be affected; only a chain of two or more `\b`-anchored subexpressions in one linear pattern is at risk.
-- [ ] State the preference for delimiter-anchored alternatives where the surrounding pattern already bounds the token (a pipe-delimited table cell, a whitespace- or quote-bounded field), rather than adding further `\b`s to a pattern that already has one.
-- [ ] State the `-P` remedy for the case where `\b` is genuinely needed and the pattern will run under ugrep.
-- [ ] State the execute-before-commit obligation: any new `\b` pattern must be run against a real positive input AND a real negative input under the actual mechanism that will run it in production — never reasoned about, never tested as a simplified stand-in, never assumed safe by analogy to a working pattern elsewhere.
-- [ ] Add a short "how to determine which engine applies" procedure (the `type grep` / `bash -c 'grep --version'` pair from Phase 1) so a reader can settle the question in one command rather than inferring it.
-- [ ] Add a pointer to the note from the `HOOK_REGEX_BOUNDARY_DEFECT` entry in `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`, and a back-pointer from the note to that vocabulary entry.
-- [ ] Verify the note contains no task-number reference and no reference to the separately-owned gate task: run `bash agent-system/extensions/core/scripts/check-task-references.sh` (or the deployed equivalent) and confirm the new and edited files are clean.
-- [ ] Read the finished note back against report Finding 1 and confirm it nowhere asserts that ugrep is unconditionally "the deployed grep".
+- [x] Create `agent-system/extensions/core/context/standards/grep-word-boundary-portability.md`, adapting the report's drafted text, with the invocation-context split as its **first** assertion: `.sh`/hook subprocess execution resolves to GNU grep; a command typed or pasted into an agent's own Bash-tool shell (including a fenced `bash` block copied out of an agent-instruction Markdown file) runs under ugrep. *(completed)*
+- [x] State the defect compositionally, not as a missing feature: ugrep's `-E` engine mis-evaluates a `\b` appearing downstream of an earlier `\b`-anchored subexpression separated by a wildcard run; every fragment can match in isolation while the composed pattern fails; `-P` on the identical unmodified pattern matches correctly. Include the bisection evidence shape as a worked example. *(completed)*
+- [x] State the shape rule: a lone `\b`, or a single `\b...\b` bracket around one token or alternation, is not known to be affected; only a chain of two or more `\b`-anchored subexpressions in one linear pattern is at risk. *(completed)*
+- [x] State the preference for delimiter-anchored alternatives where the surrounding pattern already bounds the token (a pipe-delimited table cell, a whitespace- or quote-bounded field), rather than adding further `\b`s to a pattern that already has one. *(completed)*
+- [x] State the `-P` remedy for the case where `\b` is genuinely needed and the pattern will run under ugrep. *(completed)*
+- [x] State the execute-before-commit obligation: any new `\b` pattern must be run against a real positive input AND a real negative input under the actual mechanism that will run it in production — never reasoned about, never tested as a simplified stand-in, never assumed safe by analogy to a working pattern elsewhere. *(completed)*
+- [x] Add a short "how to determine which engine applies" procedure (the `type grep` / `bash -c 'grep --version'` pair from Phase 1) so a reader can settle the question in one command rather than inferring it. *(completed)*
+- [x] Add a pointer to the note from the `HOOK_REGEX_BOUNDARY_DEFECT` entry in `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`, and a back-pointer from the note to that vocabulary entry. *(completed)*
+- [x] Verify the note contains no task-number reference and no reference to the separately-owned gate task: run `bash agent-system/extensions/core/scripts/check-task-references.sh` (or the deployed equivalent) and confirm the new and edited files are clean. *(completed: PASS, 0 unexempted occurrences)*
+- [x] Read the finished note back against report Finding 1 and confirm it nowhere asserts that ugrep is unconditionally "the deployed grep". *(completed: confirmed by grep, no match)*
 
 **Timing**: 0.75 hours
 

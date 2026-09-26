@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Author the portability guidance note",
+  "started_at": "2026-09-26T12:15:00Z",
+  "last_updated": "2026-09-26T12:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create grep-word-boundary-portability.md with invocation-context split as first assertion", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/grep-word-boundary-portability.md"]},
+    {"id": 2, "description": "State the defect compositionally with bisection worked example", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/grep-word-boundary-portability.md"]},
+    {"id": 3, "description": "State the shape rule (lone \\b / single bracket unaffected; chain at risk)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/grep-word-boundary-portability.md"]},
+    {"id": 4, "description": "State delimiter-anchored preference", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/grep-word-boundary-portability.md"]},
+    {"id": 5, "description": "State the -P remedy", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/grep-word-boundary-portability.md"]},
+    {"id": 6, "description": "State the execute-before-commit obligation", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/grep-word-boundary-portability.md"]},
+    {"id": 7, "description": "Add engine-determination procedure", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/grep-word-boundary-portability.md"]},
+    {"id": 8, "description": "Add cross-reference pointer to/from HOOK_REGEX_BOUNDARY_DEFECT entry", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/grep-word-boundary-portability.md", "agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 9, "description": "Verify no task-number reference via check-task-references.sh", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Read the note back against report Finding 1", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "evidence": {
+    "check_task_references_result": "bash .claude/scripts/check-task-references.sh agent-system/extensions/core/context -> PASS: 0 unexempted task-reference occurrences",
+    "finding1_readback": "grep -ni 'the deployed grep is ugrep' against the new note returns no match (exit 1) -- the note's first substantive assertion is the invocation-context split, not an unqualified ugrep claim",
+    "cross_reference": "both directions verified to resolve: the note's Related section points to system-defect-discrimination.md's HOOK_REGEX_BOUNDARY_DEFECT entry; that entry's paragraph now points back to standards/grep-word-boundary-portability.md"
+  }
+}

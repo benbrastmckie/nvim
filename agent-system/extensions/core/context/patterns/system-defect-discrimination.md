@@ -164,7 +164,11 @@ once real inputs cross it), reached from a different site class than the row's o
 covers. The row itself is not reworded or reinterpreted here, and no count in this file is
 touched — whether the row's site-class wording ("a validation hook's regex or path-depth
 pattern") should be widened to cover this site class is left to separate, dedicated defect-class
-vocabulary work.
+vocabulary work. See
+`standards/grep-word-boundary-portability.md` for the full remediation guidance: the
+invocation-context engine split, the compositional-not-missing-feature framing, the
+unaffected-shape rule, the delimiter-anchored preference, and the execute-before-commit
+obligation this instance motivates.
 
 A fourteenth instance, `AMBIENT_BINDING_MISMATCH`, was added deliberately, to name one further
 concrete recorded defect shape: a downstream guard reading an ambient shell variable that its
