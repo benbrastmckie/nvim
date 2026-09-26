@@ -1229,9 +1229,15 @@
           "path": "specs/262_reduce_redundant_verify_deploy_passes/plans/01_redeploy-checkpoint-cost-reduction.md",
           "type": "plan",
           "summary": "6-phase plan for within-checkpoint gate-8 de-duplication in the inter-cycle redeploy checkpoint."
+        },
+        {
+          "path": "specs/262_reduce_redundant_verify_deploy_passes/summaries/01_redeploy-checkpoint-cost-reduction-summary.md",
+          "type": "summary",
+          "summary": "Precondition audit found the design unsound; no code changed; plan closed via decision-gate/contingency shape with Phases 2-6 COMPLETED WITH EXCLUSIONS."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Precondition audit found the single-capture Gate-8 sharing design unsound (41/73 test files under scripts/tests/ prefer the deployed tree over the source store as their subject-under-test, so Gate 8 is not invariant across a deploy). No code changed; the rejected design and its evidence are recorded in batch-orchestration-guardrails.md so a future pass does not rediscover it. Baseline wall-time numbers were measured and reported."
     },
     {
       "project_number": 263,

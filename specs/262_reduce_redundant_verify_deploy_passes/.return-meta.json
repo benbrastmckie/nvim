@@ -23,15 +23,27 @@
       "category": "PATTERN",
       "source_artifact": "specs/262_reduce_redundant_verify_deploy_passes/summaries/01_redeploy-checkpoint-cost-reduction-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-tree-first", "test-invariance", "gate8", "verify-deploy", "cache-soundness"]
+      "suggested_keywords": [
+        "deploy-tree-first",
+        "test-invariance",
+        "gate8",
+        "verify-deploy",
+        "cache-soundness"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790372264_d11531",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -412,6 +412,7 @@ does not contain.
 - **Dependencies**: Task 260
 - **Research**: [262_reduce_redundant_verify_deploy_passes/reports/01_redeploy-checkpoint-cost-reduction.md]
 - **Plan**: [262_reduce_redundant_verify_deploy_passes/plans/01_redeploy-checkpoint-cost-reduction.md]
+- **Summary**: [262_reduce_redundant_verify_deploy_passes/summaries/01_redeploy-checkpoint-cost-reduction-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
