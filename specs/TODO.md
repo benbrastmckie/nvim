@@ -42,7 +42,7 @@ next_project_number: 263
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 261 [RESEARCHED] — Reduce process-spawn amplification in the shell test suite
-262 [RESEARCHING] — Reduce redundant verify-deploy passes in the redeploy checkpoint
+262 [RESEARCHED] — Reduce redundant verify-deploy passes in the redeploy checkpoint
 
 ### Extensions
 
@@ -81,10 +81,11 @@ next_project_number: 263
 ## Tasks
 
 ### 262. Reduce redundant verify-deploy passes in the redeploy checkpoint
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 260
+- **Research**: [262_reduce_redundant_verify_deploy_passes/reports/01_redeploy-checkpoint-cost-reduction.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
