@@ -434,7 +434,7 @@
     {
       "project_number": 129,
       "project_name": "audit_word_boundary_regex_portability",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -457,13 +457,18 @@
         "agent-system/extensions/literature/scripts/literature-convert.sh"
       ],
       "created": "2026-09-01T11:24:42Z",
-      "last_updated": "2026-09-26T10:59:01Z",
+      "last_updated": "2026-09-26T11:05:28Z",
       "session_id": "sess_1790419342_eea5e0",
       "artifacts": [
         {
           "path": "specs/129_audit_word_boundary_regex_portability/reports/01_word-boundary-grep-audit.md",
           "type": "report",
           "summary": "Empirical per-site audit of every grep \\b construct across the source store: all 8 declared file_scope sites and ~24 additional sites found WORKING; corrects the dispatch's premise that ugrep is uniformly the deployed grep (it is invocation-context-dependent); confirms lean-sorry-census.sh's flagged defect was already fixed by commit 232b05b7f; drafts the guidance note text for the plan/implement phase to land."
+        },
+        {
+          "path": "specs/129_audit_word_boundary_regex_portability/plans/01_word-boundary-portability-audit.md",
+          "type": "plan",
+          "summary": "5-phase plan for the empirical word-boundary grep audit plus the portability guidance note."
         }
       ],
       "next_artifact_number": 2

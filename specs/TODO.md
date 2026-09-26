@@ -27,7 +27,7 @@ next_project_number: 268
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
-129 [RESEARCHED] — Empirically audit \b word-boundary grep patterns for...
+129 [PLANNED] — Empirically audit \b word-boundary grep patterns for...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites: rules and agent...
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -3896,11 +3896,12 @@ against a lean4 dispatch; and marker/reality divergence is caught in BOTH direct
 ---
 
 ### 129. Empirically audit \b word-boundary grep patterns for compositional failure under the deployed grep
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 88, Task 128, Task 261
 - **Research**: [129_audit_word_boundary_regex_portability/reports/01_word-boundary-grep-audit.md]
+- **Plan**: [129_audit_word_boundary_regex_portability/plans/01_word-boundary-portability-audit.md]
 
 **Description**: Audit every `\b` word-boundary construct used in a grep pattern across the source store, empirically, against the grep actually deployed, and record portable-construct guidance so the class does not recur. Surfaced by the adversarial-verification gate failure (evt_1788245094839_eybEyC); that gate is fixed separately and is NOT in this task's scope.
 
