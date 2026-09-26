@@ -65,6 +65,16 @@
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
 #   already-failing gate. This mode is purely additive: with --findings absent, default-mode
 #   narrative output and exit codes are byte-for-byte unchanged.
+#
+# Gate selection (--only-gate N[,M,...], additive-only):
+#   Runs only the named gate(s) (1-20) instead of the full battery. Absent this flag, GATES_FILTER
+#   is empty and every gate runs -- byte-for-byte the same as before this flag existed. A caller
+#   that only needs to exercise one gate (e.g. a test suite targeting gate 20) can pay for that one
+#   gate instead of all twenty; see context/standards/shell-script-testing.md for the intended
+#   test-fast-path use and the standing rule that at least one full-battery invocation must remain
+#   somewhere in the suite. gate0 (argument/target validation, before any gate runs) is never
+#   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-20) exits 2 and,
+#   under --findings, emits a `FINDING gate0` line.
 
 set -uo pipefail
 
@@ -74,12 +84,42 @@ SKIP_SLOW=false
 TARGET=""
 MINIMAL_INIT_DIR=""
 FINDINGS_LIST=()
+# GATES_FILTER: empty = all gates (today's default behavior). Populated by --only-gate below with
+# a comma-separated list of gate ids; gate_selected() (defined further down, alongside pass()/
+# fail()/warn()) is the single predicate every gate's guard consults.
+GATES_FILTER=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
     --findings) FINDINGS=true; shift ;;
     --skip-slow) SKIP_SLOW=true; shift ;;
+    --only-gate)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --only-gate requires a gate id (or comma-separated ids), e.g. --only-gate 20" >&2
+        [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate requires a gate id"
+        exit 2
+      fi
+      # Validate every comma-separated token is a plain integer in 1..20 before accepting any of
+      # them -- a partially-valid list must refuse loudly, not silently run a subset.
+      IFS=',' read -r -a _only_gate_tokens <<< "$2"
+      for _only_gate_tok in "${_only_gate_tokens[@]}"; do
+        case "$_only_gate_tok" in
+          ''|*[!0-9]*)
+            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-20)" >&2
+            [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate invalid gate id '$_only_gate_tok'"
+            exit 2
+            ;;
+        esac
+        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt 20 ]; then
+          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-20)" >&2
+          [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate gate id '$_only_gate_tok' out of range"
+          exit 2
+        fi
+      done
+      unset _only_gate_tok
+      GATES_FILTER="$2"; shift 2
+      ;;
     --minimal-init)
       if [ $# -lt 2 ] || [ -z "$2" ]; then
         echo "ERROR: --minimal-init requires a DIR argument (the nvim config directory)" >&2
@@ -89,7 +129,7 @@ while [ $# -gt 0 ]; do
       MINIMAL_INIT_DIR="$2"; shift 2
       ;;
     -h|--help)
-      sed -n '2,68p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,77p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     -*)
@@ -195,6 +235,19 @@ warn() {
   return 0
 }
 
+# gate_selected N: returns 0 (selected) when GATES_FILTER is empty (default: all gates) or
+# contains N as one of its comma-separated tokens; returns 1 otherwise. Every one of the 20
+# guarded gate blocks below consults this single predicate -- gate0 itself is never guarded by it
+# (see the --only-gate header doc above).
+gate_selected() {
+  local n="$1"
+  [ -z "$GATES_FILTER" ] && return 0
+  case ",${GATES_FILTER}," in
+    *",${n},"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 say "[verify-deploy] Target: $TARGET"
 say ""
 
@@ -203,6 +256,7 @@ say ""
 # query script, both hooks, schema, format doc) and the error-tracking stack (errors.json:
 # validated append/update writer, schema, format doc). A missing entry means the deploy predates
 # that store's work or was a partial sync.
+if gate_selected 1; then
 say "1. Event-store and error-store files (ls .claude/{scripts,hooks,context}/...)"
 CURRENT_GATE="gate1"
 for rel in \
@@ -224,10 +278,12 @@ do
 done
 say ""
 
+fi
 # ── 2. Hook registrations in the deployed settings.json ──────────────────────
 # The single most failure-prone part of a deploy: settings.json is install-once, so additions
 # reach an existing repo only through merge-sources/settings-hooks.json. A tree can have every
 # hook SCRIPT present and still register none of them.
+if gate_selected 2; then
 say "2. Hook registrations (jq '.hooks' .claude/settings.json)"
 CURRENT_GATE="gate2"
 SETTINGS="$CLAUDE_DIR/settings.json"
@@ -274,9 +330,11 @@ else
 fi
 say ""
 
+fi
 # ── 3. Doc-lint gate ─────────────────────────────────────────────────────────
 # Only meaningful in the source-store repo. A deploy consumer has no agent-system/extensions
 # directory, and the gate correctly errors there -- that is not a deploy failure.
+if gate_selected 3; then
 say "3. Doc-lint (check-extension-docs.sh --quiet)"
 CURRENT_GATE="gate3"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -331,9 +389,11 @@ fi
 
 say ""
 
+fi
 # ── 4. Task-reference lint gate ───────────────────────────────────────────────
 # Only meaningful in the source-store repo, mirroring the Doc-lint gate above -- a deploy
 # consumer has no agent-system/extensions directory and the gate correctly skips there.
+if gate_selected 4; then
 say "4. Task-reference lint (check-task-references.sh --quiet)"
 CURRENT_GATE="gate4"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -359,6 +419,7 @@ else
   fi
 fi
 
+fi
 # ── 5. Manifest-driven category parity + content-hash equality (verify.lua) ──────
 # Extends gates 1-4 (which check specific known files/registrations) to full declared-vs-
 # deployed parity plus content-hash equality across every provides.* category the manifest
@@ -366,6 +427,7 @@ fi
 # same check the extension loader itself runs after a load. Only meaningful in the source-store
 # repo (a deploy consumer has no agent-system/extensions/core/ source directory to diff against),
 # mirroring gates 3-4's SKIP-if-not-source-store precedent.
+if gate_selected 5; then
 say "5. Manifest-driven category parity + content-hash equality (verify.lua)"
 CURRENT_GATE="gate5"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -422,10 +484,12 @@ fi
 
 say ""
 
+fi
 # ── 6. Agent contracts lint gate ──────────────────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 3-4's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
 # skips there.
+if gate_selected 6; then
 say "6. Agent contracts lint (lint-agent-contracts.sh --verbose)"
 CURRENT_GATE="gate6"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -448,10 +512,12 @@ else
   fi
 fi
 
+fi
 # ── 7. Routing wiring lint gate ───────────────────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 3-4/6's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
 # skips there.
+if gate_selected 7; then
 say "7. Routing wiring lint (lint-routing-wiring.sh --verbose)"
 CURRENT_GATE="gate7"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -474,10 +540,12 @@ else
   fi
 fi
 
+fi
 # ── 8. Shell test suite runner (run-all.sh) ───────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 3-4/6-7's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
 # skips there.
+if gate_selected 8; then
 say "8. Shell test suite runner (tests/run-all.sh)"
 CURRENT_GATE="gate8"
 if [ "$SKIP_SLOW" = "true" ]; then
@@ -504,6 +572,7 @@ fi
 
 say ""
 
+fi
 # ── 9. Postflight boundary lint gate ──────────────────────────────────────────
 # Only meaningful in the source-store repo, mirroring gate 6's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -515,6 +584,7 @@ say ""
 # copy would resolve PROJECT_ROOT to agent-system/extensions instead and silently scan nothing.
 # This also matches the script's own default scan targets ($PROJECT_ROOT/.claude/skills,
 # $PROJECT_ROOT/.claude/extensions) -- it is designed to audit deployed content, not source.
+if gate_selected 9; then
 say "9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)"
 CURRENT_GATE="gate9"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -541,6 +611,7 @@ fi
 
 say ""
 
+fi
 # ── 10. specs/state.json schema validation (validate-state.sh --deep) ─────────
 # Only meaningful in the source-store repo, mirroring gates 3-4/6-7/9's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -549,6 +620,7 @@ say ""
 # TODO.md-sync check shells out to generate-todo.sh, which DOES require the deployed tree via
 # deploy-root-guard.sh -- so running the source-store copy here would spuriously fail that one
 # sub-check. Targets $TARGET/specs/state.json, the live state store, not a fixture.
+if gate_selected 10; then
 say "10. specs/state.json schema validation (validate-state.sh --deep)"
 CURRENT_GATE="gate10"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -575,6 +647,7 @@ fi
 
 say ""
 
+fi
 # ── 11. Contract compliance lint (lint-contract-compliance.sh --verbose) ──────
 # Only meaningful in the source-store repo, mirroring gates 6-7's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -582,6 +655,7 @@ say ""
 # own REPO_ROOT via `git rev-parse --show-toplevel`, falling back to the `REPO_ROOT` env override
 # set here, and always validates the source store (agent-system/extensions/core/**) regardless of
 # which copy is invoked.
+if gate_selected 11; then
 say "11. Contract compliance lint (lint-contract-compliance.sh --verbose)"
 CURRENT_GATE="gate11"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -606,12 +680,14 @@ fi
 
 say ""
 
+fi
 # Gate 12: state-writer boundary lint (lint-state-writer-boundary.sh --verbose)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11):
 # only the source store (agent-system/extensions/core/**) is validated, regardless of which copy
 # (source store or deployed .claude/) invoked this script. Invokes the source-store copy
 # directly, resolving REPO_ROOT the same way gate 11 does.
+if gate_selected 12; then
 say "12. State-writer boundary lint (lint-state-writer-boundary.sh --verbose)"
 CURRENT_GATE="gate12"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -636,6 +712,7 @@ fi
 
 say ""
 
+fi
 # Gate 13: whole-tree orphan detection (find_orphans).
 #
 # The reverse direction from gate 5: gate 5 verifies declared -> deployed (is every declared
@@ -647,6 +724,7 @@ say ""
 # invocation shape, same unanchored grep for the emitted token (OSC7 robustness). Detection only
 # -- see context/patterns/deploy-orphan-detection.md for the full exclusion contract this gate
 # enforces and the detect-never-delete decision it implements.
+if gate_selected 13; then
 say "13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)"
 CURRENT_GATE="gate13"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -696,6 +774,7 @@ fi
 
 say ""
 
+fi
 # Gate 14: orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh).
 #
 # Runs on ANY target, not just the source store -- unlike gates 3/4/6/7/8/9/10 (which SKIP on a
@@ -709,6 +788,7 @@ say ""
 #
 # Fast, not deferred by --skip-slow: three `git check-ignore` sweeps over a handful of probe
 # paths, nowhere near gate 8's tests/run-all.sh cost. --skip-slow continues to defer gate 8 only.
+if gate_selected 14; then
 say "14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)"
 CURRENT_GATE="gate14"
 if [ ! -x "$CLAUDE_DIR/scripts/check-runtime-file-tracking.sh" ] && [ ! -f "$CLAUDE_DIR/scripts/check-runtime-file-tracking.sh" ]; then
@@ -731,6 +811,7 @@ fi
 
 say ""
 
+fi
 # ── 15. Lifecycle status-variable regression lint gate ────────────────────────
 # Only meaningful in the source-store repo, mirroring gates 6-7/11-12's SKIP-if-not-source-store
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
@@ -740,6 +821,7 @@ say ""
 # patterns/*` -- source-store paths, not deployed ones -- so invoking the deployed copy would
 # resolve REPO_ROOT to the wrong depth and silently scan nothing, exactly as gate 6/7's own
 # precedent already documents for their scripts.
+if gate_selected 15; then
 say "15. Lifecycle status-variable lint (lint-lifecycle-status-var.sh --verbose)"
 CURRENT_GATE="gate15"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -764,12 +846,14 @@ fi
 
 say ""
 
+fi
 # ── 16. hard_contracts migration warning (non-blocking) ───────────────────────
 # routing_hard/routing_agents_hard are being replaced -- migrate to the flat hard_contracts
 # manifest key (see manifest-routing-schema.md). This gate WARNS, never fails: both blocks
 # remain genuinely consulted by command-route-skill.sh (for /research, /plan, /implement) and by
 # command-route-agent.sh until the two dependent follow-on tasks land, so declaring them today is
 # not yet an error -- only a migration nudge for new/updated extensions.
+if gate_selected 16; then
 say "16. hard_contracts migration warning (routing_hard/routing_agents_hard)"
 CURRENT_GATE="gate16"
 gate16_hits=0
@@ -790,12 +874,14 @@ unset gate16_manifest gate16_ext gate16_declares gate16_hits
 
 say ""
 
+fi
 # Gate 17: scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12):
 # only the source store (agent-system/extensions/core/**) is validated, regardless of which copy
 # (source store or deployed .claude/) invoked this script. Invokes the source-store copy
 # directly, resolving REPO_ROOT the same way gate 12 does.
+if gate_selected 17; then
 say "17. Scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)"
 CURRENT_GATE="gate17"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -820,12 +906,14 @@ fi
 
 say ""
 
+fi
 # Gate 18: task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
 # 17): only the source store (agent-system/extensions/core/**) is validated, regardless of which
 # copy (source store or deployed .claude/) invoked this script. Invokes the source-store copy
 # directly, resolving REPO_ROOT the same way gate 12 does.
+if gate_selected 18; then
 say "18. Task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)"
 CURRENT_GATE="gate18"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -850,12 +938,14 @@ fi
 
 say ""
 
+fi
 # Gate 19: branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
 # 17, 18): only the source store (agent-system/extensions/core/**) is validated, regardless of
 # which copy (source store or deployed .claude/) invoked this script. Invokes the source-store
 # copy directly, resolving REPO_ROOT the same way gate 18 does.
+if gate_selected 19; then
 say "19. Branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)"
 CURRENT_GATE="gate19"
 if [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -880,6 +970,7 @@ fi
 
 say ""
 
+fi
 # Gate 20: orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)
 #
 # Same source-store-vs-deploy-consumer [SKIP] posture as the sibling lint gates (6, 7, 9, 11, 12,
@@ -905,6 +996,7 @@ say ""
 # meaningfully changed -- spuriously tripping defer_reason:"deploy_checkpoint" for every
 # remaining task in a batch. Live numbers are printed unconditionally via say() below instead, so
 # drift direction stays visible without polluting --findings output.
+if gate_selected 20; then
 say "20. Orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)"
 CURRENT_GATE="gate20"
 BUDGET_CONFIG="$TARGET/agent-system/extensions/core/context/config/orchestrator-context-budget.json"
@@ -992,6 +1084,7 @@ else
 fi
 
 say ""
+fi
 if [ "$FAILURES" -eq 0 ]; then
   echo "[verify-deploy] PASS -- $CHECKS check(s), 0 failure(s)"
   say ""

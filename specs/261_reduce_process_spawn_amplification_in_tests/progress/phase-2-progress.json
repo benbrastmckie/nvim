@@ -1,0 +1,60 @@
+{
+  "phase": 2,
+  "phase_name": "Gate-Selection Flag for verify-deploy.sh",
+  "started_at": "2026-09-26T02:12:00Z",
+  "last_updated": "2026-09-26T02:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Audit cross-gate variable dependencies across all 21 CURRENT_GATE= blocks",
+      "status": "done",
+      "files_touched": [],
+      "note": "Zero cross-gate variable dependencies found. Every gate's *_output/*_status/*_line variables are uniquely named per gate and consumed only within that gate."
+    },
+    {
+      "id": 2,
+      "description": "Add GATES_FILTER + gate_selected() helper",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add --only-gate N[,M,...] argument parsing with validation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Wrap all 20 gate blocks in if gate_selected N; then / fi without reindenting",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"],
+      "note": "Applied via a verified Python script operating on anchored line ranges, processed gate20->gate1 to avoid line-number drift. bash -n clean."
+    },
+    {
+      "id": 5,
+      "description": "Update --help sed range for new header docs",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"],
+      "note": "sed -n '2,68p' -> '2,77p'"
+    },
+    {
+      "id": 6,
+      "description": "Create test-verify-deploy-gate-selection.sh covering (a)-(d)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"],
+      "note": "5/5 assertions pass, 87s wall time."
+    },
+    {
+      "id": 7,
+      "description": "Confirm discovered-suite count rises by exactly 1, exec bit set",
+      "status": "done",
+      "files_touched": [],
+      "note": "Manual discovery count 96 = baseline 95 + 1."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "known_expected_artifact": "Any full verify-deploy.sh invocation against a fixture that includes the real agent-system/extensions tree will show gate3/gate5 'Content differs from source: scripts/verify-deploy.sh' until Phase 7's redeploy -- this is the same source/deploy-drift phenomenon documented in phase-1-progress.json, now affecting verify-deploy.sh itself since it was heavily edited this phase. Confirmed via git-stash comparison: with the edit stashed out, a full run against the real repo is a clean PASS (32 checks, 0 failures); with it restored, the only diff is the one expected drift finding."
+}

@@ -188,39 +188,51 @@ tree moved since the research ran and the baseline -- not the research -- is aut
 
 ---
 
-### Phase 2: Gate-Selection Flag for verify-deploy.sh [NOT STARTED]
+### Phase 2: Gate-Selection Flag for verify-deploy.sh [COMPLETED]
 
 **Goal**: Let a caller run one gate (or a named set) instead of the whole battery, without
 changing what the default no-flag invocation does.
 
 **Tasks**:
-- [ ] Audit cross-gate variable dependencies in
+- [x] Audit cross-gate variable dependencies in
       `agent-system/extensions/core/scripts/verify-deploy.sh`: for each of the 21 `CURRENT_GATE=`
       blocks (gate0 setup plus gates 1-20), list every variable it assigns that any later gate
       reads. This audit gates the whole design and must be done before any guard is wired.
-- [ ] Hoist any such cross-gate assignment above the guarded region (or, if hoisting is not safe,
+      *(completed: full read of all 21 blocks found ZERO cross-gate variable dependencies -- every
+      gate's `*_output`/`*_status`/`*_line` variable is uniquely named per gate and consumed only
+      within that same gate. The only cross-gate state is harness-level (FAILURES, CHECKS,
+      CURRENT_GATE, FINDINGS_LIST, all naturally correct under selective gate execution) and
+      setup-level (TARGET, CLAUDE_DIR, QUIET, FINDINGS, SKIP_SLOW, NVIM_ARGS,
+      ORCHESTRATOR_BUDGET_GATE_MODE), all assigned before gate1 and never gate-specific)*
+- [x] Hoist any such cross-gate assignment above the guarded region (or, if hoisting is not safe,
       make the flag refuse that specific selection with a named error rather than silently
-      producing a wrong result).
-- [ ] Add `GATES_FILTER` (empty = all gates, today's behavior) and a `gate_selected N` helper
-      returning 0 when the filter is empty or contains N.
-- [ ] Add `--only-gate N[,M,...]` argument parsing next to the existing `--quiet`/`--findings`/
+      producing a wrong result). *(completed: N/A -- zero dependencies found, nothing to hoist)*
+- [x] Add `GATES_FILTER` (empty = all gates, today's behavior) and a `gate_selected N` helper
+      returning 0 when the filter is empty or contains N. *(completed)*
+- [x] Add `--only-gate N[,M,...]` argument parsing next to the existing `--quiet`/`--findings`/
       `--skip-slow`/`--minimal-init` cases. Reject a non-numeric or out-of-range gate id with
       `exit 2` and, under `--findings`, a `FINDING gate0` line -- mirroring how the existing
-      `--minimal-init` argument errors already behave.
-- [ ] Wrap each gate block in `if gate_selected N; then` / `fi` WITHOUT reindenting the block
+      `--minimal-init` argument errors already behave. *(completed)*
+- [x] Wrap each gate block in `if gate_selected N; then` / `fi` WITHOUT reindenting the block
       body: 2 added lines per gate, ~40 lines total, and a diff a reviewer can actually read.
       Record this indentation trade-off in the script header so a future reader does not "fix" it.
-- [ ] Update the `-h|--help` `sed -n '2,68p'` range for the new header documentation and verify
-      with `bash verify-deploy.sh --help`.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh`
+      *(completed: applied programmatically to all 20 gates via a verified line-anchored script,
+      bash -n clean)*
+- [x] Update the `-h|--help` `sed -n '2,68p'` range for the new header documentation and verify
+      with `bash verify-deploy.sh --help`. *(completed: range is now `2,77p`)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh`
       covering: (a) `--only-gate 20` runs gate 20 and no other gate's output appears; (b) every
       gate id 1..20 runs clean standalone against the same fixture (the cross-gate-variable
       regression net); (c) an invalid gate id exits 2 with a named error; (d) with no flag, all
       gate numbers appear in the output -- the "default unchanged" assertion. This suite must
-      itself be cheap: single-gate invocations only, never a full battery.
-- [ ] Add the new suite to no registry -- `run-all.sh` auto-discovers `tests/test-*.sh`. Confirm
+      itself be cheap: single-gate invocations only, never a full battery. *(completed: all 5
+      assertions pass, 87s wall time -- case (d) uses a deploy-consumer-style cheap fixture so the
+      no-flag/all-headers check does not pay full-battery cost; case (a)/(b) use a real-copy rich
+      fixture since gate 20 needs real content)*
+- [x] Add the new suite to no registry -- `run-all.sh` auto-discovers `tests/test-*.sh`. Confirm
       the discovered-suite count rises by exactly 1 and the file carries the exec bit (an absent
-      exec bit degrades to a `[SKIP]`, not a failure).
+      exec bit degrades to a `[SKIP]`, not a failure). *(completed: manual discovery count 96 =
+      baseline 95 + 1; exec bit set (rwxr-xr-x))*
 
 **Timing**: 2 hours
 
