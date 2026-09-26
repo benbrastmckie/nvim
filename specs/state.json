@@ -434,7 +434,7 @@
     {
       "project_number": 129,
       "project_name": "audit_word_boundary_regex_portability",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -442,20 +442,31 @@
       "description": "Audit every `\\b` word-boundary construct used in a grep pattern across the source store, empirically, against the grep actually deployed, and record portable-construct guidance so the class does not recur. Surfaced by the adversarial-verification gate failure (evt_1788245094839_eybEyC); that gate is fixed separately and is NOT in this task's scope.\n\nTHE DEFECT IS COMPOSITIONAL, NOT A MISSING FEATURE. State this precisely; the imprecise version of this finding is what would sink the audit itself. The deployed grep is ugrep 7.8.4 (built with PCRE2 available: `-P:pcre2jit`). Its POSIX/DFA `-E` engine does NOT simply ignore `\\b`. Every fragment of the failing pattern matches in isolation against the literal header line `| Claim | Source / counterexample | Verification method | Confidence |`:\n\n  PATTERN                                                          RESULT\n  \\bclaim\\b                                                        MATCH\n  claim                                                            MATCH\n  \\|[^|]*\\bclaim\\b[^|]*\\|                                          MATCH\n  [^|]*\\bclaim\\b                                                   MATCH\n  \\bclaim\\b[^|]*                                                   MATCH\n  \\bsource\\b[^|]*\\bcounterexample\\b                                MATCH\n  \\|[^|]*\\bclaim\\b[^|]*\\|[^|]*\\bsource\\b                           MATCH\n\nThe full composed pattern nevertheless fails, and bisection localizes it:\n\n  \\|[^|]*\\bclaim\\b[^|]*\\|[^|]*\\bsource\\b[^|]*\\bcounterexample\\b[^|]*\\|   NOMATCH   (production form)\n  \\|[^|]*\\bclaim\\b[^|]*\\|[^|]*\\bsource\\b[^|]*\\bcounterexample\\b          NOMATCH\n  \\|[^|]*\\bclaim\\b[^|]*\\|[^|]*\\bsource\\b[^|]*counterexample              MATCH     (dropped \\b around counterexample)\n  \\|[^|]*\\bclaim\\b[^|]*\\|[^|]*source[^|]*\\bcounterexample\\b              NOMATCH   (dropped \\b around source)\n  \\|[^|]*claim[^|]*\\|[^|]*\\bsource\\b[^|]*\\bcounterexample\\b              NOMATCH   (dropped \\b around claim)\n\nand the unmodified production pattern under `-P` (PCRE2) returns MATCH.\n\nSo the engine mis-evaluates a `\\b` that appears DOWNSTREAM of an earlier `\\b`-anchored subexpression separated by a `[^|]*` run. Whether a given `\\b` works depends on what else is in the pattern.\n\nBINDING CONSTRAINT ON HOW THIS AUDIT IS PERFORMED. Because the failure is compositional, spot-testing a fragment in isolation does NOT prove the production pattern works in situ. Every site must be executed as its full, unmodified production pattern against a real positive input under the deployed grep, and the observed result recorded. Reasoning about whether a construct \"should\" work, testing a simplified stand-in, or generalizing from one site's result to another's are all forbidden -- they are precisely the trap this defect sets.\n\nFOR THE SAME REASON, THIS IS NOT A MECHANICAL FIND-AND-REPLACE. A blanket `\\b` removal would be wrong: `\\b` carries real semantics, and several high-stakes sites were spot-verified as CURRENTLY WORKING under the deployed grep -- guard-destructive-git.sh's `--hard\\b` and `(drop|clear)\\b` both match (that guard is live, not silently dead), the sorry census's `\\bsorry\\b` matches, and literature-audit.sh's `\\b(Definition|Lemma|Theorem|Proposition|Corollary|Remark|Example)\\s+[0-9]+(\\.[0-9]+)*\\b` matches. Rewriting working patterns risks introducing false positives in a destructive-git guard, which is a worse outcome than the defect being audited.\n\nSCOPE. Roughly 26 grep-adjacent `\\b` sites across the source store, spanning literature scripts, lean scripts, core scripts, lint scripts, test harnesses, and hooks. For each: run the production pattern against a real positive input under the deployed grep; classify as WORKING or BROKEN on the evidence; repair only the broken ones, choosing per-site between dropping `\\b` where surrounding delimiters already provide the boundary and switching that invocation to `-P`; and leave working sites alone with a one-line note recording that they were tested rather than assumed.\n\nDELIVERABLE BEYOND THE REPAIRS. A short portability guidance note under the core standards context directory covering: that the deployed grep may be ugrep rather than GNU grep; that `\\b` under `-E` is compositionally unreliable there while `-P` is reliable; that delimiter-anchored alternatives are preferred where the surrounding pattern already bounds the token; and that any new `\\b` pattern must be executed against a real input before being committed. Without this note the class recurs the next time someone writes a plausible-looking boundary pattern.\n\nSEQUENCING. Depends on the adversarial-gate fix purely to avoid a file-footprint collision: skill-orchestrate/SKILL.md is itself one of the sites, and that task owns the gate's pattern. This task covers every other site and must not touch the gate.\n\nACCEPTANCE: every site is accompanied by a recorded empirical result under the deployed grep; no working pattern is rewritten; each repaired pattern is demonstrated to match a real positive input AND to reject a real negative input; and the guidance note exists.\n\nSOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\n\nCONFIRMED INSTANCE (2026-09-17 survey, carried from the cslib consumer repo's own task list, where it is filed as a local defect and cannot be fixed): lean/scripts/lean-sorry-census.sh matches `\\bsorry\\b` on comment-stripped text and therefore ALSO matches the \"sorry\" inside `set_option warn.sorry false in`, because `.` is a non-word character. Every suppression annotation is counted as an extra phantom sorry: measured there as 41 reported = 23 real + 18 annotation lines (repo-wide 45 = 27 + 18). This is exactly the compositional word-boundary class this task audits, on a file already in its file_scope; fix it as part of the audit and add a fixture with a `warn.sorry` line. The consumer repo task can then be abandoned with a pointer here.",
       "dependencies": [
         88,
-        128
+        128,
+        261
       ],
       "file_scope": [
-        "agent-system/extensions/literature/scripts/literature-audit.sh",
-        "agent-system/extensions/literature/scripts/literature-convert.sh",
-        "agent-system/extensions/lean/scripts/lean-sorry-census.sh",
-        "agent-system/extensions/core/scripts/test-session-runtime-files.sh",
+        "agent-system/extensions/core/context/standards/grep-word-boundary-portability.md",
+        "agent-system/extensions/core/hooks/guard-destructive-git.sh",
         "agent-system/extensions/core/scripts/check-extension-docs.sh",
-        "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
         "agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh",
-        "agent-system/extensions/core/hooks/guard-destructive-git.sh"
+        "agent-system/extensions/core/scripts/test-session-runtime-files.sh",
+        "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
+        "agent-system/extensions/lean/scripts/lean-sorry-census.sh",
+        "agent-system/extensions/literature/scripts/literature-audit.sh",
+        "agent-system/extensions/literature/scripts/literature-convert.sh"
       ],
       "created": "2026-09-01T11:24:42Z",
-      "last_updated": "2026-09-01T11:24:42Z"
+      "last_updated": "2026-09-26T10:59:01Z",
+      "session_id": "sess_1790419342_eea5e0",
+      "artifacts": [
+        {
+          "path": "specs/129_audit_word_boundary_regex_portability/reports/01_word-boundary-grep-audit.md",
+          "type": "report",
+          "summary": "Empirical per-site audit of every grep \\b construct across the source store: all 8 declared file_scope sites and ~24 additional sites found WORKING; corrects the dispatch's premise that ugrep is uniformly the deployed grep (it is invocation-context-dependent); confirms lean-sorry-census.sh's flagged defect was already fixed by commit 232b05b7f; drafts the guidance note text for the plan/implement phase to land."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 136,
@@ -1167,12 +1178,12 @@
     {
       "project_number": 261,
       "project_name": "reduce_process_spawn_amplification_in_tests",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reduce process-spawn amplification in the shell test suite",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-26T07:21:55Z",
+      "last_updated": "2026-09-26T08:46:48Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/tests/"

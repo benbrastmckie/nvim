@@ -1,0 +1,38 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/129_audit_word_boundary_regex_portability/reports/01_word-boundary-grep-audit.md",
+      "summary": "Empirical per-site audit of every grep \\b construct across the source store: all 8 declared file_scope sites and ~24 additional sites found WORKING; corrects the dispatch's premise that ugrep is uniformly the deployed grep (it is invocation-context-dependent); confirms lean-sorry-census.sh's flagged defect was already fixed by commit 232b05b7f; drafts the guidance note text for the plan/implement phase to land."
+    }
+  ],
+  "next_steps": "Run /plan 129 to schedule landing the drafted guidance note (agent-system/extensions/core/context/standards/grep-word-boundary-portability.md) and the cslib consumer-repo coordination note. No regex repairs are needed anywhere in scope.",
+  "proposed_file_scope": [
+    "agent-system/extensions/core/context/standards/grep-word-boundary-portability.md"
+  ],
+  "metadata": {
+    "session_id": "sess_1790419342_eea5e0_129",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 32
+  },
+  "memory_candidates": [
+    {
+      "content": "In this environment, `grep` is invocation-context-dependent, not a single fact: a raw command typed or pasted directly into an agent's own Bash-tool shell resolves `grep` to a non-exported interactive shell function that execs the Claude Code binary with ARGV0=ugrep (real ugrep 7.8.4 semantics), while the identical command placed inside a `.sh` file executed as a subprocess (`bash file.sh`, `./file.sh`, or a hook-runner spawn) resolves plain `grep` to GNU grep 3.12, because the function is not exported and $BASH_ENV is empty. Verify which context applies (env -i bash -lc 'grep --version' vs. the top-level Bash-tool shell) before assuming either engine when auditing or writing grep-based patterns.",
+      "category": "CONFIG",
+      "source_artifact": "specs/129_audit_word_boundary_regex_portability/reports/01_word-boundary-grep-audit.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["grep", "ugrep", "GNU grep", "bash function export", "invocation context", "word-boundary"]
+    },
+    {
+      "content": "ugrep 7.8.4's -E (POSIX/DFA) engine mis-evaluates \\b compositionally: a \\b downstream of an earlier \\b-anchored subexpression separated by a wildcard run (e.g. [^|]*) can silently NOMATCH even though every individual fragment matches in isolation and -P (PCRE2) on the same unmodified pattern matches correctly. A single \\b, or one \\b...\\b bracket around a single alternation/token (shape \\bWORD\\b or \\b(A|B|C)\\s+N\\b), is not affected -- only a chain of 2+ independent \\b-anchored subexpressions in one linear pattern is at risk. Always test the full, unmodified production pattern against a real positive AND negative input under the actual deployed engine before trusting a \\b-bearing pattern; never generalize from a simplified stand-in.",
+      "category": "PATTERN",
+      "source_artifact": "specs/129_audit_word_boundary_regex_portability/reports/01_word-boundary-grep-audit.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["ugrep", "word-boundary", "regex compositional bug", "grep -P", "HOOK_REGEX_BOUNDARY_DEFECT"]
+    }
+  ]
+}

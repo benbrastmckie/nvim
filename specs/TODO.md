@@ -11,7 +11,7 @@ next_project_number: 268
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,261,263,265,266 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,263,265,266 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,224,250,251,256,264,267 | 22,44,127,129,162,163,199,244,263,265,266 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
@@ -27,7 +27,7 @@ next_project_number: 268
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
-129 [NOT STARTED] — Empirically audit \b word-boundary grep patterns for...
+129 [RESEARCHED] — Empirically audit \b word-boundary grep patterns for...
   └─ 139 [NOT STARTED] — Forbid concurrent-writer history rewrites: rules and agent...
     └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -41,7 +41,6 @@ next_project_number: 268
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-261 [IMPLEMENTING] — Reduce process-spawn amplification in the shell test suite
 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
   └─ 264 [NOT STARTED] — Route dispatched-agent push requests through the userdecision...
 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
@@ -772,7 +771,7 @@ may depend on. deploy-headless.sh has many other callers; check them before prop
 ---
 
 ### 261. Reduce process-spawn amplification in the shell test suite
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -3897,10 +3896,11 @@ against a lean4 dispatch; and marker/reality divergence is caught in BOTH direct
 ---
 
 ### 129. Empirically audit \b word-boundary grep patterns for compositional failure under the deployed grep
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 88, Task 128
+- **Dependencies**: Task 88, Task 128, Task 261
+- **Research**: [129_audit_word_boundary_regex_portability/reports/01_word-boundary-grep-audit.md]
 
 **Description**: Audit every `\b` word-boundary construct used in a grep pattern across the source store, empirically, against the grep actually deployed, and record portable-construct guidance so the class does not recur. Surfaced by the adversarial-verification gate failure (evt_1788245094839_eybEyC); that gate is fixed separately and is NOT in this task's scope.
 
