@@ -1057,7 +1057,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, dedup rule, and the live-cycle acceptance-criterion decision",
-      "line_count": 512,
+      "line_count": 516,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3373,6 +3373,29 @@
         "agents": [],
         "commands": [],
         "task_types": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "standards/grep-word-boundary-portability.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Word-boundary (\\b) grep portability: the deployed grep is invocation-context-dependent (GNU grep in subprocess execution, ugrep at the Bash-tool top level), ugrep compositionally mis-evaluates chained \\b anchors, and remediation preferences",
+      "line_count": 93,
+      "keywords": [
+        "grep",
+        "regex",
+        "word-boundary",
+        "ugrep",
+        "portability"
+      ],
+      "topics": [
+        "quality"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": []
       },
       "on_demand": true
     }

@@ -256,19 +256,19 @@ entry.
 
 ---
 
-### Phase 4: Index, validate, and deploy the note [NOT STARTED]
+### Phase 4: Index, validate, and deploy the note [COMPLETED]
 
 **Goal**: Make the note discoverable through the context index and present in the deployed tree,
 with every relevant validator green.
 
 **Tasks**:
-- [ ] Add one entry for `standards/grep-word-boundary-portability.md` to `agent-system/extensions/core/index-entries.json`, matching the shape of the neighboring `standards/` entries: `path`, `domain: "core"`, `subdomain: "standards"`, `summary`, `line_count`, `keywords` (3-6, e.g. grep, regex, word-boundary, ugrep, portability), `topics`, `load_when` (empty agent/task_type/command arrays), `on_demand: true`.
-- [ ] Confirm no `manifest.json` change is needed: `provides.context` enumerates directories (`standards`), not individual files — verify by reading the list rather than assuming.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and reconcile the new entry's `line_count` until it reports clean.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm Rule T (index-entries schema conformance) reports no findings for the new entry.
-- [ ] Deploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default non-destructive resync) so `.claude/context/standards/grep-word-boundary-portability.md` and the regenerated `.claude/context/index.json` appear.
-- [ ] Run `bash .claude/scripts/validate-context-index.sh` and confirm the new path resolves and the entry's fields validate.
-- [ ] Confirm the deployed copy matches the source copy byte-for-byte (`diff`), demonstrating the source store is the real edit target and nothing was hand-authored under `.claude/`.
+- [x] Add one entry for `standards/grep-word-boundary-portability.md` to `agent-system/extensions/core/index-entries.json`, matching the shape of the neighboring `standards/` entries: `path`, `domain: "core"`, `subdomain: "standards"`, `summary`, `line_count`, `keywords` (3-6, e.g. grep, regex, word-boundary, ugrep, portability), `topics`, `load_when` (empty agent/task_type/command arrays), `on_demand: true`. *(completed)*
+- [x] Confirm no `manifest.json` change is needed: `provides.context` enumerates directories (`standards`), not individual files — verify by reading the list rather than assuming. *(completed: confirmed by reading manifest.json)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and reconcile the new entry's `line_count` until it reports clean. *(completed: 512/512 exact match on the deployed tree, first run)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm Rule T (index-entries schema conformance) reports no findings for the new entry. *(completed: [core] OK on the deployed tree)*
+- [x] Deploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default non-destructive resync) so `.claude/context/standards/grep-word-boundary-portability.md` and the regenerated `.claude/context/index.json` appear. *(completed: RESULT=landed_verify_clean, 33/33 checks PASS)*
+- [x] Run `bash .claude/scripts/validate-context-index.sh` and confirm the new path resolves and the entry's fields validate. *(completed: 225 entries checked, 0 errors, 0 warnings)*
+- [x] Confirm the deployed copy matches the source copy byte-for-byte (`diff`), demonstrating the source store is the real edit target and nothing was hand-authored under `.claude/`. *(completed: diff empty)*
 
 **Timing**: 0.75 hours
 
