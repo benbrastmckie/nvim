@@ -1,12 +1,50 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md",
+      "summary": "Per-site evidence table for every genuine grep-pattern \\b site (18 rows, all WORKING, zero repairs), corrected dispatch framing, recorded discrepancies against the research report, and administrative follow-ups."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Independently re-executed the empirical word-boundary grep audit across every genuine \\b site in the source store (the 2 ugrep-exposed lean agent-instruction Markdown files and 16 .sh/hook file_scope and broader-sweep sites); all classified WORKING, zero repairs made. Authored, cross-referenced, indexed, and deployed the grep-word-boundary-portability.md guidance note."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/context/standards/grep-word-boundary-portability.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/129_audit_word_boundary_regex_portability/plans/01_word-boundary-portability-audit.md",
+    "specs/129_audit_word_boundary_regex_portability/progress/phase-1-progress.json",
+    "specs/129_audit_word_boundary_regex_portability/progress/phase-2-progress.json",
+    "specs/129_audit_word_boundary_regex_portability/progress/phase-3-progress.json",
+    "specs/129_audit_word_boundary_regex_portability/progress/phase-4-progress.json",
+    "specs/129_audit_word_boundary_regex_portability/progress/phase-5-progress.json",
+    "specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A coarse `grep -rlE '\\\\b'` sweep for word-boundary construct sites produces false positives that must be filtered by inspection, not assumed real: LaTeX/Typst macros (`\\begin`, `\\bf`, `\\bigl`, `\\bullet`, `\\binom`, `\\bot`, `\\boldsymbol`, `\\bibliography`, `\\bottomrule`) match the substring `\\`+`b`; literal escaped strings in test fixtures (e.g. a jq string containing `\\\\backslash`) match the same way; and `sed`/Python `re` calls use `\\b` under a completely different, non-ugrep-affected engine. Before counting a hit as a genuine at-risk grep site, confirm it is (a) a live `grep`/`egrep` invocation, not dead code or a doc-example echo, and (b) actually the construct in question, not a substring coincidence.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["grep", "regex", "false-positive", "audit-methodology", "word-boundary"]
+    },
+    {
+      "content": "When landing a new agent-system/extensions/core/context/standards/*.md file and indexing it in index-entries.json, the source-store copies of check-extension-docs.sh and generate-context-line-counts.sh both self-refuse when run directly from agent-system/extensions/core/scripts (they detect the source-store tree and require the deployed .claude/scripts/ copy, or a REPO_ROOT override). The reliable sequence is: add the index entry, run deploy-headless.sh first, then run the deployed check-extension-docs.sh, generate-context-line-counts.sh --check, and validate-context-index.sh against the now-deployed tree, and finally diff the source and deployed copies of the new file to confirm byte-identity.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless", "index-entries", "context-standards", "source-store", "deploy-validation"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790419342_eea5e0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 5,
     "phases_total": 5
   }
 }

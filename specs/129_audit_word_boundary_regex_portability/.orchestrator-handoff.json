@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 2,
-  "summary": "Authored a 5-phase implementation plan (4h, waves [1,2][3][4][5]). Phases 1-2 independently re-execute the per-site empirical audit under the correct engine per site (ugrep for pasted Bash-tool commands in the two lean agent-instruction Markdown files; GNU grep for .sh/hook sites via their own test suites), with an explicit repair branch requiring positive-match plus negative-reject evidence. Phase 3 authors the portability guidance note under core standards with the invocation-context split as its first assertion; Phase 4 indexes, validates, and deploys it; Phase 5 consolidates the evidence table and records the two administrative follow-ups. skill-orchestrate/SKILL.md is an explicit non-goal.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "All 5 phases completed. Independently re-executed the empirical \\b word-boundary grep audit: Phase 1 re-verified the invocation-context engine split (ugrep at Bash-tool top level, GNU grep in subprocess execution) and re-tested all 5 ugrep-exposed sites (2 lean agent-instruction Markdown files) WORKING against positive and negative Lean fixtures. Phase 2 re-ran every .sh/hook file_scope and broader-sweep site through its own production mechanism (test suites, literature-audit.sh fixture, deployed check-extension-docs.sh) -- every site WORKING, zero repairs. Two honest discrepancies from the research report were recorded rather than reconciled: test-lake-build-guard.sh's case 3 (not \\b-related) passed this run where the report recorded a failure, and literature-audit.sh's 'P4' pattern is documented-only with no live grep call. Phase 3 authored and cross-referenced the portability guidance note. Phase 4 indexed, deployed, and validated it (line-count check, check-extension-docs.sh, validate-context-index.sh, byte-identical deploy diff all clean). Phase 5 consolidated the per-site evidence table into the summary, confirmed file_scope already carries the new note (appended during planning), and confirmed skill-orchestrate/SKILL.md is untouched across the whole task.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/129_audit_word_boundary_regex_portability/plans/01_word-boundary-portability-audit.md",
-      "summary": "5-phase plan for the empirical word-boundary grep audit plus the portability guidance note."
+      "type": "summary",
+      "path": "specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md",
+      "summary": "Per-site evidence table (18 sites, all WORKING, zero repairs), corrected dispatch framing, recorded discrepancies, and administrative follow-ups."
+    },
+    {
+      "type": "other",
+      "path": "agent-system/extensions/core/context/standards/grep-word-boundary-portability.md",
+      "summary": "Portability guidance note: invocation-context engine split, compositional defect explanation, shape rule, delimiter-anchored preference, -P remedy, execute-before-commit obligation."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": []
 }
