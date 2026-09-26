@@ -31,7 +31,7 @@
 # pass -- per shell-script-testing.md's loud-skip discipline extended to the discovery step itself.
 #
 # Usage:
-#   run-all.sh [--quiet] [--timings FILE]
+#   run-all.sh [--quiet] [--timings FILE] [--jobs N|auto]
 #
 # --quiet: suppress per-suite [RUN]/[PASS] narration; still prints [FAIL] lines and the final
 #          summary line, so a caller (e.g. Gate 8 in verify-deploy.sh) can capture failures
@@ -42,19 +42,52 @@
 #          FILE. Strictly additive: absent this flag, stdout/stderr output and exit codes are
 #          byte-identical to today's. Result is one of PASS, FAIL, or SKIP.
 #
+# --jobs N|auto: run up to N suites concurrently (default 1 -- sequential, byte-for-byte the same
+#          code path and output as before this flag existed). `auto` resolves to `nproc`, capped
+#          at 4 (see the rejected-alternatives note below this header for why a fixed cap, not a
+#          bare nproc). Output is ALWAYS captured per-suite and emitted whole, in discovery order,
+#          never streamed concurrently -- the `[FAIL] <path>` machine-greppable contract and the
+#          final summary line are unaffected by job count. A suite the Phase 4 parallelism-safety
+#          audit flagged as load-sensitive (ambient-load precaution, not a resource collision --
+#          see the LOAD_SENSITIVE_BASENAMES list below) always runs alone, serially, before the
+#          parallel pool starts, regardless of --jobs. Scheduling within the parallel pool is
+#          longest-first, using the advisory, optional suite-cost-hints.txt file (see its own
+#          header) -- a missing, stale, or partial hint file only biases scheduling suboptimally,
+#          never skips, duplicates, or reorders away a suite (enforced by an assertion that the
+#          built schedule's length equals the discovered count). Nested-invocation guard: if
+#          RUN_ALL_NESTED=1 is already set in the environment (this run was itself launched from
+#          inside another run-all.sh's suite, e.g. via verify-deploy.sh's Gate 8 recursing into a
+#          suite that calls verify-deploy.sh), --jobs is forced to 1 regardless of what was passed,
+#          and RUN_ALL_NESTED=1 is (re-)exported for the remainder of this run so a further level
+#          of nesting also stays sequential.
+#
+# Rejected alternatives for --jobs (recorded so a future reader does not re-propose them):
+#   - A self-maintaining timing cache written on every run: rejected because it adds mutable state
+#     to the tree, with gitignore and deploy-hygiene consequences that a one-shot, human-reviewed,
+#     checked-in suite-cost-hints.txt does not have.
+#   - File size (line count) as a cost proxy instead of measured wall time: rejected because the
+#     measurements disprove it -- test-verify-deploy-context-budget.sh (261 lines) cost ~391s
+#     pre-Phase-3 while test-orchestrate-cycle-plan.sh (3,839 lines) cost ~45s. Line count and
+#     wall-clock cost are not correlated in this suite.
+#   - A bare `nproc` for `auto` with no cap: rejected because several suites in the parallel pool
+#     rsync a ~16MB fixture tree or launch headless nvim; N concurrent copies on a many-core box
+#     multiplies peak disk and memory well past what those suites were sized for individually.
+#
 # Exit codes:
 #   0  all discovered suites passed
 #   1  one or more discovered suites failed
-#   2  zero suites were discovered (harness failure, not a pass)
+#   2  zero suites were discovered (harness failure, not a pass), or an internal scheduling
+#      invariant was violated (scheduled count != discovered count)
 #
 # Machine-greppable output: every failing suite prints a line of the exact form
 #   [FAIL] <suite path>
-# so a caller can extract failures with `grep '^\[FAIL\] '` regardless of --quiet.
+# so a caller can extract failures with `grep '^\[FAIL\] '` regardless of --quiet or --jobs.
 
 set -uo pipefail
 
 QUIET=false
 TIMINGS_FILE=""
+JOBS=1
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
@@ -66,8 +99,16 @@ while [ $# -gt 0 ]; do
       TIMINGS_FILE="$2"
       shift 2
       ;;
+    --jobs)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --jobs requires N or 'auto'" >&2
+        exit 2
+      fi
+      JOBS="$2"
+      shift 2
+      ;;
     -h|--help)
-      sed -n '2,52p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,84p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -76,6 +117,29 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
+
+# --jobs auto -> nproc, capped at 4 (see the rejected-alternatives note in the header for why a
+# cap, not a bare nproc).
+JOBS_CAP=4
+if [ "$JOBS" = "auto" ]; then
+  if command -v nproc >/dev/null 2>&1; then
+    JOBS="$(nproc)"
+  else
+    JOBS=1
+  fi
+  [ "$JOBS" -gt "$JOBS_CAP" ] && JOBS="$JOBS_CAP"
+elif ! printf '%s' "$JOBS" | grep -qE '^[0-9]+$' || [ "$JOBS" -lt 1 ]; then
+  echo "ERROR: --jobs: invalid value '$JOBS' (must be a positive integer or 'auto')" >&2
+  exit 2
+fi
+
+# Nested-invocation guard: a run-all.sh launched FROM one of this run's own suites (e.g. a suite
+# that shells out to verify-deploy.sh, whose Gate 8 is run-all.sh itself) must never multiply job
+# counts. If we are already nested, force sequential regardless of what --jobs requested.
+if [ "${RUN_ALL_NESTED:-}" = "1" ]; then
+  JOBS=1
+fi
+export RUN_ALL_NESTED=1
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -156,48 +220,229 @@ PASS_COUNT=0
 FAIL_COUNT=0
 SKIP_COUNT=0
 
-SUITE_OUT="$(mktemp)"
-trap 'rm -f "$SUITE_OUT"' EXIT
-
 if [ -n "$TIMINGS_FILE" ]; then
   : > "$TIMINGS_FILE"
 fi
 
 SUITE_RUN_START_MS="$(date +%s%3N)"
 
-for suite in "${SUITES[@]}"; do
-  suite_name="$suite"
-  if [ ! -x "$suite" ]; then
-    echo "[run-all] [SKIP] not executable (exec-bit regression?): $suite_name" >&2
-    SKIP_COUNT=$((SKIP_COUNT + 1))
-    if [ -n "$TIMINGS_FILE" ]; then
-      echo "${suite_name},0,SKIP" >> "$TIMINGS_FILE"
+if [ "$JOBS" -le 1 ]; then
+  # ── Sequential path (--jobs 1, the default) ───────────────────────────────────
+  # Byte-for-byte the same code path and output as before --jobs existed. Do not fold this into
+  # the parallel path below -- it is kept as its own branch specifically so "at --jobs 1 the code
+  # path and output must be exactly today's" is trivially true by inspection, not by argument.
+  SUITE_OUT="$(mktemp)"
+  trap 'rm -f "$SUITE_OUT"' EXIT
+
+  for suite in "${SUITES[@]}"; do
+    suite_name="$suite"
+    if [ ! -x "$suite" ]; then
+      echo "[run-all] [SKIP] not executable (exec-bit regression?): $suite_name" >&2
+      SKIP_COUNT=$((SKIP_COUNT + 1))
+      if [ -n "$TIMINGS_FILE" ]; then
+        echo "${suite_name},0,SKIP" >> "$TIMINGS_FILE"
+      fi
+      continue
     fi
-    continue
+
+    say "[run-all] [RUN]  $suite_name"
+    _suite_start_ms="$(date +%s%3N)"
+    if ( bash "$suite" >"$SUITE_OUT" 2>&1 ); then
+      _suite_result="PASS"
+      PASS_COUNT=$((PASS_COUNT + 1))
+      say "[run-all] [PASS] $suite_name"
+    else
+      _suite_result="FAIL"
+      FAIL_COUNT=$((FAIL_COUNT + 1))
+      echo "[FAIL] $suite_name"
+      if [ "$QUIET" = "true" ]; then
+        tail -20 "$SUITE_OUT" | sed 's/^/    /'
+      else
+        cat "$SUITE_OUT" | sed 's/^/    /'
+      fi
+    fi
+    _suite_end_ms="$(date +%s%3N)"
+    if [ -n "$TIMINGS_FILE" ]; then
+      echo "${suite_name},$((_suite_end_ms - _suite_start_ms)),${_suite_result}" >> "$TIMINGS_FILE"
+    fi
+    : > "$SUITE_OUT"
+  done
+else
+  # ── Parallel path (--jobs N > 1) ───────────────────────────────────────────────
+  # Output is captured per-suite (never streamed concurrently) and emitted whole, in discovery
+  # order, at the very end -- so the [FAIL]/[SKIP] machine-greppable contract and the final
+  # summary line are unaffected by job count.
+  OUT_DIR="$(mktemp -d)"
+  trap 'rm -rf "$OUT_DIR"' EXIT
+
+  # Phase 4 parallelism-safety audit verdicts (full 96-suite table:
+  # specs/261_reduce_process_spawn_amplification_in_tests/progress/phase-4-audit-table.txt).
+  # These 4 suites carry real wall-clock-budget or lock-contention/memory-pressure assertions and
+  # are run alone, serially, before the parallel pool starts -- an ambient-load precaution, NOT a
+  # resource-collision requirement (the audit found zero suites with a fixed port/socket/lock path
+  # outside their own fixture, so no pairwise conflict exists to avoid).
+  #   - test-lake-build-guard.sh: real /proc/meminfo pressure checks, flock+sleep contention
+  #   - test-state-write-concurrency.sh: deliberate real lock contention, sub-second sleeps
+  #   - test-state-write-regen-timing.sh: real SCOPE_MUTEX_ACQUIRE_BUDGET_MS / REGEN_STUB_BUDGET_SEC
+  #   - test-four-tier-conflict.sh: TASK_LOCK_RETRY_BUDGET_MS=5000 budget-bound wall-clock assertion
+  LOAD_SENSITIVE_BASENAMES=(
+    "test-lake-build-guard.sh"
+    "test-state-write-concurrency.sh"
+    "test-state-write-regen-timing.sh"
+    "test-four-tier-conflict.sh"
+  )
+  is_load_sensitive() {
+    local base
+    base="$(basename "$1")"
+    local n
+    for n in "${LOAD_SENSITIVE_BASENAMES[@]}"; do
+      [ "$base" = "$n" ] && return 0
+    done
+    return 1
+  }
+
+  SKIP_INDICES=()
+  EXEC_INDICES=()
+  for i in "${!SUITES[@]}"; do
+    if [ -x "${SUITES[i]}" ]; then
+      EXEC_INDICES+=("$i")
+    else
+      SKIP_INDICES+=("$i")
+    fi
+  done
+
+  LOAD_SENSITIVE_INDICES=()
+  POOL_INDICES=()
+  for i in "${EXEC_INDICES[@]}"; do
+    if is_load_sensitive "${SUITES[i]}"; then
+      LOAD_SENSITIVE_INDICES+=("$i")
+    else
+      POOL_INDICES+=("$i")
+    fi
+  done
+
+  # Longest-first scheduling within the parallel pool, from the advisory, optional
+  # suite-cost-hints.txt (basename,wall_ms -- see that file's own header). A missing, stale, or
+  # partial hint file only biases scheduling suboptimally: an unhinted suite simply keeps
+  # discovery order, appended after any hinted ones -- never skipped, duplicated, or reordered
+  # away from the schedule entirely (enforced by the TOTAL_ACCOUNTED assertion below).
+  COST_HINTS_FILE="$SCRIPT_DIR/suite-cost-hints.txt"
+  declare -A HINT_COST=()
+  if [ -f "$COST_HINTS_FILE" ]; then
+    while IFS=',' read -r hint_base hint_ms; do
+      [ -n "$hint_base" ] || continue
+      case "$hint_base" in \#*) continue ;; esac
+      HINT_COST["$hint_base"]="$hint_ms"
+    done < "$COST_HINTS_FILE"
   fi
 
-  say "[run-all] [RUN]  $suite_name"
-  _suite_start_ms="$(date +%s%3N)"
-  if ( bash "$suite" >"$SUITE_OUT" 2>&1 ); then
-    _suite_result="PASS"
-    PASS_COUNT=$((PASS_COUNT + 1))
-    say "[run-all] [PASS] $suite_name"
-  else
-    _suite_result="FAIL"
-    FAIL_COUNT=$((FAIL_COUNT + 1))
-    echo "[FAIL] $suite_name"
-    if [ "$QUIET" = "true" ]; then
-      tail -20 "$SUITE_OUT" | sed 's/^/    /'
+  HINTED_POOL=()
+  UNHINTED_POOL=()
+  for i in "${POOL_INDICES[@]}"; do
+    _base="$(basename "${SUITES[i]}")"
+    if [ -n "${HINT_COST[$_base]:-}" ]; then
+      HINTED_POOL+=("$i")
     else
-      cat "$SUITE_OUT" | sed 's/^/    /'
+      UNHINTED_POOL+=("$i")
     fi
+  done
+
+  if [ "${#HINTED_POOL[@]}" -gt 0 ]; then
+    mapfile -t HINTED_POOL < <(
+      for i in "${HINTED_POOL[@]}"; do
+        _base="$(basename "${SUITES[i]}")"
+        echo "${HINT_COST[$_base]} $i"
+      done | sort -rn -k1,1 | awk '{print $2}'
+    )
   fi
-  _suite_end_ms="$(date +%s%3N)"
-  if [ -n "$TIMINGS_FILE" ]; then
-    echo "${suite_name},$((_suite_end_ms - _suite_start_ms)),${_suite_result}" >> "$TIMINGS_FILE"
+
+  SCHEDULE_POOL=("${HINTED_POOL[@]}" "${UNHINTED_POOL[@]}")
+
+  # Safety assertion, checked BEFORE anything runs: every discovered suite must land in exactly
+  # one of SKIP / LOAD_SENSITIVE / POOL.
+  TOTAL_ACCOUNTED=$(( ${#SKIP_INDICES[@]} + ${#LOAD_SENSITIVE_INDICES[@]} + ${#SCHEDULE_POOL[@]} ))
+  if [ "$TOTAL_ACCOUNTED" -ne "$TOTAL_DISCOVERED" ]; then
+    echo "[run-all] [FAIL] internal scheduling error: accounted for $TOTAL_ACCOUNTED of $TOTAL_DISCOVERED discovered suites" >&2
+    exit 2
   fi
-  : > "$SUITE_OUT"
-done
+
+  declare -a SUITE_RESULT=()
+  declare -a SUITE_MS=()
+  for i in "${SKIP_INDICES[@]}"; do
+    SUITE_RESULT[i]="SKIP"
+    SUITE_MS[i]=0
+  done
+
+  run_one() {
+    # Usage: run_one INDEX -- writes rc.$i and ms.$i under $OUT_DIR; suite output to out.$i.
+    local i="$1"
+    local suite="${SUITES[i]}"
+    local start end
+    start="$(date +%s%3N)"
+    if bash "$suite" >"$OUT_DIR/out.$i" 2>&1; then
+      echo 0 > "$OUT_DIR/rc.$i"
+    else
+      echo 1 > "$OUT_DIR/rc.$i"
+    fi
+    end="$(date +%s%3N)"
+    echo "$((end - start))" > "$OUT_DIR/ms.$i"
+  }
+
+  for i in "${LOAD_SENSITIVE_INDICES[@]}"; do
+    say "[run-all] [RUN]  ${SUITES[i]} (load-sensitive: serialized, not in the parallel pool)"
+    run_one "$i"
+  done
+
+  active=0
+  for i in "${SCHEDULE_POOL[@]}"; do
+    while [ "$active" -ge "$JOBS" ]; do
+      wait -n
+      active=$((active - 1))
+    done
+    run_one "$i" &
+    active=$((active + 1))
+  done
+  wait
+
+  for i in "${LOAD_SENSITIVE_INDICES[@]}" "${SCHEDULE_POOL[@]}"; do
+    _rc="$(cat "$OUT_DIR/rc.$i" 2>/dev/null || echo 1)"
+    SUITE_MS[i]="$(cat "$OUT_DIR/ms.$i" 2>/dev/null || echo 0)"
+    if [ "$_rc" -eq 0 ]; then
+      SUITE_RESULT[i]="PASS"
+    else
+      SUITE_RESULT[i]="FAIL"
+    fi
+  done
+
+  # Emit whole, in discovery order -- never streamed concurrently.
+  for i in "${!SUITES[@]}"; do
+    suite="${SUITES[i]}"
+    case "${SUITE_RESULT[i]}" in
+      SKIP)
+        echo "[run-all] [SKIP] not executable (exec-bit regression?): $suite" >&2
+        SKIP_COUNT=$((SKIP_COUNT + 1))
+        ;;
+      PASS)
+        say "[run-all] [RUN]  $suite"
+        PASS_COUNT=$((PASS_COUNT + 1))
+        say "[run-all] [PASS] $suite"
+        ;;
+      FAIL)
+        say "[run-all] [RUN]  $suite"
+        FAIL_COUNT=$((FAIL_COUNT + 1))
+        echo "[FAIL] $suite"
+        if [ "$QUIET" = "true" ]; then
+          tail -20 "$OUT_DIR/out.$i" | sed 's/^/    /'
+        else
+          cat "$OUT_DIR/out.$i" | sed 's/^/    /'
+        fi
+        ;;
+    esac
+    if [ -n "$TIMINGS_FILE" ]; then
+      echo "${suite},${SUITE_MS[i]:-0},${SUITE_RESULT[i]}" >> "$TIMINGS_FILE"
+    fi
+  done
+fi
 
 SUITE_RUN_END_MS="$(date +%s%3N)"
 

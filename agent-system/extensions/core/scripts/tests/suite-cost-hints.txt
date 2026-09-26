@@ -1,0 +1,115 @@
+# suite-cost-hints.txt - Advisory, OPTIONAL scheduling hints for run-all.sh's --jobs N parallel
+# pool: longest-first dispatch keeps worker slots busy the whole run instead of ending on one
+# long straggler suite. Format: one row per suite, "basename,wall_ms" (basename, not a full path,
+# since discovery paths differ between source-store and deployed mode -- see run-all.sh's own
+# header). Lines starting with # are comments and blank lines are ignored.
+#
+# ADVISORY ONLY: a missing, stale, or partial hint file never skips, duplicates, or reorders away
+# a suite -- an unhinted suite simply keeps discovery order, appended after any hinted ones (see
+# run-all.sh's TOTAL_ACCOUNTED assertion, which checked before this file is read). Deleting or
+# truncating this file must never change which suites run, only the order they are scheduled in.
+#
+# Generated from a --timings capture (agent-system/extensions/core/scripts/tests/run-all.sh
+# --timings FILE) taken during this task's Phase 1 baseline, with one entry
+# (test-verify-deploy-context-budget.sh) manually corrected to its Phase 3 post-change cost since
+# that suite's own wall time changed materially within the same task that generated this file.
+# This file is a one-shot, human-reviewed snapshot, not a self-maintaining cache written on every
+# run (see run-all.sh's header for why a self-maintaining cache was rejected) -- it will drift as
+# suites are added, removed, or change cost, and that drift is expected and harmless (advisory
+# only). Re-generate by re-running with --timings and re-deriving this file when the drift starts
+# meaningfully hurting scheduling, not on any fixed cadence.
+test-verify-deploy-context-budget.sh,103000
+test-orchestrate-cycle-plan.sh,43783
+test-literature-convert.sh,21566
+test-git-commit-scoped.sh,19747
+test-orchestrate-cycle-postflight.sh,17001
+test-roadmap-argv-ceiling.sh,16996
+test-state-write-concurrency.sh,11952
+test-routing-resolution.sh,8003
+test-four-tier-conflict.sh,7164
+test-lake-build-guard.sh,7097
+test-claude-refresh-matcher.sh,6861
+test-lean-comparator-run.sh,6548
+test-orchestrate-unwind-dispatch.sh,6269
+test-index-entries-schema.sh,5744
+test-state-write-large-payload.sh,4341
+test-force-phases.sh,4120
+test-update-task-status.sh,3651
+test-assess-repo-health.sh,3069
+test-orchestrate-triage-classify.sh,2917
+test-literature-discover-tier3.sh,2768
+test-guard-destructive-git.sh,2487
+test-skill-base-lifecycle.sh,2257
+test-orchestrate-build-dispatch.sh,2245
+test-lean-challenge-snapshot.sh,2193
+test-deploy-propagation.sh,2169
+test-conflict-predicate.sh,2055
+test-postflight-deploy-gate.sh,1977
+test-init-specs.sh,1883
+test-validate-state.sh,1852
+test-orchestrate-context-growth.sh,1731
+test-task-type-detect.sh,1638
+test-chapter-quality-check.sh,1538
+test-lint-json-channel-discipline.sh,1325
+test-deploy-orphans.sh,1323
+test-gate-out-repair-reporting.sh,1298
+test-detect-noop-bash.sh,1213
+test-errors-append.sh,1212
+test-validate-no-task-references.sh,936
+test-state-write-spill-names.sh,928
+test-roadmap-items-producer.sh,776
+test-phase-heartbeat.sh,754
+test-session-registry.sh,713
+test-subagent-postflight-marker.sh,703
+test-lint-agent-contracts.sh,651
+test-lean-mcp-preflight-check.sh,650
+test-double-loading-check.sh,643
+test-generate-task-order.sh,628
+test-validate-handoff.sh,618
+test-deploy-freshness.sh,617
+test-orchestrate-predispatch-review.sh,594
+test-phase-heading-patterns.sh,593
+test-literature-build-index.sh,555
+test-lint-deploy-caller-wrap.sh,525
+test-lean-sorry-census.sh,525
+test-reconcile-handoff-status.sh,514
+test-validate-return-meta.sh,512
+test-resume-scan-nonconformance.sh,507
+test-orchestrate-build-aux-dispatch.sh,490
+test-task-lock-reap.sh,487
+test-corroborate-phase-counts.sh,456
+test-orchestrate-churn.sh,428
+test-lean-src-roots.sh,392
+test-handoff-dispatch-identity.sh,388
+test-orchestrate-recover-message-findings.sh,384
+test-consumer-freshness.sh,354
+test-state-write-regen-timing.sh,336
+test-runtime-file-tracking.sh,336
+test-title-sim-dedup.sh,282
+test-census-count.sh,264
+test-validate-handoff-location.sh,262
+test-lean-mcp-registration.sh,255
+test-deploy-ledger-lib.sh,255
+test-update-plan-status.sh,237
+test-orchestrate-recover-outcome.sh,237
+test-session-runtime-files.sh,226
+test-git-snapshot.sh,224
+test-manage-topics-create-order.sh,213
+test-lint-branch-gated-sections.sh,200
+test-handoff-reader-parity.sh,200
+test-mint-dispatch-seq.sh,199
+test-common-lib.sh,181
+test-typst-element-lint.sh,180
+test-lint-task-lookup-adoption.sh,160
+test-orchestrate-batch-admit.sh,142
+test-lint-state-writer-boundary.sh,105
+test-lint-scoped-commit-boundary.sh,104
+test-lint-postflight-boundary.sh,97
+test-lint-lifecycle-status-var.sh,82
+test-postflight-marker-schema.sh,80
+test-deploy-verify-wiring.sh,77
+test-quality-gate-notation.sh,70
+test-deploy-baseline-lib.sh,38
+test-lit-pipeline.sh,34
+test-status-vocabulary.sh,20
+test-return-meta-status-vocabulary.sh,17

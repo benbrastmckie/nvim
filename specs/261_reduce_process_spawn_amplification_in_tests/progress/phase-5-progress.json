@@ -1,0 +1,47 @@
+{
+  "phase": 5,
+  "phase_name": "Opt-In File-Level Parallelism in run-all.sh",
+  "started_at": "2026-09-26T03:22:00Z",
+  "last_updated": "2026-09-26T04:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add --jobs N|auto with default 1, byte-identical sequential branch preserved",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Per-suite output files, discovery-order emission, nested-invocation guard",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Longest-first scheduling from suite-cost-hints.txt, load-sensitive serialization, TOTAL_ACCOUNTED assertion",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/run-all.sh",
+        "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "New test-run-all-parallel.sh covering the runner's own contract",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh"],
+      "note": "9/9 cases pass against a synthetic 7-suite fixture (fast, deterministic)."
+    },
+    {
+      "id": 5,
+      "description": "Real full-suite verification: --jobs 1 vs --jobs 4 parity, discovered-count check",
+      "status": "done",
+      "files_touched": [],
+      "note": "--jobs 1: 90p/6f/0s/96t, 449s. --jobs 4: 90p/6f/0s/96t, 187s (58% faster). Identical [FAIL] set and summary line. Discovered-suite count now 97 (96 + this phase's new suite)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

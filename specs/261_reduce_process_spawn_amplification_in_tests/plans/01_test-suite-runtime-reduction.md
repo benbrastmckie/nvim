@@ -416,37 +416,51 @@ reading each file, and a suite can use `mktemp -d` and still touch a real path e
 
 ---
 
-### Phase 5: Opt-In File-Level Parallelism in run-all.sh [NOT STARTED]
+### Phase 5: Opt-In File-Level Parallelism in run-all.sh [COMPLETED]
 
 **Goal**: Add `--jobs N` to the runner, defaulting to today's sequential behavior, with
 deterministic output, a nested-invocation guard, and longest-first scheduling.
 
 **Tasks**:
-- [ ] Add `--jobs N` (and `--jobs auto` = `nproc`, capped -- pick and document the cap) with
-      default `1`. At `--jobs 1` the code path and output must be exactly today's.
-- [ ] Replace the single shared `$SUITE_OUT` temp file with one output file per suite, and keep
-      the `trap` cleanup covering all of them.
-- [ ] Emit each suite's captured output whole, in **discovery order**, never streamed
+- [x] Add `--jobs N` (and `--jobs auto` = `nproc`, capped -- pick and document the cap) with
+      default `1`. At `--jobs 1` the code path and output must be exactly today's. *(completed:
+      cap is 4, documented in the header's rejected-alternatives note; --jobs 1 is a dedicated,
+      untouched branch, verified byte-identical to the pre-Phase-5 sequential loop)*
+- [x] Replace the single shared `$SUITE_OUT` temp file with one output file per suite, and keep
+      the `trap` cleanup covering all of them. *(completed: one mktemp -d OUT_DIR with per-index
+      out./rc./ms. files, single trap covering the whole dir -- only in the --jobs>1 branch; the
+      --jobs 1 branch keeps its original single $SUITE_OUT unchanged)*
+- [x] Emit each suite's captured output whole, in **discovery order**, never streamed
       concurrently -- so the `[FAIL] <suite path>` machine-greppable contract, the `[SKIP]`
       loud-skip discipline, and the final summary line all survive parallel execution unchanged.
-- [ ] Add the nested-invocation guard: export a marker variable (e.g. `RUN_ALL_NESTED=1`) and
+      *(completed: verified by a full-suite --jobs 1 vs --jobs 4 run -- identical [FAIL] set and
+      identical summary line)*
+- [x] Add the nested-invocation guard: export a marker variable (e.g. `RUN_ALL_NESTED=1`) and
       force `--jobs 1` when it is already set, so `verify-deploy.sh` gate 8 -> `run-all.sh` ->
-      a suite that calls `verify-deploy.sh` cannot multiply job counts.
-- [ ] Implement longest-first scheduling from an advisory cost-hint file
+      a suite that calls `verify-deploy.sh` cannot multiply job counts. *(completed and verified:
+      new suite's case 4 shows RUN_ALL_NESTED=1 --jobs 3 taking ~1.9s vs ~0.7s for unguarded
+      --jobs 3 on 3x 0.6s fixture suites)*
+- [x] Implement longest-first scheduling from an advisory cost-hint file
       (`agent-system/extensions/core/scripts/tests/suite-cost-hints.txt`, generated from Phase 1's
       `--timings` CSV): sort hinted suites by descending cost, append unhinted suites after them.
       The hint file is advisory only -- a missing, stale, or partial hint file must never skip,
       duplicate, or reorder-away a suite. Assert the scheduled count equals `TOTAL_DISCOVERED`
-      before running anything.
-- [ ] Record the rejected alternative in the header: a self-maintaining timing cache written on
+      before running anything. *(completed: matched by basename since discovery paths differ
+      between source-store/deployed mode; TOTAL_ACCOUNTED assertion checked before any suite
+      runs; verified both with the real hints file and with it removed)*
+- [x] Record the rejected alternative in the header: a self-maintaining timing cache written on
       every run was rejected because it adds mutable state to the tree with gitignore and
       deploy-hygiene consequences; file size was rejected as a cost proxy because the measurements
-      disprove it (261 lines / 391s vs. 3839 lines / 45s).
-- [ ] Add the Phase 4 audit's serialization verdicts as a comment block, and serialize any suite
-      the audit flagged (run it alone, outside the parallel pool).
-- [ ] Update the `-h|--help` `sed -n` range again for the new header lines.
-- [ ] Extend or add a test for the runner itself: `--jobs 1` output matches sequential; `--jobs N`
+      disprove it (261 lines / 391s vs. 3839 lines / 45s). *(completed)*
+- [x] Add the Phase 4 audit's serialization verdicts as a comment block, and serialize any suite
+      the audit flagged (run it alone, outside the parallel pool). *(completed: the 4
+      load-sensitive suites run serially, before the parallel pool starts)*
+- [x] Update the `-h|--help` `sed -n` range again for the new header lines. *(completed: range is
+      now `2,84p`)*
+- [x] Extend or add a test for the runner itself: `--jobs 1` output matches sequential; `--jobs N`
       discovers and runs the same suite set (count assertion); the nested guard forces 1 job.
+      *(completed: new test-run-all-parallel.sh, 9/9 cases pass, against a synthetic 7-suite
+      fixture -- fast and deterministic, never the real 96-suite battery)*
 
 **Timing**: 2 hours
 
