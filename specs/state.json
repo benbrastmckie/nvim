@@ -434,7 +434,7 @@
     {
       "project_number": 129,
       "project_name": "audit_word_boundary_regex_portability",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -457,7 +457,7 @@
         "agent-system/extensions/literature/scripts/literature-convert.sh"
       ],
       "created": "2026-09-01T11:24:42Z",
-      "last_updated": "2026-09-26T11:05:28Z",
+      "last_updated": "2026-09-26T11:05:41Z",
       "session_id": "sess_1790419342_eea5e0",
       "artifacts": [
         {
@@ -469,9 +469,15 @@
           "path": "specs/129_audit_word_boundary_regex_portability/plans/01_word-boundary-portability-audit.md",
           "type": "plan",
           "summary": "5-phase plan for the empirical word-boundary grep audit plus the portability guidance note."
+        },
+        {
+          "path": "specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md",
+          "type": "summary",
+          "summary": "Per-site evidence table (18 sites, all WORKING, zero repairs), corrected dispatch framing, recorded discrepancies, and administrative follow-ups."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Independently re-executed the empirical word-boundary grep audit across every genuine \\b site in the source store (the 2 ugrep-exposed lean agent-instruction Markdown files and 16 .sh/hook file_scope and broader-sweep sites); all classified WORKING, zero repairs made. Authored, cross-referenced, indexed, and deployed the grep-word-boundary-portability.md guidance note."
     },
     {
       "project_number": 136,

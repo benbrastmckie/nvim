@@ -29,22 +29,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["grep", "regex", "false-positive", "audit-methodology", "word-boundary"]
+      "suggested_keywords": [
+        "grep",
+        "regex",
+        "false-positive",
+        "audit-methodology",
+        "word-boundary"
+      ]
     },
     {
       "content": "When landing a new agent-system/extensions/core/context/standards/*.md file and indexing it in index-entries.json, the source-store copies of check-extension-docs.sh and generate-context-line-counts.sh both self-refuse when run directly from agent-system/extensions/core/scripts (they detect the source-store tree and require the deployed .claude/scripts/ copy, or a REPO_ROOT override). The reliable sequence is: add the index entry, run deploy-headless.sh first, then run the deployed check-extension-docs.sh, generate-context-line-counts.sh --check, and validate-context-index.sh against the now-deployed tree, and finally diff the source and deployed copies of the new file to confirm byte-identity.",
       "category": "WORKFLOW",
       "source_artifact": "specs/129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless", "index-entries", "context-standards", "source-store", "deploy-validation"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "index-entries",
+        "context-standards",
+        "source-store",
+        "deploy-validation"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790419342_eea5e0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
