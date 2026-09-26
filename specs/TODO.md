@@ -11,7 +11,7 @@ next_project_number: 265
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,261,262,263 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,261,263 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 45,139,165,224,250,251,256,264 | 22,44,127,129,162,163,199,244,263 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
@@ -42,7 +42,6 @@ next_project_number: 265
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
 261 [PARTIAL] — Reduce process-spawn amplification in the shell test suite
-262 [IMPLEMENTING] — Reduce redundant verify-deploy passes in the redeploy checkpoint
 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
   └─ 264 [NOT STARTED] — Route dispatched-agent push requests through the userdecision...
 
@@ -406,7 +405,7 @@ does not contain.
 ---
 
 ### 262. Reduce redundant verify-deploy passes in the redeploy checkpoint
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 260
