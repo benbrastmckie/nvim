@@ -1,7 +1,7 @@
 # Implementation Plan: Task #261
 
 - **Task**: 261 - Reduce process-spawn amplification in tests
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: None (task 262 is adjacent but non-overlapping -- see Risks & Mitigations)
 - **Research Inputs**: specs/261_reduce_process_spawn_amplification_in_tests/reports/01_test-suite-performance-baseline.md
@@ -626,34 +626,88 @@ Exclusions table for the full evidence. No divergence occurred outside the load-
 
 ---
 
-### Phase 7: Coverage-Equality Proof, Documentation, and Redeploy [NOT STARTED]
+### Phase 7: Coverage-Equality Proof, Documentation, and Redeploy [COMPLETED]
 
 **Goal**: Demonstrate (not assert) that coverage did not shrink, report both wall times, document
 the new flags, and deploy.
 
 **Tasks**:
-- [ ] Produce the coverage-equality proof: per suite, diff the pre-change and post-change
+- [x] Produce the coverage-equality proof: per suite, diff the pre-change and post-change
       `N passed, M failed` summary lines and the `pass`/`fail` assertion call-site counts recorded
       in Phase 1. Every suite must be unchanged or higher. Any suite that is lower is a blocker,
-      not a note.
-- [ ] Report the discovered-suite count before and after (expected: baseline + 2 new suites from
-      Phases 2 and 5 -- coverage strictly higher).
-- [ ] Report the before and after full-suite wall times side by side, with the job count and
-      machine used for each. Never report a speedup with only one of the two numbers.
-- [ ] Document the new CLI surface in
+      not a note. *(completed: `git diff --stat c13fee190^..HEAD` against
+      `agent-system/extensions/core/scripts/` shows exactly 6 files touched -- run-all.sh,
+      suite-cost-hints.txt (new, not a suite), test-run-all-parallel.sh (new suite),
+      test-verify-deploy-context-budget.sh (modified), test-verify-deploy-gate-selection.sh (new
+      suite), verify-deploy.sh (not a discovered suite). All 94 other pre-existing suites are
+      byte-identical to their pre-task-261 revision -- unchanged coverage by construction. The one
+      modified pre-existing suite has identical pass/fail call-site counts before and after
+      (15/16, confirmed via `git show c13fee190^:<path> \| grep -c` vs. current `grep -c`), zero
+      added or removed, matching Phase 3's own claim. The 2 new suites add 11 and 19 call sites
+      respectively -- purely additive. See progress/phase-7-progress.json objective 1 for the
+      full detail.)*
+- [x] Report the discovered-suite count before and after (expected: baseline + 2 new suites from
+      Phases 2 and 5 -- coverage strictly higher). *(completed: 95 before, 97 after -- confirmed
+      by 4 independent full-suite runs across Phases 6-7 all agreeing on 97. Delta +2, matching
+      the Scope Hypothesis exactly.)*
+- [x] Report the before and after full-suite wall times side by side, with the job count and
+      machine used for each. Never report a speedup with only one of the two numbers. *(completed
+      -- see the Wall-Time Report subsection below.)*
+- [x] Document the new CLI surface in
       `agent-system/extensions/core/context/standards/shell-script-testing.md`: `run-all.sh`'s
       `--jobs` and `--timings`, the cost-hint file's advisory status, `verify-deploy.sh`'s
       `--only-gate` and its intended test-fast-path use, and the standing rule that at least one
       full-battery `verify-deploy.sh` invocation must remain in the suite. Keep it to one section;
-      create a new context file only if it would exceed roughly 40 lines.
-- [ ] Record the pre-existing-failure and known-flake set in that same section, so the next person
-      measuring this suite does not rediscover it.
-- [ ] Redeploy so `.claude/**` reflects the source-store changes:
+      create a new context file only if it would exceed roughly 40 lines. *(completed: added a
+      ~30-line "Suite runtime: --jobs, --timings, and gate selection" section, well under the
+      40-line budget; no new context file created.)*
+- [x] Record the pre-existing-failure and known-flake set in that same section, so the next person
+      measuring this suite does not rediscover it. *(completed: nested subsection lists the 4
+      consistent failures, 1 known-intermittent suite, and the 5-suite load-sensitive set.)*
+- [x] Redeploy so `.claude/**` reflects the source-store changes:
       `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repo's standard
       deploy entry point). Confirm the deployed `run-all.sh` and `verify-deploy.sh` carry the new
-      flags. Never hand-edit `.claude/**`.
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` (full depth, no
+      flags. Never hand-edit `.claude/**`. *(completed: first attempt landed with 1 of 33 fast
+      gates FAILING (doc-lint) -- `check-extension-docs.sh` found 4 core script files on disk not
+      registered in `manifest.json`'s `provides.scripts`: `tests/suite-cost-hints.txt`,
+      `tests/test-run-all-parallel.sh`, `tests/test-verify-deploy-gate-selection.sh` (all 3 new
+      this task) plus `tests/test-lint-deploy-caller-wrap.sh` (a pre-existing gap from task 260,
+      unrelated to this task's own changes but blocking the same gate regardless of origin --
+      fixed forward per the registration convention in `shell-script-testing.md`'s own
+      "Registration" section rather than left broken). Added all 4 to
+      `agent-system/extensions/core/manifest.json`'s `provides.scripts` array; second
+      `deploy-headless.sh` run landed `RESULT=landed_verify_clean`, 33/33 fast gates passing (gate
+      8 deferred via `--skip-slow` as always). Confirmed via direct diff: `.claude/scripts/
+      verify-deploy.sh` and `.claude/scripts/tests/run-all.sh` are byte-identical to their
+      source-store counterparts and carry the new `--only-gate`/`GATES_FILTER` and
+      `--jobs`/`--timings` surface; the 3 new test files are deployed with exec bits set.)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` (full depth, no
       `--skip-slow`) once as the end-to-end proof that gate 8 and gate 20 both still behave.
+      *(completed: 10m29.5s wall time, 34 checks (gate 8 now included, not deferred). Result:
+      33/34 PASS, exactly 1 FAIL -- gate 8 (`tests/run-all.sh`), which fails because `run-all.sh`
+      itself exits 1 whenever ANY suite fails, with no distinction between a known pre-existing
+      failure and a new regression baked into that exit code. This is the expected, documented
+      outcome per this phase's own Verification bullet ("passes, or fails only on the recorded
+      pre-existing failures") -- the underlying suite-level failures are exactly the already-
+      classified set (4 consistent + 1 known-intermittent, plus load-sensitivity under the
+      elevated ambient host load persisting throughout this whole dispatch), not a new regression;
+      no OTHER gate (including gate 20, exercised indirectly via `test-verify-deploy-gate-
+      selection.sh` inside gate 8's own suite run) failed. Gate 20 itself is proven directly by
+      Phase 2's own `test-verify-deploy-gate-selection.sh` suite, which is part of this same run.)*
+
+#### Wall-Time Report
+
+| Config | Code | Suites | Wall time | Host/load conditions |
+|--------|------|--------|-----------|----------------------|
+| `--jobs 1` (default, original) | pre-task-261 (Phase 1 baseline) | 95 | 554s / 608s / 629s / 646s (4 runs) | this host |
+| `--jobs 1` (default, current) | post-task-261 | 97 | 507.9s (1 run, this phase) | this host, elevated ambient load (5 concurrent agent sessions, ~14-18GiB/31GiB swap in use throughout) -- the true isolated saving is understated here, not overstated |
+| `--jobs 4` (opt-in only, NOT the default -- see Phase 6) | post-task-261 | 97 | 211.9s / 219.3s / 211.9s (3 runs, Phase 6) | same host, same elevated load |
+
+The default-vs-default comparison (554-646s before vs. 507.9s after, under a *harder* load
+condition than the baseline measurement) is the fair "what does an ordinary suite run look like
+now" number and reflects Phases 2-3's gate-selection saving alone, since parallelism was not
+flipped to default. The `--jobs 4` numbers show the additional, opt-in saving available to any
+caller willing to request it explicitly.
 
 **Timing**: 1.5 hours
 
@@ -671,34 +725,49 @@ removed.
 **Files to modify**:
 - `agent-system/extensions/core/context/standards/shell-script-testing.md` - new section on suite
   runtime, `--jobs`/`--timings`/`--only-gate`, and the baseline failure set
+- `agent-system/extensions/core/manifest.json` - *(unplanned, added during this phase)* registered
+  4 core test files in `provides.scripts` that doc-lint found undeclared: 3 new this task
+  (`tests/suite-cost-hints.txt`, `tests/test-run-all-parallel.sh`,
+  `tests/test-verify-deploy-gate-selection.sh`) plus 1 pre-existing gap from task 260
+  (`tests/test-lint-deploy-caller-wrap.sh`), fixed forward since it blocked this phase's own
+  redeploy gate regardless of origin
 
 **Verification**:
 - Per-suite coverage diff shows zero suites with a lower pass count or fewer assertion call sites.
-- `TOTAL_DISCOVERED` increased by exactly 2.
-- Both wall times reported with job count and host.
+  *(done -- git-diff/grep proof, see objective 1 above)*
+- `TOTAL_DISCOVERED` increased by exactly 2. *(done -- 95 -> 97, confirmed by 4 independent runs)*
+- Both wall times reported with job count and host. *(done -- see Wall-Time Report table)*
 - Full-depth `verify-deploy.sh` (no `--skip-slow`) passes, or fails only on the recorded
-  pre-existing failures.
+  pre-existing failures. *(done -- 33/34, sole failure is gate 8's own known pre-existing-suite
+  set, no other gate failed)*
 - Deployed `.claude/scripts/tests/run-all.sh` and `.claude/scripts/verify-deploy.sh` contain the
-  new flags.
+  new flags. *(done -- confirmed via direct diff against the source store, byte-identical)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] Full-suite wall time measured BEFORE any change (Phase 1) and AFTER (Phase 7); both reported.
-- [ ] Full suite run at least 3 times after the change (Phase 6), with the load-sensitive set
-      inspected individually rather than only in aggregate.
-- [ ] Pass/fail set identical to the Phase 1 baseline across all 95+ suites, with the 4 consistent
+- [x] Full-suite wall time measured BEFORE any change (Phase 1) and AFTER (Phase 7); both reported.
+      *(done -- see Phase 7's Wall-Time Report table)*
+- [x] Full suite run at least 3 times after the change (Phase 6), with the load-sensitive set
+      inspected individually rather than only in aggregate. *(done -- Phase 6)*
+- [x] Pass/fail set identical to the Phase 1 baseline across all 95+ suites, with the 4 consistent
       pre-existing failures and `test-gate-out-repair-reporting.sh`'s known intermittency stated as
-      the expected baseline rather than treated as regressions.
-- [ ] Test count and assertion count unchanged or higher, demonstrated per suite by diffing
-      recorded counts (Phase 7), never asserted.
-- [ ] `verify-deploy.sh` with no new flag produces output identical to a pre-change capture.
-- [ ] `run-all.sh` with no new flag produces output identical to a pre-change capture.
-- [ ] Every `--only-gate N` for N in 1..20 runs clean standalone (the cross-gate-variable net).
-- [ ] `bash run-all.sh --help` and `bash verify-deploy.sh --help` both print their complete
-      headers (the hardcoded `sed` range regression).
-- [ ] Full-depth `verify-deploy.sh` (no `--skip-slow`) run once end-to-end.
+      the expected baseline rather than treated as regressions. *(done -- confirmed across every
+      run in Phases 1, 6, and 7)*
+- [x] Test count and assertion count unchanged or higher, demonstrated per suite by diffing
+      recorded counts (Phase 7), never asserted. *(done -- git diff/grep proof, Phase 7 objective 1)*
+- [x] `verify-deploy.sh` with no new flag produces output identical to a pre-change capture.
+      *(done -- Phase 2's own verification)*
+- [x] `run-all.sh` with no new flag produces output identical to a pre-change capture. *(done --
+      Phase 1 and Phase 5's own verification)*
+- [x] Every `--only-gate N` for N in 1..20 runs clean standalone (the cross-gate-variable net).
+      *(done -- Phase 2's `test-verify-deploy-gate-selection.sh` case (b))*
+- [x] `bash run-all.sh --help` and `bash verify-deploy.sh --help` both print their complete
+      headers (the hardcoded `sed` range regression). *(done -- verified at each phase that touched
+      either header)*
+- [x] Full-depth `verify-deploy.sh` (no `--skip-slow`) run once end-to-end. *(done -- Phase 7,
+      33/34 checks pass, sole failure is gate 8's own known pre-existing-suite set)*
 
 ## Artifacts & Outputs
 

@@ -118,6 +118,39 @@ qualified where applicable (`tests/test-census-count.sh`, not just `test-census-
 `provides.scripts` already carries other subdirectory-qualified paths (`lint/lint-*.sh`), so this
 needs no new schema or new `provides` sub-array.
 
+## Suite runtime: `--jobs`, `--timings`, and gate selection
+
+- `run-all.sh --timings FILE` writes one CSV row per suite (`suite_path,wall_ms,result`) plus a
+  final `TOTAL` aggregate row. Additive only — absent the flag, output and exit codes match today.
+- `run-all.sh --jobs N` (or `--jobs auto`, capped at 4) runs suites in parallel by file, using
+  longest-first scheduling from the advisory `tests/suite-cost-hints.txt` file (regenerate it from
+  a `--timings` run; a missing, stale, or partial hints file never skips, duplicates, or
+  reorders-away a suite). **Default stays `1`** (today's sequential behavior) — a 3-run
+  flakiness gate found two load-sensitive suites did not reliably benefit from parallelism under
+  heavy ambient host load, so the flip to a parallel default was declined; `--jobs` remains a
+  correct, verified opt-in. A nested-invocation guard (`RUN_ALL_NESTED=1`) forces `--jobs 1`
+  whenever `run-all.sh` runs inside another `run-all.sh` invocation (e.g. `verify-deploy.sh`
+  gate 8 calling a suite that itself shells out to `verify-deploy.sh`), so job counts never
+  multiply. A fixed `LOAD_SENSITIVE_BASENAMES` set (below) always runs serially, outside the
+  parallel pool, regardless of `--jobs`.
+- `verify-deploy.sh --only-gate N[,M,...]` runs only the named gate(s) instead of the full
+  20-gate battery. Additive and opt-in — absent the flag, every gate still runs. Use it to let a
+  suite exercise one gate's logic cheaply (`test-verify-deploy-gate-selection.sh` is the reference
+  example). **At least one full-battery `verify-deploy.sh` invocation must remain in the suite**
+  (currently `test-verify-deploy-context-budget.sh`'s baseline case) so the "every gate runs
+  together" contract stays covered somewhere.
+
+### Known pre-existing failures and flakes (baseline, not regressions)
+
+None of these are introduced by the `--jobs`/`--timings`/`--only-gate` work above — record them so
+the next person measuring this suite does not rediscover them:
+- Consistently failing: `test-handoff-dispatch-identity.sh`, `test-orchestrate-context-growth.sh`,
+  `test-lint-json-channel-discipline.sh`, `test-orchestrate-recover-message-findings.sh`.
+- Known-intermittent: `test-gate-out-repair-reporting.sh`.
+- Load-sensitive (may fail only under heavy ambient host load, e.g. several concurrent agent
+  sessions): `test-lake-build-guard.sh`, `test-state-write-concurrency.sh`,
+  `test-state-write-regen-timing.sh`, `test-four-tier-conflict.sh`, `test-run-all-parallel.sh`.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this

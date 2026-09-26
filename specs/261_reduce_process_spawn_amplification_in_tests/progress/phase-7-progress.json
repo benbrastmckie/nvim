@@ -1,0 +1,58 @@
+{
+  "phase": 7,
+  "phase_name": "Coverage-Equality Proof, Documentation, and Redeploy",
+  "started_at": "2026-09-26T00:45:00Z",
+  "last_updated": "2026-09-26T01:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Produce the coverage-equality proof (per-suite pass/fail + assertion call-site counts)",
+      "status": "done",
+      "files_touched": [],
+      "note": "git diff --stat c13fee190^..HEAD (the commit immediately before task 261's Phase 1 changes) against agent-system/extensions/core/scripts/ shows EXACTLY 6 files touched: run-all.sh, suite-cost-hints.txt (new, not a test), test-run-all-parallel.sh (new suite), test-verify-deploy-context-budget.sh (modified), test-verify-deploy-gate-selection.sh (new suite), verify-deploy.sh (not a discovered suite). Every other of the 97 discovered suites is BYTE-IDENTICAL to its pre-task-261 revision, which trivially proves unchanged pass/fail behavior for those suites by construction (modulo already-documented environmental flakiness, unrelated to code changes). For the one modified pre-existing suite (test-verify-deploy-context-budget.sh): grep -c 'pass \"' / 'fail \"' gives 15/16 both before (git show c13fee190^:<path>) and after (current) -- zero call sites added or removed, confirming Phase 3's own claim independently. The two NEW suites (test-verify-deploy-gate-selection.sh: 5/6; test-run-all-parallel.sh: 9/10) are purely additive coverage. Net result: coverage is unchanged-or-higher for all 97 suites, demonstrated by diff/grep, not asserted."
+    },
+    {
+      "id": 2,
+      "description": "Report discovered-suite count before and after",
+      "status": "done",
+      "files_touched": [],
+      "note": "Before (Phase 1 baseline): 95. After: 97 (confirmed by 4 independent runs across Phases 6-7). Delta +2, matching the Scope Hypothesis exactly."
+    },
+    {
+      "id": 3,
+      "description": "Report before/after full-suite wall times with job count and host",
+      "status": "done",
+      "files_touched": [],
+      "note": "Before (Phase 1, original code, --jobs 1, 95 suites): 554s/608s/629s/646s. After, current code: --jobs 1 (default, 97 suites): 507.9s (this phase); --jobs 4 (opt-in only, not default per Phase 6): 211.9s/219.3s/211.9s (Phase 6). All measured under elevated ambient host load (5 concurrent agent sessions, ~14-18GiB/31GiB swap), so the true isolated saving is understated, not overstated. Recorded in the plan's Wall-Time Report table."
+    },
+    {
+      "id": 4,
+      "description": "Document the new CLI surface and the baseline failure/flake set in shell-script-testing.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ],
+      "note": "Added one ~30-line section plus a nested known-failures subsection, well under the plan's ~40-line budget. No new context file created."
+    },
+    {
+      "id": 5,
+      "description": "Redeploy so .claude/** reflects source-store changes",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json"
+      ],
+      "note": "First deploy-headless.sh run landed with 1/33 fast gates FAILING: check-extension-docs.sh found 4 core test files on disk undeclared in manifest.json's provides.scripts (3 new this task: suite-cost-hints.txt, test-run-all-parallel.sh, test-verify-deploy-gate-selection.sh; 1 pre-existing gap from task 260: test-lint-deploy-caller-wrap.sh). Registered all 4 (fixing the pre-existing gap forward since it blocked this phase's own gate regardless of origin). Second deploy-headless.sh run: RESULT=landed_verify_clean, 33/33 fast gates pass. Confirmed via diff: .claude/scripts/verify-deploy.sh and .claude/scripts/tests/run-all.sh are byte-identical to the source store and carry the new --only-gate/GATES_FILTER and --jobs/--timings flags; the 3 new suites are deployed with exec bits set."
+    },
+    {
+      "id": 6,
+      "description": "Run full-depth verify-deploy.sh (no --skip-slow) once end-to-end",
+      "status": "done",
+      "files_touched": [],
+      "note": "Checked free -h first (~11GiB available, ~19/30GiB used, nothing else of this task's own running) per the orchestrator's guidance, then ran as a single foreground/blocking Bash call. Exceeded the tool's single-call timeout and was auto-backgrounded by the harness (not a manual run_in_background choice); completed cleanly per the harness's own completion notification -- 10m29.5s wall time, 34 checks, 33 PASS / 1 FAIL. The sole failure is gate 8 (tests/run-all.sh), which exits 1 whenever any suite fails regardless of whether that failure is known-pre-existing or new; the underlying suite failures are exactly the already-classified set (4 consistent + 1 known-intermittent, plus load-sensitivity under the sustained elevated ambient host load), not a new regression. No other gate failed, including gate 20 (exercised via test-verify-deploy-gate-selection.sh inside gate 8's own run). This is the expected, plan-documented outcome (\"passes, or fails only on the recorded pre-existing failures\")."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
