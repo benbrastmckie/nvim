@@ -1,7 +1,7 @@
 # Implementation Plan: Task #260
 
 - **Task**: 260 - Fix self-clobbering redeploy in cycle-plan
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.25 hours
 - **Dependencies**: None (the sibling redundant-verify-deploy-passes task depends on THIS one; land this first)
 - **Research Inputs**: specs/260_fix_self_clobbering_redeploy_in_cycle_plan/reports/01_self-clobbering-redeploy-hazard.md

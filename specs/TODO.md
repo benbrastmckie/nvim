@@ -6,13 +6,13 @@ next_project_number: 263
 
 ## Task Order
 
-*Updated 2026-09-25. Generated from state.json dependency graph.*
+*Updated 2026-09-26. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,260,261 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251,256,262 | 22,44,127,129,162,163,199,244,260 | core-agent-system, neovim, opencode, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,261,262 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 45,139,165,224,250,251,256 | 22,44,127,129,162,163,199,244 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -41,9 +41,8 @@ next_project_number: 263
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-260 [IMPLEMENTING] — Fix self-clobbering redeploy in the orchestrator cycle-plan...
-  └─ 262 [NOT STARTED] — Reduce redundant verify-deploy passes in the redeploy checkpoint
 261 [NOT STARTED] — Reduce process-spawn amplification in the shell test suite
+262 [NOT STARTED] — Reduce redundant verify-deploy passes in the redeploy checkpoint
 
 ### Extensions
 
@@ -269,7 +268,7 @@ less. Identify the load-sensitive set before parallelizing anything.
 ---
 
 ### 260. Fix self-clobbering redeploy in the orchestrator cycle-plan checkpoint
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
