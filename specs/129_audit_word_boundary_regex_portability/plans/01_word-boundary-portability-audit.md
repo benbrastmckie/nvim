@@ -1,7 +1,7 @@
 # Implementation Plan: Task #129
 
 - **Task**: 129 - Empirically audit `\b` word-boundary grep patterns for compositional failure under the deployed grep
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: 88, 128, 261 (state.json). The sequencing dependency is a file-footprint
   collision avoidance only: `skill-orchestrate/SKILL.md` belongs to the adversarial-gate fix and
@@ -120,7 +120,7 @@ the note asserts what they observed.
 
 ---
 
-### Phase 1: Re-establish the engine split and audit the ugrep-exposed sites [NOT STARTED]
+### Phase 1: Re-establish the engine split and audit the ugrep-exposed sites [COMPLETED]
 
 **Goal**: Independently reproduce the invocation-context engine split, then execute every
 genuinely ugrep-exposed `\b` site (the fenced-`bash` blocks in the two lean agent-instruction
@@ -128,14 +128,14 @@ Markdown files) as its full unmodified production pattern against a real positiv
 negative input under the deployed ugrep.
 
 **Tasks**:
-- [ ] Record the engine in each of the two contexts, as raw commands with their output: `grep --version` and `type grep` at the Bash-tool top level; `bash -c 'grep --version'`, `env -i bash -lc 'grep --version'`, and a literal `bash /tmp/.../probe.sh` whose body is `grep --version`.
-- [ ] Reproduce the compositional failure directly: run the unmodified gate pattern `\|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b[^|]*\|` with `-i` against the literal header line `| Claim | Source / counterexample | Verification method | Confidence |` at the Bash-tool top level (expect NOMATCH), then the same pattern with `-P` (expect MATCH), then the same pattern inside a `.sh` file run as `bash file.sh` (expect MATCH under GNU grep).
-- [ ] Re-enumerate the ugrep-exposed site set: search `agent-system/extensions/**/*.md` for `\b` occurrences inside fenced `bash` blocks that are meant to be pasted into an agent's own Bash tool, and confirm or correct the report's set (`lean/agents/lean-implementation-agent.md`, 4 sites; `lean/agents/lean-implementation-hard-agent.md`, 1 site).
-- [ ] Build a realistic Lean fixture in the scratchpad (a `Foo.lean` containing `theorem foo_bar_baz`, `noncomputable def helper_widget`, `lemma old_name_helper`) plus negative probes (`old_name_helperx`, a nonexistent name).
-- [ ] For each enumerated site, run its full unmodified pattern (with its real variable values substituted) at the Bash-tool top level under ugrep against the positive fixture and against the negative probe; record both results verbatim.
-- [ ] Classify each site WORKING or BROKEN on that evidence alone, and record whether its shape is a lone `\b` / single `\b...\b` bracket (unaffected) or a chain of two or more `\b`-anchored subexpressions separated by a wildcard run (at risk).
-- [ ] Repair only sites classified BROKEN: prefer dropping `\b` where the surrounding pattern already delimits the token, otherwise switch that one invocation to `-P`. Re-run the positive and negative inputs after the edit. If none is broken, make no edit and record that.
-- [ ] Write the per-site evidence (command, engine, positive result, negative result, classification) into the phase progress file so Phase 5 can lift it into the summary.
+- [x] Record the engine in each of the two contexts, as raw commands with their output: `grep --version` and `type grep` at the Bash-tool top level; `bash -c 'grep --version'`, `env -i bash -lc 'grep --version'`, and a literal `bash /tmp/.../probe.sh` whose body is `grep --version`. *(completed)*
+- [x] Reproduce the compositional failure directly: run the unmodified gate pattern `\|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b[^|]*\|` with `-i` against the literal header line `| Claim | Source / counterexample | Verification method | Confidence |` at the Bash-tool top level (expect NOMATCH), then the same pattern with `-P` (expect MATCH), then the same pattern inside a `.sh` file run as `bash file.sh` (expect MATCH under GNU grep). *(completed)*
+- [x] Re-enumerate the ugrep-exposed site set: search `agent-system/extensions/**/*.md` for `\b` occurrences inside fenced `bash` blocks that are meant to be pasted into an agent's own Bash tool, and confirm or correct the report's set (`lean/agents/lean-implementation-agent.md`, 4 sites; `lean/agents/lean-implementation-hard-agent.md`, 1 site). *(completed: count and file set confirmed exactly as reported)*
+- [x] Build a realistic Lean fixture in the scratchpad (a `Foo.lean` containing `theorem foo_bar_baz`, `noncomputable def helper_widget`, `lemma old_name_helper`) plus negative probes (`old_name_helperx`, a nonexistent name). *(completed)*
+- [x] For each enumerated site, run its full unmodified pattern (with its real variable values substituted) at the Bash-tool top level under ugrep against the positive fixture and against the negative probe; record both results verbatim. *(completed)*
+- [x] Classify each site WORKING or BROKEN on that evidence alone, and record whether its shape is a lone `\b` / single `\b...\b` bracket (unaffected) or a chain of two or more `\b`-anchored subexpressions separated by a wildcard run (at risk). *(completed: all 5 sites WORKING, all single-\b-shaped)*
+- [x] Repair only sites classified BROKEN: prefer dropping `\b` where the surrounding pattern already delimits the token, otherwise switch that one invocation to `-P`. Re-run the positive and negative inputs after the edit. If none is broken, make no edit and record that. *(completed: none broken, no edit made)*
+- [x] Write the per-site evidence (command, engine, positive result, negative result, classification) into the phase progress file so Phase 5 can lift it into the summary. *(completed)*
 
 **Timing**: 0.75 hours
 

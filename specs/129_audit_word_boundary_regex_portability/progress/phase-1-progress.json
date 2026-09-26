@@ -1,0 +1,94 @@
+{
+  "phase": 1,
+  "phase_name": "Re-establish the engine split and audit the ugrep-exposed sites",
+  "started_at": "2026-09-26T11:07:00Z",
+  "last_updated": "2026-09-26T11:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record the engine in each of the two contexts (top-level Bash-tool vs subprocess)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Reproduce the compositional failure directly with the unmodified gate pattern", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-enumerate the ugrep-exposed site set in agent-instruction Markdown", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Build a realistic Lean fixture plus negative probes in the scratchpad", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run each enumerated site's full unmodified pattern against positive fixture and negative probe", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Classify each site WORKING or BROKEN and record its shape", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Repair sites classified BROKEN (if any); otherwise record no edit made", "status": "done", "note": "Zero sites classified BROKEN. No file edited.", "files_touched": []},
+    {"id": 8, "description": "Write per-site evidence into the phase progress file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "evidence": {
+    "engine_determination": [
+      {"context": "top-level Bash-tool shell: `grep --version`", "output": "ugrep 7.8.4 x86_64-pc-linux-gnu +sse2; -P:pcre2jit; -z:zlib,bzip2,zstd,brotli,7z,tar/pax/cpio/zip"},
+      {"context": "top-level Bash-tool shell: `type grep`", "output": "grep is a shell function that execs `-a ugrep \"$CLAUDE_CODE_EXECPATH\"` (or falls back to `command grep` when that binary is not executable); confirmed non-exported (`export -f` empty)"},
+      {"context": "`env -i bash -lc 'grep --version'`", "output": "grep (GNU grep) 3.12"},
+      {"context": "`bash -c 'grep --version'`", "output": "grep (GNU grep) 3.12 (verified equivalently via a literal probe.sh executed as `bash probe.sh`)"},
+      {"context": "literal `bash /tmp/.../probe.sh` whose body is `grep --version`", "output": "grep (GNU grep) 3.12"}
+    ],
+    "compositional_reproduction": {
+      "pattern": "\\|[^|]*\\bclaim\\b[^|]*\\|[^|]*\\bsource\\b[^|]*\\bcounterexample\\b[^|]*\\|",
+      "input": "| Claim | Source / counterexample | Verification method | Confidence |",
+      "top_level_dash_E_with_i": "NOMATCH (bug reproduced)",
+      "top_level_dash_P_with_i": "MATCH",
+      "inside_dot_sh_via_bash_GNU_grep": "MATCH"
+    },
+    "ugrep_exposed_site_enumeration": {
+      "method": "grep -rn for literal \\b across agent-system/extensions/**/*.md, excluding LaTeX/Typst macro false positives (\\begin, \\bf, \\bigl, \\bullet, \\binom, \\bot, \\boldsymbol, \\bibliography, \\bottomrule), then inspecting each remaining hit for whether it is a live grep invocation inside a fenced ```bash block meant for direct Bash-tool execution vs. prose/doc-example/illustrative text",
+      "confirmed_count": 5,
+      "confirmed_files": [
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md (4 sites: lines 337, 348, 349, 416)",
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md (1 site: line 491)"
+      ],
+      "excluded_as_non_sites": [
+        "agent-system/extensions/core/context/standards/census-methodology.md — illustrative doc example output, not a live agent-executed command",
+        "agent-system/extensions/core/context/guides/extension-development.md — prose describing the construct generically",
+        "agent-system/extensions/core/context/patterns/system-defect-discrimination.md — prose (the HOOK_REGEX_BOUNDARY_DEFECT vocabulary entry itself)",
+        "latex/typst files and filetypes-agent files — LaTeX macro false positives (\\begin, \\bf, \\bigl, etc.), no grep invocation present"
+      ],
+      "matches_report": "Yes — report Finding 5 asserted exactly these 2 files / 5 sites; re-enumeration confirms the count and file set independently"
+    },
+    "fixture": {
+      "path": "scratchpad/task129/lean_root/Foo.lean",
+      "content": "theorem foo_bar_baz : True := by trivial\\n\\nnoncomputable def helper_widget (x : Nat) : Nat := x + 1\\n\\nlemma old_name_helper : 1 = 1 := rfl"
+    },
+    "per_site_results": [
+      {
+        "site": "lines 337, 416 (lean-implementation-agent.md); line 491 (lean-implementation-hard-agent.md)",
+        "pattern": "^\\(noncomputable \\)\\?\\(theorem\\|def\\|lemma\\|instance\\) ${name}\\b",
+        "engine": "ugrep 7.8.4 (top-level Bash-tool)",
+        "positive_input": "name=foo_bar_baz against Foo.lean",
+        "positive_result": "MATCH",
+        "negative_input_1": "name=foo_bar_bazx (substring extension)",
+        "negative_result_1": "NOMATCH",
+        "negative_input_2": "name=nonexistent_name",
+        "negative_result_2": "NOMATCH",
+        "shape": "single trailing \\b, no chained \\b-anchored subexpression — unaffected shape",
+        "classification": "WORKING",
+        "repair": "none — left alone"
+      },
+      {
+        "site": "line 348 (lean-implementation-agent.md)",
+        "pattern": "grep -rl \"^\\(noncomputable \\)\\?\\(theorem\\|def\\|lemma\\|instance\\) ${new_name}\\b\" \"${lean_roots[@]}\"",
+        "engine": "ugrep 7.8.4 (top-level Bash-tool)",
+        "positive_input": "new_name=helper_widget against Foo.lean",
+        "positive_result": "MATCH (returned Foo.lean path)",
+        "shape": "single trailing \\b — unaffected shape",
+        "classification": "WORKING",
+        "repair": "none — left alone"
+      },
+      {
+        "site": "line 349 (lean-implementation-agent.md)",
+        "pattern": "grep -q \"\\b${replaced}\\b\" \"$new_file\"",
+        "engine": "ugrep 7.8.4 (top-level Bash-tool)",
+        "positive_input": "replaced=old_name_helper against Foo.lean",
+        "positive_result": "MATCH",
+        "negative_input": "replaced=old_name_helperx",
+        "negative_result": "NOMATCH",
+        "shape": "single \\b...\\b bracket around one token — unaffected shape",
+        "classification": "WORKING",
+        "repair": "none — left alone"
+      }
+    ],
+    "summary": "All 5 ugrep-exposed sites (2 files) re-verified WORKING against a real positive input and real negative input(s) under the actual deployed ugrep at the Bash-tool top level. Every site is a lone-\\b or single-\\b...\\b-bracket shape — never a chain of two or more \\b-anchored subexpressions separated by a wildcard run — matching the shape rule the bisection evidence establishes as unaffected. No file was edited. This independently reconfirms report Finding 1 (engine split) and Finding 5 (ugrep-exposed sites)."
+  }
+}

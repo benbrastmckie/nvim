@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/129_audit_word_boundary_regex_portability/plans/01_word-boundary-portability-audit.md",
-      "summary": "5-phase plan: independently re-execute the per-site empirical grep word-boundary audit (ugrep-exposed Markdown sites and .sh/hook sites), then author, index, and deploy the portability guidance note."
-    }
-  ],
-  "next_steps": "Run /implement 129 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1790419342_eea5e0_129",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4,
-    "dependency_waves": [[1, 2], [3], [4], [5]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this environment `grep` resolves to two different engines depending on invocation context, and the difference is load-bearing for any regex-portability audit. A command typed or pasted directly into an agent's Bash-tool shell hits a non-exported shell function that exec's ugrep (7.8.4), whose POSIX/DFA `-E` engine mis-evaluates `\\b` COMPOSITIONALLY: a `\\b` appearing downstream of an earlier `\\b`-anchored subexpression separated by a wildcard run (e.g. `[^|]*`) can fail even though every fragment matches in isolation and `-P` on the identical pattern matches. A pattern inside a `.sh` script or hook executed as a subprocess (`bash file.sh`, hook runner) resolves instead to GNU grep 3.12, which is immune. Consequence: before auditing or repairing any `\\b` pattern, determine which context runs it (`type grep` at top level; `bash -c 'grep --version'` for the subprocess case) -- and never generalize one site's result to another, since only a CHAIN of two or more `\\b`-anchored subexpressions is at risk, while a lone `\\b` or single `\\b...\\b` bracket works under both engines.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/129_audit_word_boundary_regex_portability/plans/01_word-boundary-portability-audit.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["grep", "ugrep", "word-boundary", "regex-portability", "invocation-context", "bash-tool"]
-    }
-  ],
-  "dispatch_seq": 2
+    "session_id": "sess_1790419342_eea5e0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
+  }
 }
