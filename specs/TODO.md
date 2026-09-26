@@ -1,5 +1,5 @@
 ---
-next_project_number: 265
+next_project_number: 268
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 265
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,261,263 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,139,165,224,250,251,256,264 | 22,44,127,129,162,163,199,244,263 | core-agent-system, neovim, opencode, ... |
+| 1 | 22,29,39,43,44,51,89,127,129,162,163,166,167,177,184,185,199,207,217,223,241,244,255,261,263,265,266 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 45,139,165,224,250,251,256,264,267 | 22,44,127,129,162,163,199,244,263,265,266 | core-agent-system, neovim, opencode, ... |
 | 3 | 136,170 | 51,129,139,166,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -44,6 +44,10 @@ next_project_number: 265
 261 [PARTIAL] — Reduce process-spawn amplification in the shell test suite
 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
   └─ 264 [NOT STARTED] — Route dispatched-agent push requests through the userdecision...
+265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
+  └─ 267 [NOT STARTED] — Suppress deploy-headless.sh inline verify when the caller...
+266 [NOT STARTED] — Deploy-pending completion refusal collides with the...
+  └─ 267 [NOT STARTED] — Suppress deploy-headless.sh inline verify when the caller... (see above)
 
 ### Extensions
 
@@ -80,6 +84,254 @@ next_project_number: 265
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 267. Suppress deploy-headless.sh inline verify when the caller will verify anyway
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 265, Task 266
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+=== THE REDUNDANCY ===
+scripts/deploy-headless.sh runs its OWN inline verification after deploying ("Verifying deploy
+(fast gates; shell test suite deferred)") -- a `verify-deploy.sh --skip-slow` pass, measured at
+~1m35s (deploy-headless.sh:402 `local -a VERIFY_ARGS=(--skip-slow)`, invoked at :406).
+
+When deploy-headless.sh is called from scripts/orchestrate-cycle-plan.sh's Inter-Cycle Redeploy
+Checkpoint, the checkpoint then runs its OWN pre/post/confirm verify-deploy.sh passes. The inline
+pass is duplicated work on that path.
+
+=== THIS WAS ALREADY EVALUATED AND DEFERRED -- CONFRONT THE REASONS, DO NOT REPEAT THEM ===
+The redundant-verify-passes task explicitly considered this and ruled it OUT OF SCOPE for two
+stated reasons. Both are real and both must be answered here, not rediscovered:
+
+1. deploy-headless.sh was not in that task's declared file_scope. (Procedural only -- it IS in
+   this task's file_scope.)
+2. Its exit-3 contract has many callers that depend on it. Exit 3 means RESULT=landed_verify_red:
+   the deploy LANDED but the resulting tree FAILS verification (deploy-headless.sh:96, :108,
+   :160, :454). That exit code is derived from precisely the inline run being discussed, so the
+   inline verify cannot simply be deleted. The checkpoint's own branch contract consumes exit 3.
+
+=== POINTS TO SETTLE -- DO NOT PRE-DECIDE ===
+- Whether to add an OPT-IN `--no-verify` / `--skip-verify` flag that ONLY the redeploy checkpoint
+  passes, leaving every other caller's exit-3 contract byte-identical. Opt-in (rather than
+  opt-out) is the shape that makes "no other caller changes" a structural guarantee instead of a
+  claim, but argue it rather than assuming it.
+- What EXIT CODE a deploy-with-verification-suppressed should return, such that no caller can
+  silently misread it as verified-green. A suppressed verify is not a passed verify, and 0 may be
+  the wrong answer. Consider a distinct RESULT= token alongside whatever code is chosen, matching
+  the existing RESULT= convention at :108.
+- ENUMERATE EVERY CALLER of deploy-headless.sh and state what each does with exit 3. The known
+  set of source files referencing it includes: verify-deploy.sh, orchestrate-cycle-plan.sh,
+  orchestrate-build-dispatch.sh, orchestrate-batch-admit.sh, command-gate-out.sh, skill-base.sh,
+  deploy-root-guard.sh, check-deploy-freshness.sh, check-consumer-freshness.sh,
+  check-extension-docs.sh, validate-state.sh, git-snapshot.sh, task-lock.sh,
+  measure-eager-context.sh, system-defect-record.sh, lib/deploy-baseline-lib.sh, plus tests
+  (test-deploy-verify-wiring.sh, test-postflight-deploy-gate.sh, test-deploy-propagation.sh,
+  test-deploy-orphans.sh, test-deploy-freshness.sh, test-lint-deploy-caller-wrap.sh,
+  test-double-loading-check.sh, test-orchestrate-build-dispatch.sh, test-orchestrate-cycle-plan.sh,
+  test-validate-state.sh) and docs (architecture/extension-system.md,
+  architecture/orchestrate-state-machine.md, reference/utility-scripts-inventory.md). Verify that
+  list rather than trusting it -- some references are mentions, not invocations, and the
+  distinction matters.
+- Whether run-all.sh's new `--only-gate` flag makes a CHEAPER TARGETED inline verify a better
+  answer than suppression outright. A narrowed inline verify keeps the exit-3 contract meaningful
+  while removing most of the duplicated cost, which may dominate suppression on every axis. Weigh
+  it explicitly and record the comparison either way.
+- Note that test-lint-deploy-caller-wrap.sh exists specifically to police how callers wrap
+  deploy-headless.sh; any new flag or exit code must satisfy it, or the lint must be extended
+  deliberately and with reasoning, never relaxed.
+
+=== VERIFICATION ===
+1. Every caller NOT passing the new flag observes byte-identical behavior and exit codes,
+   including exit 3. Demonstrate this, do not assert it.
+2. The redeploy checkpoint's total wall time is measured before and after, on a checkpoint that
+   actually fires (cycle_modified_files touching agent-system/**). Report both numbers.
+3. A deploy whose tree genuinely fails verification is still detectable by the checkpoint --
+   suppression must not create a path where a red tree is treated as green.
+4. The suppressed-verify exit code / RESULT token is distinguishable from verified-green in a
+   test.
+5. scripts/tests/ passes, including test-deploy-verify-wiring.sh,
+   test-lint-deploy-caller-wrap.sh, and test-orchestrate-cycle-plan.sh. No test may be weakened
+   or deleted to make the change pass.
+
+=== FILE-FOOTPRINT DEPENDENCIES (auto-added, overlap-derived) ===
+This task's file_scope overlaps both sibling tasks: scripts/tests/test-deploy-verify-wiring.sh is
+shared with the Gate 8 parallelization task, and scripts/orchestrate-cycle-plan.sh plus
+scripts/tests/test-orchestrate-cycle-plan.sh are shared with the deploy-pending/dispatch-guard
+task. Both edges are serialization-only, not semantic -- rebase on whatever they land.
+
+---
+
+### 266. Deploy-pending completion refusal collides with the identical-dispatch convergence guard
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+=== THE DEFECT, OBSERVED TWICE IN ONE REAL RUN ===
+During a single live /orchestrate run over a three-task batch, two different tasks independently
+hit the same interaction. A task whose modified_files touch agent-system/** cannot converge to
+`completed` inside the run that finished it, and then gets halted by the churn guard for being
+finished.
+
+Sequence, as observed:
+
+1. The implement dispatch finishes CORRECTLY and writes a valid handoff (all phases done, status
+   `implemented`).
+2. scripts/orchestrate-cycle-postflight.sh's completion-deploy gate REFUSES the completion write
+   with exit 6: "refusing postflight implement for task N: extension 'core' is stale relative to
+   its source store (touched path: agent-system/extensions)". No state.json write, no plan-file
+   status stamp. The task stays at `implementing` and is marked deploy-pending. The emitted
+   message asserts that convergence "is deferred to the next cycle's Inter-Cycle Redeploy
+   Checkpoint -- no manual action needed."
+3. The next cycle's checkpoint DID fire and DID deploy. But because the task's status was still
+   `implementing` with a complete plan on disk, scripts/orchestrate-cycle-plan.sh re-derived an
+   implement dispatch whose content was BYTE-IDENTICAL to the previous cycle's. That tripped the
+   identical-dispatch convergence guard (orchestrate-cycle-plan.sh:2296-2345): "dispatch content
+   matched the previous dispatch 2 times in a row; halted for the rest of this run". The task was
+   excluded via a blocked[] row and the run ended with the task still at `implementing`, despite
+   its work being complete and committed.
+4. Both tasks ultimately required OUT-OF-BAND OPERATOR ACTION to converge: run the deploy, then
+   scripts/reconcile-task-status.sh N <session_id>, which correctly promoted each to `completed`
+   ("[deploy-check] Task N: touched extension(s) verified fresh -- proceeding").
+
+=== CHARACTERIZE IT THIS WAY ===
+The deploy-pending defer and the identical-dispatch guard interact badly. A deploy-blocked task
+NECESSARILY re-derives an identical dispatch, because nothing about its inputs changed -- that is
+the definition of its situation, not evidence of churn. So the guard reads a deploy-gating
+condition as dispatch churn and halts a task that was actually finished. Both mechanisms are
+individually correct; the defect is in their composition. The "no manual action needed" assurance
+did not hold in either observed case, which makes the emitted message actively misleading.
+
+=== POINTS TO SETTLE IN RESEARCH/PLANNING -- DO NOT PRE-DECIDE ANY OF THESE ===
+- Should the identical-dispatch guard be SUPPRESSED when the task carries a deploy_pending
+  marker, or should its streak counter merely NOT BE INCREMENTED? These are different: the first
+  disables a real safety net, the second preserves it for genuine churn while refusing to charge
+  a deploy-gated re-derivation against it. Argue for one.
+- Should a deploy-pending task be RE-POSTFLIGHTED directly after the checkpoint's deploy lands,
+  rather than re-dispatched at all? The work is already done and committed; a re-dispatch is pure
+  waste even on the runs where it is not halted. This may be the better fix and may make the
+  guard question moot.
+- Should the checkpoint's deploy be followed by an AUTOMATIC reconcile pass over the tasks it
+  just unblocked, making the "no manual action needed" claim true rather than aspirational?
+  reconcile-task-status.sh already performs exactly the right check and got the right answer both
+  times, so the question is wiring and idempotency, not new logic.
+- ORDERING: the checkpoint currently deploys during Move 1 of the NEXT cycle, i.e. after the
+  refusal has already happened. Is there a cheaper ordering -- deploy BEFORE the completion write
+  is attempted, in the cases where modified_files are already known to overlap agent-system/** --
+  and what does that cost on runs where it turns out not to be needed?
+- Whether the emitted "no manual action needed" text should be CORRECTED (or downgraded to a
+  conditional) until the behavior actually matches it. Shipping a true message is a valid partial
+  fix and should not be held hostage to the larger one.
+
+=== CONSTRAINTS ===
+- Do NOT weaken the completion-deploy gate itself. Refusing to mark a task `completed` while its
+  extension is stale relative to the source store is correct and is what keeps .claude/ from
+  being certified against un-deployed sources.
+- Do NOT weaken the identical-dispatch guard for the general case. It exists to stop genuine
+  non-convergence loops and has done so.
+- Do not modify tasks 260-264 or anything under their task directories. They are the evidence
+  record for this defect, not work to be revised.
+
+=== VERIFICATION ===
+1. Reproduce the interaction in a test: a task with a complete plan and a deploy_pending marker
+   must not be halted by the identical-dispatch guard, and must converge to `completed` within a
+   single run once the checkpoint's deploy lands.
+2. A task with a complete plan and NO deploy_pending marker that genuinely re-derives an
+   identical dispatch twice IS still halted. The guard must remain live for real churn.
+3. The completion-deploy gate still refuses exit 6 when the extension is genuinely stale and no
+   deploy has run.
+4. Whatever message the refusal emits is TRUE of the resulting behavior. Quote the before and
+   after text in the summary.
+5. scripts/tests/ passes, including test-orchestrate-cycle-postflight.sh and
+   test-orchestrate-cycle-plan.sh. No test may be weakened or deleted to make the change pass.
+
+---
+
+### 265. Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh --jobs
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+=== WHAT TO CHANGE ===
+scripts/verify-deploy.sh line 558 (gate8) currently invokes the shell test suite with no --jobs:
+
+  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet 2>&1)
+
+so it inherits run-all.sh's JOBS=1 default and runs fully sequentially. Make Gate 8 use the
+opt-in parallelism that already exists in run-all.sh.
+
+=== MEASURED FACTS (already committed, do not re-measure from scratch) ===
+- Gate 8 alone costs ~9m21s of an ~11m03s full verify-deploy.sh run (~86% of the run).
+- The shell-test-suite parallelism task added opt-in `--jobs N|auto` to run-all.sh, with a
+  JOBS_CAP (4), longest-first scheduling, deterministic output ordering, and a nested-invocation
+  guard that forces JOBS=1 when run-all.sh is reached from inside a suite that itself calls
+  verify-deploy.sh (see run-all.sh header lines 34-140). Measured 449s -> 187s at --jobs 4 (58%
+  reduction) with an identical pass/fail set to --jobs 1.
+
+=== WHY THIS MECHANISM AND NOT THE OTHER ONE (record this reasoning) ===
+The sibling redundant-verify-passes task attacked the same cost differently: capture Gate 8 ONCE
+per redeploy checkpoint and share the snapshot across the pre/post/confirm passes. That was
+REJECTED in its Phase 1 precondition audit because Gate 8 is NOT invariant across a
+deploy-headless.sh call -- 41 of 73 files under scripts/tests/ prefer the DEPLOYED copy of their
+subject-under-test over the source-store copy, so a pre-deploy snapshot and a post-deploy
+snapshot are legitimately measuring different things. The rejected design and its evidence are
+recorded in context/patterns/batch-orchestration-guardrails.md; read it before proposing
+anything snapshot-shaped here.
+
+Making each Gate 8 run FASTER requires no invariance premise at all, so it sidesteps the exact
+reason the sharing design failed. That is the justification for this task existing, and it
+should survive into the plan's rationale section.
+
+=== CRITICAL DEPENDENCY TO RESOLVE, NOT ASSUME ===
+Parallel-run safety is NOT yet empirically established. The parallelism task's Phase 6 was the
+flakiness decision gate -- 3 repeated full-suite runs at --jobs 4, checked against Phase 1's
+recorded baseline pass/fail set and against a named set of load-sensitive suites -- and it did
+NOT complete: it was interrupted by genuine system-wide memory pressure. That task remains
+PARTIAL with Phases 6 and 7 outstanding, and the user has chosen NOT to resume it for now.
+
+Therefore this task must choose ONE of:
+  (a) carry that 3-run validation itself, as an explicit EARLY phase that gates every later
+      phase, before line 558 is touched at all; or
+  (b) declare a hard dependency on the parallelism task's Phase 6 completing.
+
+DECIDE THIS IN RESEARCH/PLANNING. Do not pre-decide it, and under no circumstances change
+line 558 on unvalidated parallel safety. No dependency edge is recorded on this task's
+`dependencies` field precisely because recording one would pre-decide option (b).
+
+=== ALSO SETTLE ===
+- What job count Gate 8 should request: a fixed N, `auto`, or inherit from an env var. Note that
+  `auto` resolves to nproc capped at JOBS_CAP=4 (run-all.sh:121-130).
+- Whether an environment override is needed for CI or low-memory hosts, and if so its name,
+  precedence, and documented default.
+- The load-sensitive suites named by the parallelism task's Phase 4 audit -- carry that list
+  forward rather than rediscovering it.
+- That test-run-all-parallel.sh's own timing assertions were ALREADY redesigned from absolute
+  thresholds to load-tolerant relative ratios after flaking under ambient host load. Do not
+  regress them to absolute timings, and do not read a ratio-based assertion as a weakened one.
+- Interaction with run-all.sh's nested-invocation guard: verify-deploy.sh IS reached from inside
+  some suites, so confirm the guard still forces JOBS=1 on those paths and that the new call site
+  does not defeat it.
+
+=== VERIFICATION ===
+1. The pass/fail set under the new invocation is IDENTICAL to the sequential baseline set. Report
+   both sets, not just a count.
+2. Report before/after wall times for a full verify-deploy.sh run (no --skip-slow), measured on
+   the same host.
+3. --skip-slow still skips Gate 8 entirely (verify-deploy.sh:551) -- unchanged.
+4. The deploy-consumer and missing-run-all.sh branches (verify-deploy.sh:553-556) are unchanged.
+5. scripts/tests/ passes, including test-deploy-verify-wiring.sh,
+   test-verify-deploy-gate-selection.sh, and test-run-all-parallel.sh. No test may be weakened,
+   skipped, or deleted to make the change pass.
+
+---
 
 ### 264. Route dispatched-agent push requests through the user_decision relay and sweep the prohibition surface
 - **Status**: [NOT STARTED]
