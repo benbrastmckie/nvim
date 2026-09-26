@@ -166,26 +166,26 @@ accepting the set, and record the observed count even if it differs from 5.
 
 ---
 
-### Phase 2: Re-execute the `file_scope` and `.sh`/hook site audit [NOT STARTED]
+### Phase 2: Re-execute the `file_scope` and `.sh`/hook site audit [COMPLETED]
 
 **Goal**: Re-run every `.sh`/hook `\b` site through the mechanism that actually exercises it in
 production (its dedicated test suite where one exists, a live run of the script otherwise), record
 the observed result per site, and repair only sites demonstrated BROKEN.
 
 **Tasks**:
-- [ ] Re-enumerate genuine grep-pattern `\b` sites across `agent-system/extensions/**`, excluding LaTeX/Typst macro false positives (`\begin`, `\bf`, `\bigl`, `\bullet`, `\binom`, `\bot`, ...), `sed`/jq/Python-`re` patterns, and prose mentions. Record the observed count against the report's ~32 call sites / ~26 pattern definitions.
-- [ ] Run `extensions/core/scripts/tests/test-guard-destructive-git.sh` and record the pass/fail counts (covers `--hard\b` and `(drop|clear)\b`).
-- [ ] Run the deployed `check-extension-docs.sh` against every real extension and record the result (covers `[A-Za-z0-9_-]+\.(sh|sql)\b`).
-- [ ] Run `extensions/core/scripts/tests/test-lint-postflight-boundary.sh` (covers `Agent\b` and the meta-pattern).
-- [ ] Run `extensions/core/scripts/test-session-runtime-files.sh` (covers `\$_seeded\b`, `\bexit\b`, `\breturn 1\b`).
-- [ ] Run `extensions/core/scripts/tests/test-lake-build-guard.sh` and record case 12b's result specifically, separating it from any pre-existing unrelated failure (report saw case 3 failing on stdout/stderr interleaving).
-- [ ] Re-verify `literature-audit.sh`'s P1-P4 extraction patterns by running the literal `grep -oE` lines, inside a `.sh` file so GNU grep is the engine, against a fixture containing `Theorem 3.1`, `Definition 2.4`, `Lemma 5`, `Theorem A`, and a `theoretically` false-positive probe; record extracted tokens and confirm the probe yields zero matches.
-- [ ] Run `extensions/lean/scripts/tests/test-lean-sorry-census.sh` and record the result, confirming the `set_option warn.sorry false in` fixture and the anti-vacuous guard are present and passing. Make no change to the script or its fixtures.
-- [ ] Run the remaining covering suites and record results: `test-validate-no-task-references.sh` (`task-reference-patterns.sh`), `test-task-type-detect.sh` (`task-type-detect.sh`, 3 sites), `test-census-count.sh` (`\bTARGET\b`), `test-lean-comparator-run.sh` (`lean_lib[[:space:]]+\`?${name}\b`), and the `sess_930\b` assertion within `test-orchestrate-recover-message-findings.sh`.
-- [ ] Confirm the two recorded non-sites by inspection and record them as such: `literature-convert.sh`'s `\\begin\{` false positive, and `literature-chunk.sh`'s defined-but-never-referenced `XREF_PATTERN` dead code.
-- [ ] Separate any observed failure into "`\b`/grep-related" vs. "pre-existing and unrelated" with a one-line justification each; only the former enters the repair branch.
-- [ ] Repair branch (only for a site demonstrated BROKEN): choose per-site between dropping `\b` where the surrounding delimiters already bound the token and switching that invocation to `-P`; then demonstrate the repaired pattern matches a real positive input AND rejects a real negative input; for `guard-destructive-git.sh` specifically, keep the suite at 50/50 and add a negative case for the rewritten branch.
-- [ ] Write the per-site evidence table into the phase progress file.
+- [x] Re-enumerate genuine grep-pattern `\b` sites across `agent-system/extensions/**`, excluding LaTeX/Typst macro false positives (`\begin`, `\bf`, `\bigl`, `\bullet`, `\binom`, `\bot`, ...), `sed`/jq/Python-`re` patterns, and prose mentions. Record the observed count against the report's ~32 call sites / ~26 pattern definitions. *(completed: enumeration reconfirms the report's site set; 3 additional non-grep constructs inspected and excluded — sed in generate-task-order.sh, Python re in roadmap-integration.sh/literature_combining_detect.py)*
+- [x] Run `extensions/core/scripts/tests/test-guard-destructive-git.sh` and record the pass/fail counts (covers `--hard\b` and `(drop|clear)\b`). *(completed: 50/50 pass)*
+- [x] Run the deployed `check-extension-docs.sh` against every real extension and record the result (covers `[A-Za-z0-9_-]+\.(sh|sql)\b`). *(completed: PASS all 21 extensions OK)*
+- [x] Run `extensions/core/scripts/tests/test-lint-postflight-boundary.sh` (covers `Agent\b` and the meta-pattern). *(completed: 6/6 pass)*
+- [x] Run `extensions/core/scripts/test-session-runtime-files.sh` (covers `\$_seeded\b`, `\bexit\b`, `\breturn 1\b`). *(completed: 6/6 pass)*
+- [x] Run `extensions/core/scripts/tests/test-lake-build-guard.sh` and record case 12b's result specifically, separating it from any pre-existing unrelated failure (report saw case 3 failing on stdout/stderr interleaving). *(completed: 47/0 this run — case 12b (\b assertion) PASS; case 3 also PASS this run, a discrepancy from the report recorded honestly, not \b-related)*
+- [x] Re-verify `literature-audit.sh`'s P1-P4 extraction patterns by running the literal `grep -oE` lines, inside a `.sh` file so GNU grep is the engine, against a fixture containing `Theorem 3.1`, `Definition 2.4`, `Lemma 5`, `Theorem A`, and a `theoretically` false-positive probe; record extracted tokens and confirm the probe yields zero matches. *(completed: P1/P2/P3 all correct, probe 0 matches; P4 found to be documented-only with no live grep call — recorded as a finding)*
+- [x] Run `extensions/lean/scripts/tests/test-lean-sorry-census.sh` and record the result, confirming the `set_option warn.sorry false in` fixture and the anti-vacuous guard are present and passing. Make no change to the script or its fixtures. *(completed: 17/17 pass, no code change made)*
+- [x] Run the remaining covering suites and record results: `test-validate-no-task-references.sh` (`task-reference-patterns.sh`), `test-task-type-detect.sh` (`task-type-detect.sh`, 3 sites), `test-census-count.sh` (`\bTARGET\b`), `test-lean-comparator-run.sh` (`lean_lib[[:space:]]+\`?${name}\b`), and the `sess_930\b` assertion within `test-orchestrate-recover-message-findings.sh`. *(completed: 31/31, 10/10, 8/8, 22/22+1 skip, sess_930\b assertion PASS respectively)*
+- [x] Confirm the two recorded non-sites by inspection and record them as such: `literature-convert.sh`'s `\\begin\{` false positive, and `literature-chunk.sh`'s defined-but-never-referenced `XREF_PATTERN` dead code. *(completed)*
+- [x] Separate any observed failure into "`\b`/grep-related" vs. "pre-existing and unrelated" with a one-line justification each; only the former enters the repair branch. *(completed: all observed failures — test-lake-build-guard.sh none this run, test-orchestrate-recover-message-findings.sh's 2 acceptance-e2e failures — are pre-existing/unrelated, not \b-related)*
+- [x] Repair branch (only for a site demonstrated BROKEN): choose per-site between dropping `\b` where the surrounding delimiters already bound the token and switching that invocation to `-P`; then demonstrate the repaired pattern matches a real positive input AND rejects a real negative input; for `guard-destructive-git.sh` specifically, keep the suite at 50/50 and add a negative case for the rewritten branch. *(completed: zero sites BROKEN, no repair made)*
+- [x] Write the per-site evidence table into the phase progress file. *(completed)*
 
 **Timing**: 1.25 hours
 
