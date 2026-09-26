@@ -1,18 +1,30 @@
 {
-  "status": "planned",
+  "status": "partial",
   "task_number": 261,
-  "phase": "plan",
-  "session_id": "sess_1790372264_d11531_261",
-  "dispatch_seq": 7,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1790372264_d11531",
+  "dispatch_seq": 9,
+  "phases_completed": 5,
   "phases_total": 7,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/261_reduce_process_spawn_amplification_in_tests/plans/01_test-suite-runtime-reduction.md",
-      "summary": "7-phase plan: verify-deploy.sh --only-gate flag (~290s saving), opt-in run-all.sh parallelism behind a 3-run flakiness decision gate, measured before/after baseline, per-suite coverage-equality proof."
+      "type": "summary",
+      "path": "specs/261_reduce_process_spawn_amplification_in_tests/summaries/01_test-suite-runtime-reduction-summary.md",
+      "summary": "Phases 1-5 complete (measurement harness, verify-deploy.sh gate selection, invocation collapse, parallelism-safety audit, opt-in run-all.sh parallelism). Phase 6 partial (real flake found+fixed; 3-run gate validation interrupted by system memory pressure). Phase 7 not started."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/261_reduce_process_spawn_amplification_in_tests/handoffs/phase-6-handoff-20260926T045500Z.md",
+      "summary": "Exact resume command for Phase 6's remaining 3-run flakiness-gate validation, plus the memory-pressure caveat and the baseline/load-sensitive sets to compare against."
     }
   ],
-  "next_steps": "Run /implement 261 to execute the plan",
-  "notes": "Scope note: task file_scope is agent-system/extensions/core/scripts/tests/ but Phase 2 edits agent-system/extensions/core/scripts/verify-deploy.sh and Phase 7 edits context/standards/shell-script-testing.md -- both intentional and named in the plan. Territory: sibling task 262 owns orchestrate-cycle-plan.sh, deploy-baseline-lib.sh, deploy-ledger-lib.sh, batch-orchestration-guardrails.md, test-orchestrate-cycle-plan.sh; no phase here modifies any of them (deploy-baseline-lib.sh is read/sourced only)."
+  "blockers": [
+    {
+      "type": "environmental",
+      "description": "System-wide memory pressure from unrelated concurrent processes (other agent sessions, pytest, lean4lean builds) on this shared development machine caused the harness's own idle-session memory-pressure safeguard to terminate a backgrounded full-suite validation run mid-execution. Confirmed via free -h/ps aux showing sustained heavy swap usage (17-19 GiB of 31 GiB) both before and after the interruption -- not transient, not caused by this task's own work.",
+      "resolution": "Wait for the concurrent load to clear (check free -h before retrying), then run the 3x full-suite --jobs 4 validation from the Phase 6 handoff artifact, preferring a foreground/blocking call with a generous timeout over a backgrounded one."
+    }
+  ],
+  "next_steps": "Resume at Phase 6: run the full suite 3 times at --jobs 4 with the current committed code, diff against the recorded baseline pass/fail set, inspect the 5-suite load-sensitive set, and apply the gate criterion (flip run-all.sh's default to --jobs auto, or keep --jobs 1 and close Phase 6 [COMPLETED WITH EXCLUSIONS]). Then complete Phase 7 (coverage-equality proof, documentation, redeploy).",
+  "notes": "Phases 1-5 are solid, verified, committed work -- not at risk from the Phase 6 interruption. A real bug (a flaky wall-clock assertion in the new test-run-all-parallel.sh suite) was found and correctly fixed as part of this dispatch, not left for a successor. The task's own file_scope (agent-system/extensions/core/scripts/tests/) was respected throughout; Phase 2's edit to verify-deploy.sh and (pending) Phase 7's edit to context/standards/shell-script-testing.md are both pre-declared, intentional exceptions per the plan. No sibling task 262 territory (orchestrate-cycle-plan.sh, deploy-baseline-lib.sh, deploy-ledger-lib.sh, batch-orchestration-guardrails.md, test-orchestrate-cycle-plan.sh) was touched."
 }
