@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/261_reduce_process_spawn_amplification_in_tests/plans/01_test-suite-runtime-reduction.md",
-      "summary": "7-phase plan cutting shell-suite wall time via a verify-deploy.sh --only-gate flag (~290s of ~650s) plus opt-in run-all.sh file-level parallelism behind a 3-run flakiness decision gate, with a measured before/after baseline and a per-suite coverage-equality proof."
-    }
-  ],
-  "next_steps": "Run /implement 261 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 9,
   "metadata": {
-    "session_id": "sess_1790372264_d11531_261",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 11,
-    "dependency_waves": [[1], [2, 4], [3, 5], [6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "Performance planning for a test suite must start from a full-suite measurement, not from a plausible structural story. In the agent-system shell suite the named suspect (process-spawn amplification: 46 subprocess re-execs in one file, 'each re-sources 5+ libraries and re-parses state.json') measured at 0.8% of total wall time, while an unnamed file was 60% of it -- because it invoked the real verify-deploy.sh four times to test ONE of its 20 gates, and verify-deploy.sh had no gate-selection flag. Micro-measurements: sourcing a shared shell lib costs ~0.1ms over bare `bash -c ':'`; a jq read of a 1200-line JSON state file ~5ms. Generalizable pattern: when a test is slow because it exercises one unit of a monolithic production script, the highest-value fix is usually an additive selection flag in the PRODUCTION script (keeping one full-battery invocation somewhere for the all-units-together contract), not test-side fixture reuse or parallelism. Order the work: measure, then gate-select, then parallelize, then micro-optimize.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/plans/01_test-suite-runtime-reduction.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["test-suite-performance", "measure-before-optimizing", "gate-selection-flag", "verify-deploy", "process-spawn-amplification", "shell-test-parallelism"]
-    }
-  ],
-  "dispatch_seq": 7
+    "session_id": "sess_1790372264_d11531",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

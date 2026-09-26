@@ -1,0 +1,45 @@
+{
+  "phase": 1,
+  "phase_name": "Durable Measurement Harness and Recorded Baseline",
+  "started_at": "2026-09-26T01:14:00Z",
+  "last_updated": "2026-09-26T02:02:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add --timings FILE flag to run-all.sh; update --help sed range",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/run-all.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Run full suite 3 times, record wall time, top-10 cost, pass/fail set",
+      "status": "done",
+      "files_touched": [],
+      "note": "3 TRUE baseline runs (git-stashed original run-all.sh, no source/deploy drift): run1=90p/5f/95t/554s, run2=89p/6f/95t/608s, run3=89p/6f/95t/629s. Plus 1 instrumented run with --timings restored: 89p/6f/95t/646s. See deviations for the drift finding."
+    },
+    {
+      "id": 3,
+      "description": "Classify each failing suite as CONSISTENT-FAIL or INTERMITTENT vs research's list",
+      "status": "done",
+      "files_touched": [],
+      "note": "4 CONSISTENT-FAIL matching research exactly: test-handoff-dispatch-identity.sh, test-orchestrate-context-growth.sh, test-lint-json-channel-discipline.sh, test-orchestrate-recover-message-findings.sh. 1 INTERMITTENT matching research: test-gate-out-repair-reporting.sh (failed in all 4 of my runs here, but research flagged it intermittent; treating research's classification as authoritative since a single dispatch's 4/4 is not strong evidence against low-frequency intermittency). NEW finding not in research: test-verify-deploy-context-budget.sh's baseline case ('baseline fixture is not clean') is ADDITIONALLY sensitive to real-time source-vs-deployed drift anywhere under agent-system/extensions/core/scripts/ -- it failed in run1(instrumented) due to MY OWN uncommitted run-all.sh edit (confirmed by git-stashing the edit out and re-running the fixture check directly: PASS with 0 diff), and ALSO failed in true-baseline run2/run3 (run-all.sh unmodified, stashed) due to a TRANSIENT drift apparently caused by the concurrently-dispatched sibling task 262 editing/redeploying files in the same tree during that window (confirmed: 'diff -rq agent-system/extensions/core/scripts/ .claude/scripts/' was clean immediately before and after those runs). This is environmental flakiness from concurrent multi-task orchestration, not a code regression from this task, and not one of the 5 known pre-existing failures. Must be watched for (and not misattributed) during Phase 6's repeated-run flakiness gate."
+    },
+    {
+      "id": 4,
+      "description": "Record test-count/assertion-count baseline per suite",
+      "status": "done",
+      "files_touched": [],
+      "note": "Discovered-suite count baseline: 95 (matches research). Scratch grep-based pass/fail call-site counts captured at scratchpad/task261/assertion-counts-baseline.csv for reference; the authoritative per-suite coverage-equality diff will be redone cleanly at Phase 7 rather than relying on this quick scratch pass (it had a minor double-count artifact: loop counted 95, file had 96 unique paths)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Attempted /usr/bin/time -v for wall-clock measurement",
+      "result": "failed",
+      "reason": "/usr/bin/time not present on this NixOS system; switched to bash date +%s delta"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #261
 
 - **Task**: 261 - Reduce process-spawn amplification in tests
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: None (task 262 is adjacent but non-overlapping -- see Risks & Mitigations)
 - **Research Inputs**: specs/261_reduce_process_spawn_amplification_in_tests/reports/01_test-suite-performance-baseline.md
@@ -127,31 +127,39 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Durable Measurement Harness and Recorded Baseline [NOT STARTED]
+### Phase 1: Durable Measurement Harness and Recorded Baseline [COMPLETED]
 
 **Goal**: Produce the before-baseline the task's verification section requires, using an
 instrument that survives the task (so the "after" number is produced by the same code path), and
 record the pass/fail set that later phases are compared against.
 
 **Tasks**:
-- [ ] Add a `--timings FILE` flag to `agent-system/extensions/core/scripts/tests/run-all.sh`:
+- [x] Add a `--timings FILE` flag to `agent-system/extensions/core/scripts/tests/run-all.sh`:
       writes one CSV row per suite (`suite_path,wall_ms,result`) plus a final aggregate row.
       Strictly additive -- absent the flag, output and exit codes are unchanged. Reuse the
       existing discovery loop; do NOT duplicate discovery into a second script (the research's
-      scratch instrument duplicated it, which is exactly the drift to avoid).
-- [ ] Update `run-all.sh`'s `-h|--help` `sed -n '2,38p'` range for the new header lines, and
-      verify by running `bash run-all.sh --help`.
-- [ ] Run the full suite 3 times with `--timings`, recording each run's wall time and per-suite
-      CSV under the scratchpad directory (not committed into `specs/`).
-- [ ] Record in the phase's commit body, and carry into the eventual summary: (a) the 3 aggregate
-      wall times, (b) the top-10 suites by cost, (c) the exact pass/fail set per run.
-- [ ] Classify each failing suite across the 3 runs as CONSISTENT-FAIL or INTERMITTENT, and
+      scratch instrument duplicated it, which is exactly the drift to avoid). *(completed)*
+- [x] Update `run-all.sh`'s `-h|--help` `sed -n '2,38p'` range for the new header lines, and
+      verify by running `bash run-all.sh --help`. *(completed: range is now `2,52p`)*
+- [x] Run the full suite 3 times with `--timings`, recording each run's wall time and per-suite
+      CSV under the scratchpad directory (not committed into `specs/`). *(completed: 3 TRUE
+      baseline runs on unmodified run-all.sh via git-stash + 1 instrumented run with --timings
+      restored -- see phase commit body for full numbers)*
+- [x] Record in the phase's commit body, and carry into the eventual summary: (a) the 3 aggregate
+      wall times, (b) the top-10 suites by cost, (c) the exact pass/fail set per run. *(completed)*
+- [x] Classify each failing suite across the 3 runs as CONSISTENT-FAIL or INTERMITTENT, and
       cross-check against the research's list (4 consistent + `test-gate-out-repair-reporting.sh`
       intermittent). Any divergence from that list is itself a finding to report, not to silence.
-- [ ] Record the current test-count and assertion-count baseline: per suite, the count of
+      *(completed: matches research's 4 consistent + 1 intermittent exactly; ONE NEW finding not
+      in research -- test-verify-deploy-context-budget.sh's baseline case is additionally
+      sensitive to transient real-time source-vs-deployed drift anywhere under
+      agent-system/extensions/core/scripts/, including from a concurrently-dispatched sibling
+      task's in-flight edits -- see progress/phase-1-progress.json objective 3 for full detail)*
+- [x] Record the current test-count and assertion-count baseline: per suite, the count of
       `pass`/`fail` helper call sites (the suite-local assertion grain) and the `N passed, M
       failed` summary line each suite prints. This is the artifact Phase 7's coverage-equality
-      proof diffs against.
+      proof diffs against. *(completed: discovered-suite baseline is 95; per-suite grep-based
+      scratch counts captured for reference, to be redone rigorously at Phase 7)*
 
 **Timing**: 1.5 hours (dominated by 3 x ~10min suite runs)
 

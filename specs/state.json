@@ -1167,12 +1167,12 @@
     {
       "project_number": 261,
       "project_name": "reduce_process_spawn_amplification_in_tests",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reduce process-spawn amplification in the shell test suite",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-26T01:12:04Z",
+      "last_updated": "2026-09-26T01:12:20Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/tests/"
@@ -1196,12 +1196,12 @@
     {
       "project_number": 262,
       "project_name": "reduce_redundant_verify_deploy_passes",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reduce redundant verify-deploy passes in the redeploy checkpoint",
       "created": "2026-09-25T00:00:00Z",
-      "last_updated": "2026-09-26T01:12:09Z",
+      "last_updated": "2026-09-26T01:12:23Z",
       "dependencies": [
         260
       ],

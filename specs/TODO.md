@@ -41,8 +41,8 @@ next_project_number: 263
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-261 [PLANNED] — Reduce process-spawn amplification in the shell test suite
-262 [PLANNED] — Reduce redundant verify-deploy passes in the redeploy checkpoint
+261 [IMPLEMENTING] — Reduce process-spawn amplification in the shell test suite
+262 [IMPLEMENTING] — Reduce redundant verify-deploy passes in the redeploy checkpoint
 
 ### Extensions
 
@@ -81,7 +81,7 @@ next_project_number: 263
 ## Tasks
 
 ### 262. Reduce redundant verify-deploy passes in the redeploy checkpoint
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 260
@@ -195,7 +195,7 @@ may depend on. deploy-headless.sh has many other callers; check them before prop
 ---
 
 ### 261. Reduce process-spawn amplification in the shell test suite
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

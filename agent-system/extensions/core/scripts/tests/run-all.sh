@@ -31,11 +31,16 @@
 # pass -- per shell-script-testing.md's loud-skip discipline extended to the discovery step itself.
 #
 # Usage:
-#   run-all.sh [--quiet]
+#   run-all.sh [--quiet] [--timings FILE]
 #
 # --quiet: suppress per-suite [RUN]/[PASS] narration; still prints [FAIL] lines and the final
 #          summary line, so a caller (e.g. Gate 8 in verify-deploy.sh) can capture failures
 #          without the full per-suite transcript.
+#
+# --timings FILE: additionally write one CSV row per discovered suite (suite_path,wall_ms,result)
+#          plus a final aggregate row (TOTAL,wall_ms,PASS_COUNT/FAIL_COUNT/SKIP_COUNT/TOTAL) to
+#          FILE. Strictly additive: absent this flag, stdout/stderr output and exit codes are
+#          byte-identical to today's. Result is one of PASS, FAIL, or SKIP.
 #
 # Exit codes:
 #   0  all discovered suites passed
@@ -49,11 +54,20 @@
 set -uo pipefail
 
 QUIET=false
+TIMINGS_FILE=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
+    --timings)
+      if [ $# -lt 2 ]; then
+        echo "ERROR: --timings requires a FILE argument" >&2
+        exit 2
+      fi
+      TIMINGS_FILE="$2"
+      shift 2
+      ;;
     -h|--help)
-      sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,52p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -145,19 +159,31 @@ SKIP_COUNT=0
 SUITE_OUT="$(mktemp)"
 trap 'rm -f "$SUITE_OUT"' EXIT
 
+if [ -n "$TIMINGS_FILE" ]; then
+  : > "$TIMINGS_FILE"
+fi
+
+SUITE_RUN_START_MS="$(date +%s%3N)"
+
 for suite in "${SUITES[@]}"; do
   suite_name="$suite"
   if [ ! -x "$suite" ]; then
     echo "[run-all] [SKIP] not executable (exec-bit regression?): $suite_name" >&2
     SKIP_COUNT=$((SKIP_COUNT + 1))
+    if [ -n "$TIMINGS_FILE" ]; then
+      echo "${suite_name},0,SKIP" >> "$TIMINGS_FILE"
+    fi
     continue
   fi
 
   say "[run-all] [RUN]  $suite_name"
+  _suite_start_ms="$(date +%s%3N)"
   if ( bash "$suite" >"$SUITE_OUT" 2>&1 ); then
+    _suite_result="PASS"
     PASS_COUNT=$((PASS_COUNT + 1))
     say "[run-all] [PASS] $suite_name"
   else
+    _suite_result="FAIL"
     FAIL_COUNT=$((FAIL_COUNT + 1))
     echo "[FAIL] $suite_name"
     if [ "$QUIET" = "true" ]; then
@@ -166,11 +192,21 @@ for suite in "${SUITES[@]}"; do
       cat "$SUITE_OUT" | sed 's/^/    /'
     fi
   fi
+  _suite_end_ms="$(date +%s%3N)"
+  if [ -n "$TIMINGS_FILE" ]; then
+    echo "${suite_name},$((_suite_end_ms - _suite_start_ms)),${_suite_result}" >> "$TIMINGS_FILE"
+  fi
   : > "$SUITE_OUT"
 done
 
+SUITE_RUN_END_MS="$(date +%s%3N)"
+
 say ""
 echo "[run-all] $PASS_COUNT passed, $FAIL_COUNT failed, $SKIP_COUNT skipped, $TOTAL_DISCOVERED total"
+
+if [ -n "$TIMINGS_FILE" ]; then
+  echo "TOTAL,$((SUITE_RUN_END_MS - SUITE_RUN_START_MS)),${PASS_COUNT}/${FAIL_COUNT}/${SKIP_COUNT}/${TOTAL_DISCOVERED}" >> "$TIMINGS_FILE"
+fi
 
 if [ "$FAIL_COUNT" -gt 0 ]; then
   exit 1
