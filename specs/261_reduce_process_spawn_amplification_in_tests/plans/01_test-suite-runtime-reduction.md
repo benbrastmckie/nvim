@@ -495,30 +495,70 @@ likely breakage site.
 
 ---
 
-### Phase 6: Flakiness Decision Gate -- 3 Repeated Parallel Runs [IN PROGRESS]
+### Phase 6: Flakiness Decision Gate -- 3 Repeated Parallel Runs [PARTIAL]
 
 **Goal**: Decide empirically whether parallelism becomes the default or stays opt-in. This is a
 decision gate: its measurement selects the branch Phase 7 documents.
 
 **Tasks**:
 - [ ] Run the full suite 3 times at the chosen job count, capturing `--timings` CSV and the
-      pass/fail set for each run.
+      pass/fail set for each run. *(PARTIAL -- interrupted, see below)*
 - [ ] Diff each run's pass/fail set against Phase 1's recorded baseline set. Treat the 4
       consistent failures as expected failures and `test-gate-out-repair-reporting.sh` as
-      known-intermittent; any OTHER divergence is a flake introduced here.
+      known-intermittent; any OTHER divergence is a flake introduced here. *(partially done: see
+      finding below)*
 - [ ] Inspect the load-sensitive set named in Phase 4 specifically across all 3 runs, not just the
-      aggregate pass/fail counts.
+      aggregate pass/fail counts. *(not yet completed for the full 3-run set)*
 - [ ] Apply the gate criterion: **3 of 3 runs produce the baseline pass/fail set (modulo the known
-      intermittent suite) AND no load-sensitive suite failed in any run.**
+      intermittent suite) AND no load-sensitive suite failed in any run.** *(not yet applied --
+      no 3 clean, post-fix runs completed yet)*
 - [ ] **If the criterion passes**: flip `run-all.sh`'s default to `--jobs auto` (capped), keep
       `--jobs 1` as the documented escape hatch, and leave `verify-deploy.sh` gate 8's invocation
       to inherit the new default. Re-run the 3-run validation once more after the flip, since the
-      default path is now a different code path than the one just validated.
+      default path is now a different code path than the one just validated. *(not reached)*
 - [ ] **If the criterion fails**: keep the default at `--jobs 1`, record which suite(s) flaked and
       under what job count, and close this phase `[COMPLETED WITH EXCLUSIONS]` with a
       `#### Reasoned Exclusions` table whose Evidence column cites the failing runs. The
       gate-selection work from Phases 2-3 stands on its own either way -- it is the larger of the
-      two savings.
+      two savings. *(not reached)*
+
+**PARTIAL -- interruption record and real finding along the way**:
+
+Two attempted 3-run batches at `--jobs 4` were interrupted or invalidated before completing the
+gate's own required 3-run set:
+
+1. First attempt (2 of 3 runs completed): revealed a genuine finding not anticipated by Phase
+   4's audit -- `test-run-all-parallel.sh` (added in Phase 5, after Phase 4's audit closed)
+   flaked twice, failing its own case3 (`--jobs 3` completing under an absolute 1300ms threshold
+   against a synthetic 3x0.6s fixture). Diagnosed and fixed in a dedicated sub-step (commit "task
+   261 phase 6.1: fix test-run-all-parallel.sh flake found by the flakiness gate"): first
+   hypothesized as sibling-suite contention within run-all.sh's own `--jobs 4` pool (added the
+   suite to `LOAD_SENSITIVE_BASENAMES` to serialize it) -- this alone did NOT fix it (confirmed by
+   a follow-up run where it still flaked while serialized), correctly redirecting the diagnosis to
+   genuine ambient HOST load from unrelated concurrent processes on this shared dev machine
+   (confirmed via `free -h`/`ps aux` showing heavy, growing swap use from other sessions/builds
+   unrelated to this task). The real fix was redesigning the suite's own case3/case4 assertions
+   from absolute-ms thresholds to a load-tolerant relative ratio (parallel time <= 75% of
+   forced-sequential time, measured back-to-back) -- verified 9/9 standalone after the fix.
+2. Second attempt (1 of 3 runs completed, using the LOAD_SENSITIVE_BASENAMES-only fix, before the
+   relative-ratio redesign): the background process was terminated by the harness's own
+   idle-session memory-pressure safeguard (system-wide memory genuinely low from unrelated
+   concurrent sessions/builds -- confirmed via `free -h` showing 17-19 GiB of 31 GiB swap in use
+   both before and after the interruption, i.e. NOT transient). This is an environmental
+   constraint outside this task's control, not a defect in the implementation.
+
+**Remaining work for a successor dispatch**: run the full suite 3 times at `--jobs 4` with the
+CURRENT code (both the serialization addition and the relative-ratio redesign are already
+committed), diff against Phase 1's baseline, inspect the load-sensitive set specifically, and
+apply the gate criterion. Resume command:
+```
+bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet --jobs 4 \
+  --timings /path/to/scratch/run-N.csv
+```
+Run when system memory pressure has genuinely cleared (check `free -h` -- swap usage well below
+the ~17-19 GiB observed during this dispatch's attempts is a reasonable signal), and prefer a
+foreground/blocking invocation with a generous timeout over a backgrounded one if the harness's
+idle-session reap is a concern.
 
 **Timing**: 1.5 hours (dominated by repeated suite runs)
 
