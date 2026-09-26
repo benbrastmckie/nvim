@@ -1,0 +1,18 @@
+{
+  "task_number": 262,
+  "session_id": "sess_1790372264_d11531_262",
+  "dispatch_seq": 8,
+  "phase": "plan",
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/262_reduce_redundant_verify_deploy_passes/plans/01_redeploy-checkpoint-cost-reduction.md",
+      "summary": "6-phase plan for within-checkpoint gate-8 de-duplication in the inter-cycle redeploy checkpoint."
+    }
+  ],
+  "next_steps": "Run /implement 262 to execute the plan",
+  "notes": "Rejects the dispatch's ledger-extension idea (cross-cycle whole-snapshot caching) with the research report's reasoning; decides deploy-headless.sh inline-verify suppression explicitly OUT of scope. Corrects one research premise: deploy-headless.sh DOES write to the source store (line_count auto-repair of agent-system/extensions/*/index-entries.json), so Phase 1's audit precondition is widened accordingly. deploy-ledger-lib.sh is in file_scope but deliberately untouched."
+}

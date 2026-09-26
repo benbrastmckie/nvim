@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790372264_d11531_262",
-  "dispatch_seq": 6,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/262_reduce_redundant_verify_deploy_passes/reports/01_redeploy-checkpoint-cost-reduction.md",
-      "summary": "Rejects whole-findings-snapshot ledger caching (unsafe when it would matter, redundant when safe); recommends a within-checkpoint gate-8 (shell test suite) de-duplication in orchestrate-cycle-plan.sh + deploy-baseline-lib.sh, backed by live-timed measurements (full run 11m03s vs --skip-slow 1m35s), cutting the common-path verify cost by ~40% while preserving the confirm/attribution filters unchanged."
+      "type": "plan",
+      "path": "specs/262_reduce_redundant_verify_deploy_passes/plans/01_redeploy-checkpoint-cost-reduction.md",
+      "summary": "6-phase plan: capture gate 8 (tests/run-all.sh, ~86% of a full verify run) exactly once per redeploy-checkpoint firing and union it identically into pre/post/confirm findings sets, preserving depth symmetry and the (a)/(b)/(c) contract."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's redeploy checkpoint (orchestrate-cycle-plan.sh), verify-deploy.sh's gate 8 (tests/run-all.sh, the shell test suite) is by far the dominant cost (~86% of a full run, measured 9m28s of 11m03s) and checks only agent-system/extensions/core/scripts/tests/** -- content deploy-headless.sh never writes to (it only copies FROM source store INTO .claude/). This makes gate 8's outcome provably invariant across a single checkpoint's own pre/post deploy-headless.sh call, so it can be captured once and shared (unioned) into both the pre- and post-deploy findings sets instead of being recomputed twice, without weakening the pre/post depth-symmetry contract.",
-      "category": "PATTERN",
-      "source_artifact": "specs/262_reduce_redundant_verify_deploy_passes/reports/01_redeploy-checkpoint-cost-reduction.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy.sh", "gate8", "redeploy-checkpoint", "deploy-baseline-lib", "cost-reduction"]
-    },
-    {
-      "content": "Cross-invocation ledger-based caching of a full verify-deploy.sh --findings snapshot (e.g. via deploy-ledger-lib.sh) is unsafe as a general pattern: reaching the ledger's 'run' decision (the only branch that pays for verify passes) requires the tracked content hash to have already changed since the cached snapshot was taken, meaning the cache is stale for exactly the case where it would be used, and would silently convert a deploy-regression-only comparison into a cumulative-drift-since-last-checkpoint comparison. The sub-case where reuse would be safe (hash provably unchanged) is typically already served by a zero-cost skip path, so whole-snapshot caching adds risk without a real win.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/262_reduce_redundant_verify_deploy_passes/reports/01_redeploy-checkpoint-cost-reduction.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["deploy-ledger", "cache-invalidation", "baseline-comparison", "orchestrate-cycle-plan", "correctness-trap"]
-    }
-  ],
-  "next_steps": "Run /plan 262 to create implementation plan"
+  "memory_candidates": [],
+  "next_steps": "Run /implement 262 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1790372264_d11531_262",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6.5,
+    "dependency_waves": [[1], [2], [3], [4, 5], [6]]
+  },
+  "dispatch_seq": 8
 }
