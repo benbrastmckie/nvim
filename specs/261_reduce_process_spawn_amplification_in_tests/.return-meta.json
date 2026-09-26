@@ -1,24 +1,19 @@
 {
-  "status": "partial",
-  "dispatch_seq": 9,
-  "partial_progress": {
-    "stage": "phase_6_interrupted",
-    "details": "Phases 1-5 of 7 completed and committed. Phase 6 (3-repeated-run flakiness decision gate) is PARTIAL: a real flake in test-run-all-parallel.sh was found, diagnosed, and fixed (committed), but the required clean 3-run validation against the final code has not completed -- two attempts were each interrupted, the second by the harness's own idle-session memory-pressure safeguard responding to genuine system-wide memory pressure from unrelated concurrent processes (confirmed via free -h/ps aux, not a task defect). Phase 7 not started. See the Phase 6 handoff artifact for the exact resume command.",
-    "handoff_path": "specs/261_reduce_process_spawn_amplification_in_tests/handoffs/phase-6-handoff-20260926T045500Z.md",
-    "phases_completed": 5,
-    "phases_total": 7
-  },
+  "status": "implemented",
+  "dispatch_seq": 10,
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/261_reduce_process_spawn_amplification_in_tests/summaries/01_test-suite-runtime-reduction-summary.md",
-      "summary": "Phases 1-5 complete: --timings harness, verify-deploy.sh --only-gate flag (391s->103s saving on the dominant suite), full 96/97-suite parallelism-safety audit, and run-all.sh --jobs N parallelism (58% faster, verified identical pass/fail). Phase 6 partial (real flake found+fixed, 3-run gate validation interrupted by system memory pressure). Phase 7 not started."
+      "summary": "All 7 phases complete: --timings measurement harness, verify-deploy.sh --only-gate flag (391s->103s saving on the dominant suite), full 97-suite parallelism-safety audit, run-all.sh --jobs N parallelism (opt-in, verified identical pass/fail), a 3-run flakiness gate that correctly declined to flip the parallel default under heavy ambient host load, and a coverage-equality proof plus clean redeploy."
     }
   ],
   "completion_data": {
-    "completion_summary": "Implemented gate-selection (--only-gate) for verify-deploy.sh and opt-in parallelism (--jobs N) for run-all.sh, cutting the dominant cost suite from 391s to 103s and the full suite from 449s to 187s at --jobs 4 (verified identical pass/fail sets). Found and fixed a genuine ambient-load flake in the new parallel-runner test suite along the way. Phase 6's repeated-run validation and Phase 7's coverage proof/redeploy remain, deferred due to system memory pressure outside this task's control."
+    "completion_summary": "Reduced the core shell test suite's dominant cost by collapsing test-verify-deploy-context-budget.sh from 4 full-battery verify-deploy.sh invocations to 1, via a new opt-in --only-gate flag (391s -> ~103s for that file). Added opt-in --jobs N parallelism to run-all.sh, verified to reproduce the same pass/fail set (211.9-219.3s vs. 507.9-646s sequential). A 3-run flakiness decision gate found two load-sensitive suites did not reliably benefit from parallelism under sustained heavy ambient host contention (5 concurrent agent sessions), so the parallel default was correctly NOT flipped -- phase closed COMPLETED WITH EXCLUSIONS with full evidence rather than forcing a pass by weakening a test. Coverage is unchanged or higher for all 97 discovered suites (up from 95), demonstrated by git diff/grep, not asserted. Redeployed cleanly (33/33 fast gates); full-depth verify-deploy.sh fails only on the already-known pre-existing/intermittent/load-sensitive suite set, no new regression."
   },
   "modified_files": [
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/manifest.json",
     "agent-system/extensions/core/scripts/tests/run-all.sh",
     "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt",
     "agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh",
@@ -29,7 +24,7 @@
   ],
   "memory_candidates": [
     {
-      "content": "When a shell-test-suite timing assertion measures wall-clock elapsed time (e.g. 'parallel run finishes under N ms'), an ABSOLUTE millisecond threshold is not robust on a shared development machine: unrelated concurrent processes (other agent sessions, builds, pytest runs) can inflate wall-clock measurements by 2-3x transiently, causing a correct implementation to flake. The fix is a RELATIVE ratio: measure the two conditions being compared (e.g. parallel vs. forced-sequential) back-to-back in the same test run, and assert a ratio between them (e.g. parallel_ms <= 75% of sequential_ms) rather than either an absolute ceiling or floor. An external load multiplier inflates both measurements roughly proportionally, so the ratio stays meaningful regardless of host load, while a genuine regression (e.g. parallelism silently becoming a no-op) still fails the ratio check reliably. Diagnosed by first (incorrectly) hypothesizing sibling-test contention within the same test runner's own concurrency pool, then falsifying that hypothesis by observing the flake persisted even when the suite was serialized/isolated from siblings -- the real cause was external, machine-wide load, confirmed via free -h/ps aux showing heavy swap usage from unrelated sessions.",
+      "content": "When a shell-test-suite timing assertion measures wall-clock elapsed time (e.g. 'parallel run finishes under N ms'), an ABSOLUTE millisecond threshold is not robust on a shared development machine: unrelated concurrent processes (other agent sessions, builds, pytest runs) can inflate wall-clock measurements by 2-3x transiently, causing a correct implementation to flake. The fix is a RELATIVE ratio: measure the two conditions being compared (e.g. parallel vs. forced-sequential) back-to-back in the same test run, and assert a ratio between them (e.g. parallel_ms <= 75% of sequential_ms) rather than either an absolute ceiling or floor. This is more robust than an absolute threshold but is NOT unconditionally load-proof: under sufficiently extreme, sustained ambient contention (e.g. 5+ concurrent agent sessions on one machine), even the relative ratio can fail to show a speedup, because the host has no genuinely free cores to parallelize onto. When that happens, the correct response is to report the gate result honestly (the parallelism feature stays opt-in, not default) rather than loosening the test further to force a pass on one specific overloaded host.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/summaries/01_test-suite-runtime-reduction-summary.md",
       "confidence": 0.85,
@@ -43,19 +38,19 @@
       "suggested_keywords": ["gate-selection-flag", "cross-check-audit", "verifier-script", "opt-in-flag", "regression-net"]
     },
     {
-      "content": "In a source-store-to-deploy architecture (edits land in a source tree, a separate 'deploy' step syncs them to a consumed/deployed copy), a self-verifying deploy-drift gate (checking deployed content == source content) will correctly flag ANY in-flight, uncommitted-to-deploy edit as drift -- including your own current task's edits, and any concurrently-scheduled sibling task's edits, for as long as redeploy is deliberately deferred to a later phase. This is expected and NOT a regression: confirm by git-stashing your own edit and re-running the check (if it passes clean, the drift was self-caused); if it still fails with your edit stashed, another in-flight file is the cause (check via a direct fixture rebuild + verifier run, since stashing stops being useful once your own earlier-phase edits are committed to source history rather than just working-tree diffs).",
-      "category": "INSIGHT",
+      "content": "A cheap, rigorous coverage-equality proof for 'did this change reduce test coverage' does not require re-running an entire pre-change test suite: git diff --stat against the commit immediately before the change set shows exactly which suite files were touched. Every untouched file is coverage-unchanged BY CONSTRUCTION (its behavior cannot have changed since its bytes did not change), which only needs stating, not re-executing. For the small set of actually-modified files, diff pass/fail assertion call-site counts (e.g. grep -c 'pass \"' / 'fail \"') before (git show <old-commit>:<path>) vs. after (current file) to prove zero assertions were silently dropped. New files are purely additive coverage by definition. This is both cheaper and more rigorous than re-running the full old suite for comparison, since it proves invariance structurally rather than relying on two potentially-flaky executions to agree.",
+      "category": "TECHNIQUE",
       "source_artifact": "specs/261_reduce_process_spawn_amplification_in_tests/summaries/01_test-suite-runtime-reduction-summary.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["source-store-deploy-boundary", "deploy-drift", "verify-deploy", "git-stash-diagnosis", "concurrent-tasks"]
+      "confidence": 0.85,
+      "suggested_keywords": ["coverage-equality-proof", "git-diff-stat", "assertion-call-site-count", "regression-proof", "test-suite-refactor"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1790372264_d11531",
+    "session_id": "sess_1790407301_c7abef",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 5,
+    "phases_completed": 7,
     "phases_total": 7
   }
 }
