@@ -544,6 +544,13 @@ contract. Every other file that mentions the checkpoint (`regeneration-is-manual
 `scripts/deploy-headless.sh`, `scripts/verify-deploy.sh`) cross-references this subsection by path
 rather than restating it.
 
+The checkpoint's own clean-success branches also run a post-deploy reconcile pass that promotes
+any deploy-pending task this exact cycle just unblocked, before this cycle's own status refresh
+and dispatch derivation — see "The Postflight Completion-Deploy Gate" section below's "D6's
+original closure did not account for the identical-dispatch guard" discussion for the full
+mechanism, the paired identical-dispatch streak-freeze backstop, and the marker lifecycle that
+keeps the freeze from arming permanently.
+
 **Trigger**: the union of every task dispatched this cycle's actual `modified_files`, compared
 against the `scope_roots x critical_paths` expansion of
 `context/reference/orchestrator-critical-paths.json` using the directory-prefix overlap predicate
@@ -1024,6 +1031,72 @@ same limitation stated for `check-deploy-freshness.sh`). The Commit-Per-Green-Su
 (`.claude/rules/git-workflow.md`) makes the uncommitted-at-postflight case rare in practice, and
 `scripts/verify-deploy.sh` remains the deep, per-file companion for anyone who needs to check
 beyond commit granularity.
+
+**D6's original closure did not account for the identical-dispatch guard — a second residual,
+now also closed**: the two changes that closed D6 above make the checkpoint retry a deploy-pending
+task on the FOLLOWING cycle, but say nothing about what that following cycle's own dispatch
+derivation does with a task whose inputs have not changed. A deploy-blocked task NECESSARILY
+re-derives a dispatch byte-identical to the one the exit-6 refusal already consumed — that is the
+deterministic signature of its own deploy-gated situation, not evidence of non-convergence — yet
+`orchestrate-cycle-plan.sh`'s identical-dispatch convergence guard (the Fix 2 hashing block and
+its `_idh_streak -ge 2` halt, documented in this file's own identical-dispatch coverage) reads
+that re-derivation as churn and halts the task for the rest of the run. Two individually-correct
+mechanisms — this gate's exit-6 refusal and the identical-dispatch guard — composed into a trap:
+a task the gate refused could go on to be halted by the guard for being finished. Both mechanisms
+stay exactly as strict as before; the composition is what needed a structural fix, not either
+mechanism in isolation.
+
+*Primary fix — a post-deploy reconcile pass inside the checkpoint itself*: `orchestrate-cycle-plan.sh`
+now runs `reconcile-task-status.sh` — the same tool an operator previously had to run by hand
+against a stranded deploy-pending task, and which already makes the correct promotion decision —
+directly inside the Inter-Cycle Redeploy Checkpoint's own already-serialized window, immediately
+after the checkpoint's deploy is confirmed to have landed and BEFORE the cycle's own status
+refresh and dispatch derivation run. It fires on exactly the checkpoint's three clean-success
+branches (a verify-deploy.sh-clean landing; a landing where every post-redeploy finding predates
+the redeploy; a landing where every candidate new finding was confirmed flaky or unrelated to the
+batch) and deliberately never on a failed-to-land deploy or on a confirmed, attributable blocking
+finding — reconciling a task whose extension is not actually fresh yet would be reconciling on
+faith, not evidence. This is the reason the checkpoint's own DEPLOY-PENDING message (below) can
+now truthfully say convergence is automatic: by the time the cycle's status refresh reads
+`current_statuses[$t]`, a deploy-unblocked task has already been promoted to `completed` by this
+reconcile pass, so no second `implement` dispatch is ever derived for it at all — not merely a
+dispatch that would have been halted.
+
+*Backstop — a streak-freeze in the identical-dispatch guard*: for the residual paths the reconcile
+pass cannot conclude (the deploy itself did not land; a confirmed, attributable finding blocks it;
+`reconcile-task-status.sh`'s own phase-accounting backstop refuses the promotion), the guard's Fix
+2 hashing block reads the SAME task's own `deploy_pending` flag directly from its
+`.return-meta.json` — using the identical `lookup_project` / `task_lookup_dir` resolution the
+checkpoint's own `deploy_pending_any` scan already uses — and, when that flag is true and the
+dispatch hash matches the previous cycle's for the same phase, leaves `identical_dispatch_streak`
+at its current persisted value instead of incrementing it. This is a **freeze, never a
+suppression**: the halt threshold itself is completely unmodified, so a task that was never
+deploy-pending, or a task whose marker has since been cleared, is held to exactly the same
+two-strikes rule as before. The freeze is also scoped to the task's OWN marker, never the
+checkpoint's batch-wide `deploy_pending_any` — reading the batch-wide signal instead would let one
+sibling's deploy-pending state mask a genuinely churning task's own repeat, which is precisely the
+kind of guard-weakening this closure must not introduce.
+
+*Marker lifecycle — why an uncleared marker would have quietly retired the guard*: `skill-base.sh`'s
+`skill_postflight_update` sets `deploy_pending` / `deploy_pending_reason` on a refused task's own
+`.return-meta.json` when the completion-deploy gate refuses with exit 6. Before this closure,
+nothing ever cleared it. `update-task-status.sh` now clears both keys at the single chokepoint
+both callers that can ever complete an implement postflight already share — the ordinary
+`skill_postflight_update` path and `reconcile-task-status.sh`'s own direct
+`postflight … implement` call — immediately once that exact transition's completion write
+succeeds, and never on a refusal (a refusal must not clear the record of itself). Without this,
+the streak-freeze above would stay permanently armed for any task that was EVER deploy-pending,
+even long after its extension became fresh again, silently retiring the identical-dispatch guard
+for that task for the rest of its life — a strictly worse outcome than the composition defect this
+closure fixes.
+
+*The corrected message*: the checkpoint's own DEPLOY-PENDING notice (emitted from
+`orchestrate-cycle-postflight.sh`'s `postflight_rc -eq 6` branch) no longer asserts an
+unconditional "no manual action needed" — that assurance did not hold in either incident that
+prompted this closure. It now names the two-outcome structure this section documents: the next
+cycle's checkpoint deploys and then automatically reconciles the task's status, with manual
+action needed only on the residual paths above, where the checkpoint's own named WARNING states
+the remedy.
 
 ## Admission-Time vs. Mid-Flight: A Knowability Test
 

@@ -431,28 +431,29 @@ extension is genuinely stale, and that the emitted text is the corrected one.
 
 ---
 
-### Phase 7: Correct the "D6 — CLOSED" documentation claim [NOT STARTED]
+### Phase 7: Correct the "D6 — CLOSED" documentation claim [COMPLETED]
 
 **Goal**: Stop `batch-orchestration-guardrails.md` asserting a convergence guarantee the composed
 system did not provide, and document the two mechanisms' interaction in one place.
 
 **Tasks**:
-- [ ] In `context/patterns/batch-orchestration-guardrails.md`'s
+- [x] In `context/patterns/batch-orchestration-guardrails.md`'s
       `**Residual — the /orchestrate path (D6) — CLOSED**` subsection, record that the original
       closure did not account for the identical-dispatch guard, and describe the composition
-      defect and its resolution.
-- [ ] Document the post-deploy reconcile pass: where it fires (the three clean-success branches),
+      defect and its resolution. *(completed)*
+- [x] Document the post-deploy reconcile pass: where it fires (the three clean-success branches),
       where it deliberately does not (branches (a) and (b)), and why the placement inherits the
-      existing serialization.
-- [ ] Document the streak-freeze backstop and the settled freeze-vs-suppress decision, including
-      the per-task-marker scoping rule.
-- [ ] Document the marker's lifecycle end-to-end: set by `skill-base.sh` on exit 6, cleared at the
+      existing serialization. *(completed)*
+- [x] Document the streak-freeze backstop and the settled freeze-vs-suppress decision, including
+      the per-task-marker scoping rule. *(completed)*
+- [x] Document the marker's lifecycle end-to-end: set by `skill-base.sh` on exit 6, cleared at the
       completion chokepoint, and why an uncleared marker would have retired the guard for that
-      task.
-- [ ] Add a cross-reference from the `### The Inter-Cycle Redeploy Checkpoint` section to the
-      reconcile pass, so a reader arriving at either section finds the other.
-- [ ] Reference scripts and functions by name, never by line number.
-- [ ] Cite durable anchors only — no task-number references (this file lives outside `specs/**`).
+      task. *(completed)*
+- [x] Add a cross-reference from the `### The Inter-Cycle Redeploy Checkpoint` section to the
+      reconcile pass, so a reader arriving at either section finds the other. *(completed)*
+- [x] Reference scripts and functions by name, never by line number. *(completed: verified every
+      named script/function exists via grep)*
+- [x] Cite durable anchors only — no task-number references (this file lives outside `specs/**`). *(completed: verified via task-reference-patterns.sh, zero matches)*
 
 **Timing**: 0.5 hours
 
