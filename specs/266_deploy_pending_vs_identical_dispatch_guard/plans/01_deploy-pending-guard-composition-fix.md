@@ -529,21 +529,26 @@ completion exercising the repaired path.
 
 ## Testing & Validation
 
-- [ ] **Dispatch item 1**: a task with a complete plan and a `deploy_pending` marker is not halted
+- [x] **Dispatch item 1**: a task with a complete plan and a `deploy_pending` marker is not halted
       by the identical-dispatch guard and converges to `completed` within a single run once the
-      checkpoint's deploy lands (Phase 5 Arm A).
-- [ ] **Dispatch item 2**: a task with a complete plan and no `deploy_pending` marker that
-      genuinely re-derives an identical dispatch twice is still halted (Phase 5 Arms B and D).
-- [ ] **Dispatch item 3**: the completion-deploy gate still refuses with exit 6 when the extension
-      is genuinely stale and no deploy has run (Phase 6).
-- [ ] **Dispatch item 4**: the refusal message is true of the resulting behavior, with before and
-      after text quoted verbatim in the summary (Phases 4, 6, 8).
-- [ ] **Dispatch item 5**: `scripts/tests/` passes, including `test-orchestrate-cycle-postflight.sh`
-      and `test-orchestrate-cycle-plan.sh`, with no test weakened or deleted (Phase 8).
-- [ ] Pre-fix failure evidence recorded for every new arm that claims to reproduce the defect.
-- [ ] `--dry-run` remains fully non-mutating across the new reconcile path.
-- [ ] No file under `.claude/**` was hand-authored; every edit landed in the source store and
-      reached `.claude/` only via the deploy.
+      checkpoint's deploy lands (Phase 5 Arm A). *(verified)*
+- [x] **Dispatch item 2**: a task with a complete plan and no `deploy_pending` marker that
+      genuinely re-derives an identical dispatch twice is still halted (Phase 5 Arms B and D). *(verified)*
+- [x] **Dispatch item 3**: the completion-deploy gate still refuses with exit 6 when the extension
+      is genuinely stale and no deploy has run (Phase 6). *(verified: pre-existing Characterization
+      case plus Phase 1's new Case 1/10 in test-postflight-deploy-gate.sh)*
+- [x] **Dispatch item 4**: the refusal message is true of the resulting behavior, with before and
+      after text quoted verbatim in the summary (Phases 4, 6, 8). *(verified)*
+- [x] **Dispatch item 5**: `scripts/tests/` passes, including `test-orchestrate-cycle-postflight.sh`
+      and `test-orchestrate-cycle-plan.sh`, with no test weakened or deleted (Phase 8). *(verified
+      for both named suites, 100% green; see Phase 8's documented exclusion for 6 pre-existing,
+      unrelated suite failures elsewhere in the repo)*
+- [x] Pre-fix failure evidence recorded for every new arm that claims to reproduce the defect. *(verified: Arms A and C, the two that actually exercise new logic, recorded pre-fix RED evidence in Phase 5's progress file; Arm D's before/after parity is itself the expected, documented outcome)*
+- [x] `--dry-run` remains fully non-mutating across the new reconcile path. *(verified: the
+      reconcile loop is gated on `dry_run != "true"`, matching the checkpoint's own posture)*
+- [x] No file under `.claude/**` was hand-authored; every edit landed in the source store and
+      reached `.claude/` only via the deploy. *(verified: every edit targeted
+      agent-system/extensions/core/**; .claude/ was updated only by deploy-headless.sh in Phase 8)*
 
 ## Artifacts & Outputs
 
