@@ -924,6 +924,34 @@
       ]
     },
     {
+      "path": "project/logic/domain/frame-constraint-landscape.md",
+      "summary": "Task-frame constraint landscape: time-indexed vs ball-indexed quantifiers, the independence matrix, the Saturation/Completion and dense/discrete separations, the four-row strength table (including the open S1 -> S1d row), the carrier-hypothesis pattern, and the ForMathlib siting rule",
+      "category": "domain",
+      "line_count": 241,
+      "load_when": {
+        "agents": [
+          "logic-research-agent",
+          "formal-research-agent"
+        ],
+        "task_types": [
+          "logic",
+          "formal"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "logic",
+      "topics": [
+        "frame",
+        "constraint",
+        "saturation",
+        "completion",
+        "independence",
+        "ball-space",
+        "spherical-completeness",
+        "formathlib-siting"
+      ]
+    },
+    {
       "path": "project/math/category-theory/adjunctions.md",
       "summary": "Adjoint functors and universal properties",
       "category": "domain",

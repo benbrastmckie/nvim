@@ -81,6 +81,37 @@ Location: `specs/literature-index.json` (per-project)
 - **Orphan detection**: If a `doc_id` is not found in the global index, the entry is reported as an orphan (warning logged, no crash).
 - **Override support**: Optional `literature_dir` field overrides `$LITERATURE_DIR` for this project.
 
+### Ids Are Matched Whole; Hazards Attach to Ids
+
+A corpus id is an opaque key, matched **whole**. It is never matched, abbreviated, or grouped by
+its author-year stem. Two ids that share a stem may be entirely different documents, with
+different source files, different `provenance_fidelity`, and different hazards.
+
+A `hazard` field therefore attaches to **the id it is written on**, never to the author-year the id
+happens to start with. Carrying a hazard across a stem match transfers a warning to a document it
+was never about — and, worse, can make a verified document look provisional (or a provisional one
+look verified) to a reader who matched on the stem.
+
+**Worked example.** Both of these are real, distinct entries in one repository sub-index:
+
+| id | document | path under `sources/` | fidelity |
+|----|----------|------------------------|----------|
+| `thomas_1997` | Ehrenfeucht-Fraïssé Games, the Composition Method, and the Monadic Theory of Ordinal Words | `thomas_1997/Thomas_1997_EF_Games_Composition_Monadic.md` | `no_source_pdf` — provisional, hazard-carrying |
+| `thomas_1997_languages_automata` | Languages, Automata, and Logic (handbook chapter) | `thomas_1997_languages/Thomas_1997_Languages_Automata_Logic.md` | `verified_conversion` — source PDF present |
+
+Same author, same year, separate directories, opposite fidelity verdicts. The `no_source_pdf`
+hazard belongs to the first and must not be read onto the second; the second's
+`verified_conversion` stamp must not be read onto the first.
+
+**Practical rules.**
+
+- When two ids share a stem, say so in *both* entries: each entry's `hazard` or `reason` names its
+  own file and states explicitly that the hazard does not attach to the sibling id.
+- Write a `hazard` so it is unambiguous read **in isolation** — a reader may meet it without the
+  sibling entry beside it. Open with the file the hazard is about, not with the verdict.
+- When citing, quote the full id. "Thomas 1997" is not a citation in a corpus that holds two of
+  them.
+
 ## Directory Structure
 
 ```

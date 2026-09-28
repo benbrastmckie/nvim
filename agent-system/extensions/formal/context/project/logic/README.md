@@ -39,6 +39,7 @@ In all logic documentation, use **"sentence letter"** instead of "propositional 
 - `domain/mereology-foundations.md` - Part-whole relations
 - `domain/spatial-domain.md` - Spatial logic
 - `domain/task-semantics.md` - Task-based semantics
+- `domain/frame-constraint-landscape.md` - Task-frame constraint landscape: independence matrix, Saturation/Completion and dense/discrete separations, ForMathlib siting rule
 - `domain/topological-foundations-domain.md` - Topological logic
 
 ### Process Files

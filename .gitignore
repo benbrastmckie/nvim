@@ -72,5 +72,6 @@ specs/literature/**/*.djvu
 specs/literature/.literature.db
 specs/literature/.literature.db.tmp
 # (.claude/scripts/literature-pyenv/ is covered by the blanket /.claude/ rule above)
+agent-system/extensions/literature/scripts/literature-pyenv/
 __pycache__/
 *.pyc

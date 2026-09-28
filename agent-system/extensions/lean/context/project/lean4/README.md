@@ -17,6 +17,7 @@ This directory contains context files for Lean 4 theorem prover development.
 - `standards/lean4-style-guide.md` - Coding style conventions
 - `domain/hard-mode.md` - `--hard` routing, hard-mode agents, and behavioral contracts
 - `tools/comparator-guide.md` - Comparator trust model: what a green result does and does not certify
+- `domain/decidability-provenance.md` - What the MSO/Rabin decidability argument may be cited for, and the finite-model vs finite-presentation distinction
 
 ## For Research
 

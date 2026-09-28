@@ -9,7 +9,8 @@
         "index",
         "schema",
         "per-repo",
-        "global"
+        "global",
+        "whole-id"
       ],
       "keywords": [
         "literature",
@@ -17,10 +18,12 @@
         "schema",
         "doc_id",
         "sub-index",
-        "briefing"
+        "briefing",
+        "whole-id",
+        "hazard"
       ],
-      "summary": "Unified index schema: global Literature/ repo structure, per-repo sub-index (specs/literature-index.json), and runtime resolution",
-      "line_count": 191,
+      "summary": "Unified index schema: global Literature/ repo structure, per-repo sub-index (specs/literature-index.json), runtime resolution, and whole-id matching (hazards attach to ids, never to author-year stems)",
+      "line_count": 222,
       "load_when": {
         "agents": [
           "literature-agent"

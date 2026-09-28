@@ -710,6 +710,30 @@
       ]
     },
     {
+      "path": "project/lean4/domain/decidability-provenance.md",
+      "line_count": 116,
+      "load_when": {
+        "agents": [
+          "lean-implementation-agent",
+          "lean-research-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "What the MSO/Rabin decidability argument may be cited for and what it may not; the frame-class assumption; finite MODEL (refuted) vs finite PRESENTATION (available); no inherited complexity bound",
+      "keywords": [
+        "decidability",
+        "provenance",
+        "rabin",
+        "mso",
+        "finite-model-property",
+        "citation-licence"
+      ]
+    },
+    {
       "path": "project/lean4/domain/challenge-snapshot.md",
       "line_count": 188,
       "load_when": {
@@ -730,6 +754,30 @@
         "statement-fidelity",
         "immutability",
         "r1-vs-r2"
+      ]
+    },
+    {
+      "path": "project/lean4/domain/sentence-translation-contract.md",
+      "line_count": 210,
+      "load_when": {
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "The source-sentence translation contract: the 18-row elimination table, the three rows that are not the obvious operator, the next/prev order caveat, the box-clause discrepancy, and the JSON conformance channel",
+      "keywords": [
+        "lean4",
+        "translation",
+        "elimination",
+        "truth-preservation",
+        "conformance",
+        "modelchecker"
       ]
     }
   ]
