@@ -1,0 +1,27 @@
+{
+  "phase": 6,
+  "phase_name": "Postflight test coverage for the corrected message and marker clearing",
+  "started_at": "2026-09-28T22:15:00Z",
+  "last_updated": "2026-09-28T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add corrected trailing-clause assertion to phase 2's DEPLOY-PENDING case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Confirm exit-6 stale-extension coverage already exists (Characterization case); no duplicate added", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Marker-clearing assertions already added to test-postflight-deploy-gate.sh in Phase 1", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "Add a case asserting exit-6 refusal for a genuinely stale extension",
+      "type": "skipped",
+      "reason": "Already covered end-to-end by the pre-existing Characterization case (dp_candidate_num=709) using build_deploy_stale_fixture; adding a near-duplicate would not increase coverage.",
+      "annotation": "*(completed: deviation — see plan Phase 6 task note)*"
+    }
+  ],
+  "verification": {
+    "bash -n": "clean",
+    "test-orchestrate-cycle-postflight.sh": "128 passed, 0 failed"
+  }
+}

@@ -388,22 +388,30 @@ add an arm for any left uncovered, and record the mapping in the summary.
 
 ---
 
-### Phase 6: Postflight test coverage for the corrected message and marker clearing [NOT STARTED]
+### Phase 6: Postflight test coverage for the corrected message and marker clearing [COMPLETED]
 
 **Goal**: Pin dispatch verification items 3 and 4 — that the exit-6 refusal still fires when the
 extension is genuinely stale, and that the emitted text is the corrected one.
 
 **Tasks**:
-- [ ] In `scripts/tests/test-orchestrate-cycle-postflight.sh`, extend the existing DEPLOY-PENDING
+- [x] In `scripts/tests/test-orchestrate-cycle-postflight.sh`, extend the existing DEPLOY-PENDING
       coverage with an assertion on the corrected trailing clause (a distinctive substring of the
-      new wording), leaving both existing prefix assertions untouched.
-- [ ] Add a case asserting the exit-6 refusal still occurs for a genuinely stale extension: no
+      new wording), leaving both existing prefix assertions untouched. *(completed)*
+- [x] Add a case asserting the exit-6 refusal still occurs for a genuinely stale extension: no
       `state.json` completion write, `deploy_pending: true` written to `.return-meta.json`, and
-      the task left at its in-flight status.
-- [ ] Add the Phase 1 marker-clearing assertions (positive: cleared on a successful completion
+      the task left at its in-flight status. *(completed: deviation — already covered by the
+      pre-existing "Characterization: cycle_modified_files accumulates across a real exit-6
+      deploy-pending postflight refusal" case, which exercises a genuinely stale extension end to
+      end (state.json unchanged, deploy_pending:true recorded). No new case added; verified this
+      pre-existing coverage still passes.)*
+- [x] Add the Phase 1 marker-clearing assertions (positive: cleared on a successful completion
       write with unrelated keys preserved; negative: preserved on an exit-6 refusal) to whichever
       suite covers `update-task-status.sh`; if no such suite exists, add them here and say so in
-      the summary.
+      the summary. *(completed in Phase 1: added as Cases 9-10 in
+      `scripts/tests/test-postflight-deploy-gate.sh`, the suite whose own header already declares
+      it "the fixture-driven regression suite for ... update-task-status.sh's PHASE 0.5 block",
+      rather than `test-update-task-status.sh` — a better-fitting home since it already carries
+      the exact source_dir/source_git_head freshness fixture machinery these assertions need.)*
 
 **Timing**: 0.75 hours
 

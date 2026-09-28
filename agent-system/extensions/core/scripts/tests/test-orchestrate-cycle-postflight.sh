@@ -1847,6 +1847,16 @@ if echo "$LAST_STDERR" | grep -q "DEPLOY-PENDING: task ${dp2_candidate_num}"; th
 else
   fail "phase 2: expected a DEPLOY-PENDING notice on stderr, got: $LAST_STDERR"
 fi
+# Corrected-message assertion: the trailing clause now describes the delivered two-outcome
+# structure (checkpoint deploys and then automatically reconciles this candidate's status) rather
+# than the old, unconditional "no manual action needed" assurance that did not hold in either
+# observed incident. A distinctive substring of the NEW wording, leaving the pre-existing prefix
+# assertion immediately above untouched.
+if echo "$LAST_STDERR" | grep -q "automatically reconciles this task's status"; then
+  pass "phase 2: the DEPLOY-PENDING notice carries the corrected trailing clause (automatic reconcile, not an unconditional 'no manual action needed')"
+else
+  fail "phase 2: expected the corrected trailing clause on the DEPLOY-PENDING notice, got: $LAST_STDERR"
+fi
 if [ "$before_head_710" != "$after_head_710" ] && [ "$after_subject_710" = "task ${dp2_candidate_num}: orchestration paused (cycle 0)" ]; then
   pass "phase 2: the commit message is the paused message, not 'complete implementation'"
 else
