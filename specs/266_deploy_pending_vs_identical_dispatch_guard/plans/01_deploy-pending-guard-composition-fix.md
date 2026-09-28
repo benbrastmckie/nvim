@@ -1,7 +1,7 @@
 # Implementation Plan: Task #266
 
 - **Task**: 266 - deploy_pending vs identical-dispatch guard: composition defect
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/266_deploy_pending_vs_identical_dispatch_guard/reports/01_deploy_pending_vs_identical_dispatch_guard.md`
