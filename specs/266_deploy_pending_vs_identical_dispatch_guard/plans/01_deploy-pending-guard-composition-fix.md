@@ -325,7 +325,7 @@ assurance that did not hold in either observed incident.
 
 ---
 
-### Phase 5: Reproduction and regression tests in test-orchestrate-cycle-plan.sh [NOT STARTED]
+### Phase 5: Reproduction and regression tests in test-orchestrate-cycle-plan.sh [IN PROGRESS]
 
 **Goal**: Pin verification arms 1-3 from the dispatch with a new, additive test group that
 reproduces the composition defect and proves it resolved, while proving the guard still fires for

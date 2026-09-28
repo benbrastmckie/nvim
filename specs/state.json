@@ -1,7 +1,17 @@
 {
   "version": "1.1.0",
-  "next_project_number": 268,
+  "next_project_number": 269,
   "active_projects": [
+    {
+      "project_number": 268,
+      "project_name": "lake_build_guard_false_green_scope_key",
+      "status": "not_started",
+      "task_type": "general",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/lake-build-guard.sh (never .claude/**).\n\nREPORTED DEFECT. During a multi-task /orchestrate run in the BimodalLogic repository, a Lean implementation agent observed lake-build-guard.sh replay a stale result across a differently-scoped build: it reported 'Build completed successfully (1200 jobs)' while writing no .olean for the module actually requested. The agent worked around it by passing --no-share on every subsequent build, and all of its later builds were genuine. A false green is the dangerous direction of wrong for this guard: it would let a broken module pass a gate that believes it built.\n\nDO NOT ASSUME THE DEFECT IS REAL -- REPRODUCE FIRST. The scope_key result-sharing condition that would prevent exactly this replay is ALREADY IMPLEMENTED in the guard and predates the observation. See decide_sharing(), whose scope condition is labelled 'Defect B' and reads: a missing or empty recorded scope_key is treated as NOT shareable (fail closed); and compute_scope_key(), which hashes the invocation's lake argument vector with a NUL-separated sha256. The STALENESS POLICY header block states the five sharing conditions, of which scope_key is condition 3. So this is not simply the known defect recurring.\n\nDETERMINE WHICH OF THESE HOLDS:\n(a) compute_scope_key has a residual normalization gap that lets a scoped build (lake build Foo.Bar) and a full build (lake build) hash to the same key -- e.g. argument-vector construction differing between the two call paths before hashing, so the guard believes the scopes match when they do not;\n(b) the observed replay came from a record written before scope_key existed, and the documented fail-closed branch did not actually fire -- i.e. get_record_field returning something non-empty for an absent key, or the record being read by a path that bypasses decide_sharing;\n(c) the report was a misdiagnosis and some other mechanism produced the appearance of a successful build with no .olean written.\n\nIf (a) or (b), fix at source and add a regression test under agent-system/extensions/core/scripts/tests/ covering the scoped-vs-full collision directly. If (c), record the real cause; a false-green report against this guard should not be left unexplained.\n\nREPRODUCTION ENVIRONMENT. This repository contains no Lean project (no lakefile.toml anywhere under it), so the guard cannot be exercised end to end here. Reproduction needs a real Lean project with a lake build; ~/Projects/BimodalLogic is where the observation occurred and is the natural harness. Treat that checkout as read-only test fixture: land no change there, and note it is a separate repository with its own task system.\n\nNote the guard is deployed into consumer repositories at .claude/scripts/lake-build-guard.sh. Never hand-patch a deployed copy -- fix the source above and redeploy, per the source-store/deploy-boundary rule.",
+      "topic": "core-agent-system",
+      "created": "2026-09-28T21:23:38Z",
+      "last_updated": "2026-09-28T21:23:38Z"
+    },
     {
       "project_number": 250,
       "project_name": "script_corpus_inventory_and_engine_decomposition",
@@ -746,12 +756,12 @@
     {
       "project_number": 266,
       "project_name": "deploy_pending_vs_identical_dispatch_guard",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Deploy-pending completion refusal collides with the identical-dispatch convergence guard",
       "created": "2026-09-26T04:34:55Z",
-      "last_updated": "2026-09-28T21:11:21Z",
+      "last_updated": "2026-09-28T21:11:30Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",

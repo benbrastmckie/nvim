@@ -1,5 +1,5 @@
 ---
-next_project_number: 268
+next_project_number: 269
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 268
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,43,44,51,89,127,139,162,163,167,207,217,223,241,244,255,266 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,43,44,51,89,127,139,162,163,167,207,217,223,241,244,255,266,268 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,136,165,184,199,251,263,265 | 22,44,127,139,162,163,241,266 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 185,250 | 184,199,265 | core-agent-system |
 | 4 | 170 | 51,250,251 | core-agent-system |
@@ -33,7 +33,7 @@ next_project_number: 268
   └─ 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-266 [PLANNED] — Deploy-pending completion refusal collides with the...
+266 [IMPLEMENTING] — Deploy-pending completion refusal collides with the...
   └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
     └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
   └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
@@ -42,6 +42,7 @@ next_project_number: 268
       └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
   └─ 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
     └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh... (see above)
+268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Extensions
 
@@ -73,8 +74,33 @@ next_project_number: 268
 
 ## Tasks
 
+### 268. Lake build guard false green scope key
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/lake-build-guard.sh (never .claude/**).
+
+REPORTED DEFECT. During a multi-task /orchestrate run in the BimodalLogic repository, a Lean implementation agent observed lake-build-guard.sh replay a stale result across a differently-scoped build: it reported 'Build completed successfully (1200 jobs)' while writing no .olean for the module actually requested. The agent worked around it by passing --no-share on every subsequent build, and all of its later builds were genuine. A false green is the dangerous direction of wrong for this guard: it would let a broken module pass a gate that believes it built.
+
+DO NOT ASSUME THE DEFECT IS REAL -- REPRODUCE FIRST. The scope_key result-sharing condition that would prevent exactly this replay is ALREADY IMPLEMENTED in the guard and predates the observation. See decide_sharing(), whose scope condition is labelled 'Defect B' and reads: a missing or empty recorded scope_key is treated as NOT shareable (fail closed); and compute_scope_key(), which hashes the invocation's lake argument vector with a NUL-separated sha256. The STALENESS POLICY header block states the five sharing conditions, of which scope_key is condition 3. So this is not simply the known defect recurring.
+
+DETERMINE WHICH OF THESE HOLDS:
+(a) compute_scope_key has a residual normalization gap that lets a scoped build (lake build Foo.Bar) and a full build (lake build) hash to the same key -- e.g. argument-vector construction differing between the two call paths before hashing, so the guard believes the scopes match when they do not;
+(b) the observed replay came from a record written before scope_key existed, and the documented fail-closed branch did not actually fire -- i.e. get_record_field returning something non-empty for an absent key, or the record being read by a path that bypasses decide_sharing;
+(c) the report was a misdiagnosis and some other mechanism produced the appearance of a successful build with no .olean written.
+
+If (a) or (b), fix at source and add a regression test under agent-system/extensions/core/scripts/tests/ covering the scoped-vs-full collision directly. If (c), record the real cause; a false-green report against this guard should not be left unexplained.
+
+REPRODUCTION ENVIRONMENT. This repository contains no Lean project (no lakefile.toml anywhere under it), so the guard cannot be exercised end to end here. Reproduction needs a real Lean project with a lake build; ~/Projects/BimodalLogic is where the observation occurred and is the natural harness. Treat that checkout as read-only test fixture: land no change there, and note it is a separate repository with its own task system.
+
+Note the guard is deployed into consumer repositories at .claude/scripts/lake-build-guard.sh. Never hand-patch a deployed copy -- fix the source above and redeploy, per the source-store/deploy-boundary rule.
+
+---
+
 ### 266. Deploy-pending completion refusal collides with the identical-dispatch convergence guard
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
