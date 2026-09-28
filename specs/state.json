@@ -746,12 +746,12 @@
     {
       "project_number": 266,
       "project_name": "deploy_pending_vs_identical_dispatch_guard",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Deploy-pending completion refusal collides with the identical-dispatch convergence guard",
       "created": "2026-09-26T04:34:55Z",
-      "last_updated": "2026-09-28T21:05:57Z",
+      "last_updated": "2026-09-28T21:11:21Z",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
@@ -767,6 +767,11 @@
           "path": "specs/266_deploy_pending_vs_identical_dispatch_guard/reports/01_deploy_pending_vs_identical_dispatch_guard.md",
           "type": "report",
           "summary": "Characterizes the deploy_pending vs identical-dispatch guard composition defect: reconcile-task-status.sh runs only once at /orchestrate entry, never after the Inter-Cycle Redeploy Checkpoint's mid-run deploy, so a deploy-unblocked task can only converge via a re-derived identical dispatch that trips the guard. Recommends wiring an automatic reconcile pass into the checkpoint's clean-success path as the primary fix, plus a streak-freeze (not full suppression) backstop on the guard, and correcting the 'no manual action needed' message."
+        },
+        {
+          "path": "specs/266_deploy_pending_vs_identical_dispatch_guard/plans/01_deploy-pending-guard-composition-fix.md",
+          "type": "plan",
+          "summary": "8-phase implementation plan for the deploy_pending vs identical-dispatch guard composition defect."
         }
       ],
       "next_artifact_number": 2,

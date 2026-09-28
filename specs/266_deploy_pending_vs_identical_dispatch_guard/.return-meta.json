@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790629230_3cfae4_266",
-  "dispatch_seq": 1,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/266_deploy_pending_vs_identical_dispatch_guard/reports/01_deploy_pending_vs_identical_dispatch_guard.md",
-      "summary": "Characterizes the deploy_pending vs identical-dispatch guard composition defect: reconcile-task-status.sh runs only once at /orchestrate entry, never after the Inter-Cycle Redeploy Checkpoint's mid-run deploy, so a deploy-unblocked task can only converge via a re-derived identical dispatch that trips the guard. Recommends wiring an automatic reconcile pass into the checkpoint's clean-success path as the primary fix, plus a streak-freeze (not full suppression) backstop on the guard, and correcting the 'no manual action needed' message."
+      "type": "plan",
+      "path": "specs/266_deploy_pending_vs_identical_dispatch_guard/plans/01_deploy-pending-guard-composition-fix.md",
+      "summary": "8-phase plan fixing the deploy_pending/identical-dispatch composition defect: clear the marker at the completion chokepoint, wire an automatic post-deploy reconcile into the checkpoint's three clean-success branches, add a per-task streak-freeze backstop to the guard, correct the DEPLOY-PENDING message, plus reproduction tests, doc correction, and a full gate/deploy pass."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1790629230_3cfae4_266",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 7.5,
+    "dependency_waves": [[1], [2], [3], [4], [5, 6, 7], [8]]
+  },
   "memory_candidates": [
     {
-      "content": "In this repo's /orchestrate engine, reconcile-task-status.sh is invoked exactly once per invocation (at entry, before Move 1's first cycle) -- never per-cycle inside the loop. Any mid-run event that unblocks a stuck task's status (e.g. the Inter-Cycle Redeploy Checkpoint's deploy landing) has no in-loop mechanism to re-run reconcile and pick up the unblock within the same run; only a fresh dispatch re-derivation or a subsequent /orchestrate invocation's entry-reconcile will. When designing a mid-run self-healing hook, the checkpoint boundary (orchestrate-cycle-plan.sh, strictly before Move 2 issues dispatches, the one point with no dispatch in flight) is the safe serialized insertion point, matching the existing Concurrency Posture rationale for why the redeploy trigger itself lives only there.",
+      "content": "When two individually-correct guards in an orchestration loop compose badly (one gates an action, the other detects repetition of that action's inputs), the durable fix is usually to remove the repetition rather than to exempt the repeater from the detector. In this repo's /orchestrate engine, a deploy-gated task necessarily re-derives a byte-identical dispatch -- so the fix is to promote it in-loop via reconcile-task-status.sh at the checkpoint's clean-success branches (no second dispatch ever built) and to keep any guard exemption as a narrow, self-clearing backstop: freeze the streak counter rather than suppress the guard, read the gating marker from the task's OWN .return-meta.json rather than a batch-wide aggregate, and clear the marker at the single chokepoint where the gated write finally succeeds -- otherwise the exemption arms permanently and silently retires the guard for that task.",
       "category": "PATTERN",
-      "source_artifact": "specs/266_deploy_pending_vs_identical_dispatch_guard/reports/01_deploy_pending_vs_identical_dispatch_guard.md",
+      "source_artifact": "specs/266_deploy_pending_vs_identical_dispatch_guard/plans/01_deploy-pending-guard-composition-fix.md",
       "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "reconcile-task-status", "deploy_pending", "checkpoint", "convergence"]
-    },
-    {
-      "content": "The deploy_pending marker this repo's skill-base.sh writes into a refused task's .return-meta.json (on postflight exit 6 from the completion-deploy gate) is never cleared by any writer once set -- confirmed absent from both reconcile-task-status.sh and update-task-status.sh. This is inert once a task reaches a terminal status (terminal tasks are never re-considered), but any future scan that iterates task numbers unconditionally (not filtered by terminal status) and reads this marker, such as orchestrate-cycle-plan.sh's Inter-Cycle Redeploy Checkpoint deploy_pending_any loop, risks stale positives if a task number is ever reused.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/266_deploy_pending_vs_identical_dispatch_guard/reports/01_deploy_pending_vs_identical_dispatch_guard.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["deploy_pending", "return-meta", "state-cleanup", "orchestrate"]
+      "suggested_keywords": ["orchestrate", "guard-composition", "deploy_pending", "identical-dispatch", "reconcile", "streak-freeze"]
     }
   ],
-  "next_steps": "Run /plan 266 to create implementation plan"
+  "next_steps": "Run /implement 266 to execute the plan",
+  "dispatch_seq": 2
 }
