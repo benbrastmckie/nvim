@@ -468,7 +468,7 @@
     },
     {
       "path": "project/lean4/README.md",
-      "line_count": 27,
+      "line_count": 28,
       "load_when": {
         "agents": [
           "lean-research-agent",
