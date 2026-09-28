@@ -286,25 +286,25 @@ deploy-gated re-derivation against the convergence guard — without disabling t
 
 ---
 
-### Phase 4: Correct the DEPLOY-PENDING refusal message [NOT STARTED]
+### Phase 4: Correct the DEPLOY-PENDING refusal message [COMPLETED]
 
 **Goal**: Make the emitted message true of the behavior shipped by Phases 2-3, replacing an
 assurance that did not hold in either observed incident.
 
 **Tasks**:
-- [ ] Quote the current text verbatim from `scripts/orchestrate-cycle-postflight.sh`'s
+- [x] Quote the current text verbatim from `scripts/orchestrate-cycle-postflight.sh`'s
       `postflight_rc -eq 6` branch into the phase's working notes, for the summary's
-      before/after requirement.
-- [ ] Replace the trailing clause so it describes the delivered two-outcome structure: the next
+      before/after requirement. *(completed: before text captured — see summary)*
+- [x] Replace the trailing clause so it describes the delivered two-outcome structure: the next
       cycle's checkpoint deploys **and then reconciles this task's status automatically**, with no
       manual action needed unless that deploy or its verify fails — in which case the checkpoint
-      emits its own named WARNING and states the remedy.
-- [ ] Keep the leading `DEPLOY-PENDING: task ${task_number}` prefix byte-identical — two existing
+      emits its own named WARNING and states the remedy. *(completed)*
+- [x] Keep the leading `DEPLOY-PENDING: task ${task_number}` prefix byte-identical — two existing
       assertions in `scripts/tests/test-orchestrate-cycle-postflight.sh` match on that prefix and
-      must keep passing untouched.
-- [ ] Verify by `grep -rn "no manual action needed"` across the source store that the string has
+      must keep passing untouched. *(completed: 127 passed, 0 failed)*
+- [x] Verify by `grep -rn "no manual action needed"` across the source store that the string has
       exactly one occurrence before the edit and that the replacement leaves no stale copy
-      elsewhere (including in context/ prose that quotes it).
+      elsewhere (including in context/ prose that quotes it). *(completed: exactly one occurrence, in the edited line itself)*
 
 **Timing**: 0.5 hours
 

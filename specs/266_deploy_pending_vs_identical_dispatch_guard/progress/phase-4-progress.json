@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Correct the DEPLOY-PENDING refusal message",
+  "started_at": "2026-09-28T21:35:00Z",
+  "last_updated": "2026-09-28T21:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Quote before text; replace trailing clause with the delivered two-outcome structure; keep prefix byte-identical", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "before_text": "DEPLOY-PENDING: task ${task_number}'s postflight completion write was refused by the completion-deploy gate (exit 6). The task remains at its current in-flight status; convergence is deferred to the next cycle's Inter-Cycle Redeploy Checkpoint (orchestrate-cycle-plan.sh) -- no manual action needed.",
+  "after_text": "DEPLOY-PENDING: task ${task_number}'s postflight completion write was refused by the completion-deploy gate (exit 6). The task remains at its current in-flight status; the next cycle's Inter-Cycle Redeploy Checkpoint (orchestrate-cycle-plan.sh) deploys and then automatically reconciles this task's status -- no manual action needed unless that deploy or its post-deploy verify fails, in which case the checkpoint emits its own named WARNING there and states the remedy.",
+  "verification": {
+    "bash -n orchestrate-cycle-postflight.sh": "clean",
+    "grep no manual action needed": "exactly one occurrence",
+    "test-orchestrate-cycle-postflight.sh": "127 passed, 0 failed"
+  }
+}
