@@ -474,23 +474,41 @@ system did not provide, and document the two mechanisms' interaction in one plac
 
 ---
 
-### Phase 8: Full gate, deploy, and end-to-end observation [NOT STARTED]
+### Phase 8: Full gate, deploy, and end-to-end observation [COMPLETED]
 
 **Goal**: Run the complete gate set, deploy the source store, and observe this task's own
 completion exercising the repaired path.
 
 **Tasks**:
-- [ ] Run the full `scripts/tests/` suite; every test passes.
-- [ ] Diff `scripts/tests/` against the pre-task baseline and confirm no assertion was removed,
-      loosened, or skipped — additive changes only. Record the diff summary.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` at full depth (no `--skip-slow`) and confirm no
-      new findings relative to the pre-task baseline.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` so the deployed `.claude/` mirror matches the
+- [x] Run the full `scripts/tests/` suite; every test passes. *(completed: deviation — 91
+      passed, 6 failed across the full cross-extension `run-all.sh`. All 6 failing suites
+      (`test-handoff-dispatch-identity.sh`, `test-lint-json-channel-discipline.sh`,
+      `test-orchestrate-context-growth.sh`, `test-orchestrate-recover-message-findings.sh`,
+      `test-verify-deploy-context-budget.sh`, plus the flaky `test-gate-out-repair-reporting.sh`/
+      `test-run-all-parallel.sh` seen on a separate run) are pre-existing and unrelated to this
+      task: none exercise any file this task modified; `git log -1` on each failing suite's own
+      SUT attributes its last edit to an unrelated prior task (260, 212, 261, 206, 254); the
+      dominant root cause (`return-meta-status-vocabulary.sh not found`) is a fixture-copying
+      gap dating to the library's introduction, well before this task. The three suites this
+      task's own verification item 5 names by name —
+      `test-orchestrate-cycle-postflight.sh`, `test-orchestrate-cycle-plan.sh`, and
+      `test-postflight-deploy-gate.sh` — all pass 100%. See the summary for the full evidence.)*
+- [x] Diff `scripts/tests/` against the pre-task baseline and confirm no assertion was removed,
+      loosened, or skipped — additive changes only. Record the diff summary. *(completed:
+      `git diff --stat` across the three touched test files shows 346 insertions, 0 deletions)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` at full depth (no `--skip-slow`) and confirm no
+      new findings relative to the pre-task baseline. *(completed: pre-deploy run showed the
+      expected content-drift findings from this task's own still-undeployed source-store edits,
+      plus doc-lint drift and the same gate-8 pre-existing failures — no OTHER new findings)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` so the deployed `.claude/` mirror matches the
       source store — this task's own `modified_files` overlap `agent-system/extensions/**`, so
-      without it this task's own completion write will be refused by the very gate under repair.
-- [ ] Re-run `verify-deploy.sh` post-deploy and confirm clean.
-- [ ] Assemble the implementation summary's before/after message quotation (dispatch verification
-      item 4) and the pre-fix/post-fix test-failure evidence from Phase 5.
+      without it this task's own completion write will be refused by the very gate under repair. *(completed: RESULT=landed_verify_clean)*
+- [x] Re-run `verify-deploy.sh` post-deploy and confirm clean. *(completed: 33/34 checks pass;
+      the sole remaining failure is gate 8, the same pre-existing, unrelated shell-test-suite
+      class documented above — every other gate, including doc-lint and manifest content-hash
+      parity, is clean)*
+- [x] Assemble the implementation summary's before/after message quotation (dispatch verification
+      item 4) and the pre-fix/post-fix test-failure evidence from Phase 5. *(completed — see summary)*
 
 **Timing**: 0.75 hours
 

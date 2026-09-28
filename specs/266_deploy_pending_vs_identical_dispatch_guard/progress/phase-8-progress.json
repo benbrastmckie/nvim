@@ -1,0 +1,31 @@
+{
+  "phase": 8,
+  "phase_name": "Full gate, deploy, and end-to-end observation",
+  "started_at": "2026-09-28T22:35:00Z",
+  "last_updated": "2026-09-28T23:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run full scripts/tests/ suite (run-all.sh across all extensions)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Diff scripts/tests/ against pre-task baseline: additive only", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run verify-deploy.sh full depth pre-deploy", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-run verify-deploy.sh post-deploy", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.1",
+      "description": "Run the full scripts/tests/ suite; every test passes",
+      "type": "altered",
+      "reason": "6 pre-existing, unrelated test-suite failures exist in the repo independent of this task (evidenced via git log showing each failing suite's SUT last touched by an unrelated task: 260, 212, 261, 206, 254; root cause for most is a fixture-copying gap for return-meta-status-vocabulary.sh predating this task). This task's own named suites (test-orchestrate-cycle-postflight.sh, test-orchestrate-cycle-plan.sh, test-postflight-deploy-gate.sh) are 100% green.",
+      "annotation": "*(completed: deviation — see plan Phase 8 task note and summary)*"
+    }
+  ],
+  "verification": {
+    "run-all.sh (all extensions)": "91 passed, 6 failed, 0 skipped, 97 total -- all 6 failures pre-existing/unrelated (evidenced)",
+    "deploy-headless.sh": "RESULT=landed_verify_clean",
+    "verify-deploy.sh post-deploy": "33/34 checks pass; sole failure is the same pre-existing gate-8 class",
+    "diff scripts/tests/": "346 insertions, 0 deletions across the three touched test files"
+  }
+}
