@@ -782,10 +782,16 @@
           "path": "specs/266_deploy_pending_vs_identical_dispatch_guard/plans/01_deploy-pending-guard-composition-fix.md",
           "type": "plan",
           "summary": "8-phase implementation plan for the deploy_pending vs identical-dispatch guard composition defect."
+        },
+        {
+          "path": "specs/266_deploy_pending_vs_identical_dispatch_guard/summaries/01_deploy-pending-guard-composition-fix-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary with before/after DEPLOY-PENDING message text and pre-fix/post-fix test evidence."
         }
       ],
       "next_artifact_number": 2,
-      "session_id": "sess_1790629230_3cfae4"
+      "session_id": "sess_1790629230_3cfae4",
+      "completion_summary": "Fixed the composition defect between the postflight completion-deploy gate and the identical-dispatch convergence guard by wiring a post-deploy reconcile pass into the Inter-Cycle Redeploy Checkpoint's clean-success path, adding a per-task streak-freeze backstop, clearing the deploy_pending marker at the completion chokepoint, correcting the refusal message, and documenting the interaction. All 8 plan phases completed; deployed and verified end-to-end (deploy-headless.sh RESULT=landed_verify_clean; verify-deploy.sh 33/34 post-deploy, sole failure a pre-existing unrelated test-suite class)."
     }
   ],
   "completed_projects": [],

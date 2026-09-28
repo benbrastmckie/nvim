@@ -106,6 +106,7 @@ Note the guard is deployed into consumer repositories at .claude/scripts/lake-bu
 - **Dependencies**: None
 - **Research**: [266_deploy_pending_vs_identical_dispatch_guard/reports/01_deploy_pending_vs_identical_dispatch_guard.md]
 - **Plan**: [266_deploy_pending_vs_identical_dispatch_guard/plans/01_deploy-pending-guard-composition-fix.md]
+- **Summary**: [266_deploy_pending_vs_identical_dispatch_guard/summaries/01_deploy-pending-guard-composition-fix-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
