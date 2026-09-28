@@ -238,34 +238,34 @@ and record the correction.
 
 ---
 
-### Phase 3: Streak-freeze backstop in the identical-dispatch guard [NOT STARTED]
+### Phase 3: Streak-freeze backstop in the identical-dispatch guard [COMPLETED]
 
 **Goal**: For the residual paths where Phase 2's reconcile cannot conclude (deploy failed,
 findings blocked, promotion refused by the phase-accounting backstop), stop charging a
 deploy-gated re-derivation against the convergence guard — without disabling the guard.
 
 **Tasks**:
-- [ ] In `scripts/orchestrate-cycle-plan.sh`'s Fix 2 hashing block, resolve task `$t`'s own task
+- [x] In `scripts/orchestrate-cycle-plan.sh`'s Fix 2 hashing block, resolve task `$t`'s own task
       directory and read `.deploy_pending // false` from its `.return-meta.json`, using the same
       `lookup_project` + `task_lookup_dir` resolution the checkpoint's `deploy_pending_any` scan
-      already uses.
-- [ ] When that flag is true and the hash matches the previous cycle's for the same phase, **do
+      already uses. *(completed)*
+- [x] When that flag is true and the hash matches the previous cycle's for the same phase, **do
       not increment** `identical_dispatch_streak[$t]`: leave it at its current persisted value
       (do not reset it to 1 either — a freeze, not a clear, so a pre-existing genuine streak is
-      preserved across the deploy-gated interruption).
-- [ ] Still write `last_dispatch_hash[$t]` and `last_dispatch_phase[$t]` unchanged, so equality
-      detection for the *next* cycle remains accurate.
-- [ ] Emit a distinct, named stderr notice when the freeze fires, e.g.
+      preserved across the deploy-gated interruption). *(completed)*
+- [x] Still write `last_dispatch_hash[$t]` and `last_dispatch_phase[$t]` unchanged, so equality
+      detection for the *next* cycle remains accurate. *(completed)*
+- [x] Emit a distinct, named stderr notice when the freeze fires, e.g.
       `[orchestrate] IDENTICAL DISPATCH: task #N <phase> content matches the previous one, but the task is deploy-pending — streak frozen at <n>, not charged as churn.`
-      It must be textually distinguishable from the existing streak notice.
-- [ ] Leave the `_idh_streak -ge 2` halt block itself completely unmodified — the freeze acts only
+      It must be textually distinguishable from the existing streak notice. *(completed)*
+- [x] Leave the `_idh_streak -ge 2` halt block itself completely unmodified — the freeze acts only
       on the counter's input, so the halt semantics are untouched for every non-deploy-pending
-      task.
-- [ ] Leave the hash-degradation path (`sha256sum` unavailable, unreadable dispatch file)
-      unmodified.
-- [ ] Add a comment recording the settled decision: freeze, not suppress; per-task marker, never
+      task. *(completed)*
+- [x] Leave the hash-degradation path (`sha256sum` unavailable, unreadable dispatch file)
+      unmodified. *(completed)*
+- [x] Add a comment recording the settled decision: freeze, not suppress; per-task marker, never
       `deploy_pending_any`; and that Phase 1's marker clearing is what keeps the freeze from
-      arming permanently.
+      arming permanently. *(completed)*
 
 **Timing**: 1 hour
 

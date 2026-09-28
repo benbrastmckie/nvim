@@ -2356,21 +2356,60 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # below, so a halt (streak >= 2, just below) can back out cleanly without having charged
   # anything yet. `_idh_streak` stays 0 (never halts) when the hash degrades (sha256sum missing or
   # the just-written file unreadable) -- disabling the guard for this run rather than failing it.
+  #
+  # Streak-freeze backstop (deploy_pending vs. identical-dispatch composition defect): a task
+  # refused by the postflight completion-deploy gate (exit 6) is deploy-blocked and therefore
+  # NECESSARILY re-derives a byte-identical dispatch next cycle -- that is the deterministic
+  # signature of its own deploy-gated situation, not evidence of genuine non-convergence. Freeze,
+  # never suppress: when this task's OWN .return-meta.json carries deploy_pending:true (read
+  # fresh here, via the same lookup_project + task_lookup_dir resolution the checkpoint's
+  # deploy_pending_any scan above already uses -- deliberately NEVER the batch-wide
+  # deploy_pending_any, so a sibling's deploy-pending state can never mask THIS task's genuine
+  # churn) and the hash matches the previous cycle's for the same phase, the streak counter is
+  # left at its current persisted value -- not incremented, and not reset to 1 either, so a
+  # pre-existing genuine streak survives the deploy-gated interruption intact. The `_idh_streak
+  # -ge 2` halt block below is completely unmodified: the freeze acts only on this counter's
+  # input, so halt semantics are untouched for every non-deploy-pending task. The Phase-2 post-
+  # deploy reconcile pass above is the reason this freeze is even needed only as a backstop: once
+  # that reconcile clears deploy_pending (via update-task-status.sh's completion chokepoint), this
+  # per-task read goes back to false and the guard is fully live again for that task -- an
+  # uncleared marker would otherwise arm this freeze permanently.
   _idh_streak=0
   if _idh_hash=$(cycle_plan_dispatch_hash "$dispatch_file"); then
     _idh_prev_hash=$(mt_get --arg t "$t" '.last_dispatch_hash[$t] // ""')
     _idh_prev_phase=$(mt_get --arg t "$t" '.last_dispatch_phase[$t] // ""')
+
+    _idh_deploy_pending="false"
+    _idh_dp_entry="$(lookup_project "$t" 2>/dev/null || true)"
+    if [ -n "$_idh_dp_entry" ] && [ "$_idh_dp_entry" != "null" ]; then
+      _idh_dp_pname="$(echo "$_idh_dp_entry" | jq -r '.project_name // ""' 2>/dev/null || true)"
+      if [ -n "$_idh_dp_pname" ]; then
+        _idh_dp_dir="${PROJECT_ROOT}/$(task_lookup_dir "$t" "$_idh_dp_pname" "$PROJECT_ROOT")"
+        _idh_dp_meta="${_idh_dp_dir}/.return-meta.json"
+        if [ -f "$_idh_dp_meta" ]; then
+          _idh_dp_flag="$(jq -r '.deploy_pending // false' "$_idh_dp_meta" 2>/dev/null || true)"
+          [ "$_idh_dp_flag" = "true" ] && _idh_deploy_pending="true"
+        fi
+      fi
+    fi
+
     if [ -n "$_idh_hash" ] && [ "$_idh_hash" = "$_idh_prev_hash" ] && [ "$g" = "$_idh_prev_phase" ]; then
-      _idh_streak=$(( $(mt_get --arg t "$t" '.identical_dispatch_streak[$t] // 0') + 1 ))
+      if [ "$_idh_deploy_pending" = "true" ]; then
+        _idh_streak=$(mt_get --arg t "$t" '.identical_dispatch_streak[$t] // 0')
+        echo "[orchestrate] IDENTICAL DISPATCH: task #$t $g content matches the previous one, but the task is deploy-pending -- streak frozen at ${_idh_streak}, not charged as churn." >&2
+      else
+        _idh_streak=$(( $(mt_get --arg t "$t" '.identical_dispatch_streak[$t] // 0') + 1 ))
+        mt_set --arg t "$t" --argjson s "$_idh_streak" '.identical_dispatch_streak[$t] = $s'
+        if [ "$_idh_streak" -gt 1 ]; then
+          echo "[orchestrate] IDENTICAL DISPATCH: task #$t $g dispatch content matches the previous one (streak=$_idh_streak) -- ${dispatch_file}" >&2
+        fi
+      fi
     else
       _idh_streak=1
+      mt_set --arg t "$t" --argjson s "$_idh_streak" '.identical_dispatch_streak[$t] = $s'
     fi
     mt_set --arg t "$t" --arg h "$_idh_hash" '.last_dispatch_hash[$t] = $h'
     mt_set --arg t "$t" --arg p "$g" '.last_dispatch_phase[$t] = $p'
-    mt_set --arg t "$t" --argjson s "$_idh_streak" '.identical_dispatch_streak[$t] = $s'
-    if [ "$_idh_streak" -gt 1 ]; then
-      echo "[orchestrate] IDENTICAL DISPATCH: task #$t $g dispatch content matches the previous one (streak=$_idh_streak) -- ${dispatch_file}" >&2
-    fi
   elif [ "$?" -eq 2 ]; then
     echo "[orchestrate] NOTICE: identical-dispatch convergence guard disabled for this run (sha256sum unavailable, or task #$t's just-written dispatch file was unreadable)." >&2
   fi
