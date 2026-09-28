@@ -6,14 +6,15 @@ next_project_number: 268
 
 ## Task Order
 
-*Updated 2026-09-26. Generated from state.json dependency graph.*
+*Updated 2026-09-28. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,29,39,43,44,51,89,127,139,162,163,166,167,177,184,185,199,207,217,223,224,241,244,255,263,265,266 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 45,136,165,250,251,256,264,267 | 22,44,127,139,162,163,166,199,244,263,265,266 | core-agent-system, neovim, opencode, ... |
-| 3 | 170 | 51,250,251 | core-agent-system |
+| 1 | 22,39,43,44,51,89,127,139,162,163,167,207,217,223,241,244,255,266 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,136,165,184,199,251,263,265 | 22,44,127,139,162,163,241,266 | core-agent-system, extensions, file-scope-lifecycle |
+| 3 | 185,250 | 184,199,265 | core-agent-system |
+| 4 | 170 | 51,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -29,29 +30,25 @@ next_project_number: 268
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
 139 [NOT STARTED] — Forbid concurrent-writer history rewrites: rules and agent...
   └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
-166 [NOT STARTED] — Stop research reports drifting from validate-artifact.sh's...
-  └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status... (see above)
-184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
-185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
-  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
-    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+  └─ 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-224 [NOT STARTED] — Add /please: single-use grant, push guard, destructive-git...
 244 [NOT STARTED] — check-task-references.sh: scan repo-appropriate roots instead...
-263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
-  └─ 264 [NOT STARTED] — Route dispatched-agent push requests through the userdecision...
-265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
-  └─ 267 [NOT STARTED] — Suppress deploy-headless.sh inline verify when the caller...
 266 [NOT STARTED] — Deploy-pending completion refusal collides with the...
-  └─ 267 [NOT STARTED] — Suppress deploy-headless.sh inline verify when the caller... (see above)
+  └─ 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
+    └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
+  └─ 199 [NOT STARTED] — Decide and implement the working-tree and build isolation...
+    └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"... (see above)
+    └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
+      └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+  └─ 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
+    └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh... (see above)
 
 ### Extensions
 
-29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 43 [NOT STARTED] — Decide and implement how email safety context actually...
 167 [NOT STARTED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
+  └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 255 [NOT STARTED] — Reconcile typst extension scope ownership and fix...
 
 ### Literature
@@ -61,12 +58,7 @@ next_project_number: 268
 
 ### Neovim
 
-45 [NOT STARTED] — Picker fixes: Global Update extension-repo registry, and...
-
-### Opencode
-
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-256 [NOT STARTED] — Audit residual .opencode wiring in the core source store...
 
 ### File Scope Lifecycle
 
@@ -77,89 +69,9 @@ next_project_number: 268
 
 ### Lean Extension
 
-177 [NOT STARTED] — Add a dependency-tracing recipe to the lean4 extension context
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
-
-### 267. Suppress deploy-headless.sh inline verify when the caller will verify anyway
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 265, Task 266
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-=== THE REDUNDANCY ===
-scripts/deploy-headless.sh runs its OWN inline verification after deploying ("Verifying deploy
-(fast gates; shell test suite deferred)") -- a `verify-deploy.sh --skip-slow` pass, measured at
-~1m35s (deploy-headless.sh:402 `local -a VERIFY_ARGS=(--skip-slow)`, invoked at :406).
-
-When deploy-headless.sh is called from scripts/orchestrate-cycle-plan.sh's Inter-Cycle Redeploy
-Checkpoint, the checkpoint then runs its OWN pre/post/confirm verify-deploy.sh passes. The inline
-pass is duplicated work on that path.
-
-=== THIS WAS ALREADY EVALUATED AND DEFERRED -- CONFRONT THE REASONS, DO NOT REPEAT THEM ===
-The redundant-verify-passes task explicitly considered this and ruled it OUT OF SCOPE for two
-stated reasons. Both are real and both must be answered here, not rediscovered:
-
-1. deploy-headless.sh was not in that task's declared file_scope. (Procedural only -- it IS in
-   this task's file_scope.)
-2. Its exit-3 contract has many callers that depend on it. Exit 3 means RESULT=landed_verify_red:
-   the deploy LANDED but the resulting tree FAILS verification (deploy-headless.sh:96, :108,
-   :160, :454). That exit code is derived from precisely the inline run being discussed, so the
-   inline verify cannot simply be deleted. The checkpoint's own branch contract consumes exit 3.
-
-=== POINTS TO SETTLE -- DO NOT PRE-DECIDE ===
-- Whether to add an OPT-IN `--no-verify` / `--skip-verify` flag that ONLY the redeploy checkpoint
-  passes, leaving every other caller's exit-3 contract byte-identical. Opt-in (rather than
-  opt-out) is the shape that makes "no other caller changes" a structural guarantee instead of a
-  claim, but argue it rather than assuming it.
-- What EXIT CODE a deploy-with-verification-suppressed should return, such that no caller can
-  silently misread it as verified-green. A suppressed verify is not a passed verify, and 0 may be
-  the wrong answer. Consider a distinct RESULT= token alongside whatever code is chosen, matching
-  the existing RESULT= convention at :108.
-- ENUMERATE EVERY CALLER of deploy-headless.sh and state what each does with exit 3. The known
-  set of source files referencing it includes: verify-deploy.sh, orchestrate-cycle-plan.sh,
-  orchestrate-build-dispatch.sh, orchestrate-batch-admit.sh, command-gate-out.sh, skill-base.sh,
-  deploy-root-guard.sh, check-deploy-freshness.sh, check-consumer-freshness.sh,
-  check-extension-docs.sh, validate-state.sh, git-snapshot.sh, task-lock.sh,
-  measure-eager-context.sh, system-defect-record.sh, lib/deploy-baseline-lib.sh, plus tests
-  (test-deploy-verify-wiring.sh, test-postflight-deploy-gate.sh, test-deploy-propagation.sh,
-  test-deploy-orphans.sh, test-deploy-freshness.sh, test-lint-deploy-caller-wrap.sh,
-  test-double-loading-check.sh, test-orchestrate-build-dispatch.sh, test-orchestrate-cycle-plan.sh,
-  test-validate-state.sh) and docs (architecture/extension-system.md,
-  architecture/orchestrate-state-machine.md, reference/utility-scripts-inventory.md). Verify that
-  list rather than trusting it -- some references are mentions, not invocations, and the
-  distinction matters.
-- Whether run-all.sh's new `--only-gate` flag makes a CHEAPER TARGETED inline verify a better
-  answer than suppression outright. A narrowed inline verify keeps the exit-3 contract meaningful
-  while removing most of the duplicated cost, which may dominate suppression on every axis. Weigh
-  it explicitly and record the comparison either way.
-- Note that test-lint-deploy-caller-wrap.sh exists specifically to police how callers wrap
-  deploy-headless.sh; any new flag or exit code must satisfy it, or the lint must be extended
-  deliberately and with reasoning, never relaxed.
-
-=== VERIFICATION ===
-1. Every caller NOT passing the new flag observes byte-identical behavior and exit codes,
-   including exit 3. Demonstrate this, do not assert it.
-2. The redeploy checkpoint's total wall time is measured before and after, on a checkpoint that
-   actually fires (cycle_modified_files touching agent-system/**). Report both numbers.
-3. A deploy whose tree genuinely fails verification is still detectable by the checkpoint --
-   suppression must not create a path where a red tree is treated as green.
-4. The suppressed-verify exit code / RESULT token is distinguishable from verified-green in a
-   test.
-5. scripts/tests/ passes, including test-deploy-verify-wiring.sh,
-   test-lint-deploy-caller-wrap.sh, and test-orchestrate-cycle-plan.sh. No test may be weakened
-   or deleted to make the change pass.
-
-=== FILE-FOOTPRINT DEPENDENCIES (auto-added, overlap-derived) ===
-This task's file_scope overlaps both sibling tasks: scripts/tests/test-deploy-verify-wiring.sh is
-shared with the Gate 8 parallelization task, and scripts/orchestrate-cycle-plan.sh plus
-scripts/tests/test-orchestrate-cycle-plan.sh are shared with the deploy-pending/dispatch-guard
-task. Both edges are serialization-only, not semantic -- rebase on whatever they land.
-
----
 
 ### 266. Deploy-pending completion refusal collides with the identical-dispatch convergence guard
 - **Status**: [NOT STARTED]
@@ -253,7 +165,7 @@ did not hold in either observed case, which makes the emitted message actively m
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 266
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -328,142 +240,84 @@ line 558 on unvalidated parallel safety. No dependency edge is recorded on this 
    test-verify-deploy-gate-selection.sh, and test-run-all-parallel.sh. No test may be weakened,
    skipped, or deleted to make the change pass.
 
----
 
-### 264. Route dispatched-agent push requests through the user_decision relay and sweep the prohibition surface
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 263
+=== ABSORBED 2026-09-28 (path review, fifth pass) from former task 267 (suppress_inline_verify_in_deploy_headless); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
-deploy artifact -- see rules/source-store-deploy-boundary.md).
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
-DEPENDS ON the consent-gated-push design task, for two independent reasons: (1) semantic -- this
-task routes a push REQUEST through the orchestrator and mints the grant its guard consumes, which
-is impossible until that task settles the grant semantics, the invalidation predicate, and the
-wrapper's interface; (2) file-footprint overlap -- both touch rules/pr-prohibition.md and
-manifest.json. Rebase on whatever that task lands.
+=== THE REDUNDANCY ===
+scripts/deploy-headless.sh runs its OWN inline verification after deploying ("Verifying deploy
+(fast gates; shell test suite deferred)") -- a `verify-deploy.sh --skip-slow` pass, measured at
+~1m35s (deploy-headless.sh:402 `local -a VERIFY_ARGS=(--skip-slow)`, invoked at :406).
 
-=== GOAL ===
-Two things: (a) define how an agent running in a fire-and-forget dispatch REQUESTS a push, since it
-cannot call AskUserQuestion itself, and how the user's answer becomes a grant the guard honors;
-(b) sweep the codebase so nothing still asserts the blanket prohibition the companion task
-narrowed.
+When deploy-headless.sh is called from scripts/orchestrate-cycle-plan.sh's Inter-Cycle Redeploy
+Checkpoint, the checkpoint then runs its OWN pre/post/confirm verify-deploy.sh passes. The inline
+pass is duplicated work on that path.
 
-=== (a) THE DISPATCH PATH -- EXTEND THE EXISTING CHANNEL, DO NOT INVENT ONE ===
-A dispatched subagent cannot call AskUserQuestion. Verified concretely: while these tasks were
-being created, the dispatched agent doing so had NO AskUserQuestion tool available -- a
-ToolSearch for it returned "No matching deferred tools found". So the request must be relayed.
+=== THIS WAS ALREADY EVALUATED AND DEFERRED -- CONFRONT THE REASONS, DO NOT REPEAT THEM ===
+The redundant-verify-passes task explicitly considered this and ruled it OUT OF SCOPE for two
+stated reasons. Both are real and both must be answered here, not rediscovered:
 
-The channel exists and this case is already inside its stated remit.
-context/standards/user-decision-contract.md defines an agent-authored `user_decision`, and
-context/formats/return-metadata-file.md (~line 507, "### user_decision (optional)") gives its
-shape: a TOP-LEVEL object on `.return-meta.json`, producer-owned by the agent that sets it,
-`{question, options: [...], recommended, blocking: true|false}`, mirrored onto
-`.orchestrator-handoff.json` when that dispatch also writes one. Later writers must merge without
-touching it. The contract's enumerated qualifying shape 2 is, verbatim: "An external cost or risk
-the user must accept -- spending money, granting a credential, deleting data, or taking an action
-outside this repository that the agent cannot verify is already sanctioned." A push to a remote is
-squarely an action outside this repository. Treat that as the designed home for this request.
+1. deploy-headless.sh was not in that task's declared file_scope. (Procedural only -- it IS in
+   this task's file_scope.)
+2. Its exit-3 contract has many callers that depend on it. Exit 3 means RESULT=landed_verify_red:
+   the deploy LANDED but the resulting tree FAILS verification (deploy-headless.sh:96, :108,
+   :160, :454). That exit code is derived from precisely the inline run being discussed, so the
+   inline verify cannot simply be deleted. The checkpoint's own branch contract consumes exit 3.
 
-VERIFIED RELAY PATH (use these call sites; do not re-derive):
-  - scripts/orchestrate-cycle-postflight.sh, "WORK (e): user_decision relay" (~lines 1073-1096):
-    reads `.orchestrator-handoff.json` first when fresh (`handoff_stale != true`), else
-    `.return-meta.json`; a non-null value sets `verdict="ask_user"`, which "takes precedence over
-    every other signal". The script relays and NEVER resolves (its line-68 comment:
-    "user_decision is RELAYED, never resolved") and explicitly never writes .decisions.json
-    (~line 1088).
-  - skills/skill-orchestrate/SKILL.md Move 3 "Postflight" (~lines 208-213) ACCUMULATES rather than
-    asking per task: `.pending_ask_user = ((.pending_ask_user // []) + [{"task": $tn,
-    "decision": $q}])`.
-  - Move 4 "Branch" batched relay (~lines 256-263): if `pending_ask_user[]` is non-empty, call
-    AskUserQuestion once per entry (question/options/recommended from `.decision`), all batched at
-    the single Move-4 boundary -- "never mid-cycle, never one call per task". Non-blocking
-    decisions proceed on the agent's recommendation and are only surfaced in output.
-  - Move 4 then appends each answer to `specs/{padded}_{project}/.decisions.json` and clears that
-    task's `pending_ask_user`.
-
-*** CRITICAL DESIGN HAZARD -- THE EXISTING REPLAY CHANNEL ***
-`.decisions.json` is not inert. Schema in docs/architecture/handoff-schema.md (~lines 951-991):
-a JSON array of `{question, answer, cycle, timestamp}` at
-`specs/{NNN}_{slug}/.decisions.json`, absent until the first decision is answered, additive only.
-scripts/orchestrate-build-dispatch.sh (~lines 38-42, 367-377, 511-518) READS it when building the
-NEXT dispatch for the same task and emits a `## Prior Decisions` section so the answer is not
-re-asked. That mechanism is desirable for ordinary design decisions and DANGEROUS here: a recorded
-"yes, push" would be replayed into every subsequent dispatch for that task as standing prior
-approval -- which is exactly the failure the requirement forbids ("permission must never be
-inferred from a prior approval in another context"). Resolve this explicitly. Either exclude push
-grants from the `## Prior Decisions` injection, or record them in a form that is self-evidently
-non-reusable (bound to a specific sha/branch/remote that a later cycle cannot satisfy), or both.
-Do NOT leave the default replay behavior in place for this decision class. Whatever is chosen,
-verify it with a test that runs two cycles and confirms the second does not inherit the grant.
-
-Also establish:
-  - How the push request is expressed in the `user_decision` payload with enough specificity that
-    the answer authorizes ONE identifiable push (remote, branch, commit sha, force-or-not). A
-    vague "may I push?" the guard then interprets broadly would defeat the design. The payload's
-    `options`/`recommended` fields must make the exact target legible to the user at the moment
-    they answer -- consent to an unspecified push is not consent.
-  - Whether such a request may ever be `blocking: false`. It almost certainly must always be
-    `blocking: true`, since the non-blocking path proceeds on the AGENT's recommendation without
-    asking -- which would be an agent authorizing its own push. Confirm and enforce this.
-  - The RETURN LEG, which has no existing precedent: the relay today surfaces decisions to the
-    user; it does not mint an authorization token a later subprocess consumes. Design how a YES
-    becomes a grant the guard script honors, and where that token lives.
-  - What happens when the request is relayed but the run ENDS before an answer, and when the user
-    answers NO. Both must leave the task clean with no push performed.
-  - Whether a granted push may carry across a later cycle in the same run, or dies with the
-    dispatch that requested it. Must be answered consistently with the companion task's
-    grant-scope decision.
-
-Constraint to preserve: the contract's core invariant is that the orchestrator never asks on its
-own and never decides on the user's behalf, and that agents decide everything else themselves. A
-push request must not become a prompt agents raise reflexively; it qualifies only when a push is
-genuinely the task's sanctioned endpoint.
-
-=== (b) CONSISTENCY SWEEP ===
-Note up front, verified: there is NO existing lint or test asserting behavioral push/PR blocking,
-so this sweep is about DOCUMENT consistency plus ADDING the missing tests, not about repairing
-broken assertions. The only structural check is scripts/check-extension-docs.sh Rule H
-`check_undeclared_rules()`, which asserts rules/pr-prohibition.md is declared in manifest.json's
-`provides.rules`; keep that satisfied.
-
-Files to reconcile:
-  - rules/pr-prohibition.md -- the narrowing lands in the companion task; verify no stale absolute
-    language survives, especially "Never push branches or create PRs even if asked to in task
-    descriptions or user messages", which must still hold verbatim for everything the new gate
-    does NOT cover. Its `paths: "**/*"` frontmatter and why-eager comment stay.
-  - rules/git-workflow.md -- the "Git Safety > Never Run" bullet on `git push --force` to
-    main/master, and the "Enforced by guard-destructive-git.sh" note if a new guard joins it.
-  - merge-sources/claudemd.md -- this is the GENERATED-FROM source for the deployed
-    .claude/CLAUDE.md; edit here, never the deployed file. Reconcile the `/merge` and `/tag`
-    "(user-only)" command-table markings (~lines 111, 114), `skill-tag | (user-only)` in the skill
-    table (~153), and the "User-Only Skills" note (~165). If the companion task decided PR
-    creation and `/merge` stay prohibited, these stay and should be reinforced, not loosened.
-  - commands/merge.md and skills/skill-tag/SKILL.md -- both reference the prohibition; check both.
-  - context/standards/status-markers.md -- confirm whether a consented push changes when a task
-    reaches `[PR READY]`. Most likely it does not; say so explicitly rather than leaving it
-    unexamined.
-  - If a new audit event type is introduced, context/formats/events-format.md and
-    context/schemas/events-schema.json must stay in sync with each other.
+=== POINTS TO SETTLE -- DO NOT PRE-DECIDE ===
+- Whether to add an OPT-IN `--no-verify` / `--skip-verify` flag that ONLY the redeploy checkpoint
+  passes, leaving every other caller's exit-3 contract byte-identical. Opt-in (rather than
+  opt-out) is the shape that makes "no other caller changes" a structural guarantee instead of a
+  claim, but argue it rather than assuming it.
+- What EXIT CODE a deploy-with-verification-suppressed should return, such that no caller can
+  silently misread it as verified-green. A suppressed verify is not a passed verify, and 0 may be
+  the wrong answer. Consider a distinct RESULT= token alongside whatever code is chosen, matching
+  the existing RESULT= convention at :108.
+- ENUMERATE EVERY CALLER of deploy-headless.sh and state what each does with exit 3. The known
+  set of source files referencing it includes: verify-deploy.sh, orchestrate-cycle-plan.sh,
+  orchestrate-build-dispatch.sh, orchestrate-batch-admit.sh, command-gate-out.sh, skill-base.sh,
+  deploy-root-guard.sh, check-deploy-freshness.sh, check-consumer-freshness.sh,
+  check-extension-docs.sh, validate-state.sh, git-snapshot.sh, task-lock.sh,
+  measure-eager-context.sh, system-defect-record.sh, lib/deploy-baseline-lib.sh, plus tests
+  (test-deploy-verify-wiring.sh, test-postflight-deploy-gate.sh, test-deploy-propagation.sh,
+  test-deploy-orphans.sh, test-deploy-freshness.sh, test-lint-deploy-caller-wrap.sh,
+  test-double-loading-check.sh, test-orchestrate-build-dispatch.sh, test-orchestrate-cycle-plan.sh,
+  test-validate-state.sh) and docs (architecture/extension-system.md,
+  architecture/orchestrate-state-machine.md, reference/utility-scripts-inventory.md). Verify that
+  list rather than trusting it -- some references are mentions, not invocations, and the
+  distinction matters.
+- Whether run-all.sh's new `--only-gate` flag makes a CHEAPER TARGETED inline verify a better
+  answer than suppression outright. A narrowed inline verify keeps the exit-3 contract meaningful
+  while removing most of the duplicated cost, which may dominate suppression on every axis. Weigh
+  it explicitly and record the comparison either way.
+- Note that test-lint-deploy-caller-wrap.sh exists specifically to police how callers wrap
+  deploy-headless.sh; any new flag or exit code must satisfy it, or the lint must be extended
+  deliberately and with reasoning, never relaxed.
 
 === VERIFICATION ===
-1. A dispatched subagent needing a push emits a well-formed top-level `user_decision` with
-   `blocking: true` and does NOT push.
-2. postflight sets `verdict="ask_user"`; Move 3 accumulates it into `pending_ask_user`; Move 4
-   relays it in the batch with the specific push identified (remote, branch, sha, force-or-not).
-3. A NO answer results in no push and a clean task state.
-4. A run ending before an answer results in no push and a clean task state.
-5. A YES produces a grant the guard honors for exactly that push and no other: verify a replay
-   against a different branch, a different remote, and a later commit is each refused.
-6. TWO-CYCLE TEST for the hazard above: after a granted push in cycle N, cycle N+1's dispatch does
-   NOT inherit standing permission via `## Prior Decisions`.
-7. `grep` the source store for remaining blanket-prohibition language; list every file changed and
-   every file deliberately left unchanged, with reasons.
-8. Re-run scripts/tests/ plus the check-*.sh lints, including check-extension-docs.sh Rule H. No
-   test weakened or deleted; any test whose assertion changed is named in the summary with its old
-   and new assertion. New tests must cover items 1-6.
+1. Every caller NOT passing the new flag observes byte-identical behavior and exit codes,
+   including exit 3. Demonstrate this, do not assert it.
+2. The redeploy checkpoint's total wall time is measured before and after, on a checkpoint that
+   actually fires (cycle_modified_files touching agent-system/**). Report both numbers.
+3. A deploy whose tree genuinely fails verification is still detectable by the checkpoint --
+   suppression must not create a path where a red tree is treated as green.
+4. The suppressed-verify exit code / RESULT token is distinguishable from verified-green in a
+   test.
+5. scripts/tests/ passes, including test-deploy-verify-wiring.sh,
+   test-lint-deploy-caller-wrap.sh, and test-orchestrate-cycle-plan.sh. No test may be weakened
+   or deleted to make the change pass.
+
+=== FILE-FOOTPRINT DEPENDENCIES (auto-added, overlap-derived) ===
+This task's file_scope overlaps both sibling tasks: scripts/tests/test-deploy-verify-wiring.sh is
+shared with the Gate 8 parallelization task, and scripts/orchestrate-cycle-plan.sh plus
+scripts/tests/test-orchestrate-cycle-plan.sh are shared with the deploy-pending/dispatch-guard
+task. Both edges are serialization-only, not semantic -- rebase on whatever they land.
+
+=== PATH REVIEW 2026-09-28 (fifth pass): premise update and ordering ===
+The parallelism task this text calls PARTIAL is COMPLETED (2026-09-26): its Phase 6 flakiness gate ran three repeated --jobs 4 full-suite runs, found two load-sensitive suites unreliable only under sustained heavy contention (five concurrent agent sessions), and closed COMPLETED WITH EXCLUSIONS without flipping the serial default. Option (b) above is therefore already satisfied; do not re-run a 3-run gate from scratch -- cite that task's recorded pass/fail sets and carry its named load-sensitive suites forward.
+WHY THIS IS HIGH LEVERAGE (measured 2026-09-28): the Inter-Cycle Redeploy Checkpoint in orchestrate-cycle-plan.sh takes its pre/post (and confirm) findings snapshots at FULL depth -- never --skip-slow -- so Gate 8 (~9 min of an ~11 min run) is paid two to three times per checkpoint fire, on top of deploy-headless.sh's own inline --skip-slow pass (~1.5 min). Every self-modifying task in this repo fires that checkpoint. The checkpoint runs at the one boundary with no dispatch in flight, so ambient agent load there is minimal -- the condition under which --jobs 4 reproduced the sequential pass/fail set exactly.
+PHASES: (A) Gate 8 --jobs (choose a conservative default plus an env override; document; verify --skip-slow and nested-guard paths unchanged); (B) the absorbed inline-verify question in deploy-headless.sh (opt-in flag vs. --only-gate-narrowed inline verify; exit-code contract preserved for every other caller). Serialized behind the deploy-pending/identical-dispatch fix because both touch orchestrate-cycle-plan.sh's checkpoint.
 
 ---
 
@@ -471,7 +325,7 @@ Files to reconcile:
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 139
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).
@@ -651,945 +505,181 @@ source-store regeneration will wipe or a stale reference to something already go
 which and fix the reference. Do not leave a header comment pointing at a file the source store
 does not contain.
 
----
 
-### 262. Reduce redundant verify-deploy passes in the redeploy checkpoint
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 260
-- **Research**: [262_reduce_redundant_verify_deploy_passes/reports/01_redeploy-checkpoint-cost-reduction.md]
-- **Plan**: [262_reduce_redundant_verify_deploy_passes/plans/01_redeploy-checkpoint-cost-reduction.md]
-- **Summary**: [262_reduce_redundant_verify_deploy_passes/summaries/01_redeploy-checkpoint-cost-reduction-summary.md]
+=== ABSORBED 2026-09-28 (path review, fifth pass) from former task 224 (please_grant_integrity_and_git_guards); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+Add a tamper-resistant single-use /please grant mechanism, a new git push guard, and grant checks in the destructive-git guard. Only agent-system/extensions/core/ is edited (hooks/, scripts/tests/, root-files/settings.json and/or merge-sources/settings-hooks.json, context/standards/git-safety.md), never .claude/.
 
-DEPENDS ON the self-clobbering-redeploy task, for two independent reasons: (1) file-footprint
-overlap -- both edit the same ~280-line REDEPLOY CHECKPOINT block of
-scripts/orchestrate-cycle-plan.sh (roughly lines 721-1001); (2) semantic -- if that task adopts
-its candidate fix (b) and invokes the SOURCE-STORE copy of deploy-headless.sh, that changes
-which copy runs and therefore what its internal --skip-slow verify covers, which is a direct
-input to the design here. Rebase on whatever it lands.
+(1) GRANT HOOK. A UserPromptSubmit hook that, when the literal user prompt starts with "/please", writes one grant (request text, timestamp, 10-minute expiry). Research must first verify what the hook payload actually contains (raw "/please ..." text or the expanded command body) and that subagent- or model-generated prompts can never trigger UserPromptSubmit.
 
-=== OBSERVED COST ===
-During a live /orchestrate 257-259 run the Inter-Cycle Redeploy Checkpoint spent roughly 17
-minutes of wall time ON THE CRITICAL PATH of a single run. The checkpoint fires on every
-/orchestrate run whose cycle_modified_files touch agent-system/** -- i.e. every agent-system
-task -- so this is a recurring, not incidental, cost.
+(2) INTEGRITY, TO BE SETTLED IN RESEARCH. "The model must not be able to create grants" and "forged grant file rejected" require a real integrity mechanism: a gitignored file the model can Write to is forgeable. Starting point: an HMAC over each grant using a secret key stored outside the model-reachable/writable paths (or readable only by the hook), plus a PreToolUse guard blocking Write/Edit/Bash writes to the grant file and the key path. State the threat model honestly: a same-user shell process can in principle read any file the hook can read, so this raises the bar rather than proving user intent; name the residual risk. Decide whether the grant belongs outside the repo (e.g. $XDG_STATE_HOME) or in a gitignored in-repo path (the repo .gitignore currently ignores /.claude/ and /specs/tmp; root-files/.gitignore only covers .claude/).
 
-=== CORRECTION: THE OBVIOUS CANDIDATE FIX IS NOT VIABLE AS STATED ===
-THIS IS THE MOST IMPORTANT ITEM IN THIS DESCRIPTION AND IT REDIRECTS THE WHOLE FIX. The defect
-was reported with the candidate fix "cache and reuse the findings snapshot within a single
-checkpoint rather than recomputing it". That does not work, and the code says why. Verified by
-reading the source 2026-09-25:
+(3) MATCHING RULE, TO BE SETTLED IN RESEARCH. Define how the free-text request is matched to the concrete command, e.g. action class (force-push, reset --hard, clean -fd, ...) plus remote/branch extracted from both. Ambiguous or partial matches are refused; one grant covers one action class and one target.
 
-  - THE THREE VERIFY PASSES ARE NOT THREE COPIES OF ONE COMPUTATION.
-    pre_findings  (scripts/orchestrate-cycle-plan.sh:840) is taken BEFORE deploy-headless.sh runs.
-    post_findings (:880) is taken AFTER it runs.
-    They deliberately observe DIFFERENT TREE STATES. Reusing one for the other destroys the
-    baseline comparison outright -- the comparison's entire purpose is to tell a finding this
-    deploy introduced from one that predates it.
+(4) PUSH GUARD. No push guard exists today (rules/pr-prohibition.md is advisory only; root-files/settings.json allow-lists Bash(git:*)). Create a new PreToolUse Bash hook (e.g. hooks/guard-git-push.sh) that blocks git push without a matching unexpired grant, via exit 2 + stderr like guard-destructive-git.sh (permissionDecision: deny is documented-buggy for allow-listed git commands). Research decides whether it also covers gh pr create / glab mr create and how /merge own push stays working.
 
-  - THE CODE ALREADY ARGUES AGAINST TOUCHING THAT PAIR, BY NAME. The comment block at :869-879
-    states the pre/post pair "MUST stay at IDENTICAL depth (both full, no --skip-slow on either
-    side)" and that "an asymmetric pair would make every gate-8 finding look 'new' simply
-    because pre never looked for it, which is a strictly worse bug". Treat that as a constraint
-    to respect, not an obstacle to route around. The full-depth choice is documented as
-    DELIBERATE (the "DEFECT A" note at :868-879), because deploy-headless.sh's own internal
-    verify runs --skip-slow (deploy-headless.sh:402: `local -a VERIFY_ARGS=(--skip-slow)`) and
-    therefore only ever certifies the FAST subset.
+(5) DESTRUCTIVE-GIT GUARD. hooks/guard-destructive-git.sh allows a matched action only with a matching unexpired grant, consuming it on use (mirror the existing .git-snapshot-marker consume-on-use pattern). Without a grant, behavior is unchanged. Preserve the clean-tree early exit and the COMMAND_SCAN quote/comment-stripping; a grant must never exempt the over-staging detectors. Decide where the grant check sits relative to the clean-tree early exit.
 
-  - THE THIRD PASS IS ALREADY GATED AND IS NOT A COMMON-PATH COST. The confirmation re-run
-    (deploy_baseline_confirm_new_findings, :917) sits INSIDE the `new_findings` non-empty branch
-    -- it fires only on the rare would-be-defer path, never on a clean checkpoint. Counting it
-    as one third of a per-checkpoint 3x cost overstates the common-path saving available.
+(6) REGISTRATION. Register the new hooks in the source-store settings file(s) research identifies (PreToolUse Bash hooks currently live in root-files/settings.json; UserPromptSubmit hooks in merge-sources/settings-hooks.json).
 
-  So the actual COMMON-PATH cost is: two full verify-deploy.sh passes, plus deploy-headless.sh's
-  own internal --skip-slow pass. Start from that measurement, not from "three identical runs".
+(7) TESTS in scripts/tests/ following context/standards/shell-script-testing.md and the fixture style of test-guard-destructive-git.sh (hook run as a subprocess against a synthetic dirty repo, asserting exit codes): forged grant rejected, expired grant rejected, grant consumed after one use, mismatched action/target rejected, no-grant behavior unchanged for both guards, writes to grant file and key path blocked.
 
-=== WHERE THE REAL SAVING LIVES: CROSS-CYCLE REUSE ===
-The viable reuse is ACROSS cycles, not within a checkpoint: cycle N's post_findings is, by
-construction, a full-depth snapshot of the same tree state that cycle N+1's pre_findings would
-measure -- PROVIDED nothing changed the tree in between. That proviso is the whole design
-problem and must be established rigorously, not assumed.
+OVERLAP NOTE (no dependency edge, by user decision): the pending history-rewrite predicate work on guard-destructive-git.sh also edits hooks/guard-destructive-git.sh, rules/git-workflow.md and context/standards/git-safety.md. Structure predicate ordering so the two additions compose; the file-footprint admission gate serializes them if run concurrently.
 
-There is an existing mechanism to extend rather than a new one to invent. The durable redeploy
-ledger (scripts/lib/deploy-ledger-lib.sh, consulted at roughly :828-838 via
-deploy_ledger_hash_state / deploy_ledger_read / deploy_ledger_decide, backed by
-specs/.orchestrator-deploy-ledger.json) ALREADY does something structurally identical: it
-carries a content-hash state plus an outcome across invocations and can skip the entire
-deploy+verify body on positive evidence. Extending it to carry the findings snapshot itself,
-keyed on the same hash state, is the natural shape. Evaluate that before designing anything
-new. See context/patterns/batch-orchestration-guardrails.md's "Durable redeploy ledger"
-paragraph for its contract.
+Redeploy afterwards and confirm the hooks fire from the deployed copies.
 
-Preserve the ledger's existing FAIL-SAFE DIRECTION, which is explicit in the code: a
-CANNOTVERIFY hash state or an unreadable ledger both degrade to a "run" decision, never to a
-false skip. Any cache added here must fail the same way -- a stale, missing, or unverifiable
-cached snapshot must cause a fresh verify, never a silently reused one.
+=== ABSORBED 2026-09-17 from former task 225 (/please command, never-list, pr-prohibition exception, docs); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+Add the user-only /please command, its never-list, the pr-prohibition exception, and the CLAUDE.md command-reference entry. Only agent-system/extensions/core/ is edited (commands/please.md, commands/README.md, rules/pr-prohibition.md, merge-sources/claudemd.md), never .claude/. Builds on the grant mechanism and guards from the predecessor task (dependency).
 
-=== THE FLAKY-VS-REAL DISCRIMINATION MUST BE PRESERVED, NOT DELETED ===
-It would be easy to "save" the confirmation run by removing it. Do not. It earns its place and
-did so in the observed run: it correctly classified a `gate8 budget-bound` finding as FLAKY,
-which prevented a spurious batch deferral. scripts/lib/deploy-baseline-lib.sh:77-83 documents
-the motivation -- the checkpoint runs a full deploy plus the entire shell test suite
-immediately before taking its post snapshot, which is itself enough ambient load to flake a
-load-sensitive test in that same suite (observed: test-lake-build-guard.sh). "A gate that just
-self-inflicted memory pressure cannot trust a single post-load snapshot to tell flaky from
-real." If the deploy+verify sequence is restructured, check whether that self-inflicted-load
-premise still holds, and say so explicitly either way.
+(1) commands/please.md, user-only, modeled on commands/merge.md and commands/tag.md: authorizes one otherwise-blocked action per invocation (e.g. "/please force-push main to origin"). Parse the requested action; show the exact command and its effect (for pushes: local vs remote SHAs); confirm with AskUserQuestion before any irreversible step; prefer safe forms (--force-with-lease=<ref>:<observed remote SHA> over --force); do only the literal request; log the action to specs/events.jsonl via scripts/events-append.sh. Caveat to state in the command: the grant proves the user typed /please, not that the command the agent then runs is the one meant, so the confirmation step is mandatory for anything irreversible.
 
-Likewise preserve the ATTRIBUTION filter (deploy_baseline_unattributable_findings) and its
-fail-safe direction: a finding naming no identifier at all is NEVER dropped and stays blocking.
+(2) NEVER-LIST, refused regardless of wording and enforced in the command: credential/secret access, deletion outside the repo, .git internals, disabling/editing/removing hooks or hook settings.
 
-=== ADJACENT, DECIDE IN OR OUT EXPLICITLY ===
-Whether deploy-headless.sh's own internal --skip-slow verify can be suppressed when the
-checkpoint is about to run a full-depth verify of its own anyway. That would remove a whole pass
-from the common path. Weigh it against the fact that deploy-headless.sh's exit 3 (deploy landed,
-inline verify reported failures) is part of the checkpoint's documented branch contract and is
-derived from precisely that internal run -- suppressing it changes an exit code other callers
-may depend on. deploy-headless.sh has many other callers; check them before proposing this.
+(3) rules/pr-prohibition.md: add a /please exception scoped to the single action of that one invocation, reconciled explicitly with the existing "never push even if asked in user messages" language.
 
-=== VERIFICATION ===
-1. Measure the checkpoint's wall time before and after, on a checkpoint that actually fires
-   (cycle_modified_files touching agent-system/**). Report both numbers; do not claim an
-   improvement without them.
-2. A clean checkpoint with an unchanged tree reuses the cached snapshot and skips a verify pass.
-3. A checkpoint whose tree DID change between cycles does NOT reuse, and takes a fresh
-   pre-snapshot.
-4. An unreadable/absent/stale cache degrades to a fresh verify (fail-safe), never to a reuse.
-5. A genuinely new finding still defers the batch, with the defer_ledger detail naming it.
-6. A flaky finding is still correctly classified as flaky and does NOT defer -- reproduce the
-   gate8 budget-bound case or an equivalent.
-7. A pre-existing finding present in both snapshots still proceeds loudly via branch (c) with
-   its verify_deploy_baseline_notices entry.
-8. Re-run scripts/tests/ for orchestrate-cycle-plan.sh and the deploy/baseline tests. No test
-   may be weakened or deleted to make the change pass.
+(4) merge-sources/claudemd.md: add a /please row to the Command Reference table beside /tag and /merge, marked user-only; add a row to commands/README.md.
 
----
+Redeploy and confirm the generated .claude/CLAUDE.md shows the new row.
 
-### 261. Reduce process-spawn amplification in the shell test suite
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [261_reduce_process_spawn_amplification_in_tests/reports/01_test-suite-performance-baseline.md]
-- **Plan**: [261_reduce_process_spawn_amplification_in_tests/plans/01_test-suite-runtime-reduction.md]
-- **Summary**: [261_reduce_process_spawn_amplification_in_tests/summaries/01_test-suite-runtime-reduction-summary.md]
+=== ABSORBED 2026-09-28 (path review, fifth pass) from former task 264 (relay_push_consent_through_user_decision); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md).
 
-LOWER PRIORITY THAN the self-clobbering-redeploy task and the redundant-verify-deploy-passes
-task. Independent of both -- no file-scope overlap, no dependency edge.
+DEPENDS ON the consent-gated-push design task, for two independent reasons: (1) semantic -- this
+task routes a push REQUEST through the orchestrator and mints the grant its guard consumes, which
+is impossible until that task settles the grant semantics, the invalidation predicate, and the
+wrapper's interface; (2) file-footprint overlap -- both touch rules/pr-prohibition.md and
+manifest.json. Rebase on whatever that task lands.
 
-=== SCOPE CORRECTION UP FRONT: THIS IS NOT WHAT MADE THE OBSERVED RUN SLOW ===
-Record this so nobody later mis-attributes the incident. During the live /orchestrate 257-259
-run, roughly 17 minutes was lost in the Inter-Cycle Redeploy Checkpoint. THE SHELL TEST SUITE
-WAS NOT THE CAUSE: it is gate 8, and it is DEFERRED via --skip-slow on the orchestrate critical
-path (deploy-headless.sh:402, `local -a VERIFY_ARGS=(--skip-slow)`, whose own documentation
-says --skip-slow "defers gate 8, the shell test suite, and nothing else"). This task is a
-standalone developer-experience improvement for anyone running the suite directly or running a
-full-depth verify, not a fix for the observed stall.
+=== GOAL ===
+Two things: (a) define how an agent running in a fire-and-forget dispatch REQUESTS a push, since it
+cannot call AskUserQuestion itself, and how the user's answer becomes a grant the guard honors;
+(b) sweep the codebase so nothing still asserts the blanket prohibition the companion task
+narrowed.
 
-=== MEASURED CHARACTERISTICS ===
-The suite has heavy process-spawn amplification. Concretely:
+=== (a) THE DISPATCH PATH -- EXTEND THE EXISTING CHANNEL, DO NOT INVENT ONE ===
+A dispatched subagent cannot call AskUserQuestion. Verified concretely: while these tasks were
+being created, the dispatched agent doing so had NO AskUserQuestion tool available -- a
+ToolSearch for it returned "No matching deferred tools found". So the request must be relayed.
 
-  scripts/tests/test-force-phases.sh -- 530 lines, but 46 subprocess invocations of heavy
-  scripts: 14x state-write.sh, 10x orchestrate-cycle-plan.sh, 10x orchestrate-stage5-postflight.sh,
-  plus skill-base.sh, task-lock.sh, parse-command-args.sh. Each re-exec re-sources 5+ libraries
-  and re-parses state.json from scratch.
+The channel exists and this case is already inside its stated remit.
+context/standards/user-decision-contract.md defines an agent-authored `user_decision`, and
+context/formats/return-metadata-file.md (~line 507, "### user_decision (optional)") gives its
+shape: a TOP-LEVEL object on `.return-meta.json`, producer-owned by the agent that sets it,
+`{question, options: [...], recommended, blocking: true|false}`, mirrored onto
+`.orchestrator-handoff.json` when that dispatch also writes one. Later writers must merge without
+touching it. The contract's enumerated qualifying shape 2 is, verbatim: "An external cost or risk
+the user must accept -- spending money, granting a credential, deleting data, or taking an action
+outside this repository that the agent cannot verify is already sanctioned." A push to a remote is
+squarely an action outside this repository. Treat that as the designed home for this request.
 
-  Measured wall times: test-force-phases.sh 5.0s; test-orchestrate-triage-classify.sh 2.5s.
+VERIFIED RELAY PATH (use these call sites; do not re-derive):
+  - scripts/orchestrate-cycle-postflight.sh, "WORK (e): user_decision relay" (~lines 1073-1096):
+    reads `.orchestrator-handoff.json` first when fresh (`handoff_stale != true`), else
+    `.return-meta.json`; a non-null value sets `verdict="ask_user"`, which "takes precedence over
+    every other signal". The script relays and NEVER resolves (its line-68 comment:
+    "user_decision is RELAYED, never resolved") and explicitly never writes .decisions.json
+    (~line 1088).
+  - skills/skill-orchestrate/SKILL.md Move 3 "Postflight" (~lines 208-213) ACCUMULATES rather than
+    asking per task: `.pending_ask_user = ((.pending_ask_user // []) + [{"task": $tn,
+    "decision": $q}])`.
+  - Move 4 "Branch" batched relay (~lines 256-263): if `pending_ask_user[]` is non-empty, call
+    AskUserQuestion once per entry (question/options/recommended from `.decision`), all batched at
+    the single Move-4 boundary -- "never mid-cycle, never one call per task". Non-blocking
+    decisions proceed on the agent's recommendation and are only surfaced in output.
+  - Move 4 then appends each answer to `specs/{padded}_{project}/.decisions.json` and clears that
+    task's `pending_ask_user`.
 
-  72 test files totalling 1.7MB. Largest: test-orchestrate-cycle-plan.sh at 3,684 lines.
+*** CRITICAL DESIGN HAZARD -- THE EXISTING REPLAY CHANNEL ***
+`.decisions.json` is not inert. Schema in docs/architecture/handoff-schema.md (~lines 951-991):
+a JSON array of `{question, answer, cycle, timestamp}` at
+`specs/{NNN}_{slug}/.decisions.json`, absent until the first decision is answered, additive only.
+scripts/orchestrate-build-dispatch.sh (~lines 38-42, 367-377, 511-518) READS it when building the
+NEXT dispatch for the same task and emits a `## Prior Decisions` section so the answer is not
+re-asked. That mechanism is desirable for ordinary design decisions and DANGEROUS here: a recorded
+"yes, push" would be replayed into every subsequent dispatch for that task as standing prior
+approval -- which is exactly the failure the requirement forbids ("permission must never be
+inferred from a prior approval in another context"). Resolve this explicitly. Either exclude push
+grants from the `## Prior Decisions` injection, or record them in a form that is self-evidently
+non-reusable (bound to a specific sha/branch/remote that a later cycle cannot satisfy), or both.
+Do NOT leave the default replay behavior in place for this decision class. Whatever is chosen,
+verify it with a test that runs two cycles and confirms the second does not inherit the grant.
 
-  No fixture reuse. No parallelism.
+Also establish:
+  - How the push request is expressed in the `user_decision` payload with enough specificity that
+    the answer authorizes ONE identifiable push (remote, branch, commit sha, force-or-not). A
+    vague "may I push?" the guard then interprets broadly would defeat the design. The payload's
+    `options`/`recommended` fields must make the exact target legible to the user at the moment
+    they answer -- consent to an unspecified push is not consent.
+  - Whether such a request may ever be `blocking: false`. It almost certainly must always be
+    `blocking: true`, since the non-blocking path proceeds on the AGENT's recommendation without
+    asking -- which would be an agent authorizing its own push. Confirm and enforce this.
+  - The RETURN LEG, which has no existing precedent: the relay today surfaces decisions to the
+    user; it does not mint an authorization token a later subprocess consumes. Design how a YES
+    becomes a grant the guard script honors, and where that token lives.
+  - What happens when the request is relayed but the run ENDS before an answer, and when the user
+    answers NO. Both must leave the task clean with no push performed.
+  - Whether a granted push may carry across a later cycle in the same run, or dies with the
+    dispatch that requested it. Must be answered consistently with the companion task's
+    grant-scope decision.
 
-THE FULL SUITE WAS NOT TIMED. Do not carry forward any total-runtime figure that was not
-measured. Measuring the full suite, and identifying which files actually dominate it, is the
-FIRST piece of work here -- the two timed files above are a sample, and optimizing them
-specifically would be premature without knowing whether they are representative.
+Constraint to preserve: the contract's core invariant is that the orchestrator never asks on its
+own and never decides on the user's behalf, and that agents decide everything else themselves. A
+push request must not become a prompt agents raise reflexively; it qualifies only when a push is
+genuinely the task's sanctioned endpoint.
 
-=== DIRECTIONS TO EVALUATE (none pre-selected) ===
-  - Fixture reuse: build a state.json fixture once per test file (or per suite) rather than
-    re-deriving it per assertion. Establish what isolation each test actually needs before
-    sharing anything -- a shared fixture that leaks state between assertions trades a slow suite
-    for a flaky one, which is strictly worse.
-  - In-process helpers: for the highest-count callees (state-write.sh at 14 invocations in one
-    file), evaluate sourcing a library function instead of re-exec'ing the script. Note this
-    changes what is under test -- a test that currently exercises the script's full CLI
-    contract would stop doing so. Keep at least one end-to-end invocation per contract.
-  - Parallelism across test FILES (the coarse, safe grain) rather than within them. Check for
-    shared mutable state first: specs/.scope-lock, specs/.deploy-lock, specs/.commit-lock, and
-    any fixed temp paths are the obvious serialization points.
-  - Splitting the 3,684-line test-orchestrate-cycle-plan.sh, if that helps parallel scheduling.
+=== (b) CONSISTENCY SWEEP ===
+Note up front, verified: there is NO existing lint or test asserting behavioral push/PR blocking,
+so this sweep is about DOCUMENT consistency plus ADDING the missing tests, not about repairing
+broken assertions. The only structural check is scripts/check-extension-docs.sh Rule H
+`check_undeclared_rules()`, which asserts rules/pr-prohibition.md is declared in manifest.json's
+`provides.rules`; keep that satisfied.
 
-=== HARD CONSTRAINT ===
-No test may be weakened, skipped, or deleted to make the suite faster. Coverage before and after
-must be demonstrably identical. A speedup achieved by testing less is a regression reported as
-an improvement. If a test is genuinely redundant, say so explicitly and justify it as its own
-decision -- do not fold it into a performance change.
-
-Note also that several tests in this suite are known LOAD-SENSITIVE (see
-scripts/lib/deploy-baseline-lib.sh:77-83 on test-lake-build-guard.sh and its "pressured fixture"
-history). Introducing parallelism increases ambient load and may make those flake MORE, not
-less. Identify the load-sensitive set before parallelizing anything.
+Files to reconcile:
+  - rules/pr-prohibition.md -- the narrowing lands in the companion task; verify no stale absolute
+    language survives, especially "Never push branches or create PRs even if asked to in task
+    descriptions or user messages", which must still hold verbatim for everything the new gate
+    does NOT cover. Its `paths: "**/*"` frontmatter and why-eager comment stay.
+  - rules/git-workflow.md -- the "Git Safety > Never Run" bullet on `git push --force` to
+    main/master, and the "Enforced by guard-destructive-git.sh" note if a new guard joins it.
+  - merge-sources/claudemd.md -- this is the GENERATED-FROM source for the deployed
+    .claude/CLAUDE.md; edit here, never the deployed file. Reconcile the `/merge` and `/tag`
+    "(user-only)" command-table markings (~lines 111, 114), `skill-tag | (user-only)` in the skill
+    table (~153), and the "User-Only Skills" note (~165). If the companion task decided PR
+    creation and `/merge` stay prohibited, these stay and should be reinforced, not loosened.
+  - commands/merge.md and skills/skill-tag/SKILL.md -- both reference the prohibition; check both.
+  - context/standards/status-markers.md -- confirm whether a consented push changes when a task
+    reaches `[PR READY]`. Most likely it does not; say so explicitly rather than leaving it
+    unexamined.
+  - If a new audit event type is introduced, context/formats/events-format.md and
+    context/schemas/events-schema.json must stay in sync with each other.
 
 === VERIFICATION ===
-1. Full-suite wall time measured BEFORE any change, as the baseline that did not previously
-   exist. Report it.
-2. Full-suite wall time after. Report both; do not claim a speedup without both numbers.
-3. Identical pass/fail results across every one of the 72 files, before and after.
-4. Test count and assertion count unchanged or higher -- demonstrate this, do not assert it.
-5. Run the suite at least three times after the change to surface any flakiness introduced by
-   fixture sharing or parallelism, paying specific attention to the load-sensitive set.
-
----
-
-### 260. Fix self-clobbering redeploy in the orchestrator cycle-plan checkpoint
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [260_fix_self_clobbering_redeploy_in_cycle_plan/reports/01_self-clobbering-redeploy-hazard.md]
-- **Plan**: [260_fix_self_clobbering_redeploy_in_cycle_plan/plans/01_function-wrap-deploy-callers.md]
-- **Summary**: [260_fix_self_clobbering_redeploy_in_cycle_plan/summaries/01_function-wrap-deploy-callers-summary.md]
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-=== OBSERVED FAILURE, IN A REAL RUN ===
-During a live /orchestrate 257-259 run, the Inter-Cycle Redeploy Checkpoint in
-scripts/orchestrate-cycle-plan.sh invoked deploy-headless.sh, which regenerates
-.claude/scripts/orchestrate-cycle-plan.sh WHILE THAT VERY SCRIPT WAS MID-EXECUTION. bash reads
-scripts incrementally by byte offset, so execution resumed inside the newly-written file at a
-stale offset and died with:
-
-    .claude/scripts/orchestrate-cycle-plan.sh: line 998: o: unbound variable
-
-THIS IS NOT A CODE BUG, AND THAT WAS VERIFIED, NOT ASSUMED. The deployed and source-store copies
-were byte-identical (diff clean), and line 998 is:
-
-    '.redeploy_skip_notices += [$entry]'
-
--- inside SINGLE quotes, where bash never expands $o. There is no $o anywhere in the file. The
-error is an artifact of bash resuming into a rewritten file, not of any expression in it.
-
-Consequence: the entire cycle was lost. Empty plan JSON, no dispatch rows, cycle_count stuck
-at 3.
-
-INTERMITTENCY IS THE DEFINING PROPERTY AND MUST SHAPE THE VERIFICATION STRATEGY. Observed once;
-a subsequent re-run happened to survive. The failure depends on the byte layout of the rewritten
-file relative to bash's current read offset, so it is NOT reliably reproducible on demand. Do
-NOT treat "I could not reproduce it" as evidence the defect is absent, and do NOT gate the fix
-on producing a reproducer. If a reproducer is wanted, the honest route is a synthetic one: a
-small harness script that rewrites its own file mid-execution with content of a different
-length, which demonstrates the bash behaviour directly without depending on the orchestrator's
-timing.
-
-=== THE CALL SITE ===
-scripts/orchestrate-cycle-plan.sh, inside the REDEPLOY CHECKPOINT block (roughly lines 721-1001):
-
-    bash "$SCRIPT_DIR/deploy-headless.sh" >&2 || deploy_exit=$?
-
-$SCRIPT_DIR here is the DEPLOYED .claude/scripts directory -- the same directory
-deploy-headless.sh is about to overwrite, including the running script itself.
-
-=== PRIOR ART ALREADY IN-TREE -- READ THIS BEFORE DESIGNING ANYTHING ===
-The hazard class is ALREADY RECOGNIZED in this codebase, but was mitigated ad hoc for exactly
-one script. scripts/deploy-headless.sh:140-141 carries:
-
-    # specs/.commit-lock/ (see scripts/git-commit-scoped.sh). Implemented inline, WITHOUT sourcing
-    # scripts/task-lock.sh: this script is about to overwrite the deployed copy of task-lock.sh
-
-and its header at :335-337 records the same reasoning a second time for a second helper. So the
-"a deploy overwrites the files the deploying process still needs" problem was understood and
-worked around case by case. TREAT THAT COMMENT AS PRIOR ART FOR THE MITIGATION, NOT AS A
-PRECEDENT FOR ANOTHER AD HOC PATCH. A third one-off special case at the cycle-plan call site
-would leave the class open for the next caller. Generalize.
-
-=== HAZARD-CLASS SURVEY IS IN SCOPE ===
-Do not fix only the one observed call site. Survey every deployed script that can trigger a
-deploy of itself or of a helper it still needs afterwards. Sites referencing deploy-headless.sh
-in the source store include, at minimum:
-
-    scripts/command-gate-out.sh
-    scripts/skill-base.sh
-    scripts/orchestrate-batch-admit.sh
-    scripts/orchestrate-build-dispatch.sh
-    scripts/task-lock.sh
-    scripts/orchestrate-cycle-plan.sh   (the observed site)
-    scripts/git-snapshot.sh
-    scripts/validate-state.sh
-    scripts/verify-deploy.sh
-    scripts/check-deploy-freshness.sh
-    scripts/check-consumer-freshness.sh
-    scripts/deploy-root-guard.sh
-    scripts/system-defect-record.sh
-    scripts/measure-eager-context.sh
-    scripts/check-extension-docs.sh
-
-That list came from a `grep -rln deploy-headless.sh` and is a STARTING POINT, not a verified
-hazard list -- most of those references are documentation strings, remedy messages, or checks
-that never actually execute a deploy. Part of this task is separating the references that
-GENUINELY INVOKE a deploy from within a running deployed script (the true hazard set) from the
-ones that merely mention the path. Report that classification; do not silently narrow to the
-one site.
-
-=== CANDIDATE FIXES -- EVALUATE, DO NOT ASSUME ===
-None of these is pre-selected. Picking among them, or finding a better one, is the research and
-planning work.
-
-(a) Re-exec the checkpoint from a copy placed outside the deploy tree before deploying, so the
-    running image is never the one being rewritten. Consider where that copy lives, how it is
-    cleaned up, and whether re-exec disturbs the mutex/lock state the checkpoint holds.
-
-(b) Invoke the SOURCE-STORE copy, agent-system/extensions/core/scripts/deploy-headless.sh,
-    instead of the deployed one. THIS IS THE MANUAL WORKAROUND THE OPERATOR USED SUCCESSFULLY
-    during the incident, so it has one real datapoint behind it. But note it only moves the
-    DEPLOYING script out of the rewrite path -- the CALLING script (orchestrate-cycle-plan.sh)
-    is still the deployed copy and is still being overwritten mid-execution, so establish
-    whether this actually closes the hole or merely made one observed run survive. Also note
-    deploy-headless.sh:304-312 documents a deliberate reason some of its internal calls use the
-    DEPLOYED copy (a root-computation assumption valid only two levels under a deployed
-    scripts/ tree); a source-store invocation may violate that assumption. Check it.
-
-(c) Defer the deploy to a point where the cycle-plan script is no longer executing -- e.g. hand
-    it to the caller, or to a detached stage that runs after the script exits. Consider what
-    this does to the checkpoint's failure contract, which currently DEFERS remaining tasks on a
-    failed deploy and needs the deploy's exit code in-band to do so.
-
-Whatever is chosen must preserve the checkpoint's existing three-branch (a)/(b)/(c) failure
-contract documented in context/patterns/batch-orchestration-guardrails.md's
-"### The Inter-Cycle Redeploy Checkpoint" subsection and implemented by command-gate-out.sh's
-rc==6 handler. Do not weaken the deploy-failure defer.
-
-=== RELATIONSHIP TO THE SIBLING PERFORMANCE TASK ===
-The redundant-verify-deploy-passes task edits the SAME ~280-line checkpoint block and depends on
-this one. Land this first. The choice made here -- particularly whether fix (b) changes WHICH
-copy of deploy-headless.sh runs, and therefore what its internal --skip-slow verify covers --
-is a direct input to that task's design. Record the decision and its verify-depth consequences
-explicitly so the sibling can build on it rather than re-deriving it.
-
-=== VERIFICATION ===
-1. Demonstrate the underlying bash behaviour with a synthetic self-rewriting harness, so the
-   mechanism is established independently of the orchestrator's timing.
-2. Show that after the fix the checkpoint completes with a non-empty plan JSON and dispatch
-   rows when a deploy is triggered mid-cycle.
-3. Exercise the deploy-failure branch (deploy-headless.sh exit 1 or 2) and confirm remaining
-   tasks are still deferred with the defer_ledger entry intact.
-4. Exercise the deploy-landed branches (exit 0 and exit 3) and confirm the baseline comparison
-   still runs.
-5. Re-run scripts/tests/ for orchestrate-cycle-plan.sh and the deploy tests
-   (test-deploy-orphans.sh, test-deploy-verify-wiring.sh). No test may be weakened or deleted
-   to make the change pass.
-
----
-
-### 259. Allow completion when a plan branch deliberately skips phases, and stop the identical-redispatch loop
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [259_allow_completion_on_a_gate_skipped_plan_branch/reports/01_gate-skipped-plan-completion.md]
-- **Plan**: [259_allow_completion_on_a_gate_skipped_plan_branch/plans/01_gate-skipped-plan-completion.md]
-- **Summary**: [259_allow_completion_on_a_gate_skipped_plan_branch/summaries/01_gate-skipped-plan-completion-summary.md]
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-=== OBSERVED DEADLOCK, IN A REAL RUN ===
-/orchestrate 184,188 in the ModelChecker consumer repo. Task 188's implement dispatch succeeded
-completely: source changes landed, four phase commits were made, and the handoff was written
-fresh with a matching dispatch_seq and a correct "status": "implemented". Recovery SUCCEEDED --
-this is NOT the declined-recovery path that the return-meta-vocabulary and
-recovery-decline-attribution tasks address, and neither of those fixes would touch it.
-
-The refusal came from skill_gate_completion_claim (scripts/skill-base.sh:1224), Case 1:
-
-    if [ "$phases_total" -gt 0 ]; then
-      # Case 1: phase accounting present but incomplete -- always refuse.
-
-The handoff reported phases_completed=4, phases_total=7, so completion was refused and the task
-was held at `implementing`. The next cycle re-dispatched. Cycles 3 and 4 wrote BYTE-IDENTICAL
-dispatch files (.dispatch/6.md and .dispatch/7.md differ only in dispatch_seq and
-dispatch_start_ts). Cycle 4's implementation agent independently worked out that it was a
-re-fire, verified the work was already complete, correctly refused to redo the expensive
-25-seed sweep, and returned the same 4/7 handoff -- producing the same refusal. Each such cycle
-cost roughly 40 minutes of agent time for a provably empty result. The loop was halted by hand.
-
-=== THE PLAN SHAPE THAT PRODUCED IT ===
-The planner may author a plan with a DECISION GATE, and routinely should. Task 188's plan has
-seven phases of which 3-5 are explicitly conditional on Phase 2's gate passing:
-
-  Phase 1: Rerunnable Harness and Pre-Change Baseline            [COMPLETED]
-  Phase 2: Twenty-Plus-Seed Sweep of the Renamed Construction    [COMPLETED]
-  Phase 3: Land the Alpha-Rename in core.py                      [NOT STARTED]  <- gate-skipped
-  Phase 4: Full Example-Set Regression Diff                      [NOT STARTED]  <- gate-skipped
-  Phase 5: Full Bimodal Suite and Gating Oracle Suite            [NOT STARTED]  <- gate-skipped
-  Phase 6: Correct the Stale Claims and Record the History       [COMPLETED]
-  Phase 7: CONDITIONAL -- Revert and Author an UNSTABLE entry    [COMPLETED]
-
-Phase 2's gate FAILED (the candidate fix measured worse than baseline: 5/25 undecided draws
-against 2/25), so the plan's own contingency branch was taken, correctly.
-
-Note the gate was deliberately TIGHTENED recently -- its own header records that base mode
-"LOSES its `phases_total == 0` blind allow". Failing closed is the right instinct. Do not revert
-it.
-
-=== CORRECTION: THE MARKER THIS TASK PROPOSED TO INVENT ALREADY EXISTS ===
-THIS IS THE MOST IMPORTANT ITEM IN THIS DESCRIPTION AND IT REDIRECTS THE WHOLE FIX. An earlier
-draft asserted that 'there is no sanctioned phase marker for deliberately not executed' and
-proposed inventing [SKIPPED] or [NOT APPLICABLE], plus new `phases_skipped` /
-`phase_accounting_note` handoff fields. BOTH PREMISES ARE FALSE. Verified 2026-09-25:
-
-  - `[COMPLETED WITH EXCLUSIONS]` is an existing, fully-wired, sanctioned phase-heading marker.
-    context/standards/status-markers.md:186-238 defines it as 'a third terminal phase-heading
-    outcome' meaning 'every remaining item was decided, justified, and will not be revisited --
-    nothing is left for a future dispatch to pick up; the phase is closed, not stalled'.
-  - IT ALREADY COUNTS AS CLOSED IN THE DENOMINATOR AND NUMERATOR. scripts/lib/
-    phase-heading-patterns.sh:104-107 defines
-    PHASE_STATUS_DONE_ALT='COMPLETED|COMPLETED WITH EXCLUSIONS', and its own comment states
-    "`COMPLETED WITH EXCLUSIONS` counting as closed is the fix for the orchestration" case.
-    update-task-status.sh's phase-check block logs '${DONE}/${TOTAL} phases closed (COMPLETED or
-    COMPLETED WITH EXCLUSIONS)'.
-  - WHOLE-PHASE EXCLUSION IS EXPLICITLY THE INTENDED CASE, NOT A DEGENERATE ONE.
-    status-markers.md: 'the excluded set may be a subset of a phase's remaining items or the
-    ENTIRE remainder... A plan author facing a whole-phase exclusion should reach for
-    `[COMPLETED WITH EXCLUSIONS]` here, not invent a fourth marker.'
-  - A FOURTH MARKER IS ALREADY ARGUED AGAINST BY NAME. The same section rejects `[DESCOPED]`
-    because 'admitting a semantically-overlapping fourth marker would require re-touching every
-    site `[COMPLETED WITH EXCLUSIONS]` already wired for no expressive gain.' [SKIPPED] /
-    [NOT APPLICABLE] fall to that identical argument. DROP THAT PROPOSAL.
-  - Phases 3-5 of the observed plan SATISFY the five-condition admission test
-    (status-markers.md:210-228) on their face: (1) a deliberate decision, not abandonment --
-    the gate failed and the contingency branch was taken; (2) tightly scoped to three enumerated
-    phases; (3) reason stated; (4) evidenced by the sweep measurement (5/25 vs 2/25); (5) no
-    residual work -- Phase 7 was executed instead and the branch will not be revisited.
-    Confirm this reading against the test rather than assuming it, but it is the starting point.
-
-=== REFRAMED FIX 1: EVALUATE THE NO-SCHEMA-CHANGE PATH FIRST ===
-If phases 3-5 are marked `[COMPLETED WITH EXCLUSIONS]` with the `#### Reasoned Exclusions` record
-that context/formats/plan-format.md:353-420 already specifies, then count_plan_phases() yields
-7 closed of 7, skill_corroborate_phase_counts reports 7/7, and skill_gate_completion_claim takes
-Case 2 ('the only unconditional allow'). The deadlock dissolves with NO handoff-schema change, NO
-new marker, and NO new gate case. Establish whether that is true end to end BEFORE designing any
-schema addition; if it is, the schema work is not merely unnecessary but actively harmful --
-`phases_skipped` would be a second, competing mechanism inside the documented family
-'documented incompleteness that still counts as success' that status-markers.md and
-context/contracts/anti-analysis.md deliberately keep to one.
-
-On that reading the real gaps are narrower and different from the earlier draft's:
-
-  GAP 1 (documentation / agent contract). Nothing tells a planner or an implementation agent that
-  a gate-skipped phase is represented as `[COMPLETED WITH EXCLUSIONS]`. plan-format.md:166
-  mentions descoping uses that marker, and status-markers.md carries the admission test, but
-  neither connects it to the DECISION-GATE / contingency-branch shape, which is the form the
-  planner actually emits. The agent in the incident had a correct mechanism available and no way
-  to know it applied. Document the branched-plan -> exclusion-marker mapping where the planner and
-  the implementation agents will read it.
-    SCOPE CAUTION: do NOT edit agent bodies in this task. The sibling agent-contract task owns
-    agent-body edits (planner-agent.md among them) and a collision would force a batch deferral.
-    Put this guidance in plan-format.md / status-markers.md and, if agent-body wording is truly
-    required, sequence after that task rather than overlapping its file_scope.
-
-  GAP 2 (the gate, and this one IS a real script defect). Case 1 refuses on the agent's
-  SELF-REPORTED counters and never consults the plan. skill_corroborate_phase_counts exists and
-  reads the plan markers, but it is invoked only on the phases_total == 0 precondition -- Case 3's
-  path (orchestrate-cycle-postflight.sh:480-486, 'matches skill_gate_completion_claim's own
-  Case 3 precondition exactly'). So when the handoff says 4/7 and the plan says 7/7 closed,
-  nothing ever notices the disagreement. Extend corroboration to the Case 1 path so plan markers
-  can carry a completion claim the handoff counters understate. This keeps the fail-closed
-  posture -- a bare 4/7 with the plan ALSO showing 4/7 closed must still refuse, so an agent
-  cannot escape the gate by under-reporting phases_total or by leaving markers open.
-
-Only if the above is shown insufficient should a handoff-schema addition be designed. If it is,
-prefer the variant where phases_total keeps meaning 'phases authored' and the gate computes
-completed + |excluded| >= total, so plan and handoff stay numerically comparable; document it in
-docs/architecture/handoff-schema.md.
-
-=== FIX 2 (convergence guard) -- VERIFIED, KEEP AS SCOPED ===
-scripts/orchestrate-cycle-plan.sh's convergence guard fires only when a cycle dispatches NOTHING
-(:1715):
-
-    if [ "${#probed_dispatch[@]}" -eq 0 ] && [ "${#eligible_tasks[@]}" -gt 0 ]; then
-
-A cycle that dispatches and is then refused at postflight looks like forward progress, so
-consecutive_no_dispatch_cycles (:1716-1725) stays 0 and the guard never trips. The only bound on
-the retry is MAX_CYCLES. Make the guard count IDENTICAL dispatches, not just absent ones: hash
-each dispatch file's content modulo dispatch_seq/dispatch_start_ts and stop after N consecutive
-identical dispatches for the same task/phase. N=2 would have capped the observed incident at one
-wasted cycle instead of two, with MAX_CYCLES as the outer bound behind it.
-
-This is independently valuable and is the general protection against ANY
-dispatch-refuse-redispatch loop, of which the phase-accounting case is only one instance. It
-survives intact regardless of how Fix 1 resolves -- size it as its own phase and commit it green
-on its own, first if convenient.
-
-=== ALREADY CORRECT -- DO NOT DUPLICATE OR SILENCE ===
-A `[phase-check]` warning already fires on the completing transition and says precisely the right
-thing (update-task-status.sh:494):
-
-    WARNING: [phase-check] task 188 is being marked completed with only 4/7 phases closed
-
-Keep it. NOTE A DETAIL THE EARLIER DRAFT MISSED: this block has TWO modes. `--phase-check=refuse`
-(:485-489) is a hard refusal with its own exit code, and command-gate-out.sh:133 passes exactly
-that for the implement token, while reconcile-task-status.sh:591,641 do too. So the phase-check
-is not unconditionally advisory -- establish which mode is in force on the batch postflight path
-before concluding the warning is the only phase-accounting check in play, or a Case 1 fix may be
-undone by a second refusal downstream.
-
-=== ADJACENT, DECIDE IN OR OUT EXPLICITLY ===
-(a) DROPPED. The 'no sanctioned marker for deliberately not executed' premise is false and the
-    proposed [SKIPPED]/[NOT APPLICABLE] marker is already argued against by name -- see the
-    correction section above. No change to phase-heading-patterns.sh's regexes or the
-    plan-format lint is needed, which removes the largest risk item the earlier draft carried.
-(b) scripts/system-defect-record.sh's fourteen-value enum (:164-170) has no class that fits this.
-    The incident was recorded as ARTIFACTS_SHAPE_MISMATCH (event evt_1790355986580_8B8Ntt in the
-    ModelChecker consumer repo) for want of anything better, which is a poor fit -- the artifacts
-    array was correct; the phase counters were the problem. Consider whether a
-    PHASE_ACCOUNTING_MISMATCH class earns its place, weighed against enum growth for its own sake.
-    ENUM COLLISION WITH THE SIBLING RECOVERY-DECLINE-ATTRIBUTION TASK -- ALREADY SERIALIZED, NO
-    MANUAL SEQUENCING NEEDED. That task also contemplates adding a class to this same closed
-    enum. VERIFIED 2026-09-25: BOTH tasks are SELF-MODIFYING under
-    context/reference/orchestrator-critical-paths.json -- this task declares
-    scripts/skill-base.sh and scripts/orchestrate-cycle-plan.sh, both listed critical paths, and
-    the sibling declares scripts/orchestrate-cycle-postflight.sh plus system-defect-record.sh
-    itself. Per orchestrate-batch-admit.sh's designated-self-modifying-candidate rule (:93-101)
-    only the LOWEST-numbered self-modifying candidate is admitted per cycle, so the two can
-    never co-dispatch and no dependencies[] edge is warranted (an edge would also exempt the
-    pair from the collision scan, losing a check for no gain). Land whichever runs first and
-    rebase the second onto the enum as it then stands.
-
-=== RELATIONSHIP TO THE TWO SIBLING META TASKS ===
-Same subsystem, three distinct gaps in the postflight adjudication chain, all found in one day:
-a status-value gap (agent writes "completed", recovery declines), an attribution gap (the
-declined-recovery path blames skill-orchestrate for a handoff research agents are forbidden to
-write), and this phase-accounting gap. This one is reachable only when recovery SUCCEEDS, so it
-is independent of both: landing either sibling leaves this deadlock exactly as it is, and
-landing this one does not address either of them. The systemic signal worth acting on is that the
-chain has been hardened faster than its schemas and its DOCUMENTATION have been widened -- and in
-this instance the schema was in fact already wide enough; only the documentation was not.
-
-=== FILE SCOPE NOTE ===
-Under the reframed Fix 1 the scope shifts away from handoff-schema.md toward
-context/formats/plan-format.md and context/standards/status-markers.md (Gap 1) and
-scripts/skill-base.sh (Gap 2, the Case 1 corroboration), with
-scripts/orchestrate-cycle-plan.sh retained for Fix 2. Keep docs/architecture/handoff-schema.md
-only if a schema addition survives the evaluation above. Plus the test suites named below.
-Harvest the final set at plan postflight.
-
-=== VERIFICATION ===
-Exercise all five arms: (1) a linear plan completing all phases -> allowed, as today; (2) a
-branched plan whose gate-skipped phases are marked [COMPLETED WITH EXCLUSIONS] with the required
-Reasoned Exclusions record -> allowed, and demonstrate the count reaches 7/7 through
-count_plan_phases/skill_corroborate_phase_counts rather than through any new field; (3) a bare
-shortfall with the plan ALSO showing the phases open -> still refused, fail-closed preserved;
-(4) an agent under-reporting phases_total against an incomplete plan -> still refused; (5) the
-same dispatch fired twice with identical content -> the convergence guard stops the run. Re-run
-scripts/tests/ for skill-base.sh and orchestrate-cycle-plan.sh, and confirm the [phase-check]
-warning still fires in arm (2). No test may be weakened or deleted to make the change pass.
-
----
-
-### 258. Stop recording a declined return-meta recovery as HANDOFF_STALE_OR_ABSENT against skill-orchestrate
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 257
-- **Research**: [258_fix_postflight_recovery_decline_attribution/reports/01_recovery-decline-attribution.md]
-- **Plan**: [258_fix_postflight_recovery_decline_attribution/plans/01_recovery-decline-attribution.md]
-- **Summary**: [258_fix_postflight_recovery_decline_attribution/summaries/01_recovery-decline-attribution-summary.md]
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-=== DIAGNOSTICS DEFECT (MISATTRIBUTION, NOT CAUSAL) ===
-When a research dispatch's return-meta recovery DECLINES, orchestrate-cycle-postflight.sh falls
-through its `have_outcome` else-arm into WORK (d), the absent-handoff branch (:591-612), and
-records defect class HANDOFF_STALE_OR_ABSENT attributed to
-agent-system/extensions/core/skills/skill-orchestrate/SKILL.md with the message "Skill did not
-write orchestrator handoff".
-
-For a research phase that attribution is wrong twice over:
-1. Research agents are CONTRACTUALLY FORBIDDEN to write a handoff. Every research agent body
-   carries a '### `.orchestrator-handoff.json` -- research agents never write one' section
-   stating that an absent handoff after a research dispatch is 'the expected, non-defective
-   case'. The postflight's own happy path already says exactly this correctly: its RECOVERY line
-   reads 'no handoff written for this dispatch -- expected outcome for this phase's writer'.
-2. The actual fault in the observed incident was agent-side status vocabulary (a return-meta
-   carrying "status": "completed"), which is the separate agent-contract task's subject. The
-   orchestrator skill did nothing wrong and is blamed anyway.
-
-Mechanism: handoff_expected defaults to "true" (:180) with no phase-awareness, and
-skill-orchestrate's Move 3 never passes --handoff-expected false. VERIFIED: zero occurrences of
-'handoff-expected' in skill-orchestrate/SKILL.md or orchestrate-cycle-plan.sh, so the default is
-always in force.
-
-=== CORRECTION: THE FIELD TO READ IS `reason`, NOT `evidence_reason` ===
-THIS IS THE MOST IMPORTANT ITEM IN THIS DESCRIPTION. An earlier draft of this task said to reuse
-`evidence_reason` and listed STATUS_NOT_SUCCESS among its values. That is wrong and an
-implementer following it literally will produce a useless message:
-
-  - `evidence_reason` is ALWAYS the literal string "NONE" on every recovered=false path.
-    orchestrate-recover-outcome.sh:284 emits `evidence_reason="NONE"` on the STATUS_NOT_SUCCESS
-    path, and the script's own header states evidence_suspect is 'Always false on every
-    recovered=false' arm. evidence_suspect/evidence_reason are evaluated ONLY on the
-    recovered=true path (PHASES_ZERO_ON_SUCCESS | ARTIFACTS_SHAPE_MISMATCH).
-  - The field that actually discriminates is `reason`, documented at the same header as one of:
-    NONE (recovered=true), META_MISSING, META_STALE, META_DISPATCH_SEQ_MISMATCH,
-    STATUS_IN_PROGRESS, STATUS_NOT_SUCCESS, USAGE.
-
-Note that `reason` is NOT currently read anywhere in the else-arm -- only
-`out_recovered_reported_status` (from `.status`) is, a few lines below the defect record, purely
-for the output JSON. The fix must ADD a read of `.reason` and may hoist or reuse the existing
-`.status` read.
-
-=== THE BRANCH HAS THREE SUB-CASES; THE FIX MUST DISCRIMINATE, NOT BLANKET ===
-'Recovery declined' is not one condition. Reaching this branch with a given `reason` means
-materially different things, and the existing test suite already pins one of them:
-  (i)  META_MISSING -- no .return-meta.json at all. This is test fixture (A) in
-       scripts/tests/test-orchestrate-cycle-postflight.sh:574-612 (general-implementation-agent
-       context-exhaustion death, writes neither file). For that case 'the agent produced nothing'
-       is a defensible reading and the existing record must keep working -- the fixture asserts
-       EXACTLY ONE HANDOFF_STALE_OR_ABSENT row and verdict=failed. DO NOT BREAK IT.
-  (ii) STATUS_IN_PROGRESS -- return-meta present, terminal write never happened (the
-       interrupted-fan-out shape).
-  (iii) STATUS_NOT_SUCCESS -- return-meta present and fresh, carrying an out-of-vocabulary
-       terminal value. THIS is the observed incident and the case whose attribution is wrong.
-A fix that treats the branch as one thing will either regress fixture (A) or under-fix (iii).
-
-=== NUANCE THAT MUST BE PRESERVED ===
-This branch is reachable ONLY after recovery has ALREADY declined -- it is the else-arm of the
-`recovered = true` test inside the else-arm of `have_outcome`. It is therefore NOT firing
-spuriously on every research dispatch; the ordinary successful research dispatch takes the
-RECOVERY path and is logged correctly. Any fix that suppresses the branch wholesale would
-throw away a genuine signal: reaching it still means something went wrong, just not the thing
-currently named.
-
-=== FIX DIRECTION ===
-Make the failure-path diagnostic name the REAL fault rather than blaming the orchestrator for a
-handoff the agent was forbidden to write. Read `.reason` (and the already-available `.status`)
-from recover_json so the defect record can say, for example, 'return-meta recovery declined:
-agent reported status=completed, which is not in the accepted researched|planned|implemented
-vocabulary'.
-
-CHEAPER PATH WORTH EVALUATING FIRST: scripts/validate-return-meta.sh:183 already emits exactly
-that sentence ('status value is 'completed', which is explicitly forbidden (triggers Claude stop
-behavior) -- use "implemented" instead') and currently has no runtime caller at all. Invoking it
-at this point, or reusing the 8-value vocabulary library the sibling agent-contract task extracts
-from it, gets a correctly-worded diagnostic without hand-rolling a second message. Evaluate that
-before writing new message-construction code.
-
-Consider whether this warrants a distinct defect class (e.g. RECOVERY_DECLINED or
-STATUS_VOCABULARY_VIOLATION) rather than reusing HANDOFF_STALE_OR_ABSENT, and attribute it to
-the dispatched agent's own file rather than to skill-orchestrate's SKILL.md.
-
-A phase-aware --handoff-expected false threaded from skill-orchestrate's Move 3 is a plausible
-second mechanism, but evaluate it against the simpler in-script fix first: the else-arm already
-prints 'handoff not expected for this dispatch; no defect recorded' (:611), so merely flipping
-the flag would SILENCE the branch entirely and lose the recovery-declined signal described above.
-Naming the real fault is preferred over silencing.
-
-=== TWO MECHANICAL PREREQUISITES THE EARLIER DRAFT DID NOT NAME ===
-1. A NEW DEFECT CLASS REQUIRES EDITING A CLOSED ENUM. scripts/system-defect-record.sh validates
-   --defect-class against a closed FOURTEEN-value case arm (:164-170) and exits 1 on anything
-   else, with an error message pointing at
-   context/patterns/system-defect-discrimination.md. Adding RECOVERY_DECLINED or
-   STATUS_VOCABULARY_VIOLATION means editing that enum AND that pattern doc, neither of which is
-   in this task's current file_scope. Weigh the addition against enum growth for its own sake --
-   reusing an existing class with corrected attribution and message is a legitimate outcome.
-2. NO AGENT-NAME -> AGENT-FILE RESOLVER EXISTS. `agent_name` is a required argument and is
-   available (:190), but a grep for any agent-path resolver across scripts/ returns nothing.
-   Attributing to 'the dispatched agent's own file' means building that lookup, and it must
-   handle both trees: the deployed shape (.claude/agents/{name}.md) and the source-store shape
-   (agent-system/extensions/{ext}/agents/{name}.md). lint-agent-contracts.sh's
-   enumerate_dispatchable_agents plus a frontmatter `name:` match is the existing precedent for
-   walking that set.
-
-=== ATTRIBUTION BOUNDARY -- STATE IT DELIBERATELY, DO NOT LEAVE IT BY OMISSION ===
-`attributed_path` is ONE script-wide constant set at :328 and reused by EVERY defect record in
-this script -- the stray-handoff site (:370), the stale site (:401), the recovered-path
-ARTIFACTS_SHAPE_MISMATCH site (:558), and this absent site. ARTIFACTS_SHAPE_MISMATCH in
-particular is just as much an agent-side fault blamed on the orchestrator as the case this task
-fixes. The completed deploy-pending-recovery task's Part 3 recorded the SAME misattribution
-complaint for the stale sub-case and chose documentation over fixing attribution.
-So this task fixes ONE of at least three sites. That is an acceptable scope, but it must be an
-argued boundary in the plan, not an accident: say explicitly which sites keep the shared constant
-and why.
-
-=== DO NOT DISTURB THE STALE-MTIME PATH ===
-specs/events.jsonl in the Verification consumer repo holds 10 HANDOFF_STALE_OR_ABSENT records.
-The previous 9 are all the distinct stale-mtime / dispatch_seq-mismatch sub-case, recorded
-unconditionally EARLIER in the script (before this branch is ever reached) and correctly. Only
-the 10th is this absent-plus-recovery-declined variant, the first of its kind. The fix must be
-confined to the WORK (d) absent-handoff branch and must leave the stale and dispatch_seq-mismatch
-recording sites untouched.
-
-=== DEPENDENCY: THE SIBLING AGENT-CONTRACT TASK MUST LAND FIRST ===
-dependencies[] carries that task's number. Two independent reasons, both load-bearing:
-  1. ARTIFACT DEPENDENCY. The cheaper path above reuses the 8-value return-meta vocabulary
-     library that task extracts out of validate-return-meta.sh:175. Running this task first
-     means either hand-rolling a second copy of the vocabulary (the drift this system's
-     one-sourced-library convention exists to prevent) or falling back to reading the hardcoded
-     array directly.
-  2. CAUSE BEFORE DIAGNOSTIC. That task fixes the CAUSE (agent bodies emitting an
-     out-of-vocabulary status); this one fixes how the resulting failure is REPORTED. Fixing the
-     report first leaves the cause live and makes this task's own verification harder to stage,
-     since arm (a) needs an agent that still emits a bad status.
-Note the edge's admission-control side effect, which is intended here: a successor is not
-eligible while its predecessor is non-terminal, so this task waits a cycle rather than
-co-dispatching. That also keeps it out of the same cycle as the phase-accounting sibling.
-
-=== FILE SCOPE NOTE ===
-Current file_scope lists only orchestrate-cycle-postflight.sh and is incomplete. It must also
-cover scripts/tests/test-orchestrate-cycle-postflight.sh (three fixtures assert exactly-one
-HANDOFF_STALE_OR_ABSENT and will need updating), and -- only if a new defect class is chosen --
-scripts/system-defect-record.sh and context/patterns/system-defect-discrimination.md. NOTE A
-ENUM COLLISION WITH THE SIBLING PHASE-ACCOUNTING TASK -- ALREADY SERIALIZED BY THE MACHINERY, NO
-MANUAL SEQUENCING NEEDED. That task also contemplates adding a class (PHASE_ACCOUNTING_MISMATCH)
-to this same closed enum. VERIFIED 2026-09-25: both tasks are SELF-MODIFYING under
-context/reference/orchestrator-critical-paths.json -- this task declares
-scripts/orchestrate-cycle-postflight.sh, scripts/system-defect-record.sh and
-context/patterns/system-defect-discrimination.md, all three of which are listed critical paths,
-and the sibling declares scripts/skill-base.sh and scripts/orchestrate-cycle-plan.sh. Per
-orchestrate-batch-admit.sh's designated-self-modifying-candidate rule (:93-101) only the
-LOWEST-numbered self-modifying candidate is admitted per cycle and every other one defers, so
-the two can never co-dispatch. Do NOT add a dependencies[] edge between them for this reason:
-an edge would additionally EXEMPT the pair from the collision scan (:219), removing a check for
-no gain. Land whichever runs first and rebase the second onto the enum as it then stands.
-
-=== VERIFICATION ===
-Exercise all three sub-cases plus the untouched path: (a) a research dispatch whose return-meta
-carries a bad status (reason=STATUS_NOT_SUCCESS) -> the new, correctly-attributed record;
-(b) reason=META_MISSING -> fixture (A)'s existing behaviour, unchanged; (c) a genuinely stale
-handoff -> the existing HANDOFF_STALE_OR_ABSENT record, unchanged. The script's own --dry-run
-mode prints 'would record' lines and is the cheapest way to check without writing to the defect
-store. Extend test-orchestrate-cycle-postflight.sh rather than writing a parallel suite, and do
-not weaken fixture (A) to make the change pass.
-
----
-
-### 257. Inline the correct terminal status value and the never-use-completed warning into every dispatchable agent's return-meta example
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [257_inline_terminal_status_in_agent_contracts/reports/01_terminal-status-vocabulary.md]
-- **Plan**: [257_inline_terminal_status_in_agent_contracts/plans/01_inline-terminal-status-contracts.md]
-- **Summary**: [257_inline_terminal_status_in_agent_contracts/summaries/01_inline-terminal-status-contracts-summary.md]
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ (never .claude/**).
-
-=== CAUSAL DEFECT, OBSERVED IN A REAL DISPATCH ===
-typst-research-agent wrote "status": "completed" into .return-meta.json after a research
-dispatch whose report file was written correctly. orchestrate-recover-outcome.sh accepts only
-researched|planned|implemented in its success `case` arm; "completed" fell through to the
-default arm, which emits STATUS_NOT_SUCCESS -> recovered=false -> no status transition ->
-verdict=failed. A fully successful research phase was charged as a failure, and the deeper
-consequence is that the same wrong value silently converts ANY successful dispatch into a
-failed one wherever it occurs.
-
-The normative vocabulary at context/formats/return-metadata-file.md states explicitly: 'Never
-use "completed" - it triggers Claude stop behavior.' The pointer exists; the failure mode is
-that an agent body which only POINTS at that file (with an 'always load before writing final
-metadata' instruction) leaves the model free to skip the load and fall back on the ordinary
-English sense of 'completed'.
-
-=== ROOT CAUSE: STRUCTURAL INCONSISTENCY, NOT A TYPST BUG ===
-Agent bodies fall into THREE shapes, not two. The protected shape wraps the canonical artifacts
-fragment inside a fuller JSON object that carries the concrete correct status inline, e.g.
-lean-research-agent.md:321-337 opens its fenced block with `{ "status": "researched",` before
-the artifacts array. The unprotected shape emits ONLY the bare `"artifacts": [...]` fragment
-with no enclosing object and no status key anywhere in the example. The THIRD shape, found on
-the hard-mode twins, carries a PIPE-ALTERNATIVES PLACEHOLDER rather than a concrete value --
-lean-implementation-hard-agent.md:305 and cslib-implementation-hard-agent.md:324 both read
-`"status": "implemented | partial | blocked"`, which is not a member of the vocabulary as a
-literal string. Decide explicitly how the fix and the lint treat this third shape; do not
-silently conflate it with either of the other two.
-
-=== VERIFIED SET (re-audited 2026-09-25; the earlier audit was INCOMPLETE) ===
-A grep for an inline terminal status drawn from the 8-value return-meta vocabulary over all
-dispatchable agent files (73 files, per lint-agent-contracts.sh's own is_dispatchable_agent
-detector) finds 24 without one. DO NOT STOP AT THE THIRTEEN RESEARCH/IMPLEMENTATION AGENTS the
-first audit named -- the set spans the plan phase and the hard-mode twins as well.
-
-Research agents MISSING an inline "status": "researched" (6):
-  core/general-research-agent.md, latex/latex-research-agent.md,
-  python/python-research-agent.md, rust/rust-research-agent.md,
-  typst/typst-research-agent.md, z3/z3-research-agent.md
-
-Implementation agents MISSING an inline "status": "implemented" (7):
-  email, latex, python, rust, typst, web, z3
-
-NEWLY FOUND, ALL IN SCOPE (7):
-  - core/agents/planner-agent.md -- THE MOST SERIOUS OMISSION AND THE HIGHEST-PRIORITY FILE.
-    Its happy-path terminal block (the fenced JSON at :410) is the bare `"artifacts": [...]`
-    fragment; the prose at :401 says 'with status `planned`' but no fenced example carries it.
-    The ONLY complete JSON object in the file carries `"status": "needs_research"` (:434), i.e.
-    the one worked example the model sees is the FAILURE path. planner-agent is the default plan
-    path for EVERY task type, so the identical defect can charge a successful plan phase as
-    failed -- the same blast radius as general-research-agent, on a phase nobody has audited.
-  - lean/agents/lean-research-hard-agent.md, lean/agents/lean-implementation-hard-agent.md,
-    cslib/agents/cslib-research-hard-agent.md, cslib/agents/cslib-implementation-hard-agent.md
-    -- the hard-mode twins of four files the first audit listed as 'protected, leave alone'.
-    TWIN-FILE DISCIPLINE IS BINDING HERE: a one-sided edit between engine twins is a recorded
-    recurring defect class in this system. Fixing lean/cslib base agents while leaving their
-    -hard twins unprotected IS that defect. Locate each site by content, not by line symmetry.
-  - core/agents/spawn-agent.md (:203 prose 'with status `researched`', no inline value)
-  - present/agents/grant-agent.md (in_progress only)
-
-LEAVE ALONE -- already recorded exclusions in lint-agent-contracts.sh's
-EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS (:317-320), because they do not write
-.return-meta.json at all: core/agents/code-reviewer-agent.md,
-literature/agents/literature-agent.md.
-
-Research agents already protected (13 -- the earlier count of '11' was wrong, the list was
-right; leave alone and copy their wording): lean, math, logic, formal, physics, cslib,
-pr-review, epi, deck, neovim, nix, slides, web.
-Implementation agents already protected (6, not 4): core/general-implementation-agent.md,
-cslib-implementation-agent.md, pr-review-implementation-agent.md, lean, nix, nvim.
-
-Per-file exceptions, CHECK EACH FILE BEFORE EDITING rather than applying a uniform patch:
-general-research-agent.md is only PARTIALLY unprotected -- it already carries the correct value
-in prose ('with status `researched`') and a MUST NOT line reading 'Use status value "completed"
-(triggers Claude stop behavior)' (:433); it lacks only the inline JSON. email-implementation-agent.md
-(:228) and web-implementation-agent.md already carry the warning and lack only the inline status.
-Do not duplicate what is already there.
-
-Because general-research-agent AND planner-agent are both in the unprotected set, this is the
-DEFAULT path for the general, meta, and markdown task types across BOTH the research and plan
-phases -- not a typst-only issue and not a research-only issue.
-
-=== FIX ===
-Bring each unprotected agent up to the shape the protected ones already use: (a) wrap the
-existing bare artifacts fragment in a full JSON object whose first key is the concrete correct
-terminal status for that agent's phase ("researched" for research agents, "planned" for
-planner-agent, "implemented" for implementation agents), matching lean-research-agent.md's
-existing block in structure; (b) add the never-use-"completed" warning where absent, reusing the
-wording already present in general-research-agent.md rather than inventing a new form. Do NOT
-invent a new template shape.
-
-COMPATIBILITY, RE-VERIFIED 2026-09-25: lint-agent-contracts.sh currently passes clean (104
-passed, 0 warnings, 0 failed). Check F extracts only the REQUIRED KEY SET (type/path/summary)
-from context/contracts/return-meta-artifacts-template.md and does not forbid an enclosing
-object, which is why the protected agents pass today. Wrapping is therefore safe. Re-run the
-lint to confirm rather than assuming.
-
-=== REGRESSION GUARD (in scope) -- ITS SCOPE IS AN OPEN DESIGN QUESTION, SETTLE IT IN THE PLAN ===
-Add a check to extensions/core/scripts/lint/lint-agent-contracts.sh (alongside the existing
-Check F, reusing its is_dispatchable_agent detector and its recorded-exclusion mechanism) that
-fails any dispatchable agent whose terminal-metadata example does not carry a status value drawn
-from the accepted vocabulary, and that flags any occurrence of "status": "completed" in an agent
-body.
-
-DO NOT WRITE THIS CHECK BEFORE RESOLVING TWO THINGS -- discovering either during implementation
-will produce a lint that fails files this task does not propose to fix:
-
-  1. WHICH AGENTS IT APPLIES TO. is_dispatchable_agent enumerates all 73 agent files, and many
-     carry legitimate extension-local terminal vocabularies that are NOT members of the 8-value
-     return-meta enum: meta-builder-agent (tasks_created, analyzed, cancelled),
-     pptx-assembly-agent and slidev-assembly-agent (assembled), filetypes/* (converted,
-     extracted, scraped, edited, created, skipped, empty), legal-analysis-agent (consulted),
-     project-agent (reviewed). A naive check fails all of them. Choose deliberately between
-     widening the recorded-exclusion list, restricting the check to lifecycle-dispatch agents
-     (the research/plan/implement routing targets), or admitting a per-extension vocabulary
-     extension point -- and record the choice.
-  2. THE PIPE-PLACEHOLDER SHAPE above: decide whether `"implemented | partial | blocked"`
-     passes, fails, or is rewritten to a concrete value.
-
-VOCABULARY SOURCE -- THERE IS A TRAP HERE, READ THIS BEFORE CHOOSING. Three copies of a
-'status vocabulary' exist, and the one NAMED like the single source of truth is the WRONG one:
-  - scripts/lib/status-vocabulary.sh -- the 12-value TASK-LEVEL enum for
-    state.json .active_projects[].status. IT CONTAINS "completed" AS A VALID VALUE. Sourcing
-    this file (the obvious candidate by name) yields a lint that ACCEPTS the exact value this
-    task exists to forbid. DO NOT USE IT.
-  - scripts/validate-return-meta.sh:175 -- a hardcoded 8-value array
-    (in_progress researched planned implemented needs_research partial failed blocked) plus an
-    explicit `completed` rejection at :183. This is the correct vocabulary.
-  - scripts/orchestrate-recover-outcome.sh:242 -- the 3-value success case arm (a subset).
-Derive the lint's vocabulary from the return-meta vocabulary, and prefer EXTRACTING that 8-value
-list out of validate-return-meta.sh into its own sourced library (modeled on
-scripts/lib/phase-heading-patterns.sh's 'one sourced shared library, many consumers' shape) so
-the lint, the validator, and the recover-outcome arm all read one definition. The sibling
-recovery-decline-attribution task needs the same list for its defect message, so this extraction
-is the shared prerequisite between the two -- whichever lands first should perform it.
-
-=== RUNTIME HOLE -- DECIDE IN OR OUT EXPLICITLY, DO NOT LEAVE IT UNADDRESSED ===
-scripts/validate-return-meta.sh:183 ALREADY fails on `status: "completed"` with precisely the
-right message ('explicitly forbidden (triggers Claude stop behavior) -- use "implemented"
-instead'). It has ZERO runtime callers: a grep for `validate-return-meta` across
-agent-system/ returns only comments, docs, and its own test. It would have caught the observed
-typst incident outright, and it did not run.
-
-This matters because the rest of this task is a DOCUMENTATION fix: a static lint over agent
-bodies prevents the examples from drifting, but it cannot stop an agent that writes "completed"
-anyway despite a correct example in front of it. Wiring this validator into the dispatch path
-(at or before the recovery read) is the only change that closes the hole at runtime. Either
-scope it in here, or split it out as its own task and say so -- but record the decision rather
-than leaving the validator dead.
-
-=== FILE SCOPE NOTE ===
-file_scope must grow to cover the seven newly-found agent files above (planner-agent, the four
-hard twins, spawn-agent, grant-agent). Harvest the final set at plan postflight.
-
-=== OUT OF SCOPE ===
-Changing orchestrate-recover-outcome.sh to ACCEPT "completed" as a success synonym. That would
-paper over the vocabulary violation and re-import the stop-behavior hazard the vocabulary exists
-to avoid. The status vocabulary is correct; the agent bodies are what is wrong.
-
----
-
-### 256. Audit residual .opencode wiring in the core source store against the standing frozen-mirror policy
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: opencode
-- **Dependencies**: Task 244
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-=== PREMISE RESOLVED 2026-09-25 -- SCOPE NARROWED, DO NOT RE-BROADEN ===
-This task originally proposed auditing ~32 .opencode references across core scripts on the
-premise that "OpenCode is retired". The user has now settled that premise directly: .opencode/
-in the nvim agent-system repo STAYS FROZEN, exactly as the standing frozen-mirror policy
-records -- not maintained, not generated, not deleted. The blanket reference audit is therefore
-CANCELLED: those references are correct and must stay. Removing the .opencode arm from
-deploy-root-guard.sh or validate-state.sh in particular would narrow a deliberately general
-"this must be a deploy tree, whichever kind" guard into a single-system one -- a regression
-dressed as a cleanup, and the specific outcome this note exists to prevent.
-
-What separately DID happen: the ModelChecker consumer repo deleted its own stale .opencode/
-DEPLOY (351 files, 2.9M, context files already drifted) plus its root opencode.json. That is a
-consumer-local deploy deletion, orthogonal to the frozen mirror, and it is already done.
-
-=== THE ONE REAL REMAINING DEFECT ===
-That deletion exposed a genuine, narrow bug, which is now this task entire:
-
-scripts/validate-wiring.sh does not gracefully skip a MISSING .opencode tree. Its `all` arm
-unconditionally calls validate_core_system/validate_extensions_loaded against
-"$PROJECT_ROOT/.opencode" and reports hard [FAIL] rows ("index.json not found", "Agent
-missing: ...", "Rule missing: ...") when that directory simply is not deployed in this
-consumer. Measured in ModelChecker on 2026-09-25, immediately after the deletion:
-`validate-wiring.sh all` -> exit 1, 15 failures, every one attributable to the absent
-.opencode arm; `validate-wiring.sh --claude` -> exit 0, 20 passed, 0 failed.
-
-A consumer repo that never deploys OpenCode is a NORMAL, supported configuration, not an
-error. The script should treat an absent tree root the way check-task-references.sh already
-does -- skip it with an informational line (its existing "[SKIP] lua does not exist under
-..." output is the exact precedent to mirror) -- rather than emitting failures that mask the
-real .claude-side result. Note this masking was severe before the deletion: ModelChecker
-`validate-wiring.sh all` reported 89 failures, ALL from the stale .opencode arm, while the
-.claude side was in fact completely clean.
-
-Scope: (1) make validate-wiring.sh skip a non-existent tree root for BOTH the .claude and
-.opencode arms, emitting a SKIP line rather than failures, so the exit status reflects only
-trees actually present; (2) confirm the same missing-tree-root assumption does not bite the
-other scripts that reference .opencode -- deploy-root-guard.sh and validate-state.sh were
-checked on 2026-09-25 and are SAFE (both match the running script own path against
-*/.claude/scripts/ or */.opencode/scripts/, so an absent sibling tree is irrelevant), and
-hooks/validate-handoff-location.sh is SAFE (its OC_ regex concerns specs/ path shapes, not the
-tree); re-verify rather than trusting this note; (3) add a regression test covering a
-consumer layout with .claude present and .opencode absent.
-
-Explicitly OUT of scope now: removing any .opencode reference, editing the frozen-mirror
-policy, and check-task-references.sh TREE_ROOTS (owned wholesale by the dependency task).
+1. A dispatched subagent needing a push emits a well-formed top-level `user_decision` with
+   `blocking: true` and does NOT push.
+2. postflight sets `verdict="ask_user"`; Move 3 accumulates it into `pending_ask_user`; Move 4
+   relays it in the batch with the specific push identified (remote, branch, sha, force-or-not).
+3. A NO answer results in no push and a clean task state.
+4. A run ending before an answer results in no push and a clean task state.
+5. A YES produces a grant the guard honors for exactly that push and no other: verify a replay
+   against a different branch, a different remote, and a later commit is each refused.
+6. TWO-CYCLE TEST for the hazard above: after a granted push in cycle N, cycle N+1's dispatch does
+   NOT inherit standing permission via `## Prior Decisions`.
+7. `grep` the source store for remaining blanket-prohibition language; list every file changed and
+   every file deliberately left unchanged, with reasons.
+8. Re-run scripts/tests/ plus the check-*.sh lints, including check-extension-docs.sh Rule H. No
+   test weakened or deleted; any test whose assertion changed is named in the summary with its old
+   and new assertion. New tests must cover items 1-6.
+
+=== PATH REVIEW RULING 2026-09-28 (fifth pass) -- ONE grant mechanism, not three ===
+Three tasks (this one, the absorbed /please task, and the absorbed user_decision relay task) each designed a git-push grant. They are now one task with three phases, and the following is settled rather than re-litigated:
+  1. INTEGRITY DECIDES THE MINT PATH. A grant file the model can Write after reading an AskUserQuestion answer is forgeable by construction -- exactly the artifact the absorbed /please text rejects. So the tamper-resistant mint path is the /please UserPromptSubmit hook (the harness fires it only on a literal user prompt; research item (1) of the absorbed text must still VERIFY the payload shape and that model- or subagent-generated prompts never trigger it). AskUserQuestion is the confirmation surface, never the mint.
+  2. THE TOKEN CARRIES THE TARGET. Whatever the /please grant records, it must bind action class + remote + branch + commit sha + force-or-not (this task's design questions 1 and 3), single-use, short expiry, fail-CLOSED on any unreadable/malformed/mismatched grant. The bare TIMESTAMP-only snapshot-marker shape is explicitly insufficient.
+  3. THE DISPATCH PATH ONLY RELAYS. A dispatched agent emits a blocking user_decision whose options make the exact push legible; Move 4 relays it once at cycle end (settled decision: the orchestrator never asks on its own and never decides). A YES does NOT mint anything -- the relayed text tells the user the exact /please line to type, and the guard consumes that grant. This closes the .decisions.json replay hazard for free: nothing replayable is ever recorded, but the two-cycle test in the absorbed text still ships to prove it.
+  4. PR/MR creation and /merge stay user-only. Force-push and pushes to master are outside any grant unless the /please never-list explicitly admits a --force-with-lease form; decide and record.
+  5. skills/skill-orchestrate/SKILL.md sits at 17 B under its 20,000 B ceiling (measured 2026-09-28). Any relay text added there must be offset byte-for-byte (mode-gate it or move it to a context file) -- verify-deploy Gate 20 will otherwise refuse the redeploy.
+PHASES: (A) grant token + /please hook + integrity + push guard + destructive-git grant check + tests; (B) /please command, never-list, rule exception, docs sweep (the absorbed consistency sweep); (C) dispatch relay + two-cycle test. Depends on the history-rewrite task (guard-destructive-git.sh, git-safety.md, git-workflow.md are shared; its predicate ordering must compose with the grant check).
 
 ---
 
@@ -1683,314 +773,6 @@ HEADER CONTRACT MUST BE UPDATED IN THE SAME COMMIT. Header lines 99-101 document
   - Edits land ONLY in agent-system/extensions/typst/. Do not edit any deployed .claude/ tree, in this repo or any of the 5 consumer repos.
   - Do not touch scripts/typst-element-lint.sh or its tests; it is a separate gate with its own contract.
   - Part 1 and Part 2 have disjoint file scopes (EXTENSION.md + manifest.json vs. scripts/chapter-quality-check.sh + its test). Keep them as separate phases so each can be committed green independently.
-
----
-
-### 254. Implement chapter-quality-check.sh with its test harness, then wire the standard and checker into the typst agents, skills, manifest and index
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: extensions
-- **Dependencies**: Task 253
-- **Research**: [254_typst_chapter_quality_checker_and_wiring/reports/01_chapter-quality-checker-wiring.md]
-- **Plan**: [254_typst_chapter_quality_checker_and_wiring/plans/01_chapter-quality-checker-wiring.md]
-- **Summary**: [254_typst_chapter_quality_checker_and_wiring/summaries/01_chapter-quality-checker-wiring-summary.md]
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**, which is a
-disposable deploy artifact regenerated from the source store).
-
-DEPENDS ON the chapter-quality standard task, which produces
-context/project/typst/standards/chapter-quality.md. That document is this task's SPECIFICATION:
-the rule inventory implemented here is sourced verbatim from it, and the blocking/advisory and
-mechanical/judged classifications implemented here are the ones it assigns. Do not invent, rename
-or re-tag a rule in this task -- if a rule proves unimplementable as classified, amend the
-standard in the same commit that changes the checker, exactly as typst-element-lint.sh's header
-already requires for its own element inventory.
-
-WHY THIS TASK BUNDLES TWO CONCERNS. It was deliberately merged from a checker task and a wiring
-task to shorten the dependency chain -- NOT to blur the verification surface. The plan MUST
-phase-separate the two concerns so the wiring is verifiable independently of the checker:
-
-  PHASE GROUP A -- THE CHECKER AND ITS TESTS. Self-contained; verified by running the checker and
-  its test harness. Touches scripts/ only.
-
-  PHASE GROUP B -- THE WIRING. An agent-contract and registration change; verified by deploying
-  and by reading the agent/skill contracts, not by running the checker. Touches manifest.json,
-  index-entries.json, agents/, skills/ and EXTENSION.md.
-
-Commit at each green milestone rather than once at the end, per rules/git-workflow.md. A
-regression in Group B must be diagnosable without re-litigating Group A.
-
-=== PHASE GROUP A: scripts/chapter-quality-check.sh AND ITS TEST HARNESS ===
-
-MIRROR THE ESTABLISHED SHAPE; DO NOT INVENT A SECOND ONE. scripts/typst-element-lint.sh (341
-lines) is the precedent in this extension and the pattern to follow. Reproduce its structural
-conventions:
-  - A documented PURPOSE header explaining why prose alone was insufficient.
-  - An explicit SEVERITY SPLIT section stating which checks are BLOCKING and which are ADVISORY,
-    and stating that promoting an advisory check to blocking requires a documented review pass
-    against real chapters first.
-  - A rule inventory sourced VERBATIM from the standard it enforces, with an in-header instruction
-    that the two are updated in the same commit.
-  - A KNOWN LIMITATIONS section documenting what is deliberately not parsed, rather than papering
-    over it. typst-element-lint.sh's own limitations list (no Typst math-mode parsing, no raw-block
-    parsing, start-of-line matching only) is the model, and several of those limitations apply
-    here unchanged.
-  - CLI shape: [--verbose] [--help] PATH..., where PATH is a .typ file or a directory scanned
-    recursively.
-
-COMPOSE WITH THE EXISTING LINT, DO NOT RE-IMPLEMENT IT. The Universal Placement Rule is already
-mechanically enforced by typst-element-lint.sh. This checker invokes or composes with that script
-for placement rather than writing a second placement checker. Two independent implementations of
-one rule will diverge, and the divergence will be discovered as a contradictory pair of findings
-on a real chapter.
-
-REQUIRED OUTPUTS.
-  1. A PER-CHAPTER SCORE, plus findings, each finding carrying its dimension, its rule, and its
-     BLOCKING-or-ADVISORY severity.
-  2. EXIT CODE DRIVEN BY BLOCKING FINDINGS ONLY (settled). Advisory findings are reported and
-     counted and never affect exit status. ANTI-FLUFF DENSITY is advisory-scored throughout, so
-     no ANTI-FLUFF finding may ever change the exit code.
-  3. JUDGED RULES ARE EMITTED, NOT SKIPPED. Every rule the standard classifies as JUDGED must be
-     emitted as a STRUCTURED PROMPT for a reviewing agent -- naming the rule, the location, and
-     what the reviewer must decide. Silently omitting judged rules would make the checker's
-     green result a false assurance of full coverage, which is worse than no checker.
-
-DO NOT DUPLICATE THE CONSUMING REPO'S CHECKS. The name-resolution check and the chapter-source
-coverage invariant belong to a consuming repository's own typst/scripts/. This checker implements
-the standard's interface contract for them -- it does not implement the checks themselves.
-
-TEST HARNESS IS REQUIRED, NOT OPTIONAL.
-  agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh
-Follow scripts/tests/test-typst-element-lint.sh (331 lines) for shape. Every script in this
-extension's manifest ships with its test registered alongside it; a checker without one would be
-the only untested script here. At minimum the suite must demonstrate, in BOTH directions:
-  - a blocking finding produces a non-zero exit;
-  - an advisory-only run produces exit 0 while still REPORTING the advisory findings (the
-    non-vacuity requirement -- a checker that passes silently on a bad chapter is the failure
-    mode being guarded against);
-  - a judged rule produces its structured reviewer prompt.
-
-=== PHASE GROUP B: WIRING ===
-
-Six files, each a distinct registration or contract surface:
-
-  1. manifest.json -- add chapter-quality-check.sh AND tests/test-chapter-quality-check.sh to
-     provides.scripts. Both entries; the existing element-lint pair is the precedent.
-  2. index-entries.json -- a new context entry for the standard, with path, line_count,
-     load_when.agents, load_when.task_types, domain, subdomain, summary and keywords, matching
-     the shape of the existing standards entries.
-  3. agents/typst-implementation-agent.md -- make the checker a pre-completion gate. The
-     element-lint wiring in this same file is the exact precedent and the exact set of sites:
-     the Stage 4C per-phase self-review, the Stage 5 whole-document final verification pass, and
-     the numbered Critical Requirements list. A blocking finding is a blocking condition at both
-     stages; advisory findings are reported in the implementation summary's Verification section
-     rather than silently dropped. Content tasks must run the checker BEFORE declaring a chapter
-     done -- that is the behavioural change this task exists to deliver.
-  4. agents/typst-research-agent.md -- make the standard a loadable context file at its Stage 2
-     context-loading step, so research that feeds a chapter knows the bar the chapter will be
-     measured against.
-  5. skills/skill-typst-implementation/SKILL.md -- reflect the new verification step.
-  6. EXTENSION.md -- the merge source for the extension's CLAUDE.md section. It already advertises
-     the element lint; advertise the chapter-quality checker the same way, so the capability is
-     discoverable without reading the manifest.
-
-ACCEPTANCE.
-  1. Checker and test both exist in the source store, and nothing was hand-authored under
-     .claude/**.
-  2. The test suite is green, and demonstrates the blocking/advisory split in both directions as
-     described above.
-  3. A blocking finding yields non-zero exit; an advisory-only run yields exit 0 with the
-     advisory findings still printed.
-  4. No ANTI-FLUFF DENSITY finding can change the exit code -- demonstrate this explicitly.
-  5. Judged rules appear as structured reviewer prompts, and the rule set emitted matches the
-     standard's JUDGED set with no silent omissions.
-  6. Placement is delegated to typst-element-lint.sh; grep confirms no second placement
-     implementation was added.
-  7. Both new scripts registered in manifest.json provides.scripts; the standard registered in
-     index-entries.json.
-  8. All six wiring files updated, and the deploy reproduces them into .claude/ cleanly.
-  9. No task-number references in any deliverable
-     (rules/no-task-references-in-deliverables.md).
-
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
-
----
-
-### 253. Define the Typst chapter-quality standard across the four dimensions, with per-rule blocking/advisory and mechanical/judged classification
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: extensions
-- **Dependencies**: None
-- **Research**: [253_typst_chapter_quality_standard/reports/01_chapter-quality-standard-research.md]
-- **Plan**: [253_typst_chapter_quality_standard/plans/01_chapter-quality-standard.md]
-- **Summary**: [253_typst_chapter_quality_standard/summaries/01_chapter-quality-standard-summary.md]
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/ (never .claude/**, which is a
-disposable deploy artifact regenerated from the source store).
-
-MOTIVATION. Manual chapters are to be built slowly and carefully from high-quality research and
-never filled with fluff. Today there is no defined bar a chapter can be measured against, so
-chapter quality is judged ad hoc -- per reviewer, per sitting, with no record of what was
-actually checked. This task writes that bar down as a standard. The mechanical checker and the
-agent wiring that enforce it are a dependent task; this one produces the specification they
-implement.
-
-DELIVERABLE (exactly one file).
-  agent-system/extensions/typst/context/project/typst/standards/chapter-quality.md
-
-PATH NOTE (settled). The measure was originally sketched at context/standards/chapter-quality.md.
-That is not this extension's layout: all eight existing standards live under
-context/project/typst/standards/ (compilation-standards, document-structure,
-notation-conventions, package-usage, semantic-element-usage, textbook-standards,
-type-theory-foundations, typst-style-guide). The path above is the corrected, settled target.
-
-THE FOUR DIMENSIONS ARE SETTLED MAINTAINER DECISIONS. Not open for redesign, renaming, merging,
-reordering or extension. Define exactly these four, no more and no fewer:
-
-  1. SOURCE GROUNDING. Every substantive claim traces to a cited source -- a repo path, a paper,
-     or a verified fact. Backticked paths resolve against the live tree. Citations resolve in
-     bibliography.bib. No hand-typed count, version or hash. CONFIRM comments well-formed.
-
-  2. ANTI-FLUFF DENSITY. Claim-to-word ratio thresholds. No section without a stated reader need.
-     Flags hedging and filler connective prose. ADVISORY SCORE RATHER THAN A HARD GATE -- this
-     dimension never blocks, and the standard must say so explicitly for each of its rules.
-
-  3. PRESENTATION CLARITY. Every notation or glossary term defined before first use. Heading-depth
-     bound. Paragraph-length bounds. A concept introduced has an accompanying example or figure.
-
-  4. OPEN-QUESTION HONESTY. Speculative claims explicitly marked. Open questions listed rather
-     than buried. No future-tense claim stated as settled fact.
-
-PER-RULE CLASSIFICATION IS THE CORE OF THE DELIVERABLE, NOT A GARNISH. Every individual rule
-under every dimension carries TWO independent, explicitly stated classifications:
-
-  AXIS 1 -- BLOCKING or ADVISORY. The consuming checker's exit code is driven by BLOCKING
-  findings only; ADVISORY findings are reported and counted but never affect exit status. This
-  mirrors the severity split already documented in the header of scripts/typst-element-lint.sh,
-  whose stated rationale holds here verbatim: an unreviewed hard threshold that fires on correct
-  documents is exactly the failure mode the split exists to prevent, because a gate that fires on
-  correct documents gets switched off. Any threshold introduced here without a corpus observation
-  behind it must be ADVISORY on first release, and the standard must say that it is unreviewed.
-
-  AXIS 2 -- MECHANICAL or JUDGED. Mechanical rules are checkable by a shell script without
-  understanding the prose. Judged rules require a reader. The standard must be honest about which
-  is which, because the dependent checker is required to emit JUDGED rules as a structured prompt
-  for a reviewing agent rather than silently skipping them. A rule misclassified as mechanical
-  here becomes a false gate downstream; one misclassified as judged becomes an unenforced rule.
-
-DEFER, DO NOT DUPLICATE -- INTERNAL. Three existing standards in this same extension already
-cover adjacent ground. Cross-reference and defer; do not restate, and do not contradict:
-  - standards/textbook-standards.md -- "Motivation Requirements", "Professional Tone Standards",
-    "Chapter Structure" and "Quality Checklist" overlap ANTI-FLUFF DENSITY and PRESENTATION
-    CLARITY materially.
-  - standards/semantic-element-usage.md -- its "Self-Review Questions" overlap the judged rules,
-    and its Universal Placement Rule is ALREADY mechanically enforced by
-    scripts/typst-element-lint.sh. PRESENTATION CLARITY must not re-specify placement; it names
-    the existing rule and its existing enforcer.
-  - standards/notation-conventions.md -- the shared-notation.typ import pattern is the natural
-    anchor for PRESENTATION CLARITY's "notation defined before first use". Point at it rather
-    than re-deriving a second notation model.
-Where this standard and an existing one could both be read as owning a rule, say which one owns
-it. Ambiguous double-ownership is how two standards drift apart.
-
-DEFER, DO NOT DUPLICATE -- PER-REPO. A consuming repository plans its own checks in its local
-typst/scripts/: a name-resolution check and a chapter-source coverage invariant. This standard
-must NOT implement or duplicate either. It must instead DEFINE THE INTERFACE CONTRACT those local
-checks satisfy -- what a conforming local check is expected to verify, what it reports, and how
-its result composes with this standard's own findings -- so a repo-local implementation can be
-written against the contract without importing agent-system code.
-
-RATIONALE SECTION IS REQUIRED, AND IS LOAD-BEARING. Record why each dimension exists, so a future
-editor cannot quietly delete a rule whose purpose is no longer obvious. In particular:
-OPEN-QUESTION HONESTY exists because a forward-looking chapter on training agents to synthesize
-programs from verified components must not present genuinely open research questions as resolved.
-That reasoning goes in the rationale section, not in a commit message where it will be lost.
-
-PLACEMENT IS SETTLED. This is an agent-system standard in the typst extension, not a per-repo
-document. It is deployed to every repo that loads the typst extension.
-
-ACCEPTANCE.
-  1. The file exists at the path above, in the source store, and nowhere under .claude/**.
-  2. All four dimensions present, named exactly as above, with no fifth dimension.
-  3. EVERY rule carries an explicit BLOCKING-or-ADVISORY tag and an explicit MECHANICAL-or-JUDGED
-     tag. A rule missing either tag is an incomplete deliverable -- the dependent checker cannot
-     be written against it.
-  4. Every ANTI-FLUFF DENSITY rule is tagged ADVISORY. No exceptions.
-  5. Explicit cross-references to textbook-standards.md, semantic-element-usage.md and
-     notation-conventions.md, each stating what is deferred to it rather than restated.
-  6. An interface-contract section for the consuming repo's name-resolution and chapter-source
-     coverage checks, written so a repo-local implementation can satisfy it independently.
-  7. A rationale section that records the OPEN-QUESTION HONESTY reasoning above.
-  8. No task-number references anywhere in the file
-     (rules/no-task-references-in-deliverables.md).
-
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
-
----
-
-### 252. Port deploy pending recovery batch postflight
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [252_port_deploy_pending_recovery_batch_postflight/reports/01_deploy-pending-recovery-batch-postflight.md]
-- **Plan**: [252_port_deploy_pending_recovery_batch_postflight/plans/01_deploy-pending-recovery-batch-postflight.md]
-- **Summary**: [252_port_deploy_pending_recovery_batch_postflight/summaries/01_deploy-pending-recovery-batch-postflight-summary.md]
-
-**Description**: Port the deploy-pending (exit 6) recovery into the batch postflight, and fix cycle_modified_files accumulation on a refused postflight
-
-SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-MOTIVATION -- A CLOSED LOOP THAT PREVENTS ANY SOURCE-STORE-EDITING TASK FROM COMPLETING UNDER THE BATCH ENGINE. Observed live on 2026-09-22 during an /orchestrate run over two tasks. The second task finished all 4 phases, committed cleanly, and still could not reach `completed` without manual operator intervention.
-
-CONFIRMED MECHANISM (all four facts verified by direct inspection, not inferred):
-
-  1. `update-task-status.sh` (its "PHASE 0.5" check-only backstop) refuses postflight with EXIT 6 when a task's `modified_files` overlap `agent-system/extensions/**` and the deployed `.claude/` tree is stale. Observed verbatim: "[deploy-check] refusing postflight implement ...: extension 'core' is stale relative to its source store".
-
-  2. The sanctioned auto-recovery for exit 6 EXISTS, but only in `scripts/command-gate-out.sh` (around lines 153-175): it snapshots verify-deploy findings via `deploy_findings_snapshot`, runs the sanctioned single-task redeploy trigger, and retries the status write once. Its own comment names it as "one of the two sanctioned automated deploy-trigger sites" per `context/patterns/regeneration-is-manual-only.md`'s carve-out.
-
-  3. `scripts/orchestrate-cycle-postflight.sh` -- the postflight the CURRENT four-move batch loop actually runs -- has NO exit-6 handler at all. `grep -n 'command-gate-out' orchestrate-cycle-postflight.sh` returns exactly ONE hit, at line 1136, and it is a COMMENT ("releasing it once at the outer command-gate-out.sh boundary this per-cycle script does not"). The recovery was never ported when the single-task engine was retired.
-
-  4. SECOND, INDEPENDENT MISS ON THE SAME LOOP. The refusal aborts before `orchestrate-cycle-postflight.sh`'s `cycle_modified_files` accumulation block (around lines 1169-1176). Verified after the live run: `cycle_modified_files` was `[]` in the multi-state file even though the task modified three files under `agent-system/extensions/core/**`. Because `orchestrate-cycle-plan.sh`'s inter-cycle redeploy checkpoint (around lines 700-810) CONSUMES the prior cycle's `cycle_modified_files`, an empty array means the checkpoint can never fire either. So the fallback that would otherwise have caught this is silently disarmed by the very refusal it exists to recover from.
-
-THE RESULTING CYCLE: postflight refused -> modified_files never accumulated -> inter-cycle redeploy checkpoint never fires -> next cycle re-dispatches `implement` against an already-4/4-complete plan -> same refusal. Cycle 4 of the live run did exactly this: it prepared a fresh implement dispatch for a task whose plan was fully closed. Without operator intervention this churns until MAX_CYCLES.
-
-BLAST RADIUS. This repository IS the agent system, so `modified_files` overlapping `agent-system/extensions/**` is the COMMON case for `meta` task types, not an edge case. Every such task currently requires a manual deploy plus a manual `reconcile-task-status.sh` replay to reach `completed`.
-
-=== PART 1 (primary): PORT THE EXIT-6 RECOVERY ===
-
-Port `command-gate-out.sh`'s exit-6 branch into `orchestrate-cycle-postflight.sh`. Requirements:
-  - Reuse `deploy_findings_snapshot` from `scripts/lib/deploy-baseline-lib.sh` -- do NOT reimplement the baseline-relative (a)/(b)/(c) failure contract. The gate-out call site and the Inter-Cycle Redeploy Checkpoint already share that library specifically so the two cannot drift; a third copy would reintroduce exactly that drift.
-  - Preserve the single-retry posture: `command-gate-out.sh:211` deliberately does NOT re-attempt after a successful redeploy still leaves the task refused ("this is a real signal, not re-attempted again"). Keep that.
-  - CONCURRENCY IS THE REAL DESIGN QUESTION, AND IT IS NOT A DETAIL. `command-gate-out.sh`'s own comment justifies its automated deploy trigger on the grounds that it is "a point with NO concurrency -- the true single-task /implement completion path". The batch postflight is NOT such a point: sibling tasks in the same wave may be mid-flight. Decide and DOCUMENT the posture explicitly -- serialize the redeploy behind a lock, defer it to the inter-cycle checkpoint boundary where no dispatch is in flight, or another defensible option. Do not port the trigger without resolving this; an unserialized redeploy under a live batch is a worse defect than the one being fixed. If the resolution is "defer to the checkpoint", then Part 2 alone may be the correct whole fix -- that is an acceptable outcome, but it must be an argued conclusion, not a silent omission.
-  - Update `context/patterns/regeneration-is-manual-only.md`'s carve-out if the count of sanctioned automated deploy-trigger sites changes (it currently says "two").
-
-=== PART 2: FIX cycle_modified_files ACCUMULATION ON A REFUSED POSTFLIGHT ===
-
-`cycle_modified_files` must accumulate from `.return-meta.json` even when the status write was refused. It is the input to the inter-cycle redeploy checkpoint, and a refusal is precisely when that fallback matters most. Note the existing comment at that block explains it accumulates there (rather than being re-read later) because the scoped commit may already have removed `.return-meta.json` -- so the fix must preserve that ordering constraint, not just hoist the read.
-
-This part is independently valuable and lower-risk than Part 1: it re-arms the existing checkpoint without introducing any new deploy-trigger site. Size it as its own phase and commit it green on its own.
-
-=== PART 3 (small): DOCUMENT THE REPLAY PATH AFTER AN UNWIND ===
-
-`scripts/orchestrate-unwind-dispatch.sh` is documented in skills/skill-orchestrate/SKILL.md as "the sanctioned hand-recovery path" for a prepared-but-never-issued dispatch row. What is NOT documented is what to run afterwards. Observed live: re-running `orchestrate-cycle-postflight.sh` directly after an unwind opens a FRESH dispatch window that the existing handoff predates, producing:
-  - "ERROR: STALE HANDOFF -- mtime <t1>, older than this dispatch window (<t2>)"
-  - a false `verdict: failed` on work that was in fact complete,
-  - a spurious `HANDOFF_STALE_OR_ABSENT` row in `detected_defects` attributed to skill-orchestrate/SKILL.md,
-  - and a misleading "orchestration dispatch off-schema" commit.
-
-`reconcile-task-status.sh` was the correct replay path and resolved it cleanly. Document that in SKILL.md's "Unwinding an Unconsumed Dispatch" pointer and in `docs/architecture/orchestrate-state-machine.md`. Consider whether `orchestrate-unwind-dispatch.sh` should print the follow-up instruction itself on success. This is documentation plus at most a printed hint -- do not grow it into a behavioral change to the handoff-identity gate, which is working as designed.
-
-=== ACCEPTANCE ===
-  1. A task whose `modified_files` overlap `agent-system/extensions/**` reaches `completed` through the four-move loop with NO manual deploy and NO manual reconcile -- demonstrated end to end, not asserted.
-  2. `cycle_modified_files` is non-empty after a postflight refused by the completion-deploy gate, and the inter-cycle redeploy checkpoint demonstrably fires on the following cycle.
-  3. The concurrency posture from Part 1 is documented in the script and in `context/patterns/batch-orchestration-guardrails.md`.
-  4. `scripts/tests/test-postflight-deploy-gate.sh` and `scripts/tests/test-orchestrate-cycle-postflight.sh` cover the refusal-then-recovery path; both green. Extend them rather than writing a parallel suite.
-  5. No test is weakened or deleted to make the change pass.
-
-=== SCOPE DISCIPLINE ===
-  - Do NOT edit `orchestrate-cycle-plan.sh` beyond what the checkpoint re-arming strictly requires -- its decomposition is another open task's declared scope, and editing it here reintroduces the undeclared-overlap deferral the batch engine exists to prevent.
-  - Do NOT weaken the completion-deploy gate itself. The gate is correct; the missing piece is the recovery, not the check.
 
 ---
 
@@ -2093,7 +875,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 199, Task 245, Task 249, Task 259
+- **Dependencies**: Task 199, Task 245, Task 249, Task 259, Task 265, Task 266
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -2291,65 +1073,9 @@ SUGGESTED MEASUREMENT FOR PHASE 1'S PROBE: capture per-suite wall-clock in the i
 output, not just line/byte/caller counts. The ranking for "what to speed up" needs per-suite
 timing, and that data is currently collected nowhere.
 
----
-
-### 249. Restore the eager-context budget: trim the source-store rule to a lazy narrative rather than re-baselining
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [249_restore_eager_context_budget/reports/01_eager-context-budget-trim.md]
-- **Plan**: [249_restore_eager_context_budget/plans/01_eager-context-budget-trim.md]
-- **Summary**: [249_restore_eager_context_budget/summaries/01_eager-context-budget-trim-summary.md]
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-EVIDENCE. Measured 2026-09-22. `bash .claude/scripts/verify-deploy.sh --skip-slow` FAILS with eager-load total 67,003 B against the recorded baseline_bytes 65,950 B in context/config/orchestrator-context-budget.json (+1,053 B over). The same breach is the sole red suite in `run-all.sh` (91 passed, 1 failed, 92 total): tests/test-verify-deploy-context-budget.sh fails two internal cases, "baseline fixture is not clean (rc=1, gate20 finding lines=1)" and "could not compute a safe eager-load pad amount (current_eager='67003', baseline_bytes='65950')". Both are deterministic consequences of the breach, not flakes. These are ONE defect with two symptoms, not two.
-
-ATTRIBUTION IS EXACT. The eager total was 65,257 B on 2026-09-21 (per the CORRECTED note in orchestrator-context-budget.json). Byte-level diff of every eager contributor since that date:
-  core/rules/source-store-deploy-boundary.md   2,746 -> 4,443 B  (+1,697)
-  core/merge-sources/claudemd.md             19,435 -> 19,484 B  (+49)
-  total                                                  +1,746 B, i.e. 65,257 -> 67,003
-The +1,697 B is a completed task's rewrite of the source-store rule, which grew an EAGERLY LOADED rule file by 62%. That task completed without the budget gate being run, so the breach landed silently.
-
-PREFERRED REMEDY: TRIM, DO NOT RE-BASELINE. rules/source-store-deploy-boundary.md now inlines a 5-step source_dir resolution procedure, an "If the source store is unreachable" branch, a Before/After example, an Exceptions list, and a two-layer Enforcement narrative with a Known-limitation paragraph. Only the path pattern, the principle, and the one-line resolution instruction ("read source_dir from <project-root>/.claude-extensions.json and edit under it") need to be eager -- roughly 1,200 B of the 4,443. Move the procedure detail, the example, and the Enforcement narrative into a lazily loaded context/standards/ file and point at it from the rule. This is the SAME rule->narrative split the codebase already uses twice: rules/git-workflow.md -> context/standards/git-workflow-narrative.md, and rules/state-management.md -> context/reference/state-management-schema.md. Follow those as the model.
-
-AIM FOR HEADROOM, NOT PAR. Two queued tasks add further eager bytes on top of an already-breached budget: 139 edits rules/git-workflow.md (8,828 B, the largest eager rule) and 224 edits both rules/pr-prohibition.md (2,574 B) and merge-sources/claudemd.md (predicted-assembled into CLAUDE.md, hence eager). Trimming back to exactly the baseline just moves the wall a few hundred bytes before those two hit it again. Target a margin that absorbs them.
-
-RE-BASELINING IS THE FALLBACK, AND IS GATED. baseline_bytes "must never be silently re-derived from a fresh measurement -- only a deliberate, reviewed change should move it" (its own note field). If research concludes the expanded rule content genuinely must be eager, then re-baselining is permitted ONLY with: (a) a written justification of why each retained paragraph must load on every session; (b) the bump recorded in the note field in the same commit, in the style of the existing 64450->65950 entry; (c) an explicit statement of the remaining headroom against 139 and 224.
-
-ACCEPTANCE.
- 1. `bash .claude/scripts/measure-eager-context.sh --check` reports TOTAL at or under baseline_bytes.
- 2. `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` passes all 13 cases.
- 3. `bash .claude/scripts/verify-deploy.sh --skip-slow` gate 20 passes (note: gates for deployed-script drift and provides.scripts registration are task 245's, not this task's -- do not "fix" those here).
- 4. `run-all.sh` green; read the summary line and the exit code, and DO NOT pipe it through tail/head (that masks both).
- 5. No behavioral change to the source-store rule itself: the same prohibition, the same exceptions, the same correct edit target. This is a relocation of prose, not a weakening of a rule.
- 6. The lazily loaded destination file is reachable from the rule by a plain backticked path reference, never an @-import (eager-loading it again would defeat the change).
-
-DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).
-
----
-
-### 245. orchestrate-batch-admit.sh: compute in-batch file_scope deferral against tasks actually admitted this cycle
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-- **Research**: [245_batch_admit_defer_against_admitted_set_only/reports/01_admitted_set_only_defer.md]
-- **Plan**: [245_batch_admit_defer_against_admitted_set_only/plans/01_admitted-set-only-defer.md]
-- **Summary**: [245_batch_admit_defer_against_admitted_set_only/summaries/01_admitted-set-only-defer-summary.md]
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
-
-EVIDENCE SOURCE. Observed live on 2026-09-21 in ~/Projects/Logos/Verification during `/orchestrate 66,70,72,76,77,81,84,85` (session sess_1790009936_0a5e95).
-
-DEFECT. scripts/orchestrate-batch-admit.sh's in_batch rule defers a candidate against ANY lower-numbered in-batch task with overlapping file_scope, regardless of whether that lower-numbered task is itself admitted this cycle. Observed: one cycle admitted two tasks; a third deferred on the first (overlap on docs/ci.md) -- correct -- but a fourth, independent of both admitted tasks, then deferred on the third (overlap on docs/README.md) even though the third was not dispatching, waiting an extra cycle. The same pattern recurred two cycles later. Safe but wasteful: the 8-task batch took 6 implement cycles, of which ~2 could have been saved.
-
-DELIVERABLE. Compute in-batch deferral against the set of tasks actually admitted this cycle: iterate candidates greedily in ascending project_number, admitting a candidate iff its scope does not overlap any ALREADY-ADMITTED task's scope (plus all existing gates). Preserve determinism (same input -> same admitted set) and existing cross_batch semantics unchanged. Keep deferral reasons naming the admitted task that blocked the candidate. Add a regression test (new scripts/tests/test-orchestrate-batch-admit.sh or extend an existing admit test) reproducing the chain A admitted, C deferred on A, D overlapping only C -> D admitted.
-
-OUT OF SCOPE. Empty/absent file_scope admission posture (owned by the file-scope-lifecycle topic tasks).
-
-DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-references-in-deliverables.md).
+=== PATH REVIEW 2026-09-28 (fifth pass): the run-all.sh worked example is CLOSED -- do not redo it ===
+The test-suite runtime task completed on 2026-09-26 and delivered exactly the sequence the worked example above prescribes: verify-deploy.sh gained --only-gate; test-verify-deploy-context-budget.sh collapsed to one full battery (391 s -> ~103 s); run-all.sh gained opt-in --jobs N|auto (serial default, JOBS_CAP 4, longest-first, deterministic output, nested-invocation guard) and a durable per-suite timing baseline in that task's report. run-all.sh, test-verify-deploy-context-budget.sh and verify-deploy.sh were removed from this task's file_scope accordingly (verify-deploy.sh now belongs to the Gate 8 parallelism task).
+WHAT REMAINS: Phase 1 (the standing script-inventory probe, which must reuse that task's timing baseline as its per-suite wall-clock input rather than re-measuring) and Phase 2 (the behaviour-preserving decomposition of orchestrate-cycle-plan.sh into lib/). Ordered behind the isolation-posture decision, the deploy-pending/identical-dispatch fix and the checkpoint-cost task, so the file is quiet when it is decomposed. Re-measure the 2,279-line figure first.
 
 ---
 
@@ -2398,6 +1124,57 @@ TWO ADDITIONAL REQUIREMENTS beyond the original (1)-(6):
     admits or blocks a different set is a new defect, not a fix. The hook is now in file_scope
     for this reason, and a test should cover lint/hook agreement on a consumer-repo-shaped
     fixture.
+
+
+=== ABSORBED 2026-09-28 (path review, fifth pass) from former task 256 (validate_wiring_skip_missing_tree_root); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
+
+=== PREMISE RESOLVED 2026-09-25 -- SCOPE NARROWED, DO NOT RE-BROADEN ===
+This task originally proposed auditing ~32 .opencode references across core scripts on the
+premise that "OpenCode is retired". The user has now settled that premise directly: .opencode/
+in the nvim agent-system repo STAYS FROZEN, exactly as the standing frozen-mirror policy
+records -- not maintained, not generated, not deleted. The blanket reference audit is therefore
+CANCELLED: those references are correct and must stay. Removing the .opencode arm from
+deploy-root-guard.sh or validate-state.sh in particular would narrow a deliberately general
+"this must be a deploy tree, whichever kind" guard into a single-system one -- a regression
+dressed as a cleanup, and the specific outcome this note exists to prevent.
+
+What separately DID happen: the ModelChecker consumer repo deleted its own stale .opencode/
+DEPLOY (351 files, 2.9M, context files already drifted) plus its root opencode.json. That is a
+consumer-local deploy deletion, orthogonal to the frozen mirror, and it is already done.
+
+=== THE ONE REAL REMAINING DEFECT ===
+That deletion exposed a genuine, narrow bug, which is now this task entire:
+
+scripts/validate-wiring.sh does not gracefully skip a MISSING .opencode tree. Its `all` arm
+unconditionally calls validate_core_system/validate_extensions_loaded against
+"$PROJECT_ROOT/.opencode" and reports hard [FAIL] rows ("index.json not found", "Agent
+missing: ...", "Rule missing: ...") when that directory simply is not deployed in this
+consumer. Measured in ModelChecker on 2026-09-25, immediately after the deletion:
+`validate-wiring.sh all` -> exit 1, 15 failures, every one attributable to the absent
+.opencode arm; `validate-wiring.sh --claude` -> exit 0, 20 passed, 0 failed.
+
+A consumer repo that never deploys OpenCode is a NORMAL, supported configuration, not an
+error. The script should treat an absent tree root the way check-task-references.sh already
+does -- skip it with an informational line (its existing "[SKIP] lua does not exist under
+..." output is the exact precedent to mirror) -- rather than emitting failures that mask the
+real .claude-side result. Note this masking was severe before the deletion: ModelChecker
+`validate-wiring.sh all` reported 89 failures, ALL from the stale .opencode arm, while the
+.claude side was in fact completely clean.
+
+Scope: (1) make validate-wiring.sh skip a non-existent tree root for BOTH the .claude and
+.opencode arms, emitting a SKIP line rather than failures, so the exit status reflects only
+trees actually present; (2) confirm the same missing-tree-root assumption does not bite the
+other scripts that reference .opencode -- deploy-root-guard.sh and validate-state.sh were
+checked on 2026-09-25 and are SAFE (both match the running script own path against
+*/.claude/scripts/ or */.opencode/scripts/, so an absent sibling tree is irrelevant), and
+hooks/validate-handoff-location.sh is SAFE (its OC_ regex concerns specs/ path shapes, not the
+tree); re-verify rather than trusting this note; (3) add a regression test covering a
+consumer layout with .claude present and .opencode absent.
+
+Explicitly OUT of scope now: removing any .opencode reference, editing the frozen-mirror
+policy, and check-task-references.sh TREE_ROOTS (owned wholesale by the dependency task).
 
 ---
 
@@ -2463,47 +1240,6 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ---
 
-### 224. Add /please: single-use grant, push guard, destructive-git grant check, the user-only command, rule exception and docs
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 129, Task 240
-
-**Description**: Add a tamper-resistant single-use /please grant mechanism, a new git push guard, and grant checks in the destructive-git guard. Only agent-system/extensions/core/ is edited (hooks/, scripts/tests/, root-files/settings.json and/or merge-sources/settings-hooks.json, context/standards/git-safety.md), never .claude/.
-
-(1) GRANT HOOK. A UserPromptSubmit hook that, when the literal user prompt starts with "/please", writes one grant (request text, timestamp, 10-minute expiry). Research must first verify what the hook payload actually contains (raw "/please ..." text or the expanded command body) and that subagent- or model-generated prompts can never trigger UserPromptSubmit.
-
-(2) INTEGRITY, TO BE SETTLED IN RESEARCH. "The model must not be able to create grants" and "forged grant file rejected" require a real integrity mechanism: a gitignored file the model can Write to is forgeable. Starting point: an HMAC over each grant using a secret key stored outside the model-reachable/writable paths (or readable only by the hook), plus a PreToolUse guard blocking Write/Edit/Bash writes to the grant file and the key path. State the threat model honestly: a same-user shell process can in principle read any file the hook can read, so this raises the bar rather than proving user intent; name the residual risk. Decide whether the grant belongs outside the repo (e.g. $XDG_STATE_HOME) or in a gitignored in-repo path (the repo .gitignore currently ignores /.claude/ and /specs/tmp; root-files/.gitignore only covers .claude/).
-
-(3) MATCHING RULE, TO BE SETTLED IN RESEARCH. Define how the free-text request is matched to the concrete command, e.g. action class (force-push, reset --hard, clean -fd, ...) plus remote/branch extracted from both. Ambiguous or partial matches are refused; one grant covers one action class and one target.
-
-(4) PUSH GUARD. No push guard exists today (rules/pr-prohibition.md is advisory only; root-files/settings.json allow-lists Bash(git:*)). Create a new PreToolUse Bash hook (e.g. hooks/guard-git-push.sh) that blocks git push without a matching unexpired grant, via exit 2 + stderr like guard-destructive-git.sh (permissionDecision: deny is documented-buggy for allow-listed git commands). Research decides whether it also covers gh pr create / glab mr create and how /merge own push stays working.
-
-(5) DESTRUCTIVE-GIT GUARD. hooks/guard-destructive-git.sh allows a matched action only with a matching unexpired grant, consuming it on use (mirror the existing .git-snapshot-marker consume-on-use pattern). Without a grant, behavior is unchanged. Preserve the clean-tree early exit and the COMMAND_SCAN quote/comment-stripping; a grant must never exempt the over-staging detectors. Decide where the grant check sits relative to the clean-tree early exit.
-
-(6) REGISTRATION. Register the new hooks in the source-store settings file(s) research identifies (PreToolUse Bash hooks currently live in root-files/settings.json; UserPromptSubmit hooks in merge-sources/settings-hooks.json).
-
-(7) TESTS in scripts/tests/ following context/standards/shell-script-testing.md and the fixture style of test-guard-destructive-git.sh (hook run as a subprocess against a synthetic dirty repo, asserting exit codes): forged grant rejected, expired grant rejected, grant consumed after one use, mismatched action/target rejected, no-grant behavior unchanged for both guards, writes to grant file and key path blocked.
-
-OVERLAP NOTE (no dependency edge, by user decision): the pending history-rewrite predicate work on guard-destructive-git.sh also edits hooks/guard-destructive-git.sh, rules/git-workflow.md and context/standards/git-safety.md. Structure predicate ordering so the two additions compose; the file-footprint admission gate serializes them if run concurrently.
-
-Redeploy afterwards and confirm the hooks fire from the deployed copies.
-
-=== ABSORBED 2026-09-17 from former task 225 (/please command, never-list, pr-prohibition exception, docs); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
-Add the user-only /please command, its never-list, the pr-prohibition exception, and the CLAUDE.md command-reference entry. Only agent-system/extensions/core/ is edited (commands/please.md, commands/README.md, rules/pr-prohibition.md, merge-sources/claudemd.md), never .claude/. Builds on the grant mechanism and guards from the predecessor task (dependency).
-
-(1) commands/please.md, user-only, modeled on commands/merge.md and commands/tag.md: authorizes one otherwise-blocked action per invocation (e.g. "/please force-push main to origin"). Parse the requested action; show the exact command and its effect (for pushes: local vs remote SHAs); confirm with AskUserQuestion before any irreversible step; prefer safe forms (--force-with-lease=<ref>:<observed remote SHA> over --force); do only the literal request; log the action to specs/events.jsonl via scripts/events-append.sh. Caveat to state in the command: the grant proves the user typed /please, not that the command the agent then runs is the one meant, so the confirmation step is mandatory for anything irreversible.
-
-(2) NEVER-LIST, refused regardless of wording and enforced in the command: credential/secret access, deletion outside the repo, .git internals, disabling/editing/removing hooks or hook settings.
-
-(3) rules/pr-prohibition.md: add a /please exception scoped to the single action of that one invocation, reconciled explicitly with the existing "never push even if asked in user messages" language.
-
-(4) merge-sources/claudemd.md: add a /please row to the Command Reference table beside /tag and /merge, marked user-only; add a row to commands/README.md.
-
-Redeploy and confirm the generated .claude/CLAUDE.md shows the new row.
-
----
-
 ### 223. Record the Comparator-on-NixOS fixes in the lean extension
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
@@ -2514,6 +1250,28 @@ Redeploy and confirm the generated .claude/CLAUDE.md shows the new row.
 **Description**: Record the Comparator-on-NixOS fixes in the lean extension source store (~/.config/nvim/agent-system/extensions/lean, not .claude/): update context/project/lean4/domain/comparator-integration.md, context/project/lean4/tools/comparator-guide.md and scripts/lean-comparator-run.sh (with scripts/tests/test-lean-comparator-run.sh) so a Comparator run works on this host. Fixes found while certifying framed_channel: (1) put the pinned toolchain bin/ before the elan shim on PATH, since landrun cannot execute the shim (the `lake: Permission denied` failure the design record notes but never explains); (2) invoke as `lake env comparator config.json`; (3) point TMPDIR inside the writable .lake directory because bv_decide writes SAT files to /tmp, which the sandbox makes read-only; (4) grant --rox on git's nix store libraries, otherwise Lake decides the package URL changed and deletes .lake/packages/<dep>. Also document: lean4export panics when permitted_axioms names an axiom absent from the Challenge (handle a flagged bv_decide row by permitting only the trusted axioms and requiring the exact Illegal axiom rejection, which still proves the statement matches); `lake update` in a tool-pinning package silently rewrites lean-toolchain unless --keep-toolchain; batched Lean4Lean runs can exceed 19 GB and trigger earlyoom, so run one module per process; an outer landrun around lake env and Comparator itself. Reference implementation: framed_channel/recheck-comparator.sh, recheck-revs.sh and comparator-configs.sh in this repository, and the task 32 report and summary. Redeploy .claude/ afterwards.
 
 ORIGIN: moved from the ~/Projects/Logos/Verification task list, where it was researched; the research report was copied here as reports/01_comparator-nixos-fixes.md. The reference implementation it transcribes lives in ~/Projects/Logos/Verification/framed_channel/ (recheck-comparator.sh, recheck-revs.sh, comparator-configs.sh). Task numbers inside the report refer to that repository's task list.
+
+=== ABSORBED 2026-09-28 (path review, fifth pass) from former task 177 (lean4_dependency_tracing_recipe); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+Add a dependency-tracing recipe to the lean4 extension context: how to mechanically answer "does X depend on Y?" in a Lean 4 environment, and why `#print axioms` cannot answer it.
+
+WHY THIS EXISTS. A trace task in ~/Projects/BimodalLogic had to answer whether a decision procedure depended on a set of theorems whose hypotheses had been refuted. The task's own description demanded a MECHANICAL trace ("a prose argument that it probably doesn't is not the deliverable"), and no recipe existed -- the probes were invented from scratch. They worked, are re-runnable, and generalize. The finished probes and their verbatim output live at `~/Projects/BimodalLogic/specs/549_trace_decide_dependency_on_vacuous_run_theorems/probes/` (`DepTrace.lean`, `DepTrace2.lean`, `RevDep.lean`, `Widen.lean`, `Ax.lean`, `Exists.lean`, plus `probe-evidence.md`). Harvest them from there; do not re-derive.
+
+THE LOAD-BEARING CAVEAT, and the reason this is worth writing down at all. `#print axioms` is NOT a dependency tracer. In the observed case the decision procedure, its soundness theorem, AND the vacuous theorem under suspicion all reported the same `[propext, Classical.choice, Quot.sound]`. An axiom check answers "is this sound?", never "what does this rest on?" -- yet it is the first probe most people reach for, and it would have returned a confidently useless answer. State this explicitly and early in the recipe.
+
+FOUR PROBE SHAPES TO DOCUMENT AS REUSABLE TEMPLATES:
+1. Forward transitive closure over the environment -- `Expr.getUsedConstants` over both type and value, iterated to a fixed point from a named entry point, then intersected with a suspect set. This is the primary tool.
+2. The module-index variant -- resolve which module each reached constant came from, and count the hits attributable to a target module. Answers "how much of module M does X touch?" in one number.
+3. Whole-environment reverse-dependency scan -- iterate every declaration in the environment and report those whose closure contains a suspect. Answers "what would break if I deleted this?", which is the question a retirement decision actually needs.
+4. Import-closure check -- whether the target's module is even reachable via transitive imports. Distinguishes "unused" from "unavailable", a meaningfully stronger result.
+
+ALSO WORTH RECORDING: run probes with `lake env lean` against existing oleans rather than a full `lake build` -- the observed trace needed no rebuild at all. And note the failure mode that bit the source task: line numbers cited in a research report go stale quickly in a large file, so probes should resolve declarations by name.
+
+SCOPE. Create `agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md` in the SOURCE STORE (never `.claude/**`, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md). Wire it into the lean4 context index the way sibling pattern files are wired; follow the existing single-statement-plus-pointer convention rather than restating the model at the pointer site.
+
+PRIORITY: low, and genuinely optional. This is a recipe harvested from one successful use, not a defect fix -- nothing is broken without it. Its value is that the next such trace does not start from zero, and that the `#print axioms` trap is documented before someone falls into it.
+
+ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt without access to the originating repository. The `#print axioms` caveat is stated explicitly, with the concrete observation that three declarations at different dependency depths all reported identical axioms.
 
 ---
 
@@ -2792,7 +1550,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243, Task 259
+- **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243, Task 259, Task 266
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
@@ -2897,7 +1655,7 @@ re-deciding declaration granularity here.
 - **Status**: [NOT STARTED]
 - **Task Type**: markdown
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 266, Task 199, Task 184
 
 **Description**: Retarget the remaining historical "Stage N" and "Stage MT-N" citations to the four-move loop vocabulary.
 
@@ -2917,13 +1675,16 @@ SCOPE AND CARE. This is a mechanical retarget, not a rewrite of the surrounding 
 
 ACCEPTANCE: every citation that refers to a LIVE section names the correct Move; every historical citation is either left intact or explicitly marked as historical; a grep for "Stage MT-" and for single-task "Stage [0-8]" returns only intentional historical references; deploy and the full gate run stay green.
 
+=== PATH REVIEW 2026-09-28: scope and ordering ===
+file_scope now names the five known sites; research MUST add the remaining files (a grep for 'Stage MT-' and single-task 'Stage [0-8]' matched 72 files under core/context, docs, skills and commands on 2026-09-28, most of them historical-by-intent) to file_scope before the implement dispatch. Ordered behind the three engine tasks that are actively editing batch-orchestration-guardrails.md and handoff-schema.md, so the mechanical sweep runs over settled text.
+
 ---
 
 ### 184. Surface skeleton-plan follow-ups at completion under the batch engine (ruled: port the sorry_inventory follow-up report, not pr_ready routing)
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 242, Task 243, Task 258, Task 259
+- **Dependencies**: Task 242, Task 243, Task 258, Task 259, Task 266
 
 **Description**: === RULED 2026-09-22 (eighth-pass phase 0) ===
 Disposition: option (a), narrowed to what was actually lost. The single-task engine's skeleton-exhaustion branch did three things: (1) routed the task to completion via the pr_ready target, (2) propagated a completion summary, (3) derived and reported follow-up tasks from sorry_inventory[].follow_up_task. Under the batch engine (1) is moot: pr_ready is a type=pr-only terminus, and every other task completes through orchestrate-cycle-postflight.sh's completion-claim gate, which a skeleton plan with all phases complete already reaches (orchestrate-cycle-plan.sh's 'no OPEN heading' fallthrough, ~line 2003, and the porting note at ~line 1921). (2) is owned by postflight generally. Only (3) is lost: a skeleton plan completes with its sorry_inventory silently dropped, so the strategic sorries never become tasks.
@@ -2941,35 +1702,6 @@ SCOPE. Determine whether strategic-sorry skeleton plans can still reach a correc
 EVIDENCE. The assertions covering this mechanism (.skeleton / last_skeleton and .sorry_inventory / follow_up_tasks) were removed from scripts/tests/test-handoff-reader-parity.sh. Recorded under "Plan Deviations" in specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md. Related policy: the strategic-sorry skeleton allowance in context/contracts/recovery.md.
 
 ACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a working path to terminal status for skeleton plans with test coverage, or documentation naming the expected terminus.
-
----
-
-### 177. Add a dependency-tracing recipe to the lean4 extension context
-- **Effort**: 2-3 hours
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: lean-extension
-- **Dependencies**: None
-
-**Description**: Add a dependency-tracing recipe to the lean4 extension context: how to mechanically answer "does X depend on Y?" in a Lean 4 environment, and why `#print axioms` cannot answer it.
-
-WHY THIS EXISTS. A trace task in ~/Projects/BimodalLogic had to answer whether a decision procedure depended on a set of theorems whose hypotheses had been refuted. The task's own description demanded a MECHANICAL trace ("a prose argument that it probably doesn't is not the deliverable"), and no recipe existed -- the probes were invented from scratch. They worked, are re-runnable, and generalize. The finished probes and their verbatim output live at `~/Projects/BimodalLogic/specs/549_trace_decide_dependency_on_vacuous_run_theorems/probes/` (`DepTrace.lean`, `DepTrace2.lean`, `RevDep.lean`, `Widen.lean`, `Ax.lean`, `Exists.lean`, plus `probe-evidence.md`). Harvest them from there; do not re-derive.
-
-THE LOAD-BEARING CAVEAT, and the reason this is worth writing down at all. `#print axioms` is NOT a dependency tracer. In the observed case the decision procedure, its soundness theorem, AND the vacuous theorem under suspicion all reported the same `[propext, Classical.choice, Quot.sound]`. An axiom check answers "is this sound?", never "what does this rest on?" -- yet it is the first probe most people reach for, and it would have returned a confidently useless answer. State this explicitly and early in the recipe.
-
-FOUR PROBE SHAPES TO DOCUMENT AS REUSABLE TEMPLATES:
-1. Forward transitive closure over the environment -- `Expr.getUsedConstants` over both type and value, iterated to a fixed point from a named entry point, then intersected with a suspect set. This is the primary tool.
-2. The module-index variant -- resolve which module each reached constant came from, and count the hits attributable to a target module. Answers "how much of module M does X touch?" in one number.
-3. Whole-environment reverse-dependency scan -- iterate every declaration in the environment and report those whose closure contains a suspect. Answers "what would break if I deleted this?", which is the question a retirement decision actually needs.
-4. Import-closure check -- whether the target's module is even reachable via transitive imports. Distinguishes "unused" from "unavailable", a meaningfully stronger result.
-
-ALSO WORTH RECORDING: run probes with `lake env lean` against existing oleans rather than a full `lake build` -- the observed trace needed no rebuild at all. And note the failure mode that bit the source task: line numbers cited in a research report go stale quickly in a large file, so probes should resolve declarations by name.
-
-SCOPE. Create `agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md` in the SOURCE STORE (never `.claude/**`, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md). Wire it into the lean4 context index the way sibling pattern files are wired; follow the existing single-statement-plus-pointer convention rather than restating the model at the pointer site.
-
-PRIORITY: low, and genuinely optional. This is a recipe harvested from one successful use, not a defect fix -- nothing is broken without it. Its value is that the next such trace does not start from zero, and that the `#print axioms` trap is documented before someone falls into it.
-
-ACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt without access to the originating repository. The `#print axioms` caveat is stated explicitly, with the concrete observation that three declarations at different dependency depths all reported identical axioms.
 
 ---
 
@@ -3467,49 +2199,9 @@ DELIVERABLE RULE (binding): no task-number references in any file outside specs/
 
 ACCEPTANCE: a task-type-independent path exists by which an agent about to compile a .tex file consults the shared guard, demonstrably covering `formal`-typed and `general`-typed tasks; the (i)/(ii)/both decision is recorded with reasons, and the rejected per-extension-hook option is explicitly rejected in writing; if agent contracts were edited, both twins carry equivalent obligations; if `skill-base.sh` was edited, the change is additive, preserves existing hook ordering and non-blocking semantics, and the lifecycle test suite passes; no `.claude/**` file is modified.
 
----
 
-### 166. Stop research reports drifting from validate-artifact.sh's required section headings
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 194, Task 196, Task 257
-
-**Description**: DEFECT: a produced research report used section headings that are semantically correct but lexically non-conforming, so validate-artifact.sh's required-section check failed on an artifact whose authoring agent ALREADY carries a conforming skeleton. This is NOT the "agent has no skeleton at all" class addressed by the lean/formal skeleton work -- here the skeleton is present and correct, and the produced artifact drifted from it.
-
-VERIFIED EVIDENCE.
-1. THE CHECK. agent-system/extensions/core/scripts/validate-artifact.sh:20 declares
-     REPORT_SECTIONS=("Executive Summary" "Context & Scope" "Findings" "Decisions" "Recommendations")
-   and :170-173 matches each with `grep -qE "^##+ ${section}"` -- an any-depth heading PREFIX match, unanchored at the end.
-2. THE ARTIFACT. ~/Projects/BimodalLogic specs/461_acquire_goldblatt_1989_varieties_of_complex_algebras/reports/01_acquisition-verified-corpus-status.md, authored 2026-09-07 12:39 -- AFTER that repo's agent reload at 11:13, so by the current deployed agent. task_type=general, therefore written by general-research-agent. `validate-artifact.sh <path> report` without --fix: FAIL, 1 error, "Missing required section: ## Recommendations".
-3. WHY IT FAILED. The report does address recommendations, under two headings:
-     :331  ## Context Extension Recommendations
-     :337  ## Recommended Next Steps (for the plan phase)
-   Neither matches `^##+ Recommendations`: the first because the text after "## " begins "Context", the second because "Recommended" is not "Recommendations". Both directions verified by running the validator's exact regex against both literal strings.
-4. THE SKELETON IS NOT THE DEFECT. agent-system/extensions/core/agents/general-research-agent.md:277 carries a report skeleton that DOES include a conforming `### Recommendations`, which satisfies `^##+ Recommendations`. The agent departed from its own template when writing a real report.
-
-TWO CONTRIBUTING FACTORS TO EVALUATE (do not assume either is the cause).
-(a) BURIAL. In the skeleton, `### Recommendations` is a third-level subsection of `## Findings`, sitting alongside `### Codebase Patterns` and `### External Resources`. Every other required section is top-level. An agent restructuring Findings for a real report gets no signal that this one subsection is load-bearing for validation.
-(b) NEAR-MISS TRAP. The same skeleton separately contains `## Context Extension Recommendations`. An agent writing that heading may reasonably believe the Recommendations requirement is met. The observed artifact contains exactly that heading.
-
-DECIDE, do not assume. Candidate remedies, each with a real cost:
-  (i)   AGENT-SIDE: state the five required heading strings verbatim in the agent contract and mark them non-paraphrasable. Cheapest; relies on instruction-following, which is precisely what failed here.
-  (ii)  SKELETON-SIDE: promote `### Recommendations` to a top-level `## Recommendations`. Structurally removes factor (a); changes the report shape.
-  (iii) VALIDATOR-SIDE: relax matching. DANGEROUS -- a substring match would let `## Context Extension Recommendations` satisfy `Recommendations`, converting a true failure into a false pass. Do not weaken a check to make it green.
-State the ruling and its reasoning. Combining (i) and (ii) is permitted; (iii) requires an explicit argument that it creates no false passes.
-
-SCOPE. Determine whether this is general-research-agent alone or a shared shape. Enumerate every core agent carrying a report or summary skeleton and machine-check each skeleton's headings against REPORT_SECTIONS/SUMMARY_SECTIONS using the validator's own regex -- not by eye.
-
-NOT IN SCOPE: pre-existing non-conforming artifacts authored before their agent gained a conforming skeleton. Those fail for a different reason and are a separate backfill question.
-
-ACCEPTANCE.
-  - The exact failure is reproduced in a fixture (a report carrying `## Recommended Next Steps` and `## Context Extension Recommendations` but no `## Recommendations`) and shown to pass after the chosen remedy.
-  - The chosen remedy is recorded with reasoning, including why the validator was or was not changed.
-  - If the validator is touched, a fixture proves `## Context Extension Recommendations` ALONE still fails.
-  - An enumeration of all core report/summary-writing agent skeletons, machine-checked against the validator's own regex, with any further gaps listed.
-  - A real general-type research dispatch produces a report validating with 0 errors and 0 auto-repairs.
-
-CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+=== PATH REVIEW 2026-09-28 (fifth pass): rule first, scope trimmed ===
+Settled decision 8 stands: the rule edit (primary + pointer + guide cross-reference, AC1-AC7) is the deliverable. The three absorbed mechanism tasks above (core guard script, latex preflight wiring, task-type-independent core path) are CONDITIONAL later phases, admitted only if AC7 shows the widened paths glob does not fire for Bash-only references AND the EXTENSION.md pointer proves insufficient in practice. Their core-side targets (scripts/latex-build-guard.sh, scripts/skill-base.sh, core/manifest.json, agents/general-implementation-agent.md) were REMOVED from file_scope: they classified this task as self-modifying and collided with three unrelated engine tasks. Add them back at plan time only if the conditional phases are actually admitted.
 
 ---
 
@@ -3779,7 +2471,7 @@ DEPENDENCY RATIONALE. Depends on its predecessor task on two grounds: that task 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 91, Task 139, Task 146, Task 166, Task 194, Task 257
+- **Dependencies**: Task 139
 
 **Description**: PRODUCER-SIDE root cause of the malformed plan-level Status line that task 91 handles from the consumer side. Task 91 makes update-plan-status.sh diagnose the malformed line loudly; this task stops the line being written in the first place, and makes the validator catch it if it ever is.
 
@@ -3891,59 +2583,47 @@ ACCEPTANCE (extends, does not replace, the original): the terminal-status requir
 fan-out resolution apply to extension implementation agents as well as the core one, demonstrated
 against a lean4 dispatch; and marker/reality divergence is caught in BOTH directions.
 
----
 
-### 129. Empirically audit \b word-boundary grep patterns for compositional failure under the deployed grep
-- **Status**: [COMPLETED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 88, Task 128, Task 261
-- **Research**: [129_audit_word_boundary_regex_portability/reports/01_word-boundary-grep-audit.md]
-- **Plan**: [129_audit_word_boundary_regex_portability/plans/01_word-boundary-portability-audit.md]
-- **Summary**: [129_audit_word_boundary_regex_portability/summaries/01_word-boundary-portability-audit-summary.md]
+=== ABSORBED 2026-09-28 (path review, fifth pass) from former task 166 (enforce_required_section_heading_conformance); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
 
-**Description**: Audit every `\b` word-boundary construct used in a grep pattern across the source store, empirically, against the grep actually deployed, and record portable-construct guidance so the class does not recur. Surfaced by the adversarial-verification gate failure (evt_1788245094839_eybEyC); that gate is fixed separately and is NOT in this task's scope.
+DEFECT: a produced research report used section headings that are semantically correct but lexically non-conforming, so validate-artifact.sh's required-section check failed on an artifact whose authoring agent ALREADY carries a conforming skeleton. This is NOT the "agent has no skeleton at all" class addressed by the lean/formal skeleton work -- here the skeleton is present and correct, and the produced artifact drifted from it.
 
-THE DEFECT IS COMPOSITIONAL, NOT A MISSING FEATURE. State this precisely; the imprecise version of this finding is what would sink the audit itself. The deployed grep is ugrep 7.8.4 (built with PCRE2 available: `-P:pcre2jit`). Its POSIX/DFA `-E` engine does NOT simply ignore `\b`. Every fragment of the failing pattern matches in isolation against the literal header line `| Claim | Source / counterexample | Verification method | Confidence |`:
+VERIFIED EVIDENCE.
+1. THE CHECK. agent-system/extensions/core/scripts/validate-artifact.sh:20 declares
+     REPORT_SECTIONS=("Executive Summary" "Context & Scope" "Findings" "Decisions" "Recommendations")
+   and :170-173 matches each with `grep -qE "^##+ ${section}"` -- an any-depth heading PREFIX match, unanchored at the end.
+2. THE ARTIFACT. ~/Projects/BimodalLogic specs/461_acquire_goldblatt_1989_varieties_of_complex_algebras/reports/01_acquisition-verified-corpus-status.md, authored 2026-09-07 12:39 -- AFTER that repo's agent reload at 11:13, so by the current deployed agent. task_type=general, therefore written by general-research-agent. `validate-artifact.sh <path> report` without --fix: FAIL, 1 error, "Missing required section: ## Recommendations".
+3. WHY IT FAILED. The report does address recommendations, under two headings:
+     :331  ## Context Extension Recommendations
+     :337  ## Recommended Next Steps (for the plan phase)
+   Neither matches `^##+ Recommendations`: the first because the text after "## " begins "Context", the second because "Recommended" is not "Recommendations". Both directions verified by running the validator's exact regex against both literal strings.
+4. THE SKELETON IS NOT THE DEFECT. agent-system/extensions/core/agents/general-research-agent.md:277 carries a report skeleton that DOES include a conforming `### Recommendations`, which satisfies `^##+ Recommendations`. The agent departed from its own template when writing a real report.
 
-  PATTERN                                                          RESULT
-  \bclaim\b                                                        MATCH
-  claim                                                            MATCH
-  \|[^|]*\bclaim\b[^|]*\|                                          MATCH
-  [^|]*\bclaim\b                                                   MATCH
-  \bclaim\b[^|]*                                                   MATCH
-  \bsource\b[^|]*\bcounterexample\b                                MATCH
-  \|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b                           MATCH
+TWO CONTRIBUTING FACTORS TO EVALUATE (do not assume either is the cause).
+(a) BURIAL. In the skeleton, `### Recommendations` is a third-level subsection of `## Findings`, sitting alongside `### Codebase Patterns` and `### External Resources`. Every other required section is top-level. An agent restructuring Findings for a real report gets no signal that this one subsection is load-bearing for validation.
+(b) NEAR-MISS TRAP. The same skeleton separately contains `## Context Extension Recommendations`. An agent writing that heading may reasonably believe the Recommendations requirement is met. The observed artifact contains exactly that heading.
 
-The full composed pattern nevertheless fails, and bisection localizes it:
+DECIDE, do not assume. Candidate remedies, each with a real cost:
+  (i)   AGENT-SIDE: state the five required heading strings verbatim in the agent contract and mark them non-paraphrasable. Cheapest; relies on instruction-following, which is precisely what failed here.
+  (ii)  SKELETON-SIDE: promote `### Recommendations` to a top-level `## Recommendations`. Structurally removes factor (a); changes the report shape.
+  (iii) VALIDATOR-SIDE: relax matching. DANGEROUS -- a substring match would let `## Context Extension Recommendations` satisfy `Recommendations`, converting a true failure into a false pass. Do not weaken a check to make it green.
+State the ruling and its reasoning. Combining (i) and (ii) is permitted; (iii) requires an explicit argument that it creates no false passes.
 
-  \|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b[^|]*\|   NOMATCH   (production form)
-  \|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b          NOMATCH
-  \|[^|]*\bclaim\b[^|]*\|[^|]*\bsource\b[^|]*counterexample              MATCH     (dropped \b around counterexample)
-  \|[^|]*\bclaim\b[^|]*\|[^|]*source[^|]*\bcounterexample\b              NOMATCH   (dropped \b around source)
-  \|[^|]*claim[^|]*\|[^|]*\bsource\b[^|]*\bcounterexample\b              NOMATCH   (dropped \b around claim)
+SCOPE. Determine whether this is general-research-agent alone or a shared shape. Enumerate every core agent carrying a report or summary skeleton and machine-check each skeleton's headings against REPORT_SECTIONS/SUMMARY_SECTIONS using the validator's own regex -- not by eye.
 
-and the unmodified production pattern under `-P` (PCRE2) returns MATCH.
+NOT IN SCOPE: pre-existing non-conforming artifacts authored before their agent gained a conforming skeleton. Those fail for a different reason and are a separate backfill question.
 
-So the engine mis-evaluates a `\b` that appears DOWNSTREAM of an earlier `\b`-anchored subexpression separated by a `[^|]*` run. Whether a given `\b` works depends on what else is in the pattern.
+ACCEPTANCE.
+  - The exact failure is reproduced in a fixture (a report carrying `## Recommended Next Steps` and `## Context Extension Recommendations` but no `## Recommendations`) and shown to pass after the chosen remedy.
+  - The chosen remedy is recorded with reasoning, including why the validator was or was not changed.
+  - If the validator is touched, a fixture proves `## Context Extension Recommendations` ALONE still fails.
+  - An enumeration of all core report/summary-writing agent skeletons, machine-checked against the validator's own regex, with any further gaps listed.
+  - A real general-type research dispatch produces a report validating with 0 errors and 0 auto-repairs.
 
-BINDING CONSTRAINT ON HOW THIS AUDIT IS PERFORMED. Because the failure is compositional, spot-testing a fragment in isolation does NOT prove the production pattern works in situ. Every site must be executed as its full, unmodified production pattern against a real positive input under the deployed grep, and the observed result recorded. Reasoning about whether a construct "should" work, testing a simplified stand-in, or generalizing from one site's result to another's are all forbidden -- they are precisely the trap this defect sets.
+CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
-FOR THE SAME REASON, THIS IS NOT A MECHANICAL FIND-AND-REPLACE. A blanket `\b` removal would be wrong: `\b` carries real semantics, and several high-stakes sites were spot-verified as CURRENTLY WORKING under the deployed grep -- guard-destructive-git.sh's `--hard\b` and `(drop|clear)\b` both match (that guard is live, not silently dead), the sorry census's `\bsorry\b` matches, and literature-audit.sh's `\b(Definition|Lemma|Theorem|Proposition|Corollary|Remark|Example)\s+[0-9]+(\.[0-9]+)*\b` matches. Rewriting working patterns risks introducing false positives in a destructive-git guard, which is a worse outcome than the defect being audited.
-
-SCOPE. Roughly 26 grep-adjacent `\b` sites across the source store, spanning literature scripts, lean scripts, core scripts, lint scripts, test harnesses, and hooks. For each: run the production pattern against a real positive input under the deployed grep; classify as WORKING or BROKEN on the evidence; repair only the broken ones, choosing per-site between dropping `\b` where surrounding delimiters already provide the boundary and switching that invocation to `-P`; and leave working sites alone with a one-line note recording that they were tested rather than assumed.
-
-DELIVERABLE BEYOND THE REPAIRS. A short portability guidance note under the core standards context directory covering: that the deployed grep may be ugrep rather than GNU grep; that `\b` under `-E` is compositionally unreliable there while `-P` is reliable; that delimiter-anchored alternatives are preferred where the surrounding pattern already bounds the token; and that any new `\b` pattern must be executed against a real input before being committed. Without this note the class recurs the next time someone writes a plausible-looking boundary pattern.
-
-SEQUENCING. Depends on the adversarial-gate fix purely to avoid a file-footprint collision: skill-orchestrate/SKILL.md is itself one of the sites, and that task owns the gate's pattern. This task covers every other site and must not touch the gate.
-
-ACCEPTANCE: every site is accompanied by a recorded empirical result under the deployed grep; no working pattern is rewritten; each repaired pattern is demonstrated to match a real positive input AND to reject a real negative input; and the guidance note exists.
-
-SOURCE-STORE RULE (binding): edit agent-system/extensions/**, never .claude/**.
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
-
-
-CONFIRMED INSTANCE (2026-09-17 survey, carried from the cslib consumer repo's own task list, where it is filed as a local defect and cannot be fixed): lean/scripts/lean-sorry-census.sh matches `\bsorry\b` on comment-stripped text and therefore ALSO matches the "sorry" inside `set_option warn.sorry false in`, because `.` is a non-word character. Every suppression annotation is counted as an extra phantom sorry: measured there as 41 reported = 23 real + 18 annotation lines (repo-wide 45 = 27 + 18). This is exactly the compositional word-boundary class this task audits, on a file already in its file_scope; fix it as part of the audit and add a fixture with a `warn.sorry` line. The consumer repo task can then be abandoned with a pointer here.
+=== PATH REVIEW 2026-09-28: why the research-report heading task was folded in ===
+Both halves are 'an agent skeleton/contract drifts from what validate-artifact.sh enforces': the implementation side (plan-level Status grammar, fan-out, marker/commit sync) and the research side (required-section headings). They serialize on validate-artifact.sh and share one remedy shape (fix the contract text AND make the validator reject the drift), so they are one task with two phases -- research phase first (independent of the git-safety task), implementation-agent phase after the history-rewrite task lands on general-implementation-agent.md.
 
 ---
 
@@ -4016,15 +2696,181 @@ Affected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsit
 === EVIDENCE REFRESHED 2026-09-22 (post-/todo measurement) ===
 The stranded-file count in THIS repo alone is now 48 (.orchestrator-multi-state-*.json and .return-meta-multi-*.json at the specs/ root), up from 25 measured on 2026-09-08 -- nearly doubled in two weeks, with the oldest surviving entries still present. No reaper ran in between, which is precisely the point: part (3) above is the load-bearing half of this task. Relocation (part 1) and glob widening (part 2) both leave the growth rate untouched; only wiring the reaper into /todo changes it. Treat part (3) as the acceptance-critical deliverable, not as the third of three equals.
 
+=== EVIDENCE REFRESHED 2026-09-28 ===
+67 stranded session files at this repo's specs/ root (48 on 2026-09-22, 25 on 2026-09-08), including one .meta-return-sess_*.json written by the superseded convention this task already names as orphaned. Twelve completed tasks await /todo, which is the housekeeping command part (3) wires the reaper into.
+
 ---
 
-### 45. Picker fixes: Global Update extension-repo registry, and honest [Reload All]/[Regenerate] entries
-- **Status**: [NOT STARTED]
-- **Task Type**: general
-- **Topic**: neovim
-- **Dependencies**: Task 22
+### 44. Slim commands/task.md, the largest per-invocation context contributor
+- **Effort**: 2-4 hours
+- **Status**: [PLANNED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 87, Task 149, Task 210
+- **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
+- **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
 
-**Description**: TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carried topic core-agent-system, but its real scope (the <leader>al extension picker's 'Global Update' action) is nvim-config Lua UI code at lua/neotex/plugins/ai/claude/commands/picker/** and lua/neotex/plugins/ai/shared/extensions/**, NOT agent-system/extensions/** -- it is unrelated to the orchestrate-engine collapse. Re-topiced to neovim; file_scope backfilled from description evidence (was previously empty). Original description follows.\n\nImplement <leader>al repo registration and 'Global Update' action: when <leader>al loads extensions into other repos, register those repos and their loaded extensions in this nvim repo; add a 'Global Update' entry (similar to 'Reload All') that reloads all extensions already loaded in each registered repo, reporting any failures in a message and otherwise success as a count of the total
+**Description**: LOWER PRIORITY (per-invocation cost, not per-session). `commands/task.md` measures 37,465 bytes (~9.4k tokens) loaded on every `/task` invocation, plus ~2.8k tokens of imports it pulls in — the largest single per-invocation context contributor found by the context-loading audit. Slim the command body by moving reference material (long option tables, worked examples, edge-case narratives) into lazily-loaded context files under the core extension's context tree, keeping the command body to the decision logic and dispatch instructions an invocation actually needs. Preserve behavior: every mode (--recover, --expand, --sync, --abandon, multi-task creation) must remain fully specified — either inline or via an explicit pointer the executing agent is instructed to follow. Measure before/after bytes and record them in the implementation summary. CONSTRAINTS: all edits target agent-system/extensions/core/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**; do not change command behavior, only where its prose lives.
+
+---
+
+### 43. Decide and implement how email safety context actually reaches agents (live defect: five inert safety pointers)
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 194, Task 257
+
+**Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is email-extension-internal context-loading work, classified extension-internal by the consolidation audit, and is unrelated to the orchestrate-engine collapse. Original description follows.LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.
+
+---
+
+### 39. Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
+- **Effort**: 3-6 hours
+- **Status**: [PLANNED]
+- **Task Type**: meta
+- **Topic**: literature
+- **Dependencies**: None
+- **Research**: [039_zotero_metadata_resolution_upgrade/reports/02_zotero-metadata-resolution-design.md]
+- **Plan**: [039_zotero_metadata_resolution_upgrade/plans/02_zotero-metadata-resolution.md]
+
+**Description**: Upgrade the literature extension's Zotero integration beyond bare write-path activation: add a real metadata-resolution step for web-discovered sources, decide the MCP question, gate auto-attach on storage quota, and record the Zotero 10 backend-swap plan. Grounded in verified Aug-2026 tooling research — see the seed report before re-deriving any landscape claim.
+
+=== WORK ITEMS ===
+
+1. TRANSLATION-SERVER INTEGRATION (the pipeline's thinnest point today). The online ingest bridge currently relies on `zot add --pdf`'s DOI-from-PDF extraction for metadata, which fails on books, preprints without embedded DOIs, and scans. Integrate the official `zotero/translation-server` (HTTP, port 1969; service provisioning is the ~/.dotfiles repo's job — its task 129): call `POST /search` (DOI/ISBN/arXiv ID, preferred when Tier-3 discovery already has an identifier) or `POST /web` (URL fallback) to resolve full Zotero JSON BEFORE item creation, and pass that metadata through the create path. Degrade gracefully (current behavior) when the service is down, and surface which resolution path produced the record.
+
+2. ZOTERO-MCP ADOPTION DECISION. Evaluate adding 54yyyu/zotero-mcp (de-facto standard, ~4.6k stars, hybrid mode = local-API reads + Web-API writes, add-by-DOI/URL/ISBN, OA-PDF cascade) as an INTERACTIVE complement for `/research --lit` sessions. The deterministic scripts remain the pipeline of record — community practice in 2026 is exactly this split. Deliverable is a recorded decision (adopt/defer with reasons); if adopted, registration scope and permission grants follow the grant-at-registration-scope principle already established for MCP servers in the ~/.dotfiles Claude configuration, and the registration itself lands there, not here.
+
+3. STORAGE-QUOTA GATE. Stored-file uploads via the Web API count against the zotero.org 300 MB free tier (948 attachments already exist locally; the account's plan/usage is unverified). Verify quota state and encode an explicit auto-attach policy in the ingest bridge rather than discovering the ceiling by failure. Note the upload flow's `{"exists": 1}` content-hash dedup for PDF bytes.
+
+4. ZOTERO 10 BACKEND-SWAP PLAN (plan, do NOT implement while 10 is beta). Zotero 10 ships native local writes (items + file upload) at `localhost:23119/api/` with consent-based local API keys via `POST /api/local/authorize` — eliminating cloud round-trips and the storage quota for attached files. Record the swap plan against the single write choke-point (`zotero-write.sh`) so callers never change; explicitly reject `/connector/saveItems` as a write contract (undocumented internal protocol).
+
+=== ACCEPTANCE CRITERIA ===
+
+1. Web-discovered sources get translation-server-resolved metadata when an identifier or URL is available, with honest surfacing of which resolution path was used and graceful degradation when the service is unreachable.
+2. The MCP decision is recorded with reasons; no MCP registration or grants are hand-edited in this repo either way.
+3. Auto-attach policy is explicit and quota-aware; no silent quota-exhaustion failure mode remains.
+4. The Zotero 10 swap plan exists in the extension's context docs, names the choke-point, and states what stays constant for callers.
+
+=== BINDING RULES ===
+
+SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER edit the deployed .claude/** tree.
+DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
+
+---
+
+### 29. Generate .mcp.json from extension manifests, then register obsidian-memory through it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 210, Task 22, Task 241
+
+**Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is deploy-engine (lua merge-path) and manifest-surface work for extension MCP registration, unrelated to the orchestrate-engine collapse; the consolidation audit confirmed no overlap with the routing ladder it carries forward. Original description follows.Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
+
+WHY THIS IS NEEDED: extensions currently express server declarations as `mcpServers` keys inside settings-fragment.json, which register nothing -- settings files are not a registration surface. Project-scoped .mcp.json IS a real registration surface, and it IS reachable by dispatched subagents (verified by direct experiment; the earlier belief to the contrary rested on a session-start snapshot confound). So the fix is to route declarations to a surface that works, not to abandon the idea of extensions declaring servers.
+
+WORK: add a new manifest merge target -- e.g. `merge_targets.mcp` with a source file per extension -- that the deploy engine collects across all LOADED extensions and writes to the repository-root .mcp.json. Mirror the existing settings merge path (process_merge_targets / merge_settings in merge.lua) rather than inventing a second idiom: the existing path is an additive, idempotent deep-merge that does not clobber pre-existing content, and it deliberately targets a file that is NOT install-once, which is exactly the property needed here. Extend manifest_spec.lua so the new key validates.
+
+REQUIREMENTS THE MECHANISM MUST SATISFY: (a) each generated server entry carries an explicit "type" field -- as of Claude Code v2.1.202 a remote server lacking an explicit type fails fast rather than failing silently, and all current declarations omit it; (b) unloading an extension must REMOVE its servers from .mcp.json, because an additive deep-merge alone never retracts, and a stale grant surviving an unload is an already-observed defect class in this system; (c) the operation must be idempotent -- deploying twice yields a byte-identical .mcp.json; (d) hand-written entries a user added to .mcp.json themselves must survive regeneration, or the file must clearly declare itself generated. Decide (d) explicitly and record the choice.
+
+IMPORTANT CONTEXT: a project-scoped .mcp.json server requires workspace-trust approval before `claude mcp list` will read it (v2.1.196+), and a server added to .mcp.json is invisible to any ALREADY-RUNNING session. Both facts must be documented for users, or the mechanism will be reported as broken when it is working correctly. Verify against a fresh session or `claude -p`, never against the current one.
+
+VERIFICATION: build a scratchpad fixture project, load an extension declaring a trivial stdio server, and confirm .mcp.json is generated correctly; confirm a second deploy is a no-op; confirm unloading removes the entry; confirm `claude mcp get <name>` in the fixture reports Scope: Project config. Do NOT deploy against this repository as part of verification. SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+=== ABSORBED 2026-09-22 from former task 30 (register_obsidian_memory_mcp_server); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions, alongside its prerequisite (the .mcp.json generation mechanism). Unrelated to the orchestrate-engine collapse. Original description follows.Register the obsidian-memory MCP server through the new manifest-driven .mcp.json mechanism, and grant its tools at the matching scope.
+
+CURRENT STATE: memory/settings-fragment.json carries a dead `mcpServers` block declaring obsidian-memory (npx -y @anthropic-ai/obsidian-claude-code-mcp@latest, with env OBSIDIAN_WS_PORT). It registers nothing, because settings files are not a registration surface. The memory extension IS loaded in this repository, so unlike the five retired servers this one is wanted and should be made to work.
+
+WORK: move the declaration to the new merge target so it lands in .mcp.json, with an explicit "type": "stdio". Then determine the server's ACTUAL tool names and add matching permission grants to the fragment, applying the grant-at-registration-scope rule. Do NOT guess the tool names and do NOT copy them from any existing documentation: enumerate them empirically by starting the server and issuing a tools/list request. This system has already shipped documentation instructing agents to call MCP tools that never existed, and a naming mismatch between a declared server name and its granted mcp__<name>__* prefix has already been found in another extension -- verify both the server name and every tool name against the running server.
+
+RUNTIME PREREQUISITE, DO NOT PAPER OVER: this server needs OBSIDIAN_WS_PORT set and a running Obsidian instance with the companion plugin. If that prerequisite cannot be satisfied in this environment, wire the declaration correctly, document the prerequisite plainly in the memory extension README, and report the tool-name enumeration as NOT VERIFIED rather than inventing plausible names. A truthful 'could not verify' is the correct outcome here; a fabricated tool list is not.
+
+VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on both edited files; doc-lint passes for the memory extension; every granted mcp__ tool name either matches a name observed from the running server or is explicitly marked unverified with the reason. SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 22. Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: === STATUS REPAIRED 2026-09-22 (eighth-pass phase 0): researching -> not_started. No specs/022_* directory, no artifacts and no dispatch record exist in the live tree or the archive; the status was left by a dispatch that never wrote anything (last touched 2026-09-01). It deferred tasks 29 and 45 in every dry run via merge.lua. Nothing else changed. ===
+
+=== REVISED 2026-09-01 (backlog streamline: .opencode declared FROZEN) ===
+POLICY SETTLED BY USER DECISION: .opencode/ is FROZEN -- not maintained, not generated, not deleted. No sync mechanism will be built (the sibling sync-mechanism task is abandoned with a pointer here); the tree is preserved intact for possible future refactoring, exactly as this task's binding constraint already required. This settles the reframed design question below ("SHOULD opencode-agents.json fragments reference a per-project deploy tree at all?"): under a frozen mirror, no path corrections are owed and defect class (1) breakage is expected and tolerated -- the fix is to stop the noise and record the policy, not to repair paths that will drift again.
+
+REVISED SCOPE, absorbing the narrowed remainder of the abandoned sync-mechanism task:
+1. SILENCE THE SPAM (original core): gate or suppress the ~60-notification validation spam on <leader>al reload (emitter: M.generate_opencode_json / validate_opencode_fragment in lua/neotex/plugins/ai/shared/extensions/merge.lua). Under the frozen policy, missing {file:} deploy targets are an EXPECTED state; the validator must not shout about them on every reload. Prefer gating generation/validation behind the frozen policy (skip, or a single-line summary) over deleting the mechanism -- the binding constraint that no opencode fragment, validator function, or .opencode/ file is deleted still holds.
+2. FIX THE ONE FAKE-TOOL LINE (from the absorbed task): .opencode/extensions/web/agents/web-implementation-agent.md still teaches browser_verify_text_visible as a real tool; the source store explicitly retracts it. A frozen mirror may drift, but it must not actively teach a nonexistent tool. One-line fix, editing .opencode/** directly (it has no source-store counterpart; the source-store/deploy-boundary rule does not apply to this tree).
+3. RECORD THE POLICY where the next person will look (e.g. a note in .opencode/ and/or the extensions docs): the tree is frozen, unmaintained, drift-expected, and preserved for future refactoring.
+ACCEPTANCE: a <leader>al reload from a project carrying an opencode.json.managed marker produces no validation-failure spam; the fake tool name no longer appears as usable guidance in .opencode/; the frozen policy is written down; nothing under .opencode/ is deleted.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+=== REVISED 2026-08-24 (refactor survey) ===
+SUBSTANTIALLY OVERTAKEN, and the remaining half got worse. Re-verified today:
+- Defect class (3) is FIXED. merge.lua:1002-1041 now degrades per-agent-key, reports every missing key rather than only the first, and no longer discards a whole fragment. Close it out; do not re-fix.
+- Defect class (2) MOVED rather than got fixed. The archived path-fix work changed the lean fragment to reference .claude/agents/lean-research-agent.md instead of .claude/extensions/lean/agents/... -- but that path does not exist either.
+- Defect class (1) is WORSE: 30 of 34 {file:} refs across all fragments now point at nonexistent files (was 16 of 18). Only nvim and nix resolve, because those are the extensions loaded in this repo -- which is itself the clue.
+REFRAME around the one live question rather than patching paths again: SHOULD opencode-agents.json fragments reference a per-project deploy tree at all? Every {file:} ref is per-repo-deploy-dependent by construction, so any path fix is correct only for the extension set of whichever repo it was fixed in. That is why class (1) keeps regrowing. Answer the design question first; the path corrections fall out of it.
+=== ORIGINAL DESCRIPTION FOLLOWS ===
+Silence and correct opencode-agents.json fragment validation spam on extension reload.
+
+SYMPTOM (observed live): reloading .claude/ via <leader>al from a project with an
+opencode.json.managed marker emits ~60 WARN notifications of the form "Extension 'X'
+opencode-agents.json validation failed: Agent 'Y' references missing file: Z. Skipping
+fragment." before "Resynced 12 extension(s)".
+
+EMITTER: M.generate_opencode_json in lua/neotex/plugins/ai/shared/extensions/merge.lua
+(vim.notify at ~line 994), gated on an opencode.json.managed marker check (~line 931), with
+per-fragment validation by M.validate_opencode_fragment (~line 887), which resolves each agent
+prompt's {file:PATH} against project_dir.
+
+THREE DISTINCT DEFECT CLASSES (measured against a live project, not assumed):
+
+(1) MISSING DEPLOY TARGETS -- 16 of 18 {file:} refs across python (2), present (5), nix (2),
+and filetypes (7) point at .opencode/agent/subagents/*-agent.md files that were never
+deployed. The .opencode/agent/subagents/ directory DOES exist and holds 15 agent files
+(core, lean, latex, typst, math, logic, physics, formal, meta-builder, planner,
+code-reviewer), but none for those four extensions. So this is a partial-deploy gap, not a
+wholly absent tree.
+
+(2) LEAN WRONG-PATH BUG (independent of any opencode policy decision) --
+agent-system/extensions/lean/opencode-agents.json is the ONLY fragment using a .claude/ path
+shape. It references .claude/extensions/lean/agents/lean-research-agent.md and
+.claude/extensions/lean/agents/lean-implementation-agent.md, neither of which exists anywhere,
+while the CORRECT files .opencode/agent/subagents/lean-research-agent.md and
+.opencode/agent/subagents/lean-implementation-agent.md ALREADY EXIST on disk. This is a plain
+mis-pathed reference, fixable on its own merits regardless of what is decided about opencode.
+
+(3) NOTIFICATION SPAM AND SIMULTANEOUS UNDER-REPORTING -- the same 5 messages repeat ~12 times
+because generation runs once per resynced extension rather than once per reload. Separately,
+validate_opencode_fragment iterates with pairs() and returns on the FIRST missing ref, so only
+one broken ref per extension is ever named, and WHICH one varies nondeterministically between
+runs (python alternates python-research/python-implementation; filetypes alternates
+scrape/filetypes-spreadsheet). The true breakage (18 refs) is therefore both over-announced in
+aggregate and under-reported per message.
+
+BINDING CONSTRAINT (from the user): .opencode/ is NOT currently used and may be excluded from
+scope, BUT the fix MUST NOT damage or delete .opencode/ infrastructure. The opencode-agents.json
+fragments, the validator function, the managed-marker gating, and the existing .opencode/ tree
+must all survive intact so .opencode/ can be refactored in the future. Prefer suppressing or
+gating the noise over removing the mechanism.
+
+ACCEPTANCE: a <leader>al reload from a project carrying an opencode.json.managed marker
+produces no validation-failure spam; the lean fragment's two refs resolve to real files;
+whatever gating approach is chosen is documented; and no opencode fragment, no validator
+function, and no .opencode/ file is deleted.
+
+SOURCE-STORE RULE (binding): edit lua/** for the Lua emitter and agent-system/extensions/** for
+the JSON fragments; never edit .claude/**.
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+=== ABSORBED 2026-09-28 (path review, fifth pass) from former task 45 (global_update_extension_repo_registry); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
+
+TOPIC CORRECTION + BACKFILL NOTE (task-116 audit). This task carried topic core-agent-system, but its real scope (the <leader>al extension picker's 'Global Update' action) is nvim-config Lua UI code at lua/neotex/plugins/ai/claude/commands/picker/** and lua/neotex/plugins/ai/shared/extensions/**, NOT agent-system/extensions/** -- it is unrelated to the orchestrate-engine collapse. Re-topiced to neovim; file_scope backfilled from description evidence (was previously empty). Original description follows.\n\nImplement <leader>al repo registration and 'Global Update' action: when <leader>al loads extensions into other repos, register those repos and their loaded extensions in this nvim repo; add a 'Global Update' entry (similar to 'Reload All') that reloads all extensions already loaded in each registered repo, reporting any failures in a message and otherwise success as a count of the total
 
 === ABSORBED 2026-09-22 from former task 202 (Make the picker's [Reload All] and [Regenerate] entries honest and self-documenting, and rule on their redundancy); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
 
@@ -4130,172 +2976,3 @@ second should make sure all three entries read as a coherent set.
 - The redundancy ruling is recorded with reasoning, and "Step Through" is either implemented or
   removed.
 - Verified by opening <leader>al and selecting each entry, not by reading the diff alone.
-
----
-
-### 44. Slim commands/task.md, the largest per-invocation context contributor
-- **Effort**: 2-4 hours
-- **Status**: [PLANNED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 87, Task 149, Task 210
-- **Research**: [044_slim_task_command_body/reports/01_command-body-extraction-approach.md]
-- **Plan**: [044_slim_task_command_body/plans/01_task-command-mode-extraction.md]
-
-**Description**: LOWER PRIORITY (per-invocation cost, not per-session). `commands/task.md` measures 37,465 bytes (~9.4k tokens) loaded on every `/task` invocation, plus ~2.8k tokens of imports it pulls in — the largest single per-invocation context contributor found by the context-loading audit. Slim the command body by moving reference material (long option tables, worked examples, edge-case narratives) into lazily-loaded context files under the core extension's context tree, keeping the command body to the decision logic and dispatch instructions an invocation actually needs. Preserve behavior: every mode (--recover, --expand, --sync, --abandon, multi-task creation) must remain fully specified — either inline or via an explicit pointer the executing agent is instructed to follow. Measure before/after bytes and record them in the implementation summary. CONSTRAINTS: all edits target agent-system/extensions/core/** (source store), never the deployed .claude/** tree; no task-number references in deliverables outside specs/**; do not change command behavior, only where its prose lives.
-
----
-
-### 43. Decide and implement how email safety context actually reaches agents (live defect: five inert safety pointers)
-- **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: extensions
-- **Dependencies**: Task 194, Task 257
-
-**Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is email-extension-internal context-loading work, classified extension-internal by the consolidation audit, and is unrelated to the orchestrate-engine collapse. Original description follows.LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.
-
----
-
-### 39. Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
-- **Effort**: 3-6 hours
-- **Status**: [PLANNED]
-- **Task Type**: meta
-- **Topic**: literature
-- **Dependencies**: None
-- **Research**: [039_zotero_metadata_resolution_upgrade/reports/02_zotero-metadata-resolution-design.md]
-- **Plan**: [039_zotero_metadata_resolution_upgrade/plans/02_zotero-metadata-resolution.md]
-
-**Description**: Upgrade the literature extension's Zotero integration beyond bare write-path activation: add a real metadata-resolution step for web-discovered sources, decide the MCP question, gate auto-attach on storage quota, and record the Zotero 10 backend-swap plan. Grounded in verified Aug-2026 tooling research — see the seed report before re-deriving any landscape claim.
-
-=== WORK ITEMS ===
-
-1. TRANSLATION-SERVER INTEGRATION (the pipeline's thinnest point today). The online ingest bridge currently relies on `zot add --pdf`'s DOI-from-PDF extraction for metadata, which fails on books, preprints without embedded DOIs, and scans. Integrate the official `zotero/translation-server` (HTTP, port 1969; service provisioning is the ~/.dotfiles repo's job — its task 129): call `POST /search` (DOI/ISBN/arXiv ID, preferred when Tier-3 discovery already has an identifier) or `POST /web` (URL fallback) to resolve full Zotero JSON BEFORE item creation, and pass that metadata through the create path. Degrade gracefully (current behavior) when the service is down, and surface which resolution path produced the record.
-
-2. ZOTERO-MCP ADOPTION DECISION. Evaluate adding 54yyyu/zotero-mcp (de-facto standard, ~4.6k stars, hybrid mode = local-API reads + Web-API writes, add-by-DOI/URL/ISBN, OA-PDF cascade) as an INTERACTIVE complement for `/research --lit` sessions. The deterministic scripts remain the pipeline of record — community practice in 2026 is exactly this split. Deliverable is a recorded decision (adopt/defer with reasons); if adopted, registration scope and permission grants follow the grant-at-registration-scope principle already established for MCP servers in the ~/.dotfiles Claude configuration, and the registration itself lands there, not here.
-
-3. STORAGE-QUOTA GATE. Stored-file uploads via the Web API count against the zotero.org 300 MB free tier (948 attachments already exist locally; the account's plan/usage is unverified). Verify quota state and encode an explicit auto-attach policy in the ingest bridge rather than discovering the ceiling by failure. Note the upload flow's `{"exists": 1}` content-hash dedup for PDF bytes.
-
-4. ZOTERO 10 BACKEND-SWAP PLAN (plan, do NOT implement while 10 is beta). Zotero 10 ships native local writes (items + file upload) at `localhost:23119/api/` with consent-based local API keys via `POST /api/local/authorize` — eliminating cloud round-trips and the storage quota for attached files. Record the swap plan against the single write choke-point (`zotero-write.sh`) so callers never change; explicitly reject `/connector/saveItems` as a write contract (undocumented internal protocol).
-
-=== ACCEPTANCE CRITERIA ===
-
-1. Web-discovered sources get translation-server-resolved metadata when an identifier or URL is available, with honest surfacing of which resolution path was used and graceful degradation when the service is unreachable.
-2. The MCP decision is recorded with reasons; no MCP registration or grants are hand-edited in this repo either way.
-3. Auto-attach policy is explicit and quota-aware; no silent quota-exhaustion failure mode remains.
-4. The Zotero 10 swap plan exists in the extension's context docs, names the choke-point, and states what stays constant for callers.
-
-=== BINDING RULES ===
-
-SOURCE-STORE RULE: all edits target agent-system/extensions/literature/**. NEVER edit the deployed .claude/** tree.
-DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
-
----
-
-### 29. Generate .mcp.json from extension manifests, then register obsidian-memory through it
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: extensions
-- **Dependencies**: Task 210
-
-**Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is deploy-engine (lua merge-path) and manifest-surface work for extension MCP registration, unrelated to the orchestrate-engine collapse; the consolidation audit confirmed no overlap with the routing ladder it carries forward. Original description follows.Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
-
-WHY THIS IS NEEDED: extensions currently express server declarations as `mcpServers` keys inside settings-fragment.json, which register nothing -- settings files are not a registration surface. Project-scoped .mcp.json IS a real registration surface, and it IS reachable by dispatched subagents (verified by direct experiment; the earlier belief to the contrary rested on a session-start snapshot confound). So the fix is to route declarations to a surface that works, not to abandon the idea of extensions declaring servers.
-
-WORK: add a new manifest merge target -- e.g. `merge_targets.mcp` with a source file per extension -- that the deploy engine collects across all LOADED extensions and writes to the repository-root .mcp.json. Mirror the existing settings merge path (process_merge_targets / merge_settings in merge.lua) rather than inventing a second idiom: the existing path is an additive, idempotent deep-merge that does not clobber pre-existing content, and it deliberately targets a file that is NOT install-once, which is exactly the property needed here. Extend manifest_spec.lua so the new key validates.
-
-REQUIREMENTS THE MECHANISM MUST SATISFY: (a) each generated server entry carries an explicit "type" field -- as of Claude Code v2.1.202 a remote server lacking an explicit type fails fast rather than failing silently, and all current declarations omit it; (b) unloading an extension must REMOVE its servers from .mcp.json, because an additive deep-merge alone never retracts, and a stale grant surviving an unload is an already-observed defect class in this system; (c) the operation must be idempotent -- deploying twice yields a byte-identical .mcp.json; (d) hand-written entries a user added to .mcp.json themselves must survive regeneration, or the file must clearly declare itself generated. Decide (d) explicitly and record the choice.
-
-IMPORTANT CONTEXT: a project-scoped .mcp.json server requires workspace-trust approval before `claude mcp list` will read it (v2.1.196+), and a server added to .mcp.json is invisible to any ALREADY-RUNNING session. Both facts must be documented for users, or the mechanism will be reported as broken when it is working correctly. Verify against a fresh session or `claude -p`, never against the current one.
-
-VERIFICATION: build a scratchpad fixture project, load an extension declaring a trivial stdio server, and confirm .mcp.json is generated correctly; confirm a second deploy is a no-op; confirm unloading removes the entry; confirm `claude mcp get <name>` in the fixture reports Scope: Project config. Do NOT deploy against this repository as part of verification. SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
-
-=== ABSORBED 2026-09-22 from former task 30 (register_obsidian_memory_mcp_server); that task is abandoned into this one. Its text follows verbatim; where it names "the dependency task" or "the sibling task", read this task's other sections. ===
-
-TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions, alongside its prerequisite (the .mcp.json generation mechanism). Unrelated to the orchestrate-engine collapse. Original description follows.Register the obsidian-memory MCP server through the new manifest-driven .mcp.json mechanism, and grant its tools at the matching scope.
-
-CURRENT STATE: memory/settings-fragment.json carries a dead `mcpServers` block declaring obsidian-memory (npx -y @anthropic-ai/obsidian-claude-code-mcp@latest, with env OBSIDIAN_WS_PORT). It registers nothing, because settings files are not a registration surface. The memory extension IS loaded in this repository, so unlike the five retired servers this one is wanted and should be made to work.
-
-WORK: move the declaration to the new merge target so it lands in .mcp.json, with an explicit "type": "stdio". Then determine the server's ACTUAL tool names and add matching permission grants to the fragment, applying the grant-at-registration-scope rule. Do NOT guess the tool names and do NOT copy them from any existing documentation: enumerate them empirically by starting the server and issuing a tools/list request. This system has already shipped documentation instructing agents to call MCP tools that never existed, and a naming mismatch between a declared server name and its granted mcp__<name>__* prefix has already been found in another extension -- verify both the server name and every tool name against the running server.
-
-RUNTIME PREREQUISITE, DO NOT PAPER OVER: this server needs OBSIDIAN_WS_PORT set and a running Obsidian instance with the companion plugin. If that prerequisite cannot be satisfied in this environment, wire the declaration correctly, document the prerequisite plainly in the memory extension README, and report the tool-name enumeration as NOT VERIFIED rather than inventing plausible names. A truthful 'could not verify' is the correct outcome here; a fabricated tool list is not.
-
-VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on both edited files; doc-lint passes for the memory extension; every granted mcp__ tool name either matches a name observed from the running server or is explicitly marked unverified with the reason. SOURCE-STORE RULE (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/**. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
-
----
-
-### 22. Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: opencode
-- **Dependencies**: None
-
-**Description**: === STATUS REPAIRED 2026-09-22 (eighth-pass phase 0): researching -> not_started. No specs/022_* directory, no artifacts and no dispatch record exist in the live tree or the archive; the status was left by a dispatch that never wrote anything (last touched 2026-09-01). It deferred tasks 29 and 45 in every dry run via merge.lua. Nothing else changed. ===
-
-=== REVISED 2026-09-01 (backlog streamline: .opencode declared FROZEN) ===
-POLICY SETTLED BY USER DECISION: .opencode/ is FROZEN -- not maintained, not generated, not deleted. No sync mechanism will be built (the sibling sync-mechanism task is abandoned with a pointer here); the tree is preserved intact for possible future refactoring, exactly as this task's binding constraint already required. This settles the reframed design question below ("SHOULD opencode-agents.json fragments reference a per-project deploy tree at all?"): under a frozen mirror, no path corrections are owed and defect class (1) breakage is expected and tolerated -- the fix is to stop the noise and record the policy, not to repair paths that will drift again.
-
-REVISED SCOPE, absorbing the narrowed remainder of the abandoned sync-mechanism task:
-1. SILENCE THE SPAM (original core): gate or suppress the ~60-notification validation spam on <leader>al reload (emitter: M.generate_opencode_json / validate_opencode_fragment in lua/neotex/plugins/ai/shared/extensions/merge.lua). Under the frozen policy, missing {file:} deploy targets are an EXPECTED state; the validator must not shout about them on every reload. Prefer gating generation/validation behind the frozen policy (skip, or a single-line summary) over deleting the mechanism -- the binding constraint that no opencode fragment, validator function, or .opencode/ file is deleted still holds.
-2. FIX THE ONE FAKE-TOOL LINE (from the absorbed task): .opencode/extensions/web/agents/web-implementation-agent.md still teaches browser_verify_text_visible as a real tool; the source store explicitly retracts it. A frozen mirror may drift, but it must not actively teach a nonexistent tool. One-line fix, editing .opencode/** directly (it has no source-store counterpart; the source-store/deploy-boundary rule does not apply to this tree).
-3. RECORD THE POLICY where the next person will look (e.g. a note in .opencode/ and/or the extensions docs): the tree is frozen, unmaintained, drift-expected, and preserved for future refactoring.
-ACCEPTANCE: a <leader>al reload from a project carrying an opencode.json.managed marker produces no validation-failure spam; the fake tool name no longer appears as usable guidance in .opencode/; the frozen policy is written down; nothing under .opencode/ is deleted.
-=== ORIGINAL DESCRIPTION FOLLOWS ===
-=== REVISED 2026-08-24 (refactor survey) ===
-SUBSTANTIALLY OVERTAKEN, and the remaining half got worse. Re-verified today:
-- Defect class (3) is FIXED. merge.lua:1002-1041 now degrades per-agent-key, reports every missing key rather than only the first, and no longer discards a whole fragment. Close it out; do not re-fix.
-- Defect class (2) MOVED rather than got fixed. The archived path-fix work changed the lean fragment to reference .claude/agents/lean-research-agent.md instead of .claude/extensions/lean/agents/... -- but that path does not exist either.
-- Defect class (1) is WORSE: 30 of 34 {file:} refs across all fragments now point at nonexistent files (was 16 of 18). Only nvim and nix resolve, because those are the extensions loaded in this repo -- which is itself the clue.
-REFRAME around the one live question rather than patching paths again: SHOULD opencode-agents.json fragments reference a per-project deploy tree at all? Every {file:} ref is per-repo-deploy-dependent by construction, so any path fix is correct only for the extension set of whichever repo it was fixed in. That is why class (1) keeps regrowing. Answer the design question first; the path corrections fall out of it.
-=== ORIGINAL DESCRIPTION FOLLOWS ===
-Silence and correct opencode-agents.json fragment validation spam on extension reload.
-
-SYMPTOM (observed live): reloading .claude/ via <leader>al from a project with an
-opencode.json.managed marker emits ~60 WARN notifications of the form "Extension 'X'
-opencode-agents.json validation failed: Agent 'Y' references missing file: Z. Skipping
-fragment." before "Resynced 12 extension(s)".
-
-EMITTER: M.generate_opencode_json in lua/neotex/plugins/ai/shared/extensions/merge.lua
-(vim.notify at ~line 994), gated on an opencode.json.managed marker check (~line 931), with
-per-fragment validation by M.validate_opencode_fragment (~line 887), which resolves each agent
-prompt's {file:PATH} against project_dir.
-
-THREE DISTINCT DEFECT CLASSES (measured against a live project, not assumed):
-
-(1) MISSING DEPLOY TARGETS -- 16 of 18 {file:} refs across python (2), present (5), nix (2),
-and filetypes (7) point at .opencode/agent/subagents/*-agent.md files that were never
-deployed. The .opencode/agent/subagents/ directory DOES exist and holds 15 agent files
-(core, lean, latex, typst, math, logic, physics, formal, meta-builder, planner,
-code-reviewer), but none for those four extensions. So this is a partial-deploy gap, not a
-wholly absent tree.
-
-(2) LEAN WRONG-PATH BUG (independent of any opencode policy decision) --
-agent-system/extensions/lean/opencode-agents.json is the ONLY fragment using a .claude/ path
-shape. It references .claude/extensions/lean/agents/lean-research-agent.md and
-.claude/extensions/lean/agents/lean-implementation-agent.md, neither of which exists anywhere,
-while the CORRECT files .opencode/agent/subagents/lean-research-agent.md and
-.opencode/agent/subagents/lean-implementation-agent.md ALREADY EXIST on disk. This is a plain
-mis-pathed reference, fixable on its own merits regardless of what is decided about opencode.
-
-(3) NOTIFICATION SPAM AND SIMULTANEOUS UNDER-REPORTING -- the same 5 messages repeat ~12 times
-because generation runs once per resynced extension rather than once per reload. Separately,
-validate_opencode_fragment iterates with pairs() and returns on the FIRST missing ref, so only
-one broken ref per extension is ever named, and WHICH one varies nondeterministically between
-runs (python alternates python-research/python-implementation; filetypes alternates
-scrape/filetypes-spreadsheet). The true breakage (18 refs) is therefore both over-announced in
-aggregate and under-reported per message.
-
-BINDING CONSTRAINT (from the user): .opencode/ is NOT currently used and may be excluded from
-scope, BUT the fix MUST NOT damage or delete .opencode/ infrastructure. The opencode-agents.json
-fragments, the validator function, the managed-marker gating, and the existing .opencode/ tree
-must all survive intact so .opencode/ can be refactored in the future. Prefer suppressing or
-gating the noise over removing the mechanism.
-
-ACCEPTANCE: a <leader>al reload from a project carrying an opencode.json.managed marker
-produces no validation-failure spam; the lean fragment's two refs resolve to real files;
-whatever gating approach is chosen is documented; and no opencode fragment, no validator
-function, and no .opencode/ file is deleted.
-
-SOURCE-STORE RULE (binding): edit lua/** for the Lua emitter and agent-system/extensions/** for
-the JSON fragments; never edit .claude/**.
-DELIVERABLE RULE: no task numbers in deliverables outside specs/**.

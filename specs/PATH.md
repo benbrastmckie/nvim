@@ -2,195 +2,172 @@
 
 *Forward-only: what remains, in what order, and the checks that gate each step. Finished work is
 removed, not archived here — it lives in git history, task summaries and `specs/archive/`.
-Last rewritten 2026-09-22 (fourth pass).*
+Last rewritten 2026-09-28 (fifth pass).*
 
 ## Goal
 
 `/orchestrate` is the only lifecycle entry point, and the orchestrator is token-cheap by
 construction: it delegates, reads back compact verdicts, and asks the user only when a decision is
-genuinely the user's. Both halves are met in shape and in measurement. What remains is making the
-engine correct for the Lean and paper work that runs on it in the consumer repos — which is where
-every new task this month was filed from.
+genuinely the user's. Both halves are met in shape and in measurement. What remains splits into
+three lanes: make the engine **converge without operator help** (every self-modifying task since
+2026-09-22 needed a hand reconcile), make it **correct for concurrent Lean and paper work** in the
+consumer repos, and **cut dead weight and per-invocation cost** once the engine is quiet.
 
-## Where things stand (measured 2026-09-22, fourth pass)
+## Where things stand (measured 2026-09-28, fifth pass)
 
 | Measure | Value | Bearing |
 |---|---|---|
-| Open tasks | **30** | 252 closed this pass; 245, 249, 252 await `/todo` |
-| `verify-deploy.sh --skip-slow` | **PASS, 33/33** | Clean |
-| `validate-state.sh` | 10 pass, 0 warnings, 0 failures | Clean |
-| Eager context load | **64,148 B / baseline 65,950** | 1,802 B headroom |
-| `skills/skill-orchestrate/SKILL.md` | 19,983 B / ceiling 20,000 | **17 B headroom** — effectively at the cap |
+| Open tasks | **29** (+12 completed awaiting `/todo`) | Was 36 open; 7 absorbed this pass (below) |
+| `validate-state.sh --deep` | 17 pass, 0 warnings, 0 failures | Clean after TODO.md regen |
+| `verify-deploy.sh --skip-slow` | **FAIL, 3 of 33** | All pre-existing: lean README line count, `literature-index.md` content drift, TODO sync (now fixed). The first two are **uncommitted working-tree edits** to lean/literature/formal context (plus untracked `frame-constraint-landscape.md`, `decidability-provenance.md`, `sentence-translation-contract.md`, `literature-pyenv/`) that were never deployed. Commit or discard them, then redeploy |
+| Eager context load | 64,148 B / baseline 65,950 | 1,802 B headroom |
+| `skills/skill-orchestrate/SKILL.md` | 19,983 B / ceiling 20,000 | **17 B headroom** — 263's relay text must be offset |
 | `commands/orchestrate.md` | 20,228 B / ceiling 21,000 | 772 B headroom |
-| `run-all.sh` | 92 suites, **557 s serial** on an idle machine | See Batch D |
-| Stranded session files in `specs/` root | **54** (was 52, was 25 on 2026-09-08) | Still growing; 51 builds the reaper |
-| Consumer deploys | **Every registered consumer STALE or CANNOTVERIFY** | Redeploy before running batches anywhere |
+| Redeploy checkpoint cost | full-depth verify ×2–3 per fire; Gate 8 ≈ 9 of 11 min | See call C (265) |
+| Stranded session files in `specs/` root | **67** (48 on 09-22, 25 on 09-08) | 51 builds the reaper trigger |
+| Consumer deploys | PossibleWorlds STALE (lean 11, typst 12, others 1–2); rest CANNOTVERIFY | Redeploy before running batches anywhere |
 
-**Where new tasks come from.** Not `errors.json` (19 entries, none newer than 2026-09-03, none
-tied to an open task). They are filed by hand from defects hit live during `/orchestrate` runs in
-Logos/Verification, BimodalLogic and PossibleWorlds, under standing rule 1.
+**`MAX_TASKS` is 8**, enforced in `commands/orchestrate.md` (the command truncates to the first 8
+with a warning); `orchestrate-cycle-plan.sh` itself accepts any count, so a dry-run over more than
+8 is not evidence a call will run them.
 
-**Every open task is accounted for below**: Batch B's 11 + Batch C's 14 + the picker lane's 3 +
-Batch D's 2 = 30. If that sum stops matching `state.json`, this file has drifted.
+**Every open task is accounted for below**: A 1 + B 8 + C 8 + D 8 + E 4 = 29. If that sum stops
+matching `state.json`, this file has drifted.
 
-**`MAX_TASKS` is 8.** A `/orchestrate` call naming more is silently truncated to the first 8 with a
-warning. Every command below is at or under that cap.
+---
+
+## What this pass changed (task graph, applied 2026-09-28)
+
+Seven tasks absorbed, each with its full text carried verbatim into the survivor and a pointer
+left on the archived entry:
+
+| Absorbed | Into | Why |
+|---|---|---|
+| 224 (`/please` grant), 264 (push-consent relay) | **263** | Three independent designs of one git-push grant mechanism. Ruling recorded on 263: one token, minted only by the tamper-resistant `/please` UserPromptSubmit path; the dispatch path relays a `user_decision` and never mints |
+| 267 (inline verify suppression) | **265** | Both cut the redeploy checkpoint's verify cost; serialize on the checkpoint |
+| 166 (research heading conformance) | **136** | Same shape (agent skeleton drifts from `validate-artifact.sh`); serialize on the validator |
+| 177 (lean dependency-tracing recipe) | **223** | Both are lean-extension context docs; 223 is already researched |
+| 256 (`validate-wiring.sh` missing root) | **244** | Both are "lint scripts assume the nvim layout" |
+| 45 (picker honesty) | **22** | Both are `<leader>al` picker Lua; serialize on `merge.lua` |
+
+Edges added: 263←139, 265←266, 199←266, 184←266, 250←{265,266}, 185←{266,199,184},
+29←{22,241}. Edges dropped as moot: 136←166, 256←244. Scopes: 263's three globs replaced by 28
+concrete paths; 167 trimmed to `latex/**` (it is no longer classified self-modifying and no longer
+collides with three engine tasks); 250 lost `run-all.sh`/`verify-deploy.sh` (that half shipped in
+261); 185 gained its five known files. Premise addenda recorded on 250, 265, 167, 51.
 
 ---
 
 ## Do first
 
-1. `bash .claude/scripts/deploy-headless.sh` **in each consumer** before running anything there.
-   This repo never pushes into a consumer.
-2. In cslib's task list: abandon **595** (satisfied by `validate-state.sh` Check D3 once it
-   redeploys) and **608** (its evidence is in 129), with pointers here. Both still `not_started`.
+1. `/todo` — archive the 12 completed tasks (129, 245, 249, 252–254, 257–262).
+2. Commit the graph edits: `specs/state.json`, `specs/TODO.md`, `specs/archive/state.json`,
+   `specs/archive/{224,256,264,267}_*`.
+3. Decide the uncommitted lean/literature/formal context edits in the working tree (see table),
+   then `bash .claude/scripts/deploy-headless.sh` here — it regenerates line counts and clears the
+   two real verify findings — and in each consumer.
+4. Delete `specs/ORCHESTRATION-HANDOFF.md`: every item in it is resolved or refiled.
 
 ---
 
-## Batch B — guards, contracts, the file_scope chain (11 tasks, three waves)
-
-The blocker that gated this batch is gone: a task whose `modified_files` overlap
-`agent-system/extensions/**` now reaches `completed` through the four-move loop with no manual
-deploy and no manual reconcile. Every task below edits the source store, so all of them depended
-on that.
-
-| Wave | Task | What lands | After |
-|---|---|---|---|
-| 1 | **129** | Empirical `\b` word-boundary audit under the deployed grep; portable-construct guidance; the `\bsorry\b` double count in `lean-sorry-census.sh` | — |
-| 1 | **166** | Required-section heading conformance: the research agent's skeleton and `validate-artifact.sh` agree lexically, not just semantically | — |
-| 1 | **162** (researched) | `**Files to modify**:` formalised in `plan-format.md`, harvested into `file_scope` at plan time, wired into postflight, reconcile and `/revise`; backfill last | — |
-| 1 | **163** | Absent, empty or glob `file_scope` made visible in `validate-state.sh` and the pre-dispatch review | — |
-| 1 | **244** | `check-task-references.sh` scans roots appropriate to the repo it runs in | — |
-| 1 | **184** | Skeleton handoff with a non-empty `sorry_inventory[]` reports `follow_up_task` entries append-only; no auto-created tasks | — |
-| 1 | **199** | Decide, then implement, whether concurrent same-repo dispatches share one working tree and `.lake` or each get an isolated one. A split verdict is acceptable if the selecting predicate is defined | — |
-| 2 | **139** (+140) | History-rewrite prohibition in `git-workflow.md` and the implementation-agent contract; then a concurrency-gated predicate in `guard-destructive-git.sh` that does not consult tree dirtiness | 129 |
-| 2 | **224** | `/please`: single-use grant hook, `guard-git-push.sh`, grant checks in the destructive-git guard, user-only command, rule exception, docs | 129, 240 |
-| 2 | **165** (+190) | Admission posture for an absent `file_scope`; then cross-session visibility so two self-modifying candidates in separate sessions are not both admitted solo | 162, 163 |
-| 3 | **136** | Plan-level `Status` ownership in the implementation-agent contract and the validator; fan-out prohibition; marker/commit sync | 139, 166 |
-
-Wave 1 is seven independent tasks — dry-run confirms all seven admit in cycle 0, nothing deferred,
-nothing blocked:
+## Call A — engine convergence, alone
 
 ```
-/orchestrate 129, 166, 162, 163, 244, 184, 199
+/orchestrate 266
 ```
 
-Then waves 2 and 3, whose dependency edges the engine sequences:
+The deploy-pending refusal (exit 6) and the identical-dispatch guard compose so that every task
+whose `modified_files` touch `agent-system/**` — which is every meta task in this repo — halts at
+`implementing` and needs `reconcile-task-status.sh` by hand. 266 runs alone for two reasons: the
+admission tie-breaker designates the **lowest-numbered** self-modifying candidate each cycle, so in
+any shared batch 199 would go first; and 266 is itself self-modifying, so its own convergence
+inside one run is the acceptance test.
+
+## Call B — git safety, file_scope chain, isolation decision (8)
 
 ```
-/orchestrate 139, 224, 165, 136
+/orchestrate 139, 162, 163, 244, 43, 199, 207, 167
 ```
 
-199 is the largest open decision; if it stalls, pull it out and run it alone with `--hard`.
-
----
-
-## Batch C — extension content, cheap closes, cost and clutter (14 tasks)
-
-| Order | Task | What lands | Note |
-|---|---|---|---|
-| 1 | **223** (researched) | Comparator-on-NixOS fixes in the lean extension | Cheapest close in the backlog |
-| 1 | **177** | Lean 4 dependency-tracing recipe (why `#print axioms` cannot answer "does X depend on Y") | Doc only |
-| 1 | **167** (+74, 75, 76) | vimtex continuous-build safety via the latex extension's existing rule; guard script and lifecycle wiring only if the rule proves insufficient | Rule first |
-| 1 | **207** (+208) | `zotero-generate-export.sh` Path 1: jq-argv accumulator truncation and a shrink guard; then the 481-item pagination stop | Data loss today |
-| 1 | **39** (planned) | Zotero metadata resolution for web-discovered sources; quota-gated auto-attach; Zotero 10 backend-swap note | Plan exists since August |
-| 1 | **43** | The email extension's five safety context pointers actually load | Live defect |
-| 1 | **241** | Drop two redundant playwright grant lists and five dead `mcp_servers` fields; correct `mcp-server-ownership.md` and the nix README | Re-verify the user-scope grant count is 9 first. Defers behind 29 |
-| 2 | **51** | Session runtime files out of the `specs/` root and the reap path actually running | **54 stranded now.** Also the designated self-modifying candidate |
-| 2 | **217** | `/refresh` idle Lean LSP tree reclamation, PSS accounting, CPU-delta idleness; prompt, never a silent kill | |
-| 2 | **89** | Mode-gate the seven sections of `skill-literature/SKILL.md` (84 KB) and `skill-distill` | Protects the eager-context headroom |
-| 2 | **44** (planned) | Slim `commands/task.md` (37 KB per `/task` call) into lazily loaded files | Protects the eager-context headroom |
-| 2 | **185** | Retarget the ~120 remaining "Stage N" / "Stage MT-N" citations to Move 1-4 vocabulary | Mechanical |
-| 2 | **127** | Collapse the four-block routing ladder to `routing_agents`; resolve present's compound values; prune lean/cslib `routing_hard` keys | Manifest rewrite |
-| 3 | **170** | Isolate shell test suites from ambient host state (memory and timing axes); record the convention. Research must name the specific suites and add them to `file_scope` before implement | Last; after 51 and 129 |
-
-```
-/orchestrate 223, 177, 167, 207, 39, 43, 241
-/orchestrate 51, 217, 89, 44, 185, 127, 170
-```
-
-**170's premise has changed.** Its notes say Instance A (`test-lake-build-guard.sh`) is already
-fixed. On 2026-09-22 that suite failed inside a loaded full run and then passed 47/47 in isolation,
-same commit, same machine — the same fails-loaded/passes-isolated shape recorded for Instance B.
-The 878043472 fix isolated the *memory* axis only; the suite is not load-independent. First step is
-identifying which case fails under load, since the full-suite output does not name it.
-
----
-
-## Lane — nvim picker Lua (3 tasks, whenever)
-
-These edit `lua/neotex/plugins/ai/**`, not the agent system, and do not feed the loop.
-
-| Order | Task | What lands |
+| Task | What lands | Note |
 |---|---|---|
-| 1 | **22** | Silence the ~60-notification opencode fragment validation spam on `<leader>al` reload; fix the one fake-tool line; record the frozen-mirror policy |
-| 2 | **45** (+202) | Picker: Global Update updates the extension-repo registry; `[Reload All]` / `[Regenerate]` get honest descriptions and previews |
-| 3 | **29** (+30) | A `merge_targets.mcp` deploy path writing the repository-root `.mcp.json`; then register obsidian-memory through it |
+| **139** | History-rewrite prohibition (rules, contracts) + concurrency-gated predicate in `guard-destructive-git.sh` | Gates 263 and 136 |
+| **162** (researched) | `**Files to modify**:` formalised; harvested into `file_scope` at plan postflight; backfill | Plan dispatch first |
+| **163** | Absent / empty / glob `file_scope` visible in `validate-state.sh` and predispatch review | WARN-first |
+| **244** (+256) | `check-task-references.sh` scans repo-appropriate roots; `validate-wiring.sh` skips a missing tree root | Two consumer repos reproduce it |
+| **43** | The email extension's five safety pointers actually reach an agent | Live defect, small |
+| **199** | Working-tree / `.lake` isolation posture for concurrent same-repo dispatches; then implement | Waits for 266 in-run. Largest decision: if it stalls, pull it out and run `/orchestrate 199 --hard` |
+| **207** (+208) | Zotero export Path 1: temp-file accumulator, loud failure, shrink guard; then the 481-item stop | Data loss today. Absorbed half needs Zotero **open** |
+| **167** (+74–76) | vimtex continuous-build safety in the latex rule; mechanism phases conditional | Rule first (decision 8) |
+
+Dry-run admits 139, 162, 163, 244, 43, 207, 167 in cycle 0; 199 admits once 266 is terminal.
+Implement-phase serialization inside the batch: 162 → 199 (both self-modifying).
+
+## Call C — push consent, admission posture, contracts, checkpoint cost (8)
 
 ```
-/orchestrate 22, 45, 29
+/orchestrate 263, 165, 136, 265, 51, 223, 255, 241
 ```
 
-29 defers behind 22 on `merge.lua`, and 241 behind 29 on memory's `manifest.json` — ordering edges
-the batch engine resolves in sequence, so the call above is correct as written.
-
----
-
-## Batch D — systematic corpus review (2 tasks, gated behind B and C)
-
-Both exist because task intake here is defect-driven: it surfaces only what *broke*. Complexity and
-dead weight break nothing, so they are invisible to the filing process by construction. Each is
-shaped as **build a mechanical probe, then act on its ranked output** — a "review everything" pass
-that emits prose and no diff is the analysis-paralysis failure mode H2 already names.
-
-| Task | What lands | After |
+| Task | What lands | Note |
 |---|---|---|
-| **250** | A standing script-inventory probe beside `assess-repo-health.sh`; then cut `run-all.sh`'s runtime; then a behaviour-preserving decomposition of `orchestrate-cycle-plan.sh` into `lib/`, gated on byte-identical `--dry-run` output | 199 |
-| **251** | A context-reachability probe understanding all three reference styles — filename, **directory**, `index.json` — plus eager/lazy classification; then telemetry cross-check and removal of what is genuinely dead | 44, 127 |
+| **263** (+224, 264) | One grant token; `/please` mint hook with integrity; push guard; grant check in the destructive-git guard; user-only command, never-list, rule exception; dispatch relay + two-cycle non-replay test | After 139. Offset any SKILL.md growth byte-for-byte |
+| **165** (+190) | Admission posture for an absent `file_scope`; cross-session visibility for self-modifying candidates | After 162, 163 |
+| **136** (+166, 14) | Plan-level `Status` ownership and grammar; fan-out prohibition; marker/commit sync; research-report heading conformance | After 139 |
+| **265** (+267) | Gate 8 via `run-all.sh --jobs` (conservative default + env override); inline verify in `deploy-headless.sh` narrowed or opt-out | After 266. Biggest per-checkpoint saving available |
+| **51** | Session runtime files out of the `specs/` root; reaper widened and wired into `/todo` | 67 stranded now |
+| **223** (+177) (researched) | Comparator-on-NixOS fixes; Lean 4 dependency-tracing recipe | Plan dispatch first |
+| **255** | typst scope statement matches what it ships; `chapter-quality-check.sh` Rule 1.3 bib resolution | Deployed to 5 repos |
+| **241** | Drop two playwright grant lists and five dead `mcp_servers` fields; fix ownership doc and nix README | Re-verify the user-scope grant count is 9 first |
 
-**Scale (measured 2026-09-22):** 182 non-test scripts / 63,740 lines. The orchestrate engine is
-8,207 lines across 14 scripts, of which `orchestrate-cycle-plan.sh` alone is **2,279 — 27.8% of the
-engine, 6.5× its family's 351-line median**, in a tree that already has 14 extracted libs totalling
-2,564 lines. The context corpus is 523 files / 3.6 MB.
+Implement-phase serialization: 51 → 165 → 265 → 263 (self-modifying, lowest first).
 
-**There are zero confirmed dead context files.** A naive basename check flagged 16; all 16 are
-present-extension slide templates referenced by *directory*. The finding is that the check was
-inadequate and no adequate one exists — not that anything should be deleted. 251 carries those 16
-as its regression fixture: a correct probe reports all of them reachable.
-
-**The `run-all.sh` long pole (profiled 2026-09-22 on an idle machine):** 92 suites, 557 s serial.
-`test-verify-deploy-context-budget.sh` alone was **329 s — 59% of the run**; top 5 = 76%; 56 of 92
-finish under 1 s. Cause: it `rsync`s the whole 17 MB `extensions/` tree as its fixture (a *correct*
-choice — a minimal fixture makes gates 3-13 SKIP into vacuity), then runs `verify-deploy.sh` over
-that mirror several times at ~55 s each. Highest-leverage fix: `verify-deploy.sh` has **no gate
-selector**, so that suite asserts on gate 20 alone but pays for ~19 others.
-
-**Fix the long pole before parallelising.** While one suite is 329 s, even infinite parallelism caps
-at a 41% gain. Order: gate selector → re-measure → per-suite output files (the shared `SUITE_OUT`
-mktemp at `run-all.sh:145` is the structural blocker) → `--jobs` → selective execution. **`--jobs`
-ships opt-in, serial by default:** 170 documents suites whose wall-clock assertions break under
-load, parallelism increases exactly that contention, and 170 depends on 250 — so flipping the
-default is 170's call. A fast flaky gate is worse than a slow honest one.
+## Call D — cost, clutter, corpus probe (8)
 
 ```
-/orchestrate 250
-/orchestrate 251
+/orchestrate 250, 89, 44, 127, 217, 39, 185, 184
 ```
+
+| Task | What lands | Note |
+|---|---|---|
+| **250** | Script-inventory probe (reuse 261's timing baseline); decompose `orchestrate-cycle-plan.sh` into `lib/`, byte-identical `--dry-run` | After 199, 265, 266 — the file is quiet by then |
+| **89** | Mode-gate `skill-literature` (84 KB) and `skill-distill` (93 KB) | ~24.8k tokens per invocation |
+| **44** (planned) | Slim `commands/task.md` (41 KB per `/task`) into lazy context files | Implement dispatch first |
+| **127** | Collapse the routing ladder to the two agent blocks; retire `command-route-skill.sh`; lint nonexistent agent targets | Clears the gate16 WARN |
+| **217** (+218, 219) | `/refresh` PSS accounting, CPU-delta idleness, prompt-never-kill | Utility, not engine |
+| **39** (planned) | Zotero metadata resolution; MCP decision; quota gate; Zotero 10 swap plan | Needs the dotfiles translation-server |
+| **185** | Retarget live "Stage N" / "Stage MT-N" citations to Move vocabulary; keep historical ones | After 266, 199, 184; research adds the rest of the 72 files to scope |
+| **184** | Skeleton-plan `sorry_inventory` follow-ups reported append-only at completion | After 266 |
+
+## Call E — reachability, test isolation, picker lane (4)
+
+```
+/orchestrate 251, 170, 22, 29
+```
+
+| Task | What lands | Note |
+|---|---|---|
+| **251** | Context-reachability probe (filename, directory, `index.json`) with the 16 present templates as the fixture; telemetry cross-check; remove what is genuinely dead | After 44, 127 |
+| **170** | Isolate shell suites from ambient host state (memory and timing axes); record the convention; repeated-run acceptance under load | Last: after 51, 250, 251 |
+| **22** (+45) | Silence opencode fragment spam; fix the fake-tool line; record the frozen-mirror policy; honest `[Reload All]`/`[Regenerate]`; Global Update registry | Lua, not agent-system |
+| **29** (+30) | `merge_targets.mcp` → repository-root `.mcp.json`; register obsidian-memory through it | After 22, 241 |
 
 ---
 
-## Checks before and after every batch
+## Checks before and after every call
 
 - `bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json <tasks>`
-  — **space-separated task numbers, not comma-separated**; admits what you expect, and
-  `md5sum specs/state.json` unchanged across the call.
-- `bash .claude/scripts/validate-state.sh` — 0 failures, 0 warnings.
-- `bash agent-system/extensions/core/scripts/tests/run-all.sh` — green, **on an idle machine**.
-  Do not pipe it through `tail`/`head`: that masks its exit code and truncates the failing suite's
-  inline output, which is how a red run read as green on 2026-09-22.
-- `bash .claude/scripts/verify-deploy.sh --skip-slow` — PASS, and both engine files under their
-  ceilings. A self-modifying task is not finished until `.claude/` is resynced.
-- After any batch that ran in a consumer: `check-consumer-freshness.sh` here, `deploy-headless.sh`
+  — **space-separated**; admits what you expect, `md5sum specs/state.json` unchanged. Research and
+  plan dispatches are exempt from the self-modifying defer (`--phase-map`), so overlap only
+  serializes at implement time.
+- `bash .claude/scripts/validate-state.sh --deep` — 0 failures, 0 warnings.
+- `bash agent-system/extensions/core/scripts/tests/run-all.sh` — green, on an idle machine, exit
+  code read directly (never through `tail`/`head`). `--jobs 4` is opt-in and reproduces the
+  serial pass/fail set except under heavy contention (261's finding).
+- `bash .claude/scripts/verify-deploy.sh --skip-slow` — PASS once "Do first" step 3 is done, and
+  both engine files under their ceilings. A self-modifying task is not finished until `.claude/`
+  is resynced.
+- After any call that ran in a consumer: `check-consumer-freshness.sh` here, `deploy-headless.sh`
   there if STALE.
 
 ---
@@ -201,19 +178,21 @@ default is 170's call. A fast flaky gate is worse than a slow honest one.
    kept in full and is per-invocation.
 2. **The orchestrator never asks and never decides.** Only an agent-surfaced `user_decision` reaches
    the user, once, at cycle end.
-3. **Research-first is the default** for a fresh task; `--fast` restores planner-first. The
-   planner's `needs_research` return path survives either way.
+3. **Research-first is the default** for a fresh task; `--fast` restores planner-first.
 4. **`--dry-run` prints the plan it would dispatch.** There is no separate dry-run report.
 5. **No fixed consumer validation gates.** The checks above are recommended, not blocking.
 6. **A linear chain of small tasks that serialize on one file is one task with phases.** Applied
-   twice; apply it at creation time from here on.
+   six more times this pass; apply it at creation time.
 7. **No analysis surface over `file_scope`** until the field is reliably populated (162, 163).
-8. **Rule before mechanism** for the vimtex hazard: 167's later phases are conditional.
+8. **Rule before mechanism** for the vimtex hazard: 167's mechanism phases are conditional.
 9. **Skeleton plans terminate through the completion-claim gate**; only the sorry-inventory
    follow-up report is ported (184). No `pr_ready` routing outside `type=pr`.
 10. **No third automated deploy-trigger site.** The batch postflight defers its redeploy to the
-    Inter-Cycle Redeploy Checkpoint, which runs at the one boundary with no dispatch in flight.
-    The sanctioned count stays at exactly two. Cost: convergence slips by one cycle.
+    Inter-Cycle Redeploy Checkpoint. The sanctioned count stays at exactly two.
+11. **One grant mechanism.** A push (or any otherwise-blocked git action) is authorized by one
+    single-use token bound to action, remote, branch and sha, minted only where the harness can
+    prove the user typed it. Nothing the model can write is a grant. PR/MR creation and `/merge`
+    stay user-only (263).
 
 ## Standing rules
 
@@ -227,22 +206,15 @@ default is 170's call. A fast flaky gate is worse than a slow honest one.
 
 ## Unfiled observations (none worth a task yet)
 
-- **The redeploy checkpoint rewrites the script that is executing it.** On 2026-09-22 the
-  checkpoint fired inside `orchestrate-cycle-plan.sh`, ran `deploy-headless.sh`, and the deploy
-  overwrote that same file mid-run; bash reads scripts by byte offset, so execution resumed inside
-  the new bytes and died with `line 957: syntax error near unexpected token '('`. Nothing durable
-  was mutated (`cycle_count` unchanged, no dispatch file written) and a plain re-invocation
-  recovered — but the crash is silent about its cause and looks like a code defect. The obvious
-  shape of a fix is `exec`-ing a copy, or deferring the redeploy to a point after the script's last
-  read. Worth a task if it recurs.
-- `test-verify-deploy-context-budget.sh` does not finish inside 240 s alone, so it cannot serve as a
-  quick local check while iterating on the budget. 250's gate selector is the fix.
 - The runtime wave-split check (`orchestrate-cycle-plan.sh` step 4.5) defers a cross-batch scope
-  collision on every run and records nothing. Persisting it as a `dependencies[]` edge is a one-line
-  `state-write.sh` call, after 165 rules on absent scope.
-- The write-time task-reference hook fires on files in the session scratchpad. Its path filter could
-  exempt `/tmp/**`.
-- A subagent parked on genuinely slow background work emits repeated interim notifications that read
-  like stalling. Notification semantics, not agent behaviour — do not "fix" it by telling agents to
-  run long gates in the foreground.
-- `specs/archive/state.json` holds 188 completed and 41 abandoned entries.
+  collision on every run and records nothing. Persisting it as a `dependencies[]` edge is a
+  one-line `state-write.sh` call, after 165 rules on absent scope.
+- The write-time task-reference hook fires on files in the session scratchpad. Its path filter
+  could exempt `/tmp/**`.
+- A subagent parked on genuinely slow background work emits repeated interim notifications that
+  read like stalling. Notification semantics, not agent behaviour.
+- `commands/task.md`'s abandon mode documents the archive target as `completed_projects`; the
+  live archive puts abandoned entries in `archived_projects` with `archived_at`. 44 rewrites that
+  file and should fix the text.
+- `specs/archive/state.json` holds 169 completed, 48 archived (abandoned/orphan) and 1 expanded
+  entries.
