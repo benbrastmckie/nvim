@@ -1,7 +1,7 @@
 # Implementation Plan: Task #266
 
 - **Task**: 266 - deploy_pending vs identical-dispatch guard: composition defect
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/266_deploy_pending_vs_identical_dispatch_guard/reports/01_deploy_pending_vs_identical_dispatch_guard.md`
@@ -123,27 +123,27 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Clear `deploy_pending` at the completion chokepoint [NOT STARTED]
+### Phase 1: Clear `deploy_pending` at the completion chokepoint [COMPLETED]
 
 **Goal**: Make the `deploy_pending` marker a transient record of an outstanding refusal rather
 than a permanent scar, so every later consumer (the checkpoint's `deploy_pending_any` scan, and
 Phase 3's streak-freeze) reads a live signal.
 
 **Tasks**:
-- [ ] Read `scripts/skill-base.sh`'s `skill_postflight_update` marker-write block to capture the
-      exact key names and `jq … > tmp && mv` idiom used to set the marker; mirror it for clearing.
-- [ ] In `scripts/update-task-status.sh`, on the `postflight … implement` path, after the
+- [x] Read `scripts/skill-base.sh`'s `skill_postflight_update` marker-write block to capture the
+      exact key names and `jq … > tmp && mv` idiom used to set the marker; mirror it for clearing. *(completed)*
+- [x] In `scripts/update-task-status.sh`, on the `postflight … implement` path, after the
       completion status write succeeds (and only then), clear `deploy_pending` and
-      `deploy_pending_reason` from the already-resolved `DEPLOY_CHECK_META_FILE`.
-- [ ] Reuse `resolve_return_meta_for_deploy_check`'s resolved path rather than re-deriving the
-      task directory; if `DEPLOY_CHECK_META_FILE` is empty, skip silently (nothing to clear).
-- [ ] Use `jq 'del(.deploy_pending, .deploy_pending_reason)' … > tmp && mv`, preserving every
+      `deploy_pending_reason` from the already-resolved `DEPLOY_CHECK_META_FILE`. *(completed)*
+- [x] Reuse `resolve_return_meta_for_deploy_check`'s resolved path rather than re-deriving the
+      task directory; if `DEPLOY_CHECK_META_FILE` is empty, skip silently (nothing to clear). *(completed)*
+- [x] Use `jq 'del(.deploy_pending, .deploy_pending_reason)' … > tmp && mv`, preserving every
       other key; on any failure emit a `WARNING:` to stderr and continue — clearing must never
-      turn a successful status write into a failure.
-- [ ] Add a comment block naming why this is the single chokepoint: both the ordinary
+      turn a successful status write into a failure. *(completed)*
+- [x] Add a comment block naming why this is the single chokepoint: both the ordinary
       `skill_postflight_update` path and `reconcile-task-status.sh`'s direct
       `update-task-status.sh postflight … implement` call funnel through it, so one site covers
-      both and neither script needs its own copy.
+      both and neither script needs its own copy. *(completed)*
 
 **Timing**: 0.75 hours
 

@@ -1,0 +1,30 @@
+{
+  "phase": 1,
+  "phase_name": "Clear deploy_pending at the completion chokepoint",
+  "started_at": "2026-09-28T21:14:08Z",
+  "last_updated": "2026-09-28T21:14:08Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Trace both callers (skill-base.sh, reconcile-task-status.sh) to confirm the single chokepoint hypothesis in update-task-status.sh",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Clear deploy_pending/deploy_pending_reason from DEPLOY_CHECK_META_FILE after a successful postflight implement completion write, preserving other keys, non-fatal on failure",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add regression tests: positive (cleared + unrelated keys preserved) and negative (preserved on exit-6 refusal)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

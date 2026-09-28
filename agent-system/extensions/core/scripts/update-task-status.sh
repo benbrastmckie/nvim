@@ -870,6 +870,37 @@ update_plan_file() {
 # Execute plan file update
 update_plan_file
 
+# ============================================================
+# PHASE 4: Clear the deploy_pending marker at the completion chokepoint
+# ============================================================
+# skill-base.sh's skill_postflight_update sets `deploy_pending` / `deploy_pending_reason` on
+# this task's OWN .return-meta.json when PHASE 0.5 above refuses with exit 6. Nothing ever
+# cleared it, which left the identical-dispatch streak-freeze (orchestrate-cycle-plan.sh)
+# permanently armed for any task that was ever deploy-pending, even long after the extension
+# became fresh again. This is the single chokepoint for clearing it: both the ordinary
+# `skill_postflight_update` path (skill-base.sh) and `reconcile-task-status.sh`'s direct
+# `update-task-status.sh postflight <n> implement <sid>` call funnel through this same script,
+# so clearing it here covers both callers without either needing its own copy. Only fires once
+# the completion write for this exact transition (postflight/implement, non-noop, non-dry-run)
+# has already succeeded -- by this point in the script, PHASE 0.5's exit 6 (stale extension) and
+# update_state_json's/update_plan_file's own fatal exits have already returned control here, so
+# reaching this line means the write went through. A noop replay (state_is_noop == true, e.g. a
+# retry against an already-completed task) skips this: PHASE 0.5 does not run on that path
+# either, so DEPLOY_CHECK_META_FILE is never resolved, and the marker (if any) was already
+# cleared by the original successful write.
+if [[ "$operation" == "postflight" && "$target_status" == "implement" \
+      && "$state_is_noop" != "true" && "$DRY_RUN" != "true" ]]; then
+  if [[ -n "${DEPLOY_CHECK_META_FILE:-}" ]]; then
+    _dp_clear_tmp="$(mktemp)"
+    if jq 'del(.deploy_pending, .deploy_pending_reason)' "$DEPLOY_CHECK_META_FILE" > "$_dp_clear_tmp" 2>/dev/null; then
+      mv "$_dp_clear_tmp" "$DEPLOY_CHECK_META_FILE"
+    else
+      rm -f "$_dp_clear_tmp" 2>/dev/null
+      echo "WARNING: [deploy-check] failed to clear deploy_pending marker in $(basename "$DEPLOY_CHECK_META_FILE") for task $task_number (non-fatal)" >&2
+    fi
+  fi
+fi
+
 if [[ "$DRY_RUN" != "true" ]]; then
   if [[ "$state_is_noop" == "true" ]]; then
     echo "OK: task $task_number state.json already at '$STATE_STATUS' (no-op); plan/phase updates re-applied"

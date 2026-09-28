@@ -416,6 +416,86 @@ else
 fi
 
 # =====================================================================
+# Case 9: marker clearing at the completion chokepoint -- a successful completion write (exit 0,
+# transition applied) clears BOTH deploy_pending and deploy_pending_reason from .return-meta.json,
+# leaving every unrelated key byte-identical. This is the fix for the marker that, before this
+# case existed, was never cleared once set -- see write_return_meta_dp below for the fixture
+# shape.
+# =====================================================================
+write_return_meta_dp() {
+  local root="$1" modified_files_json="$2" dp_json="$3"
+  cat > "$root/specs/001_fixture_task/.return-meta.json" << EOF
+{"status": "implemented", "modified_files": ${modified_files_json}, "roadmap_items": ["keep me"], ${dp_json}}
+EOF
+}
+
+info "=== Case 9: successful completion write clears the deploy_pending marker ==="
+FIXTURE_ROOT="$WORKDIR/case9"
+build_fixture_repo "$FIXTURE_ROOT"
+build_source_and_extensions "$FIXTURE_ROOT"
+write_return_meta_dp "$FIXTURE_ROOT" '["agent-system/extensions/core/scripts/foo.sh"]' \
+  '"deploy_pending": true, "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"'
+
+UTS postflight 1 implement sess_test_c9 >"$WORKDIR/c9.out" 2>"$WORKDIR/c9.err"
+C9_EXIT=$?
+c9_meta="$FIXTURE_ROOT/specs/001_fixture_task/.return-meta.json"
+if [[ "$C9_EXIT" -eq 0 ]]; then
+  pass "marker-clearing: a successful completion write (fresh extension) exits 0"
+else
+  fail "marker-clearing: expected exit 0, got $C9_EXIT (see $WORKDIR/c9.err)"
+fi
+st="$(task_status)"
+if [[ "$st" == "completed" ]]; then
+  pass "marker-clearing: the transition still applies (implementing -> completed)"
+else
+  fail "marker-clearing: expected status 'completed', got '$st'"
+fi
+c9_dp="$(jq -r '.deploy_pending // "absent"' "$c9_meta" 2>/dev/null)"
+c9_dpr="$(jq -r '.deploy_pending_reason // "absent"' "$c9_meta" 2>/dev/null)"
+if [[ "$c9_dp" == "absent" && "$c9_dpr" == "absent" ]]; then
+  pass "marker-clearing: deploy_pending and deploy_pending_reason are both absent after success"
+else
+  fail "marker-clearing: expected both keys absent, got deploy_pending='$c9_dp' deploy_pending_reason='$c9_dpr'"
+fi
+c9_roadmap="$(jq -c '.roadmap_items' "$c9_meta" 2>/dev/null)"
+if [[ "$c9_roadmap" == '["keep me"]' ]]; then
+  pass "marker-clearing: an unrelated key (roadmap_items) is preserved byte-identical"
+else
+  fail "marker-clearing: unrelated key roadmap_items was disturbed, got '$c9_roadmap'"
+fi
+
+# =====================================================================
+# Case 10: a refusal must not clear the record of itself -- when the gate refuses with exit 6,
+# a pre-existing deploy_pending marker (as if this were a second refusal in a row) is left
+# untouched.
+# =====================================================================
+info "=== Case 10: an exit-6 refusal leaves a pre-existing marker untouched ==="
+FIXTURE_ROOT="$WORKDIR/case10"
+build_fixture_repo "$FIXTURE_ROOT"
+build_source_and_extensions "$FIXTURE_ROOT"
+write_return_meta_dp "$FIXTURE_ROOT" '["agent-system/extensions/core/scripts/foo.sh"]' \
+  '"deploy_pending": true, "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"'
+# Advance the source repo without updating the recorded head -> stale, same as Case 1.
+echo "v2" > "$SRC_REPO/agent-system/extensions/core/scripts/foo.sh"
+git -C "$SRC_REPO" add agent-system/extensions/core/scripts/foo.sh
+git -C "$SRC_REPO" commit -q -m "v2"
+
+UTS postflight 1 implement sess_test_c10 >"$WORKDIR/c10.out" 2>"$WORKDIR/c10.err"
+C10_EXIT=$?
+c10_meta="$FIXTURE_ROOT/specs/001_fixture_task/.return-meta.json"
+if [[ "$C10_EXIT" -eq 6 ]]; then
+  pass "refusal-preserves-marker: the refused call exits 6"
+else
+  fail "refusal-preserves-marker: expected exit 6, got $C10_EXIT (see $WORKDIR/c10.err)"
+fi
+c10_dp="$(jq -r '.deploy_pending // "absent"' "$c10_meta" 2>/dev/null)"
+if [[ "$c10_dp" == "true" ]]; then
+  pass "refusal-preserves-marker: deploy_pending remains true after a refusal (never cleared by a refusal)"
+else
+  fail "refusal-preserves-marker: expected deploy_pending to remain 'true', got '$c10_dp'"
+fi
+
+# =====================================================================
 # Contract assertion: the backstop block in update-task-status.sh contains no literal
 # reference to the deploy/regeneration script name or the deploy-verification script name --
 # the mechanical enforcement of the check-only contract (research constraint 3), run as a test

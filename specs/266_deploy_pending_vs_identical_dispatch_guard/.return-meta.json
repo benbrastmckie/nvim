@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/266_deploy_pending_vs_identical_dispatch_guard/plans/01_deploy-pending-guard-composition-fix.md",
-      "summary": "8-phase plan fixing the deploy_pending/identical-dispatch composition defect: clear the marker at the completion chokepoint, wire an automatic post-deploy reconcile into the checkpoint's three clean-success branches, add a per-task streak-freeze backstop to the guard, correct the DEPLOY-PENDING message, plus reproduction tests, doc correction, and a full gate/deploy pass."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1790629230_3cfae4_266",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 7.5,
-    "dependency_waves": [[1], [2], [3], [4], [5, 6, 7], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When two individually-correct guards in an orchestration loop compose badly (one gates an action, the other detects repetition of that action's inputs), the durable fix is usually to remove the repetition rather than to exempt the repeater from the detector. In this repo's /orchestrate engine, a deploy-gated task necessarily re-derives a byte-identical dispatch -- so the fix is to promote it in-loop via reconcile-task-status.sh at the checkpoint's clean-success branches (no second dispatch ever built) and to keep any guard exemption as a narrow, self-clearing backstop: freeze the streak counter rather than suppress the guard, read the gating marker from the task's OWN .return-meta.json rather than a batch-wide aggregate, and clear the marker at the single chokepoint where the gated write finally succeeds -- otherwise the exemption arms permanently and silently retires the guard for that task.",
-      "category": "PATTERN",
-      "source_artifact": "specs/266_deploy_pending_vs_identical_dispatch_guard/plans/01_deploy-pending-guard-composition-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "guard-composition", "deploy_pending", "identical-dispatch", "reconcile", "streak-freeze"]
-    }
-  ],
-  "next_steps": "Run /implement 266 to execute the plan",
-  "dispatch_seq": 2
+    "session_id": "sess_1790629230_3cfae4",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
