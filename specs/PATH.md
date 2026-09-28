@@ -2,7 +2,7 @@
 
 *Forward-only: what remains, in what order, and the checks that gate each step. Finished work is
 removed, not archived here — it lives in git history, task summaries and `specs/archive/`.
-Last rewritten 2026-09-28 (fifth pass).*
+Last rewritten 2026-09-28 (sixth pass).*
 
 ## Goal
 
@@ -13,19 +13,19 @@ three lanes: make the engine **converge without operator help** (every self-modi
 2026-09-22 needed a hand reconcile), make it **correct for concurrent Lean and paper work** in the
 consumer repos, and **cut dead weight and per-invocation cost** once the engine is quiet.
 
-## Where things stand (measured 2026-09-28, fifth pass)
+## Where things stand (measured 2026-09-28, sixth pass)
 
 | Measure | Value | Bearing |
 |---|---|---|
-| Open tasks | **29** (+12 completed awaiting `/todo`) | Was 36 open; 7 absorbed this pass (below) |
-| `validate-state.sh --deep` | 17 pass, 0 warnings, 0 failures | Clean after TODO.md regen |
-| `verify-deploy.sh --skip-slow` | **FAIL, 3 of 33** | All pre-existing: lean README line count, `literature-index.md` content drift, TODO sync (now fixed). The first two are **uncommitted working-tree edits** to lean/literature/formal context (plus untracked `frame-constraint-landscape.md`, `decidability-provenance.md`, `sentence-translation-contract.md`, `literature-pyenv/`) that were never deployed. Commit or discard them, then redeploy |
+| Open tasks | **29** | Archive holds 181 completed, 48 abandoned/orphan, 1 expanded |
+| `validate-state.sh --deep` | 0 failures | Clean |
+| `verify-deploy.sh --skip-slow` | **PASS, 33 of 33** | Context edits committed and redeployed; the working tree is clean |
 | Eager context load | 64,148 B / baseline 65,950 | 1,802 B headroom |
 | `skills/skill-orchestrate/SKILL.md` | 19,983 B / ceiling 20,000 | **17 B headroom** — 263's relay text must be offset |
 | `commands/orchestrate.md` | 20,228 B / ceiling 21,000 | 772 B headroom |
 | Redeploy checkpoint cost | full-depth verify ×2–3 per fire; Gate 8 ≈ 9 of 11 min | See call C (265) |
-| Stranded session files in `specs/` root | **67** (48 on 09-22, 25 on 09-08) | 51 builds the reaper trigger |
-| Consumer deploys | PossibleWorlds STALE (lean 11, typst 12, others 1–2); rest CANNOTVERIFY | Redeploy before running batches anywhere |
+| Stranded session files in `specs/` root | **67** (36 multi-state, 30 return-meta-multi, 1 meta-return) | 51 builds the reaper trigger |
+| Consumer deploys | **all 9 FRESH** | Five consumers (Theory, Hardware, cslib, dotfiles, PersonalWebsite) carry uncommitted hygiene fixes: `init-specs.sh` untracks staged in the index, and stale root-`.gitignore` lines that ignored `.orchestrator-handoff.json` / `.return-meta.json` removed. Commit each in its own repo before running a batch there |
 
 **`MAX_TASKS` is 8**, enforced in `commands/orchestrate.md` (the command truncates to the first 8
 with a warning); `orchestrate-cycle-plan.sh` itself accepts any count, so a dry-run over more than
@@ -36,37 +36,10 @@ matching `state.json`, this file has drifted.
 
 ---
 
-## What this pass changed (task graph, applied 2026-09-28)
+## Next
 
-Seven tasks absorbed, each with its full text carried verbatim into the survivor and a pointer
-left on the archived entry:
-
-| Absorbed | Into | Why |
-|---|---|---|
-| 224 (`/please` grant), 264 (push-consent relay) | **263** | Three independent designs of one git-push grant mechanism. Ruling recorded on 263: one token, minted only by the tamper-resistant `/please` UserPromptSubmit path; the dispatch path relays a `user_decision` and never mints |
-| 267 (inline verify suppression) | **265** | Both cut the redeploy checkpoint's verify cost; serialize on the checkpoint |
-| 166 (research heading conformance) | **136** | Same shape (agent skeleton drifts from `validate-artifact.sh`); serialize on the validator |
-| 177 (lean dependency-tracing recipe) | **223** | Both are lean-extension context docs; 223 is already researched |
-| 256 (`validate-wiring.sh` missing root) | **244** | Both are "lint scripts assume the nvim layout" |
-| 45 (picker honesty) | **22** | Both are `<leader>al` picker Lua; serialize on `merge.lua` |
-
-Edges added: 263←139, 265←266, 199←266, 184←266, 250←{265,266}, 185←{266,199,184},
-29←{22,241}. Edges dropped as moot: 136←166, 256←244. Scopes: 263's three globs replaced by 28
-concrete paths; 167 trimmed to `latex/**` (it is no longer classified self-modifying and no longer
-collides with three engine tasks); 250 lost `run-all.sh`/`verify-deploy.sh` (that half shipped in
-261); 185 gained its five known files. Premise addenda recorded on 250, 265, 167, 51.
-
----
-
-## Do first
-
-1. `/todo` — archive the 12 completed tasks (129, 245, 249, 252–254, 257–262).
-2. Commit the graph edits: `specs/state.json`, `specs/TODO.md`, `specs/archive/state.json`,
-   `specs/archive/{224,256,264,267}_*`.
-3. Decide the uncommitted lean/literature/formal context edits in the working tree (see table),
-   then `bash .claude/scripts/deploy-headless.sh` here — it regenerates line counts and clears the
-   two real verify findings — and in each consumer.
-4. Delete `specs/ORCHESTRATION-HANDOFF.md`: every item in it is resolved or refiled.
+Call A. The dry-run admits 266 at `research` with nothing deferred or blocked, and leaves
+`state.json` unchanged. Nothing else is outstanding before it.
 
 ---
 
@@ -164,7 +137,7 @@ Implement-phase serialization: 51 → 165 → 265 → 263 (self-modifying, lowes
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh` — green, on an idle machine, exit
   code read directly (never through `tail`/`head`). `--jobs 4` is opt-in and reproduces the
   serial pass/fail set except under heavy contention (261's finding).
-- `bash .claude/scripts/verify-deploy.sh --skip-slow` — PASS once "Do first" step 3 is done, and
+- `bash .claude/scripts/verify-deploy.sh --skip-slow` — PASS (33 of 33 on 2026-09-28), and
   both engine files under their ceilings. A self-modifying task is not finished until `.claude/`
   is resynced.
 - After any call that ran in a consumer: `check-consumer-freshness.sh` here, `deploy-headless.sh`
@@ -216,5 +189,5 @@ Implement-phase serialization: 51 → 165 → 265 → 263 (self-modifying, lowes
 - `commands/task.md`'s abandon mode documents the archive target as `completed_projects`; the
   live archive puts abandoned entries in `archived_projects` with `archived_at`. 44 rewrites that
   file and should fix the text.
-- `specs/archive/state.json` holds 169 completed, 48 archived (abandoned/orphan) and 1 expanded
+- `specs/archive/state.json` holds 181 completed, 48 archived (abandoned/orphan) and 1 expanded
   entries.
