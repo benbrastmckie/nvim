@@ -3830,6 +3830,262 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 29: deploy_pending vs identical-dispatch guard composition -- reproduces the defect
+# characterized in this group's own originating research (a candidate refused by the postflight
+# completion-deploy gate necessarily re-derives a byte-identical dispatch next cycle, which the
+# identical-dispatch guard then misreads as churn) and pins its resolution: the Group 2 post-
+# deploy reconcile pass (a clean-success checkpoint promotes a deploy-pending candidate within
+# the SAME cycle, before any second dispatch is derived) plus the Group 3 streak-freeze backstop
+# (for the residual paths where that reconcile cannot conclude). Five arms map onto the dispatch's
+# own five-item verification list; see each arm's own header for its mapping.
+#
+# Fixture numbering note: project_number values below are synthetic fixture data for this suite
+# only (see this file's own numbering convention note above Group 11) -- messages accordingly say
+# "candidate #N", never "task N". A handful of assertions below match the SUT's own REAL stderr
+# wording verbatim, which legitimately contains "task #N" as literal runtime output; those lines
+# carry an inline task-ref-ok marker.
+#
+# Additive only: every assertion below is new. No existing Group 1-28 case is modified.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 29: deploy_pending vs identical-dispatch guard composition (reproduction + regression)"
+
+# Install the REAL reconcile-task-status.sh and its own remaining dependency chain (state-write.sh,
+# generate-todo.sh, update-task-status.sh, and lib/status-vocabulary.sh are already real as of
+# Group 21/27's own restorations above and are never re-stubbed after that point in this file).
+cp "$CORE_DIR/reconcile-task-status.sh" "$WORKDIR/.claude/scripts/reconcile-task-status.sh"
+cp "$CORE_DIR/generate-task-order.sh" "$WORKDIR/.claude/scripts/generate-task-order.sh"
+cp "$CORE_DIR/update-plan-status.sh" "$WORKDIR/.claude/scripts/update-plan-status.sh"
+cp "$CORE_DIR/update-phase-status.sh" "$WORKDIR/.claude/scripts/update-phase-status.sh"
+cp "$CORE_DIR/lib/deploy-freshness-lib.sh" "$WORKDIR/.claude/scripts/lib/deploy-freshness-lib.sh"
+chmod +x "$WORKDIR"/.claude/scripts/*.sh
+
+# g29_build_source_and_extensions: a throwaway git repo standing in for the source store, plus a
+# FRESH .claude-extensions.json (source_git_head already matches current HEAD) -- representing
+# "the deploy has landed" the same way test-postflight-deploy-gate.sh's own
+# build_source_and_extensions does, but rooted under $WORKDIR (this suite's own PROJECT_ROOT) so
+# update-task-status.sh's PHASE 0.5 gate resolves it. Distinct from this suite's PRE-EXISTING
+# G11_SOURCE_ROOT ($WORKDIR/agent-system/extensions/core, the deploy LEDGER's own hash-scope
+# root) -- deliberately never populated here, so deploy_ledger_hash_state stays CANNOTVERIFY and
+# every arm below falls through to "run" on ledger grounds alone, independent of the
+# deploy_pending override this group is actually testing.
+G29_SRC_REPO=""
+g29_build_source_and_extensions() {
+  G29_SRC_REPO="$WORKDIR/g29-source-repo"
+  rm -rf "$G29_SRC_REPO"
+  mkdir -p "$G29_SRC_REPO/agent-system/extensions/core/scripts"
+  git init -q "$G29_SRC_REPO"
+  git -C "$G29_SRC_REPO" config user.email "test@example.com"
+  git -C "$G29_SRC_REPO" config user.name "Test"
+  echo "v1" > "$G29_SRC_REPO/agent-system/extensions/core/scripts/foo.sh"
+  git -C "$G29_SRC_REPO" add agent-system/extensions/core/scripts/foo.sh
+  git -C "$G29_SRC_REPO" commit -q -m "initial"
+  local head
+  head="$(git -C "$G29_SRC_REPO" log -1 --format=%H -- agent-system/extensions/core/scripts/foo.sh)"
+  cat > "$WORKDIR/.claude-extensions.json" <<EOF
+{"version":"1.0.0","extensions":{"core":{"version":"1.0.0","source_dir":"${G29_SRC_REPO}/agent-system/extensions/core","source_git_head":"${head}"}}}
+EOF
+}
+g29_build_source_and_extensions
+
+# g29_write_task_fixture <task_num> <project_name> <deploy_pending:true|false> <modified_files_json>
+# [with_summary:true|false, default true] -- an "implementing" candidate directory with a fully
+# COMPLETED plan (so reconcile-task-status.sh's own --phase-check=refuse never refuses the
+# promotion) and, when with_summary=true, a summary artifact plus a `.orchestrator-handoff.json`
+# reporting `implemented` (so reconcile actually promotes rather than no-op'ing). with_summary=
+# false fixtures the "reconcile cannot conclude" residual path Group 3's freeze exists for.
+g29_write_task_fixture() {
+  local num="$1" pname="$2" dp="$3" mf="$4" with_summary="${5:-true}"
+  local padded task_dir
+  padded=$(printf "%03d" "$num")
+  task_dir="$WORKDIR/specs/${padded}_${pname}"
+  rm -rf "$task_dir"
+  mkdir -p "$task_dir/plans"
+  cat > "$task_dir/plans/01_fixture-plan.md" <<'PLANEOF'
+# Implementation Plan: Fixture Task
+
+- **Status**: [IMPLEMENTING]
+
+## Implementation Phases
+
+### Phase 1: Only phase [COMPLETED]
+PLANEOF
+  if [ "$with_summary" = "true" ]; then
+    mkdir -p "$task_dir/summaries"
+    echo "fixture summary" > "$task_dir/summaries/01_fixture-summary.md"
+    cat > "$task_dir/.orchestrator-handoff.json" <<'HOFEOF'
+{"status": "implemented", "phases_completed": 1, "phases_total": 1}
+HOFEOF
+  fi
+  local dp_json=""
+  if [ "$dp" = "true" ]; then
+    dp_json=', "deploy_pending": true, "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"'
+  fi
+  cat > "$task_dir/.return-meta.json" <<EOF
+{"status": "implemented", "modified_files": ${mf}${dp_json}}
+EOF
+}
+
+# g29_seed_state_and_mt <session> <cmf_json> <task_num> <project_name> <status> [<task_num2> <project_name2> <status2> ...]
+# -- writes state.json with one or more active_projects and a fresh mt_state file naming every
+# given task_num in .task_numbers, clearing lock dirs and the durable deploy ledger.
+g29_seed_state_and_mt() {
+  local session="$1" cmf="$2"; shift 2
+  local projects="[]" tns="[]"
+  while [ "$#" -ge 3 ]; do
+    local n="$1" p="$2" s="$3"; shift 3
+    projects=$(jq -n -c --argjson prev "$projects" --argjson n "$n" --arg p "$p" --arg s "$s" \
+      '$prev + [{project_number: $n, project_name: $p, task_type: "general", status: $s, description: "g29 fixture", dependencies: [], file_scope: []}]')
+    tns=$(jq -n -c --argjson prev "$tns" --argjson n "$n" '$prev + [$n]')
+  done
+  jq -n --argjson ap "$projects" '{active_projects: $ap}' > "$STATE_FILE"
+  reset_lock_dirs
+  rm -f "$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+  rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
+  # Group 11 hygiene, applied here too (per-group hygiene convention this file already follows):
+  # a leftover call-count marker from Group 11's own many cases must never leak into this new
+  # group's fresh write_g11_verify_stub/write_g11_deploy_headless_stub invocations below.
+  rm -f "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
+  jq -n --argjson tn "$tns" --argjson cmf "$cmf" '{task_numbers: $tn, cycle_modified_files: $cmf}' \
+    > "$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+}
+
+# ── Arm A (dispatch verification item 1): the defect, resolved -- a deploy-pending candidate with
+# a complete summary+handoff converges to 'completed' WITHIN A SINGLE RUN, via the post-deploy
+# reconcile pass, with ZERO implement dispatch rows ever derived for it. ────────────────────────
+g29_seed_state_and_mt "g29_a" '[".claude/scripts/orchestrate-cycle-plan.sh"]' 9201 "g29_arm_a" "implementing"
+g29_write_task_fixture 9201 "g29_arm_a" "true" '["agent-system/extensions/core/scripts/foo.sh"]' "true"
+write_g11_verify_stub "" "" 0
+write_g11_deploy_headless_stub 0
+run_sut --session g29_a --no-plan-cache -- 9201
+if [[ "$LAST_STDERR" == *"post-deploy reconcile for task #9201"*"promoted"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
+  pass "Arm A: the post-deploy reconcile line fires and reports 'promoted'"
+else
+  fail "Arm A: expected a promoted post-deploy reconcile line on stderr, got: $LAST_STDERR"
+fi
+a_status="$(jq -r '.active_projects[] | select(.project_number == 9201) | .status' "$STATE_FILE")"
+if [ "$a_status" = "completed" ]; then
+  pass "Arm A: candidate #9201's state.json status becomes 'completed' within this single run"
+else
+  fail "Arm A: expected status 'completed', got '$a_status'"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 9201 and .phase == "implement")) | length')" = "0" ]; then
+  pass "Arm A: zero implement dispatch rows are emitted for candidate #9201"
+else
+  fail "Arm A: an implement dispatch row was unexpectedly emitted for candidate #9201 (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jq -r '.deploy_pending // "absent"' "$WORKDIR/specs/9201_g29_arm_a/.return-meta.json")" = "absent" ]; then
+  pass "Arm A: deploy_pending is cleared from .return-meta.json after the promotion"
+else
+  fail "Arm A: deploy_pending was not cleared from .return-meta.json after the promotion"
+fi
+
+# ── Arm B (dispatch verification item 2): guard still live -- a candidate with a complete plan
+# and NO deploy_pending marker that genuinely re-derives an identical implement dispatch across
+# two cycles is still halted, exactly as Group 28 already establishes for the research phase. ───
+g29_seed_state_and_mt "g29_b" '[]' 9202 "g29_arm_b" "implementing"
+g29_write_task_fixture 9202 "g29_arm_b" "false" '[]' "false"
+run_sut --session g29_b --no-plan-cache -- 9202
+if [ "$(jqf '.dispatch | map(select(.task == 9202 and .phase == "implement")) | length')" = "1" ]; then
+  pass "Arm B: cycle 1 dispatches the non-deploy-pending candidate normally"
+else
+  fail "Arm B: cycle 1 did not dispatch candidate #9202 (stdout: $LAST_STDOUT)"
+fi
+run_sut --session g29_b --no-plan-cache -- 9202
+if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.blocked | map(select(.task == 9202)) | length')" = "1" ]; then
+  pass "Arm B: cycle 2 (identical content, no deploy_pending marker) is halted -- guard fully live"
+else
+  fail "Arm B: expected cycle 2 to halt candidate #9202, got: $LAST_STDOUT"
+fi
+if [[ "$LAST_STDERR" == *"IDENTICAL DISPATCH HALT: task #9202"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
+  pass "Arm B: the IDENTICAL DISPATCH HALT notice fires on stderr"
+else
+  fail "Arm B: expected the IDENTICAL DISPATCH HALT notice for candidate #9202, got: $LAST_STDERR"
+fi
+
+# ── Arm C (streak-freeze, per-candidate scope): a two-candidate fixture where only ONE carries
+# deploy_pending:true, on a path where reconcile cannot conclude (no summary artifact -> no-op,
+# never a promotion, so neither candidate leaves 'implementing'). Two identical cycles: the
+# deploy-pending candidate's streak is frozen (never halted); the sibling WITHOUT the marker
+# halts normally -- proving the freeze reads the candidate's OWN marker, never a batch-wide
+# signal. ─────────────────────────────────────────────────────────────────────────────────────
+g29_seed_state_and_mt "g29_c" '[]' \
+  9203 "g29_arm_c_dp" "implementing" \
+  9204 "g29_arm_c_plain" "implementing"
+g29_write_task_fixture 9203 "g29_arm_c_dp" "true" '["agent-system/extensions/core/scripts/foo.sh"]' "false"
+g29_write_task_fixture 9204 "g29_arm_c_plain" "false" '[]' "false"
+run_sut --session g29_c --no-plan-cache -- 9203 9204
+c_dispatch_count_1=$(jqf '.dispatch | length')
+if [ "$c_dispatch_count_1" = "2" ]; then
+  pass "Arm C: cycle 1 dispatches both candidates normally"
+else
+  fail "Arm C: cycle 1 expected 2 dispatch rows, got $c_dispatch_count_1 (stdout: $LAST_STDOUT)"
+fi
+mt_c="$WORKDIR/specs/.orchestrator-multi-state-g29_c.json"
+c_streak_9203_after_1=$(jq -r '.identical_dispatch_streak["9203"] // 0' "$mt_c")
+
+run_sut --session g29_c --no-plan-cache -- 9203 9204
+if [ "$(jqf '.dispatch | map(select(.task == 9203 and .phase == "implement")) | length')" = "1" ]; then
+  pass "Arm C: cycle 2 still dispatches the deploy-pending candidate #9203 -- not halted by the freeze"
+else
+  fail "Arm C: candidate #9203 was unexpectedly halted or missing from dispatch (stdout: $LAST_STDOUT)"
+fi
+c_streak_9203_after_2=$(jq -r '.identical_dispatch_streak["9203"] // 0' "$mt_c")
+if [ "$c_streak_9203_after_2" = "$c_streak_9203_after_1" ]; then
+  pass "Arm C: candidate #9203's identical_dispatch_streak is unchanged by the second identical cycle (frozen at $c_streak_9203_after_1)"
+else
+  fail "Arm C: expected identical_dispatch_streak unchanged at $c_streak_9203_after_1, got $c_streak_9203_after_2"
+fi
+if [[ "$LAST_STDERR" == *"task #9203 implement content matches the previous one, but the task is deploy-pending"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
+  pass "Arm C: the distinct streak-freeze stderr notice fires for candidate #9203"
+else
+  fail "Arm C: expected the streak-freeze notice for candidate #9203, got: $LAST_STDERR"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 9204)) | length')" = "0" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 9204)) | length')" = "1" ]; then
+  pass "Arm C: the sibling WITHOUT a deploy_pending marker (candidate #9204) still halts normally"
+else
+  fail "Arm C: expected candidate #9204 to halt on cycle 2 same as Arm B, got: $LAST_STDOUT"
+fi
+
+# ── Arm D (marker clearing closes the freeze): simulates the POST-clearing state Phase 1's
+# chokepoint produces (deploy_pending absent, as Arm A already proved it ends up) directly on a
+# fresh candidate fixture -- a genuine implement-phase promotion is terminal (candidate #9201
+# above is now 'completed' and cannot be re-dispatched to demonstrate a REPEAT), so this arm
+# isolates the guard's own post-clearing behavior instead: with no deploy_pending marker at all
+# (the same state Phase 1 leaves behind), two genuinely identical cycles halt exactly like Arm B
+# -- proving the freeze does not persist past the episode that set it. ──────────────────────────
+g29_seed_state_and_mt "g29_d" '[]' 9205 "g29_arm_d" "implementing"
+g29_write_task_fixture 9205 "g29_arm_d" "false" '[]' "false"
+run_sut --session g29_d --no-plan-cache -- 9205
+run_sut --session g29_d --no-plan-cache -- 9205
+if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.blocked | map(select(.task == 9205)) | length')" = "1" ]; then
+  pass "Arm D: once deploy_pending is absent (the post-clearing state), a genuine identical-dispatch repeat halts normally"
+else
+  fail "Arm D: expected candidate #9205 to halt on cycle 2 with no deploy_pending marker present, got: $LAST_STDOUT"
+fi
+
+# ── Arm E (dispatch verification item 3, negative control): failure path -- deploy-headless.sh
+# exits 1 (branch (a), the deploy did NOT land) with a deploy_pending candidate present. No
+# reconcile line may fire (nothing was actually deployed) and the candidate's status must be left
+# unchanged. ──────────────────────────────────────────────────────────────────────────────────
+g29_seed_state_and_mt "g29_e" '[".claude/scripts/orchestrate-cycle-plan.sh"]' 9206 "g29_arm_e" "implementing"
+g29_write_task_fixture 9206 "g29_arm_e" "true" '["agent-system/extensions/core/scripts/foo.sh"]' "true"
+write_g11_verify_stub "" "" 0
+write_g11_deploy_headless_stub 1
+run_sut --session g29_e --no-plan-cache -- 9206
+if [[ "$LAST_STDERR" != *"post-deploy reconcile for task #9206"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
+  pass "Arm E: no post-deploy reconcile line fires when the deploy itself did not land"
+else
+  fail "Arm E: an unexpected post-deploy reconcile line fired despite deploy-headless.sh exit 1, got: $LAST_STDERR"
+fi
+e_status="$(jq -r '.active_projects[] | select(.project_number == 9206) | .status' "$STATE_FILE")"
+if [ "$e_status" = "implementing" ]; then
+  pass "Arm E: candidate #9206's status is left unchanged (still implementing) when the deploy did not land"
+else
+  fail "Arm E: expected status 'implementing' unchanged, got '$e_status'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

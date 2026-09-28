@@ -1,0 +1,31 @@
+{
+  "phase": 5,
+  "phase_name": "Reproduction and regression tests in test-orchestrate-cycle-plan.sh",
+  "started_at": "2026-09-28T21:45:00Z",
+  "last_updated": "2026-09-28T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Group 29 with Arms A-E, reusing Group 11/27 helpers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Confirm pre-fix failure for the arms that exercise new logic (A, C); Arm D passes both before/after by construction (recorded as deviation)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "Reuse Arm A's completed (terminal) task for Arm D's repeat-dispatch check", "result": "failed", "reason": "a postflight-implement promotion is always terminal (completed); a terminal task cannot be re-dispatched, so Arm D was redesigned to isolate the same invariant on a fresh, marker-absent fixture instead"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.Arm D",
+      "description": "Arm D (marker clearing closes the freeze)",
+      "type": "altered",
+      "reason": "A genuine implement-phase promotion is terminal, so Arm A's own task cannot be re-dispatched to prove a post-clearing repeat halts. Arm D instead uses a fresh candidate with no deploy_pending marker at all (the state Phase 1's clearing produces) to test the same invariant. This arm passes both before and after the fix by construction, since pre-fix code never read the marker either.",
+      "annotation": "*(completed: deviation — see plan Phase 5 Arm D task note)*"
+    }
+  ],
+  "verification": {
+    "bash -n": "clean",
+    "test-orchestrate-cycle-plan.sh": "300 passed, 0 failed (all Group 1-28 unchanged, new Group 29 all green)",
+    "pre_fix_regression_check": "swapped orchestrate-cycle-plan.sh to pre-Phase-2 commit (753d2e569), re-ran suite: Arms A and C genuinely FAIL (293 passed, 7 failed); Arms B/D/E pass unaffected (expected, they do not depend on the fix); restored post-fix file (byte-identical to committed version, confirmed via git diff --stat)",
+    "test-postflight-deploy-gate.sh": "29 passed, 0 failed",
+    "test-orchestrate-cycle-postflight.sh": "127 passed, 0 failed"
+  }
+}

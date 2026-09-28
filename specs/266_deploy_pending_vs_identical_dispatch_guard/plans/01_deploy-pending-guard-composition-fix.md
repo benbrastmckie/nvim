@@ -325,39 +325,45 @@ assurance that did not hold in either observed incident.
 
 ---
 
-### Phase 5: Reproduction and regression tests in test-orchestrate-cycle-plan.sh [IN PROGRESS]
+### Phase 5: Reproduction and regression tests in test-orchestrate-cycle-plan.sh [COMPLETED]
 
 **Goal**: Pin verification arms 1-3 from the dispatch with a new, additive test group that
 reproduces the composition defect and proves it resolved, while proving the guard still fires for
 genuine churn.
 
 **Tasks**:
-- [ ] Add a new group (next free number after Group 28) to
+- [x] Add a new group (next free number after Group 28) to
       `scripts/tests/test-orchestrate-cycle-plan.sh`, reusing Group 11's
       `write_g11_deploy_headless_stub` / `write_g11_verify_stub` helpers and Group 27's
-      real-script restoration precaution.
-- [ ] **Arm A (the defect, resolved)**: a task at `implementing` with a complete plan, a summary
+      real-script restoration precaution. *(completed: Group 29)*
+- [x] **Arm A (the defect, resolved)**: a task at `implementing` with a complete plan, a summary
       artifact, a handoff reporting `implemented`, and `deploy_pending: true`. Stub the deploy
       clean. Assert within a single run: the post-deploy reconcile line fires, the task's
       `state.json` status becomes `completed`, and **zero** `implement` dispatch rows are emitted
-      for it.
-- [ ] **Arm B (guard still live)**: a task with a complete plan and **no** `deploy_pending`
+      for it. *(completed; confirmed to genuinely fail pre-fix — see Testing & Validation)*
+- [x] **Arm B (guard still live)**: a task with a complete plan and **no** `deploy_pending`
       marker that re-derives identical dispatches across two cycles is still halted — a blocked[]
-      row naming the guard, zero dispatch rows, and the `IDENTICAL DISPATCH HALT` stderr notice.
-- [ ] **Arm C (streak freeze, per-task scope)**: a two-task fixture where only one carries
+      row naming the guard, zero dispatch rows, and the `IDENTICAL DISPATCH HALT` stderr notice. *(completed)*
+- [x] **Arm C (streak freeze, per-task scope)**: a two-task fixture where only one carries
       `deploy_pending: true`; drive two identical cycles on a path where the reconcile cannot
       promote (e.g. no summary artifact). Assert the deploy-pending task is not halted and its
-      streak is unchanged, while the sibling without the marker still halts normally.
-- [ ] **Arm D (marker clearing closes the freeze)**: after the Arm A promotion, assert
+      streak is unchanged, while the sibling without the marker still halts normally. *(completed; confirmed to genuinely fail pre-fix)*
+- [x] **Arm D (marker clearing closes the freeze)**: after the Arm A promotion, assert
       `deploy_pending` is absent from that task's `.return-meta.json`, then drive a genuine
       identical-dispatch repeat and assert the guard now halts it — proving the freeze does not
-      persist past the episode.
-- [ ] **Arm E (failure path, no spurious reconcile)**: stub `deploy-headless.sh` exit 1 (branch
+      persist past the episode. *(completed: deviation — a genuine implement-phase promotion is
+      terminal (`completed`), so the Arm A task cannot literally be re-dispatched; Arm D instead
+      isolates the SAME invariant on a fresh candidate carrying no marker at all, which is the
+      exact state Phase 1's clearing leaves behind. This arm passes both before and after the fix
+      by construction — pre-fix code never read the marker either, so "absent marker -> ordinary
+      halt" was never broken. Recorded honestly rather than staged to force a misleading red/green
+      delta; Arms A and C are the ones that actually pin the defect.)*
+- [x] **Arm E (failure path, no spurious reconcile)**: stub `deploy-headless.sh` exit 1 (branch
       (a)) with a `deploy_pending` task present; assert no reconcile line fires and the task's
-      status is unchanged.
-- [ ] Reset lock dirs, multi-state files, and the Group 11 call-count markers between arms, per
-      the established per-group hygiene in this file.
-- [ ] Add no assertion that loosens or replaces an existing Group 11/27/28 case.
+      status is unchanged. *(completed)*
+- [x] Reset lock dirs, multi-state files, and the Group 11 call-count markers between arms, per
+      the established per-group hygiene in this file. *(completed)*
+- [x] Add no assertion that loosens or replaces an existing Group 11/27/28 case. *(completed: 300 passed including all pre-existing groups, 0 failed)*
 
 **Timing**: 1.75 hours
 
