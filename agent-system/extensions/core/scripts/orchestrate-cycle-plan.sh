@@ -524,6 +524,7 @@ mt_json=$(jq -c \
   | .redeploy_skip_notices //= []
   | .consecutive_no_dispatch_cycles //= 0
   | .verify_deploy_baseline_notices //= []
+  | .post_deploy_reconcile_notices //= []
   | .defer_ledger //= []
   | .detected_defects //= []
   | .forward_progress_violated //= false
@@ -773,6 +774,16 @@ orchestrate_cycle_plan_main() {
 #       was shown flaky/unrelated (the new filtered sub-branch) -- proceeds loudly with a
 #       recorded verify_deploy_baseline_notices entry; the notice's own fields distinguish the
 #       two cases (see the `filtered` marker below) so they are never confused with each other.
+#
+# Post-deploy reconcile accumulator: initialized unconditionally here, BEFORE the checkpoint
+# body below (including its ledger-skip and dry-run paths), so it is always defined when the
+# post-checkpoint reconcile loop near the bottom of this block reads it. It is populated (set to
+# deploy_pending_tasks_json, computed below) ONLY inside the three clean-success branches that
+# also append to .deployed_critical_paths -- never on branch (a) (deploy-headless.sh did not
+# land) or branch (b) (confirmed, attributable blocking findings). See the reconcile loop's own
+# header comment after this checkpoint's closing `fi` for why this promotes deploy-unblocked
+# tasks within the SAME cycle instead of leaving them for a second, wastefully-identical dispatch.
+post_deploy_reconcile_json='[]'
 CRITICAL_PATHS_FILE="$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json"
 cycle_modified_files_json=$(mt_get_json '.cycle_modified_files')
 if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" != "null" ] && [ -f "$CRITICAL_PATHS_FILE" ]; then
@@ -909,6 +920,8 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
       if [ -z "$post_findings" ]; then
         post_exit=0
         mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
+        # Clean-success branch (i): the deploy landed and verify-deploy.sh is fully clean.
+        post_deploy_reconcile_json="$deploy_pending_tasks_json"
         echo "[orchestrate] REDEPLOY CHECKPOINT: deploy-headless.sh succeeded; verify-deploy.sh clean." >&2
         if [ -n "$hash_state_json" ]; then
           deploy_ledger_write "$ledger_file" "$hash_state_json" "clean" "$(mt_get_json '.task_numbers')" "$session_id" "$cycle_count" \
@@ -926,6 +939,8 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
           echo "[PRE-EXISTING VERIFY-DEPLOY FAILURE - findings predate this redeploy, 0 newly introduced; batch continuing]" >&2
           echo "<!-- verify-deploy-baseline pre=$(echo "$pre_findings" | grep -c .) post=$(echo "$post_findings" | grep -c .) new=0 proceeded=true -->" >&2
           mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
+          # Clean-success branch (ii): every post-redeploy finding predates the redeploy.
+          post_deploy_reconcile_json="$deploy_pending_tasks_json"
           mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson pre "$(echo "$pre_findings" | grep -c .)" --argjson post "$(echo "$post_findings" | grep -c .)" --argjson pe "$post_exit" '{cycle:$c, gate:"verify-deploy.sh", pre_findings:$pre, post_findings:$post, new_findings:0, post_exit:$pe, filtered:false}')" '.verify_deploy_baseline_notices += [$entry]'
           if [ -n "$hash_state_json" ]; then
             deploy_ledger_write "$ledger_file" "$hash_state_json" "pre_existing" "$(mt_get_json '.task_numbers')" "$session_id" "$cycle_count" \
@@ -957,6 +972,8 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
             [ -n "$flaky_findings" ] && { echo "  flaky (did not reproduce on re-run):" >&2; printf '%s\n' "$flaky_findings" | sed 's/^/    /' >&2; }
             [ -n "$unrelated_findings" ] && { echo "  unrelated (names an identifier absent from this batch's modified files):" >&2; printf '%s\n' "$unrelated_findings" | sed 's/^/    /' >&2; }
             mt_set --argjson mp "$matched_paths_json" '.deployed_critical_paths = ((.deployed_critical_paths + $mp) | unique)'
+            # Clean-success branch (iii): every candidate new finding was flaky or unrelated.
+            post_deploy_reconcile_json="$deploy_pending_tasks_json"
             mt_set --argjson entry "$(jq -n -c \
               --argjson c "$cycle_count" \
               --argjson pre "$(echo "$pre_findings" | grep -c .)" \
@@ -1026,6 +1043,47 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
   fi
   fi
 fi
+
+# ── Post-deploy reconcile pass ───────────────────────────────────────────────────────────────
+# Makes the checkpoint's own "convergence is deferred to the next cycle" promise real: promote
+# every task THIS cycle's checkpoint just deploy-unblocked (post_deploy_reconcile_json, set
+# above inside exactly the three clean-success branches -- never on branch (a) deploy failure or
+# branch (b) blocking findings) by replaying reconcile-task-status.sh -- the same tool an
+# operator otherwise has to run by hand -- BEFORE this cycle's own (a) Status refresh loop and
+# dispatch derivation run. Landing this here means current_statuses[$t] already reflects the
+# promotion and is_terminal_status() naturally excludes the task from Move 2's dispatch batch --
+# no new triage-layer skip logic is needed, and no second, byte-identical `implement` dispatch is
+# ever derived for a task whose work was already done and committed.
+#
+# Placement: strictly inside this already-serialized checkpoint window, after the deploy's
+# success is confirmed above and before Move 2 (elsewhere in this script) issues any dispatch --
+# the one point in the whole cycle with no dispatch in flight (see this block's own CONCURRENCY
+# POSTURE comment). This inherits the existing serialization rather than introducing a new lock.
+#
+# `dry_run == true` skips the loop entirely, matching this checkpoint's own non-mutating posture
+# under --dry-run. A non-zero reconcile-task-status.sh exit (e.g. the postflight completion-
+# deploy gate itself refusing again, or the phase-accounting backstop) is NON-FATAL here: warn,
+# record, and move on to the next task -- a failed self-heal attempt must never take down the
+# rest of the batch loop.
+if [ "$dry_run" != "true" ] && [ "$post_deploy_reconcile_json" != "[]" ]; then
+  for _pdr_t in $(echo "$post_deploy_reconcile_json" | jq -r '.[]' 2>/dev/null || true); do
+    [ -n "$_pdr_t" ] || continue
+    _pdr_rc=0
+    _pdr_out="$(bash "$SCRIPT_DIR/reconcile-task-status.sh" "$_pdr_t" "$session_id" 2>&1)" || _pdr_rc=$?
+    if [ "$_pdr_rc" -ne 0 ]; then
+      _pdr_outcome="refused"
+    elif printf '%s' "$_pdr_out" | grep -q "promoted .* -> completed"; then
+      _pdr_outcome="promoted"
+    else
+      _pdr_outcome="no-op"
+    fi
+    echo "[orchestrate] REDEPLOY CHECKPOINT: post-deploy reconcile for task #${_pdr_t} — ${_pdr_outcome}" >&2
+    mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson t "$_pdr_t" --arg o "$_pdr_outcome" --argjson rc "$_pdr_rc" '{cycle:$c, task:$t, outcome:$o, exit_code:$rc}')" \
+      '.post_deploy_reconcile_notices += [$entry]'
+  done
+  mt_save
+fi
+
 # Reset for the cycle now starting — the future postflight composer accumulates fresh entries
 # during THIS cycle's own dispatch, to be consulted by the NEXT invocation of this script.
 mt_set '.cycle_modified_files = []'

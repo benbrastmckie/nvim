@@ -174,7 +174,7 @@ add the clear at that caller instead and record the divergence.
 
 ---
 
-### Phase 2: Wire an automatic reconcile pass into the checkpoint's clean-success path [NOT STARTED]
+### Phase 2: Wire an automatic reconcile pass into the checkpoint's clean-success path [COMPLETED]
 
 **Goal**: Make the checkpoint's own "convergence is deferred to the next cycle" promise real by
 promoting every task it just unblocked in the same cycle, before that cycle's status refresh — so
@@ -182,33 +182,33 @@ the task is already terminal by the time dispatch derivation runs and no second 
 dispatch is ever built for it.
 
 **Tasks**:
-- [ ] In `scripts/orchestrate-cycle-plan.sh`, initialize a cycle-local accumulator (e.g.
+- [x] In `scripts/orchestrate-cycle-plan.sh`, initialize a cycle-local accumulator (e.g.
       `post_deploy_reconcile_json='[]'`) before the checkpoint block opens, so it is defined on
-      every path including the ledger-skip and dry-run paths.
-- [ ] Set it to `$deploy_pending_tasks_json` inside **each of the three clean-success branches**
+      every path including the ledger-skip and dry-run paths. *(completed)*
+- [x] Set it to `$deploy_pending_tasks_json` inside **each of the three clean-success branches**
       only: (i) `post_findings` empty ("verify-deploy.sh clean"), (ii) branch (c) pre-existing
       findings with `new=0`, (iii) the branch-(c)-equivalent `filtered` path where every candidate
       new finding was flaky or unrelated. Leave it untouched on branch (a) (`deploy_exit` 1 or 2)
-      and branch (b) (blocking findings).
-- [ ] After the checkpoint block closes and before the `── (a) Status refresh` loop, iterate the
+      and branch (b) (blocking findings). *(completed)*
+- [x] After the checkpoint block closes and before the `── (a) Status refresh` loop, iterate the
       accumulator and run `bash "$SCRIPT_DIR/reconcile-task-status.sh" "$_t" "$session_id"` live
-      (never `--dry-run`), capturing exit code and stderr per task.
-- [ ] Skip the whole loop when `dry_run` is true, matching the checkpoint's own posture — a
-      dry run must remain non-mutating.
-- [ ] Emit one named stderr line per task on both outcomes, e.g.
+      (never `--dry-run`), capturing exit code and stderr per task. *(completed)*
+- [x] Skip the whole loop when `dry_run` is true, matching the checkpoint's own posture — a
+      dry run must remain non-mutating. *(completed)*
+- [x] Emit one named stderr line per task on both outcomes, e.g.
       `[orchestrate] REDEPLOY CHECKPOINT: post-deploy reconcile for task #N — <promoted|no-op|refused>`,
       and record a structured entry in the multi-task state (a `post_deploy_reconcile_notices`
       array mirroring the existing `verify_deploy_baseline_notices` shape) so the outcome is
-      visible without re-reading stderr.
-- [ ] Treat a non-zero reconcile exit as non-fatal: warn, record, and continue to the next task —
-      a failed self-heal must never take down the batch loop.
-- [ ] Record the placement rationale in a comment: this window is the one point in the loop with
+      visible without re-reading stderr. *(completed)*
+- [x] Treat a non-zero reconcile exit as non-fatal: warn, record, and continue to the next task —
+      a failed self-heal must never take down the batch loop. *(completed)*
+- [x] Record the placement rationale in a comment: this window is the one point in the loop with
       no dispatch in flight, so the call inherits the existing serialization rather than
       introducing a new lock; and it must precede the status refresh so `current_statuses[$t]`
       picks up the promotion and `is_terminal_status()` excludes the task naturally, with no new
-      triage-layer skip logic.
-- [ ] Note in the same comment that `deploy_pending_any` forces the ledger decision to `run`, so
-      the ledger-skip path can never starve this reconcile for a deploy-pending task.
+      triage-layer skip logic. *(completed)*
+- [x] Note in the same comment that `deploy_pending_any` forces the ledger decision to `run`, so
+      the ledger-skip path can never starve this reconcile for a deploy-pending task. *(completed)*
 
 **Timing**: 1.5 hours
 
