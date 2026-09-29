@@ -45,7 +45,7 @@ next_project_number: 269
 ### Extensions
 
 43 [RESEARCHED] — Decide and implement how email safety context actually...
-167 [RESEARCHING] — Guard LaTeX builds against the vimtex watcher: always-on rule...
+167 [RESEARCHED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 255 [NOT STARTED] — Reconcile typst extension scope ownership and fix...
@@ -1977,10 +1977,11 @@ Contemporaneous context that plausibly supplied the load: the same run-all.sh in
 ---
 
 ### 167. Guard LaTeX builds against the vimtex watcher: always-on rule first; shared guard script and lifecycle wiring only if the rule proves insufficient
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 257, Task 259
+- **Research**: [167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md]
 
 **Description**: Make continuous-build (vimtex `latexmk -pvc`) safety guidance always-in-effect for every agent and command, not only latex-typed dispatches, by extending the latex extension's EXISTING deployed rule file rather than adding a new mechanism.
 

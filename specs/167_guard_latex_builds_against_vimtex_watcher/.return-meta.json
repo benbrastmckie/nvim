@@ -1,44 +1,45 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 1 meta task (#167) to make vimtex continuous-build safety always-in-effect by extending the latex extension's existing paths-globbed rule file plus a one-pointer CLAUDE.md merge-source addition.",
+  "status": "researched",
+  "dispatch_seq": 8,
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task #167 added to TODO.md under topic 'extensions'"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task #167 entry with task_type meta, 7 acceptance criteria, and full option analysis"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/167_guard_latex_builds_against_vimtex_watcher/",
-      "summary": "Task directory with reports/, plans/, summaries/ subdirectories"
+      "type": "report",
+      "path": "specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md",
+      "summary": "Confirms multi-glob paths: syntax via existing precedent, empirically resolves AC7 (paths: auto-load fires on Read/Edit/Write only, never on Bash), and supplies ready-to-apply text for the rule's new Continuous Build Safety section, the EXTENSION.md pointer, the compilation-guide.md cross-reference, and a one-pointer addition to latex-implementation-agent.md; recommends the three absorbed mechanism tasks stay deferred/not-admitted this round."
     }
   ],
-  "next_steps": "Run /research 167 to begin research, then /plan 167 and /implement 167. Note: interactive confirmation via AskUserQuestion was unavailable in this subagent context; review the task description before proceeding.",
+  "next_steps": "Run /plan 167 to create the implementation plan for the rule edit plus the two/three pointer additions (EXTENSION.md, compilation-guide.md, latex-implementation-agent.md).",
   "metadata": {
-    "session_id": "sess_1788810938_vmtx01",
-    "agent_type": "meta-builder-agent",
-    "duration_seconds": 240,
+    "session_id": "sess_1790640953_159e0d_167",
+    "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1,
-    "user_confirmation": "not_obtained_tool_unavailable"
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
   },
+  "memory_candidates": [
+    {
+      "content": "The Claude Code harness's rule paths: frontmatter auto-load (agent-system/extensions/core/context/patterns/context-discovery.md's 'Rule Loading: Two Independent Paths') fires only on Read/Edit/Write tool calls whose path matches the glob. It does NOT fire on a Bash tool call whose command string names, or even cat's the content of, a matching path. Verified empirically in-session with a minimal pair: `cat` on a real .lua file via Bash produced no rule injection, while a Read tool call on the identical file immediately injected the full matching rule. Any always-in-effect guidance meant to cover bare Bash tool invocations must live in an eager CLAUDE.md merge-source pointer (or an equivalent unconditional channel), not rely on widening a rule's paths: glob alone.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["paths-glob", "rule-loading", "harness-mechanism", "bash-vs-read", "eager-context"]
+    },
+    {
+      "content": "Multi-glob paths: frontmatter (JSON-array-of-quoted-strings form, e.g. paths: [\"a/**\", \"b/**\"]) is already an established, deployed pattern in this codebase's rule files (core/rules/git-workflow.md, nvim/rules/neovim-lua.md, web/rules/web-astro.md, nix/rules/nix.md), and is explicitly parsed by measure-eager-context.sh's rule_matches_rep_paths logic. No manifest.json change or loader change is needed to add a second/third glob to an existing single-glob rule.",
+      "category": "PATTERN",
+      "source_artifact": "specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["paths-glob", "rule-frontmatter", "multi-glob", "yaml-syntax"]
+    }
+  ],
   "modified_files": [
-    "/home/benjamin/.config/nvim/specs/state.json",
-    "/home/benjamin/.config/nvim/specs/TODO.md"
+    "specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md"
   ],
   "proposed_file_scope": [
     "agent-system/extensions/latex/rules/latex.md",
     "agent-system/extensions/latex/EXTENSION.md",
-    "agent-system/extensions/latex/context/project/latex/tools/compilation-guide.md"
+    "agent-system/extensions/latex/context/project/latex/tools/compilation-guide.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md"
   ],
   "errors": []
 }
