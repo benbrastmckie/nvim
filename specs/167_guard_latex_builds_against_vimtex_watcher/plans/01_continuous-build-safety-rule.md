@@ -273,33 +273,33 @@ glob structurally cannot reach.
 
 ---
 
-### Phase 3: Non-Contradiction Pointers in the Guide and the Build-Issuing Agent [NOT STARTED]
+### Phase 3: Non-Contradiction Pointers in the Guide and the Build-Issuing Agent [COMPLETED]
 
 **Goal**: The lazily-loaded compilation guide and the agent that actually issues build commands
 both point at the rule instead of contradicting it, with the prose stated once (AC6).
 
 **Tasks**:
-- [ ] Re-read both target files immediately before editing.
-- [ ] `compilation-guide.md`: insert a cross-reference directly after the existing `-pvc` bullet
+- [x] Re-read both target files immediately before editing. *(completed)*
+- [x] `compilation-guide.md`: insert a cross-reference directly after the existing `-pvc` bullet
       list in `## Continuous Compilation` / `### Using latexmk with Preview` (the bullets
       `- \`-pvc\`: Preview continuously...` and `- Works well with PDF viewers...`, at
       approximately lines 217-218), before `### Editor Integration`. Content: never start, stop, or
       race a second `latexmk` invocation against the same target while this is running; see the
       rule's "Continuous Build Safety" section for the detection command and the safe alternative;
-      not restated here.
-- [ ] `latex-implementation-agent.md`: add ONE pointer immediately after the `### Build Tools (via
+      not restated here. *(completed)*
+- [x] `latex-implementation-agent.md`: add ONE pointer immediately after the `### Build Tools (via
       Bash)` bullet list (approximately lines 46-50), per Decision 4. Content: check for a
       competing continuous-build watcher before running any of the listed commands, referencing
       `rules/latex.md`'s "Continuous Build Safety" section. Keep the accurate parenthetical that
       this agent's own `.tex` Read/Edit/Write calls auto-load that rule during normal plan
       execution -- this is the one agent for which the glob-based path is expected to suffice on
-      its own.
-- [ ] `latex-implementation-agent.md`: gate `MUST DO` item 4 in `## Critical Requirements`, which
+      its own. *(completed)*
+- [x] `latex-implementation-agent.md`: gate `MUST DO` item 4 in `## Critical Requirements`, which
       currently reads `Run \`latexmk -pdf\` to verify compilation` -- an unconditional bare-build
       mandate in the contract's strongest-lever section. Qualify it to require the isolated build
       when a watcher owns the output directory, referencing the rule's section. Do NOT add four or
-      five pointers at the other build sites (AC6).
-- [ ] Commit both files together (one coherent pointer change), staging them by explicit name.
+      five pointers at the other build sites (AC6). *(completed)*
+- [x] Commit both files together (one coherent pointer change), staging them by explicit name. *(completed)*
 
 **Timing**: 30 minutes
 

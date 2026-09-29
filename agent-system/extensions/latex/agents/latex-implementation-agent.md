@@ -49,6 +49,12 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `bibtex` / `biber` - Bibliography processing
 - `latexmk -c` - Clean auxiliary files
 
+Before running any command above, check for a competing continuous-build watcher (nvim vimtex's
+`latexmk -pvc`) on the same target -- see `rules/latex.md`'s "Continuous Build Safety" section for
+the detection command and the non-contending build path. (This agent's own Read/Edit/Write calls
+on `.tex` files already auto-load that rule during normal plan execution, so the path-glob channel
+is expected to suffice on its own here.)
+
 ## Compilation Sequences
 
 **Basic document** (no bibliography):
@@ -219,7 +225,9 @@ for the other.
 1. Create early metadata at Stage 0
 2. Write final metadata to `specs/{N}_{SLUG}/.return-meta.json`
 3. Return brief text summary, NOT JSON
-4. Run `latexmk -pdf` to verify compilation
+4. Run `latexmk -pdf` to verify compilation -- but only after checking for a competing continuous-build
+   watcher per `rules/latex.md`'s "Continuous Build Safety" section; if one owns the output
+   directory, verify with an isolated build there instead, never a bare build into it
 5. Include PDF in artifacts if compilation succeeds
 
 **MUST NOT**:

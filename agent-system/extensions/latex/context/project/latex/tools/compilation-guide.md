@@ -217,6 +217,11 @@ latexmk -pdf -pvc MainDocument.tex
 - `-pvc`: Preview continuously, recompile on changes
 - Works well with PDF viewers that auto-refresh
 
+Never start, stop, or race a second `latexmk` invocation against the same target while one of
+these is running (e.g. a user's nvim vimtex continuous-build watcher). See
+`rules/latex.md`'s "Continuous Build Safety" section for the detection command and the safe
+alternative; not restated here.
+
 ### Editor Integration
 
 Most LaTeX editors (TeXstudio, VS Code with LaTeX Workshop, Overleaf) provide:
