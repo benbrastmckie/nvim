@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790640953_159e0d_139",
+  "dispatch_seq": 1,
+  "findings_count": 8,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md",
+      "summary": "Verifies the four rules/contract WORK items and the absorbed hook-predicate work; corrects item (d)'s target from a nonexistent general-implementation-hard-agent.md to context/contracts/recovery.md lines 19-26; evaluates three concurrency-signal candidates for the hook and recommends reusing task-lock.sh session-list's liveness computation; flags that the new predicate must run before the hook's existing clean-tree exemption to avoid being dead code."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's agent system, --hard mode contracts for task types without a dedicated *-implementation-hard-agent.md file (general/meta/markdown) are not silently missing -- they live in shared context/contracts/*.md files loaded via skill-orchestrate's hard-mode contract injection (H1 branch), not per-domain agent files. Before assuming a named hard-mode agent file should exist, check context/contracts/ for the same text.",
+      "category": "PATTERN",
+      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["hard-mode", "recovery-ladder", "context-contracts", "agent-frontmatter", "general-implementation"]
+    },
+    {
+      "content": "guard-destructive-git.sh exits 0 immediately on a clean working tree (before any destructive-pattern detector runs), because its whole design targets discarding UNCOMMITTED changes. Any new predicate for a different hazard class (e.g. rewriting already-committed history) must be spliced in BEFORE that clean-tree early-exit or it becomes dead code, since the guarded commands (--amend, non-hard reset) are non-destructive to the working tree and routinely run on a clean tree.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["guard-destructive-git", "hook-ordering", "clean-tree-exemption", "history-rewrite", "concurrency"]
+    },
+    {
+      "content": "task-lock.sh session-list already emits NDJSON with a two-signal (pid-liveness + heartbeat) 'live' boolean and a task_numbers array per registered agent-system session (specs/.sessions/*.json), computed by session_liveness(). Per context/standards/orchestrator-runtime-files.md this registry is produced but has zero consumers today -- it is a ready-made, already-tested concurrency-liveness primitive for any future hook or script that needs to detect 'is more than one task/session currently active in this repo', rather than re-deriving lock-scanning from scratch.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["session-registry", "task-lock", "concurrency-detection", "session-list", "liveness"]
+    }
+  ],
+  "next_steps": "Run /plan 139 to create implementation plan"
+}
