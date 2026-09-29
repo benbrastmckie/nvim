@@ -1,0 +1,57 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/051_move_session_state_files_out_of_specs_root/reports/01_relocate-widen-reap-wire-todo.md",
+      "summary": "Research findings for all three parts: Part 2's fix is a one-file reap-glob widening (gitignore already covers all four naming generations); Part 3 has a ready-made porting template in skill-refresh/SKILL.md Steps 4.5/4.6 and a confirmed hook point between skill-todo Stage 10 and Stage 15; Part 1 (relocation) requires editing ~4 writer/reader files outside the declared file_scope, listed precisely with a proposed_file_scope addition; also documents a newly-found currently-tracked orphan file (.meta-return-sess_*.json) undetected by check-runtime-file-tracking.sh."
+    }
+  ],
+  "next_steps": "Run /plan 51 to create an implementation plan. The plan should explicitly rule on Part 1's scope (widen file_scope per proposed_file_scope below and do it this round, checking task 265's live status on the two overlapping files first, or defer it to a follow-up and say so) while implementing Parts 2 and 3 in full within the current file_scope.",
+  "proposed_file_scope": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/test-session-runtime-files.sh",
+    "agent-system/extensions/core/commands/refresh.md",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/commands/todo.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system's runtime-file-patterns.sh, gitignore patterns are **/-prefixed shell globs (e.g. **/.orchestrator-multi-state*.json), which use bash pathname-expansion semantics (* = zero-or-more of any char) rather than requiring a literal separator. This means a single canonical pattern can already tolerate multiple historical naming-generation variants (un-suffixed, hyphen-suffixed, dot-separator, .prev- variant) with zero changes -- the actual coverage gap was in a downstream consumer (reap-session-runtime-files.sh) that used a narrower literal bash-array glob requiring a literal hyphen. When auditing 'does X cover Y' for a glob-based ignore/allow list, check the glob semantics before assuming a gap exists in the canonical pattern itself.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/051_move_session_state_files_out_of_specs_root/reports/01_relocate-widen-reap-wire-todo.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["gitignore", "glob-semantics", "runtime-file-patterns", "reap", "orchestrator-multi-state"]
+    },
+    {
+      "content": "check-runtime-file-tracking.sh's Check B (no ephemeral-class file is tracked) only scans the 18 canonical members of runtime-file-patterns.sh's RUNTIME_FILE_B_REGEX array. A file from a fully retired/superseded naming convention that was never added to that array (e.g. a 'meta-return' return-file convention retired from skill-meta before this check existed) can be currently git-tracked and committed at HEAD while the check reports a clean PASS. Verification tooling built around 'the canonical N-member list' is only as complete as that list -- a dead convention's stray tracked file is invisible to it by construction, not merely by bug.",
+      "category": "PATTERN",
+      "source_artifact": "specs/051_move_session_state_files_out_of_specs_root/reports/01_relocate-widen-reap-wire-todo.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["check-runtime-file-tracking", "coverage-gap", "git-tracked-orphan", "verification-tooling"]
+    },
+    {
+      "content": "skill-refresh/SKILL.md's Steps 4.5 (reap-session-runtime-files.sh) and 4.6 (task-lock.sh session-reap) are a directly portable reference for wiring the same two non-interactive, threshold-gated reap calls into any other skill (e.g. skill-todo): both echo the reaper's own output verbatim, both reuse a single dry_run boolean parsed once in Step 1, and both are called unconditionally (no AskUserQuestion gate) since they are pure age-threshold sweeps, not user-judgment decisions.",
+      "category": "PATTERN",
+      "source_artifact": "specs/051_move_session_state_files_out_of_specs_root/reports/01_relocate-widen-reap-wire-todo.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["skill-refresh", "skill-todo", "reap", "porting-template", "non-interactive-sweep"]
+    }
+  ],
+  "dispatch_seq": 5,
+  "metadata": {
+    "session_id": "sess_1790721762_ff3d8e_51",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 8
+  }
+}
