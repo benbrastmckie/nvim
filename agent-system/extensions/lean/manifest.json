@@ -40,6 +40,7 @@
       "lean-src-roots.sh",
       "tests/test-lean-src-roots.sh",
       "lean-comparator-run.sh",
+      "lean-comparator-landrun-shim.sh",
       "tests/test-lean-comparator-run.sh",
       "tests/fixtures/comparator/README.md",
       "tests/fixtures/comparator/fake-landrun.sh",

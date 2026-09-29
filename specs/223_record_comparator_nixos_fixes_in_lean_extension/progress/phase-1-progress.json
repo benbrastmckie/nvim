@@ -1,0 +1,28 @@
+{
+  "phase": 1,
+  "phase_name": "Landrun shim script (Fixes 3 + 4)",
+  "started_at": "2026-09-29T22:55:00Z",
+  "last_updated": "2026-09-29T23:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read live reference landrun-shim.sh and recheck-comparator.sh confined()/run_room()", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create lean-comparator-landrun-shim.sh with TMPDIR, git library --rox grants, ELF-interpreter --rox grant", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh"]},
+    {"id": 3, "description": "LEAN_COMPARATOR_RUN_REAL_LANDRUN override seam", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh"]},
+    {"id": 4, "description": "LEAN_COMPARATOR_RUN_SHIM_LOG argv log seam", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh"]},
+    {"id": 5, "description": "LEAN_COMPARATOR_RUN_LAKE_DIR in-shim PATH prepend", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh"]},
+    {"id": 6, "description": "chmod +x new script", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh"]},
+    {"id": 7, "description": "Add to manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/lean/manifest.json"]},
+    {"id": 8, "description": "bash -n; shellcheck if available", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.8",
+      "description": "run shellcheck if available",
+      "type": "altered",
+      "reason": "shellcheck is not installed on this host; bash -n was run instead and manual review performed",
+      "annotation": "*(deviation: altered — shellcheck unavailable on host, bash -n + manual review substituted)*"
+    }
+  ]
+}

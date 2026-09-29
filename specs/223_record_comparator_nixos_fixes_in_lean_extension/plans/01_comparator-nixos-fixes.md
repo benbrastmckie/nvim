@@ -1,7 +1,7 @@
 # Implementation Plan: Record Comparator-on-NixOS Fixes in the Lean Extension
 
 - **Task**: 223 - Record comparator nixos fixes in lean extension
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/223_record_comparator_nixos_fixes_in_lean_extension/reports/01_comparator-nixos-fixes.md
@@ -114,34 +114,34 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Landrun shim script (Fixes 3 + 4) [NOT STARTED]
+### Phase 1: Landrun shim script (Fixes 3 + 4) [COMPLETED]
 
 **Goal**: A new source-store sibling script that Comparator can be pointed at via
 `COMPARATOR_LANDRUN`, which execs the real `landrun` with Comparator's own argv unchanged plus the
 grants its internal sandbox omits.
 
 **Tasks**:
-- [ ] Read `~/Projects/Logos/Verification/framed_channel/recheck/landrun-shim.sh` in full (the
+- [x] Read `~/Projects/Logos/Verification/framed_channel/recheck/landrun-shim.sh` in full (the *(completed)*
       live file, not the report's excerpt) and `scripts/recheck-comparator.sh`'s `confined()` and
       `run_room()` for how the shim is handed its environment.
-- [ ] Create `agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh`: a header
+- [x] Create `agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh`: a header *(completed)*
       comment stating it is INTERNAL (exec'd by Comparator, never run by hand), `-h`/`--help`
       answered without side effects, then `TMPDIR=$PWD/.lake/tmp` (`mkdir -p`) as `--env`, one
       `--rox` per `ldd`-reported shared library of the realpath'd `git` binary, and the
       ELF-interpreter `--rox` grant for `lake` via `readelf -l` (guarded on `readelf` being
       present) — the nix-ld case `landrun -ldd` does not discover.
-- [ ] Give the shim a `LEAN_COMPARATOR_RUN_REAL_LANDRUN` override for the real `landrun` path,
+- [x] Give the shim a `LEAN_COMPARATOR_RUN_REAL_LANDRUN` override for the real `landrun` path, *(completed)*
       following this extension's established `LEAN_COMPARATOR_RUN_GUARD_BIN` test-seam naming, so
       the shim is testable with no real `landrun` present.
-- [ ] Give the shim an optional argv log env var (the reference's `RECHECK_SHIM_LOG` equivalent,
+- [x] Give the shim an optional argv log env var (the reference's `RECHECK_SHIM_LOG` equivalent, *(completed)*
       named per this extension's convention) so Phase 4 can assert on logged argv rather than by
       reading source.
-- [ ] Carry the reference's `RECHECK_LAKE_DIR` equivalent: a PATH prepend performed *inside the
+- [x] Carry the reference's `RECHECK_LAKE_DIR` equivalent: a PATH prepend performed *inside the *(completed)*
       shim* because `lake env` reorders `PATH` — record that reason in a comment.
-- [ ] `chmod +x` the new script.
-- [ ] Re-read `manifest.json`, then add `lean-comparator-landrun-shim.sh` to
+- [x] `chmod +x` the new script. *(completed)*
+- [x] Re-read `manifest.json`, then add `lean-comparator-landrun-shim.sh` to *(completed)*
       `provides.scripts` immediately after the existing `lean-comparator-run.sh` entry.
-- [ ] `bash -n` the new script; run `shellcheck` if available.
+- [x] `bash -n` the new script; run `shellcheck` if available. *(completed: bash -n clean; shellcheck unavailable on host)* *(deviation: altered — shellcheck unavailable on host, bash -n + manual review substituted)*
 
 **Timing**: 1.5 hours
 
