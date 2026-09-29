@@ -230,7 +230,7 @@ time but are line-number-anchored and may drift.
 
 ---
 
-### Phase 2: Eager Pointer in the CLAUDE.md Merge Source [NOT STARTED]
+### Phase 2: Eager Pointer in the CLAUDE.md Merge Source [COMPLETED]
 
 **Goal**: `EXTENSION.md` carries a short `### Build Safety` pointer so the guidance reaches the
 eager session prefix whenever the latex extension is loaded -- independent of task type and
@@ -238,19 +238,19 @@ independent of any path having been touched, which is the one channel AC7 confir
 glob structurally cannot reach.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/latex/EXTENSION.md` immediately before editing.
-- [ ] Add a `### Build Safety` subsection (3-4 lines) after the existing `### Document Structure`
+- [x] Re-read `agent-system/extensions/latex/EXTENSION.md` immediately before editing. *(completed)*
+- [x] Add a `### Build Safety` subsection (3-4 lines) after the existing `### Document Structure`
       subsection. It must stay INSIDE the existing `## LaTeX Extension` section -- do not add a new
       `##` heading, which would break the `merge_targets.claudemd` `section_id: extension_latex`
-      contract.
-- [ ] Content: state that a competing vimtex continuous-build watcher must be checked for before
+      contract. *(completed: verified single `## ` heading remains)*
+- [x] Content: state that a competing vimtex continuous-build watcher must be checked for before
       any `latexmk`/`pdflatex` build command, explicitly including outside a `latex`-typed task;
       reference `agent-system/extensions/latex/rules/latex.md`'s "Continuous Build Safety" section
       by path for the detection command and the non-contending build path; state that it is not
-      restated here.
-- [ ] Keep it to a pointer. This text lands in the eager session prefix, which the system budgets
-      via `measure-eager-context.sh` / `measure-eager-surface.sh`.
-- [ ] Commit this file alone.
+      restated here. *(completed)*
+- [x] Keep it to a pointer. This text lands in the eager session prefix, which the system budgets
+      via `measure-eager-context.sh` / `measure-eager-surface.sh`. *(completed: 6 lines total)*
+- [x] Commit this file alone. *(completed)*
 
 **Timing**: 15 minutes
 

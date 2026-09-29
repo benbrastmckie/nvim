@@ -26,3 +26,10 @@ document content. Content-creation work (proofs, theorems, chapters, textbook pr
 - Organize with `\input{}` for modular documents
 - Use `build/` directory for output files
 - Keep `.bib` files organized by project
+
+### Build Safety
+
+Before any `latexmk`/`pdflatex` build command -- including outside a `latex`-typed task -- check
+for a competing vimtex continuous-build watcher (`latexmk -pvc`) on the same target. See
+`rules/latex.md`'s "Continuous Build Safety" section for the detection command and the
+non-contending build path; not restated here.
