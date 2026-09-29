@@ -1,10 +1,48 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/139_forbid_concurrent_writer_history_rewrites/summaries/01_forbid-concurrent-writer-rewrites-summary.md",
+      "summary": "All 7 plan phases completed: contract layer (rules, agent contract, recovery.md) forbids concurrent-writer history rewrites; guard-destructive-git.sh gained a tree-state-blind concurrency-gated predicate proven by a 72-case suite; standards documentation updated; redeploy confirmed survival."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added the concurrency-gated history-rewrite prohibition to rules/git-workflow.md, general-implementation-agent.md, and context/contracts/recovery.md; implemented a tree-state-blind concurrency predicate in guard-destructive-git.sh proven by a 72-case fixture suite; documented the hazard class in git-safety.md and orchestrator-runtime-files.md; confirmed the change survives .claude/ regeneration and fires from the deployed hook."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/contracts/recovery.md",
+    "agent-system/extensions/core/context/standards/git-safety.md",
+    "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A PreToolUse hook that must be hermetically testable cannot call agent-system scripts that source deploy-root-guard.sh (which exits 1 when run from the source store) or that anchor PROJECT_ROOT to their own SCRIPT_DIR rather than the caller's cwd -- e.g. task-lock.sh. The testable pattern is to read the runtime record files directly and cwd-relatively (find specs -maxdepth 3 -name holder.json ..., specs/.sessions/*.json), inlining the portable liveness idiom (kill -0 on the recorded pid plus a heartbeat-age parse with a BSD date fallback) instead of reusing the script that owns it.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/summaries/01_forbid-concurrent-writer-rewrites-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["hook-testability", "deploy-root-guard", "cwd-relative", "task-lock", "pretooluse", "hermetic-fixture"]
+    },
+    {
+      "content": "Before adding substantial prose to a file matched by an eager rule glob (.claude/rules/**/*.md with a broad paths: frontmatter, e.g. paths: [\"specs/**/*\", \".claude/**/*\"]), check 'REPO_ROOT=$(pwd) bash scripts/measure-eager-context.sh --check' against orchestrator-context-budget.json's eager_load.baseline_bytes BEFORE writing, not after. That baseline is a fixed, deliberately-reviewed ceiling (never silently re-derived), and a verbose new rule section can blow through the entire headroom in one edit. When it does, the established fix in this codebase is the eager-core/lazy-narrative split already used by rules/git-workflow.md and its companion context/standards/git-workflow-narrative.md: keep only the rule statement, a one-sentence distinguishing clause, a brief permitted-forms summary, and an enforcement/pointer paragraph in the eager file; move the incident record, the complete permitted-forms list, and practical guidance to the lazy companion.",
+      "category": "PATTERN",
+      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/summaries/01_forbid-concurrent-writer-rewrites-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["eager-context-budget", "orchestrator-context-budget", "rules-eager-vs-lazy", "git-workflow-narrative", "context-budget-gate", "verify-deploy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }

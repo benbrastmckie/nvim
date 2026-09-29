@@ -1,17 +1,19 @@
 {
-  "status": "planned",
-  "summary": "Authored a 7-phase plan (5.5h) covering the contract layer (git-workflow.md Never Run bullets plus a new sibling section on concurrent-writer history rewrites, general-implementation-agent.md MUST NOT bullet, recovery.md re-scoping) and the enforcement layer (a tree-state-blind concurrency-gated history-rewrite predicate in guard-destructive-git.sh, clean-tree test fixtures, standards updates, redeploy verification). Research's item-(d) retarget to context/contracts/recovery.md is adopted; its task-lock.sh session-list recommendation is corrected to a direct cwd-relative record read.",
-  "phase": "plan",
-  "phases_completed": 0,
-  "phases_total": 7,
-  "blockers": [],
+  "status": "implemented",
+  "dispatch_seq": 17,
+  "phase": "implement",
+  "summary": "All 7 plan phases completed: contract layer (rules, agent contract, recovery.md) forbids concurrent-writer history rewrites; guard-destructive-git.sh gained a tree-state-blind concurrency-gated predicate proven by a 72-case suite; standards documentation updated; redeploy confirmed the change survives regeneration and fires from the deployed hook copy.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/139_forbid_concurrent_writer_history_rewrites/plans/01_forbid-concurrent-writer-rewrites.md",
-      "summary": "7-phase implementation plan for the contract layer and the concurrency-gated history-rewrite hook predicate."
+      "type": "summary",
+      "path": "specs/139_forbid_concurrent_writer_history_rewrites/summaries/01_forbid-concurrent-writer-rewrites-summary.md",
+      "summary": "Implementation summary covering the contract layer, the hook predicate, the test suite, standards docs, and the eager-context-budget trim deviation discovered during redeploy verification."
     }
   ],
-  "next_action_hint": "Run /orchestrate 139 --implement to execute the plan starting at Phase 1 (rules/git-workflow.md).",
-  "dispatch_seq": 9
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": null
 }

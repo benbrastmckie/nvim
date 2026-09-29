@@ -587,22 +587,27 @@ actually fires.
 
 ## Testing & Validation
 
-- [ ] Source-store suite: `bash agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh`
-      exits 0, all pre-existing cases still passing.
-- [ ] Deployed suite: `bash .claude/scripts/tests/test-guard-destructive-git.sh` exits 0.
-- [ ] Acceptance, contract layer: `git commit --amend` and a HEAD-moving `git reset` appear in
+- [x] Source-store suite: `bash agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh`
+      exits 0, all pre-existing cases still passing. *(completed: 72 passed, 0 failed)*
+- [x] Deployed suite: `bash .claude/scripts/tests/test-guard-destructive-git.sh` exits 0.
+      *(completed: 72 passed, 0 failed)*
+- [x] Acceptance, contract layer: `git commit --amend` and a HEAD-moving `git reset` appear in
       `rules/git-workflow.md`'s `Never Run` list with the concurrency qualifier; the rationale sits
       immediately after the uncommitted-work section; `general-implementation-agent.md` carries the
       `git-commit-scoped.sh` mandate; `recovery.md` no longer scopes its prohibition solely by tree
-      dirtiness.
-- [ ] Acceptance, enforcement layer: bare `--amend` under a live foreign lock on a **clean** tree
+      dirtiness. *(completed)*
+- [x] Acceptance, enforcement layer: bare `--amend` under a live foreign lock on a **clean** tree
       is refused; the same command with no live writer is permitted; a `git-commit-scoped.sh`
       invocation is permitted; a commit message containing the literal `--amend` (single- and
-      multi-line) does not trigger; `git reset -- <path>` unstaging is permitted.
-- [ ] `bash -n` clean on both modified shell files; `shellcheck` clean if available.
-- [ ] `bash .claude/scripts/check-task-references.sh` reports no new occurrence in any file this
-      task touched outside `specs/**`.
-- [ ] `bash .claude/scripts/validate-wiring.sh` shows no new failure.
+      multi-line) does not trigger; `git reset -- <path>` unstaging is permitted. *(completed:
+      pinned by Phase 5's 72-case suite plus a live manual smoke test in Phase 7)*
+- [x] `bash -n` clean on both modified shell files; `shellcheck` clean if available. *(completed:
+      both exit 0; shellcheck not installed in this environment)*
+- [x] `bash .claude/scripts/check-task-references.sh` reports no new occurrence in any file this
+      task touched outside `specs/**`. *(completed: 0 unexempted occurrences repo-wide)*
+- [x] `bash .claude/scripts/validate-wiring.sh` shows no new failure. *(completed: 41 pre-existing
+      failures, all missing `project/neovim/**`/`project/memory/README.md` context files
+      unrelated to this task; every check naming this task's files reports PASS)*
 
 ## Artifacts & Outputs
 
