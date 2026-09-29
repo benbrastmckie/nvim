@@ -196,7 +196,8 @@
 # script's own perspective after its entry-point `exec 3>&1 1>&2`; a caller invoking this script
 # normally (without itself touching fd 3) observes it as plain stdout, unchanged from the
 # caller's point of view:
-#   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file, force}],
+#   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file, force, focus, isolation,
+#    worktree_path}],
 #    aux_dispatch: [{task, kind, agent, model, dispatch_file, orchestrator_mode: false}],
 #    deferred: [{task, reason}], blocked: [{task, reason}], stop: null | {reason, message}}
 # `model`/`dispatch_file` are `null` on every dispatch row in --dry-run mode (nothing was built),
@@ -207,6 +208,16 @@
 # Stage MT-4's postflight call as `--force-invoked`, mirroring single-task Stage 5's own
 # `force_invoked` (A2) semantics for the monotonic-max status clamp and the forced-dispatch
 # artifact-round advance.
+# `isolation` (`"none"` or `"worktree"`, working-tree and build isolation posture dispatch-site
+# wiring) is selected by task_selected_for_worktree_isolation() -- phase == "implement" AND a
+# lean4/cslib-family task_type -- and is emitted identically in BOTH modes. `worktree_path` is
+# `null` whenever `isolation` is `"none"`, and ALSO always `null` under --dry-run regardless of
+# what `isolation` says (--dry-run provisions nothing -- see that mode's own row builder); in the
+# live path a `"worktree"` row's `worktree_path` is the real path `dispatch-worktree.sh provision`
+# returned. This row change is additive-only for existing consumers: `skill-orchestrate/SKILL.md`'s
+# Move 2/Move 3 and `orchestrate-cycle-postflight.sh` read named fields, never positionally, and
+# neither needed an edit for this addition (confirmed by reading both before this change; see
+# the decision record for the full evidence this predicate implements).
 #
 # Exit codes:
 #   0 - a plan was printed on stdout, regardless of its dispatch/deferred/blocked/stop contents
@@ -1910,6 +1921,29 @@ compose_focus() {
   fi
 }
 
+# ── Working-tree isolation selection predicate (dispatch-site wiring for the working-tree and
+# build isolation posture decision -- see context/patterns/batch-orchestration-guardrails.md's
+# "Working-Tree and Build Isolation Posture" section for the full evidence, scoring, and split
+# verdict this predicate implements). Kept as one small helper, called from both the --dry-run
+# row builder and the live per-task loop below, so the decision record and this code state the
+# predicate exactly once each rather than two independently-maintained copies.
+#
+# Selected: phase == "implement" AND the task's own task_type is in the lean4/cslib family
+# (the two REAL task_type string values that family covers -- "lean4" and "cslib" are each
+# extensions' own `task_type` manifest field; "lean4" additionally appears as a cslib
+# `keyword_overrides` alias for auto-detecting task_type at /task creation time, which is a
+# DIFFERENT mechanism this predicate does not touch or depend on). Every other phase
+# (research/plan) and every other task_type keeps the shared tree, unchanged.
+WORKTREE_ISOLATED_TASK_TYPES=("lean4" "cslib")
+task_selected_for_worktree_isolation() {
+  local phase="$1" ttype="$2" candidate
+  [ "$phase" = "implement" ] || return 1
+  for candidate in "${WORKTREE_ISOLATED_TASK_TYPES[@]}"; do
+    [ "$ttype" = "$candidate" ] && return 0
+  done
+  return 1
+}
+
 # ── Sibling territory (base mode AND hard mode; the task that carries concurrent-sibling
 # territory into base-mode dispatch briefs) — a dispatch file is the ONLY channel that reaches a
 # dispatched agent once it is running: a message sent to a live dispatch does not arrive until
@@ -2188,8 +2222,13 @@ if [ "$dry_run" = "true" ]; then
     agent=$(resolve_agent "$g" "${task_types[$t]}" "$t")
     dry_force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && dry_force_json="true"
     dry_focus=$(compose_focus "$t" "$g")
-    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" --arg focus "$dry_focus" \
-      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force, focus: $focus}')")
+    # --dry-run surfaces the identical isolation CHOICE a live cycle would make, without ever
+    # provisioning: worktree_path stays null unconditionally here (see task_selected_for_
+    # worktree_isolation()'s header comment and this phase's own "provision nothing" contract).
+    dry_isolation="none"
+    task_selected_for_worktree_isolation "$g" "${task_types[$t]}" && dry_isolation="worktree"
+    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" --arg focus "$dry_focus" --arg iso "$dry_isolation" \
+      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force, focus: $focus, isolation: $iso, worktree_path: null}')")
   done
   emit_and_exit "$cycle_count"
 fi
@@ -2336,6 +2375,35 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   task_composed_focus=$(compose_focus "$t" "$g")
   if [ -n "$task_composed_focus" ]; then
     build_args+=(--focus "$task_composed_focus")
+  fi
+  # --worktree (dispatch-site wiring for the working-tree and build isolation posture decision):
+  # selected mechanically by task_selected_for_worktree_isolation() above. On ANY provision
+  # failure this task is deferred outright (out_deferred_rows) -- it NEVER falls through to a
+  # shared-tree dispatch, per this phase's own instruction and the decision record's Risk
+  # ("Worktree provisioning failure silently degrades to a shared-tree dispatch, reintroducing
+  # the hazard the task exists to remove"). Empty-value-skips-flag, same convention as every
+  # other flag in this block: an unselected task passes no --worktree flag at all, byte-for-byte
+  # unchanged from before this feature existed. Deliberately does NOT release the task-lock
+  # acquired above before deferring -- mirrors the existing "orchestrate-build-dispatch.sh
+  # failed" deferral immediately below, the only other post-acquire failure branch in this loop.
+  task_isolation="none"
+  task_worktree_path=""
+  if task_selected_for_worktree_isolation "$g" "${task_types[$t]}"; then
+    if run_capture_stdout _wt_provision_json bash "$SCRIPT_DIR/dispatch-worktree.sh" provision "$t" --session "$dispatch_session" --seq "$task_dispatch_seq"; then
+      _wt_provision_exit=0
+    else
+      _wt_provision_exit=$?
+    fi
+    if [ "$_wt_provision_exit" -eq 0 ]; then
+      task_worktree_path=$(printf '%s' "$_wt_provision_json" | jq -r '.path // ""' 2>/dev/null) || task_worktree_path=""
+    fi
+    if [ "$_wt_provision_exit" -ne 0 ] || [ -z "$task_worktree_path" ]; then
+      echo "[orchestrate] WARNING: dispatch-worktree.sh provision failed for task #$t (exit $_wt_provision_exit): ${CAPTURE_DIAG:-$_wt_provision_json}" >&2
+      out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "dispatch-worktree.sh provision failed; deferring to a later cycle rather than falling through to a shared-tree dispatch"}')")
+      continue
+    fi
+    task_isolation="worktree"
+    build_args+=(--worktree "$task_worktree_path")
   fi
   if run_capture_stdout dispatch_json bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}"; then
     build_exit=0
@@ -2522,8 +2590,13 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # Threading it through the row (rather than recomputing it downstream) is the same shape as
   # every other per-task field this row already carries.
   force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && force_json="true"
-  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" --arg focus "$task_composed_focus" \
-    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force, focus: $focus}')")
+  # isolation/worktree_path (dispatch-site wiring, matching the --dry-run row shape above
+  # byte-for-byte): task_isolation/task_worktree_path were computed just above, before the
+  # orchestrate-build-dispatch.sh call this row's other fields already came from.
+  task_worktree_path_json="null"
+  [ -n "$task_worktree_path" ] && task_worktree_path_json="\"$task_worktree_path\""
+  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" --arg focus "$task_composed_focus" --arg iso "$task_isolation" --argjson wtp "$task_worktree_path_json" \
+    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force, focus: $focus, isolation: $iso, worktree_path: $wtp}')")
 done
 
 mt_set --argjson c "$new_cycle_count" '.cycle_count = $c'

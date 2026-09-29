@@ -522,38 +522,53 @@ unreachable, so the addition is load-bearing, not optional polish.
 
 ---
 
-### Phase 6: Dispatch-site wiring [NOT STARTED]
+### Phase 6: Dispatch-site wiring [COMPLETED]
 
 **Goal**: Select isolation mechanically at dispatch time and tell the agent, in its dispatch file,
 exactly which tree it is working in and where its artifacts still go.
 
 **Tasks**:
-- [ ] **Re-read `orchestrate-cycle-plan.sh` immediately before editing** — sibling tasks are
-      concurrently scoped to this same file.
-- [ ] In `orchestrate-cycle-plan.sh`'s live dispatch-prep section, add the selection predicate:
+- [x] **Re-read `orchestrate-cycle-plan.sh` immediately before editing** — sibling tasks are
+      concurrently scoped to this same file. *(completed: re-read at implementation time; no
+      other in-flight uncommitted changes to this file were observed in `git status` at that
+      point)*
+- [x] In `orchestrate-cycle-plan.sh`'s live dispatch-prep section, add the selection predicate:
       `phase == "implement"` AND the task's type is in the lean4/cslib family → isolated. Keep the
       predicate in one small helper so the decision record and the code state it once each.
-- [ ] Call `dispatch-worktree.sh provision` for a selected task. On any failure, append to
+      *(completed: `task_selected_for_worktree_isolation()`, defined once, called from both the
+      --dry-run and live row builders)*
+- [x] Call `dispatch-worktree.sh provision` for a selected task. On any failure, append to
       `out_deferred_rows` with a named reason — **never** fall through to a shared-tree dispatch.
-- [ ] Extend the dispatch row from `{task, phase, agent, model, dispatch_file, force, focus}` with
+      *(completed)*
+- [x] Extend the dispatch row from `{task, phase, agent, model, dispatch_file, force, focus}` with
       `isolation` (`"none"` or `"worktree"`) and `worktree_path` (`null` when not isolated), and
       update the row-shape documentation in the script header and in the `--dry-run` row builder
-      so both renderings stay identical. `--dry-run` must provision nothing.
-- [ ] Pass the worktree path to `orchestrate-build-dispatch.sh` via a new empty-value-skips-flag
+      so both renderings stay identical. `--dry-run` must provision nothing. *(completed: header
+      schema comment updated; both row builders emit the identical field shape)*
+- [x] Pass the worktree path to `orchestrate-build-dispatch.sh` via a new empty-value-skips-flag
       `--worktree <path>`, matching the convention every other flag there already uses.
-- [ ] In `orchestrate-build-dispatch.sh`, render an `## Isolated Working Tree` section, gated on
+      *(completed)*
+- [x] In `orchestrate-build-dispatch.sh`, render an `## Isolated Working Tree` section, gated on
       that flag, stating: every **source** edit and every `lake`/build invocation happens under
       the worktree path; task artifacts (`.return-meta.json`, the handoff, reports/plans/
       summaries) are written to the **absolute main-tree paths this same dispatch file already
       names**; nothing under the worktree's own `specs/` may be written or committed; commit
-      source work on the dispatch branch inside the worktree as usual.
-- [ ] Confirm the row change is additive for existing consumers: `skill-orchestrate/SKILL.md`'s
+      source work on the dispatch branch inside the worktree as usual. *(completed)*
+- [x] Confirm the row change is additive for existing consumers: `skill-orchestrate/SKILL.md`'s
       Move 2 reads named fields only and needs no edit — verify by reading it, and record that
-      conclusion in the script header rather than editing the skill.
-- [ ] Extend `test-orchestrate-cycle-plan.sh` (predicate true/false, row fields, deferral on
+      conclusion in the script header rather than editing the skill. *(completed: Move 2 and
+      Move 3 both read named fields via `jq -r .field <<<"$row"`, never positionally, and
+      neither reads `.isolation`/`.worktree_path` today — confirmed additive by direct reading,
+      recorded in the header comment. `orchestrate-cycle-postflight.sh` is invoked with discrete
+      named arguments extracted from the row by Move 3, not the row itself, and is unaffected;
+      wiring it to actually USE isolation/worktree_path for land/release is Phase 7's own scope,
+      not this phase's)*
+- [x] Extend `test-orchestrate-cycle-plan.sh` (predicate true/false, row fields, deferral on
       provision failure, `--dry-run` provisions nothing) and
       `test-orchestrate-build-dispatch.sh` (section present with the flag, absent without it,
-      byte-identical output when the flag is omitted).
+      byte-identical output when the flag is omitted). *(completed: 312/312 cases pass in
+      test-orchestrate-cycle-plan.sh (300 pre-existing + 12 new, Group 30), 122/122 in
+      test-orchestrate-build-dispatch.sh (113 pre-existing + 9 new, Group 15))*
 
 **Timing**: 2 hours
 

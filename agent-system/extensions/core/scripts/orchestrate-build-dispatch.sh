@@ -77,6 +77,17 @@
 # governs the JSON it just received. See `## Territory` below and
 # `context/contracts/territory.md`'s "Cross-Task Territory (Base Mode)" section.
 #
+# --worktree PATH (working-tree and build isolation posture dispatch-site wiring -- see
+# context/patterns/batch-orchestration-guardrails.md's "Working-Tree and Build Isolation
+# Posture" section): `orchestrate-cycle-plan.sh` passes this only for a task it selected for
+# per-dispatch git-worktree isolation (phase == "implement" AND a lean4/cslib-family task_type),
+# after `dispatch-worktree.sh provision` already succeeded for PATH. Renders an
+# "## Isolated Working Tree" section (see below) stating PATH is where every source edit and
+# build invocation happens, while task artifacts still go to the absolute main-tree paths this
+# same dispatch file already names. Empty-value-skips-flag, same convention as every other flag
+# here: an unselected dispatch passes no `--worktree` at all, and its dispatch file is
+# byte-identical to one built before this feature existed.
+#
 # where <phase> is one of: research | plan | implement
 #
 # Caller-owned, never generated here (per this task's Non-Goals -- see the plan this script
@@ -105,6 +116,7 @@ usage() {
 Usage: orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
          [--clean] [--lit] [--compare] [--hard] [--fast] [--model M] [--focus "..."]
          [--territory "..."] [--phase-number N] [--dispatch-start-ts TS] [--allow-terminal]
+         [--worktree PATH]
 
 <phase> is one of: research | plan | implement
 USAGE
@@ -140,6 +152,7 @@ territory=""
 dispatch_start_ts=""
 phase_number=""
 allow_terminal="false"
+worktree_path=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -156,6 +169,7 @@ while [ "$#" -gt 0 ]; do
     --territory) territory="${2:-}"; shift 2 ;;
     --dispatch-start-ts) dispatch_start_ts="${2:-}"; shift 2 ;;
     --allow-terminal) allow_terminal="true"; shift ;;
+    --worktree) worktree_path="${2:-}"; shift 2 ;;
     --help|-h) usage; exit 0 ;;
     *)
       echo "ERROR: orchestrate-build-dispatch.sh: unrecognized argument: $1" >&2
@@ -465,6 +479,25 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   echo "- handoff_path: ${handoff_path_abs}"
   echo "- task_dir: ${TASK_DIR_ABS}"
   echo ""
+  if [ -n "$worktree_path" ]; then
+    echo "## Isolated Working Tree"
+    echo ""
+    echo "This dispatch runs in an ISOLATED git worktree, not the shared main tree:"
+    echo ""
+    echo "- worktree_path: ${worktree_path}"
+    echo ""
+    echo "Every SOURCE edit and every \`lake\`/build invocation happens under this worktree path"
+    echo "-- run every command with your working directory inside it, never the main tree. Task"
+    echo "artifacts (\`.return-meta.json\`, the handoff, reports/plans/summaries) are still"
+    echo "written to the ABSOLUTE MAIN-TREE PATHS this same dispatch file already names above --"
+    echo "never inside this worktree's own \`specs/\` (a tracked, HEAD-stale copy from when the"
+    echo "worktree was provisioned; anything written or committed there would be silently"
+    echo "discarded, and landing a branch that touched it would be refused outright). Commit"
+    echo "your source work on the dispatch branch INSIDE this worktree as usual -- the"
+    echo "orchestrator lands that branch into the main tree after you return; do not attempt to"
+    echo "merge, push, or land it yourself."
+    echo ""
+  fi
   if [ -n "$territory" ]; then
     echo "## Territory"
     echo ""

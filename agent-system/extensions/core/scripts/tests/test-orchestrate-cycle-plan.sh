@@ -4085,6 +4085,175 @@ else
   fail "Arm E: expected status 'implementing' unchanged, got '$e_status'"
 fi
 
+# =====================================================================================================
+# Group 30: working-tree isolation dispatch-site wiring -- selection predicate (phase == implement
+# AND a lean4/cslib-family task_type), the two new dispatch[] row fields (isolation/worktree_path)
+# in BOTH modes, and deferral (never a shared-tree fallthrough) on a provision failure. See
+# context/patterns/batch-orchestration-guardrails.md's "Working-Tree and Build Isolation Posture"
+# section for the decision this predicate implements.
+# =====================================================================================================
+info "Group 30: working-tree isolation selection predicate, row fields, and provision-failure deferral"
+
+# Cases A-C run under --dry-run, WITHOUT ever staging a dispatch-worktree.sh stub in the fixture's
+# .claude/scripts/ tree -- matching Groups 1-3/6's own "no stubbing needed for dry-run" convention.
+# If the predicate's own "must provision nothing" contract were violated, the SUT would try to
+# exec a nonexistent script and fail loudly, rather than this suite silently passing.
+
+# Case A: phase == implement AND task_type == lean4 -- selected. isolation="worktree",
+# worktree_path stays null (nothing is ever provisioned under --dry-run).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3001, "project_name": "g30_lean_implement", "task_type": "lean4", "status": "implementing", "description": "predicate true case", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g30a --dry-run -- 3001
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].isolation')" = "worktree" ] && [ "$(jqf '.dispatch[0].worktree_path')" = "null" ]; then
+  pass "Case A: lean4 implement candidate selected (isolation=worktree, worktree_path=null under --dry-run)"
+else
+  fail "Case A: expected isolation=worktree worktree_path=null; got exit=$LAST_EXIT stdout=$LAST_STDOUT stderr=$LAST_STDERR"
+fi
+
+# Case B: task_type == cslib but phase == plan (status researched, not implementing) -- NOT
+# selected despite the family task_type, because phase must also be implement.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3002, "project_name": "g30_cslib_plan", "task_type": "cslib", "status": "researched", "description": "predicate false: phase mismatch", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g30b --dry-run -- 3002
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].isolation')" = "none" ] && [ "$(jqf '.dispatch[0].worktree_path')" = "null" ]; then
+  pass "Case B: cslib PLAN-phase candidate not selected (isolation=none) despite family task_type"
+else
+  fail "Case B: expected isolation=none worktree_path=null; got exit=$LAST_EXIT stdout=$LAST_STDOUT stderr=$LAST_STDERR"
+fi
+
+# Case C: phase == implement but task_type == general -- NOT selected (task_type not in family).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3003, "project_name": "g30_general_implement", "task_type": "general", "status": "implementing", "description": "predicate false: task_type mismatch", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g30c --dry-run -- 3003
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].isolation')" = "none" ] && [ "$(jqf '.dispatch[0].worktree_path')" = "null" ]; then
+  pass "Case C: general implement candidate not selected (isolation=none, wrong task_type)"
+else
+  fail "Case C: expected isolation=none worktree_path=null; got exit=$LAST_EXIT stdout=$LAST_STDOUT stderr=$LAST_STDERR"
+fi
+
+# Cases D-F: LIVE path, one three-candidate batch -- a lean4 candidate whose provision succeeds,
+# a cslib candidate whose provision FAILS (deferred, never falling through to a shared-tree
+# dispatch), and a general candidate that is never selected at all (dispatch-worktree.sh must
+# never even be invoked for it).
+WT_ARGV_LOG="$WORKDIR/g30-dispatch-worktree-argv.log"
+: > "$WT_ARGV_LOG"
+cat > "$WORKDIR/.claude/scripts/dispatch-worktree.sh" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$WT_ARGV_LOG"
+if [ "\$1" = "provision" ]; then
+  task_num="\$2"
+  if [ "\$task_num" = "3005" ]; then
+    echo "stub: simulated provision failure for candidate #3005" >&2
+    exit 84
+  fi
+  jq -n -c --arg p "/fake/.orchestrate-worktrees/\${task_num}-1" '{status:"provisioned", path: \$p}'
+  exit 0
+fi
+exit 0
+EOF
+chmod +x "$WORKDIR/.claude/scripts/dispatch-worktree.sh"
+
+G30_BUILD_ARGV_LOG="$WORKDIR/g30-build-dispatch-argv.log"
+: > "$G30_BUILD_ARGV_LOG"
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$G30_BUILD_ARGV_LOG"
+proj_num="\$1"; phase="\$2"
+jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+
+cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3004, "project_name": "g30_lean_success", "task_type": "lean4", "status": "implementing", "description": "provision succeeds", "dependencies": [], "file_scope": []},
+    {"project_number": 3005, "project_name": "g30_cslib_fail", "task_type": "cslib", "status": "implementing", "description": "provision fails", "dependencies": [], "file_scope": []},
+    {"project_number": 3006, "project_name": "g30_general_untouched", "task_type": "general", "status": "implementing", "description": "not selected, dispatch-worktree.sh never invoked", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g30live -- 3004 3005 3006
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Cases D-F: SUT exits 0 despite one candidate's provision failure"
+else
+  fail "Cases D-F: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 3004)) | length')" = "1" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3004) | .isolation')" = "worktree" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3004) | .worktree_path')" = "/fake/.orchestrate-worktrees/3004-1" ]; then
+  pass "Case D: lean4 candidate #3004 dispatches with isolation=worktree and the provisioned path"
+else
+  fail "Case D: candidate #3004 row wrong (stdout: $LAST_STDOUT)"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 3005)) | length')" = "0" ] &&    [ "$(jqf '.deferred | map(select(.task == 3005)) | length')" = "1" ]; then
+  pass "Case E: cslib candidate #3005 (provision failure) is absent from dispatch, present in deferred"
+else
+  fail "Case E: candidate #3005 bucketing wrong (stdout: $LAST_STDOUT)"
+fi
+
+e_reason="$(jqf '.deferred[] | select(.task == 3005) | .reason')"
+if echo "$e_reason" | grep -qi "provision"; then
+  pass "Case E: deferred reason for #3005 names the provision failure, never a shared-tree fallthrough"
+else
+  fail "Case E: deferred reason for #3005 does not mention provision (reason: '$e_reason')"
+fi
+
+if ! grep -q '^3005 implement' "$G30_BUILD_ARGV_LOG" 2>/dev/null; then
+  pass "Case E: orchestrate-build-dispatch.sh was NEVER invoked for the deferred candidate #3005 (no shared-tree fallthrough)"
+else
+  fail "Case E: orchestrate-build-dispatch.sh was invoked for #3005 despite the provision failure -- shared-tree fallthrough regression"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 3006)) | length')" = "1" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3006) | .isolation')" = "none" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3006) | .worktree_path')" = "null" ]; then
+  pass "Case F: general candidate #3006 dispatches normally with isolation=none"
+else
+  fail "Case F: candidate #3006 row wrong (stdout: $LAST_STDOUT)"
+fi
+
+if ! grep -q '^provision 3006' "$WT_ARGV_LOG" 2>/dev/null; then
+  pass "Case F: dispatch-worktree.sh was NEVER invoked for the unselected candidate #3006"
+else
+  fail "Case F: dispatch-worktree.sh was invoked for #3006 despite it not being selected"
+fi
+
+if grep -q -- "--worktree /fake/.orchestrate-worktrees/3004-1" "$G30_BUILD_ARGV_LOG" 2>/dev/null; then
+  pass "Case D: orchestrate-build-dispatch.sh received --worktree with the provisioned path for #3004"
+else
+  fail "Case D: --worktree missing/wrong in orchestrate-build-dispatch.sh argv for #3004 (log: $(cat "$G30_BUILD_ARGV_LOG" 2>/dev/null))"
+fi
+
+if grep '^3006 implement' "$G30_BUILD_ARGV_LOG" 2>/dev/null | grep -q -- "--worktree"; then
+  fail "Case F: orchestrate-build-dispatch.sh unexpectedly received --worktree for unselected candidate #3006"
+else
+  pass "Case F: orchestrate-build-dispatch.sh received no --worktree flag for unselected candidate #3006"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"

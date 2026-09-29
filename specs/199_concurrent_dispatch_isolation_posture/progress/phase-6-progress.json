@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "phase_name": "Dispatch-site wiring",
+  "started_at": "2026-09-29T05:50:00Z",
+  "last_updated": "2026-09-29T06:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-cycle-plan.sh before editing; confirm no sibling in-flight edits", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add task_selected_for_worktree_isolation() helper (phase==implement AND lean4/cslib family)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Dry-run row builder: emit isolation/worktree_path (worktree_path always null)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Live loop: call dispatch-worktree.sh provision when selected; defer (never fall through) on failure; pass --worktree to orchestrate-build-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Live row builder: emit isolation/worktree_path matching dry-run shape; update header schema doc", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "orchestrate-build-dispatch.sh: --worktree flag, ## Isolated Working Tree section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 7, "description": "Confirm additivity for skill-orchestrate/SKILL.md Move 2/3 and orchestrate-cycle-postflight.sh by direct reading", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Extend test-orchestrate-cycle-plan.sh (Group 30: predicate true/false, row fields, provision-failure deferral)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 9, "description": "Extend test-orchestrate-build-dispatch.sh (Group 15: section present/absent, byte-identical without flag)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

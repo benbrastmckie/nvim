@@ -848,6 +848,58 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 15: --worktree flag -- "## Isolated Working Tree" section present with the flag, absent
+# without it, and byte-identical output when the flag is omitted (dispatch-site wiring for the
+# working-tree and build isolation posture decision -- see
+# context/patterns/batch-orchestration-guardrails.md's "Working-Tree and Build Isolation
+# Posture" section).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 15: --worktree flag renders/omits the Isolated Working Tree section"
+
+# Case A: no --worktree -- section absent (this is the byte-identical-without-the-flag baseline).
+run_sut implement --clean --seq 15
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content" "## Isolated Working Tree" "Case A (no --worktree): section absent"
+else
+  fail "Case A (no --worktree): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+NO_WORKTREE_DISPATCH_FILE="$WORKDIR/g15-no-worktree-dispatch.md"
+cp "$LAST_DISPATCH_FILE" "$NO_WORKTREE_DISPATCH_FILE"
+
+# Case B: --worktree PATH -- section present, names the path, and states the three obligations
+# (source edits happen under the worktree, artifacts still go to the main-tree paths already
+# named, specs/** under the worktree must never be written/committed).
+WORKTREE_FIXTURE_PATH="/tmp/fixture-orchestrate-worktrees/42-1"
+run_sut implement --clean --seq 15 --worktree "$WORKTREE_FIXTURE_PATH"
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "## Isolated Working Tree" "Case B (--worktree): section present"
+  assert_contains "$content" "worktree_path: ${WORKTREE_FIXTURE_PATH}" "Case B (--worktree): path recorded"
+  assert_contains "$content" "ISOLATED git worktree" "Case B (--worktree): states this is an isolated tree"
+  assert_contains "$content" "never the main tree" "Case B (--worktree): states source edits happen under the worktree"
+  assert_contains "$content" "ABSOLUTE MAIN-TREE PATHS this same dispatch file already names above" "Case B (--worktree): states artifacts still go to the main-tree paths"
+  assert_contains "$content" "own \`specs/\`" "Case B (--worktree): warns against the worktree's own specs/"
+  assert_contains "$content" "do not attempt to" "Case B (--worktree): states the orchestrator (not the agent) lands the branch"
+else
+  fail "Case B (--worktree): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case C: byte-identical proof -- Case A's dispatch file, with only the volatile dispatch_seq
+# line stripped, is IDENTICAL to a fresh no-flag build (proves the flag is a pure, gated
+# addition, never a reformatting of anything else in the file).
+run_sut implement --clean --seq 15
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  if diff -q       <(sed -E 's/dispatch_seq: [0-9]+//' "$NO_WORKTREE_DISPATCH_FILE")       <(sed -E 's/dispatch_seq: [0-9]+//' "$LAST_DISPATCH_FILE")       >/dev/null 2>&1; then
+    pass "Case C: two no-flag builds are byte-identical (modulo dispatch_seq)"
+  else
+    fail "Case C: two no-flag builds differ unexpectedly -- see $NO_WORKTREE_DISPATCH_FILE vs $LAST_DISPATCH_FILE"
+  fi
+else
+  fail "Case C: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
