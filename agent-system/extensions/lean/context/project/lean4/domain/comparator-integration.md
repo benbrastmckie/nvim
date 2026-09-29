@@ -111,6 +111,37 @@ subcommand with nothing but the project tree determining output; it must NOT be 
 Read `lake-build-guard.sh`'s own contract (subcommands, exit-code band, `--dir`, `--no-share`)
 before modifying this call site -- it is reused as-is and is never modified by this task.
 
+### Outer Landrun Hardening (Deliberate Addition, Not a README Deviation)
+
+The README's mandated wrapper above confines only what happens INSIDE Comparator's own internal
+sandbox (its internal `lake build`, via `COMPARATOR_LANDRUN`). The top-level `lake env`
+invocation and Comparator's own process -- and any Lake package-management operation that runs
+before Comparator's internal sandbox ever starts -- run OUTSIDE that sandbox entirely. This
+runner adds a THIRD layer: a `landrun` invocation wrapping the whole `systemd-run` payload
+(`--best-effort --rox / --rw /dev --rwx <clean-room worktree>`), confining the entire run --
+including Lake's own package management -- to the clean-room worktree plus `/dev`, with no
+network access. The rationale is explicit and narrow: never trust Lake package management with
+more room than the clean-room worktree needs, since Lake operations that shell out to `git` (see
+the pre-flight probe below) happen before Comparator's own sandbox is even constructed. Like
+Comparator's own internal call, `--best-effort` is used deliberately: strict mode demands the
+newest Landlock ABI the installed `landrun` knows and refuses to start below it, which not every
+host's kernel reaches. `landrun` drops every environment variable not explicitly named via its
+own `--env` flag, so every variable this runner's own `systemd-run -E` flags set (`PATH`, `HOME`,
+`TMPDIR`, `COMPARATOR_LANDRUN`, `COMPARATOR_LEAN4EXPORT`, the shim's own env-var seams) must be
+re-listed on this outer `landrun` call too, or the wrapped process would not see it. This layer's
+absence is handled the same way a missing `lake-build-guard.sh` already is: a loud warning, then
+a degraded-but-proceeding run -- never a silent skip.
+
+### Git-Remote Pre-Flight Probe
+
+Before the main sandboxed run, this runner probes `git -C <pkg> remote get-url origin` for every
+linked dependency package under the clean-room worktree's `.lake/packages/`, under the SAME
+sandbox grants (outer landrun plus the resolved `git`) the main run itself would use. Lake treats
+a linked package whose remote it cannot read as MOVED and deletes `.lake/packages/<dep>` to
+re-clone it -- inside a network-denied sandbox, that re-clone then also fails, permanently losing
+a dependency Lake cannot get back. Failing loudly here (`comparator_unavailable`, naming the
+affected package) before the main run starts is cheaper than losing the dependency mid-run.
+
 ## Verdict Vocabulary
 
 Comparator itself exposes only a binary exit code: every failure path surfaces as an uncaught
@@ -158,6 +189,49 @@ verified` so the guarantees Comparator did establish remain visible.
 **Fail-closed classification.** A non-zero exit matching none of the above arms MUST emit a
 loud, unclassified failure that is neither `verified` nor `comparator_unavailable`, carrying the
 raw stderr. A checker that can only ever say "pass" is not a checker.
+
+### `lean4export` Panics on a Challenge-Absent `permitted_axioms` Entry
+
+The `axiom_violation` row above assumes `lean4export` completes normally and Comparator's own
+`Axioms.loop` walk reports the illegal axiom as ordinary stderr output. A DIFFERENT failure mode
+exists one step earlier: if `permitted_axioms` names an axiom that is absent from the Challenge
+side's environment entirely (as opposed to present-but-outside-the-whitelist), `lean4export`
+itself panics while exporting the Challenge side -- `Constant ... not found in environment`, exit
+134 (SIGABRT) -- rather than Comparator ever reaching its own axiom-closure check. This is a
+`lean4export` crash, not a `comparator_unavailable` or `axiom_violation` verdict from this
+wrapper's own classification arms, since the crash happens inside Comparator's own build/export
+pipeline before Comparator's stdout/stderr carries any of the strings `classify_verdict()`
+matches on.
+
+**The working handling**: permit only the TRUSTED axioms in `permitted_axioms` (never a
+speculative superset naming an axiom that might not exist in the Challenge environment), and
+treat the exact `Illegal axiom detected: '<helper-axiom-name>'` rejection as that configuration's
+EXPECTED PASS rather than a failure to fix. This still proves the Challenge and Solution
+statements match (Comparator checks statement equality before it ever reaches axiom-closure
+checking), even though it does not additionally prove kernel acceptance for that specific
+configuration -- the two guarantees are separable, and a statement-match-only result is still
+useful evidence, correctly labeled as such rather than silently upgraded to a full `verified`.
+
+### `lake update --keep-toolchain` Pitfall
+
+In a package that pins a specific tool version (the C3 version-coupling concern this integration
+already tracks for `lean4export`), a plain `lake update` silently REWRITES `lean-toolchain` to
+whatever newer toolchain the updated tool itself declares -- there is no warning, and every later
+build in that package then silently targets the wrong Lean version. The defense is twofold: pass
+`--keep-toolchain` to every `lake update` invocation in a tool-pinning package, and, as a
+belt-and-suspenders coherence check, compare `lean-toolchain` files across the package and its
+pinned tool, and grep each built binary's own `lean --githash` against the target project's
+expected commit.
+
+### Batched Lean4Lean/leanchecker Runs Can Exhaust Memory
+
+Not applicable to this runner's own single in-process Comparator invocation (which this
+integration does not change), but load-bearing for any FUTURE kernel-replay sibling script that
+might batch multiple modules through Lean4Lean or `leanchecker` in one process: a batched
+whole-package run reached 19 GB RSS and was killed by `earlyoom`, which ALSO SIGTERM'd an
+unrelated concurrent `lean` process on the same host -- a batched run's memory pressure is not
+contained to itself. The defense is running one module per process, never batching a
+whole-package kernel replay into a single long-lived process.
 
 ## Env Var / Binary Resolution and the C3 Version-Coupling Caveat
 
@@ -214,16 +288,66 @@ evidence were assembled (same day), real `comparator` (nix store path confirms b
 become available via the user's home-manager profile -- the sibling `~/.dotfiles/` provisioning
 task appears to have partially landed. `lean4export` and `nanoda_bin` remain absent.
 
-**New finding, diagnostic only (no provisioning or patching attempted, per this task's binding
-Non-Goal)**: invoking the real `comparator` binary directly against the vendored `simple_match`
-fixture (bypassing this runner) failed with `error: command failed: 'lake' / Permission denied
-(os error 13)` before ever reaching the lean4export-dependent export step. Comparator's OWN
-internal invocation of `landrun` around its internal `lake` build appears to deny an operation
-`lake` needs -- Landlock sandboxing requires explicit `--ro`/`--rw`/`--rox`/`--rwx` grants (per
-`landrun --help`), and diagnosing the exact grant Comparator's own `Main.lean` would need is
-Comparator's own internal concern, not this wrapper's. This is a SEPARATE blocker from
-`lean4export`'s absence -- provisioning `lean4export` alone would not resolve it. Both blockers
-are left for the sibling `~/.dotfiles/` provisioning task or a dedicated follow-up.
+**Diagnosed root cause (supersedes the "Comparator's own internal concern" framing below this
+paragraph carried until this integration's NixOS-host fixes landed)**: invoking the real
+`comparator` binary directly against the vendored `simple_match` fixture (bypassing this runner)
+failed with `error: command failed: 'lake' / Permission denied (os error 13)` before ever
+reaching the lean4export-dependent export step. This is NOT a missing grant in Comparator's own
+`Main.lean` -- it is a bare `PATH` lookup inside the sandbox resolving the top-level elan
+dispatcher shim (a shell script, `~/.elan/bin/lake` or the nixpkgs-elan equivalent), which landrun
+denies executing: a shell script has no ELF interpreter of its own for landrun's `-ldd` grant
+discovery to find, so the exec of the wrapper itself is denied before Lake ever starts. The fix
+is PATH ordering, not a wider sandbox grant: put the pinned toolchain's own `bin/` directory
+(resolved via `lean --print-prefix` inside the checking environment, never the caller's ambient
+toolchain) first on the `PATH` handed into the sandbox. On THIS host, the toolchain's own `lake`
+is itself a nixpkgs-elan wrapper script (renamed to `lake.orig`, with `lake` a bash wrapper that
+runs `dirname` and execs `lake.orig` with `LEAN_CC` preset) -- the same problem one level deeper
+-- so the fix additionally unwraps to a private directory (outside every sandboxed room, so
+nothing confined can write to it) holding one symlink to the real `lake.orig` binary, placed
+first on PATH ahead of the toolchain's own (still-wrapped) `bin/`.
+
+**The fixes are ordered, not independent.** `lake env comparator config.json` (the invocation
+form itself) needs no code change -- `run_sandboxed()`'s guard and fallback branches already
+produce that exact command line. What was missing is the diagnosis that this invocation only
+ever reaches a WORKING `lake` once the PATH-ordering fix above lands; without it, `lake env`
+itself fails at the same `lake: Permission denied` step, regardless of which command line invokes
+it. This is a SEPARATE blocker from `lean4export`'s absence -- provisioning `lean4export` alone
+would not resolve it. `lean4export`/`nanoda_bin` provisioning remains tracked by the sibling
+`~/.dotfiles/` effort; the PATH-ordering/unwrap/landrun-shim/pre-flight fixes below are this
+integration's own scope and require no external provisioning.
+
+### The Landrun-Shim Mechanism (Fixes 3+4)
+
+Comparator builds its OWN internal `landrun` argument vector for its internal `lake build` call
+and exposes exactly one injection point into it: the `COMPARATOR_LANDRUN` env var, which
+Comparator execs in place of a bare `landrun` PATH lookup. `lean-comparator-run.sh` therefore
+points `COMPARATOR_LANDRUN` at
+`agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh`, never at the real
+`landrun` binary directly -- the shim execs the real `landrun` (resolved separately and forwarded
+via `LEAN_COMPARATOR_RUN_REAL_LANDRUN`) with Comparator's own arguments unchanged and in order,
+plus the extra grants Comparator's own internal sandbox omits but this NixOS host's build needs:
+
+- **`TMPDIR` inside `.lake`**: `bv_decide` writes SAT files to `/tmp`, which the outer sandbox
+  (this runner's own landrun layer, see below) makes read-only. The shim points `TMPDIR` at
+  `$PWD/.lake/tmp` instead -- a directory the outer sandbox already grants read-write on, so this
+  introduces no NEW write access, only a redirection of where a write Comparator's internal build
+  already needs lands.
+- **git shared-library `--rox` grants**: Comparator's sandbox grants execute on the `git` binary
+  itself but not on its `ldd`-reported shared-library closure, so `git` cannot actually run inside
+  the sandbox without them. This matters because Lake treats a linked dependency package whose
+  remote `git` cannot read as MOVED and deletes `.lake/packages/<dep>` to re-clone it -- inside a
+  sandbox that denies network access, that re-clone then also fails, permanently losing the
+  dependency. See the pre-flight probe below, which catches this before it happens.
+- **ELF-interpreter `--rox` grant**: on NixOS, the pinned toolchain's `lake` (or, post-unwrap,
+  `lake.orig`) requests `nix-ld` as its ELF interpreter, which landrun's own `-ldd` grant
+  auto-discovery does not find (it walks `lake`'s `DT_NEEDED` shared libraries, not its
+  interpreter). Without this grant the exec of `lake` itself is denied before Lake starts, the
+  same class of failure as the elan-wrapper problem above but one layer further in. Guarded on
+  `readelf` being present -- its absence only skips this one grant, never a hard failure.
+
+`COMPARATOR_LANDRUN` is therefore the ONLY injection point into Comparator's own internal
+sandbox argv; there is no way to add these grants except by wrapping whatever binary
+`COMPARATOR_LANDRUN` resolves to.
 
 **Demonstrated for real regardless**: this runner's `comparator_unavailable` verdict was
 exercised against the genuinely-missing `lean4export` binary using the actual, unmodified runner
@@ -241,7 +365,15 @@ this host today.
 - `agent-system/extensions/lean/scripts/lean-sorry-census.sh` -- the sibling script whose
   dirname-relative-sibling-with-env-override guard-resolution pattern this runner generalises
   from one binary to four.
+- `agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh` -- the landrun shim
+  carrying the TMPDIR/git-library/ELF-interpreter grants documented above.
 - `agent-system/extensions/lean/agents/lean-implementation-agent.md` -- Final Verification Stage,
   the four text-heuristic gates Comparator's guarantees are relative to.
 - `agent-system/extensions/lean/context/project/lean4/standards/proof-debt-policy.md` -- the
   zero-debt completion policy this integration is the eventual terminal gate for.
+- A sibling repository's `framed_channel/scripts/recheck-comparator.sh`,
+  `framed_channel/scripts/comparator-configs.sh`, `framed_channel/scripts/lib/recheck-revs.sh`,
+  and `framed_channel/recheck/landrun-shim.sh` -- the reference implementation this integration's
+  NixOS-host fixes (PATH ordering, elan-wrapper unwrapping, the landrun shim, the outer landrun
+  layer, and the git-remote pre-flight probe) transcribe from, re-read live at implementation
+  time rather than trusted from any prior written description.

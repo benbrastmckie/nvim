@@ -307,51 +307,51 @@ case silently or inflating the count.
 
 ---
 
-### Phase 5: Design record and operator guide [NOT STARTED]
+### Phase 5: Design record and operator guide [COMPLETED]
 
 **Goal**: `comparator-integration.md` states the diagnosed root cause and every documentation-only
 finding; `comparator-guide.md` gains the one operator-facing pointer it needs.
 
 **Tasks**:
-- [ ] Rewrite the "Binary Provisioning Status (as measured 2026-09-07, mid-implementation)"
+- [x] Rewrite the "Binary Provisioning Status (as measured 2026-09-07, mid-implementation)" *(completed)*
       section's `lake: Permission denied (os error 13)` paragraph: the cause is that a bare `PATH`
       lookup inside the sandbox resolves the elan shim, which landrun cannot execute — not a
       missing grant in Comparator's own `Main.lean`. Supersede the "Comparator's own internal
       concern" framing explicitly, and state that the invocation form `lake env comparator
       config.json` only reaches a working `lake` once the PATH ordering lands, so the fixes are
       ordered, not independent.
-- [ ] Add a new subsection documenting the landrun-shim mechanism: why `COMPARATOR_LANDRUN` is the
+- [x] Add a new subsection documenting the landrun-shim mechanism: why `COMPARATOR_LANDRUN` is the *(completed)*
       only injection point, the `TMPDIR`-inside-`.lake` grant (bv_decide writes SAT files to
       `/tmp`, which the sandbox makes read-only) and that it introduces no new write access, the
       git shared-library `--rox` grants and the `.lake/packages/<dep>` deletion they prevent, and
       the ELF-interpreter grant for nix-ld.
-- [ ] Extend the "Verdict Vocabulary" section's `axiom_violation` row and add a subsection for the
+- [x] Extend the "Verdict Vocabulary" section's `axiom_violation` row and add a subsection for the *(completed)*
       lean4export panic: naming a Challenge-absent axiom in `permitted_axioms` makes lean4export
       panic (`Constant ... not found in environment`, exit 134) while exporting the Challenge side;
       the working handling is to permit only the trusted axioms and require the exact
       `Illegal axiom detected: '<helper>'` rejection as that config's **expected pass**, which
       still proves statement equality (Comparator checks statements before axiom membership) but
       not kernel acceptance.
-- [ ] Add the `lake update --keep-toolchain` pitfall under "Env Var / Binary Resolution and the C3
+- [x] Add the `lake update --keep-toolchain` pitfall under "Env Var / Binary Resolution and the C3 *(completed)*
       Version-Coupling Caveat": in a tool-pinning package a plain `lake update` silently adopts
       the tool's own newer `lean-toolchain`, so every later build targets the wrong Lean; the
       defense is a coherence check comparing `lean-toolchain` files and grepping each built binary
       for the target project's `lean --githash`.
-- [ ] Add the batched-Lean4Lean caveat, framed explicitly as not applicable to this script's own
+- [x] Add the batched-Lean4Lean caveat, framed explicitly as not applicable to this script's own *(completed)*
       single in-process Comparator invocation but load-bearing for any future kernel-replay
       sibling: a batched whole-package run reached 19 GB RSS and was killed by `earlyoom`, which
       also SIGTERM'd an unrelated concurrent `lean`; run one module per process.
-- [ ] Record the outer-landrun hardening as a deliberate design decision in the "Sandbox
+- [x] Record the outer-landrun hardening as a deliberate design decision in the "Sandbox *(completed)*
       Invocation and Guard Nesting" section, with its rationale (never trust Lake package
       management with more than the room it is confined to) and the git pre-flight probe.
-- [ ] Add the new reference paths to the "References" section
+- [x] Add the new reference paths to the "References" section *(completed)*
       (`framed_channel/scripts/recheck-comparator.sh`,
       `framed_channel/scripts/comparator-configs.sh`,
       `framed_channel/scripts/lib/recheck-revs.sh`, `framed_channel/recheck/landrun-shim.sh`).
-- [ ] Add a one-to-two-sentence pointer in `comparator-guide.md` for an operator hand-constructing
+- [x] Add a one-to-two-sentence pointer in `comparator-guide.md` for an operator hand-constructing *(completed)*
       `permitted_axioms`, referencing the new design-record subsection by heading; do not
       restructure the file (it deliberately omits implementation detail).
-- [ ] Cite durable anchors only — file names, section headings, measured dates. No "task N"
+- [x] Cite durable anchors only — file names, section headings, measured dates. No "task N" *(completed)*
       references in either file (rules/no-task-references-in-deliverables.md).
 
 **Timing**: 1.5 hours

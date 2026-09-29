@@ -103,6 +103,15 @@ a separate, later decision to be made on evidence from real runs — nothing in 
 `context/project/lean4/standards/proof-debt-policy.md` for how this interacts with the zero-debt
 completion requirement, which today is still enforced by its own greps, not by Comparator.
 
+## Hand-Constructing `permitted_axioms`
+
+Naming an axiom in `permitted_axioms` that is absent from the Challenge side entirely (as
+opposed to present-but-outside-the-whitelist) makes `lean4export` panic rather than reaching
+Comparator's own axiom check -- see "`lean4export` Panics on a Challenge-Absent
+`permitted_axioms` Entry" in `comparator-integration.md` for the exact failure mode and the
+working handling (permit only the trusted axioms; treat the exact `Illegal axiom detected`
+rejection as that configuration's expected pass).
+
 ## See Also
 
 `context/project/lean4/domain/comparator-integration.md` covers the implementation detail this

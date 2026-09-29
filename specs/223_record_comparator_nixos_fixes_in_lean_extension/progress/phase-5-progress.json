@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Design record and operator guide",
+  "started_at": "2026-09-30T01:05:00Z",
+  "last_updated": "2026-09-30T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite lake: Permission denied paragraph with diagnosed root cause; ordered-not-independent note", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md"]},
+    {"id": 2, "description": "Add landrun-shim mechanism subsection (TMPDIR, git-rox, ELF-interpreter)", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md"]},
+    {"id": 3, "description": "lean4export panic subsection", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md"]},
+    {"id": 4, "description": "lake update --keep-toolchain pitfall", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md"]},
+    {"id": 5, "description": "Batched Lean4Lean earlyoom caveat", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md"]},
+    {"id": 6, "description": "Outer-landrun hardening design decision + git pre-flight probe subsection", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md"]},
+    {"id": 7, "description": "New reference paths in References section", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md"]},
+    {"id": 8, "description": "Operator pointer in comparator-guide.md for hand-constructing permitted_axioms", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/tools/comparator-guide.md"]},
+    {"id": 9, "description": "Durable-anchor citations only, no task-number references", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
