@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790721762_ff3d8e_241",
+  "dispatch_seq": 8,
+  "task_number": 241,
+  "findings_count": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/241_reconcile_mcp_registration_surfaces/reports/01_reconcile-mcp-surfaces.md",
+      "summary": "Re-verifies all four items in the task description at research time: item 1's hard precondition is live (9 playwright grants in ~/.claude/settings.json, byte-identical to both extension fragments) so item 1 is unblocked; item 2's five-manifest mcp_servers inventory is exact with no dangling reader; item 3's four ownership-doc passages are still stale exactly as described; item 4's nix/README.md lines 26-34 are still stale and the other six mcp-nixos mentions are correctly out of scope. No fifth stale surface found."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 241 to create implementation plan"
+}
