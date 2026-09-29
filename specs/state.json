@@ -783,9 +783,15 @@
           "path": "specs/244_check_task_references_repo_appropriate_roots/plans/01_repo-appropriate-scan-roots.md",
           "type": "plan",
           "summary": "6-phase plan for repo-wide scan roots in check-task-references.sh plus validate-wiring.sh missing-tree-root SKIP guards, with two new fixture-driven test suites."
+        },
+        {
+          "path": "specs/244_check_task_references_repo_appropriate_roots/summaries/01_repo-appropriate-scan-roots-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering both fixes, both new test suites, the documentation rewrite, and verification results."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Replaced check-task-references.sh's hard-coded four-tree TREE_ROOTS with a repo-wide git-ls-files scan (0/0 measured equivalence in this repo), made PATH_SCOPE scannable anywhere in the repo, added validate-wiring.sh SKIP guards for missing .claude/.opencode tree roots, shipped two new fixture-driven test suites (both verified to fail against reverted pre-fix scripts), and rewrote task-reference-exemptions.md's Enforcement section off the four-root model."
     },
     {
       "project_number": 255,

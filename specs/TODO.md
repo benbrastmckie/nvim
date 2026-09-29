@@ -1111,6 +1111,7 @@ WHAT REMAINS: Phase 1 (the standing script-inventory probe, which must reuse tha
 - **Dependencies**: None
 - **Research**: [244_check_task_references_repo_appropriate_roots/reports/01_repo_appropriate_scan_roots.md]
 - **Plan**: [244_check_task_references_repo_appropriate_roots/plans/01_repo-appropriate-scan-roots.md]
+- **Summary**: [244_check_task_references_repo_appropriate_roots/summaries/01_repo-appropriate-scan-roots-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
