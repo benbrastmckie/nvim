@@ -290,7 +290,7 @@ not for a count fixed at plan time.
 
 ---
 
-### Phase 4: Cross-file consistency gate and close-out [IN PROGRESS]
+### Phase 4: Cross-file consistency gate and close-out [COMPLETED]
 
 **Goal**: Confirm the four edited files tell one consistent story, that nothing operational
 changed, and that the decision is discoverable from each entry point a future auditor would use.
