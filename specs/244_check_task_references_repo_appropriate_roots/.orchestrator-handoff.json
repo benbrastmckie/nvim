@@ -1,19 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Authored a 6-phase implementation plan. check-task-references.sh's hard-coded TREE_ROOTS is replaced by one repo-wide git ls-files walk filtered through the existing shared is_exempt_path (specs/** only), and the PATH_SCOPE-must-be-under-TREE_ROOTS exit-2 check is dropped; the shared pattern library and the write-time hook need no code changes. validate-wiring.sh gains per-arm existence guards emitting [SKIP] instead of cascading [FAIL] rows for an absent tree. Two new fixture-driven test suites cover a consumer-repo layout (including lint/hook scope agreement) and the .claude-present/.opencode-absent case. task-reference-exemptions.md's Enforcement narrative is rewritten off the four-root model. Option (a), coverage, chosen over option (b), carve-out, on the research report's measured 0/0 scan equivalence.",
-  "phases_completed": 0,
-  "phases_total": 6,
-  "blockers": [],
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "phase": "implement",
+  "summary": "All 6 plan phases completed: check-task-references.sh now scans repo-wide (git ls-files) minus specs/**, replacing the hard-coded four-tree TREE_ROOTS; PATH_SCOPE anywhere in the repo is scannable, never exit 2; validate-wiring.sh SKIPs a missing .claude/.opencode tree instead of cascading FAILs; two new fixture-driven suites both pass and were confirmed to fail against reverted pre-fix scripts; task-reference-exemptions.md's Enforcement section rewritten off the four-root model.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/244_check_task_references_repo_appropriate_roots/summaries/01_repo-appropriate-scan-roots-summary.md",
+      "summary": "Full implementation summary covering both fixes, both new test suites, the documentation rewrite, and verification results."
+    },
     {
       "type": "plan",
       "path": "specs/244_check_task_references_repo_appropriate_roots/plans/01_repo-appropriate-scan-roots.md",
-      "summary": "6-phase plan for repo-wide scan roots in check-task-references.sh plus validate-wiring.sh missing-tree-root SKIP guards, with two new fixture-driven test suites."
+      "summary": "6-phase plan, all phases marked [COMPLETED], plan-level Status [COMPLETED]."
     }
   ],
-  "next_action_hint": "Run /implement 244 to execute the plan",
-  "dispatch_seq": 12,
-  "sorry_inventory": [],
-  "continuation_path": null
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": []
 }

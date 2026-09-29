@@ -1,9 +1,47 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/244_check_task_references_repo_appropriate_roots/summaries/01_repo-appropriate-scan-roots-summary.md",
+      "summary": "check-task-references.sh now scans the whole repo minus specs/** via git ls-files (repo-appropriate, no hard-coded TREE_ROOTS); PATH_SCOPE anywhere is scannable, never exit 2; validate-wiring.sh SKIPs a missing .claude/.opencode tree instead of cascading FAILs; two new fixture-driven regression suites; task-reference-exemptions.md Enforcement section rewritten off the four-root model."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced check-task-references.sh's hard-coded four-tree TREE_ROOTS with a repo-wide git-ls-files scan (0/0 measured equivalence in this repo), made PATH_SCOPE scannable anywhere in the repo, added validate-wiring.sh SKIP guards for missing .claude/.opencode tree roots, shipped two new fixture-driven test suites (both verified to fail against reverted pre-fix scripts), and rewrote task-reference-exemptions.md's Enforcement section off the four-root model."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/check-task-references.sh",
+    "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt",
+    "agent-system/extensions/core/scripts/tests/test-check-task-references.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-wiring.sh",
+    "agent-system/extensions/core/scripts/validate-wiring.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a repo-wide lint/gate script that runs in a multi-repo agent-system (deployed into many consumer repos of differing layout) enumerates a fixed list of this repo's own directories, it silently degrades to zero coverage in every other repo -- the defect is invisible because the script still exits 0/PASS. The general default: enumerate via `git ls-files` (repo-wide, gitignore-respecting) minus one documented exempt set, never a hard-coded directory list. This generalizes beyond task-reference linting to any cross-repo lint/gate script.",
+      "category": "PATTERN",
+      "source_artifact": "specs/244_check_task_references_repo_appropriate_roots/summaries/01_repo-appropriate-scan-roots-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["repo-wide scan", "git ls-files", "consumer repo", "hard-coded directory list", "cross-repo lint", "deploy-appropriate default"]
+    },
+    {
+      "content": "A test fixture that must invoke a script requiring deploy-root-guard.sh (parent-of-parent directory literally .claude or .opencode, no REPO_ROOT override) cannot construct a scenario where BOTH systems are literally absent from disk, because the fixture must place the runner's own copy inside one of them. When a plan specifies such a literal-both-absent test case for a script with this constraint, the closest achievable equivalent is: host the runner in a payload-free tree, invoke targeting only the genuinely-absent sibling system, and document the substitution explicitly rather than silently narrowing or skipping the assertion.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/244_check_task_references_repo_appropriate_roots/summaries/01_repo-appropriate-scan-roots-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["deploy-root-guard", "test fixture", "structural constraint", "both-absent case", "documented deviation"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
