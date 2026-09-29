@@ -79,10 +79,23 @@ The template.typ imports notation, making it available to chapters.
 
 ### Code Cross-References
 
+The Bimodal Reference Manual's actual Lean-citation commands, defined in `template.typ`, are
+`leansrc` and `leanref` (documented here as the canonical example; a project may name its own
+equivalents differently, but should follow this shape):
+
 | Command | Usage | Output |
 |---------|-------|--------|
-| `srcref(module, name)` | `srcref("Core.Syntax", "Formula")` | `Core.Syntax.Formula` |
-| `coderef(name)` | `coderef("completeness_theorem")` | `completeness_theorem` |
+| `leansrc(module, name)` | `leansrc("Metalogic.Soundness", "soundness")` | Block-level attribution: a blockquote-style line reading `Metalogic.Soundness.soundness.`, placed on its own line after a colon-terminated sentence. |
+| `leanref(name)` | `leanref("soundness")` | Inline monospace identifier, no path -- for a declaration mentioned in running prose. |
+
+A file or directory cited as a file, not as a declaration, uses a plain backtick-quoted,
+repo-root-relative path (for example `` `FormalSystem/Syntax/Formula.lean` ``) instead of either
+command above -- never a module-relative path, which cannot be resolved against the repository
+root.
+
+`srcref(module, name)` and `coderef(name)` are an earlier, superseded naming for the same two
+roles; no project currently calls either. Prefer `leansrc`/`leanref` (or an equivalent pair
+following this doc's usage/output shape) for new work.
 
 ---
 
