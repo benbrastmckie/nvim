@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Consumer-repo fixture test suite for the lint",
+  "started_at": "2026-09-29T02:30:00Z",
+  "last_updated": "2026-09-29T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "New test-check-task-references.sh: consumer-repo-shaped fixture (docs/, README.md, code/, .github/, specs/)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-task-references.sh"]},
+    {"id": 2, "description": "Assertions: docs/ found, code/ found, README.md found, specs/** exempt, task-ref-ok stripped, gitignored excluded", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-task-references.sh"]},
+    {"id": 3, "description": "PATH_SCOPE assertions: scoped dir finds, nonexistent SKIPs+exit0, single-file scope scanned", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-task-references.sh"]},
+    {"id": 4, "description": "Lint/hook scope-agreement assertion (requirement 8) and gate-4 regex assertion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-task-references.sh"]},
+    {"id": 5, "description": "Advisory suite-cost-hints.txt row added; confirmed reverting Phase 2 makes docs/ and source-dir assertions fail", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Write the test file directly with literal task-number fixture strings", "result": "failed", "reason": "validate-no-task-references.sh PreToolUse hook blocked the write; fixed by wrapping every fixture-content block in task-ref-ok:begin/end markers (Exemption Taxonomy category 6)"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -217,40 +217,40 @@ changing the summary lines.
  *(completed)*
 ---
 
-### Phase 3: Consumer-repo fixture test suite for the lint [NOT STARTED]
+### Phase 3: Consumer-repo fixture test suite for the lint [COMPLETED]
 
 **Goal**: A new `test-check-task-references.sh` proving the lint scans a consumer-shaped layout
 and that the lint and the write-time hook admit/block the same set.
 
 **Tasks**:
-- [ ] Read `scripts/tests/test-validate-no-task-references.sh` (assertion-style template) and
+- [x] Read `scripts/tests/test-validate-no-task-references.sh` (assertion-style template) and
       `scripts/tests/test-deploy-verify-wiring.sh` (throwaway git-fixture template) before
       writing; follow `context/standards/shell-script-testing.md`'s `pass()`/`fail()`/`info()` +
-      `mktemp -d` + trap-cleanup convention.
-- [ ] Build a consumer-repo-shaped fixture: `git init -q` a scratch dir with `docs/`,
+      `mktemp -d` + trap-cleanup convention. *(completed)*
+- [x] Build a consumer-repo-shaped fixture: `git init -q` a scratch dir with `docs/`,
       `README.md`, a source dir (`code/` or `framed_channel/`), `.github/`, and a
       `specs/{NNN}_{slug}/reports/` artifact — deliberately NO `agent-system/extensions`, `lua`,
       `.memory`, or `.opencode`. Place the script plus its shared library at
       `<fixture>/.claude/scripts/` so `deploy-root-guard.sh` resolves, or invoke with an explicit
-      `REPO_ROOT`.
-- [ ] Assertion: a planted unexempted citation in `docs/` is found (exit 1, finding line names the
-      `docs/` path). This is the case that fails today.
-- [ ] Assertion: a planted citation in the source dir (`code/`-style) is found — the ModelChecker
-      reproduction.
-- [ ] Assertion: a citation inside `specs/**` is NOT found (exit 0) — the one path exemption holds.
-- [ ] Assertion: a `task-ref-ok`-marked region is NOT found — `strip_exempt_regions` still applies
-      through the new enumeration.
-- [ ] Assertion: a gitignored file carrying a citation is NOT found — `git ls-files` exclusion.
-- [ ] Assertion (requirement 3): `PATH_SCOPE=docs` exits 0/1 with the `docs/` finding, never 2;
-      and a `PATH_SCOPE` naming a non-existent path prints the `[SKIP]` line and exits 0.
-- [ ] Assertion (requirement 8, lint/hook agreement): for each fixture file, compare the lint's
+      `REPO_ROOT`. *(completed)*
+- [x] Assertion: a planted unexempted citation in `docs/` is found (exit 1, finding line names the
+      `docs/` path). This is the case that fails today. *(completed)*
+- [x] Assertion: a planted citation in the source dir (`code/`-style) is found — the ModelChecker
+      reproduction. *(completed)*
+- [x] Assertion: a citation inside `specs/**` is NOT found (exit 0) — the one path exemption holds. *(completed)*
+- [x] Assertion: a `task-ref-ok`-marked region is NOT found — `strip_exempt_regions` still applies
+      through the new enumeration. *(completed)*
+- [x] Assertion: a gitignored file carrying a citation is NOT found — `git ls-files` exclusion. *(completed)*
+- [x] Assertion (requirement 3): `PATH_SCOPE=docs` exits 0/1 with the `docs/` finding, never 2;
+      and a `PATH_SCOPE` naming a non-existent path prints the `[SKIP]` line and exits 0. *(completed)*
+- [x] Assertion (requirement 8, lint/hook agreement): for each fixture file, compare the lint's
       in-scope/out-of-scope verdict against `hooks/validate-no-task-references.sh`'s verdict for a
       Write of that same path+content. They must agree on every file — a repo-wide lint paired
-      with a differently-scoped gate is the new defect this assertion exists to prevent.
-- [ ] Assertion: per-finding line matches `^  [^:]+:[0-9]+:` (the `verify-deploy.sh` gate 4
+      with a differently-scoped gate is the new defect this assertion exists to prevent. *(completed)*
+- [x] Assertion: per-finding line matches `^  [^:]+:[0-9]+:` (the `verify-deploy.sh` gate 4
       contract), asserted directly in this suite so a future reshaping breaks here rather than in
-      gate 4.
-- [ ] No `run-all.sh` registration needed — it auto-discovers `scripts/tests/test-*.sh` (confirmed
+      gate 4. *(completed)*
+- [x] No `run-all.sh` registration needed — it auto-discovers `scripts/tests/test-*.sh` (confirmed
       at `run-all.sh:185`). Optionally add a `suite-cost-hints.txt` row; purely advisory.
 
 **Timing**: 1.5 hours
@@ -274,7 +274,7 @@ fixture can actually express.
 - Reverting Phase 2's change (in a scratch copy, not the working tree) makes the `docs/` and
   source-dir assertions FAIL — proving the suite actually tests the fix rather than passing
   vacuously.
-
+ *(completed)*
 ---
 
 ### Phase 4: validate-wiring.sh missing-tree-root SKIP guards [NOT STARTED]

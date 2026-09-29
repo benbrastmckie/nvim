@@ -113,3 +113,4 @@ test-deploy-baseline-lib.sh,38
 test-lit-pipeline.sh,34
 test-status-vocabulary.sh,20
 test-return-meta-status-vocabulary.sh,17
+test-check-task-references.sh,281
