@@ -1,10 +1,54 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 22,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/207_fix_zotero_export_path1_truncation/summaries/01_path1-truncation-shrink-guard-summary.md",
+      "summary": "All 7 plan phases completed: fetch_path1 temp-file accumulator with loud failure and Total-Results-driven pagination, authoritative itemType filter, content-keyed shrink guard with --allow-shrink, corrected fetch_path3 itemTypeID exclusion, 11-case offline regression suite, and doc updates."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the silent-truncation data-loss defect in zotero-generate-export.sh's Path 1 by rewriting fetch_path1() with a temp-file accumulator, Total-Results-driven pagination, and loud failure with no partial write; added a content-keyed shrink guard, corrected fetch_path3's itemTypeID exclusion set, and delivered an 11-case offline regression suite plus documentation updates."
+  },
+  "modified_files": [
+    "agent-system/extensions/literature/scripts/zotero-generate-export.sh",
+    "agent-system/extensions/literature/scripts/tests/curl-stub.sh",
+    "agent-system/extensions/literature/scripts/tests/generate-zotero-page-fixtures.sh",
+    "agent-system/extensions/literature/scripts/tests/generate-zotero-sqlite-fixture.sh",
+    "agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh",
+    "agent-system/extensions/literature/context/project/literature/patterns/zotero-pdf-resolution.md",
+    "agent-system/extensions/literature/commands/literature.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a PATH-shadowing test stub (curl-stub.sh style) that needs to locate sibling fixture/generator files, resolve its own directory via `readlink -f \"${BASH_SOURCE[0]}\"` rather than plain `dirname(BASH_SOURCE)`. Callers commonly install the stub as `curl` in a scratch PATH dir via either `cp` or `ln -s`; only the symlink form resolves back to the real directory (and its siblings) through readlink -f. Document both install forms and add an explicit env-var override for callers that must `cp`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/207_fix_zotero_export_path1_truncation/summaries/01_path1-truncation-shrink-guard-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["curl-stub", "PATH-shadowing", "readlink -f", "test fixtures", "bash self-location"]
+    },
+    {
+      "content": "Linux's MAX_ARG_STRLEN (128KiB per single argv argument, independent of the larger ARG_MAX) silently kills a `jq --argjson` accumulation loop once the accumulated value crosses that size -- and a trailing `2>/dev/null || echo \"$prior_value\"` fallback swallows the failure entirely, making the script exit 0 with a silently truncated result. The general-purpose fix: never pass a growing value via a single argv argument; write each unit to its own temp file and combine once via `jq -s 'add'` (or `jq -s` equivalent) at the end, and delete any error-swallowing fallback so a combine failure aborts loudly instead of returning a stale/partial value as success.",
+      "category": "PATTERN",
+      "source_artifact": "specs/207_fix_zotero_export_path1_truncation/summaries/01_path1-truncation-shrink-guard-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["MAX_ARG_STRLEN", "jq --argjson", "argv accumulation", "silent truncation", "jq -s add"]
+    },
+    {
+      "content": "Zotero sqlite/API itemTypeID values are not stable identifiers -- they can differ across installations/versions, so hardcoding a numeric itemTypeID exclusion/inclusion set (e.g. `NOT IN (1, 3, 28)`) can silently mean the wrong types on a different install with zero error signal. Resolve such filters by TYPE NAME via a subquery/join against the type-name table (e.g. `itemTypes.typeName`) instead. Also note: Zotero's CSL-JSON export maps itemType `attachment` to CSL type `document` (never `\"attachment\"`), so a CSL `.type`-based exclusion filter for attachments/notes is a no-op; the authoritative type must come from the raw (non-CSL) API/DB response, cross-referenced by item key.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/207_fix_zotero_export_path1_truncation/summaries/01_path1-truncation-shrink-guard-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["Zotero", "itemTypeID", "itemType name-vs-id", "CSL-JSON", "sqlite reconstruction"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 22
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

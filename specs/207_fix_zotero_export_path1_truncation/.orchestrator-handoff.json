@@ -1,25 +1,17 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 15,
-  "summary": "Authored a 7-phase plan fixing the Path 1 MAX_ARG_STRLEN accumulator, the wrong csljson end-of-pagination signal, the no-op itemType filter, and adding a content-keyed shrink guard with an --allow-shrink opt-out distinct from --force, plus offline curl-stub regression coverage and four doc updates.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 22,
+  "summary": "Completed all 7 plan phases: rewrote fetch_path1() with a temp-file accumulator, Total-Results-driven pagination, and loud failure/no-write on any error; replaced the no-op CSL-type filter with an authoritative raw-itemType cross-reference filter; added a content-keyed shrink guard with a distinct --allow-shrink opt-out; corrected fetch_path3()'s sqlite itemTypeID exclusion set to a name-keyed subquery; delivered an 11-case offline regression suite via an extended PATH-shadowing curl stub; and updated the two documentation touchpoints that needed changes.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/207_fix_zotero_export_path1_truncation/plans/01_path1-truncation-shrink-guard.md",
-      "summary": "7-phase implementation plan, 9 hours estimated, fully serialized for phases 2-5 (same-file edits)."
+      "type": "summary",
+      "path": "specs/207_fix_zotero_export_path1_truncation/summaries/01_path1-truncation-shrink-guard-summary.md",
+      "summary": "Full implementation summary covering all 7 phases, decisions, deviations, verification, and follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
   "blockers": [],
-  "user_decision": {
-    "question": "Research found that fetch_path3's sqlite filter excludes the wrong itemTypeIDs, so the existing on-disk 4049-item export is ~61% attachment/note/annotation stubs. Should this task also correct that filter (Phase 5), which drops those stub entries from future sqlite-path exports and lowers the shrink guard's baseline to a true bibliographic count?",
-    "options": [
-      "Fix it in this task (Phase 5) -- the shrink guard then protects a real bibliographic baseline, and the first post-fix regeneration legitimately needs --allow-shrink once",
-      "Leave it and spin it out as a follow-up task -- smaller blast radius, but the shrink guard ships with a knowingly contaminated raw-item-table baseline"
-    ],
-    "recommended": "Fix it in this task (Phase 5) -- the shrink guard then protects a real bibliographic baseline, and the first post-fix regeneration legitimately needs --allow-shrink once",
-    "blocking": false
-  }
+  "user_decision": null
 }
