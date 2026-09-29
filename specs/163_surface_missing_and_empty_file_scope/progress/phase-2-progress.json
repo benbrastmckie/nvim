@@ -1,0 +1,32 @@
+{
+  "phase": 2,
+  "phase_name": "validate-state.sh Check 10 -- missing/null/empty file_scope",
+  "started_at": "2026-09-29T00:20:00Z",
+  "last_updated": "2026-09-29T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Check 10 block following Check 9's shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 2, "description": "Classify entries into missing_key/null_value/empty_array with WARN lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Update header Base-mode checks list with D2 ruling and promotion criterion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "used ${_check10_result:-{}} as a jq default", "result": "failed", "reason": "bash's ${var:-{}} parameter expansion mishandles a literal {} default value, silently appending an extra trailing } to the output whenever var is non-empty (confirmed via isolated bash -c repro) -- caused '1\\n0' style corrupted values and an arithmetic syntax error. Fixed by using ${var:-null} instead, which jq's // operators handle cleanly."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2",
+      "description": "Header Check 10 entry with D2 ruling and promotion criterion",
+      "type": "altered",
+      "reason": "Wrote the Check 11 header paragraph in the same edit as Check 10's, for prose contiguity in the Base-mode checks list, ahead of Phase 3's own script-body addition of Check 11 itself. The header text is accurate for the final state; Phase 3 only needs to add Check 11's script body.",
+      "annotation": "*(completed: also wrote the Check 11 header paragraph in the same edit, ahead of Phase 3's own script-body addition, for header prose contiguity)*"
+    },
+    {
+      "task_id": "2",
+      "description": "Confirm the Exit-codes header block still reads true",
+      "type": "altered",
+      "reason": "Discovered the --help handler's hardcoded sed -n '2,107p' range went stale and silently truncated --help output the moment the header grew past line 107 (confirmed empirically). Fixed with a dynamic awk-based range that reads to the first non-#-comment line, immune to future header growth in Phase 3/4.",
+      "annotation": "*(completed: also found and fixed a real regression this header growth exposed)*"
+    }
+  ]
+}

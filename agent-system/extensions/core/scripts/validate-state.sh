@@ -50,7 +50,8 @@
 #   hard error, exit 2 -- never a silent fallback to the default.
 #
 # Exit codes:
-#   0 - valid (no FAIL-level finding; Checks 8 and 9 below are WARN-only and never fail the run)
+#   0 - valid (no FAIL-level finding; Checks 8, 9, 10 and 11 below are WARN-only and never fail
+#       the run)
 #   1 - invalid (at least one FAIL-level finding), OR --fix given unparseable JSON
 #   2 - environment error (file not found, jq unavailable, a required shared library could not be
 #       found at any candidate path, a malformed --allow-artifact-removal value, a non-integer
@@ -80,6 +81,28 @@
 #     --fix (see below). Class B (normalization-equivalent -- distinct strings that collapse
 #     under the shared `norm` def, e.g. "a/" vs "a") is reported but never auto-repaired, since
 #     choosing which spelling survives is a judgment call. Never blocking.
+#   - Check 10 (WARN-only): missing / literal-null / empty-array file_scope, over the same
+#     non-terminal population as Check 8/9. Absence is a property of the FIELD, not of an entry
+#     -- Checks 8/9 both silently skip it via the `// []` idiom, so this check exists specifically
+#     to make that invisible-by-construction state visible. Reports three separately-labelled
+#     sub-states, all WARN: missing_key (the field is absent), null_value (a literal `null` --
+#     also orchestrate-predispatch-review.sh's Class B territory, but that script only reviews a
+#     caller-supplied batch, not the whole file), and empty_array (an explicit `[]`, possibly a
+#     deliberate "this task touches nothing" assertion). PROMOTION CRITERION (advisory-first, per
+#     plan-format.md's "Enforcement level" subsection -- the in-repo precedent for this exact
+#     rollout shape): promote missing_key and null_value from WARN to FAIL once no non-terminal
+#     task under specs/ lacks a usable file_scope. empty_array stays advisory INDEFINITELY and is
+#     never a promotion candidate. This task does NOT perform the promotion; --strict (see below)
+#     makes all three exit-blocking today for an opt-in caller.
+#   - Check 11 (WARN-only): glob-shaped file_scope entries (containing `*`, `?`, or `[`), via the
+#     canonical is_glob_entry predicate in scripts/lib/file-scope-overlap.sh. A glob entry is
+#     invisible to the symmetric Overlap predicate (Check 8 above) BY DESIGN -- see
+#     context/patterns/file-footprint-overlap.md's Non-Goals -- so the WARN names that concrete
+#     consequence rather than calling the shape invalid; a glob remains fully valid for the
+#     separate Containment predicate (path_covered_by_scope(), consumed by git-snapshot.sh).
+#     PROMOTION CRITERION: advisory indefinitely -- globs remain legitimate for the Containment
+#     consumer, so there is no promotion bar to reach; this is a deliberate permanent WARN, not an
+#     oversight.
 #
 # --deep mode additionally checks:
 #   - active_projects[].project_number uniqueness
@@ -161,7 +184,12 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --help|-h)
-      sed -n '2,107p' "$0" | sed 's/^# \{0,1\}//'
+      # Dynamic range (never a hardcoded line count): prints every leading `#`-comment line
+      # starting at line 2, stopping at the first non-`#` line (the blank line before
+      # `set -uo pipefail`). A hardcoded `sed -n 'START,ENDp'` range went stale and silently
+      # truncated --help output the moment Check 10/11 grew this header past its old end line --
+      # this form cannot go stale again as the header grows.
+      awk 'NR==1{next} /^#/{print; next} {exit}' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -536,6 +564,72 @@ else
     [[ -z "$_c9_pnum" ]] && continue
     log_warn "Duplicate file_scope entry (Class B, normalization-equivalent -- NOT auto-repaired): project_number $_c9_pnum, entries '$_c9_a' and '$_c9_b' collide after normalization"
   done < <(jq -r '.[] | .project_number as $p | .classB[] | [($p|tostring), .a, .b] | @tsv' <<< "$dup_findings")
+fi
+
+# ─── Check 10: missing / null / empty file_scope (WARN-only, base mode) ────────────────────────
+# D1: file_scope ABSENCE is a property of the FIELD, not of an entry -- a different question from
+# Check 8 (blast radius) and Check 9 (intra-array duplication), both of which legitimately operate
+# on an entry LIST and are silently skipped (via the `// []` idiom) whenever file_scope is absent,
+# null, or empty. This check makes that invisible-by-construction state visible, over the same
+# non-terminal population as Check 8/9 (status not in {completed, abandoned, expanded}).
+#
+# D2: reports THREE separately-labelled sub-states, all WARN, never one merged count:
+#   - missing_key  -- the field is absent entirely (an omission).
+#   - null_value   -- a literal `null` (a schema-default violation; already
+#                     orchestrate-predispatch-review.sh's Class B territory, but that script only
+#                     reviews a caller-supplied batch, never the whole state file, so this check
+#                     surfaces it here too for full-file coverage).
+#   - empty_array  -- an explicit `[]` (possibly a deliberate "this task touches nothing"
+#                     assertion, not necessarily an omission).
+# All three warn (the task title covers "and empty"), labelled separately so a future promotion
+# can bind to a subset. Supporting data point: the historical BimodalLogic measurement of "22
+# lacking a usable value" this task's dispatch cites tallied missing-key plus literal-null and
+# EXCLUDED empty-array -- i.e. that original measurement already treated empty-array as the
+# lesser concern.
+#
+# PROMOTION CRITERION (advisory-first, per plan-format.md's "Enforcement level" subsection -- the
+# in-repo precedent for this exact rollout shape: a missing field warns, never fails, until usage
+# converges). Applied here per the same three-part pattern: (a) start WARN in default mode; (b)
+# write the criterion down, here; (c) do NOT promote in this task. Promote the missing_key and
+# null_value sub-states from WARN to FAIL once no non-terminal task under specs/ lacks a usable
+# file_scope. The empty_array sub-state stays advisory INDEFINITELY and is never a promotion
+# candidate -- an explicit `[]` may be a deliberate assertion. `--strict` (Phase 4/Check 11 below)
+# makes all three exit-blocking TODAY for an opt-in caller; this task does not perform the
+# promotion in default mode.
+_check10_prog="
+def is_terminal: . == \"completed\" or . == \"abandoned\" or . == \"expanded\";
+(.active_projects) as \$all |
+[ \$all[] | select(((.status // \"\") | is_terminal) | not) ] as \$nonterm |
+{
+  denominator: (\$nonterm | length),
+  findings: [
+    \$nonterm[] |
+    (if (has(\"file_scope\") | not) then \"missing_key\"
+     elif (.file_scope == null) then \"null_value\"
+     elif (.file_scope == []) then \"empty_array\"
+     else empty end) as \$sub_state |
+    {project_number: .project_number, project_name: (.project_name // \"\"), sub_state: \$sub_state}
+  ] | sort_by(.project_number)
+}"
+_check10_result=$(jq -c "$_check10_prog" "$STATE_FILE" 2>/dev/null)
+scope_denominator=$(jq -r '.denominator // 0' <<< "${_check10_result:-null}" 2>/dev/null || echo 0)
+scope_findings=$(jq -c '.findings // []' <<< "${_check10_result:-null}" 2>/dev/null || echo '[]')
+scope_count=$(jq 'length' <<< "${scope_findings:-[]}" 2>/dev/null || echo 0)
+scope_missing=$(jq '[.[] | select(.sub_state == "missing_key")] | length' <<< "$scope_findings" 2>/dev/null || echo 0)
+scope_null=$(jq '[.[] | select(.sub_state == "null_value")] | length' <<< "$scope_findings" 2>/dev/null || echo 0)
+scope_empty=$(jq '[.[] | select(.sub_state == "empty_array")] | length' <<< "$scope_findings" 2>/dev/null || echo 0)
+if [[ -z "$scope_count" || "$scope_count" -eq 0 ]]; then
+  log_pass "No missing/null/empty file_scope found among $scope_denominator non-terminal task(s)"
+else
+  log_warn "file_scope visibility: $scope_missing missing-key, $scope_null literal-null, $scope_empty empty-array, out of $scope_denominator non-terminal task(s)"
+  while IFS=$'\t' read -r _c10_pnum _c10_sub _c10_name; do
+    [[ -z "$_c10_pnum" ]] && continue
+    log_warn "file_scope $_c10_sub: project_number $_c10_pnum ($_c10_name)"
+  done < <(jq -r '.[:10][] | [(.project_number|tostring), .sub_state, .project_name] | @tsv' <<< "$scope_findings")
+  if [[ "$scope_count" -gt 10 ]]; then
+    _c10_remaining=$((scope_count - 10))
+    log_warn "... and $_c10_remaining more file_scope visibility finding(s) not shown"
+  fi
 fi
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════

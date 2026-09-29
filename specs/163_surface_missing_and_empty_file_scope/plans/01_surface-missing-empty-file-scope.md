@@ -244,35 +244,48 @@ including any not listed here.
 
 ---
 
-### Phase 2: `validate-state.sh` Check 10 — missing / null / empty `file_scope` [NOT STARTED]
+### Phase 2: `validate-state.sh` Check 10 — missing / null / empty `file_scope` [COMPLETED]
 
 **Goal**: Default-mode `validate-state.sh` reports, as three distinguishable WARN sub-states with
 counts, every non-terminal task whose `file_scope` is absent, literal null, or an empty array —
 and still exits 0.
 
 **Tasks**:
-- [ ] Re-read `validate-state.sh` around Check 8/Check 9 immediately before editing.
-- [ ] Add Check 10 after Check 9, following Check 9's exact shape: a `_check10_prog` jq program
+- [x] Re-read `validate-state.sh` around Check 8/Check 9 immediately before editing. *(completed)*
+- [x] Add Check 10 after Check 9, following Check 9's exact shape: a `_check10_prog` jq program
       string, `jq -c` into a findings variable, a `length` count, a `log_pass` negative branch,
-      and `while IFS=$'\t' read -r ... done < <(jq -r ... @tsv)` WARN loops.
-- [ ] Classify each non-terminal entry into exactly one of `missing_key`
+      and `while IFS=$'\t' read -r ... done < <(jq -r ... @tsv)` WARN loops. *(completed)*
+- [x] Classify each non-terminal entry into exactly one of `missing_key`
       (`has("file_scope") | not`), `null_value` (`.file_scope == null`), `empty_array`
       (`.file_scope == []`); emit one WARN line per finding naming the `project_number`, the
       sub-state, and the `project_name`, plus one summary WARN line carrying the three counts and
-      the non-terminal denominator.
-- [ ] Use the same non-terminal filter as Check 8 (`status` not in
-      `{completed, abandoned, expanded}`), reusing its `is_terminal` def shape.
-- [ ] Cap the per-finding WARN list the way Check 8 does (first 10, then an "... and N more" line).
-- [ ] Extend the header comment's `# Base-mode checks (always run):` list with a Check 10 entry
+      the non-terminal denominator. *(completed)*
+- [x] Use the same non-terminal filter as Check 8 (`status` not in
+      `{completed, abandoned, expanded}`), reusing its `is_terminal` def shape. *(completed)*
+- [x] Cap the per-finding WARN list the way Check 8 does (first 10, then an "... and N more" line).
+      *(completed)*
+- [x] Extend the header comment's `# Base-mode checks (always run):` list with a Check 10 entry
       recording decision **D2** (empty vs absent vs null, all warn, separately labelled, with the
       historical-measurement data point) and the **promotion criterion**: promote the
       missing-key and literal-null sub-states from WARN to FAIL once no non-terminal task under
       `specs/` lacks a usable `file_scope`; the empty-array sub-state stays advisory indefinitely
       because an explicit `[]` may be a deliberate assertion. Cite `plan-format.md`'s
       `### Enforcement level` subsection as the precedent and state explicitly that this task does
-      not perform the promotion.
-- [ ] Confirm the Exit-codes header block still reads true (`Checks 8 and 9 ... are WARN-only`
-      becomes `Checks 8, 9, 10 and 11`; leave the `--strict` mention to Phase 4).
+      not perform the promotion. *(completed: also wrote the Check 11 header paragraph in the
+      same edit, ahead of Phase 3's own script-body addition, for header prose contiguity — see
+      Phase 3's own checklist for the corresponding decision)*
+- [x] Confirm the Exit-codes header block still reads true (`Checks 8 and 9 ... are WARN-only`
+      becomes `Checks 8, 9, 10 and 11`; leave the `--strict` mention to Phase 4). *(completed:
+      also found and fixed a real regression this header growth exposed — see deviation below)*
+- [x] *(deviation: altered — additional necessary fix not in the original task list)* The
+      `--help` handler used a hardcoded `sed -n '2,107p' "$0"` range that went stale and silently
+      truncated `--help` output partway through the `--deep mode` section the moment the header
+      grew past its old end line (confirmed by running `--help` before the fix: it cut off
+      mid-list). Replaced with a dynamic range,
+      `awk 'NR==1{next} /^#/{print; next} {exit}' "$0"`, that reads every leading `#`-comment line
+      from line 2 to the first non-`#` line and cannot go stale again as Phase 3/4 grow the header
+      further. Verified: `--help` now prints the complete header (128 lines) including the
+      previously-truncated `--deep mode additionally checks:` list.
 
 **Timing**: 1 hour
 
