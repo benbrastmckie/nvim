@@ -290,30 +290,36 @@ not for a count fixed at plan time.
 
 ---
 
-### Phase 4: Cross-file consistency gate and close-out [NOT STARTED]
+### Phase 4: Cross-file consistency gate and close-out [IN PROGRESS]
 
 **Goal**: Confirm the four edited files tell one consistent story, that nothing operational
 changed, and that the decision is discoverable from each entry point a future auditor would use.
 
 **Tasks**:
-- [ ] Read the final state of all four edited files and check the three accounts of the loading
+- [x] Read the final state of all four edited files and check the three accounts of the loading
       model (`EXTENSION.md`, `safety-invariants.md` banner, `README.md` row) agree with each
       other and with `index-entries.json`'s summary — no contradiction, no stale imperative left
-      anywhere.
-- [ ] Confirm zero behavioral drift: `git diff` over the task's commits touches only the four
+      anywhere. *(completed: all four accounts consistent)*
+- [x] Confirm zero behavioral drift: `git diff` over the task's commits touches only the four
       paths above, and contains no change to any constant, threshold, wrapper name, gate, or
-      flag anywhere in the extension.
-- [ ] Run the repo gates: `bash .claude/scripts/validate-wiring.sh`,
+      flag anywhere in the extension. *(completed: diff mentions of MAX_BATCH_SIZE/
+      PLAN_EXPIRY_DAYS are documentation naming them in the new coverage map, not value changes)*
+- [x] Run the repo gates: `bash .claude/scripts/validate-wiring.sh`,
       `bash .claude/scripts/validate-context-index.sh`,
-      `bash .claude/scripts/check-task-references.sh`.
-- [ ] Confirm the four consumer bodies are untouched (`git diff --stat` shows no entry under
-      `agent-system/extensions/email/agents/` or `.../skills/`).
-- [ ] Record in the implementation summary: the decision taken, the coverage map's outcome
+      `bash .claude/scripts/check-task-references.sh`. *(completed: context-index and
+      task-references both PASS with 0 errors/warnings; validate-wiring.sh fails, but only on
+      pre-existing, unrelated missing neovim/memory context files entirely outside
+      agent-system/extensions/email/** and outside every concurrent sibling's declared
+      territory — see Testing & Validation notes)*
+- [x] Confirm the four consumer bodies are untouched (`git diff --stat` shows no entry under
+      `agent-system/extensions/email/agents/` or `.../skills/`). *(completed: confirmed empty)*
+- [x] Record in the implementation summary: the decision taken, the coverage map's outcome
       (full coverage, or the named gap), that the deployed `.claude/` tree refreshes only on the
       next manual regeneration, and the two deferred follow-ups (a core
       `context-loading-tiers.md` pattern doc; a constants-drift lint across the duplicated
-      locations).
-- [ ] Final commit if any gate fix was needed; otherwise no commit.
+      locations). *(completed, see summary artifact)*
+- [x] Final commit if any gate fix was needed; otherwise no commit. *(completed: no gate fix
+      needed — the validate-wiring.sh failures are pre-existing and out of scope)*
 
 **Timing**: 0.5 hours
 
@@ -335,15 +341,24 @@ changed, and that the decision is discoverable from each entry point a future au
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/validate-wiring.sh` passes.
-- [ ] `bash .claude/scripts/validate-context-index.sh` passes.
-- [ ] `bash .claude/scripts/check-task-references.sh` reports no new hits outside `specs/**`.
-- [ ] `jq empty agent-system/extensions/email/index-entries.json` exits 0.
-- [ ] Every `safety-invariants.md` section heading has a row in the coverage map.
-- [ ] `EXTENSION.md` contains no `@`-prefixed context path (nothing promoted to eager loading).
-- [ ] The four consumer bodies are byte-identical to their pre-task state.
-- [ ] Each of the five domain files is still referenced by plain backticked path, unchanged in
-      form.
+- [x] `bash .claude/scripts/validate-wiring.sh` passes. *(deviation: not clean — fails on 11
+      pre-existing, unrelated missing-context-file errors under `project/neovim/**` and
+      `project/memory/README.md`, none of which is inside `agent-system/extensions/email/**` or
+      touched by this task's commits; confirmed via `git diff --stat` across this task's own
+      commit range that only the four email paths changed)*
+- [x] `bash .claude/scripts/validate-context-index.sh` passes. *(completed: 225 entries checked,
+      0 errors, 0 warnings)*
+- [x] `bash .claude/scripts/check-task-references.sh` reports no new hits outside `specs/**`.
+      *(completed: 0 unexempted occurrences across all 4 scanned trees)*
+- [x] `jq empty agent-system/extensions/email/index-entries.json` exits 0. *(completed)*
+- [x] Every `safety-invariants.md` section heading has a row in the coverage map. *(completed:
+      all 11 original invariant sections have a row)*
+- [x] `EXTENSION.md` contains no `@`-prefixed context path (nothing promoted to eager loading).
+      *(completed: `grep -c '^@'` is 0)*
+- [x] The four consumer bodies are byte-identical to their pre-task state. *(completed: `git
+      diff --stat` shows no entry under `agents/` or `skills/`)*
+- [x] Each of the five domain files is still referenced by plain backticked path, unchanged in
+      form. *(completed)*
 
 ## Artifacts & Outputs
 
