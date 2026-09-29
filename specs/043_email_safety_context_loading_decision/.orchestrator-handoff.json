@@ -1,21 +1,21 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 43,
-  "phase": "plan",
-  "session_id": "sess_1790640953_159e0d_43",
-  "dispatch_seq": 13,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1790640953_159e0d",
+  "dispatch_seq": 20,
+  "phases_completed": 4,
   "phases_total": 4,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/043_email_safety_context_loading_decision/plans/01_email-safety-context-loading-decision.md",
-      "summary": "4-phase documentation-only plan recording decision (b) for email safety context loading."
+      "type": "summary",
+      "path": "specs/043_email_safety_context_loading_decision/summaries/01_email-safety-context-loading-decision-summary.md",
+      "summary": "Recorded decision (b): email safety domain files stay on-demand reference; full enforcement coverage confirmed across all 11 safety-invariants.md sections via inline consumer copies and/or mechanical layers (mail-guard.sh, wrapper binaries)."
     }
   ],
-  "next_steps": "Run /implement 43 to execute the plan",
-  "notes": "Documentation-only plan; all edits target agent-system/extensions/email/**. No sibling territory overlap. Plan file set extends the task's anticipated file_scope to include context/project/email/domain/safety-invariants.md, README.md, and index-entries.json.",
-  "summary": "Authored a 4-phase, documentation-only plan recording decision (b): the five email safety domain files stay on-demand reference material, because enforcement already lives in mail-guard.sh, the nix-built wrapper binaries, and inline copies in four consumer bodies. Phase 1 is a decision gate that builds an 11-invariant x 4-consumer enforcement-coverage map before any decision wording is written.",
+  "next_steps": "None -- task complete. Deployed .claude/ tree refreshes only on the next manual regeneration.",
+  "notes": "Documentation-only across all 4 phases, scoped entirely to agent-system/extensions/email/**: safety-invariants.md (banner + coverage map), EXTENSION.md (safety framing + Context Pointers), README.md (file-table row), index-entries.json (summary + line_count). No consumer body (agents/**, skills/**) touched. validate-wiring.sh fails on 11 pre-existing, unrelated project/neovim/** and project/memory/README.md missing-context-file errors, out of this task's scope and confirmed unrelated via git diff --stat over this task's own commit range.",
+  "summary": "Implemented the email safety context-loading decision across 4 phases: (1) built an 11-invariant x 4-consumer enforcement-coverage map and added a Role-and-Loading-Model banner to safety-invariants.md confirming full coverage with no gap; (2) rewrote EXTENSION.md's safety framing to state the actual enforcement mechanism instead of a dead imperative; (3) aligned README.md and index-entries.json with the recorded decision; (4) verified cross-file consistency, zero behavioral drift, and ran the repo gates. All edits are documentation-only inside agent-system/extensions/email/**.",
   "blockers": [],
   "sorry_inventory": [],
   "continuation_path": null

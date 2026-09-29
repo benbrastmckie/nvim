@@ -261,7 +261,7 @@
     {
       "project_number": 43,
       "project_name": "email_safety_context_loading_decision",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Decide and implement how email safety context actually reaches agents (live defect: five inert safety pointers)",
       "topic": "extensions",
@@ -289,12 +289,18 @@
           "path": "specs/043_email_safety_context_loading_decision/plans/01_email-safety-context-loading-decision.md",
           "type": "plan",
           "summary": "4-phase documentation-only plan recording decision (b) for email safety context loading."
+        },
+        {
+          "path": "specs/043_email_safety_context_loading_decision/summaries/01_email-safety-context-loading-decision-summary.md",
+          "type": "summary",
+          "summary": "Recorded decision (b): email safety domain files stay on-demand reference; full enforcement coverage confirmed across all 11 safety-invariants.md sections via inline consumer copies and/or mechanical layers (mail-guard.sh, wrapper binaries)."
         }
       ],
       "created": "2026-08-11T16:14:06Z",
-      "last_updated": "2026-09-29T02:03:02Z",
+      "last_updated": "2026-09-29T02:48:18Z",
       "session_id": "sess_1790640953_159e0d",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Recorded the email safety context-loading decision across the four source-store files (safety-invariants.md banner + coverage map, EXTENSION.md framing, README.md row, index-entries.json summary), confirming full enforcement coverage and zero behavioral drift. Documentation-only; deployed .claude/ tree unaffected until next manual regeneration."
     },
     {
       "project_number": 44,

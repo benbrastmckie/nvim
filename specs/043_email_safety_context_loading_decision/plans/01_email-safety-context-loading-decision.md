@@ -1,7 +1,7 @@
 # Implementation Plan: Email Safety Context-Loading Decision
 
 - **Task**: 43 - Decide and implement how email safety context actually reaches agents (live defect: five inert safety pointers)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: 194 (archived/completed), 257 (archived/completed) — none blocking
 - **Research Inputs**: specs/043_email_safety_context_loading_decision/reports/01_email-safety-context-loading-decision.md

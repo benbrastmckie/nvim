@@ -1,9 +1,62 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 20,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/043_email_safety_context_loading_decision/summaries/01_email-safety-context-loading-decision-summary.md",
+      "summary": "Recorded decision (b): email safety domain files stay on-demand reference, deliberately not eager-loaded; enforcement lives in mail-guard.sh, the wrapper binaries' baked-in checks, and inline copies in the four consumer bodies. Full coverage confirmed across all 11 safety-invariants.md sections; no gap."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Recorded the email safety context-loading decision across the four source-store files (safety-invariants.md banner + coverage map, EXTENSION.md framing, README.md row, index-entries.json summary), confirming full enforcement coverage and zero behavioral drift. Documentation-only; deployed .claude/ tree unaffected until next manual regeneration."
+  },
+  "modified_files": [
+    "agent-system/extensions/email/context/project/email/domain/safety-invariants.md",
+    "agent-system/extensions/email/EXTENSION.md",
+    "agent-system/extensions/email/README.md",
+    "agent-system/extensions/email/index-entries.json",
+    "specs/043_email_safety_context_loading_decision/summaries/01_email-safety-context-loading-decision-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When auditing whether a 'non-negotiable' safety/contract markdown file is actually reaching an agent, build an explicit per-invariant coverage map before concluding it's a defect: for each rule, check (1) whether it's duplicated inline in the consumer bodies (SKILL.md/agent.md) that are read in full at their own invocation time, and (2) whether an independent mechanical layer (a PreToolUse hook, or a compiled binary's own baked-in check) enforces it with zero markdown loaded. If every invariant clears at least one of these two, the correct fix is to DOCUMENT the loading model (a banner section in the reference file plus a consistent framing in the extension's CLAUDE.md fragment, README, and index-entries.json summary) rather than promote the file to eager-loading and pay a recurring per-session token cost. Coverage need not be uniform across invariants -- a flag-specific invariant (e.g. an --archive-only gate) may legitimately be covered by only one consumer plus its own mechanical layer; that is accepted, not a gap.",
+      "category": "PATTERN",
+      "source_artifact": "specs/043_email_safety_context_loading_decision/summaries/01_email-safety-context-loading-decision-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "context-loading",
+        "safety-invariants",
+        "enforcement-coverage-map",
+        "eager-loading",
+        "audit",
+        "documentation-decision"
+      ]
+    },
+    {
+      "content": "In a shared working tree with concurrently-dispatched sibling tasks, never run `git stash` (even transiently, e.g. to diff against an older commit) without first confirming the working tree is clean or scoping the stash to specific paths -- a bare `git stash` sweeps in every sibling's uncommitted in-flight work along with your own, and the destructive-git guard hook will then block the natural recovery move (`git checkout <sha> -- .`) on the resulting dirty tree. If this happens, `git stash pop` immediately restores everything (verified via `git status` matching pre-stash state) -- do not attempt a second workaround. Prefer reasoning from `git diff --stat <task-start-sha>..HEAD -- <your-paths>` (scoped to your own commit range and paths) over any stash/checkout maneuver when you need to confirm a gate failure is pre-existing and unrelated to your own changes.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/043_email_safety_context_loading_decision/summaries/01_email-safety-context-loading-decision-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "git-stash",
+        "concurrent-siblings",
+        "shared-working-tree",
+        "destructive-git-guard",
+        "gate-verification"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
