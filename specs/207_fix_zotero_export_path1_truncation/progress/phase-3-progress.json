@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Replace the no-op CSL-type filter with an authoritative itemType filter",
+  "started_at": "2026-09-29T02:32:00Z",
+  "last_updated": "2026-09-29T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove the no-op CSL .type predicate", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 2, "description": "Per-window raw format=json fetch to a temp file", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 3, "description": "Filter csljson page by key against raw itemType exclusion set", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 4, "description": "Route raw-fetch/parse failures to loud-abort path", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 5, "description": "Do not use unverified server-side itemType query param", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Comment recording why CSL .type cannot carry this filter", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.x",
+      "description": "Curl stub extension for per-format fail/malformed knobs (RAW_FAIL_AT/RAW_MALFORMED_AT)",
+      "type": "altered",
+      "reason": "Plan's Phase 3 verification requires 'raw fetch stubbed to fail -> exits non-zero, writes nothing' as a distinct case from a general page failure. The Phase 1 FAIL_AT/MALFORMED_AT knobs apply to both formats at a given start and collide with the no-start probe defaulting to start=0, so dedicated format=json-only knobs were added to curl-stub.sh (not originally itemized in Phase 1's task list) to make this specific case testable without also tripping the initial API probe.",
+      "annotation": "*(deviation: altered — added RAW_FAIL_AT/RAW_MALFORMED_AT stub knobs, not in original Phase 1 task list)*"
+    }
+  ]
+}

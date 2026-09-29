@@ -236,6 +236,7 @@ fetch_path1() {
   local max_pages=2000
   local tmpdir
   local hdr_file page_file filtered_file http_code url
+  local raw_file raw_url raw_http_code excluded_file
 
   tmpdir="$(mktemp -d)" || {
     echo "fetch_path1: error - mktemp -d failed; aborting, no write." >&2
@@ -285,12 +286,49 @@ fetch_path1() {
       fi
     fi
 
-    # Filter out attachment/note CSL types defensively (the API's csljson format normally
-    # only returns top-level bibliographic items, but guard against future changes).
+    # Exclude attachment/note/annotation items using Zotero's AUTHORITATIVE data.itemType,
+    # cross-referenced from the same window's raw (format=json) response by item key -- NOT
+    # the CSL .type string, which cannot carry this filter: Zotero maps its "attachment"
+    # itemType to CSL type "document" (never "attachment"), so a `.type != "attachment"`
+    # predicate is a verified no-op (0 items removed across a full live sweep). Annotation
+    # items are already absent from the csljson body itself (see the genuine-end-of-
+    # pagination comment below), so this exclusion set only ever actually removes
+    # attachment/note keys from $page_file in practice, but is computed uniformly for all
+    # three excluded types in case that ever changes.
+    raw_file="$tmpdir/raw_${page_index}.json"
+    raw_url="${API_BASE}?format=json&limit=${limit}&start=${start}"
+    raw_http_code="$(curl -s -o "$raw_file" -w '%{http_code}' \
+      --connect-timeout 2 --max-time 20 "$raw_url" 2>/dev/null)" || raw_http_code=""
+
+    if [ -z "$raw_http_code" ] || [ "$raw_http_code" != "200" ]; then
+      echo "fetch_path1: error - raw-format (itemType) request for start=$start failed (http_code=${raw_http_code:-<none>}); aborting, no write." >&2
+      rm -rf "$tmpdir"
+      trap - EXIT INT TERM
+      return 1
+    fi
+
+    if [ ! -s "$raw_file" ] || ! jq empty "$raw_file" 2>/dev/null; then
+      echo "fetch_path1: error - malformed or unreadable raw-format JSON body for start=$start; aborting, no write." >&2
+      rm -rf "$tmpdir"
+      trap - EXIT INT TERM
+      return 1
+    fi
+
+    excluded_file="$tmpdir/excluded_${page_index}.json"
+    if ! jq -c '[.[] | select(.data.itemType as $t | ($t == "attachment" or $t == "note" or $t == "annotation")) | .key]' \
+      "$raw_file" > "$excluded_file" 2>/dev/null; then
+      echo "fetch_path1: error - failed to compute itemType exclusion set at start=$start; aborting, no write." >&2
+      rm -rf "$tmpdir"
+      trap - EXIT INT TERM
+      return 1
+    fi
+
     filtered_file="$tmpdir/filtered_${page_index}.json"
-    if ! jq '[.[] | select((.type // "") != "attachment" and (.type // "") != "note")]' \
+    if ! jq --slurpfile excl "$excluded_file" \
+      '($excl[0] // []) as $ex |
+       [.[] | select( ((((.id // "") | split("/") | last)) as $k | ($ex | index($k))) == null )]' \
       "$page_file" > "$filtered_file" 2>/dev/null; then
-      echo "fetch_path1: error - failed to filter page at start=$start; aborting, no write." >&2
+      echo "fetch_path1: error - failed to apply itemType exclusion filter at start=$start; aborting, no write." >&2
       rm -rf "$tmpdir"
       trap - EXIT INT TERM
       return 1

@@ -46,6 +46,9 @@
 #                                  simulates a curl transport failure (exit 28, no stdout).
 #   CURL_STUB_ZOTERO_MALFORMED_AT  A `start` value at which this request (whichever format)
 #                                  returns a non-JSON body instead of the generated page.
+#   CURL_STUB_ZOTERO_RAW_FAIL_AT       Like FAIL_AT, but format=json-only (does not also catch
+#                                      the format=csljson fetch or the no-start probe request).
+#   CURL_STUB_ZOTERO_RAW_MALFORMED_AT  Like MALFORMED_AT, but format=json-only.
 #
 # A *_CODE value of "curl_fail" simulates a curl transport failure: nonzero exit
 # (28, curl's own timeout code), no stdout at all — this is how a stubbed scenario
@@ -186,11 +189,22 @@ if [ "$is_zotero_items" = "true" ]; then
   limit="$(url_query_param "$url" "limit" "100")"
   fmt_param="$(url_query_param "$url" "format" "csljson")"
 
+  # FAIL_AT/MALFORMED_AT apply regardless of format (both the csljson and the raw request at
+  # that start are affected, since a real page fetch failure at either format is equally a
+  # failure). RAW_FAIL_AT/RAW_MALFORMED_AT are format=json-only, so a test can fail/corrupt
+  # JUST the itemType cross-reference fetch for a start whose csljson fetch already succeeded
+  # (needed because CURL_STUB_ZOTERO_FAIL_AT=0 would otherwise also catch the initial
+  # probe_zotero_api() call, which has no start param and defaults to "0").
   if [ -n "${CURL_STUB_ZOTERO_FAIL_AT:-}" ] && [ "$start" = "$CURL_STUB_ZOTERO_FAIL_AT" ]; then
+    exit 28
+  fi
+  if [ "$fmt_param" = "json" ] && [ -n "${CURL_STUB_ZOTERO_RAW_FAIL_AT:-}" ] && [ "$start" = "$CURL_STUB_ZOTERO_RAW_FAIL_AT" ]; then
     exit 28
   fi
 
   if [ -n "${CURL_STUB_ZOTERO_MALFORMED_AT:-}" ] && [ "$start" = "$CURL_STUB_ZOTERO_MALFORMED_AT" ]; then
+    body_inline="THIS IS NOT VALID JSON {{{"
+  elif [ "$fmt_param" = "json" ] && [ -n "${CURL_STUB_ZOTERO_RAW_MALFORMED_AT:-}" ] && [ "$start" = "$CURL_STUB_ZOTERO_RAW_MALFORMED_AT" ]; then
     body_inline="THIS IS NOT VALID JSON {{{"
   elif [ "$fmt_param" = "json" ]; then
     body_inline="$(bash "$ZOTERO_PAGE_GEN" --format raw --start "$start" --limit "$limit" --total "$total" --ratio "$ratio")"

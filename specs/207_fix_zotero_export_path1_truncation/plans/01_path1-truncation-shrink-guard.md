@@ -208,26 +208,26 @@ single-concern hunk.
 
 ---
 
-### Phase 3: Replace the no-op CSL-type filter with an authoritative itemType filter [NOT STARTED]
+### Phase 3: Replace the no-op CSL-type filter with an authoritative itemType filter [COMPLETED]
 
 - **Goal:** Path 1 excludes attachment-, note-, and annotation-typed items using Zotero's
   authoritative `data.itemType`, not the CSL `.type` string.
 - **Tasks:**
-  - [ ] Remove the existing `select((.type // "") != "attachment" and (.type // "") != "note")`
+  - [x] Remove the existing `select((.type // "") != "attachment" and (.type // "") != "note")`
         predicate. It is a verified no-op (0 items removed across a full live sweep) and keeping it
         would ship ~1800 `document`-typed attachment stubs into every Path 1 export.
-  - [ ] For each pagination window, additionally fetch the raw format (`format=json`, same
+  - [x] For each pagination window, additionally fetch the raw format (`format=json`, same
         `limit`/`start`) to a temp file and collect the set of item keys whose `data.itemType` is
         `attachment`, `note`, or `annotation`.
-  - [ ] Filter the csljson page by key: a csljson entry's key is `.id | split("/") | last` — the same
+  - [x] Filter the csljson page by key: a csljson entry's key is `.id | split("/") | last` — the same
         mapping `enrich_path2()` already relies on. Drop entries whose key is in the excluded set.
-  - [ ] Route raw-fetch and parse failures to Phase 2's loud-abort path; a failed exclusion lookup
+  - [x] Route raw-fetch and parse failures to Phase 2's loud-abort path; a failed exclusion lookup
         must not silently degrade to "exclude nothing".
-  - [ ] Do **not** use a server-side `itemType=-attachment -note -annotation` query parameter unless
+  - [x] Do **not** use a server-side `itemType=-attachment -note -annotation` query parameter unless
         the syntax is independently confirmed against Zotero's official API `itemType` grammar AND a
         test asserts the exclusion actually happened. Ad hoc testing of that form during research did
         not filter as hoped.
-  - [ ] Add a brief comment recording why the CSL `.type` field cannot carry this filter (Zotero maps
+  - [x] Add a brief comment recording why the CSL `.type` field cannot carry this filter (Zotero maps
         its `attachment` itemType to CSL `document`).
 - **Timing:** 1.5 hours
 - **Depends on:** 2
