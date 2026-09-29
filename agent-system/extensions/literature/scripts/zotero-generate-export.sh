@@ -516,7 +516,20 @@ fetch_path3() {
     FROM items it
     JOIN itemTypes ityp ON ityp.itemTypeID = it.itemTypeID
     JOIN libraries lib ON lib.libraryID = it.libraryID AND lib.type = 'user'
-    WHERE it.itemTypeID NOT IN (1, 3, 28);
+    -- Exclude attachment/note/annotation items by TYPE NAME (never a hardcoded numeric ID --
+    -- itemTypeID values are not guaranteed stable across Zotero versions/installations, which
+    -- is exactly how this query previously shipped broken: NOT IN (1, 3, 28) was meant to
+    -- exclude attachment/note/annotation but on this installation 1/3/28 are actually
+    -- artwork/audioRecording/podcast (observed: attachment=2, note=26, annotation=37) -- a
+    -- verified no-op that let ~61% attachment/note stub entries into every sqlite-path export.
+    -- This correction materially REDUCES the exported item count on the sqlite path (stub
+    -- entries with empty title/author/issued fields are dropped). A first post-fix
+    -- regeneration run over a pre-fix export is EXPECTED to trip the shrink guard above and
+    -- legitimately needs --allow-shrink once, to move the recorded baseline to the corrected,
+    -- true bibliographic count.
+    WHERE it.itemTypeID NOT IN (
+      SELECT itemTypeID FROM itemTypes WHERE typeName IN ('attachment', 'note', 'annotation')
+    );
   " 2>/dev/null)" || raw="[]"
 
   if [ -z "$raw" ]; then

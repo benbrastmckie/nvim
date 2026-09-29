@@ -298,21 +298,21 @@ single-concern hunk.
 
 ---
 
-### Phase 5: Correct fetch_path3's itemTypeID exclusion set [NOT STARTED]
+### Phase 5: Correct fetch_path3's itemTypeID exclusion set [COMPLETED]
 
 - **Goal:** `fetch_path3()` excludes `attachment`/`note`/`annotation` rather than
   `artwork`/`audioRecording`/`podcast`, so the sqlite path produces a bibliographic-only export and
   the shrink guard's baseline is meaningful.
 - **Tasks:**
-  - [ ] Replace `WHERE it.itemTypeID NOT IN (1, 3, 28)` with an exclusion resolved from the
+  - [x] Replace `WHERE it.itemTypeID NOT IN (1, 3, 28)` with an exclusion resolved from the
         `itemTypes` table **by type name**, not by hardcoded numeric ID — e.g.
         `WHERE it.itemTypeID NOT IN (SELECT itemTypeID FROM itemTypes WHERE typeName IN
         ('attachment','note','annotation'))`. A name-keyed subquery cannot rot across Zotero versions
         the way the current hardcoded IDs did.
-  - [ ] Add a comment recording the observed IDs for this installation (`attachment=2`, `note=26`,
+  - [x] Add a comment recording the observed IDs for this installation (`attachment=2`, `note=26`,
         `annotation=37`) and that `1`/`3`/`28` were `artwork`/`audioRecording`/`podcast` — so the
         original mistake is not silently reintroduced.
-  - [ ] Note in the same comment that this correction materially reduces the exported item count on
+  - [x] Note in the same comment that this correction materially reduces the exported item count on
         the sqlite path (stub entries with empty title/author/issued fields are dropped), and that a
         first post-fix regeneration over a pre-fix export is expected to trip the Phase 4 shrink
         guard and legitimately needs `--allow-shrink` once.

@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Correct fetch_path3's itemTypeID exclusion set",
+  "started_at": "2026-09-29T03:07:00Z",
+  "last_updated": "2026-09-29T03:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace hardcoded NOT IN (1,3,28) with name-keyed subquery on itemTypes.typeName", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 2, "description": "Comment recording observed IDs and the original mistake", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 3, "description": "Comment noting expected shrink and one-time --allow-shrink need on first post-fix regeneration", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "user_decision_resolved": {
+    "note": "Team-lead relayed no user answer was obtained for the plan's non-blocking user_decision (whether to fix fetch_path3's itemTypeID filter in this task). Proceeded on the planner's own recommendation per explicit instruction: fix it in this task, exactly as Phase 5 specifies."
+  }
+}
