@@ -1,44 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md",
-      "summary": "Evidence-backed split-verdict recommendation: per-dispatch git-worktree isolation for lean4/cslib implement dispatches (with a measured hardlink-clone .lake mitigation for the disk cost), plus a narrow refuse-on-contended-file guard for general/meta/markdown dispatches; hunk-level staging ruled out as infeasible; documents the build mutex's opt-in nature and the mode-1b staging qualification."
+      "type": "plan",
+      "path": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
+      "summary": "11-phase plan implementing the split-verdict isolation posture: script-provisioned per-dispatch git worktrees for lean4/cslib implement dispatches, a contended-path commit refusal for shared-tree dispatches, the decision record, the mutex opt-in and staging qualification docs, and an acceptance fixture proving cross-task commit bleed is gone."
     }
   ],
-  "next_steps": "Run /plan 199 to create implementation plan",
   "metadata": {
     "session_id": "sess_1790640953_159e0d_199",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 11,
+    "estimated_hours": 16.5,
+    "dependency_waves": [[1, 2, 3], [4], [5, 6], [7, 8], [9], [10], [11]]
   },
   "memory_candidates": [
     {
-      "content": "For a Lean/Lake project, hardlink-cloning .lake (`cp -al .lake <dest>`) into a fresh git worktree reproduces a multi-GiB build cache in well under a second with zero measured disk growth (df unchanged), versus a naive independent .lake per worktree costing the full cache size again. Safety depends on Lake writing build outputs via atomic temp+rename (unverified here, cheap to test: rebuild one module in the clone and diff the resulting .olean's inode number against the original).",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["lake", "lean4", "git-worktree", "hardlink", "build-cache", "concurrency"]
-    },
-    {
-      "content": "The Agent tool's isolation: \"worktree\" parameter (auto-create/auto-cleanup git worktree, returns path/branch) is the harness-native primitive for per-dispatch isolation in this agent system; as of this finding it is wired nowhere in skill-orchestrate's dispatch pipeline (grep-confirmed zero hits across SKILL.md, orchestrate-cycle-plan.sh, orchestrate-build-dispatch.sh), despite concurrent same-repo dispatches already running in production without it.",
+      "content": "A per-dispatch git-worktree isolation design in a repo whose .claude/ deploy tree is gitignored must materialize .claude/ into the new worktree with a HARDLINK clone (cp -al), never a symlink: deployed core scripts resolve PROJECT_ROOT via `cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd`, which follows a symlink back to the main tree and silently makes every commit land in the main tree, defeating the isolation while appearing to work. The hardlink keeps the physical path inside the worktree and still satisfies deploy-root-guard.sh's `*/.claude | */.opencode` structural check. The dual fact: specs/ IS tracked, so a fresh worktree carries a HEAD-stale copy of state.json/TODO.md and every task directory -- task artifacts must keep being written to the main tree by absolute path (which the existing Postflight Boundary single-writer contract already requires), and any merge-back step must refuse a branch touching specs/** rather than merge a stale snapshot over live state. Together these two facts also argue against the harness Agent(isolation: \"worktree\") parameter for orchestrated dispatches: it relocates the whole repo copy opaquely, including specs/, whose absolute main-tree paths the dispatch file and handoff contract depend on.",
       "category": "INSIGHT",
-      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md",
+      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
       "confidence": 0.85,
-      "suggested_keywords": ["agent-tool", "isolation", "worktree", "orchestrate", "dispatch"]
-    },
-    {
-      "content": "Explicit-path git staging (git add <named-files>) is necessary but not sufficient for concurrency safety: it operates at file granularity and cannot subdivide a single file's content by which concurrent dispatch authored which line. Two dispatches following the sanctioned staging convention perfectly can still silently bleed content into each other's commits when they edit the same shared file in one working tree. No hunk/line-to-task attribution mechanism exists in this codebase to close that gap without new machinery.",
-      "category": "PATTERN",
-      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-staging", "concurrency", "commit-bleed", "hunk-attribution", "territory"]
+      "suggested_keywords": ["git-worktree", "dispatch-isolation", "deploy-root-guard", "hardlink-clone", "postflight-boundary", "concurrent-dispatch"]
     }
   ],
-  "modified_files": [
-    "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md"
-  ]
+  "next_steps": "Run /implement 199 to execute the plan",
+  "dispatch_seq": 14
 }

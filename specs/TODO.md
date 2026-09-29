@@ -32,7 +32,7 @@ next_project_number: 269
   └─ 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-199 [PLANNING] — Decide and implement the working-tree and build isolation...
+199 [PLANNED] — Decide and implement the working-tree and build isolation...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"... (see above)
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -1577,11 +1577,12 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 199. Decide and implement the working-tree and build isolation posture for concurrent same-repo dispatches
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243, Task 259, Task 266
 - **Research**: [199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md]
+- **Plan**: [199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
