@@ -12,7 +12,23 @@
 #
 # Usage:
 #   git-commit-scoped.sh --message <msg> --session <session_id> \
-#       [--honest-index-rows <task_number>] -- <pathspec>...
+#       [--honest-index-rows <task_number>] [--task <task_number>] -- <pathspec>...
+#
+# --task <task_number>: opt-in (empty-value-skips-flag, like --honest-index-rows). When given,
+# consults the cycle-scoped contended-path manifest (orchestrate-cycle-plan.sh's
+# build_contended_manifest, specs/.contention-manifest/*.json) for each POSITIVE pathspec entry.
+# A path NOT listed in any manifest proceeds exactly as before -- this is the common case and is
+# byte-identical to a caller that omits --task entirely. A listed path is claimed via
+# task-lock.sh's claim-acquire/claim-release (a first-claim lease per declared manifest path,
+# specs/.contention-claims/<path>) BEFORE any git add is attempted: unclaimed -> claim, stage,
+# commit, release; claimed by this same task -> proceed (re-entrant); claimed by another live
+# task -> REFUSE before any git add, with nothing staged, naming the path, the holding task, and
+# the release condition (the holder's own commit or its claim's staleness timeout) -- direct the
+# caller to defer that path and re-sequence, never to widen the pathspec or force it. FAILS OPEN
+# unconditionally: --task absent, a missing/unreadable/malformed manifest, or any error inside
+# this check proceeds with today's behavior (plus a stderr notice for the error case) -- a
+# concurrency guard must never be the reason an agent cannot commit at all. See the working-tree/
+# build isolation posture decision record's Option 3(ii) for the full rationale.
 #
 # <msg> is the commit body WITHOUT the trailing "Session: ..." line — this script appends
 # "\n\nSession: <session_id>\n" itself, so every call site gets an identical session-line
@@ -41,6 +57,9 @@
 #       site's existing `|| echo "Note: Nothing to commit..."` fallback
 #   2 - usage error, the V3 degenerate-pathspec refusal (exclude-only list; refused before any
 #       git add/commit), or `git add` failed for one or more staged paths
+#   3 - contended-path refusal (V5, --task only): a positive pathspec entry is listed as
+#       contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused
+#       before any git add; nothing staged. Never emitted when --task is omitted.
 #
 # Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
 #   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
@@ -61,6 +80,12 @@
 #        a bare commit, not narrower. This script refuses outright (no git add, no commit) if the
 #        pathspec list contains zero positive entries, both before and after V2 filtering (since
 #        filtering itself can produce a degenerate list).
+#   V5 - explicit-path staging alone does not protect against CONCURRENT same-file dispatch: two
+#        tasks can each stage only their own paths, correctly and narrowly, and still bleed into
+#        each other's commit when both touch the SAME file in the SAME shared working tree (see
+#        the working-tree/build isolation posture decision record's mode-1b finding). --task
+#        opts a caller into the fix: a per-path first-claim lease consulted against the
+#        cycle-scoped contention manifest before any git add is attempted.
 
 set -euo pipefail
 
@@ -77,6 +102,7 @@ usage() {
 message=""
 session_id=""
 honest_task_number=""
+contention_task_number=""
 pathspecs=()
 
 while [ "$#" -gt 0 ]; do
@@ -94,6 +120,11 @@ while [ "$#" -gt 0 ]; do
     --honest-index-rows)
       [ "$#" -ge 2 ] || usage
       honest_task_number="$2"
+      shift 2
+      ;;
+    --task)
+      [ "$#" -ge 2 ] || usage
+      contention_task_number="$2"
       shift 2
       ;;
     --)
@@ -178,6 +209,67 @@ for p in "${pathspecs[@]}"; do
 done
 pathspecs=("${expanded_pathspecs[@]}")
 
+# --- V5 contended-path refusal (--task opt-in only; see the header's V5 note) ---
+# Runs BEFORE V2/V3 and before any git add — a refusal here must leave nothing staged. Iterates
+# the caller's own POSITIVE pathspec entries (exactly as given; exclude entries are never
+# checked, same scope as every gate above) against every manifest file under
+# specs/.contention-manifest/*.json. Unconditionally fail-open: --task omitted, the manifest
+# directory absent or empty, or any error while reading a manifest file falls through to today's
+# behavior (no claim, no refusal) — this check must never be the reason a commit cannot happen.
+contended_claims_acquired=()
+
+release_contended_claims() {
+  local p
+  for p in "${contended_claims_acquired[@]:-}"; do
+    [ -n "$p" ] || continue
+    bash "$SCRIPT_DIR/task-lock.sh" claim-release "$p" "$contention_task_number" >&2 || true
+  done
+}
+
+if [ -n "$contention_task_number" ]; then
+  contention_manifest_dir="$PROJECT_ROOT/specs/.contention-manifest"
+  if [ -d "$contention_manifest_dir" ]; then
+    for p in "${pathspecs[@]}"; do
+      case "$p" in
+        :\(exclude\)*) continue ;;
+      esac
+
+      contended_here="false"
+      manifest_file=""
+      for manifest_file in "$contention_manifest_dir"/*.json; do
+        [ -e "$manifest_file" ] || continue
+        jq_rc=0
+        jq -e --arg p "$p" '.contended // [] | any(.path == $p)' "$manifest_file" >/dev/null 2>/dev/null || jq_rc=$?
+        if [ "$jq_rc" -eq 0 ]; then
+          contended_here="true"
+          break
+        elif [ "$jq_rc" -gt 1 ]; then
+          echo "WARN: git-commit-scoped.sh could not parse contention manifest '$manifest_file' (malformed/unreadable) — skipping it for this check (fail-open)." >&2
+        fi
+      done
+
+      [ "$contended_here" = "true" ] || continue
+
+      claim_out=""
+      claim_rc=0
+      claim_out=$(bash "$SCRIPT_DIR/task-lock.sh" claim-acquire "$p" "$contention_task_number" "$session_id") || claim_rc=$?
+      if [ "$claim_rc" -eq 0 ]; then
+        claim_status=$(echo "$claim_out" | jq -r '.status // ""' 2>/dev/null) || claim_status=""
+        if [ "$claim_status" = "claimed" ]; then
+          contended_claims_acquired+=("$p")
+        fi
+        # "already_self" (re-entrant): proceed without adding to the release list — this
+        # invocation did not freshly acquire it, so it must not release someone else's hold.
+      else
+        holder_task=$(echo "$claim_out" | jq -r '.holder_task // "unknown"' 2>/dev/null) || holder_task="unknown"
+        echo "ERROR: git-commit-scoped.sh refuses to commit — path '$p' is contended this cycle and currently claimed by task #${holder_task} (Verified Finding V5, mode-1b: explicit-path staging alone does not protect against concurrent same-file dispatch). Nothing was staged. Defer this path and re-sequence after task #${holder_task}'s own commit lands (or the claim's staleness timeout elapses) — never widen the pathspec or force it." >&2
+        release_contended_claims
+        exit 3
+      fi
+    done
+  fi
+fi
+
 # --- V2 safety gate: classify each positive pathspec into one of THREE outcomes, not two ---
 # Exclude pathspecs pass through unvalidated into BOTH arrays below (git itself never resolves
 # them against the working tree the way it does a positive entry, and validating them would
@@ -248,6 +340,11 @@ release_commit_mutex_guarded() {
     COMMIT_MUTEX_OWNED_HERE="false"
     unset COMMIT_MUTEX_HELD
   fi
+  # V5 contended-path claims (see the block above this section): release on EVERY exit path
+  # (success, git-commit failure, or an early refusal that already released inline) — a single
+  # trap-driven cleanup point, same shape as the commit mutex directly above. Idempotent: a path
+  # already released by the inline exit-3 refusal call finds no claim directory and is a no-op.
+  release_contended_claims
 }
 trap release_commit_mutex_guarded EXIT
 

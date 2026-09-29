@@ -1335,10 +1335,19 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
   # this script parses stdout as exactly one JSON object) -- but the entry-point exec 3>&1 1>&2
   # redirect above already routes it to the diagnostic stream structurally, so no redirect is
   # needed at this call site any more.
+  # --task wires this per-cycle commit into the V5 contended-path refusal (git-commit-scoped.sh,
+  # working-tree/build isolation posture decision record's Option 3(ii)) -- the shared-tree half
+  # of the split verdict. A refusal (exit 3) falls through to the SAME non-blocking WARNING path
+  # as any other commit failure below: state.json's own transition already took effect on disk
+  # (WORK (f) above wrote it before this call), it is simply left uncommitted for a later cycle's
+  # commit to pick up once the holding task's own commit lands or its claim goes stale -- no new
+  # hazard class versus an ordinary git-commit failure, just a new, rarer trigger for the same
+  # already-non-blocking fallback.
   bash "${SCRIPT_DIR}/git-commit-scoped.sh" \
     --message "$commit_message" \
     --session "$session_id" \
     --honest-index-rows "$task_number" \
+    --task "$task_number" \
     -- "${stage_paths[@]}" \
     || echo "${notice_prefix} WARNING: commit failed for task ${task_number} (non-blocking) — proceeding to lock release." >&2
 elif [ "$research_gate_failed" = "true" ]; then

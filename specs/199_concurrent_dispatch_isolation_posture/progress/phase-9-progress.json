@@ -1,0 +1,36 @@
+{
+  "phase": 9,
+  "phase_name": "Contended-path refusal in git-commit-scoped.sh",
+  "started_at": "2026-09-29T11:40:00Z",
+  "last_updated": "2026-09-29T12:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add claim-acquire/claim-release CLI subcommands to task-lock.sh (thin wrappers over acquire_named_mutex/release_named_mutex, same shape as commit-acquire/commit-release), with a per-path mutex directory and zero wait budget", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Add --task input and the V5 contended-path pre-staging check to git-commit-scoped.sh: exact-match against specs/.contention-manifest/*.json, claim/re-entrant/refuse branches, fail-open on every error class", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "Wire release_contended_claims into the existing commit-mutex EXIT trap plus an inline release before the exit-3 refusal (trap not yet installed at that point in execution)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 4, "description": "Manual smoke test: fresh claim/commit/release, re-entrant, foreign refusal (exit 3, nothing staged), fail-open (unlisted path, no --task, missing manifest)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Extend test-git-commit-scoped.sh: V1-V8 (23/23 total including T1-T10 unchanged)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 6, "description": "Register specs/.contention-claims/ in orchestrator-runtime-files.md and .gitignore", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md", ".gitignore"]},
+    {"id": 7, "description": "Wire --task into the one real shared-tree caller (orchestrate-cycle-postflight.sh WORK (i)); confirm the other two real callers (orchestrator-postflight.sh, orchestrate-unwind-dispatch.sh) omit --task and stay fail-open/unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 8, "description": "Extend test-orchestrate-cycle-postflight.sh with an end-to-end V5-wiring case (147/147 total)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 9, "description": "Verify: shellcheck clean on every touched file, test-lint-scoped-commit-boundary.sh and test-lint-postflight-boundary.sh pass, check-task-references.sh clean, full bash .claude/scripts/tests/run-all.sh baseline recorded (84 passed/11 failed, all pre-existing and unrelated -- deployed .claude/ tree predates this task's phases 7-9, not yet redeployed)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.6",
+      "description": "Reuse the task-lock.sh lease pattern rather than inventing a new primitive",
+      "type": "altered",
+      "reason": "Interpreted as literally reusing the EXISTING acquire_named_mutex/release_named_mutex primitives via two new thin CLI subcommands on task-lock.sh (claim-acquire/claim-release, mirroring commit-acquire/commit-release exactly -- same owner-file write, same token/holder verification on release), rather than hand-rolling a parallel mkdir/staleness implementation inside git-commit-scoped.sh itself. task-lock.sh is not sourceable (its own bare CLI dispatch executes on source), so the established shell-out convention (bash task-lock.sh <subcommand> ...) was followed, matching every other git-commit-scoped.sh <-> task-lock.sh call already in the file (commit-acquire/commit-release). Recorded as a footprint addition beyond this phase's declared file_scope.",
+      "annotation": null
+    },
+    {
+      "task_id": "9.implicit",
+      "description": "Wire --task into the real per-cycle commit call site so the mechanism is actually live, not just present",
+      "type": "altered",
+      "reason": "Not explicitly named as a Phase 9 task-list bullet, but required by the phase's own Goal (\"make the SHARED-TREE COMMIT PATH refuse...\") and Scope Hypothesis (\"...or is updated deliberately in this phase\"). Enumerated all three real (non-test) bash invocation call sites of git-commit-scoped.sh across agent-system/extensions and wired --task into the one relevant to this task's own multi-task-batch incident (orchestrate-cycle-postflight.sh WORK (i)); orchestrator-postflight.sh (the single-task engine's own commit call) and orchestrate-unwind-dispatch.sh (the rollback path) were deliberately left unwired -- both are out of scope for the multi-task shared-tree scenario this whole task addresses, and both remain fully fail-open/unchanged since --task is opt-in.",
+      "annotation": null
+    }
+  ]
+}

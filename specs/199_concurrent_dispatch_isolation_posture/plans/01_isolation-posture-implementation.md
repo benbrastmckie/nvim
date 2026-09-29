@@ -718,35 +718,41 @@ duplicating the derivation.
 
 ---
 
-### Phase 9: Contended-path refusal in `git-commit-scoped.sh` [NOT STARTED]
+### Phase 9: Contended-path refusal in `git-commit-scoped.sh` [COMPLETED]
 
 **Goal**: Option 3(ii) — make the shared-tree commit path refuse to stage a path a live sibling is
 concurrently contending for, with a first-claim lease that keeps exactly one committer moving.
 
 **Tasks**:
-- [ ] Add a `--task <task_number>` input to `git-commit-scoped.sh` (empty-value-skips, so every
-      existing call site is unaffected until it opts in) naming the committing task.
-- [ ] Before staging, for each **positive** pathspec entry: consult the cycle manifest. Not
-      listed → proceed exactly as today.
-- [ ] Listed and unclaimed → claim it with a lease file (`{task, session, claimed_at}`) under a
+- [x] Add a `--task <task_number>` input to `git-commit-scoped.sh` (empty-value-skips, so every
+      existing call site is unaffected until it opts in) naming the committing task. *(completed)*
+- [x] Before staging, for each **positive** pathspec entry: consult the cycle manifest. Not
+      listed → proceed exactly as today. *(completed)*
+- [x] Listed and unclaimed → claim it with a lease file (`{task, session, claimed_at}`) under a
       `specs/`-rooted ephemeral claims directory, then stage and commit, then release the claim.
-- [ ] Listed and claimed by **this** task → proceed (re-entrant).
-- [ ] Listed and claimed by another live task → **refuse before any `git add`**, with a distinct
+      *(completed: `specs/.contention-claims/<sanitized-path>/holder.json`)*
+- [x] Listed and claimed by **this** task → proceed (re-entrant). *(completed)*
+- [x] Listed and claimed by another live task → **refuse before any `git add`**, with a distinct
       exit code and a message naming the path, the holding task, and the release condition
       (the holder's commit). Direct the agent to defer that path and re-sequence — never to widen
-      the pathspec and never to force it.
-- [ ] Honor an age-based staleness override on a claim, reusing the `task-lock.sh` lease pattern
-      rather than inventing a new primitive.
-- [ ] **Fail open**: a missing, unreadable, or malformed manifest, an absent `--task`, or any
+      the pathspec and never to force it. *(completed: exit 3)*
+- [x] Honor an age-based staleness override on a claim, reusing the `task-lock.sh` lease pattern
+      rather than inventing a new primitive. *(completed: deviation — added `claim-acquire`/
+      `claim-release` CLI subcommands to `task-lock.sh` itself, thin wrappers over the EXISTING
+      `acquire_named_mutex`/`release_named_mutex` primitives (same pattern as `commit-acquire`/
+      `commit-release`), rather than reimplementing the mkdir/staleness dance inside
+      `git-commit-scoped.sh`; recorded as a footprint addition beyond this phase's declared
+      `file_scope`, mirroring Phase 7's precedent)*
+- [x] **Fail open**: a missing, unreadable, or malformed manifest, an absent `--task`, or any
       error inside the check proceeds with today's behavior and a stderr notice. A concurrency
-      guard must never be the reason an agent cannot commit at all.
-- [ ] Leave every existing gate (V2 unmatched-path classification, V3 exclude-only refusal, the
+      guard must never be the reason an agent cannot commit at all. *(completed)*
+- [x] Leave every existing gate (V2 unmatched-path classification, V3 exclude-only refusal, the
       commit mutex, the ephemeral-exclude injection) untouched, and keep explicit multi-file path
-      staging permitted.
-- [ ] Extend `test-git-commit-scoped.sh`: unlisted path proceeds; unclaimed listed path claims,
+      staging permitted. *(completed: T1-T10's pre-existing cases pass unchanged)*
+- [x] Extend `test-git-commit-scoped.sh`: unlisted path proceeds; unclaimed listed path claims,
       commits, releases; re-entrant claim proceeds; foreign live claim refuses with nothing staged;
       stale claim overridden; missing/corrupt manifest fails open; no `--task` fails open; existing
-      V2/V3 cases unchanged.
+      V2/V3 cases unchanged. *(completed: V1-V8, 23/23 passing including T1-T10)*
 
 **Timing**: 2 hours
 
@@ -761,11 +767,28 @@ concurrently contending for, with a first-claim lease that keeps exactly one com
 - `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md` - register the
   claims directory
 
+Modified (**footprint additions beyond the declared `file_scope`** — recorded deliberately, same
+convention Phase 7 established):
+- `agent-system/extensions/core/scripts/task-lock.sh` - new `claim-acquire`/`claim-release` CLI
+  subcommands (thin wrappers over the EXISTING `acquire_named_mutex`/`release_named_mutex`
+  primitives, same shape as `commit-acquire`/`commit-release`) — the age-based staleness lease
+  reuse this phase's own task list calls for, rather than a second hand-rolled implementation
+- `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` - WORK (i)'s scoped
+  commit call now passes `--task "$task_number"`, the ONE real caller this phase wires
+  deliberately (the "shared-tree commit path" the phase Goal names) — confirmed by enumerating
+  every other caller (`orchestrator-postflight.sh`, `orchestrate-unwind-dispatch.sh`, and every
+  test suite) and finding each omits `--task` (fail-open, unchanged)
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` - one new
+  case proving the `--task` wiring reaches git-commit-scoped.sh's real V5 refusal end to end
+- `.gitignore` - ignore `specs/.contention-claims/`
+
 **Scope Hypothesis**: this phase asserts that adding an optional input and a fail-open pre-staging
-check leaves every existing caller of `git-commit-scoped.sh` behaviorally unchanged. Confirm at
+check leaves every existing caller of `git-commit-scoped.sh` behaviorally unchanged. Confirmed at
 implementation time by enumerating callers
-(`grep -rn 'git-commit-scoped.sh' agent-system/extensions`) and verifying each either omits
-`--task` (fail-open, unchanged) or is updated deliberately in this phase.
+(`grep -rn 'git-commit-scoped.sh' agent-system/extensions`): exactly three real invocation sites
+exist (`orchestrator-postflight.sh`, `orchestrate-cycle-postflight.sh`, `orchestrate-unwind-dispatch.sh`);
+`orchestrate-cycle-postflight.sh` is updated deliberately (see the footprint addition above), the
+other two omit `--task` and are fail-open/unchanged.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` passes, including

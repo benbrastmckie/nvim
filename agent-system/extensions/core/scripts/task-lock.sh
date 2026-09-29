@@ -24,6 +24,8 @@
 #   task-lock.sh scope-release <token>
 #   task-lock.sh commit-acquire <session_id> [stale_sec]
 #   task-lock.sh commit-release <token>
+#   task-lock.sh claim-acquire <path> <task_number> <session_id> [stale_sec]
+#   task-lock.sh claim-release <path> [task_number]
 #   task-lock.sh session-register <session_id> <command> <task_numbers_csv> [--pid N]
 #   task-lock.sh session-heartbeat <session_id>
 #   task-lock.sh session-release <session_id>
@@ -1273,6 +1275,94 @@ cmd_commit_release() {
 }
 
 # =====================================================================
+# claim-acquire <path> <task_number> <session_id> [stale_sec]
+# claim-release <path> <task_number>
+# =====================================================================
+# First-claim lease for git-commit-scoped.sh's contended-path refusal (working-tree/build
+# isolation posture decision record, Option 3(ii): "keep the shared tree but refuse to commit a
+# hunk in a path the committing task does not own"). ONE mutex directory PER declared manifest
+# path (specs/.contention-claims/<sanitized-path>), reusing acquire_named_mutex's exact
+# mkdir/staleness pattern above rather than inventing a new primitive -- the only difference from
+# commit-acquire/scope-acquire is a PER-PATH directory name instead of one fixed directory, and a
+# ZERO wait budget: this call never blocks or retries. A path already held by ANOTHER live task
+# must be refused to the caller immediately, so ITS OWN caller (git-commit-scoped.sh) can decide
+# to defer -- never to wait it out or force it.
+CONTENTION_CLAIM_STALE_SEC=1800
+
+_contention_claim_dirname() {
+  # Sanitizes a declared manifest path into a single-level directory name safe to resolve
+  # directly under specs/.contention-claims/ (acquire_named_mutex does one bare `mkdir`, not
+  # `mkdir -p`, so a name containing "/" would require pre-existing parents). "/" -> "_"; a
+  # collision between two DIFFERENT declared paths that only differ by this substitution is
+  # accepted as a rare, self-correcting false-positive claim (the lease clears within
+  # CONTENTION_CLAIM_STALE_SEC as soon as its wider owner releases or times out) rather than
+  # something worth a heavier collision-proof encoding for.
+  printf '%s' "$1" | tr '/' '_'
+}
+
+cmd_claim_acquire() {
+  local path="$1" task_number="$2" session_id="$3" stale_sec="${4:-}"
+  local claim_name
+  claim_name=".contention-claims/$(_contention_claim_dirname "$path")"
+  local mutex_dir="$PROJECT_ROOT/specs/${claim_name}"
+
+  # acquire_named_mutex's own `mkdir "$mutex_dir"` is NOT `mkdir -p` -- the parent
+  # specs/.contention-claims/ must already exist, or every acquire attempt fails closed (looking
+  # identical to "held by someone else"). Ensure it once, here, rather than at every call site.
+  mkdir -p "$PROJECT_ROOT/specs/.contention-claims" 2>/dev/null || true
+
+  if acquire_named_mutex "$claim_name" "$stale_sec" "$CONTENTION_CLAIM_STALE_SEC" 0; then
+    jq -n --argjson t "$task_number" --arg s "$session_id" --arg p "$path" \
+      '{task: $t, session_id: $s, path: $p}' > "$mutex_dir/holder.json" 2>/dev/null || true
+    jq -n -c --arg status "claimed" --arg path "$path" '{status: $status, path: $path}'
+    return 0
+  fi
+
+  # Acquire failed (directory already exists and is not stale): re-entrant when the EXISTING
+  # holder's own task_number matches this caller's -- treat as success, never self-block.
+  local holder_task holder_session
+  holder_task=$(jq -r '.task // empty' "$mutex_dir/holder.json" 2>/dev/null) || holder_task=""
+  holder_session=$(jq -r '.session_id // empty' "$mutex_dir/holder.json" 2>/dev/null) || holder_session=""
+
+  if [ -n "$holder_task" ] && [ "$holder_task" = "$task_number" ]; then
+    jq -n -c --arg status "already_self" --arg path "$path" '{status: $status, path: $path}'
+    return 0
+  fi
+
+  jq -n -c --arg status "held" --arg path "$path" \
+    --arg ht "$holder_task" --arg hs "$holder_session" \
+    '{status: $status, path: $path,
+      holder_task: (if $ht == "" then null else ($ht | tonumber) end),
+      holder_session: (if $hs == "" then null else $hs end)}'
+  return 1
+}
+
+# Best-effort, task-verified release (mirrors cmd_commit_release's token-verification rationale:
+# never delete a claim a stale-timeout reclaim has already handed to a different task). Always
+# exits 0 -- release must never fail a caller's cleanup path.
+cmd_claim_release() {
+  local path="$1" task_number="${2:-}"
+  local claim_name
+  claim_name=".contention-claims/$(_contention_claim_dirname "$path")"
+  local mutex_dir="$PROJECT_ROOT/specs/${claim_name}"
+
+  if [ ! -d "$mutex_dir" ]; then
+    return 0
+  fi
+
+  local holder_task
+  holder_task=$(jq -r '.task // empty' "$mutex_dir/holder.json" 2>/dev/null) || holder_task=""
+
+  if [ -n "$task_number" ] && [ -n "$holder_task" ] && [ "$holder_task" != "$task_number" ]; then
+    echo "WARN: claim-release (path=$path, task=$task_number) found holder task=$holder_task -- NOT releasing (claim was reclaimed by a different task, likely a stale-timeout race)." >&2
+    return 0
+  fi
+
+  release_named_mutex "$claim_name"
+  return 0
+}
+
+# =====================================================================
 # init-marker <file_path>
 # =====================================================================
 # Generic atomic-on-creation primitive for marker/state files that were using a
@@ -1755,6 +1845,22 @@ case "$SUBCMD" in
     cmd_commit_release "$@"
     exit $?
     ;;
+  claim-acquire)
+    if [ "$#" -lt 3 ]; then
+      echo "Usage: $0 claim-acquire <path> <task_number> <session_id> [stale_sec]" >&2
+      exit 2
+    fi
+    cmd_claim_acquire "$@"
+    exit $?
+    ;;
+  claim-release)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 claim-release <path> [task_number]" >&2
+      exit 2
+    fi
+    cmd_claim_release "$@"
+    exit $?
+    ;;
   session-register)
     if [ "$#" -lt 3 ]; then
       echo "Usage: $0 session-register <session_id> <command> <task_numbers_csv> [--pid N]" >&2
@@ -1788,7 +1894,7 @@ case "$SUBCMD" in
     exit $?
     ;;
   *)
-    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|session-register|session-heartbeat|session-release|session-reap|session-list} ..." >&2
+    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|claim-acquire|claim-release|session-register|session-heartbeat|session-release|session-reap|session-list} ..." >&2
     exit 2
     ;;
 esac

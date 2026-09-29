@@ -2093,6 +2093,71 @@ else
   fail "phase 7 (specs refusal): the worktree was unexpectedly removed after a specs/** refusal"
 fi
 
+# task-ref-ok:begin category 6-adjacent: "task #999" below is synthetic fixture data (the
+# holder identity a manually-acquired task-lock.sh claim reports back) exercising
+# git-commit-scoped.sh's own V5 refusal message shape -- never a citation of this repo's own
+# ephemeral task tracker. 999 is arbitrary and carries no relationship to any real
+# specs/{NNN}_{SLUG}/ task directory.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Phase 9: WORK (i)'s scoped commit now passes --task through to git-commit-scoped.sh's V5
+# contended-path refusal. A foreign live claim on the task's own self-reported modified_files
+# entry (a RELATIVE path, exactly as it appears in stage_paths -- unlike specs/state.json, which
+# WORK (i) always resolves to an ABSOLUTE path and so can never exact-match a manifest's own
+# relative declared paths) makes the per-task commit fall through to the SAME non-blocking
+# WARNING path as any other commit failure -- nothing new for the caller, verified here against
+# the REAL git-commit-scoped.sh and task-lock.sh copies this suite already stages.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Phase 9: WORK (i)'s commit call passes --task through to git-commit-scoped.sh's V5 refusal"
+setup_sandbox
+p9_num=750
+p9_summary="specs/${p9_num}_candidate/summaries/01_x-summary.md"
+mkdir -p "$WORKDIR/specs/${p9_num}_candidate/summaries"
+echo x > "$WORKDIR/$p9_summary"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${p9_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${p9_num} -- V5 wiring smoke test", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/${p9_num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${p9_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"${p9_summary}","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["${p9_summary}"]}
+EOF
+mkdir -p "$WORKDIR/specs/.contention-manifest"
+cat > "$WORKDIR/specs/.contention-manifest/sess_p9.json" <<EOF
+{"session_id":"sess_p9","cycle":1,"generated_at":"2026-01-01T00:00:00Z","contended":[{"path":"${p9_summary}","tasks":[${p9_num},999],"granularity":"file"}]}
+EOF
+( cd "$WORKDIR" && bash .claude/scripts/task-lock.sh claim-acquire "$p9_summary" 999 sess_p9_other >/dev/null )
+before_p9=$(cd "$WORKDIR" && git rev-list --count HEAD)
+run_sut "specs/${p9_num}_candidate" --session "sess_p9" --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file "specs/${p9_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$p9_num"
+after_p9=$(cd "$WORKDIR" && git rev-list --count HEAD)
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "phase 9: postflight still exits 0 despite the commit being refused (non-blocking)"
+else
+  fail "phase 9: postflight exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDERR" | grep -q "Verified Finding V5" && echo "$LAST_STDERR" | grep -q "task #999"; then
+  pass "phase 9: the V5 contended-path refusal notice reached postflight's own diagnostic stream, naming the holding task"
+else
+  fail "phase 9: expected a V5 refusal notice naming task #999 on stderr, got: $LAST_STDERR"
+fi
+if echo "$LAST_STDERR" | grep -q "WARNING: commit failed for task ${p9_num} (non-blocking)"; then
+  pass "phase 9: the V5 refusal falls through to the existing non-blocking commit-failure WARNING"
+else
+  fail "phase 9: expected the existing non-blocking commit-failure WARNING, got: $LAST_STDERR"
+fi
+if [ "$after_p9" -eq "$before_p9" ]; then
+  pass "phase 9: no commit landed while the claim was held (HEAD unchanged)"
+else
+  fail "phase 9: expected HEAD unchanged, before=$before_p9 after=$after_p9"
+fi
+( cd "$WORKDIR" && bash .claude/scripts/task-lock.sh claim-release "$p9_summary" 999 >/dev/null 2>&1 )
+# task-ref-ok:end
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

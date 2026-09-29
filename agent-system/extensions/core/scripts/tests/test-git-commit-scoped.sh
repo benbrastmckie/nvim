@@ -355,6 +355,190 @@ else
   fail "T10: expected one commit carrying both rename halves and clean status; got rc=$rc_t10 before=$before_t10 after=$after_t10 show='$show_t10' status='$status_t10' output=$out_t10"
 fi
 
+# task-ref-ok:begin category 6-adjacent: every "task 40x"/"#40x"/"--task 40x" literal in the V1-V8
+# block below is synthetic fixture data exercising git-commit-scoped.sh's OWN --task input (an
+# arbitrary integer identifying the committing task for the contended-path claim check) -- never
+# a citation of this repo's own ephemeral task tracker. The fixture task numbers (401, 402) are
+# arbitrary and carry no relationship to any real specs/{NNN}_{SLUG}/ task directory.
+#
+# V1-V8: V5 contended-path refusal (--task opt-in only; the working-tree/build isolation posture
+# decision record's Option 3(ii)). write_manifest builds a synthetic
+# specs/.contention-manifest/<name>.json exactly like orchestrate-cycle-plan.sh's
+# build_contended_manifest would; every existing gate (V2/V3/mutex/ephemeral-exclude) is left
+# completely untouched by these cases -- they only ever add --task to run_commit's argv.
+# =====================================================================
+
+write_manifest() {
+  local repo="$1" name="$2" contended_json="$3"
+  mkdir -p "$repo/specs/.contention-manifest"
+  printf '{"session_id":"%s","cycle":1,"generated_at":"2026-01-01T00:00:00Z","contended":%s}' \
+    "$name" "$contended_json" > "$repo/specs/.contention-manifest/${name}.json"
+}
+
+# --- V1: a path NOT listed in the manifest proceeds exactly as today, even with --task given. ---
+
+repo_v1="$(build_repo covered)"
+echo "line2" >> "$repo_v1/specs/999_probe/file.txt"
+write_manifest "$repo_v1" "sess_v1" '[{"path":"specs/999_probe/OTHER.txt","tasks":[401,402],"granularity":"file"}]'
+before_v1=$(git -C "$repo_v1" rev-list --count HEAD)
+out_v1="$(run_commit "$repo_v1" --message "V1 probe" --session "sess_v1" --task 401 -- "specs/999_probe/file.txt" 2>&1)"
+rc_v1=$?
+after_v1=$(git -C "$repo_v1" rev-list --count HEAD 2>/dev/null || echo "$before_v1")
+
+if [ "$rc_v1" -eq 0 ] && [ "$after_v1" -eq $((before_v1 + 1)) ]; then
+  pass "V1: an unlisted path proceeds exactly as today, even with --task given"
+else
+  fail "V1: expected rc=0 and HEAD advanced by 1; got rc=$rc_v1 before=$before_v1 after=$after_v1 output=$out_v1"
+fi
+
+# --- V2: an unclaimed listed path claims, commits, and releases. ---
+
+repo_v2="$(build_repo covered)"
+echo "line2" >> "$repo_v2/specs/999_probe/file.txt"
+write_manifest "$repo_v2" "sess_v2" '[{"path":"specs/999_probe/file.txt","tasks":[401,402],"granularity":"file"}]'
+before_v2=$(git -C "$repo_v2" rev-list --count HEAD)
+out_v2="$(run_commit "$repo_v2" --message "V2 probe" --session "sess_v2" --task 401 -- "specs/999_probe/file.txt" 2>&1)"
+rc_v2=$?
+after_v2=$(git -C "$repo_v2" rev-list --count HEAD 2>/dev/null || echo "$before_v2")
+
+if [ "$rc_v2" -eq 0 ] && [ "$after_v2" -eq $((before_v2 + 1)) ]; then
+  pass "V2: an unclaimed listed path claims and commits successfully"
+else
+  fail "V2: expected rc=0 and HEAD advanced by 1; got rc=$rc_v2 before=$before_v2 after=$after_v2 output=$out_v2"
+fi
+if [ ! -d "$repo_v2/specs/.contention-claims" ] || [ -z "$(ls -A "$repo_v2/specs/.contention-claims" 2>/dev/null)" ]; then
+  pass "V2: the claim was released after the commit (no lingering claim directory)"
+else
+  fail "V2: expected the claim released, found: $(ls "$repo_v2/specs/.contention-claims" 2>/dev/null)"
+fi
+
+# --- V3: a path already claimed by THIS SAME task is re-entrant -- proceeds without error, and
+# the pre-existing claim (owned by an OUTER caller, not freshly acquired by this invocation) is
+# left in place, never auto-released by this invocation. ---
+
+repo_v3="$(build_repo covered)"
+echo "line2" >> "$repo_v3/specs/999_probe/file.txt"
+write_manifest "$repo_v3" "sess_v3" '[{"path":"specs/999_probe/file.txt","tasks":[401,402],"granularity":"file"}]'
+(cd "$repo_v3" && bash .claude/scripts/task-lock.sh claim-acquire "specs/999_probe/file.txt" 401 sess_v3 >/dev/null)
+before_v3=$(git -C "$repo_v3" rev-list --count HEAD)
+out_v3="$(run_commit "$repo_v3" --message "V3 probe" --session "sess_v3" --task 401 -- "specs/999_probe/file.txt" 2>&1)"
+rc_v3=$?
+after_v3=$(git -C "$repo_v3" rev-list --count HEAD 2>/dev/null || echo "$before_v3")
+
+if [ "$rc_v3" -eq 0 ] && [ "$after_v3" -eq $((before_v3 + 1)) ]; then
+  pass "V3: a path already claimed by this same task is re-entrant -- commit proceeds"
+else
+  fail "V3: expected rc=0 and HEAD advanced by 1; got rc=$rc_v3 before=$before_v3 after=$after_v3 output=$out_v3"
+fi
+if [ -d "$repo_v3/specs/.contention-claims" ] && [ -n "$(ls -A "$repo_v3/specs/.contention-claims" 2>/dev/null)" ]; then
+  pass "V3: the pre-existing (outer) claim is left in place -- never auto-released by a re-entrant caller"
+else
+  fail "V3: expected the outer claim still present after a re-entrant commit, found none"
+fi
+(cd "$repo_v3" && bash .claude/scripts/task-lock.sh claim-release "specs/999_probe/file.txt" 401 >/dev/null 2>&1)
+
+# --- V4: a path claimed by ANOTHER live task refuses before any git add -- nothing staged, the
+# foreign claim is left untouched, and the target commit count does not advance. ---
+
+repo_v4="$(build_repo covered)"
+echo "line2" >> "$repo_v4/specs/999_probe/file.txt"
+write_manifest "$repo_v4" "sess_v4" '[{"path":"specs/999_probe/file.txt","tasks":[401,402],"granularity":"file"}]'
+(cd "$repo_v4" && bash .claude/scripts/task-lock.sh claim-acquire "specs/999_probe/file.txt" 402 sess_v4_other >/dev/null)
+before_v4=$(git -C "$repo_v4" rev-list --count HEAD)
+out_v4="$(run_commit "$repo_v4" --message "V4 probe" --session "sess_v4" --task 401 -- "specs/999_probe/file.txt" 2>&1)"
+rc_v4=$?
+after_v4=$(git -C "$repo_v4" rev-list --count HEAD 2>/dev/null || echo "$before_v4")
+staged_v4="$(git -C "$repo_v4" diff --cached --name-only 2>/dev/null)"
+
+if [ "$rc_v4" -eq 3 ] && [ "$after_v4" -eq "$before_v4" ]; then
+  pass "V4: a path held by another live task refuses (exit 3), HEAD unchanged"
+else
+  fail "V4: expected rc=3 and HEAD unchanged; got rc=$rc_v4 before=$before_v4 after=$after_v4 output=$out_v4"
+fi
+if [ -z "$staged_v4" ]; then
+  pass "V4: nothing staged on the foreign-claim refusal (git diff --cached is empty)"
+else
+  fail "V4: expected nothing staged, found: $staged_v4"
+fi
+if echo "$out_v4" | grep -q "task #402"; then
+  pass "V4: the refusal names the holding task (#402) verbatim"
+else
+  fail "V4: expected the refusal to name task #402, got: $out_v4"
+fi
+holder_after_v4=$(jq -r '.task // empty' "$repo_v4/specs/.contention-claims/specs_999_probe_file.txt/holder.json" 2>/dev/null)
+if [ "$holder_after_v4" = "402" ]; then
+  pass "V4: the foreign claim is untouched (still held by task #402)"
+else
+  fail "V4: expected the foreign claim to still be held by task #402, got holder='$holder_after_v4'"
+fi
+(cd "$repo_v4" && bash .claude/scripts/task-lock.sh claim-release "specs/999_probe/file.txt" 402 >/dev/null 2>&1)
+
+# --- V5: a stale claim (age past its own holder-declared window) is reclaimed and the commit
+# proceeds -- the age-based staleness override, reusing task-lock.sh's own lease pattern. ---
+
+repo_v5="$(build_repo covered)"
+echo "line2" >> "$repo_v5/specs/999_probe/file.txt"
+write_manifest "$repo_v5" "sess_v5" '[{"path":"specs/999_probe/file.txt","tasks":[401,402],"granularity":"file"}]'
+(cd "$repo_v5" && bash .claude/scripts/task-lock.sh claim-acquire "specs/999_probe/file.txt" 402 sess_v5_other 1 >/dev/null)
+sleep 2
+before_v5=$(git -C "$repo_v5" rev-list --count HEAD)
+out_v5="$(run_commit "$repo_v5" --message "V5 probe" --session "sess_v5" --task 401 -- "specs/999_probe/file.txt" 2>&1)"
+rc_v5=$?
+after_v5=$(git -C "$repo_v5" rev-list --count HEAD 2>/dev/null || echo "$before_v5")
+
+if [ "$rc_v5" -eq 0 ] && [ "$after_v5" -eq $((before_v5 + 1)) ]; then
+  pass "V5: a stale foreign claim is reclaimed; the commit proceeds"
+else
+  fail "V5: expected rc=0 and HEAD advanced by 1; got rc=$rc_v5 before=$before_v5 after=$after_v5 output=$out_v5"
+fi
+
+# --- V6: a missing or malformed manifest fails open -- the commit still proceeds, with a
+# non-blocking WARN naming the unreadable file. ---
+
+repo_v6="$(build_repo covered)"
+echo "line2" >> "$repo_v6/specs/999_probe/file.txt"
+mkdir -p "$repo_v6/specs/.contention-manifest"
+echo '{not valid json' > "$repo_v6/specs/.contention-manifest/sess_v6.json"
+before_v6=$(git -C "$repo_v6" rev-list --count HEAD)
+out_v6="$(run_commit "$repo_v6" --message "V6 probe" --session "sess_v6" --task 401 -- "specs/999_probe/file.txt" 2>&1)"
+rc_v6=$?
+after_v6=$(git -C "$repo_v6" rev-list --count HEAD 2>/dev/null || echo "$before_v6")
+
+if [ "$rc_v6" -eq 0 ] && [ "$after_v6" -eq $((before_v6 + 1)) ]; then
+  pass "V6: a malformed manifest fails open -- the commit still proceeds"
+else
+  fail "V6: expected rc=0 and HEAD advanced by 1 despite the malformed manifest; got rc=$rc_v6 before=$before_v6 after=$after_v6 output=$out_v6"
+fi
+if echo "$out_v6" | grep -qi "could not parse contention manifest"; then
+  pass "V6: a non-blocking WARN names the unparseable manifest file"
+else
+  fail "V6: expected a WARN about the malformed manifest, got: $out_v6"
+fi
+
+# --- V7: omitting --task entirely fails open -- no claim check at all, even when the manifest
+# lists the exact path being committed. ---
+
+repo_v7="$(build_repo covered)"
+echo "line2" >> "$repo_v7/specs/999_probe/file.txt"
+write_manifest "$repo_v7" "sess_v7" '[{"path":"specs/999_probe/file.txt","tasks":[401,402],"granularity":"file"}]'
+(cd "$repo_v7" && bash .claude/scripts/task-lock.sh claim-acquire "specs/999_probe/file.txt" 402 sess_v7_other >/dev/null)
+before_v7=$(git -C "$repo_v7" rev-list --count HEAD)
+out_v7="$(run_commit "$repo_v7" --message "V7 probe" --session "sess_v7" -- "specs/999_probe/file.txt" 2>&1)"
+rc_v7=$?
+after_v7=$(git -C "$repo_v7" rev-list --count HEAD 2>/dev/null || echo "$before_v7")
+
+if [ "$rc_v7" -eq 0 ] && [ "$after_v7" -eq $((before_v7 + 1)) ]; then
+  pass "V7: omitting --task fails open -- the commit proceeds even though the path is held by another task in the manifest"
+else
+  fail "V7: expected rc=0 and HEAD advanced by 1 with --task omitted; got rc=$rc_v7 before=$before_v7 after=$after_v7 output=$out_v7"
+fi
+(cd "$repo_v7" && bash .claude/scripts/task-lock.sh claim-release "specs/999_probe/file.txt" 402 >/dev/null 2>&1)
+
+# --- V8: every pre-existing V2/V3 case (T1-T10 above) is unaffected -- already proven by T1-T10
+# passing above without any of them ever passing --task; no new fixture needed here, this is a
+# structural note that V8's own acceptance is "look at the T-series results already printed".
+# task-ref-ok:end
+
 # =====================================================================
 # Summary
 # =====================================================================

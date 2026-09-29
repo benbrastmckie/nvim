@@ -62,6 +62,11 @@
 # cheap precondition): one file per session, overwritten every multi-task cycle. No freshness
 # gate on read -- see orchestrator-runtime-files.md's Class Table for the full rationale.
 **/.contention-manifest/
+# Contended-path claims (task-lock.sh's claim-acquire/claim-release, consulted by
+# git-commit-scoped.sh's --task-gated V5 refusal check): one mutex directory per declared
+# manifest path currently claimed. No freshness gate on read -- see
+# orchestrator-runtime-files.md's Class Table for the full rationale.
+**/.contention-claims/
 # Durable redeploy ledger (specs/.orchestrator-deploy-ledger.json by default): a machine-local,
 # cross-invocation record, distinct in KIND from every other pattern in this block above. It is
 # gitignored not because it is disposable per-cycle scratch, but because it describes THIS
