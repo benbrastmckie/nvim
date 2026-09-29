@@ -2084,6 +2084,156 @@ build_sibling_territory() {
   jq -n -c --argjson sibs "$siblings_json" --arg note "$note" '{concurrent_siblings: $sibs, concurrency_note: $note}'
 }
 
+# ── Contended-path manifest producer (working-tree/build isolation posture decision record,
+# "Narrower Staging-Layer Alternative" -- option 3(ii)'s cheap precondition) ─────────────────────
+# Mechanically derives, for THIS cycle only, the set of paths two or more concurrently-dispatched
+# tasks are contending for -- no agent cooperation, reusing the SAME per-task file_scope +
+# granularity classification `build_sibling_territory` already computes above
+# (`_sibling_territory_classify_entry`'s "file"|"directory"|"glob" vocabulary), per this phase's
+# own Scope Hypothesis (confirmed: that helper already carries every input this producer needs --
+# per-task `file_scope`, granularity, and the set of tasks dispatched this cycle -- so nothing new
+# is derived here). git-commit-scoped.sh (a later phase) reads this manifest at commit time to
+# refuse staging a still-contended path a live sibling holds a claim on; this producer only writes
+# the manifest, never itself gates or refuses anything.
+#
+# A path is CONTENDED when it appears in the declared `file_scope` of two or more tasks dispatched
+# this same cycle; a directory/glob entry contends with any path beneath it (or matching it, for a
+# glob). Skipped entirely for a single-task cycle (no contention is possible) and, structurally,
+# under --dry-run too -- this function is only ever called from the live-only half below, which
+# --dry-run's own emit_and_exit return never reaches; a --dry-run cycle therefore performs no
+# manifest write or removal of its own, matching this phase's own "byte-identical in both cases"
+# requirement. A task selected for worktree isolation (task_selected_for_worktree_isolation) is
+# excluded from contention entirely -- it has no shared working copy to contend over, so listing
+# it would produce a false refusal downstream.
+CONTENDED_MANIFEST_DIR="$PROJECT_ROOT/specs/.contention-manifest"
+
+# _paths_contend <path_a> <gran_a> <path_b> <gran_b> -- true (rc 0) when two DECLARED file_scope
+# entries overlap: identical strings, or either side is a "directory" entry that is a literal
+# path-prefix of the other, or either side is a "glob" entry the other matches (bash's own glob
+# semantics via `case`, consistent with how file_scope globs are documented/authored elsewhere).
+_paths_contend() {
+  local pa="$1" ga="$2" pb="$3" gb="$4"
+  [ "$pa" = "$pb" ] && return 0
+  if [ "$ga" = "directory" ]; then
+    case "$pb" in "${pa%/}"/*) return 0 ;; esac
+  fi
+  if [ "$gb" = "directory" ]; then
+    case "$pa" in "${pb%/}"/*) return 0 ;; esac
+  fi
+  if [ "$ga" = "glob" ]; then
+    # shellcheck disable=SC2254  # $pa is deliberately unquoted here -- it IS the glob pattern.
+    case "$pb" in $pa) return 0 ;; esac
+  fi
+  if [ "$gb" = "glob" ]; then
+    # shellcheck disable=SC2254  # $pb is deliberately unquoted here -- it IS the glob pattern.
+    case "$pa" in $pb) return 0 ;; esac
+  fi
+  return 1
+}
+
+build_contended_manifest() {
+  # build_contended_manifest <task_number>...  -- the FULL set of tasks dispatched this cycle
+  # (probed_dispatch_post_h1). Writes (or removes) $CONTENDED_MANIFEST_DIR/${session_id}.json --
+  # one file per session, OVERWRITTEN every cycle (never merged across cycles), matching the
+  # existing `specs/.commit-lock/`/`specs/.scope-lock/` ephemeral-runtime-path convention.
+  local -a tasks=("$@")
+  local manifest_path="$CONTENDED_MANIFEST_DIR/${session_id}.json"
+
+  if [ "${#tasks[@]}" -lt 2 ]; then
+    # Single-task (or zero-task) cycle: contention is structurally impossible. Actively remove
+    # any manifest a PRIOR, larger cycle in this same session left behind, rather than merely
+    # skipping the write -- a stale manifest naming tasks no longer in flight this cycle would be
+    # a silent false-positive source for git-commit-scoped.sh's later refusal check.
+    rm -f "$manifest_path" 2>/dev/null || true
+    return 0
+  fi
+
+  local -A path_granularity=()
+  local -A path_declarers=()   # path -> space-joined, deduped task numbers that declare it
+  local ct cg ct_entry ct_scope_json path gran
+
+  for ct in "${tasks[@]}"; do
+    cg="${effective_group[$ct]:-}"
+    task_selected_for_worktree_isolation "$cg" "${task_types[$ct]:-}" && continue
+    ct_entry=$(lookup_project "$ct") || ct_entry=""
+    { [ -z "$ct_entry" ] || [ "$ct_entry" = "null" ]; } && continue
+    ct_scope_json=$(echo "$ct_entry" | jq -c '.file_scope // []')
+    case "$ct_scope_json" in ''|'null'|'[]') continue ;; esac
+    while IFS= read -r path; do
+      [ -z "$path" ] && continue
+      gran=$(_sibling_territory_classify_entry "$path")
+      path_granularity["$path"]="$gran"
+      case " ${path_declarers[$path]:-} " in
+        *" $ct "*) : ;;
+        *) path_declarers["$path"]="${path_declarers[$path]:-} $ct" ;;
+      esac
+    done < <(echo "$ct_scope_json" | jq -r '.[]')
+  done
+
+  local -a unique_paths=()
+  if [ "${#path_granularity[@]}" -gt 0 ]; then
+    unique_paths=("${!path_granularity[@]}")
+  fi
+  if [ "${#unique_paths[@]}" -eq 0 ]; then
+    rm -f "$manifest_path" 2>/dev/null || true
+    return 0
+  fi
+
+  local -a manifest_rows=()
+  local p q gp gq tasks_union dq
+  for p in "${unique_paths[@]}"; do
+    gp="${path_granularity[$p]}"
+    tasks_union="${path_declarers[$p]}"
+    for q in "${unique_paths[@]}"; do
+      [ "$p" = "$q" ] && continue
+      gq="${path_granularity[$q]}"
+      if _paths_contend "$p" "$gp" "$q" "$gq"; then
+        for dq in ${path_declarers[$q]}; do
+          case " $tasks_union " in
+            *" $dq "*) : ;;
+            *) tasks_union="$tasks_union $dq" ;;
+          esac
+        done
+      fi
+    done
+
+    local -a uniq_tasks=()
+    local tk uniq_probe
+    for tk in $tasks_union; do
+      uniq_probe=""
+      [ "${#uniq_tasks[@]}" -gt 0 ] && uniq_probe=" $(printf '%s ' "${uniq_tasks[@]}")"
+      case "$uniq_probe" in
+        *" $tk "*) : ;;
+        *) uniq_tasks+=("$tk") ;;
+      esac
+    done
+
+    if [ "${#uniq_tasks[@]}" -ge 2 ]; then
+      local sorted_tasks tasks_json
+      sorted_tasks=$(printf '%s\n' "${uniq_tasks[@]}" | sort -n)
+      tasks_json=$(printf '%s\n' "$sorted_tasks" | jq -R 'select(length > 0) | tonumber' | jq -sc '.')
+      manifest_rows+=("$(jq -n -c --arg p "$p" --arg g "$gp" --argjson tk "$tasks_json" \
+        '{path: $p, tasks: $tk, granularity: $g}')")
+    fi
+  done
+
+  if [ "${#manifest_rows[@]}" -eq 0 ]; then
+    rm -f "$manifest_path" 2>/dev/null || true
+    return 0
+  fi
+
+  mkdir -p "$CONTENDED_MANIFEST_DIR"
+  local generated_at contended_json tmp_manifest
+  generated_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  contended_json="[$(IFS=,; echo "${manifest_rows[*]}")]"
+  tmp_manifest="$(mktemp "${CONTENDED_MANIFEST_DIR}/.tmp.XXXXXX")"
+  jq -n -c --arg sid "$session_id" --argjson cyc "$new_cycle_count" --arg gen "$generated_at" \
+    --argjson c "$contended_json" \
+    '{session_id: $sid, cycle: $cyc, generated_at: $gen, contended: $c}' > "$tmp_manifest"
+  mv "$tmp_manifest" "$manifest_path"
+  echo "[orchestrate] Contended-path manifest: ${#manifest_rows[@]} path(s) contended across ${#tasks[@]} dispatched task(s) this cycle -- $manifest_path" >&2
+}
+
 # ── H1: hard-mode per-phase dispatch selection (Phase 4 of the task that ported single-task
 # features into the batch engine) — one blocking phase per task per cycle, selected by the SAME
 # shared heading-scan machinery single-task Stage 4's H1 branch uses. Runs ONCE, here, in the
@@ -2242,6 +2392,11 @@ source "$SCRIPT_DIR/skill-base.sh"
 cd "$SKILL_REPO_ROOT"
 
 new_cycle_count=$(( cycle_count + 1 ))
+
+# Contended-path manifest (Phase 8): computed ONCE per cycle, over the full dispatched-task set,
+# before any per-task work below (a task's own worktree-provision call further below does not
+# change its own contention status -- exclusion is by SELECTION, not by provisioning outcome).
+build_contended_manifest "${probed_dispatch_post_h1[@]}"
 
 for t in "${probed_dispatch_post_h1[@]}"; do
   g="${effective_group[$t]}"

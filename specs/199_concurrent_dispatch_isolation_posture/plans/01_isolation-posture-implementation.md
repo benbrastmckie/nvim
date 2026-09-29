@@ -648,28 +648,47 @@ Postflight Boundary already puts main-tree writes.
 
 ---
 
-### Phase 8: Contended-path manifest producer [NOT STARTED]
+### Phase 8: Contended-path manifest producer [COMPLETED]
 
 **Goal**: Derive, mechanically, the set of paths two or more concurrently dispatched tasks are
 contending for — no agent cooperation, using data the dispatch pipeline already computes.
 
 **Tasks**:
-- [ ] **Re-read `orchestrate-cycle-plan.sh` immediately before editing** (same-file sibling
-      hazard, and Phase 6 has already touched it).
-- [ ] Reuse the sibling-territory computation already in the script: a path is *contended* for
+- [x] **Re-read `orchestrate-cycle-plan.sh` immediately before editing** (same-file sibling
+      hazard, and Phase 6 has already touched it). *(completed)*
+- [x] Reuse the sibling-territory computation already in the script: a path is *contended* for
       this cycle when it appears in the declared `file_scope` of two or more tasks dispatched this
-      same cycle. A directory/glob entry contends with any path beneath it.
-- [ ] Write a cycle-scoped manifest (`{session_id, cycle, generated_at, contended: [{path,
+      same cycle. A directory/glob entry contends with any path beneath it. *(completed: reuses
+      `_sibling_territory_classify_entry`'s granularity vocabulary; new `_paths_contend` predicate
+      and `build_contended_manifest` producer)*
+- [x] Write a cycle-scoped manifest (`{session_id, cycle, generated_at, contended: [{path,
       tasks:[...], granularity}]}`) to an ephemeral runtime path under `specs/`, following the
       existing `specs/.commit-lock/`/`specs/.scope-lock/` naming convention; overwrite per cycle.
-- [ ] Skip the manifest entirely for a single-task cycle and for `--dry-run` — byte-identical
-      behavior to today in both cases.
-- [ ] Exclude paths belonging to a task dispatched with `isolation == "worktree"`: it has no
+      *(completed: `specs/.contention-manifest/{session_id}.json`)*
+- [x] Skip the manifest entirely for a single-task cycle and for `--dry-run` — byte-identical
+      behavior to today in both cases. *(completed: single-task/zero-task cycles actively remove
+      any stale manifest rather than merely skipping the write; --dry-run never reaches the
+      live-only half this producer is called from)*
+- [x] Exclude paths belonging to a task dispatched with `isolation == "worktree"`: it has no
       shared working copy to contend over, so listing it would produce a false refusal.
-- [ ] Register the manifest path in `orchestrator-runtime-files.md` and `.gitignore`.
-- [ ] Extend `test-orchestrate-cycle-plan.sh`: two tasks sharing a path (contended); directory
+      *(completed)*
+- [x] Register the manifest path in `orchestrator-runtime-files.md` and `.gitignore`. *(completed)*
+- [x] Extend `test-orchestrate-cycle-plan.sh`: two tasks sharing a path (contended); directory
       entry covering a sibling's file (contended); disjoint scopes (no manifest entry);
       single-task cycle (no manifest); isolated task excluded; `--dry-run` writes nothing.
+      *(completed: deviation — discovered empirically that orchestrate-batch-admit.sh's
+      pre-existing in_batch file_scope collision check already, unconditionally, defers one of
+      any two same-cycle candidates whose declared file_scope entries are identical or in a true
+      directory/ancestor relationship, with no override for in_batch pairs; those two literal
+      fixture shapes are therefore unreachable live through this integration path. Group 31's
+      Cases A/B instead exercise the REAL reachable gap this producer closes — a glob entry is
+      "invisible" to that admission check by its own documented design
+      (`is_glob_entry`'s comment in `lib/file-scope-overlap.sh`), so a glob-vs-concrete-path pair
+      sails through admission un-deferred even though it genuinely contends; a standalone Case G
+      unit-tests the directory-containment branch of `_paths_contend` directly (Group 27's
+      function-extraction precedent) to prove it correct on its own terms. All six required
+      scenarios are covered; Cases C-F use the literal fixture shapes from the plan text
+      unchanged, since those are unaffected by the admission-gate discovery)*
 
 **Timing**: 1.5 hours
 

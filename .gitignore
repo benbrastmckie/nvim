@@ -58,6 +58,10 @@
 # .claude/context/standards/orchestrator-runtime-files.md's Class Table for the full rationale.
 /.orchestrate-worktrees/
 **/.worktree-registry/
+# Contended-path manifest (orchestrate-cycle-plan.sh's build_contended_manifest, Option 3(ii)'s
+# cheap precondition): one file per session, overwritten every multi-task cycle. No freshness
+# gate on read -- see orchestrator-runtime-files.md's Class Table for the full rationale.
+**/.contention-manifest/
 # Durable redeploy ledger (specs/.orchestrator-deploy-ledger.json by default): a machine-local,
 # cross-invocation record, distinct in KIND from every other pattern in this block above. It is
 # gitignored not because it is disposable per-cycle scratch, but because it describes THIS

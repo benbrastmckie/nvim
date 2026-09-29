@@ -4255,6 +4255,242 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 31: contended-path manifest producer -- build_contended_manifest. Reuses Group 30's
+# already-active dispatch-worktree.sh/orchestrate-build-dispatch.sh/update-task-status.sh stubs
+# (persist in $WORKDIR/.claude/scripts/ from Group 30 above; every task number below avoids 3005,
+# the one number Group 30's dispatch-worktree.sh stub is coded to fail provision for).
+#
+# IMPORTANT DISCOVERY, recorded here so a future maintainer does not "fix" these fixtures back to
+# the plan's literal wording: orchestrate-batch-admit.sh's PRE-EXISTING in_batch file_scope
+# collision check (lib/file-scope-overlap.sh's scopes_overlap_first -- exact-string match OR
+# either side a literal directory-prefix of the other) ALREADY, unconditionally, defers one of any
+# two same-cycle candidates whose declared file_scope entries are identical or in a true
+# directory/ancestor relationship -- confirmed empirically (an earlier draft of this group used
+# exactly those two fixture shapes and both were silently reduced to a 1-task cycle by admission
+# before ever reaching build_contended_manifest). That check has NO override for in_batch pairs
+# (--allow-scope-collision only lifts a cross_batch collision -- see this script's own admission
+# call site). So "two tasks sharing an identical path" and "a true directory entry covering a
+# sibling's file" are BOTH already unreachable live scenarios for THIS manifest, by construction --
+# a second, independent layer would-be redundant there. What is NOT caught by that check, by its
+# own documented design (`is_glob_entry`'s comment: "invisible to the symmetric Overlap predicate
+# ... by design"), is a GLOB entry on one side: scopes_overlap_first compares declared strings
+# opaquely and never expands a glob, so a glob-vs-concrete-path pair sails through admission
+# un-deferred even when the glob would, in practice, match the sibling's file. THIS is the live,
+# reachable gap build_contended_manifest exists to close (Option 3(ii) is explicitly "cheaper than
+# worktree isolation" precisely because most of the collision surface is already handled upstream;
+# only the glob blind spot needs a second layer). Cases A/B below exercise that reachable gap
+# end-to-end; a standalone Case G unit-tests the directory-containment branch of `_paths_contend`
+# directly (Group 27's extraction precedent: `sed`-lift the function from $SUT_SRC and invoke it
+# in a bare `bash -c`), proving that branch is correct even though live traffic never reaches it
+# through this integration path.
+# =====================================================================================================
+info "Group 31: contended-path manifest producer (build_contended_manifest)"
+
+MANIFEST_DIR="$WORKDIR/specs/.contention-manifest"
+
+# Case A: a glob entry on one task and a concrete path on another -- DIFFERENT literal strings,
+# so admission's Overlap predicate cannot see it (glob-blind by design), but the glob matches the
+# sibling's concrete file, so it genuinely contends. Live-reachable: both tasks admit together.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3101, "project_name": "g31_glob_a", "task_type": "general", "status": "implementing", "description": "declares a glob", "dependencies": [], "file_scope": ["docs/glob/*.md"]},
+    {"project_number": 3102, "project_name": "g31_glob_b", "task_type": "general", "status": "implementing", "description": "declares a concrete file the glob matches", "dependencies": [], "file_scope": ["docs/glob/target.md"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g31a -- 3101 3102
+g31a_dispatched=$(jqf '.dispatch | length')
+if [ "$g31a_dispatched" = "2" ]; then
+  pass "Case A: both candidates admit together (glob-vs-concrete is invisible to admission's Overlap predicate)"
+else
+  fail "Case A: expected both candidates admitted (glob blind spot), got $g31a_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+g31a_manifest="$MANIFEST_DIR/g31a.json"
+if [ -f "$g31a_manifest" ]; then
+  pass "Case A: manifest file written for the glob-vs-concrete cycle"
+else
+  fail "Case A: expected manifest file at $g31a_manifest (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+# Row order is not asserted (bash associative-array key iteration order is unspecified) --
+# each row is looked up by its own .path instead of comparing the whole array positionally.
+a_glob_row=$(jq -c '.contended[] | select(.path == "docs/glob/*.md")' "$g31a_manifest" 2>/dev/null)
+a_file_row=$(jq -c '.contended[] | select(.path == "docs/glob/target.md")' "$g31a_manifest" 2>/dev/null)
+if [ "$a_glob_row" = '{"path":"docs/glob/*.md","tasks":[3101,3102],"granularity":"glob"}' ]; then
+  pass "Case A: the glob entry (docs/glob/*.md) lists both tasks, granularity=glob"
+else
+  fail "Case A: unexpected glob row: $a_glob_row"
+fi
+if [ "$a_file_row" = '{"path":"docs/glob/target.md","tasks":[3101,3102],"granularity":"file"}' ]; then
+  pass "Case A: the concrete file it matches also lists both tasks, granularity=file"
+else
+  fail "Case A: unexpected file row: $a_file_row"
+fi
+a_contended_count=$(jq '.contended | length' "$g31a_manifest" 2>/dev/null)
+if [ "$a_contended_count" = "2" ]; then
+  pass "Case A: exactly two contended rows (the glob entry and the file entry), each exactly once"
+else
+  fail "Case A: expected exactly 2 contended rows, got $a_contended_count"
+fi
+
+# Case B: same glob-blind-spot shape, this time framed as a "family of files" glob standing in for
+# a coarse/directory-style declaration (the plan's own vocabulary: "a directory/glob entry
+# contends with any path beneath it") -- a distinct pair of tasks and paths from Case A, still
+# live-reachable end to end.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3103, "project_name": "g31_family_glob", "task_type": "general", "status": "implementing", "description": "declares a family-of-files glob", "dependencies": [], "file_scope": ["lib/config/*"]},
+    {"project_number": 3104, "project_name": "g31_family_file", "task_type": "general", "status": "implementing", "description": "declares one concrete file the glob covers", "dependencies": [], "file_scope": ["lib/config/settings.md"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g31b -- 3103 3104
+g31b_dispatched=$(jqf '.dispatch | length')
+if [ "$g31b_dispatched" = "2" ]; then
+  pass "Case B: both candidates admit together (glob-as-coarse-scope is also invisible to admission)"
+else
+  fail "Case B: expected both candidates admitted, got $g31b_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+g31b_manifest="$MANIFEST_DIR/g31b.json"
+b_glob_row=$(jq -c '.contended[] | select(.path == "lib/config/*")' "$g31b_manifest" 2>/dev/null)
+b_file_row=$(jq -c '.contended[] | select(.path == "lib/config/settings.md")' "$g31b_manifest" 2>/dev/null)
+if [ "$b_glob_row" = '{"path":"lib/config/*","tasks":[3103,3104],"granularity":"glob"}' ]; then
+  pass "Case B: the glob entry (lib/config/*) lists both tasks, granularity=glob"
+else
+  fail "Case B: unexpected glob row: $b_glob_row"
+fi
+if [ "$b_file_row" = '{"path":"lib/config/settings.md","tasks":[3103,3104],"granularity":"file"}' ]; then
+  pass "Case B: the concrete file it covers also lists both tasks, granularity=file"
+else
+  fail "Case B: unexpected file row: $b_file_row"
+fi
+b_contended_count=$(jq '.contended | length' "$g31b_manifest" 2>/dev/null)
+if [ "$b_contended_count" = "2" ]; then
+  pass "Case B: exactly two contended rows (the glob entry and the file entry), each exactly once"
+else
+  fail "Case B: expected exactly 2 contended rows, got $b_contended_count"
+fi
+
+# Case C: disjoint scopes -- no manifest entry (and no manifest file at all, since the empty
+# result is actively removed rather than written as an empty array).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3105, "project_name": "g31_disjoint_a", "task_type": "general", "status": "implementing", "description": "foo only", "dependencies": [], "file_scope": ["foo/bar.md"]},
+    {"project_number": 3106, "project_name": "g31_disjoint_b", "task_type": "general", "status": "implementing", "description": "baz only", "dependencies": [], "file_scope": ["baz/qux.md"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g31c -- 3105 3106
+g31c_manifest="$MANIFEST_DIR/g31c.json"
+if [ ! -f "$g31c_manifest" ]; then
+  pass "Case C: disjoint file_scope entries produce no manifest file at all"
+else
+  fail "Case C: expected no manifest file for disjoint scopes, found: $(cat "$g31c_manifest" 2>/dev/null)"
+fi
+
+# Case D: single-task cycle -- no manifest, regardless of file_scope.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3107, "project_name": "g31_solo", "task_type": "general", "status": "implementing", "description": "alone this cycle", "dependencies": [], "file_scope": ["docs/shared.md"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g31d -- 3107
+g31d_manifest="$MANIFEST_DIR/g31d.json"
+if [ ! -f "$g31d_manifest" ]; then
+  pass "Case D: a single-task cycle writes no manifest file"
+else
+  fail "Case D: expected no manifest file for a single-task cycle, found: $(cat "$g31d_manifest" 2>/dev/null)"
+fi
+
+# Case E: a task selected for worktree isolation is excluded from contention entirely -- its
+# declared file_scope must not make an otherwise-solo sibling's path look contended. Uses the same
+# glob-vs-concrete shape as Case A (so both admit together) with the GLOB side isolated.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3108, "project_name": "g31_isolated", "task_type": "lean4", "status": "implementing", "description": "worktree-isolated implement candidate (glob side)", "dependencies": [], "file_scope": ["docs/shared2/*.md"]},
+    {"project_number": 3109, "project_name": "g31_shared2_solo", "task_type": "general", "status": "implementing", "description": "the glob would match this file, but the isolated sibling must not count", "dependencies": [], "file_scope": ["docs/shared2/file.md"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g31e -- 3108 3109
+g31e_manifest="$MANIFEST_DIR/g31e.json"
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Case E: SUT exits 0 with one isolated and one non-isolated candidate in the same cycle"
+else
+  fail "Case E: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+g31e_dispatched=$(jqf '.dispatch | length')
+if [ "$g31e_dispatched" = "2" ]; then
+  pass "Case E: both candidates still admit together (glob blind spot, independent of isolation)"
+else
+  fail "Case E: expected both candidates admitted, got $g31e_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+if [ ! -f "$g31e_manifest" ]; then
+  pass "Case E: the isolated task's file_scope is excluded from contention -- no manifest entry, no manifest file"
+else
+  fail "Case E: expected no manifest file (isolated task must be excluded), found: $(cat "$g31e_manifest" 2>/dev/null)"
+fi
+
+# Case F: --dry-run writes nothing, even for a 2-task cycle with a glob-vs-concrete pair that
+# WOULD be contended live (the manifest producer is only ever called from the live-only half).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3110, "project_name": "g31_dryrun_a", "task_type": "general", "status": "implementing", "description": "would contend live", "dependencies": [], "file_scope": ["docs/dryrun/*.md"]},
+    {"project_number": 3111, "project_name": "g31_dryrun_b", "task_type": "general", "status": "implementing", "description": "would contend live", "dependencies": [], "file_scope": ["docs/dryrun/shared.md"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g31f --dry-run -- 3110 3111
+g31f_manifest="$MANIFEST_DIR/g31f.json"
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Case F: --dry-run exits 0 for the would-contend fixture"
+else
+  fail "Case F: --dry-run exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if [ ! -f "$g31f_manifest" ]; then
+  pass "Case F: --dry-run writes no manifest file even though the same fixture would contend live"
+else
+  fail "Case F: --dry-run unexpectedly wrote a manifest file: $(cat "$g31f_manifest" 2>/dev/null)"
+fi
+
+# Case G (unit-level, Group 27's extraction precedent): the directory-containment branch of
+# `_paths_contend` is correct on its own terms, even though admission's pre-existing in_batch
+# check means live traffic never reaches it through the integration path above (see this group's
+# header comment). Byte-extracts the real function from $SUT_SRC and invokes it directly.
+g31g_fn=$(sed -n '/^_paths_contend() {/,/^}/p' "$SUT_SRC")
+if [ -n "$g31g_fn" ]; then
+  pass "Case G: _paths_contend() found in SUT source"
+else
+  fail "Case G: could not extract _paths_contend() from $SUT_SRC"
+fi
+g31g_rc=0
+bash -c "$g31g_fn"$'\n''_paths_contend "docs/notes/" "directory" "docs/notes/file.md" "file"' _ || g31g_rc=$?
+if [ "$g31g_rc" -eq 0 ]; then
+  pass "Case G: a directory entry contends with a file beneath it (rc=0)"
+else
+  fail "Case G: expected rc=0 for a directory containing a file, got rc=$g31g_rc"
+fi
+g31g_rc2=0
+bash -c "$g31g_fn"$'\n''_paths_contend "foo/" "directory" "bar/baz.md" "file"' _ || g31g_rc2=$?
+if [ "$g31g_rc2" -eq 1 ]; then
+  pass "Case G: an unrelated directory does not contend with a disjoint file (rc=1)"
+else
+  fail "Case G: expected rc=1 for disjoint paths, got rc=$g31g_rc2"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then
