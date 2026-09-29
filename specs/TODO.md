@@ -1582,6 +1582,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243, Task 259, Task 266
 - **Research**: [199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md]
 - **Plan**: [199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md]
+- **Handoff**: [199_concurrent_dispatch_isolation_posture/handoffs/phase-3-handoff-20260929T031000Z.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 

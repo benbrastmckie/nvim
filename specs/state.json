@@ -684,6 +684,11 @@
           "path": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
           "type": "plan",
           "summary": "11 phases, 7 dependency waves, 16.5 estimated hours; validates clean under validate-artifact.sh --strict."
+        },
+        {
+          "path": "specs/199_concurrent_dispatch_isolation_posture/handoffs/phase-3-handoff-20260929T031000Z.md",
+          "type": "handoff",
+          "summary": "Wave-1-complete handoff naming Phase 4 as the next unblocked phase and every decision-record value it needs to consume."
         }
       ],
       "next_artifact_number": 2
