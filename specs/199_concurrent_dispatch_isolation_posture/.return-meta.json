@@ -1,0 +1,44 @@
+{
+  "status": "researched",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md",
+      "summary": "Evidence-backed split-verdict recommendation: per-dispatch git-worktree isolation for lean4/cslib implement dispatches (with a measured hardlink-clone .lake mitigation for the disk cost), plus a narrow refuse-on-contended-file guard for general/meta/markdown dispatches; hunk-level staging ruled out as infeasible; documents the build mutex's opt-in nature and the mode-1b staging qualification."
+    }
+  ],
+  "next_steps": "Run /plan 199 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1790640953_159e0d_199",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "For a Lean/Lake project, hardlink-cloning .lake (`cp -al .lake <dest>`) into a fresh git worktree reproduces a multi-GiB build cache in well under a second with zero measured disk growth (df unchanged), versus a naive independent .lake per worktree costing the full cache size again. Safety depends on Lake writing build outputs via atomic temp+rename (unverified here, cheap to test: rebuild one module in the clone and diff the resulting .olean's inode number against the original).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["lake", "lean4", "git-worktree", "hardlink", "build-cache", "concurrency"]
+    },
+    {
+      "content": "The Agent tool's isolation: \"worktree\" parameter (auto-create/auto-cleanup git worktree, returns path/branch) is the harness-native primitive for per-dispatch isolation in this agent system; as of this finding it is wired nowhere in skill-orchestrate's dispatch pipeline (grep-confirmed zero hits across SKILL.md, orchestrate-cycle-plan.sh, orchestrate-build-dispatch.sh), despite concurrent same-repo dispatches already running in production without it.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["agent-tool", "isolation", "worktree", "orchestrate", "dispatch"]
+    },
+    {
+      "content": "Explicit-path git staging (git add <named-files>) is necessary but not sufficient for concurrency safety: it operates at file granularity and cannot subdivide a single file's content by which concurrent dispatch authored which line. Two dispatches following the sanctioned staging convention perfectly can still silently bleed content into each other's commits when they edit the same shared file in one working tree. No hunk/line-to-task attribution mechanism exists in this codebase to close that gap without new machinery.",
+      "category": "PATTERN",
+      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-staging", "concurrency", "commit-bleed", "hunk-attribution", "territory"]
+    }
+  ],
+  "modified_files": [
+    "specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md"
+  ]
+}
