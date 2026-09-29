@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Verify the load-bearing preconditions",
+  "started_at": "2026-09-29T02:04:41Z",
+  "last_updated": "2026-09-29T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Verify Lake's write pattern (atomic rename) in the reference consumer repo", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record the .lake population strategy verdict", "status": "done", "files_touched": ["specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md"]},
+    {"id": 3, "description": "Verify the .claude/ hardlink-vs-symlink fact and PROJECT_ROOT resolution", "status": "done", "files_touched": ["specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md"]},
+    {"id": 4, "description": "Verify the specs/ tracked, HEAD-stale fact", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Measure free-space headroom, pick floor and cap values", "status": "done", "files_touched": ["specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md"]},
+    {"id": 6, "description": "Remove scratch worktrees/clones, confirm clean", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record all findings in the plan file", "status": "done", "files_touched": ["specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "used bash --dir flag on lake-build-guard.sh while cwd differed from target dir", "result": "failed", "reason": "discovered guard resolves lock/result paths via --dir but never cd's before invoking lake itself; lake then searched upward from the wrong PWD. Worked around by cd'ing into the target dir directly (matches real dispatch usage where the agent's cwd is the worktree) and using --no-share to bypass the stale replayed result from the failed attempt."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.3",
+      "description": "Confirm a symlinked .claude/ does the opposite (makes PROJECT_ROOT resolve to the main tree)",
+      "type": "altered",
+      "reason": "Empirically the symlink case did NOT resolve PROJECT_ROOT to the main tree under this bash version (5.3.9) -- both symlink and hardlink resolved to the worktree via the exact common_repo_root cd+pwd idiom. Recorded the disproof and a corrected, still-valid rationale for hardlink-over-symlink (ephemeral runtime-state bleed, not PROJECT_ROOT resolution) rather than silently keeping the disproven claim.",
+      "annotation": "*(completed: no-.claude/ fact confirmed; PROJECT_ROOT-resolves-to-worktree confirmed for the hardlink case; the symlink-defeats-resolution mechanism did NOT reproduce on this bash -- see the corrected rationale in Phase 1 Findings -- hardlink-only decision stands for a different, verified reason)*"
+    }
+  ]
+}

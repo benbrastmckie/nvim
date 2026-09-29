@@ -1,7 +1,7 @@
 # Implementation Plan: Task #199
 
 - **Task**: 199 - Decide and implement the working-tree and build isolation posture for concurrent same-repo dispatches
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 16.5 hours
 - **Dependencies**: 191, 192, 193, 213, 242, 243, 259, 266 (all coordinated-with, none re-decided)
 - **Research Inputs**: specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md
@@ -162,33 +162,39 @@ No ROADMAP.md found.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Verify the load-bearing preconditions [NOT STARTED]
+### Phase 1: Verify the load-bearing preconditions [COMPLETED]
 
 **Goal**: Settle the three unverified facts the rest of the design rests on, and pick the `.lake`
 population strategy from evidence rather than assumption.
 
 **Tasks**:
-- [ ] Verify Lake's write pattern in the reference consumer repo (`~/Projects/BimodalLogic`):
+- [x] Verify Lake's write pattern in the reference consumer repo (`~/Projects/BimodalLogic`):
       hardlink-clone `.lake` to a scratch path (`cp -al`), record the inode of one module's
       `.olean`, touch that module's `.lean` source in a worktree using the clone, run a guarded
       build of that module only (`lake-build-guard.sh build --timeout 1800 -- build <Module>`),
       then compare inode numbers. Divergence = atomic rename confirmed (hardlink strategy is
-      safe); same inode with changed content = the assumption is FALSE.
-- [ ] Record the verdict and choose: hardlink clone (`cp -al`) if confirmed, otherwise
-      `lake exe cache get` population plus a disk-sized concurrency cap.
-- [ ] Verify the `.claude/` fact: `git worktree add` a scratch worktree of this repo, confirm no
+      safe); same inode with changed content = the assumption is FALSE. *(completed: confirmed
+      TRUE — see Phase 1 Findings)*
+- [x] Record the verdict and choose: hardlink clone (`cp -al`) if confirmed, otherwise
+      `lake exe cache get` population plus a disk-sized concurrency cap. *(completed: hardlink
+      clone chosen)*
+- [x] Verify the `.claude/` fact: `git worktree add` a scratch worktree of this repo, confirm no
       `.claude/` is present, `cp -al` the main tree's `.claude/` into it, then confirm a deployed
       script run from inside the worktree resolves `PROJECT_ROOT` to the **worktree** root and
       passes `deploy-root-guard.sh`. Confirm a symlinked `.claude/` does the opposite.
-- [ ] Verify the `specs/` fact: confirm the scratch worktree carries a tracked, HEAD-stale
+      *(completed: no-`.claude/` fact confirmed; PROJECT_ROOT-resolves-to-worktree confirmed for
+      the hardlink case; the symlink-defeats-resolution mechanism did NOT reproduce on this bash
+      — see the corrected rationale in Phase 1 Findings — hardlink-only decision stands for a
+      different, verified reason)*
+- [x] Verify the `specs/` fact: confirm the scratch worktree carries a tracked, HEAD-stale
       `specs/state.json`, and that `.claude/`-relative ephemeral runtime paths
-      (`specs/.commit-lock/`, `specs/.scope-lock/`) are absent there.
-- [ ] Measure free-space headroom and pick the concrete preflight floor and worktree cap values
-      Phase 4 will encode.
-- [ ] Remove every scratch worktree and clone (`git worktree remove --force`, `rm -rf` the
-      clone) and confirm `git worktree list` is clean.
-- [ ] Record all findings in this plan file under this phase (they are Phase 2's inputs and the
-      summary's evidence).
+      (`specs/.commit-lock/`, `specs/.scope-lock/`) are absent there. *(completed: confirmed)*
+- [x] Measure free-space headroom and pick the concrete preflight floor and worktree cap values
+      Phase 4 will encode. *(completed: floor 5 GiB, cap 3 worktrees — see Phase 1 Findings)*
+- [x] Remove every scratch worktree and clone (`git worktree remove --force`, `rm -rf` the
+      clone) and confirm `git worktree list` is clean. *(completed: both repos confirmed clean)*
+- [x] Record all findings in this plan file under this phase (they are Phase 2's inputs and the
+      summary's evidence). *(completed)*
 
 **Timing**: 1 hour
 
@@ -202,6 +208,81 @@ population strategy from evidence rather than assumption.
 - The chosen `.lake` population strategy and the two numeric values (free-space floor, worktree
   cap) are written down.
 - `git worktree list` shows no leftover scratch worktrees in either repo.
+
+#### Phase 1 Findings (recorded 2026-09-29)
+
+**Fact 1 — Lake's write pattern (atomic rename): CONFIRMED YES.**
+Reference repo: `~/Projects/BimodalLogic`. Method: hardlink-cloned `.lake` (`cp -al`) into a
+scratch `git worktree`, recorded the baseline inode of `FormalSystem/Version.olean`
+(inode `26476548`, md5 `60aa8e4d18...`), edited the corresponding source in the clone only,
+rebuilt with `lake-build-guard.sh build --no-share -- build FormalSystem.Version`, then compared.
+Result: the clone's rebuilt `.olean` landed at a **new** inode (`3846262`, different md5,
+`nlink=1`), while the main tree's original file kept its original inode, md5, and mtime
+unchanged (`nlink=1`, no longer shared with the clone's now-repointed directory entry). This is
+exactly the unlink+create-new-inode signature of temp-write-then-rename, not in-place
+modification — a hardlink-shared `.lake` is safe under concurrent divergent builds.
+
+**Fact 2 — `.lake` population strategy: hardlink clone (`cp -al`), CONFIRMED as the choice.**
+Fact 1's confirmation clears the load-bearing assumption, so `dispatch-worktree.sh provision`
+populates `.lake` via `cp -al` from the main tree's `.lake` (near-zero cost, see the Cost
+measurements finding below), not `lake exe cache get`. The `lake exe cache get` path
+(`lean-comparator-run.sh`'s precedent) remains the documented fallback for a repo where the
+verdict comes back FALSE, or where the main tree has no `.lake` yet.
+
+**Fact 3 — the `.claude/` materialization fact: CONFIRMED, WITH A CORRECTION TO THE STATED
+MECHANISM.** Method: `git worktree add` of this repo confirmed no `.claude/` is present (gitignored,
+as expected). Two sub-cases were then tested against the *exact* `common_repo_root` idiom
+(`cd "$SCRIPT_DIR/../.." && pwd`, `agent-system/extensions/core/scripts/lib/common.sh`):
+a **symlinked** `.claude/` and a **hardlink-cloned** (`cp -al`) `.claude/`. **Correction**: under
+this system's bash (5.3.9), both cases resolved `PROJECT_ROOT` to the **worktree**, not the main
+tree — the symlink did NOT redirect resolution back to the main tree the way the planning-time
+assumption stated (plain logical `cd`, without `-P`, does not re-resolve a symlink component when
+walking `..` segments on this bash version). The originally-stated mechanism (symlink defeats
+`PROJECT_ROOT` resolution) does not reproduce and should not be repeated as the justification.
+**The hardlink-only decision stands anyway, for a different and more direct reason**: a symlinked
+`.claude/` is not a separate directory at all — every write under it (`build-guard.lock/.result/
+.log`, any future ephemeral runtime path) lands physically in the **main tree's** `.claude/`,
+which reintroduces exactly the shared-mutable-resource hazard (lock contention, log/record
+clobbering between a worktree dispatch and the main tree, or between two worktrees if ever
+symlinked to a common source) that isolation exists to remove. A hardlink clone (`cp -al`) gives
+each worktree its own directory entries — independently rebindable via the same atomic-rename
+mechanism Fact 1 just confirmed — while still sharing disk blocks for anything unchanged. Record
+this corrected rationale in Phase 2's decision record instead of the disproven symlink-redirects-
+`PROJECT_ROOT` claim.
+
+**Fact 4 — the `specs/` tracked/HEAD-stale fact: CONFIRMED YES.** The scratch worktree carried a
+tracked `specs/` (task directories `039_...`, `043_...`, `044_...` etc. all present) at the
+worktree's checked-out commit, while the main tree's `specs/state.json` showed as modified
+(`git status --porcelain` -> ` M specs/state.json`) relative to that same commit — i.e. the
+worktree's copy is real but HEAD-stale, exactly as the design fact states. Ephemeral runtime paths
+(`specs/.commit-lock/`) were absent in the fresh worktree, also as expected (gitignored, not
+tracked).
+
+**Free-space headroom and chosen values.** Measured in the reference repo: `.lake` disk usage
+16 GiB (`du -sh`); free space on the same filesystem ~26–27 GiB (`df` fluctuated in that band
+across the measurement window, consistent with ordinary background disk churn on a shared
+machine, not with the hardlink clone itself — see below). `git worktree add` measured at 0.194 s;
+hardlink-cloning `.lake` (`cp -al`, 157,422 files, all confirmed `nlink>1` after the clone, i.e.
+fully hardlinked with none silently falling back to a real copy) measured at 0.786 s. `df`'s
+available-space reading moved from a rounded "27G" to "26G" (exact byte reading after the clone:
+27,921,485,824 bytes ≈ 26.0 GiB) across the clone step — a shift on the order of `df -h`'s own
+1 GiB rounding granularity, not the ~16 GiB drop a real full copy would produce; treated as noise
+consistent with the research report's "zero measured disk growth" finding, not a contradiction of
+it.
+  - **Free-space preflight floor: 5 GiB.** Chosen as a conservative multiple of a single
+    incremental Lean module rebuild's typical footprint (the `FormalSystem.Version` rebuild above
+    added on the order of a few KiB; a much larger module still lands in the tens-to-low-hundreds
+    of MiB range for this project), leaving headroom for several concurrent worktrees' incremental
+    divergence without assuming a worst-case full-tree rebuild is normal.
+  - **Worktree cap: 3 concurrent isolated worktrees per host.** With ~26–27 GiB free and a 5 GiB
+    floor, 3 worktrees diverging incrementally (not from a cold full rebuild) stay comfortably
+    inside the remaining ~21–22 GiB even under a pessimistic per-worktree divergence estimate; a
+    4th is where the arithmetic gets tight given this host's specific 95%-full baseline. Both
+    values are read by `dispatch-worktree.sh` as overridable inputs (Phase 4), not hardcoded
+    constants, so a different host's headroom can raise or lower them without a code change.
+
+`git worktree list` confirmed clean in both repos after teardown (only each repo's own main-tree
+row remains); no `orchestrate/task-*` branches or scratch clones were left behind.
 
 ---
 

@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
-      "summary": "11-phase plan implementing the split-verdict isolation posture: script-provisioned per-dispatch git worktrees for lean4/cslib implement dispatches, a contended-path commit refusal for shared-tree dispatches, the decision record, the mutex opt-in and staging qualification docs, and an acceptance fixture proving cross-task commit bleed is gone."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 21,
   "metadata": {
-    "session_id": "sess_1790640953_159e0d_199",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 11,
-    "estimated_hours": 16.5,
-    "dependency_waves": [[1, 2, 3], [4], [5, 6], [7, 8], [9], [10], [11]]
-  },
-  "memory_candidates": [
-    {
-      "content": "A per-dispatch git-worktree isolation design in a repo whose .claude/ deploy tree is gitignored must materialize .claude/ into the new worktree with a HARDLINK clone (cp -al), never a symlink: deployed core scripts resolve PROJECT_ROOT via `cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd`, which follows a symlink back to the main tree and silently makes every commit land in the main tree, defeating the isolation while appearing to work. The hardlink keeps the physical path inside the worktree and still satisfies deploy-root-guard.sh's `*/.claude | */.opencode` structural check. The dual fact: specs/ IS tracked, so a fresh worktree carries a HEAD-stale copy of state.json/TODO.md and every task directory -- task artifacts must keep being written to the main tree by absolute path (which the existing Postflight Boundary single-writer contract already requires), and any merge-back step must refuse a branch touching specs/** rather than merge a stale snapshot over live state. Together these two facts also argue against the harness Agent(isolation: \"worktree\") parameter for orchestrated dispatches: it relocates the whole repo copy opaquely, including specs/, whose absolute main-tree paths the dispatch file and handoff contract depend on.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-worktree", "dispatch-isolation", "deploy-root-guard", "hardlink-clone", "postflight-boundary", "concurrent-dispatch"]
-    }
-  ],
-  "next_steps": "Run /implement 199 to execute the plan",
-  "dispatch_seq": 14
+    "session_id": "sess_1790640953_159e0d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 11
+  }
 }
