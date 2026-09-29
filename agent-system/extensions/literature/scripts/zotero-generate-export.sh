@@ -55,7 +55,23 @@
 #                                (or otherwise make a data source available) and re-run.
 #   --force                      Regenerate even if the output file already exists
 #                                (overwrites the existing snapshot).
+#   --allow-shrink               Bypass the shrink guard (see SHRINK GUARD below).
 #   -h, --help                   Show this help message.
+#
+# SHRINK GUARD:
+#   Before writing, the resolved item count is compared against the PREVIOUS export's
+#   item count (read from .zotero-library.meta.json's "item_count", falling back to
+#   `jq 'length'` on the existing export file if the stamp is missing/unparseable). If the
+#   candidate count is 0, or is more than a 10% shrink from the previous count, the write is
+#   BLOCKED (exit 4, nothing written) unless --allow-shrink is given. This is DISTINCT from
+#   --force: --force is existence-keyed and pre-fetch ("may I overwrite a file that already
+#   exists?", exit 3, evaluated before any fetch even happens, and required just to REACH a
+#   fetch when the output already exists) -- it is not a safe stand-in for the shrink guard
+#   because every guarded run already carries --force by construction (an existing file always
+#   requires --force to regenerate at all). --allow-shrink is content-keyed and post-fetch
+#   ("may I overwrite with materially less data than before?"), evaluated only once a fetch has
+#   actually completed. When neither the output file nor its meta stamp exists, there is
+#   nothing to protect -- the guard is not applicable and the write proceeds normally.
 #
 # ENVIRONMENT:
 #   ZOTERO_LIBRARY      Explicit output path override (tier 1 of resolve_library_path()).
@@ -81,6 +97,9 @@
 #      overwritten in either case).
 #   2  Argument error.
 #   3  Output file already exists and --force was not given.
+#   4  Shrink guard blocked the write (candidate item count is 0, or shrank more than 10%
+#      from the previous export's recorded count) and --allow-shrink was not given. No output
+#      file or meta stamp was written or overwritten.
 
 set -euo pipefail
 
@@ -102,15 +121,25 @@ ZOTERO_SQLITE="$("$SCRIPT_DIR/zotero-resolve-sqlite-path.sh")"
 OUTPUT_PATH=""
 ORCHESTRATOR_MODE="false"
 FORCE="false"
+ALLOW_SHRINK="false"
 
 show_usage() {
   cat >&2 << 'USAGE'
 USAGE:
   zotero-generate-export.sh [--output PATH] [--orchestrator-mode true|false] [--force]
+                            [--allow-shrink]
 
 Generates $LITERATURE_DIR/zotero-library.json (Better CSL JSON) from LOCAL Zotero via
 three fallback paths (Zotero 7 local API, Better BibTeX citekey enrichment, direct sqlite
 reconstruction). See the header comment in this script for full details.
+
+--force gates OVERWRITING AN EXISTING FILE AT ALL (existence-keyed, pre-fetch, exit 3 if
+omitted and the output already exists) -- it is required just to reach a fetch when the
+output already exists. --allow-shrink gates a DIFFERENT, LATER decision: whether the freshly
+fetched result may overwrite that existing file with dramatically fewer items (content-keyed,
+post-fetch, exit 4 if omitted and the shrink guard trips). Reusing --force for both would make
+the shrink guard unbypassable independently, since every guarded run already carries --force
+by construction.
 USAGE
 }
 
@@ -126,6 +155,10 @@ while [ $# -gt 0 ]; do
       ;;
     --force)
       FORCE="true"
+      shift
+      ;;
+    --allow-shrink)
+      ALLOW_SHRINK="true"
       shift
       ;;
     -h|--help)
@@ -596,6 +629,70 @@ synthesize_citekeys() {
 }
 
 # ---------------------------------------------------------------------------
+# Shrink guard: refuse to overwrite an existing export with dramatically fewer items
+# unless --allow-shrink is given. Applies to every path (1, 2, and 3) -- the loss scenario
+# is defined by what gets WRITTEN, not by which path produced it. See the SHRINK GUARD
+# section in the header comment for the full --force-vs-allow-shrink rationale.
+# ---------------------------------------------------------------------------
+check_shrink_guard() {
+  local candidate_count="$1"
+  local previous_count=""
+  local previous_source=""
+
+  if [ -f "$META_PATH" ]; then
+    previous_count="$(jq -r '.item_count // empty' "$META_PATH" 2>/dev/null)" || previous_count=""
+    if [ -n "$previous_count" ]; then
+      previous_source="$META_PATH"
+    fi
+  fi
+
+  if [ -z "$previous_count" ] && [ -f "$OUTPUT_PATH" ]; then
+    previous_count="$(jq 'length' "$OUTPUT_PATH" 2>/dev/null)" || previous_count=""
+    if [ -n "$previous_count" ]; then
+      previous_source="$OUTPUT_PATH (re-parsed directly; meta stamp missing or unparseable)"
+    fi
+  fi
+
+  if [ -z "$previous_count" ]; then
+    if [ -f "$META_PATH" ] || [ -f "$OUTPUT_PATH" ]; then
+      # A prior export and/or stamp exists on disk but neither yielded a usable count --
+      # an unknown baseline is NOT a safe baseline. Block rather than guess.
+      echo "Shrink guard: BLOCKED. A previous export or meta stamp exists at $OUTPUT_PATH / $META_PATH but its item count could not be determined (corrupt or unreadable). An unknown baseline is not treated as safe." >&2
+      echo "Pass --allow-shrink to proceed anyway." >&2
+      return 1
+    fi
+    # This branch is the exception, not the norm, for THIS library: a real, complete export
+    # is expected to already be on disk in the live/primary scenario this guard protects.
+    # It IS the legitimate outcome for a genuinely first-ever regeneration, though.
+    echo "Shrink guard: not applicable -- no previous export or meta stamp found at $OUTPUT_PATH / $META_PATH. Proceeding." >&2
+    return 0
+  fi
+
+  if ! [[ "$previous_count" =~ ^[0-9]+$ ]]; then
+    echo "Shrink guard: BLOCKED. Previous item count read from $previous_source is not a valid non-negative integer ('$previous_count')." >&2
+    echo "Pass --allow-shrink to proceed anyway." >&2
+    return 1
+  fi
+
+  if [ "$candidate_count" -eq 0 ]; then
+    echo "Shrink guard: BLOCKED. Candidate export has 0 items; previous export ($previous_source) had $previous_count. Refusing to overwrite a real export with an empty one." >&2
+    echo "Pass --allow-shrink to proceed anyway (e.g. zotero-generate-export.sh --force --allow-shrink ...)." >&2
+    return 1
+  fi
+
+  # Block when candidate < previous * 0.9 (a >10% shrink), computed integer-safe as
+  # candidate*10 < previous*9.
+  if [ $(( candidate_count * 10 )) -lt $(( previous_count * 9 )) ]; then
+    echo "Shrink guard: BLOCKED. Candidate export has $candidate_count items, a >10% shrink from the previous $previous_count (source: $previous_source). Threshold: candidate must be >= 90% of previous." >&2
+    echo "Pass --allow-shrink to proceed anyway (e.g. zotero-generate-export.sh --force --allow-shrink ...)." >&2
+    return 1
+  fi
+
+  echo "Shrink guard: OK. Candidate count $candidate_count vs. previous $previous_count (source: $previous_source)." >&2
+  return 0
+}
+
+# ---------------------------------------------------------------------------
 # Atomic writes
 # ---------------------------------------------------------------------------
 write_output() {
@@ -682,9 +779,20 @@ fi
 
 ITEMS="$(synthesize_citekeys "$ITEMS")"
 
+FINAL_COUNT="$(echo "$ITEMS" | jq 'length' 2>/dev/null)" || FINAL_COUNT=""
+if [ -z "$FINAL_COUNT" ] || ! [[ "$FINAL_COUNT" =~ ^[0-9]+$ ]]; then
+  echo "Error: failed to compute the final item count from the generated result; aborting, no write." >&2
+  exit 1
+fi
+
+if [ "$ALLOW_SHRINK" = "true" ]; then
+  echo "Rationale: --allow-shrink given; shrink guard bypassed without evaluation." >&2
+elif ! check_shrink_guard "$FINAL_COUNT"; then
+  exit 4
+fi
+
 write_output "$ITEMS"
 
-FINAL_COUNT="$(echo "$ITEMS" | jq 'length' 2>/dev/null || echo 0)"
 write_meta_stamp "$SOURCE" "$SOURCE_PATH" "$FINAL_COUNT"
 
 echo "Rationale: wrote $FINAL_COUNT entries to $OUTPUT_PATH (source: $SOURCE)." >&2

@@ -251,36 +251,36 @@ single-concern hunk.
 
 ---
 
-### Phase 4: Content-keyed shrink guard with a distinct opt-out flag [NOT STARTED]
+### Phase 4: Content-keyed shrink guard with a distinct opt-out flag [COMPLETED]
 
 - **Goal:** The script refuses to overwrite an existing export with a dramatically smaller one unless
   explicitly allowed, via a flag distinct from `--force`, with the rationale documented in the
   script's own usage text.
 - **Tasks:**
-  - [ ] Add `--allow-shrink` to the argument parser and to `show_usage()`.
-  - [ ] Record the rationale as a comment at the guard and in `show_usage()`: `--force` is
+  - [x] Add `--allow-shrink` to the argument parser and to `show_usage()`.
+  - [x] Record the rationale as a comment at the guard and in `show_usage()`: `--force` is
         **existence-keyed and pre-fetch** ("may I overwrite a file that exists?", exit 3, evaluated
         before any fetch, and *required* just to reach the fetch when a file exists);
         `--allow-shrink` is **content-keyed and post-fetch** ("may I overwrite with materially less
         data?"). Reusing `--force` would make the shrink guard unbypassable independently, because
         every guarded run already carries `--force` by construction.
-  - [ ] Implement the guard after `ITEMS` is final (post `synthesize_citekeys()`) and immediately
+  - [x] Implement the guard after `ITEMS` is final (post `synthesize_citekeys()`) and immediately
         **before** `write_output()`.
-  - [ ] Read the previous count from `.zotero-library.meta.json`'s `item_count` rather than
+  - [x] Read the previous count from `.zotero-library.meta.json`'s `item_count` rather than
         re-parsing the multi-megabyte JSON. If the stamp is missing or unparseable but the export
         file exists, fall back to `jq 'length'` on the existing export; if that also fails, treat the
         previous count as unknown and **block** (an unknown baseline is not a safe baseline).
-  - [ ] Guard predicate: block when the candidate count is 0, or when
+  - [x] Guard predicate: block when the candidate count is 0, or when
         `candidate < previous * 0.9` (a >10% shrink). State the threshold and its units in the
         diagnostic.
-  - [ ] No-existing-export branch: when neither the export file nor the stamp exists, there is
+  - [x] No-existing-export branch: when neither the export file nor the stamp exists, there is
         nothing to protect — proceed and log one line saying the guard was not applicable because no
         prior export was found. Do not describe this as "first regeneration is unguarded"; the
         live state has a complete export on disk, so this branch is the exception, not the norm.
-  - [ ] Blocked path must exit non-zero with a distinct exit code (not 3, which is the
+  - [x] Blocked path must exit non-zero with a distinct exit code (not 3, which is the
         already-exists code), write nothing, and print the previous count, the candidate count, the
         threshold, and the exact `--allow-shrink` invocation to override.
-  - [ ] The guard applies to every path (1, 2, and 3), not just Path 1 — the loss scenario is defined
+  - [x] The guard applies to every path (1, 2, and 3), not just Path 1 — the loss scenario is defined
         by what gets written, not by which path produced it.
 - **Timing:** 1 hour
 - **Depends on:** 3

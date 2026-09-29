@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Content-keyed shrink guard with a distinct opt-out flag",
+  "started_at": "2026-09-29T02:47:00Z",
+  "last_updated": "2026-09-29T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --allow-shrink to arg parser and show_usage()", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 2, "description": "Rationale comment: --force existence-keyed/pre-fetch vs --allow-shrink content-keyed/post-fetch", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 3, "description": "Guard implemented after ITEMS final, immediately before write_output()", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 4, "description": "Read previous count from .zotero-library.meta.json item_count, fallback jq length, else block on unknown baseline", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 5, "description": "Guard predicate: block on 0 or <90% of previous, threshold stated in diagnostic", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 6, "description": "No-existing-export branch: proceed, log not-applicable line", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 7, "description": "Blocked path: distinct exit code 4, no write, diagnostic names previous/candidate/threshold/override", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 8, "description": "Guard applies to every path (1, 2, 3)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
