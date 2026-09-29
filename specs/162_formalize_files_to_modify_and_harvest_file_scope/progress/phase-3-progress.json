@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Widen --file-scope-add to accept target_status=plan",
+  "started_at": "2026-09-28T01:00:00Z",
+  "last_updated": "2026-09-28T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read validation block and header comment before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Widen restriction guard to research|plan", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 3, "description": "Update error message to name both statuses", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 4, "description": "Update header comment for plan-postflight consumer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 5, "description": "Verify merge clause and no-op branch need no change", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Add case 11g (plan accepted) and 11h (implement still rejected), keep 11f's preflight axis", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-update-task-status.sh"]},
+    {"id": 7, "description": "Grep for old error string in test suite before changing it", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.x",
+      "description": "test-update-task-status.sh's suite always copies the DEPLOYED .claude/scripts/ tree into its fixture, never the source-store copy under edit, so validating the widened restriction end-to-end required deploying first.",
+      "type": "altered",
+      "reason": "Ran bash .claude/scripts/deploy-headless.sh once during Phase 3 (not deferred entirely to Phase 6) so the test suite exercises the real widened script. This also surfaced an unrelated doc-lint FAIL (Phase 2's two new files were missing from core's manifest.json provides.scripts list); fixed by adding both entries to agent-system/extensions/core/manifest.json, re-deployed, and verify-deploy.sh now reports 33/33 PASS. Phase 6 will still run the final full deploy + gate + acceptance checks as planned; this interim deploy is idempotent and does not change that.",
+      "annotation": "*(deviation: altered — ran an interim deploy-headless.sh during Phase 3 to validate against the deployed tree, and fixed a manifest.json gap it surfaced; see progress file)*"
+    }
+  ]
+}

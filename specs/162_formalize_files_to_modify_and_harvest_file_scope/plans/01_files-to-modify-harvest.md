@@ -287,32 +287,32 @@ one exists, extend it instead of adding a second parser.
 
 ---
 
-### Phase 3: Widen --file-scope-add to accept target_status=plan [NOT STARTED]
+### Phase 3: Widen --file-scope-add to accept target_status=plan [COMPLETED]
 
 **Goal**: `update-task-status.sh` accepts `--file-scope-add` on `postflight ... plan ...` with its
 union-merge and validation otherwise unchanged, and its test suite covers the widened restriction.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/update-task-status.sh` lines ~218-260 (the
+- [x] Re-read `agent-system/extensions/core/scripts/update-task-status.sh` lines ~218-260 (the
       `--file-scope-add` validation block) and its header comment block (~lines 53-70) immediately
-      before editing.
-- [ ] Change the restriction guard from `target_status != research` to reject only when
+      before editing. *(completed)*
+- [x] Change the restriction guard from `target_status != research` to reject only when
       `target_status` is neither `research` nor `plan`, leaving the `operation != postflight`
-      condition intact.
-- [ ] Update the restriction's error message to name both permitted target statuses, so the
-      failure text stays accurate.
-- [ ] Update the header comment block to document the plan-postflight consumer alongside the
+      condition intact. *(completed)*
+- [x] Update the restriction's error message to name both permitted target statuses, so the
+      failure text stays accurate. *(completed)*
+- [x] Update the header comment block to document the plan-postflight consumer alongside the
       existing research one, and to restate that semantics are unchanged (additive union, never a
-      replacement, never subtractive).
-- [ ] Verify the merge clause (~line 768) and the no-op branch (~line 697) need no change — they
-      are keyed off `FILE_SCOPE_ADD_LEN`, not off `target_status`.
-- [ ] Read existing test case 11f (`test-update-task-status.sh` ~line 513) before editing; it
+      replacement, never subtractive). *(completed)*
+- [x] Verify the merge clause (~line 768) and the no-op branch (~line 697) need no change — they
+      are keyed off `FILE_SCOPE_ADD_LEN`, not off `target_status`. *(completed)*
+- [x] Read existing test case 11f (`test-update-task-status.sh` ~line 513) before editing; it
       currently asserts rejection on `preflight 1 implement`. Keep that axis (the
       `operation != postflight` half of the guard is unchanged) and add a case asserting
       `postflight N plan ... --file-scope-add=[...]` is accepted and merges additively, plus a case
-      asserting a still-rejected `postflight N implement` combination.
-- [ ] Grep the test suite for the literal old error string before changing it, and update any
-      assertion that matches on it.
+      asserting a still-rejected `postflight N implement` combination. *(completed)*
+- [x] Grep the test suite for the literal old error string before changing it, and update any
+      assertion that matches on it. *(completed)*
 
 **Timing**: 0.75 hours
 

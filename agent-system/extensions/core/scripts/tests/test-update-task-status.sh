@@ -433,8 +433,11 @@ fi
 
 # =====================================================================
 # Case 11: --file-scope-add -- additive-only union-merge onto file_scope, restricted to
-# operation=postflight/target_status=research. Six sub-cases (a)-(f) share one fixture, run in
-# sequence, mirroring Case 1/2's continuation pattern.
+# operation=postflight/target_status in {research, plan}. Eight sub-cases (a)-(h) share one
+# fixture, run in sequence, mirroring Case 1/2's continuation pattern. (g)/(h) cover the
+# target_status=plan widening this phase adds: (g) asserts plan is now accepted, (h) asserts
+# implement is still rejected under postflight (the target_status axis, distinct from (f)'s
+# operation axis).
 # =====================================================================
 info "=== Case 11: --file-scope-add ==="
 FIXTURE_ROOT="$WORKDIR/case11"
@@ -519,6 +522,41 @@ else
     pass "11f: --file-scope-add rejected on a non-research/non-postflight call, state unchanged"
   else
     fail "11f: --file-scope-add rejection exited non-zero but state.json changed anyway"
+  fi
+fi
+
+# --- 11g: postflight ... plan ... --file-scope-add is now ACCEPTED and merges additively ---
+# (the widened restriction this phase adds: target_status=plan alongside target_status=research)
+if UTS postflight 1 plan sess_test_c11 --file-scope-add='["d.sh"]' \
+    >"$WORKDIR/c11g.out" 2>"$WORKDIR/c11g.err"; then
+  fs="$(file_scope)"
+  if [[ "$fs" == '["a.sh","b.sh","c.sh","d.sh"]' ]]; then
+    pass "11g: postflight/plan --file-scope-add is accepted and merges additively"
+  else
+    fail "11g: expected [\"a.sh\",\"b.sh\",\"c.sh\",\"d.sh\"], got '$fs' (see $WORKDIR/c11g.err)"
+  fi
+else
+  fail "11g: postflight/plan --file-scope-add unexpectedly exited nonzero (see $WORKDIR/c11g.err)"
+fi
+
+# --- 11h: postflight ... implement ... --file-scope-add is STILL rejected (only research/plan
+# are permitted target statuses under postflight; this exercises the target_status axis of the
+# guard, distinct from 11f's operation axis) ---
+BEFORE_11H="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+if UTS postflight 1 implement sess_test_c11 --file-scope-add='["y.sh"]' \
+    >"$WORKDIR/c11h.out" 2>"$WORKDIR/c11h.err"; then
+  fail "11h: --file-scope-add on postflight/implement unexpectedly exited 0"
+else
+  AFTER_11H="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+  if [[ "$BEFORE_11H" == "$AFTER_11H" ]]; then
+    pass "11h: --file-scope-add rejected on postflight/implement, state unchanged"
+  else
+    fail "11h: --file-scope-add rejection exited non-zero but state.json changed anyway"
+  fi
+  if grep -q "target_status in {research, plan}" "$WORKDIR/c11h.err"; then
+    pass "11h: rejection error names both permitted target statuses"
+  else
+    fail "11h: rejection error does not name both permitted target statuses (see $WORKDIR/c11h.err)"
   fi
 fi
 
