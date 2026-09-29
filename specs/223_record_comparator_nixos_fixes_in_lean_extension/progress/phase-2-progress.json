@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Runner PATH ordering, lake unwrapping, TMPDIR, shim wiring (Fix 1)",
+  "started_at": "2026-09-29T23:10:00Z",
+  "last_updated": "2026-09-29T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read run_sandboxed()/clean_room_setup() and lake-build-guard.sh scope_key contract", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Toolchain-resolution helper (resolve_toolchain, lean --print-prefix inside WORKDIR)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 3, "description": "Elan-wrapper handling (lake.orig unwrap into private dir, else comparator_unavailable)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 4, "description": "env_flags PATH= <lake dir>:<toolchain bin>:<git dirname>:$PATH", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 5, "description": "mkdir -p WORKDIR/.lake/tmp and forward TMPDIR", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 6, "description": "Repoint COMPARATOR_LANDRUN to shim, forward real landrun via LEAN_COMPARATOR_RUN_REAL_LANDRUN", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 7, "description": "Update header comment describing COMPARATOR_LANDRUN", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 8, "description": "bash -n; run existing suite to confirm no regression", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.8",
+      "description": "run the existing suite to confirm no pre-existing case regressed",
+      "type": "altered",
+      "reason": "resolve_toolchain()'s new 'lean --print-prefix' call broke every pre-existing case on this host (test fixtures use a fake lean-toolchain version with no real installed toolchain); fixed by adding a make_lean_stub() test helper and wiring it into every pre-existing case's bindir setup (U, G, G3, V, and the isolated-PATH U4 case) so resolve_toolchain() succeeds without needing a real elan-managed toolchain. This is a necessary test-helper fix within Phase 2's own verification tier (all pre-existing cases must still PASS), not a new regression case (those are Phase 4's scope).",
+      "annotation": "*(deviation: altered — added make_lean_stub() test helper to unbreak resolve_toolchain() against pre-existing fixtures; all 22 pre-existing cases + sibling regression check now PASS)*"
+    }
+  ]
+}

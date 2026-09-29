@@ -75,7 +75,16 @@
 #   COMPARATOR_BIN             Path to the `comparator` binary itself (this script's own name;
 #                              upstream has no need to override its own binary). Falls back to a
 #                              bare `comparator` PATH lookup.
-#   COMPARATOR_LANDRUN         Overrides a bare `landrun` PATH lookup.
+#   COMPARATOR_LANDRUN         Overrides a bare `landrun` PATH lookup for the REAL binary this
+#                              script resolves. The value actually forwarded to Comparator's own
+#                              internal build (its own COMPARATOR_LANDRUN env var, read inside the
+#                              sandbox) is NOT this real binary directly -- it is
+#                              lean-comparator-landrun-shim.sh, which execs this resolved real
+#                              landrun with Comparator's own arguments unchanged plus the grants
+#                              Comparator's own sandbox omits (TMPDIR inside .lake, git shared
+#                              libraries, the pinned toolchain's ELF interpreter). See
+#                              LEAN_COMPARATOR_RUN_LANDRUN_SHIM_BIN and
+#                              LEAN_COMPARATOR_RUN_REAL_LANDRUN below, and the design record.
 #   COMPARATOR_LEAN4EXPORT     Overrides a bare `lean4export` PATH lookup. MUST NOT be defaulted
 #                              to a path inside a Comparator checkout by any caller -- see the
 #                              design record's C3 version-coupling caveat: `lean4export` must
@@ -89,6 +98,21 @@
 #                              core/scripts/lake-build-guard.sh (a test seam; the two scripts ship
 #                              from different source-store extensions but land as literal
 #                              siblings only post-deploy in .claude/scripts/).
+#   LEAN_COMPARATOR_RUN_LANDRUN_SHIM_BIN
+#                              Overrides the dirname-relative-sibling lookup for
+#                              lean-comparator-landrun-shim.sh (a test seam; same sibling
+#                              convention as LEAN_COMPARATOR_RUN_GUARD_BIN above).
+#   LEAN_COMPARATOR_RUN_REAL_LANDRUN
+#                              Forwarded into the sandbox so the shim (above) knows the real
+#                              landrun binary to exec. Set internally by this script from its own
+#                              resolved LANDRUN_PATH; not meant to be set by a caller of this
+#                              script (set COMPARATOR_LANDRUN instead, which this script reads).
+#   LEAN_COMPARATOR_RUN_LAKE_DIR
+#                              Forwarded into the sandbox when the pinned toolchain's `lake` is
+#                              an elan-wrapper shell script: the private per-run directory holding
+#                              the unwrapped `lake` symlink, which the shim re-prepends onto PATH
+#                              because `lake env` (Comparator's own internal invocation) reorders
+#                              PATH ahead of anything this script sets outside the sandbox.
 #
 # Output (always, to stdout, on exit): a verdict record -- key: value lines by default, or a
 # single JSON object under --json. Fields: `verdict`, `reason_detail` (optional), and
@@ -363,6 +387,46 @@ EOF
 }
 
 # ---------------------------------------------------------------------------
+# Toolchain resolution (Fix 1) -- resolves the WORKTREE's own pinned toolchain bin/ directory
+# (never the caller's ambient one) and unwraps an elan-shell-wrapper `lake` to the real binary.
+# Must run AFTER clean_room_setup() so `lean --print-prefix` reflects the worktree's own
+# lean-toolchain (git worktree add already checked it out; clean_room_setup's defensive copy
+# covers the case it is untracked). This resolution itself runs OUTSIDE any sandbox -- landrun
+# denials do not apply here -- so an ordinary elan/PATH lookup of `lean` is expected to work
+# even before the PATH-ordering fix below is in place.
+# ---------------------------------------------------------------------------
+
+TOOLCHAIN_BIN=""
+LAKE_DIR=""
+
+resolve_toolchain() {
+  local prefix
+  prefix="$(cd "$WORKDIR" && lean --print-prefix 2>/dev/null)" || true
+  [ -n "$prefix" ] || \
+    emit_verdict comparator_unavailable "" "" "'lean --print-prefix' failed or produced no output inside the clean-room worktree; the pinned toolchain may not be installed"
+  TOOLCHAIN_BIN="$prefix/bin"
+  [ -d "$TOOLCHAIN_BIN" ] || \
+    emit_verdict comparator_unavailable "" "" "resolved toolchain bin directory '$TOOLCHAIN_BIN' (from 'lean --print-prefix') does not exist"
+
+  # Elan-wrapper case: nixpkgs' elan renames the toolchain's real `lake` binary to `lake.orig`
+  # and writes a bash wrapper named `lake` (runs dirname, then execs lake.orig with LEAN_CC
+  # preset). A shell script has no ELF interpreter of its own for landrun's -ldd probe to grant,
+  # so the sandboxed exec of the wrapper is denied before Lake ever starts ("lake: Permission
+  # denied") -- not a missing grant in Comparator's own sandbox. Route around it: a private
+  # directory outside every sandboxed room (nothing confined can write to it) holding one
+  # symlink to the real binary, put first on PATH below.
+  if [ "$(head -c 2 "$TOOLCHAIN_BIN/lake" 2>/dev/null)" = '#!' ]; then
+    if [ -x "$TOOLCHAIN_BIN/lake.orig" ]; then
+      LAKE_DIR="$WORKDIR/.lean-comparator-lake-bin"
+      mkdir -p "$LAKE_DIR"
+      ln -sf "$TOOLCHAIN_BIN/lake.orig" "$LAKE_DIR/lake"
+    else
+      emit_verdict comparator_unavailable "" "" "the pinned toolchain's lake ('$TOOLCHAIN_BIN/lake') is a shell wrapper with no lake.orig beside it; this wrapper cannot be executed under Landlock and there is no real binary to route around it"
+    fi
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Config synthesis (dispatch item (c))
 # ---------------------------------------------------------------------------
 
@@ -420,6 +484,7 @@ PYEOF
 # ---------------------------------------------------------------------------
 
 GUARD_BIN=""
+LANDRUN_SHIM_BIN=""
 RUN_STDOUT_LOG=""
 RUN_STDERR_LOG=""
 RUN_EXIT_STATUS=""
@@ -432,6 +497,11 @@ run_sandboxed() {
   # post-deploy in .claude/scripts/ -- LEAN_COMPARATOR_RUN_GUARD_BIN exists primarily as a test
   # seam for running this script directly from the source store.
   GUARD_BIN="${LEAN_COMPARATOR_RUN_GUARD_BIN:-$(dirname "${BASH_SOURCE[0]:-$0}")/lake-build-guard.sh}"
+
+  # Same dirname-relative-sibling convention as GUARD_BIN above: this script and the shim ship
+  # from the same source-store extension, but the override seam still lets the shim be swapped
+  # out in tests without touching PATH.
+  LANDRUN_SHIM_BIN="${LEAN_COMPARATOR_RUN_LANDRUN_SHIM_BIN:-$(dirname "${BASH_SOURCE[0]:-$0}")/lean-comparator-landrun-shim.sh}"
 
   local -a inner_argv
   if [ -x "$GUARD_BIN" ]; then
@@ -457,10 +527,35 @@ run_sandboxed() {
   RUN_STDOUT_LOG="$WORKDIR/.comparator-stdout.log"
   RUN_STDERR_LOG="$WORKDIR/.comparator-stderr.log"
 
+  # TMPDIR inside the writable .lake directory: bv_decide writes SAT files to /tmp, which
+  # Phase 3's outer landrun layer makes read-only. Created here (not by the shim, which derives
+  # the identical path from its own $PWD once systemd-run's --working-directory below places it
+  # in $WORKDIR) so the directory exists even for a run that never reaches the shim's own logic
+  # (e.g. the guard-absent lake fallback below).
+  mkdir -p "$WORKDIR/.lake/tmp"
+
+  # PATH ordering (Fix 1): the pinned toolchain's own bin/ (or, if it needed elan-wrapper
+  # unwrapping, LAKE_DIR's real-binary symlink first) goes ahead of everything else, including
+  # this script's own ambient PATH -- a bare PATH lookup inside the sandbox otherwise resolves
+  # the top-level elan dispatcher shim, which landrun cannot execute (see resolve_toolchain()).
+  # git's own dirname is included explicitly: Lake shells out to git, and the git resolved above
+  # is not guaranteed to already be first (or present at all) on the ambient PATH forwarded here.
+  local sandbox_path="$TOOLCHAIN_BIN:$(dirname "$GIT_PATH"):$PATH"
+  [ -n "$LAKE_DIR" ] && sandbox_path="$LAKE_DIR:$sandbox_path"
+
   # Forward Comparator's own override env vars into the sandbox using RESOLVED absolute paths
   # (not the caller's possibly-unset originals) so the sandboxed process resolves the exact
   # binary this script already validated exists, rather than repeating its own PATH lookup.
-  local -a env_flags=(-E "PATH=$PATH" -E "COMPARATOR_LANDRUN=$LANDRUN_PATH" -E "COMPARATOR_LEAN4EXPORT=$LEAN4EXPORT_PATH")
+  # COMPARATOR_LANDRUN is repointed at the shim (LANDRUN_SHIM_BIN), never at the real landrun
+  # binary directly -- see the header comment and lean-comparator-landrun-shim.sh's own header
+  # for why COMPARATOR_LANDRUN is the only injection point into Comparator's own internal
+  # sandbox argv. LEAN_COMPARATOR_RUN_REAL_LANDRUN forwards the real binary this script already
+  # resolved (LANDRUN_PATH) so the shim does not have to re-resolve it from a possibly-different
+  # PATH inside the sandbox.
+  local -a env_flags=(-E "PATH=$sandbox_path" -E "TMPDIR=$WORKDIR/.lake/tmp" \
+    -E "COMPARATOR_LANDRUN=$LANDRUN_SHIM_BIN" -E "LEAN_COMPARATOR_RUN_REAL_LANDRUN=$LANDRUN_PATH" \
+    -E "COMPARATOR_LEAN4EXPORT=$LEAN4EXPORT_PATH")
+  [ -n "$LAKE_DIR" ] && env_flags+=(-E "LEAN_COMPARATOR_RUN_LAKE_DIR=$LAKE_DIR")
   [ -n "$NANODA_PATH" ] && env_flags+=(-E "COMPARATOR_NANODA=$NANODA_PATH")
 
   # The README's mandated wrapper, verbatim in shape (landrun-escape mitigation -- Comparator
@@ -665,6 +760,13 @@ LANDRUN_PATH="$(resolve_binary COMPARATOR_LANDRUN landrun || true)"
 LEAN4EXPORT_PATH="$(resolve_binary COMPARATOR_LEAN4EXPORT lean4export || true)"
 [ -n "$LEAN4EXPORT_PATH" ] || fail_unavailable lean4export COMPARATOR_LEAN4EXPORT
 
+# git has no Comparator-defined override env var upstream (unlike the four resolved above); this
+# script's own PATH-ordering fix (Fix 1) and Phase 3's outer-landrun git pre-flight probe both
+# need its resolved dirname/path regardless, so it is resolved with the same loud-never-silent
+# convention.
+GIT_PATH="$(command -v git 2>/dev/null || true)"
+[ -n "$GIT_PATH" ] || fail_unavailable git ""
+
 NANODA_PATH=""
 if [ "$ENABLE_NANODA" -eq 1 ] || printf '%s' "$EXTERNAL_KERNELS" | grep -qi "noda"; then
   NANODA_PATH="$(resolve_binary COMPARATOR_NANODA nanoda_bin || true)"
@@ -678,6 +780,7 @@ have_systemd_run || fail_unavailable "systemd-run (present but unusable, or abse
 # ---------------------------------------------------------------------------
 
 clean_room_setup
+resolve_toolchain
 synth_config
 run_sandboxed
 classify_verdict

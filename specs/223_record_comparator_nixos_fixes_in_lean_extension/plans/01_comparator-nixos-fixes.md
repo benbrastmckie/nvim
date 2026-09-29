@@ -167,34 +167,34 @@ root-files list) also needs the new path, by grepping `manifest.json` for the si
 
 ---
 
-### Phase 2: Runner PATH ordering, lake unwrapping, TMPDIR, shim wiring (Fix 1) [NOT STARTED]
+### Phase 2: Runner PATH ordering, lake unwrapping, TMPDIR, shim wiring (Fix 1) [COMPLETED]
 
 **Goal**: `lean-comparator-run.sh` resolves the target project's pinned toolchain `bin/`, puts it
 first on the `PATH` it hands into the sandbox, hands Landlock something it can actually execute
 instead of the elan shim, and points `COMPARATOR_LANDRUN` at Phase 1's shim.
 
 **Tasks**:
-- [ ] Re-read `run_sandboxed()` and `clean_room_setup()` in
+- [x] Re-read `run_sandboxed()` and `clean_room_setup()` in *(completed)*
       `agent-system/extensions/lean/scripts/lean-comparator-run.sh`, and re-read
       `lake-build-guard.sh`'s `scope_key` contract to confirm the shim introduces no interaction
       with `--no-share`'s correctness argument (the design record already instructs this).
-- [ ] Add a toolchain-resolution helper that runs `lean --print-prefix` **inside `$WORKDIR`**
+- [x] Add a toolchain-resolution helper that runs `lean --print-prefix` **inside `$WORKDIR`** *(completed)*
       (after `clean_room_setup` completes) so it reflects the worktree's own `lean-toolchain`, and
       derives `<prefix>/bin`.
-- [ ] Handle the elan-wrapper case: if `<toolchain bin>/lake` begins `#!`, prefer a `lake.orig`
+- [x] Handle the elan-wrapper case: if `<toolchain bin>/lake` begins `#!`, prefer a `lake.orig` *(completed)*
       beside it, symlinked into a private per-run dir that goes first on PATH; if neither exists,
       emit `comparator_unavailable` naming the wrapper rather than failing opaquely later.
-- [ ] Change `run_sandboxed()`'s `env_flags` `PATH=` value to `<lake dir>:<toolchain bin>:<git
+- [x] Change `run_sandboxed()`'s `env_flags` `PATH=` value to `<lake dir>:<toolchain bin>:<git *(completed)*
       dirname>:$PATH` (toolchain first), matching the reference's ordering.
-- [ ] `mkdir -p "$WORKDIR/.lake/tmp"` and forward `TMPDIR` into the sandbox; the shim also derives
+- [x] `mkdir -p "$WORKDIR/.lake/tmp"` and forward `TMPDIR` into the sandbox; the shim also derives *(completed)*
       it from `$PWD/.lake/tmp`, which holds because `systemd-run --working-directory "$WORKDIR"`
       is already passed.
-- [ ] Repoint `COMPARATOR_LANDRUN` from `$LANDRUN_PATH` to the resolved shim path, resolved with
+- [x] Repoint `COMPARATOR_LANDRUN` from `$LANDRUN_PATH` to the resolved shim path, resolved with *(completed)*
       the same overridable dirname-relative-sibling pattern `GUARD_BIN` already uses; forward the
       real `landrun` path to the shim via its `LEAN_COMPARATOR_RUN_REAL_LANDRUN` seam.
-- [ ] Update the script's header comment block where it describes `COMPARATOR_LANDRUN` as pointing
+- [x] Update the script's header comment block where it describes `COMPARATOR_LANDRUN` as pointing *(completed)*
       at `landrun` directly.
-- [ ] `bash -n`; run the existing suite to confirm no pre-existing case regressed.
+- [x] `bash -n`; run the existing suite to confirm no pre-existing case regressed. *(completed: added make_lean_stub() test helper; all 22 pre-existing cases + sibling check PASS)* *(deviation: altered — added make_lean_stub() test helper to unbreak resolve_toolchain() against pre-existing fixtures; all 22 pre-existing cases + sibling regression check now PASS)*
 
 **Timing**: 1.5 hours
 

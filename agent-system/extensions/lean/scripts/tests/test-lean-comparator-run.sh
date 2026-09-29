@@ -133,6 +133,31 @@ EOF
   chmod +x "$1"
 }
 
+# make_lean_stub <bindir> -- writes a `lean` executable into <bindir> answering --print-prefix
+# with a dedicated per-case toolchain-prefix directory (<bindir>.toolchain), and ensures
+# <prefix>/bin exists so lean-comparator-run.sh's resolve_toolchain() directory-existence check
+# passes. The cases below that use only this helper (not the dedicated PATH-ordering/elan-wrapper
+# cases added separately) deliberately leave <prefix>/bin without its own `lake`: PATH resolution
+# for `lake` then falls through to whatever the case's own ambient PATH already provides (the
+# stub written by write_lake_stub, still resolvable via lean-comparator-run.sh's own
+# sandbox_path, which always appends the ambient ${PATH} after the toolchain-bin/lake-dir/git
+# prefix) -- Fix 1's PATH-ordering and elan-wrapper mechanics get their own dedicated coverage,
+# not exercised incidentally by every pre-existing case here.
+make_lean_stub() {
+  local bindir="$1"
+  local prefix="${bindir}.toolchain"
+  mkdir -p "$prefix/bin"
+  cat > "$bindir/lean" <<EOF
+#!/usr/bin/env bash
+if [ "\$1" = "--print-prefix" ]; then
+  echo "$prefix"
+  exit 0
+fi
+exit 0
+EOF
+  chmod +x "$bindir/lean"
+}
+
 # write_comparator_stub <path> <stdout-text> <stderr-text> <exit-code> -- a stub `comparator`
 # emitting canned text on each stream (via a quoted heredoc, so no shell-escaping of the text
 # itself is ever needed) and exiting with the given code.
@@ -234,6 +259,7 @@ BIN_U="$(make_bin_dir u)"
 write_noop_stub "$BIN_U/landrun"
 write_noop_stub "$BIN_U/lean4export"
 write_lake_stub "$BIN_U/lake"
+make_lean_stub "${BIN_U}"
 write_comparator_stub "$BIN_U/comparator" "Your solution is okay!" "" 0
 
 test_missing_binary() {
@@ -284,6 +310,10 @@ done
 ln -sf "$BIN_U/comparator" "$ISOBIN_U4/comparator"
 ln -sf "$BIN_U/landrun" "$ISOBIN_U4/landrun"
 ln -sf "$BIN_U/lean4export" "$ISOBIN_U4/lean4export"
+# resolve_toolchain() runs (and needs a working `lean --print-prefix`) BEFORE run_sandboxed()'s
+# own lake-absence check, so this isolated PATH needs a `lean` stub too, even though this case is
+# about `lake` being absent, not `lean`.
+make_lean_stub "${ISOBIN_U4}"
 
 OUT_U4="$(PATH="$ISOBIN_U4" COMPARATOR_BIN="$ISOBIN_U4/comparator" COMPARATOR_LANDRUN="$ISOBIN_U4/landrun" \
   COMPARATOR_LEAN4EXPORT="$ISOBIN_U4/lean4export" \
@@ -308,6 +338,7 @@ BIN_G="$(make_bin_dir g)"
 write_noop_stub "$BIN_G/landrun"
 write_noop_stub "$BIN_G/lean4export"
 write_lake_stub "$BIN_G/lake"
+make_lean_stub "${BIN_G}"
 write_comparator_stub "$BIN_G/comparator" "Your solution is okay!" "" 0
 
 # Case G1: guard present -- assert --no-share present and --memory-bound absent in the CAPTURED
@@ -337,6 +368,7 @@ BIN_G3="$(make_bin_dir g3)"
 write_noop_stub "$BIN_G3/landrun"
 write_noop_stub "$BIN_G3/lean4export"
 write_lake_stub "$BIN_G3/lake"
+make_lean_stub "${BIN_G3}"
 write_sleeping_comparator_stub "$BIN_G3/comparator" 20
 GUARD_G3="$WORKDIR/guard-g3.sh"
 write_guard_stub "$GUARD_G3" "$WORKDIR/guard-argv-g3.log"
@@ -362,6 +394,7 @@ BIN_V="$(make_bin_dir v)"
 write_noop_stub "$BIN_V/landrun"
 write_noop_stub "$BIN_V/lean4export"
 write_lake_stub "$BIN_V/lake"
+make_lean_stub "${BIN_V}"
 GUARD_V="$WORKDIR/guard-v.sh"
 write_guard_stub "$GUARD_V" "$WORKDIR/guard-argv-v.log"
 
