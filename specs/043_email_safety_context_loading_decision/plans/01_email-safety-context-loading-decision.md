@@ -185,33 +185,36 @@ branch.
 
 ---
 
-### Phase 2: Rewrite EXTENSION.md's safety framing and Context Pointers [NOT STARTED]
+### Phase 2: Rewrite EXTENSION.md's safety framing and Context Pointers [IN PROGRESS]
 
 **Goal**: Make the CLAUDE.md-merged fragment state the verified loading model instead of an
 imperative ("see `domain/safety-invariants.md` before any `email` work") that no consumer
 performs.
 
 **Tasks**:
-- [ ] Re-read `EXTENSION.md` immediately before editing (sibling activity in the shared tree).
-- [ ] Replace the third sentence of the opening paragraph (the "Operating rules are
+- [x] Re-read `EXTENSION.md` immediately before editing (sibling activity in the shared tree).
+      *(completed)*
+- [x] Replace the third sentence of the opening paragraph (the "Operating rules are
       non-negotiable — see `domain/safety-invariants.md` before any `email` work" imperative)
       with wording that: keeps the non-negotiable character of the rules; states that they are
       enforced mechanically by `hooks/mail-guard.sh` plus the wrapper binaries themselves, and
       carried inline in each email skill/agent body at invocation time; and states that the
-      domain files are on-demand reference, not ambient context.
-- [ ] Retitle/reframe the `### Context Pointers` section so its list reads as
+      domain files are on-demand reference, not ambient context. *(completed)*
+- [x] Retitle/reframe the `### Context Pointers` section so its list reads as
       read-on-demand reference material for a human or auditor, with one line stating the
       decision: these paths are deliberately plain (non-loading) and are not promoted to
       `@`-imports, because the enforcement lives in the layers named above — the full evidence
-      is the coverage map in `safety-invariants.md`.
-- [ ] Add one line directed at a future new consumer (a hypothetical additional email skill or
+      is the coverage map in `safety-invariants.md`. *(completed)*
+- [x] Add one line directed at a future new consumer (a hypothetical additional email skill or
       agent): it must inline or explicitly `Read` the safety content it depends on; that content
-      is not ambient.
-- [ ] If Phase 1's decision gate took its contingency branch, phrase the decision as holding for
+      is not ambient. *(completed)*
+- [x] If Phase 1's decision gate took its contingency branch, phrase the decision as holding for
       the covered invariants and name the gap explicitly rather than claiming full coverage.
-- [ ] Keep the five listed paths unchanged in form (plain backticks, `.claude/`-prefixed as
-      deployed) — do not convert any to `@`-imports.
-- [ ] Commit (`EXTENSION.md` staged by explicit name only).
+      *(completed: not applicable — Phase 1 found full coverage, no gap, so the decision is
+      stated unconditionally)*
+- [x] Keep the five listed paths unchanged in form (plain backticks, `.claude/`-prefixed as
+      deployed) — do not convert any to `@`-imports. *(completed)*
+- [x] Commit (`EXTENSION.md` staged by explicit name only). *(completed)*
 
 **Timing**: 0.5 hours
 

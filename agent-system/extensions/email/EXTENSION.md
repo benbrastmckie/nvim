@@ -2,8 +2,10 @@
 
 This project includes AI-assisted email triage over Himalaya/notmuch via the email extension.
 All mutation goes through five nix-built wrapper binaries; the extension itself never calls
-`himalaya`/`notmuch`/`msmtp` directly. Operating rules are non-negotiable — see
-`domain/safety-invariants.md` before any `email` work.
+`himalaya`/`notmuch`/`msmtp` directly. Operating rules are non-negotiable — they are enforced
+mechanically by `hooks/mail-guard.sh` plus the wrapper binaries' own baked-in checks, and carried
+inline in each email skill/agent body at its own invocation time; the domain files below are
+on-demand reference material, not ambient context loaded before `email` work.
 
 ### Task-Type Routing
 
@@ -28,7 +30,15 @@ Direct-execution skills (no agent dispatch):
 | `/email --sync [channel]` | Human-confirmed `mbsync` reconcile pushing a completed cleanup to the account's server; channel defaults from the account, never auto-chained |
 | `/email --account <gmail\|logos>` / `/email --logos` | Account selector (default `gmail`). Composable with any of the above. Both accounts are live; an unknown value is rejected loudly, never a silent fallback |
 
-### Context Pointers
+### Context Pointers (read-on-demand reference, not eager-loaded)
+
+These five paths are deliberately plain (never promoted to `@`-imports): the enforcement lives
+in `hooks/mail-guard.sh`, the wrapper binaries themselves, and the inline copies in
+`agents/email-implementation-agent.md`, `skills/skill-email-cleanup/SKILL.md`,
+`skills/skill-email-sync/SKILL.md`, and `skills/skill-email-implementation/SKILL.md` — the full
+evidence for that claim is the enforcement-coverage map in `safety-invariants.md`'s own
+"Role and Loading Model" section. A future new email skill or agent must inline or explicitly
+`Read` the safety content it depends on; nothing below reaches it ambiently.
 
 - `.claude/context/project/email/domain/safety-invariants.md`
 - `.claude/context/project/email/domain/wrapper-contracts.md`
