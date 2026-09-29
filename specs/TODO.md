@@ -42,7 +42,7 @@ next_project_number: 276
 
 241 [RESEARCHED] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
-255 [PLANNING] — Reconcile typst extension scope ownership and fix...
+255 [PLANNED] — Reconcile typst extension scope ownership and fix...
 
 ### Literature
 
@@ -1099,11 +1099,12 @@ PHASES: (A) grant token + /please hook + integrity + push guard + destructive-gi
 
 ### 255. Reconcile typst extension scope ownership and fix chapter-quality-check.sh Rule 1.3 bib resolution
 - **Effort**: 3-6 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [255_typst_scope_and_chapter_quality_bib_resolution/reports/01_typst-scope-bib-resolution.md]
+- **Plan**: [255_typst_scope_and_chapter_quality_bib_resolution/plans/01_typst-scope-bib-resolution.md]
 
 **Description**: Reconcile the typst extension's declared scope with what it actually owns, and fix chapter-quality-check.sh silently skipping BLOCKING Rule 1.3
 

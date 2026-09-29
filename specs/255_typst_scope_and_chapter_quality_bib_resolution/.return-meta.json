@@ -1,33 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790721762_ff3d8e_255",
-  "dispatch_seq": 7,
-  "task_number": 255,
-  "findings_count": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/255_typst_scope_and_chapter_quality_bib_resolution/reports/01_typst-scope-bib-resolution.md",
-      "summary": "Decides the typst-vs-lean4/formal/general boundary (typst owns presentation/quality of existing prose, not content origination), verifies via direct execution that the current keyword_overrides list cannot route chapter/manual tasks to typst and that adding 4 qualified phrases fixes it with no collisions; reproduces both chapter-quality-check.sh Rule 1.3 bugs (multi-file-manual root-doc bibliography, vendored .bib miscounting) live against Logos/Verification, recommends a nearest-ancestor-search + vendor-dir-exclusion fix, and audits the existing test suite (case-f valid unchanged, dirscan fixture unaffected under confirmed non-git mktemp fallback) plus a PASSED-banner WARN-tier qualifier for skipped BLOCKING rules."
+      "type": "plan",
+      "path": "specs/255_typst_scope_and_chapter_quality_bib_resolution/plans/01_typst-scope-bib-resolution.md",
+      "summary": "4-phase plan reconciling the typst extension's declared scope and keyword_overrides (Part 1) and fixing chapter-quality-check.sh Rule 1.3 bibliography resolution plus skipped-BLOCKING surfacing (Part 2), with an end-to-end acceptance-verification phase; 5.25h estimated."
     }
   ],
+  "next_steps": "Run /implement 255 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 5.25,
+  "dependency_waves": [[1, 2], [3], [4]],
   "memory_candidates": [
     {
-      "content": "In this repo's task_type detection ladder (agent-system/extensions/core/scripts/lib/task-type-detect.sh), an extension's core weak-signal table (step 4) requires >=2 DISTINCT matched keywords per type to win. A type whose weak-signal entry has only one keyword (e.g. typst|typst) can NEVER resolve via step 4 alone, regardless of how many times that keyword appears in the description. The only fix point for such a type is its own manifest.json keyword_overrides (step 2), which is checked before and overrides step 4. Diagnose misrouting to a fallback type by checking whether the target type's weak-signal keyword count is >=2 before assuming keyword_overrides alone is the gap.",
-      "category": "PATTERN",
-      "source_artifact": "specs/255_typst_scope_and_chapter_quality_bib_resolution/reports/01_typst-scope-bib-resolution.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["task-type-detect", "keyword_overrides", "weak-signal-threshold", "routing", "extension-manifest"]
-    },
-    {
-      "content": "chapter-quality-check.sh's resolve_repo_root() falls back to the checked file's OWN directory (not any broader tree) when the file isn't inside a git worktree. mktemp -d workdirs (used by this repo's shell-script test fixtures) are confirmed NOT to sit inside any git repo in this environment (verified via git rev-parse --show-toplevel from a fresh mktemp -d). This means any fixture test relying on 'root' spanning multiple directories will silently collapse to a single-directory scope unless the test harness explicitly cds into or nests within a git-tracked path -- a subtlety worth checking before assuming a proposed ancestor-walk or root-relative fix will actually exercise multi-level resolution in the test suite.",
+      "content": "Extension keyword_overrides in agent-system/extensions/*/manifest.json are matched by jq test(\"\\\\b\" + keyword + \"\\\\b\") inside task-type-detect.sh step 2, so a multi-word keyword only matches its exact contiguous singular form: \\btypst chapter\\b is FALSE for 'review the typst chapters' because the trailing s destroys the closing word boundary. Any keyword whose head noun is commonly pluralized in task descriptions needs both forms registered. Separately, typst's core weak-signal entry (step 4) holds exactly one keyword ('typst') and step 4 requires >=2 distinct matches, so typst can NEVER resolve via the weak-signal table -- keyword_overrides is the only viable fix point for typst mis-detection, and 'chapter'/'textbook' are already weak signals for general, which is what makes chapter/manual work fall through to general.",
       "category": "INSIGHT",
-      "source_artifact": "specs/255_typst_scope_and_chapter_quality_bib_resolution/reports/01_typst-scope-bib-resolution.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["chapter-quality-check", "resolve_repo_root", "mktemp", "test-fixtures", "git-worktree"]
+      "source_artifact": "specs/255_typst_scope_and_chapter_quality_bib_resolution/plans/01_typst-scope-bib-resolution.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["keyword_overrides", "task-type-detect", "word-boundary", "plural", "weak-signal", "detect_task_type"]
     }
   ],
-  "next_steps": "Run /plan 255 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1790721762_ff3d8e_255",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 15
 }
