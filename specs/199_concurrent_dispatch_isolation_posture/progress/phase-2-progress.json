@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Record the decision",
+  "started_at": "2026-09-29T02:36:00Z",
+  "last_updated": "2026-09-29T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add the new decision-record section positioned near Open Design Fork -- RESOLVED", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 2, "description": "State the three failure modes by mechanism, no task numbers", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Transcribe the 4-option x 3-mode scoring table plus cost/concurrency", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 4, "description": "Record the mode-1b staging-insufficiency finding without overturning the over-staging predicate", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 5, "description": "Record the split verdict and selection predicate", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 6, "description": "Record Phase 1 measurements and the hunk-attribution infeasibility finding", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 7, "description": "Record the two deliberate divergences", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 8, "description": "Cross-reference the new section from Related Documents", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.mechanism-note",
+      "description": "Record the .claude/ divergence rationale",
+      "type": "altered",
+      "reason": "Used the corrected (Phase 1 Findings) rationale for hardlink-over-symlink -- ephemeral runtime-state bleed, not the disproven PROJECT_ROOT-resolution mechanism -- per the Phase 1 handoff's explicit instruction not to restate the disproven claim.",
+      "annotation": null
+    }
+  ]
+}

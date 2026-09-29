@@ -286,35 +286,36 @@ row remains); no `orchestrate/task-*` branches or scratch clones were left behin
 
 ---
 
-### Phase 2: Record the decision [NOT STARTED]
+### Phase 2: Record the decision [COMPLETED]
 
 **Goal**: WORK item (b) — the durable, evidence-backed decision record, scoring every option
 against all three failure modes.
 
 **Tasks**:
-- [ ] Add a new `## Working-Tree and Build Isolation Posture` section to
+- [x] Add a new `## Working-Tree and Build Isolation Posture` section to
       `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`,
       positioned with the other decision-bearing sections (near `## Open Design Fork — RESOLVED`).
-- [ ] State the three failure modes by mechanism (working-tree revert; cross-task commit bleed;
+      *(completed)*
+- [x] State the three failure modes by mechanism (working-tree revert; cross-task commit bleed;
       build contention) without citing task numbers — durable anchors only, per the deliverable
-      rule.
-- [ ] Transcribe the scoring table: each of Option 1, Option 2, Option 3(i), Option 3(ii) against
+      rule. *(completed)*
+- [x] Transcribe the scoring table: each of Option 1, Option 2, Option 3(i), Option 3(ii) against
       modes 1a, 1b, 2, plus cost and concurrency effect. Score honestly: an option that fixes one
-      mode and leaves two open says so.
-- [ ] Record why explicit-path staging cannot address mode 1b (path granularity is the file;
+      mode and leaves two open says so. *(completed)*
+- [x] Record why explicit-path staging cannot address mode 1b (path granularity is the file;
       staging cannot subdivide a file by author) and that this does **not** overturn the
       over-staging predicate — the sanctioned explicit multi-file list remains permitted and
-      remains sufficient against over-broad staging.
-- [ ] Record the split verdict and its **selection predicate**: `phase == implement` AND task type
+      remains sufficient against over-broad staging. *(completed)*
+- [x] Record the split verdict and its **selection predicate**: `phase == implement` AND task type
       in the lean4/cslib family selects worktree isolation; every other dispatch keeps the shared
-      tree plus contended-path refusal.
-- [ ] Record the measurements from Phase 1 and the research report (worktree-add cost, hardlink
+      tree plus contended-path refusal. *(completed)*
+- [x] Record the measurements from Phase 1 and the research report (worktree-add cost, hardlink
       cost and zero disk growth, `.lake` size vs. free space, the Lake write-pattern verdict) and
-      the hunk-attribution infeasibility finding.
-- [ ] Record the two deliberate divergences: the script-provisioned worktree instead of the
+      the hunk-attribution infeasibility finding. *(completed)*
+- [x] Record the two deliberate divergences: the script-provisioned worktree instead of the
       harness `isolation` parameter (with the `specs/**` and `.claude/` reasons), and the
-      PATH-shim `lake` wrapper deferred as a follow-up.
-- [ ] Cross-reference the new section from `## Related Documents`.
+      PATH-shim `lake` wrapper deferred as a follow-up. *(completed)*
+- [x] Cross-reference the new section from `## Related Documents`. *(completed)*
 
 **Timing**: 1 hour
 

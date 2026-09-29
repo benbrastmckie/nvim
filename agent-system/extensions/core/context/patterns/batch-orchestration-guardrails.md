@@ -1359,10 +1359,162 @@ scan-scope gap in Non-Negotiable 2) should follow the existing bounded-scan prec
 against a bounded set such as non-terminal tasks, never an unbounded scan of every task directory
 — or it reintroduces the very cost problem this document exists to keep in check.
 
+## Working-Tree and Build Isolation Posture
+
+This section decides a question the sections above assume settled: when several dispatches run
+concurrently against one repository, do they share one working tree and one build directory, or
+does each get its own? The answer is a **split verdict**, evidence-backed, scored below against
+three distinct failure modes observed in live concurrent-dispatch batches.
+
+### The Three Failure Modes
+
+All three share one root cause — concurrent dispatch onto shared mutable resources — but each has
+its own mechanism, and no single per-mechanism patch closes more than one of them.
+
+- **Mode 1a — working-tree revert.** A reverting snapshot operation (default-mode
+  `git stash push -u` with no pathspec) stashes away a sibling dispatch's uncommitted work while
+  it is mid-edit. Nothing at any layer catches this unless the affected agent happens to notice
+  and restore from the stash.
+- **Mode 1b — cross-task commit bleed.** Two dispatches both hold uncommitted edits to one shared
+  file. One dispatch commits that file by its correct, explicit whole path — the sanctioned
+  staging form — and its commit silently carries the sibling's still-uncommitted lines along with
+  it, because **path granularity is the file**: explicit-path staging cannot subdivide a file by
+  author. This has been observed twice independently: once as a single shared file carrying three
+  foreign rows plus a table header inside an otherwise-correct targeted commit, and again as a
+  four-task batch where three of four dispatches' commits swept up a fourth dispatch's
+  in-flight rename edits across several shared files — in that second case nothing was reverted
+  and no build was mis-attributed; the damage was silent and permanent, directly in history.
+- **Mode 2 — build contention.** Two builds against one shared build directory (e.g. a Lean
+  project's `.lake/`) collide when at least one bypasses the project's build-serialization guard.
+  The guard itself is not missing — where one exists, it correctly implements a lock — but
+  participation in it is **opt-in**: any process invoking the build tool directly, including a
+  script the agent system does not own and cannot edit, bypasses the lock entirely.
+
+### Why Mode 1b Is the Decisive Evidence
+
+The standing mitigation for concurrent commits is targeted, explicit-path staging: name every
+file explicitly, never stage a directory or glob, never `git add -A`. A dispatch that follows this
+prescription to the letter still bled a sibling's rows into its commit, because the prescription
+addresses **over-staging** (accidentally picking up more files than intended) and mode 1b is a
+**same-file, same-path** collision between two legitimate, correctly-scoped commits. **This does
+not overturn the over-staging predicate**: an explicit, named multi-file list remains the
+sanctioned form and remains fully sufficient against over-broad staging. It is simply insufficient
+against concurrent same-file dispatch — a narrower, additional hazard the over-staging predicate
+was never designed to catch, and does not need to be widened to catch, because the fix belongs at
+a different layer (see Option 3(ii) below).
+
+### Scoring Table
+
+| Option | Mode 1a | Mode 1b | Mode 2 | Cost | Concurrency effect |
+|---|---|---|---|---|---|
+| **1 — shared tree, patch per mechanism** | Fixed (mandated non-reverting snapshot mode) | **Not addressed at all** | Fixed only if every caller opts into the build guard | Lowest incremental cost; N-th patch against one root cause | Unchanged |
+| **2 — per-dispatch git-worktree isolation** | Fixed (no shared tree to revert) | Fixed (no shared working copy to bleed from) | Fixed (no shared build directory) | Full cold build per worktree unless mitigated; new merge-back machinery | Unchanged — full concurrency preserved |
+| **3(i) — hunk-level staging** | Not addressed | Would address it directly, **if buildable** | Not addressed | Ruled out: no hunk/line-to-task attribution mechanism exists anywhere in this codebase; building one costs more than Option 2 and solves less | Unchanged |
+| **3(ii) — contended-path commit refusal (first-claim lease)** | Not addressed | Fixed for the shared-tree case: refuses to stage a path a live sibling holds, forcing explicit sequencing instead of silent bleed | Not addressed | Cheap: a lease file and a manifest lookup, reusing an existing lease-with-staleness pattern | Unchanged; a genuine collision serializes only on the contended path, not the whole batch |
+
+Scored honestly: Option 1 fixes one mode and leaves two open (or, generously, a mode-2 opt-in
+fix and nothing for 1b) — it is also the fourth-plus patch against the same root cause, each
+patch closing one more enumerated hole. Option 2 is the only single option that addresses all
+three modes at once. Option 3(i) is infeasible as verified below. Option 3(ii) addresses 1b
+cheaply but leaves 1a and 2 open — it is a shared-tree option, not a replacement for isolation.
+
+### The Split Verdict and Its Selection Predicate
+
+**Verdict**: per-dispatch git-worktree isolation (Option 2) for **implement**-phase dispatches of
+task types whose builds are expensive and collision-prone (the lean4/cslib family in this
+codebase); the shared tree plus Option 3(ii)'s contended-path commit refusal for every other
+dispatch (general/meta/markdown and any other cheap, doc-shaped task type). Option 3(i) is ruled
+out outright, not merely deprioritized.
+
+**Selection predicate** (stated once, in the form a script implements it): `phase == "implement"`
+AND the task's type is in the lean4/cslib family → isolated worktree. Every other dispatch keeps
+the shared tree and gains the contended-path refusal.
+
+This is a genuine split, not a compromise-by-indecision: the two failure-mode profiles differ by
+task family. A lean4/cslib implement dispatch pays for a full Lean build and touches a shared
+`.lake/`, making modes 1a/1b/2 all live simultaneously and expensively; a general/meta/markdown
+dispatch has no comparable build directory and a much smaller collision surface, so the cheaper
+Option 3(ii) is proportionate there and full worktree isolation would be paying worktree-cold-build
+cost for a hazard that barely exists in that family.
+
+### Measurements That Informed the Verdict
+
+- **Reference-repo scale**: a build directory (`.lake/`) of 16 GiB against roughly 26–27 GiB free
+  on the same filesystem.
+- **`git worktree add` cost**: ~0.09–0.2 s (measured twice, in two different repositories,
+  independently, converging on the same order of magnitude).
+- **Hardlink-clone cost for the build directory**: ~0.8 s to clone a 16 GiB tree
+  (157,000+ files, confirmed every file's link count exceeded 1 — i.e. genuinely hardlinked, none
+  silently falling back to a real copy) — with disk-usage movement on the order of `df`'s own
+  1 GiB rounding granularity, not the ~16 GiB a real full copy would cost. The disk objection to
+  worktree isolation is real in principle but mitigated by hardlink sharing in practice.
+- **Load-bearing assumption, verified empirically, not assumed**: the build tool writes outputs
+  via temp-file-then-atomic-rename, not in-place modification. Verified directly: hardlink-clone
+  the build directory into a scratch worktree, record a built artifact's inode in both trees
+  (identical, confirming the hardlink), edit the corresponding source in the clone only, rebuild
+  just that module, and compare again. Result: the clone's rebuilt artifact landed at a **new**
+  inode with new content, while the original tree's artifact kept its original inode, content, and
+  modification time completely unchanged. This is exactly the unlink-and-create-new-inode
+  signature of atomic rename — a hardlink-shared build directory is safe under concurrent
+  divergent builds, and each worktree's rebuild transparently un-shares only the files it actually
+  changes.
+- **Hunk-attribution feasibility (gates Option 3(i))**: no mechanism anywhere in this codebase
+  attributes a hunk or line to a task or session. Building one is a bigger, riskier undertaking
+  than worktree isolation and would only address mode 1b — Option 3(i) is ruled out on cost and
+  coverage grounds together, not preference alone.
+
+### A Corrected Rationale for Hardlink-Over-Symlink
+
+A materialized deploy tree (the directory a dispatched agent's own tooling lives under) must be
+physically present inside an isolated worktree, not merely symlinked there — but the reason is
+narrower than it first appears, and the narrower, verified reason is the one that should be
+carried forward. The originally-suspected mechanism — that a symlinked deploy tree causes a
+script's own root-resolution idiom (`cd "$(dirname ...)" && pwd`, walking `..` segments) to
+silently re-resolve back to the main tree, defeating isolation while appearing to work — was
+tested directly against the exact idiom used in this codebase and **did not reproduce**: both a
+symlinked and a hardlink-cloned deploy tree resolved the owning script's root to the isolated
+worktree, not the main tree, under the shell in use here. That specific mechanism is not a safe
+assumption to design around, and should not be repeated as the justification anywhere this
+decision is cited.
+
+**The hardlink-only decision stands regardless, for a different and more directly damaging
+reason**: a symlink is not a separate directory. Every write an isolated dispatch makes under its
+own deploy-tree path — a build-serialization lock file, a cached result record, a log, any future
+ephemeral runtime state — lands physically in the main tree's copy when that path is a symlink,
+because there is only one physical directory behind it. That reintroduces exactly the
+shared-mutable-resource hazard isolation exists to remove: a lock held by an isolated dispatch's
+build would contend with the main tree's own build, and vice versa. A hardlink clone gives each
+worktree independent directory entries — individually rebindable via the same atomic-rename
+mechanism verified above — while still sharing disk blocks for anything unchanged. Record this as
+the operative rationale; the disproven symlink-resolution mechanism is not.
+
+### Deliberate Divergences
+
+- **Script-provisioned worktrees, not a harness-level isolation parameter.** A tracked `specs/`
+  directory (carrying every task's state and artifacts) means a fresh worktree holds a
+  HEAD-stale, tracked copy of that state — task artifacts must keep being written to the main
+  tree by absolute path, and any merge-back step must refuse a branch that touched `specs/**`
+  rather than overwrite live state with a stale snapshot. A harness-level whole-repo isolation
+  parameter would relocate the agent's entire repository copy opaquely, `specs/` included,
+  silently breaking that absolute-path dependency. A dedicated provisioning script keeps the
+  worktree's scope to source code and the deploy tree, leaving `specs/` writes on the main tree by
+  design.
+- **A PATH-shim wrapper for unguarded build-tool callers is named, not built here.** The
+  build-serialization guard's opt-in nature (Mode 2) is a real, confirmed defect: any bare
+  invocation of the build tool bypasses the lock, including from a script this agent system does
+  not own and cannot edit. The system-level answer — making every such caller participate without
+  editing each one — is a PATH-shim wrapper. It is deferred as its own follow-up with its own
+  feasibility question, not attempted as part of this decision.
+
 ## Related Documents
 
 This document states principles only. The mechanisms are defined, exactly once each, elsewhere:
 
+- **Working-tree and build isolation posture**: this document's own "Working-Tree and Build
+  Isolation Posture" section above decides the shared-tree-vs-isolated-worktree question; the
+  provisioning/land/release lifecycle it selects is implemented in `dispatch-worktree.sh`, the
+  contended-path commit refusal in `git-commit-scoped.sh`, and the mode-1b staging qualification
+  lives in `context/standards/git-staging-scope.md`.
 - **Overlap algorithm**: `file-footprint-overlap.md` — the directory-prefix overlap predicate and
   its pairwise-set application, used by all three admission layers above.
 - **Lock protocol**: `task-lock.md` — the lockfile schema, acquire/heartbeat/release contract, and
