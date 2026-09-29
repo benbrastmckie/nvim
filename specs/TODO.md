@@ -63,7 +63,7 @@ next_project_number: 269
 
 162 [PLANNED] — Formalize Files to modify, harvest it into filescope at every...
   └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
-163 [RESEARCHING] — Surface missing and empty filescope in validate-state.sh and...
+163 [RESEARCHED] — Surface missing and empty filescope in validate-state.sh and...
   └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an... (see above)
 
 ### Lean Extension
@@ -2324,10 +2324,11 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 163. Surface missing and empty file_scope in validate-state.sh and orchestrate-predispatch-review.sh
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 188
+- **Research**: [163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md]
 
 **Description**: Make an ABSENT or EMPTY `file_scope` visible. Today it is invisible everywhere, by construction.
 
