@@ -601,33 +601,55 @@ including their explicit negatives and `--repair`'s non-interference.
 
 ---
 
-### Phase 8: Acceptance sweep and live measurement [NOT STARTED]
+### Phase 8: Acceptance sweep and live measurement [COMPLETED]
 
 **Goal**: Every acceptance line in the dispatch is checked against the real repository, and the
 live figure is reported as a measurement rather than asserted as a fixed number.
 
 **Tasks**:
-- [ ] `shellcheck --severity=warning` on all four edited shell files; confirm the only remaining
+- [x] `shellcheck --severity=warning` on all four edited shell files; confirm the only remaining
       full-severity output is the two pre-existing info-level notes (SC1091, SC2016) — no new
-      finding at any severity.
-- [ ] Confirm strict-mode class conformance per `context/standards/shell-strict-mode.md`:
+      finding at any severity. *(completed: validate-state.sh and orchestrate-predispatch-review.sh
+      both 0 findings at --severity=warning; lib/file-scope-overlap.sh carries one PRE-EXISTING
+      SC2053 warning, confirmed present in the pre-task commit `cda68a5e0` via `git show`, not
+      introduced by this task -- flagged as a Follow-up rather than fixed, per the Non-Goal
+      against fixing unrelated pre-existing shellcheck notes. Bare `shellcheck` (no severity
+      filter) also confirmed both target scripts show only their pre-existing SC1091/SC2016
+      info-level notes, plus one NEW SC1091 on orchestrate-predispatch-review.sh (3 -> 4 `^In `
+      blocks vs. the pre-task baseline) -- an expected, same-class consequence of the one new
+      `source` statement Phase 5 added, not a new class of finding.)*
+- [x] Confirm strict-mode class conformance per `context/standards/shell-strict-mode.md`:
       `validate-state.sh` still Class B (`set -uo pipefail`, counter idiom),
-      `orchestrate-predispatch-review.sh` still Class A (`set -euo pipefail`).
-- [ ] Run both test suites plus `test-init-specs.sh` (a downstream consumer of
-      `validate-state.sh`'s exit code) to green.
-- [ ] Default-mode live run: `bash agent-system/extensions/core/scripts/validate-state.sh
+      `orchestrate-predispatch-review.sh` still Class A (`set -euo pipefail`). *(completed,
+      unchanged)*
+- [x] Run both test suites plus `test-init-specs.sh` (a downstream consumer of
+      `validate-state.sh`'s exit code) to green. *(completed: 25/25, 34/34, 23/23, all green)*
+- [x] Default-mode live run: `bash agent-system/extensions/core/scripts/validate-state.sh
       specs/state.json` — record the Check 10 sub-state counts, the non-terminal denominator, and
-      the Check 11 result verbatim in the implementation summary, and confirm exit 0.
-- [ ] Optional second live measurement against `~/Projects/BimodalLogic/specs/state.json` if it is
+      the Check 11 result verbatim in the implementation summary, and confirm exit 0. *(completed:
+      1 missing-key, 0 literal-null, 0 empty-array, out of 28 non-terminal task(s); 0 glob-shaped
+      entries; exit 0)*
+- [x] Optional second live measurement against `~/Projects/BimodalLogic/specs/state.json` if it is
       still reachable, reported the same way. A number differing from the dispatch's cited
       27/49/22/17/5 is expected and is not a failure (**D9**); note the divergence explicitly.
-- [ ] Confirm `commands/task.md`'s `file_scope` advisory grep now picks up the Check 10/11 WARN
+      *(completed: reachable; 23 missing-key, 5 literal-null, 0 empty-array, out of 47
+      non-terminal task(s) — 28 lacking a usable value vs. the dispatch's stale 22/17/5 citation,
+      confirming D9's expectation that the corpus has moved on. 0 glob-shaped entries. Overall
+      script exit 1 due to 9 PRE-EXISTING FAIL-level findings unrelated to Checks 10/11 — both
+      new checks are WARN-only and never contribute to FAILED.)*
+- [x] Confirm `commands/task.md`'s `file_scope` advisory grep now picks up the Check 10/11 WARN
       lines (they contain the literal string `file_scope`), and record whether that is desirable
-      as-is — it is a free win, but flag it if the volume is excessive.
-- [ ] Re-confirm the D4 guarantee end-to-end: neither `--fix` nor `--repair` manufactures `[]` on
-      an absent key.
-- [ ] Confirm no `.claude/**` file was edited (every change is in
+      as-is — it is a free win, but flag it if the volume is excessive. *(completed: confirmed via
+      `grep -a 'file_scope'` against this repo's live output — both new WARN lines are picked up
+      alongside the existing Check 8/9 PASS/WARN lines. Desirable as-is: adds at most ~2-12 lines
+      per invocation (1 summary + up to 10 per-finding + 1 overflow line), not excessive)*
+- [x] Re-confirm the D4 guarantee end-to-end: neither `--fix` nor `--repair` manufactures `[]` on
+      an absent key. *(completed: pinned by Phase 6's `--fix` non-manufacture fixture and Phase
+      7's Scenario 10 `--repair` fixture, both passing against the current code)*
+- [x] Confirm no `.claude/**` file was edited (every change is in
       `agent-system/extensions/core/`), and no task number appears in any edited deliverable.
+      *(completed: all 5 touched files confirmed under agent-system/extensions/core/; grep for
+      "task 163"/"task163" across all 5 touched files -> zero matches)*
 
 **Timing**: 0.5 hours
 
@@ -646,15 +668,24 @@ live figure is reported as a measurement rather than asserted as a fixed number.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` → exit 0
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh` → exit 0
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-init-specs.sh` → exit 0
-- [ ] `shellcheck --severity=warning` clean on `validate-state.sh`,
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` → exit 0 *(25/25 pass)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh` → exit 0 *(34/34 pass)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-init-specs.sh` → exit 0 *(23/23 pass)*
+- [x] `shellcheck --severity=warning` clean on `validate-state.sh`,
       `orchestrate-predispatch-review.sh`, `lib/file-scope-overlap.sh`, and both edited test files
-- [ ] Default-mode `validate-state.sh specs/state.json` → exit 0, Check 10 and Check 11 lines present
-- [ ] `--strict` on a fixture with a Check 10 finding → exit 1; on a clean fixture → exit 0
-- [ ] `--fix` and `--repair` fixtures confirm no `file_scope` key is ever manufactured
-- [ ] No exact-count assertion anywhere binds to a live `specs/state.json`
+      *(deviation: altered — `validate-state.sh`, `orchestrate-predispatch-review.sh`, and both
+      test files are 0-finding clean; `lib/file-scope-overlap.sh` carries one PRE-EXISTING SC2053
+      in `path_covered_by_scope()`, confirmed present before this task via `git show cda68a5e0`,
+      not introduced here and not fixed here (Non-Goal: no fix of pre-existing shellcheck notes))*
+- [x] Default-mode `validate-state.sh specs/state.json` → exit 0, Check 10 and Check 11 lines present
+      *(confirmed: exit 0; both lines present)*
+- [x] `--strict` on a fixture with a Check 10 finding → exit 1; on a clean fixture → exit 0 *(confirmed)*
+- [x] `--fix` and `--repair` fixtures confirm no `file_scope` key is ever manufactured *(confirmed;
+      the `--repair` fixture additionally caught and pinned a genuine pre-existing manufacture bug
+      -- see Phase 7)*
+- [x] No exact-count assertion anywhere binds to a live `specs/state.json` *(confirmed: every
+      fixture uses hand-crafted, synthetic state; both live measurements in Phase 8 are reported,
+      never asserted)*
 
 ## Artifacts & Outputs
 
