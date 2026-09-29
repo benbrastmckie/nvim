@@ -33,7 +33,7 @@ next_project_number: 276
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 263 [PLANNED] — Consent-gated git push: grant semantics and enforcement mechanism
-265 [PLANNING] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
+265 [PLANNED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -572,11 +572,12 @@ Note the guard is deployed into consumer repositories at .claude/scripts/lake-bu
 ---
 
 ### 265. Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh --jobs
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 266
 - **Research**: [265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md]
+- **Plan**: [265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 

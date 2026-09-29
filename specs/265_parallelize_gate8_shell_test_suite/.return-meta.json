@@ -1,33 +1,29 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 265,
-  "session_id": "sess_1790721762_ff3d8e_265",
-  "dispatch_seq": 4,
-  "findings_count": 8,
-  "next_steps": "Run /plan 265 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md",
-      "summary": "Confirms task 261's --jobs parallelism (COMPLETED, not PARTIAL) already discharges the parallel-safety dependency; identifies a deterministic (not ambient-load) nested-RUN_ALL_NESTED-inheritance bug in test-run-all-parallel.sh's case3 assertion, reproduced live; narrows deploy-headless.sh's callers from 16 mentions to exactly 2 genuine invokers (command-gate-out.sh, orchestrate-cycle-plan.sh), both of which already collapse exit 0/3 into one branch, and recommends an opt-in --skip-verify flag with a new distinct exit code over a narrowed --only-gate inline verify."
+      "type": "plan",
+      "path": "specs/265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md",
+      "summary": "8-phase plan: Gate 8 opt-in --jobs auto with VERIFY_DEPLOY_GATE8_JOBS override, a deterministic test-run-all-parallel.sh nested-inheritance fix, baseline/parallel measurement decision gate, and deploy-headless.sh --skip-verify with exit 4 / RESULT=landed_verify_skipped threaded by the two genuine callers."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1790721762_ff3d8e_265",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 7,
+    "dependency_waves": [[1], [2], [3], [4], [5], [6], [7], [8]]
+  },
   "memory_candidates": [
     {
-      "content": "run-all.sh (agent-system/extensions/core/scripts/tests/) unconditionally exports RUN_ALL_NESTED=1 for its own process before invoking any discovered suite, regardless of whether --jobs was passed or whether this run-all.sh instance is itself nested. Any suite that shells out to a copy of run-all.sh to measure genuine parallel speedup (as test-run-all-parallel.sh does) must explicitly `env -u RUN_ALL_NESTED` its own 'unguarded' baseline measurement, or that measurement silently inherits the forced-sequential guard from its parent whenever the suite is discovered and run as part of any outer run-all.sh battery -- producing a deterministic (not flaky) timing-assertion failure that is easy to misattribute to ambient host load.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["run-all.sh", "RUN_ALL_NESTED", "nested-invocation guard", "test-run-all-parallel.sh", "flakiness-misattribution"]
-    },
-    {
-      "content": "When enumerating 'callers' of a script from grep/doc references in this repo, distinguish GENUINE invocation (bash .../script.sh in command position) from MENTION (a remedy string, comment, or doc pointer naming the script) before reasoning about exit-code contracts. For deploy-headless.sh specifically, only command-gate-out.sh and orchestrate-cycle-plan.sh genuinely execute it -- 14+ other files that reference its name only print a remedy message. test-lint-deploy-caller-wrap.sh already re-derives this genuine/mention classification from file contents every run and is the authoritative source, not a hardcoded list.",
+      "content": "When adding a new exit code to a shell script whose exit-code contract has many nominal consumers, first re-derive which files GENUINELY execute it (command position) versus merely MENTION it in remedy strings or comments -- in this repo a 16-file 'caller' list collapsed to 2 real invokers. Then check each real caller's branch predicate shape: a caller written as `if rc -eq 1 || rc -eq 2; then <not-landed> else <landed> fi` is already exit-code-partition-compatible, so a new code routes into the existing else branch with zero control-flow edits. That is a structural guarantee of 'no other caller changes', not a claim needing per-caller testing -- and it makes an opt-in flag plus a NEW distinct exit code strictly safer than reusing 0 (which misrepresents a suppressed check as a passed one) or an existing failure code.",
       "category": "PATTERN",
-      "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless.sh", "caller-enumeration", "genuine-vs-mention", "test-lint-deploy-caller-wrap.sh"]
+      "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["exit-code-contract", "shell-caller-enumeration", "opt-in-flag", "branch-predicate-partition", "deploy-headless"]
     }
-  ]
+  ],
+  "dispatch_seq": 12
 }

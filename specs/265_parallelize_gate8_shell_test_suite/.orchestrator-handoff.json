@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote an 8-phase plan for task 265. Part A: Gate 8 requests run-all.sh --jobs (default auto, VERIFY_DEPLOY_GATE8_JOBS override), preceded by a deterministic fix to test-run-all-parallel.sh's inherited RUN_ALL_NESTED defect and bracketed by a recorded sequential baseline and a post-change pass/fail-set decision gate. Part B: deploy-headless.sh gains an opt-in --skip-verify returning a new exit 4 / RESULT=landed_verify_skipped, threaded only by the two genuine callers (command-gate-out.sh, orchestrate-cycle-plan.sh), whose existing -eq 1 || -eq 2 predicates absorb exit 4 with no control-flow change. The research-established dependency resolution (task 261 COMPLETED, option (b) already satisfied) means no 3-run flakiness gate is re-run.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md",
+      "summary": "8-phase implementation plan, ~7 hours, strict-mode validated."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 8,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 265; Phase 4 carries an explicit decision gate that stops the plan if the parallel [FAIL] set differs from the sequential baseline.",
+  "dispatch_seq": 12
+}
