@@ -1,16 +1,16 @@
 {
   "status": "partial",
   "phase": "implement",
-  "dispatch_seq": 21,
-  "summary": "Completed the plan's entire first dependency wave (Phases 1-3): empirically verified all four load-bearing preconditions (Lake's atomic-rename write pattern confirmed via an inode-divergence test, the .claude/ materialization fact with a correction to the originally-suspected symlink-defeats-PROJECT_ROOT mechanism which did not reproduce, the specs/ tracked/HEAD-stale fact, and free-space headroom -- floor 5 GiB, cap 3 worktrees); recorded the full evidence-backed split verdict (worktree isolation for lean4/cslib implement dispatches, contended-path commit refusal for the rest, hunk staging ruled out) in a durable decision record; and documented the build guard's opt-in bypass hazard plus the mode-1b staging-insufficiency qualification. Phases 4-11 (the dispatch-worktree.sh script, dispatch/postflight wiring, the contended-path manifest and commit refusal, the acceptance fixture, and final gates/redeploy) remain for subsequent dispatches.",
+  "dispatch_seq": 25,
+  "summary": "Completed the plan's second and third dependency waves (Phases 4-6) on top of the prior dispatch's wave 1 (Phases 1-3): dispatch-worktree.sh now implements the FULL per-dispatch git-worktree lifecycle -- provision (free-space + concurrent-worktree-cap preflight, git worktree add, hardlink-clone .claude//.lake, PROJECT_ROOT-resolves-inside-worktree assertion, registry record), path, release (strips untracked .claude//.lake scratch first so a plain release is never falsely refused as dirty), prune (age-based staleness, sparing the calling session unconditionally), and land (specs/** refusal, dirty-overlap refusal, git merge --no-ff, conflict abort-and-preserve, PROJECT_ROOT-inside-a-worktree refusal) -- with 38/38 tests passing. Dispatch-site wiring is now live: orchestrate-cycle-plan.sh mechanically selects worktree isolation (phase == implement AND task_type in the lean4/cslib family), calls dispatch-worktree.sh provision (deferring, never falling through to a shared-tree dispatch, on any failure), and emits new isolation/worktree_path fields on every dispatch[] row in both --dry-run and live modes; orchestrate-build-dispatch.sh renders a new '## Isolated Working Tree' section gated on a --worktree flag. 312/312 and 122/122 tests pass across both extended suites, including every pre-existing case unchanged (proving byte-for-byte non-disruption for every dispatch that does not select isolation). Redeployed and confirmed live in this repo's own .claude/ tree; core extension's own doc-lint/manifest checks pass -- the sole remaining verify-deploy finding is a pre-existing, unrelated literature-extension issue out of this task's scope. Phases 7-11 (postflight land/release/prune wiring, the contended-path manifest producer, the git-commit-scoped.sh refusal, the acceptance fixture, and final gates/redeploy/consumer confirmation) remain for subsequent dispatches. IMPORTANT for Phase 7: orchestrate-cycle-postflight.sh should RE-DERIVE isolation status via `dispatch-worktree.sh path <task_number>` (exit 0+path = isolated, exit 3 = not) rather than threading new CLI flags through skill-orchestrate/SKILL.md's Move 3 -- that file is deliberately NOT in Phase 7's declared file_scope, and Move 3 extracts every postflight argument individually from the dispatch row today.",
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/199_concurrent_dispatch_isolation_posture/handoffs/phase-3-handoff-20260929T031000Z.md",
-      "summary": "Wave-1-complete handoff naming Phase 4 as the next unblocked phase and every decision-record value it needs to consume."
+      "path": "specs/199_concurrent_dispatch_isolation_posture/handoffs/phase-6-handoff-20260929T062000Z.md",
+      "summary": "Waves-2-and-3-complete handoff naming Phase 7 as the next unblocked phase, with the re-derive-via-dispatch-worktree.sh-path design correction recorded so Phase 7 does not naively follow the plan's literal Files-to-modify list into an out-of-scope SKILL.md edit."
     }
   ],
-  "phases_completed": 3,
+  "phases_completed": 6,
   "phases_total": 11,
   "blockers": []
 }
