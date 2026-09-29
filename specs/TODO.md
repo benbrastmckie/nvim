@@ -1,5 +1,5 @@
 ---
-next_project_number: 275
+next_project_number: 276
 ---
 
 # TODO
@@ -13,8 +13,8 @@ next_project_number: 275
 |------|-------|------------|--------|
 | 1 | 22,39,44,51,89,127,136,165,184,217,223,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,270,271,272 | 22,44,51,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 170,273 | 51,184,250,251,271 | core-agent-system |
-| 4 | 274 | 165,272,273 | core-agent-system |
+| 3 | 170,273,275 | 51,184,250,251,271,272 | core-agent-system |
+| 4 | 274 | 165,273,275 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -26,7 +26,8 @@ next_project_number: 275
 51 [NOT STARTED] — Move session runtime files out of the specs root and make the...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
   └─ 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
-    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion computed by invoking the...
+    └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
+      └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
@@ -34,7 +35,7 @@ next_project_number: 275
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
   └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
-    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion computed by invoking the... (see above)
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
@@ -70,11 +71,98 @@ next_project_number: 275
 
 ## Tasks
 
-### 274. Next-admissible-batch suggestion computed by invoking the real admission script
+### 275. Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 272, Task 273, Task 165
+- **Dependencies**: Task 272, Task 51
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. Register orchestrations in a per-repo queue whose metadata stays current, archive them when
+they finish, and expose the queue as an admission input so a new orchestration runs when it does
+not conflict and is refused with named alternatives when it does.
+
+=== SEMANTICS -- RULED, DO NOT RE-OPEN ===
+REGISTRY PLUS IMMEDIATE REFUSAL. The queue is a live record of in-flight orchestrations plus an
+archive of finished ones. A conflicting new orchestration is REFUSED IMMEDIATELY, with the conflict
+named and alternatives suggested. There is NO WAITING QUEUE, NO SCHEDULER, NO AUTO-START and NO
+UNATTENDED EXECUTION. Do not design enqueue-and-wake machinery. "Queue" here means the registry and
+its archive, not a work queue that something drains.
+
+SCOPE -- RULED: PER-REPO. One queue per repository, living beside the existing session registry. No
+cross-repo global queue and no global-ready schema requirement: file_scope conflicts are inherently
+per-repo, so a global queue would carry no information the per-repo one lacks.
+
+=== WHAT THIS OWNS ===
+The record schema; the lifecycle states registered -> running -> finished -> archived; keeping the
+record's metadata current while an orchestration runs; archiving on completion; and exposing the
+queue as an admission input.
+
+This task TAKES OVER PIECE 4 OF TASK 272 IN FULL: per-orchestration identity distinct from
+`session_id`, so two batches in two sessions of one repo keep separate
+metadata/artifacts/return-meta rather than a single shared in-flight record. That piece has been
+removed from 272's scope and lives here.
+
+=== VERIFIED GROUNDING IN THE SOURCE STORE ===
+(1) THERE IS NO ORCHESTRATION-LEVEL RECORD TODAY, AND NO HISTORY WHATSOEVER. task-lock.sh's
+    `cmd_session_release` is a bare `rm -f "$sessions_dir/${session_id}.json"` -- a finished
+    session's entry is DELETED, not archived. Nothing anywhere records that an orchestration ever
+    ran. The archive half of this task is therefore genuinely new construction, unlike the live
+    half.
+(2) NO `orchestration_id` CONCEPT EXISTS anywhere in scripts/, context/, skills/ or commands/
+    (measured: zero occurrences). The unit of identity today is `session_id`, and ONE SESSION CAN
+    COVER SEVERAL TASK NUMBERS -- observed live, a single session covering 696, 701, 703, 704, 649
+    and 650 in one repo. That many-to-one relation is exactly why an orchestration-level id is
+    needed and why `session_id` cannot serve as one.
+(3) BUILD ON THE EXISTING SESSION REGISTRY, DO NOT REPLACE IT. specs/.sessions/{session_id}.json
+    with session-register / session-heartbeat / session-release / session-reap / session-list is
+    the substrate.
+(4) REUSE THE EXISTING LIVENESS VOCABULARY -- DO NOT TRANSCRIBE A SECOND COPY. `session_liveness()`
+    already computes six reasons: `corrupt`, `dead-pid`, `dead-pid-within-grace`, `stale-heartbeat`,
+    `pid-alive`, `undeterminable`, governed by two thresholds
+    (SESSION_REGISTRY_DEAD_PID_MIN, SESSION_REGISTRY_REAP_MIN) in a documented evaluation order
+    (dead-pid tested first). Its own header records that it was factored out precisely so
+    cmd_session_list and session_contention() consume the IDENTICAL verdict rather than a second
+    transcription. A queue entry's liveness must consume that verdict for the same reason.
+(5) ARCHIVAL LOCATION MUST BE SETTLED WITH TASK 51, which relocates the per-session runtime files
+    out of the specs root and owns scripts/reap-session-runtime-files.sh,
+    context/standards/orchestrator-runtime-files.md and scripts/check-runtime-file-tracking.sh.
+    Task 51's own text warns against creating a fourth orphaned naming generation -- an
+    independently-chosen archive path here would be exactly that. ALSO check how skills/skill-todo/
+    archives tasks, so orchestration archival follows the established convention rather than
+    inventing a new one.
+
+=== DEPENDENCY NOTES ===
+Edge on 272 is SUBSTANTIVE, not footprint: a queue whose metadata silently stops updating is worse
+than no queue at all, so the zero-heartbeat defect (272's piece 1) must be diagnosed before this
+queue relies on heartbeat-driven currency. Edge on 51 is substantive too: it relocates the runtime
+files this queue lives among and owns the relevant standard. Both droppable per the standing
+convention if either stalls -- but if 272 is dropped, record what currency guarantee the queue
+assumes in its absence.
+
+file_scope OVERLAP IS DELIBERATE: this task shares scripts/task-lock.sh,
+scripts/command-gate-in.sh and context/patterns/task-lock.md with 272. The dependency edge on 272
+serializes that overlap rather than leaving it to chance.
+
+NEW SCRIPTS: add a queue script and its test under scripts/ if research concludes one is warranted.
+Name them in the plan; do not pre-commit to them here.
+
+ACCEPTANCE. A record schema with its lifecycle states documented to the standard of the existing
+session-registry contract in context/patterns/task-lock.md; finished orchestrations demonstrably
+archived rather than rm -f'd, at a location agreed with task 51's relocation; queue-entry liveness
+shown to consume `session_liveness()`'s verdict rather than recomputing it; the queue readable as an
+admission input; a fixture test covering registered -> running -> finished -> archived and the
+refusal path. Shellcheck clean per context/standards/shell-strict-mode.md. No task-number references
+in deliverables outside specs/**.
+
+---
+
+### 274. Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 272, Task 273, Task 275, Task 165
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -82,6 +170,22 @@ GOAL. The orchestration concludes by suggesting the next most natural batch of t
 clearing context, computed from the dependency DAG PLUS file_scope disjointness -- i.e. a batch that
 scripts/orchestrate-batch-admit.sh would ACTUALLY ADMIT together, so the user can open a fresh
 session and run it directly.
+
+=== TWO MODES, ONE PREDICATE ===
+MODE A -- NEXT-BATCH AT CONCLUSION (the original scope above): at the end of an orchestration,
+suggest the next most natural batch to run after clearing context.
+
+MODE B -- ALTERNATIVES ON CONFLICT (added): when an orchestration is REFUSED for conflicting with
+an in-flight one, suggest nearby task sets that could run in parallel instead. Same predicate as
+mode A, DIFFERENT TRIGGER -- refusal time rather than conclusion time. Alternatives are drawn from
+the orchestration queue (task 275), which is why this task depends on it.
+
+WHAT THE ADMISSION SCRIPT DOES AND DOES NOT GIVE YOU. scripts/orchestrate-batch-admit.sh emits a
+PER-CANDIDATE verdict and, for an idle overlapping task, an `idle_overlap_advisory` naming the
+colliding task, its status, the overlapping path and the collision scope. It has NO NOTION OF
+ALTERNATIVES: it answers "may this candidate set run?", never "what else could run instead?".
+The alternatives search is therefore a NEW CALLER-SIDE LOOP over candidate sets, NOT a change to
+the script's verdict schema. Do not extend the schema to carry alternatives.
 
 BINDING CONSTRAINT ON HOW THE SUGGESTION IS COMPUTED. The predicate must be established by ACTUALLY
 INVOKING scripts/orchestrate-batch-admit.sh over candidate sets and reading its v5 verdicts --
@@ -91,6 +195,11 @@ than no suggestion at all. Respect the existing verdict schema and its consumers
 (scripts/orchestrate-predispatch-review.sh is one) rather than extending the schema.
 
 DEPENDENCY NOTES.
+- Edge on task 275 (hard, substantive): mode B's alternatives are drawn from the orchestration
+  queue, so there is nothing to draw from until 275 exists.
+- The existing edge on task 272 is now TRANSITIVELY REDUNDANT, since 275 itself depends on 272.
+  It is left in place deliberately -- a redundant edge is harmless and costs only a wave, whereas
+  removing it would obscure why live registry scope matters to this task. Do not "clean it up".
 - Edge on task 272 (hard, substantive): the suggestion is only trustworthy if the session
   registry's file_scope is LIVE rather than frozen at register time, and if a live-but-stale lock
   is visible as held. Computing a "safe next batch" against a stale registry snapshot produces
@@ -257,6 +366,18 @@ degrades to WARN-and-proceed on a stale lock, so a lock belonging to a demonstra
 became advisory purely because its heartbeat drifted. Decide whether stale-but-pid-alive should be
 a THIRD state distinct from both `held` and `held-stale`, and implement the ruling.
 
+PRECEDENT TO REUSE, NOT TO INVENT AROUND. The distinction piece 2 needs ALREADY EXISTS one level
+up: `session_liveness()` computes six reasons -- `corrupt`, `dead-pid`, `dead-pid-within-grace`,
+`stale-heartbeat`, `pid-alive`, `undeterminable` -- governed by two thresholds
+(SESSION_REGISTRY_DEAD_PID_MIN, SESSION_REGISTRY_REAP_MIN) in a documented evaluation order, and
+its own header records that it was factored out so cmd_session_list and session_contention()
+consume the IDENTICAL verdict rather than a second transcription. THE GAP IS THAT THE PER-TASK
+LOCK HAS NO SUCH DISTINCTION: cmd_check emits only `held-fresh` (line 1033) and `held-stale`
+(line 1036), each carrying heartbeat_age_min, threshold_min and never_heartbeated but NO
+pid-liveness dimension at all. So piece 2 is bringing an existing, tested session-level vocabulary
+down to the per-task lock -- a smaller and better-shaped change than inventing a third state from
+scratch. Consume `session_liveness()`'s verdict; do not transcribe it.
+
 CRITICAL CONSTRAINT -- KEY ON session_id, NEVER ON pid. Task 165's absorbed text records that both
 sessions in its incident reported the SAME pid with pid_source `ancestor-claude`, because two
 /orchestrate runs inside one Claude Code process share an ancestor. The failing task's own
@@ -272,9 +393,12 @@ FormalSystem/Metalogic/Decidability/PlusWitnessFamily/Incompleteness.lean, which
 state.json file_scope does declare. Decide whether the registry should re-derive on heartbeat and
 implement it.
 
-=== PIECE 4: PER-ORCHESTRATION IDENTITY ===
-Introduce an orchestration-id DISTINCT from session_id, so two batches in two sessions of one repo
-keep separate metadata/artifacts/return-meta rather than a single shared in-flight record.
+=== PIECE 4 HAS MOVED OUT OF THIS TASK ===
+Per-orchestration identity (an orchestration-id distinct from session_id, with per-orchestration
+metadata/artifacts/return-meta rather than one shared in-flight record) was originally piece 4 of
+this task. It now lives IN FULL in task 275, the per-repo orchestration queue, which DEPENDS on
+this task. Do not implement it here. This task is pieces 1-3 only: diagnose the unreachable
+heartbeat, add the live-but-stale lock state, re-derive registry scope on heartbeat.
 
 DEPENDENCY NOTE. The edge on task 51 is substantive, not merely footprint serialization: 51
 relocates the per-session orchestration runtime files (specs/.orchestrator-multi-state-*.json,
