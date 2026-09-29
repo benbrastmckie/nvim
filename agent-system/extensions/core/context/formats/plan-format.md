@@ -126,23 +126,24 @@ Both forms are accepted for every per-phase field above, including `**Verificati
 `**Verification Tier:**` and `**Files to modify**:` / `**Files to modify:**`; do not treat one
 form as invalid because a generator site used the other.
 
-**Consumers of this field**: `Files to modify` has four independent consumers, three of which
+**Consumers of this field**: `Files to modify` has three independent consumers, two of which
 depend only on the heading string, not on list-item shape:
 
 - `agents/general-implementation-agent.md` — reads "Files to modify/create per phase" when
   extracting from the plan (heading-name stability only).
-- `skills/skill-orchestrate/SKILL.md`'s H1 territory block — sets `owned_files` by pointing an
-  agent at the phase's `Files to modify` location; it does not parse the list itself
-  (heading-name stability only).
-- `scripts/orchestrate-cycle-plan.sh` — the same territory derivation, ported verbatim
-  (heading-name stability only).
+- `scripts/orchestrate-cycle-plan.sh` — composes the H1 territory block's `owned_files` by
+  pointing an agent at the phase's `Files to modify` location; it does not parse the list itself
+  (heading-name stability only). `skills/skill-orchestrate/SKILL.md` calls this script for its
+  dispatch-file composition rather than carrying its own independent copy of the territory logic
+  (confirmed live — `SKILL.md` has no "territory" or "Files to modify" text of its own), so this
+  is one consumer, not two, despite the two-file split a prior draft of this section assumed.
 - `scripts/plan-file-scope-harvest.sh` — the one consumer that actually depends on list-item
   shape: it parses each phase's block to harvest `active_projects[].file_scope` at plan-postflight
   time.
 
-**The heading text `Files to modify` is frozen.** The first three consumers above embed it
+**The heading text `Files to modify` is frozen.** The first two consumers above embed it
 verbatim in a prompt directive or a ported grep, where a mismatch fails silently with no parse
-error — never rename or rephrase this heading without auditing all three.
+error — never rename or rephrase this heading without auditing both.
 
 **Consumers of this heading contract**: the exact `### Phase N: {name} [STATUS]` shape above is
 parsed by three independent mechanisms, so a future change to the format must account for all

@@ -472,44 +472,66 @@ stale for the same reason and must not be asserted as outcomes.
 
 ---
 
-### Phase 6: Deploy, full gate, and end-to-end verification [NOT STARTED]
+### Phase 6: Deploy, full gate, and end-to-end verification [COMPLETED]
 
 **Goal**: The source-store changes are deployed, every acceptance criterion is demonstrated against
 the deployed tree, and the three frozen-heading consumers are shown unbroken.
 
 **Tasks**:
-- [ ] Run `shellcheck` over every new and changed shell file from Phases 2-5.
-- [ ] Run the full relevant test set: `test-plan-file-scope-harvest.sh`,
-      `test-update-task-status.sh`, `test-backfill-file-scope.sh`.
-- [ ] Deploy the source store with `bash .claude/scripts/deploy-headless.sh` and confirm the new
-      scripts and the edited `plan-format.md` appear under `.claude/`.
-- [ ] Acceptance check 1: `plan-format.md` (deployed copy) enumerates the field with its grammar
-      and names its four consumers.
-- [ ] Acceptance check 2: the harvester extracts a correct non-empty union from all 18 local plan
+- [x] Run `shellcheck` over every new and changed shell file from Phases 2-5. *(completed)*
+- [x] Run the full relevant test set: `test-plan-file-scope-harvest.sh`,
+      `test-update-task-status.sh`, `test-backfill-file-scope.sh`. *(completed: also ran
+      `test-skill-base-lifecycle.sh` (38/38) and `test-force-phases.sh` (33/33) since Phase 4's
+      fifth-site correction touched skill-base.sh; 133 assertions total across all five suites, 0
+      failures)*
+- [x] Deploy the source store with `bash .claude/scripts/deploy-headless.sh` and confirm the new
+      scripts and the edited `plan-format.md` appear under `.claude/`. *(completed)*
+- [x] Acceptance check 1: `plan-format.md` (deployed copy) enumerates the field with its grammar
+      and names its four consumers. *(completed: deviation: altered — corrected to THREE
+      consumers during this phase; `skills/skill-orchestrate/SKILL.md` no longer independently
+      carries the "Files to modify" text or any "territory" text of its own -- it now fully
+      delegates territory composition to `scripts/orchestrate-cycle-plan.sh`, confirmed live by
+      grep. The heading string itself is unbroken either way; this is a documentation-accuracy
+      correction, not a functional change)*
+- [x] Acceptance check 2: the harvester extracts a correct non-empty union from all 18 local plan
       files and accepts both punctuation variants (exercise the second variant with a fixture,
-      since it is unattested locally).
-- [ ] Acceptance check 3: a plan postflight on a task with a plan populates a non-empty
+      since it is unattested locally). *(completed: actual current count is 11 local plan files,
+      not 18 -- expected drift per this plan's own Research Integration note; all 11 non-empty,
+      valid JSON, no leaks; second punctuation variant confirmed via fixture)*
+- [x] Acceptance check 3: a plan postflight on a task with a plan populates a non-empty
       `file_scope`. Demonstrate with `--dry-run` against this task's own state entry plus the Phase
-      3 direct probe, so the check does not require mutating an unrelated task's status.
-- [ ] Acceptance check 4: the three heading-name consumers are demonstrably unbroken — `grep -n
+      3 direct probe, so the check does not require mutating an unrelated task's status. *(completed)*
+- [x] Acceptance check 4: the three heading-name consumers are demonstrably unbroken — `grep -n
       'Files to modify' ` in `agents/general-implementation-agent.md`,
       `skills/skill-orchestrate/SKILL.md`, and `scripts/orchestrate-cycle-plan.sh` shows the string
       byte-identical to its pre-change form (confirm via `git diff` showing zero changes to that
-      string in those files).
-- [ ] Acceptance check 5: `backfill-file-scope.sh --dry-run` against this repo (expected: no
+      string in those files). *(completed: deviation noted above -- `SKILL.md` itself has zero
+      "Files to modify" occurrences today, pre-existing drift from an unrelated prior refactor
+      (task 260's function-wrap of `orchestrate-cycle-plan.sh`), not caused by this task. `git log`
+      confirms zero commits from this task touched any of the three files, so "zero changes to
+      that string" holds trivially; the string remains byte-identical in the two files that do
+      carry it)*
+- [x] Acceptance check 5: `backfill-file-scope.sh --dry-run` against this repo (expected: no
       backfillable task, one plan-less task reported as deliberately left absent) and against
       `--state-file ~/Projects/BimodalLogic/specs/state.json` (expected: the 8 plan-bearing
-      uncovered tasks itemized). Inspect that diff.
-- [ ] Run the real backfill against this repo (expected no-op given Decision 6) and, after the
+      uncovered tasks itemized). Inspect that diff. *(completed: actual counts, superseding the
+      dispatch's stale "8" estimate -- this repo: 0 backfillable/29 covered/1 plan-less;
+      BimodalLogic: 7 backfillable/29 covered/28 plan-less)*
+- [x] Run the real backfill against this repo (expected no-op given Decision 6) and, after the
       dry-run inspection above, against `~/Projects/BimodalLogic`. Re-run each to prove
       idempotence. Do NOT commit inside `~/Projects/BimodalLogic` (Decision 8); record the
-      resulting uncommitted `specs/state.json` change in the summary for the user.
-- [ ] Record the actual before/after coverage numbers for both repos in the summary, superseding
-      this plan's plan-time figures and the dispatch's stale targets.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` to confirm no task
-      number leaked into any deliverable outside `specs/**`.
-- [ ] Stage and commit only this task's own explicit file list — never a directory or glob
-      pathspec, since siblings are active in this tree.
+      resulting uncommitted `specs/state.json` change in the summary for the user. *(completed:
+      this repo confirmed no-op on both runs; BimodalLogic backfilled 7 tasks on the real run,
+      then 0 on the idempotence re-run; BimodalLogic's specs/state.json left uncommitted per
+      Decision 8)*
+- [x] Record the actual before/after coverage numbers for both repos in the summary, superseding
+      this plan's plan-time figures and the dispatch's stale targets. *(completed: this repo
+      29/30 before and after (no-op); BimodalLogic 29/64 before, 36/64 after)*
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` to confirm no task
+      number leaked into any deliverable outside `specs/**`. *(completed: PASS, 0 unexempted
+      occurrences across 4 trees)*
+- [x] Stage and commit only this task's own explicit file list — never a directory or glob
+      pathspec, since siblings are active in this tree. *(completed)*
 
 **Timing**: 1.25 hours
 
