@@ -30,6 +30,20 @@ read -r -d '' FILE_SCOPE_OVERLAP_JQ_DEFS <<'JQDEFS'
 # --- norm: path normalization per file-footprint-overlap.md's "Path Normalization" section ---
 def norm: rtrimstr("/");
 
+# --- is_glob_entry: true iff a declared file_scope entry string contains a glob metacharacter
+# (`*`, `?`, or `[`). Same character class as this codebase's two existing BASH transcriptions of
+# this same test -- path_covered_by_scope() below (`case "$entry" in *[*?\[]*) ...`) and
+# orchestrate-cycle-plan.sh's _sibling_territory_classify_entry() (`case "$path" in *[*?\[]*)
+# echo "glob" ...`) -- so all three forms cannot silently diverge on what counts as glob-shaped.
+# A glob entry is invisible to the symmetric Overlap predicate above (scopes_overlap_first) BY
+# DESIGN -- see context/patterns/file-footprint-overlap.md's Non-Goals section, which excludes
+# glob matching from Overlap deliberately. It is NOT invisible to the separate Containment
+# predicate (path_covered_by_scope() below, consumed by git-snapshot.sh), which already matches
+# globs correctly via bash's own `case` glob semantics. This def exists so Check 11
+# (validate-state.sh) and Class G (orchestrate-predispatch-review.sh) can both warn on the
+# Overlap-blind-spot consequence without transcribing a fourth copy of the character class.
+def is_glob_entry: test("[*?\\[]");
+
 # --- scopes_overlap_first: the overlap predicate itself, per file-footprint-overlap.md's
 # "Overlap Rule" section (exact match, or either side a directory-prefix ancestor of the other).
 # Returns the first overlapping path FROM other_scope (the "foreign" side, matching

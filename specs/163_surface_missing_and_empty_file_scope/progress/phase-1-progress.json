@@ -1,0 +1,30 @@
+{
+  "phase": 1,
+  "phase_name": "Shared is_glob_entry jq def",
+  "started_at": "2026-09-29T00:00:00Z",
+  "last_updated": "2026-09-29T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add def is_glob_entry to FILE_SCOPE_OVERLAP_JQ_DEFS with cross-reference comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/file-scope-overlap.sh"]},
+    {"id": 2, "description": "Enumerate and confirm every splicing consumer still runs unchanged", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Sanity-check the predicate directly against glob and non-glob examples", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1",
+      "description": "Confirm every splicing consumer of FILE_SCOPE_OVERLAP_JQ_DEFS still runs unchanged",
+      "type": "altered",
+      "reason": "Full consumer set (grep -rl) is 11 files, wider than the plan's hypothesized 4-consumer set, and most (orchestrate-batch-admit.sh, task-lock.sh, orchestrate-cycle-plan.sh, git-snapshot.sh, etc.) are gated by deploy-root-guard.sh and refuse to run from the source-store tree. Verified instead via: (a) direct jq sanity check of the new def, (b) grep confirming no duplicate `def is_glob_entry` anywhere else, (c) `bash -n` syntax check on all 9 non-library consumer files (unaffected since none was edited), (d) validate-state.sh (the one consumer runnable from the source store) executed end-to-end with byte-identical Check 8/9 output at exit 0.",
+      "annotation": "*(deviation: altered — verified via jq sanity check + no-duplicate-def grep + bash -n on all consumers + one full end-to-end run, since most consumers are deploy-root-guarded and cannot execute from the source-store tree)*"
+    },
+    {
+      "task_id": "1",
+      "description": "shellcheck --severity=warning on the library is clean",
+      "type": "altered",
+      "reason": "Found one PRE-EXISTING SC2053 warning at path_covered_by_scope() (line ~197 pre-edit, unrelated to and unmodified by this task's 14-line additive diff), confirmed present in the HEAD version before this edit via git show. Not fixed here (out of this task's Non-Goals: no fix of pre-existing shellcheck notes not caused by this task). This library was not one of the two scripts the research report checked for a shellcheck baseline (only validate-state.sh and orchestrate-predispatch-review.sh were), so this finding was previously undocumented; recorded here and will be carried into the implementation summary's Follow-ups.",
+      "annotation": "*(deviation: altered — one pre-existing SC2053 in path_covered_by_scope(), not introduced by or fixed by this task; recorded as a follow-up)*"
+    }
+  ]
+}

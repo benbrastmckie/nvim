@@ -1,7 +1,7 @@
 # Implementation Plan: Task #163
 
 - **Task**: 163 - Surface missing and empty file_scope
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md
@@ -178,27 +178,47 @@ transcribed into the relevant script's header comment during the phase that impl
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Shared `is_glob_entry` jq def [NOT STARTED]
+### Phase 1: Shared `is_glob_entry` jq def [COMPLETED]
 
 **Goal**: One canonical glob-shape predicate exists in jq, in the same library that already owns
 `norm`/`scopes_overlap_first`, so Checks 11 and Class G both consume it rather than transcribing
 a third copy.
 
 **Tasks**:
-- [ ] Re-read `scripts/lib/file-scope-overlap.sh`'s `FILE_SCOPE_OVERLAP_JQ_DEFS` heredoc (quoted
-      `<<'JQDEFS'` — no bash expansion occurs inside it) immediately before editing.
-- [ ] Add `def is_glob_entry: test("[*?\\[]");` to the heredoc with a comment stating: the
+- [x] Re-read `scripts/lib/file-scope-overlap.sh`'s `FILE_SCOPE_OVERLAP_JQ_DEFS` heredoc (quoted
+      `<<'JQDEFS'` — no bash expansion occurs inside it) immediately before editing. *(completed)*
+- [x] Add `def is_glob_entry: test("[*?\\[]");` to the heredoc with a comment stating: the
       character class is identical to `path_covered_by_scope()`'s and
       `_sibling_territory_classify_entry()`'s existing bash `case` transcriptions; a glob entry is
       invisible to the symmetric Overlap predicate **by design** per
       `context/patterns/file-footprint-overlap.md`'s Non-Goals, while the Containment predicate in
-      this same file already matches it.
-- [ ] Enumerate every splicing consumer and confirm each still runs unchanged: `validate-state.sh`
+      this same file already matches it. *(completed)*
+- [x] Enumerate every splicing consumer and confirm each still runs unchanged: `validate-state.sh`
       (Check 8, Check 9), `orchestrate-predispatch-review.sh` (Classes C/D/E), the
       `scopes_overlap()` bash wrapper in this same library, plus any other file found live by
       `grep -rl FILE_SCOPE_OVERLAP_JQ_DEFS agent-system/extensions`.
-- [ ] Sanity-check the predicate directly: `is_glob_entry` true for `*/agents/**`, `a?b`,
-      `x[0].sh`; false for `a/b/c.sh` and `a/b/`.
+      *(deviation: altered — the actual `grep -rl` consumer set is 11 files, wider than this
+      plan's hypothesized 4. CORRECTION TO PLAN PREMISE: `orchestrate-predispatch-review.sh` does
+      NOT splice `FILE_SCOPE_OVERLAP_JQ_DEFS` anywhere today (confirmed:
+      `grep -c FILE_SCOPE_OVERLAP_JQ_DEFS scripts/orchestrate-predispatch-review.sh` → 0); Classes
+      C/D/E re-present `orchestrate-batch-admit.sh` subprocess verdicts and never splice the jq
+      defs directly. This plan's own research-report input (`reports/01_...md`) asserted "both
+      target scripts already splice this variable in," which is false for this script. Phase 5
+      must therefore ADD sourcing of `file-scope-overlap.sh` to
+      `orchestrate-predispatch-review.sh` (mirroring `validate-state.sh`'s deploy-tree-first /
+      source-store-fallback pattern) before Class G can consume `is_glob_entry` — this is a new
+      task, not a reuse of an existing splice. Most other consumers
+      (`orchestrate-batch-admit.sh`, `task-lock.sh`, `orchestrate-cycle-plan.sh`,
+      `git-snapshot.sh`, `system-defect-record.sh`, `update-task-status.sh`) are gated by
+      `deploy-root-guard.sh` and refuse to run from this source-store tree, so "runs unchanged"
+      was verified via: no duplicate `def is_glob_entry` anywhere (grep), `bash -n` on all 9
+      non-library consumer files (all unedited, so unaffected by construction), a direct jq
+      sanity check of the new def in isolation, and `validate-state.sh` (the one consumer
+      runnable from the source store) executed end-to-end with byte-identical Check 8/9 output
+      at exit 0.*
+- [x] Sanity-check the predicate directly: `is_glob_entry` true for `*/agents/**`, `a?b`,
+      `x[0].sh`; false for `a/b/c.sh` and `a/b/`. *(completed: confirmed via `jq -n` with the
+      sourced library — all five cases match expectation)*
 
 **Timing**: 0.5 hours
 
