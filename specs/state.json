@@ -261,7 +261,7 @@
     {
       "project_number": 43,
       "project_name": "email_safety_context_loading_decision",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Decide and implement how email safety context actually reaches agents (live defect: five inert safety pointers)",
       "topic": "extensions",
@@ -276,10 +276,17 @@
         "agent-system/extensions/email/skills/"
       ],
       "description": "TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is email-extension-internal context-loading work, classified extension-internal by the consolidation audit, and is unrelated to the orchestrate-engine collapse. Original description follows.LIVE DEFECT, not an efficiency item: the email extension's five 'non-negotiable' safety context pointers (safety-invariants.md, wrapper-contracts.md, index-architecture.md, staleness-detection.md, archive-mode-risk.md) were written as `@.claude/context/...` imports in the merge-source era — a form that resolves to a nonexistent path and silently loads NOTHING. They have since been normalized to plain backticked paths (still non-loading by design), so the question the audit deferred is now unavoidable: how does safety-invariants.md actually reach an agent before it mutates a mailbox? Decide deliberately between: (a) making the safety pointers genuinely eager in the email extension's CLAUDE.md contribution, accepting roughly 13k tokens of every-session cost in deploys where email is loaded; (b) establishing that the wrapper contracts (five nix-built wrapper binaries as the only mutation path) plus the email skills'/agent's own explicit context-loading instructions already carry the enforcement, and recording that as the documented decision; or (c) a middle path such as eager-loading ONLY safety-invariants.md (the smallest, most critical file) while the rest stay lazy. Verify empirically what skill-email-cleanup, skill-email-sync, and email-implementation-agent load today before choosing. Whatever the choice, record it in the email extension's docs so the next audit does not re-litigate. CONSTRAINTS: all edits target agent-system/extensions/** (source store); no volatile files in any eager prefix; no task-number references in deliverables outside specs/**.",
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/043_email_safety_context_loading_decision/reports/01_email-safety-context-loading-decision.md",
+          "type": "report",
+          "summary": "Verifies empirically that the five email safety context files are unloaded at every consumer, but concludes the load-bearing safety content is already duplicated inline in skill-email-cleanup/SKILL.md, skill-email-sync/SKILL.md, and email-implementation-agent.md (each genuinely eager at invocation time) plus two mechanical layers (mail-guard.sh hook, wrapper binaries); recommends option (b) -- record the decision rather than eager-load any of the five files."
+        }
+      ],
       "created": "2026-08-11T16:14:06Z",
-      "last_updated": "2026-09-29T00:16:27Z",
-      "session_id": "sess_1790640953_159e0d_43"
+      "last_updated": "2026-09-29T00:27:18Z",
+      "session_id": "sess_1790640953_159e0d",
+      "next_artifact_number": 2
     },
     {
       "project_number": 44,
