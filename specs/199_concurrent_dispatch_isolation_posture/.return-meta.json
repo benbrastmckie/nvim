@@ -1,68 +1,14 @@
 {
-  "status": "partial",
-  "dispatch_seq": 25,
-  "partial_progress": {
-    "stage": "phase_wave_boundary",
-    "details": "Completed the plan's second and third dependency waves (Phases 4-6) on top of the prior dispatch's wave 1 (Phases 1-3): dispatch-worktree.sh's full worktree lifecycle (provision/path/release/prune in Phase 4, land/merge-back in Phase 5), and dispatch-site wiring in orchestrate-cycle-plan.sh/orchestrate-build-dispatch.sh (Phase 6) with the isolation/worktree_path dispatch-row fields. All six phases now [COMPLETED] and committed. Phase 7 (postflight land/release/prune wiring) and Phase 8 (contended-path manifest producer) are both now unblocked (wave 4) and can proceed in parallel per the plan's Dependency Analysis table. See the phase-6 handoff for full detail, including an important design correction for Phase 7 (re-derive isolation status via `dispatch-worktree.sh path`, not new CLI flags threaded through skill-orchestrate/SKILL.md's Move 3).",
-    "handoff_path": "specs/199_concurrent_dispatch_isolation_posture/handoffs/phase-6-handoff-20260929T062000Z.md",
-    "phases_completed": 6,
-    "phases_total": 11
-  },
-  "artifacts": [
-    {
-      "type": "handoff",
-      "path": "specs/199_concurrent_dispatch_isolation_posture/handoffs/phase-6-handoff-20260929T062000Z.md",
-      "summary": "Waves-2-and-3-complete handoff: phases 4-6 done and committed (dispatch-worktree.sh feature-complete for provision/path/release/prune/land, dispatch-site wiring live in orchestrate-cycle-plan.sh/orchestrate-build-dispatch.sh). Phase 7 is next, with a design correction recorded: re-derive isolation status via dispatch-worktree.sh path rather than threading new flags through skill-orchestrate/SKILL.md's Move 3."
-    }
-  ],
-  "completion_data": {
-    "completion_summary": "Implemented the full per-dispatch git-worktree lifecycle (dispatch-worktree.sh: provision, path, release, prune, land) with 38/38 tests passing, and wired mechanical selection into the dispatch pipeline (orchestrate-cycle-plan.sh's task_selected_for_worktree_isolation predicate, provision-or-defer logic, and new isolation/worktree_path dispatch-row fields; orchestrate-build-dispatch.sh's --worktree flag and Isolated Working Tree section), with 312/312 and 122/122 tests passing across both extended suites including every pre-existing case unchanged. Redeployed and confirmed live; the sole remaining verify-deploy finding is a pre-existing, unrelated literature-extension doc-lint issue out of this task's scope."
-  },
-  "modified_files": [
-    ".gitignore",
-    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
-    "agent-system/extensions/core/context/standards/git-staging-scope.md",
-    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/dispatch-worktree.sh",
-    "agent-system/extensions/core/scripts/lake-build-guard.sh",
-    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
-    "agent-system/extensions/lean/rules/lean4.md",
-    "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a hardlink-cloned scratch directory (e.g. .claude/ or .lake/, populated via cp -al into a git worktree for isolation) is untracked-by-construction in every worktree, a plain `git worktree remove` (no --force) will ALWAYS refuse as 'dirty' -- there is no such thing as a clean release otherwise. Fix: strip the known-safe untracked scratch directories (rm -rf) BEFORE calling `git worktree remove`, so only genuine uncommitted tracked-file edits (a real signal worth refusing on) can still trigger git's own clean-check. This preserves a meaningful no-force default instead of forcing every release call site to pass --force unconditionally (which would silently discard real uncommitted work too).",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-worktree-remove", "untracked-scratch-cleanup", "hardlink-clone", "release-verb-design", "dirty-check"]
-    },
-    {
-      "content": "deploy-headless.sh ships ONLY files explicitly listed in an extension's manifest.json provides.scripts array -- there is no glob/directory auto-discovery. Adding a new script (and its test file) to a source-store extension without also adding both paths to provides.scripts produces a deploy that reports success (RESULT=landed or similar) while silently omitting the new file from the deployed tree. Always grep the target manifest.json's provides.scripts (and provides.rules/context/etc. for other artifact types) immediately after creating a new file in a manifest-driven agent-system extension, and add the missing entries before the first real deploy+verify pass -- do not assume a successful-looking deploy log proves the new file shipped.",
-      "category": "PATTERN",
-      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless.sh", "manifest.json", "provides.scripts", "extension-deploy", "missing-file-silent-omission"]
-    },
-    {
-      "content": "When extending a shared per-dispatch JSON row (e.g. an orchestrator's dispatch[] array) with new fields, verify additivity for downstream consumers by DIRECTLY READING every consumer site rather than assuming it from the row's own header comment. Specifically check whether each consumer accesses fields by NAME (jq -r .field <<<\"$row\", safe to extend) or POSITIONALLY (array index or fixed-order parsing, unsafe to extend without also updating that consumer). A consumer that receives DISCRETE ARGUMENTS derived from the row (rather than the row itself) may not need editing at all for the new fields to be usable -- but a script needing the new information may then need to RE-DERIVE it from an independent, data-driven source (e.g. querying a sibling script/registry) rather than threading new CLI flags through an intermediate layer whose own file is outside the current task's declared scope. Prefer the data-driven re-derivation when it avoids an out-of-scope edit and is equally correct across resumed/multi-cycle scenarios.",
-      "category": "PATTERN",
-      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["dispatch-row-additivity", "named-vs-positional-field-access", "data-driven-re-derivation", "scope-discipline", "orchestrator-pipeline-design"]
-    }
-  ],
+  "status": "implemented",
+  "dispatch_seq": 26,
   "metadata": {
-    "session_id": "sess_1790640953_159e0d",
+    "session_id": "sess_1790680070_f61cfa",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 6,
-    "phases_total": 11
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   }
 }

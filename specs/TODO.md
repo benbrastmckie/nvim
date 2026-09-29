@@ -11,8 +11,8 @@ next_project_number: 271
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,51,89,127,136,165,184,199,217,223,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,270 | 22,44,127,184,199,241,265,269 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,39,44,51,89,127,136,165,184,217,223,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,270 | 22,44,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 170 | 51,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -30,14 +30,11 @@ next_project_number: 271
 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-199 [IMPLEMENTING] — Decide and implement the working-tree and build isolation...
-  └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"... (see above)
-  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
-    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
-  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh... (see above)
+  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
+    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Extensions
@@ -1637,13 +1634,13 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 199. Decide and implement the working-tree and build isolation posture for concurrent same-repo dispatches
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243, Task 259, Task 266
 - **Research**: [199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md]
-- **Plan**: [199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md]
 - **Handoff**: [199_concurrent_dispatch_isolation_posture/handoffs/phase-6-handoff-20260929T062000Z.md]
+- **Plan**: [199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 

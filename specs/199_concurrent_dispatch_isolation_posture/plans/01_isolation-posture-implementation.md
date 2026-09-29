@@ -1,7 +1,7 @@
 # Implementation Plan: Task #199
 
 - **Task**: 199 - Decide and implement the working-tree and build isolation posture for concurrent same-repo dispatches
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 16.5 hours
 - **Dependencies**: 191, 192, 193, 213, 242, 243, 259, 266 (all coordinated-with, none re-decided)
 - **Research Inputs**: specs/199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md
@@ -872,7 +872,7 @@ deployed tree; see this task's own memory candidate on exactly this failure mode
 
 ---
 
-### Phase 11: Full gates, redeploy, and consumer-repo confirmation [NOT STARTED]
+### Phase 11: Full gates, redeploy, and consumer-repo confirmation [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Close the remaining acceptance criteria: repo-wide gates green, the change deployed, and
 confirmed live where an agent will actually run it.
@@ -992,3 +992,40 @@ Not modified, deliberately: `core/scripts/git-snapshot.sh`, `core/rules/git-work
 - **Ephemeral runtime state** (worktrees, branches, manifests, claims) is removed by
   `dispatch-worktree.sh release`/`prune` and by the claims' staleness override; a crashed run
   leaves nothing that blocks the next one.
+
+#### Phase 11 Results (recorded 2026-09-29)
+
+Verification was run by the orchestrator after the dispatched implementation agent terminated on
+an account usage limit mid-phase, with phases 1-10 already committed. Phase 11 is verification
+only -- no source edits were required to close it.
+
+- **Task suites**: 580 assertions across the seven named suites, zero failures.
+  `test-dispatch-worktree.sh` 38/0, `test-dispatch-isolation-fixture.sh` 41/0,
+  `test-orchestrate-cycle-plan.sh` 331/0, `test-orchestrate-cycle-postflight.sh` 147/0,
+  `test-git-commit-scoped.sh` 23/0, `test-orchestrate-build-dispatch.sh` and
+  `test-lake-build-guard.sh` both exit 0.
+- **Redeploy**: `deploy-headless.sh` -> `RESULT=landed_verify_clean`; `verify-deploy.sh`
+  33 checks, 0 failures. `dispatch-worktree.sh`, `git-commit-scoped.sh` and
+  `orchestrate-cycle-postflight.sh` confirmed present in the deployed tree, and the deployed
+  `dispatch-worktree.sh --help` responds.
+- **check-task-references.sh**: 0 unexempted occurrences.
+- **shellcheck**: NOT RUN -- the interpreter is unresolvable in this environment (its nix store
+  path is dangling). `bash -n` is clean on all six touched shell files. This substitution is
+  recorded rather than silently skipped.
+- **validate-wiring.sh**: 41 failures, all in the `.opencode` arm (a frozen mirror lacking the
+  memory/nix/neovim context files). Zero findings in the `.claude` arm. Pre-existing and owned by
+  the separate frozen-mirror task; not a finding against this work.
+- **run-all.sh**: 96 passed / 8 failed / 104 total. Every failure was attributed, not assumed:
+  six reproduce identically at the pre-batch baseline commit (verified by running them in a
+  detached worktree at that commit); `test-run-all-parallel.sh` is timing-sensitive and passes
+  9/0 standalone, failing only under concurrent load; `test-typst-element-lint.sh` exercises
+  another session's uncommitted in-flight edit to the typst extension, which this work never
+  touched. No failure is attributable to this task.
+- **Regression check**: the failing-suite set is byte-identical before and after phases 4-11, so
+  this task introduced no regressions.
+
+**Excluded**: consumer-repo confirmation. The consumer checkout has not been redeployed since
+these changes, so `dispatch-worktree.sh` is not yet present there and `lean4.md` does not yet
+carry the opt-in note. Regeneration is manual-only by policy, and that repository had an active
+session at verification time, so deploying into it was deliberately not attempted. Re-run the
+deploy there when its session is idle, then confirm both facts.
