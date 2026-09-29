@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Rewrite fetch_path1 accumulation, termination, and failure handling",
+  "started_at": "2026-09-29T02:16:00Z",
+  "last_updated": "2026-09-29T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Per-run tmpdir with EXIT/INT/TERM trap cleanup", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 2, "description": "Per-page temp files, jq -s 'add' combine once", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 3, "description": "Capture Total-Results on first request only", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 4, "description": "Total-Results-driven loop control (no short-page break)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 5, "description": "Distinguish genuine-end / max_pages-guard / error terminal conditions; raise max_pages", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 6, "description": "Delete all error-swallowing || echo fallbacks in fetch_path1", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 7, "description": "Caller aborts before write_output on non-zero fetch_path1, no write", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 8, "description": "Route citation-key defaulting jq failure to loud-abort path", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

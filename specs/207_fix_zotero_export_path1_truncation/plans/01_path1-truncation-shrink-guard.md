@@ -164,33 +164,33 @@ single-concern hunk.
 
 ---
 
-### Phase 2: Rewrite fetch_path1 accumulation, termination, and failure handling [NOT STARTED]
+### Phase 2: Rewrite fetch_path1 accumulation, termination, and failure handling [COMPLETED]
 
 - **Goal:** `fetch_path1()` accumulates through temp files (never argv), terminates on
   `Total-Results`, and aborts loudly with no write on any fetch or accumulation failure.
 - **Tasks:**
-  - [ ] Create a per-run `tmpdir` (`mktemp -d`) and register a `trap` cleaning it on EXIT, INT and
+  - [x] Create a per-run `tmpdir` (`mktemp -d`) and register a `trap` cleaning it on EXIT, INT and
         TERM so it is removed on every exit path.
-  - [ ] Write each fetched page to `$tmpdir/page_${start}.json`; combine once at the end with
+  - [x] Write each fetched page to `$tmpdir/page_${start}.json`; combine once at the end with
         `jq -s 'add'` over the page files. Neither a page nor the accumulator ever transits argv.
-  - [ ] Capture response headers on the first request (e.g. `curl -sD "$tmpdir/hdr" -o "$page_file"`)
+  - [x] Capture response headers on the first request (e.g. `curl -sD "$tmpdir/hdr" -o "$page_file"`)
         and parse `Total-Results` once into a `total` variable; treat a missing or non-numeric
         `Total-Results` as an error condition, not as zero.
-  - [ ] Replace the loop control with `start=$(( start + limit ))` unconditionally, looping while
+  - [x] Replace the loop control with `start=$(( start + limit ))` unconditionally, looping while
         `start < total`. Do **not** break on a short page — short pages are a normal mid-pagination
         occurrence for `format=csljson`.
-  - [ ] Distinguish the three terminal conditions explicitly, each with its own message: (a) genuine
+  - [x] Distinguish the three terminal conditions explicitly, each with its own message: (a) genuine
         end (`start >= total`), (b) `max_pages` guard hit, (c) error. Raise `max_pages` so a
         `total`-driven loop over a 4000+ item library is not clipped by it, and treat hitting it as
         condition (b), which is an error for write purposes, not a silent success.
-  - [ ] Delete the `2>/dev/null || echo "$all_items"` fallback entirely, and every other
+  - [x] Delete the `2>/dev/null || echo "$all_items"` fallback entirely, and every other
         `|| echo "$all_items"` / `|| echo "[]"` in this function that can return a short result as
         success. A non-zero `curl`, an unparseable body, or a failed `jq -s 'add'` must return
         non-zero from `fetch_path1()`.
-  - [ ] Make the caller honor that: in the generation control flow, a non-zero `fetch_path1()` must
+  - [x] Make the caller honor that: in the generation control flow, a non-zero `fetch_path1()` must
         abort before `write_output()` with a non-zero exit and no file written or overwritten (mirror
         the existing hardened orchestrator-mode "no silent empty export" branch's phrasing).
-  - [ ] Keep the trailing `citation-key`-defaulting `jq` pass, but route its failure to the same
+  - [x] Keep the trailing `citation-key`-defaulting `jq` pass, but route its failure to the same
         loud-abort path rather than `|| echo "$all_items"`.
 - **Timing:** 1.5 hours
 - **Depends on:** 1

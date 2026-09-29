@@ -231,42 +231,112 @@ probe_zotero_api() {
 fetch_path1() {
   local start=0
   local limit=100
-  local page_count=0
-  local max_pages=100
-  local all_items='[]'
+  local total=""
+  local page_index=0
+  local max_pages=2000
+  local tmpdir
+  local hdr_file page_file filtered_file http_code url
+
+  tmpdir="$(mktemp -d)" || {
+    echo "fetch_path1: error - mktemp -d failed; aborting, no write." >&2
+    return 1
+  }
+  # Cleans up on every exit path, including an interrupting signal mid-loop. Each controlled
+  # return point below ALSO removes tmpdir and clears the trap explicitly, so this is a
+  # backstop for INT/TERM, not the only cleanup mechanism.
+  trap "rm -rf '$tmpdir'" EXIT INT TERM
 
   while :; do
-    local page
-    page="$(curl -s --connect-timeout 2 --max-time 20 \
-      "${API_BASE}?format=csljson&limit=${limit}&start=${start}" 2>/dev/null)" || page=""
+    page_file="$tmpdir/page_${page_index}.json"
+    url="${API_BASE}?format=csljson&limit=${limit}&start=${start}"
 
-    if [ -z "$page" ] || ! echo "$page" | jq empty 2>/dev/null; then
-      break
+    # Capture response headers only on the first request -- that is the sole place
+    # Total-Results is read from; every later request needs only the body.
+    if [ -z "$total" ]; then
+      hdr_file="$tmpdir/hdr"
+      http_code="$(curl -s -D "$hdr_file" -o "$page_file" -w '%{http_code}' \
+        --connect-timeout 2 --max-time 20 "$url" 2>/dev/null)" || http_code=""
+    else
+      http_code="$(curl -s -o "$page_file" -w '%{http_code}' \
+        --connect-timeout 2 --max-time 20 "$url" 2>/dev/null)" || http_code=""
     fi
 
-    local page_len
-    page_len="$(echo "$page" | jq 'length' 2>/dev/null || echo 0)"
-    if [ "$page_len" -eq 0 ]; then
-      break
+    if [ -z "$http_code" ] || [ "$http_code" != "200" ]; then
+      echo "fetch_path1: error - request for start=$start failed (http_code=${http_code:-<none>}); aborting, no write." >&2
+      rm -rf "$tmpdir"
+      trap - EXIT INT TERM
+      return 1
+    fi
+
+    if [ ! -s "$page_file" ] || ! jq empty "$page_file" 2>/dev/null; then
+      echo "fetch_path1: error - malformed or unreadable JSON body for start=$start; aborting, no write." >&2
+      rm -rf "$tmpdir"
+      trap - EXIT INT TERM
+      return 1
+    fi
+
+    if [ -z "$total" ]; then
+      total="$(grep -i '^Total-Results:' "$hdr_file" 2>/dev/null | tail -n1 | tr -d '\r' | awk '{print $2}')"
+      if [ -z "$total" ] || ! [[ "$total" =~ ^[0-9]+$ ]]; then
+        echo "fetch_path1: error - missing or non-numeric Total-Results header on the first response; aborting, no write." >&2
+        rm -rf "$tmpdir"
+        trap - EXIT INT TERM
+        return 1
+      fi
     fi
 
     # Filter out attachment/note CSL types defensively (the API's csljson format normally
     # only returns top-level bibliographic items, but guard against future changes).
-    local filtered
-    filtered="$(echo "$page" | jq '[.[] | select((.type // "") != "attachment" and (.type // "") != "note")]' 2>/dev/null || echo "[]")"
+    filtered_file="$tmpdir/filtered_${page_index}.json"
+    if ! jq '[.[] | select((.type // "") != "attachment" and (.type // "") != "note")]' \
+      "$page_file" > "$filtered_file" 2>/dev/null; then
+      echo "fetch_path1: error - failed to filter page at start=$start; aborting, no write." >&2
+      rm -rf "$tmpdir"
+      trap - EXIT INT TERM
+      return 1
+    fi
 
-    all_items="$(jq -n --argjson a "$all_items" --argjson b "$filtered" '$a + $b' 2>/dev/null || echo "$all_items")"
+    page_index=$(( page_index + 1 ))
+    start=$(( start + limit ))
 
-    page_count=$(( page_count + 1 ))
-    if [ "$page_len" -lt "$limit" ] || [ "$page_count" -ge "$max_pages" ]; then
+    if [ "$start" -ge "$total" ]; then
+      # Genuine end of pagination. A short (or even zero-length) page is NOT the
+      # termination signal here -- format=csljson silently drops annotation-typed rows
+      # from page bodies without adjusting Total-Results or the start/limit window, so a
+      # short mid-library page is normal. Total-Results is the only trustworthy signal.
       break
     fi
-    start=$(( start + limit ))
+
+    if [ "$page_index" -ge "$max_pages" ]; then
+      echo "fetch_path1: error - max_pages ($max_pages) reached at start=$start before reaching total=$total; aborting, no write. Raise max_pages if this is a legitimately larger library." >&2
+      rm -rf "$tmpdir"
+      trap - EXIT INT TERM
+      return 1
+    fi
   done
 
+  local combined
+  combined="$(jq -s 'add' "$tmpdir"/filtered_*.json 2>/dev/null)" || combined=""
+  if [ -z "$combined" ] || ! echo "$combined" | jq empty 2>/dev/null; then
+    echo "fetch_path1: error - failed to combine paged results via jq -s 'add'; aborting, no write." >&2
+    rm -rf "$tmpdir"
+    trap - EXIT INT TERM
+    return 1
+  fi
+
+  rm -rf "$tmpdir"
+  trap - EXIT INT TERM
+
   # Ensure every item has a "citation-key" key (null if absent, as plain Zotero CSL-JSON
-  # export never includes it -- only Better BibTeX-authored exports do).
-  echo "$all_items" | jq '[.[] | . + {"citation-key": (.["citation-key"] // null)}]' 2>/dev/null || echo "$all_items"
+  # export never includes it -- only Better BibTeX-authored exports do). A failure here is
+  # routed to the same loud-abort contract as the rest of this function, not swallowed.
+  local final
+  final="$(echo "$combined" | jq '[.[] | . + {"citation-key": (.["citation-key"] // null)}]' 2>/dev/null)" || final=""
+  if [ -z "$final" ]; then
+    echo "fetch_path1: error - failed to default citation-key on the combined result; aborting, no write." >&2
+    return 1
+  fi
+  echo "$final"
 }
 
 # ---------------------------------------------------------------------------
@@ -536,7 +606,10 @@ API_PROBE="$(probe_zotero_api)"
 
 if [ "$API_PROBE" = "200" ]; then
   echo "Rationale: Zotero local API reachable at $API_BASE; using Path 1 (live pull)." >&2
-  ITEMS="$(fetch_path1)"
+  if ! ITEMS="$(fetch_path1)"; then
+    echo "[zotero:auto] Error: Path 1 (Zotero local API) failed partway through pagination. Aborting WITHOUT writing $OUTPUT_PATH -- overwriting a complete export with a truncated one is exactly the data-loss failure mode this abort exists to prevent. See the fetch_path1 diagnostic above for the specific cause. Re-run once resolved, or close Zotero so Path 3 (direct sqlite reconstruction) runs instead." >&2
+    exit 1
+  fi
   SOURCE="zotero7-local-api"
   SOURCE_PATH="$API_BASE"
 
