@@ -27,22 +27,42 @@
       "category": "INSIGHT",
       "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/summaries/01_forbid-concurrent-writer-rewrites-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["hook-testability", "deploy-root-guard", "cwd-relative", "task-lock", "pretooluse", "hermetic-fixture"]
+      "suggested_keywords": [
+        "hook-testability",
+        "deploy-root-guard",
+        "cwd-relative",
+        "task-lock",
+        "pretooluse",
+        "hermetic-fixture"
+      ]
     },
     {
       "content": "Before adding substantial prose to a file matched by an eager rule glob (.claude/rules/**/*.md with a broad paths: frontmatter, e.g. paths: [\"specs/**/*\", \".claude/**/*\"]), check 'REPO_ROOT=$(pwd) bash scripts/measure-eager-context.sh --check' against orchestrator-context-budget.json's eager_load.baseline_bytes BEFORE writing, not after. That baseline is a fixed, deliberately-reviewed ceiling (never silently re-derived), and a verbose new rule section can blow through the entire headroom in one edit. When it does, the established fix in this codebase is the eager-core/lazy-narrative split already used by rules/git-workflow.md and its companion context/standards/git-workflow-narrative.md: keep only the rule statement, a one-sentence distinguishing clause, a brief permitted-forms summary, and an enforcement/pointer paragraph in the eager file; move the incident record, the complete permitted-forms list, and practical guidance to the lazy companion.",
       "category": "PATTERN",
       "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/summaries/01_forbid-concurrent-writer-rewrites-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["eager-context-budget", "orchestrator-context-budget", "rules-eager-vs-lazy", "git-workflow-narrative", "context-budget-gate", "verify-deploy"]
+      "suggested_keywords": [
+        "eager-context-budget",
+        "orchestrator-context-budget",
+        "rules-eager-vs-lazy",
+        "git-workflow-narrative",
+        "context-budget-gate",
+        "verify-deploy"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
