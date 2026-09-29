@@ -427,6 +427,39 @@ resolve_toolchain() {
 }
 
 # ---------------------------------------------------------------------------
+# Git-remote pre-flight probe -- Lake treats a linked dependency package whose remote it cannot
+# read (inside this script's own sandbox grants) as MOVED, and deletes .lake/packages/<dep> to
+# re-clone it -- a re-clone the sandbox's own network denial would then also fail, losing a
+# dependency Lake cannot get back. Probing first and refusing loudly is cheaper than losing it.
+# Must run AFTER clean_room_setup() (needs $WORKDIR/.lake/packages, populated by `lake exe cache
+# get`) and AFTER resolve_toolchain() (needs $GIT_PATH's dirname on the probe's own PATH, same
+# ordering rationale as Fix 1).
+# ---------------------------------------------------------------------------
+
+git_remote_preflight() {
+  local pkgs_dir="$WORKDIR/.lake/packages" pkg name bad="" url
+  [ -d "$pkgs_dir" ] || return 0
+  for pkg in "$pkgs_dir"/*/; do
+    [ -d "$pkg" ] || continue
+    name="$(basename "$pkg")"
+    if [ -x "$LANDRUN_PATH" ]; then
+      url="$("$LANDRUN_PATH" --best-effort --ro / --rw /dev --env PATH --env HOME -- \
+              env "PATH=$(dirname "$GIT_PATH"):$PATH" "HOME=$HOME" \
+              "$GIT_PATH" -C "$pkg" remote get-url origin 2>/dev/null)" || true
+    else
+      url="$("$GIT_PATH" -C "$pkg" remote get-url origin 2>/dev/null)" || true
+    fi
+    if [ -z "$url" ]; then
+      bad="$name"
+      break
+    fi
+  done
+  if [ -n "$bad" ]; then
+    emit_verdict comparator_unavailable "" "" "git cannot read the remote of linked package '$bad' under this script's sandbox grants; refusing to proceed, since Lake would otherwise treat the failure as a changed package URL and delete .lake/packages/$bad"
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # Config synthesis (dispatch item (c))
 # ---------------------------------------------------------------------------
 
@@ -552,18 +585,50 @@ run_sandboxed() {
   # sandbox argv. LEAN_COMPARATOR_RUN_REAL_LANDRUN forwards the real binary this script already
   # resolved (LANDRUN_PATH) so the shim does not have to re-resolve it from a possibly-different
   # PATH inside the sandbox.
-  local -a env_flags=(-E "PATH=$sandbox_path" -E "TMPDIR=$WORKDIR/.lake/tmp" \
+  local -a env_flags=(-E "PATH=$sandbox_path" -E "HOME=$HOME" -E "TMPDIR=$WORKDIR/.lake/tmp" \
     -E "COMPARATOR_LANDRUN=$LANDRUN_SHIM_BIN" -E "LEAN_COMPARATOR_RUN_REAL_LANDRUN=$LANDRUN_PATH" \
     -E "COMPARATOR_LEAN4EXPORT=$LEAN4EXPORT_PATH")
   [ -n "$LAKE_DIR" ] && env_flags+=(-E "LEAN_COMPARATOR_RUN_LAKE_DIR=$LAKE_DIR")
   [ -n "$NANODA_PATH" ] && env_flags+=(-E "COMPARATOR_NANODA=$NANODA_PATH")
 
+  # Outer landrun hardening -- a deliberate design decision this script ADDS, not a deviation
+  # from the README's mandated wrapper below: Comparator's own internal sandbox (COMPARATOR_
+  # LANDRUN, pointed at the shim) confines only ITS OWN internal `lake build`, never the
+  # top-level `lake env`/Comparator process itself, nor any Lake package-management operation
+  # that runs before it. This layer confines the WHOLE run -- never trust Lake package management
+  # with more room than the clean-room worktree needs. --best-effort matches Comparator's own
+  # landrun call: strict mode demands the newest Landlock ABI the installed landrun knows and
+  # refuses to start below it. landrun drops every environment variable not explicitly named via
+  # --env, so every name systemd-run's own -E flags above set must be re-listed here, or the
+  # wrapped process would not see it.
+  local -a env_names=(PATH HOME TMPDIR COMPARATOR_LANDRUN LEAN_COMPARATOR_RUN_REAL_LANDRUN COMPARATOR_LEAN4EXPORT)
+  [ -n "$LAKE_DIR" ] && env_names+=(LEAN_COMPARATOR_RUN_LAKE_DIR)
+  [ -n "$NANODA_PATH" ] && env_names+=(COMPARATOR_NANODA)
+  local -a env_pass=() outer_name
+  for outer_name in "${env_names[@]}"; do
+    env_pass+=(--env "$outer_name")
+  done
+
   # The README's mandated wrapper, verbatim in shape (landrun-escape mitigation -- Comparator
   # never loads .olean files itself on the stated grounds that they are mmapped and dereferenced
-  # and are therefore an attack surface). OUTER = this systemd-run invocation; INNER =
-  # lake-build-guard.sh (or the ungated fallback above).
-  local -a cmd=(systemd-run "--property=RestrictAddressFamilies=~AF_UNIX" --user --pty \
-    "${env_flags[@]}" --working-directory "$WORKDIR" -- bash -c "$inner_cmd")
+  # and are therefore an attack surface). OUTER = this systemd-run invocation (now wrapping this
+  # script's OWN landrun layer too); INNER = lake-build-guard.sh (or the ungated fallback above).
+  # landrun's absence is kept non-fatal in the same shape as the guard-absent case above: a loud
+  # warning, then a degraded-but-proceeding run under systemd-run alone (Comparator's own
+  # internal sandbox is unaffected either way) -- never a silent skip. In practice this script's
+  # own earlier binary resolution already requires LANDRUN_PATH to be non-empty and executable,
+  # so this is defensive belt-and-suspenders, not an expected-to-fire path.
+  local -a cmd
+  if [ -x "$LANDRUN_PATH" ]; then
+    cmd=(systemd-run "--property=RestrictAddressFamilies=~AF_UNIX" --user --pty \
+      "${env_flags[@]}" --working-directory "$WORKDIR" -- \
+      "$LANDRUN_PATH" --best-effort --rox / --rw /dev --rwx "$WORKDIR" \
+      "${env_pass[@]}" -- bash -c "$inner_cmd")
+  else
+    echo "lean-comparator-run.sh: WARNING: '$LANDRUN_PATH' is not executable; running WITHOUT this script's own outer landrun hardening layer (Comparator's own internal sandbox, wrapping its OWN internal 'lake build' only, is unaffected)." >&2
+    cmd=(systemd-run "--property=RestrictAddressFamilies=~AF_UNIX" --user --pty \
+      "${env_flags[@]}" --working-directory "$WORKDIR" -- bash -c "$inner_cmd")
+  fi
 
   # NOTE on --pty and stream separation: --pty allocates a pseudo-tty for the WRAPPED command,
   # which merges that command's own stdout and stderr into ONE duplex channel before it ever
@@ -781,6 +846,7 @@ have_systemd_run || fail_unavailable "systemd-run (present but unusable, or abse
 
 clean_room_setup
 resolve_toolchain
+git_remote_preflight
 synth_config
 run_sandboxed
 classify_verdict

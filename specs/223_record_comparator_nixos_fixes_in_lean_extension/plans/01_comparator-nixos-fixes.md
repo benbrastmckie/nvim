@@ -214,30 +214,30 @@ instead of the elan shim, and points `COMPARATOR_LANDRUN` at Phase 1's shim.
 
 ---
 
-### Phase 3: Outer landrun hardening and git-remote pre-flight probe [NOT STARTED]
+### Phase 3: Outer landrun hardening and git-remote pre-flight probe [COMPLETED]
 
 **Goal**: Confine every process of the run — including `lake env` and Comparator itself, which run
 *outside* Comparator's own sandbox — to the clean-room worktree and `/dev` with no network, and
 fail loudly before Lake can delete a dependency it cannot re-clone.
 
 **Tasks**:
-- [ ] Re-read `recheck-comparator.sh`'s `confined()` for the live outer-landrun argument vector
+- [x] Re-read `recheck-comparator.sh`'s `confined()` for the live outer-landrun argument vector *(completed)*
       (`--best-effort --rox / --rw /dev --rwx <room>`, plus the explicit `--env` passthrough list)
       and its stated rationale ("a hardening this script adds, not a deviation").
-- [ ] Add the outer `landrun` layer inside the existing `systemd-run` wrapper in
+- [x] Add the outer `landrun` layer inside the existing `systemd-run` wrapper in *(completed)*
       `run_sandboxed()`, preserving `--no-share` and the guard/fallback branch structure; use
       `--best-effort` for the same reason the reference does (strict mode refuses to start below
       the newest Landlock ABI the installed landrun knows).
-- [ ] Enumerate the `--env` passthrough names explicitly (`PATH`, `HOME`, `TMPDIR`,
+- [x] Enumerate the `--env` passthrough names explicitly (`PATH`, `HOME`, `TMPDIR`, *(completed)*
       `COMPARATOR_LANDRUN`, `COMPARATOR_LEAN4EXPORT`, the shim's own seams) — landrun drops
       everything not named.
-- [ ] Add a git-remote pre-flight probe: run `git -C <pkg> remote get-url origin` under the same
+- [x] Add a git-remote pre-flight probe: run `git -C <pkg> remote get-url origin` under the same *(completed)*
       grants before the main run; on failure emit `comparator_unavailable` naming the affected
       package and the reason (Lake would otherwise treat the failure as a changed package URL and
       delete `.lake/packages/<dep>`).
-- [ ] Keep `landrun`'s absence non-fatal in the same shape the script already treats a missing
+- [x] Keep `landrun`'s absence non-fatal in the same shape the script already treats a missing *(completed)*
       guard: a loud warning and a degraded-but-proceeding run, never a silent skip.
-- [ ] `bash -n`; re-run the existing suite.
+- [x] `bash -n`; re-run the existing suite. *(completed: added write_landrun_stub() test helper; all 22 pre-existing cases + sibling check PASS)* *(deviation: altered — added write_landrun_stub() exec-forwarding test helper, replacing the no-op landrun stub at all bindir setups, since the outer landrun layer now wraps this script's whole invocation, not just Comparator's own internal (never-reached-by-stub) use)*
 
 **Timing**: 1.5 hours
 

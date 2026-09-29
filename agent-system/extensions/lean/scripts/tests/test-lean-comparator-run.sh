@@ -103,13 +103,37 @@ make_bin_dir() {
   echo "$dir"
 }
 
-# write_noop_stub <path> -- a stub that exits 0 immediately (used for landrun/lean4export, which
-# this suite never exercises for real -- Comparator's own README-mandated internal calls to them
-# are not reached by any stub `comparator` used here).
+# write_noop_stub <path> -- a stub that exits 0 immediately (used for lean4export, which this
+# suite never exercises for real -- Comparator's own README-mandated internal calls to it are
+# not reached by any stub `comparator` used here).
 write_noop_stub() {
   cat > "$1" <<'EOF'
 #!/usr/bin/env bash
 exit 0
+EOF
+  chmod +x "$1"
+}
+
+# write_landrun_stub <path> -- a stub `landrun` that skips every flag argument up to and
+# including the first "--", then EXECS the trailing command -- unlike write_noop_stub, this one
+# must actually forward: since Phase 3's outer landrun hardening layer, lean-comparator-run.sh's
+# own resolved LANDRUN_PATH wraps its ENTIRE sandboxed invocation (guard-or-lake-env plus
+# Comparator itself), not merely a path Comparator's own internal build might invoke. A no-op
+# stub here would silently swallow the whole wrapped command, exactly as it did before this
+# helper existed (every V*/G* case regressed to an empty-output unclassified_failure).
+write_landrun_stub() {
+  cat > "$1" <<'EOF'
+#!/usr/bin/env bash
+args=("$@")
+i=0
+while [ $i -lt ${#args[@]} ]; do
+  if [ "${args[$i]}" = "--" ]; then
+    i=$((i+1))
+    break
+  fi
+  i=$((i+1))
+done
+exec "${args[@]:$i}"
 EOF
   chmod +x "$1"
 }
@@ -256,7 +280,7 @@ fi
 REPO_U="$WORKDIR/repo-u"
 make_repo "u"
 BIN_U="$(make_bin_dir u)"
-write_noop_stub "$BIN_U/landrun"
+write_landrun_stub "$BIN_U/landrun"
 write_noop_stub "$BIN_U/lean4export"
 write_lake_stub "$BIN_U/lake"
 make_lean_stub "${BIN_U}"
@@ -335,7 +359,7 @@ fi
 REPO_G="$WORKDIR/repo-g"
 make_repo "g"
 BIN_G="$(make_bin_dir g)"
-write_noop_stub "$BIN_G/landrun"
+write_landrun_stub "$BIN_G/landrun"
 write_noop_stub "$BIN_G/lean4export"
 write_lake_stub "$BIN_G/lake"
 make_lean_stub "${BIN_G}"
@@ -365,7 +389,7 @@ fi
 
 # Case G3: timeout -- a stub comparator that outlives --timeout yields verdict=timeout, exit 70.
 BIN_G3="$(make_bin_dir g3)"
-write_noop_stub "$BIN_G3/landrun"
+write_landrun_stub "$BIN_G3/landrun"
 write_noop_stub "$BIN_G3/lean4export"
 write_lake_stub "$BIN_G3/lake"
 make_lean_stub "${BIN_G3}"
@@ -391,7 +415,7 @@ fi
 REPO_V="$WORKDIR/repo-v"
 make_repo "v"
 BIN_V="$(make_bin_dir v)"
-write_noop_stub "$BIN_V/landrun"
+write_landrun_stub "$BIN_V/landrun"
 write_noop_stub "$BIN_V/lean4export"
 write_lake_stub "$BIN_V/lake"
 make_lean_stub "${BIN_V}"

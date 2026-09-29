@@ -1,0 +1,39 @@
+{
+  "phase": 3,
+  "phase_name": "Outer landrun hardening and git-remote pre-flight probe",
+  "started_at": "2026-09-29T23:45:00Z",
+  "last_updated": "2026-09-30T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read confined() outer-landrun argv and rationale", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Outer landrun layer inside systemd-run wrapper, preserving --no-share/guard structure", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 3, "description": "Explicit --env passthrough list", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 4, "description": "git-remote pre-flight probe (comparator_unavailable naming package)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 5, "description": "landrun absence non-fatal, loud warning, degraded proceed", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-comparator-run.sh"]},
+    {"id": 6, "description": "bash -n; re-run existing suite", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "description": "Manual /tmp end-to-end smoke test of the outer landrun wrap with a real landrun binary and stub lake/comparator",
+      "result": "succeeded",
+      "reason": "confirmed the outer landrun layer correctly execs the wrapped command and forwards named env vars once the test's own landrun stub was made exec-forwarding"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6",
+      "description": "re-run the existing suite",
+      "type": "altered",
+      "reason": "introducing the real outer landrun wrap broke every guard/verdict case because the suite's pre-existing write_noop_stub-based landrun stub is a true no-op (exit 0, no exec) -- previously harmless since Comparator's own internal COMPARATOR_LANDRUN use was never reached by any stub comparator, but now load-bearing since LANDRUN_PATH also wraps this script's OWN entire sandboxed invocation. Fixed by adding a write_landrun_stub() helper (skips flags to the first '--', execs the rest) and swapping it in at all four bindir setups (U, G, G3, V); lean4export's write_noop_stub usage is unaffected (never load-bearing). All 22 pre-existing cases + sibling check now PASS.",
+      "annotation": "*(deviation: altered — added write_landrun_stub() exec-forwarding test helper, replacing the no-op landrun stub at all bindir setups, since the outer landrun layer now wraps this script's whole invocation, not just Comparator's own internal (never-reached-by-stub) use)*"
+    },
+    {
+      "task_id": "3-verification",
+      "description": "\"A pre-flight failure path is reachable\" criterion",
+      "type": "deferred",
+      "reason": "Full reachability proof (a stub git failing 'remote get-url' inside a populated .lake/packages/<dep>) requires the same stub-lake-populates-.lake/packages machinery Phase 4 is dedicated to building as its own pre-flight-probe regression case; building a redundant ad hoc version for Phase 3's own smoke check was judged not worth the added complexity given Phase 3's own Verification Tier is 'interface' (structural), not 'full'. Phase 4 delivers the actual reachability proof.",
+      "annotation": "*(deviation: deferred to Phase 4 — full pre-flight-probe reachability proof is Phase 4's own dedicated regression case)*"
+    }
+  ]
+}
