@@ -311,26 +311,27 @@ measurement, not a failure (D9).
 
 ---
 
-### Phase 3: `validate-state.sh` Check 11 — glob-shaped `file_scope` entries [NOT STARTED]
+### Phase 3: `validate-state.sh` Check 11 — glob-shaped `file_scope` entries [COMPLETED]
 
 **Goal**: A glob-shaped entry is named in a WARN that states the real consequence — invisibility
 to the Overlap-based checks — without claiming the shape is invalid.
 
 **Tasks**:
-- [ ] Re-read `context/patterns/file-footprint-overlap.md`'s Non-Goals section and this script's
-      Check 8 block immediately before authoring the message text.
-- [ ] Add Check 11 after Check 10, splicing `FILE_SCOPE_OVERLAP_JQ_DEFS` and using
-      `is_glob_entry` from Phase 1 (never a locally re-derived regex).
-- [ ] Scope to non-terminal `active_projects[]`, matching Checks 8/9/10.
-- [ ] WARN message names the `project_number` and the offending entry verbatim, and states:
+- [x] Re-read `context/patterns/file-footprint-overlap.md`'s Non-Goals section and this script's
+      Check 8 block immediately before authoring the message text. *(completed)*
+- [x] Add Check 11 after Check 10, splicing `FILE_SCOPE_OVERLAP_JQ_DEFS` and using
+      `is_glob_entry` from Phase 1 (never a locally re-derived regex). *(completed)*
+- [x] Scope to non-terminal `active_projects[]`, matching Checks 8/9/10. *(completed)*
+- [x] WARN message names the `project_number` and the offending entry verbatim, and states:
       this entry is never compared by the overlap-based checks (Check 8's coarseness scan, and
       `orchestrate-predispatch-review.sh` Classes C/D/E), so it collides with nothing; declare a
       directory or file entry if collision detection must see it. It must **not** say the entry is
-      invalid or forbidden (**D6**).
-- [ ] Add the Check 11 entry to the header `Base-mode checks` list, with its own promotion
+      invalid or forbidden (**D6**). *(completed)*
+- [x] Add the Check 11 entry to the header `Base-mode checks` list, with its own promotion
       criterion: advisory indefinitely, since globs remain legitimate for the Containment
       consumer — recorded explicitly so a future reader does not mistake the absence of a
-      promotion bar for an oversight.
+      promotion bar for an oversight. *(completed in Phase 2's edit — see that phase's checklist
+      note)*
 
 **Timing**: 0.5 hours
 

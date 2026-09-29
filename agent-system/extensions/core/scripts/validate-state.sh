@@ -632,6 +632,41 @@ else
   fi
 fi
 
+# ─── Check 11: glob-shaped file_scope entries (WARN-only, base mode) ───────────────────────────
+# D7: uses the canonical is_glob_entry predicate spliced from FILE_SCOPE_OVERLAP_JQ_DEFS (never a
+# locally re-derived regex) -- same character class as path_covered_by_scope()'s and
+# orchestrate-cycle-plan.sh's _sibling_territory_classify_entry()'s existing bash transcriptions.
+# D6: a glob entry is invisible to the symmetric Overlap predicate (Check 8 above) BY DESIGN --
+# context/patterns/file-footprint-overlap.md's Non-Goals section excludes glob matching from
+# Overlap deliberately -- so the WARN below states that concrete consequence, never that the
+# shape is invalid: a glob remains fully legitimate for the separate Containment predicate
+# (path_covered_by_scope() below, consumed by git-snapshot.sh), which already matches it
+# correctly. Same non-terminal population as Check 8/9/10.
+_check11_prog="${FILE_SCOPE_OVERLAP_JQ_DEFS}
+def is_terminal: . == \"completed\" or . == \"abandoned\" or . == \"expanded\";
+(.active_projects) as \$all |
+[ \$all[] | select(((.status // \"\") | is_terminal) | not) ] as \$nonterm |
+[
+  \$nonterm[] as \$task |
+  (\$task.file_scope // [])[] as \$entry |
+  select(\$entry | is_glob_entry) |
+  {project_number: \$task.project_number, entry: \$entry}
+] | sort_by(.project_number, .entry)"
+glob_findings=$(jq -c "$_check11_prog" "$STATE_FILE" 2>/dev/null)
+glob_count=$(jq 'length' <<< "${glob_findings:-[]}" 2>/dev/null || echo 0)
+if [[ -z "$glob_count" || "$glob_count" -eq 0 ]]; then
+  log_pass "No glob-shaped file_scope entries found"
+else
+  while IFS=$'\t' read -r _c11_pnum _c11_entry; do
+    [[ -z "$_c11_pnum" ]] && continue
+    log_warn "Glob-shaped file_scope entry: project_number $_c11_pnum, entry '$_c11_entry' -- invisible to overlap-based collision detection (Check 8 above, and orchestrate-predispatch-review.sh Classes C/D/E); declare a directory or file entry instead if collision detection must see it"
+  done < <(jq -r '.[:10][] | [(.project_number|tostring), .entry] | @tsv' <<< "$glob_findings")
+  if [[ "$glob_count" -gt 10 ]]; then
+    _c11_remaining=$((glob_count - 10))
+    log_warn "... and $_c11_remaining more glob-shaped file_scope entry(ies) not shown"
+  fi
+fi
+
 # ══════════════════════════════════════════════════════════════════════════════════════════════
 # --deep checks
 # ══════════════════════════════════════════════════════════════════════════════════════════════

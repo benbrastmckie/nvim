@@ -1,0 +1,13 @@
+{
+  "phase": 3,
+  "phase_name": "validate-state.sh Check 11 -- glob-shaped file_scope entries",
+  "started_at": "2026-09-29T00:50:00Z",
+  "last_updated": "2026-09-29T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Check 11 block after Check 10 using is_glob_entry from Phase 1", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
