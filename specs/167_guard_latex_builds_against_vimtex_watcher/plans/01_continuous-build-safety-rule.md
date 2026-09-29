@@ -2,7 +2,7 @@
 
 - **Task**: 167 - Guard LaTeX builds against the vimtex watcher: always-on rule first; shared
   guard script and lifecycle wiring only if the rule proves insufficient
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md
@@ -156,23 +156,23 @@ text, not a second copy of the guidance.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Authoritative Rule -- Widen Glob, Add Safety Section, Repair Unconditional Blocks [NOT STARTED]
+### Phase 1: Authoritative Rule -- Widen Glob, Add Safety Section, Repair Unconditional Blocks [COMPLETED]
 
 **Goal**: `agent-system/extensions/latex/rules/latex.md` carries AC1-AC5 as actionable literal
 commands in a new "Continuous Build Safety" section positioned above the two blocks it constrains,
 and neither of those blocks any longer reads as an unconditional build instruction.
 
 **Tasks**:
-- [ ] Re-read the file immediately before editing (seven sibling tasks are live on this tree).
-- [ ] Replace the frontmatter `paths: "**/*.tex"` with the JSON-array form
+- [x] Re-read the file immediately before editing (seven sibling tasks are live on this tree). *(completed)*
+- [x] Replace the frontmatter `paths: "**/*.tex"` with the JSON-array form
       `paths: ["**/*.tex", "**/*.latexmkrc", "**/*.bib", "**/build/**"]` (Decision 1). Use the
       array form attested in `nvim/rules/neovim-lua.md` and `core/rules/git-workflow.md` -- quoted
-      strings, comma-space separated, single line.
-- [ ] Insert a new `## Continuous Build Safety` section immediately ABOVE the existing
+      strings, comma-space separated, single line. *(completed: verified via jq parse, 4 globs)*
+- [x] Insert a new `## Continuous Build Safety` section immediately ABOVE the existing
       `## Validation Checklist` heading. That position satisfies the "read before the commands it
       constrains" requirement for both repaired blocks, since `Validation Checklist` precedes
-      `Build Commands` in this file.
-- [ ] In that section, carry all five behavioral points with literal commands, not paraphrases:
+      `Build Commands` in this file. *(completed)*
+- [x] In that section, carry all five behavioral points with literal commands, not paraphrases:
       AC1 detection via `pgrep -af 'latexmk.*-pvc'` plus the same-`.tex`/same-`-outdir` process
       check; AC2 the three never-do items (no build into the shared `-outdir`, no `latexmk -c`/`-C`
       against it, never kill/stop/restart the watcher); AC3 both non-contending paths -- let vimtex
@@ -182,13 +182,13 @@ and neither of those blocks any longer reads as an unconditional build instructi
       spurious "Build failed" entries; AC4 report-don't-repair, naming `:VimtexClean` then
       `:VimtexCompile` as the user's remedy; AC5 classify-before-rerunning, distinguishing exit 12
       plus a clean log (a contention signal) from a real LaTeX error (a `^!` line or a
-      `file.tex:N:` file-line-error).
-- [ ] Repair `## Validation Checklist`: replace the `- [ ] Builds successfully with pdflatex`
-      bullet with one that requires an isolated build and cross-references the new section.
-- [ ] Repair `## Build Commands`: add a single gating sentence above the existing fenced block
+      `file.tex:N:` file-line-error). *(completed)*
+- [x] Repair `## Validation Checklist`: replace the `- [ ] Builds successfully with pdflatex`
+      bullet with one that requires an isolated build and cross-references the new section. *(completed)*
+- [x] Repair `## Build Commands`: add a single gating sentence above the existing fenced block
       pointing at the new section. Leave the commands inside the block unchanged -- they are
-      correct once gated.
-- [ ] Commit this file alone with a task-scoped message.
+      correct once gated. *(completed)*
+- [x] Commit this file alone with a task-scoped message. *(completed)*
 
 **Timing**: 45 minutes
 

@@ -1,40 +1,9 @@
 {
-  "status": "planned",
-  "dispatch_seq": 16,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md",
-      "summary": "Four-phase plan (3 waves, 2h) correcting the latex extension's existing rule file in place -- widened paths glob, new authoritative Continuous Build Safety section, two repaired unconditional blocks -- plus three non-duplicating pointers and an AC1-AC7 acceptance sweep."
-    }
-  ],
-  "next_steps": "Run /implement 167 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 23,
   "metadata": {
-    "session_id": "sess_1790640953_159e0d_167",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 2,
-    "dependency_waves": [[1], [2, 3], [4]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this agent-system source store, 'verify the change by redeploying' is frequently NOT an executable verification step for an implementer, for two independent reasons that must both be checked before a plan prescribes it. (1) context/patterns/regeneration-is-manual-only.md licenses exactly ONE automated caller of scripts/deploy-headless.sh -- skill-orchestrate's Stage MT-3 step 7 -- and states the carve-out is explicitly 'not precedent'; any other automated invocation is out of policy. (2) deploy-headless.sh's default mode only resyncs extensions already ACTIVE in the target repo's .claude-extensions.json, so for an inactive extension it silently deploys nothing. The substitute that IS available is source-store static verification plus mechanical replication of the deployer's own parse logic: measure-eager-context.sh deliberately predicts from the source store alone (never reads the deployed tree) and its normalize_paths_field / rule_matches_rep_paths functions are pure enough to replicate in a one-line assertion, e.g. reading a rule's raw paths: value with sed and piping the bracketed form through `jq -r '.[]'`.",
-      "category": "PATTERN",
-      "source_artifact": "specs/167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-verification", "deploy-headless", "source-store", "active-extensions", "measure-eager-context"]
-    }
-  ],
-  "modified_files": [
-    "specs/167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md"
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/latex/rules/latex.md",
-    "agent-system/extensions/latex/EXTENSION.md",
-    "agent-system/extensions/latex/context/project/latex/tools/compilation-guide.md",
-    "agent-system/extensions/latex/agents/latex-implementation-agent.md"
-  ],
-  "errors": []
+    "session_id": "sess_1790640953_159e0d",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
