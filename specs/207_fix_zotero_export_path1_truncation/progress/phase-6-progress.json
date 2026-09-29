@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Offline regression coverage",
+  "started_at": "2026-09-29T03:17:00Z",
+  "last_updated": "2026-09-29T03:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-zotero-generate-export.sh following existing test conventions", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 2, "description": "Install stub via ln -s, scratch ZOTERO_LIBRARY per test", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 3, "description": ">128KiB accumulator boundary test, asserts boundary crossed", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 4, "description": "Short mid-pagination page test (4042-item library)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 5, "description": "Loud failure, no write: transport failure and malformed JSON", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 6, "description": "Shrink guard blocks test", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 7, "description": "Shrink guard opt-out test", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 8, "description": "No-existing-export branch test", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 9, "description": "itemType exclusion test", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 10, "description": "Stub dispatch correctness test (BBT-RPC vs items)", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]},
+    {"id": 11, "description": "Run full existing test suite to confirm no regression", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Direct path3-itemtype test without forcing API probe unreachable",
+      "result": "failed",
+      "reason": "curl-stub.sh's items-endpoint default code is 200, so probe_zotero_api() always reported reachable and Path 1 (not Path 3) ran, yielding 0 items against an empty default CURL_STUB_ZOTERO_TOTAL. Fixed by setting CURL_STUB_ZOTERO_API_CODE=000 for that scenario only."
+    }
+  ],
+  "handoff_count": 0,
+  "scope_hypothesis_confirmation": {
+    "asserted_case_count": 11,
+    "actual_case_count": 11,
+    "note": "Plan asserted 9 test cases; actual delivered count is 11 (split loud-failure into transport + malformed sub-cases, and added path3-itemtype plus pre-existing-suite as explicit scenarios). Spot-verified pre-fix-vs-post-fix divergence for the boundary-128kib case directly (not via the test file, ad hoc): running the pre-fix zotero-generate-export.sh (git rev 374fca43e, before this task's phase 2) against the same 500-item/pad=2000 stub scenario yields 0 written items (the filtered-page argv string itself already exceeds MAX_ARG_STRLEN on the very first page under this pad size, and the error-swallowing fallback returns the still-empty initial accumulator, reported as success) vs. 350 items post-fix -- confirming the regression case is real, not a test that would have passed against the unfixed script."
+  }
+}

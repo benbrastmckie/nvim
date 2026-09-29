@@ -336,38 +336,38 @@ single-concern hunk.
 
 ---
 
-### Phase 6: Offline regression coverage [NOT STARTED]
+### Phase 6: Offline regression coverage [COMPLETED]
 
 - **Goal:** A new test script asserts every defect fixed above stays fixed, running entirely offline
   under the PATH-shadowing curl stub with no live API and no running Zotero.
 - **Tasks:**
-  - [ ] Create `scripts/tests/test-zotero-generate-export.sh`, following the structure and
+  - [x] Create `scripts/tests/test-zotero-generate-export.sh`, following the structure and
         pass/fail-reporting conventions of the existing `test-literature-*.sh` scripts in that
         directory.
-  - [ ] Install the stub as `curl` in a scratch dir prepended to `PATH`; point `ZOTERO_LIBRARY` at a
+  - [x] Install the stub as `curl` in a scratch dir prepended to `PATH`; point `ZOTERO_LIBRARY` at a
         scratch output path so no test can touch the real `$LITERATURE_DIR` export.
-  - [ ] Test: **>128KiB accumulator boundary.** A synthetic library whose accumulated JSON exceeds
+  - [x] Test: **>128KiB accumulator boundary.** A synthetic library whose accumulated JSON exceeds
         131072 bytes well before the last page exports with an item count exactly equal to the
         configured total. Assert the byte size of the accumulated payload actually crossed the
         boundary, so the test cannot silently stop exercising the threshold it exists to cover.
-  - [ ] Test: **short mid-pagination page.** A stub scenario returning fewer than `limit` items at a
+  - [x] Test: **short mid-pagination page.** A stub scenario returning fewer than `limit` items at a
         mid-library offset while `Total-Results` reports more must still export the full total —
         guarding the regression that produced the 481-item stop.
-  - [ ] Test: **loud failure, no write.** With a mid-sweep page returning a transport failure, and
+  - [x] Test: **loud failure, no write.** With a mid-sweep page returning a transport failure, and
         again with one returning malformed JSON: non-zero exit, and the pre-existing output file
         unchanged (compare checksum before/after).
-  - [ ] Test: **shrink guard blocks.** Pre-seed an export plus stamp with a large `item_count`, stub a
+  - [x] Test: **shrink guard blocks.** Pre-seed an export plus stamp with a large `item_count`, stub a
         much smaller library: non-zero exit, distinct exit code, file unchanged, diagnostic mentions
         `--allow-shrink`.
-  - [ ] Test: **shrink guard opt-out.** Same scenario with `--allow-shrink`: exit 0, smaller file
+  - [x] Test: **shrink guard opt-out.** Same scenario with `--allow-shrink`: exit 0, smaller file
         written.
-  - [ ] Test: **no-existing-export branch.** Empty scratch dir: exit 0, file written, not-applicable
+  - [x] Test: **no-existing-export branch.** Empty scratch dir: exit 0, file written, not-applicable
         line logged.
-  - [ ] Test: **itemType exclusion.** Synthetic mix with attachment/note/annotation rows: no excluded
+  - [x] Test: **itemType exclusion.** Synthetic mix with attachment/note/annotation rows: no excluded
         key appears in the written export.
-  - [ ] Test: **stub dispatch correctness.** A BBT-RPC URL is not served an items body (regression
+  - [x] Test: **stub dispatch correctness.** A BBT-RPC URL is not served an items body (regression
         guard for the shared host:port).
-  - [ ] Run the full existing test suite in `scripts/tests/` to confirm the stub changes broke no
+  - [x] Run the full existing test suite in `scripts/tests/` to confirm the stub changes broke no
         existing Tier 3 discovery test.
 - **Timing:** 1.5 hours
 - **Depends on:** 5
