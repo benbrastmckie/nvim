@@ -89,6 +89,21 @@ guarded build.
   project-granular regardless of scope.
 - Unscoped (full project) -- final verification only (after all phases complete)
 
+**The guard's mutex is real but opt-in -- route every `lake` invocation through it.** The build
+guard implements a genuine `flock`-based lock: it serializes concurrent builds against the same
+project and lets a waiter replay an already-completed matching result instead of launching a
+redundant one. What it does NOT do is intercept a bare `lake` call -- participation is opt-in by
+construction, so any process that invokes `lake` directly (including a project-local script this
+agent system does not own and cannot edit) bypasses the lock entirely and can collide with a
+guarded build running at the same time. The consequence of that collision is a **lost build, not
+a corrupted one** -- see the working-tree and build isolation posture decision record
+(`context/patterns/batch-orchestration-guardrails.md`) for the concurrency evidence this is drawn
+from. Two obligations follow: route every `lake` invocation an agent makes through
+`lake-build-guard.sh build ...`, never bare `lake`; and treat an unexplained build failure during
+concurrent work on the same project as *possible* guard bypass by another process, not
+automatically your own regression -- check for a competing unguarded `lake` before assuming the
+code is wrong.
+
 ## Literature Fidelity
 
 When a literature source (paper, textbook, proof sketch) is referenced in the task or plan:

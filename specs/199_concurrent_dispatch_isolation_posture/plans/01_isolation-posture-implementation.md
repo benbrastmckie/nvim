@@ -337,32 +337,33 @@ against all three failure modes.
 
 ---
 
-### Phase 3: Document the mutex opt-in and the staging qualification [NOT STARTED]
+### Phase 3: Document the mutex opt-in and the staging qualification [COMPLETED]
 
 **Goal**: WORK items (d)(i) and (d)(ii) — put both hazards where an agent will actually read them.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/lean/rules/lean4.md`'s `## Build Commands` section, add the
+- [x] In `agent-system/extensions/lean/rules/lean4.md`'s `## Build Commands` section, add the
       opt-in statement: the guard implements a real flock mutex, but participation is **opt-in** —
       any process invoking bare `lake` (including a project-local script the agent system does not
       own and cannot edit) bypasses the lock entirely and can collide with a guarded build. State
       the consequence plainly (a lost build, not a corrupted one) and the agent-side obligation
       (route every `lake` invocation through the guard; treat an unexplained build failure during
-      concurrent work as possible contention).
-- [ ] Add the same fact to `lake-build-guard.sh`'s header as a short cross-reference under its
+      concurrent work as possible contention). *(completed)*
+- [x] Add the same fact to `lake-build-guard.sh`'s header as a short cross-reference under its
       existing "WHAT THIS DELIBERATELY DOES NOT DO" block — a pointer to the decision record and
       the bypass hazard only. Do **not** change the participation contract, the allowlist, or any
-      mutex behavior.
-- [ ] Add the mode-1b qualification to
+      mutex behavior. *(completed: comment-only diff, confirmed via `git diff`)*
+- [x] Add the mode-1b qualification to
       `agent-system/extensions/core/context/standards/git-staging-scope.md`'s per-operation scope
       section: targeted explicit-path staging is **necessary but not sufficient** under
       concurrency, because path granularity is the file and two dispatches editing one file bleed
       into each other's commits however carefully each stages. Point at the decision record for
       the posture that does address it. Do **not** write this into `rules/git-workflow.md`, which
-      another task owns; note in the text that the two documents are cross-referenced.
-- [ ] Sanity-check every claim against the guard's actual source before writing it (the mutex,
+      another task owns; note in the text that the two documents are cross-referenced. *(completed)*
+- [x] Sanity-check every claim against the guard's actual source before writing it (the mutex,
       lock-wait exit 75, abandoned-lock recovery, result sharing, audible degradation when `flock`
-      is absent) so the documentation cannot overstate or understate what exists.
+      is absent) so the documentation cannot overstate or understate what exists. *(completed: all
+      five claims re-read directly from lake-build-guard.sh source before writing)*
 
 **Timing**: 1 hour
 

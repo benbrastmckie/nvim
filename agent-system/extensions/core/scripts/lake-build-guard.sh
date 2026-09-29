@@ -14,7 +14,13 @@
 # as omissions):
 #   - It does not wire itself into any call site. lean-sorry-census.sh, skill-lake-repair, or any
 #     other consumer must opt in explicitly by invoking `lake-build-guard.sh build ...` -- that
-#     wiring is separate, dependent work.
+#     wiring is separate, dependent work. This opt-in nature is a real bypass hazard, not merely a
+#     theoretical one: any bare `lake` invocation (including from a caller this agent system does
+#     not own and cannot edit) skips the lock entirely and can collide with a guarded build. See
+#     the working-tree and build isolation posture decision record
+#     (context/patterns/batch-orchestration-guardrails.md) for the concurrency evidence and
+#     rules/lean4.md's Build Commands section for the agent-facing obligation this implies (route
+#     every `lake` call through this guard).
 #   - It does not touch LEAN_NUM_THREADS (see "Recorded dead ends" below).
 #   - It does not coordinate across machines, run as a daemon, or persist any state beyond the
 #     lock/result/log/capture files under the resolved project's own .lake/ directory -- by name:

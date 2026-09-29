@@ -95,6 +95,32 @@ Stage the `plan` scope above (task directory with the same exclusions), PLUS:
 during execution — see `.claude/context/formats/progress-file.md`'s `files_touched` field for the
 per-objective accumulation mechanism that feeds it.
 
+### Concurrency Qualifier: Targeted Staging Is Necessary But Not Sufficient
+
+Everything above (explicit whole-path staging, never a directory or glob pathspec) remains the
+sanctioned staging form and remains **fully sufficient against over-broad staging** — nothing
+here widens or narrows that predicate. It addresses accidentally picking up more files than an
+operation intended. It does **not**, by itself, address a narrower and different hazard:
+**two concurrently dispatched tasks both holding uncommitted edits to the same shared file.**
+Path granularity is the file — an explicit-path `git add` cannot subdivide a file by author — so
+a dispatch that stages a shared file by its correct, explicit whole path can still carry a
+sibling's still-uncommitted lines into its own commit, silently and without any staging mistake
+on either side. This has been observed in production: a single shared markdown file carrying a
+sibling task's rows inside an otherwise-correctly-scoped commit, and separately, a multi-task
+batch where several dispatches' correctly-scoped commits each swept up a different task's
+in-flight edits to shared files, attributing that content to the wrong task's commit history.
+
+The remedy for this hazard lives at a different layer than staging-path discipline: a
+first-claim contended-path lease enforced inside `git-commit-scoped.sh` itself (refusing to stage
+a path a live sibling dispatch is concurrently contending for, rather than trying to stage it more
+carefully), or, for a task type whose builds are expensive enough to warrant it, per-dispatch
+working-tree isolation. See the working-tree and build isolation posture decision record
+(`context/patterns/batch-orchestration-guardrails.md`'s "Working-Tree and Build Isolation
+Posture" section) for the full scoring of both remedies against this and the other concurrent-
+dispatch failure modes. That document and this one are cross-referenced deliberately: this
+document defines what a single dispatch stages; that one decides what protects a shared file
+across dispatches.
+
 ## Multi-Task Application
 
 In multi-task `/orchestrate`, the `research`/`plan`/`implement` scopes above apply **once per
