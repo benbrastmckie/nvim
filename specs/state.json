@@ -458,6 +458,11 @@
           "path": "specs/162_formalize_files_to_modify_and_harvest_file_scope/plans/01_files-to-modify-harvest.md",
           "type": "plan",
           "summary": "6-phase plan: formalize **Files to modify** in plan-format.md, build plan-file-scope-harvest.sh, widen --file-scope-add to plan postflight, wire all four call sites, add cross-repo backfill, deploy and verify."
+        },
+        {
+          "path": "specs/162_formalize_files_to_modify_and_harvest_file_scope/summaries/01_files-to-modify-harvest-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all six phases, decisions, deviations, and cross-repo coverage numbers."
         }
       ],
       "file_scope": [
@@ -466,7 +471,8 @@
         "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Formalized plan-format.md's Files to modify field, built plan-file-scope-harvest.sh, widened update-task-status.sh's --file-scope-add restriction to accept plan postflights, wired the harvest into all five live plan-postflight call sites (discovering skill_postflight_update in skill-base.sh as a fifth, actually-live site beyond the dispatch's four named ones), and built/ran a cross-repo backfill script that populated file_scope for 7 existing plan-bearing tasks in ~/Projects/BimodalLogic."
     },
     {
       "project_number": 163,

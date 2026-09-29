@@ -2369,6 +2369,7 @@ Also reject GLOB entries in file_scope at both check sites. Observed 2026-09-14:
 - **Dependencies**: Task 197, Task 213
 - **Research**: [162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md]
 - **Plan**: [162_formalize_files_to_modify_and_harvest_file_scope/plans/01_files-to-modify-harvest.md]
+- **Summary**: [162_formalize_files_to_modify_and_harvest_file_scope/summaries/01_files-to-modify-harvest-summary.md]
 
 **Description**: Populate `file_scope` at PLAN time by formalizing an existing, universally-followed convention and making it reliably machine-harvestable.
 
