@@ -523,31 +523,49 @@ session registry is no longer documented as having no readers.
 
 ---
 
-### Phase 7: Redeploy and Confirm Survival [IN PROGRESS]
+### Phase 7: Redeploy and Confirm Survival [COMPLETED]
 
 **Goal**: every change reaches `.claude/` through regeneration, and the deployed hook copy
 actually fires.
 
 **Tasks**:
-- [ ] Confirm all of Phases 1-6 are committed and the working tree carries no uncommitted edits
-      to this task's files.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` in its default (non-destructive resync) mode.
-- [ ] Run `bash .claude/scripts/check-deploy-freshness.sh` and confirm no STALE row for this
-      task's files.
-- [ ] Diff the deployed copy of each changed file against its source-store counterpart
+- [x] Confirm all of Phases 1-6 are committed and the working tree carries no uncommitted edits
+      to this task's files. *(completed: also caught and fixed a Phase 1 eager-context-budget
+      overshoot during this confirmation pass — see Phase 1's deviation note)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` in its default (non-destructive resync) mode.
+      *(completed: first run surfaced the eager-load Gate 20 [FAIL] plus two pre-existing
+      literature-extension findings unrelated to this task; second run after the Phase 1 trim-fix
+      shows Gate 20 [PASS] (65,949 B / 65,950 B baseline) with only the two unrelated
+      literature-extension findings remaining)*
+- [x] Run `bash .claude/scripts/check-deploy-freshness.sh` and confirm no STALE row for this
+      task's files. *(completed: the WARN it reports is for the whole 'core' extension, driven by
+      sibling tasks' in-flight source-store edits (task-reference-exemptions.md,
+      orchestrate-predispatch-review.sh, its test, manifest.json) outside this task's file_scope;
+      this task's own 8 files are confirmed byte-identical between source and deployed below)*
+- [x] Diff the deployed copy of each changed file against its source-store counterpart
       (`.claude/hooks/guard-destructive-git.sh`, `.claude/rules/git-workflow.md`,
       `.claude/agents/general-implementation-agent.md`, `.claude/context/contracts/recovery.md`,
       `.claude/context/standards/git-safety.md`,
       `.claude/context/standards/orchestrator-runtime-files.md`,
+      `.claude/context/standards/git-workflow-narrative.md`,
       `.claude/scripts/tests/test-guard-destructive-git.sh`) and confirm each is identical.
-- [ ] Run the test suite from the **deployed** path
+      *(completed: all 8 files identical)*
+- [x] Run the test suite from the **deployed** path
       (`bash .claude/scripts/tests/test-guard-destructive-git.sh`, where `HOOK` resolves to
       `.claude/hooks/guard-destructive-git.sh`) and confirm it exits 0 — this is what proves the
-      predicate fires from the deployed copy, not only from the source store.
-- [ ] Run `bash .claude/scripts/validate-wiring.sh` (read-only; a sibling task owns that file this
+      predicate fires from the deployed copy, not only from the source store. *(completed: 72
+      passed, 0 failed; also confirmed a live manual smoke test against `.claude/hooks/
+      guard-destructive-git.sh` directly: bare `--amend` refused with exit 2, pointing at
+      `.claude/rules/git-workflow.md`'s new section)*
+- [x] Run `bash .claude/scripts/validate-wiring.sh` (read-only; a sibling task owns that file this
       cycle, so do not edit it) and confirm no new failure attributable to these changes.
-- [ ] Commit any deploy-side bookkeeping the deploy itself produced, scoped, via
+      *(completed: 41 pre-existing failures, all missing `project/neovim/**`/
+      `project/memory/README.md` context files unrelated to this task's footprint; every check
+      naming `general-implementation-agent`/`git-workflow.md` reports PASS)*
+- [x] Commit any deploy-side bookkeeping the deploy itself produced, scoped, via
       `git-commit-scoped.sh`; do not stage unrelated sibling-task changes to the shared tree.
+      *(completed: no deploy-side bookkeeping was produced beyond the Phase 1 trim-fix commit
+      already made above; nothing further to commit here)*
 
 **Timing**: 0.75 hours
 
