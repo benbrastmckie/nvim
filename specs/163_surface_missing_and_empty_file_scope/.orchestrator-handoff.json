@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "summary": "8-phase plan for surfacing missing/empty/null and glob-shaped file_scope: new WARN-only Check 10 (three distinguishable sub-states) and Check 11 (glob) plus a --strict flag in validate-state.sh, new Classes F and G in orchestrate-predispatch-review.sh, one shared is_glob_entry jq def in lib/file-scope-overlap.sh, and fixture coverage in both existing test suites. Advisory-first per the plan-format.md Verification Tier precedent: promotion criterion recorded in the script header, not executed here.",
-  "phase": "plan",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "summary": "Implemented all 8 phases: Check 10 (missing/null/empty file_scope) and Check 11 (glob-shaped entries) plus a --strict flag in validate-state.sh; Classes F and G in orchestrate-predispatch-review.sh, requiring new sourcing of lib/file-scope-overlap.sh since the plan's premise that this splice already existed was false. Discovered and fixed one genuine pre-existing bug in --repair (silently manufactured file_scope: [] on an absent-key candidate co-invoked with a genuinely-null sibling) and one --help truncation regression, both pinned by new regression tests. 25/25 and 34/34 fixture tests pass; both target scripts shellcheck-clean at the established baseline (one unrelated pre-existing SC2053 in lib/file-scope-overlap.sh, unfixed per Non-Goals). Live measurement: this repo 1/0/0/0 (missing/null/empty/glob) of 28 non-terminal tasks; BimodalLogic 23/5/0/0 of 47 (reported as a measurement per D9, not asserted).",
+  "phase": "implement",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/163_surface_missing_and_empty_file_scope/plans/01_surface-missing-empty-file-scope.md",
-      "summary": "8 phases, ~6.5h, 6 dependency waves; records 9 decisions including the Class F/G correction to the addendum's 'Class C' reference and the empty-vs-absent-vs-null ruling."
+      "type": "summary",
+      "path": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
+      "summary": "Full implementation summary with all 8 phases, decisions, deviations (including the major pre-existing --repair bugfix), verification results, and follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 8,
   "phases_total": 8,
   "blockers": [],
-  "next_action_hint": "Run /implement 163 to execute the plan (wave 1 = Phase 1, the shared is_glob_entry jq def).",
-  "dispatch_seq": 11
+  "next_action_hint": "Task complete. All 8 phases COMPLETED, all acceptance criteria verified. No further action needed unless the recorded promotion criteria (WARN -> FAIL) or the pre-existing SC2053 in lib/file-scope-overlap.sh are picked up by a future task."
 }

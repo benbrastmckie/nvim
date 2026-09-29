@@ -1,9 +1,52 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
+      "summary": "8-phase implementation complete: Checks 10/11 and --strict in validate-state.sh, Classes F/G in orchestrate-predispatch-review.sh, fixture coverage in both suites, plus a fixed pre-existing --repair manufacture bug and a --help truncation regression."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added missing/null/empty and glob-shaped file_scope detection (Check 10/11 in validate-state.sh, Classes F/G in orchestrate-predispatch-review.sh) plus a --strict flag, all WARN-only in default mode with advisory-first promotion criteria recorded. Discovered and fixed one genuine pre-existing bug in --repair (silent file_scope manufacture on an absent-key candidate) and one --help truncation regression, both pinned by new regression tests. 25/25 and 34/34 fixture tests pass; both target scripts shellcheck-clean."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this codebase's bash+jq scripts, never use `${var:-{}}` as a jq-input default (e.g. `jq ... <<< \"${var:-{}}\"`). Bash's parameter-expansion parser mishandles a literal `{}` default: when `var` is non-empty it silently appends a stray trailing `}` to the expansion (confirmed via `bash -c 'x=hello; echo \"${x:-{}}\"'` -> `hello}`), corrupting the value with no error. Use `${var:-null}` instead — jq's `//` operators (`.field // 0`, `.field // []`) handle a `null` input cleanly, and the bash expansion has no such quirk.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "parameter-expansion", "jq", "default-value", "gotcha"]
+    },
+    {
+      "content": "When embedding a jq program inside a bash single-quoted string (the `\"$SOME_JQ_DEFS\"'...'` splice idiom used throughout agent-system/extensions/core/scripts), never write an apostrophe (possessive 's, contractions) inside a bash `#`-comment within that jq block. The apostrophe is parsed as a literal single-quote by BASH (not jq) at that point, prematurely terminating the enclosing single-quoted string and producing a bash syntax error several lines later, far from the actual apostrophe. Existing spliced jq blocks in this codebase (Class A/B in orchestrate-predispatch-review.sh, Check 8/9 in validate-state.sh) are already deliberately apostrophe-free in their comments for this reason.",
+      "category": "PATTERN",
+      "source_artifact": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "jq", "single-quote", "syntax-error", "comment"]
+    },
+    {
+      "content": "Sourcing lib/file-scope-overlap.sh (or any lib using the `read -r -d '' VAR <<'EOF' ... EOF` heredoc-into-variable idiom) from a script running `set -euo pipefail` must NEVER use a bare `. lib.sh` or `source lib.sh`. `read -d ''` always returns a non-zero exit status at the heredoc's end (no NUL delimiter is ever found), which aborts the whole script under `-e` the instant it is sourced. The established idiom in this codebase (orchestrate-batch-admit.sh, task-lock.sh) wraps the sourcing in a tested `if ! . \"$SCRIPT_DIR/lib/file-scope-overlap.sh\" 2>/dev/null; then echo ERROR...; exit 2; fi` — the `if` test makes the command's exit status -e-exempt. Scripts using `set -uo pipefail` (no `-e`), like validate-state.sh, don't need this wrapper and can source plainly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "set -e", "heredoc", "read -d", "sourcing", "strict-mode"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "dispatch_seq": 18
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }
