@@ -513,6 +513,11 @@
           "path": "specs/163_surface_missing_and_empty_file_scope/plans/01_surface-missing-empty-file-scope.md",
           "type": "plan",
           "summary": "8 phases, ~6.5h, 6 dependency waves; records 9 decisions including the Class F/G correction to the addendum's 'Class C' reference and the empty-vs-absent-vs-null ruling."
+        },
+        {
+          "path": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with all 8 phases, decisions, deviations (including the major pre-existing --repair bugfix), verification results, and follow-ups."
         }
       ],
       "file_scope": [
@@ -522,7 +527,8 @@
         "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
         "agent-system/extensions/core/scripts/validate-state.sh"
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added missing/null/empty and glob-shaped file_scope detection (Check 10/11 in validate-state.sh, Classes F/G in orchestrate-predispatch-review.sh) plus a --strict flag, all WARN-only in default mode with advisory-first promotion criteria recorded. Discovered and fixed one genuine pre-existing bug in --repair (silent file_scope manufacture on an absent-key candidate) and one --help truncation regression, both pinned by new regression tests. 25/25 and 34/34 fixture tests pass; both target scripts shellcheck-clean."
     },
     {
       "project_number": 165,

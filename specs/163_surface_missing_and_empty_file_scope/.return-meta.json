@@ -24,29 +24,54 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "parameter-expansion", "jq", "default-value", "gotcha"]
+      "suggested_keywords": [
+        "bash",
+        "parameter-expansion",
+        "jq",
+        "default-value",
+        "gotcha"
+      ]
     },
     {
       "content": "When embedding a jq program inside a bash single-quoted string (the `\"$SOME_JQ_DEFS\"'...'` splice idiom used throughout agent-system/extensions/core/scripts), never write an apostrophe (possessive 's, contractions) inside a bash `#`-comment within that jq block. The apostrophe is parsed as a literal single-quote by BASH (not jq) at that point, prematurely terminating the enclosing single-quoted string and producing a bash syntax error several lines later, far from the actual apostrophe. Existing spliced jq blocks in this codebase (Class A/B in orchestrate-predispatch-review.sh, Check 8/9 in validate-state.sh) are already deliberately apostrophe-free in their comments for this reason.",
       "category": "PATTERN",
       "source_artifact": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "jq", "single-quote", "syntax-error", "comment"]
+      "suggested_keywords": [
+        "bash",
+        "jq",
+        "single-quote",
+        "syntax-error",
+        "comment"
+      ]
     },
     {
       "content": "Sourcing lib/file-scope-overlap.sh (or any lib using the `read -r -d '' VAR <<'EOF' ... EOF` heredoc-into-variable idiom) from a script running `set -euo pipefail` must NEVER use a bare `. lib.sh` or `source lib.sh`. `read -d ''` always returns a non-zero exit status at the heredoc's end (no NUL delimiter is ever found), which aborts the whole script under `-e` the instant it is sourced. The established idiom in this codebase (orchestrate-batch-admit.sh, task-lock.sh) wraps the sourcing in a tested `if ! . \"$SCRIPT_DIR/lib/file-scope-overlap.sh\" 2>/dev/null; then echo ERROR...; exit 2; fi` — the `if` test makes the command's exit status -e-exempt. Scripts using `set -uo pipefail` (no `-e`), like validate-state.sh, don't need this wrapper and can source plainly.",
       "category": "PATTERN",
       "source_artifact": "specs/163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "set -e", "heredoc", "read -d", "sourcing", "strict-mode"]
+      "suggested_keywords": [
+        "bash",
+        "set -e",
+        "heredoc",
+        "read -d",
+        "sourcing",
+        "strict-mode"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

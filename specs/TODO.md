@@ -2336,6 +2336,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 - **Dependencies**: Task 188
 - **Research**: [163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md]
 - **Plan**: [163_surface_missing_and_empty_file_scope/plans/01_surface-missing-empty-file-scope.md]
+- **Summary**: [163_surface_missing_and_empty_file_scope/summaries/01_surface-missing-empty-file-scope-summary.md]
 
 **Description**: Make an ABSENT or EMPTY `file_scope` visible. Today it is invisible everywhere, by construction.
 
