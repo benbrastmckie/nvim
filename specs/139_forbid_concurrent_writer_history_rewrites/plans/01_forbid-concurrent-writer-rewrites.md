@@ -201,26 +201,26 @@ phrase.
 
 ---
 
-### Phase 2: Agent Contract — MUST NOT bullet and git-commit-scoped.sh mandate [NOT STARTED]
+### Phase 2: Agent Contract — MUST NOT bullet and git-commit-scoped.sh mandate [COMPLETED]
 
 **Goal**: `general-implementation-agent.md` carries an explicit prohibition on bare history
 rewrites and an explicit mandate to route every commit through `git-commit-scoped.sh`.
 
 **Tasks**:
-- [ ] Re-read the `**MUST NOT**:` list under `## Critical Requirements` in
+- [x] Re-read the `**MUST NOT**:` list under `## Critical Requirements` in
       `agent-system/extensions/core/agents/general-implementation-agent.md` immediately before
-      editing.
-- [ ] Append a new numbered bullet (item 10, after the current item 9) prohibiting bare
+      editing. *(completed)*
+- [x] Append a new numbered bullet (item 10, after the current item 9) prohibiting bare
       `git commit --amend` and a HEAD-moving bare `git reset`, mandating
       `.claude/scripts/git-commit-scoped.sh` as the sole commit path (it serializes on the commit
       mutex and path-scopes staging), and cross-referencing
       `.claude/rules/git-workflow.md`'s `No History Rewrites While Another Writer Is Live` section
-      in the same register the existing items 6-8 use for their rule cross-references.
-- [ ] Include the empirical support in one clause: in the motivating run, four of five concurrent
+      in the same register the existing items 6-8 use for their rule cross-references. *(completed)*
+- [x] Include the empirical support in one clause: in the motivating run, four of five concurrent
       agents used `git-commit-scoped.sh` exclusively and had zero incidents; the one that did not
-      caused the entire incident.
-- [ ] Confirm the new bullet does not reference a task number (deliverable outside `specs/**`).
-- [ ] Commit this file alone via `git-commit-scoped.sh`.
+      caused the entire incident. *(completed)*
+- [x] Confirm the new bullet does not reference a task number (deliverable outside `specs/**`). *(completed)*
+- [x] Commit this file alone via `git-commit-scoped.sh`. *(completed)*
 
 **Timing**: 0.25 hours
 

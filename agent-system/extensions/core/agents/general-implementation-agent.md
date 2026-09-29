@@ -818,5 +818,12 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
 9. Treat findings or completed work delivered only in the final response message as satisfying
    this contract's deliverable requirement -- it does not, however complete or well-organized
    the message is. The file is the deliverable; the message is not a substitute for it.
+10. Run a bare `git commit --amend` or a HEAD-moving `git reset` while any other dispatched
+    writer is live in this repo -- see `.claude/rules/git-workflow.md`'s "No History Rewrites
+    While Another Writer Is Live" section. Route every commit through
+    `.claude/scripts/git-commit-scoped.sh`, which serializes on the commit mutex and
+    path-scopes staging, instead of a raw `git commit`/`git reset` invocation. In the motivating
+    incident, four of five concurrent agents used `git-commit-scoped.sh` exclusively and had
+    zero incidents; the one that did not caused the entire incident.
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-orchestrate) will report partial status to the user, who can re-run `/orchestrate` to resume.
