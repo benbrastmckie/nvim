@@ -1,0 +1,20 @@
+{
+  "phase": 5,
+  "phase_name": "Clean-Tree Concurrency Test Cases",
+  "started_at": "2026-09-29T03:00:00Z",
+  "last_updated": "2026-09-29T03:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Fixture helpers: add_live_lock/add_stale_lock/add_live_session/dead_pid/make_concurrency_repo", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 3, "description": "assert_blocked_clean / assert_allowed_clean_with helpers + self-check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 4, "description": "Block cases (live lock + live session)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 5, "description": "Allow cases (no record, stale, git-commit-scoped.sh, message text, pathspec resets, override)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 6, "description": "Re-run full suite; ordering confirmation (revert/restore)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Commit via git-commit-scoped.sh", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "specs/ untracked inside fixture repo dirtied git status", "result": "failed", "reason": "make_concurrency_repo needed a committed .gitignore for specs/ before writing fixture records"}
+  ],
+  "handoff_count": 0
+}

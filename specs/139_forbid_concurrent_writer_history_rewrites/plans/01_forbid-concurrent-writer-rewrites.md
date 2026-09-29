@@ -384,42 +384,56 @@ exists, independently of tree state, without altering any existing predicate's b
 
 ---
 
-### Phase 5: Clean-Tree Concurrency Test Cases [NOT STARTED]
+### Phase 5: Clean-Tree Concurrency Test Cases [COMPLETED]
 
 **Goal**: the new predicate's behavior is pinned by hermetic fixture-driven cases that would fail
 loudly if the predicate were placed below the clean-tree exemption or matched too broadly.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh`
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh`
       immediately before editing. Note that `make_clean_repo` and `assert_allowed_clean` already
-      exist; build on them rather than adding a parallel clean fixture.
-- [ ] Add `add_live_lock <repo> <task_number>`: writes
+      exist; build on them rather than adding a parallel clean fixture. *(completed)*
+- [x] Add `add_live_lock <repo> <task_number>`: writes
       `<repo>/specs/{NNN}_{slug}/.lock/holder.json` with `pid` set to a genuinely live pid
       (`$$` of the test process) and `heartbeat_at` stamped now in the
-      `%Y-%m-%dT%H:%M:%SZ` form the hook parses.
-- [ ] Add `add_stale_lock <repo> <task_number>`: same shape but with a long-past `heartbeat_at`
-      and a pid that is not alive, to prove staleness filtering.
-- [ ] Add `add_live_session <repo>`: writes `<repo>/specs/.sessions/sess_test.json` with a live
+      `%Y-%m-%dT%H:%M:%SZ` form the hook parses. *(completed)*
+- [x] Add `add_stale_lock <repo> <task_number>`: same shape but with a long-past `heartbeat_at`
+      and a pid that is not alive, to prove staleness filtering. *(completed: dead pid produced
+      via fork-then-reap `dead_pid()` helper rather than a hardcoded sentinel, to avoid any
+      dependency on the test host's actual process table)*
+- [x] Add `add_live_session <repo>`: writes `<repo>/specs/.sessions/sess_test.json` with a live
       pid, fresh heartbeat, and a multi-entry `task_numbers` array — the incident's own shape.
-- [ ] Add `assert_blocked_clean <label> <command>` and `assert_allowed_clean_with <label> <command>
+      *(completed)*
+- [x] Add `assert_blocked_clean <label> <command>` and `assert_allowed_clean_with <label> <command>
       <fixture-fn>` helpers in the existing `run_hook_in`/exit-code style, all operating on a
-      **clean** repo so the dirty-tree gate cannot be what produces the result.
-- [ ] Add a fixture self-check, mirroring the existing dirty self-check: assert the concurrency
+      **clean** repo so the dirty-tree gate cannot be what produces the result. *(completed:
+      both helpers additionally take the fixture-fn as an explicit third argument, plus optional
+      trailing fixture-args, e.g. `assert_blocked_clean <label> <cmd> add_live_lock 139` — needed
+      since several distinct fixtures (live lock, live session, stale lock, no record) are each
+      exercised through both helpers)*
+- [x] Add a fixture self-check, mirroring the existing dirty self-check: assert the concurrency
       fixture repo's `git status --porcelain` is **empty**, so a BLOCK result cannot be credited to
-      the dirty-tree path.
-- [ ] Add the block cases (clean tree + a live foreign lock): `git commit --amend`,
+      the dirty-tree path. *(completed: required adding a committed `.gitignore` for `specs/` in
+      `make_concurrency_repo` — without it, the fixture's own `specs/.lock/holder.json` file
+      showed up as an untracked path and the self-check failed for the wrong reason; caught and
+      fixed by the self-check itself, exactly as designed)*
+- [x] Add the block cases (clean tree + a live foreign lock): `git commit --amend`,
       `git commit --amend --no-edit`, `git reset --mixed abc1234`, `git reset abc1234`,
       `git reset --soft HEAD~1`, `git reset HEAD~2`, `git reset --hard abc1234`; and the same
-      under `add_live_session` instead of a lock.
-- [ ] Add the allow cases: no concurrency record at all (`git commit --amend` permitted — the
+      under `add_live_session` instead of a lock. *(completed)*
+- [x] Add the allow cases: no concurrency record at all (`git commit --amend` permitted — the
       explicit non-goal); only a stale/dead record; `bash .claude/scripts/git-commit-scoped.sh ...`;
       `git commit -m "mention --amend in the message"`; a multi-line `-m` message containing
       `--amend`; `git reset` bare; `git reset -- foo.txt`; `git reset HEAD -- foo.txt`;
       `git reset HEAD`; and the `GUARD_ALLOW_HISTORY_REWRITE=1 git commit --amend` override.
-- [ ] Re-run the **entire** existing suite unchanged and confirm every pre-existing case still
+      *(completed)*
+- [x] Re-run the **entire** existing suite unchanged and confirm every pre-existing case still
       passes — especially `exemption: clean tree allows a destructive command`, which proves the
       `COMMAND_SCAN` relocation did not drag the other detectors above the clean-tree exit.
-- [ ] Commit this file alone via `git-commit-scoped.sh`.
+      *(completed: 72 passed, 0 failed; additionally did the one-off ordering confirmation from
+      the Verification section below — temporarily reverting the relocation made exactly the 9
+      new block cases fail, then restored)*
+- [x] Commit this file alone via `git-commit-scoped.sh`. *(completed)*
 
 **Timing**: 1.25 hours
 

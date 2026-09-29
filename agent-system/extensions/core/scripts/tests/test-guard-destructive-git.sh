@@ -349,6 +349,207 @@ assert_allowed_dirty "overstage allow: commit message mentions some/dir/ (not a 
   'git commit -m "clean up some/dir/ later"'
 
 # =====================================================================
+# Concurrency-gated history-rewrite predicate (hazard class 2: rewriting already-committed
+# history under a live concurrent writer). Every case below runs on a CLEAN tree
+# (make_clean_repo) so the dirty-tree gate cannot be what produces a BLOCK -- if the new
+# predicate were ever placed below the clean-tree exemption (dead code), every block case here
+# would wrongly turn into an allow, which is exactly what this section pins against.
+# =====================================================================
+
+# dead_pid: forks and immediately reaps a child, returning a pid that is guaranteed not alive
+# (used to build a genuinely stale/dead lock record without depending on any real stale pid on
+# the test host).
+dead_pid() {
+  ( exit 0 ) &
+  local p=$!
+  wait "$p" 2>/dev/null || true
+  echo "$p"
+}
+
+# add_live_lock <repo> <task_number>
+# Writes a per-task lock holder.json with a live pid ($$ of the test process itself) and a
+# fresh heartbeat, in the shape guard-destructive-git.sh's history_rewrite_live_writer() reads.
+add_live_lock() {
+  local repo="$1" task_number="$2" dir
+  dir="$repo/specs/${task_number}_test_task/.lock"
+  mkdir -p "$dir"
+  cat > "$dir/holder.json" <<EOF
+{
+  "session_id": "sess_test_live",
+  "task_number": ${task_number},
+  "operation": "implement",
+  "acquired_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "heartbeat_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "pid": $$
+}
+EOF
+}
+
+# add_stale_lock <repo> <task_number>
+# Same shape, but a long-past heartbeat_at AND a pid that is not alive, so both the pid-liveness
+# check and the heartbeat-freshness check independently fail the record.
+add_stale_lock() {
+  local repo="$1" task_number="$2" dir dpid
+  dir="$repo/specs/${task_number}_test_task/.lock"
+  mkdir -p "$dir"
+  dpid="$(dead_pid)"
+  cat > "$dir/holder.json" <<EOF
+{
+  "session_id": "sess_test_stale",
+  "task_number": ${task_number},
+  "operation": "implement",
+  "acquired_at": "2020-01-01T00:00:00Z",
+  "heartbeat_at": "2020-01-01T00:00:00Z",
+  "pid": ${dpid}
+}
+EOF
+}
+
+# add_live_session <repo>
+# Writes a session-registry entry with a live pid, a fresh heartbeat, and a multi-entry
+# task_numbers array -- the motivating incident's own shape (one session driving several tasks).
+add_live_session() {
+  local repo="$1" dir
+  dir="$repo/specs/.sessions"
+  mkdir -p "$dir"
+  cat > "$dir/sess_test_live.json" <<EOF
+{
+  "session_id": "sess_test_live",
+  "pid": $$,
+  "heartbeat_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "task_numbers": [901, 902]
+}
+EOF
+}
+
+# make_concurrency_repo <fixture-fn> [fixture-args...]
+# Builds a clean repo (make_clean_repo), commits a .gitignore for specs/ so the concurrency
+# fixture files written under it (by <fixture-fn> below) do not themselves show up as untracked
+# and thereby make `git status --porcelain` non-empty for the wrong reason, then applies
+# <fixture-fn> to add (or not add, for the no-fixture no-op case) concurrency records. Echoes
+# the repo path.
+noop_fixture() { :; }
+
+make_concurrency_repo() {
+  local fixture_fn="$1"; shift
+  local d
+  d="$(make_clean_repo)"
+  echo "specs/" > "$d/.gitignore"
+  git -C "$d" add .gitignore
+  git -C "$d" commit -q -m "ignore specs/ for concurrency fixtures"
+  "$fixture_fn" "$d" "$@"
+  echo "$d"
+}
+
+# assert_blocked_clean <label> <command> <fixture-fn> [fixture-args...]
+# Builds a clean repo, applies the fixture, runs <command> through the hook, expects exit 2.
+assert_blocked_clean() {
+  local label="$1" cmd="$2" fixture_fn="$3"; shift 3
+  local repo code
+  repo="$(make_concurrency_repo "$fixture_fn" "$@")"
+  code="$(run_hook_in "$repo" "$cmd")"
+  rm -rf "$repo"
+  if [ "$code" -eq 2 ]; then
+    pass "$label: blocked (exit 2) in clean repo"
+  else
+    fail "$label: expected exit 2 in clean repo, got exit=$code"
+  fi
+}
+
+# assert_allowed_clean_with <label> <command> <fixture-fn> [fixture-args...]
+# Same shape, expects exit 0. Used both for the true-negative concurrency cases (stale/dead
+# record, no record at all) and for command-shape allow cases under a LIVE record (unstaging,
+# bare reset, the operator override, git-commit-scoped.sh, message text).
+assert_allowed_clean_with() {
+  local label="$1" cmd="$2" fixture_fn="$3"; shift 3
+  local repo code
+  repo="$(make_concurrency_repo "$fixture_fn" "$@")"
+  code="$(run_hook_in "$repo" "$cmd")"
+  rm -rf "$repo"
+  if [ "$code" -eq 0 ]; then
+    pass "$label: allowed (exit 0) in clean repo"
+  else
+    fail "$label: expected exit 0 in clean repo, got exit=$code"
+  fi
+}
+
+# --- Fixture self-check: the concurrency fixture must not itself dirty the tree ---
+concurrency_fixture_check_repo="$(make_concurrency_repo add_live_lock 139)"
+concurrency_fixture_check_status="$(git -C "$concurrency_fixture_check_repo" status --porcelain)"
+rm -rf "$concurrency_fixture_check_repo"
+if [ -z "$concurrency_fixture_check_status" ]; then
+  pass "fixture self-check: concurrency fixture (live lock) keeps the tree clean"
+else
+  fail "fixture self-check: concurrency fixture (live lock) unexpectedly dirtied the tree"
+fi
+
+# --- BLOCK cases: clean tree + a live foreign task lock ---
+assert_blocked_clean "concurrency: git commit --amend under live lock" \
+  "git commit --amend" add_live_lock 139
+assert_blocked_clean "concurrency: git commit --amend --no-edit under live lock" \
+  "git commit --amend --no-edit" add_live_lock 139
+assert_blocked_clean "concurrency: git reset --mixed <sha> under live lock" \
+  "git reset --mixed abc1234" add_live_lock 139
+assert_blocked_clean "concurrency: git reset <sha> (bare) under live lock" \
+  "git reset abc1234" add_live_lock 139
+assert_blocked_clean "concurrency: git reset --soft HEAD~1 under live lock" \
+  "git reset --soft HEAD~1" add_live_lock 139
+assert_blocked_clean "concurrency: git reset HEAD~2 (bare) under live lock" \
+  "git reset HEAD~2" add_live_lock 139
+assert_blocked_clean "concurrency: git reset --hard <sha> under live lock" \
+  "git reset --hard abc1234" add_live_lock 139
+
+# --- Same BLOCK cases, but the concurrency evidence is a live session-registry entry instead
+#     of a task lock ---
+assert_blocked_clean "concurrency: git commit --amend under live session" \
+  "git commit --amend" add_live_session
+assert_blocked_clean "concurrency: git reset --mixed <sha> under live session" \
+  "git reset --mixed abc1234" add_live_session
+
+# --- ALLOW cases: no concurrency evidence at all (the explicit non-goal: solo interactive
+#     --amend with no live writer stays permitted) ---
+assert_allowed_clean_with "concurrency allow: git commit --amend with no concurrency record at all" \
+  "git commit --amend" noop_fixture
+assert_allowed_clean_with "concurrency allow: git reset --hard <sha> with no concurrency record at all" \
+  "git reset --hard abc1234" noop_fixture
+
+# --- ALLOW cases: only a stale/dead record (dead pid AND long-past heartbeat) ---
+assert_allowed_clean_with "concurrency allow: git commit --amend with only a stale/dead lock" \
+  "git commit --amend" add_stale_lock 139
+assert_allowed_clean_with "concurrency allow: git reset <sha> with only a stale/dead lock" \
+  "git reset abc1234" add_stale_lock 139
+
+# --- ALLOW: git-commit-scoped.sh's own invocation is never blocked (subprocess-invisible; the
+#     hook only ever observes tool_input.command, never a wrapper script's internal git calls) ---
+assert_allowed_clean_with "concurrency allow: git-commit-scoped.sh invocation under live lock" \
+  "bash .claude/scripts/git-commit-scoped.sh --message x --session y -- foo.txt" add_live_lock 139
+
+# --- ALLOW: a commit message that merely contains the literal text "--amend" (single- and
+#     multi-line), under a live lock, must not trigger Gate A ---
+assert_allowed_clean_with "concurrency allow: single-line message mentions --amend, under live lock" \
+  'git commit -m "mention --amend in the message"' add_live_lock 139
+
+concurrency_multiline_amend_mention='git commit -m "mention --amend in the message
+
+Body paragraph that also says --amend, spanning multiple lines."'
+assert_allowed_clean_with "concurrency allow: multi-line message mentions --amend, under live lock" \
+  "$concurrency_multiline_amend_mention" add_live_lock 139
+
+# --- ALLOW: pathspec-only reset forms, under a live lock, must not trigger Gate B ---
+assert_allowed_clean_with "concurrency allow: git reset (bare) under live lock" \
+  "git reset" add_live_lock 139
+assert_allowed_clean_with "concurrency allow: git reset -- foo.txt under live lock" \
+  "git reset -- foo.txt" add_live_lock 139
+assert_allowed_clean_with "concurrency allow: git reset HEAD -- foo.txt under live lock" \
+  "git reset HEAD -- foo.txt" add_live_lock 139
+assert_allowed_clean_with "concurrency allow: git reset HEAD (bare) under live lock" \
+  "git reset HEAD" add_live_lock 139
+
+# --- ALLOW: the documented operator-only override, under a live lock ---
+assert_allowed_clean_with "concurrency allow: GUARD_ALLOW_HISTORY_REWRITE=1 override under live lock" \
+  "GUARD_ALLOW_HISTORY_REWRITE=1 git commit --amend" add_live_lock 139
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""
