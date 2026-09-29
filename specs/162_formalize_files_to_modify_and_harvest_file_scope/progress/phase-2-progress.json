@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Build plan-file-scope-harvest.sh with its test suite",
+  "started_at": "2026-09-28T00:15:00Z",
+  "last_updated": "2026-09-28T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create plan-file-scope-harvest.sh, Class A strict mode", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 2, "description": "Document contract: one positional arg, JSON array stdout, non-zero reserved for usage errors", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 3, "description": "Accept both punctuation forms for block header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 4, "description": "Entry detection, description stripping, continuation/prose tolerance, block-end detection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 5, "description": "Union/dedup/sorted stable output", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 6, "description": "Never filesystem-validate paths", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Create test-plan-file-scope-harvest.sh covering all grammar cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"]},
+    {"id": 8, "description": "Run suite and shellcheck both new files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.x",
+      "description": "Additional grammar wrinkle discovered at implementation time beyond the research report's three: a per-phase field (including Files to modify) may itself be rendered as a top-level list item (leading `- ` before the bold label, e.g. `- **Files to modify**:`), with its entries indented one level (`  - \\`path\\``). This is not a malformed plan -- plan-format.md's own compact example template already renders every field this way, and one real local plan (specs/207_fix_zotero_export_path1_truncation) uses it, which the harvester initially mis-parsed as an EMPTY result for that file's phases.",
+      "type": "altered",
+      "reason": "Widened the harvester's header/entry/field-label-terminator regexes to tolerate an optional single leading list marker (via a strip_marker() helper), and added plan-format.md documentation plus a dedicated Case 10 test asserting the following field's own indented sub-bullets do not leak into the harvest as bogus paths.",
+      "annotation": "*(deviation: altered — widened grammar tolerance for the list-item-wrapped field form; see plan-format.md and the harvester's own header comment)*"
+    }
+  ]
+}

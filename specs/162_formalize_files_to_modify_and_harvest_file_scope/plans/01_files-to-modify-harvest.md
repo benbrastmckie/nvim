@@ -223,38 +223,42 @@ second harvest source.
 
 ---
 
-### Phase 2: Build plan-file-scope-harvest.sh with its test suite [NOT STARTED]
+### Phase 2: Build plan-file-scope-harvest.sh with its test suite [COMPLETED]
 
 **Goal**: A standalone, shellcheck-clean harvester emits the deduplicated union of a plan's
 per-phase `Files to modify` paths as a JSON array, tolerating every grammar wrinkle attested in the
 research.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/plan-file-scope-harvest.sh` with Class A strict
+- [x] Create `agent-system/extensions/core/scripts/plan-file-scope-harvest.sh` with Class A strict
       mode (`set -euo pipefail`) per `context/standards/shell-strict-mode.md`'s default-for-new-scripts
-      rule — nothing about this script matches the Class B "report everything" admission test.
-- [ ] Contract, documented in the script header: one positional argument (a plan file path);
+      rule — nothing about this script matches the Class B "report everything" admission test. *(completed)*
+- [x] Contract, documented in the script header: one positional argument (a plan file path);
       stdout is a JSON array of strings; stdout is `[]` when the plan has no harvestable path;
       non-zero exit is reserved for genuine usage errors (missing argument, unreadable file) and
-      is NEVER used for "found nothing".
-- [ ] Accept both `**Files to modify**:` and `**Files to modify:**` as the block header.
-- [ ] Inside a block, start a new path entry only on a line matching `^- \`` and take the first
+      is NEVER used for "found nothing". *(completed)*
+- [x] Accept both `**Files to modify**:` and `**Files to modify:**` as the block header. *(completed)*
+- [x] Inside a block, start a new path entry only on a line matching `^- \`` and take the first
       backticked token as the path; discard any trailing ` - {description}`; treat every other
       line as a continuation or prose that contributes nothing; end the block at the next blank
       line followed by a non-list line, the next `**Field**:` label, or the next `###` heading
-      (whichever comes first).
-- [ ] Union and deduplicate across every phase in the file; emit in a stable (sorted) order so
-      output is reproducible.
-- [ ] Never stat, resolve, or filter by filesystem existence — paths not yet created are exactly
+      (whichever comes first). *(completed; deviation: altered — widened entry/header/field-label
+      detection to also tolerate an optional single leading list marker, e.g.
+      `- **Files to modify**:` with `  - \`path\`` entries, after finding this rendering both in
+      plan-format.md's own compact example template and in a real local plan; see progress file
+      deviations)*
+- [x] Union and deduplicate across every phase in the file; emit in a stable (sorted) order so
+      output is reproducible. *(completed)*
+- [x] Never stat, resolve, or filter by filesystem existence — paths not yet created are exactly
       what a plan carries (Non-Goal above, and the schema's "prospective, not filesystem-validated"
-      wording).
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh` following
+      wording). *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh` following
       the conventions of the existing suites in that directory, covering: both punctuation
       variants; backtick-path with trailing description; an indented wrapped continuation line
       contributing nothing; a "none planned" prose sentinel contributing nothing; multi-phase
       union and dedup; a plan with zero `Files to modify` occurrences returning `[]` with exit 0;
-      a missing-file argument exiting non-zero.
-- [ ] Run the new suite and shellcheck both new files.
+      a missing-file argument exiting non-zero. *(completed)*
+- [x] Run the new suite and shellcheck both new files. *(completed)*
 
 **Timing**: 1.5 hours
 

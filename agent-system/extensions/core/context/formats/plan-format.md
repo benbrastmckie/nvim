@@ -108,6 +108,15 @@ role as a durable, non-reverting checkpoint.
     emits it unconditionally directly after **Scope Hypothesis** — rather than introducing a new
     one; "required" describes existing practice, not an aspiration. See "Consumers of this field"
     below for who depends on this shape and how.
+
+    A generator may render every per-phase field, including this one, as its own top-level list
+    item (a leading `- ` before the bold label, e.g. `- **Files to modify**:`) rather than a bare
+    `**Field:**` line — this document's own compact example template (below, under
+    `## Implementation Phases (format)`'s worked example) already does this for every field, so
+    it is a sanctioned rendering, not a malformed one. The list-item entries under such a header
+    are then indented one level (e.g. `  - \`path\``) rather than sitting at column 0. The
+    harvester tolerates an optional single leading list-marker on both the header line and each
+    entry line; do not treat the indented form as invalid.
   - **Owner:** (optional)
   - **Started/Completed/Blocked/Abandoned:** timestamp lines when status changes (ISO8601). Do not leave null placeholders.
 
