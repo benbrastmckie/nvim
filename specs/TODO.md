@@ -61,7 +61,7 @@ next_project_number: 269
 
 ### File Scope Lifecycle
 
-162 [PLANNING] — Formalize Files to modify, harvest it into filescope at every...
+162 [PLANNED] — Formalize Files to modify, harvest it into filescope at every...
   └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
 163 [RESEARCHING] — Surface missing and empty filescope in validate-state.sh and...
   └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an... (see above)
@@ -2358,11 +2358,12 @@ Also reject GLOB entries in file_scope at both check sites. Observed 2026-09-14:
 ---
 
 ### 162. Formalize Files to modify, harvest it into file_scope at every plan postflight site, and backfill existing tasks
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 197, Task 213
 - **Research**: [162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md]
+- **Plan**: [162_formalize_files_to_modify_and_harvest_file_scope/plans/01_files-to-modify-harvest.md]
 
 **Description**: Populate `file_scope` at PLAN time by formalizing an existing, universally-followed convention and making it reliably machine-harvestable.
 
