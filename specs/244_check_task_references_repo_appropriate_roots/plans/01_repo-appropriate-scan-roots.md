@@ -277,28 +277,28 @@ fixture can actually express.
  *(completed)*
 ---
 
-### Phase 4: validate-wiring.sh missing-tree-root SKIP guards [NOT STARTED]
+### Phase 4: validate-wiring.sh missing-tree-root SKIP guards [COMPLETED]
 
 **Goal**: An absent tree root becomes an informational `[SKIP]`, not a cascade of `[FAIL]` rows,
 so exit status reflects only trees actually present.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-wiring.sh` immediately before
-      editing.
-- [ ] In `main()` (~lines 275-312), guard the `.claude` arm on `[[ -d "$PROJECT_ROOT/.claude" ]]`
+- [x] Re-read `agent-system/extensions/core/scripts/validate-wiring.sh` immediately before
+      editing. *(completed)*
+- [x] In `main()` (~lines 275-312), guard the `.claude` arm on `[[ -d "$PROJECT_ROOT/.claude" ]]`
       before calling `validate_core_system` + `validate_extensions_loaded`; emit a `log_info`
       `[SKIP]` line when absent, wording it after `check-task-references.sh`'s
-      `"[SKIP] $label does not exist under $REPO_ROOT"` precedent.
-- [ ] Apply the identical guard to the `.opencode` arm.
-- [ ] Verify `$FAILED` (and therefore the exit code) is untouched by a skip, so an all-skipped run
-      exits 0 and a present-but-broken tree still exits 1.
-- [ ] Re-verify, do not trust the note: confirm `deploy-root-guard.sh` (~lines 18-19) and
+      `"[SKIP] $label does not exist under $REPO_ROOT"` precedent. *(completed)*
+- [x] Apply the identical guard to the `.opencode` arm. *(completed)*
+- [x] Verify `$FAILED` (and therefore the exit code) is untouched by a skip, so an all-skipped run
+      exits 0 and a present-but-broken tree still exits 1. *(completed)*
+- [x] Re-verify, do not trust the note: confirm `deploy-root-guard.sh` (~lines 18-19) and
       `validate-state.sh` (~line 238) match the *running script's own* path against
       `*/.claude/scripts/` or `*/.opencode/scripts/`, and that
       `hooks/validate-handoff-location.sh` (~line 65) matches only a `specs/` path shape. Record
       the confirmed line numbers in the phase notes. If any is in fact unsafe, stop and report
-      rather than widening this phase.
-- [ ] Do NOT remove any `.opencode` reference or touch the frozen-mirror policy.
+      rather than widening this phase. *(completed)*
+- [x] Do NOT remove any `.opencode` reference or touch the frozen-mirror policy.
 
 **Timing**: 0.75 hours
 
@@ -319,7 +319,7 @@ by re-reading the three named line ranges rather than citing the report.
 - In this repo (both trees present) `validate-wiring.sh all` output and exit code are unchanged
   from a pre-edit capture — the guard is a no-op where both trees exist.
 - `validate-wiring.sh --claude` and `--opencode` each still behave as before.
-
+ *(completed)*
 ---
 
 ### Phase 5: Regression suite for missing-tree-root handling [NOT STARTED]

@@ -278,13 +278,28 @@ main() {
     echo "========================================"
 
     if [[ "$SYSTEM" == "all" || "$SYSTEM" == "--all" || "$SYSTEM" == "--claude" ]]; then
-        validate_core_system "$PROJECT_ROOT/.claude" ".claude" "agents"
-        validate_extensions_loaded "$PROJECT_ROOT/.claude" ".claude" "agents"
+        # A repo that never deploys .claude (rare, but symmetric with the .opencode case below)
+        # is a normal configuration, not an error -- skip with an informational line rather than
+        # cascading [FAIL] rows for a tree that was never expected to exist.
+        if [[ -d "$PROJECT_ROOT/.claude" ]]; then
+            validate_core_system "$PROJECT_ROOT/.claude" ".claude" "agents"
+            validate_extensions_loaded "$PROJECT_ROOT/.claude" ".claude" "agents"
+        else
+            log_info "[SKIP] .claude does not exist under $PROJECT_ROOT"
+        fi
     fi
 
     if [[ "$SYSTEM" == "all" || "$SYSTEM" == "--all" || "$SYSTEM" == "--opencode" ]]; then
-        validate_core_system "$PROJECT_ROOT/.opencode" ".opencode" "agent/subagents"
-        validate_extensions_loaded "$PROJECT_ROOT/.opencode" ".opencode" "agent/subagents"
+        # A consumer repo that never deploys OpenCode (the frozen-mirror-but-optional case) is a
+        # normal, supported configuration -- skip with an informational line rather than
+        # cascading [FAIL] rows that mask the real .claude-side result. Mirrors
+        # check-task-references.sh's own "[SKIP] $label does not exist under $REPO_ROOT" wording.
+        if [[ -d "$PROJECT_ROOT/.opencode" ]]; then
+            validate_core_system "$PROJECT_ROOT/.opencode" ".opencode" "agent/subagents"
+            validate_extensions_loaded "$PROJECT_ROOT/.opencode" ".opencode" "agent/subagents"
+        else
+            log_info "[SKIP] .opencode does not exist under $PROJECT_ROOT"
+        fi
     fi
 
     # Summary
