@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Repo-wide enumeration in check-task-references.sh",
+  "started_at": "2026-09-29T02:15:00Z",
+  "last_updated": "2026-09-29T02:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm gate 4 (verify-deploy.sh) is sole external consumer, depends only on exit code + per-finding line regex", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Remove TREE_ROOTS/TREE_COUNT/REPORT_KEYS; repo-wide git ls-files default via scan_tree(label, '.')", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 3, "description": "Drop PATH_SCOPE membership validation and its exit 2; use -e (not -d) existence guard so single-file scopes work", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 4, "description": "Preserve per-finding line format verbatim; rewrite header comment and summary line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 5, "description": "Re-verify against Phase 1 baseline: finding sets identical (both empty)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

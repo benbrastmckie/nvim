@@ -2,31 +2,36 @@
 # check-task-references.sh
 #
 # Repo-wide lint gate for rules/no-task-references-in-deliverables.md: scans every git-tracked
-# file under four deliverable tree roots (agent-system/extensions, .opencode, lua, .memory) for
-# unexempted task-number citations, using the SAME shared pattern/exemption library the write-
-# time guard hook consumes (scripts/lib/task-reference-patterns.sh). Neither this script nor the
-# hook defines TASK_PATTERN, PHASE_PATTERN, or exemption logic locally -- see that library and
+# file in the repository (via `git ls-files`, so gitignored/vendored/generated paths are excluded
+# by construction) EXCEPT specs/** for unexempted task-number citations, using the SAME shared
+# pattern/exemption library the write-time guard hook consumes
+# (scripts/lib/task-reference-patterns.sh). Neither this script nor the hook defines
+# TASK_PATTERN, PHASE_PATTERN, or exemption logic locally -- see that library and
 # context/standards/task-reference-exemptions.md's Exemption Taxonomy section (companion to
 # rules/no-task-references-in-deliverables.md) for the single source
 # of truth both consume.
 #
-# `specs/**` is the one path-level exemption (task-management artifacts) and is skipped via
-# is_exempt_path, matching the taxonomy's category 1.
+# The scan is repo-appropriate by construction: it does not hard-code this repo's own directory
+# layout (agent-system/extensions, .opencode, lua, .memory), so a consumer repo with a different
+# source-tree layout (docs/, README.md, a language-specific source dir, etc.) is scanned in full
+# rather than scanning nothing. `specs/**` is the one path-level exemption (task-management
+# artifacts) and is skipped via is_exempt_path, matching the taxonomy's category 1.
 #
 # Exit codes:
-#   0 - no unexempted citations found in any scanned tree.
+#   0 - no unexempted citations found in the scanned scope.
 #   1 - one or more unexempted citations found.
 #   2 - environment/usage error (shared library missing, git unavailable, unknown flag).
 #       Distinct from 1 so a broken script invocation is never mistaken for a clean tree.
 #
 # Usage:
 #   bash .claude/scripts/check-task-references.sh              (verbose: prints every finding)
-#   bash .claude/scripts/check-task-references.sh --quiet       (per-tree summary only)
+#   bash .claude/scripts/check-task-references.sh --quiet       (summary only)
 #   bash .claude/scripts/check-task-references.sh [--quiet] PATH_SCOPE
-#       (scope the scan to a subtree, e.g. agent-system/extensions/core/context -- reports and
-#       exits on findings under PATH_SCOPE only. PATH_SCOPE must fall under one of the four
-#       TREE_ROOTS below, or the script exits 2. The no-argument and --quiet-only forms are
-#       UNCHANGED: all four trees, same per-tree summary lines, same exit codes.)
+#       (scope the scan to a subtree or a single file anywhere in the repo, e.g.
+#       agent-system/extensions/core/context or docs/README.md -- reports and exits on findings
+#       under PATH_SCOPE only. Any in-repo path is scannable; a PATH_SCOPE naming a path that does
+#       not exist prints a [SKIP] line and exits 0 rather than erroring. The no-argument and
+#       --quiet-only forms are UNCHANGED in shape: same exit codes, same per-finding line format.)
 #   REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh
 #       (source-store invocation override -- see check-extension-docs.sh for the same pattern;
 #       required because .claude/scripts/check-task-references.sh does not exist until a deploy
@@ -99,29 +104,26 @@ fi
 FAILURES=0
 info() { [[ $QUIET -eq 0 ]] && echo "$@"; }
 
-TREE_ROOTS=(
-  "agent-system/extensions"
-  ".opencode"
-  "lua"
-  ".memory"
-)
-
-declare -A TREE_COUNT
+# SCAN_COUNT is set (not echoed) by scan_tree, and scan_tree is always invoked directly (never
+# inside a command substitution) so its info() finding lines reach real stdout rather than being
+# captured as part of a subshell's output.
+SCAN_COUNT=0
 
 # scan_tree <label> <enum_path>
-# <label> is the key TREE_COUNT is reported under; <enum_path> is what is actually passed to
-# `git ls-files` for enumeration. For the unscoped (no PATH_SCOPE) case these are identical --
-# byte-for-byte the original behavior. PATH_SCOPE mode passes a narrower <enum_path> under the
-# same <label> convention so the summary line names the requested subtree.
+# <label> names the scanned scope for reporting; <enum_path> is what is actually passed to
+# `git ls-files` for enumeration, relative to REPO_ROOT. "." enumerates the whole repository (the
+# default, unscoped case); any other value scopes to that subtree or file (PATH_SCOPE mode).
+# Existence is checked with `-e`, not `-d`, so a PATH_SCOPE naming a single file is scanned
+# rather than incorrectly treated as missing.
 scan_tree() {
   local label="$1"
   local enum_path="$2"
   local enum_dir="$REPO_ROOT/$enum_path"
   local count=0
 
-  if [[ ! -d "$enum_dir" ]]; then
+  if [[ ! -e "$enum_dir" ]]; then
     info "  [SKIP] $label does not exist under $REPO_ROOT"
-    TREE_COUNT["$label"]=0
+    SCAN_COUNT=0
     return 0
   fi
 
@@ -144,47 +146,28 @@ scan_tree() {
     done < <(strip_exempt_regions < "$file" | grep -nEi "$PHASE_PATTERN|$TASK_PATTERN" 2>/dev/null)
   done < <(git -C "$REPO_ROOT" ls-files "$enum_path" 2>/dev/null)
 
-  TREE_COUNT["$label"]="$count"
+  SCAN_COUNT="$count"
 }
 
 if [[ -n "$PATH_SCOPE" ]]; then
-  # Validate PATH_SCOPE falls under (or equals) one of the four TREE_ROOTS -- a scope outside
-  # all four is a usage error, not a silently-empty scan.
-  scope_ok=0
-  for tree in "${TREE_ROOTS[@]}"; do
-    if [[ "$PATH_SCOPE" == "$tree" || "$PATH_SCOPE" == "$tree/"* ]]; then
-      scope_ok=1
-      break
-    fi
-  done
-  if [[ "$scope_ok" -ne 1 ]]; then
-    echo "ERROR: PATH_SCOPE '$PATH_SCOPE' does not fall under any of: ${TREE_ROOTS[*]}" >&2
-    exit 2
-  fi
-  REPORT_KEYS=("$PATH_SCOPE")
+  LABEL="$PATH_SCOPE"
   info "Scanning $PATH_SCOPE ..."
-  scan_tree "$PATH_SCOPE" "$PATH_SCOPE"
+  scan_tree "$LABEL" "$PATH_SCOPE"
   info ""
 else
-  REPORT_KEYS=("${TREE_ROOTS[@]}")
-  for tree in "${TREE_ROOTS[@]}"; do
-    info "Scanning $tree ..."
-    scan_tree "$tree" "$tree"
-    info ""
-  done
+  LABEL="repo (excluding specs/)"
+  info "Scanning $LABEL ..."
+  scan_tree "$LABEL" "."
+  info ""
 fi
 
-TOTAL=0
-for key in "${REPORT_KEYS[@]}"; do
-  n="${TREE_COUNT[$key]:-0}"
-  TOTAL=$((TOTAL + n))
-  echo "  $key: $n occurrence(s)"
-done
+TOTAL="$SCAN_COUNT"
+echo "  $LABEL: $TOTAL occurrence(s)"
 
 if [[ "$TOTAL" -gt 0 ]]; then
-  echo "FAIL: $TOTAL unexempted task-reference occurrence(s) found across ${#REPORT_KEYS[@]} tree(s)"
+  echo "FAIL: $TOTAL unexempted task-reference occurrence(s) found"
   exit 1
 else
-  echo "PASS: 0 unexempted task-reference occurrences across ${#REPORT_KEYS[@]} tree(s)"
+  echo "PASS: 0 unexempted task-reference occurrences"
   exit 0
 fi

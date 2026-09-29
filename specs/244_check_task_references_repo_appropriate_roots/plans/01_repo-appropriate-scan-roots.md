@@ -157,36 +157,36 @@ by re-running both scans in this phase rather than citing the report's number.
  *(completed)*
 ---
 
-### Phase 2: Repo-wide enumeration in check-task-references.sh [NOT STARTED]
+### Phase 2: Repo-wide enumeration in check-task-references.sh [COMPLETED]
 
 **Goal**: Replace the hard-coded `TREE_ROOTS` default with one repo-wide `git ls-files` walk, and
 make any in-repo `PATH_SCOPE` scannable instead of exit-2.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/check-task-references.sh` immediately before
-      editing (sibling-concurrency discipline).
-- [ ] Delete the `TREE_ROOTS` array and the `declare -A TREE_COUNT`/`REPORT_KEYS` per-tree
-      plumbing that exists only to serve it.
-- [ ] Default (no `PATH_SCOPE`) path: enumerate `git -C "$REPO_ROOT" ls-files` once, repo-wide;
+- [x] Re-read `agent-system/extensions/core/scripts/check-task-references.sh` immediately before
+      editing (sibling-concurrency discipline). *(completed)*
+- [x] Delete the `TREE_ROOTS` array and the `declare -A TREE_COUNT`/`REPORT_KEYS` per-tree
+      plumbing that exists only to serve it. *(completed)*
+- [x] Default (no `PATH_SCOPE`) path: enumerate `git -C "$REPO_ROOT" ls-files` once, repo-wide;
       run every non-`is_exempt_path` file through the unchanged
       `strip_exempt_regions | grep -nEi "$PHASE_PATTERN|$TASK_PATTERN"` pipeline; accumulate one
-      repo-wide count.
-- [ ] Keep the per-finding print EXACTLY `info "  $rel:$finding"` — leading two spaces, `$rel`
-      colon-free — because `verify-deploy.sh` gate 4 greps `^  [^:]+:[0-9]+:`.
-- [ ] Replace the four per-tree summary lines with a single repo-wide line (e.g.
+      repo-wide count. *(completed)*
+- [x] Keep the per-finding print EXACTLY `info "  $rel:$finding"` — leading two spaces, `$rel`
+      colon-free — because `verify-deploy.sh` gate 4 greps `^  [^:]+:[0-9]+:`. *(completed)*
+- [x] Replace the four per-tree summary lines with a single repo-wide line (e.g.
       `"  repo (excluding specs/): $TOTAL occurrence(s)"`) and adjust the final `PASS:`/`FAIL:`
       lines so they no longer say "across N tree(s)" when the scan is repo-wide. Confirmed during
-      planning that nothing outside this script keys off the summary line's text.
-- [ ] `PATH_SCOPE` mode: delete the `TREE_ROOTS`-membership validation block and its
+      planning that nothing outside this script keys off the summary line's text. *(completed)*
+- [x] `PATH_SCOPE` mode: delete the `TREE_ROOTS`-membership validation block and its
       `exit 2` (requirement 3). Keep the `[[ ! -d "$enum_dir" ]]` -> `[SKIP]` guard for a scope
       naming a non-existent path; keep `git ls-files "$PATH_SCOPE"` enumeration so a scope that is
-      a single file also works.
-- [ ] Leave exit-code semantics untouched: 0 clean, 1 findings, 2 reserved for genuine
-      usage/environment errors (missing library, missing git, unknown flag, extra arguments).
-- [ ] Update the script's own header comment block (lines ~4-6 and the `PATH_SCOPE` paragraph at
+      a single file also works. *(completed)*
+- [x] Leave exit-code semantics untouched: 0 clean, 1 findings, 2 reserved for genuine
+      usage/environment errors (missing library, missing git, unknown flag, extra arguments). *(completed)*
+- [x] Update the script's own header comment block (lines ~4-6 and the `PATH_SCOPE` paragraph at
       ~25-29), which currently documents the four trees and the exit-2-if-outside rule as the
-      contract.
-- [ ] Re-run the Phase 1 baseline comparison against the *modified* script; the finding set must
+      contract. *(completed)*
+- [x] Re-run the Phase 1 baseline comparison against the *modified* script; the finding set must
       match `/tmp/.../baseline-repo-wide.txt`.
 
 **Timing**: 1.25 hours
@@ -214,7 +214,7 @@ changing the summary lines.
 - `REPO_ROOT=$(pwd) bash .../check-task-references.sh --bogus` still exits 2; an extra positional
   argument still exits 2.
 - `bash -n` clean; `shellcheck` shows no new findings relative to the pre-edit run.
-
+ *(completed)*
 ---
 
 ### Phase 3: Consumer-repo fixture test suite for the lint [NOT STARTED]
