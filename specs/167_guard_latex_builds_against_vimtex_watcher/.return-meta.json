@@ -1,9 +1,38 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 23,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md",
+      "summary": "All four plan phases completed: widened the latex rule's paths glob, added an authoritative Continuous Build Safety section (AC1-AC5), repaired the two previously-unconditional blocks, and added three non-duplicating pointers (EXTENSION.md, compilation-guide.md, latex-implementation-agent.md). AC7 empirically confirmed the EXTENSION.md pointer is load-bearing, not belt-and-braces. No mechanism work (guard script, hooks, manifest changes) admitted this round per Decision 3."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Corrected the latex extension's existing rule file (widened paths glob, new Continuous Build Safety section carrying AC1-AC5 as literal commands, repaired two unconditional build blocks) and added three non-duplicating pointers in EXTENSION.md, compilation-guide.md, and latex-implementation-agent.md, so continuous-build-watcher safety guidance is now always-in-effect regardless of task type."
+  },
+  "modified_files": [
+    "agent-system/extensions/latex/rules/latex.md",
+    "agent-system/extensions/latex/EXTENSION.md",
+    "agent-system/extensions/latex/context/project/latex/tools/compilation-guide.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "specs/167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "The harness's `paths:` frontmatter auto-load mechanism (rules with a `paths:` glob in their YAML frontmatter) fires ONLY on the Read/Edit/Write tool family -- it never fires for a Bash command, even one whose argument string names or `cat`s a matching path. This was verified via a live minimal-pair test (identical file/content exposure, differing only in tool). Consequence for any rule intended to guard a Bash-invoked command (e.g. a build tool like `latexmk`/`pdflatex`): a paths-glob-only rule cannot reach an agent that issues the guarded Bash command without ever touching a matching path via Read/Edit/Write first. The reliable complement is an eager, task-type-independent pointer (e.g. in the extension's CLAUDE.md merge source / EXTENSION.md), which is unconditionally in the session prefix whenever the extension is loaded, with no trigger dependency at all.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["paths-glob", "rule-auto-load", "bash-trigger-gap", "eager-context", "frontmatter"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

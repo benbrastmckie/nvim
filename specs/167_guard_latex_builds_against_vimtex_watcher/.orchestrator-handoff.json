@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 16,
-  "summary": "Authored a four-phase plan (3 waves, ~2h) that corrects agent-system/extensions/latex/rules/latex.md in place rather than adding a mechanism: widen the paths glob to the 4-member array form, insert an authoritative Continuous Build Safety section above the two blocks it constrains, and repair the Build Commands and Validation Checklist blocks that currently prescribe the exact harmful commands. Phases 2-3 add three non-duplicating pointers (eager EXTENSION.md merge source, lazily-loaded compilation-guide.md, latex-implementation-agent.md including a gate on its unconditional MUST DO item 4); Phase 4 runs the AC1-AC7 acceptance sweep and records the no-change dispositions. Four planner decisions recorded: keep the broad **/build/** glob (recall over precision); verification is source-store static, NOT a redeploy (regeneration-is-manual-only.md licenses only skill-orchestrate Stage MT-3, and latex is not an active extension in this repo so a default deploy would deploy nothing for it); the three absorbed mechanism tasks stay deferred with a concrete re-admission trigger; one pointer plus one repair in the implementation agent per AC6. AC7 was already resolved empirically by research (paths: auto-load fires on Read/Edit/Write only, never on Bash), which makes the EXTENSION.md pointer load-bearing rather than belt-and-braces.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 23,
+  "summary": "Executed all four plan phases. Phase 1 corrected agent-system/extensions/latex/rules/latex.md in place: widened the paths glob to the 4-member JSON-array form (verified via the deployer's own normalize_paths_field parse), inserted a new Continuous Build Safety section above Validation Checklist/Build Commands carrying AC1-AC5 as literal commands, and repaired both previously-unconditional blocks. Phase 2 added a load-bearing pointer subsection to EXTENSION.md (verified single ## heading preserved, section_id: extension_latex intact) -- load-bearing per AC7's empirical finding that the paths-glob auto-load never fires on Bash-only invocations. Phase 3 added non-duplicating cross-references in compilation-guide.md and latex-implementation-agent.md (one pointer plus one gated MUST DO item, per Decision 4/AC6). Phase 4 ran the full AC1-AC7 sweep, confirmed latex-research-agent.md and manifest.json need no change, confirmed no .claude/** file was touched, passed the task-reference lint and validate-artifact.sh on both plan and summary, and wrote the summary recording all four decisions plus the Decision 3 re-admission trigger. No mechanism work (shared guard script, hook wiring, manifest changes) was admitted this round -- deliberately deferred per Decision 3.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md",
+      "summary": "Full implementation summary: what changed in all four files, all four decisions, AC1-AC7 disposition, plan deviations (none), impacts, and follow-ups (paper-repo CLAUDE.md pointer suggestion; re-admission trigger for the deferred mechanism tasks)."
+    },
     {
       "type": "plan",
       "path": "specs/167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md",
-      "summary": "Four-phase plan for the rule-first continuous-build safety fix, with AC1-AC7 traceability and four recorded planner decisions."
+      "summary": "All four phases marked [COMPLETED] with per-task completion annotations; Testing & Validation checklist fully checked."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "next_action_hint": "Dispatch implement for task 167. Phase 1 (rules/latex.md) is wave 1 and must land before phases 2 and 3, which can run in parallel."
+  "next_action_hint": "Task complete. All acceptance criteria (AC1-AC7) verified against the source-store files. No further phases pending. If a build-race incident recurs after this fix is deployed, re-open using Decision 3's re-admission trigger recorded in the summary."
 }
