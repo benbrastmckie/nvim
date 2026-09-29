@@ -1,0 +1,22 @@
+{
+  "phase": 7,
+  "phase_name": "Document the changed contract",
+  "started_at": "2026-09-29T03:47:00Z",
+  "last_updated": "2026-09-29T03:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "zotero-pdf-resolution.md: new subsection on pagination quirk + itemTypes name-vs-ID lesson + corrected fetch_path3 exclusion", "status": "done", "files_touched": ["agent-system/extensions/literature/context/project/literature/patterns/zotero-pdf-resolution.md"]},
+    {"id": 2, "description": "commands/literature.md: extend selection narrative with shrink guard behavior, --allow-shrink vs --force, distinct exit code", "status": "done", "files_touched": ["agent-system/extensions/literature/commands/literature.md"]},
+    {"id": 3, "description": "literature-index.md: re-check single row for continued accuracy", "status": "done", "files_touched": []},
+    {"id": 4, "description": "corpus-directory-conventions.md: re-check single row for continued accuracy", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Update script's own header comment: three-path rationale, pagination contract, itemType filter, guard", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/zotero-generate-export.sh"]},
+    {"id": 6, "description": "Confirm no task-number reference introduced in any of these files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "scope_hypothesis_confirmation": {
+    "asserted_touchpoints": 4,
+    "actually_edited": 2,
+    "note": "Re-grepped zotero-generate-export across agent-system/extensions/literature/ at implementation time: literature-index.md and corpus-directory-conventions.md each carry only their pre-existing single one-line 'not applicable'/'None found' mention, both still accurate after this task's changes (neither claim -- 'not a directory traversal', 'a different id namespace' -- was invalidated by anything in Phases 1-6), so neither was edited. zotero-pdf-resolution.md and commands/literature.md were substantively edited, exactly as the plan's Scope Hypothesis anticipated as the likely outcome."
+  }
+}

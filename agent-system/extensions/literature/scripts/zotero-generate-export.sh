@@ -14,6 +14,26 @@
 #       Zotero 7's built-in local HTTP API at
 #       http://127.0.0.1:23119/api/users/0/items?format=csljson, paginated.
 #
+#       PAGINATION CONTRACT: termination is driven by the `Total-Results` response header
+#       (read once from the first page), never by "this page returned fewer than `limit`
+#       items". Zotero's format=csljson serialization silently drops annotation-typed rows
+#       from page BODIES while still counting them in Total-Results and the limit/start
+#       window -- verified live (a 100-row window containing 19 annotations serialized to
+#       only 81 csljson entries) -- so a short mid-library page is normal, not end-of-data.
+#       Each page is written to its own temp file and combined once via `jq -s 'add'` at the
+#       end; neither a single page nor the running total ever transits argv (the prior bug:
+#       a single `--argjson` argument crossing Linux's 128KiB MAX_ARG_STRLEN cap silently
+#       truncated any library past ~200 items while still exiting 0). A failed fetch,
+#       malformed body, missing Total-Results, or the max_pages guard all abort loudly
+#       (non-zero exit, nothing written) -- there is no error-swallowing fallback left in
+#       this path.
+#
+#       ITEMTYPE FILTER: attachment/note/annotation items are excluded by cross-referencing
+#       each window's raw (format=json) response, which carries the authoritative
+#       `data.itemType`, keyed by item key -- NOT the CSL `.type` field, which cannot carry
+#       this filter (Zotero maps itemType "attachment" to CSL type "document", never to
+#       "attachment"; a `.type != "attachment"` predicate was a verified no-op).
+#
 #     Path 2 (enrichment, requires Zotero running + Better BibTeX plugin):
 #       Better BibTeX JSON-RPC at http://localhost:23119/better-bibtex/json-rpc,
 #       item.citationkey(itemKeys) -- backfills the real "citation-key" field for items
@@ -25,7 +45,10 @@
 #       reconstructing CSL-JSON from items/itemData/itemDataValues/fieldsCombined,
 #       itemCreators/creators, and itemAttachments. No citekey table exists in zotero.sqlite
 #       (Better BibTeX keeps its own separate database), so citation-key is always
-#       synthesized for Path 3 entries.
+#       synthesized for Path 3 entries. Excludes attachment/note/annotation items by
+#       itemTypes.typeName (never a hardcoded numeric itemTypeID -- IDs are not stable
+#       identifiers across Zotero versions/installations; see fetch_path3()'s own comment
+#       for the observed IDs and the prior mismatch this replaced).
 #
 #   Every entry is guaranteed a non-null "citation-key" on output: any item lacking a real
 #   Better-BibTeX citekey gets one synthesized deterministically as
@@ -278,7 +301,7 @@ fetch_path1() {
   # Cleans up on every exit path, including an interrupting signal mid-loop. Each controlled
   # return point below ALSO removes tmpdir and clears the trap explicitly, so this is a
   # backstop for INT/TERM, not the only cleanup mechanism.
-  trap "rm -rf '$tmpdir'" EXIT INT TERM
+  trap 'rm -rf "$tmpdir"' EXIT INT TERM
 
   while :; do
     page_file="$tmpdir/page_${page_index}.json"

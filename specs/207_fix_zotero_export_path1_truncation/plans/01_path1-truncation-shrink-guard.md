@@ -388,29 +388,29 @@ single-concern hunk.
 
 ---
 
-### Phase 7: Document the changed contract [NOT STARTED]
+### Phase 7: Document the changed contract [COMPLETED]
 
 - **Goal:** The four verified doc touchpoints describe the new pagination contract, the working
   itemType filter, the shrink guard and its flag, and the corrected sqlite exclusion set.
 - **Tasks:**
-  - [ ] `context/project/literature/patterns/zotero-pdf-resolution.md`: add a subsection recording
+  - [x] `context/project/literature/patterns/zotero-pdf-resolution.md`: add a subsection recording
         the Zotero local-API `format=csljson` pagination quirk (annotation rows dropped from page
         bodies while still counted in `Total-Results` and the `limit`/`start` window), the
         `itemTypes` name-vs-ID lesson, and the corrected `fetch_path3()` exclusion. Reuse the
         existing "known, latent bug, recorded here as a follow-up item" phrasing template already in
         that file for anything left undone.
-  - [ ] `commands/literature.md`: extend the existing Path 1/Path 3 selection narrative with the
+  - [x] `commands/literature.md`: extend the existing Path 1/Path 3 selection narrative with the
         shrink guard's behavior, `--allow-shrink` vs. `--force` semantics, and the new distinct exit
         code; align the existing "never write an empty file, fail loudly instead" guarantee with the
         now-broader loud-failure contract.
-  - [ ] `context/project/literature/domain/literature-index.md`: re-check the single
+  - [x] `context/project/literature/domain/literature-index.md`: re-check the single
         `zotero-generate-export.sh` "Not applicable" row for continued accuracy after these changes;
         amend only if it became inaccurate.
-  - [ ] `context/project/literature/domain/corpus-directory-conventions.md`: same re-check of its
+  - [x] `context/project/literature/domain/corpus-directory-conventions.md`: same re-check of its
         single `zotero-generate-export.sh` row.
-  - [ ] Update the script's own header comment block so the three-path rationale, the pagination
+  - [x] Update the script's own header comment block so the three-path rationale, the pagination
         contract, and the guard are discoverable at the point of use.
-  - [ ] Confirm no task-number reference is introduced in any of these files (all are outside
+  - [x] Confirm no task-number reference is introduced in any of these files (all are outside
         `specs/**`).
 - **Timing:** 1 hour
 - **Depends on:** 5
@@ -438,26 +438,26 @@ single-concern hunk.
 
 ## Testing & Validation
 
-- [ ] `bash -n` and `shellcheck` clean on `zotero-generate-export.sh` and `curl-stub.sh`.
-- [ ] `bash agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh` passes.
-- [ ] Every pre-existing test under `agent-system/extensions/literature/scripts/tests/` still passes
-      (the stub is shared with the Tier 3 discovery tests).
-- [ ] Acceptance criterion 1: a >200-item synthetic library exports completely under the stub; an
+- [x] `bash -n` and `shellcheck` clean on `zotero-generate-export.sh` and `curl-stub.sh`. *(completed: shellcheck via `nix shell nixpkgs#shellcheck`, not present by default in this env; 0 warnings at -S warning across all 5 changed/new scripts)*
+- [x] `bash agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh` passes. *(completed: 11/11)*
+- [x] Every pre-existing test under `agent-system/extensions/literature/scripts/tests/` still passes
+      (the stub is shared with the Tier 3 discovery tests). *(completed: test-literature-discover-tier3.sh 27/27)*
+- [x] Acceptance criterion 1: a >200-item synthetic library exports completely under the stub; an
       injected mid-sweep failure produces a non-zero exit with the output file unchanged.
-- [ ] Acceptance criterion 2: no `2>/dev/null ||` fallback that can return a short result as success
+- [x] Acceptance criterion 2: no `2>/dev/null ||` fallback that can return a short result as success
       remains anywhere in `fetch_path1`.
-- [ ] Acceptance criterion 3: the shrink guard blocks a catastrophic overwrite, is exercised by a
+- [x] Acceptance criterion 3: the shrink guard blocks a catastrophic overwrite, is exercised by a
       test, and its opt-out is `--allow-shrink`, distinct from `--force`, with the rationale in
       `show_usage()` and in `commands/literature.md`.
-- [ ] Acceptance criterion 4: the >128KiB boundary has a dedicated test that asserts the boundary was
+- [x] Acceptance criterion 4: the >128KiB boundary has a dedicated test that asserts the boundary was
       actually crossed, run offline via the PATH-shadowing stub.
-- [ ] Acceptance criterion 5: the four verified doc touchpoints reflect the changed contract.
-- [ ] Absorbed pagination criterion: the 481-vs-4042 discrepancy is documented with its empirical
+- [x] Acceptance criterion 5: the four verified doc touchpoints reflect the changed contract.
+- [x] Absorbed pagination criterion: the 481-vs-4042 discrepancy is documented with its empirical
       cause, and the `Total-Results`-driven loop reaches the true end of pagination under the stub.
       Note that Path 1's achievable ceiling is Zotero's own csljson-converted set, so "Path 1 count
       == the pre-fix on-disk 4042" is explicitly **not** a parity target (that number is the
       unfiltered raw item-table total, contaminated with attachment/note/annotation stubs).
-- [ ] No edit landed under `.claude/**`; every change is under
+- [x] No edit landed under `.claude/**`; every change is under
       `agent-system/extensions/literature/**`.
 
 ## Artifacts & Outputs

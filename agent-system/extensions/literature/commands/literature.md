@@ -353,11 +353,32 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
            pre-check here either. It still runs `"$GENERATE_SCRIPT" --orchestrator-mode true`
            directly (a resolved sqlite path is a legitimate non-interactive success path via
            Path 3, post-FIX-1). The "never write an empty file, fail loudly instead" guarantee
-           for the genuine no-data-source case is concentrated entirely inside the generator's
-           own hardened orchestrator-mode `else` branch (see `zotero-generate-export.sh`) -- this
-           command layer does not re-implement it. Then proceed to step 1 regardless of the
-           generation outcome (Tier 2 either becomes populated or stays skipped, non-fatal; a
-           generator failure here is surfaced via its loud stderr error, never silent).
+           is now BROADER than just the genuine no-data-source case: it also covers a Path 1
+           pagination failure partway through (no partial/truncated write, non-zero exit) and
+           the content-keyed shrink guard (see below). All three are concentrated entirely
+           inside the generator's own hardened logic (see `zotero-generate-export.sh`) -- this
+           command layer does not re-implement any of it, and does not need to distinguish exit
+           1 (no data source, or a pagination failure) from exit 4 (shrink guard blocked) to
+           stay correct: both are simply "generation failed this run, Tier 2 stays on whatever
+           it had before," surfaced via loud stderr, never silent. Then proceed to step 1
+           regardless of the generation outcome (Tier 2 either becomes populated or stays
+           skipped, non-fatal; a generator failure here is surfaced via its loud stderr error,
+           never silent).
+
+         **Shrink guard note (all branches above that call `$GENERATE_SCRIPT`)**: the generator
+         now refuses to overwrite an existing export with one containing dramatically fewer
+         items (more than a 10% shrink, or zero items) unless `--allow-shrink` is also passed,
+         exiting 4 with no write when blocked. This is DISTINCT from `--force`: `--force` gates
+         whether an existing file may be regenerated AT ALL (existence-keyed, pre-fetch, exit 3
+         if omitted); `--allow-shrink` gates whether a freshly fetched, materially smaller
+         result may actually overwrite it (content-keyed, post-fetch, exit 4 if omitted). None
+         of the invocations above pass `--allow-shrink` -- a run that trips the guard surfaces
+         its diagnostic (previous count, candidate count, threshold, and the exact
+         `--allow-shrink` invocation to override) via loud stderr and Tier 2 stays on the prior
+         export, same as any other non-fatal generation failure in this step. A human re-running
+         `zotero-generate-export.sh` directly with `--allow-shrink` is the intended recovery path
+         when the shrink is expected (e.g. immediately after a Path 3 itemTypeID correction, or
+         a genuine library deletion) -- this command does not auto-pass it.
 
          This offer is a SEPARATE classifier invocation from the main discover call below; it
          never touches `literature-discover.sh`'s pure-JSON-array stdout contract. The main

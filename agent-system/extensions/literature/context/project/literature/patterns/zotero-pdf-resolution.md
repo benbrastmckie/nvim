@@ -96,6 +96,39 @@ secondary gate (year/DOI/venue cross-check against the doc_id's own metadata) is
 before any non-key-anchored candidate may be written into the corpus -- see the Reference
 implementation section below for that gate.
 
+## 7. The local API's `format=csljson` pagination quirk, and the itemTypes name-vs-ID lesson
+
+`zotero-generate-export.sh`'s Path 1 (live local-API pull) previously terminated pagination on
+"this page returned fewer than `limit` items" -- the wrong signal for `format=csljson`.
+Empirically verified against the live API: at `start=400`, the raw item window (`format=json`,
+same `limit`/`start`) returned 100 rows including 19 annotation-typed items, but the `format=csljson`
+serialization for that identical window returned only 81 entries. **Zotero silently drops
+annotation-typed rows from the csljson body while still counting them in `Total-Results` and the
+`limit`/`start` pagination window.** A page-length-driven loop stops at the first such page,
+years before the real end of the library (measured: pagination stopped at 481 items against a
+4042-item `Total-Results`). The fix is `Total-Results`-driven termination: read `Total-Results`
+once from the first response's headers, advance `start` by `limit` unconditionally, and stop only
+when `start >= Total-Results`.
+
+A second, independent quirk in the same function: the CSL `.type` field cannot carry an
+attachment/note exclusion filter. Zotero maps its `attachment` itemType to CSL type `document`
+(never to CSL type `"attachment"`), so a `select(.type != "attachment" and .type != "note")`
+predicate is a verified no-op -- confirmed live, 0 items ever removed by that predicate across a
+full sweep of a real library. The working fix cross-references each pagination window's raw
+(`format=json`) response, which DOES carry the authoritative `data.itemType`, by item key
+(`.id | split("/") | last`, the same mapping `enrich_path2()` already relies on for citekey
+enrichment) -- never a CSL-field heuristic.
+
+**The itemTypes name-vs-ID lesson** (also fixed in `fetch_path3()`, the sqlite reconstruction
+path): itemTypeID values are NOT stable identifiers to hardcode. `fetch_path3()` previously
+excluded `WHERE it.itemTypeID NOT IN (1, 3, 28)`, intending to exclude
+attachment/note/annotation -- but on this installation, IDs 1/3/28 are actually
+`artwork`/`audioRecording`/`podcast` (the real IDs are `attachment=2`, `note=26`,
+`annotation=37`). That mismatch was a verified no-op that let roughly 61% attachment/note stub
+entries (empty title/author/issued) into every sqlite-path export. The fix resolves the
+exclusion set by TYPE NAME via a subquery on `itemTypes.typeName`, never a hardcoded numeric ID,
+so it cannot rot the same way across Zotero versions or installations again.
+
 ## Follow-up items (recorded, not yet fixed)
 
 - **`zotero-generate-export.sh`'s `fetch_path3()` hardcoded storage root.** Currently latent
