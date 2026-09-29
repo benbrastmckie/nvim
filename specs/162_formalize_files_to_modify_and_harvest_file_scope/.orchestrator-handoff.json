@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "summary": "Authored a 6-phase implementation plan (~6.75h, waves [[1,2,3],[4,5],[6]]) that formalizes the already-universal **Files to modify** per-phase convention in plan-format.md, builds a single shared plan-file-scope-harvest.sh, widens update-task-status.sh's existing --file-scope-add union-merge to accept plan postflight, wires the harvest into all FOUR plan-postflight call sites (orchestrator-postflight.sh, reconcile-task-status.sh x2, skill-reviser/SKILL.md), and adds a dry-run/idempotent cross-repo backfill that reuses the harvester. All dispatch DECIDE items are resolved in a dedicated Decisions section: union not overwrite; revisions do re-harvest; harvest failure is a non-fatal warning; field documented required with validator gating deferred; Scope Hypothesis is not a harvest source; plan-less tasks are left absent (no inference, no [] sentinel).",
-  "phases_completed": 0,
-  "phases_total": 6,
-  "blockers": [],
+  "status": "implemented",
+  "dispatch_seq": 10,
+  "phase": "implement",
+  "summary": "Formalized the Files to modify plan convention, built plan-file-scope-harvest.sh, and wired it into all five live plan-postflight call sites (discovering skill_postflight_update in skill-base.sh as a fifth site beyond the dispatch's four). Ran a cross-repo backfill, populating file_scope for 7 existing plan-bearing tasks in ~/Projects/BimodalLogic (left uncommitted for user review).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/162_formalize_files_to_modify_and_harvest_file_scope/plans/01_files-to-modify-harvest.md",
-      "summary": "6-phase plan: formalize **Files to modify** in plan-format.md, build plan-file-scope-harvest.sh, widen --file-scope-add to plan postflight, wire all four call sites, add cross-repo backfill, deploy and verify."
+      "type": "summary",
+      "path": "specs/162_formalize_files_to_modify_and_harvest_file_scope/summaries/01_files-to-modify-harvest-summary.md",
+      "summary": "Full implementation summary covering all six phases, decisions, deviations, and cross-repo coverage numbers."
     }
   ],
-  "sorry_inventory": [],
-  "continuation_path": null,
-  "dispatch_seq": 2
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "plan_markers_verified": true
 }

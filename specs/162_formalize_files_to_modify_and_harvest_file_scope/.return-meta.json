@@ -1,10 +1,61 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 10,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/162_formalize_files_to_modify_and_harvest_file_scope/summaries/01_files-to-modify-harvest-summary.md",
+      "summary": "Formalized the Files to modify plan convention, built and wired plan-file-scope-harvest.sh into every live plan-postflight call site (including a fifth, previously-unnamed site), and ran a cross-repo backfill for existing plan-bearing tasks."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Formalized plan-format.md's Files to modify field, built plan-file-scope-harvest.sh, widened update-task-status.sh's --file-scope-add restriction to accept plan postflights, wired the harvest into all five live plan-postflight call sites (discovering skill_postflight_update in skill-base.sh as a fifth, actually-live site beyond the dispatch's four named ones), and built/ran a cross-repo backfill script that populated file_scope for 7 existing plan-bearing tasks in ~/Projects/BimodalLogic."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh",
+    "agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+    "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+    "agent-system/extensions/core/scripts/backfill-file-scope.sh",
+    "agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A jq batched-update filter of the shape `map(if ($updates | has(.field|tostring)) then ... end)` silently no-ops: a jq function argument (has()'s argument here) is evaluated against the SAME input as the function call itself ($updates), not the outer map(.) item. Fix by binding `. as $item |` first and referencing `$item.field` explicitly inside the function argument. Caught only by an actual positive-case assertion (array populated), not by an exit-code check alone.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/162_formalize_files_to_modify_and_harvest_file_scope/summaries/01_files-to-modify-harvest-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq", "map", "has", "function-argument-scoping", "batched-update"]
+    },
+    {
+      "content": "Before trusting a dispatch's enumerated 'consumer sites' or 'call sites' list for a live wiring task, grep for actual invocation (not just textual mentions) and check each named file's own header/doc comments for an orphaned-script or superseded-by note. In this codebase, orchestrator-postflight.sh is a fully orphaned script (zero live callers, confirmed by skill-git-workflow/SKILL.md's own 'Relationship to orchestrator-postflight.sh' section) while the actually-live equivalent (skill_postflight_update in skill-base.sh) went unnamed in a dispatch that predated a refactor. A phase's own Scope Hypothesis escape valve ('if a fifth site exists, wire it too') is the mechanism that catches this class of drift -- always exercise it literally, not just as a formality.",
+      "category": "PATTERN",
+      "source_artifact": "specs/162_formalize_files_to_modify_and_harvest_file_scope/summaries/01_files-to-modify-harvest-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dead-code", "orphaned-script", "call-site-discovery", "scope-hypothesis", "orchestrate"]
+    },
+    {
+      "content": "A test suite for a script whose sibling dependency enforces deploy-root-guard.sh (blocking source-store invocation) must drive the DEPLOYED copy of the script under test, not the source-store copy -- even when the script under test itself has no such guard, if it calls a sibling script via a same-directory relative path (e.g. $SCRIPT_DIR/state-write.sh), that sibling's guard transitively applies. The fixture then needs no script-copying at all: point --state-file (or an equivalent flag) at a throwaway fixture directory and let the deployed dependency chain resolve everything else.",
+      "category": "PATTERN",
+      "source_artifact": "specs/162_formalize_files_to_modify_and_harvest_file_scope/summaries/01_files-to-modify-harvest-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy-root-guard", "test-fixture", "state-write.sh", "sibling-script-resolution"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
