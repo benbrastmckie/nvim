@@ -238,7 +238,7 @@ performs.
 
 ---
 
-### Phase 3: Align README.md and index-entries.json with the recorded decision [IN PROGRESS]
+### Phase 3: Align README.md and index-entries.json with the recorded decision [COMPLETED]
 
 **Goal**: Keep the extension's own two other descriptions of `safety-invariants.md` consistent
 with its newly documented role, so the next audit does not find a third, contradicting account.
