@@ -130,7 +130,7 @@
         "title-similarity"
       ],
       "summary": "Resolve an index.json doc_id to its Zotero PDF: live-API vs sqlite vs snapshot tradeoffs, derived storage root, citekey-vs-real-key gotcha, title-search truncation/similarity mitigations",
-      "line_count": 114,
+      "line_count": 147,
       "load_when": {
         "agents": [
           "literature-agent",

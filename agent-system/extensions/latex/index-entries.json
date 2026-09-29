@@ -164,7 +164,7 @@
     },
     {
       "path": "project/latex/tools/compilation-guide.md",
-      "line_count": 251,
+      "line_count": 256,
       "load_when": {
         "agents": [
           "latex-implementation-agent",

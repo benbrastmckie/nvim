@@ -1797,7 +1797,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 589,
+      "line_count": 640,
       "keywords": [
         "standards",
         "git",
@@ -2382,7 +2382,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Fix-forward recovery contract: disambiguates 'reach green'/'restore green' as fix-forward-only, and defines the 3-rung Recovery Ladder (fix forward -> strategic-sorry skeleton -> snapshot-then-smallest-scope-rollback)",
-      "line_count": 95,
+      "line_count": 113,
       "keywords": [
         "fix-forward",
         "recovery-ladder",
@@ -2631,7 +2631,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 1394,
+      "line_count": 1546,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3010,7 +3010,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 352,
+      "line_count": 378,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -3034,7 +3034,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 505,
+      "line_count": 509,
       "keywords": [
         "runtime-files",
         "cleanup",
@@ -3099,7 +3099,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full task-reference exemption taxonomy and enforcement narrative, companion to the always-eager no-task-references-in-deliverables.md rule",
-      "line_count": 103,
+      "line_count": 123,
       "keywords": [
         "task-references",
         "exemptions",
@@ -3122,7 +3122,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Reactive git-workflow elaboration: commit-per-green-substep mechanism detail, snapshot-mode narrative, session ID lifecycle, branch strategy, and commit-failure error handling",
-      "line_count": 92,
+      "line_count": 131,
       "keywords": [
         "git-workflow",
         "commit-per-green-substep",
