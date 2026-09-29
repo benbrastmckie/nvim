@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md",
+      "summary": "Verifies task 91/13 resolutions (accept-trailing-text policy; --fix stays in-place), reproduces DEFECT 2 and the report-heading defect live with fixtures, and expands the ownership-boundary sweep from 4 named files to a verified 13-file list (dropping a non-existent general-implementation-hard-agent.md target)."
+    }
+  ],
+  "next_steps": "Run /plan 136 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1790721762_ff3d8e_136",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "validate-artifact.sh's required-section check `grep -qE \"^##+ ${section}\"` matches a required section heading at ANY depth (## or deeper), not just top-level -- so a nested subsection (e.g. '### Recommendations' under '## Findings') already satisfies the check. A report failing 'Missing required section' despite an agent's skeleton containing a matching subsection means the AUTHORED artifact drifted from its own skeleton, not that the skeleton's heading depth is wrong. Verify by grepping the skeleton for the exact regex before assuming a depth/burial fix is needed.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["validate-artifact.sh", "required-section-check", "heading-depth", "regex", "skeleton-drift"]
+    },
+    {
+      "content": "When a dispatch description cites a dependency task's decision as still-open or frames it as an unresolved policy question, check the dependency task's actual archived summary before implementing against the dispatch's literal wording -- the dispatch text may have been authored before the dependency resolved, and can describe the OPPOSITE of what shipped (e.g. task 136's dispatch listed 'trailing text after the closing bracket' as a malformed shape to reject, while task 91 actually shipped an accept-and-preserve policy for exactly that shape).",
+      "category": "PATTERN",
+      "source_artifact": "specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dependency-resolution", "stale-dispatch-text", "task-91", "verify-before-implement"]
+    },
+    {
+      "content": "A dispatch's 'apply to at minimum: file A, B, C, D' list for a cross-cutting agent-contract fix should be treated as a floor, not a ceiling, and independently re-swept by grep -- in task 136's case the named 4-file list undercounted the real 13-file surface by more than 3x, and one named file (general-implementation-hard-agent.md) does not exist because general/meta/markdown task types have no hard-mode agent variant (check manifest.json's routing_agents_hard before assuming a *-hard-agent.md file exists).",
+      "category": "PATTERN",
+      "source_artifact": "specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["agent-contract-sweep", "hard-mode-routing", "manifest.json", "grep-verify"]
+    }
+  ]
+}
