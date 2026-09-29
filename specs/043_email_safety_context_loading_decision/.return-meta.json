@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/043_email_safety_context_loading_decision/plans/01_email-safety-context-loading-decision.md",
-      "summary": "4-phase documentation-only plan recording decision (b): email safety context stays on-demand reference; enforcement lives in mail-guard.sh, the nix wrapper binaries, and inline copies in four consumer bodies."
-    }
-  ],
-  "next_steps": "Run /implement 43 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 2.5,
-  "dependency_waves": [[1], [2, 3], [4]],
-  "memory_candidates": [
-    {
-      "content": "Context-loading tiers in this agent system are three, not two, and the distinction decides whether a 'non-loading pointer' is a defect: (1) session-start eager -- only CLAUDE.md's own @-imports, expanded by the harness at conversation start; (2) invocation-time eager -- a SKILL.md or agent-definition .md body, read in full when the Skill/Agent tool invokes it; (3) on-demand -- a plain path in prose, read only if an agent chooses to. An @-prefixed path written INSIDE a skill or agent body sits at tier 3, not tier 1: it is stylistic documentation, never harness-expanded. Consequence for audits: a safety/contract doc listed as a plain backticked path in a merged CLAUDE.md fragment is NOT automatically a live gap. Check first whether its load-bearing content is duplicated inline in the tier-2 consumer bodies that actually gate the operation, and whether mechanical layers (PreToolUse hooks, compiled wrapper binaries) enforce it independently of any markdown. If both hold, the right fix is to DOCUMENT the loading model, not to promote the file to eager loading and pay recurring per-session tokens.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/043_email_safety_context_loading_decision/plans/01_email-safety-context-loading-decision.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["context-loading", "eager-loading", "loading-tiers", "at-imports", "skill-body", "audit"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790640953_159e0d_43",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 13
+    "session_id": "sess_1790640953_159e0d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Email Safety Context-Loading Decision
 
 - **Task**: 43 - Decide and implement how email safety context actually reaches agents (live defect: five inert safety pointers)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: 194 (archived/completed), 257 (archived/completed) — none blocking
 - **Research Inputs**: specs/043_email_safety_context_loading_decision/reports/01_email-safety-context-loading-decision.md
@@ -117,7 +117,7 @@ No `roadmap_path` was provided in this dispatch; no roadmap consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Build the enforcement-coverage map and record the role of safety-invariants.md [NOT STARTED]
+### Phase 1: Build the enforcement-coverage map and record the role of safety-invariants.md [IN PROGRESS]
 
 **Goal**: Establish, section by section, where each `safety-invariants.md` invariant is actually
 enforced, and write that evidence plus the file's real role into the file itself as a banner
@@ -125,30 +125,33 @@ section. This is the decision gate for the whole plan: every later phase's wordi
 what this map finds.
 
 **Tasks**:
-- [ ] Re-read `context/project/email/domain/safety-invariants.md` in full and enumerate its
-      section headings (expected 11 — confirm, do not assume).
-- [ ] For each section, locate its inline counterpart in each of the four consumer bodies:
+- [x] Re-read `context/project/email/domain/safety-invariants.md` in full and enumerate its
+      section headings (expected 11 — confirm, do not assume). *(completed: confirmed exactly
+      11 `## ` sections, matching the Scope Hypothesis)*
+- [x] For each section, locate its inline counterpart in each of the four consumer bodies:
       `agents/email-implementation-agent.md`, `skills/skill-email-cleanup/SKILL.md`,
       `skills/skill-email-sync/SKILL.md`, `skills/skill-email-implementation/SKILL.md`.
       Record, per invariant: which consumer(s) carry it inline, and/or which mechanical layer
       (`hooks/mail-guard.sh` deny/allow list, or a wrapper binary's own baked-in check) enforces
-      it independently of markdown.
-- [ ] Decision gate: if every invariant is covered by at least one inline consumer copy or one
+      it independently of markdown. *(completed)*
+- [x] Decision gate: if every invariant is covered by at least one inline consumer copy or one
       mechanical layer, proceed on the main branch (full coverage). If any invariant is covered
       by neither, do NOT widen scope to fix it here — record it as a named gap row in the map,
       and carry that gap forward into Phase 2's wording (conditional decision) and into the task
-      summary as a follow-up candidate.
-- [ ] Add a banner section immediately after the file's H1 (before `## Wrapper-Only`) stating:
+      summary as a follow-up candidate. *(completed: full coverage confirmed — every invariant
+      has at least one inline consumer copy or one independent mechanical layer; main branch
+      taken, no gap)*
+- [x] Add a banner section immediately after the file's H1 (before `## Wrapper-Only`) stating:
       (a) this file is reference material, resolved on demand, deliberately not eager-loaded at
       any tier; (b) the operationally load-bearing rules are duplicated inline in the four
       consumer bodies named above, each of which is read in full at its own invocation time;
       (c) the two mechanical layers hold with zero markdown loaded; (d) the measured cost that
       makes eager promotion a bad trade (~1.4k tokens for this file, ~13k for all five);
       (e) an editor's instruction: changing a rule or constant here requires updating the
-      consumer copies named in the map, and vice versa.
-- [ ] Embed the coverage map as a table in that banner section (columns: Invariant | Inline in
-      consumer(s) | Mechanical layer | Notes).
-- [ ] Commit (source-store path staged by explicit name only).
+      consumer copies named in the map, and vice versa. *(completed)*
+- [x] Embed the coverage map as a table in that banner section (columns: Invariant | Inline in
+      consumer(s) | Mechanical layer | Notes). *(completed: 11-row table)*
+- [x] Commit (source-store path staged by explicit name only). *(completed)*
 
 **Timing**: 1 hour
 
