@@ -59,6 +59,57 @@ Dispatch" subsection for the full refusal-gate contract and the by-hand-only rat
 
 ---
 
+## A Second Hazard Class: Rewriting Already-Committed History Under Concurrent Writers
+
+Everything in the section above — the guard's discard-uncommitted-work predicates, the
+snapshot-marker exemption, the clean-tree exemption — is scoped by **dirtiness of the working
+tree**. That design cannot address a structurally different hazard: rewriting a commit that a
+*different* dispatched writer already made. Bare `git commit --amend` and a HEAD-moving
+`git reset` (`--soft`/`--mixed`/bare, or `--hard` given a commit-ish) are both non-destructive to
+the working tree — a dirty-tree-scoped guard therefore waves them through on a dirty tree exactly
+as on a clean one. This is not a gap the existing predicates can be widened to close; it needs a
+predicate scoped by an entirely different variable.
+
+**The incident (observed 2026-09-02)**: during a multi-task `/orchestrate` run with five
+concurrent implementation agents committing to master, one agent's bare `git commit --amend`
+(intended for its own most recent commit) rewrote a sibling agent's commit instead, because the
+sibling's commit had landed on top in the interim — preserving the sibling's tree content but
+overwriting its message. A follow-up `git reset --mixed <own-sha>` rewound HEAD past three further
+legitimate commits, intermingling their changes in the working tree; the agent caught this and
+restored HEAD via the reflog. Trees were identical throughout, zero content was lost, and the
+only residual damage is one commit left with a mislabeled message.
+
+**The chosen signal**: `guard-destructive-git.sh` carries a second, independent predicate that
+consults **live writer evidence**, never tree state:
+
+- Two record families, read directly and cwd-relatively (never via `task-lock.sh`, which sources
+  `deploy-root-guard.sh` — `exit 1`ing from the source store — and anchors `PROJECT_ROOT` to its
+  own `SCRIPT_DIR` rather than the caller's cwd, both fatal for a hermetically testable hook):
+  `specs/{NNN}_{SLUG}/.lock/holder.json` (per-task locks) and `specs/.sessions/*.json` (the
+  session registry).
+- A record is **live** when its `pid` is numeric and `kill -0 "$pid"` succeeds, AND its
+  `heartbeat_at` is within `HISTORY_REWRITE_LIVE_MIN` minutes (default 30, matching
+  `TASK_LOCK_STALE_MIN`'s semantics).
+- **Threshold: one or more** live records refuses, with no attempt to exclude "self" — the hook
+  cannot correlate its own native Claude Code session UUID to an agent-system `sess_*` identity,
+  and a dispatched agent's own live lock is itself proof it is running under orchestration, where
+  bare rewrites are forbidden outright. A genuinely solo interactive operator has no live lock and
+  no live registry entry.
+- **Fails open** (permits) on any missing `specs/`, missing `jq`, unreadable record, or
+  unparseable timestamp — this predicate is a net layered over a documented rule, not the rule's
+  sole enforcement.
+- **Response is binary** `exit 2` + stderr, no warn tier, with a documented, auditable
+  operator-only override (`GUARD_ALLOW_HISTORY_REWRITE=1`, detected in the scanned command text,
+  never the hook's own environment) that agents MUST NOT use.
+
+See `.claude/rules/git-workflow.md`'s "No History Rewrites While Another Writer Is Live" section
+for the full policy statement and what stays permitted (solo `--amend` with no live writer,
+pathspec-only `reset` unstaging, `git-commit-scoped.sh`, and message text merely containing
+`--amend`), and `context/contracts/recovery.md`'s "Green Means Fix Forward" section for how this
+interacts with the fix-forward discipline.
+
+---
+
 ## Git Safety Pattern
 
 ### Standard Pattern

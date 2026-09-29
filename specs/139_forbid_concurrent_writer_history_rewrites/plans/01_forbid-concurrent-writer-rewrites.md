@@ -461,29 +461,30 @@ implementation reveals as load-bearing.
 
 ---
 
-### Phase 6: Standards Documentation — New Hazard Class and First Registry Consumer [NOT STARTED]
+### Phase 6: Standards Documentation — New Hazard Class and First Registry Consumer [COMPLETED]
 
 **Goal**: the standards layer describes the new hazard class and the chosen signal, and the
 session registry is no longer documented as having no readers.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-safety.md` immediately before
-      editing.
-- [ ] Add a section adjacent to the existing `## Recovering an Unconsumed Dispatch` (which already
+- [x] Re-read `agent-system/extensions/core/context/standards/git-safety.md` immediately before
+      editing. *(completed)*
+- [x] Add a section adjacent to the existing `## Recovering an Unconsumed Dispatch` (which already
       reasons about the guard's concurrency-adjacent design) covering: the second hazard class
       (rewriting already-committed history under concurrent writers), why the dirty-tree design
       cannot address it, the chosen signal (live per-task lock holders and live session-registry
       entries, `kill -0` pid plus heartbeat freshness, cwd-relative direct reads), the
       one-or-more threshold and its can't-identify-self rationale, the binary `exit 2` response
-      with no warn tier, the fail-open posture, and the operator override.
-- [ ] Re-read `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md` and
+      with no warn tier, the fail-open posture, and the operator override. *(completed)*
+- [x] Re-read `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md` and
       update the `specs/.sessions/{session_id}.json` row's Consumed-by cell: it is no longer
       "None in the source store today" — `hooks/guard-destructive-git.sh`'s concurrency-gated
       history-rewrite predicate is its first consumer, and it reads the entries directly
       (cwd-relative, with its own pid+heartbeat freshness check) rather than via
-      `task-lock.sh session-list`, with the reason recorded.
-- [ ] Confirm neither file gained a task-number reference.
-- [ ] Commit both files together via `git-commit-scoped.sh` with an explicit two-path list.
+      `task-lock.sh session-list`, with the reason recorded. *(completed)*
+- [x] Confirm neither file gained a task-number reference. *(completed)*
+- [x] Commit both files together via `git-commit-scoped.sh` with an explicit two-path list.
+      *(completed)*
 
 **Timing**: 0.5 hours
 
