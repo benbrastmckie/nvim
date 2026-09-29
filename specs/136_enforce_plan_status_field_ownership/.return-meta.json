@@ -1,41 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md",
-      "summary": "Verifies task 91/13 resolutions (accept-trailing-text policy; --fix stays in-place), reproduces DEFECT 2 and the report-heading defect live with fixtures, and expands the ownership-boundary sweep from 4 named files to a verified 13-file list (dropping a non-existent general-implementation-hard-agent.md target)."
+      "type": "plan",
+      "path": "specs/136_enforce_plan_status_field_ownership/plans/01_plan-status-field-ownership.md",
+      "summary": "8-phase plan closing three contract/validator drift threads: lint-enforced plan-level Status ownership boundary across 13 implementation agents, a shared M1/M2/M3 Status-grammar library wired into validate-artifact.sh at error level, the report-heading conformance remedy, and fan-out plus bidirectional marker/commit-synchrony sections in phase-closure.md."
     }
   ],
-  "next_steps": "Run /plan 136 to create implementation plan",
+  "next_steps": "Run /implement 136 to execute the plan",
   "metadata": {
     "session_id": "sess_1790721762_ff3d8e_136",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 10,
+    "dependency_waves": [[1, 4, 6, 7], [2, 5], [3], [8]]
   },
   "memory_candidates": [
     {
-      "content": "validate-artifact.sh's required-section check `grep -qE \"^##+ ${section}\"` matches a required section heading at ANY depth (## or deeper), not just top-level -- so a nested subsection (e.g. '### Recommendations' under '## Findings') already satisfies the check. A report failing 'Missing required section' despite an agent's skeleton containing a matching subsection means the AUTHORED artifact drifted from its own skeleton, not that the skeleton's heading depth is wrong. Verify by grepping the skeleton for the exact regex before assuming a depth/burial fix is needed.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md",
+      "content": "This agent-system repo has exactly two established mechanisms for preventing 'contract/skeleton text drifts from what a validator enforces' defects, and a plan for any such defect should be built on one of them rather than inventing a third. (1) AGENT-BODY TEXT: a canonical fragment under agent-system/extensions/core/context/contracts/ (e.g. no-task-references-bullet.md, return-meta-artifacts-template.md) holding the exact text in a fenced block plus a stated classification rule, with a check in scripts/lint/lint-agent-contracts.sh that reads the expected text FROM the fragment at runtime (never hardcoded) and greps a curated in-scope agent list. The lint runs as gate 6 of verify-deploy.sh. Note that @-references inside an agent body do NOT auto-resolve at subagent spawn time, which is why literal copies plus a lint are used instead of an include. (2) SCRIPT LOGIC: a shared library under scripts/lib/ (e.g. phase-heading-patterns.sh) sourced lazily via a ${BASH_SOURCE[0]}-relative path that resolves identically in the source store and the deployed .claude/ tree, with a missing library treated as a loud environment error (a distinct exit code), never a silent fallback to an inline pattern. Corollary: context/contracts/*.md files ARE load-bearing for extension agents when @-referenced from their Context References section - phase-closure.md is referenced 'always load'/'MANDATORY' from every implementation agent, making it the right home for a single normative statement rather than copying a paragraph into 13 files.",
+      "category": "PATTERN",
+      "source_artifact": "specs/136_enforce_plan_status_field_ownership/plans/01_plan-status-field-ownership.md",
       "confidence": 0.85,
-      "suggested_keywords": ["validate-artifact.sh", "required-section-check", "heading-depth", "regex", "skeleton-drift"]
-    },
-    {
-      "content": "When a dispatch description cites a dependency task's decision as still-open or frames it as an unresolved policy question, check the dependency task's actual archived summary before implementing against the dispatch's literal wording -- the dispatch text may have been authored before the dependency resolved, and can describe the OPPOSITE of what shipped (e.g. task 136's dispatch listed 'trailing text after the closing bracket' as a malformed shape to reject, while task 91 actually shipped an accept-and-preserve policy for exactly that shape).",
-      "category": "PATTERN",
-      "source_artifact": "specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["dependency-resolution", "stale-dispatch-text", "task-91", "verify-before-implement"]
-    },
-    {
-      "content": "A dispatch's 'apply to at minimum: file A, B, C, D' list for a cross-cutting agent-contract fix should be treated as a floor, not a ceiling, and independently re-swept by grep -- in task 136's case the named 4-file list undercounted the real 13-file surface by more than 3x, and one named file (general-implementation-hard-agent.md) does not exist because general/meta/markdown task types have no hard-mode agent variant (check manifest.json's routing_agents_hard before assuming a *-hard-agent.md file exists).",
-      "category": "PATTERN",
-      "source_artifact": "specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["agent-contract-sweep", "hard-mode-routing", "manifest.json", "grep-verify"]
+      "suggested_keywords": ["lint-agent-contracts", "canonical-fragment", "contract-drift", "shared-library", "phase-closure", "validate-artifact"]
     }
-  ]
+  ],
+  "dispatch_seq": 11
 }
