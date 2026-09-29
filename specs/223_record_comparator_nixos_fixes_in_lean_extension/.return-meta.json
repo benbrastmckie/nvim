@@ -1,30 +1,53 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 14,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/plans/01_comparator-nixos-fixes.md",
-      "summary": "7-phase plan transcribing four Comparator-on-NixOS fixes (landrun shim with TMPDIR/git-lib/ELF-interpreter grants, pinned-toolchain PATH ordering with elan-wrapper unwrapping, outer landrun, git pre-flight probe) plus four documentation-only findings into the lean extension source store, with regression coverage, a new dependency-tracing pattern file, and a .claude/ redeploy."
+      "type": "summary",
+      "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/summaries/01_comparator-nixos-fixes-summary.md",
+      "summary": "All 7 phases completed (Phase 7 as COMPLETED WITH EXCLUSIONS): transcribed four Comparator-on-NixOS fixes and four documentation-only findings into the lean extension source store, added six new regression cases (28/0/1 passing), a new dependency-tracing pattern file, and redeployed .claude/ for the first time with the lean extension active."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1790721762_ff3d8e_223",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 9,
-    "dependency_waves": [[1, 6], [2], [3], [4, 5], [7]]
+  "completion_data": {
+    "completion_summary": "Transcribed the landrun shim (TMPDIR/git-library/ELF-interpreter grants), pinned-toolchain PATH ordering with elan-wrapper unwrapping, outer landrun hardening, and a git-remote pre-flight probe into lean-comparator-run.sh and a new lean-comparator-landrun-shim.sh, documented four further findings in the design record and operator guide, added a new dependency-tracing.md pattern file, and closed the round with the lean extension's first-ever .claude/ deploy on this host."
   },
+  "modified_files": [
+    ".claude-extensions.json",
+    "agent-system/extensions/lean/EXTENSION.md",
+    "agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md",
+    "agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md",
+    "agent-system/extensions/lean/context/project/lean4/tools/comparator-guide.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh",
+    "agent-system/extensions/lean/scripts/lean-comparator-run.sh",
+    "agent-system/extensions/lean/scripts/tests/fixtures/comparator/fake-landrun.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh",
+    "specs/223_record_comparator_nixos_fixes_in_lean_extension/plans/01_comparator-nixos-fixes.md"
+  ],
   "memory_candidates": [
     {
-      "content": "When a research report grounds an implementation plan in a reference implementation that lives OUTSIDE the repository being changed, the reference must be re-read live at plan time -- not trusted from the report's quoted excerpts and line numbers. Concrete instance: a report written 2026-09-17 cited framed_channel/recheck-comparator.sh, recheck-revs.sh and comparator-configs.sh at repository-root paths; by plan time all three had moved (into scripts/ and scripts/lib/), and the reference landrun shim had grown three mechanisms the report never mentions (an ELF-interpreter --rox grant for nix-ld, an in-shim PATH prepend because `lake env` reorders PATH, and a multi-grant RWX hook). A plan built on the report alone would have shipped an incomplete transcription that still failed on the host. The durable planning practice: for any cross-repository reference, spend one grounding read per named reference file before decomposing phases, and make every phase's first task a re-read of the live file by NAME rather than by line number.",
+      "content": "An extension can exist fully in an agent-system source store (agent-system/extensions/<name>/) with a complete manifest.json, scripts, and context tree, yet never have been loaded into a given host's .claude-extensions.json -- meaning NONE of its files have ever reached .claude/**, even though tasks routinely research/plan/implement against its task_type. Before a redeploy step in any task that touches a source-store extension, check .claude-extensions.json's active extensions list explicitly (python3 -c \"import json; print(list(json.load(open('.claude-extensions.json'))['extensions'].keys()))\") rather than assuming deploy-headless.sh's default (non-destructive resync of already-active extensions only) will pick up a never-loaded one. If it is missing, load it first via a headless nvim call to manager.load('<name>', {confirm=false, project_dir=<repo>}) (mirroring deploy-headless.sh's own bootstrap-core call shape) before the normal deploy-headless.sh resync -- this is additive only and never destructive to other extensions.",
+      "category": "PATTERN",
+      "source_artifact": "specs/223_record_comparator_nixos_fixes_in_lean_extension/summaries/01_comparator-nixos-fixes-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension-loading", "deploy-headless", "claude-extensions-json", "manager-load", "first-time-deploy", "redeploy-gate"]
+    },
+    {
+      "content": "An extension's manifest.json can declare a provides.context category (e.g. \"contracts\") that legitimately OVERRIDES a same-path core context file once the extension loads after core -- this is by design, not drift. verify-deploy.sh's manifest-driven content-hash check (item 5, verify.lua) is NOT override-aware: it attributes any content difference from core's own source to a core defect, even when the deployed content correctly reflects a later-loaded extension's intentional override. When this check fires with \"core: Content differs from source\" for a path also present in another loaded extension's own context tree, check `grep -rl \"<distinguishing header text>\" agent-system/extensions/*/context/**/*.md` before assuming it is a real drift -- it may be a legitimate override the checker cannot distinguish from a stale copy.",
       "category": "INSIGHT",
-      "source_artifact": "specs/223_record_comparator_nixos_fixes_in_lean_extension/plans/01_comparator-nixos-fixes.md",
+      "source_artifact": "specs/223_record_comparator_nixos_fixes_in_lean_extension/summaries/01_comparator-nixos-fixes-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["cross-repository-reference", "plan-grounding", "research-drift", "transcription-task", "live-reference-read", "line-number-staleness"]
+      "suggested_keywords": ["verify-deploy", "manifest-override", "context-contracts", "false-positive", "extension-precedence"]
     }
   ],
-  "next_steps": "Run /implement 223 to execute the plan",
-  "dispatch_seq": 6
+  "next_steps": "Task complete. Follow-ups: provision lean4export/nanoda_bin (sibling ~/.dotfiles/ effort) for a real end-to-end Comparator demonstration; a future lean-extension-hygiene or core maintenance task should address the three Reasoned-Exclusions findings from Phase 7 (override-aware manifest verification, skill-lean-research/SKILL.md's missing postflight-boundary section, the eager-load budget baseline).",
+  "metadata": {
+    "session_id": "sess_1790721762_ff3d8e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

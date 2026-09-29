@@ -9,7 +9,7 @@
     {"id": 3, "description": "Confirm both new deployed paths exist and shim is executable", "status": "done", "files_touched": []},
     {"id": 4, "description": "Re-run deployed test suite from .claude/scripts/tests/", "status": "done", "files_touched": []},
     {"id": 5, "description": "Verify no hand-edit under .claude/**", "status": "done", "files_touched": []},
-    {"id": 6, "description": "Commit phase 7's work with task convention, explicit file paths only", "status": "in_progress", "files_touched": []}
+    {"id": 6, "description": "Commit phase 7's work with task convention, explicit file paths only", "status": "done", "files_touched": []}
   ],
   "current_objective": 6,
   "approaches_tried": [

@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 6,
-  "summary": "Wrote a 7-phase implementation plan transcribing the four Comparator-on-NixOS fixes plus four documentation-only findings into the lean extension source store, with stub-based regression coverage, the absorbed dependency-tracing pattern file, and a .claude/ redeploy. Confirmed at plan time that the research report's reference paths and line numbers are stale and that the reference landrun shim has grown three mechanisms the report does not mention; every phase re-reads the live reference by name.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 14,
+  "summary": "All 7 phases completed. Transcribed the four Comparator-on-NixOS fixes (landrun shim, PATH-ordering/elan-unwrap, outer landrun hardening, git-remote pre-flight probe) into lean-comparator-run.sh and a new lean-comparator-landrun-shim.sh, added six new regression cases plus a mutation check (28 passed/0 failed/1 skip), documented four further findings in the design record and operator guide, and added a new dependency-tracing.md pattern file. Discovered the lean extension had never been loaded into .claude-extensions.json on this host; loaded it (additive only) so this task's files could reach .claude/, fixed two trivial pre-existing gaps the first-ever deploy surfaced, and closed Phase 7 as COMPLETED WITH EXCLUSIONS for three remaining pre-existing, core-scoped or cross-cutting findings documented in the plan's Reasoned Exclusions record.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/plans/01_comparator-nixos-fixes.md",
-      "summary": "7 phases, 5 waves, ~9 hours: landrun shim, runner PATH/TMPDIR/shim wiring, outer landrun + git pre-flight probe, regression cases, design record + operator guide, dependency-tracing pattern, redeploy."
+      "summary": "7 phases, all closed ([COMPLETED] x6, [COMPLETED WITH EXCLUSIONS] x1 for Phase 7's deploy verification)."
+    },
+    {
+      "type": "summary",
+      "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/summaries/01_comparator-nixos-fixes-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, verification, impacts, follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
   "blockers": []
 }
