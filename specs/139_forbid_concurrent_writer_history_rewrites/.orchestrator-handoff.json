@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "summary": "Authored a 7-phase plan (5.5h) covering the contract layer (git-workflow.md Never Run bullets plus a new sibling section on concurrent-writer history rewrites, general-implementation-agent.md MUST NOT bullet, recovery.md re-scoping) and the enforcement layer (a tree-state-blind concurrency-gated history-rewrite predicate in guard-destructive-git.sh, clean-tree test fixtures, standards updates, redeploy verification). Research's item-(d) retarget to context/contracts/recovery.md is adopted; its task-lock.sh session-list recommendation is corrected to a direct cwd-relative record read.",
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/139_forbid_concurrent_writer_history_rewrites/plans/01_forbid-concurrent-writer-rewrites.md",
+      "summary": "7-phase implementation plan for the contract layer and the concurrency-gated history-rewrite hook predicate."
+    }
+  ],
+  "next_action_hint": "Run /orchestrate 139 --implement to execute the plan starting at Phase 1 (rules/git-workflow.md).",
+  "dispatch_seq": 9
+}

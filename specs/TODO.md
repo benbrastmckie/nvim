@@ -27,25 +27,25 @@ next_project_number: 269
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
-139 [RESEARCHED] — Forbid concurrent-writer history rewrites: rules and agent...
+139 [PLANNED] — Forbid concurrent-writer history rewrites: rules and agent...
   └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
   └─ 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-199 [RESEARCHED] — Decide and implement the working-tree and build isolation...
+199 [PLANNING] — Decide and implement the working-tree and build isolation...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"... (see above)
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-244 [RESEARCHED] — check-task-references.sh: scan repo-appropriate roots instead...
+244 [PLANNING] — check-task-references.sh: scan repo-appropriate roots instead...
 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh... (see above)
 268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Extensions
 
-43 [RESEARCHED] — Decide and implement how email safety context actually...
-167 [RESEARCHED] — Guard LaTeX builds against the vimtex watcher: always-on rule...
+43 [PLANNING] — Decide and implement how email safety context actually...
+167 [PLANNING] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 255 [NOT STARTED] — Reconcile typst extension scope ownership and fix...
@@ -53,7 +53,7 @@ next_project_number: 269
 ### Literature
 
 39 [PLANNED] — Upgrade Zotero metadata resolution and plan the Zotero 10...
-207 [RESEARCHED] — Fix zotero-generate-export.sh Path 1: accumulator truncation...
+207 [PLANNING] — Fix zotero-generate-export.sh Path 1: accumulator truncation...
 
 ### Neovim
 
@@ -61,9 +61,9 @@ next_project_number: 269
 
 ### File Scope Lifecycle
 
-162 [PLANNED] — Formalize Files to modify, harvest it into filescope at every...
+162 [IMPLEMENTING] — Formalize Files to modify, harvest it into filescope at every...
   └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
-163 [RESEARCHED] — Surface missing and empty filescope in validate-state.sh and...
+163 [PLANNING] — Surface missing and empty filescope in validate-state.sh and...
   └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an... (see above)
 
 ### Lean Extension
@@ -1107,7 +1107,7 @@ WHAT REMAINS: Phase 1 (the standing script-inventory probe, which must reuse tha
 ---
 
 ### 244. check-task-references.sh: scan repo-appropriate roots instead of a hard-coded nvim-repo TREE_ROOTS list
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1374,7 +1374,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 207. Fix zotero-generate-export.sh Path 1: accumulator truncation and shrink guard, then the pagination shortfall or path-preference order
 - **Effort**: 2-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -1576,7 +1576,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 ---
 
 ### 199. Decide and implement the working-tree and build isolation posture for concurrent same-repo dispatches
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243, Task 259, Task 266
@@ -1977,7 +1977,7 @@ Contemporaneous context that plausibly supplied the load: the same run-all.sh in
 ---
 
 ### 167. Guard LaTeX builds against the vimtex watcher: always-on rule first; shared guard script and lifecycle wiring only if the rule proves insufficient
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 257, Task 259
@@ -2328,7 +2328,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 163. Surface missing and empty file_scope in validate-state.sh and orchestrate-predispatch-review.sh
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 188
@@ -2363,7 +2363,7 @@ Also reject GLOB entries in file_scope at both check sites. Observed 2026-09-14:
 ---
 
 ### 162. Formalize Files to modify, harvest it into file_scope at every plan postflight site, and backfill existing tasks
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 197, Task 213
@@ -2422,11 +2422,12 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 139. Forbid concurrent-writer history rewrites: rules and agent contracts, then a concurrency-gated predicate in guard-destructive-git.sh
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 129
 - **Research**: [139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md]
+- **Plan**: [139_forbid_concurrent_writer_history_rewrites/plans/01_forbid-concurrent-writer-rewrites.md]
 
 **Description**: Bare git history rewrites (`git commit --amend`, `git reset` without `--hard`) are forbidden nowhere in the agent system, and the one place that looks like a prohibition is scoped so that it structurally cannot fire on the hazard that actually occurred. Add the prohibition to the rules and to the agent contracts, and correct the existing mis-scoped bullet rather than merely adding alongside it.
 
@@ -2750,7 +2751,7 @@ The stranded-file count in THIS repo alone is now 48 (.orchestrator-multi-state-
 
 ### 43. Decide and implement how email safety context actually reaches agents (live defect: five inert safety pointers)
 - **Effort**: 1-3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 194, Task 257

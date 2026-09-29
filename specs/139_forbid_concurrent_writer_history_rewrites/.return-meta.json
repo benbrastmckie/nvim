@@ -1,39 +1,29 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790640953_159e0d_139",
-  "dispatch_seq": 1,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md",
-      "summary": "Verifies the four rules/contract WORK items and the absorbed hook-predicate work; corrects item (d)'s target from a nonexistent general-implementation-hard-agent.md to context/contracts/recovery.md lines 19-26; evaluates three concurrency-signal candidates for the hook and recommends reusing task-lock.sh session-list's liveness computation; flags that the new predicate must run before the hook's existing clean-tree exemption to avoid being dead code."
+      "type": "plan",
+      "path": "specs/139_forbid_concurrent_writer_history_rewrites/plans/01_forbid-concurrent-writer-rewrites.md",
+      "summary": "7-phase plan: contract layer (git-workflow.md Never Run + new sibling section, general-implementation-agent.md MUST NOT, recovery.md re-scoping) then a tree-state-blind concurrency-gated history-rewrite predicate in guard-destructive-git.sh, clean-tree test fixtures, standards updates, and redeploy verification."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1790640953_159e0d_139",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1], [2, 3, 4], [5, 6], [7]]
+  },
   "memory_candidates": [
     {
-      "content": "In this repo's agent system, --hard mode contracts for task types without a dedicated *-implementation-hard-agent.md file (general/meta/markdown) are not silently missing -- they live in shared context/contracts/*.md files loaded via skill-orchestrate's hard-mode contract injection (H1 branch), not per-domain agent files. Before assuming a named hard-mode agent file should exist, check context/contracts/ for the same text.",
-      "category": "PATTERN",
-      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["hard-mode", "recovery-ladder", "context-contracts", "agent-frontmatter", "general-implementation"]
-    },
-    {
-      "content": "guard-destructive-git.sh exits 0 immediately on a clean working tree (before any destructive-pattern detector runs), because its whole design targets discarding UNCOMMITTED changes. Any new predicate for a different hazard class (e.g. rewriting already-committed history) must be spliced in BEFORE that clean-tree early-exit or it becomes dead code, since the guarded commands (--amend, non-hard reset) are non-destructive to the working tree and routinely run on a clean tree.",
+      "content": "A PreToolUse hook that must be hermetically testable cannot call agent-system scripts that source deploy-root-guard.sh (which exits 1 when run from the source store) or that anchor PROJECT_ROOT to their own SCRIPT_DIR rather than the caller's cwd -- e.g. task-lock.sh. Such a call makes the primary code path unreachable in source-store test mode and, in deployed mode, makes the hook read the real repo's specs/ regardless of the test fixture's cwd, so fixture-driven cases become non-hermetic and dependent on whatever orchestration run happens to be live. The testable pattern is to read the runtime record files directly and cwd-relatively (find specs -maxdepth 3 ...), inlining the portable liveness idiom (kill -0 on the recorded pid plus a heartbeat-age parse with a BSD date fallback) instead of reusing the script that owns it.",
       "category": "INSIGHT",
-      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["guard-destructive-git", "hook-ordering", "clean-tree-exemption", "history-rewrite", "concurrency"]
-    },
-    {
-      "content": "task-lock.sh session-list already emits NDJSON with a two-signal (pid-liveness + heartbeat) 'live' boolean and a task_numbers array per registered agent-system session (specs/.sessions/*.json), computed by session_liveness(). Per context/standards/orchestrator-runtime-files.md this registry is produced but has zero consumers today -- it is a ready-made, already-tested concurrency-liveness primitive for any future hook or script that needs to detect 'is more than one task/session currently active in this repo', rather than re-deriving lock-scanning from scratch.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md",
+      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/plans/01_forbid-concurrent-writer-rewrites.md",
       "confidence": 0.85,
-      "suggested_keywords": ["session-registry", "task-lock", "concurrency-detection", "session-list", "liveness"]
+      "suggested_keywords": ["hook-testability", "deploy-root-guard", "cwd-relative", "task-lock", "pretooluse", "hermetic-fixture"]
     }
   ],
-  "next_steps": "Run /plan 139 to create implementation plan"
+  "dispatch_seq": 9
 }
