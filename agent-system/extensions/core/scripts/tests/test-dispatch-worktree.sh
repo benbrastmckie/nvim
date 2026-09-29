@@ -1,0 +1,351 @@
+#!/usr/bin/env bash
+# test-dispatch-worktree.sh - Regression suite for dispatch-worktree.sh's provision/path/
+# release/prune verbs (the worktree lifecycle's creation side; `land`, the merge-back verb, is a
+# later addition to the same file and is not exercised here).
+#
+# Harness: each case builds an isolated scratch git repo under mktemp -d, copies
+# dispatch-worktree.sh plus its two runtime dependencies (deploy-root-guard.sh, lib/common.sh)
+# into <scratch>/.claude/scripts/, so PROJECT_ROOT resolves to <scratch> and
+# deploy-root-guard.sh's `*/.claude` case matches -- the real script runs against a real git
+# repo, not a mock. Fixtures are synthetic and built inline; this suite never touches the real
+# repository tree.
+#
+# Follows context/standards/shell-script-testing.md: set -uo pipefail, PASSED/FAILED counters
+# with pass()/fail()/info(), mktemp -d workdir with a trap EXIT cleanup, exit 0 only when FAILED
+# is 0, loud-skip discipline (never a silent no-op).
+#
+# task-ref-ok:begin category 6-adjacent: every "<task_number>-<seq>" and
+# "orchestrate/task-<task_number>-<seq>" literal below is fixture data exercising
+# dispatch-worktree.sh's OWN branch/registry naming convention (see that script's header), which
+# is a functional assertion on produced output -- never a citation of this repo's own ephemeral
+# task tracker. The fixture task numbers (501, 601, 701-703, 801-802, 901...) are arbitrary and
+# carry no relationship to any real specs/{NNN}_{SLUG}/ task directory.
+#
+# Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED (or a required script is
+# missing, which is reported loudly, not silently skipped).
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC_SCRIPTS_DIR="$SCRIPT_DIR/.."
+
+PASSED=0
+FAILED=0
+
+pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
+fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
+# info() is part of the shared pass/fail/info() counter idiom (shell-script-testing.md);
+# unused in this file's current case set, hence never invoked.
+# shellcheck disable=SC2329
+info() { echo "[INFO] $1"; }
+
+# --- Loud-skip discipline: verify all required scripts exist and are executable before running
+# anything (a lost exec bit is reported loudly, per the plan's own acceptance note). ---
+REQUIRED_SCRIPTS=(dispatch-worktree.sh deploy-root-guard.sh lib/common.sh)
+missing=()
+for f in "${REQUIRED_SCRIPTS[@]}"; do
+  [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
+done
+if [ "${#missing[@]}" -gt 0 ]; then
+  echo "ERROR: test-dispatch-worktree.sh cannot run -- missing required script(s) under $SRC_SCRIPTS_DIR: ${missing[*]}" >&2
+  exit 1
+fi
+if [ ! -x "$SRC_SCRIPTS_DIR/dispatch-worktree.sh" ]; then
+  fail "SKIP-GUARD: $SRC_SCRIPTS_DIR/dispatch-worktree.sh has lost its exec bit"
+fi
+
+TOP_WORKDIR="$(mktemp -d)"
+# cleanup() is invoked indirectly via `trap cleanup EXIT`.
+# shellcheck disable=SC2329
+cleanup() {
+  if [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ]; then
+    # Best-effort: reap any worktrees left registered against git before rm -rf'ing the repos,
+    # so a failed case never leaves `.git/worktrees/*` metadata pointing at a removed path.
+    find "$TOP_WORKDIR" -maxdepth 1 -type d -name 'case-*' 2>/dev/null | while IFS= read -r r; do
+      git -C "$r" worktree prune >/dev/null 2>&1 || true
+    done
+    rm -rf "$TOP_WORKDIR"
+  fi
+}
+trap cleanup EXIT
+
+# --- build_repo <name> -- builds a scratch git repo with a deployed dispatch-worktree.sh under
+# .claude/scripts/, one seed commit, and echoes the repo's absolute path. ---
+build_repo() {
+  local name="$1" dir
+  dir="$TOP_WORKDIR/case-$name"
+  mkdir -p "$dir/.claude/scripts/lib"
+  cp "$SRC_SCRIPTS_DIR/dispatch-worktree.sh" "$dir/.claude/scripts/dispatch-worktree.sh"
+  cp "$SRC_SCRIPTS_DIR/deploy-root-guard.sh" "$dir/.claude/scripts/deploy-root-guard.sh"
+  cp "$SRC_SCRIPTS_DIR/lib/common.sh" "$dir/.claude/scripts/lib/common.sh"
+  chmod +x "$dir/.claude/scripts/dispatch-worktree.sh"
+  git -C "$dir" init -q
+  git -C "$dir" config user.email "test@example.com"
+  git -C "$dir" config user.name "Test"
+  echo "seed" > "$dir/README.md"
+  # .claude/ is deliberately left UNTRACKED here, matching the real system (see .gitignore's
+  # /.claude/ rule): a fresh `git worktree add` must produce a tree with no .claude/ at all
+  # (Phase 1's confirmed fact), which is exactly what a hardlink-clone step then populates.
+  # Committing .claude/ here would make `git worktree add` check it out already, so the script's
+  # own `cp -al` would nest a copy inside it instead of populating a clean destination.
+  echo "/.claude/" > "$dir/.gitignore"
+  echo "/.orchestrate-worktrees/" >> "$dir/.gitignore"
+  echo "/specs/.worktree-registry/" >> "$dir/.gitignore"
+  git -C "$dir" add README.md .gitignore
+  git -C "$dir" commit -q -m "seed"
+  echo "$dir"
+}
+
+# --- run_dw <repo> <args...> -- invokes the repo's own deployed dispatch-worktree.sh. ---
+run_dw() {
+  local repo="$1"
+  shift
+  (cd "$repo" && bash .claude/scripts/dispatch-worktree.sh "$@")
+}
+
+# =====================================================================
+# T1: clean provision -- worktree created, branch set, .claude/ hardlink-cloned (not a symlink,
+# physically present with its own scripts), .lake/ hardlink-cloned when the main tree has one.
+# =====================================================================
+
+repo_t1="$(build_repo t1)"
+mkdir -p "$repo_t1/.lake/pkg"
+echo "built" > "$repo_t1/.lake/pkg/out.olean"
+
+out_t1="$(run_dw "$repo_t1" provision 501 --session sess_t1 --seq 1)"
+rc_t1=$?
+status_t1="$(echo "$out_t1" | jq -r '.status' 2>/dev/null)"
+path_t1="$(echo "$out_t1" | jq -r '.path' 2>/dev/null)"
+
+if [ "$rc_t1" -eq 0 ] && [ "$status_t1" = "provisioned" ] && [ -n "$path_t1" ] && [ -d "$path_t1" ]; then
+  pass "T1: provision succeeds and reports status=provisioned with an existing path"
+else
+  fail "T1: expected rc=0 status=provisioned existing dir; got rc=$rc_t1 out=$out_t1"
+fi
+
+if git -C "$repo_t1" worktree list --porcelain | grep -qxF "worktree $path_t1"; then
+  pass "T1: git recognizes the new worktree"
+else
+  fail "T1: git worktree list does not show $path_t1"
+fi
+
+if [ -d "$path_t1/.claude/scripts" ] && [ ! -L "$path_t1/.claude" ]; then
+  pass "T1: .claude/ is physically present inside the worktree, not a symlink"
+else
+  fail "T1: .claude/ missing or is a symlink at $path_t1/.claude"
+fi
+
+if [ -f "$path_t1/.lake/pkg/out.olean" ]; then
+  pass "T1: .lake/ was hardlink-cloned into the worktree"
+else
+  fail "T1: .lake/pkg/out.olean missing at $path_t1/.lake/pkg/out.olean"
+fi
+
+if git -C "$repo_t1" branch --list "orchestrate/task-501-1" | grep -q "orchestrate/task-501-1"; then
+  pass "T1: branch orchestrate/task-501-1 exists"
+else
+  fail "T1: branch orchestrate/task-501-1 was not created"
+fi
+
+# =====================================================================
+# T2: PROJECT_ROOT resolution -- a script sourcing lib/common.sh from the worktree's own
+# .claude/scripts/ resolves common_repo_root to the WORKTREE root, not the main tree.
+# =====================================================================
+
+resolved_t2="$(cd "$path_t1/.claude/scripts" && bash -c 'source lib/common.sh; common_repo_root "$PWD" 2')"
+canon_t2="$(cd "$path_t1" && pwd)"
+
+if [ "$resolved_t2" = "$canon_t2" ]; then
+  pass "T2: PROJECT_ROOT resolves inside the worktree ($canon_t2)"
+else
+  fail "T2: PROJECT_ROOT resolved to '$resolved_t2', expected worktree root '$canon_t2'"
+fi
+
+# =====================================================================
+# T3: idempotent re-provision -- provisioning the same task/seq/session again reuses the
+# existing worktree rather than erroring or double-creating.
+# =====================================================================
+
+out_t3="$(run_dw "$repo_t1" provision 501 --session sess_t1 --seq 1)"
+rc_t3=$?
+status_t3="$(echo "$out_t3" | jq -r '.status' 2>/dev/null)"
+path_t3="$(echo "$out_t3" | jq -r '.path' 2>/dev/null)"
+count_t3="$(git -C "$repo_t1" worktree list --porcelain | grep -cxF "worktree $path_t1")"
+
+if [ "$rc_t3" -eq 0 ] && [ "$status_t3" = "reused" ] && [ "$path_t3" = "$path_t1" ] && [ "$count_t3" -eq 1 ]; then
+  pass "T3: re-provisioning the same task-501-1 reuses the existing worktree (status=reused, one git entry)"
+else
+  fail "T3: expected rc=0 status=reused path=$path_t1 count=1; got rc=$rc_t3 status=$status_t3 path=$path_t3 count=$count_t3"
+fi
+
+# =====================================================================
+# T4: path hit and miss.
+# =====================================================================
+
+out_t4_hit="$(run_dw "$repo_t1" path 501)"
+rc_t4_hit=$?
+
+if [ "$rc_t4_hit" -eq 0 ] && [ "$out_t4_hit" = "$path_t1" ]; then
+  pass "T4: path 501 prints the provisioned worktree path"
+else
+  fail "T4: expected rc=0 path=$path_t1; got rc=$rc_t4_hit out=$out_t4_hit"
+fi
+
+out_t4_miss="$(run_dw "$repo_t1" path 999999)"
+rc_t4_miss=$?
+
+if [ "$rc_t4_miss" -eq 3 ] && [ -z "$out_t4_miss" ]; then
+  pass "T4: path on an unprovisioned task exits 3 with empty stdout"
+else
+  fail "T4: expected rc=3 empty stdout; got rc=$rc_t4_miss out='$out_t4_miss'"
+fi
+
+# =====================================================================
+# T5: release leaves no worktree and no registry record, but keeps the branch.
+# =====================================================================
+
+out_t5="$(run_dw "$repo_t1" release 501)"
+rc_t5=$?
+record_t5="$repo_t1/specs/.worktree-registry/501-1.json"
+
+if [ "$rc_t5" -eq 0 ] && [ ! -d "$path_t1" ] && [ ! -f "$record_t5" ]; then
+  pass "T5: release removes the worktree directory and its registry record"
+else
+  fail "T5: expected worktree and record gone; got rc=$rc_t5 out=$out_t5 dir_exists=$([ -d "$path_t1" ] && echo yes || echo no) record_exists=$([ -f "$record_t5" ] && echo yes || echo no)"
+fi
+
+if ! git -C "$repo_t1" worktree list --porcelain | grep -qxF "worktree $path_t1"; then
+  pass "T5: git worktree list no longer shows the released path"
+else
+  fail "T5: git worktree list still shows $path_t1 after release"
+fi
+
+if git -C "$repo_t1" branch --list "orchestrate/task-501-1" | grep -q "orchestrate/task-501-1"; then
+  pass "T5: release preserves the branch for later inspection"
+else
+  fail "T5: release deleted the branch orchestrate/task-501-1, which it must never do"
+fi
+
+# =====================================================================
+# T6: free-space refusal -- DISPATCH_WORKTREE_FREE_BYTES_OVERRIDE forces the preflight below the
+# floor; nothing is created.
+# =====================================================================
+
+repo_t6="$(build_repo t6)"
+err_t6_file="$TOP_WORKDIR/t6.err"
+out_t6="$(DISPATCH_WORKTREE_FREE_BYTES_OVERRIDE=1 bash -c "cd '$repo_t6' && bash .claude/scripts/dispatch-worktree.sh provision 601 --session sess_t6 --seq 1" 2>"$err_t6_file")"
+rc_t6=$?
+
+if [ "$rc_t6" -eq 80 ] && [ -z "$out_t6" ] && [ ! -d "$repo_t6/.orchestrate-worktrees/601-1" ] && [ ! -f "$repo_t6/specs/.worktree-registry/601-1.json" ]; then
+  pass "T6: free-space refusal exits 80, emits no stdout JSON, and creates nothing"
+else
+  fail "T6: expected rc=80 empty stdout nothing created; got rc=$rc_t6 out='$out_t6' stderr='$(cat "$err_t6_file")'"
+fi
+
+if ! git -C "$repo_t6" worktree list --porcelain | grep -q "601-1"; then
+  pass "T6: no worktree/branch registered for the refused provision"
+else
+  fail "T6: a worktree was registered despite the free-space refusal"
+fi
+
+# =====================================================================
+# T7: prune reaps a stale foreign-session record and spares both a live-session record and a
+# fresh foreign-session record.
+# =====================================================================
+
+repo_t7="$(build_repo t7)"
+out_t7_a="$(run_dw "$repo_t7" provision 701 --session sess_old --seq 1)"
+out_t7_b="$(run_dw "$repo_t7" provision 702 --session sess_current --seq 1)"
+out_t7_c="$(run_dw "$repo_t7" provision 703 --session sess_other_fresh --seq 1)"
+
+path_t7_a="$(echo "$out_t7_a" | jq -r '.path')"
+path_t7_b="$(echo "$out_t7_b" | jq -r '.path')"
+path_t7_c="$(echo "$out_t7_c" | jq -r '.path')"
+
+rec_t7_a="$repo_t7/specs/.worktree-registry/701-1.json"
+rec_t7_b="$repo_t7/specs/.worktree-registry/702-1.json"
+rec_t7_c="$repo_t7/specs/.worktree-registry/703-1.json"
+
+# Backdate the foreign-session record (701) far past any plausible stale threshold; leave the
+# live-session (702) and fresh-foreign (703) records at their real just-provisioned timestamp.
+old_ts="$(date -u -d "@$(($(date -u +%s) - 100000))" +%Y-%m-%dT%H:%M:%SZ)"
+tmp_t7="$TOP_WORKDIR/t7-rec.json"
+jq --arg ts "$old_ts" '.created_at = $ts' "$rec_t7_a" > "$tmp_t7" && mv "$tmp_t7" "$rec_t7_a"
+
+out_t7_prune="$(DISPATCH_WORKTREE_STALE_SEC=10 bash -c "cd '$repo_t7' && bash .claude/scripts/dispatch-worktree.sh prune --session sess_current")"
+rc_t7_prune=$?
+
+if [ "$rc_t7_prune" -eq 0 ] && [ ! -d "$path_t7_a" ] && [ ! -f "$rec_t7_a" ]; then
+  pass "T7: prune reaps the stale foreign-session record (701) and its worktree"
+else
+  fail "T7: expected 701 reaped; got rc=$rc_t7_prune dir_exists=$([ -d "$path_t7_a" ] && echo yes || echo no) rec_exists=$([ -f "$rec_t7_a" ] && echo yes || echo no)"
+fi
+
+if [ -d "$path_t7_b" ] && [ -f "$rec_t7_b" ]; then
+  pass "T7: prune spares the live-session record (702) unconditionally"
+else
+  fail "T7: expected 702 spared (it names the calling session); dir_exists=$([ -d "$path_t7_b" ] && echo yes || echo no) rec_exists=$([ -f "$rec_t7_b" ] && echo yes || echo no)"
+fi
+
+if [ -d "$path_t7_c" ] && [ -f "$rec_t7_c" ]; then
+  pass "T7: prune spares a fresh foreign-session record (703, age below the stale threshold)"
+else
+  fail "T7: expected 703 spared (not yet stale); dir_exists=$([ -d "$path_t7_c" ] && echo yes || echo no) rec_exists=$([ -f "$rec_t7_c" ] && echo yes || echo no)"
+fi
+
+pruned_list_t7="$(echo "$out_t7_prune" | jq -r '.pruned[]' 2>/dev/null)"
+if echo "$pruned_list_t7" | grep -qxF "$path_t7_a"; then
+  pass "T7: prune's JSON summary names the reaped path"
+else
+  fail "T7: prune's JSON summary did not name $path_t7_a; got $out_t7_prune"
+fi
+
+# Clean up the two deliberately-spared worktrees so this repo reaches a clean end state for the
+# generic teardown sanity check below (their sparing was already asserted above).
+run_dw "$repo_t7" release 702 >/dev/null 2>&1 || true
+run_dw "$repo_t7" release 703 >/dev/null 2>&1 || true
+
+# =====================================================================
+# T8: worktree cap refusal (bonus coverage beyond the plan's minimum case list) -- a second
+# provision beyond DISPATCH_WORKTREE_MAX_CONCURRENT is refused before touching git or disk.
+# =====================================================================
+
+repo_t8="$(build_repo t8)"
+DISPATCH_WORKTREE_MAX_CONCURRENT=1 bash -c "cd '$repo_t8' && bash .claude/scripts/dispatch-worktree.sh provision 801 --session sess_t8a --seq 1" >/dev/null
+err_t8_file="$TOP_WORKDIR/t8.err"
+out_t8="$(DISPATCH_WORKTREE_MAX_CONCURRENT=1 bash -c "cd '$repo_t8' && bash .claude/scripts/dispatch-worktree.sh provision 802 --session sess_t8b --seq 1" 2>"$err_t8_file")"
+rc_t8=$?
+
+if [ "$rc_t8" -eq 81 ] && [ -z "$out_t8" ] && [ ! -d "$repo_t8/.orchestrate-worktrees/802-1" ]; then
+  pass "T8: worktree-cap refusal exits 81 and creates nothing for the over-cap request"
+  run_dw "$repo_t8" release 801 >/dev/null 2>&1 || true
+else
+  fail "T8: expected rc=81 empty stdout nothing created; got rc=$rc_t8 out='$out_t8' stderr='$(cat "$err_t8_file")'"
+fi
+
+# =====================================================================
+# Teardown sanity: no leftover worktrees or stray branches from THIS suite's own fixtures.
+# =====================================================================
+
+for r in "$repo_t1" "$repo_t6" "$repo_t7" "$repo_t8"; do
+  leftover="$(git -C "$r" worktree list --porcelain 2>/dev/null | grep -c '^worktree ' || true)"
+  # Exactly one entry (the repo's own main worktree) is expected once every case-owned worktree
+  # has been released/pruned/refused-before-creation.
+  if [ "$leftover" -le 1 ]; then
+    pass "teardown: $r has no leftover case worktrees ($leftover total)"
+  else
+    fail "teardown: $r still has $leftover worktree entries (expected 1, main only)"
+  fi
+done
+# task-ref-ok:end
+
+# =====================================================================
+# Summary
+# =====================================================================
+echo ""
+echo "Results: ${PASSED} passed, ${FAILED} failed"
+
+if [ "$FAILED" -gt 0 ]; then
+  exit 1
+fi
+exit 0

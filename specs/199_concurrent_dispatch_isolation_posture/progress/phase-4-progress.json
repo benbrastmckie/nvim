@@ -1,0 +1,30 @@
+{
+  "phase": 4,
+  "phase_name": "dispatch-worktree.sh -- provision, path, release",
+  "started_at": "2026-09-29T04:10:00Z",
+  "last_updated": "2026-09-29T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create dispatch-worktree.sh with strict-mode preamble and --help", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 2, "description": "Implement provision: free-space + cap preflight, worktree add, hardlink-clone .claude//.lake, PROJECT_ROOT assertion, registry record, JSON verdict, idempotent reuse", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 3, "description": "Implement path: resolve most recent registry record, distinct not-found exit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 4, "description": "Implement release: strip untracked .claude//.lake scratch first, git worktree remove, delete record, keep branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 5, "description": "Implement prune: age-based staleness, spare calling session unconditionally", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 6, "description": "Register .orchestrate-worktrees/ and specs/.worktree-registry/ in orchestrator-runtime-files.md and .gitignore", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md", ".gitignore"]},
+    {"id": 7, "description": "Write test-dispatch-worktree.sh covering all required cases plus a bonus worktree-cap case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh"]},
+    {"id": 8, "description": "chmod +x both new scripts; register both in core/manifest.json provides.scripts so deploy actually ships them", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh", "agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh", "agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "test fixture committing .claude/ into the scratch repo's git history so build_repo could seed deployed scripts", "result": "failed", "reason": "made git worktree add check out .claude/ already, so the script's own cp -al hardlink-clone step nested a copy inside it instead of populating a clean destination -- diverges from the real system where .claude/ is always gitignored/untracked (Phase 1's confirmed fact). Fixed by leaving .claude/ untracked in the fixture, matching production."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.additional",
+      "description": "Register dispatch-worktree.sh and tests/test-dispatch-worktree.sh in agent-system/extensions/core/manifest.json's provides.scripts array",
+      "type": "altered",
+      "reason": "Not named in the plan's own Files to modify list for this phase, but discovered load-bearing during verification: deploy-headless.sh only ships files explicitly listed in provides.scripts, so the first deploy silently produced a .claude/ tree missing dispatch-worktree.sh entirely despite RESULT=landed. Without this addition the acceptance criterion (deployed script present and --help-responsive) is unreachable.",
+      "annotation": "*(deviation: altered -- manifest.json registration added, not originally listed as a file to modify)*"
+    }
+  ]
+}

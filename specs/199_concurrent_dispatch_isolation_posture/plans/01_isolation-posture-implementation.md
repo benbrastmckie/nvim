@@ -394,38 +394,46 @@ claim, add it here rather than silently leaving it stale.
 
 ---
 
-### Phase 4: `dispatch-worktree.sh` — provision, path, release [NOT STARTED]
+### Phase 4: `dispatch-worktree.sh` — provision, path, release [COMPLETED]
 
 **Goal**: The worktree lifecycle's creation side, as a standalone, independently testable script.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/dispatch-worktree.sh` with `set -euo pipefail`,
+- [x] Create `agent-system/extensions/core/scripts/dispatch-worktree.sh` with `set -euo pipefail`,
       the standard `SCRIPT_DIR`/`common_repo_root`/`deploy-root-guard.sh` preamble, and a `--help`
       usage block documenting every verb, exit code, and the runtime paths it owns.
-- [ ] `provision <task_number> --session <sid> --seq <n>`: free-space preflight against the floor
+      *(completed)*
+- [x] `provision <task_number> --session <sid> --seq <n>`: free-space preflight against the floor
       chosen in Phase 1 (refuse, loudly, rather than proceed); `git worktree add -b
       orchestrate/task-<N>-<seq> <root>/.orchestrate-worktrees/<N>-<seq> HEAD`; hardlink-clone
       `.claude/` into the worktree (`cp -al`, never a symlink — record why in a comment);
       populate `.lake` by the Phase 1-chosen strategy when the main tree has one; write a
       provisioning record (task, session, seq, branch, path, created_at) for `prune`; emit the
-      worktree path on stdout as JSON.
-- [ ] `path <task_number>`: resolve an existing worktree path from the record; empty output and a
-      distinct exit code when none exists.
-- [ ] `release <task_number> [--force]`: `git worktree remove` (with `--force` only when asked),
-      remove the record, leave the branch intact for later inspection.
-- [ ] `prune --session <sid>`: reap worktrees whose recorded session is no longer live, using the
+      worktree path on stdout as JSON. *(completed: also a concurrent-worktree cap refusal beyond
+      the minimum ask, plus idempotent-reuse)*
+- [x] `path <task_number>`: resolve an existing worktree path from the record; empty output and a
+      distinct exit code when none exists. *(completed)*
+- [x] `release <task_number> [--force]`: `git worktree remove` (with `--force` only when asked),
+      remove the record, leave the branch intact for later inspection. *(completed: strips the
+      hardlink-cloned `.claude/`/`.lake/` scratch first, since that untracked content would
+      otherwise make git refuse every release as "dirty" — see the script's own comment)*
+- [x] `prune --session <sid>`: reap worktrees whose recorded session is no longer live, using the
       age-based staleness pattern from `specs/.commit-lock/`/`task-lock.sh` rather than a new lock
-      primitive.
-- [ ] Assert, inside `provision`, that a script run from the new worktree's `.claude/scripts/`
+      primitive. *(completed)*
+- [x] Assert, inside `provision`, that a script run from the new worktree's `.claude/scripts/`
       resolves `PROJECT_ROOT` to the worktree root; refuse the provision if it does not.
-- [ ] Register `.orchestrate-worktrees/` and the provisioning-record path in
+      *(completed)*
+- [x] Register `.orchestrate-worktrees/` and the provisioning-record path in
       `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md`'s
       ephemeral/durable classification, and add them to `.gitignore` if not already covered.
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh` covering: a
+      *(completed: neither path was already covered; both added)*
+- [x] Write `agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh` covering: a
       clean provision; the free-space refusal; `.claude/` present and physically inside the
       worktree; `PROJECT_ROOT` resolution; `path` hit and miss; `release` leaving no worktree and
       no record; `prune` reaping a stale record and sparing a live one; idempotent re-provision.
-- [ ] `chmod +x` both new scripts (the test runner reports a lost exec bit as a loud SKIP).
+      *(completed: 23/23 cases pass, plus a bonus worktree-cap-refusal case)*
+- [x] `chmod +x` both new scripts (the test runner reports a lost exec bit as a loud SKIP).
+      *(completed)*
 
 **Timing**: 2 hours
 
@@ -443,7 +451,18 @@ claim, add it here rather than silently leaving it stale.
 **Scope Hypothesis**: this phase asserts four files (two new, two edited) and roughly a
 400-line script. Confirm at implementation time: check whether
 `orchestrator-runtime-files.md` already has a class the new paths fall under (it may need no edit
-at all), and whether `.gitignore` already covers the path by an existing rule.
+at all), and whether `.gitignore` already covers the path by an existing rule. *(confirmed at
+implementation time: neither path was already covered by an existing rule/class, so both got a
+full new entry, not a no-op. A fifth file was also touched, beyond this phase's original
+four-file hypothesis — see the footprint note immediately below.)*
+
+**Footprint addition beyond this phase's own file list (recorded deliberately)**:
+`agent-system/extensions/core/manifest.json` — `provides.scripts` is the explicit, non-glob list
+`deploy-headless.sh` ships from the source store; a first deploy attempt during this phase's own
+verification confirmed `dispatch-worktree.sh` was silently absent from the deployed `.claude/`
+tree (`RESULT=landed_verify_red`) until both new script paths were added here. Not touching this
+file would leave the acceptance criterion ("redeploy and confirm the change is live") permanently
+unreachable, so the addition is load-bearing, not optional polish.
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh` passes, every case.

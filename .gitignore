@@ -52,6 +52,12 @@
 **/.scope-lock/
 **/.sessions/
 **/.freshness-warn-streak.json
+# Per-dispatch git-worktree isolation (dispatch-worktree.sh): the worktree checkout itself is
+# root-scoped (every writer targets the repo root, never a per-task directory), while its
+# registry record lives under specs/. Neither has a freshness gate on read -- see
+# .claude/context/standards/orchestrator-runtime-files.md's Class Table for the full rationale.
+/.orchestrate-worktrees/
+**/.worktree-registry/
 # Durable redeploy ledger (specs/.orchestrator-deploy-ledger.json by default): a machine-local,
 # cross-invocation record, distinct in KIND from every other pattern in this block above. It is
 # gitignored not because it is disposable per-cycle scratch, but because it describes THIS
