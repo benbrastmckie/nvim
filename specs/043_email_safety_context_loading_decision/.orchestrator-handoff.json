@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "task_number": 43,
+  "phase": "plan",
+  "session_id": "sess_1790640953_159e0d_43",
+  "dispatch_seq": 13,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/043_email_safety_context_loading_decision/plans/01_email-safety-context-loading-decision.md",
+      "summary": "4-phase documentation-only plan recording decision (b) for email safety context loading."
+    }
+  ],
+  "next_steps": "Run /implement 43 to execute the plan",
+  "notes": "Documentation-only plan; all edits target agent-system/extensions/email/**. No sibling territory overlap. Plan file set extends the task's anticipated file_scope to include context/project/email/domain/safety-invariants.md, README.md, and index-entries.json.",
+  "summary": "Authored a 4-phase, documentation-only plan recording decision (b): the five email safety domain files stay on-demand reference material, because enforcement already lives in mail-guard.sh, the nix-built wrapper binaries, and inline copies in four consumer bodies. Phase 1 is a decision gate that builds an 11-invariant x 4-consumer enforcement-coverage map before any decision wording is written.",
+  "blockers": [],
+  "sorry_inventory": [],
+  "continuation_path": null
+}

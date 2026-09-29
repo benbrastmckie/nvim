@@ -1,35 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/043_email_safety_context_loading_decision/reports/01_email-safety-context-loading-decision.md",
-      "summary": "Verifies empirically that the five email safety context files are unloaded at every consumer, but concludes the load-bearing safety content is already duplicated inline in skill-email-cleanup/SKILL.md, skill-email-sync/SKILL.md, and email-implementation-agent.md (each genuinely eager at invocation time) plus two mechanical layers (mail-guard.sh hook, wrapper binaries); recommends option (b) -- record the decision rather than eager-load any of the five files."
+      "type": "plan",
+      "path": "specs/043_email_safety_context_loading_decision/plans/01_email-safety-context-loading-decision.md",
+      "summary": "4-phase documentation-only plan recording decision (b): email safety context stays on-demand reference; enforcement lives in mail-guard.sh, the nix wrapper binaries, and inline copies in four consumer bodies."
     }
   ],
-  "next_steps": "Run /plan 43 to create implementation plan (doc-only: EXTENSION.md wording fix + safety-invariants.md banner per report's Recommendations #1-2)",
-  "metadata": {
-    "session_id": "sess_1790640953_159e0d_43",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
-  },
+  "next_steps": "Run /implement 43 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 2.5,
+  "dependency_waves": [[1], [2, 3], [4]],
   "memory_candidates": [
     {
-      "content": "This agent system has three distinct context-loading tiers, not two: (1) CLAUDE.md's own @-imports, resolved by the harness at session start; (2) a SKILL.md or agent-definition .md body, read in full whenever the Skill/Agent tool invokes it -- genuinely eager at invocation time even though it is not session-start eager, and any @-prefixed reference written INSIDE such a body is NOT harness-expanded (it's stylistic, not the real import syntax); (3) on-demand, a plain path cited in prose that a consumer reads explicitly only if needed. When auditing whether some context 'actually loads', check which tier the citing location sits in before concluding a pointer is dead -- a pointer dead at tier 1 may have its content duplicated and load-bearing at tier 2.",
+      "content": "Context-loading tiers in this agent system are three, not two, and the distinction decides whether a 'non-loading pointer' is a defect: (1) session-start eager -- only CLAUDE.md's own @-imports, expanded by the harness at conversation start; (2) invocation-time eager -- a SKILL.md or agent-definition .md body, read in full when the Skill/Agent tool invokes it; (3) on-demand -- a plain path in prose, read only if an agent chooses to. An @-prefixed path written INSIDE a skill or agent body sits at tier 3, not tier 1: it is stylistic documentation, never harness-expanded. Consequence for audits: a safety/contract doc listed as a plain backticked path in a merged CLAUDE.md fragment is NOT automatically a live gap. Check first whether its load-bearing content is duplicated inline in the tier-2 consumer bodies that actually gate the operation, and whether mechanical layers (PreToolUse hooks, compiled wrapper binaries) enforce it independently of any markdown. If both hold, the right fix is to DOCUMENT the loading model, not to promote the file to eager loading and pay recurring per-session tokens.",
       "category": "INSIGHT",
-      "source_artifact": "specs/043_email_safety_context_loading_decision/reports/01_email-safety-context-loading-decision.md",
+      "source_artifact": "specs/043_email_safety_context_loading_decision/plans/01_email-safety-context-loading-decision.md",
       "confidence": 0.85,
-      "suggested_keywords": ["context-loading", "eager-vs-lazy", "at-import", "skill-body", "CLAUDE.md", "extension-audit"]
-    },
-    {
-      "content": "Pattern for resolving an 'is this safety doc actually enforced' question: grep every consumer skill/agent body for citations of the target file by name. If zero citations exist but the file's substantive content (specific rules, constants, thresholds) is found duplicated verbatim/near-verbatim inside the consumer bodies themselves, the file is a human-facing synthesis/onboarding doc, not a runtime dependency -- the fix is documenting that role explicitly, not eager-loading the file.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/043_email_safety_context_loading_decision/reports/01_email-safety-context-loading-decision.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["safety-audit", "duplication-detection", "context-verification", "documentation-role"]
+      "suggested_keywords": ["context-loading", "eager-loading", "loading-tiers", "at-imports", "skill-body", "audit"]
     }
   ],
-  "dispatch_seq": 5
+  "metadata": {
+    "session_id": "sess_1790640953_159e0d_43",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 13
 }
