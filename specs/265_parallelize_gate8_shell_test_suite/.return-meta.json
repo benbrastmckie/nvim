@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 265,
+  "session_id": "sess_1790721762_ff3d8e_265",
+  "dispatch_seq": 4,
+  "findings_count": 8,
+  "next_steps": "Run /plan 265 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md",
+      "summary": "Confirms task 261's --jobs parallelism (COMPLETED, not PARTIAL) already discharges the parallel-safety dependency; identifies a deterministic (not ambient-load) nested-RUN_ALL_NESTED-inheritance bug in test-run-all-parallel.sh's case3 assertion, reproduced live; narrows deploy-headless.sh's callers from 16 mentions to exactly 2 genuine invokers (command-gate-out.sh, orchestrate-cycle-plan.sh), both of which already collapse exit 0/3 into one branch, and recommends an opt-in --skip-verify flag with a new distinct exit code over a narrowed --only-gate inline verify."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "run-all.sh (agent-system/extensions/core/scripts/tests/) unconditionally exports RUN_ALL_NESTED=1 for its own process before invoking any discovered suite, regardless of whether --jobs was passed or whether this run-all.sh instance is itself nested. Any suite that shells out to a copy of run-all.sh to measure genuine parallel speedup (as test-run-all-parallel.sh does) must explicitly `env -u RUN_ALL_NESTED` its own 'unguarded' baseline measurement, or that measurement silently inherits the forced-sequential guard from its parent whenever the suite is discovered and run as part of any outer run-all.sh battery -- producing a deterministic (not flaky) timing-assertion failure that is easy to misattribute to ambient host load.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["run-all.sh", "RUN_ALL_NESTED", "nested-invocation guard", "test-run-all-parallel.sh", "flakiness-misattribution"]
+    },
+    {
+      "content": "When enumerating 'callers' of a script from grep/doc references in this repo, distinguish GENUINE invocation (bash .../script.sh in command position) from MENTION (a remedy string, comment, or doc pointer naming the script) before reasoning about exit-code contracts. For deploy-headless.sh specifically, only command-gate-out.sh and orchestrate-cycle-plan.sh genuinely execute it -- 14+ other files that reference its name only print a remedy message. test-lint-deploy-caller-wrap.sh already re-derives this genuine/mention classification from file contents every run and is the authoritative source, not a hardcoded list.",
+      "category": "PATTERN",
+      "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless.sh", "caller-enumeration", "genuine-vs-mention", "test-lint-deploy-caller-wrap.sh"]
+    }
+  ]
+}
