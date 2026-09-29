@@ -1,0 +1,32 @@
+{
+  "phase": 5,
+  "phase_name": "Backfill script for existing plan-bearing tasks",
+  "started_at": "2026-09-29T03:15:00Z",
+  "last_updated": "2026-09-29T05:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create backfill-file-scope.sh, Class A strict mode", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/backfill-file-scope.sh"]},
+    {"id": 2, "description": "Interface: [--dry-run] [--state-file PATH], repo root derivation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/backfill-file-scope.sh"]},
+    {"id": 3, "description": "Resolve latest plan artifact per task, invoke harvester as subprocess", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/backfill-file-scope.sh"]},
+    {"id": 4, "description": "Skip already-covered and plan-less tasks with reason lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/backfill-file-scope.sh"]},
+    {"id": 5, "description": "Write via state-write.sh, batched, additive merge, never hand-rolled jq", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/backfill-file-scope.sh"]},
+    {"id": 6, "description": "--dry-run prints diff, writes nothing", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Closing summary: backfilled/skipped/plan-less counts", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Record Decision 6 reasoning in script header", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Create test-backfill-file-scope.sh with required cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Test suite copies state-write.sh/task-lock.sh/plan-file-scope-harvest.sh into a fabricated .claude/scripts/ fixture tree (mirroring test-update-task-status.sh's build_fixture_repo pattern)",
+      "result": "failed",
+      "reason": "backfill-file-scope.sh resolves its sibling state-write.sh via its OWN SCRIPT_DIR (BASH_SOURCE-relative), not the fixture's -- so a fixture-copied state-write.sh is never actually reached; the invoked backfill-file-scope.sh still calls its real sibling, which then hit deploy-root-guard.sh's source-store refusal (since backfill-file-scope.sh was being invoked from the source-store copy directly). Superseded by driving the DEPLOYED backfill-file-scope.sh with only a throwaway specs/state.json + plan dirs, no script copying needed at all."
+    },
+    {
+      "approach": "Initial batched jq filter: `map(if ($updates | has(.project_number|tostring)) then ... end)`",
+      "result": "failed",
+      "reason": "jq evaluates a function argument (has(...)'s argument) against the SAME input as the function call ($updates), not the outer map(.) item -- so `.project_number` silently probed $updates.project_number (always null) instead of the task entry's own field, making the whole update a silent no-op. Fixed by binding `. as $item |` first and referencing `$item.project_number` explicitly."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

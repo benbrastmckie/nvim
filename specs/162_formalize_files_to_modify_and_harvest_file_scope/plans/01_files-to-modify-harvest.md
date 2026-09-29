@@ -405,7 +405,7 @@ finding)*
 
 ---
 
-### Phase 5: Backfill script for existing plan-bearing tasks [NOT STARTED]
+### Phase 5: Backfill script for existing plan-bearing tasks [COMPLETED]
 
 **Goal**: A one-shot, idempotent, dry-run-capable backfill populates `file_scope` for existing
 plan-bearing tasks in any repo's `state.json` by calling the Phase 2 harvester, never overwriting an
@@ -413,34 +413,34 @@ existing non-empty `file_scope`, and reporting the plan-less population it delib
 alone.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/backfill-file-scope.sh`, Class A strict mode.
-- [ ] Interface: `[--dry-run] [--state-file PATH]`. Default target is the invoking repo's
+- [x] Create `agent-system/extensions/core/scripts/backfill-file-scope.sh`, Class A strict mode. *(completed)*
+- [x] Interface: `[--dry-run] [--state-file PATH]`. Default target is the invoking repo's
       `specs/state.json`; `--state-file` names a cross-repo target and the repo root is derived from
       it (the parent of the state file's directory), so plan paths resolve against the right tree
-      (Decision 7).
-- [ ] For each task in `active_projects` whose `file_scope` is absent or empty: resolve its latest
+      (Decision 7). *(completed)*
+- [x] For each task in `active_projects` whose `file_scope` is absent or empty: resolve its latest
       plan artifact (prefer an `artifacts[]` entry of `type == "plan"`; fall back to the
       lexicographically last `specs/{NNN}_*/plans/*.md` under the task's directory), then invoke
       `plan-file-scope-harvest.sh` on it. Never re-implement path extraction — call the harvester as
-      a subprocess (this is the whole point of the reuse constraint).
-- [ ] Skip, with an explicit per-task reason line, any task that already has a non-empty
-      `file_scope`, and any task with no resolvable plan file.
-- [ ] Write through `state-write.sh` (passing `--state-file` when targeting a non-default path),
+      a subprocess (this is the whole point of the reuse constraint). *(completed)*
+- [x] Skip, with an explicit per-task reason line, any task that already has a non-empty
+      `file_scope`, and any task with no resolvable plan file. *(completed)*
+- [x] Write through `state-write.sh` (passing `--state-file` when targeting a non-default path),
       using the same additive `((. // []) + $add | unique)` merge shape `update-task-status.sh`
-      uses. No hand-rolled `jq ... > tmp && mv`.
-- [ ] Prefer a single batched `state-write.sh` invocation over one per task if the filter can carry
-      all updates; otherwise loop, and say which was chosen in the script header.
-- [ ] `--dry-run` prints the proposed per-task diff (task number, resolved plan path, paths that
-      would be added) and writes nothing whatsoever.
-- [ ] Print a closing summary: tasks backfilled, tasks skipped as already-covered, and the count of
-      plan-less tasks deliberately left absent — the visible-gap requirement from Decision 6.
-- [ ] Record Decision 6's reasoning in the script header (why not inference, why not an `[]`
-      sentinel) so the disposition travels with the code.
-- [ ] Add `agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh` covering, against
+      uses. No hand-rolled `jq ... > tmp && mv`. *(completed)*
+- [x] Prefer a single batched `state-write.sh` invocation over one per task if the filter can carry
+      all updates; otherwise loop, and say which was chosen in the script header. *(completed)*
+- [x] `--dry-run` prints the proposed per-task diff (task number, resolved plan path, paths that
+      would be added) and writes nothing whatsoever. *(completed)*
+- [x] Print a closing summary: tasks backfilled, tasks skipped as already-covered, and the count of
+      plan-less tasks deliberately left absent — the visible-gap requirement from Decision 6. *(completed)*
+- [x] Record Decision 6's reasoning in the script header (why not inference, why not an `[]`
+      sentinel) so the disposition travels with the code. *(completed)*
+- [x] Add `agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh` covering, against
       a fixture state file and fixture plan: dry-run writes nothing; a real run populates a
       plan-bearing task; a second run is a byte-for-byte no-op (idempotence); a task with an
       existing non-empty `file_scope` is untouched; a plan-less task is left absent (not `[]`) and
-      counted in the summary.
+      counted in the summary. *(completed)*
 
 **Timing**: 1.5 hours
 

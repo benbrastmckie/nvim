@@ -76,6 +76,7 @@
     "scripts": [
       "assess-repo-health.sh",
       "audit-deletion-references.sh",
+      "backfill-file-scope.sh",
       "census-count.sh",
       "check-consumer-freshness.sh",
       "check-deploy-freshness.sh",
@@ -173,6 +174,7 @@
       "test-task-lock-reap.sh",
       "tests/run-all.sh",
       "tests/test-assess-repo-health.sh",
+      "tests/test-backfill-file-scope.sh",
       "tests/test-census-count.sh",
       "tests/test-common-lib.sh",
       "tests/test-claude-refresh-matcher.sh",
