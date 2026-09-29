@@ -547,14 +547,15 @@
         {
           "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/plans/01_comparator-nixos-fixes.md",
           "type": "plan",
-          "summary": "7 phases, 5 waves, ~9 hours: landrun shim, runner PATH/TMPDIR/shim wiring, outer landrun + git pre-flight probe, regression cases, design record + operator guide, dependency-tracing pattern, redeploy."
+          "summary": "7 phases, all closed ([COMPLETED] x6, [COMPLETED WITH EXCLUSIONS] x1 for Phase 7's deploy verification)."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-09-17T07:55:14Z",
       "last_updated": "2026-09-29T23:51:15Z",
       "priority": "medium",
-      "session_id": "sess_1790721762_ff3d8e"
+      "session_id": "sess_1790721762_ff3d8e",
+      "completion_summary": "Transcribed the landrun shim (TMPDIR/git-library/ELF-interpreter grants), pinned-toolchain PATH ordering with elan-wrapper unwrapping, outer landrun hardening, and a git-remote pre-flight probe into lean-comparator-run.sh and a new lean-comparator-landrun-shim.sh, documented four further findings in the design record and operator guide, added a new dependency-tracing.md pattern file, and closed the round with the lean extension's first-ever .claude/ deploy on this host."
     },
     {
       "project_number": 255,
