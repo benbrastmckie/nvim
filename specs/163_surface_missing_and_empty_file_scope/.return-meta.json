@@ -1,43 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790640953_159e0d_163",
-  "dispatch_seq": 3,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md",
-      "summary": "Confirms the missing/empty file_scope visibility gap in validate-state.sh and orchestrate-predispatch-review.sh, clarifies that glob-shaped entries are invisible only to the Overlap predicate (not to the already-working Containment consumer), recommends new Check 10/11 and Class F/G (not reusing the addendum's 'Class C', which collides with the existing self-modification class), flags the validate-artifact.sh --strict/promotion-criterion precedent as reusable but notes validate-state.sh has no --strict flag yet, and shows the dispatch's cited historical counts (37/38, 27/49/22/17/5) no longer reproduce against either repo's live, continuously-orchestrated state.json."
+      "type": "plan",
+      "path": "specs/163_surface_missing_and_empty_file_scope/plans/01_surface-missing-empty-file-scope.md",
+      "summary": "8-phase advisory-first plan adding Check 10/Check 11/--strict to validate-state.sh and Classes F/G to orchestrate-predispatch-review.sh, with a shared is_glob_entry jq def and fixture coverage in both test suites."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In this codebase, the bash glob-metacharacter test `case \"$x\" in *[*?\\[]*) ... ;; esac` (or its jq equivalent `test(\"[*?\\\\[]\")`) already exists in path_covered_by_scope() (lib/file-scope-overlap.sh) and _sibling_territory_classify_entry() (orchestrate-cycle-plan.sh). Before adding a new glob-detection check, reuse/centralize this idiom (e.g. as a shared jq def in FILE_SCOPE_OVERLAP_JQ_DEFS) rather than transcribing a third/fourth independent copy.",
-      "category": "PATTERN",
-      "source_artifact": "specs/163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "glob", "lib/file-scope-overlap.sh", "orchestrate-cycle-plan.sh", "canonical-predicate"]
-    },
-    {
-      "content": "file-footprint-overlap.md defines two distinct file_scope predicates: the symmetric Overlap Rule (deliberately glob-free per its own Non-Goals section, used by validate-state.sh Check 8 and predispatch-review Class C/D/E) and the one-directional Containment predicate (path_covered_by_scope(), which DOES match glob-shaped entries, used by git-snapshot.sh). A glob-shaped file_scope entry is only invisible to Overlap-based collision/coarseness checks, not to Containment consumers -- word any new WARN as 'invisible to overlap detection', never as 'invalid syntax'.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "overlap", "containment", "file-footprint-overlap.md", "glob"]
-    },
-    {
-      "content": "Historical file_scope coverage counts cited in a task description (e.g. 'N/M active tasks have file_scope') are snapshots of a live, continuously-orchestrated specs/state.json and drift within days -- do not hardcode them as test assertions or literal acceptance-criteria targets. Reproduce the check LOGIC against a small hand-crafted fixture (this repo's existing convention: test-validate-state.sh's Check 8/9 fixtures), and treat any run against a live state.json as an informational measurement only.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["state.json", "measurement", "test-fixtures", "moving-target", "acceptance-criteria"]
-    }
-  ],
-  "next_steps": "Run /plan 163 to create implementation plan",
-  "user_decision": {
-    "decision_needed": false,
-    "note": "Two judgment calls were made and recorded in the report's Decisions section (new Class F/G instead of reusing the addendum's 'Class C', and glob entries are surfaced as invisible-to-overlap rather than rejected as invalid) -- these are ordinary planning-level calls the plan phase can adopt or override with the full rationale in hand; neither requires the user's own judgment before planning can proceed."
-  }
+  "metadata": {
+    "session_id": "sess_1790640953_159e0d_163",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 6.5,
+    "dependency_waves": [[1], [2, 5], [3], [4], [6, 7], [8]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /implement 163 to execute the plan",
+  "dispatch_seq": 11
 }

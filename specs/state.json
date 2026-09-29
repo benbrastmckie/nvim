@@ -477,15 +477,15 @@
     {
       "project_number": 163,
       "project_name": "surface_missing_and_empty_file_scope",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Surface missing and empty file_scope in validate-state.sh and orchestrate-predispatch-review.sh",
       "description": "Make an ABSENT or EMPTY `file_scope` visible. Today it is invisible everywhere, by construction.\n\nVERIFIED GAP -- both existing checks skip exactly the entries that lack the field:\n1. agent-system/extensions/core/scripts/validate-state.sh Check 8 (coarse whole-directory-root declarations, ~line 460) and Check 9 (duplicate entries within one task's array, ~line 501) are BOTH WARN-only AND both guard with `select(has(\"file_scope\"))`. An entry with no file_scope key is silently skipped by both. There is no missing/empty check anywhere in the script.\n2. agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh Class B (~line 236) iterates `[\"dependencies\", \"file_scope\", \"title\", \"topic\"]` and matches with `select(($entry | has($field)) and ($entry[$field] == null))`. Its own comment states the intent verbatim: \"A genuinely absent key is NOT flagged -- only a present-but-literal-null value is the anomaly this class exists to surface.\" So absence is skipped BY DESIGN, not by oversight.\n\nThese two are consolidated into one task deliberately: both are WARN-shaped detection edits in the same layer, and splitting them would force two tasks to independently re-derive the same WARN-vs-block conclusion.\n\nWORK: add a missing/empty file_scope check to validate-state.sh; extend predispatch-review to surface an absent file_scope. For the latter, DECIDE whether to widen Class B or add a NEW class -- widening Class B changes the documented meaning of an established class (its comment explicitly scopes it to literal-null) and Class B feeds `--repair`, which normalizes null to []. Note that an absent key and a literal-null value are NOT equivalent for repair purposes: normalizing an absent key to `[]` would manufacture an empty declaration that then looks deliberate, which is arguably worse than absence. A new class avoids both hazards. Record the ruling either way.\n\nENFORCEMENT LEVEL -- PRIOR ART, FOLLOW IT: plan-format.md:259-266 records the Verification Tier rollout as the in-repo precedent for exactly this decision. Quoted: per-phase tier enforcement in validate-artifact.sh is \"advisory-first: a missing `**Verification Tier**:` field emits a warning, not an error, so default-mode validation of plans authored before this vocabulary existed continues to pass. `--strict` mode enforces it today. Promotion criterion: promote the warning to an error once no non-terminal plan under specs/ lacks the field. This is recorded here for a future task to execute; it is not done by the task that introduced this vocabulary.\"\n\nApply that same three-part pattern here: (a) start WARN in default mode; (b) WRITE DOWN an explicit promotion criterion in the script's own header comment; (c) do NOT promote in this task. Consider whether `--strict` should enforce it immediately, as validate-artifact.sh does. Do not invent a different enforcement philosophy -- this precedent exists and is load-bearing.\n\nEMPTY vs ABSENT: treat `file_scope: []` and a missing key as distinct states and decide whether both warn. An explicit empty array may be a deliberate \"this task touches nothing\" assertion; a missing key is an omission. Record the distinction.\n\nMEASUREMENT VALUE: this task is what makes the problem measurable. Local coverage is 37/38 active tasks with a non-empty file_scope; ~/Projects/BimodalLogic is 27/49, with 22 lacking a usable value (17 missing the key, 5 literal null) spanning 2026-05-11 through 2026-08-26 -- longstanding, not a recent regression. The check must reproduce those counts.\n\nACCEPTANCE: validate-state.sh reports the missing/empty count and exits 0 in default mode; the promotion criterion is written into the script header; predispatch-review surfaces absent file_scope with the class decision documented; `--repair` does not manufacture `[]` on absent keys; both scripts shellcheck clean per context/standards/shell-strict-mode.md; running against this repo's specs/state.json yields the expected 1-of-38 figure.\n\nCANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/nvim/agent-system/extensions/core/. Never hand-edit any deployed .claude/** tree -- it is gitignored, disposable, and regenerated from the source store by the loader, so edits there are silently wiped. DELIVERABLE RULE: no task numbers in deliverables outside specs/**.\n\n\n=== ADDENDUM 2026-09-22 (eighth-pass phase 0) ===\nAlso reject GLOB entries in file_scope at both check sites. Observed 2026-09-14: a `*/agents/**` entry was admitted alongside three tasks editing agent files because lib/file-scope-overlap.sh does not expand globs, so a glob collides with nothing. Neither task creation nor validate-state.sh rejects the shape today (0 glob entries exist in the live file, so the class is latent, not fixed). Treat a glob entry as invisible-by-construction, the same family as an absent or empty field: WARN in validate-state.sh naming the entry, and surface it in orchestrate-predispatch-review.sh Class C.",
       "topic": "file-scope-lifecycle",
       "priority": "medium",
       "created": "2026-09-07T00:00:00Z",
-      "last_updated": "2026-09-29T00:27:56Z",
-      "session_id": "sess_1790640953_159e0d_163",
+      "last_updated": "2026-09-29T01:27:11Z",
+      "session_id": "sess_1790640953_159e0d",
       "dependencies": [
         188
       ],
@@ -494,11 +494,19 @@
           "path": "specs/163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md",
           "type": "report",
           "summary": "Confirms the missing/empty file_scope visibility gap in validate-state.sh and orchestrate-predispatch-review.sh, clarifies that glob-shaped entries are invisible only to the Overlap predicate (not to the already-working Containment consumer), recommends new Check 10/11 and Class F/G (not reusing the addendum's 'Class C', which collides with the existing self-modification class), flags the validate-artifact.sh --strict/promotion-criterion precedent as reusable but notes validate-state.sh has no --strict flag yet, and shows the dispatch's cited historical counts (37/38, 27/49/22/17/5) no longer reproduce against either repo's live, continuously-orchestrated state.json."
+        },
+        {
+          "path": "specs/163_surface_missing_and_empty_file_scope/plans/01_surface-missing-empty-file-scope.md",
+          "type": "plan",
+          "summary": "8 phases, ~6.5h, 6 dependency waves; records 9 decisions including the Class F/G correction to the addendum's 'Class C' reference and the empty-vs-absent-vs-null ruling."
         }
       ],
       "file_scope": [
-        "agent-system/extensions/core/scripts/validate-state.sh",
-        "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"
+        "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh",
+        "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+        "agent-system/extensions/core/scripts/validate-state.sh"
       ],
       "next_artifact_number": 2
     },
