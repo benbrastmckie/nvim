@@ -11,7 +11,7 @@ next_project_number: 276
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,51,89,127,136,165,184,217,223,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,51,89,127,136,165,184,217,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,270,271,272 | 22,44,51,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 170,273,275 | 51,184,250,251,271,272 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -23,17 +23,17 @@ next_project_number: 276
 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-51 [RESEARCHED] — Move session runtime files out of the specs root and make the...
+51 [PLANNING] — Move session runtime files out of the specs root and make the...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
-136 [RESEARCHED] — Implementation-agent contract corrections: plan-level Status...
+136 [PLANNING] — Implementation-agent contract corrections: plan-level Status...
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-263 [RESEARCHED] — Consent-gated git push: grant semantics and enforcement mechanism
-265 [RESEARCHED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
+263 [PLANNING] — Consent-gated git push: grant semantics and enforcement mechanism
+265 [PLANNING] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -42,7 +42,7 @@ next_project_number: 276
 
 241 [RESEARCHED] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
-255 [RESEARCHED] — Reconcile typst extension scope ownership and fix...
+255 [PLANNING] — Reconcile typst extension scope ownership and fix...
 
 ### Literature
 
@@ -54,13 +54,9 @@ next_project_number: 276
 
 ### File Scope Lifecycle
 
-165 [RESEARCHED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
+165 [PLANNING] — Admission gates in orchestrate-batch-admit.sh: posture for an...
 269 [NOT STARTED] — validate-state.sh --fix: replace the presence test with a...
   └─ 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
-
-### Lean Extension
-
-223 [PLANNED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ### Orchestrator
 
@@ -576,7 +572,7 @@ Note the guard is deployed into consumer repositories at .claude/scripts/lake-bu
 ---
 
 ### 265. Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh --jobs
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 266
@@ -737,7 +733,7 @@ PHASES: (A) Gate 8 --jobs (choose a conservative default plus an env override; d
 ---
 
 ### 263. Consent-gated git push: grant semantics and enforcement mechanism
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 139
@@ -1101,7 +1097,7 @@ PHASES: (A) grant token + /please hook + integrity + push guard + destructive-gi
 
 ### 255. Reconcile typst extension scope ownership and fix chapter-quality-check.sh Rule 1.3 bib resolution
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -1560,7 +1556,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 223. Record the Comparator-on-NixOS fixes in the lean extension
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -1960,7 +1956,7 @@ Contemporaneous context that plausibly supplied the load: the same run-all.sh in
 ---
 
 ### 165. Admission gates in orchestrate-batch-admit.sh: posture for an absent file_scope, then cross-session visibility for self-modifying candidates
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 162, Task 163, Task 245
@@ -2052,7 +2048,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 136. Implementation-agent contract corrections: plan-level Status ownership, no fan-out, marker/commit sync, validator catch
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 139
@@ -2257,7 +2253,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ---
 
 ### 51. Move session runtime files out of the specs root and make the reap path run
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 143, Task 209

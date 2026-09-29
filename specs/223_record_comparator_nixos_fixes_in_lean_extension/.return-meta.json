@@ -31,14 +31,27 @@
       "category": "PATTERN",
       "source_artifact": "specs/223_record_comparator_nixos_fixes_in_lean_extension/summaries/01_comparator-nixos-fixes-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["extension-loading", "deploy-headless", "claude-extensions-json", "manager-load", "first-time-deploy", "redeploy-gate"]
+      "suggested_keywords": [
+        "extension-loading",
+        "deploy-headless",
+        "claude-extensions-json",
+        "manager-load",
+        "first-time-deploy",
+        "redeploy-gate"
+      ]
     },
     {
       "content": "An extension's manifest.json can declare a provides.context category (e.g. \"contracts\") that legitimately OVERRIDES a same-path core context file once the extension loads after core -- this is by design, not drift. verify-deploy.sh's manifest-driven content-hash check (item 5, verify.lua) is NOT override-aware: it attributes any content difference from core's own source to a core defect, even when the deployed content correctly reflects a later-loaded extension's intentional override. When this check fires with \"core: Content differs from source\" for a path also present in another loaded extension's own context tree, check `grep -rl \"<distinguishing header text>\" agent-system/extensions/*/context/**/*.md` before assuming it is a real drift -- it may be a legitimate override the checker cannot distinguish from a stale copy.",
       "category": "INSIGHT",
       "source_artifact": "specs/223_record_comparator_nixos_fixes_in_lean_extension/summaries/01_comparator-nixos-fixes-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verify-deploy", "manifest-override", "context-contracts", "false-positive", "extension-precedence"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "manifest-override",
+        "context-contracts",
+        "false-positive",
+        "extension-precedence"
+      ]
     }
   ],
   "next_steps": "Task complete. Follow-ups: provision lean4export/nanoda_bin (sibling ~/.dotfiles/ effort) for a real end-to-end Comparator demonstration; a future lean-extension-hygiene or core maintenance task should address the three Reasoned-Exclusions findings from Phase 7 (override-aware manifest verification, skill-lean-research/SKILL.md's missing postflight-boundary section, the eager-load budget baseline).",
@@ -46,7 +59,11 @@
     "session_id": "sess_1790721762_ff3d8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }

@@ -1,7 +1,7 @@
 # Implementation Plan: Record Comparator-on-NixOS Fixes in the Lean Extension
 
 - **Task**: 223 - Record comparator nixos fixes in lean extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/223_record_comparator_nixos_fixes_in_lean_extension/reports/01_comparator-nixos-fixes.md
