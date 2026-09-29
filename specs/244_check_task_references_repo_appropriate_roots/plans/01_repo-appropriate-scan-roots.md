@@ -322,27 +322,27 @@ by re-reading the three named line ranges rather than citing the report.
  *(completed)*
 ---
 
-### Phase 5: Regression suite for missing-tree-root handling [NOT STARTED]
+### Phase 5: Regression suite for missing-tree-root handling [COMPLETED]
 
 **Goal**: A new `test-validate-wiring.sh` locking in the consumer layout `.claude` present /
 `.opencode` absent.
 
 **Tasks**:
-- [ ] Follow `test-deploy-verify-wiring.sh`'s fixture model: `mktemp -d`, trap cleanup,
+- [x] Follow `test-deploy-verify-wiring.sh`'s fixture model: `mktemp -d`, trap cleanup,
       `git init -q`, and place the script under test at `<fixture>/.claude/scripts/` (required —
       `deploy-root-guard.sh` demands the parent-of-parent directory literally be `.claude` or
-      `.opencode`, with no env override), copying whatever libraries it sources.
-- [ ] Build the fixture with a minimally-valid `.claude` tree (index.json, the agents/skills/rules
-      `validate_core_system` checks) and NO `.opencode` directory at all.
-- [ ] Assertion (a): `all` output contains a `[SKIP]` line naming `.opencode`.
-- [ ] Assertion (b): no `[FAIL]` line mentions `.opencode`.
-- [ ] Assertion (c): the exit code depends only on the `.claude` side — clean `.claude` gives
+      `.opencode`, with no env override), copying whatever libraries it sources. *(completed)*
+- [x] Build the fixture with a minimally-valid `.claude` tree (index.json, the agents/skills/rules
+      `validate_core_system` checks) and NO `.opencode` directory at all. *(completed)*
+- [x] Assertion (a): `all` output contains a `[SKIP]` line naming `.opencode`. *(completed)*
+- [x] Assertion (b): no `[FAIL]` line mentions `.opencode`. *(completed)*
+- [x] Assertion (c): the exit code depends only on the `.claude` side — clean `.claude` gives
       exit 0; deliberately break one `.claude` file and the same run gives exit 1 with a
-      `.claude`-attributed failure.
-- [ ] Assertion (d): the mirror case — `.opencode` present, `.claude` absent — skips `.claude`
-      symmetrically, since the fix covers both arms.
-- [ ] Assertion (e): both trees absent gives exit 0 with two `[SKIP]` lines and zero failures.
-- [ ] No `run-all.sh` registration needed (auto-discovery).
+      `.claude`-attributed failure. *(completed: assertion (e) realized as the closest achievable equivalent -- see suite header STRUCTURAL NOTE; literal 'both trees absent' cannot be constructed since deploy-root-guard.sh requires the runner's own host tree to exist)*
+- [x] Assertion (d): the mirror case — `.opencode` present, `.claude` absent — skips `.claude`
+      symmetrically, since the fix covers both arms. *(completed)*
+- [x] Assertion (e): both trees absent gives exit 0 with two `[SKIP]` lines and zero failures. *(deviation: altered -- deploy-root-guard.sh requires the runner's own host tree to exist on disk, so literal "both trees absent" cannot be constructed via subprocess invocation; realized as the closest achievable equivalent, requesting only the absent tree against a runner-hosting tree with zero real payload -- see suite header STRUCTURAL NOTE)*
+- [x] No `run-all.sh` registration needed (auto-discovery).
 
 **Timing**: 1.25 hours
 
@@ -362,7 +362,7 @@ note, rather than silently dropping case (c).
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-validate-wiring.sh` exits 0.
 - Reverting Phase 4 in a scratch copy makes assertions (a) and (b) fail.
-
+ *(completed)*
 ---
 
 ### Phase 6: Documentation alignment and full gate run [NOT STARTED]

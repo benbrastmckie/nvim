@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Regression suite for missing-tree-root handling",
+  "started_at": "2026-09-29T03:10:00Z",
+  "last_updated": "2026-09-29T03:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "New test-validate-wiring.sh: fixture places runner+deps under <fixture>/.claude/scripts/", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]},
+    {"id": 2, "description": "Minimal genuinely-passing .claude fixture (empty index.json entries array avoids fabricating real context content)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]},
+    {"id": 3, "description": "Assertions (a)(b)(c): SKIP names .opencode, no FAIL mentions .opencode, clean exit 0, broken file exit 1 attributed to .claude", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]},
+    {"id": 4, "description": "Assertion (d): mirror case .opencode present/.claude absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]},
+    {"id": 5, "description": "Assertion (e): realized as closest achievable equivalent due to deploy-root-guard.sh structural constraint (documented deviation)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]},
+    {"id": 6, "description": "Confirmed reverting Phase 4 makes (a)(b)(d)(e) fail against old script; advisory cost-hints row added", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Literal case (e): both .claude and .opencode directories entirely absent from disk", "result": "failed", "reason": "deploy-root-guard.sh requires the running validate-wiring.sh copy's own parent-of-parent directory to literally be .claude or .opencode with no REPO_ROOT override, so the tree hosting the runner necessarily exists on disk -- realized the closest achievable equivalent instead (documented in suite header and plan deviation annotation)"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.5",
+      "description": "Assertion (e): both trees absent gives exit 0 with two [SKIP] lines and zero failures",
+      "type": "altered",
+      "reason": "Structural impossibility: deploy-root-guard.sh requires the runner's own host tree (.claude or .opencode) to exist on disk since it has no REPO_ROOT-style override (unlike check-task-references.sh); genuine 'both trees absent from disk' cannot be produced by a real subprocess invocation.",
+      "annotation": "*(deviation: altered -- deploy-root-guard.sh requires the runner's own host tree to exist on disk, so literal \"both trees absent\" cannot be constructed via subprocess invocation; realized as the closest achievable equivalent, requesting only the absent tree against a runner-hosting tree with zero real payload -- see suite header STRUCTURAL NOTE)*"
+    }
+  ]
+}
