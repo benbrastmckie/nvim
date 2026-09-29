@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/139_forbid_concurrent_writer_history_rewrites/plans/01_forbid-concurrent-writer-rewrites.md",
-      "summary": "7-phase plan: contract layer (git-workflow.md Never Run + new sibling section, general-implementation-agent.md MUST NOT, recovery.md re-scoping) then a tree-state-blind concurrency-gated history-rewrite predicate in guard-destructive-git.sh, clean-tree test fixtures, standards updates, and redeploy verification."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 17,
   "metadata": {
-    "session_id": "sess_1790640953_159e0d_139",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1], [2, 3, 4], [5, 6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "A PreToolUse hook that must be hermetically testable cannot call agent-system scripts that source deploy-root-guard.sh (which exits 1 when run from the source store) or that anchor PROJECT_ROOT to their own SCRIPT_DIR rather than the caller's cwd -- e.g. task-lock.sh. Such a call makes the primary code path unreachable in source-store test mode and, in deployed mode, makes the hook read the real repo's specs/ regardless of the test fixture's cwd, so fixture-driven cases become non-hermetic and dependent on whatever orchestration run happens to be live. The testable pattern is to read the runtime record files directly and cwd-relatively (find specs -maxdepth 3 ...), inlining the portable liveness idiom (kill -0 on the recorded pid plus a heartbeat-age parse with a BSD date fallback) instead of reusing the script that owns it.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/139_forbid_concurrent_writer_history_rewrites/plans/01_forbid-concurrent-writer-rewrites.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["hook-testability", "deploy-root-guard", "cwd-relative", "task-lock", "pretooluse", "hermetic-fixture"]
-    }
-  ],
-  "dispatch_seq": 9
+    "session_id": "sess_1790640953_159e0d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Rules Layer — Never Run bullets and the sibling rule section",
+  "started_at": "2026-09-29T02:03:59Z",
+  "last_updated": "2026-09-29T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git-workflow.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add two Never Run bullets (amend + HEAD-moving reset)", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 3, "description": "De-positionalize Enforced-by paragraph; add concurrency-predicate sentence", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 4, "description": "Add new section 'No History Rewrites While Another Writer Is Live'", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 5, "description": "Verify no task-number reference introduced", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Commit file via git-commit-scoped.sh", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

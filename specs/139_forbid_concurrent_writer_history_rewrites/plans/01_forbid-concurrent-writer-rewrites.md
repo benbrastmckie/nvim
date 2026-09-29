@@ -1,7 +1,7 @@
 # Implementation Plan: Forbid concurrent-writer history rewrites (rules/contracts + concurrency-gated hook predicate)
 
 - **Task**: 139 - Forbid concurrent-writer history rewrites (rules/contracts) + concurrency-gated hook predicate (absorbed former task 140)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md
@@ -121,27 +121,27 @@ No `roadmap_path` supplied for this dispatch; ROADMAP.md was not consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Rules Layer — Never Run bullets and the sibling rule section [NOT STARTED]
+### Phase 1: Rules Layer — Never Run bullets and the sibling rule section [COMPLETED]
 
 **Goal**: `rules/git-workflow.md` forbids concurrent-writer history rewrites, with the rationale
 placed where a reader arriving at the uncommitted-work rule cannot miss it, and the "Enforced by"
 framing kept in agreement with the hook.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/rules/git-workflow.md` immediately before editing (a
-      sibling may have touched the shared tree).
-- [ ] In `### Never Run`, insert two bullets **immediately after the existing `git reset --hard`
+- [x] Re-read `agent-system/extensions/core/rules/git-workflow.md` immediately before editing (a
+      sibling may have touched the shared tree). *(completed)*
+- [x] In `### Never Run`, insert two bullets **immediately after the existing `git reset --hard`
       bullet and before the `git add -A` bullet** (placement is load-bearing — see the next task):
       one for `git commit --amend` and one for a HEAD-moving `git reset` (`--soft`/`--mixed`/bare,
       and `--hard` with a commit-ish), each carrying the concurrency qualifier ("while any other
-      dispatched writer is live in this repo") and a pointer to the new section below.
-- [ ] Replace the fragile positional phrase `all four bullets immediately above` in the
+      dispatched writer is live in this repo") and a pointer to the new section below. *(completed)*
+- [x] Replace the fragile positional phrase `all four bullets immediately above` in the
       `**Enforced by guard-destructive-git.sh**` paragraph with a non-positional reference to the
       over-staging bullets by name. Add a second sentence to that paragraph naming the new
       concurrency-gated history-rewrite predicate and stating that, unlike the over-staging and
       destructive-command predicates, it does **not** consult tree dirtiness and has no
-      snapshot-marker exemption.
-- [ ] Add a new `###` section titled `No History Rewrites While Another Writer Is Live`,
+      snapshot-marker exemption. *(completed)*
+- [x] Add a new `###` section titled `No History Rewrites While Another Writer Is Live`,
       positioned **immediately after** the `### No Destructive Git on Uncommitted Work` section
       and **before** `### Always Check Before Commit`. Content, in this order:
       (i) the rule: agents MUST NOT run bare `git commit --amend` or a HEAD-moving `git reset`
@@ -167,10 +167,10 @@ framing kept in agreement with the hook.
       record it; never amend to fix it under concurrency;
       (vi) enforcement pointer to `guard-destructive-git.sh`'s concurrency-gated predicate and
       the documented, auditable `GUARD_ALLOW_HISTORY_REWRITE=1` operator override, with an
-      explicit statement that agents MUST NOT use that override.
-- [ ] Verify no task-number reference was introduced (this file is a deliverable outside
-      `specs/**`): cite the commit shas and the 2026-09-02 date, never a task number.
-- [ ] Commit this file alone via `bash .claude/scripts/git-commit-scoped.sh`.
+      explicit statement that agents MUST NOT use that override. *(completed)*
+- [x] Verify no task-number reference was introduced (this file is a deliverable outside
+      `specs/**`): cite the commit shas and the 2026-09-02 date, never a task number. *(completed)*
+- [x] Commit this file alone via `bash .claude/scripts/git-commit-scoped.sh`. *(completed)*
 
 **Timing**: 0.75 hours
 
