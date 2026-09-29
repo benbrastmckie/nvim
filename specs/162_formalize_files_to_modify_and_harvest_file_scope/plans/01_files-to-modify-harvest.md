@@ -1,7 +1,7 @@
 # Implementation Plan: Task #162
 
 - **Task**: 162 - Formalize "Files to modify" and harvest file_scope
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md
@@ -169,26 +169,26 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Formalize the field in plan-format.md [NOT STARTED]
+### Phase 1: Formalize the field in plan-format.md [COMPLETED]
 
 **Goal**: `plan-format.md` enumerates `**Files to modify**:` as a required per-phase field with its
 grammar, names its consumers as compatibility constraints, and forecloses Scope Hypothesis as a
 second harvest source.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/plan-format.md`'s
-      "Implementation Phases (format)" per-phase field list immediately before editing.
-- [ ] Insert a `- **Files to modify:** (required)` bullet between the `Scope Hypothesis` bullet and
+- [x] Re-read `agent-system/extensions/core/context/formats/plan-format.md`'s
+      "Implementation Phases (format)" per-phase field list immediately before editing. *(completed)*
+- [x] Insert a `- **Files to modify:** (required)` bullet between the `Scope Hypothesis` bullet and
       the `Owner` bullet, matching the planner template's own field order
-      (`agents/planner-agent.md` emits `Files to modify` directly after `Scope Hypothesis`).
-- [ ] State the list-item grammar in that bullet: one `- \`path\`` entry per line, each optionally
+      (`agents/planner-agent.md` emits `Files to modify` directly after `Scope Hypothesis`). *(completed)*
+- [x] State the list-item grammar in that bullet: one `- \`path\`` entry per line, each optionally
       followed by ` - {description}` free text that is not part of the path; wrapped continuation
       lines belong to the preceding entry; a line that is not a backtick-path entry (e.g. a
-      "none planned" prose sentinel) contributes no path.
-- [ ] State that both punctuation forms (`**Files to modify**:` and `**Files to modify:**`) are
+      "none planned" prose sentinel) contributes no path. *(completed)*
+- [x] State that both punctuation forms (`**Files to modify**:` and `**Files to modify:**`) are
       accepted, cross-referencing the existing "Field-punctuation tolerance" paragraph rather than
-      restating its rule.
-- [ ] Add a "Consumers of this field" subsection mirroring the structure of the existing
+      restating its rule. *(completed)*
+- [x] Add a "Consumers of this field" subsection mirroring the structure of the existing
       "Consumers of this heading contract" subsection, listing: `agents/general-implementation-agent.md`
       (reads "Files to modify/create per phase" when extracting from the plan — heading-name
       stability only); `skills/skill-orchestrate/SKILL.md`'s H1 territory block (points an agent at
@@ -197,11 +197,11 @@ second harvest source.
       stability only); and `scripts/plan-file-scope-harvest.sh` (the one consumer that actually
       depends on list-item shape). State explicitly that the heading text is frozen because the
       first three embed it in a prompt directive where a mismatch fails silently with no parse
-      error.
-- [ ] Add a one-line cross-reference at the "Counts-are-hypotheses obligation" subsection stating
+      error. *(completed)*
+- [x] Add a one-line cross-reference at the "Counts-are-hypotheses obligation" subsection stating
       that `**Scope Hypothesis:**` is deliberately not a harvest source for `file_scope` and
-      naming `Files to modify` as the structured carrier (Decision 5).
-- [ ] Confirm no task numbers appear in the added text (this file lives outside `specs/**`).
+      naming `Files to modify` as the structured carrier (Decision 5). *(completed)*
+- [x] Confirm no task numbers appear in the added text (this file lives outside `specs/**`). *(completed)*
 
 **Timing**: 0.75 hours
 

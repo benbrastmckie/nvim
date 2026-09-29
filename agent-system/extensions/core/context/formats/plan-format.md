@@ -100,14 +100,40 @@ role as a durable, non-reverting checkpoint.
     `## Verification Tiers` below.
   - **Scope Hypothesis:** (conditional — required whenever the phase asserts a count, an
     enumerated file list, or a scope estimate) — see `## Verification Tiers` below.
+  - **Files to modify:** (required) the phase's file list, one `- \`path/to/file\`` entry per
+    line, each optionally followed by ` - {what changes}` free text that is not part of the path;
+    a wrapped continuation line belongs to the preceding entry rather than starting a new one; a
+    line that is not a backtick-path entry (for example a "none planned" prose sentinel)
+    contributes no path. This formalizes an already-universal convention — the planner template
+    emits it unconditionally directly after **Scope Hypothesis** — rather than introducing a new
+    one; "required" describes existing practice, not an aspiration. See "Consumers of this field"
+    below for who depends on this shape and how.
   - **Owner:** (optional)
   - **Started/Completed/Blocked/Abandoned:** timestamp lines when status changes (ISO8601). Do not leave null placeholders.
 
 **Field-punctuation tolerance**: generator sites in this codebase use two conventions for phase
 field labels — `**Field:**` (colon inside the bold) and `**Field**:` (colon outside the bold).
 Both forms are accepted for every per-phase field above, including `**Verification Tier**:` /
-`**Verification Tier:**`; do not treat one form as invalid because a generator site used the
-other.
+`**Verification Tier:**` and `**Files to modify**:` / `**Files to modify:**`; do not treat one
+form as invalid because a generator site used the other.
+
+**Consumers of this field**: `Files to modify` has four independent consumers, three of which
+depend only on the heading string, not on list-item shape:
+
+- `agents/general-implementation-agent.md` — reads "Files to modify/create per phase" when
+  extracting from the plan (heading-name stability only).
+- `skills/skill-orchestrate/SKILL.md`'s H1 territory block — sets `owned_files` by pointing an
+  agent at the phase's `Files to modify` location; it does not parse the list itself
+  (heading-name stability only).
+- `scripts/orchestrate-cycle-plan.sh` — the same territory derivation, ported verbatim
+  (heading-name stability only).
+- `scripts/plan-file-scope-harvest.sh` — the one consumer that actually depends on list-item
+  shape: it parses each phase's block to harvest `active_projects[].file_scope` at plan-postflight
+  time.
+
+**The heading text `Files to modify` is frozen.** The first three consumers above embed it
+verbatim in a prompt directive or a ported grep, where a mismatch fails silently with no parse
+error — never rename or rephrase this heading without auditing all three.
 
 **Consumers of this heading contract**: the exact `### Phase N: {name} [STATUS]` shape above is
 parsed by three independent mechanisms, so a future change to the format must account for all
@@ -263,6 +289,11 @@ implementation-time confirmation, never a fact. When a phase asserts one, it car
 The implementation-side gate that consumes this obligation (i.e., that mechanically checks a
 confirmation happened) is a separate, out-of-scope concern for this document — this section
 defines the planner-side carrier field only.
+
+**`**Scope Hypothesis**:` is deliberately not a harvest source for `file_scope`.** It is free-form
+prose about a claim to confirm, not a structured file enumeration; the structured carrier for a
+phase's file list is `Files to modify` (see "Consumers of this field" above), and
+`plan-file-scope-harvest.sh` reads only that field.
 
 ### Enforcement level
 

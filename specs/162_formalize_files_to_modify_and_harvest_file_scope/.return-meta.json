@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/162_formalize_files_to_modify_and_harvest_file_scope/plans/01_files-to-modify-harvest.md",
-      "summary": "6-phase plan formalizing the **Files to modify** per-phase convention, building a shared harvester, wiring it into all four plan-postflight call sites, and backfilling file_scope cross-repo."
-    }
-  ],
-  "next_steps": "Run /implement 162 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 10,
   "metadata": {
-    "session_id": "sess_1790640953_159e0d_162",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6.75,
-    "dependency_waves": [[1, 2, 3], [4, 5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this agent-system codebase, a helper invoked as `update-task-status.sh postflight <N> <phase> <sid>` is called from FOUR independent locations for the plan phase, not one: orchestrator-postflight.sh Stage 7, reconcile-task-status.sh (two sites), and skill-reviser/SKILL.md Stage 7 (the /revise path). Any change that must apply 'at plan postflight' has to enumerate all four, or /revise and the reconciliation self-heal path silently diverge. The general planning rule: before wiring behavior into a lifecycle postflight, grep for every call site of the status helper rather than trusting a dispatch's singular phrasing. A companion pattern: before adding a new state.json write path, check whether update-task-status.sh already exposes a flag with the needed semantics (e.g. --file-scope-add's additive union merge riding inside the existing mutex-guarded state-write.sh invocation) -- widening an existing flag's target_status restriction is consistently lower-risk than adding a second writer.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/162_formalize_files_to_modify_and_harvest_file_scope/plans/01_files-to-modify-harvest.md",
-      "confidence": 0.78,
-      "suggested_keywords": ["postflight", "call-sites", "update-task-status", "state-write", "file_scope", "wiring"]
-    }
-  ],
-  "dispatch_seq": 2
+    "session_id": "sess_1790640953_159e0d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
