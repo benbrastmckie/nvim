@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Correct the Mis-Scoped Prohibition in recovery.md",
+  "started_at": "2026-09-29T02:20:00Z",
+  "last_updated": "2026-09-29T02:24:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read recovery.md", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Correct fix-forward prohibition to cover two hazard classes", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/recovery.md"]},
+    {"id": 3, "description": "Extend rung (c) step 1 hook-list restatement", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/recovery.md"]},
+    {"id": 4, "description": "Verify no task-number reference", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Commit via git-commit-scoped.sh", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

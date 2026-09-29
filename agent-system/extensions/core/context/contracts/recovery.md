@@ -23,11 +23,24 @@ build/test/verification criteria by adding or correcting code in place.
 
 They NEVER mean: `git reset`, `git checkout -- <path>`, `git restore` (non-`--staged`),
 `git clean -fd`, `git stash drop`/`clear`, or any other operation that discards uncommitted
-changes to fall back to a prior commit — while uncommitted changes exist.
+changes to fall back to a prior commit — while uncommitted changes exist. They also NEVER mean
+bare `git commit --amend` or a HEAD-moving `git reset` used to paper over a mistake in
+already-committed history while any other dispatched writer is live in this repo — that hazard
+is independent of tree state entirely, see below.
 
 An agent MUST NOT discard uncommitted work to reach green. If the working tree is RED, the
 default and required response is to fix forward: correct the source so the same tree passes,
 preserving every line of uncommitted progress already made.
+
+**Two independent hazard classes, not one.** The prohibition above covers discarding
+*uncommitted* work and is scoped by dirtiness of the working tree — a clean tree has nothing to
+lose. A second, entirely independent hazard is rewriting *already-committed* history (bare
+`git commit --amend`, a HEAD-moving `git reset`) while another dispatched writer is live; this
+is not conditioned on tree state at all — both commands are non-destructive to the working tree,
+so a dirtiness-scoped check would wave them through on a dirty tree or a clean one alike. See
+`.claude/rules/git-workflow.md`'s "No History Rewrites While Another Writer Is Live" section for
+the incident that motivates this and the full concurrency-vs-dirtiness distinction. All commits,
+under either hazard class, go through `.claude/scripts/git-commit-scoped.sh`.
 
 ## The Recovery Ladder
 
@@ -79,7 +92,12 @@ If a genuine rollback is unavoidable:
    blocks `git reset --hard`, `git checkout -- <path>`, `git restore` (non-`--staged`),
    `git clean -fd`, `git stash drop`/`clear`, and forced `git checkout`/`git switch` on a dirty
    tree via `exit 2` unless a fresh snapshot marker exists (see git-workflow.md's "No
-   Destructive Git on Uncommitted Work" rule).
+   Destructive Git on Uncommitted Work" rule). The same hook also carries a second, independent
+   predicate for bare `git commit --amend` and a HEAD-moving `git reset`: it is tree-state-blind
+   (it fires on a clean tree exactly as on a dirty one) and has no snapshot-marker exemption,
+   because a snapshot addresses discarded working-tree state, not a rewritten commit owned by
+   another writer (see git-workflow.md's "No History Rewrites While Another Writer Is Live"
+   section).
 2. **Prefer the smallest revert scope.** Roll back the minimum needed (a single file or hunk)
    rather than the whole tree; re-apply anything from the snapshot that turns out to still be
    good.

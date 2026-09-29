@@ -240,28 +240,28 @@ rewrites and an explicit mandate to route every commit through `git-commit-scope
 
 ---
 
-### Phase 3: Correct the Mis-Scoped Prohibition in recovery.md [NOT STARTED]
+### Phase 3: Correct the Mis-Scoped Prohibition in recovery.md [COMPLETED]
 
 **Goal**: the hard-mode recovery contract no longer scopes its git prohibition solely by tree
 dirtiness, and its second restatement of the hook's guarded-command list does not drift out of
 agreement with the hook.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/contracts/recovery.md` immediately before
-      editing.
-- [ ] In `## "Green" Means Fix Forward`, **correct** (do not merely supplement) the sentence
+- [x] Re-read `agent-system/extensions/core/context/contracts/recovery.md` immediately before
+      editing. *(completed)*
+- [x] In `## "Green" Means Fix Forward`, **correct** (do not merely supplement) the sentence
       ending `— while uncommitted changes exist.` so the prohibition covers two independent
       hazard classes: discarding uncommitted work (the existing, dirtiness-scoped clause) **and**
       rewriting already-committed history (`git commit --amend`, a HEAD-moving `git reset`) while
-      another writer is live, which is not conditioned on tree state at all.
-- [ ] Add one sentence naming the distinction explicitly (dirtiness of the tree vs. concurrency of
-      writers) and pointing at `git-workflow.md`'s new section for the incident rationale.
-- [ ] In rung (c) step 1, extend the restated hook command list ("blocks `git reset --hard`, ...
+      another writer is live, which is not conditioned on tree state at all. *(completed)*
+- [x] Add one sentence naming the distinction explicitly (dirtiness of the tree vs. concurrency of
+      writers) and pointing at `git-workflow.md`'s new section for the incident rationale. *(completed)*
+- [x] In rung (c) step 1, extend the restated hook command list ("blocks `git reset --hard`, ...
       on a dirty tree via `exit 2` unless a fresh snapshot marker exists") with the new predicate,
       stating that it is tree-state-blind and has no snapshot-marker exemption — so this second
-      restatement stays in agreement with the hook after Phase 4.
-- [ ] Confirm no task-number reference was introduced.
-- [ ] Commit this file alone via `git-commit-scoped.sh`.
+      restatement stays in agreement with the hook after Phase 4. *(completed)*
+- [x] Confirm no task-number reference was introduced. *(completed)*
+- [x] Commit this file alone via `git-commit-scoped.sh`. *(completed)*
 
 **Timing**: 0.5 hours
 
