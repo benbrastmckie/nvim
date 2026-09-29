@@ -353,6 +353,12 @@ rendering decision is recorded with its rationale (including a decision NOT to r
 the ruling); the renumber question is answered either way in writing; shellcheck clean per
 context/standards/shell-strict-mode.md. No task-number references in deliverables outside specs/**.
 
+RENDERER QUIRK TO FOLD IN (observed 2026-09-29, not a separate task). The Task Order tree
+already renders the string "parenttask" -- the underscore stripped by generate-task-order.sh's own
+truncation path -- while state.json and the TODO.md task heading both hold "parent_task" correctly.
+This is a pre-existing defect in the very script this task is scoped to touch, so fix it as part of
+the rendering work item rather than filing it separately.
+
 ---
 
 ### 270. Re-runnable null-safety audit of jq mutation sites across core scripts, then decide whether a shared guard idiom belongs in scripts/lib/
