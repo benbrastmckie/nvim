@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "task_number": 165,
+  "phase": "research",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790721762_ff3d8e_165",
+  "dispatch_seq": 2,
+  "findings_count": 6,
+  "next_steps": "Run /plan 165 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/165_admission_posture_for_absent_file_scope/reports/01_admission-posture-absent-scope.md",
+      "summary": "Rules on absent-file_scope admission posture: split by scope kind (in-batch blocking via a new self-clearing defer_reason, cross-batch advisory-only via a new additive field) based on measured backfill coverage (96-97% in this repo/Logos-Verification vs. 42% in BimodalLogic, the harm's own repo). Also confirms and scopes the fix for ex-task-190's self-modifying cross-session blindness (additive-only, no version bump)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "agent-system/extensions/core/scripts/backfill-file-scope.sh is a one-shot, idempotent, plan-bearing-only backfill: it deliberately skips any task with no resolvable plan artifact (never guesses a file_scope) and any task whose plan lacks a parseable '**Files to modify**:' per-phase field (e.g. a 'Territory Contract' table format instead). Measuring coverage requires checking non-terminal tasks lacking file_scope directly against state.json, not assuming the backfill tool's existence means coverage is complete -- one live repo measured at only 42% coverage despite the tool having already been run to convergence there.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/165_admission_posture_for_absent_file_scope/reports/01_admission-posture-absent-scope.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file_scope", "backfill", "coverage", "orchestrate-batch-admit", "plan-file-scope-harvest"]
+    },
+    {
+      "content": "orchestrate-batch-admit.sh's Version History (docs/architecture/batch-admit-schema.md) establishes a clear precedent: adding a NEW defer_reason value always requires a schema version bump plus updates to three consumers (orchestrate-predispatch-review.sh's Class selects, orchestrate-dry-run-report.sh, skill-orchestrate/SKILL.md Stage MT-3 step 4.5) because a closed if/else over defer_reason mis-buckets an unrecognized value. Purely ADDITIVE fields (new verdict keys that don't change the decision, e.g. idle_overlap_advisory) never need a version bump because the consumer's Classes are select()-based and simply ignore an unrecognized field -- inert, not mis-bucketed. Use this distinction when deciding whether a batch-admit change is a v-bump or not.",
+      "category": "PATTERN",
+      "source_artifact": "specs/165_admission_posture_for_absent_file_scope/reports/01_admission-posture-absent-scope.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-batch-admit", "schema-versioning", "defer_reason", "additive-field", "version-bump"]
+    },
+    {
+      "content": "orchestrate-batch-admit.sh's D4 precedence (self-modification check runs FIRST and short-circuits) means a solo-admitted self-modifying candidate NEVER reaches the file_scope_collision or session_active passes -- confirmed by direct code read, not just documentation. session_contention()'s self-exclusion is keyed on session_id (not pid), ruling out a pid-based self-exclusion hypothesis for this class of cross-session blindness bug.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/165_admission_posture_for_absent_file_scope/reports/01_admission-posture-absent-scope.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-batch-admit", "self_modifying", "session_active", "precedence", "cross-session"]
+    }
+  ]
+}

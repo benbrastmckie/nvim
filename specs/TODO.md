@@ -54,7 +54,7 @@ next_project_number: 276
 
 ### File Scope Lifecycle
 
-165 [RESEARCHING] — Admission gates in orchestrate-batch-admit.sh: posture for an...
+165 [RESEARCHED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
 269 [NOT STARTED] — validate-state.sh --fix: replace the presence test with a...
   └─ 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
@@ -1956,10 +1956,11 @@ Contemporaneous context that plausibly supplied the load: the same run-all.sh in
 ---
 
 ### 165. Admission gates in orchestrate-batch-admit.sh: posture for an absent file_scope, then cross-session visibility for self-modifying candidates
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 162, Task 163, Task 245
+- **Research**: [165_admission_posture_for_absent_file_scope/reports/01_admission-posture-absent-scope.md]
 
 **Description**: Settle whether an ABSENT `file_scope` should be admission-relevant in agent-system/extensions/core/scripts/orchestrate-batch-admit.sh, or remain purely advisory -- and implement the ruling.
 
