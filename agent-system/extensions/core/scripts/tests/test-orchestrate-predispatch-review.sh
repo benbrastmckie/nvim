@@ -42,6 +42,9 @@ for f in orchestrate-predispatch-review.sh deploy-root-guard.sh state-write.sh; 
 done
 require_file "$CORE_DIR/lib/common.sh"
 require_file "$CORE_DIR/lib/task-lookup-lib.sh"
+# lib/file-scope-overlap.sh: NEW as of Class F/G -- the SUT now fails CLOSED (exit 2) if this
+# library is unsourceable, so the sandbox must carry a real copy, not a stub.
+require_file "$CORE_DIR/lib/file-scope-overlap.sh"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required and is not on PATH" >&2
@@ -60,6 +63,7 @@ setup_sandbox() {
   done
   cp "$CORE_DIR/lib/common.sh" "$WORKDIR/.claude/scripts/lib/common.sh"
   cp "$CORE_DIR/lib/task-lookup-lib.sh" "$WORKDIR/.claude/scripts/lib/task-lookup-lib.sh"
+  cp "$CORE_DIR/lib/file-scope-overlap.sh" "$WORKDIR/.claude/scripts/lib/file-scope-overlap.sh"
   chmod +x "$WORKDIR"/.claude/scripts/*.sh
 }
 

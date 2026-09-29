@@ -1,0 +1,36 @@
+{
+  "phase": 5,
+  "phase_name": "orchestrate-predispatch-review.sh Classes F and G",
+  "started_at": "2026-09-29T01:45:00Z",
+  "last_updated": "2026-09-29T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add sourcing of file-scope-overlap.sh (new -- plan premise was wrong) and splice FILE_SCOPE_OVERLAP_JQ_DEFS into ab_findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 2, "description": "Add Class F generator (missing_key/null_value/empty_array) to ab_findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 3, "description": "Add Class G generator (glob) using is_glob_entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 4, "description": "Add Class F and Class G report sections after Class E", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 5, "description": "Leave --repair untouched; add comment; update header class roster", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 6, "description": "Fix existing test harness sandbox to carry lib/file-scope-overlap.sh (necessary, unplanned)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "bare `. \"${SCRIPT_DIR}/lib/file-scope-overlap.sh\"` (matching validate-state.sh's style)", "result": "failed", "reason": "orchestrate-predispatch-review.sh runs set -euo pipefail; the library's read -r -d '' <<'JQDEFS' heredoc idiom always returns non-zero at EOF, which aborts the whole script under -e the instant it is sourced outside a tested if-condition. Fixed by copying orchestrate-batch-admit.sh's `if ! . ...; then error; fi` idiom instead."},
+    {"approach": "apostrophes (possessive 's) inside the new Class F/G jq-block bash comments", "result": "failed", "reason": "the jq program is embedded in a bash single-quoted string; a literal apostrophe inside a comment prematurely closes that string at the bash parse level, producing a bash syntax error a few lines later. Rewrote both comments to avoid all apostrophes, matching the existing apostrophe-free convention already used in the pre-existing Class A/B comments."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5",
+      "description": "Add a Class G generator using is_glob_entry, splicing FILE_SCOPE_OVERLAP_JQ_DEFS (the script already splices it for Classes C/D/E per the plan)",
+      "type": "altered",
+      "reason": "The plan/research premise that orchestrate-predispatch-review.sh already splices FILE_SCOPE_OVERLAP_JQ_DEFS is false (confirmed by grep: 0 occurrences before this phase). Classes C/D/E consume orchestrate-batch-admit.sh subprocess verdicts, never the jq defs directly. Added new sourcing instead of reusing an existing splice; see Phase 1's handoff for the original discovery.",
+      "annotation": "*(deviation: altered — added NEW sourcing rather than reusing an existing splice, plus the -euo pipefail-safe if-wrapped idiom and an apostrophe-free comment rewrite)*"
+    },
+    {
+      "task_id": "5",
+      "description": "existing pre-existing test suite must remain green",
+      "type": "altered",
+      "reason": "Adding the new fail-closed lib/file-scope-overlap.sh sourcing broke all 21 pre-existing test-orchestrate-predispatch-review.sh cases, since that suite's synthetic sandbox never copied this library in. Fixed the sandbox setup (require_file + setup_sandbox) as a necessary, unplanned addition to keep the suite green through this phase; Phase 7 still owns adding the new Class F/G fixture cases themselves.",
+      "annotation": "*(deviation: altered — additional necessary fix, not in the original task list; fixed the pre-existing test harness sandbox setup)*"
+    }
+  ]
+}

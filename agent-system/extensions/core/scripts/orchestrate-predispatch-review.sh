@@ -4,7 +4,7 @@
 #
 # Purpose: reads specs/state.json directly — the only place raw, unfiltered dependencies[] is
 # still visible before commands/orchestrate.md's compact STAGE 0 multi-task block discards
-# out-of-batch edges to build its intra-batch-only dependency graph — and reports FIVE classes of
+# out-of-batch edges to build its intra-batch-only dependency graph — and reports SEVEN classes of
 # pre-dispatch defect, by task number and path, BEFORE that discard happens:
 #
 #   Class A (dependency edge classification): every RAW dependencies[] entry on every candidate,
@@ -43,6 +43,21 @@
 #     source) found no hit. Requires the caller to have passed --session-id (see below); without
 #     it, batch-admit's own D6 degradation means this class reports nothing to report, not a
 #     dropped finding.
+#   Class F (missing/empty/null file_scope, NEW): a batch candidate whose file_scope is absent,
+#     a literal `null`, or an explicit empty array `[]` — three separately-labelled sub-states,
+#     scoped to $cands only (never a global specs/state.json scan, which is Check 10's job in
+#     validate-state.sh). The null_value sub-state deliberately overlaps Class B's existing
+#     finding above: Class B reports it as a metadata type defect, Class F as a visibility
+#     defect, and both lines print. CORRECTION: the addendum instructing this class's addition
+#     said to call it "Class C" — that letter is already taken by self-modification/declaration-
+#     coarseness above, so Class F is used instead.
+#   Class G (glob-shaped file_scope entries, NEW): a batch candidate whose file_scope contains a
+#     glob-shaped entry (`*`, `?`, or `[`), via the canonical is_glob_entry predicate in
+#     lib/file-scope-overlap.sh. A glob entry is invisible to the symmetric Overlap predicate
+#     Classes C/D/E consume (via orchestrate-batch-admit.sh) BY DESIGN — see
+#     context/patterns/file-footprint-overlap.md's Non-Goals section — so this finding states
+#     that concrete consequence, never that the shape is invalid; a glob remains fully legitimate
+#     for the separate Containment predicate.
 #
 # This is a REVIEW stage, not a fifth admission gate: it never excludes, never defers, and never
 # writes to state.json on its default (report-only) path. Exclusion/deferral authority for
@@ -133,6 +148,29 @@ source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
+
+# --- Shared file-scope-overlap library --- NEW sourcing as of Class F/G: this script previously
+# never spliced FILE_SCOPE_OVERLAP_JQ_DEFS at all, despite a since-corrected plan/research
+# assumption that it already did (Classes C/D/E re-present orchestrate-batch-admit.sh subprocess
+# verdicts and never touched the jq defs directly). Class G below splices this text into the
+# ab_findings program to reuse the canonical is_glob_entry predicate. Single candidate path
+# (never a source-store fallback): this script is already deploy-root-guard.sh-gated above, so
+# $SCRIPT_DIR is always .claude/scripts here, exactly matching how orchestrate-batch-admit.sh
+# (also deploy-root-guard.sh-gated, also `set -euo pipefail`) sources this same library.
+# `if ! . ...; then` (never a bare `. ...`) is REQUIRED, not stylistic: this script runs under
+# `set -euo pipefail`, and
+# lib/file-scope-overlap.sh's own `read -r -d '' FILE_SCOPE_OVERLAP_JQ_DEFS <<'JQDEFS'` idiom
+# always returns a NON-ZERO exit status at the heredoc's end (no NUL delimiter is ever found) --
+# under -e that would abort this script immediately the instant the library is sourced, unless
+# the sourcing itself sits inside a tested `if` condition, which is -e-exempt. Fail CLOSED (never
+# fall back to an inline copy or skip Class G) if the library is unsourceable.
+if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-predispatch-review.sh: could not source ${SCRIPT_DIR}/lib/file-scope-overlap.sh." >&2
+  echo "  Source-store copy: agent-system/extensions/core/scripts/lib/file-scope-overlap.sh" >&2
+  echo "  Remedy: regenerate via the picker's [Reload All]/[Regenerate] entries, or bash .claude/scripts/deploy-headless.sh." >&2
+  echo "  Failing CLOSED: no fallback overlap check will run; Class G cannot be computed." >&2
+  exit 2
+fi
 
 # --- argument parsing: --repair ahead of positional task_number validation ---
 repair_mode=false
@@ -230,7 +268,7 @@ if ab_findings=$(jq -n -c \
   --argjson candidates "$candidates_json" \
   --slurpfile state_arr "$STATE_FILE" \
   --slurpfile archived_raw "$archived_projects_tmpfile" \
-  '
+  "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
   def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
 
   (($state_arr[0].active_projects // []) + $archived_raw[0]) as $all |
@@ -263,6 +301,40 @@ if ab_findings=$(jq -n -c \
     | (["dependencies", "file_scope", "title", "topic"][]) as $field
     | select(($entry | has($field)) and ($entry[$field] == null))
     | {class: "B", task_number: $c, field: $field, project_name: ($entry.project_name // "")}
+  ),
+  ( # Class F (NEW): missing / literal-null / empty-array file_scope on a BATCH CANDIDATE only
+    # (scoped to $cands, matching Class A and Class B above -- never a global scan across all of
+    # state.json, which remains the job of Check 10 in validate-state.sh). Reports the same
+    # three sub-states as Check 10, distinguishably labelled. The null_value sub-state
+    # deliberately OVERLAPS the existing Class B file_scope finding above: Class B reports it as
+    # a metadata TYPE defect, Class F as a VISIBILITY defect (this class exists precisely because
+    # absence/emptiness is otherwise invisible everywhere) -- both lines print; neither suppresses
+    # the other. NOTE: the addendum that commissioned this class said to add it as literal Class
+    # C -- that letter is already taken by self-modification/declaration-coarseness (see header),
+    # so F is used instead; recorded here as an explicit correction, not an unexplained deviation.
+    $cands[] as $c
+    | ([$all[] | select(.project_number == $c)] | first) as $entry
+    | select($entry != null)
+    | (if (($entry | has("file_scope")) | not) then "missing_key"
+       elif ($entry.file_scope == null) then "null_value"
+       elif ($entry.file_scope == []) then "empty_array"
+       else empty end) as $sub_state
+    | {class: "F", task_number: $c, sub_state: $sub_state, project_name: ($entry.project_name // "")}
+  ),
+  ( # Class G (NEW): glob-shaped file_scope entry on a BATCH CANDIDATE, via the canonical
+    # is_glob_entry predicate spliced from FILE_SCOPE_OVERLAP_JQ_DEFS above (never a locally
+    # re-derived regex -- same character class as the path_covered_by_scope and
+    # orchestrate-cycle-plan.sh _sibling_territory_classify_entry bash transcriptions). A glob
+    # entry is invisible to the symmetric Overlap predicate the Classes C/D/E in this script
+    # consume (via orchestrate-batch-admit.sh) BY DESIGN -- see the Non-Goals section of
+    # file-footprint-overlap.md -- so this finding states that concrete consequence, never that
+    # the shape is invalid.
+    $cands[] as $c
+    | ([$all[] | select(.project_number == $c)] | first) as $entry
+    | select($entry != null)
+    | (($entry.file_scope // [])[]) as $fsentry
+    | select($fsentry | is_glob_entry)
+    | {class: "G", task_number: $c, entry: $fsentry}
   )
   ' 2>&1); then
   jq_exit=0
@@ -270,13 +342,21 @@ else
   jq_exit=$?
 fi
 if [ "$jq_exit" -ne 0 ]; then
-  echo "ERROR: orchestrate-predispatch-review.sh: failed to evaluate Class A/B findings against $STATE_FILE (jq exit $jq_exit): $ab_findings" >&2
+  echo "ERROR: orchestrate-predispatch-review.sh: failed to evaluate Class A/B/F/G findings against $STATE_FILE (jq exit $jq_exit): $ab_findings" >&2
   exit 2
 fi
 
 # ===========================================================================
 # --repair mode: Class B array-field normalization only. Never prints the
-# four-class report below — a focused, direct-invocation-only operation.
+# seven-class report below — a focused, direct-invocation-only operation.
+#
+# Classes F and G are REPORT-ONLY BY DESIGN and are deliberately never reachable from here (D4):
+# --repair matches only a literal `null` value (`.dependencies == null or .file_scope == null`,
+# below), which an ABSENT key does not satisfy in jq, and this script gains no new field-list
+# entry or `// null`-style widening for Class F/G. Normalizing an absent key to `[]` would
+# manufacture an empty declaration that then looks deliberate -- worse than the absence it
+# replaces. A glob-shaped entry (Class G) is likewise never touched: it is a legitimate
+# Containment-predicate value, not a defect to fix.
 # ===========================================================================
 if [ "$repair_mode" = true ]; then
   any_write=false
@@ -646,6 +726,39 @@ else
   else
     printf '%s\n' "$class_e_lines"
   fi
+fi
+echo ""
+
+# Class F derives its findings directly from state.json fields with no defer/admit filter of any
+# kind (same shape as Class B), so, like Class B, its negative needs no "0 findings" vs. "0
+# matched" distinction the way Classes C/D did.
+echo "-- Class F: Missing / literal-null / empty-array file_scope on a batch candidate --"
+class_f_lines=""
+if [ -n "$ab_findings" ]; then
+  class_f_lines=$(printf '%s\n' "$ab_findings" | jq -r '
+    select(.class == "F")
+    | "#\(.task_number) (\(.project_name)): file_scope is \(.sub_state)"
+  ' 2>/dev/null) || true
+fi
+if [ -z "$class_f_lines" ]; then
+  echo "0 findings (every candidate declares a file_scope that is neither missing, literal null, nor an empty array)."
+else
+  printf '%s\n' "$class_f_lines"
+fi
+echo ""
+
+echo "-- Class G: Glob-shaped file_scope entries (invisible to overlap-based collision detection) --"
+class_g_lines=""
+if [ -n "$ab_findings" ]; then
+  class_g_lines=$(printf '%s\n' "$ab_findings" | jq -r '
+    select(.class == "G")
+    | "#\(.task_number): entry \(.entry) is invisible to overlap-based collision detection (Classes C/D/E above, and Check 8 in validate-state.sh); declare a directory or file entry instead if collision detection must see it"
+  ' 2>/dev/null) || true
+fi
+if [ -z "$class_g_lines" ]; then
+  echo "0 findings (no candidate declares a glob-shaped file_scope entry)."
+else
+  printf '%s\n' "$class_g_lines"
 fi
 
 exit 0

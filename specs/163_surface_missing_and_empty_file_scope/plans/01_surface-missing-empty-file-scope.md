@@ -401,37 +401,63 @@ Confirm with the grep above at implementation time and re-check any additional h
 
 ---
 
-### Phase 5: `orchestrate-predispatch-review.sh` Classes F and G [NOT STARTED]
+### Phase 5: `orchestrate-predispatch-review.sh` Classes F and G [COMPLETED]
 
 **Goal**: The pre-dispatch report surfaces a batch candidate's absent/null/empty `file_scope`
 (Class F) and any glob-shaped entry (Class G), in the established class-section shape, with no
 reach into `--repair`.
 
 **Tasks**:
-- [ ] Re-read the script's Class A/B jq block and the Class C/D/E report-rendering sections
-      immediately before editing.
-- [ ] Add a Class F generator alongside Class B in the same `ab_findings` jq program, scoped to
+- [x] Re-read the script's Class A/B jq block and the Class C/D/E report-rendering sections
+      immediately before editing. *(completed)*
+- [x] Add a Class F generator alongside Class B in the same `ab_findings` jq program, scoped to
       `$cands` (batch candidates only, matching Classes A/B — never a global scan, which remains
       `validate-state.sh`'s job). Emit a `sub_state` field of `missing_key` / `null_value` /
       `empty_array` so the three states stay distinguishable (**D2**). Note that the `null_value`
       sub-state deliberately overlaps Class B's existing `file_scope` finding: Class B reports it
       as a type defect, Class F as a visibility defect, and both lines are printed rather than one
-      suppressing the other.
-- [ ] Add a Class G generator in the same block using `is_glob_entry` from Phase 1, splicing
+      suppressing the other. *(completed)*
+- [x] Add a Class G generator in the same block using `is_glob_entry` from Phase 1, splicing
       `FILE_SCOPE_OVERLAP_JQ_DEFS` (the script already splices it for Classes C/D/E — reuse that
-      splice rather than adding a second).
-- [ ] Add two report sections after Class E, matching the existing convention exactly: a
+      splice rather than adding a second). *(deviation: altered — CORRECTION TO PLAN PREMISE,
+      already flagged in Phase 1's handoff: the script did NOT already splice
+      `FILE_SCOPE_OVERLAP_JQ_DEFS` anywhere; Classes C/D/E consume `orchestrate-batch-admit.sh`
+      subprocess verdicts, never the jq defs directly. Added a NEW deploy-tree-only sourcing
+      block for `lib/file-scope-overlap.sh`, matching `orchestrate-batch-admit.sh`'s own
+      `if ! . "${SCRIPT_DIR}/lib/file-scope-overlap.sh" 2>/dev/null; then` idiom (required, not a
+      bare `. ...`: this script runs `set -euo pipefail`, and the library's own
+      `read -r -d '' ... <<'JQDEFS'` idiom always returns non-zero at heredoc EOF, which would
+      abort the script under `-e` outside a tested `if`). Also discovered and fixed a second
+      necessary consequence: the two literal apostrophes in an early draft of the Class F/G
+      jq-block comments prematurely terminated the bash single-quoted jq program string,
+      producing a bash syntax error -- rewrote both comments apostrophe-free.)*
+- [x] Add two report sections after Class E, matching the existing convention exactly: a
       `echo "-- Class F: ..."` header printed unconditionally, a populated finding list or an
       explicit accurate negative line, never a silently omitted section. Class G likewise. Follow
       Class E's precedent of stating precisely what the negative does and does not cover.
-- [ ] Class G's message follows **D6**'s wording.
-- [ ] Leave the `--repair` branch completely untouched: do not add `file_scope`-absence to its
+      *(completed)*
+- [x] Class G's message follows **D6**'s wording. *(completed)*
+- [x] Leave the `--repair` branch completely untouched: do not add `file_scope`-absence to its
       field list, and do not widen its `== null` predicate (**D4**). Add a comment at the
       `--repair` block stating that Classes F and G are report-only by design and why
       (normalizing an absent key to `[]` manufactures a declaration that then looks deliberate).
-- [ ] Update the header's class roster: "reports FIVE classes" becomes seven, with Class F and
+      *(completed: verified via a manual regression -- --repair on a candidate lacking the
+      file_scope key writes nothing and the key remains absent afterward)*
+- [x] Update the header's class roster: "reports FIVE classes" becomes seven, with Class F and
       Class G paragraphs; record **D3** (the addendum said "Class C"; that letter is taken by
-      self-modification/coarseness, so F and G are used) in the Class F paragraph.
+      self-modification/coarseness, so F and G are used) in the Class F paragraph. *(completed;
+      also fixed two other pre-existing stale references to the old class count found nearby:
+      "four-class report" in the --repair comment and the error message on jq evaluation failure,
+      both updated to name Classes A/B/F/G or "seven-class" as appropriate)*
+- [x] *(deviation: altered — additional necessary fix, not in the original task list)* The
+      pre-existing test harness (`scripts/tests/test-orchestrate-predispatch-review.sh`) copies a
+      fixed set of collaborator scripts into its synthetic sandbox and does NOT include
+      `lib/file-scope-overlap.sh`. Once the new fail-closed sourcing was added, all 21 pre-existing
+      test cases broke (SUT exits 2, library unsourceable). Added `lib/file-scope-overlap.sh` to
+      both the `require_file` preflight list and the `setup_sandbox` copy list. Verified: all 21
+      pre-existing cases pass again. This is the minimal fix needed to keep the existing suite
+      green through Phase 5; Phase 7 still owns adding the new Class F/G fixture *cases*
+      themselves.
 
 **Timing**: 1.25 hours
 
