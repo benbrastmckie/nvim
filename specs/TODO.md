@@ -1,5 +1,5 @@
 ---
-next_project_number: 271
+next_project_number: 275
 ---
 
 # TODO
@@ -12,8 +12,9 @@ next_project_number: 271
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,39,44,51,89,127,136,165,184,217,223,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,270 | 22,44,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 170 | 51,250,251 | core-agent-system |
+| 2 | 29,185,250,251,270,271,272 | 22,44,51,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle |
+| 3 | 170,273 | 51,184,250,251,271 | core-agent-system |
+| 4 | 274 | 165,272,273 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,18 +25,24 @@ next_project_number: 271
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 51 [NOT STARTED] — Move session runtime files out of the specs root and make the...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+  └─ 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion computed by invoking the...
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
+  └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion computed by invoking the... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
+  └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel... (see above)
 
 ### Extensions
 
@@ -62,6 +69,291 @@ next_project_number: 271
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 274. Next-admissible-batch suggestion computed by invoking the real admission script
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 272, Task 273, Task 165
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. The orchestration concludes by suggesting the next most natural batch of tasks to run after
+clearing context, computed from the dependency DAG PLUS file_scope disjointness -- i.e. a batch that
+scripts/orchestrate-batch-admit.sh would ACTUALLY ADMIT together, so the user can open a fresh
+session and run it directly.
+
+BINDING CONSTRAINT ON HOW THE SUGGESTION IS COMPUTED. The predicate must be established by ACTUALLY
+INVOKING scripts/orchestrate-batch-admit.sh over candidate sets and reading its v5 verdicts --
+never by re-implementing, approximating, or duplicating its logic. A second copy of the admission
+predicate would drift from the real one, and a suggestion the real script then refuses is worse
+than no suggestion at all. Respect the existing verdict schema and its consumers
+(scripts/orchestrate-predispatch-review.sh is one) rather than extending the schema.
+
+DEPENDENCY NOTES.
+- Edge on task 272 (hard, substantive): the suggestion is only trustworthy if the session
+  registry's file_scope is LIVE rather than frozen at register time, and if a live-but-stale lock
+  is visible as held. Computing a "safe next batch" against a stale registry snapshot produces
+  confidently wrong suggestions -- worse than offering none.
+- Edge on task 273 (hard): this suggestion is rendered by 273's conclusion stage, and both tasks
+  edit skills/skill-orchestrate/SKILL.md, so the edge is footprint-corroborated as well as logical.
+- Edge on task 165 (hard, substantive): 165 rules on whether an ABSENT file_scope is
+  admission-relevant. That ruling directly changes which batches this task would suggest -- today a
+  task with no declared scope is indistinguishable from one that provably collides with nothing, so
+  a suggester built before the ruling would confidently propose batches the post-ruling script
+  refuses. 165 also owns orchestrate-batch-admit.sh, this task's primary input. Per the standing
+  convention, DROP THE EDGE rather than hold this task if 165 stalls -- but if it is dropped, record
+  which absent-file_scope posture the suggester assumed.
+
+ACCEPTANCE. A suggested batch is verified by running the real admission script over it and showing
+every member admitted; a fixture where two candidates collide on file_scope demonstrably does NOT
+appear as a joint suggestion; no copy of the admission predicate exists anywhere in the new code;
+shellcheck clean per context/standards/shell-strict-mode.md. No task-number references in
+deliverables outside specs/**.
+
+---
+
+### 273. Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 271, Task 184
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. Every orchestration concludes by proposing three channels of follow-on work, each fired ONLY
+on that channel's own separate explicit user approval:
+  (a) DIRECT FIXES to make now, executed by a final cleanup agent;
+  (b) AGENT-SYSTEM CHANGES, routed to meta-builder-agent;
+  (c) FOLLOW-UP TASKS to create, routed to a task agent, recorded as CHILDREN of the originating
+      task via the `parent_task` edge.
+No channel may fire on another channel's approval, and none may fire without one.
+
+ANTI-BYPASS CONSTRAINT ON CHANNEL (b) -- NOT RELAXED BY THIS FEATURE. meta-builder-agent must keep
+CREATING TASKS rather than editing .claude/ or the source store directly. The constraint in
+commands/meta.md and skills/skill-meta/SKILL.md stands unchanged: the conclusion stage may hand it
+a change request, but it still produces tasks in specs/, never implementation.
+
+THIS MUST BE A DISTINCT POST-POSTFLIGHT STAGE WITH ITS OWN BOUNDARY CONTRACT -- NOT SMUGGLED INTO
+POSTFLIGHT. context/standards/postflight-tool-restrictions.md today prohibits Edit on *.md outside
+specs/ and on .claude/** non-specs, and confines postflight Bash to state-write.sh, git add/commit,
+and two `rm -f` marker deletions; AskUserQuestion is likewise outside that contract.
+skills/skill-orchestrate/SKILL.md:287 carries a `## MUST NOT (Postflight Boundary)` section.
+Channels (a) and (b) would violate both if folded into postflight. The new stage therefore needs
+its own explicitly written allowed/prohibited table in that standard, stating that it runs AFTER
+postflight has closed state and committed.
+
+=== OPEN QUESTION FOR THE RESEARCH PHASE: RECONCILE WITH TASK 184'S RULING ===
+THIS MUST BE SETTLED WITH A WRITTEN VERDICT BEFORE PLANNING. The contradiction may NOT be left
+standing in both task descriptions.
+
+Task 184's ruling of 2026-09-22 states verbatim:
+    "do NOT auto-create tasks: the report is the handoff and the user files them with /task"
+Channel (c) as requested REVERSES that operative clause. Both candidate resolutions are live:
+
+  RESOLUTION A -- NARROW OVERTURN. The ruling's implicit premise was that auto-creation is
+  UNAPPROVED creation. Per-channel explicit approval removes that premise: user-approved creation
+  is not auto-creation. On this reading 184 was right for a report-only postflight (where
+  AskUserQuestion is outside the boundary contract anyway) and wrong for an interactively-gated
+  post-postflight stage. 184's scope would be rewritten to match rather than left contradictory.
+
+  RESOLUTION B -- SCOPE-LIMITED COEXISTENCE. Task 184 governs one specific payload (skeleton-plan
+  sorry_inventory[].follow_up_task entries surfaced from orchestrate-cycle-postflight.sh, reported
+  plus recorded in an append-only state.json field), while this task governs conclusion-stage
+  follow-ups generally. The two stay distinct. Cost: two adjacent mechanisms produce follow-ups by
+  two different routes, and someone reconciles them later regardless.
+
+PRIOR ANALYSIS, RECORDED AS A RECOMMENDATION AND NOT AS THE DECISION: the /meta prompt-mode
+analysis that filed this task recommended Resolution A ("overturns, narrowly"), on the grounds
+stated above, and judged that the reversal should be named plainly as a reversal rather than
+presented as an extension. The research phase is not bound by that recommendation and must reach
+its own verdict.
+
+DEPENDENCY NOTE. The edge on task 184 is a HARD dependency: shared footprint on
+scripts/orchestrate-cycle-postflight.sh and context/standards/status-markers.md, plus the
+substantive ruling conflict above. Its own dependency chain was verified CLEAR at filing time --
+242, 243, 258 and 259 are all in specs/archive/ (directories
+242_orchestrate_partial_with_blocker_stops_redispatch,
+243_reconcile_research_handoff_writer_contract,
+258_fix_postflight_recovery_decline_attribution,
+259_allow_completion_on_a_gate_skipped_plan_branch), each carrying an implementation summary rather
+than an abandonment note, and 266 is completed -- so nothing unresolved is inherited. Per the
+standing convention, DROP THE EDGE rather than hold this task if 184 stalls.
+
+The edge on task 271 is also hard and is NOT droppable: channel (c) creates tasks AS CHILDREN, which
+is structurally impossible before the `parent_task` edge is declared, validated and rendered.
+Without 271 this stage would write a field nothing reads.
+
+ACCEPTANCE. A written verdict on the 184 reconciliation before planning begins, with the losing
+resolution's rationale recorded. The stage's own allowed/prohibited table lands in
+postflight-tool-restrictions.md to the same standard as the existing postflight table. Each of the
+three channels demonstrably cannot fire without its own approval, covered by a test. The
+meta-builder-agent anti-bypass constraint is shown still to hold for channel (b). Documented in
+docs/architecture/orchestrate-state-machine.md. Shellcheck clean per
+context/standards/shell-strict-mode.md. No task-number references in deliverables outside specs/**.
+
+---
+
+### 272. Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, and give each orchestration its own identity
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 51
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. Let different batches of tasks be orchestrated CONCURRENTLY in different sessions of the same
+repo when there is no file_scope collision and no dependency edge between them, with each
+orchestration keeping distinct metadata rather than sharing one in-flight record.
+
+THE DECISION LAYER IS ALREADY SOUND -- DO NOT REWORK IT. Measured live in ~/Projects/BimodalLogic:
+scripts/orchestrate-batch-admit.sh returned a correct v5 verdict for a real candidate,
+  {"decision":"defer","defer_reason":"file_scope_collision", plus colliding_task_number,
+   colliding_task_status, overlapping_path, "collision_scope":"cross_batch",
+   "corroborated_by":["non_terminal_status","session_registry"]}
+alongside an `idle_overlap_advisory` for an idle overlapping task. The gap is the layer BENEATH
+this verdict. MUST NOT modify scripts/orchestrate-batch-admit.sh -- that surface belongs to
+task 165, which is already scoped to it.
+
+=== PIECE 1 (SCOPE-DETERMINING, DO THIS FIRST): IS THE HEARTBEAT SILENCE A ROUTING REGRESSION OR A DESIGN GAP? ===
+
+THE MECHANISM ALREADY EXISTS AND IS WIRED. DO NOT BUILD A SECOND ONE. The per-task heartbeat is
+called at scripts/update-phase-status.sh:223:
+    hb_out=$(bash "$tl_path" heartbeat "$task_number" "$hb_sid" 2>&1) || hb_rc=$?
+seventeen lines above the `session-heartbeat` call at line 240, in the same function, with its own
+`_hb_trace "heartbeat" "$hb_verdict"` verdict line and its own no-op classifier (`no-lock`,
+`session-mismatch`, `unknown`). It is invisible to a naive grep only because the script path is
+held in the variable "$tl_path". An implementer who believes the mechanism is missing will build a
+redundant second one alongside it.
+
+MEASURED EVIDENCE (the function writes ${repo_root}/.agent-logs/heartbeat-trace.log):
+  ~/Projects/BimodalLogic: 580 trace lines, 580 of them `heartbeat ok`, covering 26 task numbers
+      -- ALL from EARLIER sessions.
+  ~/.config/nvim:          2740 trace lines, 2723 `ok`, 15 `noop:no-entry`, 2 `noop:no-holder`.
+  BUT: ZERO trace lines for EITHER in-flight task of the currently-running BimodalLogic session --
+      neither the modal-substrate task (lock acquired 2026-09-29T14:57:11Z) nor the Typst
+      lean-code-environment task in that same session produced a single line, despite eleven
+      phase-completion commits having landed for the former.
+  AND: its .lock/holder.json shows acquired_at == heartbeat_at == 2026-09-29T14:57:11Z exactly, so
+      `never_heartbeated=true` is literal, not approximate.
+  AND: the `noop:session-mismatch` verdict exists in the classifier but appears ZERO times in
+      either repo's log -- so the no-op paths are NOT absorbing these calls. The function is not
+      being ENTERED at all.
+
+WHY THIS ORDERING MATTERS. The silence is SESSION- or DISPATCH-PATH-scoped, not task-scoped: two
+in-flight tasks in one session both traced zero while every earlier session traced cleanly. Cadence
+therefore cannot explain it for either task. A routing regression in the currently-running
+orchestrate loop is a SMALL fix; a design gap is not. ESTABLISH WHICH BEFORE SCOPING THE REST OF
+THIS PIECE. Secondary and genuinely real regardless of that answer: the heartbeat is reachable only
+via a phase-status change, so a task sitting in one long phase emits nothing between transitions --
+close that with a time-based or dispatch-boundary trigger. Also consider consuming the `_hb_trace`
+verdicts, which are written today and read by nothing.
+
+=== PIECE 2: A THIRD LOCK STATE FOR STALE-HEARTBEAT-BUT-PID-ALIVE ===
+Observed live: `task-lock.sh check <N>` reported `held-stale session=... heartbeat_age_min=33
+threshold_min=30 never_heartbeated=true` while `session-list` reported that SAME session
+`live:true, liveness_reason:"pid-alive"` (pid 1015099). cmd_acquire's held-lock overlap pass
+degrades to WARN-and-proceed on a stale lock, so a lock belonging to a demonstrably LIVE session
+became advisory purely because its heartbeat drifted. Decide whether stale-but-pid-alive should be
+a THIRD state distinct from both `held` and `held-stale`, and implement the ruling.
+
+CRITICAL CONSTRAINT -- KEY ON session_id, NEVER ON pid. Task 165's absorbed text records that both
+sessions in its incident reported the SAME pid with pid_source `ancestor-claude`, because two
+/orchestrate runs inside one Claude Code process share an ancestor. The failing task's own
+holder.json likewise shows pid_source `ancestor-claude`. A self-exclusion keyed on pid would treat
+a foreign session as self and silently disable cross-session detection for the most common case.
+
+=== PIECE 3: RE-DERIVE THE REGISTRY'S file_scope ON HEARTBEAT ===
+scripts/command-gate-in.sh:106 registers the session with a task-number CSV, and the union
+file_scope is computed AT REGISTER TIME ONLY; `session-heartbeat` refreshes heartbeat_at and
+nothing else. So widening a task's file_scope after registration leaves the registry snapshot
+permanently narrow. Observed live: the registered scope lacked
+FormalSystem/Metalogic/Decidability/PlusWitnessFamily/Incompleteness.lean, which that task's
+state.json file_scope does declare. Decide whether the registry should re-derive on heartbeat and
+implement it.
+
+=== PIECE 4: PER-ORCHESTRATION IDENTITY ===
+Introduce an orchestration-id DISTINCT from session_id, so two batches in two sessions of one repo
+keep separate metadata/artifacts/return-meta rather than a single shared in-flight record.
+
+DEPENDENCY NOTE. The edge on task 51 is substantive, not merely footprint serialization: 51
+relocates the per-session orchestration runtime files (specs/.orchestrator-multi-state-*.json,
+specs/.return-meta-multi-*.json) that Piece 4's per-orchestration metadata extends, and it owns the
+same two files this task edits (scripts/task-lock.sh,
+context/standards/orchestrator-runtime-files.md). Building Piece 4 before 51 lands risks creating
+exactly the fourth orphaned naming generation that 51's own text warns against.
+
+ACCEPTANCE. Piece 1's routing-regression-versus-design-gap question answered in writing before any
+fix lands, with the answer visible in the trace log or an equivalent probe. A fixture test
+reproduces the two-live-sessions overlap case and the stale-but-pid-alive case, and fails against
+the current scripts. No change to orchestrate-batch-admit.sh. Existing consumers of task-lock.sh's
+output lines (which read them as prefixes/substrings) keep working. Shellcheck clean per
+context/standards/shell-strict-mode.md. No task-number references in deliverables outside specs/**.
+
+---
+
+### 271. Finish the parent_task edge: declare it in the schema, validate it, render it in TODO, and make it survive renumbering
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 269
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact regenerated by the loader -- see rules/source-store-deploy-boundary.md).
+
+GOAL. Finish the `parent_task` edge so that follow-up and spawned tasks can be recorded as CHILDREN of their originating task, as a parent/child relation DISTINCT from the existing `dependencies[]` array.
+
+THIS IS NOT GREENFIELD -- IT IS A HALF-BUILT FIELD WITH TWO PRODUCERS AND ZERO CONSUMERS. Verified in the source store:
+  PRODUCERS (already write it):
+    - skills/skill-spawn/SKILL.md:380  ("parent_task": $parent)
+    - commands/task.md:833             (/task --review follow-up creation)
+    plus declared intent in commands/spawn.md:117, agents/spawn-agent.md:176,195
+      (as `parent_task_number`), context/orchestration/delegation.md:657,673
+  CONSUMERS (all absent -- measured, 0 occurrences each):
+    - context/schemas/state-schema.json          0  (field is written but UNDECLARED)
+    - scripts/validate-state.sh                  0  (no orphan/cycle checking)
+    - scripts/generate-todo.sh                   0  (invisible in TODO.md)
+    - context/reference/state-management-schema.md 0 (undocumented)
+  NOT A CONSUMER DESPITE APPEARANCES: scripts/generate-task-order.sh has 10 "parent" hits, but
+  they are union-find / graph-parent identifiers (lines 459, 464-468, 479, 486) plus two display
+  strings ("indented = depends on parent", lines 513 and 881). None reads `parent_task`.
+
+NO MIGRATION BURDEN. Live count of entries carrying `parent_task` in this repo: 0, across both
+`active_projects` and `completed_projects`. There is no legacy population to backfill, which makes
+this a clean moment to declare the field properly rather than after it has accumulated data.
+
+WORK ITEMS.
+(1) Declare `parent_task` in context/schemas/state-schema.json and document it in
+    context/reference/state-management-schema.md, stating explicitly that it is NOT a dependency
+    edge: a parent may complete before its children, and parentage must never affect dispatch
+    eligibility or the Kahn-algorithm dependency waves.
+(2) Add orphaned-parent and cyclic-parentage checks to scripts/validate-state.sh. Follow the
+    ADVISORY-FIRST precedent recorded at plan-format.md:259-266 (the Verification Tier rollout):
+    a missing or dangling value emits a warning rather than an error, `--strict` enforces, and the
+    PROMOTION CRITERION is written down at the same time as the check.
+(3) Decide what scripts/generate-task-order.sh and scripts/generate-todo.sh render for parentage.
+    CONSTRAINT: generate-task-order.sh's existing indentation already means "depends on parent" in
+    the DEPENDENCY sense (its own display strings say so). Parentage rendering must not collide
+    with or be mistaken for that. Consider whether parentage belongs in the Task Order tree at all
+    versus the per-task TODO.md entry.
+(4) Settle renumber survival. scripts/deprecated/vault-operation.sh step 5 renumbers active tasks
+    by subtracting 1000 and rewrites `dependencies`, but nothing anywhere handles `parent_task`, so
+    a renumber would silently dangle every parentage edge. PRIOR QUESTION TO ANSWER FIRST: that
+    script lives under scripts/deprecated/, so establish whether renumbering is a live path at all
+    before writing code for it. If it is dead, say so and record that parentage stability rests on
+    numbers never being rewritten; if it is live, fix it.
+
+DEPENDENCY NOTE. The edge on task 269 is a FOOTPRINT-SERIALIZATION edge only, on
+scripts/validate-state.sh, not a substantive dependency: 269 is a one-line null-safety fix
+(presence test -> type test) in that same file. Per the standing convention, DROP THE EDGE rather
+than hold this task if 269 stalls.
+
+ACCEPTANCE. The field is declared in the schema and documented; validate-state.sh detects an
+orphaned parent and a parentage cycle, advisory-first with a written promotion criterion; the TODO
+rendering decision is recorded with its rationale (including a decision NOT to render, if that is
+the ruling); the renumber question is answered either way in writing; shellcheck clean per
+context/standards/shell-strict-mode.md. No task-number references in deliverables outside specs/**.
+
+---
 
 ### 270. Re-runnable null-safety audit of jq mutation sites across core scripts, then decide whether a shared guard idiom belongs in scripts/lib/
 - **Status**: [NOT STARTED]
