@@ -334,36 +334,36 @@ independently in Phase 4.
 
 ---
 
-### Phase 4: Acceptance Sweep, No-Change Dispositions, and Decision Record [NOT STARTED]
+### Phase 4: Acceptance Sweep, No-Change Dispositions, and Decision Record [COMPLETED]
 
 **Goal**: AC1-AC7 are each demonstrably satisfied across the four edited/reviewed files, the two
 no-change files are recorded as reviewed rather than overlooked, and the deferral decision plus its
 re-admission trigger are written into the summary.
 
 **Tasks**:
-- [ ] AC6 no-duplication sweep across all three pointer sites: each must reference the rule's
+- [x] AC6 no-duplication sweep across all three pointer sites: each must reference the rule's
       section by path/title, and none may carry the detection command or the isolated-build
-      invocation.
-- [ ] AC1-AC5 presence sweep: confirm each criterion's literal command or classification language
-      appears in `rules/latex.md`, and confirm it appears there and nowhere else.
-- [ ] AC7: record the empirical finding in the summary (auto-load fires on Read/Edit/Write only,
+      invocation. *(completed)*
+- [x] AC1-AC5 presence sweep: confirm each criterion's literal command or classification language
+      appears in `rules/latex.md`, and confirm it appears there and nowhere else. *(completed)*
+- [x] AC7: record the empirical finding in the summary (auto-load fires on Read/Edit/Write only,
       never on Bash; the `EXTENSION.md` pointer is therefore load-bearing). Do not re-run the test
-      -- it is already resolved in the research report with its exact test sequence.
-- [ ] Record `agent-system/extensions/latex/agents/latex-research-agent.md` as reviewed, no change
-      required -- verify with a zero-match grep for build commands.
-- [ ] Record `agent-system/extensions/latex/manifest.json` as reviewed, no change required --
+      -- it is already resolved in the research report with its exact test sequence. *(completed)*
+- [x] Record `agent-system/extensions/latex/agents/latex-research-agent.md` as reviewed, no change
+      required -- verify with a zero-match grep for build commands. *(completed: 0 matches)*
+- [x] Record `agent-system/extensions/latex/manifest.json` as reviewed, no change required --
       verify it is untouched in `git diff`, so its `file_scope` membership does not read as an
-      oversight.
-- [ ] Assert no `.claude/**` file was modified by this task.
-- [ ] Run the repo-wide task-reference lint; no task numbers may appear in any edited file (all
-      four are outside `specs/**`).
-- [ ] Write the summary recording: Decision 1 (glob breadth trade-off), Decision 2 (why no
+      oversight. *(completed: absent from git diff --name-only)*
+- [x] Assert no `.claude/**` file was modified by this task. *(completed)*
+- [x] Run the repo-wide task-reference lint; no task numbers may appear in any edited file (all
+      four are outside `specs/**`). *(completed: PASS, 0 occurrences)*
+- [x] Write the summary recording: Decision 1 (glob breadth trade-off), Decision 2 (why no
       redeploy verification), Decision 3 (mechanism phases deferred + the concrete re-admission
       trigger + the settings-fragment PreToolUse hook as documented escalation of last resort),
       Decision 4 (one pointer plus one repair), and the out-of-scope follow-up suggestion that the
       PossibleWorlds paper repo's own `CLAUDE.md` "Build Workflow: Preventing Aux File Corruption"
-      section warrants a pointer -- user-owned, not edited from this task.
-- [ ] Commit the summary.
+      section warrants a pointer -- user-owned, not edited from this task. *(completed)*
+- [x] Commit the summary. *(completed)*
 
 **Timing**: 30 minutes
 
@@ -398,22 +398,22 @@ artifacts.
 
 ## Testing & Validation
 
-- [ ] The widened `paths:` value parses to exactly 4 globs through the deployer's own
-      `normalize_paths_field` branch (`jq -r '.[]'` on the bracketed raw value).
-- [ ] `## Continuous Build Safety` precedes both `## Validation Checklist` and `## Build Commands`
-      in `rules/latex.md`.
-- [ ] AC1-AC5 each traceable to literal text in `rules/latex.md` (not a paraphrase).
-- [ ] The two previously unconditional blocks in `rules/latex.md` are gated; the string
-      `Builds successfully with` is gone.
-- [ ] `EXTENSION.md` still has exactly one `^## ` heading (`## LaTeX Extension`), preserving the
-      `section_id: extension_latex` merge contract.
-- [ ] AC6: the detection command and the isolated-build invocation appear in `rules/latex.md` only.
-- [ ] `latex-implementation-agent.md` carries exactly one new pointer and a gated `MUST DO` item 4.
-- [ ] `latex-research-agent.md`: zero build-command matches, recorded as no-change.
-- [ ] `manifest.json`: absent from `git diff --name-only`, recorded as no-change.
-- [ ] No file under `.claude/**` modified.
-- [ ] No task-number reference in any of the four edited files.
-- [ ] AC7's finding and the Decision 3 re-admission trigger are both recorded in the summary.
+- [x] The widened `paths:` value parses to exactly 4 globs through the deployer's own
+      `normalize_paths_field` branch (`jq -r '.[]'` on the bracketed raw value). *(completed)*
+- [x] `## Continuous Build Safety` precedes both `## Validation Checklist` and `## Build Commands`
+      in `rules/latex.md`. *(completed)*
+- [x] AC1-AC5 each traceable to literal text in `rules/latex.md` (not a paraphrase). *(completed)*
+- [x] The two previously unconditional blocks in `rules/latex.md` are gated; the string
+      `Builds successfully with` is gone. *(completed)*
+- [x] `EXTENSION.md` still has exactly one `^## ` heading (`## LaTeX Extension`), preserving the
+      `section_id: extension_latex` merge contract. *(completed)*
+- [x] AC6: the detection command and the isolated-build invocation appear in `rules/latex.md` only. *(completed)*
+- [x] `latex-implementation-agent.md` carries exactly one new pointer and a gated `MUST DO` item 4. *(completed)*
+- [x] `latex-research-agent.md`: zero build-command matches, recorded as no-change. *(completed)*
+- [x] `manifest.json`: absent from `git diff --name-only`, recorded as no-change. *(completed)*
+- [x] No file under `.claude/**` modified. *(completed)*
+- [x] No task-number reference in any of the four edited files. *(completed)*
+- [x] AC7's finding and the Decision 3 re-admission trigger are both recorded in the summary. *(completed)*
 
 ## Artifacts & Outputs
 
