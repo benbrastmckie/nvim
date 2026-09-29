@@ -433,22 +433,22 @@ working probes rather than re-derived, with the `#print axioms` trap stated up f
 
 ---
 
-### Phase 7: Redeploy `.claude/` and close the round [NOT STARTED]
+### Phase 7: Redeploy `.claude/` and close the round [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The source-store changes reach the deploy tree, and the full gate set passes.
 
 **Tasks**:
-- [ ] Run the lean extension's full test set from the source store:
+- [x] Run the lean extension's full test set from the source store:
       `bash agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh` plus the
-      sibling lean tests, and the repo's shell-test runner if it covers them.
-- [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh` (resolving the invocation from
-      `.claude-extensions.json`'s `source_dir`), then `bash .claude/scripts/verify-deploy.sh`.
-- [ ] Confirm `.claude/scripts/lean-comparator-landrun-shim.sh` exists and is executable
-      post-deploy, and that `.claude/context/project/lean4/patterns/dependency-tracing.md` landed.
-- [ ] Re-run the deployed test suite from `.claude/scripts/tests/` to confirm the deployed copy
-      passes as the source copy did.
-- [ ] Verify no file under `.claude/**` was hand-edited during this task (`git status` shows only
-      deploy-generated changes there, and `.claude/` is gitignored).
+      sibling lean tests, and the repo's shell-test runner if it covers them. *(completed: test-lean-comparator-run.sh 28 passed/0 failed/1 skip; test-lean-challenge-snapshot.sh 14/0/0; test-lean-mcp-preflight-check.sh 17/0; test-lean-mcp-registration.sh 7/0; test-lean-src-roots.sh 10/0; test-lean-sorry-census.sh via the sibling-regression check. The repo-wide shell-test runner (tests/run-all.sh) was not run in full -- deploy-headless.sh's own verify-deploy.sh call defaults to --skip-slow for this exact runner, and this task follows that same convention rather than paying its full cost.)* *(deviation: altered — repo-wide tests/run-all.sh deferred, matching verify-deploy.sh's own default --skip-slow convention)*
+- [x] Redeploy: `bash .claude/scripts/deploy-headless.sh` (resolving the invocation from
+      `.claude-extensions.json`'s `source_dir`), then `bash .claude/scripts/verify-deploy.sh`. *(completed: the `lean` extension had never been loaded on this host's .claude-extensions.json before this task -- loading it (`manager.load('lean', ...)`, additive, no other extension touched) was a necessary prerequisite for this task's own files to ever reach the deploy tree. Two pre-existing lean-extension gaps surfaced only by this first-ever deploy were fixed as trivial, safe corrections: a missing index-entries.json entry for the pre-existing operations/long-builds.md, and a missing trailing newline on the pre-existing fixtures/comparator/fake-landrun.sh test fixture. verify-deploy.sh now reports 3 of 33 checks failed -- see this phase's Reasoned Exclusions below for why each of the three is pre-existing and out of this task's scope.)* *(deviation: altered — two trivial, pre-existing lean-extension gaps fixed to unblock the deploy gate; see this task's summary for detail)*
+- [x] Confirm `.claude/scripts/lean-comparator-landrun-shim.sh` exists and is executable
+      post-deploy, and that `.claude/context/project/lean4/patterns/dependency-tracing.md` landed. *(completed: both confirmed present; the shim is `-rwxr-xr-x`)*
+- [x] Re-run the deployed test suite from `.claude/scripts/tests/` to confirm the deployed copy
+      passes as the source copy did. *(completed: 28 passed/0 failed/1 skip, identical to the source-store run)*
+- [x] Verify no file under `.claude/**` was hand-edited during this task (`git status` shows only
+      deploy-generated changes there, and `.claude/` is gitignored). *(completed: `.claude/` is entirely gitignored (`.gitignore:6:/.claude/`); `git status --porcelain -- .claude/` shows nothing, since git never tracks it)*
 - [ ] Commit each phase's work with the `task {N}: ...` convention, staging by explicit file path
       only — never a directory or glob pathspec, per this cycle's concurrency note.
 
@@ -465,6 +465,24 @@ working probes rather than re-derived, with the `#print axioms` trap stated up f
 - `verify-deploy.sh` exits 0.
 - The deployed test suite exits 0 with the same case results as the source-store run.
 - Both new deployed paths exist.
+
+#### Reasoned Exclusions
+
+`verify-deploy.sh` reports 3 of 33 checks failed rather than exiting 0, because loading the
+`lean` extension for the first time on this host (a necessary prerequisite -- it was never in
+`.claude-extensions.json`'s active set before this task, so none of this task's own deployed
+files could otherwise reach `.claude/**` at all) surfaced three PRE-EXISTING gaps unrelated to
+this task's own four fixes or the dependency-tracing recipe. Two other, trivially-safe
+pre-existing gaps surfaced the same way (a missing `index-entries.json` entry for
+`operations/long-builds.md`, a missing trailing newline on `fixtures/comparator/fake-landrun.sh`)
+were fixed directly (see Task 2's completion note above) since they were one-line, zero-risk
+corrections; the three below are not, for the stated reasons.
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Manifest-driven verification (check 5): 3 findings, "core: Content differs from source" for `context/contracts/{adversarial-verification,anti-analysis,reference-grounding}.md` | NOT a defect: the lean extension's own `context/contracts/` directory (declared in its `manifest.json`'s `provides.context` array) legitimately overrides these three core contract files for Lean4-specific requirements (lemma-level source mapping, sorry-inventory cross-references, PDF citation format) -- deployed content correctly reflects the lean override, but `verify-deploy.sh`'s manifest-driven check is not override-aware and misattributes the difference to `core`. Fixing the checker is a `core`-scoped change, outside this task's `agent-system/extensions/lean/**` file_scope, and risks conflicting with this cycle's concurrent core-touching sibling tasks (263, 265, 51). | `diff agent-system/extensions/lean/context/contracts/reference-grounding.md .claude/context/contracts/reference-grounding.md` shows the deployed file is the LEAN override (`# Reference Grounding Contract (H3) — Lean4 Override`), matching `agent-system/extensions/lean/context/contracts/reference-grounding.md` byte for byte; `grep -rl "Lean4 Override" agent-system/extensions/*/context/contracts/*.md` confirms only the `lean` extension provides these override files. |
+| Postflight boundary lint (check 9): `skill-lean-research/SKILL.md` missing `## MUST NOT (Postflight Boundary)` section | Pre-existing lean-extension gap, unrelated to Comparator/dependency-tracing -- `git log` shows this skill file predates this task by many commits and this task's own dispatch never named it. Authoring a correct MUST-NOT list requires domain knowledge of that skill's own postflight boundary (what a research-skill lead must not do after its subagent returns), which is a separate, substantive addition this task's plan never scoped or researched. | `bash .claude/scripts/lint/lint-postflight-boundary.sh --verbose` names exactly this one file as the sole violation across all 29 checked skills; `git log --oneline -1 -- agent-system/extensions/lean/skills/skill-lean-research/SKILL.md` shows its last edit predates this task. |
+| Orchestrator context budget lock (check 20): eager-load total 67980 B exceeds recorded baseline 65950 B | Direct, expected consequence of loading a previously-unloaded extension (lean) for the first time -- its own eagerly-loaded context now counts toward the total. The baseline file (`context/config/orchestrator-context-budget.json`) is `core`-owned, and the check's own message explicitly gates re-deriving it on human review ("re-derive only if the growth is deliberate and reviewed"), which is a judgment call for whoever owns that budget, not a unilateral edit this task should make. | `.claude/context/config/orchestrator-context-budget.json` is deployed from `agent-system/extensions/core/**`, outside this task's `agent-system/extensions/lean/**` file_scope; the growth (2030 B) is consistent in size with `lean`'s own newly-active eagerly-loaded context files. |
 
 ---
 

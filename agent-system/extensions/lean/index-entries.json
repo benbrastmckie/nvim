@@ -390,6 +390,28 @@
       ]
     },
     {
+      "path": "project/lean4/operations/long-builds.md",
+      "line_count": 195,
+      "load_when": {
+        "agents": [
+          "lean-implementation-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Detaching a long `lake build` past tool timeouts and routing it through the shared build guard, together",
+      "keywords": [
+        "lean4",
+        "lake-build",
+        "livelock",
+        "timeout",
+        "build-guard"
+      ]
+    },
+    {
       "path": "project/lean4/processes/end-to-end-proof-workflow.md",
       "line_count": 65,
       "load_when": {
@@ -688,7 +710,7 @@
     },
     {
       "path": "project/lean4/domain/comparator-integration.md",
-      "line_count": 247,
+      "line_count": 379,
       "load_when": {
         "agents": [
           "lean-implementation-agent",
@@ -711,7 +733,7 @@
     },
     {
       "path": "project/lean4/tools/comparator-guide.md",
-      "line_count": 110,
+      "line_count": 119,
       "load_when": {
         "agents": [
           "lean-implementation-agent",

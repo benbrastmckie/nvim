@@ -1,0 +1,39 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy .claude/ and close the round",
+  "started_at": "2026-09-30T02:00:00Z",
+  "last_updated": "2026-09-30T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run lean extension's full test set from source store plus sibling tests", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Redeploy via deploy-headless.sh then verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json", "agent-system/extensions/lean/scripts/tests/fixtures/comparator/fake-landrun.sh"]},
+    {"id": 3, "description": "Confirm both new deployed paths exist and shim is executable", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-run deployed test suite from .claude/scripts/tests/", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify no hand-edit under .claude/**", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Commit phase 7's work with task convention, explicit file paths only", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "description": "Assumed the lean extension was already loaded/deployed, per the plan's own framing ('the round closes with a .claude/ redeploy')",
+      "result": "failed",
+      "reason": "discovered .claude-extensions.json's active extensions list (core, literature, email, nix, nvim, memory) did not include lean at all -- no lean file had ever been deployed to .claude/** on this host. Loaded it via a headless nvim manager.load('lean', {confirm=false, project_dir=...}) call, additive only, before proceeding with the normal deploy-headless.sh resync."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.1",
+      "description": "Run the repo's shell-test runner if it covers them",
+      "type": "altered",
+      "reason": "the repo-wide shell-test runner (tests/run-all.sh) is deferred by deploy-headless.sh's own verify-deploy.sh call via --skip-slow by default; this task follows that same established convention rather than paying its full multi-minute cost. Every lean-specific test file was run individually instead: test-lean-comparator-run.sh (28/0/1), test-lean-challenge-snapshot.sh (14/0/0), test-lean-mcp-preflight-check.sh (17/0), test-lean-mcp-registration.sh (7/0), test-lean-src-roots.sh (10/0), test-lean-sorry-census.sh (via the sibling-regression check inside test-lean-comparator-run.sh).",
+      "annotation": "*(deviation: altered — repo-wide tests/run-all.sh deferred, matching verify-deploy.sh's own default --skip-slow convention)*"
+    },
+    {
+      "task_id": "7.2",
+      "description": "Redeploy then verify-deploy.sh exits 0",
+      "type": "altered",
+      "reason": "loading the lean extension for the first time (necessary for this task's own files to reach .claude/**) surfaced two trivial pre-existing gaps (fixed directly: missing index-entries.json entry for long-builds.md, missing trailing newline on fake-landrun.sh) and three non-trivial pre-existing gaps (documented as a Reasoned Exclusions record on this phase heading, closing it as [COMPLETED WITH EXCLUSIONS] rather than [COMPLETED]).",
+      "annotation": "*(deviation: altered — two trivial, pre-existing lean-extension gaps fixed to unblock the deploy gate; see this task's summary for detail)*"
+    }
+  ]
+}
