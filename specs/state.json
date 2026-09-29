@@ -465,16 +465,19 @@
       "project_name": "record_comparator_nixos_fixes_in_lean_extension",
       "title": "Record the Comparator-on-NixOS fixes in the lean extension",
       "task_type": "meta",
-      "status": "planning",
+      "status": "planned",
       "topic": "lean-extension",
       "dependencies": [],
       "file_scope": [
+        "agent-system/extensions/lean/EXTENSION.md",
         "agent-system/extensions/lean/context/project/lean4/domain/comparator-integration.md",
-        "agent-system/extensions/lean/context/project/lean4/tools/comparator-guide.md",
-        "agent-system/extensions/lean/scripts/lean-comparator-run.sh",
-        "agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh",
         "agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md",
-        "agent-system/extensions/lean/index-entries.json"
+        "agent-system/extensions/lean/context/project/lean4/tools/comparator-guide.md",
+        "agent-system/extensions/lean/index-entries.json",
+        "agent-system/extensions/lean/manifest.json",
+        "agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh",
+        "agent-system/extensions/lean/scripts/lean-comparator-run.sh",
+        "agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh"
       ],
       "description": "Record the Comparator-on-NixOS fixes in the lean extension source store (~/.config/nvim/agent-system/extensions/lean, not .claude/): update context/project/lean4/domain/comparator-integration.md, context/project/lean4/tools/comparator-guide.md and scripts/lean-comparator-run.sh (with scripts/tests/test-lean-comparator-run.sh) so a Comparator run works on this host. Fixes found while certifying framed_channel: (1) put the pinned toolchain bin/ before the elan shim on PATH, since landrun cannot execute the shim (the `lake: Permission denied` failure the design record notes but never explains); (2) invoke as `lake env comparator config.json`; (3) point TMPDIR inside the writable .lake directory because bv_decide writes SAT files to /tmp, which the sandbox makes read-only; (4) grant --rox on git's nix store libraries, otherwise Lake decides the package URL changed and deletes .lake/packages/<dep>. Also document: lean4export panics when permitted_axioms names an axiom absent from the Challenge (handle a flagged bv_decide row by permitting only the trusted axioms and requiring the exact Illegal axiom rejection, which still proves the statement matches); `lake update` in a tool-pinning package silently rewrites lean-toolchain unless --keep-toolchain; batched Lean4Lean runs can exceed 19 GB and trigger earlyoom, so run one module per process; an outer landrun around lake env and Comparator itself. Reference implementation: framed_channel/recheck-comparator.sh, recheck-revs.sh and comparator-configs.sh in this repository, and the task 32 report and summary. Redeploy .claude/ afterwards.\n\nORIGIN: moved from the ~/Projects/Logos/Verification task list, where it was researched; the research report was copied here as reports/01_comparator-nixos-fixes.md. The reference implementation it transcribes lives in ~/Projects/Logos/Verification/framed_channel/ (recheck-comparator.sh, recheck-revs.sh, comparator-configs.sh). Task numbers inside the report refer to that repository's task list.\n\n=== ABSORBED 2026-09-28 (path review, fifth pass) from former task 177 (lean4_dependency_tracing_recipe); that task is abandoned into this one. Its text follows verbatim; where it names \"the dependency task\" or \"the sibling task\", read this task's other sections. ===\n\nAdd a dependency-tracing recipe to the lean4 extension context: how to mechanically answer \"does X depend on Y?\" in a Lean 4 environment, and why `#print axioms` cannot answer it.\n\nWHY THIS EXISTS. A trace task in ~/Projects/BimodalLogic had to answer whether a decision procedure depended on a set of theorems whose hypotheses had been refuted. The task's own description demanded a MECHANICAL trace (\"a prose argument that it probably doesn't is not the deliverable\"), and no recipe existed -- the probes were invented from scratch. They worked, are re-runnable, and generalize. The finished probes and their verbatim output live at `~/Projects/BimodalLogic/specs/549_trace_decide_dependency_on_vacuous_run_theorems/probes/` (`DepTrace.lean`, `DepTrace2.lean`, `RevDep.lean`, `Widen.lean`, `Ax.lean`, `Exists.lean`, plus `probe-evidence.md`). Harvest them from there; do not re-derive.\n\nTHE LOAD-BEARING CAVEAT, and the reason this is worth writing down at all. `#print axioms` is NOT a dependency tracer. In the observed case the decision procedure, its soundness theorem, AND the vacuous theorem under suspicion all reported the same `[propext, Classical.choice, Quot.sound]`. An axiom check answers \"is this sound?\", never \"what does this rest on?\" -- yet it is the first probe most people reach for, and it would have returned a confidently useless answer. State this explicitly and early in the recipe.\n\nFOUR PROBE SHAPES TO DOCUMENT AS REUSABLE TEMPLATES:\n1. Forward transitive closure over the environment -- `Expr.getUsedConstants` over both type and value, iterated to a fixed point from a named entry point, then intersected with a suspect set. This is the primary tool.\n2. The module-index variant -- resolve which module each reached constant came from, and count the hits attributable to a target module. Answers \"how much of module M does X touch?\" in one number.\n3. Whole-environment reverse-dependency scan -- iterate every declaration in the environment and report those whose closure contains a suspect. Answers \"what would break if I deleted this?\", which is the question a retirement decision actually needs.\n4. Import-closure check -- whether the target's module is even reachable via transitive imports. Distinguishes \"unused\" from \"unavailable\", a meaningfully stronger result.\n\nALSO WORTH RECORDING: run probes with `lake env lean` against existing oleans rather than a full `lake build` -- the observed trace needed no rebuild at all. And note the failure mode that bit the source task: line numbers cited in a research report go stale quickly in a large file, so probes should resolve declarations by name.\n\nSCOPE. Create `agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md` in the SOURCE STORE (never `.claude/**`, which is a regenerated deploy artifact -- see rules/source-store-deploy-boundary.md). Wire it into the lean4 context index the way sibling pattern files are wired; follow the existing single-statement-plus-pointer convention rather than restating the model at the pointer site.\n\nPRIORITY: low, and genuinely optional. This is a recipe harvested from one successful use, not a defect fix -- nothing is broken without it. Its value is that the next such trace does not start from zero, and that the `#print axioms` trap is documented before someone falls into it.\n\nACCEPTANCE. The four probe shapes are reproduced as templates a reader can adapt without access to the originating repository. The `#print axioms` caveat is stated explicitly, with the concrete observation that three declarations at different dependency depths all reported identical axioms.",
       "artifacts": [
@@ -482,13 +485,18 @@
           "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/reports/01_comparator-nixos-fixes.md",
           "type": "report",
           "summary": "Research on transcribing the live-proven Comparator-on-NixOS fixes (toolchain PATH ordering, landrun TMPDIR and git --rox grants, lake env invocation) into the lean extension, plus documentation-only lessons and test coverage gaps."
+        },
+        {
+          "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/plans/01_comparator-nixos-fixes.md",
+          "type": "plan",
+          "summary": "7 phases, 5 waves, ~9 hours: landrun shim, runner PATH/TMPDIR/shim wiring, outer landrun + git pre-flight probe, regression cases, design record + operator guide, dependency-tracing pattern, redeploy."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-09-17T07:55:14Z",
-      "last_updated": "2026-09-29T22:43:17Z",
+      "last_updated": "2026-09-29T22:54:13Z",
       "priority": "medium",
-      "session_id": "sess_1790721762_ff3d8e_223"
+      "session_id": "sess_1790721762_ff3d8e"
     },
     {
       "project_number": 255,

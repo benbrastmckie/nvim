@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 6,
+  "summary": "Wrote a 7-phase implementation plan transcribing the four Comparator-on-NixOS fixes plus four documentation-only findings into the lean extension source store, with stub-based regression coverage, the absorbed dependency-tracing pattern file, and a .claude/ redeploy. Confirmed at plan time that the research report's reference paths and line numbers are stale and that the reference landrun shim has grown three mechanisms the report does not mention; every phase re-reads the live reference by name.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/223_record_comparator_nixos_fixes_in_lean_extension/plans/01_comparator-nixos-fixes.md",
+      "summary": "7 phases, 5 waves, ~9 hours: landrun shim, runner PATH/TMPDIR/shim wiring, outer landrun + git pre-flight probe, regression cases, design record + operator guide, dependency-tracing pattern, redeploy."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": []
+}
