@@ -336,30 +336,30 @@ union-merge and validation otherwise unchanged, and its test suite covers the wi
 
 ---
 
-### Phase 4: Wire the harvest into all four plan-postflight call sites [NOT STARTED]
+### Phase 4: Wire the harvest into all four plan-postflight call sites [COMPLETED]
 
 **Goal**: Every path that runs `update-task-status.sh postflight <N> plan <sid>` first harvests the
 plan file and forwards the result as `--file-scope-add`, treating harvester failure or an empty
 result as a non-fatal no-op.
 
 **Tasks**:
-- [ ] Re-read each call site immediately before editing (siblings are active in this tree).
-- [ ] `scripts/orchestrator-postflight.sh` Stage 7: add a `plan` branch alongside the existing
+- [x] Re-read each call site immediately before editing (siblings are active in this tree). *(completed)*
+- [x] `scripts/orchestrator-postflight.sh` Stage 7: add a `plan` branch alongside the existing
       `research`/`proposed_file_scope` branch (~lines 348-360), sourcing the JSON array from
       `bash .claude/scripts/plan-file-scope-harvest.sh "$artifact_path"` instead of from
       `.return-meta.json`, and reusing the same
-      `[ -n "$x" ] && [ "$x" != "[]" ] && [ "$x" != "null" ]` guard shape that branch already uses.
-- [ ] `scripts/reconcile-task-status.sh:558`: compute the harvest from `$plan_file` (already in
-      scope, passed to `link_artifact` on the preceding line) and pass `--file-scope-add=<json>`.
-- [ ] `scripts/reconcile-task-status.sh:678`: same, for the second call site.
-- [ ] `skills/skill-reviser/SKILL.md:324`: same pattern, sourcing from the `$artifact_path` already
-      validated in Stage 6a, so `/revise` re-harvests per Decision 2.
-- [ ] At every site, wrap the harvester invocation so a non-zero exit or unparseable output degrades
+      `[ -n "$x" ] && [ "$x" != "[]" ] && [ "$x" != "null" ]` guard shape that branch already uses. *(completed)*
+- [x] `scripts/reconcile-task-status.sh:558`: compute the harvest from `$plan_file` (already in
+      scope, passed to `link_artifact` on the preceding line) and pass `--file-scope-add=<json>`. *(completed)*
+- [x] `scripts/reconcile-task-status.sh:678`: same, for the second call site. *(completed)*
+- [x] `skills/skill-reviser/SKILL.md:324`: same pattern, sourcing from the `$artifact_path` already
+      validated in Stage 6a, so `/revise` re-harvests per Decision 2. *(completed)*
+- [x] At every site, wrap the harvester invocation so a non-zero exit or unparseable output degrades
       to "no `--file-scope-add` argument" with a named warning, never a failed postflight
       (Decision 3). Match the existing `|| echo "[postflight] WARNING: ... (non-blocking)"` wording
-      convention already present at each site.
-- [ ] Honor `--dry-run` where the surrounding call site already threads it (reconcile's
-      `Would promote` branches must not write).
+      convention already present at each site. *(completed)*
+- [x] Honor `--dry-run` where the surrounding call site already threads it (reconcile's
+      `Would promote` branches must not write). *(completed)*
 
 **Timing**: 1 hour
 
@@ -371,7 +371,13 @@ result as a non-fatal no-op.
 implementation time with
 `grep -rn 'postflight.*"\?plan"\?' agent-system/extensions/core/scripts/ agent-system/extensions/core/skills/`
 plus a search for `update-task-status.sh postflight`; if a fifth site exists, wire it too and record
-the correction.
+the correction. *(deviation: altered — a FIFTH site was found and is the actually-live one:
+`skill_postflight_update()` in `scripts/skill-base.sh`, called from both `/orchestrate` engines
+with `operation="plan"`. `orchestrator-postflight.sh` itself was confirmed ORPHANED with zero live
+callers — see its own header note and `skills/skill-git-workflow/SKILL.md`'s "Relationship to
+orchestrator-postflight.sh" section. Wired the fifth site too, with two new fixture-based test
+cases in `test-skill-base-lifecycle.sh`; see this phase's progress-file deviations for the full
+finding)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/orchestrator-postflight.sh` - add the `plan` harvest branch
@@ -380,6 +386,13 @@ the correction.
   `postflight ... plan ...` call sites
 - `agent-system/extensions/core/skills/skill-reviser/SKILL.md` - harvest and forward at the Stage 7
   postflight call, so `/revise` re-harvests
+- `agent-system/extensions/core/scripts/skill-base.sh` - *(deviation: altered, not originally
+  listed)* widen `skill_postflight_update()`'s `_fsa_args` gate to also harvest on `operation=="plan"`
+  — the actually-live plan-postflight path for both `/orchestrate` engines
+- `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` - *(deviation: altered,
+  not originally listed)* add Group 4a (plan-branch file_scope harvest: positive case and
+  no-plans-dir absent-not-empty case) and add `plan-file-scope-harvest.sh` to
+  `build_fixture_repo()`'s required-scripts list
 
 **Verification**:
 - `grep -c 'file-scope-add' ` across the three changed files accounts for all four new sites plus

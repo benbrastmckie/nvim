@@ -209,6 +209,27 @@ link_artifact() {
   fi
 }
 
+# --- Helper: harvest a plan's "Files to modify" union as a --file-scope-add argv fragment ---
+#
+# Shared by both `postflight ... plan ...` replay sites below (the `planning` and `not_started`
+# no-summary-yet branches). Never re-implements path extraction -- always calls
+# plan-file-scope-harvest.sh as a subprocess, per this task's reuse constraint. Degrades to no
+# flag at all (byte-for-byte no-op, matching update-task-status.sh's own FILE_SCOPE_ADD_LEN
+# no-op contract) on any harvester failure, empty result, or unparseable output -- a harvest
+# problem must never block reconciliation's own status-promotion replay.
+#
+# Usage: harvested_flag="$(harvest_file_scope_args "$plan_file")"; prints either the single
+# "--file-scope-add=<json>" token (no trailing newline issues -- $() strips it) or nothing.
+harvest_file_scope_args() {
+  local plan_file="$1"
+  local harvested
+  harvested=$(bash "$SCRIPT_DIR/plan-file-scope-harvest.sh" "$plan_file" 2>/dev/null) \
+    || { echo "[reconcile] WARNING: plan-file-scope-harvest.sh failed for $plan_file, skipping file_scope harvest (non-blocking)" >&2; return 0; }
+  if [[ -n "$harvested" && "$harvested" != "[]" && "$harvested" != "null" ]]; then
+    echo "--file-scope-add=$harvested"
+  fi
+}
+
 # --- Helper: lock-aware demotion for a stranded in-flight task with no artifact ---
 #
 # Direction (b) defense-in-depth (research report Decision 1): a task sitting in `researching` or
@@ -555,7 +576,10 @@ case "$current_status" in
     else
       echo "[reconcile] Task $task_number: status=planning but plan exists ($plan_basename) — replaying postflight"
       link_artifact "$plan_file" "plan" "Implementation plan: $plan_basename"
-      "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "plan" "$session_id"
+      fsa_args=()
+      harvested_flag="$(harvest_file_scope_args "$plan_file")"
+      [[ -n "$harvested_flag" ]] && fsa_args=("$harvested_flag")
+      "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "plan" "$session_id" "${fsa_args[@]}"
       echo "[reconcile] Task $task_number: promoted planning -> planned"
     fi
     ;;
@@ -675,7 +699,10 @@ case "$current_status" in
       else
         echo "[reconcile] Task $task_number: status=not_started but plan exists ($plan_basename) — replaying postflight"
         link_artifact "$plan_file" "plan" "Implementation plan: $plan_basename"
-        "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "plan" "$session_id"
+        fsa_args=()
+        harvested_flag="$(harvest_file_scope_args "$plan_file")"
+        [[ -n "$harvested_flag" ]] && fsa_args=("$harvested_flag")
+        "$SCRIPT_DIR/update-task-status.sh" postflight "$task_number" "plan" "$session_id" "${fsa_args[@]}"
         echo "[reconcile] Task $task_number: promoted not_started -> planned"
       fi
       exit 0

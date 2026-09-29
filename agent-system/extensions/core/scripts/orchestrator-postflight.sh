@@ -345,9 +345,12 @@ fi
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$do_status_update" = "true" ] && [ "$status" = "$success_status" ]; then
   echo "[postflight] Updating task status via update-task-status.sh..."
-  # --file-scope-add write-back (research only): extract proposed_file_scope from the
-  # already-open $metadata_file and forward it as --file-scope-add=<json>, so
-  # update-task-status.sh's additive union-merge picks it up in the same postflight write.
+  # --file-scope-add write-back: two independent sources feed the same additive union-merge --
+  # research forwards proposed_file_scope from .return-meta.json (below); plan instead harvests
+  # the artifact's own "Files to modify" per-phase field via plan-file-scope-harvest.sh (see
+  # context/formats/plan-format.md's "Consumers of this field" subsection and Decisions 1-3 in
+  # this task's plan). Both degrade to no flag at all (byte-for-byte no-op) on any empty,
+  # unparseable, or failed result -- a harvest failure must never block a plan postflight.
   # Absent field, null, or [] passes no flag at all (byte-for-byte no-op).
   fsa_args=()
   if [ "$operation_type" = "research" ] && [ -f "$metadata_file" ]; then
@@ -355,6 +358,12 @@ if [ "$do_status_update" = "true" ] && [ "$status" = "$success_status" ]; then
       "$metadata_file" 2>/dev/null)
     if [ -n "$proposed_file_scope" ] && [ "$proposed_file_scope" != "[]" ] && [ "$proposed_file_scope" != "null" ]; then
       fsa_args=(--file-scope-add="$proposed_file_scope")
+    fi
+  elif [ "$operation_type" = "plan" ] && [ -n "$artifact_path" ] && [ -f "$artifact_path" ]; then
+    harvested_file_scope=$(bash .claude/scripts/plan-file-scope-harvest.sh "$artifact_path" 2>/dev/null) \
+      || echo "[postflight] WARNING: plan-file-scope-harvest.sh failed for ${artifact_path}, skipping file_scope harvest for this postflight (non-blocking)" >&2
+    if [ -n "$harvested_file_scope" ] && [ "$harvested_file_scope" != "[]" ] && [ "$harvested_file_scope" != "null" ]; then
+      fsa_args=(--file-scope-add="$harvested_file_scope")
     fi
   fi
   bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation_type" "$session_id" \

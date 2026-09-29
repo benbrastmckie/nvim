@@ -904,11 +904,16 @@ skill_postflight_update() {
       if [[ "$_skip_write" == "true" ]]; then
         :
       else
-        # --file-scope-add write-back (research only): read proposed_file_scope from this
-        # task's own .return-meta.json and forward it as --file-scope-add=<json> so
-        # update-task-status.sh's additive union-merge picks it up in the same postflight
-        # write. Same empty-array-expansion pattern as phase_check_args above -- an absent
-        # field, null, or [] passes no flag at all (byte-for-byte no-op).
+        # --file-scope-add write-back: two independent sources, mirroring
+        # orchestrator-postflight.sh's Stage 7 branch (this function is the OTHER, actually-live
+        # plan-postflight path -- orchestrator-postflight.sh itself has no live callers; see its
+        # own header note -- so both must carry the harvest, not only the orphaned one). research
+        # reads proposed_file_scope from this task's own .return-meta.json; plan instead harvests
+        # the latest plan artifact's own "Files to modify" per-phase field via
+        # plan-file-scope-harvest.sh (never re-implementing extraction). Both forward the result
+        # as --file-scope-add=<json> so update-task-status.sh's additive union-merge picks it up
+        # in the same postflight write. Same empty-array-expansion pattern as phase_check_args
+        # above -- an absent field, null, or [] passes no flag at all (byte-for-byte no-op).
         local _fsa_args=()
         if [[ "$operation" == "research" && -n "${_task_dir}" && -f "${_task_dir}/.return-meta.json" ]]; then
           local _proposed_fs
@@ -916,6 +921,20 @@ skill_postflight_update() {
             "${_task_dir}/.return-meta.json" 2>/dev/null)
           if [[ -n "$_proposed_fs" && "$_proposed_fs" != "[]" && "$_proposed_fs" != "null" ]]; then
             _fsa_args=(--file-scope-add="$_proposed_fs")
+          fi
+        elif [[ "$operation" == "plan" && -n "${_task_dir}" && -d "${_task_dir}/plans" ]]; then
+          local _plan_file _harvested_fs
+          # Version-ordered latest plan file, same convention as reconcile-task-status.sh's
+          # find_latest_artifact() and update-task-status.sh's resolve_plan_file_for_phase_check().
+          # `|| true`: an existing-but-empty plans/ dir makes the glob a literal nonexistent
+          # filename under set -e -o pipefail; that is a legitimate no-plan-yet state, not an error.
+          _plan_file=$(ls -1 "${_task_dir}/plans/"*.md 2>/dev/null | sort -V | tail -1 || true)
+          if [[ -n "$_plan_file" && -f "$_plan_file" ]]; then
+            _harvested_fs=$(bash .claude/scripts/plan-file-scope-harvest.sh "$_plan_file" 2>/dev/null) \
+              || echo "WARNING: [skill-base] plan-file-scope-harvest.sh failed for $_plan_file, skipping file_scope harvest for this postflight (non-blocking)" >&2
+            if [[ -n "$_harvested_fs" && "$_harvested_fs" != "[]" && "$_harvested_fs" != "null" ]]; then
+              _fsa_args=(--file-scope-add="$_harvested_fs")
+            fi
           fi
         fi
         bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" "${_fsa_args[@]}" || _postflight_rc=$?

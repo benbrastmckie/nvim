@@ -138,8 +138,13 @@ build_fixture_repo() {
   # case below to reach update_plan_file()'s plan-file logic at all -- without them,
   # update-task-status.sh's plan_script executability check early-returns with "not found or not
   # executable" and the case would pass vacuously even if a per-phase marker defect were present.
+  # plan-file-scope-harvest.sh is required for the Group 4a plan-postflight file_scope harvest
+  # cases below -- skill_postflight_update's plan branch calls it via the same hardcoded bare
+  # relative path (`.claude/scripts/plan-file-scope-harvest.sh`) noted in this function's own
+  # header comment, so without a copy here that branch would silently no-op (harvester not found)
+  # rather than genuinely exercising the harvest.
   for f in update-task-status.sh state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh \
-           update-plan-status.sh update-phase-status.sh; do
+           update-plan-status.sh update-phase-status.sh plan-file-scope-harvest.sh; do
     cp "$DEPLOY_SCRIPTS_SRC/$f" "$root/.claude/scripts/$f"
     chmod +x "$root/.claude/scripts/$f"
   done
@@ -442,6 +447,61 @@ else
   fail "skill_postflight_update with a non-success status unexpectedly changed state.json ($BEFORE_STATUS -> $AFTER_STATUS)"
 fi
 
+cd "$ORIG_PWD" || true
+
+# =====================================================================
+# Group 4a: skill_postflight_update's plan-branch file_scope harvest. skill_postflight_update is
+# the ACTUALLY-LIVE plan-postflight path (called from orchestrate-cycle-postflight.sh and
+# orchestrate-stage5-postflight.sh -- orchestrator-postflight.sh's own "research and plan only"
+# Stage 7 branch has no live callers, see that script's own header note), so this is the site
+# that matters for real /orchestrate plan-postflight runs, distinct from and in addition to
+# orchestrator-postflight.sh's own branch.
+# =====================================================================
+info "=== skill_postflight_update (plan-branch file_scope harvest) ==="
+
+HARVEST_ROOT="$WORKDIR/harvest-fixture"
+build_fixture_repo "$HARVEST_ROOT"
+mkdir -p "$HARVEST_ROOT/specs/001_fixture_task/plans"
+cat > "$HARVEST_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md" << 'PLANEOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `scripts/harvested-one.sh` - added by the harvest test fixture
+- `scripts/harvested-two.sh`
+
+**Verification**:
+- ok
+PLANEOF
+
+cd "$HARVEST_ROOT" || { fail "could not cd into harvest fixture repo"; }
+skill_postflight_update 1 "plan" "sess_test_harvest" "planned" "" "specs/001_fixture_task" \
+  2>"$WORKDIR/harvest-postflight-stderr.log"
+HARVEST_POSTFLIGHT_EXIT=$?
+HARVEST_FILE_SCOPE="$(jq -c '.active_projects[0].file_scope' "$HARVEST_ROOT/specs/state.json" 2>/dev/null)"
+if [[ "$HARVEST_POSTFLIGHT_EXIT" -eq 0 ]]; then
+  pass "skill_postflight_update (plan, with a real plan file): exits 0"
+else
+  fail "skill_postflight_update (plan, with a real plan file) exited $HARVEST_POSTFLIGHT_EXIT (see $WORKDIR/harvest-postflight-stderr.log)"
+fi
+if [[ "$(echo "$HARVEST_FILE_SCOPE" | jq -c 'sort')" == '["scripts/harvested-one.sh","scripts/harvested-two.sh"]' ]]; then
+  pass "skill_postflight_update (plan): file_scope harvested from the plan's Files to modify field ($HARVEST_FILE_SCOPE)"
+else
+  fail "skill_postflight_update (plan): expected file_scope [\"scripts/harvested-one.sh\",\"scripts/harvested-two.sh\"], got '$HARVEST_FILE_SCOPE' (see $WORKDIR/harvest-postflight-stderr.log)"
+fi
+cd "$ORIG_PWD" || true
+
+# --- Degenerate case: no plans/ directory at all -- file_scope stays absent/null, never [] ----
+NOPLAN_ROOT="$WORKDIR/harvest-noplan-fixture"
+build_fixture_repo "$NOPLAN_ROOT"
+cd "$NOPLAN_ROOT" || { fail "could not cd into no-plan harvest fixture repo"; }
+skill_postflight_update 1 "plan" "sess_test_harvest_noplan" "planned" "" "specs/001_fixture_task" \
+  2>"$WORKDIR/harvest-noplan-postflight-stderr.log"
+NOPLAN_FILE_SCOPE="$(jq -c '.active_projects[0].file_scope' "$NOPLAN_ROOT/specs/state.json" 2>/dev/null)"
+if [[ "$NOPLAN_FILE_SCOPE" == "null" ]]; then
+  pass "skill_postflight_update (plan, no plans/ dir): file_scope stays absent (null), no bogus [] written"
+else
+  fail "skill_postflight_update (plan, no plans/ dir): expected file_scope null, got '$NOPLAN_FILE_SCOPE' (see $WORKDIR/harvest-noplan-postflight-stderr.log)"
+fi
 cd "$ORIG_PWD" || true
 
 # =====================================================================

@@ -1,0 +1,37 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the harvest into all four plan-postflight call sites",
+  "started_at": "2026-09-29T01:00:00Z",
+  "last_updated": "2026-09-29T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read each call site immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "orchestrator-postflight.sh Stage 7: add plan harvest branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 3, "description": "reconcile-task-status.sh:558 call site", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 4, "description": "reconcile-task-status.sh:678 call site", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 5, "description": "skill-reviser/SKILL.md:324 call site", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-reviser/SKILL.md"]},
+    {"id": 6, "description": "Non-fatal degrade at every site on harvester failure", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Honor --dry-run at reconcile sites", "status": "done", "files_touched": []},
+    {"id": 8, "description": "FIFTH SITE (discovered): skill_postflight_update() in skill-base.sh -- the actually-live plan-postflight path for /orchestrate's own engine; orchestrator-postflight.sh itself is orphaned with no live callers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh", "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Manually smoke-test reconcile-task-status.sh's not_started branch end-to-end with a minimal fixture", "result": "failed", "reason": "Fixture plan file lacked the standard plan-format.md metadata header, tripping an unrelated check_plan_state_divergence code path. Superseded by isolating and testing harvest_file_scope_args() directly, which confirmed correct behavior without the unrelated fixture-completeness burden."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.x",
+      "description": "reconcile-task-status.sh has two call sites in the same file, so a shared harvest_file_scope_args() helper was added rather than duplicating the harvest-and-degrade logic twice inline.",
+      "type": "altered",
+      "reason": "Reduces duplication; both call sites invoke the same helper, which itself calls plan-file-scope-harvest.sh as a subprocess (never re-implementing extraction) and degrades to no flag on any failure/empty/null result.",
+      "annotation": "*(deviation: altered — factored a shared helper for reconcile-task-status.sh's two call sites instead of duplicating inline logic)*"
+    },
+    {
+      "task_id": "4.Scope Hypothesis",
+      "description": "MAJOR CORRECTION to the phase's Scope Hypothesis (\"exactly four call sites in three files\"). A fifth, and arguably more important, call site was discovered: skill_postflight_update() in agent-system/extensions/core/scripts/skill-base.sh. Cross-checking actual invocation sites (grep -rn 'bash.*orchestrator-postflight.sh' across the whole extension) found ZERO live callers of orchestrator-postflight.sh -- its own header/skill-git-workflow/SKILL.md documentation independently confirms it is an orphaned script kept for reference only, superseded by skill-orchestrate/SKILL.md's dispatch-loop commit sites. The ACTUAL live plan-postflight path for both /orchestrate engines (standard and hard mode) is skill_postflight_update(), called from orchestrate-cycle-postflight.sh and orchestrate-stage5-postflight.sh with operation=\"plan\"/status=\"planned\". Without wiring this fifth site, the whole Phase 4 harvest would have been dead weight for the actual /orchestrate plan-postflight flow -- only reconcile-task-status.sh's self-heal path and skill-reviser's /revise path would ever have populated file_scope from a plan.",
+      "type": "altered",
+      "reason": "Widened skill_postflight_update()'s existing research-only _fsa_args gate to also cover operation==plan, resolving the latest plan file from ${_task_dir}/plans/*.md (version-ordered, same convention as reconcile-task-status.sh's find_latest_artifact() and update-task-status.sh's resolve_plan_file_for_phase_check()) and harvesting via plan-file-scope-harvest.sh, with the same non-fatal degrade-on-failure posture as every other site. Added two new fixture-based test cases to test-skill-base-lifecycle.sh (Group 4a) proving the positive harvest case and the no-plans-dir absent-not-empty case; also added plan-file-scope-harvest.sh to that suite's build_fixture_repo() required-scripts list, since it was previously omitted (the branch would otherwise silently no-op against the fixture's deployed-tree copy). The kept orchestrator-postflight.sh edit is harmless (consistent with that file's own existing, equally-unreachable research branch) and left in place rather than reverted, since removing it is out of this task's scope and the dispatch explicitly named it as a site to wire.",
+      "annotation": "*(deviation: altered — discovered and wired a fifth, actually-live call site (skill_postflight_update in skill-base.sh) beyond the dispatch's four named sites; see progress file for the full finding)*"
+    }
+  ]
+}

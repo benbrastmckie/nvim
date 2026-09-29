@@ -318,10 +318,26 @@ fi
 
 **For Plan Revision** (status == "planned"):
 
+Harvest `artifact_path`'s (the revised plan's) per-phase `Files to modify` union and forward it
+as `--file-scope-add`, so `/revise` re-harvests on every revision round (Decision 2: additive
+merge is safe even when a revision drops a phase's file mention). Degrades to no flag at all on
+any harvester failure or empty result -- never re-implement path extraction here:
+
+```bash
+fsa_args=()
+if [ -n "$artifact_path" ] && [ -f "$artifact_path" ]; then
+  harvested_file_scope=$(bash .claude/scripts/plan-file-scope-harvest.sh "$artifact_path" 2>/dev/null) \
+    || echo "WARNING: plan-file-scope-harvest.sh failed for $artifact_path, skipping file_scope harvest (non-blocking)"
+  if [ -n "$harvested_file_scope" ] && [ "$harvested_file_scope" != "[]" ] && [ "$harvested_file_scope" != "null" ]; then
+    fsa_args=(--file-scope-add="$harvested_file_scope")
+  fi
+fi
+```
+
 Update task status to "planned" using the centralized script:
 
 ```bash
-bash .claude/scripts/update-task-status.sh postflight $task_number plan $session_id
+bash .claude/scripts/update-task-status.sh postflight $task_number plan $session_id "${fsa_args[@]}"
 ```
 
 If the script exits non-zero, log error but continue (status update is best-effort for revise).
