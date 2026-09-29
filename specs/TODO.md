@@ -11,8 +11,8 @@ next_project_number: 269
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,51,89,127,139,163,184,199,207,217,223,241,244,255,265,268 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,136,165,185,250,251,263 | 22,44,127,139,163,184,199,241,265 | core-agent-system, extensions, file-scope-lifecycle |
+| 1 | 22,39,44,51,89,127,136,165,184,199,217,223,241,255,263,265,268 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251 | 22,44,127,184,199,241,265 | core-agent-system, extensions |
 | 3 | 170 | 51,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -27,9 +27,7 @@ next_project_number: 269
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
-139 [IMPLEMENTING] — Forbid concurrent-writer history rewrites: rules and agent...
-  └─ 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
-  └─ 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
+136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 199 [IMPLEMENTING] — Decide and implement the working-tree and build isolation...
@@ -37,7 +35,7 @@ next_project_number: 269
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-244 [IMPLEMENTING] — check-task-references.sh: scan repo-appropriate roots instead...
+263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh... (see above)
 268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
@@ -51,7 +49,6 @@ next_project_number: 269
 ### Literature
 
 39 [PLANNED] — Upgrade Zotero metadata resolution and plan the Zotero 10...
-207 [IMPLEMENTING] — Fix zotero-generate-export.sh Path 1: accumulator truncation...
 
 ### Neovim
 
@@ -59,8 +56,7 @@ next_project_number: 269
 
 ### File Scope Lifecycle
 
-163 [IMPLEMENTING] — Surface missing and empty filescope in validate-state.sh and...
-  └─ 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
+165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
 
 ### Lean Extension
 
@@ -1103,7 +1099,7 @@ WHAT REMAINS: Phase 1 (the standing script-inventory probe, which must reuse tha
 ---
 
 ### 244. check-task-references.sh: scan repo-appropriate roots instead of a hard-coded nvim-repo TREE_ROOTS list
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1372,7 +1368,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 207. Fix zotero-generate-export.sh Path 1: accumulator truncation and shrink guard, then the pagination shortfall or path-preference order
 - **Effort**: 2-3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
@@ -1582,7 +1578,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/**.
 - **Dependencies**: Task 191, Task 192, Task 193, Task 213, Task 242, Task 243, Task 259, Task 266
 - **Research**: [199_concurrent_dispatch_isolation_posture/reports/01_isolation-posture-recommendation.md]
 - **Plan**: [199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md]
-- **Handoff**: [199_concurrent_dispatch_isolation_posture/handoffs/phase-3-handoff-20260929T031000Z.md]
+- **Handoff**: [199_concurrent_dispatch_isolation_posture/handoffs/phase-6-handoff-20260929T062000Z.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**).
 
@@ -2332,7 +2328,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 163. Surface missing and empty file_scope in validate-state.sh and orchestrate-predispatch-review.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 188
@@ -2429,7 +2425,7 @@ CANONICAL SOURCE CONSTRAINT (binding): all edits target /home/benjamin/.config/n
 ---
 
 ### 139. Forbid concurrent-writer history rewrites: rules and agent contracts, then a concurrency-gated predicate in guard-destructive-git.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 129
