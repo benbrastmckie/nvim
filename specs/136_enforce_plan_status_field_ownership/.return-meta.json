@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/136_enforce_plan_status_field_ownership/plans/01_plan-status-field-ownership.md",
-      "summary": "8-phase plan closing three contract/validator drift threads: lint-enforced plan-level Status ownership boundary across 13 implementation agents, a shared M1/M2/M3 Status-grammar library wired into validate-artifact.sh at error level, the report-heading conformance remedy, and fan-out plus bidirectional marker/commit-synchrony sections in phase-closure.md."
-    }
-  ],
-  "next_steps": "Run /implement 136 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 16,
   "metadata": {
-    "session_id": "sess_1790721762_ff3d8e_136",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 10,
-    "dependency_waves": [[1, 4, 6, 7], [2, 5], [3], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "This agent-system repo has exactly two established mechanisms for preventing 'contract/skeleton text drifts from what a validator enforces' defects, and a plan for any such defect should be built on one of them rather than inventing a third. (1) AGENT-BODY TEXT: a canonical fragment under agent-system/extensions/core/context/contracts/ (e.g. no-task-references-bullet.md, return-meta-artifacts-template.md) holding the exact text in a fenced block plus a stated classification rule, with a check in scripts/lint/lint-agent-contracts.sh that reads the expected text FROM the fragment at runtime (never hardcoded) and greps a curated in-scope agent list. The lint runs as gate 6 of verify-deploy.sh. Note that @-references inside an agent body do NOT auto-resolve at subagent spawn time, which is why literal copies plus a lint are used instead of an include. (2) SCRIPT LOGIC: a shared library under scripts/lib/ (e.g. phase-heading-patterns.sh) sourced lazily via a ${BASH_SOURCE[0]}-relative path that resolves identically in the source store and the deployed .claude/ tree, with a missing library treated as a loud environment error (a distinct exit code), never a silent fallback to an inline pattern. Corollary: context/contracts/*.md files ARE load-bearing for extension agents when @-referenced from their Context References section - phase-closure.md is referenced 'always load'/'MANDATORY' from every implementation agent, making it the right home for a single normative statement rather than copying a paragraph into 13 files.",
-      "category": "PATTERN",
-      "source_artifact": "specs/136_enforce_plan_status_field_ownership/plans/01_plan-status-field-ownership.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-agent-contracts", "canonical-fragment", "contract-drift", "shared-library", "phase-closure", "validate-artifact"]
-    }
-  ],
-  "dispatch_seq": 11
+    "session_id": "sess_1790721762_ff3d8e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

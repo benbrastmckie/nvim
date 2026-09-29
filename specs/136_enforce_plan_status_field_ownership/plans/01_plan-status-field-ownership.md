@@ -2,7 +2,7 @@
 
 - **Task**: 136 - Implementation-agent contract corrections: plan-level Status ownership, no
   fan-out, marker/commit sync, validator catch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: 139 (completed), 91 (completed, archived), 13 (completed, archived)
 - **Research Inputs**: specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md
@@ -153,35 +153,35 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Canonical ownership fragment and predicate-derived in-scope enumeration [NOT STARTED]
+### Phase 1: Canonical ownership fragment and predicate-derived in-scope enumeration [COMPLETED]
 
 **Goal**: Establish the single authoritative text of the plan-level Status ownership boundary, and
 derive the in-scope agent set by a stated rule rather than by a name glob.
 
 **Tasks**:
-- [ ] Re-run the in-scope sweep as a **predicate over every** `agent-system/extensions/*/agents/*.md`
+- [x] Re-run the in-scope sweep as a **predicate over every** `agent-system/extensions/*/agents/*.md`
       (never a filename glob): a file is in scope iff it is a dispatchable agent (first line `---`,
       frontmatter carries `name:`) AND its body instructs editing a `### Phase {P}: ... [MARKER]`
-      heading or calls `update-phase-status.sh`. Record the exact command and its output.
-- [ ] Confirm the candidates the research's `*implementation*agent.md` glob could not see
+      heading or calls `update-phase-status.sh`. Record the exact command and its output. *(completed: predicate sweep run across every agents/*.md file, cross-checked against multiple wording patterns)*
+- [x] Confirm the candidates the research's `*implementation*agent.md` glob could not see
       (`epidemiology/agents/epi-implement-agent.md`, `founder/agents/founder-implement-agent.md`)
       are correctly out of scope, and that `cslib/agents/pr-review-implementation-agent.md` and
       `email/agents/email-implementation-agent.md` remain out of scope (no phase-heading write
-      authority to bound).
-- [ ] Create `agent-system/extensions/core/context/contracts/plan-status-ownership.md`, mirroring
+      authority to bound). *(deviation: altered — founder-implement-agent.md was found to instruct editing `### Phase N ... [MARKER]` headings and is therefore IN scope, contradicting the plan's hypothesis; epi/pr-review/email confirmed correctly out of scope)*
+- [x] Create `agent-system/extensions/core/context/contracts/plan-status-ownership.md`, mirroring
       `context/contracts/no-task-references-bullet.md`'s shape section-for-section: purpose; the
       "generated-copy source, not an `@`-import" note; **the exact bullet text in a fenced block**;
       the classification rule; the placement rule; and a pointer to `plan-format.md`'s existing
       "Plan-level vs. phase-level markers" subsection as the authority for the two-vocabulary /
-      two-owner distinction (pointer only — that file is not edited).
-- [ ] Bullet text requirements: names `update-plan-status.sh` and `update-task-status.sh`
+      two-owner distinction (pointer only — that file is not edited). *(completed)*
+- [x] Bullet text requirements: names `update-plan-status.sh` and `update-task-status.sh`
       postflight as the owner; states the metadata `- **Status**:` field MUST NOT be hand-edited;
       states positively what the agent's plan-file write authority *is* (`### Phase N: ...
       [MARKER]` headings and `- [ ]` checklist items); contains **no digits** so it cannot trip
       `check-task-references.sh`'s own gate (the same constraint `no-task-references-bullet.md`
-      documents for its own placeholder forms).
-- [ ] Record the derived in-scope list inside the fragment, as Check C's list is recorded, with a
-      note that a future agent addition must be classified by the rule rather than inferred.
+      documents for its own placeholder forms). *(completed: verified 0 digits and check-task-references.sh clean)*
+- [x] Record the derived in-scope list inside the fragment, as Check C's list is recorded, with a
+      note that a future agent addition must be classified by the rule rather than inferred. *(completed: 14-file list recorded, with the founder-implement-agent.md divergence explained inline)*
 
 **Timing**: 0.75 hours
 

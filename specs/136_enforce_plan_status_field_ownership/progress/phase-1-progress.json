@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Canonical ownership fragment and predicate-derived in-scope enumeration",
+  "started_at": "2026-09-29T00:00:00Z",
+  "last_updated": "2026-09-29T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run predicate sweep over agent-system/extensions/*/agents/*.md", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm founder/epi/pr-review/email candidates", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Create plan-status-ownership.md canonical fragment", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/plan-status-ownership.md"]},
+    {"id": 4, "description": "Record derived in-scope list in fragment", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/plan-status-ownership.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "Confirm founder-implement-agent.md and epi-implement-agent.md are correctly out of scope",
+      "type": "altered",
+      "reason": "Sweep evidence contradicts the plan's Scope Hypothesis: founder-implement-agent.md DOES instruct editing `### Phase N: {Phase Name} [MARKER]` headings via Edit tool old_string/new_string (e.g. lines ~199-241), identically to the 13 confirmed agents. epi-implement-agent.md, cslib pr-review-implementation-agent.md, and email-implementation-agent.md were confirmed correctly out of scope (zero phase-heading marker edit instructions). Per the plan's own instruction (\"if the sweep yields a different set, the sweep wins and the fragment records the difference\"), founder-implement-agent.md is added as a 14th in-scope file.",
+      "annotation": "*(deviation: altered — founder-implement-agent.md added to in-scope set; sweep found it edits ### Phase N ... [MARKER] headings, contradicting the plan's hypothesis that it was out of scope)*"
+    }
+  ]
+}
