@@ -12,6 +12,64 @@ Each entry includes:
 
 ---
 
+### 2026-09-29
+
+**Task 266: deploy_pending_vs_identical_dispatch_guard**
+- Status: completed
+- Type: meta
+- Summary: Fixed the composition defect between the postflight completion-deploy gate and the identical-dispatch convergence guard by wiring a post-deploy reconcile pass into the Inter-Cycle Redeploy Checkpoint's clean-success path, adding a per-task streak-freeze backstop, clearing the deploy_pending marker at the completion chokepoint, correcting the refusal message, and documenting the interaction. All 8 plan phases completed; deployed and verified end-to-end.
+- Artifacts: specs/archive/266_deploy_pending_vs_identical_dispatch_guard/{reports,plans,summaries}/01_*.md
+
+**Task 244: check_task_references_repo_appropriate_roots**
+- Status: completed
+- Type: meta
+- Summary: Replaced check-task-references.sh's hard-coded four-tree TREE_ROOTS with a repo-wide git-ls-files scan (0/0 measured equivalence in this repo), made PATH_SCOPE scannable anywhere in the repo, added validate-wiring.sh SKIP guards for missing .claude/.opencode tree roots, shipped two new fixture-driven test suites, and rewrote task-reference-exemptions.md's Enforcement section off the four-root model.
+- Artifacts: specs/archive/244_check_task_references_repo_appropriate_roots/{reports,plans,summaries}/01_*.md
+
+**Task 207: fix_zotero_export_path1_truncation**
+- Status: completed
+- Type: meta
+- Summary: Fixed the silent-truncation data-loss defect in zotero-generate-export.sh's Path 1 by rewriting fetch_path1() with a temp-file accumulator, Total-Results-driven pagination, and loud failure with no partial write; added a content-keyed shrink guard, corrected fetch_path3's itemTypeID exclusion set, and delivered an 11-case offline regression suite plus documentation updates.
+- Artifacts: specs/archive/207_fix_zotero_export_path1_truncation/{reports,plans,summaries}/01_*.md
+
+**Task 199: concurrent_dispatch_isolation_posture**
+- Status: completed
+- Type: meta
+- Summary: Evidence-backed split-verdict recommendation: per-dispatch git-worktree isolation for lean4/cslib implement dispatches (with a measured hardlink-clone .lake mitigation for the disk cost), plus a narrow refuse-on-contended-file guard for general/meta/markdown dispatches; hunk-level staging ruled out as infeasible.
+- Artifacts: specs/archive/199_concurrent_dispatch_isolation_posture/{reports,plans,handoffs}/*.md
+
+**Task 167: guard_latex_builds_against_vimtex_watcher**
+- Status: completed
+- Type: meta
+- Summary: Corrected the latex extension's existing rule file (widened paths glob, new Continuous Build Safety section carrying AC1-AC5 as literal commands, repaired two unconditional build blocks) and added three non-duplicating pointers in EXTENSION.md, compilation-guide.md, and latex-implementation-agent.md, so continuous-build-watcher safety guidance is now always-in-effect regardless of task type.
+- Artifacts: specs/archive/167_guard_latex_builds_against_vimtex_watcher/{reports,plans,summaries}/01_*.md
+
+**Task 163: surface_missing_and_empty_file_scope**
+- Status: completed
+- Type: meta
+- Summary: Added missing/null/empty and glob-shaped file_scope detection (Check 10/11 in validate-state.sh, Classes F/G in orchestrate-predispatch-review.sh) plus a --strict flag, all WARN-only in default mode. Discovered and fixed one genuine pre-existing bug in --repair (silent file_scope manufacture) and one --help truncation regression, both pinned by new regression tests. 25/25 and 34/34 fixture tests pass.
+- Artifacts: specs/archive/163_surface_missing_and_empty_file_scope/{reports,plans,summaries}/01_*.md
+
+**Task 162: formalize_files_to_modify_and_harvest_file_scope**
+- Status: completed
+- Type: meta
+- Summary: Formalized plan-format.md's Files to modify field, built plan-file-scope-harvest.sh, widened update-task-status.sh's --file-scope-add restriction to accept plan postflights, wired the harvest into all five live plan-postflight call sites, and built/ran a cross-repo backfill script that populated file_scope for 7 existing plan-bearing tasks in ~/Projects/BimodalLogic.
+- Artifacts: specs/archive/162_formalize_files_to_modify_and_harvest_file_scope/{reports,plans,summaries}/01_*.md
+
+**Task 139: forbid_concurrent_writer_history_rewrites**
+- Status: completed
+- Type: meta
+- Summary: Added the concurrency-gated history-rewrite prohibition to rules/git-workflow.md, general-implementation-agent.md, and context/contracts/recovery.md; implemented a tree-state-blind concurrency predicate in guard-destructive-git.sh proven by a 72-case fixture suite; documented the hazard class in git-safety.md and orchestrator-runtime-files.md; confirmed the change survives .claude/ regeneration and fires from the deployed hook.
+- Artifacts: specs/archive/139_forbid_concurrent_writer_history_rewrites/{reports,plans,summaries}/01_*.md
+
+**Task 43: email_safety_context_loading_decision**
+- Status: completed
+- Type: meta
+- Summary: Recorded the email safety context-loading decision across the four source-store files (safety-invariants.md banner + coverage map, EXTENSION.md framing, README.md row, index-entries.json summary), confirming full enforcement coverage and zero behavioral drift. Documentation-only; deployed .claude/ tree unaffected until next manual regeneration.
+- Artifacts: specs/archive/043_email_safety_context_loading_decision/{reports,plans,summaries}/01_*.md
+
+---
+
 ### 2026-09-18
 
 **Task 234: fix_state_write_spill_name_collision**
