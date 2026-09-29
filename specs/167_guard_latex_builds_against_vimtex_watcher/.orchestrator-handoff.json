@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 16,
+  "summary": "Authored a four-phase plan (3 waves, ~2h) that corrects agent-system/extensions/latex/rules/latex.md in place rather than adding a mechanism: widen the paths glob to the 4-member array form, insert an authoritative Continuous Build Safety section above the two blocks it constrains, and repair the Build Commands and Validation Checklist blocks that currently prescribe the exact harmful commands. Phases 2-3 add three non-duplicating pointers (eager EXTENSION.md merge source, lazily-loaded compilation-guide.md, latex-implementation-agent.md including a gate on its unconditional MUST DO item 4); Phase 4 runs the AC1-AC7 acceptance sweep and records the no-change dispositions. Four planner decisions recorded: keep the broad **/build/** glob (recall over precision); verification is source-store static, NOT a redeploy (regeneration-is-manual-only.md licenses only skill-orchestrate Stage MT-3, and latex is not an active extension in this repo so a default deploy would deploy nothing for it); the three absorbed mechanism tasks stay deferred with a concrete re-admission trigger; one pointer plus one repair in the implementation agent per AC6. AC7 was already resolved empirically by research (paths: auto-load fires on Read/Edit/Write only, never on Bash), which makes the EXTENSION.md pointer load-bearing rather than belt-and-braces.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md",
+      "summary": "Four-phase plan for the rule-first continuous-build safety fix, with AC1-AC7 traceability and four recorded planner decisions."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 167. Phase 1 (rules/latex.md) is wave 1 and must land before phases 2 and 3, which can run in parallel."
+}

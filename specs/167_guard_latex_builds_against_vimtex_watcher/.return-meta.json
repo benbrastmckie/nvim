@@ -1,39 +1,34 @@
 {
-  "status": "researched",
-  "dispatch_seq": 8,
+  "status": "planned",
+  "dispatch_seq": 16,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md",
-      "summary": "Confirms multi-glob paths: syntax via existing precedent, empirically resolves AC7 (paths: auto-load fires on Read/Edit/Write only, never on Bash), and supplies ready-to-apply text for the rule's new Continuous Build Safety section, the EXTENSION.md pointer, the compilation-guide.md cross-reference, and a one-pointer addition to latex-implementation-agent.md; recommends the three absorbed mechanism tasks stay deferred/not-admitted this round."
+      "type": "plan",
+      "path": "specs/167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md",
+      "summary": "Four-phase plan (3 waves, 2h) correcting the latex extension's existing rule file in place -- widened paths glob, new authoritative Continuous Build Safety section, two repaired unconditional blocks -- plus three non-duplicating pointers and an AC1-AC7 acceptance sweep."
     }
   ],
-  "next_steps": "Run /plan 167 to create the implementation plan for the rule edit plus the two/three pointer additions (EXTENSION.md, compilation-guide.md, latex-implementation-agent.md).",
+  "next_steps": "Run /implement 167 to execute the plan",
   "metadata": {
     "session_id": "sess_1790640953_159e0d_167",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 7
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2,
+    "dependency_waves": [[1], [2, 3], [4]]
   },
   "memory_candidates": [
     {
-      "content": "The Claude Code harness's rule paths: frontmatter auto-load (agent-system/extensions/core/context/patterns/context-discovery.md's 'Rule Loading: Two Independent Paths') fires only on Read/Edit/Write tool calls whose path matches the glob. It does NOT fire on a Bash tool call whose command string names, or even cat's the content of, a matching path. Verified empirically in-session with a minimal pair: `cat` on a real .lua file via Bash produced no rule injection, while a Read tool call on the identical file immediately injected the full matching rule. Any always-in-effect guidance meant to cover bare Bash tool invocations must live in an eager CLAUDE.md merge-source pointer (or an equivalent unconditional channel), not rely on widening a rule's paths: glob alone.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["paths-glob", "rule-loading", "harness-mechanism", "bash-vs-read", "eager-context"]
-    },
-    {
-      "content": "Multi-glob paths: frontmatter (JSON-array-of-quoted-strings form, e.g. paths: [\"a/**\", \"b/**\"]) is already an established, deployed pattern in this codebase's rule files (core/rules/git-workflow.md, nvim/rules/neovim-lua.md, web/rules/web-astro.md, nix/rules/nix.md), and is explicitly parsed by measure-eager-context.sh's rule_matches_rep_paths logic. No manifest.json change or loader change is needed to add a second/third glob to an existing single-glob rule.",
+      "content": "In this agent-system source store, 'verify the change by redeploying' is frequently NOT an executable verification step for an implementer, for two independent reasons that must both be checked before a plan prescribes it. (1) context/patterns/regeneration-is-manual-only.md licenses exactly ONE automated caller of scripts/deploy-headless.sh -- skill-orchestrate's Stage MT-3 step 7 -- and states the carve-out is explicitly 'not precedent'; any other automated invocation is out of policy. (2) deploy-headless.sh's default mode only resyncs extensions already ACTIVE in the target repo's .claude-extensions.json, so for an inactive extension it silently deploys nothing. The substitute that IS available is source-store static verification plus mechanical replication of the deployer's own parse logic: measure-eager-context.sh deliberately predicts from the source store alone (never reads the deployed tree) and its normalize_paths_field / rule_matches_rep_paths functions are pure enough to replicate in a one-line assertion, e.g. reading a rule's raw paths: value with sed and piping the bracketed form through `jq -r '.[]'`.",
       "category": "PATTERN",
-      "source_artifact": "specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md",
+      "source_artifact": "specs/167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md",
       "confidence": 0.85,
-      "suggested_keywords": ["paths-glob", "rule-frontmatter", "multi-glob", "yaml-syntax"]
+      "suggested_keywords": ["deploy-verification", "deploy-headless", "source-store", "active-extensions", "measure-eager-context"]
     }
   ],
   "modified_files": [
-    "specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md"
+    "specs/167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md"
   ],
   "proposed_file_scope": [
     "agent-system/extensions/latex/rules/latex.md",
