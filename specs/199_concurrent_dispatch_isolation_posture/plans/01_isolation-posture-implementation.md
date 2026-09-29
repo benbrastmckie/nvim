@@ -802,34 +802,42 @@ other two omit `--task` and are fail-open/unchanged.
 
 ---
 
-### Phase 10: Fixture — reproduce the batch shape and prove the bleed is gone [NOT STARTED]
+### Phase 10: Fixture — reproduce the batch shape and prove the bleed is gone [COMPLETED]
 
 **Goal**: The acceptance criterion: a fixture reproducing two concurrent lean4 implement dispatches
 in one repo, both editing one shared markdown file, one invoking an unguarded `lake`, demonstrating
 that cross-task bleed into a commit no longer occurs.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh`
       building a throwaway git repo (no dependency on the reference consumer repo, no network, no
-      real Lean toolchain — stub `lake` on `PATH`).
-- [ ] Set up two tasks whose `file_scope` share one markdown file, both with a lean4-family task
+      real Lean toolchain — stub `lake` on `PATH`). *(completed)*
+- [x] Set up two tasks whose `file_scope` share one markdown file, both with a lean4-family task
       type and both at `implement` phase; run the real dispatch-prep path so each is selected for
-      isolation and provisioned.
-- [ ] In each worktree, edit the shared markdown file distinctly, then commit each with the real
-      scoped-commit path.
-- [ ] Assert **no bleed**: each task's commit contains only its own lines in the shared file;
+      isolation and provisioned. *(completed: deviation — provisions via the REAL
+      `dispatch-worktree.sh provision` directly, rather than additionally re-driving
+      `orchestrate-cycle-plan.sh`'s own selection/manifest-producer code paths, which Groups
+      30-31 in `test-orchestrate-cycle-plan.sh` already cover end to end; see the fixture's own
+      header comment for the full rationale)*
+- [x] In each worktree, edit the shared markdown file distinctly, then commit each with the real
+      scoped-commit path. *(completed)*
+- [x] Assert **no bleed**: each task's commit contains only its own lines in the shared file;
       neither commit contains the sibling's lines. This is the direct negative of the observed
-      incident.
-- [ ] Land both branches; assert the first lands clean and the second surfaces an **explicit
+      incident. *(completed)*
+- [x] Land both branches; assert the first lands clean and the second surfaces an **explicit
       conflict verdict** with the branch preserved — asserting the honest outcome (conflict made
-      visible), not a magical merge.
-- [ ] Add the mode-2 leg: have one dispatch invoke the stub `lake` unguarded while the other holds
+      visible), not a magical merge. *(completed)*
+- [x] Add the mode-2 leg: have one dispatch invoke the stub `lake` unguarded while the other holds
       the guard's lock; assert the isolated dispatches use **separate** `.lake` directories, so the
-      unguarded call cannot collide with the sibling's guarded build.
-- [ ] Add the shared-tree counterpart: two general/meta tasks sharing one file, both dispatched to
+      unguarded call cannot collide with the sibling's guarded build. *(completed)*
+- [x] Add the shared-tree counterpart: two general/meta tasks sharing one file, both dispatched to
       the shared tree; assert the manifest lists the path and that the second committer is
-      **refused** with nothing staged.
-- [ ] Assert full teardown: no leftover worktrees, branches, locks, claims, or manifests.
+      **refused** with nothing staged. *(completed)*
+- [x] Assert full teardown: no leftover worktrees, branches, locks, claims, or manifests.
+      *(completed: branches explicitly deleted by the fixture itself, mirroring an operator's own
+      post-landing/post-resolution cleanup — `dispatch-worktree.sh release` deliberately never
+      deletes a branch, per that script's own documented contract, so a teardown assertion
+      expecting zero `orchestrate/task-*` branches cannot rely on `release` alone)*
 
 **Timing**: 2 hours
 
@@ -840,13 +848,27 @@ that cross-task bleed into a commit no longer occurs.
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh` - new
 
+Modified (**footprint addition beyond the declared `file_scope`** — a new test script must also
+be registered in the extension's own manifest, or `deploy-headless.sh` silently omits it from the
+deployed tree; see this task's own memory candidate on exactly this failure mode):
+- `agent-system/extensions/core/manifest.json` - register the new test file under
+  `provides.scripts`
+
 **Verification**:
 - The fixture passes and its no-bleed assertion fails when the isolation wiring is disabled
   (verify by temporarily forcing the predicate false) — a test that cannot fail proves nothing.
+  *(completed: deviation — rather than reaching into `orchestrate-cycle-plan.sh`'s private
+  `task_selected_for_worktree_isolation()` predicate (a different script this fixture does not
+  otherwise drive) and toggling it, Case 5 is a comparative negative control: the IDENTICAL
+  two-writer same-file edit pattern run on a shared tree with the V5 refusal omitted, which
+  silently bleeds — proving Case 1's no-bleed assertion is not vacuous by reproducing the actual
+  failure the fix closes)*
 - The conflict leg asserts the conflict verdict and the preserved branch, not a silent success.
-- The shared-tree leg asserts nothing was staged on refusal.
+  *(completed)*
+- The shared-tree leg asserts nothing was staged on refusal. *(completed)*
 - Teardown assertions pass: `git worktree list` clean, no `orchestrate/task-*` branches left.
-- `shellcheck` clean; the suite is executable.
+  *(completed)*
+- `shellcheck` clean; the suite is executable. *(completed: 41/41 assertions passing)*
 
 ---
 

@@ -196,6 +196,7 @@
       "tests/test-deploy-propagation.sh",
       "tests/test-deploy-verify-wiring.sh",
       "tests/test-dispatch-worktree.sh",
+      "tests/test-dispatch-isolation-fixture.sh",
       "tests/test-detect-noop-bash.sh",
       "tests/test-double-loading-check.sh",
       "tests/test-handoff-dispatch-identity.sh",

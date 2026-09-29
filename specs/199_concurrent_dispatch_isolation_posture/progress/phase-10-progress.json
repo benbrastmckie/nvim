@@ -1,0 +1,45 @@
+{
+  "phase": 10,
+  "phase_name": "Fixture -- reproduce the batch shape and prove the bleed is gone",
+  "started_at": "2026-09-29T12:15:00Z",
+  "last_updated": "2026-09-29T13:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Build the fixture scaffold: throwaway git repo, real dispatch-worktree.sh/git-commit-scoped.sh/task-lock.sh/lake-build-guard.sh, no network, no real Lean toolchain", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh"]},
+    {"id": 2, "description": "Case 1-2: two worktree-isolated candidates edit the same line of a shared markdown file distinctly; assert no bleed on the clean land and an honest conflict verdict (branch/worktree preserved) on the second", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh"]},
+    {"id": 3, "description": "Case 3: mode-2 leg -- separate .lake directories per worktree via a stubbed lake (LAKE_BUILD_GUARD_LAKE_BIN), one unguarded call and one guarded call, assert no cross-worktree marker collision", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh"]},
+    {"id": 4, "description": "Case 4: shared-tree counterpart -- hand-built contention manifest, first committer succeeds, second (with a manually-held claim simulating a live rival) refused with nothing staged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh"]},
+    {"id": 5, "description": "Case 5: negative control -- same edit pattern on a shared tree WITHOUT --task silently bleeds, proving Case 1's no-bleed assertion is not vacuous", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh"]},
+    {"id": 6, "description": "Case 6: full teardown assertions across every repo (worktrees, branches, registry, claims, manifest all empty)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh"]},
+    {"id": 7, "description": "Debug pass: fixed a lake-build-guard.sh missing-lakefile refusal, a --dir-vs-cwd misunderstanding (the wrapped lake always runs from the guard's own CWD, not --dir), and two commit-count/branch-cleanup fixture bugs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh"]},
+    {"id": 8, "description": "Register the new test file in agent-system/extensions/core/manifest.json (provides.scripts) so deploy-headless.sh does not silently omit it", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 9, "description": "Verify: 41/41 assertions passing, shellcheck clean, check-task-references.sh clean (task-ref-ok:begin/:end wrapping every synthetic task-shaped fixture literal)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Pass --dir <worktree-path> to lake-build-guard.sh from the main tree's own CWD", "result": "failed", "reason": "--dir only steers project-root resolution for the lock/result file paths; the wrapped lake command itself always runs from the guard's own current process CWD (main.sh never cd's into ROOT before cmd_build). The build marker landed in the main tree's .lake/, not the worktree's. Fixed by cd-ing into the worktree itself before invoking the guard, with no --dir flag."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "10.2",
+      "description": "Run the real dispatch-prep path (orchestrate-cycle-plan.sh's own selection/provisioning) so each candidate is selected for isolation and provisioned",
+      "type": "altered",
+      "reason": "Interpreted as driving the REAL dispatch-worktree.sh provision/land/release and git-commit-scoped.sh --task refusal directly (the actual lifecycle machinery Phases 4-9 built), rather than additionally re-driving orchestrate-cycle-plan.sh's OWN selection/manifest-producer code paths -- those are already covered end to end by Groups 30-31 in test-orchestrate-cycle-plan.sh. This fixture's job is the cross-script INTEGRATION outcome (no bleed, honest conflict, separate .lake/, refused shared-tree commit, clean teardown), matching the plan's own Verification bullets for this phase.",
+      "annotation": null
+    },
+    {
+      "task_id": "10.verification.1",
+      "description": "Verify the no-bleed assertion is not vacuous by temporarily forcing orchestrate-cycle-plan.sh's task_selected_for_worktree_isolation() predicate false",
+      "type": "altered",
+      "reason": "That predicate lives in a different script this fixture does not otherwise drive (see the 10.2 deviation above). Case 5 substitutes a comparative negative control instead: the IDENTICAL two-writer same-file edit pattern run on a shared tree with the V5 refusal omitted (no --task), which DOES silently bleed -- proving Case 1's no-bleed assertion is not vacuous by directly reproducing the failure the posture closes, which is a stronger and more literal proof than toggling an internal predicate flag would have been.",
+      "annotation": null
+    },
+    {
+      "task_id": "10.6",
+      "description": "Assert full teardown: no leftover worktrees, branches, locks, claims, or manifests",
+      "type": "altered",
+      "reason": "dispatch-worktree.sh's own `release` deliberately never deletes a branch (durable git history, left for inspection -- see that script's own header). A teardown assertion expecting zero orchestrate/task-* branches therefore cannot rely on `release` alone; the fixture explicitly deletes each candidate's branch itself after landing/resolving it, the same way an operator would, then asserts the fully clean end state.",
+      "annotation": null
+    }
+  ]
+}
