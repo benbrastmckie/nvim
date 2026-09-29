@@ -1379,6 +1379,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [207_fix_zotero_export_path1_truncation/reports/01_path1-truncation-and-pagination-root-cause.md]
 - **Plan**: [207_fix_zotero_export_path1_truncation/plans/01_path1-truncation-shrink-guard.md]
+- **Summary**: [207_fix_zotero_export_path1_truncation/summaries/01_path1-truncation-shrink-guard-summary.md]
 
 **Description**: Fix the silent-truncation data-loss defect in zotero-generate-export.sh's Path 1 (Zotero 7 local API pull), and add a shrink guard so a truncated pull can never again overwrite a complete export.
 
