@@ -24,14 +24,24 @@
       "category": "INSIGHT",
       "source_artifact": "specs/167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["paths-glob", "rule-auto-load", "bash-trigger-gap", "eager-context", "frontmatter"]
+      "suggested_keywords": [
+        "paths-glob",
+        "rule-auto-load",
+        "bash-trigger-gap",
+        "eager-context",
+        "frontmatter"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }

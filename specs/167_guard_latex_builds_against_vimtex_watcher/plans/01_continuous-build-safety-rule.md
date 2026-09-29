@@ -2,7 +2,7 @@
 
 - **Task**: 167 - Guard LaTeX builds against the vimtex watcher: always-on rule first; shared
   guard script and lifecycle wiring only if the rule proves insufficient
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md

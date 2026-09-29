@@ -11,7 +11,7 @@ next_project_number: 269
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,51,89,127,139,163,167,184,199,207,217,223,241,244,255,265,268 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,51,89,127,139,163,184,199,207,217,223,241,244,255,265,268 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,136,165,185,250,251,263 | 22,44,127,139,163,184,199,241,265 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 170 | 51,250,251 | core-agent-system |
 
@@ -44,7 +44,6 @@ next_project_number: 269
 
 ### Extensions
 
-167 [IMPLEMENTING] — Guard LaTeX builds against the vimtex watcher: always-on rule...
 241 [NOT STARTED] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 255 [NOT STARTED] — Reconcile typst extension scope ownership and fix...
@@ -1980,12 +1979,13 @@ Contemporaneous context that plausibly supplied the load: the same run-all.sh in
 ---
 
 ### 167. Guard LaTeX builds against the vimtex watcher: always-on rule first; shared guard script and lifecycle wiring only if the rule proves insufficient
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 257, Task 259
 - **Research**: [167_guard_latex_builds_against_vimtex_watcher/reports/01_vimtex-watcher-guard-rule.md]
 - **Plan**: [167_guard_latex_builds_against_vimtex_watcher/plans/01_continuous-build-safety-rule.md]
+- **Summary**: [167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md]
 
 **Description**: Make continuous-build (vimtex `latexmk -pvc`) safety guidance always-in-effect for every agent and command, not only latex-typed dispatches, by extending the latex extension's EXISTING deployed rule file rather than adding a new mechanism.
 
