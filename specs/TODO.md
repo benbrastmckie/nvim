@@ -12,9 +12,9 @@ next_project_number: 276
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,39,44,51,89,127,136,165,184,217,223,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,270,271,272 | 22,44,51,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle |
-| 3 | 170,273,275 | 51,184,250,251,271,272 | core-agent-system |
-| 4 | 274 | 165,273,275 | core-agent-system |
+| 2 | 29,185,250,251,270,271,272 | 22,44,51,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 170,273,275 | 51,184,250,251,271,272 | core-agent-system, orchestrator |
+| 4 | 274 | 165,273,275 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -25,25 +25,18 @@ next_project_number: 276
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 51 [NOT STARTED] — Move session runtime files out of the specs root and make the...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
-  └─ 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
-    └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
-      └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
 136 [NOT STARTED] — Implementation-agent contract corrections: plan-level Status...
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-  └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
-    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 263 [NOT STARTED] — Consent-gated git push: grant semantics and enforcement mechanism
 265 [NOT STARTED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
-  └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel... (see above)
 
 ### Extensions
 
@@ -69,12 +62,21 @@ next_project_number: 276
 
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
+### Orchestrator
+
+271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
+  └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
+272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
+  └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
+
 ## Tasks
 
 ### 275. Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: orchestrator
 - **Dependencies**: Task 272, Task 51
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
@@ -161,7 +163,7 @@ in deliverables outside specs/**.
 ### 274. Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: orchestrator
 - **Dependencies**: Task 272, Task 273, Task 275, Task 165
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
@@ -225,7 +227,7 @@ deliverables outside specs/**.
 ### 273. Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: orchestrator
 - **Dependencies**: Task 271, Task 184
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
@@ -306,7 +308,7 @@ context/standards/shell-strict-mode.md. No task-number references in deliverable
 ### 272. Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, and give each orchestration its own identity
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: orchestrator
 - **Dependencies**: Task 51
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
@@ -419,7 +421,7 @@ context/standards/shell-strict-mode.md. No task-number references in deliverable
 ### 271. Finish the parent_task edge: declare it in the schema, validate it, render it in TODO, and make it survive renumbering
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
+- **Topic**: orchestrator
 - **Dependencies**: Task 269
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact regenerated by the loader -- see rules/source-store-deploy-boundary.md).
