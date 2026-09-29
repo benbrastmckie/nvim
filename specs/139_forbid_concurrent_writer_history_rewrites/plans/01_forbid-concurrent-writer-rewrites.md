@@ -1,7 +1,7 @@
 # Implementation Plan: Forbid concurrent-writer history rewrites (rules/contracts + concurrency-gated hook predicate)
 
 - **Task**: 139 - Forbid concurrent-writer history rewrites (rules/contracts) + concurrency-gated hook predicate (absorbed former task 140)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/139_forbid_concurrent_writer_history_rewrites/reports/01_forbid-concurrent-writer-rewrites.md

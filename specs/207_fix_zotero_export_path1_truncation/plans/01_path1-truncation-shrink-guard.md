@@ -1,7 +1,7 @@
 # Implementation Plan: Path 1 Truncation Fix and Shrink Guard
 
 - **Task**: 207 - Fix the silent-truncation data-loss defect in zotero-generate-export.sh's Path 1, and add a shrink guard
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/207_fix_zotero_export_path1_truncation/reports/01_path1-truncation-and-pagination-root-cause.md

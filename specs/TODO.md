@@ -1,5 +1,5 @@
 ---
-next_project_number: 269
+next_project_number: 271
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 269
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,51,89,127,136,165,184,199,217,223,241,255,263,265,268 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251 | 22,44,127,184,199,241,265 | core-agent-system, extensions |
+| 1 | 22,39,44,51,89,127,136,165,184,199,217,223,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,270 | 22,44,127,184,199,241,265,269 | core-agent-system, extensions, file-scope-lifecycle |
 | 3 | 170 | 51,250,251 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -57,12 +57,77 @@ next_project_number: 269
 ### File Scope Lifecycle
 
 165 [NOT STARTED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
+269 [NOT STARTED] — validate-state.sh --fix: replace the presence test with a...
+  └─ 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
 ### Lean Extension
 
 223 [RESEARCHED] — Record the Comparator-on-NixOS fixes in the lean extension
 
 ## Tasks
+
+### 270. Re-runnable null-safety audit of jq mutation sites across core scripts, then decide whether a shared guard idiom belongs in scripts/lib/
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: Task 269
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
+
+WHY THIS IS SEPARATE FROM THE VALIDATE-STATE FIX. The sibling task repairs one mutation site. This task establishes whether that site was an isolated slip or an instance of a systematic pattern, and leaves behind a mechanism so the answer stays true. The signature to hunt is a REPORT-GUARDED / WRITE-UNGUARDED SPLIT: a read/report filter that correctly null-guards a field with `// []`, paired with a mutation filter over the same field that tests only for KEY PRESENCE via `has("...")` and then iterates with a bare `.[]`, `reduce`, or `map`. `has()` is true for a literal-null value, so the pairing is silently unsafe on exactly the data the report filter was written to tolerate.
+
+STARTING INVENTORY (gathered during triage; VERIFY rather than trust -- the corpus moves, and this list was not produced by a tool that can be re-run). Every file_scope mutation site outside the sibling task's already-identified one appeared null-safe on first pass, which is the outcome that makes a re-runnable check valuable rather than redundant:
+  - scripts/orchestrate-predispatch-review.sh, circa lines 421 and 430, uses the EXPLICIT form `has("dependencies") and .dependencies == null` / `has("file_scope") and .file_scope == null` and then assigns `[]`. This is correct and deliberate -- it is a null-to-empty repair, not a dedup, and it must keep distinguishing null from absent. Do not "simplify" it into a type test; a type test would change its meaning.
+  - scripts/update-task-status.sh, circa lines 704 and 775, uses `((. // []) + $add | unique)`. Null-safe. Note it uses `unique` deliberately, on a DIFFERENT contract from the order-preserving D3 dedup -- do not unify the two.
+  - scripts/backfill-file-scope.sh, circa line 234, uses `((.file_scope // []) + $updates[...] | unique)`. Null-safe.
+  - scripts/orchestrate-batch-admit.sh, circa lines 547 and 570, uses `(($e.file_scope // []) | length)`. Null-safe.
+  - scripts/task-lock.sh, circa line 1380, slurps with `add | unique`. Check its behavior on a null element, not merely on an empty input.
+  - scripts/orchestrate-cycle-postflight.sh, circa line 1059, pipes `jq 'length'` over a file_scope JSON value. `length` on null yields 0 rather than aborting, so this is safe today -- but record WHY it is safe, because that safety is incidental to jq's semantics rather than intentional in the code.
+Extend the sweep past file_scope to every array-valued field that can legitimately be null or absent in practice -- dependencies, artifacts, memory_candidates, modified_files, and any state.json or errors.json field with the same exposure.
+
+DELIVERABLE 1 -- A RE-RUNNABLE CHECK, NOT A ONE-TIME SWEEP. A prose findings list decays immediately. Add a check script alongside the existing repo-health lints (scripts/check-task-references.sh, check-runtime-file-tracking.sh, check-extension-docs.sh are the shape and exit-code convention to follow) that flags the presence-vs-type asymmetry mechanically. The hard part is the false-positive rate: a bare `has("x")` is entirely legitimate as a shape ASSERTION (scripts/validate-return-meta.sh circa line 216 pairs it WITH a type test, which is the correct idiom; the test suites under scripts/tests/ use it as an assertion throughout). Flag only the dangerous pairing -- presence test guarding an ITERATION -- and give the check an explicit, documented exemption mechanism for the deliberate null-vs-absent discriminators named above, so the check can be run at full strength without maintainers learning to ignore it. Register the new script in docs/reference/utility-scripts-inventory.md.
+
+DELIVERABLE 2 -- DECIDE, WITH A RECORDED RATIONALE, WHETHER A SHARED GUARD IDIOM BELONGS IN scripts/lib/. A genuine decision, not a foregone conclusion: if the audit finds the single already-known site, a helper is over-engineering and the check script plus a documented idiom is the proportionate answer. If it finds several, scripts/lib/file-scope-overlap.sh is the precedent to follow -- it already exports jq `def` source text as FILE_SCOPE_OVERLAP_JQ_DEFS via a quoted heredoc for splicing into callers' own jq programs, and its header records exactly why that shape beat a standalone .jq file. A dedup/guard def could ride the same mechanism. Record the decision either way so a future reader does not re-litigate it.
+
+RELATED, DELIBERATELY NOT MERGED. scripts/orchestrate-cycle-postflight.sh's modified_files-vs-file_scope excursion check (circa lines 1053-1069) is detection-only, emitting a stderr advisory where it should be an enforcement gate. That is a genuine follow-on but a DIFFERENT defect class -- advisory-vs-blocking, not null-safety -- and it was recorded separately. Touching the same file is not a reason to bundle it. If the audit turns up null-safety problems inside that same excursion block, fix those here and leave the enforcement-gate question to its own task.
+
+---
+
+### 269. validate-state.sh --fix: replace the presence test with a type test so a null file_scope cannot abort the repair
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/validate-state.sh (never .claude/**). The deployed copy at a consumer repo's .claude/scripts/validate-state.sh was confirmed byte-for-byte identical (diff -q) and is listed in .claude-extensions.json's installed_files under the core extension, so it is a deploy artifact only -- fix at source and redeploy, per rules/source-store-deploy-boundary.md.
+
+CONFIRMED DEFECT, ALREADY MECHANICALLY REPRODUCED. `validate-state.sh --fix` aborts with `jq: error (at <stdin>:1): Cannot iterate over null (null)` on any state.json holding an active_projects entry whose file_scope is literal null. Net effect: --fix REPORTS its findings correctly and then repairs NOTHING, because state-write.sh sees the jq transform fail and correctly refuses the write. The refusal is working as designed; the defect is strictly upstream of it.
+
+ROOT CAUSE -- A PRESENCE-TEST vs TYPE-TEST ASYMMETRY BETWEEN TWO FILTERS THAT MUST AGREE. Inside the --fix block, the report filter (circa line 305) is correctly null-guarded with `($t.file_scope // []) as $fs`, but the mutation filter handed to state-write.sh (circa line 322) is not:
+
+  .active_projects = [.active_projects[] | if has("file_scope") then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]
+
+`has("file_scope")` returns TRUE when the value is literal null, because the KEY exists. The reduce then iterates over null and jq aborts. Reproduction:
+
+  $ echo '{"active_projects":[{"project_number":1,"file_scope":null}]}' | jq -c '.active_projects = [.active_projects[] | if has("file_scope") then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]'
+  jq: error (at <stdin>:1): Cannot iterate over null (null)
+
+The type-test form is correct and idempotent, leaving null-valued and absent entries byte-identical:
+
+  $ echo '{"active_projects":[{"project_number":1,"file_scope":null}]}' | jq -c '.active_projects = [.active_projects[] | if (.file_scope|type) == "array" then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]'
+  {"active_projects":[{"project_number":1,"file_scope":null}]}
+
+INVARIANTS THE FIX MUST PRESERVE (all three are load-bearing and documented in the comment block above the filter):
+  1. D3 order-preserving dedup. jq's `unique` SORTS and must not be substituted for the reduce.
+  2. The filter must never introduce a `file_scope: []` field on an entry that never had one. A type test satisfies this for free: a null-valued entry keeps its null, an absent-key entry stays absent.
+  3. Idempotence -- an entry whose file_scope already has no duplicates is left byte-identical.
+Update that comment block too: it currently explains and endorses the `has("file_scope")` form, so leaving it in place would re-document the defect.
+
+REGRESSION TEST. scripts/tests/test-validate-state.sh already carries a --fix fixture block (FIX_FIXTURE_DIR, circa line 600) and is the natural home; do not add a new test file. The fixture must drive a null-bearing state.json through --fix end to end and assert (a) exit status is success, (b) genuinely duplicated file_scope arrays elsewhere in the same fixture were actually deduplicated -- proving the write landed rather than merely that nothing crashed, and (c) the null-valued and absent-key entries are untouched, still null and still absent respectively. Note the existing suite already probes `has("file_scope")` on fixtures at test-validate-state.sh circa line 807 as an ASSERTION about state shape; that usage is legitimate and is not what this task changes.
+
+PROVENANCE. Encountered live during an /orchestrate implement dispatch. Five projects in the ~/Projects/BimodalLogic consumer repo's specs/state.json currently carry literal-null file_scope, so the crash triggers there today. That dispatch worked around it with an equivalent project-scoped null-safe filter applied through state-write.sh and deliberately did NOT hand-patch the deployed copy. The broader missing-or-null file_scope visibility class in that repo is 28 entries -- a different and larger set than the null-valued subset; do not conflate the two figures. The --fix block's Check 8/9 lineage traces to the completed task that surfaced missing and empty file_scope in validate-state.sh and orchestrate-predispatch-review.sh.
+
+---
 
 ### 268. Lake build guard false green scope key
 - **Status**: [NOT STARTED]

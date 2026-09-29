@@ -1,7 +1,7 @@
 # Implementation Plan: Task #163
 
 - **Task**: 163 - Surface missing and empty file_scope
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/163_surface_missing_and_empty_file_scope/reports/01_missing-empty-file-scope-visibility.md

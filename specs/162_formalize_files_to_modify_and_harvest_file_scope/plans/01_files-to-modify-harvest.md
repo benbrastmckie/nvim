@@ -1,7 +1,7 @@
 # Implementation Plan: Task #162
 
 - **Task**: 162 - Formalize "Files to modify" and harvest file_scope
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/162_formalize_files_to_modify_and_harvest_file_scope/reports/01_files-to-modify-harvest.md
