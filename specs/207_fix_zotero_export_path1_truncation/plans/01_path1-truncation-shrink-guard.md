@@ -1,7 +1,7 @@
 # Implementation Plan: Path 1 Truncation Fix and Shrink Guard
 
 - **Task**: 207 - Fix the silent-truncation data-loss defect in zotero-generate-export.sh's Path 1, and add a shrink guard
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/207_fix_zotero_export_path1_truncation/reports/01_path1-truncation-and-pagination-root-cause.md
@@ -122,30 +122,30 @@ Phases within the same wave can execute in parallel. Phases 2-5 are deliberately
 four edit `zotero-generate-export.sh`, and serializing them keeps each commit a reviewable
 single-concern hunk.
 
-### Phase 1: Extend the curl stub for the Zotero local API [NOT STARTED]
+### Phase 1: Extend the curl stub for the Zotero local API [COMPLETED]
 
 - **Goal:** `scripts/tests/curl-stub.sh` can drive `zotero-generate-export.sh` Path 1 end to end
   offline — paged synthetic csljson bodies large enough to cross 128KiB, a short mid-pagination page,
   `Total-Results`/`Link` response headers, and correct dispatch between the items endpoint and the
   BBT-RPC endpoint on the same host:port.
 - **Tasks:**
-  - [ ] Add **path-based** dispatch: match `*/api/users/0/items*` and `*/better-bibtex/json-rpc*`
+  - [x] Add **path-based** dispatch: match `*/api/users/0/items*` and `*/better-bibtex/json-rpc*`
         separately. Both share `localhost:23119`, so hostname matching alone misroutes RPC calls.
-  - [ ] Add query-string parsing for `start=` and `limit=` so the stub serves the correct synthetic
+  - [x] Add query-string parsing for `start=` and `limit=` so the stub serves the correct synthetic
         page for a given window.
-  - [ ] Add a third recognized invocation shape: `curl -s -o /dev/null -w '%{http_code}'` — print
+  - [x] Add a third recognized invocation shape: `curl -s -o /dev/null -w '%{http_code}'` — print
         **only** the code, no body (this is `probe_zotero_api()`'s and `probe_bbt_rpc()`'s exact
         shape; the body is discarded by `-o /dev/null`).
-  - [ ] Add a header-emitting route matching whatever header-capture invocation Phase 2 settles on
+  - [x] Add a header-emitting route matching whatever header-capture invocation Phase 2 settles on
         (e.g. `-D -`), emitting a `Total-Results:` and `Link: ...rel="last"` block.
-  - [ ] Add a synthetic-page generator (extend `generate-test-fixtures.py` or add a sibling helper)
+  - [x] Add a synthetic-page generator (extend `generate-test-fixtures.py` or add a sibling helper)
         producing N csljson items per page with padded `abstract` fields, so a page and the
         accumulated total both cross 131072 bytes well before the page count is large.
-  - [ ] Add env-var knobs for the scenarios Phase 6 needs: total item count, a `start` offset whose
+  - [x] Add env-var knobs for the scenarios Phase 6 needs: total item count, a `start` offset whose
         page returns fewer than `limit` items while more pages remain, and a page index that returns
         a transport failure (`curl_fail`) or malformed JSON.
-  - [ ] Keep the existing four-provider host dispatch and the unknown-host `exit 7` behavior intact.
-  - [ ] Drive the stub from a scratch script (not the real generator yet) to confirm each shape and
+  - [x] Keep the existing four-provider host dispatch and the unknown-host `exit 7` behavior intact.
+  - [x] Drive the stub from a scratch script (not the real generator yet) to confirm each shape and
         each knob produces the intended bytes and exit codes.
 - **Timing:** 1.5 hours
 - **Depends on:** none

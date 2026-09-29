@@ -1,0 +1,51 @@
+{
+  "phase": 1,
+  "phase_name": "Extend the curl stub for the Zotero local API",
+  "started_at": "2026-09-29T00:00:00Z",
+  "last_updated": "2026-09-29T02:10:34Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Path-based dispatch for items endpoint vs BBT-RPC endpoint",
+      "status": "done"
+    },
+    {
+      "id": 2,
+      "description": "Query-string parsing for start=/limit=",
+      "status": "done"
+    },
+    {
+      "id": 3,
+      "description": "Third invocation shape: -s -o /dev/null -w '%{http_code}'",
+      "status": "done"
+    },
+    {
+      "id": 4,
+      "description": "Header-emitting route with Total-Results/Link",
+      "status": "done"
+    },
+    {
+      "id": 5,
+      "description": "Synthetic paged csljson generator crossing 128KiB",
+      "status": "done"
+    },
+    {
+      "id": 6,
+      "description": "Env-var knobs: total count, short-mid-page, curl_fail/malformed page",
+      "status": "done"
+    },
+    {
+      "id": 7,
+      "description": "Preserve existing four-provider host dispatch and unknown-host exit 7",
+      "status": "done"
+    },
+    {
+      "id": 8,
+      "description": "Scratch-script verification of each shape/knob",
+      "status": "done"
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
