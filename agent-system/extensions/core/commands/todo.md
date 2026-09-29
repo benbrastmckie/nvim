@@ -903,6 +903,35 @@ Track vault operations for output:
 - `tasks_renumbered`: count of tasks renumbered
 - `new_next_project_number`: reset value
 
+### 5.8. Reap Stale Session Runtime Files
+
+`/todo` also sweeps the `specs/` root for stale session-scoped
+`specs/.orchestrator-multi-state-{session_id}.json` and
+`specs/.return-meta-multi-{session_id}.json` files via `reap-session-runtime-files.sh`, and
+`specs/.sessions/` for stale in-flight orchestration session registry entries via
+`task-lock.sh session-reap` — the same two calls `/refresh` already makes (see
+`commands/refresh.md`'s "Stale Session-Scoped Orchestration Files" and "Stale Session Registry
+Entries" subsections for the full class description and threshold derivation). `/todo` is run
+far more often than `/refresh`, so wiring these two reaps into every live invocation closes the
+gap where litter accumulates unbounded between manual `/refresh` runs.
+
+Both calls reuse the `dry_run` boolean already parsed in Step 1: on `--dry-run`, each script runs
+with `--dry-run` and reports what it would reap; on a live run, each reaps and reports what it
+reaped. Each script's own per-item output (filename/session id/age for the orchestration-file
+sweep; session id/command/task numbers/age/reason for the registry sweep) is echoed verbatim,
+matching `/refresh`'s own "echo verbatim" convention for these same two calls.
+
+This stage is **non-blocking**: a nonzero exit or a missing script is logged and stepped over,
+never failing `/todo`. Both `ORCHESTRATOR_SESSION_REAP_MIN` and `SESSION_REGISTRY_REAP_MIN`
+(default 240 minutes each) are honored unchanged, so an in-flight batch orchestration run is
+never reaped out from under itself. `/refresh`'s own invocation of these same two scripts is
+untouched by this addition.
+
+Because every path either script reaps is gitignored (see
+`.claude/context/standards/orchestrator-runtime-files.md`'s Class Table), Step 6's staging below
+is a fixed explicit path list and needs no git interaction for these deletions — the reap simply
+runs ahead of Step 6's commit in the same invocation, not inside it.
+
 ### 6. Git Commit
 
 Stage and commit together via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned

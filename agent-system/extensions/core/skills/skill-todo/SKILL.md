@@ -973,7 +973,54 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       identically -- no separate cleanup logic exists for it; it rides the same archive-move.
     </process>
   </stage>
-  
+
+  <stage id="14.5" name="ReapRuntimeFiles">
+    <action>Reap stale session-scoped orchestration runtime files and stale session-registry
+    entries</action>
+    <process>
+      `/todo` is run far more often than `/refresh`, so this stage wires the same two reap calls
+      `skill-refresh/SKILL.md` Steps 4.5 and 4.6 already make into every live `/todo` invocation,
+      closing the gap where litter accumulates unbounded between manual `/refresh` runs. Reuses
+      the `dry_run` boolean already parsed in Stage 1 -- same `--dry-run` passthrough branch shape
+      as Steps 4.5/4.6.
+
+      This stage is non-blocking: a nonzero exit or a missing script is logged and stepped over,
+      never failing `/todo`. Both `ORCHESTRATOR_SESSION_REAP_MIN` and
+      `SESSION_REGISTRY_REAP_MIN` (default 240min each) are honored unchanged, so an in-flight
+      batch orchestration run is never reaped out from under itself. `/refresh`'s own invocation
+      of these same two scripts (Steps 4.5/4.6) is untouched by this stage.
+
+      ```bash
+      echo ""
+      echo "=== Reaping Stale Session-Scoped Orchestration Files ==="
+      echo ""
+
+      if [ "$dry_run" = true ]; then
+          .claude/scripts/reap-session-runtime-files.sh --dry-run || true
+      else
+          .claude/scripts/reap-session-runtime-files.sh || true
+      fi
+
+      echo ""
+      echo "=== Reaping Stale Session Registry Entries ==="
+      echo ""
+
+      if [ "$dry_run" = true ]; then
+          .claude/scripts/task-lock.sh session-reap --dry-run || true
+      else
+          .claude/scripts/task-lock.sh session-reap || true
+      fi
+      ```
+
+      Echo each script's own per-item output verbatim rather than summarizing it away, matching
+      `skill-refresh/SKILL.md`'s "echo verbatim" convention for these same two calls. Because
+      every path either script reaps is gitignored (see
+      `context/standards/orchestrator-runtime-files.md`'s Class Table), Stage 15's staging is a
+      fixed explicit path list and needs no git interaction for these deletions -- the reap
+      simply lands ahead of Stage 15's commit in the same run, never inside it.
+    </process>
+  </stage>
+
   <stage id="15" name="GitCommit">
     <action>Commit all changes</action>
     <process>
@@ -996,6 +1043,9 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       - Deferred expanded parents: `{N} held back (subtasks still active)`, from
         `deferred_expanded[]` (Stage 2); omit the line when `deferred_expanded[]` is empty
       - Directory operations (orphans tracked/misplaced moved)
+      - Runtime file reap: echo Stage 14.5's two reap calls' own summary lines verbatim (e.g.
+        "reaped N of M session-scoped orchestration file(s)" and "reaped N of M stale session
+        registry entries"), the same verbatim-echo convention as the lines above
       - Updates applied (roadmap annotations/readme changes/changelog entries): same three-way
         branch as Stage 8's dry-run line — omit the roadmap count only when
         `roadmap_structure.parseable == true` and zero items were annotated; **always** print

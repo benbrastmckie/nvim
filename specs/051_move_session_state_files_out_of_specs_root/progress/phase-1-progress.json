@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Wire the reap pair into /todo",
+  "started_at": "2026-09-29T23:55:00Z",
+  "last_updated": "2026-09-29T23:58:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Insert Stage 14.5 ReapRuntimeFiles into skill-todo/SKILL.md between Stage 14 and Stage 15, plus Stage 16 summary bullet",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Add ### 5.8 Reap Stale Session Runtime Files subsection to commands/todo.md between §5.7 and §6",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/todo.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

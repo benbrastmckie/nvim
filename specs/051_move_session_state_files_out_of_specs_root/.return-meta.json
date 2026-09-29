@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/051_move_session_state_files_out_of_specs_root/plans/01_relocate-widen-reap-wire-todo.md",
-      "summary": "7-phase, 8-hour plan covering all three parts: Phase 1 wires the reap pair into /todo (acceptance-critical, Wave 1, no dependencies), Phase 2 widens the reaper's globs to all four naming generations, Phase 3 untracks the retired-convention orphan and documents Check B's coverage limit, Phases 4-6 relocate both singletons into specs/.orchestration/ (writers, 19th runtime-file class member, ~121 test-fixture references across 7 suites, 9 prose sites), Phase 7 redeploys, runs the full gate set, and sweeps the live litter."
-    }
-  ],
-  "next_steps": "Run /implement 51 to execute the plan. Phase 1 is the acceptance-critical deliverable and depends on nothing, so it must land and commit before the relocation phases start. Phases 4-6 are the designated drop candidates if effort must be cut.",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790721762_ff3d8e_51",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 8,
-    "dependency_waves": [[1, 2, 3], [4], [5, 6], [7]]
+    "session_id": "sess_1790721762_ff3d8e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "When a plan relocates a runtime file that scripts derive by path-string concatenation (e.g. mt_state_file=\"$(dirname \"$STATE_FILE\")/.orchestrator-multi-state-${session_id}.json\"), the writer/reader count understates the blast radius by roughly two orders of magnitude: test suites hardcode the same literal fixture paths for their own assertions. In agent-system's core extension, 4 writer/reader sites corresponded to ~121 literal references across 7 test files (92 in one suite alone). Before scoping a path relocation, grep the test tree separately from the source tree and count -- a research pass that enumerates only writers/readers/docs will miss the largest single category of churn.",
-      "category": "PATTERN",
-      "source_artifact": "specs/051_move_session_state_files_out_of_specs_root/plans/01_relocate-widen-reap-wire-todo.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["path-relocation", "blast-radius", "test-fixtures", "scope-estimation", "runtime-files"]
-    }
-  ],
-  "dispatch_seq": 13
+  "dispatch_seq": 17
 }

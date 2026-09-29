@@ -23,12 +23,12 @@ next_project_number: 276
 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-51 [PLANNED] — Move session runtime files out of the specs root and make the...
+51 [IMPLEMENTING] — Move session runtime files out of the specs root and make the...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
-136 [PLANNED] — Implementation-agent contract corrections: plan-level Status...
+136 [IMPLEMENTING] — Implementation-agent contract corrections: plan-level Status...
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
@@ -40,9 +40,9 @@ next_project_number: 276
 
 ### Extensions
 
-241 [RESEARCHED] — Reconcile MCP registration surfaces: redundant playwright...
+241 [PLANNING] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
-255 [PLANNED] — Reconcile typst extension scope ownership and fix...
+255 [IMPLEMENTING] — Reconcile typst extension scope ownership and fix...
 
 ### Literature
 
@@ -1099,7 +1099,7 @@ PHASES: (A) grant token + /please hook + integrity + push guard + destructive-gi
 
 ### 255. Reconcile typst extension scope ownership and fix chapter-quality-check.sh Rule 1.3 bib resolution
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -1496,7 +1496,7 @@ WHAT REMAINS: Phase 1 (the standing script-inventory probe, which must reuse tha
 ---
 
 ### 241. Reconcile MCP registration surfaces: redundant playwright grants, dead manifest mcp_servers fields, ownership doc and nix README
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -2052,7 +2052,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 136. Implementation-agent contract corrections: plan-level Status ownership, no fan-out, marker/commit sync, validator catch
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 139
@@ -2258,7 +2258,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ---
 
 ### 51. Move session runtime files out of the specs root and make the reap path run
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 143, Task 209

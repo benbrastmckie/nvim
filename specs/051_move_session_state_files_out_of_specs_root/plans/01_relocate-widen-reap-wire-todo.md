@@ -1,7 +1,7 @@
 # Implementation Plan: Task #51
 
 - **Task**: 51 - Move session runtime files out of the specs root and make the reap path run
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None (task 143 and task 209 are both completed/archived and non-blocking)
 - **Research Inputs**: specs/051_move_session_state_files_out_of_specs_root/reports/01_relocate-widen-reap-wire-todo.md
@@ -156,32 +156,32 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Wire the reap pair into /todo [NOT STARTED]
+### Phase 1: Wire the reap pair into /todo [COMPLETED]
 
 **Goal**: `/todo` reaps stale session-scoped orchestration files and stale session-registry
 entries on every live invocation, reporting both verbatim, with `/refresh`'s behavior unchanged.
 This is the acceptance-critical deliverable.
 
 **Tasks**:
-- [ ] Read `skills/skill-refresh/SKILL.md` Steps 4.5 and 4.6 (lines ~207-263) as the porting
+- [x] Read `skills/skill-refresh/SKILL.md` Steps 4.5 and 4.6 (lines ~207-263) as the porting
       template — note the `if [ "$dry_run" = true ]` / `--dry-run` passthrough branch and the
-      "echo its output verbatim rather than summarizing it away" instruction
-- [ ] Confirm `skill-todo/SKILL.md` Stage 1 (`ParseArguments`) sets a `dry_run` boolean and that
-      Stage 8 (`DryRunOutput`) is the only early exit; record the variable's exact name
-- [ ] Insert `<stage id="14.5" name="ReapRuntimeFiles">` into `skills/skill-todo/SKILL.md`
+      "echo its output verbatim rather than summarizing it away" instruction *(completed)*
+- [x] Confirm `skill-todo/SKILL.md` Stage 1 (`ParseArguments`) sets a `dry_run` boolean and that
+      Stage 8 (`DryRunOutput`) is the only early exit; record the variable's exact name *(completed)*
+- [x] Insert `<stage id="14.5" name="ReapRuntimeFiles">` into `skills/skill-todo/SKILL.md`
       between Stage 14 (`CreateMemories`, line ~936) and Stage 15 (`GitCommit`, line ~977),
       containing both calls (`.claude/scripts/reap-session-runtime-files.sh` and
       `.claude/scripts/task-lock.sh session-reap`) under the same `dry_run` branch shape as
-      `skill-refresh` Steps 4.5/4.6
-- [ ] State in the stage body that it is non-blocking (a nonzero exit or missing script is logged
-      and stepped over, never failing `/todo`) and that both thresholds are honored unchanged
-- [ ] Add a `Runtime file reap` bullet to Stage 16 (`OutputResults`)'s summary list, following the
-      same verbatim-echo convention
-- [ ] Add `### 5.8. Reap Stale Session Runtime Files` to `commands/todo.md` between
+      `skill-refresh` Steps 4.5/4.6 *(completed)*
+- [x] State in the stage body that it is non-blocking (a nonzero exit or missing script is logged
+      and stepped over, never failing `/todo`) and that both thresholds are honored unchanged *(completed)*
+- [x] Add a `Runtime file reap` bullet to Stage 16 (`OutputResults`)'s summary list, following the
+      same verbatim-echo convention *(completed)*
+- [x] Add `### 5.8. Reap Stale Session Runtime Files` to `commands/todo.md` between
       `### 5.7. Vault Operation` (line ~779) and `### 6. Git Commit` (line ~906), mirroring
-      `commands/refresh.md`'s own two reap subsections (lines ~140-180) in prose shape
-- [ ] Note explicitly in both files that Stage 15's staging is a fixed explicit path list, so
-      reaped (gitignored) deletions require no git interaction
+      `commands/refresh.md`'s own two reap subsections (lines ~140-180) in prose shape *(completed)*
+- [x] Note explicitly in both files that Stage 15's staging is a fixed explicit path list, so
+      reaped (gitignored) deletions require no git interaction *(completed)*
 
 **Timing**: 1.25 hours
 
