@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "The Concurrency-Gated History-Rewrite Predicate",
+  "started_at": "2026-09-29T02:30:00Z",
+  "last_updated": "2026-09-29T02:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read hook file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Restructure: move COMMAND_SCAN above clean-tree exit", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 3, "description": "Insert Gate A (amend) and Gate B (HEAD-moving reset) syntactic gates", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 4, "description": "Operator override GUARD_ALLOW_HISTORY_REWRITE=1", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 5, "description": "Implement history_rewrite_live_writer()", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 6, "description": "Refusal exit 2 + stderr message", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 7, "description": "Rewrite header comment block", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 8, "description": "bash -n / shellcheck / smoke tests / commit", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

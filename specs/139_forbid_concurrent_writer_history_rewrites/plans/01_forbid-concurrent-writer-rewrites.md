@@ -287,20 +287,21 @@ editing and handle every hit found, not only these two.
 
 ---
 
-### Phase 4: The Concurrency-Gated History-Rewrite Predicate [NOT STARTED]
+### Phase 4: The Concurrency-Gated History-Rewrite Predicate [COMPLETED]
 
 **Goal**: `guard-destructive-git.sh` refuses a history rewrite whenever a live dispatched writer
 exists, independently of tree state, without altering any existing predicate's behavior.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/hooks/guard-destructive-git.sh` immediately before
-      editing.
-- [ ] **Restructure (ordering is load-bearing)**: move the pure-string `COMMAND_SCAN` construction
+- [x] Re-read `agent-system/extensions/core/hooks/guard-destructive-git.sh` immediately before
+      editing. *(completed)*
+- [x] **Restructure (ordering is load-bearing)**: move the pure-string `COMMAND_SCAN` construction
       block (quote-strip via `sed -z`, then comment-strip) to sit immediately after the empty-
       `$COMMAND` early exit and **above** the clean-tree `exit 0`. Move nothing else. The
       clean-tree `exit 0` must remain immediately above the over-staging detectors so those, and
       the destructive-pattern chain, keep their documented dirty-tree-only behavior unchanged.
-- [ ] Insert the new predicate between `COMMAND_SCAN` and the clean-tree exit, as a
+      *(completed)*
+- [x] Insert the new predicate between `COMMAND_SCAN` and the clean-tree exit, as a
       **syntactic-gate-first** block so no filesystem scan is paid unless the command actually
       matches:
       - **Gate A, amend**: a `git commit` segment (existing `(^|[;&|][[:space:]]*)git[[:space:]]+commit[^;&|]*`
@@ -313,11 +314,12 @@ exists, independently of tree state, without altering any existing predicate's b
         which the existing dirty-tree predicate exempts on a clean tree.
       - Both gates read `$COMMAND_SCAN`, never raw `$COMMAND`, inheriting the existing
         false-positive closure for a commit message containing the literal text `--amend`.
-- [ ] Add the operator override: if `$COMMAND_SCAN` contains `GUARD_ALLOW_HISTORY_REWRITE=1`,
+      *(completed)*
+- [x] Add the operator override: if `$COMMAND_SCAN` contains `GUARD_ALLOW_HISTORY_REWRITE=1`,
       fall through. Detect it **in the scan string only** — never from the hook's own environment,
       which the caller's inline assignment does not reach — so the override is always visible and
-      auditable in the transcript. Comment it as operator-only, agents-MUST-NOT.
-- [ ] Implement `history_rewrite_live_writer()`: a cwd-relative liveness scan over both record
+      auditable in the transcript. Comment it as operator-only, agents-MUST-NOT. *(completed)*
+- [x] Implement `history_rewrite_live_writer()`: a cwd-relative liveness scan over both record
       families, following the file's existing `find specs -maxdepth 3` marker-scan idiom:
       - `find specs -maxdepth 3 -name holder.json -type f` (per-task locks, written by
         `command-gate-in.sh`/`orchestrate-cycle-plan.sh` for every operation, not just implement)
@@ -340,19 +342,23 @@ exists, independently of tree state, without altering any existing predicate's b
         proof that it is running under orchestration, where the new rule forbids bare rewrites
         outright. A genuinely solo interactive operator has no live lock and no live registry
         entry, so the explicit non-goal is preserved.
-- [ ] Refuse with `exit 2` + stderr (never `permissionDecision: deny`, per the file's header
+      *(completed: parse failure returns via `continue` — skip the record — rather than a named
+      999999 sentinel; functionally identical fail-open behavior, verbatim `date -u -d` /
+      `date -u -j -f` fallback chain inlined directly rather than wrapped in a same-named helper)*
+- [x] Refuse with `exit 2` + stderr (never `permissionDecision: deny`, per the file's header
       warning), naming: the matched form, that the refusal is due to a live concurrent writer and
       not tree state, `.claude/scripts/git-commit-scoped.sh` as the sanctioned path,
       `.claude/rules/git-workflow.md`'s `No History Rewrites While Another Writer Is Live` section
-      for the rationale, and the operator override with its agents-MUST-NOT caveat.
-- [ ] Rewrite the header comment block, which currently documents a single-hazard design: state
+      for the rationale, and the operator override with its agents-MUST-NOT caveat. *(completed)*
+- [x] Rewrite the header comment block, which currently documents a single-hazard design: state
       both hazard classes, that the new predicate runs **before** the clean-tree exemption and
       consults concurrency rather than dirtiness, the two record families and the liveness rule,
       the fail-open posture, the one-or-more threshold with its can't-identify-self rationale, the
       override, and why `git-commit-scoped.sh` needs no special case (the existing
-      observation-boundary argument applies unchanged).
-- [ ] `bash -n` the file, then `shellcheck` it if available, and commit it alone via
-      `git-commit-scoped.sh`.
+      observation-boundary argument applies unchanged). *(completed)*
+- [x] `bash -n` the file, then `shellcheck` it if available, and commit it alone via
+      `git-commit-scoped.sh`. *(completed: bash -n passed; shellcheck not installed in this
+      environment)*
 
 **Timing**: 1.5 hours
 

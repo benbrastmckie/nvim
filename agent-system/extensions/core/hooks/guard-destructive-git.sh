@@ -1,8 +1,21 @@
 #!/usr/bin/env bash
 # guard-destructive-git.sh
-# PreToolUse Bash hook: block destructive git commands when the working tree is dirty,
-# unless a fresh git-snapshot.sh marker exists (see .claude/scripts/git-snapshot.sh for
-# the marker contract) or the tree is already clean.
+# PreToolUse Bash hook guarding TWO INDEPENDENT hazard classes:
+#
+#   1. Destructive commands that discard UNCOMMITTED working-tree changes. This class is
+#      scoped by DIRTINESS OF THE TREE: a clean tree has nothing to lose, so these predicates
+#      exempt it, and a fresh git-snapshot.sh marker exempts a dirty tree too (see
+#      .claude/scripts/git-snapshot.sh for the marker contract).
+#   2. History rewrites (bare `git commit --amend`, a HEAD-moving `git reset`) that can
+#      silently rewrite a commit made by a DIFFERENT dispatched writer. This class is scoped by
+#      CONCURRENCY OF WRITERS, not tree state -- both gated commands are non-destructive to the
+#      working tree, so class 1's dirty-tree design would wave them through on a dirty tree or a
+#      clean one alike. This predicate therefore runs BEFORE the clean-tree exemption below and
+#      consults live task-lock/session-registry evidence instead of `git status --porcelain`; it
+#      has no snapshot-marker exemption (a snapshot makes discarded working-tree state
+#      recoverable; it does nothing for a commit another writer already made). See
+#      .claude/rules/git-workflow.md's "No History Rewrites While Another Writer Is Live" section
+#      for the motivating incident and the full rationale.
 #
 # Modeled line-for-line on .claude/hooks/block-pr-submission.sh: blocks via exit code 2
 # + a stderr message (NOT permissionDecision: deny, which is documented-buggy for
@@ -58,22 +71,52 @@
 # runs as a subprocess *inside* that script is structurally invisible at this observation
 # boundary -- it never appears in tool_input.command. Any future legitimate need to bypass
 # these detectors must be wrapped in a script the same way, never special-cased in this file.
+#
+# Concurrency-gated history-rewrite predicate (hazard class 2, see top-of-file header) --
+# design summary:
+#   - Gates (syntactic, cheap, checked first so no filesystem scan is paid unless the command
+#     actually matches): Gate A is `git commit --amend` as a real argv token; Gate B is a
+#     HEAD-moving `git reset` (a non-flag commit-ish token before any `--` pathspec separator;
+#     bare `HEAD`/`@` are exempt since neither moves HEAD). This deliberately also covers
+#     `git reset --hard <commit-ish>`, which the dirty-tree predicate below exempts on a clean
+#     tree for an unrelated reason (nothing to lose, not "no history was rewritten"). Both
+#     gates read $COMMAND_SCAN only, inheriting the false-positive closure for a commit message
+#     that merely contains the text "--amend".
+#   - `git-commit-scoped.sh` needs no special case: the same subprocess-invisibility argument
+#     above applies unchanged -- its internal git invocations never appear in tool_input.command.
+#   - Liveness signal, once a gate matches: a live entry in either specs/{NNN}_{SLUG}/.lock/
+#     holder.json (per-task locks) or specs/.sessions/*.json (the session registry), read
+#     directly and cwd-relatively -- NEVER via `task-lock.sh`, which sources
+#     deploy-root-guard.sh (exit 1 from the source store) and anchors PROJECT_ROOT to its own
+#     SCRIPT_DIR rather than the caller's cwd, both fatal for a hermetically testable hook.
+#     "Live" means a numeric `pid` for which `kill -0` succeeds AND a `heartbeat_at` within
+#     HISTORY_REWRITE_LIVE_MIN minutes (default 30, matching TASK_LOCK_STALE_MIN's semantics).
+#   - Threshold is ONE OR MORE live records, with no attempt to exclude "self": this hook
+#     cannot correlate its own native Claude Code session UUID to an agent-system `sess_*`
+#     identity, and a dispatched agent's own live lock is itself proof it is running under
+#     orchestration, where the rule forbids bare rewrites outright. A genuinely solo interactive
+#     operator has no live lock and no live session-registry entry.
+#   - Fails OPEN (treats as "no live writer", i.e. permits) on any missing specs/, missing jq,
+#     unreadable record, or unparseable timestamp -- the file's established
+#     `2>/dev/null || true` posture, deliberate for a net layered over a documented rule rather
+#     than the rule's sole enforcement.
+#   - Response is binary `exit 2` + stderr (no warn tier), naming the matched form, the
+#     concurrency (not dirtiness) rationale, `git-commit-scoped.sh` as the sanctioned path, and
+#     git-workflow.md's section for the incident. A documented, auditable operator-only override,
+#     `GUARD_ALLOW_HISTORY_REWRITE=1` prefixed onto the command, is detected in $COMMAND_SCAN
+#     only (never the hook's own environment) so any use stays visible in the transcript --
+#     agents MUST NOT use it.
 
 set -euo pipefail
 
 FRESHNESS_WINDOW=120
+HISTORY_REWRITE_LIVE_MIN="${HISTORY_REWRITE_LIVE_MIN:-30}"
 
 INPUT=$(cat) || true
 COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || true
 
 # Allow through if command is empty (non-Bash tool or parse failure).
 if [ -z "$COMMAND" ]; then
-  exit 0
-fi
-
-# Clean tree -> nothing to lose. Also exempts /todo's post-safety-commit reset --hard
-# and git clean -fd (git-safety.md), since the safety commit makes the tree clean first.
-if [ -z "$(git status --porcelain 2>/dev/null)" ]; then
   exit 0
 fi
 
@@ -121,6 +164,129 @@ fi
 COMMAND_SCAN=$(printf '%s' "$COMMAND" \
   | sed -z -e 's/"[^"]*"/""/g' -e "s/'[^']*'/''/g" \
   | sed -e 's/\(^\|[[:space:]]\)#.*$//')
+
+# --- Concurrency-gated history-rewrite predicate (hazard class 2) ---
+# Runs BEFORE the clean-tree exemption below, deliberately: it is tree-state-blind and must not
+# be silent dead code on a clean tree. See the top-of-file header and the design-summary comment
+# above `set -euo pipefail` for the full rationale; this is the implementation.
+
+# history_rewrite_live_writer: returns 0 (true) if a live dispatched writer exists in this repo,
+# 1 (false, and FAILS OPEN on any read/parse problem) otherwise. Reads both record families
+# directly and cwd-relatively -- never via task-lock.sh, see the header note on why.
+history_rewrite_live_writer() {
+  command -v jq >/dev/null 2>&1 || return 1
+
+  local now then_epoch age pid heartbeat f
+  local lock_records session_records records
+
+  now=$(date -u +%s 2>/dev/null) || return 1
+
+  lock_records=$(find specs -maxdepth 3 -name "holder.json" -type f 2>/dev/null) || true
+  session_records=$(find specs/.sessions -maxdepth 1 -name "*.json" -type f 2>/dev/null) || true
+  records="${lock_records}
+${session_records}"
+
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    pid=$(jq -r '.pid // empty' "$f" 2>/dev/null) || continue
+    heartbeat=$(jq -r '.heartbeat_at // empty' "$f" 2>/dev/null) || continue
+    [ -z "$pid" ] && continue
+    [ -z "$heartbeat" ] && continue
+    case "$pid" in
+      ''|*[!0-9]*) continue ;;
+    esac
+    kill -0 "$pid" 2>/dev/null || continue
+    then_epoch=$(date -u -d "$heartbeat" +%s 2>/dev/null \
+      || date -u -j -f "%Y-%m-%dT%H:%M:%SZ" "$heartbeat" +%s 2>/dev/null) || true
+    [ -z "$then_epoch" ] && continue
+    age=$(( (now - then_epoch) / 60 ))
+    if [ "$age" -ge 0 ] && [ "$age" -le "$HISTORY_REWRITE_LIVE_MIN" ]; then
+      return 0
+    fi
+  done <<< "$records"
+
+  return 1
+}
+
+HISTORY_REWRITE_MATCHED=0
+HISTORY_REWRITE_REASON=""
+
+# Gate A: bare `git commit --amend` (a real argv token, never message text -- $COMMAND_SCAN has
+# already had quoted/commented spans stripped above).
+AMEND_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+commit[^;&|]*') || true
+if [ -n "$AMEND_SEGMENTS" ]; then
+  while IFS= read -r seg; do
+    [ -z "$seg" ] && continue || true
+    if echo "$seg" | grep -qE -- '(^|[[:space:]])--amend([[:space:]]|$)'; then
+      HISTORY_REWRITE_MATCHED=1
+      HISTORY_REWRITE_REASON="git commit --amend rewrites an already-committed commit"
+      break
+    fi
+  done <<< "$AMEND_SEGMENTS"
+fi
+
+# Gate B: a HEAD-moving `git reset` -- a non-flag commit-ish token appearing before any `--`
+# pathspec separator; bare `HEAD` and bare `@` are explicitly exempt since neither moves HEAD.
+# This deliberately also matches `git reset --hard <commit-ish>`, which the dirty-tree predicate
+# below exempts on a clean tree for an unrelated reason (nothing to lose, not "no history was
+# rewritten"). `read -ra` walks real argv tokens rather than relying on word-splitting, mirroring
+# the directory/glob `git add` detector's own per-token idiom below.
+if [ "$HISTORY_REWRITE_MATCHED" = "0" ]; then
+  RESET_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+reset[^;&|]*') || true
+  if [ -n "$RESET_SEGMENTS" ]; then
+    while IFS= read -r seg; do
+      [ -z "$seg" ] && continue || true
+      seg_rest=$(echo "$seg" | sed -E 's/^[;&|]*[[:space:]]*git[[:space:]]+reset[[:space:]]*//')
+      read -ra RESET_TOKENS <<< "$seg_rest" || true
+      for tok in "${RESET_TOKENS[@]:-}"; do
+        [ -z "$tok" ] && continue || true
+        if [ "$tok" = "--" ]; then
+          break
+        fi
+        case "$tok" in
+          -*) continue ;;
+        esac
+        if [ "$tok" != "HEAD" ] && [ "$tok" != "@" ]; then
+          HISTORY_REWRITE_MATCHED=1
+          HISTORY_REWRITE_REASON="git reset $tok moves HEAD, rewriting which commit this branch points at"
+          break
+        fi
+      done
+      if [ "$HISTORY_REWRITE_MATCHED" = "1" ]; then
+        break
+      fi
+    done <<< "$RESET_SEGMENTS"
+  fi
+fi
+
+if [ "$HISTORY_REWRITE_MATCHED" = "1" ]; then
+  # Documented, auditable operator-only override -- detected in the scan string only, NEVER from
+  # the hook's own environment (the caller's inline env assignment does not reach this process),
+  # so any use stays visible in the transcript. Agents MUST NOT use this override.
+  if echo "$COMMAND_SCAN" | grep -q 'GUARD_ALLOW_HISTORY_REWRITE=1'; then
+    HISTORY_REWRITE_MATCHED=0
+  fi
+fi
+
+if [ "$HISTORY_REWRITE_MATCHED" = "1" ] && history_rewrite_live_writer; then
+  echo "BLOCKED: $HISTORY_REWRITE_REASON" >&2
+  echo "A live concurrent writer exists in this repo (a dispatched task lock or session-registry" >&2
+  echo "entry with a fresh heartbeat) -- this refusal is due to CONCURRENCY, not tree state; it" >&2
+  echo "fires on a clean tree exactly as on a dirty one." >&2
+  echo "Route this commit through .claude/scripts/git-commit-scoped.sh instead, which serializes" >&2
+  echo "on the commit mutex and path-scopes staging." >&2
+  echo "See .claude/rules/git-workflow.md's 'No History Rewrites While Another Writer Is Live'" >&2
+  echo "section for the incident and full rationale." >&2
+  echo "Operator-only override (agents MUST NOT use this): prefix the command with" >&2
+  echo "GUARD_ALLOW_HISTORY_REWRITE=1 if you are a human operator working this branch solo." >&2
+  exit 2
+fi
+
+# Clean tree -> nothing to lose. Also exempts /todo's post-safety-commit reset --hard
+# and git clean -fd (git-safety.md), since the safety commit makes the tree clean first.
+if [ -z "$(git status --porcelain 2>/dev/null)" ]; then
+  exit 0
+fi
 
 # --- Over-staging detectors ---
 # Independent of the destructive-command MATCHED chain below: these block directly via their
