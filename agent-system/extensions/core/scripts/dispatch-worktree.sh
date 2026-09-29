@@ -6,10 +6,9 @@
 # Posture" section) selects per-dispatch git-worktree isolation for lean4/cslib `implement`
 # dispatches, to remove three observed concurrent-dispatch failure modes at once: a sibling's
 # working-tree revert (mode 1a), cross-task commit bleed into a shared file (mode 1b), and build
-# contention over one shared `.lake` (mode 2). This script is the creation/teardown half of that
-# machinery. The merge-back half (`land`) is a separate, later addition to this same file -- see
-# the plan's Phase 5 -- and is deliberately NOT implemented here; a caller needing to land an
-# isolated dispatch's branch back into the main tree has no verb for that yet.
+# contention over one shared `.lake` (mode 2). This script is the full worktree lifecycle:
+# creation/teardown (`provision`/`path`/`release`/`prune`, added in Phase 4) and merge-back
+# (`land`, added in Phase 5).
 #
 # WHAT THIS DOES:
 #   provision <task_number> --session <sid> --seq <n>
@@ -39,6 +38,23 @@
 #       `specs/.commit-lock/`/`task-lock.sh` rather than inventing a new liveness primitive (a
 #       genuine pid-liveness check would need the full session registry, which is a separate,
 #       heavier mechanism this script does not depend on).
+#   land <task_number> --session <sid>
+#       Runs from the MAIN TREE (refuses outright if PROJECT_ROOT resolves under
+#       `.orchestrate-worktrees/`, i.e. if invoked via a worktree's own hardlinked copy of this
+#       script). Merges the dispatch branch (resolved from the registry record, same as
+#       `path`/`release`) into the main tree's current HEAD via `git merge --no-ff`, after two
+#       refusals that run BEFORE any `git add`/merge is attempted: (1) any path under `specs/**`
+#       in the branch's diff against its merge-base -- a worktree's own `specs/` is a tracked,
+#       HEAD-stale snapshot (see below), and merging it would overwrite live main-tree state; (2)
+#       any branch-touched path the main tree currently has uncommitted modifications to -- surfaced
+#       rather than silently merged over. A genuine merge conflict aborts the merge
+#       (`git merge --abort`), leaves the branch AND worktree intact for human resolution, and is
+#       never auto-resolved (no `-X ours`/`-X theirs`, ever). Already-merged-or-never-diverged is a
+#       no-op. Emits exactly one JSON verdict on stdout -- `{"verdict": "landed" |
+#       "nothing_to_land" | "refused_specs_paths" | "conflict" | "refused_dirty_overlap" |
+#       "unavailable", ...}` -- with every diagnostic (including the wrapped `git merge`'s own
+#       stdout/stderr) redirected to stderr, per the JSON-channel discipline
+#       `lint-json-channel-discipline.sh` enforces repo-wide.
 #
 # WHY A HARDLINK CLONE, NEVER A SYMLINK, FOR `.claude/`: see the decision record's "A Corrected
 # Rationale for Hardlink-Over-Symlink" subsection. In short: a symlinked `.claude/` is not a
@@ -53,9 +69,9 @@
 # anything under a worktree's own `specs/`; task artifacts (`.return-meta.json`, handoffs,
 # reports/plans/summaries) are written by the dispatched agent to the MAIN tree's absolute paths,
 # which the dispatch file names explicitly. Landing a branch that touched `specs/**` is refused
-# outright by the (not-yet-implemented) `land` verb -- this script's own registry writes
-# (`specs/.worktree-registry/*.json`) are gitignored runtime state in the MAIN tree, not inside
-# any worktree, and carry no such hazard.
+# outright by `land` -- this script's own registry writes (`specs/.worktree-registry/*.json`)
+# are gitignored runtime state in the MAIN tree, not inside any worktree, and carry no such
+# hazard.
 #
 # RUNTIME PATHS THIS SCRIPT OWNS (register any change here in
 # context/standards/orchestrator-runtime-files.md and .gitignore, not just here):
@@ -73,6 +89,13 @@
 #        was torn down before returning
 #   83 - `provision` refused: the main tree has no `.claude/` to clone (deploy first)
 #   84 - `provision`/`release` failed: the underlying `git worktree add`/`remove` call failed
+#   90 - `land` refused: the branch's diff against its merge-base touches a `specs/**` path
+#   91 - `land` refused: the main tree has uncommitted modifications overlapping a branch-touched
+#        path
+#   92 - `land` aborted: a genuine merge conflict (branch and worktree left intact, no in-progress
+#        merge)
+#   93 - `land` refused: invoked with PROJECT_ROOT resolving inside a worktree, or found no usable
+#        registry record/branch (`verdict: "unavailable"`)
 #
 # Test seams (env vars, all optional):
 #   DISPATCH_WORKTREE_FREE_SPACE_FLOOR_GIB - free-space floor in GiB. Default 5 (Phase 1 Findings).
@@ -106,16 +129,21 @@ EXIT_WORKTREE_CAP=81
 EXIT_ROOT_ASSERT=82
 EXIT_CLAUDE_MISSING=83
 EXIT_GIT_WORKTREE_ADD=84
+EXIT_LAND_SPECS=90
+EXIT_LAND_DIRTY_OVERLAP=91
+EXIT_LAND_CONFLICT=92
+EXIT_LAND_UNAVAILABLE=93
 
 print_help() {
   cat <<'EOF'
-dispatch-worktree.sh - per-dispatch git-worktree lifecycle (provision, path, release, prune).
+dispatch-worktree.sh - per-dispatch git-worktree lifecycle (provision, path, release, prune, land).
 
 Usage:
   dispatch-worktree.sh provision <task_number> --session <sid> --seq <n>
   dispatch-worktree.sh path <task_number>
   dispatch-worktree.sh release <task_number> [--force]
   dispatch-worktree.sh prune --session <sid>
+  dispatch-worktree.sh land <task_number> --session <sid>
   dispatch-worktree.sh --help
 
 provision: preflights free disk space (floor: DISPATCH_WORKTREE_FREE_SPACE_FLOOR_GIB GiB,
@@ -135,9 +163,18 @@ prune: reaps every registry record (and its worktree) whose session differs from
   <sid> and whose age exceeds DISPATCH_WORKTREE_STALE_SEC (default 3600s). A record naming <sid>
   itself is never reaped. Emits a JSON summary on stdout.
 
+land: run from the main tree. Merges <task_number>'s dispatch branch (resolved from its
+  registry record) into the current HEAD via `git merge --no-ff`, after refusing any specs/**
+  touch or any main-tree dirty overlap. A genuine conflict aborts the merge and leaves the
+  branch and worktree intact. Emits exactly one JSON verdict on stdout: {"verdict": "landed" |
+  "nothing_to_land" | "refused_specs_paths" | "conflict" | "refused_dirty_overlap" |
+  "unavailable", ...}. Never auto-resolves a conflict.
+
 Exit codes: 0 success; 2 usage error; 3 not found (path/release); 80 free-space refusal;
   81 worktree-cap refusal; 82 PROJECT_ROOT-resolution-assert failure (provision torn down);
-  83 main tree has no .claude/ to clone; 84 git worktree add/remove failure.
+  83 main tree has no .claude/ to clone; 84 git worktree add/remove failure; 90 land refused
+  (specs/** touched); 91 land refused (dirty overlap); 92 land aborted (conflict); 93 land
+  unavailable (no record/branch, or invoked from inside a worktree).
 EOF
 }
 
@@ -421,6 +458,143 @@ cmd_prune() {
     '{pruned: $pruned, kept_count: $kept_count}'
 }
 
+cmd_land() {
+  local task_number="" session_id=""
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --session)
+        [ "$#" -ge 2 ] || usage
+        session_id="$2"
+        shift 2
+        ;;
+      -*)
+        usage
+        ;;
+      *)
+        if [ -z "$task_number" ]; then
+          task_number="$1"
+          shift
+        else
+          usage
+        fi
+        ;;
+    esac
+  done
+  [[ "$task_number" =~ ^[0-9]+$ ]] || usage
+  [ -n "$session_id" ] || usage
+
+  # land must run from the MAIN tree. If this invocation is the WORKTREE's own hardlinked copy
+  # of this script, PROJECT_ROOT resolved (correctly, for provision's own purposes) to the
+  # worktree root -- landing "into" that would merge into the isolated checkout, not the main
+  # tree, so refuse outright rather than silently doing the wrong thing.
+  case "$PROJECT_ROOT" in
+    */.orchestrate-worktrees/*)
+      echo "ERROR: dispatch-worktree.sh land refused -- PROJECT_ROOT ('$PROJECT_ROOT') resolves inside a worktree, not the main tree. Invoke the main tree's own .claude/scripts/dispatch-worktree.sh instead." >&2
+      jq -n --arg verdict "unavailable" --arg reason "invoked from inside a worktree" '{verdict: $verdict, reason: $reason}'
+      exit "$EXIT_LAND_UNAVAILABLE"
+      ;;
+  esac
+
+  local match
+  match="$(latest_record_for_task "$task_number")"
+  if [ -z "$match" ]; then
+    echo "ERROR: dispatch-worktree.sh land found no provisioning record for task $task_number." >&2
+    jq -n --arg verdict "unavailable" --arg reason "no registry record" '{verdict: $verdict, reason: $reason}'
+    exit "$EXIT_LAND_UNAVAILABLE"
+  fi
+
+  local branch
+  branch="$(jq -r '.branch' "$match")"
+
+  if ! git -C "$PROJECT_ROOT" rev-parse --verify --quiet "refs/heads/$branch" >/dev/null 2>&1; then
+    echo "ERROR: dispatch-worktree.sh land found no branch '$branch' for task $task_number." >&2
+    jq -n --arg verdict "unavailable" --arg reason "branch does not exist" '{verdict: $verdict, reason: $reason}'
+    exit "$EXIT_LAND_UNAVAILABLE"
+  fi
+
+  # Already fully landed (or the branch never diverged from HEAD at all): nothing to do.
+  if git -C "$PROJECT_ROOT" merge-base --is-ancestor "$branch" HEAD 2>/dev/null; then
+    jq -n --arg verdict "nothing_to_land" --arg branch "$branch" '{verdict: $verdict, branch: $branch}'
+    return 0
+  fi
+
+  local merge_base
+  merge_base="$(git -C "$PROJECT_ROOT" merge-base HEAD "$branch" 2>/dev/null)" || merge_base=""
+  if [ -z "$merge_base" ]; then
+    echo "ERROR: dispatch-worktree.sh land could not compute a merge-base between HEAD and '$branch'." >&2
+    jq -n --arg verdict "unavailable" --arg reason "no merge-base" '{verdict: $verdict, reason: $reason}'
+    exit "$EXIT_LAND_UNAVAILABLE"
+  fi
+
+  local touched_paths
+  touched_paths="$(git -C "$PROJECT_ROOT" diff --name-only "$merge_base" "$branch" 2>/dev/null)"
+
+  local touched_arr=()
+  local p
+  while IFS= read -r p; do
+    [ -n "$p" ] && touched_arr+=("$p")
+  done <<< "$touched_paths"
+
+  if [ "${#touched_arr[@]}" -eq 0 ]; then
+    jq -n --arg verdict "nothing_to_land" --arg branch "$branch" '{verdict: $verdict, branch: $branch}'
+    return 0
+  fi
+
+  # Refusal 1 (before any git add/merge): a specs/** path in the branch's own diff would
+  # overwrite live main-tree state with a HEAD-stale worktree snapshot -- see the header's
+  # "`specs/` IS TRACKED" note.
+  local specs_paths=()
+  for p in "${touched_arr[@]}"; do
+    case "$p" in
+      specs/*)
+        specs_paths+=("$p")
+        ;;
+    esac
+  done
+
+  if [ "${#specs_paths[@]}" -gt 0 ]; then
+    echo "ERROR: dispatch-worktree.sh land refused -- branch '$branch' touches specs/** path(s), which would overwrite live main-tree state with a HEAD-stale worktree snapshot:" >&2
+    printf '  %s\n' "${specs_paths[@]}" >&2
+    local specs_json
+    specs_json="$(printf '%s\n' "${specs_paths[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')"
+    jq -n --arg verdict "refused_specs_paths" --arg branch "$branch" --argjson paths "$specs_json" \
+      '{verdict: $verdict, branch: $branch, paths: $paths}'
+    exit "$EXIT_LAND_SPECS"
+  fi
+
+  # Refusal 2 (before any git add/merge): the main tree already has uncommitted modifications
+  # overlapping a path the branch touched -- surface it rather than merging over in-flight work.
+  local dirty_overlap
+  dirty_overlap="$(git -C "$PROJECT_ROOT" status --porcelain -- "${touched_arr[@]}" 2>/dev/null)"
+  if [ -n "$dirty_overlap" ]; then
+    echo "ERROR: dispatch-worktree.sh land refused -- the main tree has uncommitted modifications overlapping branch '$branch':" >&2
+    echo "$dirty_overlap" >&2
+    local overlap_json
+    overlap_json="$(printf '%s\n' "$dirty_overlap" | jq -R -s -c 'split("\n") | map(select(length > 0))')"
+    jq -n --arg verdict "refused_dirty_overlap" --arg branch "$branch" --argjson overlap "$overlap_json" \
+      '{verdict: $verdict, branch: $branch, overlap: $overlap}'
+    exit "$EXIT_LAND_DIRTY_OVERLAP"
+  fi
+
+  local merge_msg="dispatch-worktree.sh land: task ${task_number} (${branch})"
+  if git -C "$PROJECT_ROOT" merge --no-ff "$branch" -m "$merge_msg" >&2; then
+    jq -n --arg verdict "landed" --arg branch "$branch" '{verdict: $verdict, branch: $branch}'
+    return 0
+  fi
+
+  # Conflict: read the conflicted paths BEFORE aborting, then abort -- never auto-resolve, never
+  # -X ours/theirs. Both the branch and the worktree are left intact for human resolution.
+  local conflicted_paths conflicted_json
+  conflicted_paths="$(git -C "$PROJECT_ROOT" diff --name-only --diff-filter=U 2>/dev/null)"
+  git -C "$PROJECT_ROOT" merge --abort >&2 || true
+  echo "ERROR: dispatch-worktree.sh land aborted -- merge conflict against branch '$branch'; branch and worktree left intact for resolution:" >&2
+  echo "$conflicted_paths" >&2
+  conflicted_json="$(printf '%s\n' "$conflicted_paths" | jq -R -s -c 'split("\n") | map(select(length > 0))')"
+  jq -n --arg verdict "conflict" --arg branch "$branch" --argjson paths "$conflicted_json" \
+    '{verdict: $verdict, branch: $branch, paths: $paths}'
+  exit "$EXIT_LAND_CONFLICT"
+}
+
 # --- main dispatch ---
 [ "$#" -ge 1 ] || usage
 
@@ -444,6 +618,10 @@ case "$1" in
   prune)
     shift
     cmd_prune "$@"
+    ;;
+  land)
+    shift
+    cmd_land "$@"
     ;;
   *)
     usage

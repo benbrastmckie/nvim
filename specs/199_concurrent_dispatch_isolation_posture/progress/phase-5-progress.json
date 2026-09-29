@@ -1,0 +1,26 @@
+{
+  "phase": 5,
+  "phase_name": "dispatch-worktree.sh -- land (merge-back)",
+  "started_at": "2026-09-29T05:20:00Z",
+  "last_updated": "2026-09-29T05:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add land verb: specs/** refusal before any merge, otherwise git merge --no-ff", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 2, "description": "Merge-conflict handling: abort, preserve branch/worktree, named conflict verdict, distinct exit code", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 3, "description": "Dirty-overlap refusal against main-tree uncommitted modifications", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 4, "description": "JSON verdict on stdout for every outcome; all diagnostics on stderr (JSON-channel discipline)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-worktree.sh"]},
+    {"id": 5, "description": "Extend test-dispatch-worktree.sh with land cases (clean, specs refusal, conflict, dirty-overlap, nothing-to-land) plus two bonus cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "same-line conflict fixture (both sides editing one pre-existing shared line)", "result": "not needed", "reason": "an add/add conflict (both sides independently adding the same new filename with different content after the branch forked) reproduces a genuine, unresolvable git conflict just as validly and needed less fixture setup; used that instead of pre-seeding shared content."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.additional",
+      "description": "Added a PROJECT_ROOT-resolves-inside-a-worktree refusal to land (verdict=unavailable, exit 93) beyond the plan's stated task list",
+      "type": "altered",
+      "reason": "The plan's Phase 5 tasks did not explicitly call for this guard, but land's own header/design already documents 'run from the main tree' as a hard requirement (inherited from Phase 4's provision, which the plan's own header commentary flags as load-bearing for the specs/** refusal to make sense at all). Without the guard, invoking the worktree's own hardlinked copy of the script would silently merge into the wrong tree. Recorded as a deliberate strengthening, not scope creep beyond the phase's own goal."
+    }
+  ]
+}

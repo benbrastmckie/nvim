@@ -91,7 +91,12 @@ build_repo() {
   echo "/.claude/" > "$dir/.gitignore"
   echo "/.orchestrate-worktrees/" >> "$dir/.gitignore"
   echo "/specs/.worktree-registry/" >> "$dir/.gitignore"
-  git -C "$dir" add README.md .gitignore
+  # A tracked specs/ file, so a land case can exercise the specs/** refusal against a real
+  # tracked path (mirroring the real system, where specs/ is tracked -- see the script's own
+  # header note).
+  mkdir -p "$dir/specs"
+  echo '{"seed":true}' > "$dir/specs/state.json"
+  git -C "$dir" add README.md .gitignore specs/state.json
   git -C "$dir" commit -q -m "seed"
   echo "$dir"
 }
@@ -324,10 +329,192 @@ else
 fi
 
 # =====================================================================
+# T9: land -- clean case. A branch-only commit merges cleanly into the main tree via
+# `git merge --no-ff`; the worktree is left in place (release is a separate, later step).
+# =====================================================================
+
+repo_t9="$(build_repo t9)"
+out_t9_prov="$(run_dw "$repo_t9" provision 901 --session sess_t9 --seq 1)"
+wt_t9="$(echo "$out_t9_prov" | jq -r '.path')"
+
+echo "new content" > "$wt_t9/feature.txt"
+git -C "$wt_t9" add feature.txt
+git -C "$wt_t9" commit -q -m "add feature.txt"
+
+out_t9_land="$(run_dw "$repo_t9" land 901 --session sess_t9)"
+rc_t9_land=$?
+verdict_t9="$(echo "$out_t9_land" | jq -r '.verdict' 2>/dev/null)"
+
+if [ "$rc_t9_land" -eq 0 ] && [ "$verdict_t9" = "landed" ] && [ -f "$repo_t9/feature.txt" ] && [ "$(cat "$repo_t9/feature.txt")" = "new content" ]; then
+  pass "T9: land merges a clean branch commit into the main tree (verdict=landed, file present)"
+else
+  fail "T9: expected rc=0 verdict=landed feature.txt present; got rc=$rc_t9_land out=$out_t9_land"
+fi
+
+run_dw "$repo_t9" release 901 >/dev/null 2>&1 || true
+
+# =====================================================================
+# T10: land -- specs/** refusal. A branch commit touching a tracked specs/ path is refused
+# before any merge is attempted; the main tree's specs/state.json is untouched.
+# =====================================================================
+
+repo_t10="$(build_repo t10)"
+out_t10_prov="$(run_dw "$repo_t10" provision 1001 --session sess_t10 --seq 1)"
+wt_t10="$(echo "$out_t10_prov" | jq -r '.path')"
+
+echo '{"touched":true}' > "$wt_t10/specs/state.json"
+git -C "$wt_t10" add specs/state.json
+git -C "$wt_t10" commit -q -m "touch specs/state.json"
+
+before_state_t10="$(cat "$repo_t10/specs/state.json")"
+err_t10_file="$TOP_WORKDIR/t10.err"
+out_t10_land="$(run_dw "$repo_t10" land 1001 --session sess_t10 2>"$err_t10_file")"
+rc_t10_land=$?
+verdict_t10="$(echo "$out_t10_land" | jq -r '.verdict' 2>/dev/null)"
+after_state_t10="$(cat "$repo_t10/specs/state.json")"
+
+if [ "$rc_t10_land" -eq 90 ] && [ "$verdict_t10" = "refused_specs_paths" ] && [ "$before_state_t10" = "$after_state_t10" ]; then
+  pass "T10: land refuses a specs/** touch before merging; specs/state.json byte-identical"
+else
+  fail "T10: expected rc=90 verdict=refused_specs_paths unchanged state.json; got rc=$rc_t10_land out=$out_t10_land stderr='$(cat "$err_t10_file")'"
+fi
+
+if echo "$out_t10_land" | jq -r '.paths[]' 2>/dev/null | grep -qxF "specs/state.json"; then
+  pass "T10: refusal verdict names the offending specs/ path"
+else
+  fail "T10: refusal verdict did not name specs/state.json; got $out_t10_land"
+fi
+
+run_dw "$repo_t10" release 1001 --force >/dev/null 2>&1 || true
+
+# =====================================================================
+# T11: land -- genuine conflict (add/add on the same new path from both sides). The merge is
+# aborted, nothing is left in-progress, and both the branch and worktree survive intact.
+# =====================================================================
+
+repo_t11="$(build_repo t11)"
+out_t11_prov="$(run_dw "$repo_t11" provision 1101 --session sess_t11 --seq 1)"
+wt_t11="$(echo "$out_t11_prov" | jq -r '.path')"
+
+echo "branch version" > "$wt_t11/conflict.txt"
+git -C "$wt_t11" add conflict.txt
+git -C "$wt_t11" commit -q -m "branch adds conflict.txt"
+
+# Main tree diverges independently, adding the SAME new path with different content.
+echo "main version" > "$repo_t11/conflict.txt"
+git -C "$repo_t11" add conflict.txt
+git -C "$repo_t11" commit -q -m "main adds conflict.txt"
+
+err_t11_file="$TOP_WORKDIR/t11.err"
+out_t11_land="$(run_dw "$repo_t11" land 1101 --session sess_t11 2>"$err_t11_file")"
+rc_t11_land=$?
+verdict_t11="$(echo "$out_t11_land" | jq -r '.verdict' 2>/dev/null)"
+merge_head_present_t11="no"
+[ -f "$repo_t11/.git/MERGE_HEAD" ] && merge_head_present_t11="yes"
+
+if [ "$rc_t11_land" -eq 92 ] && [ "$verdict_t11" = "conflict" ] && [ "$merge_head_present_t11" = "no" ]; then
+  pass "T11: land aborts a genuine conflict (verdict=conflict, no in-progress merge left behind)"
+else
+  fail "T11: expected rc=92 verdict=conflict no MERGE_HEAD; got rc=$rc_t11_land out=$out_t11_land merge_head=$merge_head_present_t11 stderr='$(cat "$err_t11_file")'"
+fi
+
+if git -C "$repo_t11" branch --list "orchestrate/task-1101-1" | grep -q "orchestrate/task-1101-1" && [ -d "$wt_t11" ]; then
+  pass "T11: conflict leaves the branch and worktree intact for resolution"
+else
+  fail "T11: expected branch and worktree preserved after a conflict"
+fi
+
+if [ "$(cat "$repo_t11/conflict.txt")" = "main version" ]; then
+  pass "T11: main tree's own conflicting file is untouched after the aborted merge"
+else
+  fail "T11: main tree's conflict.txt was altered by the aborted merge attempt"
+fi
+
+run_dw "$repo_t11" release 1101 --force >/dev/null 2>&1 || true
+
+# =====================================================================
+# T12: land -- dirty-overlap refusal. The main tree has an UNCOMMITTED edit to a path the branch
+# also touches; land refuses before merging, and the uncommitted edit survives untouched.
+# =====================================================================
+
+repo_t12="$(build_repo t12)"
+echo "seed" > "$repo_t12/shared.txt"
+git -C "$repo_t12" add shared.txt
+git -C "$repo_t12" commit -q -m "add shared.txt"
+
+out_t12_prov="$(run_dw "$repo_t12" provision 1201 --session sess_t12 --seq 1)"
+wt_t12="$(echo "$out_t12_prov" | jq -r '.path')"
+
+echo "branch edit" >> "$wt_t12/shared.txt"
+git -C "$wt_t12" add shared.txt
+git -C "$wt_t12" commit -q -m "branch edits shared.txt"
+
+echo "uncommitted local edit" >> "$repo_t12/shared.txt"
+before_shared_t12="$(cat "$repo_t12/shared.txt")"
+
+err_t12_file="$TOP_WORKDIR/t12.err"
+out_t12_land="$(run_dw "$repo_t12" land 1201 --session sess_t12 2>"$err_t12_file")"
+rc_t12_land=$?
+verdict_t12="$(echo "$out_t12_land" | jq -r '.verdict' 2>/dev/null)"
+after_shared_t12="$(cat "$repo_t12/shared.txt")"
+
+if [ "$rc_t12_land" -eq 91 ] && [ "$verdict_t12" = "refused_dirty_overlap" ] && [ "$before_shared_t12" = "$after_shared_t12" ]; then
+  pass "T12: land refuses on a main-tree dirty overlap; the uncommitted edit survives untouched"
+else
+  fail "T12: expected rc=91 verdict=refused_dirty_overlap unchanged shared.txt; got rc=$rc_t12_land out=$out_t12_land stderr='$(cat "$err_t12_file")'"
+fi
+
+git -C "$repo_t12" checkout -- shared.txt 2>/dev/null || true
+run_dw "$repo_t12" release 1201 --force >/dev/null 2>&1 || true
+
+# =====================================================================
+# T13: land -- nothing-to-land no-op (no commits made on the branch beyond its fork point), and
+# reuse of the same still-live worktree for the "invoked from inside a worktree" refusal.
+# =====================================================================
+
+repo_t13="$(build_repo t13)"
+out_t13_prov="$(run_dw "$repo_t13" provision 1301 --session sess_t13 --seq 1)"
+wt_t13="$(echo "$out_t13_prov" | jq -r '.path')"
+
+out_t13_land="$(run_dw "$repo_t13" land 1301 --session sess_t13)"
+rc_t13_land=$?
+verdict_t13="$(echo "$out_t13_land" | jq -r '.verdict' 2>/dev/null)"
+
+if [ "$rc_t13_land" -eq 0 ] && [ "$verdict_t13" = "nothing_to_land" ]; then
+  pass "T13: land on a branch with no new commits reports verdict=nothing_to_land, exit 0"
+else
+  fail "T13: expected rc=0 verdict=nothing_to_land; got rc=$rc_t13_land out=$out_t13_land"
+fi
+
+err_t13b_file="$TOP_WORKDIR/t13-unavailable.err"
+out_t13b="$(cd "$repo_t13" && bash .claude/scripts/dispatch-worktree.sh land 999999 --session sess_t13 2>"$err_t13b_file")"
+rc_t13b=$?
+verdict_t13b="$(echo "$out_t13b" | jq -r '.verdict' 2>/dev/null)"
+
+if [ "$rc_t13b" -eq 93 ] && [ "$verdict_t13b" = "unavailable" ]; then
+  pass "T13: land on an unprovisioned task reports verdict=unavailable, exit 93"
+else
+  fail "T13: expected rc=93 verdict=unavailable; got rc=$rc_t13b out=$out_t13b stderr='$(cat "$err_t13b_file")'"
+fi
+
+err_t13c_file="$TOP_WORKDIR/t13-fromworktree.err"
+out_t13c="$(cd "$wt_t13" && bash .claude/scripts/dispatch-worktree.sh land 1301 --session sess_t13 2>"$err_t13c_file")"
+rc_t13c=$?
+verdict_t13c="$(echo "$out_t13c" | jq -r '.verdict' 2>/dev/null)"
+
+if [ "$rc_t13c" -eq 93 ] && [ "$verdict_t13c" = "unavailable" ]; then
+  pass "T13: land invoked from inside a worktree's own .claude/scripts/ refuses (verdict=unavailable)"
+else
+  fail "T13: expected rc=93 verdict=unavailable when invoked from inside a worktree; got rc=$rc_t13c out=$out_t13c stderr='$(cat "$err_t13c_file")'"
+fi
+
+run_dw "$repo_t13" release 1301 --force >/dev/null 2>&1 || true
+
+# =====================================================================
 # Teardown sanity: no leftover worktrees or stray branches from THIS suite's own fixtures.
 # =====================================================================
 
-for r in "$repo_t1" "$repo_t6" "$repo_t7" "$repo_t8"; do
+for r in "$repo_t1" "$repo_t6" "$repo_t7" "$repo_t8" "$repo_t9" "$repo_t10" "$repo_t11" "$repo_t12" "$repo_t13"; do
   leftover="$(git -C "$r" worktree list --porcelain 2>/dev/null | grep -c '^worktree ' || true)"
   # Exactly one entry (the repo's own main worktree) is expected once every case-owned worktree
   # has been released/pruned/refused-before-creation.

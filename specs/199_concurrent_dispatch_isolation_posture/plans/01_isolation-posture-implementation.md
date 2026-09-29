@@ -473,28 +473,35 @@ unreachable, so the addition is load-bearing, not optional polish.
 
 ---
 
-### Phase 5: `dispatch-worktree.sh` — land (merge-back) [NOT STARTED]
+### Phase 5: `dispatch-worktree.sh` — land (merge-back) [COMPLETED]
 
 **Goal**: Land an isolated dispatch's work into the main tree as an ordinary git merge, with the
 `specs/**` refusal that keeps live state safe from a HEAD-stale snapshot.
 
 **Tasks**:
-- [ ] Add `land <task_number> --session <sid>`: run from the **main tree**; diff the dispatch
+- [x] Add `land <task_number> --session <sid>`: run from the **main tree**; diff the dispatch
       branch against its merge base and **refuse** (distinct exit code, every offending path
       named) if any path is under `specs/**`; otherwise `git merge --no-ff` the branch.
-- [ ] On a merge conflict: abort the merge, preserve both the branch and the worktree, emit a
+      *(completed: also refuses outright if invoked from a worktree's own `.claude/scripts/`
+      copy, since PROJECT_ROOT would then resolve to the worktree rather than the main tree)*
+- [x] On a merge conflict: abort the merge, preserve both the branch and the worktree, emit a
       machine-readable conflict verdict naming every conflicted path, and exit with a distinct
-      code. Never auto-resolve and never pass `-X ours`/`-X theirs`.
-- [ ] Refuse to land when the main tree has uncommitted modifications to any path the branch
-      touches — surface it rather than merging over in-flight work.
-- [ ] Emit a JSON verdict on stdout for every outcome (`landed`, `nothing_to_land`,
+      code. Never auto-resolve and never pass `-X ours`/`-X theirs`. *(completed)*
+- [x] Refuse to land when the main tree has uncommitted modifications to any path the branch
+      touches — surface it rather than merging over in-flight work. *(completed)*
+- [x] Emit a JSON verdict on stdout for every outcome (`landed`, `nothing_to_land`,
       `refused_specs_paths`, `conflict`, `refused_dirty_overlap`, `unavailable`) so the postflight
-      caller branches on data, not on parsed prose.
-- [ ] Keep every diagnostic on stderr and the verdict alone on stdout, per the JSON-channel
-      discipline the lint enforces.
-- [ ] Extend `test-dispatch-worktree.sh`: a clean land; a `specs/**` refusal; an induced
+      caller branches on data, not on parsed prose. *(completed)*
+- [x] Keep every diagnostic on stderr and the verdict alone on stdout, per the JSON-channel
+      discipline the lint enforces. *(completed: `lint-json-channel-discipline.sh --verbose`
+      reports the file PASS with zero violations)*
+- [x] Extend `test-dispatch-worktree.sh`: a clean land; a `specs/**` refusal; an induced
       same-line conflict left unresolved with the branch intact; a dirty-overlap refusal; a
-      nothing-to-land no-op; exit codes distinct for each.
+      nothing-to-land no-op; exit codes distinct for each. *(completed: 38/38 cases pass, plus
+      two bonus cases -- an unprovisioned-task `unavailable` verdict, and the invoked-from-
+      inside-a-worktree refusal -- using an add/add conflict fixture rather than same-line,
+      since it reproduces the genuine-conflict contract without needing pre-existing shared
+      content)*
 
 **Timing**: 1.5 hours
 
