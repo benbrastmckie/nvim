@@ -250,6 +250,8 @@
       "tests/test-lint-deploy-caller-wrap.sh",
       "tests/test-run-all-parallel.sh",
       "tests/test-verify-deploy-gate-selection.sh",
+      "tests/test-check-task-references.sh",
+      "tests/test-validate-wiring.sh",
       "tier-selection.sh",
       "uninstall-extension.sh",
       "update-phase-status.sh",

@@ -63,12 +63,19 @@ see `specs/decisions/no-task-references-enforcement-history.md`.
 
 ## Enforcement
 
-Three layers. `specs/**` is the ONLY exempt tree — `agent-system/extensions/**`, `.opencode/**`,
-`lua/**`, and `.memory/**` are all deliverables subject to this rule.
+Three layers. `specs/**` is the ONLY exempt tree — every other git-tracked file in the
+repository, in any repo this system deploys into, is a deliverable subject to this rule.
 
-- **Repo-wide lint gate**: `.claude/scripts/check-task-references.sh` scans every git-tracked
-  file under the four deliverable tree roots above and exits non-zero on any unexempted finding.
-  It is wired as gate 4 of `scripts/verify-deploy.sh`.
+- **Repo-wide lint gate**: `.claude/scripts/check-task-references.sh` enumerates every
+  git-tracked file in the repository via `git ls-files` (so gitignored/vendored/generated paths
+  are excluded by construction) and exits non-zero on any unexempted finding outside `specs/**`.
+  The scan is repo-appropriate by construction — it does not hard-code this repo's own directory
+  layout, so a consumer repo with a different source-tree layout (e.g. a `docs/` and a
+  language-specific source dir, rather than this repo's `agent-system/extensions/`, `.opencode/`,
+  `lua/`, `.memory/`) is scanned in full rather than scanning nothing. It is wired as gate 4 of
+  `scripts/verify-deploy.sh`. The lint and the write-time gate below share exactly one scope
+  predicate (`is_exempt_path`, from the shared library), so the two enforcement layers cannot
+  silently diverge in scope.
 - **Write-time gate**: `.claude/hooks/validate-no-task-references.sh` is a blocking PreToolUse
   gate (matcher `Write|Edit`) that scans new/edited content outside `specs/**` for task-number
   citation patterns and denies the write via exit code 2 (not `permissionDecision: "deny"`, which
@@ -101,3 +108,16 @@ Three layers. `specs/**` is the ONLY exempt tree — `agent-system/extensions/**
 registration or a new `scripts/<subdir>/*.sh` file might not reach an already-deployed repo, and
 how the manifest-driven deploy engine now guards against that defect class, see
 `specs/decisions/no-task-references-enforcement-history.md`.
+
+## Design Principle: Default to Repo-Wide Scope, Never a Hard-Coded Directory List
+
+`check-task-references.sh` originally enumerated a fixed `TREE_ROOTS` list encoding this repo's
+own layout (`agent-system/extensions`, `.opencode`, `lua`, `.memory`). In a consumer repo with a
+different source-tree layout, that list matched nothing the repo actually shipped, so the lint
+scanned zero files while claiming repo-wide coverage. The general principle this defect exposed:
+a lint or gate script consumed by multiple repos of differing layout should default to the widest
+safe scope — repo-wide minus a documented exempt set (`specs/**` here) — rather than a hard-coded
+list of one repo's own directories. `git ls-files` makes this cheap: it already excludes
+gitignored/vendored/generated paths by construction, so "widest safe scope" does not require any
+new exemption machinery beyond the one that already exists. Apply this same default when writing
+a new cross-repo lint or gate script.

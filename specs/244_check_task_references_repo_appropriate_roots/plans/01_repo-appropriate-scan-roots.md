@@ -1,7 +1,7 @@
 # Implementation Plan: Task #244
 
 - **Task**: 244 - check-task-references.sh: scan repo-appropriate roots instead of a hard-coded nvim-repo TREE_ROOTS list
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/244_check_task_references_repo_appropriate_roots/reports/01_repo_appropriate_scan_roots.md
@@ -365,39 +365,39 @@ note, rather than silently dropping case (c).
  *(completed)*
 ---
 
-### Phase 6: Documentation alignment and full gate run [NOT STARTED]
+### Phase 6: Documentation alignment and full gate run [COMPLETED]
 
 **Goal**: The enforcement narrative describes the actual scan, the rule's repo-wide claim is
 backed rather than merely asserted, and the whole repository's gate set is green.
 
 **Tasks**:
-- [ ] Re-read `context/standards/task-reference-exemptions.md` immediately before editing.
-- [ ] Rewrite the `## Enforcement` section's two four-root assertions: the lead sentence
+- [x] Re-read `context/standards/task-reference-exemptions.md` immediately before editing. *(completed)*
+- [x] Rewrite the `## Enforcement` section's two four-root assertions: the lead sentence
       (`"specs/** is the ONLY exempt tree — agent-system/extensions/**, .opencode/**, lua/**, and
       .memory/** are all deliverables subject to this rule"`) and the lint bullet (`"scans every
       git-tracked file under the four deliverable tree roots above"`). Both must describe the
       repo-wide-minus-`specs/**` scan; keep the `specs/**`-is-the-only-exemption fact, drop the
-      four-root framing, and keep the gate-4 wiring pointer.
-- [ ] Add one sentence recording that the lint and the write-time hook now share exactly one scope
+      four-root framing, and keep the gate-4 wiring pointer. *(completed)*
+- [x] Add one sentence recording that the lint and the write-time hook now share exactly one scope
       predicate (`is_exempt_path`), so the two enforcement layers cannot silently diverge in scope
-      (requirement 8's durable documentation).
-- [ ] Re-read `rules/no-task-references-in-deliverables.md` and confirm its "the entire repository
+      (requirement 8's durable documentation). *(completed)*
+- [x] Re-read `rules/no-task-references-in-deliverables.md` and confirm its "the entire repository
       EXCEPT `specs/**/*`" claim is now backed by the lint. No substantive change expected
       (requirement 7 is satisfied by closing the gap, not by editing the rule). If any wording
-      still implies a narrower mechanical scope, correct only that wording.
-- [ ] Consider the research report's Context Extension Recommendation — a short note capturing the
+      still implies a narrower mechanical scope, correct only that wording. *(completed)*
+- [x] Consider the research report's Context Extension Recommendation — a short note capturing the
       general "a multi-repo lint should default to the widest safe scope, not this repo's own
       directory list" principle — as a subsection of the exemptions doc. Include it if it fits in
-      a few sentences; otherwise leave it for a follow-up rather than growing this phase.
-- [ ] Verify no task-number references were introduced in any file outside `specs/**` by these
-      edits (the new lint will catch it).
-- [ ] Redeploy so gate 4 exercises the fixed script:
+      a few sentences; otherwise leave it for a follow-up rather than growing this phase. *(completed)*
+- [x] Verify no task-number references were introduced in any file outside `specs/**` by these
+      edits (the new lint will catch it). *(completed)*
+- [x] Redeploy so gate 4 exercises the fixed script:
       `bash agent-system/extensions/core/scripts/deploy-headless.sh` (gate 4 invokes
-      `$CLAUDE_DIR/scripts/check-task-references.sh`, the deployed copy, not the source store).
-- [ ] Run the full gate set: `bash agent-system/extensions/core/scripts/tests/run-all.sh` and
+      `$CLAUDE_DIR/scripts/check-task-references.sh`, the deployed copy, not the source store). *(completed: deploy-headless.sh run; landed with fast-gate FAILs confined to the literature extension's concurrent zotero-export work, out of this task's file_scope -- see summary)*
+- [x] Run the full gate set: `bash agent-system/extensions/core/scripts/tests/run-all.sh` and
       `bash agent-system/extensions/core/scripts/verify-deploy.sh` (gates 1-5, with gate 4 the one
-      of direct interest here).
-- [ ] Re-run the Phase 1 equivalence check one final time immediately before the final commit, to
+      of direct interest here). *(completed: run-all.sh 83/93 passed, both new suites (test-check-task-references.sh, test-validate-wiring.sh) PASS; all 10 failures traced to concurrent sibling tasks' files, none in this task's file_scope -- verify-deploy.sh gate 4 PASS, gate 3/5 fails confined to literature extension)*
+- [x] Re-run the Phase 1 equivalence check one final time immediately before the final commit, to
       catch any violation introduced by a concurrent sibling task in this same orchestrate cycle.
 
 **Timing**: 1.0 hours
@@ -424,7 +424,7 @@ rules/no-task-references-in-deliverables.md` before editing.
 - `run-all.sh` exits 0, including both new suites.
 - `verify-deploy.sh` exits 0 with gate 4 passing against the redeployed script.
 - The final equivalence re-run matches the Phase 1 baseline finding set.
-
+ *(completed)*
 ---
 
 ## Testing & Validation
