@@ -1,12 +1,52 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 21,
+  "partial_progress": {
+    "stage": "phase_wave_boundary",
+    "details": "Completed the plan's entire first dependency wave (Phases 1-3: verify load-bearing preconditions, record the decision, document the mutex opt-in and staging qualification). All three are prose/documentation-tier phases now [COMPLETED] and committed. Phase 4 (dispatch-worktree.sh implementation) is the next unblocked phase and is substantial script-writing work sized for its own dispatch. See the phase-3 handoff for full detail.",
+    "handoff_path": "specs/199_concurrent_dispatch_isolation_posture/handoffs/phase-3-handoff-20260929T031000Z.md",
+    "phases_completed": 3,
+    "phases_total": 11
+  },
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/199_concurrent_dispatch_isolation_posture/handoffs/phase-3-handoff-20260929T031000Z.md",
+      "summary": "Wave-1-complete handoff: phases 1-3 done and committed, Phase 4 (dispatch-worktree.sh) is next, with all decision-record values (hardlink strategy, free-space floor/cap, corrected symlink rationale) already recorded for it to consume."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Verified all four load-bearing preconditions for concurrent-dispatch isolation empirically (Lake's atomic-rename write pattern, the .claude/ materialization fact with a correction to the originally-suspected symlink mechanism, the specs/ tracked/HEAD-stale fact, and free-space headroom), recorded the full evidence-backed split-verdict decision (worktree isolation for lean4/cslib implement dispatches, contended-path refusal for the rest) in the durable decision record, and documented the build guard's opt-in bypass hazard plus the mode-1b staging-insufficiency qualification where an agent will read them."
+  },
+  "modified_files": [
+    "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/lean/rules/lean4.md",
+    "agent-system/extensions/core/scripts/lake-build-guard.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When empirically verifying whether a per-dispatch git-worktree isolation design's deploy-tree materialization is safe, test the EXACT root-resolution idiom the codebase actually uses (e.g. `cd \"$(dirname script)/../..\" && pwd`), not a generic assumption about symlinks. On at least one system (bash 5.3.9), a symlinked deploy tree did NOT cause this idiom to re-resolve back to the real target -- bash's logical `cd` (no `-P`) does not necessarily re-resolve a symlink component when walking `..` segments, contrary to a common assumption. Hardlink-clone can still be the right choice for an independent, more direct reason: a symlink is not a separate directory, so any ephemeral runtime state (lock files, result caches, logs) written under it lands physically in the shared source, reintroducing the exact resource-sharing hazard isolation exists to remove. Test the assumption directly before designing around it, and if it's disproven, find and record the real reason the original design choice is still correct rather than silently keeping the disproven justification.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["git-worktree-isolation", "symlink-vs-hardlink", "PROJECT_ROOT-resolution", "empirical-verification", "concurrent-dispatch"]
+    },
+    {
+      "content": "To empirically test whether a build tool writes outputs via atomic temp-file-then-rename (safe to hardlink-share the build directory across worktrees) versus in-place modification (unsafe to share): hardlink-clone the build directory into a scratch git worktree, record the inode of one built artifact in both trees (should match, confirming the hardlink), edit the corresponding source in the clone only, rebuild just that one target, then compare inodes again. Atomic rename shows up as: the clone's rebuilt artifact gets a NEW inode with new content and nlink=1, while the original tree's artifact keeps its ORIGINAL inode, content, and mtime completely unchanged (also nlink=1, since the clone's directory entry no longer points to it). This is a cheap, minutes-long test that replaces an assumption with direct evidence before committing a design to it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["atomic-rename-verification", "hardlink-clone", "inode-divergence-test", "lake-build", "build-directory-sharing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790640953_159e0d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 3,
     "phases_total": 11
   }
 }

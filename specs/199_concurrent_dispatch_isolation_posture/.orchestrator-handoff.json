@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 14,
-  "summary": "Wrote an 11-phase implementation plan for the split-verdict concurrent-dispatch isolation posture: script-provisioned per-dispatch git worktrees for lean4/cslib implement dispatches (with merge-back and a specs/** refusal), a machine-derived contended-path commit refusal for shared-tree dispatches, the decision record scoring all options against all three failure modes, the mutex opt-in and staging-qualification documentation, and an acceptance fixture proving cross-task commit bleed is gone.",
+  "status": "partial",
+  "phase": "implement",
+  "dispatch_seq": 21,
+  "summary": "Completed the plan's entire first dependency wave (Phases 1-3): empirically verified all four load-bearing preconditions (Lake's atomic-rename write pattern confirmed via an inode-divergence test, the .claude/ materialization fact with a correction to the originally-suspected symlink-defeats-PROJECT_ROOT mechanism which did not reproduce, the specs/ tracked/HEAD-stale fact, and free-space headroom -- floor 5 GiB, cap 3 worktrees); recorded the full evidence-backed split verdict (worktree isolation for lean4/cslib implement dispatches, contended-path commit refusal for the rest, hunk staging ruled out) in a durable decision record; and documented the build guard's opt-in bypass hazard plus the mode-1b staging-insufficiency qualification. Phases 4-11 (the dispatch-worktree.sh script, dispatch/postflight wiring, the contended-path manifest and commit refusal, the acceptance fixture, and final gates/redeploy) remain for subsequent dispatches.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/199_concurrent_dispatch_isolation_posture/plans/01_isolation-posture-implementation.md",
-      "summary": "11 phases, 7 dependency waves, 16.5 estimated hours; validates clean under validate-artifact.sh --strict."
+      "type": "handoff",
+      "path": "specs/199_concurrent_dispatch_isolation_posture/handoffs/phase-3-handoff-20260929T031000Z.md",
+      "summary": "Wave-1-complete handoff naming Phase 4 as the next unblocked phase and every decision-record value it needs to consume."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 3,
   "phases_total": 11,
   "blockers": []
 }
