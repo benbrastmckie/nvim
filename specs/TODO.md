@@ -32,7 +32,7 @@ next_project_number: 276
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-263 [PLANNING] — Consent-gated git push: grant semantics and enforcement mechanism
+263 [PLANNED] — Consent-gated git push: grant semantics and enforcement mechanism
 265 [PLANNING] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -733,11 +733,12 @@ PHASES: (A) Gate 8 --jobs (choose a conservative default plus an env override; d
 ---
 
 ### 263. Consent-gated git push: grant semantics and enforcement mechanism
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 139
 - **Research**: [263_consent_gated_git_push/reports/01_consent-gated-push-design.md]
+- **Plan**: [263_consent_gated_git_push/plans/01_consent-gated-push-enforcement.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).

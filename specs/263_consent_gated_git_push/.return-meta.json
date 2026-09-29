@@ -1,44 +1,39 @@
 {
-  "status": "researched",
-  "summary": "Designed the consent-gated git push mechanism across all three absorbed phases (grant token + /please mint hook + guards + tests; /please command + docs sweep; orchestrator dispatch relay). Confirmed the prohibition is currently rule-text-only with zero mechanical enforcement. Settled the grant-scope/invalidation predicate, the categorical exclusions (force-push and master pushes stay outside any grant), that PR/MR creation and /merge stay fully user-only, the audit-event design, and the .decisions.json replay-hazard closure (a YES never mints a grant directly). Surfaced two findings not named in the dispatch: (1) root-files/settings.json and merge-sources/settings-hooks.json reach different consumer populations, and guard-destructive-git.sh's own Bash-matcher registration is missing from the latter -- a live latent propagation gap the new hooks must not repeat; (2) commands/README.md has no per-command table, so the absorbed task's 'add a row there' instruction needs correction.",
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/263_consent_gated_git_push/reports/01_consent-gated-push-design.md",
-      "summary": "Full design research covering grant semantics, integrity/mint-path, hook registration mechanics, categorical exclusions, audit-event design, and the orchestrator dispatch-relay path for consent-gated git push across all three absorbed implementation phases."
+      "type": "plan",
+      "path": "specs/263_consent_gated_git_push/plans/01_consent-gated-push-enforcement.md",
+      "summary": "13-phase plan for net-new git-push enforcement plus a single-use, HMAC-signed, target-bound consent grant minted only by a literal human prompt: grant library, /please mint hook, push guard + sanctioned wrapper, destructive-guard grant check, dual-template registration, five test suites, the /please command and rule narrowing, and the orchestrator relay leg."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's agent-system source store, root-files/settings.json (install-once template, only reaches a repo whose .claude/settings.json does not yet exist) and merge-sources/settings-hooks.json (add-only deep-merge fragment, the only path that reaches an already-initialized consumer repo) are NOT interchangeable hook-registration targets. Any new PreToolUse/UserPromptSubmit/etc. hook must be registered in BOTH, each as its own dedicated single-command matcher object (never appended into an existing shared matcher's hooks array, which breaks vim.deep_equal-based re-merge idempotency). Cross-checking the two files against each other is the only way to catch a hook that reaches fresh deploys but never propagates to existing ones -- guard-destructive-git.sh's own Bash-matcher entry is a live example of this exact gap (present in root-files/settings.json, absent from merge-sources/settings-hooks.json).",
-      "category": "PATTERN",
-      "source_artifact": "specs/263_consent_gated_git_push/reports/01_consent-gated-push-design.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["settings.json", "merge-sources", "root-files", "hook registration", "deploy propagation", "install-once"]
-    },
-    {
-      "content": "For a Claude Code UserPromptSubmit hook: the .prompt field on stdin JSON carries the LITERAL, unexpanded text the user typed, not an expanded slash-command's markdown file content -- confirmed indirectly via hooks/wezterm-task-number.sh, which pattern-matches literal '/research', '/plan' etc. prefixes directly against .prompt (only correct if unexpanded). This makes UserPromptSubmit a viable tamper-resistant mint point for a human-consent gate, since a dispatched subagent has no independent prompt-submission lifecycle and therefore cannot trigger it -- but that non-triggering property should be empirically verified (temporary logging + a subagent dispatch starting with the trigger text) before being relied on for a security-critical design, not merely inferred from architecture.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/263_consent_gated_git_push/reports/01_consent-gated-push-design.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["UserPromptSubmit", "hook payload", "subagent", "prompt injection", "mint path", "integrity"]
-    },
-    {
-      "content": "In this repo, a model's file-mutation channels are exactly Claude Code's own tool-call surface (Bash, Write, Edit, plus any write-capable MCP tool a given deploy has wired) -- every one of those is interceptable by a PreToolUse hook returning exit 2. So a PreToolUse guard blocking writes to a specific path (mirroring guard-destructive-git.sh's quote-stripped COMMAND_SCAN pattern-matching technique for Bash, plus a Write|Edit matcher for the dedicated tools) genuinely closes the model's write channel to that path completely -- PROVIDED the guard's matcher list covers every write-capable tool currently active in that deploy. This is a real, load-bearing scope qualification for any 'model cannot forge file X' design: state explicitly which matchers the guard covers and note that a newly-wired write-capable tool (e.g. a future MCP filesystem-write server) requires revisiting the guard's matcher list, rather than assuming Bash|Write|Edit is exhaustive forever.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/263_consent_gated_git_push/reports/01_consent-gated-push-design.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["PreToolUse", "write guard", "tamper resistance", "MCP tools", "threat model", "forgery"]
-    }
-  ],
+  "user_decision": {
+    "question": "Consent-gated push: may a plain (non-force) push of the default branch be authorized by a /please grant, or should every push to the default branch stay categorically excluded as the research report recommended?",
+    "options": [
+      "Admit plain non-force default-branch pushes under a valid grant; keep every force form on the default branch, bare --force anywhere, and all bulk/deletion refspecs categorically excluded (planner's recommendation - git-workflow.md's pre-existing Never Run is specifically force-to-master, and this repo's own working branch IS master, so a blanket exclusion would make the mechanism unusable here)",
+      "Exclude every push to the default branch from any grant, per the research report's stricter recommendation; a push from this repository would then always require a non-default branch"
+    ],
+    "recommended": "Admit plain non-force default-branch pushes under a valid grant; keep every force form on the default branch, bare --force anywhere, and all bulk/deletion refspecs categorically excluded (planner's recommendation - git-workflow.md's pre-existing Never Run is specifically force-to-master, and this repo's own working branch IS master, so a blanket exclusion would make the mechanism unusable here)",
+    "blocking": false
+  },
   "metadata": {
     "session_id": "sess_1790721762_ff3d8e_263",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "task_number": 263,
-    "timestamp": "2026-09-29T22:49:39Z"
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 13,
+    "estimated_hours": 17.5,
+    "dependency_waves": [[1, 2], [3, 4, 5], [6, 7, 8], [9], [10], [11], [12], [13]]
   },
-  "dispatch_seq": 1,
-  "next_steps": "Run /plan 263 to create the implementation plan covering Phases A (grant token + /please mint hook + integrity + push guard + destructive-git guard grant check + tests), B (/please command, never-list, rule exception, docs sweep), and C (dispatch relay + two-cycle no-replay test)."
+  "memory_candidates": [
+    {
+      "content": "Install-once vs. merge-fragment settings registration is a live, recurring trap in this agent-system source store: agent-system/extensions/core/root-files/settings.json is INSTALL-ONCE (the root_files copier skips it whenever the target exists), so a hook registered only there can never reach an already-initialized consumer repo; merge-sources/settings-hooks.json is the add-only merge fragment that does reach existing repos. Any new PreToolUse/UserPromptSubmit hook must be registered in BOTH, each as its own dedicated single-command matcher object (object-level dedup keeps re-merges idempotent; appending into an existing shared '*' matcher's hooks array does not). guard-destructive-git.sh is itself a live instance of the gap - its Bash matcher exists only in root-files/settings.json. check-extension-docs.sh Rule P's check_settings_merge_source_coverage() detects this class but suppresses it (condition 3) whenever the hook is already live in the current repo's deployed tree, so the gap stays invisible in the repo that authored it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/263_consent_gated_git_push/plans/01_consent-gated-push-enforcement.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["settings-registration", "install-once", "merge-sources", "hook-registration", "check-extension-docs", "rule-p"]
+    }
+  ],
+  "next_steps": "Run /implement 263 to execute the plan",
+  "dispatch_seq": 9
 }

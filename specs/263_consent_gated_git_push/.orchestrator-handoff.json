@@ -1,0 +1,25 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 9,
+  "summary": "Wrote a 13-phase implementation plan for consent-gated git push: a single-use, HMAC-signed, target-bound grant minted only by a literal human prompt (UserPromptSubmit), enforced by a new push guard hook plus a sanctioned wrapper, with registration in both settings templates, five test suites, the /please command and rule narrowing, and the orchestrator relay leg. Three planning-time decisions extend the research: consumption is shared between hook and wrapper (because /merge, /tag and cslib /pr all push inline), the mint hook recognises /merge, /tag and /pr so those user-only flows keep working with zero cslib edits, and the default-branch exclusion is narrowed to force forms only (surfaced as a non-blocking user_decision).",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/263_consent_gated_git_push/plans/01_consent-gated-push-enforcement.md",
+      "summary": "13-phase, 17.5-hour plan across 8 dependency waves covering grant semantics, the enforcement pair, the /please command, the docs sweep, and the dispatch relay."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 13,
+  "blockers": [],
+  "user_decision": {
+    "question": "Consent-gated push: may a plain (non-force) push of the default branch be authorized by a /please grant, or should every push to the default branch stay categorically excluded as the research report recommended?",
+    "options": [
+      "Admit plain non-force default-branch pushes under a valid grant; keep every force form on the default branch, bare --force anywhere, and all bulk/deletion refspecs categorically excluded (planner's recommendation - git-workflow.md's pre-existing Never Run is specifically force-to-master, and this repo's own working branch IS master, so a blanket exclusion would make the mechanism unusable here)",
+      "Exclude every push to the default branch from any grant, per the research report's stricter recommendation; a push from this repository would then always require a non-default branch"
+    ],
+    "recommended": "Admit plain non-force default-branch pushes under a valid grant; keep every force form on the default branch, bare --force anywhere, and all bulk/deletion refspecs categorically excluded (planner's recommendation - git-workflow.md's pre-existing Never Run is specifically force-to-master, and this repo's own working branch IS master, so a blanket exclusion would make the mechanism unusable here)",
+    "blocking": false
+  }
+}
