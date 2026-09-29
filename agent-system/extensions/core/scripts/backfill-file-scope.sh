@@ -58,6 +58,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/common.sh"
 HARVESTER="$SCRIPT_DIR/plan-file-scope-harvest.sh"
 STATE_WRITE="$SCRIPT_DIR/state-write.sh"
 
@@ -225,7 +226,7 @@ if [[ "$DRY_RUN" == "true" ]]; then
   exit 0
 fi
 
-SESSION_ID="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
+SESSION_ID="$(common_session_id)"
 # `. as $item | ...`: a jq function argument (the `has(...)`/index expression here) is evaluated
 # against the SAME input as the function call itself ($updates), not the outer `.` -- binding the
 # task entry to $item first is what lets `$item.project_number` reach the entry's own field
