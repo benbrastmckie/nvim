@@ -79,6 +79,22 @@ for candidate in "${FS_VALIDATOR_CANDIDATES[@]}"; do
   fi
 done
 
+# --- Check 10 / Check 11 (missing/null/empty + glob file_scope) validator resolution ---
+# Same source-store-first precedent as FS_VALIDATOR above. A candidate is trusted only after
+# grepping for BOTH check identifiers ("Check 10" and "Check 11"), so a stale deployed copy that
+# has one but not the other cannot produce a false green.
+SCOPE_VALIDATOR_CANDIDATES=(
+  "$SCRIPT_DIR/../validate-state.sh"
+  "$REPO_ROOT/.claude/scripts/validate-state.sh"
+)
+SCOPE_VALIDATOR=""
+for candidate in "${SCOPE_VALIDATOR_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]] && grep -q "Check 10" "$candidate" 2>/dev/null && grep -q "Check 11" "$candidate" 2>/dev/null; then
+    SCOPE_VALIDATOR="$candidate"
+    break
+  fi
+done
+
 PASSED=0
 FAILED=0
 
@@ -621,6 +637,187 @@ JSON
     rm -rf "$FIX_FIXTURE_DIR"
   else
     info "SKIPPING --fix fixture: no deployed state-write.sh at $REPO_ROOT/.claude/scripts/state-write.sh"
+    info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
+  fi
+fi
+
+# =====================================================================
+# Check 10 (missing/null/empty file_scope) / Check 11 (glob file_scope) / --strict / --fix
+# non-manufacture fixtures
+# =====================================================================
+if [[ -z "$SCOPE_VALIDATOR" ]]; then
+  info "SKIPPING Check 10/Check 11/--strict fixtures: no candidate validator (source-store or"
+  info "deployed) contains BOTH Check 10 and Check 11 (grepped for \"Check 10\" and \"Check 11\")."
+  info "Candidates checked:"
+  for candidate in "${SCOPE_VALIDATOR_CANDIDATES[@]}"; do
+    info "  $candidate"
+  done
+  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  info "deployed candidate, that a deploy has run) before re-running this suite."
+else
+  info "Check 10/Check 11/--strict fixtures running against: $SCOPE_VALIDATOR (confirmed to contain Check 10 and Check 11)"
+
+  # --- Check 10 fixture: one entry each of missing_key / null_value / empty_array / a concrete
+  # (unaffected) entry, all non-terminal -> all three sub-state WARN lines, the summary counts,
+  # and exit 0 ---
+  cat > "$WORKDIR/scope10-fixture.json" <<'JSON'
+{
+  "next_project_number": 5,
+  "active_projects": [
+    {"project_number": 1, "project_name": "cand-missing", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"},
+    {"project_number": 2, "project_name": "cand-null", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": null},
+    {"project_number": 3, "project_name": "cand-empty", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": []},
+    {"project_number": 4, "project_name": "cand-ok", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": ["a/b.sh"]}
+  ]
+}
+JSON
+  out=$(bash "$SCOPE_VALIDATOR" "$WORKDIR/scope10-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "file_scope missing_key: project_number 1 (cand-missing)" <<< "$out" \
+      && grep -q "file_scope null_value: project_number 2 (cand-null)" <<< "$out" \
+      && grep -q "file_scope empty_array: project_number 3 (cand-empty)" <<< "$out" \
+      && grep -q "file_scope visibility: 1 missing-key, 1 literal-null, 1 empty-array, out of 4 non-terminal task(s)" <<< "$out"; then
+    pass "Check 10 fixture: missing_key/null_value/empty_array all fire with distinct sub-state lines plus a summary count line, exit 0"
+  else
+    fail "Check 10 fixture: expected exit 0 with all three sub-state WARN lines plus the summary line (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Check 10 negative fixture: the sole non-terminal entry declares a concrete non-empty
+  # file_scope -> the log_pass negative fires, no Check 10 WARN ---
+  cat > "$WORKDIR/scope10-negative-fixture.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {"project_number": 1, "project_name": "cand-ok", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": ["a/b.sh"]}
+  ]
+}
+JSON
+  out=$(bash "$SCOPE_VALIDATOR" "$WORKDIR/scope10-negative-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "No missing/null/empty file_scope found among 1 non-terminal task(s)" <<< "$out" \
+      && ! grep -q "file_scope visibility:" <<< "$out"; then
+    pass "Check 10 negative fixture: every non-terminal entry declares a non-empty file_scope -> log_pass, no WARN"
+  else
+    fail "Check 10 negative fixture: expected exit 0 with the log_pass negative and no Check 10 WARN (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Check 10 terminal-exclusion fixture: a completed entry with no file_scope key must NOT
+  # produce a finding (confirming the non-terminal filter); the sole non-terminal entry declares
+  # a concrete scope, so the log_pass negative fires against a denominator of 1, not 2 ---
+  cat > "$WORKDIR/scope10-terminal-fixture.json" <<'JSON'
+{
+  "next_project_number": 3,
+  "active_projects": [
+    {"project_number": 1, "project_name": "cand-terminal", "status": "completed", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"},
+    {"project_number": 2, "project_name": "cand-ok", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": ["a/b.sh"]}
+  ]
+}
+JSON
+  out=$(bash "$SCOPE_VALIDATOR" "$WORKDIR/scope10-terminal-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "No missing/null/empty file_scope found among 1 non-terminal task(s)" <<< "$out" \
+      && ! grep -q "cand-terminal" <<< "$out"; then
+    pass "Check 10 terminal-exclusion fixture: a completed entry with no file_scope produces no finding"
+  else
+    fail "Check 10 terminal-exclusion fixture: expected the terminal entry excluded from both the finding set and the denominator (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Check 11 fixture: a glob-shaped entry fires the named WARN; a non-glob control entry
+  # must not ---
+  cat > "$WORKDIR/scope11-fixture.json" <<'JSON'
+{
+  "next_project_number": 3,
+  "active_projects": [
+    {"project_number": 1, "project_name": "cand-glob", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": ["*/agents/**"]},
+    {"project_number": 2, "project_name": "cand-plain", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": ["a/b/c.sh"]}
+  ]
+}
+JSON
+  out=$(bash "$SCOPE_VALIDATOR" "$WORKDIR/scope11-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "Glob-shaped file_scope entry: project_number 1, entry '\*/agents/\*\*'" <<< "$out" \
+      && ! grep -q "Glob-shaped file_scope entry: project_number 2" <<< "$out"; then
+    pass "Check 11 fixture: glob-shaped entry fires the named WARN, non-glob control entry does not, exit 0"
+  else
+    fail "Check 11 fixture: expected the named Check 11 WARN for project 1 only (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- --strict fixtures: the Check 10 fixture (WARN-only in default mode) becomes exit 1 under
+  # --strict; the warning-free negative fixture stays exit 0 under --strict ---
+  out=$(bash "$SCOPE_VALIDATOR" --strict "$WORKDIR/scope10-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 1 ]] && grep -q "STATE VALIDATION FAILED (--strict:" <<< "$out"; then
+    pass "--strict fixture: a WARN-only Check 10 finding becomes exit 1 under --strict"
+  else
+    fail "--strict fixture: expected exit 1 with the strict-mode summary line against the Check 10 fixture (rc=$rc)"
+    info "$out"
+  fi
+
+  out=$(bash "$SCOPE_VALIDATOR" --strict "$WORKDIR/scope10-negative-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]]; then
+    pass "--strict fixture: a warning-free fixture still exits 0 under --strict"
+  else
+    fail "--strict fixture: expected exit 0 against a warning-free fixture under --strict (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- --fix non-manufacture fixture (D4): an entry with no file_scope key must still have no
+  # file_scope key after --fix, alongside a sibling entry with an exact duplicate so --fix
+  # actually performs a repair in the same run. Placed inside THIS repo's own git tree (matching
+  # the existing --fix fixture above), since --fix writes only through a DEPLOYED
+  # state-write.sh. Gracefully SKIPPED (not FAILED) when no deployed state-write.sh exists yet.
+  if [[ -f "$REPO_ROOT/.claude/scripts/state-write.sh" ]]; then
+    NOMFG_FIXTURE_DIR="$REPO_ROOT/specs/_tmp_scope_nomfg_fixture_$$"
+    mkdir -p "$NOMFG_FIXTURE_DIR"
+    cat > "$NOMFG_FIXTURE_DIR/state.json" <<'JSON'
+{
+  "next_project_number": 3,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
+     "dependencies": [],
+     "file_scope": ["docs/README.md", "docs/README.md", "src/foo.lua"]},
+    {"project_number": 2, "project_name": "b", "status": "not_started", "task_type": "general",
+     "created": "2026-01-02T00:00:00Z", "last_updated": "2026-01-02T00:00:00Z",
+     "dependencies": []}
+  ]
+}
+JSON
+    out=$(bash "$SCOPE_VALIDATOR" --fix "$NOMFG_FIXTURE_DIR/state.json" 2>&1)
+    rc=$?
+    nomfg_fs1=$(jq -c '.active_projects[] | select(.project_number==1) | .file_scope' "$NOMFG_FIXTURE_DIR/state.json" 2>/dev/null)
+    nomfg_p2_has_key=$(jq -r '.active_projects[] | select(.project_number==2) | has("file_scope")' "$NOMFG_FIXTURE_DIR/state.json" 2>/dev/null)
+    if [[ "$rc" -eq 0 ]] \
+        && [[ "$nomfg_fs1" == '["docs/README.md","src/foo.lua"]' ]] \
+        && [[ "$nomfg_p2_has_key" == "false" ]]; then
+      pass "--fix non-manufacture fixture (D4): project 1's exact duplicate is repaired, project 2 still has no file_scope key"
+    else
+      fail "--fix non-manufacture fixture: expected project 1 deduped and project 2 to remain keyless (rc=$rc)"
+      info "$out"
+      info "project 1 file_scope: $nomfg_fs1"
+      info "project 2 has file_scope key: $nomfg_p2_has_key"
+    fi
+    rm -rf "$NOMFG_FIXTURE_DIR"
+  else
+    info "SKIPPING --fix non-manufacture fixture: no deployed state-write.sh at $REPO_ROOT/.claude/scripts/state-write.sh"
     info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
   fi
 fi

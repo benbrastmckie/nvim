@@ -482,34 +482,43 @@ reach into `--repair`.
 
 ---
 
-### Phase 6: Fixture tests for Checks 10, 11, `--strict`, and `--fix` non-manufacture [NOT STARTED]
+### Phase 6: Fixture tests for Checks 10, 11, `--strict`, and `--fix` non-manufacture [COMPLETED]
 
 **Goal**: Every new `validate-state.sh` behavior is pinned by a hand-crafted fixture, including
 the negative guarantee that `--fix` never invents a `file_scope` key.
 
 **Tasks**:
-- [ ] Re-read `scripts/tests/test-validate-state.sh`'s Check 8/9 fixture section and its
+- [x] Re-read `scripts/tests/test-validate-state.sh`'s Check 8/9 fixture section and its
       grep-the-validator-for-the-check-identifier resolution guard, and follow both conventions.
-- [ ] Add a validator-resolution guard for the new checks (grep for `Check 10` / `Check 11`), so a
+      *(completed)*
+- [x] Add a validator-resolution guard for the new checks (grep for `Check 10` / `Check 11`), so a
       stale deployed copy cannot produce a false green — mirroring the existing `FS_VALIDATOR` and
-      `D5_VALIDATOR` precedent.
-- [ ] Check 10 fixture: four non-terminal entries — one missing the key, one literal null, one
+      `D5_VALIDATOR` precedent. *(completed: new `SCOPE_VALIDATOR` block)*
+- [x] Check 10 fixture: four non-terminal entries — one missing the key, one literal null, one
       empty array, one with a concrete entry — asserting all three WARN sub-state lines, the
-      summary counts, and exit 0.
-- [ ] Check 10 negative fixture: every non-terminal entry declares a non-empty scope → the
-      `log_pass` line, no Check 10 WARN.
-- [ ] Check 10 terminal-exclusion fixture: a `completed` entry with no `file_scope` produces no
-      finding (confirming the non-terminal filter).
-- [ ] Check 11 fixture: a `*/agents/**` entry → the named WARN, exit 0; plus a non-glob control
-      entry that must not fire.
-- [ ] `--strict` fixtures: the Check 10 fixture under `--strict` → exit 1; the warning-free
-      fixture under `--strict` → exit 0.
-- [ ] `--fix` non-manufacture fixture: an entry with no `file_scope` key (alongside an entry with
+      summary counts, and exit 0. *(completed)*
+- [x] Check 10 negative fixture: every non-terminal entry declares a non-empty scope → the
+      `log_pass` line, no Check 10 WARN. *(completed)*
+- [x] Check 10 terminal-exclusion fixture: a `completed` entry with no `file_scope` produces no
+      finding (confirming the non-terminal filter). *(completed)*
+- [x] Check 11 fixture: a `*/agents/**` entry → the named WARN, exit 0; plus a non-glob control
+      entry that must not fire. *(completed)*
+- [x] `--strict` fixtures: the Check 10 fixture under `--strict` → exit 1; the warning-free
+      fixture under `--strict` → exit 0. *(completed)*
+- [x] `--fix` non-manufacture fixture: an entry with no `file_scope` key (alongside an entry with
       exact duplicates, so `--fix` actually does work) → after repair, the first entry still has
       no `file_scope` key. Place the fixture inside this repo's own git tree the way the existing
       `--fix` fixture does, since `--fix` writes only through a deployed `state-write.sh`.
-- [ ] Use synthetic `project_number` values and refer to them as "candidate #N"/fixture numbers,
-      never "task N", per `no-task-references-in-deliverables.md`.
+      *(completed)*
+- [x] Use synthetic `project_number` values and refer to them as "candidate #N"/fixture numbers,
+      never "task N", per `no-task-references-in-deliverables.md`. *(completed: plain integer
+      project_number values, no task-number references anywhere in the new fixtures)*
+- [x] *(spot-check, per this phase's own Verification)* Confirmed each new case fails loudly when
+      the corresponding check is disabled: the Check 10 fixture run against the pre-Check-10/11
+      commit (`deb5c1fd6`) errors out rather than vacuously matching; the `--fix` non-manufacture
+      fixture run against a deliberately-broken in-place copy (manufacture guard removed) fails
+      with the exact expected message, then the original file was restored and confirmed
+      byte-identical via `diff`.
 
 **Timing**: 1.25 hours
 
