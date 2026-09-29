@@ -170,12 +170,12 @@
     {
       "project_number": 51,
       "project_name": "move_session_state_files_out_of_specs_root",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "Stop session-scoped orchestration runtime files from accumulating at the specs/ root, and make the existing reap path actually run. Originally scoped as \"move the files into a dot-prefixed directory\"; widened after a manual cleanup swept 79 stranded files across 5 repos (oldest dated 2026-07-11), because relocation alone hides the clutter without stopping the growth.\n\nThree parts:\n\n(1) Relocation (original scope). Move .orchestrator-multi-state-{sid}.json and .return-meta-multi-{sid}.json out of the specs/ root into a dot-prefixed subdirectory (e.g. specs/.orchestration/), or handle otherwise as most appropriate. Must update every writer/reader, the reaper's glob roots, .gitignore patterns, check-runtime-file-tracking.sh's probe paths, and context/standards/orchestrator-runtime-files.md's Class Table.\n\n(2) Reaper glob coverage gap. scripts/reap-session-runtime-files.sh sweeps ONLY the current hyphen-separated shapes (specs/.orchestrator-multi-state-*.json, specs/.return-meta-multi-*.json). Three superseded naming generations are therefore permanently unreapable and had to be deleted by hand:\n  - un-suffixed:     .orchestrator-multi-state.json / .return-meta-multi.json\n  - dot-separator:   .orchestrator-multi-state.sess_{sid}.json\n  - .prev- variant:  .orchestrator-multi-state.prev-sess_{sid}.json\nAdditionally .return-meta-meta.json, .return-meta-meta-sess_{sid}.json, and .meta-return.json have NO writer or reader anywhere in agent-system/ or .claude/ (orphans of a superseded convention; .meta-return.json was also tracked in git and has since been removed). Decide per shape whether to widen the reaper's globs or to add a one-shot legacy-name migration, and ensure any relocation in part (1) does not create a fourth orphaned generation.\n\n(3) Automatic invocation (root cause). The reaper is correct and works -- it cleared 41 of 41 files on first run -- but its ONLY trigger is a manual /refresh, so litter grows unbounded between refreshes. Wire reap into /todo, which is run far more often and is already the repo's housekeeping command. Call both scripts/reap-session-runtime-files.sh and task-lock.sh session-reap (stale .sessions/ registry entries accumulate identically -- 9 dead-pid entries were swept in nvim alone). Suggested hook point: a new stage between skill-todo's stage 10 ArchiveTasks and stage 15 GitCommit, so reaped paths land in the same commit; alternatively fold the reporting half into stage 3 DetectOrphans. Must stay non-blocking and honor the existing ORCHESTRATOR_SESSION_REAP_MIN threshold (default 240min) so in-flight batch runs are never reaped; echo the reaper's own output verbatim the way skill-refresh already does. Keep /refresh's invocation working unchanged.\n\nAffected repos observed: nvim, BimodalLogic, cslib, ModelChecker, PersonalWebsite -- so the fix belongs in the core extension source store, not any single repo's deploy.\n\n=== EVIDENCE REFRESHED 2026-09-22 (post-/todo measurement) ===\nThe stranded-file count in THIS repo alone is now 48 (.orchestrator-multi-state-*.json and .return-meta-multi-*.json at the specs/ root), up from 25 measured on 2026-09-08 -- nearly doubled in two weeks, with the oldest surviving entries still present. No reaper ran in between, which is precisely the point: part (3) above is the load-bearing half of this task. Relocation (part 1) and glob widening (part 2) both leave the growth rate untouched; only wiring the reaper into /todo changes it. Treat part (3) as the acceptance-critical deliverable, not as the third of three equals.\n\n=== EVIDENCE REFRESHED 2026-09-28 ===\n67 stranded session files at this repo's specs/ root (48 on 2026-09-22, 25 on 2026-09-08), including one .meta-return-sess_*.json written by the superseded convention this task already names as orphaned. Twelve completed tasks await /todo, which is the housekeeping command part (3) wires the reaper into.",
       "topic": "core-agent-system",
       "created": "2026-08-11T16:17:10Z",
-      "last_updated": "2026-09-29T22:54:51Z",
+      "last_updated": "2026-09-29T23:53:07Z",
       "file_scope": [
         "agent-system/extensions/core/commands/orchestrate.md",
         "agent-system/extensions/core/commands/refresh.md",
@@ -186,6 +186,7 @@
         "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+        "agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh",
         "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
@@ -193,20 +194,36 @@
         "agent-system/extensions/core/scripts/reap-session-runtime-files.sh",
         "agent-system/extensions/core/scripts/task-lock.sh",
         "agent-system/extensions/core/scripts/test-session-runtime-files.sh",
+        "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+        "agent-system/extensions/core/scripts/tests/test-init-specs.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "agent-system/extensions/core/skills/skill-todo/"
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+        "agent-system/extensions/core/skills/skill-todo/",
+        "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+        "specs/.gitignore",
+        "specs/.meta-return-sess_1790273700_meta01.json"
       ],
       "dependencies": [
         143,
         209
       ],
       "title": "Move session runtime files out of the specs root and make the reap path run",
-      "session_id": "sess_1790721762_ff3d8e_51",
+      "session_id": "sess_1790721762_ff3d8e",
       "artifacts": [
         {
           "path": "specs/051_move_session_state_files_out_of_specs_root/reports/01_relocate-widen-reap-wire-todo.md",
           "type": "report",
           "summary": "Research findings for all three parts: Part 2's fix is a one-file reap-glob widening (gitignore already covers all four naming generations); Part 3 has a ready-made porting template in skill-refresh/SKILL.md Steps 4.5/4.6 and a confirmed hook point between skill-todo Stage 10 and Stage 15; Part 1 (relocation) requires editing ~4 writer/reader files outside the declared file_scope, listed precisely with a proposed_file_scope addition; also documents a newly-found currently-tracked orphan file (.meta-return-sess_*.json) undetected by check-runtime-file-tracking.sh."
+        },
+        {
+          "path": "specs/051_move_session_state_files_out_of_specs_root/plans/01_relocate-widen-reap-wire-todo.md",
+          "type": "plan",
+          "summary": "7-phase implementation plan for wiring the runtime-file reap into /todo, widening the reaper's globs, untracking a retired-convention orphan, and relocating both session-scoped singletons into specs/.orchestration/."
         }
       ],
       "next_artifact_number": 2

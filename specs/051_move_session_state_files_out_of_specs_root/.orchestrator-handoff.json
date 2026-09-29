@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "summary": "Authored a 7-phase, 8-hour implementation plan covering all three parts of the task. Phase 1 (wire reap-session-runtime-files.sh and task-lock.sh session-reap into a new skill-todo stage 14.5) is the acceptance-critical deliverable and depends on nothing. Phase 2 widens the reaper's literal candidate globs to all four naming generations. Phase 3 untracks the newly-found tracked orphan specs/.meta-return-sess_1790273700_meta01.json and documents Check B's coverage limit. Phases 4-6 relocate both singletons into specs/.orchestration/, adding a 19th runtime-file class member and repointing ~121 literal test-fixture references across 7 suites. Phase 7 redeploys, runs the full gate set, and sweeps the ~72 live stranded files. Planning measured a blast radius for Part 1 roughly 100x larger than the research report's single-test-fixture estimate; that divergence is documented in the plan.",
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": [],
+  "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/051_move_session_state_files_out_of_specs_root/plans/01_relocate-widen-reap-wire-todo.md",
+      "summary": "7-phase implementation plan for wiring the runtime-file reap into /todo, widening the reaper's globs, untracking a retired-convention orphan, and relocating both session-scoped singletons into specs/.orchestration/."
+    }
+  ],
+  "next_action_hint": "Run /implement 51. Phase 1 is acceptance-critical and dependency-free. Phases 4-6 overlap sibling tasks 263 and 265 on five files (orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, skill-orchestrate/SKILL.md, test-orchestrate-cycle-plan.sh, test-orchestrate-cycle-postflight.sh) and require a re-read immediately before each edit per the territory contract."
+}
