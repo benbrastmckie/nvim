@@ -53,7 +53,7 @@ next_project_number: 269
 ### Literature
 
 39 [PLANNED] — Upgrade Zotero metadata resolution and plan the Zotero 10...
-207 [PLANNING] — Fix zotero-generate-export.sh Path 1: accumulator truncation...
+207 [PLANNED] — Fix zotero-generate-export.sh Path 1: accumulator truncation...
 
 ### Neovim
 
@@ -1375,11 +1375,12 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 
 ### 207. Fix zotero-generate-export.sh Path 1: accumulator truncation and shrink guard, then the pagination shortfall or path-preference order
 - **Effort**: 2-3 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [207_fix_zotero_export_path1_truncation/reports/01_path1-truncation-and-pagination-root-cause.md]
+- **Plan**: [207_fix_zotero_export_path1_truncation/plans/01_path1-truncation-shrink-guard.md]
 
 **Description**: Fix the silent-truncation data-loss defect in zotero-generate-export.sh's Path 1 (Zotero 7 local API pull), and add a shrink guard so a truncated pull can never again overwrite a complete export.
 

@@ -1,13 +1,18 @@
 {
   "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 15,
+  "summary": "Authored a 7-phase plan fixing the Path 1 MAX_ARG_STRLEN accumulator, the wrong csljson end-of-pagination signal, the no-op itemType filter, and adding a content-keyed shrink guard with an --allow-shrink opt-out distinct from --force, plus offline curl-stub regression coverage and four doc updates.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/207_fix_zotero_export_path1_truncation/plans/01_path1-truncation-shrink-guard.md",
-      "summary": "7-phase plan: temp-file accumulator, Total-Results-driven pagination, working itemType filter, content-keyed shrink guard with --allow-shrink, corrected fetch_path3 exclusion set, offline curl-stub regression suite, and four doc touchpoints."
+      "summary": "7-phase implementation plan, 9 hours estimated, fully serialized for phases 2-5 (same-file edits)."
     }
   ],
-  "next_steps": "Run /implement 207 to execute the plan",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": [],
   "user_decision": {
     "question": "Research found that fetch_path3's sqlite filter excludes the wrong itemTypeIDs, so the existing on-disk 4049-item export is ~61% attachment/note/annotation stubs. Should this task also correct that filter (Phase 5), which drops those stub entries from future sqlite-path exports and lowers the shrink guard's baseline to a true bibliographic count?",
     "options": [
@@ -16,16 +21,5 @@
     ],
     "recommended": "Fix it in this task (Phase 5) -- the shrink guard then protects a real bibliographic baseline, and the first post-fix regeneration legitimately needs --allow-shrink once",
     "blocking": false
-  },
-  "metadata": {
-    "session_id": "sess_1790640953_159e0d_207",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 9,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6, 7]]
-  },
-  "memory_candidates": [],
-  "dispatch_seq": 15
+  }
 }
