@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test-lean-comparator-run.sh -- regression suite for lean-comparator-run.sh.
 #
-# Covers three distinct regression concerns:
+# Covers four distinct regression concerns:
 #
 # (1) Verdict classification (Cases V1-V11): each of the 8 named verdicts from the closed
 # vocabulary, plus `timeout` and the internal `unclassified_failure` escape hatch, driven end to
@@ -20,6 +20,14 @@
 # guard-absent-but-lake-present degradation prints a loud warning and still proceeds; usage
 # errors exit 64.
 #
+# (4) The NixOS-host fixes (Cases P1-P5): Fix 1's pinned-toolchain PATH ordering (P1) and
+# elan-wrapper unwrapping (P2), both asserted from the sandboxed process's own inherited PATH
+# (never by reading the source); COMPARATOR_LANDRUN shim wiring (P3); the landrun shim's own
+# grants -- TMPDIR override, git-library --rox, Comparator's argv unchanged -- invoked directly
+# (P4); and the git-remote pre-flight probe's comparator_unavailable-before-Comparator-runs
+# behavior (P5). A dedicated mutation check (inverting the lake.orig executable check) proves
+# P1/P2 are not vacuous.
+#
 # Anti-vacuous-test guard (Case AV1, carrying test-lean-sorry-census.sh's own discipline): a
 # naive "exit code 1 means rejected, full stop" classifier is asserted to DISAGREE with this
 # tool's classifier on the axiom_violation vs config_error fixtures -- both exit 1, so a
@@ -29,7 +37,8 @@
 # Cases requiring the REAL `comparator`, `landrun`, or `lean4export` binaries (all three
 # confirmed absent on this development host, per the task's own dispatch) are SKIPPED with an
 # explicit report naming which acceptance criterion is thereby deferred -- never silently
-# reported as a pass. See Case E1/E2.
+# reported as a pass. See Case E1/E2. None of the new Cases P1-P5 above require these real
+# binaries -- all five are fully exercised via stubs on this host, with no deferral.
 #
 # Follows the core shell-test convention (see test-lean-sorry-census.sh and
 # core/scripts/tests/test-census-count.sh): pass()/fail()/info()/skip() helpers, PASSED/FAILED
@@ -155,6 +164,22 @@ fi
 exit 0
 EOF
   chmod +x "$1"
+}
+
+# write_wrapped_lake_stub <dir> -- writes lake.orig (the same functional stub as write_lake_stub
+# above: fails `exe cache get`, execs the trailing command for `env`) plus a `lake` WRAPPER that
+# execs lake.orig -- mirrors the real shape this host's own nixpkgs-elan-installed toolchain
+# `lake` takes (a `#!` script beside `lake.orig`; see resolve_toolchain()'s own header comment),
+# so resolve_toolchain()'s elan-wrapper unwrap logic has something real to unwrap.
+write_wrapped_lake_stub() {
+  local dir="$1"
+  mkdir -p "$dir"
+  write_lake_stub "$dir/lake.orig"
+  cat > "$dir/lake" <<EOF
+#!/usr/bin/env bash
+exec "$dir/lake.orig" "\$@"
+EOF
+  chmod +x "$dir/lake"
 }
 
 # make_lean_stub <bindir> -- writes a `lean` executable into <bindir> answering --print-prefix
@@ -525,6 +550,185 @@ if [ "$VERDICT_MUTATED" != "axiom_violation" ]; then
   pass "Mutation check: breaking the axiom_violation string match no longer yields axiom_violation (got '$VERDICT_MUTATED') -- Case V5's assertion is not vacuous"
 else
   fail "Mutation check: mutated tool still reported axiom_violation -- Case V5's assertion would pass even against a broken classifier"
+fi
+
+# ---------------------------------------------------------------------------
+# Cases P1-P5: the NixOS-host fixes -- Fix 1 (pinned-toolchain PATH ordering, elan-wrapper
+# unwrapping), the landrun-shim's own grants (Fixes 3+4), shim wiring, and the git-remote
+# pre-flight probe. P1/P2/P3 share one env-probing stub comparator (dumps its own inherited PATH
+# and COMPARATOR_LANDRUN to files instead of reading source) since all three assert on the exact
+# environment lean-comparator-run.sh's sandbox_path/env_flags construction produces; P4 invokes
+# the shim script directly; P5 drives the pre-flight probe end to end.
+# ---------------------------------------------------------------------------
+
+SHIM_SRC="$SCRIPT_DIR/../lean-comparator-landrun-shim.sh"
+
+# write_path_probe_comparator_stub <path> <path-log> <landrun-log> -- a stub `comparator` that
+# dumps its own inherited PATH and COMPARATOR_LANDRUN to the given log files (proving what
+# run_sandboxed()'s sandbox_path/env_flags construction actually produced, at the exact point
+# Comparator itself would resolve `lake` or read COMPARATOR_LANDRUN) then behaves like a V1
+# (verified) stub.
+write_path_probe_comparator_stub() {
+  local path="$1" path_log="$2" landrun_log="$3"
+  cat > "$path" <<EOF
+#!/usr/bin/env bash
+printf '%s' "\$PATH" > "$path_log"
+printf '%s' "\$COMPARATOR_LANDRUN" > "$landrun_log"
+echo "Your solution is okay!"
+exit 0
+EOF
+  chmod +x "$path"
+}
+
+REPO_P="$WORKDIR/repo-p"
+make_repo "p"
+BIN_P="$(make_bin_dir p)"
+write_landrun_stub "$BIN_P/landrun"
+write_noop_stub "$BIN_P/lean4export"
+GUARD_P="$WORKDIR/guard-p.sh"
+write_guard_stub "$GUARD_P" "$WORKDIR/guard-argv-p.log"
+
+# Toolchain setup: lean --print-prefix -> $BIN_P.toolchain; its bin/ holds the elan-wrapper pair
+# (a `lake` wrapper script execing `lake.orig`) -- the shape resolve_toolchain()'s own header
+# comment says this NixOS host's real nixpkgs-elan-installed lake always takes.
+make_lean_stub "$BIN_P"
+TOOLCHAIN_BIN_P="${BIN_P}.toolchain/bin"
+write_wrapped_lake_stub "$TOOLCHAIN_BIN_P"
+
+# Decoy: a DIFFERENT, non-executable "lake" on the ambient PATH ($BIN_P itself, which -- absent
+# Fix 1 -- would be exactly where a bare PATH lookup lands) -- mimics the real elan top-level
+# dispatcher shim landrun cannot execute. Proves the fix does not fall back to it: if PATH
+# ordering were broken, the assertions below (which resolve the FIRST PATH component's own
+# `lake`) would find this decoy instead of the toolchain's real one.
+printf '#!/usr/bin/env bash\necho decoy\n' > "$BIN_P/lake"
+chmod -x "$BIN_P/lake"
+
+PATH_LOG_P="$WORKDIR/path-log-p.txt"
+LANDRUN_LOG_P="$WORKDIR/landrun-log-p.txt"
+write_path_probe_comparator_stub "$BIN_P/comparator" "$PATH_LOG_P" "$LANDRUN_LOG_P"
+
+# --keep-workdir: Case P2 below inspects LAKE_DIR's symlink AFTER the run completes, which the
+# default cleanup-on-exit trap would otherwise have already removed.
+OUT_P="$(run_tool "$BIN_P" "$GUARD_P" "$REPO_P" --keep-workdir)"
+VERDICT_P="$(get_field "$OUT_P" verdict)"
+CAPTURED_PATH_P="$(cat "$PATH_LOG_P" 2>/dev/null || echo '')"
+FIRST_COMPONENT_P="${CAPTURED_PATH_P%%:*}"
+CAPTURED_LANDRUN_P="$(cat "$LANDRUN_LOG_P" 2>/dev/null || echo '')"
+
+# Case P1 (PATH ordering, Fix 1): the FIRST component of the sandboxed PATH must resolve a
+# `lake` that traces back to the pinned toolchain's own lake.orig, never to the decoy on $BIN_P.
+if [ "$VERDICT_P" = "verified" ] && [ -n "$FIRST_COMPONENT_P" ] && \
+   [ "$(readlink -f "$FIRST_COMPONENT_P/lake" 2>/dev/null)" = "$(readlink -f "$TOOLCHAIN_BIN_P/lake.orig")" ]; then
+  pass "Case P1 (PATH ordering): sandboxed PATH's first component resolves 'lake' to the pinned toolchain's lake.orig, not the ambient decoy"
+else
+  fail "Case P1 (PATH ordering): expected the first PATH component's lake to resolve to '$TOOLCHAIN_BIN_P/lake.orig'; got verdict=$VERDICT_P path=$CAPTURED_PATH_P"
+fi
+
+# Case P2 (elan-wrapper unwrapping): the first PATH component is a DEDICATED private directory
+# (LAKE_DIR), distinct from the toolchain's own bin/ -- proving the wrapper was actually
+# unwrapped via a fresh symlink, not merely resolved to the (still-wrapped, still `#!`-prefixed)
+# toolchain bin/ itself.
+if [ "$FIRST_COMPONENT_P" != "$TOOLCHAIN_BIN_P" ] && [ -L "$FIRST_COMPONENT_P/lake" ] && \
+   [ "$(head -c 2 "$TOOLCHAIN_BIN_P/lake" 2>/dev/null)" = '#!' ]; then
+  pass "Case P2 (elan-wrapper unwrapping): PATH's first component ($FIRST_COMPONENT_P) is a private unwrap dir distinct from the (still-wrapped) toolchain bin/, holding a lake symlink"
+else
+  fail "Case P2 (elan-wrapper unwrapping): expected a private unwrap dir distinct from '$TOOLCHAIN_BIN_P' holding a lake symlink; got first-component=$FIRST_COMPONENT_P"
+fi
+
+# Case P3 (shim wiring): COMPARATOR_LANDRUN in the captured sandboxed environment must point at
+# lean-comparator-landrun-shim.sh, never at the raw resolved landrun path ($BIN_P/landrun).
+if [ "$(basename "$CAPTURED_LANDRUN_P")" = "lean-comparator-landrun-shim.sh" ] && [ "$CAPTURED_LANDRUN_P" != "$BIN_P/landrun" ]; then
+  pass "Case P3 (shim wiring): COMPARATOR_LANDRUN=$CAPTURED_LANDRUN_P points at the shim, not the raw landrun path"
+else
+  fail "Case P3 (shim wiring): expected COMPARATOR_LANDRUN to name lean-comparator-landrun-shim.sh; got '$CAPTURED_LANDRUN_P'"
+fi
+
+# Case P4 (shim grants): invoke the shim script directly with a stub git/ldd pair and a stub
+# real landrun (via LEAN_COMPARATOR_RUN_REAL_LANDRUN); assert the logged argv carries the TMPDIR
+# override, at least one --rox library grant, and Comparator's own arguments unchanged and in
+# order (never by reading the shim's source).
+SHIM_WORKDIR="$WORKDIR/shim-p4"
+mkdir -p "$SHIM_WORKDIR"
+SHIM_REAL_LANDRUN="$WORKDIR/shim-p4-real-landrun.sh"
+SHIM_ARGV_LOG="$WORKDIR/shim-p4-argv.log"
+cat > "$SHIM_REAL_LANDRUN" <<EOF
+#!/usr/bin/env bash
+printf '%s\n' "\$*" > "$SHIM_ARGV_LOG"
+EOF
+chmod +x "$SHIM_REAL_LANDRUN"
+SHIM_LOG_P4="$WORKDIR/shim-p4-log.txt"
+if [ -f "$SHIM_SRC" ]; then
+  ( cd "$SHIM_WORKDIR" && LEAN_COMPARATOR_RUN_REAL_LANDRUN="$SHIM_REAL_LANDRUN" \
+      LEAN_COMPARATOR_RUN_SHIM_LOG="$SHIM_LOG_P4" \
+      bash "$SHIM_SRC" --best-effort --ro / -- lake build ) >/dev/null 2>&1
+  SHIM_ARGV_P4="$(cat "$SHIM_ARGV_LOG" 2>/dev/null || echo '')"
+  if echo "$SHIM_ARGV_P4" | grep -q -- "TMPDIR=$SHIM_WORKDIR/.lake/tmp" && \
+     echo "$SHIM_ARGV_P4" | grep -q -- "--rox" && \
+     echo "$SHIM_ARGV_P4" | grep -q -- "--best-effort --ro / -- lake build$"; then
+    pass "Case P4 (shim grants): logged argv carries the TMPDIR override, at least one --rox grant, and Comparator's own arguments unchanged and in order"
+  else
+    fail "Case P4 (shim grants): expected TMPDIR override, a --rox grant, and unchanged trailing Comparator args; got: $SHIM_ARGV_P4"
+  fi
+else
+  fail "Case P4 (shim grants): expected shim script at $SHIM_SRC"
+fi
+
+# Case P5 (git-remote pre-flight probe): a linked dependency package with no git remote (this
+# case's stub `lake exe cache get` creates a plain, non-git directory under .lake/packages/) must
+# yield comparator_unavailable (exit 69) naming the package, before Comparator is ever invoked.
+REPO_PF="$WORKDIR/repo-pf"
+make_repo "pf"
+BIN_PF="$(make_bin_dir pf)"
+write_landrun_stub "$BIN_PF/landrun"
+write_noop_stub "$BIN_PF/lean4export"
+make_lean_stub "$BIN_PF"
+write_comparator_stub "$BIN_PF/comparator" "Your solution is okay!" "" 0
+cat > "$BIN_PF/lake" <<'EOF'
+#!/usr/bin/env bash
+if [ "$1" = "exe" ] && [ "$2" = "cache" ]; then
+  mkdir -p .lake/packages/fakedep
+  exit 0
+fi
+if [ "$1" = "env" ]; then
+  shift
+  exec "$@"
+fi
+exit 0
+EOF
+chmod +x "$BIN_PF/lake"
+GUARD_PF="$WORKDIR/guard-pf.sh"
+write_guard_stub "$GUARD_PF" "$WORKDIR/guard-argv-pf.log"
+OUT_PF="$(run_tool "$BIN_PF" "$GUARD_PF" "$REPO_PF")"
+RC_PF=$?
+VERDICT_PF="$(get_field "$OUT_PF" verdict)"
+if [ "$RC_PF" -eq 69 ] && [ "$VERDICT_PF" = "comparator_unavailable" ] && echo "$OUT_PF" | grep -qF "fakedep"; then
+  pass "Case P5 (git-remote pre-flight probe): comparator_unavailable (exit 69) naming 'fakedep', before Comparator ran"
+else
+  fail "Case P5 (git-remote pre-flight probe): expected exit 69 / comparator_unavailable naming 'fakedep'; got rc=$RC_PF verdict=$VERDICT_PF out=$OUT_PF"
+fi
+
+# ---------------------------------------------------------------------------
+# Mutation check (Fix 1): deliberately breaking the elan-wrapper unwrap (a fresh copy of the
+# tool with the `lake.orig` executable-check inverted) must make Case P1/P2 fall through to the
+# (still-wrapped, non-functional-for-Landlock) toolchain bin/ instead of a private unwrap dir --
+# proving those assertions are not vacuously true regardless of the tool's behavior.
+# ---------------------------------------------------------------------------
+
+MUTATED_TOOL_P="$WORKDIR/lean-comparator-run-mutated-p.sh"
+sed "s/\[ -x \"\$TOOLCHAIN_BIN\/lake.orig\" \]/[ ! -x \"\$TOOLCHAIN_BIN\/lake.orig\" ]/" "$TOOL_SRC" > "$MUTATED_TOOL_P"
+chmod +x "$MUTATED_TOOL_P"
+PATH_LOG_MUT="$WORKDIR/path-log-mut.txt"
+LANDRUN_LOG_MUT="$WORKDIR/landrun-log-mut.txt"
+write_path_probe_comparator_stub "$BIN_P/comparator" "$PATH_LOG_MUT" "$LANDRUN_LOG_MUT"
+OUT_MUTATED_P="$(PATH="$BIN_P:$PATH" COMPARATOR_BIN="$BIN_P/comparator" COMPARATOR_LANDRUN="$BIN_P/landrun" \
+  COMPARATOR_LEAN4EXPORT="$BIN_P/lean4export" LEAN_COMPARATOR_RUN_GUARD_BIN="$GUARD_P" \
+  bash "$MUTATED_TOOL_P" --project-root "$REPO_P" --challenge-module Challenge --solution-module Solution \
+    --theorems comm --permitted-axioms "" 2>&1)"
+VERDICT_MUTATED_P="$(get_field "$OUT_MUTATED_P" verdict)"
+if [ "$VERDICT_MUTATED_P" = "comparator_unavailable" ]; then
+  pass "Mutation check (Fix 1): inverting the lake.orig executable check now reports comparator_unavailable (the mutated tool believes there is no lake.orig to unwrap to) -- Case P1/P2's assertions are not vacuous"
+else
+  fail "Mutation check (Fix 1): mutated tool still reached a verdict ($VERDICT_MUTATED_P) instead of comparator_unavailable -- Case P1/P2's assertions would pass even against a broken unwrap check"
 fi
 
 # ---------------------------------------------------------------------------

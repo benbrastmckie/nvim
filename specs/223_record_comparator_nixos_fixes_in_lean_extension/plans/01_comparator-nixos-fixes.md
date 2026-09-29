@@ -257,32 +257,32 @@ fail loudly before Lake can delete a dependency it cannot re-clone.
 
 ---
 
-### Phase 4: Regression cases for the new mechanisms [NOT STARTED]
+### Phase 4: Regression cases for the new mechanisms [COMPLETED]
 
 **Goal**: Stub-based cases proving PATH ordering, shim wiring, the shim's own grants, and the
 pre-flight probe — asserted from logged argv, never by reading the source.
 
 **Tasks**:
-- [ ] Re-read `test-lean-comparator-run.sh`'s house style (the `pass`/`fail`/`info`/`skip`
+- [x] Re-read `test-lean-comparator-run.sh`'s house style (the `pass`/`fail`/`info`/`skip` *(completed)*
       helpers, the Case G1-G3 stub-argv-log pattern, the isolated-PATH technique from Case U4).
-- [ ] Add a PATH-ordering case: a stub `lake` at a "toolchain bin" path plus a non-executable
+- [x] Add a PATH-ordering case: a stub `lake` at a "toolchain bin" path plus a non-executable *(completed)*
       "elan shim" stand-in earlier on `PATH`; assert the invocation resolves the toolchain-bin one.
-- [ ] Add an elan-wrapper case: `<toolchain bin>/lake` as a `#!` script with a `lake.orig` beside
+- [x] Add an elan-wrapper case: `<toolchain bin>/lake` as a `#!` script with a `lake.orig` beside *(completed)*
       it; assert the private-dir symlink is what lands first on the sandbox `PATH`.
-- [ ] Add a shim-wiring case: assert `COMPARATOR_LANDRUN` in the captured environment points at
+- [x] Add a shim-wiring case: assert `COMPARATOR_LANDRUN` in the captured environment points at *(completed)*
       `lean-comparator-landrun-shim.sh`, not at the raw resolved `landrun` path.
-- [ ] Add a shim-grants case: invoke the shim directly with a stub `git`/`ldd` pair and a stub
+- [x] Add a shim-grants case: invoke the shim directly with a stub `git`/`ldd` pair and a stub *(completed)*
       real `landrun` (via `LEAN_COMPARATOR_RUN_REAL_LANDRUN`); assert the logged argv carries the
       `TMPDIR` override, at least one `--rox` library grant, and Comparator's own arguments
       unchanged and in order.
-- [ ] Add a pre-flight-probe case: stub `git` failing `remote get-url origin` yields
+- [x] Add a pre-flight-probe case: stub `git` failing `remote get-url origin` yields *(completed)*
       `comparator_unavailable` (exit 69) naming the package.
-- [ ] Add an anti-vacuous mutation check for at least one new assertion, following Case AV1 and
+- [x] Add an anti-vacuous mutation check for at least one new assertion, following Case AV1 and *(completed)*
       the existing `axiom_violation` mutation check: break the mechanism in a copy of the script
       and confirm the new case then FAILS.
-- [ ] Extend the suite's header comment block to name the new concern group, and extend the
+- [x] Extend the suite's header comment block to name the new concern group, and extend the *(completed)*
       Case E1/E2 skip text if any new criterion is deferred for want of a real binary.
-- [ ] Add nothing to `manifest.json` (the test file is already listed).
+- [x] Add nothing to `manifest.json` (the test file is already listed). *(completed)*
 
 **Timing**: 1.5 hours
 
