@@ -117,7 +117,7 @@ No `roadmap_path` was provided in this dispatch; no roadmap consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Build the enforcement-coverage map and record the role of safety-invariants.md [IN PROGRESS]
+### Phase 1: Build the enforcement-coverage map and record the role of safety-invariants.md [COMPLETED]
 
 **Goal**: Establish, section by section, where each `safety-invariants.md` invariant is actually
 enforced, and write that evidence plus the file's real role into the file itself as a banner
