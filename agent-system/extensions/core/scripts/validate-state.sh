@@ -22,8 +22,21 @@
 #
 # Usage:
 #   validate-state.sh [--deep] [--allow-artifact-removal <project_number>[:<type>]]...
-#                      [--fix] [--session-id SID] [STATE_FILE]
+#                      [--fix] [--strict] [--session-id SID] [STATE_FILE]
 #   validate-state.sh --help
+#
+# --strict: opt-in only, never implicit (default behavior for every existing caller is
+#   unchanged). Copies validate-artifact.sh's --strict semantics exactly: every WARN-level
+#   finding joins FAIL-level findings in the exit-blocking total, so a WARN alone now causes
+#   exit 1. D5: this makes Checks 8, 9, 10, AND 11 exit-blocking under --strict, not just the two
+#   new checks this task adds -- Check 8 and Check 9 were already WARN-only before this task and
+#   gain no special exemption. Documented here as a deliberate consequence, not hidden: today, no
+#   caller enumerated below passes --strict, so no existing invocation's behavior changes. Live
+#   caller enumeration (grep -rn 'validate-state.sh' agent-system/extensions, confirmed at
+#   implementation time): commands/task.md (base mode, greps `file_scope` lines out of the
+#   output), scripts/verify-deploy.sh gate 10 (`--deep`, no `--strict`), scripts/tests/
+#   test-init-specs.sh (base mode), scripts/tests/test-validate-state.sh (this script's own test
+#   suite; base, `--deep`, and `--fix` modes, no `--strict`). None passes `--strict` today.
 #
 # STATE_FILE defaults to specs/state.json relative to the current working directory when omitted.
 #
@@ -51,8 +64,9 @@
 #
 # Exit codes:
 #   0 - valid (no FAIL-level finding; Checks 8, 9, 10 and 11 below are WARN-only and never fail
-#       the run)
-#   1 - invalid (at least one FAIL-level finding), OR --fix given unparseable JSON
+#       the run in DEFAULT mode)
+#   1 - invalid (at least one FAIL-level finding), OR --fix given unparseable JSON, OR (under
+#       --strict only) at least one WARN-level finding with zero FAIL-level findings
 #   2 - environment error (file not found, jq unavailable, a required shared library could not be
 #       found at any candidate path, a malformed --allow-artifact-removal value, a non-integer
 #       FILE_SCOPE_COARSE_MIN_OVERLAP, a missing --session-id argument, or --fix unable to resolve
@@ -143,6 +157,7 @@ STATE_FILE=""
 ALLOW_ARTIFACT_REMOVAL=()
 FIX_MODE=false
 FIX_SESSION_ID=""
+STRICT_MODE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -152,6 +167,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --fix)
       FIX_MODE=true
+      shift
+      ;;
+    --strict)
+      STRICT_MODE=true
       shift
       ;;
     --session-id)
@@ -902,8 +921,20 @@ echo -e "Warnings: ${YELLOW}$WARNINGS${NC}"
 echo -e "Failed:   ${RED}$FAILED${NC}"
 echo ""
 
+# D5: --strict copies validate-artifact.sh's --strict semantics exactly -- WARNINGS joins FAILED
+# in the exit-blocking total. Default mode (STRICT_MODE=false) is completely unchanged: only
+# FAILED gates the exit code, matching every existing caller's expectation.
+if [[ "$STRICT_MODE" == "true" ]]; then
+  total_issues=$((FAILED + WARNINGS))
+else
+  total_issues=$FAILED
+fi
+
 if [[ "$FAILED" -gt 0 ]]; then
   echo -e "${RED}STATE VALIDATION FAILED${NC}"
+  exit 1
+elif [[ "$total_issues" -gt 0 ]]; then
+  echo -e "${RED}STATE VALIDATION FAILED (--strict: $WARNINGS warning(s) promoted to exit-blocking)${NC}"
   exit 1
 elif [[ "$WARNINGS" -gt 0 ]]; then
   echo -e "${YELLOW}STATE VALIDATION PASSED WITH WARNINGS${NC}"

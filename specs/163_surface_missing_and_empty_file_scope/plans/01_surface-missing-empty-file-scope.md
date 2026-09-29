@@ -351,29 +351,31 @@ to the Overlap-based checks — without claiming the shape is invalid.
 
 ---
 
-### Phase 4: `--strict` flag on `validate-state.sh` [NOT STARTED]
+### Phase 4: `--strict` flag on `validate-state.sh` [COMPLETED]
 
 **Goal**: An opt-in caller can make warnings — including Checks 10 and 11 — exit-blocking today,
 exactly as `validate-artifact.sh --strict` already does, without changing default-mode behavior
 for any existing caller.
 
 **Tasks**:
-- [ ] Re-read `scripts/validate-artifact.sh`'s `--strict` parsing and its `total_issues` exit
-      branch, and copy that shape rather than inventing a variant.
-- [ ] Add `--strict` to `validate-state.sh`'s argument-parsing `case`, its `--help` text, and its
-      `# Usage:` header block.
-- [ ] Change the final exit branch so that under `--strict` the accumulated `WARNINGS` count joins
+- [x] Re-read `scripts/validate-artifact.sh`'s `--strict` parsing and its `total_issues` exit
+      branch, and copy that shape rather than inventing a variant. *(completed)*
+- [x] Add `--strict` to `validate-state.sh`'s argument-parsing `case`, its `--help` text, and its
+      `# Usage:` header block. *(completed)*
+- [x] Change the final exit branch so that under `--strict` the accumulated `WARNINGS` count joins
       `FAILED` in the exit-blocking total, and print a distinguishable summary line naming that
-      strict mode caused the failure.
-- [ ] Update the `# Exit codes:` header block: exit 1 also covers "at least one WARN-level finding
-      under `--strict`".
-- [ ] Record decision **D5** in the header, including the explicit consequence that pre-existing
-      Check 8 and Check 9 warnings also become blocking under `--strict`.
-- [ ] Enumerate every live caller and confirm none passes `--strict`, so default behavior is
+      strict mode caused the failure. *(completed)*
+- [x] Update the `# Exit codes:` header block: exit 1 also covers "at least one WARN-level finding
+      under `--strict`". *(completed)*
+- [x] Record decision **D5** in the header, including the explicit consequence that pre-existing
+      Check 8 and Check 9 warnings also become blocking under `--strict`. *(completed)*
+- [x] Enumerate every live caller and confirm none passes `--strict`, so default behavior is
       unchanged: `commands/task.md` (base mode, greps `file_scope` lines out of the output),
       `verify-deploy.sh` gate 10 (`--deep`), `scripts/tests/test-init-specs.sh`,
       `scripts/tests/test-validate-state.sh`, and anything else found by
-      `grep -rn 'validate-state.sh' agent-system/extensions`.
+      `grep -rn 'validate-state.sh' agent-system/extensions`. *(completed: confirmed exactly this
+      4-caller set via `grep -rn 'validate-state.sh' agent-system/extensions`, matching the Scope
+      Hypothesis exactly; enumeration recorded verbatim in the script's own Usage header)*
 
 **Timing**: 0.75 hours
 
