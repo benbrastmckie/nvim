@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790640953_159e0d_244",
+  "dispatch_seq": 4,
+  "task_number": 244,
+  "findings_count": 12,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/244_check_task_references_repo_appropriate_roots/reports/01_repo_appropriate_scan_roots.md",
+      "summary": "Recommends replacing check-task-references.sh's hard-coded four-tree TREE_ROOTS with a repo-wide git-ls-files scan filtered through the existing is_exempt_path (specs/** only) -- measured 0/0 equivalence against this repo's current scan; confirms the write-time hook and shared pattern lib need no changes; scopes validate-wiring.sh's independent absorbed defect (skip missing .claude/.opencode tree roots instead of hard-failing) and confirms deploy-root-guard.sh/validate-state.sh/validate-handoff-location.sh are safe; specifies two new fixture-driven test suites."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's agent-system, a repo-wide lint gate consumed by multiple downstream consumer repos of differing layout (check-task-references.sh) should default to the widest safe scope via `git ls-files` filtered through one shared exemption predicate, rather than a hard-coded list of the source-store repo's own top-level directories (TREE_ROOTS). The hard-coded-list pattern silently scans nothing relevant in a consumer repo whose layout differs, while the companion write-time hook (keyed on the file path of the current write, not an enumerated tree list) never had this problem -- a batch-scan script and a per-write hook sharing one exemption library can still diverge in effective scope if the batch scanner adds its own tree-list narrowing on top of the shared predicate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/244_check_task_references_repo_appropriate_roots/reports/01_repo_appropriate_scan_roots.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-task-references", "TREE_ROOTS", "repo-wide scan", "git ls-files", "consumer repo", "lint scope"]
+    },
+    {
+      "content": "verify-deploy.sh gate 4 (task-reference lint) only runs when $TARGET/agent-system/extensions exists, i.e. it exclusively exercises the source-store repo, never a deploy consumer -- so changes to check-task-references.sh's default scan scope are fully de-risked by measuring equivalence against the source-store repo alone; no consumer-repo CI path depends on the old four-tree behavior.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/244_check_task_references_repo_appropriate_roots/reports/01_repo_appropriate_scan_roots.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verify-deploy.sh", "gate 4", "source-store-only", "check-task-references.sh"]
+    }
+  ],
+  "next_steps": "Run /plan 244 to create implementation plan"
+}
