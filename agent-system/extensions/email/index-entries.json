@@ -43,10 +43,10 @@
         ],
         "commands": []
       },
-      "line_count": 102,
+      "line_count": 156,
       "domain": "project",
       "subdomain": "email",
-      "summary": "Non-negotiable email operating rules: wrapper-only invariant, two-layer enforcement, propose-review-confirm-execute, delete/PATH preconditions, freshness gate, cursor, sub-50 drain, archive gates"
+      "summary": "Non-negotiable email operating rules: wrapper-only invariant, two-layer enforcement, propose-review-confirm-execute, delete/PATH preconditions, freshness gate, cursor, sub-50 drain, archive gates. On-demand reference only (deliberately not eager-loaded); its own \"Role and Loading Model\" banner section holds the enforcement-coverage map naming which of the four consumer bodies or which mechanical layer enforces each rule."
     },
     {
       "path": "project/email/domain/index-architecture.md",

@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Align README.md and index-entries.json with the recorded decision",
+  "started_at": "2026-09-29T02:38:00Z",
+  "last_updated": "2026-09-29T02:48:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read README.md and index-entries.json immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Update README.md safety-invariants row purpose text", "status": "done", "files_touched": ["agent-system/extensions/email/README.md"]},
+    {"id": 3, "description": "Add missing staleness-detection.md row to README.md table", "status": "done", "files_touched": ["agent-system/extensions/email/README.md"]},
+    {"id": 4, "description": "Update index-entries.json summary for safety-invariants entry; verify load_when consistent", "status": "done", "files_touched": ["agent-system/extensions/email/index-entries.json"]},
+    {"id": 5, "description": "Commit phase 3 changes", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Also updated line_count field from 102 to 156 in index-entries.json for the safety-invariants.md entry",
+      "type": "altered",
+      "reason": "Phase 1 added ~54 lines to safety-invariants.md; the plan only named 'summary' for this task but leaving line_count stale would trip validate-context-index.sh's line-count tolerance check (>10% drift) and misrepresent the file's actual size going forward. Purely additive accuracy fix, no semantic change to load_when.",
+      "annotation": "*(deviation: altered — also refreshed line_count for accuracy)*"
+    }
+  ]
+}

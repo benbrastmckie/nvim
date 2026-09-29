@@ -185,7 +185,7 @@ branch.
 
 ---
 
-### Phase 2: Rewrite EXTENSION.md's safety framing and Context Pointers [IN PROGRESS]
+### Phase 2: Rewrite EXTENSION.md's safety framing and Context Pointers [COMPLETED]
 
 **Goal**: Make the CLAUDE.md-merged fragment state the verified loading model instead of an
 imperative ("see `domain/safety-invariants.md` before any `email` work") that no consumer
@@ -238,24 +238,29 @@ performs.
 
 ---
 
-### Phase 3: Align README.md and index-entries.json with the recorded decision [NOT STARTED]
+### Phase 3: Align README.md and index-entries.json with the recorded decision [IN PROGRESS]
 
 **Goal**: Keep the extension's own two other descriptions of `safety-invariants.md` consistent
 with its newly documented role, so the next audit does not find a third, contradicting account.
 
 **Tasks**:
-- [ ] Re-read `README.md` and `index-entries.json` immediately before editing.
-- [ ] Update the `README.md` file-table row for
+- [x] Re-read `README.md` and `index-entries.json` immediately before editing. *(completed)*
+- [x] Update the `README.md` file-table row for
       `context/project/email/domain/safety-invariants.md` so its Purpose cell names the file's
       role (on-demand synthesis + coverage map) alongside its content, matching Phase 1's banner.
-- [ ] Add the missing `context/project/email/domain/staleness-detection.md` row to the same
+      *(completed)*
+- [x] Add the missing `context/project/email/domain/staleness-detection.md` row to the same
       table — it is one of the five pointers named in `EXTENSION.md` but is absent from the
       README table, which would otherwise leave the decision's own subject list incomplete.
-- [ ] Update the `summary` field of the `project/email/domain/safety-invariants.md` entry in
+      *(completed)*
+- [x] Update the `summary` field of the `project/email/domain/safety-invariants.md` entry in
       `index-entries.json` to mention the loading model, and confirm its `load_when` block is
       consistent with the decision (an advisory index hint, not an eager-load directive — do not
-      change its semantics, only verify and note).
-- [ ] Commit (both paths staged by explicit name only).
+      change its semantics, only verify and note). *(completed: confirmed `load_when` is an
+      advisory index hint only — consumed by check-extension-docs.sh/install-extension.sh
+      metadata paths, never a harness auto-load mechanism — so no semantic change was needed.
+      Also refreshed the stale `line_count` field 102 -> 156, see progress-file deviation 3.4)*
+- [x] Commit (both paths staged by explicit name only). *(completed)*
 
 **Timing**: 0.5 hours
 
