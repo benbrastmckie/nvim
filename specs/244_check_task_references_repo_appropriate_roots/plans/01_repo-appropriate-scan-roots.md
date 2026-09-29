@@ -1,7 +1,7 @@
 # Implementation Plan: Task #244
 
 - **Task**: 244 - check-task-references.sh: scan repo-appropriate roots instead of a hard-coded nvim-repo TREE_ROOTS list
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/244_check_task_references_repo_appropriate_roots/reports/01_repo_appropriate_scan_roots.md
@@ -117,23 +117,23 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Baseline equivalence measurement [NOT STARTED]
+### Phase 1: Baseline equivalence measurement [COMPLETED]
 
 **Goal**: Capture today's four-tree scan result and the repo-wide walk result side by side, as the
 recorded baseline requirement (1) is checked against, before any production file changes.
 
 **Tasks**:
-- [ ] Run the current scan verbatim and save output:
-      `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh > /tmp/.../baseline-four-tree.txt 2>&1; echo "exit=$?"`
-- [ ] Run the same non-quiet scan without `--quiet` into the same capture so per-finding lines (if
-      any ever appear) are in the baseline, not just counts.
-- [ ] Run a throwaway repo-wide walk (a scratch script sourcing the *unmodified*
+- [x] Run the current scan verbatim and save output:
+      `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-task-references.sh > /tmp/.../baseline-four-tree.txt 2>&1; echo "exit=$?"` *(completed)*
+- [x] Run the same non-quiet scan without `--quiet` into the same capture so per-finding lines (if
+      any ever appear) are in the baseline, not just counts. *(completed)*
+- [x] Run a throwaway repo-wide walk (a scratch script sourcing the *unmodified*
       `scripts/lib/task-reference-patterns.sh`, enumerating `git ls-files` repo-wide, filtering
       through `is_exempt_path`, piping each file through `strip_exempt_regions | grep -nEi
-      "$PHASE_PATTERN|$TASK_PATTERN"`) into `/tmp/.../baseline-repo-wide.txt`.
-- [ ] Diff the two finding sets (not the summary lines — the summary shape is expected to change)
-      and record the result. Both are expected empty.
-- [ ] If the diff is NON-empty: stop and record every newly-surfaced file. Requirement (1) is
+      "$PHASE_PATTERN|$TASK_PATTERN"`) into `/tmp/.../baseline-repo-wide.txt`. *(completed)*
+- [x] Diff the two finding sets (not the summary lines — the summary shape is expected to change)
+      and record the result. Both are expected empty. *(completed)*
+- [x] If the diff is NON-empty: stop and record every newly-surfaced file. Requirement (1) is
       about *same files flagged*; a non-empty delta must be triaged (real violation to fix, or a
       missing exemption category) before Phase 2 proceeds — it is not a reason to abandon option
       (a).
@@ -154,7 +154,7 @@ by re-running both scans in this phase rather than citing the report's number.
 **Verification**:
 - Both capture files exist and the finding-line diff between them is empty (or its non-empty
   delta is enumerated in the phase's progress notes with a triage decision per file).
-
+ *(completed)*
 ---
 
 ### Phase 2: Repo-wide enumeration in check-task-references.sh [NOT STARTED]

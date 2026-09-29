@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline equivalence measurement",
+  "started_at": "2026-09-29T02:10:00Z",
+  "last_updated": "2026-09-29T02:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run current four-tree scan verbatim", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run repo-wide walk via unmodified shared library", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Diff finding sets, both empty, equivalence confirmed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

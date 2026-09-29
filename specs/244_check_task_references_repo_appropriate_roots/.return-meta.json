@@ -1,31 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/244_check_task_references_repo_appropriate_roots/plans/01_repo-appropriate-scan-roots.md",
-      "summary": "6-phase plan: repo-wide git-ls-files enumeration in check-task-references.sh (option (a), coverage, over option (b), carve-out), PATH_SCOPE membership check dropped, validate-wiring.sh missing-tree-root SKIP guards, two new fixture-driven test suites including lint/hook scope-agreement, and the enforcement narrative rewritten off the four-root model."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790640953_159e0d_244",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 244,
-    "phase_count": 6,
-    "estimated_hours": 6,
-    "dependency_waves": [[1, 4], [2, 5], [3], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a lint/gate script's output is consumed by another script, the consumer's parsing contract -- not the script's whole output -- is what must be preserved across a redesign. check-task-references.sh's per-tree summary lines were freely replaceable, but verify-deploy.sh gate 4 greps '^  [^:]+:[0-9]+:' out of the non-quiet output to build its FINDING list, so the per-finding line shape (leading two spaces, colon-free relative path) is the real interface. Before reshaping any gate script's reporting, grep every caller for what it actually parses: exit code, one line regex, or the summary text. Asserting the consumer's regex inside the producer's OWN test suite makes a future reshaping break locally instead of silently degrading a downstream gate.",
-      "category": "PATTERN",
-      "source_artifact": "specs/244_check_task_references_repo_appropriate_roots/plans/01_repo-appropriate-scan-roots.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["output contract", "gate script", "verify-deploy", "finding line format", "downstream parser", "lint redesign"]
-    }
-  ],
-  "next_steps": "Run /implement 244 to execute the plan",
-  "dispatch_seq": 12
+    "session_id": "sess_1790640953_159e0d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
