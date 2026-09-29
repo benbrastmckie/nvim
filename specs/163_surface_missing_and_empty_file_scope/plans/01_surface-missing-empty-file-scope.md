@@ -542,24 +542,48 @@ suite's own PASS tally rather than asserting this number in the plan.
 
 ---
 
-### Phase 7: Fixture tests for Classes F and G [NOT STARTED]
+### Phase 7: Fixture tests for Classes F and G [COMPLETED]
 
 **Goal**: Classes F and G are pinned by fixtures in the existing predispatch-review suite,
 including their explicit negatives and `--repair`'s non-interference.
 
 **Tasks**:
-- [ ] Re-read `scripts/tests/test-orchestrate-predispatch-review.sh`, including its
+- [x] Re-read `scripts/tests/test-orchestrate-predispatch-review.sh`, including its
       `orchestrate-batch-admit.sh` stubbing and its synthetic `$WORKDIR/.claude/scripts/` tree
-      (needed for `deploy-root-guard.sh`'s parent-directory check).
-- [ ] Class F fixture: candidates missing the key / literal null / empty array → all three lines,
-      with the `null_value` candidate also still producing its existing Class B line.
-- [ ] Class G fixture: a candidate with a glob entry → the named Class G line; a control candidate
-      with concrete entries that must not fire.
-- [ ] Negative fixture: all candidates declare concrete non-empty scopes → both new sections print
-      their explicit negatives, and neither section is omitted.
-- [ ] `--repair` fixture: a candidate with no `file_scope` key → no write, key still absent
-      afterwards (the **D4** guarantee, asserted rather than assumed).
-- [ ] Keep the suite's fixture-numbering convention ("candidate #N", never "task N").
+      (needed for `deploy-root-guard.sh`'s parent-directory check). *(completed)*
+- [x] Class F fixture: candidates missing the key / literal null / empty array → all three lines,
+      with the `null_value` candidate also still producing its existing Class B line. *(completed:
+      Scenario 8)*
+- [x] Class G fixture: a candidate with a glob entry → the named Class G line; a control candidate
+      with concrete entries that must not fire. *(completed: Scenario 9)*
+- [x] Negative fixture: all candidates declare concrete non-empty scopes → both new sections print
+      their explicit negatives, and neither section is omitted. *(completed: extended the
+      existing Scenario 4 all-clean batch, adding Class F/G to its section-header-presence loop
+      and two new negative-line assertions, rather than a wholly separate scenario — Scenario 4
+      was already exactly this shape)*
+- [x] `--repair` fixture: a candidate with no `file_scope` key → no write, key still absent
+      afterwards (the **D4** guarantee, asserted rather than assumed). *(completed: Scenario 10 --
+      see the MAJOR deviation below: this fixture caught a genuine, pre-existing bug in
+      `--repair`'s write filter)*
+- [x] Keep the suite's fixture-numbering convention ("candidate #N", never "task N"). *(completed)*
+- [x] *(deviation: MAJOR, altered — a genuine pre-existing bug was discovered and fixed, not
+      merely a new fixture added)* Writing the `--repair` D4 fixture (a candidate with an absent
+      key alongside a candidate with a real literal null, in the SAME invocation) revealed that
+      `--repair`'s actual write filter used plain `.file_scope == null` / `.dependencies == null`
+      (and `// []` defaulting) with NO `has()` guard -- jq's dot-access cannot distinguish an
+      ABSENT key from a PRESENT literal null, so BOTH conditions are true for an absent key. The
+      write filter (and its preview print) therefore silently manufactured `file_scope: []` on
+      ANY candidate sharing a `--repair` invocation with another candidate that had a genuine
+      literal null -- a direct violation of this script's own documented contract ("a present,
+      non-null value is never overwritten") and this task's D4 guarantee/acceptance criterion.
+      This is PRE-EXISTING (confirmed via `git show` against the pre-Task-163 commit and via a
+      manual reproduction against it) and unrelated to Classes F/G's own new code -- it was never
+      introduced by this task, only discovered by its verification. FIXED by gating both the
+      preview `select()` and the write transform on `has(field) and .field == null` for both
+      `dependencies` and `file_scope`, restoring the documented contract. This is a correctness
+      fix to the EXISTING Class B repair machinery, not a new repair branch for Classes F/G
+      (which remain completely untouched by `--repair`, per D4/Non-Goals) -- Scenario 10 pins
+      both halves: the absent key stays absent, and the genuine literal null is still repaired.
 
 **Timing**: 1 hour
 

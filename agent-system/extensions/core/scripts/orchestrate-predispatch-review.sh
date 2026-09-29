@@ -404,10 +404,21 @@ if [ "$repair_mode" = true ]; then
   # `|| true`: this is a purely informational preview print, distinct from the actual
   # mutex-guarded write below via state-write.sh -- a jq hiccup here must never abort the script
   # before the real write is attempted.
+  #
+  # BUGFIX (discovered during this task's own D4 verification, pre-existing and unrelated to
+  # Classes F/G): plain `.dependencies == null` / `.file_scope == null` cannot distinguish an
+  # ABSENT key from a PRESENT literal null -- jq's dot-access returns null for both. The select
+  # below (and the write filter just below it) previously selected/touched a candidate whose key
+  # was merely ABSENT, provided that candidate shared this same --repair invocation with another
+  # candidate that had a REAL literal null -- silently manufacturing `file_scope: []` (or
+  # `dependencies: []`) on a candidate that never had a literal null at all, contradicting this
+  # script's own documented contract ("a present, non-null value is never overwritten") and this
+  # task's D4 guarantee. Fixed by gating on `has(field) and .field == null` everywhere below, so
+  # an absent key is never selected or written, only a genuine literal null.
   jq -r --argjson candidates "$candidates_json" '
     ($candidates) as $cands |
     .active_projects[] | select(.project_number as $pn | ($cands | index($pn)) != null) |
-    select(.dependencies == null or .file_scope == null) |
+    select((has("dependencies") and .dependencies == null) or (has("file_scope") and .file_scope == null)) |
     "  #\(.project_number): dependencies " + (.dependencies | tojson) + " -> " + ((.dependencies // []) | tojson) +
     "  ;  file_scope " + (.file_scope | tojson) + " -> " + ((.file_scope // []) | tojson)
   ' "$STATE_FILE" || true
@@ -415,7 +426,8 @@ if [ "$repair_mode" = true ]; then
   if ! "$SCRIPT_DIR/state-write.sh" \
     '($candidates) as $cands |
     (.active_projects[] | select(.project_number as $pn | ($cands | index($pn)) != null)) |=
-      (.dependencies = (.dependencies // []) | .file_scope = (.file_scope // []))' \
+      ( (if (has("dependencies") and .dependencies == null) then .dependencies = [] else . end)
+      | (if (has("file_scope") and .file_scope == null) then .file_scope = [] else . end) )' \
     --session-id "$session_id" \
     --argjson candidates "$candidates_json"; then
     # state-write.sh itself already prints a distinguishing "transform failed" (exit 3) vs

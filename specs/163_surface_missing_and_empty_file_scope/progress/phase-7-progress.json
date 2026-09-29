@@ -1,0 +1,26 @@
+{
+  "phase": 7,
+  "phase_name": "Fixture tests for Classes F and G",
+  "started_at": "2026-09-29T03:20:00Z",
+  "last_updated": "2026-09-29T04:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Class F fixture: missing/null/empty candidates all fire, null also fires Class B", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 2, "description": "Class G fixture: glob candidate fires, control candidate does not", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 3, "description": "Negative fixture: all clean -> both sections print explicit negatives", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 4, "description": "--repair fixture: candidate missing file_scope key -> no write, key stays absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh", "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "wrote the --repair D4 fixture expecting it to trivially pass against the already-implemented D4 guarantee", "result": "failed", "reason": "the fixture instead revealed a genuine pre-existing bug: --repair's write filter used plain .field == null (no has() guard), so an absent key on a candidate sharing an invocation with a genuinely-null sibling was silently manufactured to []. Confirmed via manual reproduction, then confirmed pre-existing via git show against the pre-Task-163 commit. Fixed the write filter and its preview print to gate on has(field) and .field == null for both dependencies and file_scope."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7",
+      "description": "--repair fixture: a candidate with no file_scope key -> no write, key still absent afterwards (the D4 guarantee, asserted rather than assumed)",
+      "type": "altered",
+      "reason": "MAJOR: this fixture caught a genuine, pre-existing (not introduced by this task) bug in --repair's write filter -- an absent key on a candidate co-invoked with a genuinely-null sibling was silently manufactured to []. Fixed the underlying bug (gating the write transform and preview on has(field) AND .field == null, not plain .field == null) rather than merely writing a fixture that would have failed against production code. This is a correctness fix to the EXISTING Class B repair machinery, not a new repair branch for Classes F/G, which remain untouched by --repair per D4/Non-Goals.",
+      "annotation": "*(deviation: MAJOR, altered — a genuine pre-existing bug was discovered and fixed, not merely a new fixture added)*"
+    }
+  ]
+}

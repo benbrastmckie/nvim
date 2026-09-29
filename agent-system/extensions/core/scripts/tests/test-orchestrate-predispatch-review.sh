@@ -45,6 +45,10 @@ require_file "$CORE_DIR/lib/task-lookup-lib.sh"
 # lib/file-scope-overlap.sh: NEW as of Class F/G -- the SUT now fails CLOSED (exit 2) if this
 # library is unsourceable, so the sandbox must carry a real copy, not a stub.
 require_file "$CORE_DIR/lib/file-scope-overlap.sh"
+# task-lock.sh: NEW as of the Scenario 10 --repair fixture -- state-write.sh's mutex acquisition
+# shells out to task-lock.sh scope-acquire/scope-release, which no earlier scenario in this suite
+# exercised (every prior --repair-free scenario never reaches state-write.sh at all).
+require_file "$CORE_DIR/task-lock.sh"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required and is not on PATH" >&2
@@ -58,7 +62,7 @@ trap cleanup EXIT
 setup_sandbox() {
   rm -rf "$WORKDIR"
   mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/specs/archive"
-  for f in orchestrate-predispatch-review.sh deploy-root-guard.sh state-write.sh; do
+  for f in orchestrate-predispatch-review.sh deploy-root-guard.sh state-write.sh task-lock.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
   cp "$CORE_DIR/lib/common.sh" "$WORKDIR/.claude/scripts/lib/common.sh"
@@ -210,6 +214,8 @@ fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Scenario 4: an all-clean batch -- every class still prints an explicit, precise zero line.
+# Doubles as the Class F/G "negative fixture": the sole candidate declares a concrete non-empty,
+# non-glob file_scope, so both new sections must print their explicit negatives too.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Scenario 4: an all-clean batch prints an explicit zero line for every class, none omitted"
 setup_sandbox
@@ -227,7 +233,7 @@ else
   fail "scenario 4: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 g4_missing=""
-for marker in "-- Class A:" "-- Class B:" "-- Class C:" "-- Class D:" "-- Class E:"; do
+for marker in "-- Class A:" "-- Class B:" "-- Class C:" "-- Class D:" "-- Class E:" "-- Class F:" "-- Class G:"; do
   echo "$LAST_STDOUT" | grep -qF -- "$marker" || g4_missing="${g4_missing}${marker}; "
 done
 if [ -z "$g4_missing" ]; then
@@ -249,6 +255,16 @@ if echo "$LAST_STDOUT" | grep -qF "0 deferred for session contention (this signa
   pass "scenario 4: Class E's precise zero-line fires"
 else
   fail "scenario 4: expected Class E's precise zero-line; got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDOUT" | grep -qF "0 findings (every candidate declares a file_scope that is neither missing, literal null, nor an empty array)."; then
+  pass "scenario 4: Class F's negative fires (candidate declares a concrete non-empty file_scope)"
+else
+  fail "scenario 4: expected Class F's negative; got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDOUT" | grep -qF "0 findings (no candidate declares a glob-shaped file_scope entry)."; then
+  pass "scenario 4: Class G's negative fires (candidate declares a non-glob-shaped entry)"
+else
+  fail "scenario 4: expected Class G's negative; got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -327,6 +343,123 @@ if echo "$LAST_STDOUT" | grep -qF -- "-- Class A: Dependency edge classification
   pass "scenario 7: Class A section still renders with no archive file present"
 else
   fail "scenario 7: expected the Class A section header; got: $LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Scenario 8: Class F -- missing/null/empty file_scope on a batch candidate. The null-value
+# candidate must ALSO still fire the pre-existing Class B line (both lines print; neither
+# suppresses the other, per this class's own header record).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Scenario 8: Class F fires for missing/null/empty file_scope candidates; the null-value candidate also still fires Class B"
+setup_sandbox
+write_state <<'EOF'
+{"next_project_number": 4, "active_projects": [
+  {"project_number": 3001, "project_name": "cand_missing", "task_type": "general", "status": "not_started", "description": "candidate #3001", "dependencies": []},
+  {"project_number": 3002, "project_name": "cand_null", "task_type": "general", "status": "not_started", "description": "candidate #3002", "dependencies": [], "file_scope": null},
+  {"project_number": 3003, "project_name": "cand_empty", "task_type": "general", "status": "not_started", "description": "candidate #3003", "dependencies": [], "file_scope": []}
+]}
+EOF
+stub_admit <<'EOF'
+{"decision":"admit","task_number":3001,"self_modifying":false}
+{"decision":"admit","task_number":3002,"self_modifying":false}
+{"decision":"admit","task_number":3003,"self_modifying":false}
+EOF
+run_sut --session-id sess_test_caller_f -- 3001 3002 3003
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "scenario 8: SUT exits 0"
+else
+  fail "scenario 8: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#3001 (cand_missing): file_scope is missing_key"; then
+  pass "scenario 8: Class F missing_key line rendered for candidate #3001"
+else
+  fail "scenario 8: expected Class F missing_key line for #3001; got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#3002 (cand_null): file_scope is null_value"; then
+  pass "scenario 8: Class F null_value line rendered for candidate #3002"
+else
+  fail "scenario 8: expected Class F null_value line for #3002; got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#3003 (cand_empty): file_scope is empty_array"; then
+  pass "scenario 8: Class F empty_array line rendered for candidate #3003"
+else
+  fail "scenario 8: expected Class F empty_array line for #3003; got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDOUT" | grep -qF '#3002: field "file_scope" is null'; then
+  pass "scenario 8: candidate #3002 still fires the pre-existing Class B line alongside Class F (neither suppresses the other)"
+else
+  fail "scenario 8: expected the Class B line for #3002 to still fire; got: $LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Scenario 9: Class G -- a glob-shaped file_scope entry on a batch candidate; a control candidate
+# with a concrete entry must not fire.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Scenario 9: Class G fires for a glob-shaped file_scope entry; a concrete control candidate does not fire"
+setup_sandbox
+write_state <<'EOF'
+{"next_project_number": 3, "active_projects": [
+  {"project_number": 3010, "project_name": "cand_glob", "task_type": "general", "status": "not_started", "description": "candidate #3010", "dependencies": [], "file_scope": ["*/agents/**"]},
+  {"project_number": 3011, "project_name": "cand_plain", "task_type": "general", "status": "not_started", "description": "candidate #3011", "dependencies": [], "file_scope": ["lua/plain.lua"]}
+]}
+EOF
+stub_admit <<'EOF'
+{"decision":"admit","task_number":3010,"self_modifying":false}
+{"decision":"admit","task_number":3011,"self_modifying":false}
+EOF
+run_sut --session-id sess_test_caller_g -- 3010 3011
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "scenario 9: SUT exits 0"
+else
+  fail "scenario 9: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#3010: entry */agents/** is invisible to overlap-based collision detection"; then
+  pass "scenario 9: Class G fires for candidate #3010's glob-shaped entry"
+else
+  fail "scenario 9: expected the Class G line for #3010; got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#3011: entry"; then
+  fail "scenario 9: expected NO Class G line for control candidate #3011; got: $LAST_STDOUT"
+else
+  pass "scenario 9: control candidate #3011 (concrete entry) does not fire Class G"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Scenario 10: --repair D4 non-manufacture -- a candidate with an ABSENT file_scope key, named in
+# the same --repair invocation as a candidate with a REAL literal null, must be left completely
+# untouched. This also pins the bugfix discovered during this task's own verification: the
+# pre-existing write filter used plain `.file_scope == null` (matching absent AND literal-null
+# alike) rather than `has("file_scope") and .file_scope == null`, so a candidate sharing an
+# invocation with a genuinely-null sibling had `file_scope: []` silently manufactured onto it.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Scenario 10: --repair leaves an absent file_scope key untouched even when a co-invoked sibling has a real literal null (D4)"
+setup_sandbox
+write_state <<'EOF'
+{"next_project_number": 3, "active_projects": [
+  {"project_number": 3020, "project_name": "cand_missing", "task_type": "general", "status": "not_started", "description": "candidate #3020", "dependencies": []},
+  {"project_number": 3021, "project_name": "cand_null", "task_type": "general", "status": "not_started", "description": "candidate #3021", "dependencies": [], "file_scope": null}
+]}
+EOF
+run_sut --repair --session-id sess_test_repair_d4 -- 3020 3021
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "scenario 10: --repair exits 0"
+else
+  fail "scenario 10: --repair exited $LAST_EXIT ($LAST_STDERR)"
+fi
+repair_p3020_has_key=$(jq -r '.active_projects[] | select(.project_number==3020) | has("file_scope")' "$STATE_FILE" 2>/dev/null)
+repair_p3021_fs=$(jq -c '.active_projects[] | select(.project_number==3021) | .file_scope' "$STATE_FILE" 2>/dev/null)
+if [ "$repair_p3020_has_key" = "false" ]; then
+  pass "scenario 10: candidate #3020's absent file_scope key was NOT manufactured (D4 holds)"
+else
+  fail "scenario 10: expected candidate #3020 to still lack a file_scope key; has(\"file_scope\")=$repair_p3020_has_key"
+fi
+if [ "$repair_p3021_fs" = "[]" ]; then
+  pass "scenario 10: candidate #3021's genuine literal null was correctly repaired to []"
+else
+  fail "scenario 10: expected candidate #3021's file_scope to become []; got: $repair_p3021_fs"
 fi
 
 echo ""
