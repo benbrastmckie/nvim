@@ -1,40 +1,47 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 2 tasks for the zotero-generate-export.sh Path 1 silent-truncation data-loss defect: the accumulator/loud-failure/shrink-guard fix, and the dependent 481-vs-4042 pagination investigation.",
+  "status": "researched",
+  "summary": "Confirmed the dispatch's accumulator diagnosis, and empirically resolved the absorbed-208 pagination discrepancy live against the running Zotero API: annotations are silently dropped from csljson page bodies without shifting pagination windows, so short pages are normal mid-library, not end-of-pagination. Also found two previously-unknown no-op filter bugs: the existing attachment/note CSL-type filter never matches (Zotero emits 'document', not 'attachment'/'note'), and fetch_path3's itemTypeID exclusion list (1,3,28) targets the wrong types entirely (real IDs are 2/26/37) -- so the on-disk 'ground truth' 4042-item export is ~61% non-bibliographic stub entries.",
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Tasks 207 and 208 added to TODO.md"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Two entries appended to active_projects; next_project_number advanced to 209"
-    },
-    {
-      "type": "task_directory",
-      "path": "/home/benjamin/.config/nvim/specs/207_fix_zotero_export_path1_truncation/",
-      "summary": "Task directory with reports/, plans/, summaries/"
-    },
-    {
-      "type": "task_directory",
-      "path": "/home/benjamin/.config/nvim/specs/208_explain_zotero_path1_pagination_shortfall/",
-      "summary": "Task directory with reports/, plans/, summaries/"
+      "type": "report",
+      "path": "specs/207_fix_zotero_export_path1_truncation/reports/01_path1-truncation-and-pagination-root-cause.md",
+      "summary": "Root-cause report covering the accumulator bug, the live-verified pagination-termination bug (resolves absorbed task 208), and two newly-found itemType-filter no-op bugs in fetch_path1 and fetch_path3, with fix recommendations and a flagged user decision on Path 3 scope."
     }
   ],
   "metadata": {
-    "session_id": "sess_1789247280_e7ba62",
-    "agent_type": "meta-builder-agent",
+    "session_id": "sess_1790640953_159e0d_207",
+    "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 2,
-    "task_numbers": [207, 208],
-    "topic": "literature",
-    "commit": "6b58d7200"
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
   },
-  "next_steps": "Run /research 207 to begin research on the foundational task. Task 208 requires Zotero RUNNING and must follow 207."
+  "memory_candidates": [
+    {
+      "content": "Zotero 7 local API (127.0.0.1:23119): format=csljson pagination windows (start/limit) apply to the RAW item table (including attachment/note/annotation rows), matching Total-Results and the default format=json exactly. But the csljson-CONVERTED page body silently drops annotation-typed rows without adjusting the window or Total-Results, so a mid-library page can legitimately be shorter than `limit`. Any pagination loop must track `start` against Total-Results (or the Link rel=last header), never against the converted array's own length.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/207_fix_zotero_export_path1_truncation/reports/01_path1-truncation-and-pagination-root-cause.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["zotero", "local-api", "csljson", "pagination", "annotation"]
+    },
+    {
+      "content": "Zotero's local-API csljson serializer maps the Zotero itemType 'attachment' to CSL type 'document' (not 'attachment'), and never emits literal 'attachment'/'note' CSL type strings. A filter checking `.type != \"attachment\" and .type != \"note\"` against csljson output is a silent no-op. To reliably exclude non-bibliographic items from a csljson export, cross-reference the item's real Zotero itemType via a parallel format=json (raw) fetch, keyed by item key, rather than filtering on the CSL .type field.",
+      "category": "PATTERN",
+      "source_artifact": "specs/207_fix_zotero_export_path1_truncation/reports/01_path1-truncation-and-pagination-root-cause.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["zotero", "csl-json", "itemtype", "filter", "attachment"]
+    },
+    {
+      "content": "To read a Zotero (or any actively-held) sqlite database for inspection while the owning app holds a lock, `sqlite3 -readonly path.sqlite ...` can still fail with 'database is locked'. `sqlite3 \"file:path.sqlite?immutable=1\" ...` succeeds for one-shot read inspection since it opens assuming no concurrent writer will invalidate the read -- useful for verifying schema/itemType tables without needing to close the app first.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/207_fix_zotero_export_path1_truncation/reports/01_path1-truncation-and-pagination-root-cause.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sqlite", "immutable", "locked-database", "readonly"]
+    }
+  ],
+  "user_decision": {
+    "required": false,
+    "note": "No blocking decision needed to proceed to planning. One planning-time decision is flagged in the report's Decisions/Recommendations sections (finding 6/7): whether to fix fetch_path3's itemTypeID no-op bug within this task's scope, since it changes the shrink guard's baseline. This is a scoping/judgment call for the planner, not a blocker for research to hand off."
+  },
+  "dispatch_seq": 7,
+  "next_steps": "Run /plan 207 to create an implementation plan. The plan should explicitly address: (1) the accumulator temp-file fix, (2) Total-Results-driven pagination termination replacing the page-length check, (3) a real itemType-based filter replacing the no-op CSL-type check, (4) the shrink guard and its opt-out flag naming/semantics, (5) a scope decision on fetch_path3's itemTypeID bug, (6) curl-stub.sh extension for path-based dispatch + query-string parsing + header emission, and (7) the four doc touchpoints."
 }
