@@ -104,6 +104,29 @@
       ]
     },
     {
+      "path": "project/lean4/patterns/dependency-tracing.md",
+      "line_count": 211,
+      "load_when": {
+        "agents": [
+          "lean-implementation-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Mechanically tracing whether one Lean 4 declaration depends on another: four reusable probe shapes and why #print axioms cannot answer the question",
+      "keywords": [
+        "lean4",
+        "dependency-tracing",
+        "print-axioms",
+        "environment",
+        "reverse-dependency",
+        "retirement"
+      ]
+    },
+    {
       "path": "project/lean4/standards/lean4-style-guide.md",
       "line_count": 130,
       "load_when": {

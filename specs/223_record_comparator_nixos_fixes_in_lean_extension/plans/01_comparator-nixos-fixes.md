@@ -377,38 +377,38 @@ finding; `comparator-guide.md` gains the one operator-facing pointer it needs.
 
 ---
 
-### Phase 6: Lean dependency-tracing recipe [NOT STARTED]
+### Phase 6: Lean dependency-tracing recipe [COMPLETED]
 
 **Goal**: A new lean4 pattern file answering "does X depend on Y?" mechanically, harvested from
 working probes rather than re-derived, with the `#print axioms` trap stated up front.
 
 **Tasks**:
-- [ ] Read the probes at
+- [x] Read the probes at *(completed)*
       `~/Projects/BimodalLogic/specs/archive/549_trace_decide_dependency_on_vacuous_run_theorems/probes/`
       — note they have moved into `specs/archive/`, not the path the task description gives:
       `DepTrace.lean`, `DepTrace2.lean`, `RevDep.lean`, `Widen.lean`, `Ax.lean`, `Exists.lean`,
       and `probe-evidence.md`. Harvest; do not re-derive.
-- [ ] Create `agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md`
+- [x] Create `agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md` *(completed)*
       opening with the load-bearing caveat: `#print axioms` is not a dependency tracer — in the
       observed case a decision procedure, its soundness theorem, and the vacuous theorem under
       suspicion all reported the same `[propext, Classical.choice, Quot.sound]`, so an axiom check
       answers "is this sound?" and never "what does this rest on?".
-- [ ] Reproduce the four probe shapes as self-contained adaptable templates: (1) forward
+- [x] Reproduce the four probe shapes as self-contained adaptable templates: (1) forward *(completed)*
       transitive closure via `Expr.getUsedConstants` over both type and value, iterated to a fixed
       point from a named entry point then intersected with a suspect set; (2) the module-index
       variant counting hits attributable to a target module; (3) the whole-environment reverse
       dependency scan ("what would break if I deleted this?"); (4) the import-closure check
       distinguishing "unused" from "unavailable".
-- [ ] Record the two operational notes: run probes with `lake env lean` against existing oleans
+- [x] Record the two operational notes: run probes with `lake env lean` against existing oleans *(completed)*
       rather than a full `lake build` (the observed trace needed no rebuild), and resolve
       declarations by name, never by line number, because line numbers in a report go stale.
-- [ ] Add an `index-entries.json` entry for the new path, modeled on the existing
+- [x] Add an `index-entries.json` entry for the new path, modeled on the existing *(completed)*
       `project/lean4/patterns/tactic-patterns.md` entry (same `load_when` agents/task_types shape,
       accurate `line_count`, `domain`/`subdomain`, summary, keywords).
-- [ ] Add a one-line pointer in `EXTENSION.md` beside the existing
+- [x] Add a one-line pointer in `EXTENSION.md` beside the existing *(completed)*
       `patterns/mcp-fallback-table.md` line, following the single-statement-plus-pointer
       convention rather than restating the recipe.
-- [ ] The file must be usable without access to the originating repository: no path in it is the
+- [x] The file must be usable without access to the originating repository: no path in it is the *(completed)*
       sole carrier of a probe's content.
 
 **Timing**: 1.25 hours

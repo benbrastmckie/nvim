@@ -1,0 +1,27 @@
+{
+  "phase": 6,
+  "phase_name": "Lean dependency-tracing recipe",
+  "started_at": "2026-09-30T01:35:00Z",
+  "last_updated": "2026-09-30T01:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read probes at specs/archive/549_.../probes/ (moved from task description's path)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create dependency-tracing.md with #print axioms caveat first", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md"]},
+    {"id": 3, "description": "Reproduce four probe shapes as self-contained templates", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md"]},
+    {"id": 4, "description": "Two operational notes (lake env lean against oleans; resolve by name)", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md"]},
+    {"id": 5, "description": "index-entries.json entry modeled on tactic-patterns.md", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 6, "description": "One-line pointer in EXTENSION.md beside mcp-fallback-table.md", "status": "done", "files_touched": ["agent-system/extensions/lean/EXTENSION.md"]},
+    {"id": 7, "description": "Usable without access to originating repository", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.1",
+      "description": "Read the probes at ~/Projects/BimodalLogic/specs/549_.../probes/",
+      "type": "altered",
+      "reason": "the absorbed task text itself already flags this path as stale: the probes moved to specs/archive/549_trace_decide_dependency_on_vacuous_run_theorems/probes/ (task 549 was archived). Read from the corrected archive path; no other deviation.",
+      "annotation": "*(deviation: altered — read from specs/archive/549_.../probes/, the corrected path the absorbed task text itself already names)*"
+    }
+  ]
+}
