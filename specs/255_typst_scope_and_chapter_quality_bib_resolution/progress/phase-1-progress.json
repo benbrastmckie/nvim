@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Reconcile declared scope and task-type detection (Part 1)",
+  "started_at": "2026-09-29T00:00:00Z",
+  "last_updated": "2026-09-29T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite EXTENSION.md Scope section", "status": "done", "files_touched": ["agent-system/extensions/typst/EXTENSION.md"]},
+    {"id": 2, "description": "Add five keywords to manifest.json keyword_overrides.typst.keywords", "status": "done", "files_touched": ["agent-system/extensions/typst/manifest.json"]},
+    {"id": 3, "description": "Validate JSON and collision audit", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Demonstrate detect_task_type probes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_evidence": {
+    "keyword_count": "jq -e length==13 -> true",
+    "detect_task_type_probes": [
+      {"desc": "review and condense the typst manual chapters", "result": "typst", "expected": "typst"},
+      {"desc": "typst chapter quality pass on the introduction", "result": "typst", "expected": "typst"},
+      {"desc": "review the typst chapters", "result": "typst", "expected": "typst"},
+      {"desc": "write a chapter for the textbook on group theory", "result": "general", "expected": "general"},
+      {"desc": "prove a lemma about lean4 theorem in mathlib", "result": "lean4", "expected": "lean4"}
+    ],
+    "collision_audit": "no added phrase found in cslib/email/latex/rust keyword_overrides"
+  }
+}

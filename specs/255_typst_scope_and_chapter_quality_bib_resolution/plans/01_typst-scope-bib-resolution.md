@@ -1,7 +1,7 @@
 # Implementation Plan: Task #255
 
 - **Task**: 255 - Reconcile typst extension scope ownership and fix chapter-quality-check.sh Rule 1.3 bib resolution
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/255_typst_scope_and_chapter_quality_bib_resolution/reports/01_typst-scope-bib-resolution.md
@@ -146,40 +146,42 @@ its test). Phase 3 follows Phase 2 because both edit `chapter-quality-check.sh`.
 
 ---
 
-### Phase 1: Reconcile declared scope and task-type detection (Part 1) [NOT STARTED]
+### Phase 1: Reconcile declared scope and task-type detection (Part 1) [COMPLETED]
 
 **Goal**: `EXTENSION.md`'s Scope section states a boundary consistent with every file under
 `context/project/typst/`, and chapter/manual-quality descriptions self-detect as `typst`.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/typst/EXTENSION.md` lines 1-20 immediately before editing
-      (concurrent-sibling discipline).
-- [ ] Replace the `### Scope` section body with the boundary decided in research Decision 1/2:
+- [x] Re-read `agent-system/extensions/typst/EXTENSION.md` lines 1-20 immediately before editing
+      (concurrent-sibling discipline). *(completed)*
+- [x] Replace the `### Scope` section body with the boundary decided in research Decision 1/2:
       typst owns formatting, compilation, styling, structural concerns, **and the presentation
       quality of existing document content** — including chapter/manual prose review, condensing,
       and the chapter-quality gate (source grounding, anti-fluff density, presentation clarity,
       open-question honesty); originating or mathematically verifying new content routes to
       `lean4`/`formal`/`general`, while typst owns how that content is written up and presented
       once it exists, and the measurable quality of that write-up.
-- [ ] Confirm by reading that the new wording disclaims no category the extension ships context
+- [x] Confirm by reading that the new wording disclaims no category the extension ships context
       for: check it against `standards/chapter-quality.md`, `standards/textbook-standards.md`,
       `standards/type-theory-foundations.md`, `patterns/theorem-environments.md`, and
       `templates/chapter-template.md`, and confirm it does not contradict the `**Scope note**`
       already carried verbatim by `textbook-standards.md` and `type-theory-foundations.md`
-      (ACCEPTANCE 1).
-- [ ] Add five qualified phrases to `manifest.json`'s `keyword_overrides.typst.keywords`, keeping
+      (ACCEPTANCE 1). *(completed: read all five files, confirmed consistency with existing
+      Scope notes)*
+- [x] Add five qualified phrases to `manifest.json`'s `keyword_overrides.typst.keywords`, keeping
       the existing eight: `"typst chapter"`, `"typst chapters"`, `"typst manual"`,
       `"chapter quality"`, `"chapter prose"`. The plural `"typst chapters"` is required because
       `\btypst chapter\b` does not match "typst chapters" (verified by direct `jq test()`
-      execution during planning).
-- [ ] Deliberately do NOT add a bare `"chapter"` or bare `"manual"` (KEYWORD SAFETY CONSTRAINT:
+      execution during planning). *(completed)*
+- [x] Deliberately do NOT add a bare `"chapter"` or bare `"manual"` (KEYWORD SAFETY CONSTRAINT:
       `typst` sorts early among `agent-system/extensions/*/manifest.json`, first whole-word match
-      wins and is final).
-- [ ] Validate JSON: `jq -e '.keyword_overrides.typst.keywords | length == 13' manifest.json`.
-- [ ] Re-run the collision audit across every `agent-system/extensions/*/manifest.json`
+      wins and is final). *(completed: confirmed no bare noun added)*
+- [x] Validate JSON: `jq -e '.keyword_overrides.typst.keywords | length == 13' manifest.json`.
+      *(completed: returned true)*
+- [x] Re-run the collision audit across every `agent-system/extensions/*/manifest.json`
       `keyword_overrides` set and confirm no added phrase appears in another extension's list
-      (ACCEPTANCE 3).
-- [ ] Demonstrate detection by execution (ACCEPTANCE 2), sourcing
+      (ACCEPTANCE 3). *(completed: audited cslib, email, latex, rust — no collision)*
+- [x] Demonstrate detection by execution (ACCEPTANCE 2), sourcing
       `agent-system/extensions/core/scripts/lib/task-type-detect.sh` and calling
       `detect_task_type "<desc>" specs/state.json agent-system/extensions`:
       - `"review and condense the typst manual chapters"` -> `typst` (was `general`)
@@ -188,9 +190,10 @@ its test). Phase 3 follows Phase 2 because both edit `chapter-quality-check.sh`.
       - `"write a chapter for the textbook on group theory"` -> `general` (unchanged; no false
         positive)
       - `"prove a lemma about lean4 theorem in mathlib"` -> `lean4` (unchanged; no collision)
-- [ ] Commit this phase alone: `git add -- agent-system/extensions/typst/EXTENSION.md
+      *(completed: all five probes matched expected output exactly)*
+- [x] Commit this phase alone: `git add -- agent-system/extensions/typst/EXTENSION.md
       agent-system/extensions/typst/manifest.json`, then `git diff --staged --name-only` to
-      confirm exactly two paths, then commit.
+      confirm exactly two paths, then commit. *(completed)*
 
 **Timing**: 1.25 hours
 

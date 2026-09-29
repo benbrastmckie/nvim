@@ -57,7 +57,12 @@
         "typst template",
         "typst style",
         "typst layout",
-        "fletcher diagram"
+        "fletcher diagram",
+        "typst chapter",
+        "typst chapters",
+        "typst manual",
+        "chapter quality",
+        "chapter prose"
       ],
       "aliases": []
     }

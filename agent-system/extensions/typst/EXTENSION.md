@@ -5,8 +5,12 @@ This project includes Typst document development support via the typst extension
 ### Scope
 
 This extension covers formatting, compilation, styling, and structural concerns for existing
-document content. Content-creation work (proofs, theorems, chapters, textbook prose) routes to
-`lean4`, `formal`, or `general` as appropriate, not to `typst`.
+document content, **and the presentation quality of that content** — including chapter/manual
+prose review, condensing, and the chapter-quality gate (source grounding, anti-fluff density,
+presentation clarity, open-question honesty; see `standards/chapter-quality.md`). Originating or
+mathematically verifying new content (proofs, theorems, and their correctness) routes to
+`lean4`, `formal`, or `general` as appropriate, not to `typst`; `typst` owns how that content is
+written up and presented once it exists, and the measurable quality of that write-up.
 
 ### Language Routing
 
