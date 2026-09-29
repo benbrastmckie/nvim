@@ -2,16 +2,26 @@
   "phase": 1,
   "phase_name": "Rules Layer — Never Run bullets and the sibling rule section",
   "started_at": "2026-09-29T02:03:59Z",
-  "last_updated": "2026-09-29T02:10:00Z",
+  "last_updated": "2026-09-29T04:10:00Z",
   "objectives": [
     {"id": 1, "description": "Re-read git-workflow.md before editing", "status": "done", "files_touched": []},
     {"id": 2, "description": "Add two Never Run bullets (amend + HEAD-moving reset)", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
     {"id": 3, "description": "De-positionalize Enforced-by paragraph; add concurrency-predicate sentence", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
     {"id": 4, "description": "Add new section 'No History Rewrites While Another Writer Is Live'", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
     {"id": 5, "description": "Verify no task-number reference introduced", "status": "done", "files_touched": []},
-    {"id": 6, "description": "Commit file via git-commit-scoped.sh", "status": "in_progress", "files_touched": []}
+    {"id": 6, "description": "Commit file via git-commit-scoped.sh", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Phase-7-discovered: trim git-workflow.md new section to fit eager-context budget", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md", "agent-system/extensions/core/context/standards/git-workflow-narrative.md"]}
   ],
-  "current_objective": 6,
+  "current_objective": 7,
   "approaches_tried": [],
-  "handoff_count": 0
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Full-detail 'No History Rewrites While Another Writer Is Live' section in rules/git-workflow.md",
+      "type": "altered",
+      "reason": "Drove the eager-load total to 69,375 B against the hard-reviewed 65,950 B orchestrator-context-budget.json baseline (discovered at Phase 7 Gate 20). Trimmed the eager section to essentials and relocated full detail to context/standards/git-workflow-narrative.md (established lazy-companion pattern) and git-safety.md (already carries full detail from Phase 6). Final eager-load total: 65,949 B.",
+      "annotation": "*(deviation: altered — see plan Phase 1 task-list note)*"
+    }
+  ]
 }

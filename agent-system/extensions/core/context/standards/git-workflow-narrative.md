@@ -58,6 +58,45 @@ the intended behavior at this call site, because the snapshot sits immediately b
 already-decided destructive command. For a purely defensive checkpoint where work
 continues afterwards, use `--no-revert`, which leaves the tree untouched.
 
+## No History Rewrites While Another Writer Is Live — Incident and Full Detail
+
+The eager core keeps the rule, the one-sentence dirtiness-vs-concurrency distinction, a brief
+permitted-forms summary, and the enforcement pointer in full. The incident record and the
+complete permitted/guidance detail behind it:
+
+**Incident (observed 2026-09-02)**. During a multi-task `/orchestrate` run with five concurrent
+implementation agents committing to master, one agent ran a bare `git commit --amend` intending
+to add an attribution trailer to what it believed was its own most recent commit. Between its
+commit and the amend, a sibling agent's commit had landed on top, so the amend rewrote the
+sibling's commit instead — preserving that commit's tree content but overwriting its message.
+The agent then ran `git reset --mixed <own-sha>` to undo the mistake, which rewound HEAD past
+three further legitimate commits and intermingled their changes in the working tree. It caught
+this and restored HEAD via the reflog. Verified afterward: the trees were identical throughout
+and zero content was lost; the only residual damage is one commit left with a mislabeled message.
+Reconstructible reflog evidence: `539561c39` (the correct commit), `9c5b790b6` (the orphaned
+original), `fd50fabfd` (tree-identical to `9c5b790b6`, carrying the wrong message).
+
+**What stays permitted, in full**:
+- Every commit made through `.claude/scripts/git-commit-scoped.sh` — its internal git invocations
+  run as a subprocess and are invisible at the hook's observation boundary; this is the
+  sanctioned path and needs no special-casing.
+- Solo interactive `git commit --amend` when no other writer is live — the discriminating
+  variable is concurrency, not the command itself.
+- Bare `git reset`, `git reset -- <path>`, and `git reset HEAD -- <path>` (pathspec-only
+  unstaging; none of these move HEAD).
+- A commit message that merely contains the literal text `--amend`.
+
+**Practical guidance for the incident's actual motive**: if a commit already carries a missing
+trailer or a wrong message, and other writers may be active, **leave it alone** — add a
+follow-up commit or record the discrepancy. Never amend to fix it under concurrency; the fix is
+not worth the risk of rewriting a sibling's history.
+
+**The operator override in full**: `GUARD_ALLOW_HISTORY_REWRITE=1` prefixed onto the command
+falls through `guard-destructive-git.sh`'s concurrency-gated predicate. It is detected in the
+scanned command text only, never the hook's own environment, so any use stays visible in the
+transcript. It exists solely for a human operator working the branch interactively —
+**agents MUST NOT use it**.
+
 ## Session ID Lifecycle
 
 1. Generated at CHECKPOINT 1 (GATE IN)

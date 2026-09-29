@@ -78,13 +78,8 @@ template, and the fail-safe under-stage-not-over-stage direction).
 - `git push --force` to main/master
 - `git reset --hard` on uncommitted work without a snapshot first — see
   "No Destructive Git on Uncommitted Work" below for the full rule and exemptions
-- Bare `git commit --amend` while any other dispatched writer is live in this repo — see
-  "No History Rewrites While Another Writer Is Live" below for the full rule, the incident that
-  motivates it, and what stays permitted
-- A HEAD-moving `git reset` (`--soft`, `--mixed`, bare, or `--hard` given a commit-ish) while any
-  other dispatched writer is live in this repo — see "No History Rewrites While Another Writer Is
-  Live" below; pathspec-only unstaging (`git reset -- <path>`, `git reset HEAD -- <path>`) is
-  unaffected
+- Bare `git commit --amend` or a HEAD-moving `git reset` while another writer is live in this
+  repo — see "No History Rewrites While Another Writer Is Live" below
 - `git rebase -i` (interactive mode not supported)
 - Any destructive operations without user confirmation
 - `git add -A` (or `git add .`) — stages the entire working tree, silently pulling in
@@ -97,15 +92,11 @@ template, and the fail-safe under-stage-not-over-stage direction).
 - `git commit -am` — implicitly stages all tracked-file modifications, the same over-staging
   problem as `git add -A`
 
-**Enforced by `guard-destructive-git.sh`**: the over-staging bullets above (`git add -A`/`git
-add .`, the directory-or-glob `git add` pathspec, and `git commit -am`) are enforced mechanically
-by the same `guard-destructive-git.sh` PreToolUse Bash hook described below for the
-destructive-command class — its over-staging predicate blocks them on a dirty working tree via
-`exit 2`, with NO snapshot-marker exemption (a snapshot makes a destructive command recoverable;
-it does not make scope pollution acceptable). The history-rewrite bullets above are enforced by
-that same hook's **separate, concurrency-gated** predicate: unlike every other predicate in this
-file, it does not consult tree dirtiness at all and has no snapshot-marker exemption — it
-refuses purely on evidence of a live concurrent writer.
+**Enforced by `guard-destructive-git.sh`**: the over-staging bullets (`git add -A`/`.`, the
+directory-or-glob pathspec, `git commit -am`) are enforced by this hook via `exit 2` on a dirty
+tree, no snapshot exemption. The history-rewrite bullet is enforced by a **separate,
+concurrency-gated** predicate in the same hook that ignores tree dirtiness and has no snapshot
+exemption either.
 
 ### No Destructive Git on Uncommitted Work
 
@@ -160,51 +151,17 @@ default-mode call.
 
 ### No History Rewrites While Another Writer Is Live
 
-Agents MUST NOT run a bare `git commit --amend` or a HEAD-moving `git reset` while any other
-dispatched writer is live in this repo. All commits go through
-`.claude/scripts/git-commit-scoped.sh`, never a raw `git commit`/`git reset` invocation.
+Agents MUST NOT run a bare `git commit --amend` or a HEAD-moving `git reset` while another
+writer is live in this repo. Commits go through `.claude/scripts/git-commit-scoped.sh`.
 
-**The distinction from the rule above, stated explicitly**: the rule above ("No Destructive Git
-on Uncommitted Work") is scoped by *dirtiness of the working tree* — it exists to stop a command
-from discarding uncommitted changes, and it exempts a clean tree because there is nothing left to
-lose. This rule is scoped by an entirely different variable: *concurrency of writers*. Both
-`git commit --amend` and a non-`--hard` `git reset` are non-destructive to the working tree —
-that is exactly why the rule above structurally cannot fire on them, on a dirty tree or a clean
-one. The hazard here is rewriting **already-committed history** that a different writer may have
-extended in the interim, which has nothing to do with tree state.
+Unlike the rule above (dirtiness-scoped), this one is scoped by *concurrency of writers* and
+fires on a clean tree too — the hazard is rewriting history another writer may have extended.
+Permitted: `git-commit-scoped.sh`, solo `--amend` with no live writer, pathspec-only `reset`, and
+`--amend`-mentioning messages.
 
-**Incident (observed 2026-09-02)**. During a multi-task `/orchestrate` run with five concurrent
-implementation agents committing to master, one agent ran a bare `git commit --amend` intending
-to add an attribution trailer to what it believed was its own most recent commit. Between its
-commit and the amend, a sibling agent's commit had landed on top, so the amend rewrote the
-sibling's commit instead — preserving that commit's tree content but overwriting its message.
-The agent then ran `git reset --mixed <own-sha>` to undo the mistake, which rewound HEAD past
-three further legitimate commits and intermingled their changes in the working tree. It caught
-this and restored HEAD via the reflog. Verified afterward: the trees were identical throughout
-and zero content was lost; the only residual damage is one commit left with a mislabeled message.
-Reconstructible reflog evidence: `539561c39` (the correct commit), `9c5b790b6` (the orphaned
-original), `fd50fabfd` (tree-identical to `9c5b790b6`, carrying the wrong message).
-
-**What stays permitted**:
-- Every commit made through `.claude/scripts/git-commit-scoped.sh` — its internal git invocations
-  run as a subprocess and are invisible at the hook's observation boundary; this is the
-  sanctioned path and needs no special-casing.
-- Solo interactive `git commit --amend` when no other writer is live — the discriminating
-  variable is concurrency, not the command itself.
-- Bare `git reset`, `git reset -- <path>`, and `git reset HEAD -- <path>` (pathspec-only
-  unstaging; none of these move HEAD).
-- A commit message that merely contains the literal text `--amend`.
-
-**Practical guidance for the incident's actual motive**: if a commit already carries a missing
-trailer or a wrong message, and other writers may be active, **leave it alone** — add a
-follow-up commit or record the discrepancy. Never amend to fix it under concurrency; the fix is
-not worth the risk of rewriting a sibling's history.
-
-**Enforcement**: `guard-destructive-git.sh`'s concurrency-gated history-rewrite predicate refuses
-the matched command with `exit 2` when evidence of a live concurrent writer exists. There is a
-documented, auditable operator-only override, `GUARD_ALLOW_HISTORY_REWRITE=1` prefixed onto the
-command — **agents MUST NOT use this override**; it exists solely for a human operator working
-the branch interactively.
+**Enforcement**: `guard-destructive-git.sh`'s predicate refuses with `exit 2` (operator override
+`GUARD_ALLOW_HISTORY_REWRITE=1`; agents MUST NOT use it). Detail:
+`context/standards/git-workflow-narrative.md`; design: `git-safety.md`.
 
 ### Always Check Before Commit
 - `git status` to verify staged files

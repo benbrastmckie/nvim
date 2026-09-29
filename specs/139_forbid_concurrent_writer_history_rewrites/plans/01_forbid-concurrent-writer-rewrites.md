@@ -171,6 +171,23 @@ framing kept in agreement with the hook.
 - [x] Verify no task-number reference was introduced (this file is a deliverable outside
       `specs/**`): cite the commit shas and the 2026-09-02 date, never a task number. *(completed)*
 - [x] Commit this file alone via `bash .claude/scripts/git-commit-scoped.sh`. *(completed)*
+- [x] *(deviation: altered — discovered during Phase 7's redeploy verification (Gate 20, the
+      orchestrator context budget lock): the full-detail version of item (iv) drove
+      `rules/git-workflow.md` from 8,828 B to 13,166 B, pushing the eager-load total to 69,375 B
+      against a hard-reviewed 65,950 B baseline, `orchestrator-context-budget.json`'s
+      `eager_load.baseline_bytes` (must never be silently re-derived). Trimmed the new section in
+      `rules/git-workflow.md` down to the rule statement, a one-sentence dirtiness-vs-concurrency
+      distinction, a brief permitted-forms list, and an enforcement/override paragraph; relocated
+      the full incident record, the complete permitted-forms list, and the practical guidance for
+      the incident's actual motive to a new "No History Rewrites While Another Writer Is Live —
+      Incident and Full Detail" section in `context/standards/git-workflow-narrative.md` (the
+      established lazy-loaded companion this same file already uses for its
+      "No Destructive Git on Uncommitted Work" sibling rule). This mirrors this codebase's own
+      precedent, "split git-workflow.md into eager core plus lazy narrative companion". Final
+      measured eager-load total: 65,949 B, 1 B under baseline. All content required by items
+      (i)-(vi) above is still present, split across the two files rather than inlined in one;
+      `git-safety.md`'s "A Second Hazard Class" section (Phase 6) also carries the full incident
+      and design rationale independently.)*
 
 **Timing**: 0.75 hours
 
@@ -506,7 +523,7 @@ session registry is no longer documented as having no readers.
 
 ---
 
-### Phase 7: Redeploy and Confirm Survival [NOT STARTED]
+### Phase 7: Redeploy and Confirm Survival [IN PROGRESS]
 
 **Goal**: every change reaches `.claude/` through regeneration, and the deployed hook copy
 actually fires.
