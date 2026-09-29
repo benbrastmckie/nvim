@@ -41,7 +41,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-         errors-append.sh events-append.sh; do
+         errors-append.sh events-append.sh dispatch-worktree.sh; do
   require_file "$CORE_DIR/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
@@ -66,7 +66,7 @@ setup_sandbox() {
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-           errors-append.sh events-append.sh; do
+           errors-append.sh events-append.sh dispatch-worktree.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
   # return-meta-status-vocabulary.sh is a HARD dependency of orchestrate-recover-outcome.sh
@@ -1902,6 +1902,195 @@ if echo "$LAST_STDERR" | grep -q "DEPLOY-PENDING:"; then
   fail "phase 2 (contrast): unexpected DEPLOY-PENDING notice on an unrefused path"
 else
   pass "phase 2 (contrast): no DEPLOY-PENDING notice on the unrefused path"
+fi
+if echo "$LAST_STDERR" | grep -qi "worktree"; then
+  fail "phase 7 (non-isolated regression): unexpected worktree-related notice for a task with no dispatch-worktree.sh registry record"
+else
+  pass "phase 7 (non-isolated regression): a non-isolated row's postflight is byte-identical to before Phase 7 (no worktree notices at all)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Phase 7: worktree land/release/prune wiring. Every case below provisions a REAL worktree via
+# the real dispatch-worktree.sh (copied into the sandbox above), matching this suite's own
+# structural model (real call graph, not a stubbed approximation). Unlike commit_fixture() (which
+# tracks .claude/ in the sandbox repo for the rest of this suite), these cases commit ONLY
+# specs/ -- an untracked .claude/ at provision time mirrors the real system (see .gitignore's
+# `/.claude/` rule and dispatch-worktree.sh's own header) and avoids `cp -al` nesting a copy
+# inside a checked-out .claude/ that `git worktree add` would otherwise have materialized.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+# provision_worktree_fixture <task_num> <seq> <session>: real `dispatch-worktree.sh provision`
+# against the sandbox repo.
+provision_worktree_fixture() {
+  local task_num="$1" seq="$2" sess="$3"
+  ( cd "$WORKDIR" && bash .claude/scripts/dispatch-worktree.sh provision "$task_num" --session "$sess" --seq "$seq" >/dev/null )
+}
+
+# worktree_path_for <task_num>: real `dispatch-worktree.sh path` against the sandbox repo.
+worktree_path_for() {
+  ( cd "$WORKDIR" && bash .claude/scripts/dispatch-worktree.sh path "$1" )
+}
+
+commit_specs_only() {
+  ( cd "$WORKDIR" && git add specs/ >/dev/null 2>&1 && git commit -q -m "fixture" >/dev/null 2>&1 )
+}
+
+# ─── Phase 7, case 1: clean land ────────────────────────────────────────────────────────────────
+info "Phase 7 (clean land): a worktree-isolated implemented dispatch lands cleanly and the worktree is released"
+setup_sandbox
+wt_num=740
+mkdir -p "$WORKDIR/specs/${wt_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${wt_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${wt_num}, "project_name": "candidate", "task_type": "lean4", "status": "implementing", "description": "candidate #${wt_num} -- worktree isolated (clean land)", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_specs_only
+provision_worktree_fixture "$wt_num" 1 "sess_wt${wt_num}"
+wt_path="$(worktree_path_for "$wt_num")"
+mkdir -p "$wt_path/docs"
+echo "hello from the isolated worktree" > "$wt_path/docs/isolated-note.md"
+( cd "$wt_path" && git add docs/isolated-note.md && git -c user.email=t@t.com -c user.name=T commit -q -m "isolated edit" >/dev/null )
+cat > "$WORKDIR/specs/${wt_num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${wt_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${wt_num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/${wt_num}_candidate/summaries/01_x-summary.md"]}
+EOF
+run_sut "specs/${wt_num}_candidate" --session "sess_wt${wt_num}" --phase implement --task-type lean4 \
+  --agent general-implementation-agent --loop-guard-file "specs/${wt_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$wt_num"
+
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "phase 7 (clean land): verdict=ok"
+else
+  fail "phase 7 (clean land): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDERR" | grep -q "dispatch-worktree.sh land: landed"; then
+  pass "phase 7 (clean land): land verdict=landed observed"
+else
+  fail "phase 7 (clean land): expected a 'land: landed' notice, got: $LAST_STDERR"
+fi
+if [ -f "$WORKDIR/docs/isolated-note.md" ]; then
+  pass "phase 7 (clean land): the isolated edit merged into the main tree"
+else
+  fail "phase 7 (clean land): docs/isolated-note.md missing from the main tree after land"
+fi
+if ! (cd "$WORKDIR" && git worktree list) | grep -q "$wt_path"; then
+  pass "phase 7 (clean land): the worktree was released"
+else
+  fail "phase 7 (clean land): the worktree is still registered after a clean land"
+fi
+if [ ! -f "$WORKDIR/specs/.worktree-registry/${wt_num}-1.json" ]; then
+  pass "phase 7 (clean land): the registry record was removed on release"
+else
+  fail "phase 7 (clean land): the registry record still exists after release"
+fi
+
+# ─── Phase 7, case 2: conflict path -- status not advanced, worktree preserved, reason carries
+# the conflicted path(s) ────────────────────────────────────────────────────────────────────────
+info "Phase 7 (conflict): a genuine merge conflict blocks the land, preserves the worktree, and leaves status unadvanced"
+setup_sandbox
+wt2_num=741
+mkdir -p "$WORKDIR/specs/${wt2_num}_candidate/summaries" "$WORKDIR/docs"
+echo x > "$WORKDIR/specs/${wt2_num}_candidate/summaries/01_x-summary.md"
+echo "base" > "$WORKDIR/docs/shared.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${wt2_num}, "project_name": "candidate", "task_type": "lean4", "status": "implementing", "description": "candidate #${wt2_num} -- worktree isolated (conflict)", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+( cd "$WORKDIR" && git add specs/ docs/ >/dev/null 2>&1 && git commit -q -m "fixture" >/dev/null 2>&1 )
+provision_worktree_fixture "$wt2_num" 1 "sess_wt${wt2_num}"
+wt2_path="$(worktree_path_for "$wt2_num")"
+echo "isolated-side change" > "$wt2_path/docs/shared.md"
+( cd "$wt2_path" && git add docs/shared.md && git -c user.email=t@t.com -c user.name=T commit -q -m "isolated conflicting edit" >/dev/null )
+echo "main-side change" > "$WORKDIR/docs/shared.md"
+( cd "$WORKDIR" && git add docs/shared.md >/dev/null 2>&1 && git commit -q -m "main-side conflicting edit" >/dev/null 2>&1 )
+cat > "$WORKDIR/specs/${wt2_num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${wt2_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${wt2_num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/${wt2_num}_candidate/summaries/01_x-summary.md"]}
+EOF
+run_sut "specs/${wt2_num}_candidate" --session "sess_wt${wt2_num}" --phase implement --task-type lean4 \
+  --agent general-implementation-agent --loop-guard-file "specs/${wt2_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$wt2_num"
+
+if [ "$(jqf '.verdict')" = "defer" ]; then
+  pass "phase 7 (conflict): verdict=defer (not ok, not failed) -- retry next cycle"
+else
+  fail "phase 7 (conflict): expected verdict=defer, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDERR" | grep -q "WORKTREE LAND BLOCKED" && echo "$LAST_STDERR" | grep -q "docs/shared.md"; then
+  pass "phase 7 (conflict): the blocked notice names the conflicted path verbatim"
+else
+  fail "phase 7 (conflict): expected a WORKTREE LAND BLOCKED notice naming docs/shared.md, got: $LAST_STDERR"
+fi
+wt2_status_after="$(jq -r --argjson n "$wt2_num" '.active_projects[] | select(.project_number==$n) | .status' "$STATE_FILE" 2>/dev/null)"
+if [ "$wt2_status_after" = "implementing" ]; then
+  pass "phase 7 (conflict): state.json status unchanged (still implementing) -- the phase was not claimed as landed"
+else
+  fail "phase 7 (conflict): expected status still 'implementing', got: $wt2_status_after"
+fi
+if (cd "$WORKDIR" && git worktree list) | grep -q "$wt2_path"; then
+  pass "phase 7 (conflict): the worktree was preserved for human resolution"
+else
+  fail "phase 7 (conflict): the worktree was unexpectedly removed after a conflict"
+fi
+if [ -f "$WORKDIR/specs/.worktree-registry/${wt2_num}-1.json" ]; then
+  pass "phase 7 (conflict): the registry record was preserved (no release on a blocked land)"
+else
+  fail "phase 7 (conflict): the registry record was unexpectedly removed after a conflict"
+fi
+(cd "$WORKDIR" && git merge --abort >/dev/null 2>&1) || true
+
+# ─── Phase 7, case 3: specs/** refusal path ─────────────────────────────────────────────────────
+info "Phase 7 (specs refusal): a branch touching specs/** is refused before any merge is attempted"
+setup_sandbox
+wt3_num=742
+mkdir -p "$WORKDIR/specs/${wt3_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${wt3_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${wt3_num}, "project_name": "candidate", "task_type": "lean4", "status": "implementing", "description": "candidate #${wt3_num} -- worktree isolated (specs refusal)", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_specs_only
+provision_worktree_fixture "$wt3_num" 1 "sess_wt${wt3_num}"
+wt3_path="$(worktree_path_for "$wt3_num")"
+# The dispatched agent (wrongly, or via a stale worktree) touched a specs/** path -- land must
+# refuse this outright rather than overwrite live main-tree state with a HEAD-stale snapshot.
+echo "stray specs edit" > "$wt3_path/specs/${wt3_num}_candidate/stray-note.md"
+( cd "$wt3_path" && git add "specs/${wt3_num}_candidate/stray-note.md" && git -c user.email=t@t.com -c user.name=T commit -q -m "stray specs edit" >/dev/null )
+cat > "$WORKDIR/specs/${wt3_num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${wt3_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${wt3_num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/${wt3_num}_candidate/summaries/01_x-summary.md"]}
+EOF
+run_sut "specs/${wt3_num}_candidate" --session "sess_wt${wt3_num}" --phase implement --task-type lean4 \
+  --agent general-implementation-agent --loop-guard-file "specs/${wt3_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$wt3_num"
+
+if [ "$(jqf '.verdict')" = "defer" ]; then
+  pass "phase 7 (specs refusal): verdict=defer"
+else
+  fail "phase 7 (specs refusal): expected verdict=defer, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDERR" | grep -q "WORKTREE LAND BLOCKED" && echo "$LAST_STDERR" | grep -q "refused_specs_paths" && echo "$LAST_STDERR" | grep -q "stray-note.md"; then
+  pass "phase 7 (specs refusal): the blocked notice names verdict=refused_specs_paths and the offending specs/** path verbatim"
+else
+  fail "phase 7 (specs refusal): expected a refused_specs_paths notice naming stray-note.md, got: $LAST_STDERR"
+fi
+wt3_status_after="$(jq -r --argjson n "$wt3_num" '.active_projects[] | select(.project_number==$n) | .status' "$STATE_FILE" 2>/dev/null)"
+if [ "$wt3_status_after" = "implementing" ]; then
+  pass "phase 7 (specs refusal): state.json status unchanged -- the phase was not claimed as landed"
+else
+  fail "phase 7 (specs refusal): expected status still 'implementing', got: $wt3_status_after"
+fi
+if (cd "$WORKDIR" && git worktree list) | grep -q "$wt3_path"; then
+  pass "phase 7 (specs refusal): the worktree was preserved"
+else
+  fail "phase 7 (specs refusal): the worktree was unexpectedly removed after a specs/** refusal"
 fi
 
 echo ""

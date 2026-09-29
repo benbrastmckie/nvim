@@ -602,26 +602,30 @@ assuming additivity.
 
 ---
 
-### Phase 7: Postflight land and release wiring [NOT STARTED]
+### Phase 7: Postflight land and release wiring [COMPLETED]
 
 **Goal**: Land and clean up an isolated dispatch from the main tree, at the one place the
 Postflight Boundary already puts main-tree writes.
 
 **Tasks**:
-- [ ] In `orchestrate-cycle-postflight.sh`, for a `dispatch[]` row with `isolation == "worktree"`,
+- [x] In `orchestrate-cycle-postflight.sh`, for a `dispatch[]` row with `isolation == "worktree"`,
       call `dispatch-worktree.sh land` **after** the agent's return is read and **before** the
-      task's status transition, and branch on the JSON verdict.
-- [ ] Map each verdict to an outcome: `landed`/`nothing_to_land` → continue as today;
+      task's status transition, and branch on the JSON verdict. *(completed: deviation — isolation
+      is RE-DERIVED via `dispatch-worktree.sh path "$task_number"` rather than read off the
+      `isolation` row field; see the Phase 6 handoff's design correction and the Plan Deviations
+      note below)*
+- [x] Map each verdict to an outcome: `landed`/`nothing_to_land` → continue as today;
       `conflict`/`refused_specs_paths`/`refused_dirty_overlap` → record the task as needing human
       resolution with the offending paths verbatim in the reason, preserve branch and worktree,
-      and do **not** claim the phase landed.
-- [ ] Call `release` only on a clean land; preserve the worktree on any refusal or conflict so the
-      work is recoverable.
-- [ ] Call `prune` once per cycle for the current session so a crashed run's worktrees are reaped
-      on the next invocation.
-- [ ] Extend `test-orchestrate-cycle-postflight.sh`: clean-land path, conflict path (status not
+      and do **not** claim the phase landed. *(completed)*
+- [x] Call `release` only on a clean land; preserve the worktree on any refusal or conflict so the
+      work is recoverable. *(completed)*
+- [x] Call `prune` once per cycle for the current session so a crashed run's worktrees are reaped
+      on the next invocation. *(completed)*
+- [x] Extend `test-orchestrate-cycle-postflight.sh`: clean-land path, conflict path (status not
       advanced, worktree preserved, reason carries the conflicted paths), `specs/**` refusal path,
-      and a non-isolated row taking a byte-identical path to today.
+      and a non-isolated row taking a byte-identical path to today. *(completed: 5 new assertions
+      across 4 cases, 143/143 total passing)*
 
 **Timing**: 1 hour
 

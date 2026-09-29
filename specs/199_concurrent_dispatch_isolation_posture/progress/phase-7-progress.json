@@ -1,0 +1,31 @@
+{
+  "phase": 7,
+  "phase_name": "Postflight land and release wiring",
+  "started_at": "2026-09-29T11:07:58Z",
+  "last_updated": "2026-09-29T11:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert WORK (f0): re-derive isolation via dispatch-worktree.sh path, land before status transition, branch on verdict", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Gate the implemented) status-transition arm on worktree_land_blocked (implemented_gate_passed=false, verdict=defer, no state write, branch/worktree preserved)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Call release only on landed/nothing_to_land; call prune once per cycle regardless of this task's own verdict", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Extend test-orchestrate-cycle-postflight.sh: clean-land, conflict, specs/** refusal, non-isolated-unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Verify: extended suite (143/143), shellcheck clean, test-lint-postflight-boundary.sh unaffected", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.1",
+      "description": "Read isolation off the dispatch[] row's isolation field",
+      "type": "altered",
+      "reason": "Phase 6 handoff's design correction: re-deriving via `dispatch-worktree.sh path \"$task_number\"` (exit 0+path=isolated, exit 3=not) keeps this phase self-contained to its own two declared files (no skill-orchestrate/SKILL.md Move 3 edit) and correctly handles a resumed dispatch whose isolation decision was made in an earlier cycle.",
+      "annotation": "*(completed: deviation — isolation is RE-DERIVED via `dispatch-worktree.sh path \"$task_number\"` rather than read off the `isolation` row field; see the Phase 6 handoff's design correction and the Plan Deviations note below)*"
+    },
+    {
+      "task_id": "7.2",
+      "description": "Record the task as needing human resolution via system-defect-record.sh",
+      "type": "altered",
+      "reason": "system-defect-record.sh's --defect-class enum is closed at fifteen Signal A instances and is owned by context/patterns/system-defect-discrimination.md, outside this phase's declared file_scope. Recorded instead via a loud, named stderr notice (WORKTREE LAND BLOCKED, naming the verdict and offending paths verbatim) plus the state.json status staying un-advanced (implementing) -- the same durable signal every other in-flight-retry outcome in this script already uses, without widening a closed cross-task enum."
+    }
+  ]
+}
