@@ -9,7 +9,7 @@
 # WHY THIS EXISTS (see context/patterns/batch-orchestration-guardrails.md's "The Inter-Cycle
 # Redeploy Checkpoint" subsection, "Durable redeploy ledger" paragraph, for the full contract):
 # the checkpoint's only pre-existing dedup, `deployed_critical_paths`, lives in the
-# session-suffixed `specs/.orchestrator-multi-state-{session_id}.json`, which is fresh on every
+# session-suffixed `specs/.orchestration/.orchestrator-multi-state-{session_id}.json`, which is fresh on every
 # `/orchestrate` invocation. It is a correct WITHIN-invocation re-deploy suppressor, but it has no
 # memory that lasts BETWEEN invocations, so a task that lands in `[IMPLEMENTING]` across separate
 # `/orchestrate` runs re-triggers a full deploy+verify every single run, even when nothing in the

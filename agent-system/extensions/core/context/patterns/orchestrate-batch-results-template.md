@@ -140,7 +140,8 @@ for the full contract; not restated here.
 ### System Defects Detected
 
 (Rendered only when `detected_defects` is non-empty — populated from
-`mt_state_file.detected_defects` / `.return-meta-multi.json`'s `metadata.detected_defects`, one
+`mt_state_file.detected_defects` / `specs/.orchestration/.return-meta-multi-{session_id}.json`'s
+`metadata.detected_defects`, one
 row per entry. Renders on a SUCCEEDED (`"implemented"`) batch just as readily as a `"partial"`
 one: a detection is an OBSERVATION about the agent system, never a failure signal about the
 batch, and is never omitted merely because the batch otherwise completed cleanly. Placed

@@ -81,7 +81,7 @@ survive a later writer's update untouched.
 **Values**: Contextual success values or error states
 
 This table is the **normative** status vocabulary for `.return-meta.json`,
-`specs/.return-meta-multi-{session_id}.json`, and — by reference — `.orchestrator-handoff.json`'s `status`
+`specs/.orchestration/.return-meta-multi-{session_id}.json`, and — by reference — `.orchestrator-handoff.json`'s `status`
 field (see `docs/architecture/handoff-schema.md`, which cross-references this table rather than
 restating the enumeration independently). Any writer of one of those three files should draw its
 `status` value from this table rather than re-deriving or restating it elsewhere.
@@ -119,7 +119,7 @@ correct writer of one vocabulary by imposing another's rule.
 
 | Vocabulary | Governs | `"completed"` valid? |
 |------------|---------|----------------------|
-| Skill-status vocabulary (this table) | `.return-meta.json`, `specs/.return-meta-multi-{session_id}.json`, and `.orchestrator-handoff.json`'s `status` field | No — forbidden, use `"implemented"` |
+| Skill-status vocabulary (this table) | `.return-meta.json`, `specs/.orchestration/.return-meta-multi-{session_id}.json`, and `.orchestrator-handoff.json`'s `status` field | No — forbidden, use `"implemented"` |
 | state.json task status | `specs/state.json`'s `active_projects[].status` field and the corresponding TODO.md `[COMPLETED]` marker | Yes — this is the correct terminal value |
 | Lifecycle/notification status | `orchestrator-postflight.sh`'s wezterm tab-color/TTS notification mapping | Yes — an unrelated vocabulary describing UI notification state, not skill or task status |
 

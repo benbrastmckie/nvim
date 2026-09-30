@@ -152,8 +152,8 @@ review time.
 ### Stale Session-Scoped Orchestration Files
 
 `/refresh` also sweeps the `specs/` root for stale session-scoped
-`specs/.orchestrator-multi-state-{session_id}.json` and
-`specs/.return-meta-multi-{session_id}.json` files via `reap-session-runtime-files.sh`, reporting
+`specs/.orchestration/.orchestrator-multi-state-{session_id}.json` and
+`specs/.orchestration/.return-meta-multi-{session_id}.json` files via `reap-session-runtime-files.sh`, reporting
 each one found (filename, embedded session id, age in minutes) on both the dry-run and live
 paths. See `.claude/context/standards/orchestrator-runtime-files.md`'s Class Table for what these
 files are and `reap-session-runtime-files.sh`'s own header for the `ORCHESTRATOR_SESSION_REAP_MIN`

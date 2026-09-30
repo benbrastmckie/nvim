@@ -906,8 +906,8 @@ Track vault operations for output:
 ### 5.8. Reap Stale Session Runtime Files
 
 `/todo` also sweeps the `specs/` root for stale session-scoped
-`specs/.orchestrator-multi-state-{session_id}.json` and
-`specs/.return-meta-multi-{session_id}.json` files via `reap-session-runtime-files.sh`, and
+`specs/.orchestration/.orchestrator-multi-state-{session_id}.json` and
+`specs/.orchestration/.return-meta-multi-{session_id}.json` files via `reap-session-runtime-files.sh`, and
 `specs/.sessions/` for stale in-flight orchestration session registry entries via
 `task-lock.sh session-reap` — the same two calls `/refresh` already makes (see
 `commands/refresh.md`'s "Stale Session-Scoped Orchestration Files" and "Stale Session Registry

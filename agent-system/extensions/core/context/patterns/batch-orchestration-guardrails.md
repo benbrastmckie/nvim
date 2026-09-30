@@ -795,7 +795,7 @@ overlap set contains at least one critical path not already recorded in
 several cycles OF THE SAME `/orchestrate` INVOCATION would re-report the same `modified_files`
 and re-fire the checkpoint every cycle, at unbounded redundant deploy/verify cost and with the
 mid-run script-swap window maximized rather than minimized. `deployed_critical_paths` lives in
-the SESSION-SUFFIXED `specs/.orchestrator-multi-state-{session_id}.json` (see the Class Table in
+the SESSION-SUFFIXED `specs/.orchestration/.orchestrator-multi-state-{session_id}.json` (see the Class Table in
 `context/standards/orchestrator-runtime-files.md`), which is minted fresh on every `/orchestrate`
 invocation — it therefore has NO memory that lasts BETWEEN invocations. It is written only on the
 checkpoint's three success branches (clean, branch (c), the filtered (c)-equivalent) and is never

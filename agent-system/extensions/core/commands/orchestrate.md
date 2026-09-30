@@ -235,7 +235,7 @@ batch_session_id="$(common_session_id)"
 
 Invoke a single `skill-orchestrate` instance with all task context — it manages wave-by-wave
 dispatch, per-task postflight, session-registry annotation, and writes results to
-`specs/.orchestrator-multi-state-${batch_session_id}.json`:
+`specs/.orchestration/.orchestrator-multi-state-${batch_session_id}.json`:
 
 ```
 Tool: Skill

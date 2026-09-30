@@ -206,8 +206,8 @@ own per-item reporting contract.
 
 ### Step 4.5: Reap Stale Session-Scoped Orchestration Files
 
-Sweep `specs/` for stale session-scoped `specs/.orchestrator-multi-state-{session_id}.json` and
-`specs/.return-meta-multi-{session_id}.json` files (see
+Sweep `specs/` for stale session-scoped `specs/.orchestration/.orchestrator-multi-state-{session_id}.json` and
+`specs/.orchestration/.return-meta-multi-{session_id}.json` files (see
 `context/standards/orchestrator-runtime-files.md`'s Class Table) and report every one found. This
 is a distinct cleanup target from Step 4's task-lock reap — session-scoping the two repo-level
 batch-orchestration singletons trades collision risk for unbounded litter if an abandoned batch's
