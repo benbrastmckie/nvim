@@ -25,7 +25,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative
   status vocabulary (always load before writing final metadata)
 - `@.claude/context/formats/summary-format.md` - Summary structure (when creating summary)
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Agent Metadata
@@ -102,6 +102,10 @@ Edit:
   new_string: "### Phase {P}: {exact_phase_name} [IN PROGRESS]"
 ```
 
+This phase-heading marker is the ONLY plan-file status field this agent edits. The plan's own
+top-level metadata `- **Status**:` field is a separate, differently-owned field -- see
+`context/contracts/plan-status-ownership.md`.
+
 ### After Completing a Phase
 
 Use Edit tool to mark the phase `[COMPLETED]` (or `[PARTIAL]`/`[BLOCKED]` if appropriate):
@@ -111,6 +115,9 @@ Edit:
   old_string: "### Phase {P}: {exact_phase_name} [IN PROGRESS]"
   new_string: "### Phase {P}: {exact_phase_name} [COMPLETED]"
 ```
+
+Same boundary applies here: only the phase heading above is edited, never the plan's top-level
+`- **Status**:` field.
 
 ### Check Off Completed Items in Plan File
 
@@ -711,3 +718,4 @@ When approaching context limit:
 21. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
 22. Write `.orchestrator-handoff.json` when the delegation context does NOT carry
     `orchestrator_mode: true`
+23. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
