@@ -214,23 +214,24 @@ have invalidated) and by checking that every line in `git diff` on the `+`/`-` s
 
 ---
 
-### Phase 3: Cross-link the design record to the point-of-use rule [NOT STARTED]
+### Phase 3: Cross-link the design record to the point-of-use rule [COMPLETED]
 
 **Goal**: The "Deliberate Divergences" bullet that argues against a harness-level isolation
 parameter points at the enforced rule in Move 2, and names the complementary failure mode it does
 not itself cover, so a future edit to either surfaces the other.
 
 **Tasks**:
-- [ ] Re-read `context/patterns/batch-orchestration-guardrails.md`'s `### Deliberate Divergences`
-      subsection immediately before editing.
-- [ ] Add one line to the "Script-provisioned worktrees, not a harness-level isolation parameter"
+- [x] Re-read `context/patterns/batch-orchestration-guardrails.md`'s `### Deliberate Divergences`
+      subsection immediately before editing. *(completed: content anchor unchanged)*
+- [x] Add one line to the "Script-provisioned worktrees, not a harness-level isolation parameter"
       bullet pointing to the enforced point-of-use rule in `skill-orchestrate/SKILL.md`'s Move 2
-      (by section name).
-- [ ] Note in the same line that the stacked-worktree / cross-checkout-git-refusal /
+      (by section name). *(completed)*
+- [x] Note in the same line that the stacked-worktree / cross-checkout-git-refusal /
       uncommittable-work failure mode is the complementary rationale carried there, distinct from
-      this bullet's own `specs/`-staleness argument.
-- [ ] Leave the existing `specs/`-staleness argument fully intact — add, never replace.
-- [ ] Commit this file's hunk alone with an explicit pathspec.
+      this bullet's own `specs/`-staleness argument. *(completed)*
+- [x] Leave the existing `specs/`-staleness argument fully intact — add, never replace.
+      *(completed: verified via git diff, zero deletions)*
+- [x] Commit this file's hunk alone with an explicit pathspec. *(completed)*
 
 **Timing**: 15 minutes
 

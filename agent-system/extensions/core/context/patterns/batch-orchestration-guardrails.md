@@ -1498,7 +1498,12 @@ the operative rationale; the disproven symlink-resolution mechanism is not.
   parameter would relocate the agent's entire repository copy opaquely, `specs/` included,
   silently breaking that absolute-path dependency. A dedicated provisioning script keeps the
   worktree's scope to source code and the deploy tree, leaving `specs/` writes on the main tree by
-  design.
+  design. `skill-orchestrate/SKILL.md`'s Move 2 MUST NOT enforces the complementary,
+  point-of-use half of this divergence: a dispatch row's `isolation`/`worktree_path` fields must
+  never be forwarded to the Agent tool's own `isolation` parameter, because doing so stacks a
+  second harness checkout on top of the one this script already provisioned, and the harness then
+  refuses all cross-checkout git while still permitting file writes and build runs — a distinct
+  failure mode from the `specs/`-staleness argument above.
 - **A PATH-shim wrapper for unguarded build-tool callers is named, not built here.** The
   build-serialization guard's opt-in nature (Mode 2) is a real, confirmed defect: any bare
   invocation of the build tool bypasses the lock, including from a script this agent system does
