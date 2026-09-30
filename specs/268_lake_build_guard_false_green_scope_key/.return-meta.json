@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/268_lake_build_guard_false_green_scope_key/plans/01_cross-tree-guard-state-clone.md",
-      "summary": "5-phase plan fixing the confirmed cross-tree guard-state false green at its root (exclude build-guard.* from dispatch-worktree.sh's .lake/ hardlink clone), with red-then-green regression tests, an incidental-protection pin, header hazard notes, and redeploy."
-    }
-  ],
-  "next_steps": "Run /implement 268 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 10,
   "metadata": {
-    "session_id": "sess_1790788666_f8aaca_268",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4.5,
-    "dependency_waves": [[1, 3], [2], [4], [5]]
-  },
-  "memory_candidates": [
-    {
-      "content": "A hardlink clone (cp -al) used for workspace isolation shares the INODE of every file that already exists in the source directory: the clone and the original are one file under two paths, not two files. Isolation therefore holds only for files created AFTER the clone, or for writers that replace a path by atomic rename (write-temp-then-mv, which rebinds the directory entry and breaks the link). A writer that truncates in place (`> \"$PATH\"`) writes through to the shared inode and clobbers the other tree silently, and an flock() lock file cloned this way serializes the very processes the isolation was meant to decouple. Rule: when cloning a directory for isolation, exclude its ephemeral runtime state (locks, result records, logs, captured output) by name, and keep sharing only immutable build output. Confirmed and reproduced for dispatch-worktree.sh's cp -al of .lake/ (lake-build-guard.sh's five build-guard.* files), where it produced a real false green: a worktree build's record overwrote the main tree's, and `result` without --expect-pid reported the foreign tree's exit_status=0 as the main tree's own.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/plans/01_cross-tree-guard-state-clone.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["hardlink-clone", "cp -al", "worktree-isolation", "shared-inode", "runtime-state", "false-green"]
-    }
-  ],
-  "dispatch_seq": 7
+    "session_id": "sess_1790788666_f8aaca",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
+  }
 }

@@ -18,8 +18,9 @@
 # "orchestrate/task-<task_number>-<seq>" literal below is fixture data exercising
 # dispatch-worktree.sh's OWN branch/registry naming convention (see that script's header), which
 # is a functional assertion on produced output -- never a citation of this repo's own ephemeral
-# task tracker. The fixture task numbers (501, 601, 701-703, 801-802, 901...) are arbitrary and
-# carry no relationship to any real specs/{NNN}_{SLUG}/ task directory.
+# task tracker. The fixture task numbers (501, 601, 701-703, 801-802, 901, 1001, 1101, 1201,
+# 1301, 1401, 1501...) are arbitrary and carry no relationship to any real specs/{NNN}_{SLUG}/
+# task directory.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED (or a required script is
 # missing, which is reported loudly, not silently skipped).
@@ -41,7 +42,9 @@ info() { echo "[INFO] $1"; }
 
 # --- Loud-skip discipline: verify all required scripts exist and are executable before running
 # anything (a lost exec bit is reported loudly, per the plan's own acceptance note). ---
-REQUIRED_SCRIPTS=(dispatch-worktree.sh deploy-root-guard.sh lib/common.sh)
+# lake-build-guard.sh is required for T15, which exercises the guard's own `result` reporting
+# through a provisioned worktree's hardlink-cloned .claude/scripts/ copy.
+REQUIRED_SCRIPTS=(dispatch-worktree.sh deploy-root-guard.sh lib/common.sh lake-build-guard.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -78,7 +81,10 @@ build_repo() {
   cp "$SRC_SCRIPTS_DIR/dispatch-worktree.sh" "$dir/.claude/scripts/dispatch-worktree.sh"
   cp "$SRC_SCRIPTS_DIR/deploy-root-guard.sh" "$dir/.claude/scripts/deploy-root-guard.sh"
   cp "$SRC_SCRIPTS_DIR/lib/common.sh" "$dir/.claude/scripts/lib/common.sh"
-  chmod +x "$dir/.claude/scripts/dispatch-worktree.sh"
+  # Copied unconditionally (unused by T1-T13) so T15 can exercise the guard through the SAME
+  # hardlink-cloned .claude/scripts/ path a real dispatch worktree provides.
+  cp "$SRC_SCRIPTS_DIR/lake-build-guard.sh" "$dir/.claude/scripts/lake-build-guard.sh"
+  chmod +x "$dir/.claude/scripts/dispatch-worktree.sh" "$dir/.claude/scripts/lake-build-guard.sh"
   git -C "$dir" init -q
   git -C "$dir" config user.email "test@example.com"
   git -C "$dir" config user.name "Test"
@@ -511,10 +517,118 @@ fi
 run_dw "$repo_t13" release 1301 --force >/dev/null 2>&1 || true
 
 # =====================================================================
+# T14: root cause, inode distinctness -- after the .lake/ hardlink clone, every `build-guard.*`
+# state file must be an INDEPENDENT inode in the worktree, never the same inode as the main
+# tree's copy (each is ephemeral per-tree runtime bookkeeping, not build output), while ordinary
+# .lake/ build output (e.g. an .olean) remains hardlink-shared -- the actual reason .lake/ is
+# cloned at all. Confirmed root cause: `cp -al` makes every pre-existing file in the source
+# directory a shared inode, and lake-build-guard.sh's own `finalize_record()` truncates its
+# state files in place, so a shared inode is silently overwritten across trees.
+# =====================================================================
+
+repo_t14="$(build_repo t14)"
+mkdir -p "$repo_t14/.lake/pkg"
+echo "built" > "$repo_t14/.lake/pkg/out.olean"
+echo "lock" > "$repo_t14/.lake/build-guard.lock"
+echo "state=complete" > "$repo_t14/.lake/build-guard.result"
+echo "log" > "$repo_t14/.lake/build-guard.log"
+echo "stdout" > "$repo_t14/.lake/build-guard.stdout"
+echo "stderr" > "$repo_t14/.lake/build-guard.stderr"
+
+out_t14="$(run_dw "$repo_t14" provision 1401 --session sess_t14 --seq 1)"
+path_t14="$(echo "$out_t14" | jq -r '.path' 2>/dev/null)"
+
+GUARD_STATE_FILES_T14=(build-guard.lock build-guard.result build-guard.log build-guard.stdout build-guard.stderr)
+for f in "${GUARD_STATE_FILES_T14[@]}"; do
+  main_inode_t14="$(stat -c '%i' "$repo_t14/.lake/$f" 2>/dev/null)"
+  wt_inode_t14="$(stat -c '%i' "$path_t14/.lake/$f" 2>/dev/null)"
+  if [ -f "$path_t14/.lake/$f" ] && [ -n "$main_inode_t14" ] && [ -n "$wt_inode_t14" ] && [ "$main_inode_t14" != "$wt_inode_t14" ]; then
+    pass "T14: .lake/$f is an independent inode in the worktree (not hardlinked to the main tree)"
+  else
+    fail "T14: .lake/$f expected a distinct worktree inode; main_inode=$main_inode_t14 wt_inode=$wt_inode_t14 exists=$([ -f "$path_t14/.lake/$f" ] && echo yes || echo no)"
+  fi
+done
+
+main_olean_inode_t14="$(stat -c '%i' "$repo_t14/.lake/pkg/out.olean" 2>/dev/null)"
+wt_olean_inode_t14="$(stat -c '%i' "$path_t14/.lake/pkg/out.olean" 2>/dev/null)"
+if [ -f "$path_t14/.lake/pkg/out.olean" ] && [ -n "$main_olean_inode_t14" ] && [ "$main_olean_inode_t14" = "$wt_olean_inode_t14" ]; then
+  pass "T14: .lake/pkg/out.olean remains hardlink-shared (same inode) -- the sharing benefit survives the guard-state exclusion"
+else
+  fail "T14: .lake/pkg/out.olean expected to remain hardlink-shared; main_inode=$main_olean_inode_t14 wt_inode=$wt_olean_inode_t14"
+fi
+
+run_dw "$repo_t14" release 1401 --force >/dev/null 2>&1 || true
+
+# =====================================================================
+# T15: behavioural, cross-tree `result` clobbering -- `result --dir <main>` (no --expect-pid)
+# must keep reporting the MAIN tree's own build after an unrelated build at a DIFFERENT scope
+# completes inside a provisioned worktree. Pre-fix, the shared inode lets the worktree build's
+# finalize_record() truncate-in-place overwrite the main tree's own record and log, so `result`
+# reports the worktree's verdict as the main tree's own -- the reported false green.
+# =====================================================================
+
+repo_t15="$(build_repo t15)"
+mkdir -p "$repo_t15/bin" "$repo_t15/src"
+cat > "$repo_t15/lakefile.toml" <<'EOF'
+name = "fixture"
+EOF
+echo "leanprover/lean4:stable" > "$repo_t15/lean-toolchain"
+echo "def foo := 1" > "$repo_t15/src/Foo.lean"
+cat > "$repo_t15/bin/lake" <<'FAKE_LAKE_EOF'
+#!/usr/bin/env bash
+echo "${FAKE_LAKE_OUT:-STDOUT_MARKER}"
+echo "${FAKE_LAKE_ERR:-STDERR_MARKER}" >&2
+exit "${FAKE_LAKE_EXIT:-0}"
+FAKE_LAKE_EOF
+chmod +x "$repo_t15/bin/lake"
+git -C "$repo_t15" add lakefile.toml lean-toolchain src/Foo.lean bin/lake
+git -C "$repo_t15" commit -q -m "add lean fixture and fake lake"
+
+GUARD_T15="$repo_t15/.claude/scripts/lake-build-guard.sh"
+
+# Main-tree build: scope "build", marker MAIN_MARKER.
+main_rc_t15=0
+FAKE_LAKE_OUT="MAIN_MARKER" PATH="$repo_t15/bin:$PATH" bash "$GUARD_T15" build --dir "$repo_t15" -- build >/dev/null 2>&1 || main_rc_t15=$?
+
+main_result_t15="$(PATH="$repo_t15/bin:$PATH" bash "$GUARD_T15" result --dir "$repo_t15" 2>/dev/null)"
+main_holder_pid_t15="$(echo "$main_result_t15" | grep '^holder_pid=' | cut -d= -f2-)"
+
+if [ "$main_rc_t15" -eq 0 ] && [ -n "$main_holder_pid_t15" ] && grep -q "MAIN_MARKER" "$repo_t15/.lake/build-guard.log" 2>/dev/null; then
+  pass "T15: main-tree build completes and records MAIN_MARKER in its own log"
+else
+  fail "T15: main-tree build setup failed; rc=$main_rc_t15 holder_pid=$main_holder_pid_t15"
+fi
+
+out_t15_prov="$(run_dw "$repo_t15" provision 1501 --session sess_t15 --seq 1)"
+path_t15="$(echo "$out_t15_prov" | jq -r '.path' 2>/dev/null)"
+
+# Worktree build: a DIFFERENT scope ("build Bar" vs main's "build"), marker WT_MARKER.
+FAKE_LAKE_OUT="WT_MARKER" PATH="$path_t15/bin:$PATH" bash "$path_t15/.claude/scripts/lake-build-guard.sh" build --dir "$path_t15" -- build Bar >/dev/null 2>&1 || true
+
+# Re-check the MAIN tree's own result, with NO --expect-pid -- the unguarded read this case
+# targets as the false-green path.
+after_result_t15="$(PATH="$repo_t15/bin:$PATH" bash "$GUARD_T15" result --dir "$repo_t15" 2>/dev/null)"
+after_holder_pid_t15="$(echo "$after_result_t15" | grep '^holder_pid=' | cut -d= -f2-)"
+
+if [ "$after_holder_pid_t15" = "$main_holder_pid_t15" ]; then
+  pass "T15: result --dir <main> (no --expect-pid) still reports the main tree's own holder_pid after an unrelated worktree build"
+else
+  fail "T15: result --dir <main> reported holder_pid=$after_holder_pid_t15, expected the main tree's own $main_holder_pid_t15 (cross-tree record clobbering)"
+fi
+
+if grep -q "MAIN_MARKER" "$repo_t15/.lake/build-guard.log" 2>/dev/null && ! grep -q "WT_MARKER" "$repo_t15/.lake/build-guard.log" 2>/dev/null; then
+  pass "T15: main tree's build-guard.log still contains MAIN_MARKER and not WT_MARKER after the worktree build"
+else
+  fail "T15: main tree's build-guard.log was clobbered by the worktree build: $(cat "$repo_t15/.lake/build-guard.log" 2>/dev/null)"
+fi
+
+run_dw "$repo_t15" release 1501 --force >/dev/null 2>&1 || true
+
+# =====================================================================
 # Teardown sanity: no leftover worktrees or stray branches from THIS suite's own fixtures.
 # =====================================================================
 
-for r in "$repo_t1" "$repo_t6" "$repo_t7" "$repo_t8" "$repo_t9" "$repo_t10" "$repo_t11" "$repo_t12" "$repo_t13"; do
+for r in "$repo_t1" "$repo_t6" "$repo_t7" "$repo_t8" "$repo_t9" "$repo_t10" "$repo_t11" "$repo_t12" "$repo_t13" "$repo_t14" "$repo_t15"; do
   leftover="$(git -C "$r" worktree list --porcelain 2>/dev/null | grep -c '^worktree ' || true)"
   # Exactly one entry (the repo's own main worktree) is expected once every case-owned worktree
   # has been released/pruned/refused-before-creation.

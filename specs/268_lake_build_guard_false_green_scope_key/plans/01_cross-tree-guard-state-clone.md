@@ -1,7 +1,7 @@
 # Implementation Plan: Task #268
 
 - **Task**: 268 - lake-build-guard false-green (cross-tree guard-state clone)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/268_lake_build_guard_false_green_scope_key/reports/01_false_green_scope_key_defect.md`
@@ -166,7 +166,7 @@ run `git-snapshot.sh` in its reverting default mode.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Pin the two confirmed consequences as failing tests [NOT STARTED]
+### Phase 1: Pin the two confirmed consequences as failing tests [COMPLETED]
 
 **Goal**: Add two deterministic cases to `test-dispatch-worktree.sh` that reproduce the confirmed
 defect through the real `provision` code path, and confirm both FAIL against current code before
@@ -175,18 +175,18 @@ research's `/tmp` fixture.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh` in full
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh` in full
       (sibling tasks are live on this tree), noting the T1 `.lake/` hardlink-clone case, the
       `REQUIRED_SCRIPTS` loud-skip block, the `pass()`/`fail()`/`info()` counter idiom, and the
       `mktemp -d` + `trap cleanup EXIT` harness.
-- [ ] Add case **T14 (root cause, inode distinctness)**: build a scratch repo whose
+- [x] Add case **T14 (root cause, inode distinctness)**: build a scratch repo whose
       `.lake/` contains all five guard state files (`build-guard.lock`, `.result`, `.log`,
       `.stdout`, `.stderr`) plus a real build-output file (`.lake/pkg/out.olean`, reusing T1's
       shape). Run `provision`. Assert, per file, that the worktree's `build-guard.*` is NOT the
       same inode as the main tree's (`stat -c '%i'` inequality, or link count 1), AND that
       `.lake/pkg/out.olean` IS still the same inode — the sharing benefit must survive. Emit one
       named `pass`/`fail` per assertion so a partial fix is visible.
-- [ ] Add case **T15 (behavioural, cross-tree `result` clobbering)**: extend the harness's
+- [x] Add case **T15 (behavioural, cross-tree `result` clobbering)**: extend the harness's
       script-copy set to include `lake-build-guard.sh` (add it to `REQUIRED_SCRIPTS` so a lost
       exec bit is a loud skip, matching existing discipline). Build a scratch repo carrying a
       minimal Lean-package fixture (`lakefile.toml`, `lean-toolchain`, one `.lean` source) and an
@@ -196,13 +196,13 @@ research's `/tmp` fixture.
       run `result --dir <main>` with NO `--expect-pid`. Assert the reported `holder_pid` is the
       main tree's own build's pid and that the file at the reported `log_path` contains the MAIN
       marker and not the WT marker.
-- [ ] Follow `context/standards/shell-script-testing.md`: `set -uo pipefail`, counter idiom,
+- [x] Follow `context/standards/shell-script-testing.md`: `set -uo pipefail`, counter idiom,
       loud-skip discipline (never a silent no-op), no reliance on the real `lake` binary, no
       write outside the `mktemp -d` workdir.
-- [ ] Respect `.claude/rules/no-task-references-in-deliverables.md`: any fixture task number is
+- [x] Respect `.claude/rules/no-task-references-in-deliverables.md`: any fixture task number is
       arbitrary `dispatch-worktree.sh` naming-convention data — extend the file's existing
       `task-ref-ok:begin` rationale block rather than adding a bare number outside it.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh` and record
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh` and record
       the exact failing output for T14 and T15 (this is the reproduction evidence).
 
 **Timing**: 1.5 hours
