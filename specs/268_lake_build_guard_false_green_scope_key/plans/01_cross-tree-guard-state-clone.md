@@ -291,7 +291,7 @@ to confirm no second `.lake/` clone site exists.
 
 ---
 
-### Phase 3: Pin the incidental cross-tree non-replay protection [NOT STARTED]
+### Phase 3: Pin the incidental cross-tree non-replay protection [COMPLETED]
 
 **Goal**: Add Test C to `test-lake-build-guard.sh` asserting that `decide_sharing()` refuses to
 replay a record authored in a different tree even when every other sharing condition is
@@ -300,22 +300,22 @@ content hash) fails a suite instead of silently reopening literal hypothesis (d)
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh`'s fixture
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh`'s fixture
       machinery (`build_fixture()`, `run_guard()`) and its existing scope_key mutation coverage
       (mutation D) to place the new case consistently.
-- [ ] Add **Test C**: build two fixture roots at different paths; run a real guard `build` in the
+- [x] Add **Test C**: build two fixture roots at different paths; run a real guard `build` in the
       first with a given scope; `cp -al <root1>/.lake <root2>/.lake` (the raw clone operation,
       deliberately NOT routed through `dispatch-worktree.sh` — this case pins the guard's OWN
       logic independent of Phase 2's clone fix); run a guard `build` in the second with the SAME
       scope and assert a real build occurred: the fake `lake` invocation counter incremented, the
       real-build-only `lake-build-guard: STATUS:` marker appears on stderr, and no
       `lake-build-guard: REPLAY:` marker appears.
-- [ ] Add a short comment above the case stating WHY it exists: the protection is incidental
+- [x] Add a short comment above the case stating WHY it exists: the protection is incidental
       (path-embedding in `compute_fingerprint()`'s pre-image, in both `stat` and `hash` modes),
       not designed, so it needs pinning; and stating that this case must keep using a raw
       `cp -al` rather than `provision`, since routing it through the fixed clone would make it
       vacuous.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh`.
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh`.
 
 **Timing**: 1 hour
 

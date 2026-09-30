@@ -1005,6 +1005,58 @@ else
 fi
 
 # =====================================================================================
+# Test C: cross-tree replay refusal over a raw, full cp -al hardlink clone of the project root
+# -- pins the INCIDENTAL protection that keeps decide_sharing() safe across trees even when
+# every OTHER sharing
+# condition (state=complete, scope match, freshness) is satisfiable. The protection is not
+# designed: compute_fingerprint()'s hashed pre-image embeds each file's own path string (`stat
+# -c '%n %s %y'` in the default `stat` mode; even `hash` mode's `sha256sum` output is a
+# "<hash>  <filename>" line, which also embeds the filename), so two DIFFERENT root paths can
+# never hash to an equal fingerprint, and decide_sharing()'s post_fingerprint comparison always
+# fails closed across trees. A future change to a pure content hash (dropping path-embedding)
+# would silently reopen a cross-tree replay at the decide_sharing() level. This case is
+# deliberately NOT routed through dispatch-worktree.sh's `provision` -- it uses a raw `cp -al`
+# directly -- so it pins the guard's OWN logic independent of that script's clone-side fix and
+# stays load-bearing (not vacuous) whether or not that fix is present.
+# =====================================================================================
+TESTC_ROOT1="$WORKDIR/testc_root1"
+TESTC_ROOT2="$WORKDIR/testc_root2"
+build_fixture "$TESTC_ROOT1"
+
+COUNTERC="$WORKDIR/testc_counter"
+: > "$COUNTERC"
+
+# Real build in root1 at a given scope.
+FAKE_LAKE_COUNTER="$COUNTERC" run_guard "$TESTC_ROOT1" build build > /dev/null 2>&1
+
+# Raw, FULL cp -al clone of the whole root (mirrors dispatch-worktree.sh's own hardlink-clone
+# mechanism, but invoked directly rather than through that script) -- deliberately NOT a
+# selective per-file copy. A full hardlink clone gives root2 files with the SAME content AND
+# the SAME mtime as root1's (they are the same inode), so path is the ONLY thing that differs
+# between the two trees' fingerprint pre-images. A selective `cp -r` of the non-.lake/ files
+# would reset their mtime to copy time, which would ALSO defeat sharing in stat mode -- for a
+# reason having nothing to do with path-embedding -- and silently make this case pass for the
+# wrong reason (confirmed by hand: a `cp -r`-based version of this fixture still passed against
+# a path-stripped mutant of compute_fingerprint(), because the mtime difference alone already
+# blocked the replay it was supposed to prove).
+cp -al "$TESTC_ROOT1" "$TESTC_ROOT2"
+
+# Real build in root2, the SAME scope -- if decide_sharing() replayed root1's cross-tree-shared
+# record, no second fake-lake invocation would occur and no STATUS marker (real-build-only)
+# would appear, while a REPLAY marker would.
+TESTC_ERR="$WORKDIR/testc_err"
+FAKE_LAKE_COUNTER="$COUNTERC" run_guard "$TESTC_ROOT2" build build > /dev/null 2>"$TESTC_ERR"
+INVOCATIONSC="$(wc -l < "$COUNTERC" | tr -d ' ')"
+
+if [ "$INVOCATIONSC" = "2" ] \
+   && grep -q 'lake-build-guard: STATUS:' "$TESTC_ERR" \
+   && ! grep -q 'lake-build-guard: REPLAY:' "$TESTC_ERR"; then
+  pass "Test C: a real build occurs in root2 despite a raw full cp -al hardlink clone of root1 at the same scope (2 invocations, STATUS marker present, REPLAY marker absent) -- cross-tree replay is refused, pinning the incidental fingerprint path-embedding protection"
+else
+  fail "Test C: expected a real build in root2 (2 invocations, STATUS present, REPLAY absent); got invocations=$INVOCATIONSC stderr=[$(cat "$TESTC_ERR")]"
+fi
+
+# =====================================================================================
 # Non-vacuousness (mutation) checks
 # =====================================================================================
 # Per context/standards/shell-script-testing.md's "Mutation checks for regex-shaped fixes", and
