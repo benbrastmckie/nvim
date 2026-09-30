@@ -24,7 +24,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema and the normative
   status vocabulary (always load before writing final metadata)
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Agent Metadata
@@ -105,6 +105,7 @@ Use the Edit tool with:
 - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
 
 Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+This is the per-phase case; the plan's own top-level metadata `- **Status**:` field is a separate, differently-owned field -- see `context/contracts/plan-status-ownership.md`.
 
 **B. Execute Steps**
 1. Create/modify .tex files per plan instructions
@@ -124,6 +125,7 @@ Use the Edit tool with:
 - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
 
 Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+This is the per-phase case; the plan's own top-level metadata `- **Status**:` field is a separate, differently-owned field -- see `context/contracts/plan-status-ownership.md`.
 
 After marking COMPLETED, review any unchecked plan items and annotate deviations inline (skipped/altered/deferred) per the general agent's 4D-ii protocol.
 
@@ -238,3 +240,4 @@ for the other.
 5. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
 6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 7. Use status value "completed" (triggers Claude stop behavior)
+8. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
