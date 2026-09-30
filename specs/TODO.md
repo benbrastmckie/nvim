@@ -54,7 +54,7 @@ next_project_number: 283
 ### File Scope Lifecycle
 
 165 [PLANNED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
-269 [PLANNING] — validate-state.sh --fix: replace the presence test with a...
+269 [PLANNED] — validate-state.sh --fix: replace the presence test with a...
   └─ 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
 ### Orchestrator
@@ -1022,11 +1022,12 @@ RELATED, DELIBERATELY NOT MERGED. scripts/orchestrate-cycle-postflight.sh's modi
 ---
 
 ### 269. validate-state.sh --fix: replace the presence test with a type test so a null file_scope cannot abort the repair
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
 - **Research**: [269_validate_state_fix_null_file_scope_crash/reports/01_null-file-scope-fix-crash.md]
+- **Plan**: [269_validate_state_fix_null_file_scope_crash/plans/01_null-file-scope-fix-crash.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/validate-state.sh (never .claude/**). The deployed copy at a consumer repo's .claude/scripts/validate-state.sh was confirmed byte-for-byte identical (diff -q) and is listed in .claude-extensions.json's installed_files under the core extension, so it is a deploy artifact only -- fix at source and redeploy, per rules/source-store-deploy-boundary.md.
 

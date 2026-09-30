@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Authored a 3-phase sequential implementation plan (1.5h) for the validate-state.sh --fix null file_scope crash: extend the existing FIX_FIXTURE_DIR fixture and prove it red, swap the mutation filter's has(\"file_scope\") gate to a (.file_scope|type) == \"array\" type test with a rewritten comment block, then verify all three dedup invariants.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/269_validate_state_fix_null_file_scope_crash/plans/01_null-file-scope-fix-crash.md",
+      "summary": "3-phase sequential plan (1.5h) for the null-file_scope --fix crash: red-then-green fixture, type-test filter swap plus comment rewrite, full invariant verification."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 3,
+  "blockers": [],
+  "next_action_hint": "Run /implement 269; Phase 1 must confirm the extended --fix fixture FAILS before Phase 2 applies the filter fix.",
+  "dispatch_seq": 8
+}
