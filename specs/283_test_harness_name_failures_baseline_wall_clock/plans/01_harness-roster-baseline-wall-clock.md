@@ -176,31 +176,31 @@ original error string disappeared.
 
 ---
 
-### Phase 2: End-of-run failure roster in run-all.sh [NOT STARTED]
+### Phase 2: End-of-run failure roster in run-all.sh [COMPLETED]
 
 **Goal**: Collect failing suite names into a consolidated block printed immediately before the
 final tally line, on both the sequential and parallel code paths, without perturbing the existing
 inline `[FAIL] <path>` contract.
 
 **Tasks**:
-- [ ] Introduce a `FAILED_SUITE_NAMES=()` array alongside `FAIL_COUNT` (declared near line 220).
-- [ ] Append the suite path at both existing failure sites: the sequential branch (line ~257,
-      `echo "[FAIL] $suite_name"`) and the parallel branch (line ~445, `echo "[FAIL] $suite"`).
-- [ ] Print the roster immediately before the final tally at line ~462, guarded by
+- [x] Introduce a `FAILED_SUITE_NAMES=()` array alongside `FAIL_COUNT` (declared near line 220). *(completed)*
+- [x] Append the suite path at both existing failure sites: the sequential branch (line ~257,
+      `echo "[FAIL] $suite_name"`) and the parallel branch (line ~445, `echo "[FAIL] $suite"`). *(completed)*
+- [x] Print the roster immediately before the final tally at line ~462, guarded by
       `[ "${#FAILED_SUITE_NAMES[@]}" -gt 0 ]`. Emit it unconditionally — **not** suppressed by
-      `--quiet` — matching the inline `[FAIL]` line's existing posture.
-- [ ] **Critical output-contract constraint**: the roster MUST NOT contain the literal token
+      `--quiet` — matching the inline `[FAIL]` line's existing posture. *(completed)*
+- [x] **Critical output-contract constraint**: the roster MUST NOT contain the literal token
       `[FAIL]` anywhere. `verify-deploy.sh` Gate 8 folds every `grep -F '[FAIL]'` hit into a
       `FINDING gate8` row, so a roster carrying that token would silently double every gate-8
       finding. Use a header of the form `[run-all] Failing suites (N):` followed by one
-      `    <suite path>` line per entry.
-- [ ] Update `run-all.sh`'s header comment block (the machine-greppable output contract around
+      `    <suite path>` line per entry. *(completed: verified zero [FAIL] tokens in the roster block on a live 105-suite run)*
+- [x] Update `run-all.sh`'s header comment block (the machine-greppable output contract around
       lines 82-84) to document the roster block alongside the existing `[FAIL] <suite path>` line,
-      and state the no-`[FAIL]`-token constraint and why.
-- [ ] Confirm the `--timings` aggregate row and the exit-code logic at lines ~465-470 are
-      unchanged.
-- [ ] Sanity-run: `bash run-all.sh --jobs 1` and `bash run-all.sh --jobs 4` against the existing
-      tree and confirm the roster's entries match the inline `[FAIL]` lines exactly, on both paths.
+      and state the no-`[FAIL]`-token constraint and why. *(completed)*
+- [x] Confirm the `--timings` aggregate row and the exit-code logic at lines ~465-470 are
+      unchanged. *(completed)*
+- [x] Sanity-run: `bash run-all.sh --jobs 1` and `bash run-all.sh --jobs 4` against the existing
+      tree and confirm the roster's entries match the inline `[FAIL]` lines exactly, on both paths. *(completed: both report 5 failing suites, identical roster content -- test-gate-out-repair-reporting.sh, test-lint-json-channel-discipline.sh, test-run-all-parallel.sh, test-verify-deploy-context-budget.sh, test-typst-element-lint.sh)*
 
 **Timing**: 1 hour
 
@@ -230,32 +230,32 @@ and enumerate any additional consumer found.
 
 ---
 
-### Phase 3: Regression test for the naming + roster contract [NOT STARTED]
+### Phase 3: Regression test for the naming + roster contract [COMPLETED]
 
 **Goal**: Add the dispatch's explicitly required regression test: a deliberately-failing fixture
 suite must be named both inline and in the roster, so the "zero `[FAIL]` markers" symptom can
 never silently return.
 
 **Tasks**:
-- [ ] Create `tests/test-run-all-failure-reporting.sh`, following the synthetic-fixture-directory
+- [x] Create `tests/test-run-all-failure-reporting.sh`, following the synthetic-fixture-directory
       pattern already established by `tests/test-run-all-parallel.sh` (build a temp tests dir
       containing a small set of trivially-passing suites plus one deliberately-failing suite, then
-      invoke the real `run-all.sh` against it).
-- [ ] Case: the deliberately-failing fixture's path appears in an inline `[FAIL] <path>` line.
-- [ ] Case: the same path appears in the end-of-run roster block.
-- [ ] Case: the roster header's count matches the tally line's `failed` count.
-- [ ] Case (double-count guard): the total count of `[FAIL]` token occurrences in the output
-      equals the number of failing fixtures — proving the roster did not reintroduce the token.
-- [ ] Case: both assertions hold under `--quiet` (the naming contract is explicitly not
-      `--quiet`-suppressed).
-- [ ] Case: both assertions hold under `--jobs 3` (parallel path parity).
-- [ ] Case: an all-passing fixture set prints no roster block at all and exits 0.
-- [ ] Make the file executable (`chmod +x`) — `run-all.sh` skips non-executable suites with a
-      `[SKIP]`, so a missing exec bit would make this test silently never run.
-- [ ] Add `tests/test-run-all-failure-reporting.sh` to `manifest.json`'s `provides` array
-      (alongside the other `tests/*.sh` entries around lines 177-250) so it deploys.
-- [ ] Run the new suite standalone; confirm it passes and that it genuinely fails if the roster
-      code from Phase 2 is temporarily reverted.
+      invoke the real `run-all.sh` against it). *(completed: 3 passing + 2 deliberately-failing fixtures)*
+- [x] Case: the deliberately-failing fixture's path appears in an inline `[FAIL] <path>` line. *(completed)*
+- [x] Case: the same path appears in the end-of-run roster block. *(completed)*
+- [x] Case: the roster header's count matches the tally line's `failed` count. *(completed)*
+- [x] Case (double-count guard): the total count of `[FAIL]` token occurrences in the output
+      equals the number of failing fixtures — proving the roster did not reintroduce the token. *(completed)*
+- [x] Case: both assertions hold under `--quiet` (the naming contract is explicitly not
+      `--quiet`-suppressed). *(completed)*
+- [x] Case: both assertions hold under `--jobs 3` (parallel path parity). *(completed)*
+- [x] Case: an all-passing fixture set prints no roster block at all and exits 0. *(completed)*
+- [x] Make the file executable (`chmod +x`) — `run-all.sh` skips non-executable suites with a
+      `[SKIP]`, so a missing exec bit would make this test silently never run. *(completed)*
+- [x] Add `tests/test-run-all-failure-reporting.sh` to `manifest.json`'s `provides` array
+      (alongside the other `tests/*.sh` entries around lines 177-250) so it deploys. *(completed)*
+- [x] Run the new suite standalone; confirm it passes and that it genuinely fails if the roster
+      code from Phase 2 is temporarily reverted. *(completed: reverting run-all.sh's roster code via git stash made 8 of 22 cases fail loudly)*
 
 **Timing**: 1.5 hours
 

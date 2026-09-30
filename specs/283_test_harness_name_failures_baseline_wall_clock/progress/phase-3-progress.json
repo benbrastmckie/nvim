@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Regression test for the naming + roster contract",
+  "started_at": "2026-09-30T13:10:00Z",
+  "last_updated": "2026-09-30T13:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-run-all-failure-reporting.sh with naming/roster/count/double-count/quiet/jobs3/all-green cases", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh",
+      "agent-system/extensions/core/manifest.json"
+    ]},
+    {"id": 2, "description": "Confirm suite genuinely fails when roster code reverted", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

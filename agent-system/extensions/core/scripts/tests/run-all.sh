@@ -73,21 +73,55 @@
 #     rsync a ~16MB fixture tree or launch headless nvim; N concurrent copies on a many-core box
 #     multiplies peak disk and memory well past what those suites were sized for individually.
 #
+# --fail-on-new: opt-in. When a committed tests/known-failures.txt manifest is present (see its
+#          own header -- advisory, optional, basename-keyed, format
+#          `basename|category|reason|owner`), each failing suite is classified as EXPECTED
+#          (basename matches a manifest row) or NEW (does not). With --fail-on-new, the exit code
+#          is 1 only if at least one failure is NEW; an all-EXPECTED failure set exits 0. Without
+#          this flag, the DEFAULT exit-code semantics are unchanged: exit 1 if any suite failed,
+#          EXPECTED or not. A missing or truncated known-failures.txt degrades to today's
+#          behavior exactly -- every failure is then classified NEW, so --fail-on-new becomes
+#          equivalent to the default (exit 1 on any failure).
+#
 # Exit codes:
-#   0  all discovered suites passed
-#   1  one or more discovered suites failed
+#   0  all discovered suites passed (or, under --fail-on-new, no failure was classified NEW)
+#   1  one or more discovered suites failed (or, under --fail-on-new, at least one was NEW)
 #   2  zero suites were discovered (harness failure, not a pass), or an internal scheduling
 #      invariant was violated (scheduled count != discovered count)
 #
 # Machine-greppable output: every failing suite prints a line of the exact form
 #   [FAIL] <suite path>
 # so a caller can extract failures with `grep '^\[FAIL\] '` regardless of --quiet or --jobs.
+#
+# End-of-run failure roster: immediately before the final tally line, if one or more suites
+# failed, a consolidated roster block is printed:
+#   [run-all] Failing suites (N):
+#       <suite path>
+#       <suite path>
+# printed unconditionally -- NOT suppressed by --quiet, matching the inline [FAIL] line's own
+# posture -- so a caller that only captures the tail of the output (or a human skimming a long
+# run) can recover every failing suite's identity without set-differencing [RUN]/[PASS] markers.
+# CRITICAL CONSTRAINT: this roster block must never contain the literal token `[FAIL]` anywhere.
+# verify-deploy.sh's Gate 8 folds every `grep -F '[FAIL]'` hit into a FINDING gate8 row; a roster
+# carrying that token would silently double-count every failure. The header and entry lines above
+# are deliberately token-free for this reason -- do not "helpfully" prefix roster entries with
+# `[FAIL]` in a future edit.
+#
+# Known-failing baseline: if tests/known-failures.txt (basename-keyed, advisory, optional -- see
+# its own header) is present, each roster entry is annotated `(EXPECTED)` or `(NEW)` and the final
+# tally line grows a trailing `(E expected, X NEW)` clause, e.g.
+#   [run-all] 97 passed, 8 failed (8 expected, 0 NEW), 0 skipped, 105 total
+# The leading `N passed, M failed` prefix is byte-identical to the pre-manifest tally either way,
+# so any existing consumer parsing only the head of that line is unaffected. A missing or
+# truncated known-failures.txt degrades to exactly today's tally line and roster (no annotation,
+# no trailing clause) -- see --fail-on-new above for the manifest's file format and semantics.
 
 set -uo pipefail
 
 QUIET=false
 TIMINGS_FILE=""
 JOBS=1
+FAIL_ON_NEW=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
@@ -107,8 +141,9 @@ while [ $# -gt 0 ]; do
       JOBS="$2"
       shift 2
       ;;
+    --fail-on-new) FAIL_ON_NEW=true; shift ;;
     -h|--help)
-      sed -n '2,84p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,117p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -219,6 +254,24 @@ say ""
 PASS_COUNT=0
 FAIL_COUNT=0
 SKIP_COUNT=0
+FAILED_SUITE_NAMES=()
+
+# Known-failing baseline manifest: advisory, optional, basename-keyed -- see
+# tests/known-failures.txt's own header for the full format contract and
+# suite-cost-hints.txt's precedent for the same shape. A missing file leaves
+# KNOWN_FAILURE_CATEGORY empty, so every failure classifies as NEW below -- today's behavior,
+# exactly, when no manifest exists.
+KNOWN_FAILURES_FILE="$SCRIPT_DIR/known-failures.txt"
+MANIFEST_PRESENT=false
+declare -A KNOWN_FAILURE_CATEGORY=()
+if [ -f "$KNOWN_FAILURES_FILE" ]; then
+  MANIFEST_PRESENT=true
+  while IFS='|' read -r kf_base kf_category _kf_reason _kf_owner; do
+    [ -n "$kf_base" ] || continue
+    case "$kf_base" in \#*) continue ;; esac
+    KNOWN_FAILURE_CATEGORY["$kf_base"]="$kf_category"
+  done < "$KNOWN_FAILURES_FILE"
+fi
 
 if [ -n "$TIMINGS_FILE" ]; then
   : > "$TIMINGS_FILE"
@@ -254,6 +307,7 @@ if [ "$JOBS" -le 1 ]; then
     else
       _suite_result="FAIL"
       FAIL_COUNT=$((FAIL_COUNT + 1))
+      FAILED_SUITE_NAMES+=("$suite_name")
       echo "[FAIL] $suite_name"
       if [ "$QUIET" = "true" ]; then
         tail -20 "$SUITE_OUT" | sed 's/^/    /'
@@ -442,6 +496,7 @@ else
       FAIL)
         say "[run-all] [RUN]  $suite"
         FAIL_COUNT=$((FAIL_COUNT + 1))
+        FAILED_SUITE_NAMES+=("$suite")
         echo "[FAIL] $suite"
         if [ "$QUIET" = "true" ]; then
           tail -20 "$OUT_DIR/out.$i" | sed 's/^/    /'
@@ -459,10 +514,60 @@ fi
 SUITE_RUN_END_MS="$(date +%s%3N)"
 
 say ""
-echo "[run-all] $PASS_COUNT passed, $FAIL_COUNT failed, $SKIP_COUNT skipped, $TOTAL_DISCOVERED total"
+
+# Classify each failure as EXPECTED (basename matches a known-failures.txt row) or NEW
+# (does not). With no manifest present, KNOWN_FAILURE_CATEGORY is empty, so every failure
+# classifies NEW -- this is the "missing file degrades to today's behavior" contract; NEW_COUNT
+# then always equals FAIL_COUNT, keeping --fail-on-new equivalent to the default in that case.
+EXPECTED_COUNT=0
+NEW_COUNT=0
+declare -a FAILED_SUITE_STATUS=()
+for _failed_name in "${FAILED_SUITE_NAMES[@]}"; do
+  _failed_base="$(basename "$_failed_name")"
+  if [ -n "${KNOWN_FAILURE_CATEGORY[$_failed_base]:-}" ]; then
+    FAILED_SUITE_STATUS+=("EXPECTED")
+    EXPECTED_COUNT=$((EXPECTED_COUNT + 1))
+  else
+    FAILED_SUITE_STATUS+=("NEW")
+    NEW_COUNT=$((NEW_COUNT + 1))
+  fi
+done
+
+# End-of-run failure roster: printed unconditionally (not --quiet-suppressed, matching the
+# inline [FAIL] line's own posture) immediately before the final tally, so failing suite
+# identities are recoverable without set-differencing [RUN]/[PASS] markers. Deliberately carries
+# zero occurrences of the literal token `[FAIL]` -- see the header comment's CRITICAL CONSTRAINT.
+# Each entry is annotated (EXPECTED)/(NEW) only when a known-failures.txt manifest is present.
+if [ "${#FAILED_SUITE_NAMES[@]}" -gt 0 ]; then
+  echo "[run-all] Failing suites (${#FAILED_SUITE_NAMES[@]}):"
+  for _idx in "${!FAILED_SUITE_NAMES[@]}"; do
+    if [ "$MANIFEST_PRESENT" = "true" ]; then
+      echo "    ${FAILED_SUITE_NAMES[_idx]} (${FAILED_SUITE_STATUS[_idx]})"
+    else
+      echo "    ${FAILED_SUITE_NAMES[_idx]}"
+    fi
+  done
+fi
+
+# The leading "N passed, M failed" prefix is byte-identical whether or not the manifest clause is
+# appended, so any existing consumer parsing only the head of the line is unaffected.
+if [ "$MANIFEST_PRESENT" = "true" ]; then
+  echo "[run-all] $PASS_COUNT passed, $FAIL_COUNT failed ($EXPECTED_COUNT expected, $NEW_COUNT NEW), $SKIP_COUNT skipped, $TOTAL_DISCOVERED total"
+else
+  echo "[run-all] $PASS_COUNT passed, $FAIL_COUNT failed, $SKIP_COUNT skipped, $TOTAL_DISCOVERED total"
+fi
 
 if [ -n "$TIMINGS_FILE" ]; then
   echo "TOTAL,$((SUITE_RUN_END_MS - SUITE_RUN_START_MS)),${PASS_COUNT}/${FAIL_COUNT}/${SKIP_COUNT}/${TOTAL_DISCOVERED}" >> "$TIMINGS_FILE"
+fi
+
+# --fail-on-new: exit nonzero only when at least one failure is NEW. Default (no flag) exit-code
+# semantics are unchanged: exit 1 if any suite failed, EXPECTED or not.
+if [ "$FAIL_ON_NEW" = "true" ]; then
+  if [ "$NEW_COUNT" -gt 0 ]; then
+    exit 1
+  fi
+  exit 0
 fi
 
 if [ "$FAIL_COUNT" -gt 0 ]; then
