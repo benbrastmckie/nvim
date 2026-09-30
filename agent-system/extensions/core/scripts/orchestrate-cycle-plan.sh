@@ -901,7 +901,12 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
     ledger_decision="$(echo "$ledger_decision_json" | jq -r '.decision')"
 
     if [ "$ledger_decision" = "run" ]; then
-    pre_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh")
+    # --skip-slow (harness-wall-clock fix): this pre-redeploy snapshot no longer runs gate 8
+    # (tests/run-all.sh, the 105-suite shell-test battery) -- see the POST-redeploy call below
+    # for the full trade-off rationale. Both this call and its post-redeploy counterpart MUST
+    # carry the identical flag so the comm -13 diff below stays meaningful (an asymmetric pair
+    # would make every gate-8 finding look "new" simply because pre never looked for it).
+    pre_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh" --skip-slow)
 
     deploy_exit=0
     bash "$SCRIPT_DIR/deploy-headless.sh" >&2 || deploy_exit=$?
@@ -918,30 +923,38 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
           || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: failed to write the durable deploy ledger at $ledger_file (non-fatal)." >&2
       fi
     else
-      # Deploy landed (exit 0 or 3) -- reachable from exit 3 for the first time. A fresh,
-      # FULL (non-`--skip-slow`) post-redeploy findings snapshot is taken independently of
-      # deploy-headless.sh's own internal `--skip-slow` verify -- exactly as before this phase --
-      # so the baseline comparison below sees slow-gate findings too, not only the fast subset
-      # deploy-headless.sh itself checked. deploy_findings_snapshot's FINDING-line vocabulary is
+      # Deploy landed (exit 0 or 3) -- reachable from exit 3 for the first time. A fresh
+      # post-redeploy findings snapshot is taken independently of deploy-headless.sh's own
+      # internal `--skip-slow` verify. deploy_findings_snapshot's FINDING-line vocabulary is
       # empty if and only if verify-deploy.sh exited 0 (see its own FAILURES-eq-0 exit-0 rule),
       # so an empty post_findings is a reliable, cheaper stand-in for a separately-captured exit
       # code; post_exit below is derived from that emptiness (and the exit-2 sentinel marker)
       # purely for the diagnostic notice field, not as a second live invocation.
       #
-      # DEFECT A -- this documented full-depth choice is DELIBERATE, not an oversight, and is
-      # PRESERVED here, not silently lowered: deploy-headless.sh's OWN internal verify-deploy.sh
-      # call runs `--skip-slow` (defers gate 8, the shell test suite, and nothing else), so a
-      # `deploy_exit -eq 0` ("landed_verify_clean") only ever certifies the FAST subset. Taking
-      # this pre/post pair at full depth independently is what lets the baseline comparison see
-      # slow-gate (gate 8) findings too. The asymmetry against deploy-headless.sh's own fast
-      # verify is no longer silently resolved in either direction: see the fast/full depth
-      # disagreement report below, fired exactly when `deploy_exit -eq 0` yet the full-depth
-      # comparison still finds a genuine blocking finding.
-      # The pre/post pair itself MUST stay at IDENTICAL depth (both full, no `--skip-slow` on
-      # either side) -- an asymmetric pair would make every gate-8 finding look "new" simply
-      # because pre never looked for it, which is a strictly worse bug than the depth mismatch
-      # against deploy-headless.sh being reported at all.
-      post_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh")
+      # DEFECT A / --skip-slow WALL-CLOCK TRADE-OFF (this comment replaces an earlier version
+      # that documented the OPPOSITE choice -- full depth, deliberately preserved -- as the fix
+      # for the same underlying tension; read on for why the decision flipped). This pre/post
+      # pair now ALSO runs `--skip-slow`, deferring gate 8 (tests/run-all.sh, the 105-suite shell
+      # battery) here too, matching deploy-headless.sh's own internal verify depth exactly. The
+      # prior full-depth choice existed so this baseline comparison could catch a gate-8
+      # regression that deploy-headless.sh's own fast verify would miss; but every dispatched
+      # implementation agent's OWN phase gate already runs this exact 105-suite battery against
+      # this exact source-store tree immediately before reaching this checkpoint (deploy-headless
+      # copies files, it does not re-run or alter suite source), so the full-depth pair here was
+      # measured to be a redundant THIRD full run of the same battery within one cycle -- the
+      # dominant wall-clock cost this task's Phase 5 exists to remove. Accepted trade-off: a
+      # gate-8 regression can now slip past this SPECIFIC checkpoint if, and only if, no
+      # dispatched agent in the cycle happened to run the shell-test gate itself; this is judged
+      # acceptable because (a) the agent-side gate is not optional for any task that touches
+      # agent-system/**, and (b) Phase 2-4 of the task that added this comment made agent-side
+      # failures far cheaper to see (named roster + known-failures baseline), lowering the cost of
+      # relying on that gate instead of this one. If a shell-test regression is ever traced to a
+      # deploy that skipped this checkpoint's own gate-8 check, revert this specific flag pass
+      # (see the plan's Rollback/Contingency section) rather than reverting all of Phase 5.
+      # The pre/post pair itself MUST stay at IDENTICAL depth (both --skip-slow, or both not) --
+      # an asymmetric pair would make every non-gate-8 finding's comparison invalid in the other
+      # direction, which is a strictly worse bug than the coverage gap accepted above.
+      post_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh" --skip-slow)
       matched_paths_json=$(echo "$matched_json" | jq -c '[.[].path]')
       if [ -z "$post_findings" ]; then
         post_exit=0
@@ -979,10 +992,11 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
           # re-run -- flaky) and then the attribution filter (drop confirmed findings that
           # positively name an identifier absent from this batch's own cycle_modified_files --
           # unrelated). Only the survivors ("blocking") may defer. This confirmation snapshot is
-          # taken at the SAME full depth as the pre/post pair (never `--skip-slow`) so it is
-          # comparing like with like -- exactly one extra verify-deploy.sh call, fired only on
-          # this rare would-be-defer path.
-          confirm_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh")
+          # taken at the SAME depth as the pre/post pair above (--skip-slow, per this task's
+          # wall-clock trade-off -- see the post_findings comment above for the full rationale)
+          # so it is comparing like with like -- exactly one extra verify-deploy.sh call, fired
+          # only on this rare would-be-defer path.
+          confirm_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh" --skip-slow)
           confirmed_new=$(deploy_baseline_confirm_new_findings "$new_findings" "$confirm_findings")
           flaky_findings=$(comm -23 <(printf '%s\n' "$new_findings" | sort -u) <(printf '%s\n' "$confirmed_new" | sort -u))
           unrelated_findings=$(deploy_baseline_unattributable_findings "$confirmed_new" "$cycle_modified_files_json")
@@ -1025,13 +1039,20 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
             printf '%s\n' "$blocking" | sed 's/^/    /' >&2
             # DEFECT A depth-disagreement report: deploy_exit -eq 0 means deploy-headless.sh's
             # own internal --skip-slow verify already reported landed_verify_clean (a fast PASS)
-            # for THIS same tree -- yet the full-depth comparison still finds a blocking finding.
-            # That is a depth disagreement (the finding lives in the slow gate --skip-slow
-            # deferred), not a contradiction between two verdicts of the same depth; say so.
+            # for THIS same tree -- yet this checkpoint's own comparison still finds a blocking
+            # finding. Since this task's wall-clock fix (see the post_findings comment above),
+            # this pre/post/confirm pair ALSO runs --skip-slow, at the SAME depth as
+            # deploy-headless.sh's own internal check -- so a disagreement here can no longer be
+            # explained by "the finding lives in gate 8, which only one side checked" (gate 8 is
+            # deferred on both sides now). It signals a genuine difference between the two
+            # verify-deploy.sh invocations at equal depth (different TARGET/scope, a
+            # non-deterministic gate, or a state change between the two calls), not a depth
+            # mismatch -- the name and detection are kept (still worth surfacing loudly) but the
+            # message below no longer attributes it to the slow gate specifically.
             depth_disagreement=false
             if [ "$deploy_exit" -eq 0 ]; then
               depth_disagreement=true
-              echo "  [orchestrate] DEPTH NOTE: deploy-headless.sh's own --skip-slow verify passed (fast PASS); the finding(s) above come from the full-depth (slow-gate) verify this checkpoint runs independently -- a depth disagreement, not a contradiction." >&2
+              echo "  [orchestrate] DEPTH NOTE: deploy-headless.sh's own --skip-slow verify passed (fast PASS); the finding(s) above come from this checkpoint's own independent verify-deploy.sh run at the same --skip-slow depth -- a genuine disagreement between two equal-depth verdicts, not a slow-gate-vs-fast-gate depth mismatch (gate 8 is deferred on both sides as of this task's wall-clock fix)." >&2
             fi
             mt_set --argjson tn "$(mt_get_json '.task_numbers')" --argjson ft "$(mt_get_json '.failed_tasks')" '
               .deferred_deploy_checkpoint = ((.deferred_deploy_checkpoint + ($tn - $ft)) | unique)'

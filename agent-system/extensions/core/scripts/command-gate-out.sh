@@ -186,7 +186,16 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
       # sourced at the top of this file), matching the Inter-Cycle Redeploy Checkpoint's own
       # "Exit-2 resolution" rule and shared with that checkpoint's own call site so the two
       # cannot drift apart again.
-      gate_out_pre_findings="$(deploy_findings_snapshot .claude/scripts/verify-deploy.sh)"
+      #
+      # --skip-slow (harness-wall-clock fix): defers gate 8 (tests/run-all.sh, the 105-suite
+      # shell battery) on both this pre- and the post-redeploy call below, matching
+      # orchestrate-cycle-plan.sh's own redeploy-checkpoint pair (same rationale: the dispatched
+      # implementation agent's own phase gate already ran this exact battery against this exact
+      # source-store tree immediately before reaching this postflight gate, so re-running it here
+      # a third time is redundant wall-clock cost, not additional coverage). MUST stay symmetric
+      # with the post-redeploy call -- an asymmetric pair would make every gate-8 finding look
+      # "new" simply because pre never looked for it.
+      gate_out_pre_findings="$(deploy_findings_snapshot .claude/scripts/verify-deploy.sh --skip-slow)"
 
       gate_out_deploy_rc=0
       gate_out_deploy_log="$(bash .claude/scripts/deploy-headless.sh 2>&1)" || gate_out_deploy_rc=$?
@@ -199,7 +208,9 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
         echo "[gate-out] Redeploy trigger FAILED for task $task_number (deploy-headless.sh exited ${gate_out_deploy_rc} -- the deploy did not land). Leaving status as '$current_status'." >&2
         printf '%s\n' "$gate_out_deploy_log" | tail -20 >&2
       else
-        gate_out_post_findings="$(deploy_findings_snapshot .claude/scripts/verify-deploy.sh)"
+        # --skip-slow: symmetric with the pre-redeploy call above -- see its comment for the
+        # full wall-clock trade-off rationale.
+        gate_out_post_findings="$(deploy_findings_snapshot .claude/scripts/verify-deploy.sh --skip-slow)"
         gate_out_new_findings="$(deploy_baseline_new_findings "$gate_out_pre_findings" "$gate_out_post_findings")"
 
         if [ -n "$gate_out_new_findings" ]; then
