@@ -183,30 +183,31 @@ and will have drifted.
 
 ---
 
-### Phase 2: Swap the mutation-filter predicate and rewrite its comment [NOT STARTED]
+### Phase 2: Swap the mutation-filter predicate and rewrite its comment [COMPLETED]
 
 **Goal**: The mutation filter gates on array type rather than key presence, and the comment block
 above it documents the type test instead of endorsing the defect.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-state.sh` around the
-      `if [[ "$DO_FIX" == true ]]` block (territory: sibling 279 declares this file too).
-- [ ] In the filter string passed to `bash "$FIX_STATE_WRITE"`, replace `if has("file_scope") then`
+- [x] Re-read `agent-system/extensions/core/scripts/validate-state.sh` around the
+      `if [[ "$DO_FIX" == true ]]` block (territory: sibling 279 declares this file too). *(completed)*
+- [x] In the filter string passed to `bash "$FIX_STATE_WRITE"`, replace `if has("file_scope") then`
       with `if (.file_scope|type) == "array" then`. Change nothing else in that string — the
       `reduce .[] as $x ([]; if index($x) then . else . + [$x] end)` body and the `else . end`
-      stay byte-identical.
-- [ ] Rewrite the comment block directly above the `_fix_report` assignment so it: keeps the D3
+      stay byte-identical. *(completed)*
+- [x] Rewrite the comment block directly above the `_fix_report` assignment so it: keeps the D3
       statement that `unique` sorts and must not be used; replaces the
       `if has("file_scope") then ... else . end` sentence with the type-test form; states why the
       type test is required (a literal-null `file_scope` has the key present but is not iterable,
       and `has()` conflated "key present" with "safe to iterate", aborting jq and causing
       `state-write.sh` to refuse the write); and retains the no-manufacture and idempotence
       statements, noting that the type test satisfies no-manufacture for free because a
-      null-valued entry keeps its null and an absent-key entry stays absent.
-- [ ] Leave the `_fix_report` filter itself untouched — its `($t.file_scope // [])` guard is
-      already correct.
-- [ ] Commit the filter and comment change together (one semantic unit: the code and the comment
-      that documents it must never be separately committed in a state where the comment is wrong).
+      null-valued entry keeps its null and an absent-key entry stays absent. *(completed)*
+- [x] Leave the `_fix_report` filter itself untouched — its `($t.file_scope // [])` guard is
+      already correct. *(completed: only the mutation filter and its comment changed; report
+      filter byte-identical)*
+- [x] Commit the filter and comment change together (one semantic unit: the code and the comment
+      that documents it must never be separately committed in a state where the comment is wrong). *(completed)*
 
 **Timing**: 0.5 hours
 

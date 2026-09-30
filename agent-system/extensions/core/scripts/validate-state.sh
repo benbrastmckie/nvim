@@ -296,9 +296,15 @@ if [[ "$FIX_MODE" == "true" ]]; then
     exit 2
   fi
 
-  # Order-preserving dedup filter (D3): `unique` sorts and must not be used. Only entries that
-  # ALREADY have a file_scope field are touched (`if has("file_scope") then ... else . end`) --
-  # never introduces a file_scope: [] field on an entry that never had one, and an entry whose
+  # Order-preserving dedup filter (D3): `unique` sorts and must not be used. Only entries whose
+  # file_scope is actually an array are touched
+  # (`if (.file_scope|type) == "array" then ... else . end`). A type test is required rather than
+  # a `has("file_scope")` presence test: `has()` returns true for a literal-null file_scope (the
+  # key is present, so the reduce below would try to iterate over null and jq would abort),
+  # whereas the type test only enters the reduce when there is actually an array to dedup. This
+  # also satisfies the "never introduces a file_scope: [] field on an entry that never had one"
+  # invariant for free -- a null-valued entry keeps its null and a key-absent entry stays absent,
+  # both failing the type test and falling through to `else . end` -- and an entry whose
   # file_scope already has no duplicates is left byte-identical (the filter is idempotent there).
   _fix_report=$(jq -c '
     [ .active_projects[] | . as $t |
@@ -319,7 +325,7 @@ if [[ "$FIX_MODE" == "true" ]]; then
     _fix_session="${FIX_SESSION_ID:-$(common_session_id)}"
     _fix_state_abs="$_fix_state_dir/$(basename "$STATE_FILE")"
     bash "$FIX_STATE_WRITE" \
-      '.active_projects = [.active_projects[] | if has("file_scope") then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]' \
+      '.active_projects = [.active_projects[] | if (.file_scope|type) == "array" then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]' \
       --state-file "$_fix_state_abs" \
       --session-id "$_fix_session"
     _fix_rc=$?

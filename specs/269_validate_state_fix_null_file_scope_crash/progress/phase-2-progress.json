@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Swap the mutation-filter predicate and rewrite its comment",
+  "started_at": "2026-09-30T00:15:00Z",
+  "last_updated": "2026-09-30T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read validate-state.sh around the DO_FIX block", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Swap has(file_scope) to type-test in mutation filter", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Rewrite comment block above _fix_report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Leave report filter untouched (verified)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Commit filter and comment change together", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
