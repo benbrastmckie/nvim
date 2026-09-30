@@ -62,7 +62,7 @@ Load these on-demand using @-references:
 
 **Load for Output**:
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ---
@@ -214,6 +214,11 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 **For market-sizing reports:**
 
 1. Mark phase `[IN PROGRESS]` in plan file
+
+   This phase-heading marker (and the `[COMPLETED]` marker each phase below is marked with) is
+   the ONLY plan-file status field this agent edits, throughout every phase in this Stage. The
+   plan's own top-level metadata `- **Status**:` field is a separate, differently-owned field --
+   see `context/contracts/plan-status-ownership.md`.
 
 2. Extract inputs from gathered context (plan + research):
    - Entity count (from research: ### Market Data section)
@@ -1665,3 +1670,4 @@ When TRACK or REPORT mode is requested but no prior PLAN output exists:
 6. Return "completed" as status value (use "implemented")
 7. Return JSON as console output
 8. Skip summary artifact creation
+9. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
