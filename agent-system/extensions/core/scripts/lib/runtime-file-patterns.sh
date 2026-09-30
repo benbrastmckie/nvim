@@ -4,7 +4,7 @@
 # untracked, as distinct from the durable-provenance files (.orchestrator-handoff.json, the
 # bare .return-meta.json) that MUST stay tracked and are deliberately NOT part of this class.
 #
-# Exports one canonical record per class member (18 total) consumed by BOTH mechanical
+# Exports one canonical record per class member (19 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
 # two deploy-harness test fixtures that seed a scratch repo's .gitignore
 # (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
@@ -49,6 +49,17 @@
 # would silently swallow a legitimate per-task `tmp/` some consumer repo might create for its
 # own purposes. This repo's own root `.gitignore` already carries the root-relative `/specs/tmp`
 # form as precedent.
+#
+# `orchestration` (19th member, added by the specs/-root relocation task) is a DIRECTORY-class
+# member covering `specs/.orchestration/` — the relocation target for the two repo-level
+# session-scoped singletons (`.orchestrator-multi-state-{session_id}.json`,
+# `.return-meta-multi-{session_id}.json`) that used to sit directly at the `specs/` root. Its
+# `**/.orchestration/` pattern is additive alongside (never a replacement for) the pre-existing
+# `orchestrator-multi-state`/`return-meta-suffixed` file-class patterns above, which already
+# match at any depth via their own `**/` prefix and therefore already cover files inside the new
+# directory without modification. The directory-class pattern exists so `specs/.orchestration/`
+# itself is never reported as an untracked directory in `git status`, mirroring the
+# `.sessions/`/`.dispatch/`/`.deploy-lock/` precedent above.
 
 declare -a RUNTIME_FILE_IDS=(
   "lock"
@@ -69,6 +80,7 @@ declare -a RUNTIME_FILE_IDS=(
   "errors-lock"
   "tmp"
   "deploy-ledger"
+  "orchestration"
 )
 
 # Exact gitignore pattern line for each member, as emitted by runtime_ignore_block().
@@ -91,6 +103,7 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "**/.errors.lock"
   "/specs/tmp/"
   "**/.orchestrator-deploy-ledger.json"
+  "**/.orchestration/"
 )
 
 # Check A representative probe path: a concrete file this pattern must `git check-ignore -q`.
@@ -102,7 +115,7 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/000_probe/.continuation-loop-guard"
   "specs/000_probe/.orchestrator-churn-state.json"
   "specs/000_probe/.postflight-loop-guard"
-  "specs/.orchestrator-multi-state-sess_0000000000_probe.json"
+  "specs/.orchestration/.orchestrator-multi-state-sess_0000000000_probe.json"
   "specs/000_probe/.drift-inspection.json"
   "specs/000_probe/.return-meta-orchestrate.json"
   "specs/.events.lock"
@@ -115,6 +128,7 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/.errors.lock"
   "specs/tmp/claude-tts-notify.log"
   "specs/.orchestrator-deploy-ledger.json"
+  "specs/.orchestration/.orchestrator-multi-state-sess_0000000000_probe.json"
 )
 
 # Check B tracked-file regex: `grep -E` pattern matched against `git ls-files` output. Any hit
@@ -138,22 +152,23 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '\.errors\.lock$'
   '^specs/tmp/'
   '\.orchestrator-deploy-ledger\.json$'
+  '/\.orchestration/'
 )
 
 # Directory-class flag ("1" or "0"): governs which `git rm` remediation form Check B prints for
 # a hit at this index. A "1" member's bare directory basename is given in
 # RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "1" "0"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "1" "0" "1"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "tmp" ""
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "tmp" "" ".orchestration"
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
 
 # runtime_ignore_block
-# Emits the exact fenced gitignore body (comment header + all 17 patterns, in the order above)
+# Emits the exact fenced gitignore body (comment header + all 19 patterns, in the order above)
 # that context/standards/orchestrator-runtime-files.md's "Consumer Repo Setup" block and both
 # deploy-harness test fixtures (test-deploy-orphans.sh, test-deploy-propagation.sh) must carry
 # verbatim. Callers write this to a `.gitignore` file or embed it in a fenced markdown block --
@@ -187,11 +202,12 @@ runtime_ignore_block() {
 **/.errors.lock
 /specs/tmp/
 **/.orchestrator-deploy-ledger.json
+**/.orchestration/
 BLOCK_EOF
 }
 
 # runtime_specs_ignore_block
-# Emits the same 18-member class as runtime_ignore_block() above, but with every pattern
+# Emits the same 19-member class as runtime_ignore_block() above, but with every pattern
 # rewritten relative to `specs/` instead of the repo root, for a `specs/.gitignore` file (whose
 # patterns are matched relative to the directory the .gitignore file lives in, not the repo
 # root). MECHANICALLY DERIVED from RUNTIME_FILE_PATTERNS -- never a second hand-written literal
@@ -246,4 +262,25 @@ runtime_file_dir_basename_for_hit() {
     fi
   done
   return 1
+}
+
+# runtime_mt_state_path <specs_dir> <session_id>
+# Single shared resolver for the session-scoped multi-task batch-orchestration state file's
+# path, so a future rename of its location touches this one site rather than every writer/reader
+# independently re-deriving the same string. `<specs_dir>` is the caller's own resolved `specs/`
+# directory (e.g. `"$(dirname "$STATE_FILE")"` or a literal `specs`); the file lives under
+# `<specs_dir>/.orchestration/`, created on demand by the caller before first write — this
+# function only computes the path, it never creates the directory itself.
+runtime_mt_state_path() {
+  local specs_dir="$1" session_id="$2"
+  echo "${specs_dir}/.orchestration/.orchestrator-multi-state-${session_id}.json"
+}
+
+# runtime_return_meta_multi_path <specs_dir> <session_id>
+# Sibling resolver for the session-scoped multi-task batch return-metadata file's path. Same
+# contract as runtime_mt_state_path() above: caller supplies its own resolved `specs/` directory
+# and ensures `.orchestration/` exists before writing; this function only computes the path.
+runtime_return_meta_multi_path() {
+  local specs_dir="$1" session_id="$2"
+  echo "${specs_dir}/.orchestration/.return-meta-multi-${session_id}.json"
 }

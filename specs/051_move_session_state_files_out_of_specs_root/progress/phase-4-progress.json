@@ -1,0 +1,46 @@
+{
+  "phase": 4,
+  "phase_name": "Relocate the writers into specs/.orchestration/",
+  "started_at": "2026-09-30T00:13:00Z",
+  "last_updated": "2026-09-30T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add shared path resolver functions runtime_mt_state_path/runtime_return_meta_multi_path to runtime-file-patterns.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Update orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, orchestrate-unwind-dispatch.sh to resolve mt_state_file under specs/.orchestration/",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Update skill-orchestrate/SKILL.md Stage MT-1 mt_state_file and return-meta-multi write paths, adding mkdir -p",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    },
+    {
+      "id": 4,
+      "description": "Add orchestration as 19th class member across all four runtime-file-patterns.sh arrays plus dir-flag/basename arrays; repoint orchestrator-multi-state probe",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Update orchestrator-runtime-files.md Consumer Repo Setup block (byte-identical to runtime_ignore_block) and new Class Table row plus path updates on existing rows",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

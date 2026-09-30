@@ -319,35 +319,35 @@ up, untrack each and say so rather than assuming the count.
 
 ---
 
-### Phase 4: Relocate the writers into specs/.orchestration/ [NOT STARTED]
+### Phase 4: Relocate the writers into specs/.orchestration/ [COMPLETED]
 
 **Goal**: every live writer and reader of the two singletons resolves them under
 `specs/.orchestration/`, creating the directory on demand, and the runtime-file class lib plus its
 pinned doc block carry the new directory-class member.
 
 **Tasks**:
-- [ ] Add a single shared path resolver rather than four independent string literals — a small
+- [x] Add a single shared path resolver rather than four independent string literals — a small
       function in `scripts/lib/runtime-file-patterns.sh` (e.g.
       `runtime_mt_state_path <specs_dir> <session_id>` and a `return-meta-multi` sibling) — so a
-      future rename touches one site
-- [ ] Update `scripts/orchestrate-cycle-plan.sh` (~line 495) and its header comment (~lines
+      future rename touches one site *(completed)*
+- [x] Update `scripts/orchestrate-cycle-plan.sh` (~line 495) and its header comment (~lines
       167-168) to resolve `mt_state_file` under `<dirname STATE_FILE>/.orchestration/`, with
-      `mkdir -p` before first write
-- [ ] Update `scripts/orchestrate-cycle-postflight.sh` (~line 317) and its header comment
-      (~line 75) identically
-- [ ] Update `scripts/orchestrate-unwind-dispatch.sh` (~line 300) and its header comment
-      (~line 39) identically (read path — no `mkdir -p` needed)
-- [ ] Update `skills/skill-orchestrate/SKILL.md` Stage MT-1's `mt_state_file=` (~line 92) and the
-      `.return-meta-multi-${session_id}.json` write (~line 269), adding the `mkdir -p` step
-- [ ] Add `orchestration` as the 19th member of `runtime-file-patterns.sh`'s four index-aligned
+      `mkdir -p` before first write *(completed)*
+- [x] Update `scripts/orchestrate-cycle-postflight.sh` (~line 317) and its header comment
+      (~line 75) identically *(completed)*
+- [x] Update `scripts/orchestrate-unwind-dispatch.sh` (~line 300) and its header comment
+      (~line 39) identically (read path — no `mkdir -p` needed) *(completed)*
+- [x] Update `skills/skill-orchestrate/SKILL.md` Stage MT-1's `mt_state_file=` (~line 92) and the
+      `.return-meta-multi-${session_id}.json` write (~line 269), adding the `mkdir -p` step *(completed)*
+- [x] Add `orchestration` as the 19th member of `runtime-file-patterns.sh`'s four index-aligned
       arrays: id `orchestration`, pattern `**/.orchestration/`, probe
       `specs/.orchestration/.orchestrator-multi-state-sess_0000000000_probe.json`, Check B regex
       `/\.orchestration/`; and repoint the existing `orchestrator-multi-state` probe to the new
-      directory
-- [ ] Update `context/standards/orchestrator-runtime-files.md` in the SAME commit as the lib: the
+      directory *(completed)*
+- [x] Update `context/standards/orchestrator-runtime-files.md` in the SAME commit as the lib: the
       "Consumer Repo Setup" fenced pattern block (must stay byte-identical to
       `runtime_ignore_block()`'s output) and a new Class Table row for `specs/.orchestration/`,
-      plus the two existing rows' paths
+      plus the two existing rows' paths *(completed)*
 
 **Timing**: 1.75 hours
 

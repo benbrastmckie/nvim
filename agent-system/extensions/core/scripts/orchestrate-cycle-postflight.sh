@@ -72,8 +72,9 @@
 #
 # Two-engine contract: single-task callers pass --loop-guard-file (the resolved defect/infra
 # store is that file); multi-task callers omit it (the resolved store is the derived multi-state
-# file, `<dirname STATE_FILE>/.orchestrator-multi-state-<session_id>.json`, matching
-# orchestrate-cycle-plan.sh's own derivation exactly). Both stores carry `.detected_defects` with
+# file, `<dirname STATE_FILE>/.orchestration/.orchestrator-multi-state-<session_id>.json` via the
+# shared `runtime_mt_state_path()` resolver, matching orchestrate-cycle-plan.sh's own derivation
+# exactly). Both stores carry `.detected_defects` with
 # the identical entry shape (see skill_orchestrate_append_detected_defect's header in
 # scripts/skill-base.sh), so one recording code path serves both.
 #
@@ -141,6 +142,7 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+source "${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
 
 # ── Structural output-channel discipline (emit direction) ──────────────────────────────────────
 # Same fd-3 discipline as orchestrate-cycle-plan.sh (see that script's own header for the full
@@ -314,7 +316,8 @@ fi
 export task_number cycle_count
 
 # ─── Multi-state path derivation (byte-identical to orchestrate-cycle-plan.sh) ─────────────────
-mt_state_file="$(dirname "$STATE_FILE")/.orchestrator-multi-state-${session_id}.json"
+mt_state_file="$(runtime_mt_state_path "$(dirname "$STATE_FILE")" "$session_id")"
+mkdir -p "$(dirname "$mt_state_file")"
 
 # ─── Resolved defect/infra store: loop guard (single-task) or multi-state file (multi-task) ────
 if [ -n "$loop_guard_file" ]; then

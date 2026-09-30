@@ -36,10 +36,11 @@
 #                 controls whether it is also committed. Never uses destructive git.
 #   --mt-state FILE
 #                 Optional. Names the run's multi-state file explicitly. Default:
-#                 "specs/.orchestrator-multi-state-${SID}.json" (relative to the repo root). If
-#                 the resolved file does not exist, or does not carry this task, this step is a
-#                 logged no-op (best-effort; never fatal -- see Decision 5 of the originating
-#                 plan's "Multi-state file" note).
+#                 "specs/.orchestration/.orchestrator-multi-state-${SID}.json" (relative to the
+#                 repo root, via the shared runtime_mt_state_path() resolver). If the resolved
+#                 file does not exist, or does not carry this task, this step is a logged no-op
+#                 (best-effort; never fatal -- see Decision 5 of the originating plan's
+#                 "Multi-state file" note).
 #
 # Refusal gate (Decision 3): ALL of the following must hold, or the script refuses (exit 2) and
 # touches NOTHING:
@@ -99,6 +100,8 @@ PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 STATE_FILE="$PROJECT_ROOT/specs/state.json"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
 
 usage() {
   cat >&2 <<'EOF'
@@ -297,7 +300,7 @@ if [ -n "$mt_state_override" ]; then
     *) mt_state_file="$PROJECT_ROOT/$mt_state_override" ;;
   esac
 else
-  mt_state_file="$PROJECT_ROOT/specs/.orchestrator-multi-state-${session_id}.json"
+  mt_state_file="$(runtime_mt_state_path "$PROJECT_ROOT/specs" "$session_id")"
 fi
 
 restore_dsc="$prior_dispatch_seq_counter"

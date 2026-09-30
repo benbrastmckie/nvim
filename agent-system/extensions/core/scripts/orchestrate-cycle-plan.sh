@@ -163,9 +163,12 @@
 #
 # `--state-file F` is the CANONICAL specs/state.json (or a fixture copy in tests) — the same
 # STATE_FILE every sibling script (orchestrate-batch-admit.sh, orchestrate-triage-classify.sh)
-# reads. This script separately derives its OWN per-invocation bookkeeping file at the fixed path
-# `<dirname F>/.orchestrator-multi-state-${session_id}.json` (mirroring Stage MT-1's
-# `specs/.orchestrator-multi-state-${session_id}.json` naming exactly when F is specs/state.json).
+# reads. This script separately derives its OWN per-invocation bookkeeping file via the shared
+# `runtime_mt_state_path()` resolver (scripts/lib/runtime-file-patterns.sh), at
+# `<dirname F>/.orchestration/.orchestrator-multi-state-${session_id}.json` (mirroring Stage
+# MT-1's own `specs/.orchestration/.orchestrator-multi-state-${session_id}.json` naming exactly
+# when F is specs/state.json — relocated off the `specs/` root into `specs/.orchestration/`; see
+# context/standards/orchestrator-runtime-files.md's Class Table).
 # `--team`/`--team-size` are REJECTED as unrecognized flags (usage error, exit 2) — team mode is
 # withdrawn; no `team` key is ever emitted on a dispatch row.
 #
@@ -231,6 +234,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+source "${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
 
 # ── Structural output-channel discipline (emit direction) ──────────────────────────────────────
 # fd 3 is THE data channel for the rest of this script's life: it is dup'd from the original
@@ -492,7 +496,8 @@ canonical_force_phases_json=$(jq -n -c --argjson given "$(printf '%s\n' "${force
 ' 2>/dev/null) || canonical_force_phases_json="[]"
 
 # ─── mt_state_file: derived path, in-memory representation, non-destructive defaults ───────────
-mt_state_file="$(dirname "$STATE_FILE")/.orchestrator-multi-state-${session_id}.json"
+mt_state_file="$(runtime_mt_state_path "$(dirname "$STATE_FILE")" "$session_id")"
+mkdir -p "$(dirname "$mt_state_file")"
 
 mt_json="{}"
 if [ "$dry_run" != "true" ] && [ -f "$mt_state_file" ]; then

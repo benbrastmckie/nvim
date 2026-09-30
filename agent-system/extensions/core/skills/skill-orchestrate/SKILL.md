@@ -89,7 +89,8 @@ plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
   "${focus_args[@]+"${focus_args[@]}"}" \
   "${task_numbers[@]}")
 stop_json=$(echo "$plan_json" | jq -c '.stop')
-mt_state_file="specs/.orchestrator-multi-state-${session_id}.json"
+mt_state_file="specs/.orchestration/.orchestrator-multi-state-${session_id}.json"
+mkdir -p "$(dirname "$mt_state_file")"
 ```
 
 If `stop_json` is non-null: log `.reason`/`.message`, skip to Move 4 (`all_terminal` is a success
@@ -266,7 +267,8 @@ Then: emit the consolidated output (read `context/patterns/orchestrate-batch-res
 and render exactly), run the residue check (`git status --porcelain -- specs/` — warn only,
 never commits), release the session registry (`task-lock.sh session-release "$session_id"`),
 remove `.dispatch/` for every task in
-`completed_tasks` only, and write `specs/.return-meta-multi-${session_id}.json` with `status`,
+`completed_tasks` only, and write `specs/.orchestration/.return-meta-multi-${session_id}.json`
+(creating `specs/.orchestration/` first via `mkdir -p` if it does not already exist) with `status`,
 `session_id`, and `metadata` (`tasks_completed`, `tasks_failed`, the two deferred arrays,
 `forward_progress_violated`, `defer_ledger`, `idle_overlap_ledger`, `detected_defects`,
 `verify_deploy_baseline_notices`, `cycles_used`) — `jq -n` shape documented in
