@@ -1,49 +1,17 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 2 tasks for the jq presence-vs-type null-safety defect in validate-state.sh --fix: the targeted fix plus regression test, and a re-runnable audit of comparable mutation sites across core scripts.",
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790788666_f8aaca_269",
+  "dispatch_seq": 4,
+  "findings_count": 6,
   "artifacts": [
     {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/269_validate_state_fix_null_file_scope_crash/",
-      "summary": "Replace has(\"file_scope\") presence test with a type test at validate-state.sh's --fix mutation site; add a null-bearing regression fixture"
-    },
-    {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/270_jq_null_safety_audit_core_mutation_sites/",
-      "summary": "Re-runnable check script for the report-guarded/write-unguarded asymmetry across core scripts; decide whether a shared jq guard def belongs in scripts/lib/"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Tasks 269 and 270 added, with the 270 -> 269 dependency rendered in Task Order"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Two not_started meta entries appended under topic file-scope-lifecycle; next_project_number advanced 269 -> 271"
+      "type": "report",
+      "path": "specs/269_validate_state_fix_null_file_scope_crash/reports/01_null-file-scope-fix-crash.md",
+      "summary": "Confirms the has(\"file_scope\") vs type-test asymmetry as the crash's root cause, verifies a one-line (.file_scope|type)==\"array\" predicate swap fixes it while preserving D3 order-preserving dedup / no-manufacture / idempotence, and recommends extending an existing --fix regression fixture in test-validate-state.sh (two concrete placement options) rather than adding a new test file."
     }
   ],
-  "next_steps": "Run /orchestrate 269 to fix the crash and land the regression fixture, then /orchestrate 270 for the audit (270 depends on 269).",
-  "metadata": {
-    "session_id": "sess_1790660736_6ad23f",
-    "agent_type": "meta-builder-agent",
-    "duration_seconds": 420,
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 2,
-    "confirmation_gate": "not_available_in_subagent_context"
-  },
-  "modified_files": [
-    "specs/TODO.md",
-    "specs/state.json",
-    "specs/269_validate_state_fix_null_file_scope_crash/.return-meta.json"
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/validate-state.sh",
-    "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
-  ],
-  "errors": []
+  "memory_candidates": [],
+  "next_steps": "Run /plan 269 to create implementation plan"
 }
