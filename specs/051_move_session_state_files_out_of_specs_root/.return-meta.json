@@ -1,10 +1,68 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/051_move_session_state_files_out_of_specs_root/summaries/01_relocate-widen-reap-wire-todo-summary.md",
+      "summary": "All 7 phases complete: wired the reap pair into /todo, widened the reaper's globs to all four naming generations, untracked a retired-convention git orphan, relocated both session-scoped singletons into specs/.orchestration/ with permanent legacy-root reap coverage, repointed every writer/reader/test fixture/doc reference, and redeployed + swept this repo's live litter from 72 stranded files down to 0. Phase 7 closed COMPLETED WITH EXCLUSIONS: three verify-deploy.sh gates and several run-all.sh residual failures were traced with concrete evidence to defects predating this task and outside its file_scope."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wired reap-session-runtime-files.sh and task-lock.sh session-reap into /todo (the acceptance-critical fix), widened the reaper's glob coverage to all four naming generations, and relocated the two session-scoped singletons off the specs/ root into specs/.orchestration/ with permanent legacy coverage retained. Redeployed and swept this repo's litter from 72 stranded files to 0."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/commands/refresh.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/reap-session-runtime-files.sh",
+    "agent-system/extensions/core/scripts/test-session-runtime-files.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "specs/.gitignore",
+    "specs/.meta-return-sess_1790273700_meta01.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When relocating a runtime-file path that multiple scripts derive by string concatenation and a shared class-tracking lib enumerates by index-aligned parallel arrays (e.g. runtime-file-patterns.sh's RUNTIME_FILE_IDS/PATTERNS/PROBES/B_REGEX/IS_DIR/DIR_BASENAME), add a single shared path-resolver function to the lib (e.g. runtime_mt_state_path(specs_dir, session_id)) rather than updating N independent string-literal derivations across N writer/reader scripts. This reduces future rename cost to one call site and makes drift between writers structurally impossible. Also: adding a new lib source line to a widely-tested script (orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, orchestrate-unwind-dispatch.sh) breaks every hand-maintained test-fixture sandbox that copies that script's dependencies by an explicit list/array rather than a wildcard -- grep the whole scripts/tests/ tree for sandboxes building the SAME script before considering the source-line addition complete, since a full run-all.sh pass is the only reliable way to surface all of them (some sandboxes carry zero literal references to the relocated path, so a ref-count grep alone misses them).",
+      "category": "PATTERN",
+      "source_artifact": "specs/051_move_session_state_files_out_of_specs_root/summaries/01_relocate-widen-reap-wire-todo-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["path-relocation", "shared-resolver", "test-fixture-drift", "runtime-file-patterns", "lib-copy-list"]
+    },
+    {
+      "content": "When a full run-all.sh pass surfaces test failures unrelated to the current task's edits, use `git merge-base --is-ancestor <file's-last-touch-commit> <commit-that-introduced-the-now-unmet-dependency>` to prove a failure predates the current task, rather than assuming or hand-waving 'probably pre-existing'. Pair with `git stash` + re-run for failures with no clear introducing commit (confirms the failure reproduces identically with zero current-task changes present). This produces citable evidence for a plan's #### Reasoned Exclusions table (the [COMPLETED WITH EXCLUSIONS] phase-heading marker's required record) instead of an unsubstantiated claim.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/051_move_session_state_files_out_of_specs_root/summaries/01_relocate-widen-reap-wire-todo-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["pre-existing-defect", "git-merge-base", "reasoned-exclusions", "test-triage", "git-stash-verification"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790721762_ff3d8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 17
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

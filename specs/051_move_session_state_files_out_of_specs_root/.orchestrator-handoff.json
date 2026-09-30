@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "summary": "Authored a 7-phase, 8-hour implementation plan covering all three parts of the task. Phase 1 (wire reap-session-runtime-files.sh and task-lock.sh session-reap into a new skill-todo stage 14.5) is the acceptance-critical deliverable and depends on nothing. Phase 2 widens the reaper's literal candidate globs to all four naming generations. Phase 3 untracks the newly-found tracked orphan specs/.meta-return-sess_1790273700_meta01.json and documents Check B's coverage limit. Phases 4-6 relocate both singletons into specs/.orchestration/, adding a 19th runtime-file class member and repointing ~121 literal test-fixture references across 7 suites. Phase 7 redeploys, runs the full gate set, and sweeps the ~72 live stranded files. Planning measured a blast radius for Part 1 roughly 100x larger than the research report's single-test-fixture estimate; that divergence is documented in the plan.",
-  "phase": "plan",
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "All 7 phases complete. Phase 1 (acceptance-critical): wired reap-session-runtime-files.sh and task-lock.sh session-reap into a new skill-todo Stage 14.5, plus commands/todo.md §5.8. Phase 2 widened the reaper's candidate globs to all four naming generations (un-suffixed, hyphen-suffixed, dot-separator, .prev-). Phase 3 untracked the retired-convention git orphan specs/.meta-return-sess_1790273700_meta01.json and documented Check B's coverage limit. Phases 4-6 relocated both session-scoped singletons (.orchestrator-multi-state-{sid}.json, .return-meta-multi-{sid}.json) into specs/.orchestration/, added a shared path resolver, added orchestration as the 19th runtime-file class member, repointed every writer/reader plus ~121 literal test-fixture references across 9 test suites (2 more than the plan's original 7-file estimate, discovered only by a full run-all.sh pass), and swept 9 prose-only doc files -- while permanently retaining legacy specs/-root reap coverage so no consumer repo's already-stranded litter becomes newly unreapable. Phase 7 redeployed, ran the full verification gate set, and swept this repo's live litter from 72 stranded files down to 0; confirmed via git merge-base --is-ancestor and git stash re-runs that residual verify-deploy.sh/run-all.sh failures (a lean-extension/core context/contracts filename collision, a lean skill's missing postflight-boundary section, and accumulated eager-context-budget drift from ten unrelated prior tasks) all predate this task and lie outside its file_scope -- closed COMPLETED WITH EXCLUSIONS with a full evidence table in the plan.",
+  "phase": "implement",
+  "phases_completed": 7,
   "phases_total": 7,
   "blockers": [],
-  "dispatch_seq": 13,
+  "dispatch_seq": 17,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/051_move_session_state_files_out_of_specs_root/summaries/01_relocate-widen-reap-wire-todo-summary.md",
+      "summary": "Full 7-phase implementation summary: /todo reap wiring, reaper glob widening, retired-orphan untrack, specs/.orchestration/ relocation, redeploy, and live litter sweep (72 -> 0)."
+    },
     {
       "type": "plan",
       "path": "specs/051_move_session_state_files_out_of_specs_root/plans/01_relocate-widen-reap-wire-todo.md",
-      "summary": "7-phase implementation plan for wiring the runtime-file reap into /todo, widening the reaper's globs, untracking a retired-convention orphan, and relocating both session-scoped singletons into specs/.orchestration/."
+      "summary": "7-phase implementation plan, all phases now COMPLETED (Phase 7: COMPLETED WITH EXCLUSIONS with a Reasoned Exclusions evidence table for 3 pre-existing verify-deploy.sh gates and 2 pre-existing run-all.sh defect classes)."
     }
   ],
-  "next_action_hint": "Run /implement 51. Phase 1 is acceptance-critical and dependency-free. Phases 4-6 overlap sibling tasks 263 and 265 on five files (orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, skill-orchestrate/SKILL.md, test-orchestrate-cycle-plan.sh, test-orchestrate-cycle-postflight.sh) and require a re-read immediately before each edit per the territory contract."
+  "next_action_hint": "Task complete. Follow-ups recorded in the summary's Follow-ups section and the plan's Phase 7 Reasoned Exclusions table are out-of-scope defects (lean/core context/contracts collision, skill-lean-research postflight-boundary gap, eager-context-budget drift, return-meta-status-vocabulary.sh missing from three test fixtures since task 257) worth a future dedicated task."
 }
