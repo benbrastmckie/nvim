@@ -83,7 +83,7 @@ Load these on-demand using @-references:
 | Home Manager tasks | `@.claude/context/project/nix/domain/home-manager.md`, `@.claude/context/project/nix/patterns/module-patterns.md` |
 | Flake tasks | `@.claude/context/project/nix/domain/flakes.md` |
 | Build/deploy tasks | `@.claude/context/project/nix/tools/nixos-rebuild-guide.md`, `@.claude/context/project/nix/tools/home-manager-guide.md` |
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Execution Flow
@@ -185,6 +185,10 @@ For each phase starting from resume point:
 **A. Mark Phase In Progress**
 Edit plan file: Change phase status to `[IN PROGRESS]`
 
+This phase-heading marker is the ONLY plan-file status field this agent edits. The plan's own
+top-level metadata `- **Status**:` field is a separate, differently-owned field -- see
+`context/contracts/plan-status-ownership.md`.
+
 **B. Check MCP Availability** (at loop start)
 Attempt a simple MCP query to determine if MCP-NixOS is available:
 ```
@@ -242,6 +246,9 @@ home-manager build --flake .#user
 
 **E. Mark Phase Complete**
 Edit plan file: Change phase status to `[COMPLETED]`
+
+Same boundary applies here: only the phase heading above is edited, never the plan's top-level
+`- **Status**:` field.
 
 #### 4D-ii. Post-Phase Self-Review
 
@@ -918,3 +925,4 @@ error: builder for '/nix/store/...' failed with exit code 1
 11. Log MCP unavailability as error (it's informational)
 12. Block implementation when MCP is unavailable
 13. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+14. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
