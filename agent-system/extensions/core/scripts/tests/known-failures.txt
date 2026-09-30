@@ -1,0 +1,35 @@
+# known-failures.txt - Advisory, OPTIONAL known-failing baseline manifest for run-all.sh.
+# Format: one row per suite, "basename|category|reason|owner" (basename, not a full path, since
+# discovery paths differ between source-store and deployed mode -- see run-all.sh's own header).
+# Lines starting with # are comments and blank lines are ignored.
+#
+# ADVISORY ONLY: a missing, stale, or partial manifest file must never change which suites run,
+# only whether a failure is annotated EXPECTED vs. NEW in run-all.sh's roster and tally line (see
+# that script's own header for the --fail-on-new contract). Deleting or truncating this file
+# restores today's pre-manifest reporting exactly.
+#
+# category is one of: real-defect / intermittent / load-sensitive / wip-transient.
+# owner is a durable anchor (never a bare task number -- this file lives under
+# agent-system/extensions/**, not specs/**, so task-number references are prohibited here; see
+# no-task-references-in-deliverables.md) or the literal `needs-owner` when no follow-up owner has
+# been assigned yet. A `needs-owner` row is a known gap, not an accepted steady state -- a
+# follow-up task should be spawned to either fix or formally accept each one.
+#
+# This is the single source of truth for which suites are known-failing; do not duplicate this
+# list in prose elsewhere (context/standards/shell-script-testing.md points here instead of
+# maintaining its own copy, which is exactly the drift mechanism that produced a stale prose list
+# once already).
+#
+# Seeded from a fresh `run-all.sh --jobs auto` run taken after the Phase 1 stale-fixture fix
+# landed (which cleared 3 of the original 8 named failures: test-handoff-dispatch-identity.sh,
+# test-orchestrate-context-growth.sh, test-orchestrate-recover-message-findings.sh -- all three
+# were missing lib/return-meta-status-vocabulary.sh from a hardcoded sandbox copy-list, not a real
+# defect). The remaining 5 failures were triaged individually; 4 are recorded below and 1
+# (test-typst-element-lint.sh) is deliberately excluded because its redness traced to an
+# uncommitted, concurrently in-flight working-tree change to
+# agent-system/extensions/typst/scripts/typst-element-lint.sh at seed time, not a committed
+# defect -- re-add it here if it is still red against a clean, fully-committed tree.
+test-gate-out-repair-reporting.sh|real-defect|SKILL_VALIDATE_FIXES and SKILL_VALIDATE_FIXED_FILES do not accumulate across multi-file aggregation and are not reset between calls in validate-artifact.sh (cases 4 and 6 fail: fixes=0 errors=1, and stale globals detected across calls)|needs-owner
+test-lint-json-channel-discipline.sh|real-defect|typst/scripts/chapter-quality-check.sh captures a collaborator's output with 2>&1 then consumes it as JSON/NDJSON, so the collaborator's stderr can corrupt the payload (1 live VIOLATION against the real corpus)|needs-owner
+test-verify-deploy-context-budget.sh|real-defect|live Gate 20 findings against the real tree: skills/skill-orchestrate/SKILL.md is over its context-budget ceiling and the eager-load total is over its recorded baseline, so the suite's own baseline-must-be-clean precondition fails|needs-owner
+test-run-all-parallel.sh|intermittent|case3/case4's relative-timing assertion (parallel vs. forced-sequential) flakes under heavy ambient host load on a shared dev machine; documented and deliberately accepted in this suite's own case3/4 comment rather than fixed, since an absolute threshold was already tried and rejected there|accepted (see this suite's own case3/4 comment for the rejected-alternatives account)

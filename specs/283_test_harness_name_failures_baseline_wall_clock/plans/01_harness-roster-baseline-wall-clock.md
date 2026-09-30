@@ -284,26 +284,26 @@ unhinted.
 
 ---
 
-### Phase 4: Committed known-failing baseline manifest [NOT STARTED]
+### Phase 4: Committed known-failing baseline manifest [IN PROGRESS]
 
 **Goal**: Introduce a checked-in, machine-readable quarantine manifest and have `run-all.sh`
 classify each failure as EXPECTED or NEW, so a run can report `8 failed, 8 expected, 0 NEW` and a
 caller can gate on NEW only.
 
 **Tasks**:
-- [ ] Take a fresh full run (`bash run-all.sh --jobs auto`) **after** Phase 1 has landed, and
+- [x] Take a fresh full run (`bash run-all.sh --jobs auto`) **after** Phase 1 has landed, and
       derive the current failing set from the new roster block. Do not transcribe the research
       report's list or `shell-script-testing.md`'s prose list — research established both are
-      stale relative to a live run.
-- [ ] Create `tests/known-failures.txt`, mirroring `suite-cost-hints.txt`'s conventions exactly:
+      stale relative to a live run. *(completed: fresh run showed exactly 5 failures, matching the 8-minus-3-from-Phase-1 prediction)*
+- [x] Create `tests/known-failures.txt`, mirroring `suite-cost-hints.txt`'s conventions exactly:
       basename-keyed (not full path, since discovery paths differ between source-store and
       deployed mode), `#` comments, blank lines ignored, and a header stating that the file is
       advisory, human-reviewed, optional, and that a missing or truncated file must never change
-      which suites run.
-- [ ] Row format: `basename|category|reason|owner`, where `category` is one of
+      which suites run. *(completed)*
+- [x] Row format: `basename|category|reason|owner`, where `category` is one of
       `real-defect` / `intermittent` / `load-sensitive` / `wip-transient`, and `owner` is a task
-      reference or the literal `needs-owner`.
-- [ ] Seed rows (subject to the fresh-run re-derivation above):
+      reference or the literal `needs-owner`. *(completed with a deviation: owner uses a durable anchor or `needs-owner`, never a bare task number, per the no-task-references-in-deliverables rule this file's own header now documents — see Phase 6's task list)*
+- [x] Seed rows (subject to the fresh-run re-derivation above):
       `test-gate-out-repair-reporting.sh` (real-defect — `SKILL_VALIDATE_FIXES` /
       `SKILL_VALIDATE_FIXED_FILES` do not accumulate across multi-file aggregation and are not
       reset between calls in `validate-artifact.sh`);
@@ -316,29 +316,29 @@ caller can gate on NEW only.
       ambient host load; documented and accepted by task 261).
       Exclude `typst/scripts/tests/test-typst-element-lint.sh` if its redness still traces to
       uncommitted working-tree state; if it is committed-red by implementation time, add it as
-      `real-defect`.
-- [ ] Every row must carry an owner or the explicit `needs-owner` marker. For each `needs-owner`
+      `real-defect`. *(completed: seeded exactly 4 rows from the fresh live run; test-typst-element-lint.sh excluded per the note below since its redness traced to uncommitted concurrent WIP on typst-element-lint.sh at seed time)*
+- [x] Every row must carry an owner or the explicit `needs-owner` marker. For each `needs-owner`
       row, record in the plan's summary that a follow-up task should be spawned; do not silently
-      leave a real defect unowned.
-- [ ] Teach `run-all.sh` to read `$SCRIPT_DIR/known-failures.txt` optionally, following
+      leave a real defect unowned. *(completed: all 3 real-defect rows use needs-owner; noted below for follow-up task spawning)*
+- [x] Teach `run-all.sh` to read `$SCRIPT_DIR/known-failures.txt` optionally, following
       `COST_HINTS_FILE`'s existing shape (lines ~341-348): `[ -f "$FILE" ]` guard, read loop,
-      skip comments and blanks. A missing file must degrade to today's behavior exactly.
-- [ ] Classify each entry in `FAILED_SUITE_NAMES` (Phase 2's array) by basename against the
+      skip comments and blanks. A missing file must degrade to today's behavior exactly. *(completed)*
+- [x] Classify each entry in `FAILED_SUITE_NAMES` (Phase 2's array) by basename against the
       manifest, and extend the final tally line to
       `[run-all] N passed, M failed (E expected, X NEW), S skipped, T total`. Keep the leading
       `N passed, M failed` prefix byte-identical so any existing consumer parsing the head of
-      that line is unaffected.
-- [ ] Annotate the roster block: mark each roster entry EXPECTED or NEW.
-- [ ] Add an opt-in `--fail-on-new` flag (or equivalent) that exits non-zero only when `X > 0`.
+      that line is unaffected. *(completed)*
+- [x] Annotate the roster block: mark each roster entry EXPECTED or NEW. *(completed)*
+- [x] Add an opt-in `--fail-on-new` flag (or equivalent) that exits non-zero only when `X > 0`.
       **Do not change the default exit-code semantics** — default stays "exit 1 if
-      `FAIL_COUNT > 0`", so no existing caller's behavior shifts.
-- [ ] Add `tests/known-failures.txt` to `manifest.json`'s `provides` array (next to
-      `tests/suite-cost-hints.txt` at line ~254).
-- [ ] Extend `tests/test-run-all-failure-reporting.sh` with manifest cases: a fixture-local
+      `FAIL_COUNT > 0`", so no existing caller's behavior shifts. *(completed)*
+- [x] Add `tests/known-failures.txt` to `manifest.json`'s `provides` array (next to
+      `tests/suite-cost-hints.txt` at line ~254). *(completed)*
+- [x] Extend `tests/test-run-all-failure-reporting.sh` with manifest cases: a fixture-local
       manifest classifying one failing fixture as expected yields `(1 expected, 0 NEW)`; an
       unlisted failing fixture yields NEW; a missing manifest file leaves the tally and exit code
       exactly as before; `--fail-on-new` exits 0 when all failures are expected and non-zero when
-      any is NEW.
+      any is NEW. *(completed: 10 new cases added, 32 total passing)*
 
 **Timing**: 2 hours
 
@@ -371,32 +371,32 @@ and the run's roster block is the authority.
 
 ---
 
-### Phase 5: Stop redeploy-checkpoint Gate 8 amplification [NOT STARTED]
+### Phase 5: Stop redeploy-checkpoint Gate 8 amplification [COMPLETED]
 
 **Goal**: Remove the redundant full-105-suite runs the orchestrator's own checkpoints trigger
 2-3 times per cycle, by passing `--skip-slow` to the `deploy_findings_snapshot()` call sites —
 the single highest-leverage wall-clock fix, requiring no change to `run-all.sh` itself.
 
 **Tasks**:
-- [ ] Confirm `verify-deploy.sh --skip-slow` defers exactly Gate 8 and no other gate (lines
-      ~551-552 and the header note at ~789-790 state gate 8 only).
-- [ ] Add `--skip-slow` to the three `deploy_findings_snapshot` calls in
+- [x] Confirm `verify-deploy.sh --skip-slow` defers exactly Gate 8 and no other gate (lines
+      ~551-552 and the header note at ~789-790 state gate 8 only). *(completed)*
+- [x] Add `--skip-slow` to the three `deploy_findings_snapshot` calls in
       `orchestrate-cycle-plan.sh` (lines ~904 pre-redeploy, ~944 post-redeploy, ~985 confirm).
-      `deploy_findings_snapshot` already forwards `[extra args...]` — no library change needed.
-- [ ] Add `--skip-slow` to the two calls in `command-gate-out.sh` (lines ~189 pre, ~202 post).
-- [ ] **Symmetry requirement**: within each file, the pre- and post-snapshot calls must carry
+      `deploy_findings_snapshot` already forwards `[extra args...]` — no library change needed. *(completed)*
+- [x] Add `--skip-slow` to the two calls in `command-gate-out.sh` (lines ~189 pre, ~202 post). *(completed)*
+- [x] **Symmetry requirement**: within each file, the pre- and post-snapshot calls must carry
       identical flags, or the `deploy_baseline_new_findings` `comm -13` diff will report every
-      gate-8 finding as spuriously new or spuriously resolved. Verify pairwise at each site.
-- [ ] Record the trade-off in a comment at each call site: the checkpoint's job is NEW-finding
+      gate-8 finding as spuriously new or spuriously resolved. Verify pairwise at each site. *(completed: verified via grep -- all 3 orchestrate-cycle-plan.sh calls and both command-gate-out.sh calls carry --skip-slow identically)*
+- [x] Record the trade-off in a comment at each call site: the checkpoint's job is NEW-finding
       detection relative to its own pre-redeploy baseline, and the dispatched agent's own phase
       gate already ran the full suite immediately prior; a redeploy cannot introduce a shell-test
-      regression that the agent-side gate would not already have caught.
-- [ ] Check `tests/test-orchestrate-cycle-plan.sh` (around line ~1131, which references the
+      regression that the agent-side gate would not already have caught. *(completed, including updating the pre-existing "DEFECT A" full-depth comment and its depth-disagreement report, which documented the OPPOSITE choice and would otherwise contradict this change)*
+- [x] Check `tests/test-orchestrate-cycle-plan.sh` (around line ~1131, which references the
       `deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh"` call shape) and any lint asserting
-      that shape; update the expectation to the new flagged form if it pins the exact string.
-- [ ] Measure: time one `deploy_findings_snapshot` invocation before and after, and record both
+      that shape; update the expectation to the new flagged form if it pins the exact string. *(completed: the stubbed verify-deploy.sh ignores all arguments -- call-counting only -- so no update was needed; confirmed by running the full suite: 331 passed, 0 failed)*
+- [x] Measure: time one `deploy_findings_snapshot` invocation before and after, and record both
       numbers in the implementation summary so the wall-clock claim is evidenced rather than
-      asserted.
+      asserted. *(completed: see implementation summary for the recorded before/after timings)*
 
 **Timing**: 1 hour
 
@@ -430,7 +430,7 @@ hit as call site / definition / comment / test before editing.
 
 ---
 
-### Phase 6: Documentation reconciliation [NOT STARTED]
+### Phase 6: Documentation reconciliation [IN PROGRESS]
 
 **Goal**: Make the new manifest the single source of truth for known-failing suites, retire the
 duplicated prose list that research found stale, and document the roster contract and the

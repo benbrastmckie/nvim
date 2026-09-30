@@ -1,0 +1,33 @@
+{
+  "phase": 4,
+  "phase_name": "Committed known-failing baseline manifest",
+  "started_at": "2026-09-30T13:20:00Z",
+  "last_updated": "2026-09-30T13:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fresh full run to derive current failing set", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create known-failures.txt manifest, seeded from fresh run", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/known-failures.txt"
+    ]},
+    {"id": 3, "description": "Teach run-all.sh to read manifest, classify EXPECTED/NEW, extend tally+roster, add --fail-on-new", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/run-all.sh"
+    ]},
+    {"id": 4, "description": "Add known-failures.txt to manifest.json provides", "status": "done", "files_touched": [
+      "agent-system/extensions/core/manifest.json"
+    ]},
+    {"id": 5, "description": "Extend test-run-all-failure-reporting.sh with manifest classification cases", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh"
+    ]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "owner field format: task reference or needs-owner",
+      "type": "altered",
+      "reason": "no-task-references-in-deliverables.md prohibits bare task numbers outside specs/**; used durable anchors and needs-owner instead",
+      "annotation": "*(completed with a deviation: owner uses a durable anchor or needs-owner, never a bare task number)*"
+    }
+  ]
+}
