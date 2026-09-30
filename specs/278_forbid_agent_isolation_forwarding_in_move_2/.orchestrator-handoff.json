@@ -1,20 +1,19 @@
 {
-  "status": "planned",
-  "task_number": 278,
-  "session_id": "sess_1790788666_f8aaca_278",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Authored a 4-phase implementation plan for the isolation-forwarding prohibition. Phase 1 inserts a categorical MUST NOT in skill-orchestrate/SKILL.md Move 2 (no dispatch-row field is an Agent-tool argument unless Move 2 names it; isolation/worktree_path named as the motivating example, with the stacked-checkout/uncommittable-work consequence stated in one clause). Phase 2 strengthens orchestrate-cycle-plan.sh's output-schema header from 'dispatch-site wiring' to an explicit never-an-Agent-tool-argument statement, located by content anchor rather than line number so the co-owning decomposition task cannot invalidate it. Phase 3 adds the two-way cross-link in batch-orchestration-guardrails.md's Deliberate Divergences. Phase 4 runs the final gate set (check-task-references.sh, bash -n, deploy-boundary confirmation). Waves: [1], [2,3], [4]. Documentation-and-comment-only; no executable logic changes; all edits in the source store under agent-system/extensions/core, none under .claude/**.",
-  "blockers": [],
-  "sorry_inventory": [],
-  "continuation_path": null,
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "phase": "implement",
+  "summary": "Landed a categorical point-of-use MUST NOT in skill-orchestrate/SKILL.md's Move 2 forbidding dispatch-row isolation/worktree_path forwarding to the Agent tool, strengthened orchestrate-cycle-plan.sh's header, and cross-linked batch-orchestration-guardrails.md. All 4 plan phases completed; all three edits are documentation/comment-only and verified green.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/278_forbid_agent_isolation_forwarding_in_move_2/plans/01_forbid-isolation-forwarding.md",
-      "summary": "4-phase documentation-and-contract plan: Move 2 categorical MUST NOT, orchestrate-cycle-plan.sh header strengthening, guardrails cross-link, final gate verification."
+      "type": "summary",
+      "path": "specs/278_forbid_agent_isolation_forwarding_in_move_2/summaries/01_forbid-isolation-forwarding-summary.md",
+      "summary": "Implementation summary covering all 4 completed phases."
     }
   ],
-  "next_steps": "Run /implement 278 to execute the plan"
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete. Deploy tree (.claude/**) is expectedly stale for the three edited source-store files; regenerate only if the user requests it."
 }

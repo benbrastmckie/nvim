@@ -1,12 +1,28 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/278_forbid_agent_isolation_forwarding_in_move_2/summaries/01_forbid-isolation-forwarding-summary.md",
+      "summary": "All 4 plan phases completed: categorical MUST NOT added to Move 2, script header strengthened with never-forward statement, design record cross-linked, and final gate verification passed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a categorical point-of-use MUST NOT to skill-orchestrate/SKILL.md's Move 2 forbidding forwarding of dispatch-row isolation/worktree_path fields to the Agent tool's own isolation parameter, strengthened orchestrate-cycle-plan.sh's header with an explicit never-forward statement, and cross-linked the existing rationale in batch-orchestration-guardrails.md. All three edits are documentation/comment-only, additive, and verified via check-task-references.sh and bash -n."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1790788666_f8aaca",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 4,
     "phases_total": 4
   }
 }

@@ -256,25 +256,29 @@ file: expect additions only and zero deletions within the "Script-provisioned wo
 
 ---
 
-### Phase 4: Final gate verification [NOT STARTED]
+### Phase 4: Final gate verification [COMPLETED]
 
 **Goal**: The full gate set is green across all three edits, with the task-reference lint and the
 deploy-boundary rule both confirmed satisfied before the task closes.
 
 **Tasks**:
-- [ ] `bash .claude/scripts/check-task-references.sh` — confirm no task-number reference was
+- [x] `bash .claude/scripts/check-task-references.sh` — confirm no task-number reference was
       introduced into any of the three edited files (all three live outside `specs/**`, so the
-      prohibition applies to all of them).
-- [ ] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` — re-confirm after
-      all phases have landed.
-- [ ] Confirm no file under `.claude/**` was written by any phase (`git status --short` plus a
-      direct check), satisfying the source-store/deploy boundary.
-- [ ] Re-read each of the three edited regions end to end and confirm the two-way pointers
+      prohibition applies to all of them). *(completed: PASS, 0 unexempted occurrences)*
+- [x] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` — re-confirm after
+      all phases have landed. *(completed: exits 0)*
+- [x] Confirm no file under `.claude/**` was written by any phase (`git status --short` plus a
+      direct check), satisfying the source-store/deploy boundary. *(completed: zero `.claude/**`
+      writes across all three commits)*
+- [x] Re-read each of the three edited regions end to end and confirm the two-way pointers
       resolve: Move 2 -> "Deliberate Divergences", script header -> Move 2, "Deliberate
-      Divergences" -> Move 2.
-- [ ] Confirm `git log` shows this task's commits only in `agent-system/**`, with no foreign hunk
-      swept in by an over-broad pathspec.
-- [ ] Report the deploy tree as expectedly stale for these three files; do NOT regenerate it.
+      Divergences" -> Move 2. *(completed: all three pointer pairs resolve to real,
+      correctly-named sections)*
+- [x] Confirm `git log` shows this task's commits only in `agent-system/**`, with no foreign hunk
+      swept in by an over-broad pathspec. *(completed: each of the three commits touches exactly
+      one intended file, per `git show --name-only`)*
+- [x] Report the deploy tree as expectedly stale for these three files; do NOT regenerate it.
+      *(completed: reported below; deploy tree left untouched)*
 
 **Timing**: 20 minutes
 
@@ -302,18 +306,18 @@ the broader script-test suite only if that set turns out larger than three.
 
 ## Testing & Validation
 
-- [ ] `grep -n -i "isolation" agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
+- [x] `grep -n -i "isolation" agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
       returns matches confined to the Move 2 section (was 0 matches before this task).
-- [ ] The new Move 2 paragraph contains all five required content elements: categorical rule,
+- [x] The new Move 2 paragraph contains all five required content elements: categorical rule,
       Context-is-prompt-text note, `isolation`/`worktree_path` named example, one-clause
       consequence, forward pointer.
-- [ ] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` exits 0.
-- [ ] `orchestrate-cycle-plan.sh`'s executable body is unchanged (diff confined to `#` lines).
-- [ ] `bash .claude/scripts/check-task-references.sh` reports no new violation across the three
+- [x] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` exits 0.
+- [x] `orchestrate-cycle-plan.sh`'s executable body is unchanged (diff confined to `#` lines).
+- [x] `bash .claude/scripts/check-task-references.sh` reports no new violation across the three
       edited files.
-- [ ] No file under `.claude/**` was created or modified.
-- [ ] All three cross-pointers resolve to real, correctly-named sections in both directions.
-- [ ] Each phase's commit stages only that phase's own file, by explicit pathspec.
+- [x] No file under `.claude/**` was created or modified.
+- [x] All three cross-pointers resolve to real, correctly-named sections in both directions.
+- [x] Each phase's commit stages only that phase's own file, by explicit pathspec.
 
 ## Artifacts & Outputs
 
