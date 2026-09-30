@@ -11,7 +11,7 @@ next_project_number: 286
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,283,284,285 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,276,281 | 22,44,127,184,241,265,272,277,279,280 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -37,7 +37,6 @@ next_project_number: 286
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-283 [IMPLEMENTING] — Fix the agent-system test harness...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 
@@ -239,7 +238,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 283. Test harness name failures baseline wall clock
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

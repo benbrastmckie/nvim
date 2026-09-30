@@ -2,7 +2,7 @@
 
 - **Task**: 283 - Fix the agent-system test harness (run-all.sh): name failing suites, add a
   known-failing baseline, and reduce wall clock
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/283_test_harness_name_failures_baseline_wall_clock/reports/01_test-harness-defects-research.md
