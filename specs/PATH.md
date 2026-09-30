@@ -22,8 +22,8 @@ drifted badly STALE behind this pass's source-store changes.
 
 | Measure | Value | Bearing |
 |---|---|---|
-| Open tasks | **24** | Plus 4 `completed` awaiting `/todo` archive. `specs/archive/` holds 211 task directories |
-| `validate-state.sh --deep` | 0 failures, **3 warnings** | Unchanged in shape: 268 has no `file_scope`; 270's is coarse enough to overlap 15 non-terminal tasks. Fix both at creation, not later |
+| Open tasks | **28** | Four verified-defect tasks were filed on 2026-09-30 after this pass's batch (see call 0). Plus 4 `completed` awaiting `/todo` archive; `specs/archive/` holds 211 task directories |
+| `validate-state.sh --deep` | 0 failures, **1 warning** | 268 now declares a `file_scope`. The remaining warning is 270's, coarse enough to overlap 20 non-terminal tasks. A TODO.md desync appeared and was cleared by `generate-todo.sh` — regenerate after any direct `state.json` write |
 | `verify-deploy.sh` | **FAIL — 3 of 33** | **Regression from 33 of 33.** Blocks the Inter-Cycle Redeploy Checkpoint, so it blocks every multi-cycle batch. See Next |
 | Eager context load | 67,980 B / baseline 65,950 | **2,030 B OVER** — was 1 B of headroom. Gate 20 now fails outright; 89 and 251 are the tasks that create room |
 | `skills/skill-orchestrate/SKILL.md` | 20,137 B / ceiling 20,000 | **137 B OVER** (gate is `warn` mode, so it reports rather than fails) |
@@ -36,7 +36,7 @@ drifted badly STALE behind this pass's source-store changes.
 with a warning); `orchestrate-cycle-plan.sh` itself accepts any count, so a dry-run over more than
 8 is not evidence a call will run them.
 
-**Every open task is accounted for below**: A 4 + B 8 + C 4 + D 8 = 24. If that sum stops
+**Every open task is accounted for below**: 0 4 + A 4 + B 8 + C 4 + D 8 = 28. If that sum stops
 matching `state.json`, this file has drifted.
 
 ---
@@ -61,8 +61,33 @@ None of the three is caused by, or fixable within, the scope of any task listed 
 as one task (they share a single acceptance check: `verify-deploy.sh` returns 33 of 33) and run it
 before call A's remainder.
 
+**Call 0 outranks even that.** 276 is verified silent data loss in the worktree dispatch path —
+a dispatch that authored correct work can have it destroyed with no error raised. Read call 0
+before scheduling anything else; 278 in particular is a contract fix that prevents the loss from
+being *triggered* and is cheap.
+
 Then: **the consumer repos are STALE across the board.** If the next work touches a consumer, run
 `deploy-headless.sh` there before dispatching into it.
+
+---
+
+## Call 0 — worktree dispatch integrity and state schema (4)
+
+```
+/orchestrate 278, 277, 276, 279
+```
+
+Filed 2026-09-30, all four verified by reading the source store rather than inferred. **This lane
+comes first.** Ordering within it is deliberate: 278 is a contract-only change that stops the
+hazard being triggered at all, 277 restores the commit path the fix depends on, 276 removes the
+destructive branch itself, and 279 is independent.
+
+| Task | What lands | Note |
+|---|---|---|
+| **278** | Forbid forwarding the Agent tool's harness-level `isolation` parameter in Move 2; `orchestrate-cycle-plan.sh` already emits `isolation`/`worktree_path` on every dispatch row with nothing prohibiting their use | Documentation and contract only, no executable logic. **Cheapest of the four and it closes the trigger** — do it first |
+| **277** | `git-commit-scoped.sh` cannot commit inside a dispatch worktree and fails as a **false negative that reads as success** to its caller: `PROJECT_ROOT` is derived from `BASH_SOURCE[0]`, so it always targets the main tree with no retarget flag | The single sanctioned commit path for every skill postflight. 276's fix is not trustworthy until this one lands |
+| **276** | `orchestrate-cycle-postflight.sh` folds `landed` and `nothing_to_land` into one success branch, which then releases the worktree — so a dispatch that authored verified work but failed to commit it has that work destroyed silently | **HIGHEST SEVERITY: silent data loss.** Shares `dispatch-worktree.sh` with 268 |
+| **279** | State schema rejects live orchestration fields; decide the per-field policy and ship a migration tool if one is warranted | Observed in BimodalLogic; that repo's data migration is its owner's separate action. **Gates 271** (call D) |
 
 ---
 
@@ -126,10 +151,10 @@ front pair on their own.
 
 | Task | What lands | Note |
 |---|---|---|
-| **268** | Reproduce-first on the `lake-build-guard.sh` false green: the `scope_key` sharing condition that would prevent the replay is already implemented and predates the observation, so determine which of the candidate causes actually holds | No deps; admits now. **Has no `file_scope`** — declare one before dispatch |
+| **268** | Reproduce-first on the `lake-build-guard.sh` false green: the `scope_key` sharing condition that would prevent the replay is already implemented and predates the observation, so determine which of the candidate causes actually holds | No deps; admits now. `file_scope` is declared and includes `dispatch-worktree.sh`, so it serializes against 276 — take the cross-tree replay hypothesis with it |
 | **269** | `validate-state.sh --fix`: presence test → type test, so a null `file_scope` cannot abort the repair | No deps; admits now. Gates 270 and 271 |
-| **270** | Re-runnable null-safety audit of jq mutation sites across core scripts; rule on a shared guard idiom in `scripts/lib/` | After 269. **`file_scope` is coarse** (`.../core/scripts/`, overlapping 15 non-terminal tasks) — narrow it or it will serialize against most of the backlog |
-| **271** | Finish the `parent_task` edge: declare in schema, validate, render in TODO, survive renumbering | After 269. Gates 273 |
+| **270** | Re-runnable null-safety audit of jq mutation sites across core scripts; rule on a shared guard idiom in `scripts/lib/` | After 269. **`file_scope` is coarse** (`.../core/scripts/`, now overlapping 20 non-terminal tasks) — narrow it or it will serialize against most of the backlog |
+| **271** | Finish the `parent_task` edge: declare in schema, validate, render in TODO, survive renumbering | After 269 **and 279** (the per-field schema policy must land before another field is declared). Gates 273 |
 | **272** | Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, give each orchestration its own identity | No outstanding dependency. Pairs naturally with the sweep defect in observations |
 | **273** | Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage | After 271 and 184 (call B) |
 | **275** | Per-repo orchestration queue: registered, live, archived on finish, consumed by admission | After 272 |
