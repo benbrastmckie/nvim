@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 11,
-  "summary": "Authored an 8-phase implementation plan closing three contract/validator drift threads via the repo's two existing drift-prevention mechanisms: a lint-enforced canonical ownership fragment rolled into 13 implementation agents, and a shared M1/M2/M3 Status-grammar library wired into validate-artifact.sh at error level. Plan validates PASS with 0 warnings.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 16,
+  "summary": "Completed all 8 plan phases: a lint-enforced plan-level-Status ownership boundary rolled into 14 implementation agents (13 hypothesized plus founder-implement-agent.md, added after a corrected sweep), a shared Status-line grammar library wired into validate-artifact.sh as a new error-level check, the general-research-agent.md report-heading drift fixed, a fan-out prohibition and bidirectional marker/commit-synchrony contract added to phase-closure.md, and a full redeploy with green deployed-tree re-verification.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/136_enforce_plan_status_field_ownership/summaries/01_plan-status-field-ownership-summary.md",
+      "summary": "Full implementation summary with 3 decision records, grep evidence for the 14-file ownership-boundary rollout, the core-agent skeleton machine-check table, and the deferred update-plan-status.sh refactor follow-up."
+    },
     {
       "type": "plan",
       "path": "specs/136_enforce_plan_status_field_ownership/plans/01_plan-status-field-ownership.md",
-      "summary": "8 phases, 4 waves, ~10 hours: ownership fragment + 13-agent rollout + lint Check G, shared Status-grammar library + validator wiring + test suite, report-heading remedy, fan-out and bidirectional marker/commit-synchrony sections in phase-closure.md, redeploy verification."
+      "summary": "8 phases, all [COMPLETED]; checklist items checked off with completion/deviation annotations throughout."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 8,
   "phases_total": 8,
   "blockers": []
 }
