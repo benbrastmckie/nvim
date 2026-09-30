@@ -474,31 +474,31 @@ this number.
 
 ---
 
-### Phase 6: Report-heading conformance remedy in general-research-agent.md [NOT STARTED]
+### Phase 6: Report-heading conformance remedy in general-research-agent.md [COMPLETED]
 
 **Goal**: Close the produced-report heading drift on the agent side, with the core skeleton
 inventory machine-checked rather than eyeballed.
 
 **Tasks**:
-- [ ] Promote `### Recommendations` in `general-research-agent.md`'s Stage 6 report skeleton to a
+- [x] Promote `### Recommendations` in `general-research-agent.md`'s Stage 6 report skeleton to a
       top-level `## Recommendations`, placed between `## Findings` and `## Decisions` — dispatch
       remedy (ii), which structurally removes contributing factor (a) (burial as a third-level
       subsection alongside two non-required siblings). Leave `### Codebase Patterns` and
-      `### External Resources` nested under `## Findings` unchanged.
-- [ ] Add dispatch remedy (i) alongside it: a short, explicit statement in Stage 6 listing the
+      `### External Resources` nested under `## Findings` unchanged. *(completed)*
+- [x] Add dispatch remedy (i) alongside it: a short, explicit statement in Stage 6 listing the
       **five required heading strings verbatim** (`## Executive Summary`, `## Context & Scope`,
       `## Findings`, `## Decisions`, `## Recommendations`) and marking them **non-paraphrasable**.
       Name the two observed near-misses explicitly — "Recommended Next Steps" and "Context
       Extension Recommendations" do **not** satisfy `## Recommendations` — because the near-miss
-      trap (contributing factor (b)) is what the observed artifact actually fell into.
-- [ ] Keep `## Context Extension Recommendations` in the skeleton (it is a distinct, useful
+      trap (contributing factor (b)) is what the observed artifact actually fell into. *(completed)*
+- [x] Keep `## Context Extension Recommendations` in the skeleton (it is a distinct, useful
       section) but note in the same statement that it is additional to, never a substitute for,
-      `## Recommendations`.
-- [ ] Machine-check every core agent's embedded skeleton against the validator's own regex
+      `## Recommendations`. *(completed)*
+- [x] Machine-check every core agent's embedded skeleton against the validator's own regex
       (`grep -qE "^##+ ${section}"` for each member of `REPORT_SECTIONS`, `SUMMARY_SECTIONS`,
       `PLAN_SECTIONS`) with a throwaway script that extracts each skeleton to a temp file and runs
       the real regex — not by eye. Record the result for every core agent, including the
-      no-skeleton and no-applicable-type cases.
+      no-skeleton and no-applicable-type cases. *(completed: general-implementation-agent.md 6/6 SUMMARY_SECTIONS, planner-agent.md 7/7 PLAN_SECTIONS, general-research-agent.md now 5/5 REPORT_SECTIONS; meta-builder-agent.md and reviser-agent.md have no embedded skeleton; code-reviewer-agent.md and spawn-agent.md have skeletons matching none of the three required arrays fully -- all matching the plan's Scope Hypothesis)*
 
 **Timing**: 1 hour
 

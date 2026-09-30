@@ -1,0 +1,15 @@
+{
+  "phase": 6,
+  "phase_name": "Report-heading conformance remedy in general-research-agent.md",
+  "started_at": "2026-09-29T00:00:00Z",
+  "last_updated": "2026-09-29T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Promote ### Recommendations to ## Recommendations", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]},
+    {"id": 2, "description": "Add non-paraphrasable five-heading statement naming near-misses", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]},
+    {"id": 3, "description": "Machine-check all core agent skeletons against validator regex", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
