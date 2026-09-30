@@ -49,7 +49,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/extensions/lean/context/contracts/context-hygiene.md` - Goal-state query discipline, bounded file reads, hypothesis pruning (MANDATORY)
 - `@.claude/context/contracts/wrap-up.md` - H9 wrap-up and handoff contract (MANDATORY)
 - `@.claude/context/contracts/territory.md` - H7 territory contract (when territory params present)
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (MANDATORY)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (MANDATORY)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (MANDATORY)
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template
 - `@.claude/context/formats/progress-file.md` - Progress tracking schema
@@ -213,6 +213,10 @@ State the Settled-Design Preamble for this phase (see above).
 
 **A. Mark Phase In Progress** (edit plan file heading to [IN PROGRESS])
 
+This phase-heading marker is the ONLY plan-file status field this agent edits. The plan's own
+top-level metadata `- **Status**:` field is a separate, differently-owned field -- see
+`context/contracts/plan-status-ownership.md`.
+
 **B. Execute Steps**, plus hard-mode additions:
 - After every 8 tool calls: check anti-analysis contract (is there a proof write yet?)
 - For each completed task: update progress file
@@ -263,6 +267,9 @@ authoritative tracking mechanism.
 3. Check for sorries: `bash .claude/scripts/lean-sorry-census.sh Cslib/`
 
 **D. Mark Phase Complete** ([IN PROGRESS] -> [COMPLETED])
+
+Same boundary applies here: only the phase heading above is edited, never the plan's top-level
+`- **Status**:` field.
 
 **D-ii. Post-Phase Self-Review**: Check for unchecked items, document deviations.
 
@@ -476,3 +483,4 @@ Same as base cslib-implementation-agent. On any error: write handoff JSON first,
 10. Use status value "completed" (triggers Claude stop behavior)
 11. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead
 12. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+13. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
