@@ -37,7 +37,7 @@ next_project_number: 276
 
 ### Extensions
 
-241 [PLANNING] — Reconcile MCP registration surfaces: redundant playwright...
+241 [PLANNED] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Literature
@@ -1493,11 +1493,12 @@ WHAT REMAINS: Phase 1 (the standing script-inventory probe, which must reuse tha
 ---
 
 ### 241. Reconcile MCP registration surfaces: redundant playwright grants, dead manifest mcp_servers fields, ownership doc and nix README
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [241_reconcile_mcp_registration_surfaces/reports/01_reconcile-mcp-surfaces.md]
+- **Plan**: [241_reconcile_mcp_registration_surfaces/plans/01_reconcile-mcp-surfaces.md]
 
 **Description**: Reconcile the MCP registration/permission documentation and dead declaration surfaces in the agent-system source store. Four items, one coherent change: three follow-ups that agent-system/extensions/core/context/patterns/mcp-server-ownership.md records but never corrects, plus a fourth stale surface found during task research.
 
