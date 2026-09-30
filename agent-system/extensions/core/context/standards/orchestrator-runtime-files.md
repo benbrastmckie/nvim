@@ -59,6 +59,36 @@ Every runtime file falls into exactly one of two classes:
 | `specs/.contention-manifest/{session_id}.json` | `scripts/orchestrate-cycle-plan.sh`'s `build_contended_manifest` (the cheap Option 3(ii) precondition of the working-tree/build isolation posture decision record — computed once per cycle over the full dispatched-task set, reusing `build_sibling_territory`'s own per-task `file_scope` + granularity classification) — `{session_id, cycle, generated_at, contended: [{path, tasks:[...], granularity}]}`; a path appearing in 2+ dispatched tasks' declared `file_scope` this cycle, excluding any task selected for worktree isolation (it has no shared working copy to contend over) | `scripts/git-commit-scoped.sh`'s contended-path refusal check, per positive pathspec entry, at commit time | Overwritten in place every multi-task cycle (static per-session filename, never accumulates across cycles); actively removed (not merely left unwritten) when a cycle drops to a single dispatched task or fewer, so a stale multi-task manifest never outlives the concurrency that produced it | **Ephemeral** — no freshness gate; a git-restored or stale copy would name tasks no longer in flight, exactly the ephemeral-class hazard this table's Overview section describes. Never git-tracked (see `.gitignore`) |
 | `specs/.contention-claims/<sanitized-path>/` (directory, `holder.json` + `acquire_named_mutex`'s own `claimed_at`/`stale_sec` files) | `scripts/task-lock.sh`'s `claim-acquire` (called from `scripts/git-commit-scoped.sh`'s `--task`-gated V5 contended-path refusal check) — ONE mutex directory per declared manifest path this cycle claims, reusing `acquire_named_mutex`'s exact mkdir/staleness pattern (a distinct directory name per path, not a distinct mutex family) with a zero wait budget, so an already-held claim is refused to the caller immediately rather than waited out | `git-commit-scoped.sh`'s own re-entrancy check (is the existing holder this same task?) and `task-lock.sh`'s `claim-release` | `claim-release`, called from `git-commit-scoped.sh`'s EXIT trap after a fresh claim's own commit (success or failure), or by a later claimant's stale-timeout reclaim (`CONTENTION_CLAIM_STALE_SEC`, default 1800s) — a claim this SAME invocation found already self-held (re-entrant) is deliberately never auto-released, mirroring `COMMIT_MUTEX_HELD`'s guest-caller contract | **Ephemeral** — no freshness gate; a git-restored or stale copy would misrepresent a claim no longer live, exactly the ephemeral-class hazard this table's Overview section describes. Never git-tracked (see `.gitignore`) |
 
+### Retired conventions and Check B's coverage limit
+
+`check-runtime-file-tracking.sh`'s Check B scans only for the canonical class members named in
+the Class Table above. This is a coverage limit, not a bug: a filename shape belonging to a
+**retired** convention — one no writer produces any more and no reader consults — was never a
+class member and never will be, so Check B has nothing to scan for and reports a clean PASS even
+while a stray tracked file of that retired shape sits in the repository.
+
+`specs/.meta-return-sess_{session_id}.json` (reversed word order from the canonical
+`.return-meta-*` family) is one such retired convention: a superseded `/meta` return-file naming
+scheme with zero writer and zero reader anywhere in `agent-system/` or `.claude/` today. One
+instance, `specs/.meta-return-sess_1790273700_meta01.json`, was found git-tracked in this repo
+(committed at `a38456608`/`f3bded704`) and was untracked via `git rm --cached` (never `rm -f` —
+the working-tree copy was independently confirmed NOT gitignored by the existing
+`**/.return-meta-*.json` pattern, since the reversed word order does not match it, so the
+working-tree copy was deleted too in the same change).
+
+**The deliberate decision not to add a class member for a zero-writer dead convention**: adding
+`meta-return` as a 19th (or 20th) Class Table row and a matching gitignore pattern would imply an
+ongoing accumulation risk to guard against, but a retired convention with no live writer cannot
+accumulate anything new — the only instance possible is one already committed before the
+convention was retired. A one-shot untrack, documented here, is the correct disposition; a
+permanent glob/pattern addition is not.
+
+**Manual hunt recipe** for finding a tracked instance of a retired convention's litter, since
+Check B cannot: `git log --all --diff-filter=A -- '**/.{retired-name}*'` (substituting the
+retired convention's own filename fragment for `{retired-name}`) surfaces every commit that
+added a matching path across all branches; `git ls-files -- '**/.{retired-name}*'` then confirms
+which of those additions, if any, are still tracked at HEAD.
+
 ### A third disposition: durable, machine-local, and gitignored
 
 `specs/.orchestrator-deploy-ledger.json` does not fit either of the two classes in "The Two-Class

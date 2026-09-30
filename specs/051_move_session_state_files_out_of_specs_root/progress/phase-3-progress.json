@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Untrack the retired-convention orphan and document the coverage limit",
+  "started_at": "2026-09-30T00:06:00Z",
+  "last_updated": "2026-09-30T00:12:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "git rm --cached the tracked orphan specs/.meta-return-sess_1790273700_meta01.json, delete working-tree copy (not gitignored)",
+      "status": "done",
+      "files_touched": ["specs/.meta-return-sess_1790273700_meta01.json"]
+    },
+    {
+      "id": 2,
+      "description": "Add Retired conventions and Check B's coverage limit subsection to orchestrator-runtime-files.md after the Class Table",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.1",
+      "description": "Scope Hypothesis confirming grep found a second .meta-return match under specs/vault/01-vault/archive/223_.../.meta-return.json",
+      "type": "altered",
+      "reason": "Second match is a per-task artifact inside an already-vaulted historical archive directory, not root-level session-scoped litter; left untracked per plan's own Non-Goals (per-task files out of reaper scope)",
+      "annotation": "documented inline in plan Phase 3 as an Implementation note"
+    }
+  ]
+}

@@ -262,26 +262,37 @@ check the writer list (`skill-orchestrate/SKILL.md`, `orchestrate-cycle-plan.sh`
 
 ---
 
-### Phase 3: Untrack the retired-convention orphan and document the coverage limit [NOT STARTED]
+### Phase 3: Untrack the retired-convention orphan and document the coverage limit [COMPLETED]
 
 **Goal**: `specs/.meta-return-sess_1790273700_meta01.json` is no longer git-tracked, and
 `orchestrator-runtime-files.md` records why Check B cannot see a retired convention's litter plus
 the manual recipe for hunting one.
 
 **Tasks**:
-- [ ] Re-confirm the file is tracked and unmodified against HEAD
+- [x] Re-confirm the file is tracked and unmodified against HEAD
       (`git ls-files -- specs/.meta-return-sess_1790273700_meta01.json`,
-      `git diff HEAD -- <path>` empty)
-- [ ] `git rm --cached specs/.meta-return-sess_1790273700_meta01.json` (never `rm -f` — the
+      `git diff HEAD -- <path>` empty) *(completed)*
+- [x] `git rm --cached specs/.meta-return-sess_1790273700_meta01.json` (never `rm -f` — the
       working-tree copy is already gitignored by `**/.return-meta-*.json`... verify this with
       `git check-ignore -v` first; if it is NOT ignored, delete the working-tree copy too and say
-      so in the commit message)
-- [ ] Add a short subsection to `context/standards/orchestrator-runtime-files.md` — placed after
+      so in the commit message) *(completed)*
+- [x] Add a short subsection to `context/standards/orchestrator-runtime-files.md` — placed after
       the Class Table — recording: (a) Check B scans only the canonical class members, so a
       retired convention's tracked litter is invisible to it by construction; (b) the deliberate
       decision NOT to add a class member for a zero-writer dead convention; (c) the manual hunt
-      recipe `git log --all --diff-filter=A -- '**/.{retired-name}*'`
-- [ ] Commit the untrack plus the doc note together as this phase's single green sub-step
+      recipe `git log --all --diff-filter=A -- '**/.{retired-name}*'` *(completed)*
+- [x] Commit the untrack plus the doc note together as this phase's single green sub-step *(completed)*
+
+**Implementation note**: the Scope Hypothesis's confirming grep
+(`git ls-files specs/ | grep -E '\.meta-return|\.return-meta-meta'`) found a SECOND match beyond
+the one named in this phase:
+`specs/vault/01-vault/archive/223_improve_deck_themes_examples_documentation/.meta-return.json`.
+Evaluated and left untouched: it is a per-task artifact inside an already-vaulted, historical
+task archive directory — the same "already correctly isolated by task directory" category this
+plan's own Non-Goals excludes from the reaper's scope — not root-level session-scoped runtime
+litter. Untracking it would alter a sealed historical vault snapshot for no operational benefit;
+recorded here per the Scope Hypothesis's "if more turn up, untrack each and say so" instruction,
+choosing "say so" over blind untracking given the different nature of the second match.
 
 **Timing**: 0.5 hours
 
