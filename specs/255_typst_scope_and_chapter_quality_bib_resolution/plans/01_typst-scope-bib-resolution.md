@@ -227,59 +227,65 @@ probe.
 
 ---
 
-### Phase 2: Fix Rule 1.3 bibliography resolution (BUGs 2a/2b/2c) [NOT STARTED]
+### Phase 2: Fix Rule 1.3 bibliography resolution (BUGs 2a/2b/2c) [COMPLETED]
 
 **Goal**: `resolve_bibliography` resolves the bibliography for a chapter file included into a
 root document that declares it (including a multi-argument declaration), and stops being
 defeated by a vendored `.bib`; header contract and tests updated in the same commit.
 
 **Tasks**:
-- [ ] Re-record the baseline: run `bash agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh`
+- [x] Re-record the baseline: run `bash agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh`
       and confirm "59 passed, 0 failed" before any edit (the baseline is measured with the
       pre-existing uncommitted `typst-element-lint.sh` edits present; do not touch that file).
-- [ ] Re-read `scripts/chapter-quality-check.sh`'s `resolve_bibliography` (~lines 344-370)
-      immediately before editing.
-- [ ] **BUG 2b**: add vendored/build-directory exclusions to the branch-(b) `find`, pruning at
+      *(completed: confirmed 59 passed, 0 failed)*
+- [x] Re-read `scripts/chapter-quality-check.sh`'s `resolve_bibliography` (~lines 344-370)
+      immediately before editing. *(completed)*
+- [x] **BUG 2b**: add vendored/build-directory exclusions to the branch-(b) `find`, pruning at
       least `.lake/`, `.git/`, `node_modules/`, `target/`, `build/`, keeping the `-print0` read
-      loop and the single-candidate test otherwise unchanged.
-- [ ] **BUG 2a + 2c**: insert a **new** resolution attempt strictly between existing branch (a)
+      loop and the single-candidate test otherwise unchanged. *(completed: now branch (c))*
+- [x] **BUG 2a + 2c**: insert a **new** resolution attempt strictly between existing branch (a)
       and existing branch (b) — do not modify either. Walk upward from the checked file's own
       directory to the already-resolved `root` (inclusive); at each level, grep that level's own
       `*.typ` files non-recursively (siblings only, no subtree scan) for a `#bibliography("...")`
       declaration using a **permissive extractor** (`#bibliography\("[^"]*"`, no required closing
       paren) so multi-argument declarations match; take the first (nearest) hit and resolve its
       path relative to that ancestor directory, reusing the existing `filedir`-style resolution
-      shape.
-- [ ] Keep branch (a)'s early `return 1` for a declared-but-unresolvable path unchanged (existing
-      documented behavior).
-- [ ] Update the header's bibliography-resolution bullet (currently lines ~99-103) to state the
+      shape. *(completed: new branch (b))*
+- [x] Keep branch (a)'s early `return 1` for a declared-but-unresolvable path unchanged (existing
+      documented behavior). *(completed: unchanged)*
+- [x] Update the header's bibliography-resolution bullet (currently lines ~99-103) to state the
       three-branch order — declared-path-in-file, then nearest-ancestor declared path, then
       single-root-candidate-after-exclusion — and to name the five excluded directory patterns
-      (ACCEPTANCE 7).
-- [ ] Add a KNOWN LIMITATIONS bullet: the ancestor walk assumes one unambiguous declaring `.typ`
+      (ACCEPTANCE 7). *(completed)*
+- [x] Add a KNOWN LIMITATIONS bullet: the ancestor walk assumes one unambiguous declaring `.typ`
       file per level; two siblings at the same level with conflicting declarations fall through to
       branch (b), matching the script's existing "under-firing is the safer bias" posture for
-      BLOCKING rules.
-- [ ] Add test case for BUG 2a/2c: a fixture root `.typ` carrying
+      BLOCKING rules. *(completed: folded into the rewritten bibliography-resolution bullet
+      itself rather than a separate bullet, since it is a qualifier on that same contract)*
+- [x] Add test case for BUG 2a/2c: a fixture root `.typ` carrying
       `#bibliography("bibliography.bib", title: [References], style: "ieee")` plus a
       `chapters/NN-x.typ` child citing a key present in that `.bib`; assert Rule 1.3 **evaluates**
       (with `--verbose`, `"Rule 1.3 evaluated against"` present) and `"1.3 NOT EVALUATED"` absent
-      (ACCEPTANCE 4).
-- [ ] Add a negative twin of that case (child cites a key absent from the ancestor `.bib`):
+      (ACCEPTANCE 4). *(completed: case-l)*
+- [x] Add a negative twin of that case (child cites a key absent from the ancestor `.bib`):
       assert exit 1 and a `[FAIL]` naming 1.3 — the non-vacuity guard proving the new branch
-      resolves to a real file rather than merely suppressing the skip.
-- [ ] Add test case for BUG 2b: a fixture with a real `.bib` plus a vendored
+      resolves to a real file rather than merely suppressing the skip. *(completed: case-l-neg)*
+- [x] Add test case for BUG 2b: a fixture with a real `.bib` plus a vendored
       `.lake/packages/x/docs/references.bib`; assert Rule 1.3 evaluates against the real one
       (ACCEPTANCE 5 gets its fixture-level guard here; its live demonstration is Phase 4).
-- [ ] Re-examine case-f (lines ~168-181) and record its disposition: it stays **valid and
+      *(completed: case-m)*
+- [x] Re-examine case-f (lines ~168-181) and record its disposition: it stays **valid and
       unmodified** (genuinely bib-less, non-git, `root == filedir`, zero ancestor range). Add an
       explanatory comment at the case stating it was re-examined against both new branches and
-      confirmed unaffected (ACCEPTANCE 6, 8 — do not weaken or delete it).
-- [ ] Add an explicit assertion to the `dirscan` CLI case that `nested/violation.typ`'s Rule 1.3
+      confirmed unaffected (ACCEPTANCE 6, 8 — do not weaken or delete it). *(completed: disposition
+      comment added directly above case-f; assertions themselves unchanged)*
+- [x] Add an explicit assertion to the `dirscan` CLI case that `nested/violation.typ`'s Rule 1.3
       stays NOT EVALUATED post-fix, plus a one-line comment recording the `mktemp -d`-is-not-a-git-worktree
-      assumption that makes it hold.
-- [ ] Re-confirm case-a and case-e still pass unchanged (declared-path branch untouched).
-- [ ] Run the full suite; commit this phase alone with an explicit two-path `git add --`.
+      assumption that makes it hold. *(completed)*
+- [x] Re-confirm case-a and case-e still pass unchanged (declared-path branch untouched).
+      *(completed: both pass unchanged)*
+- [x] Run the full suite; commit this phase alone with an explicit two-path `git add --`.
+      *(completed: 72 passed, 0 failed — up from the 59 baseline)*
 
 **Timing**: 2 hours
 

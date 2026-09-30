@@ -168,6 +168,14 @@ assert_contains "case-e (Rule 1.3 unresolved citation key)" "$out_e" "1.3"
 # Case (f): unresolvable bibliography -- no #bibliography(...) declaration and no .bib file in
 # the checked file's own directory. NOT EVALUATED [INFO] printed, exit 0 (never a blocking
 # failure).
+#
+# DISPOSITION (re-examined against both the BUG 2a/2c ancestor-walk branch and the BUG 2b
+# vendored-dir exclusion added to resolve_bibliography): this fixture stays VALID AND UNMODIFIED.
+# $WORKDIR is a plain `mktemp -d`, not a git work tree, so resolve_repo_root falls back to
+# `root == filedir` for case-f.typ's own directory; the ancestor walk therefore has zero range
+# (filedir already equals root, so the loop checks one level and stops), and there is no `.bib`
+# anywhere under root for branch (c) to find either. Both new branches are genuinely inert here --
+# this is a real bib-less repo, and it correctly stays NOT EVALUATED.
 # ----------------------------------------------------------------------------------------------
 mkdir -p "$WORKDIR/nobib"
 cat > "$WORKDIR/nobib/case-f.typ" <<'EOF'
@@ -179,6 +187,87 @@ out_f=$(bash "$CHECKER" "$WORKDIR/nobib/case-f.typ" 2>&1); ec_f=$?
 assert_exit "case-f (unresolvable bibliography)" 0 "$ec_f"
 assert_contains "case-f (unresolvable bibliography)" "$out_f" "NOT EVALUATED"
 assert_contains "case-f (unresolvable bibliography)" "$out_f" "1.3"
+
+# ----------------------------------------------------------------------------------------------
+# Case (l): BUG 2a/2c fix -- nearest-ancestor #bibliography(...) declaration, multi-argument form.
+# A root .typ (in a real git work tree, so resolve_repo_root's toplevel is the repo root rather
+# than the chapter's own directory) declares `#bibliography("bibliography.bib", title: [...],
+# style: "ieee")`; a chapters/ child with NO declaration of its own cites a key present in that
+# .bib. Rule 1.3 must EVALUATE (not NOT EVALUATED), and the citation resolves so no [FAIL] fires.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/ancestorbib/chapters"
+(cd "$WORKDIR/ancestorbib" && git init -q)
+cat > "$WORKDIR/ancestorbib/bibliography.bib" <<'EOF'
+@article{jones2021,
+  author = {Jones, Amy},
+  title = {Another Paper},
+  year = {2021},
+}
+EOF
+cat > "$WORKDIR/ancestorbib/root.typ" <<'EOF'
+#bibliography("bibliography.bib", title: [References], style: "ieee")
+
+= Manual Root
+EOF
+cat > "$WORKDIR/ancestorbib/chapters/case-l.typ" <<'EOF'
+= Chapter One
+
+This chapter cites @jones2021 as evidence.
+EOF
+out_l=$(bash "$CHECKER" --verbose "$WORKDIR/ancestorbib/chapters/case-l.typ" 2>&1); ec_l=$?
+assert_exit "case-l (BUG 2a/2c ancestor bib, multi-arg declaration)" 0 "$ec_l"
+assert_not_contains "case-l (BUG 2a/2c ancestor bib, multi-arg declaration)" "$out_l" "[FAIL]"
+assert_contains "case-l (BUG 2a/2c ancestor bib, multi-arg declaration)" "$out_l" "Rule 1.3 evaluated against"
+assert_not_contains "case-l (BUG 2a/2c ancestor bib, multi-arg declaration)" "$out_l" "1.3 NOT EVALUATED"
+
+# Negative twin (non-vacuity guard): the child cites a key ABSENT from the resolved ancestor
+# .bib -- proves the new branch resolves to a real file (Rule 1.3 fires a genuine [FAIL]) rather
+# than merely suppressing the NOT-EVALUATED skip.
+mkdir -p "$WORKDIR/ancestorbib-neg/chapters"
+(cd "$WORKDIR/ancestorbib-neg" && git init -q)
+cp "$WORKDIR/ancestorbib/bibliography.bib" "$WORKDIR/ancestorbib-neg/bibliography.bib"
+cp "$WORKDIR/ancestorbib/root.typ" "$WORKDIR/ancestorbib-neg/root.typ"
+cat > "$WORKDIR/ancestorbib-neg/chapters/case-l-neg.typ" <<'EOF'
+= Chapter One
+
+This chapter cites @doesnotexist2099 as evidence.
+EOF
+out_l_neg=$(bash "$CHECKER" --verbose "$WORKDIR/ancestorbib-neg/chapters/case-l-neg.typ" 2>&1); ec_l_neg=$?
+assert_exit "case-l-neg (BUG 2a/2c ancestor bib, unresolved key)" 1 "$ec_l_neg"
+assert_contains "case-l-neg (BUG 2a/2c ancestor bib, unresolved key)" "$out_l_neg" "[FAIL]"
+assert_contains "case-l-neg (BUG 2a/2c ancestor bib, unresolved key)" "$out_l_neg" "1.3"
+
+# ----------------------------------------------------------------------------------------------
+# Case (m): BUG 2b fix -- a vendored .bib under a pruned directory (.lake/) must not defeat the
+# single-candidate test. A real refs.bib plus a vendored .lake/packages/mathlib/docs/references.bib
+# both sit under root; Rule 1.3 must resolve against the real one and evaluate normally.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/vendoredbib/.lake/packages/mathlib/docs"
+cat > "$WORKDIR/vendoredbib/refs.bib" <<'EOF'
+@article{smith2020,
+  author = {Smith, John},
+  title = {An Important Paper},
+  year = {2020},
+}
+EOF
+cat > "$WORKDIR/vendoredbib/.lake/packages/mathlib/docs/references.bib" <<'EOF'
+@article{vendored2019,
+  author = {Vendor, V.},
+  title = {Unrelated Vendored Reference},
+  year = {2019},
+}
+EOF
+cat > "$WORKDIR/vendoredbib/case-m.typ" <<'EOF'
+= Chapter One
+
+This chapter cites @smith2020 as evidence.
+EOF
+out_m=$(bash "$CHECKER" --verbose "$WORKDIR/vendoredbib/case-m.typ" 2>&1); ec_m=$?
+assert_exit "case-m (BUG 2b vendored .bib excluded)" 0 "$ec_m"
+assert_not_contains "case-m (BUG 2b vendored .bib excluded)" "$out_m" "[FAIL]"
+assert_contains "case-m (BUG 2b vendored .bib excluded)" "$out_m" "Rule 1.3 evaluated against"
+assert_contains "case-m (BUG 2b vendored .bib excluded)" "$out_m" "refs.bib"
+assert_not_contains "case-m (BUG 2b vendored .bib excluded)" "$out_m" "1.3 NOT EVALUATED"
 
 # ----------------------------------------------------------------------------------------------
 # Case (g): advisory-only fixture (Rule 3.3, paragraph length) -- exit 0 AND the advisory
@@ -307,6 +396,15 @@ out_dir=$(bash "$CHECKER" "$WORKDIR/dirscan" 2>&1); ec_dir=$?
 assert_exit "CLI: directory scan (one clean, one violating, nested)" 1 "$ec_dir"
 assert_contains "CLI: directory scan (one clean, one violating, nested)" "$out_dir" "[FAIL]"
 assert_contains "CLI: directory scan (one clean, one violating, nested)" "$out_dir" "Files checked: 2"
+
+# Non-regression guard, explicit rather than assumed (per the plan's research integration note):
+# `$WORKDIR` is a plain `mktemp -d`, not a git work tree, so resolve_repo_root falls back to
+# `root == filedir` for nested/violation.typ (its OWN directory, not dirscan/'s parent), giving
+# the BUG 2a/2c ancestor walk zero range -- it never reaches dirscan/'s refs.bib one level up.
+# violation.typ has no #bibliography(...) declaration and no *.bib file in its own dirscan/nested/
+# directory, so Rule 1.3 must stay NOT EVALUATED for it post-fix, exactly as pre-fix.
+assert_contains "CLI: directory scan (nested/violation.typ Rule 1.3 stays NOT EVALUATED)" \
+  "$out_dir" "nested/violation.typ: Rule 1.3 NOT EVALUATED"
 
 echo ""
 echo "$PASSED passed, $FAILED failed"

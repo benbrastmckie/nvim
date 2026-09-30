@@ -96,12 +96,23 @@
 #   - Repo-root resolution (Rules 1.2/1.3) is `git rev-parse --show-toplevel` run from the
 #     checked file's own directory, falling back to that directory when the checked file is not
 #     inside a git work tree.
-#   - Bibliography resolution (Rule 1.3) is: (a) the filename argument of a `#bibliography("...")`
-#     call in the checked file if present, else (b) the single `*.bib` file found under the repo
-#     root. Zero or multiple candidates with no explicit `#bibliography(...)` declaration is
-#     reported as a named `[INFO]` environment note and evaluates Rule 1.3 as NOT EVALUATED for
-#     that file -- never as a blocking failure, and excluded from the MECHANICAL score
-#     denominator for that file.
+#   - Bibliography resolution (Rule 1.3) tries three branches in order: (a) the filename argument
+#     of a `#bibliography("...")` call in the checked file itself, if present; else (b) a
+#     nearest-ancestor `#bibliography("...")` declaration, walked upward one directory level at a
+#     time from the checked file's own directory to the repo root (inclusive), read from a sibling
+#     `*.typ` file at each level with a permissive extractor so a multi-argument declaration (e.g.
+#     `#bibliography("x.bib", title: [...], style: "ieee")`) still matches -- this is the layout a
+#     multi-file manual uses, where chapters are `#include`d into a root document that alone
+#     carries the declaration; else (c) the single `*.bib` file found under the repo root once
+#     vendored/build directories (`.lake`, `.git`, `node_modules`, `target`, `build`) are pruned
+#     from the search, so a vendored dependency's own `.bib` no longer defeats the single-candidate
+#     test. No resolution across all three branches is reported as a named `[INFO]`/`[WARN]`
+#     environment note (see the NOT-EVALUATED SURFACING bullet below) and evaluates Rule 1.3 as
+#     NOT EVALUATED for that file -- never as a blocking failure, and excluded from the MECHANICAL
+#     score denominator for that file. Branch (b) assumes one unambiguous declaring `.typ` file
+#     per ancestor level; two siblings at the same level with conflicting or unresolvable
+#     declarations fall through to branch (c) rather than erroring, the same under-firing bias
+#     Rule 1.2 documents below.
 #   - Rule 1.2's path-shape heuristic is deliberately biased toward under-firing: a backtick
 #     token is treated as path-shaped only when it contains `/` or ends in a recognized file
 #     extension. Since Rules 1.2/1.3 are BLOCKING, a false positive on a correct chapter is the
@@ -341,9 +352,18 @@ resolve_repo_root() {
   printf '%s\n' "$root"
 }
 
-# resolve_bibliography FILE ROOT -- Decision 2: (a) the filename argument of a
-# #bibliography("...") call in FILE if present, else (b) the single *.bib file found under ROOT.
-# Prints the resolved path and returns 0 on success; returns 1 (no output) when unresolvable.
+# resolve_bibliography FILE ROOT -- Decision 2, three-branch order: (a) the filename argument of
+# a #bibliography("...") call in FILE if present; else (b) a nearest-ancestor #bibliography("...")
+# declaration, walked upward from FILE's own directory to ROOT (inclusive), read from a sibling
+# *.typ file at each level using a permissive extractor so a multi-argument declaration (e.g.
+# #bibliography("x.bib", title: [...], style: "ieee")) still matches; else (c) the single *.bib
+# file found under ROOT once vendored/build directories (.lake, .git, node_modules, target,
+# build) are excluded from the search. Prints the resolved path and returns 0 on success; returns
+# 1 (no output) when unresolvable.
+# KNOWN LIMITATION: branch (b)'s ancestor walk assumes one unambiguous declaring .typ file per
+# level; two siblings at the same level with conflicting (or unresolvable) declarations fall
+# through to branch (c), matching this script's existing "under-firing is the safer bias" posture
+# for BLOCKING rules (see the header's Known Limitations list).
 resolve_bibliography() {
   local f="$1" root="$2" decl filedir
   filedir="$(cd "$(dirname "$f")" && pwd)"
@@ -358,10 +378,35 @@ resolve_bibliography() {
     fi
     return 1
   fi
+
+  # Branch (b) -- BUG 2a/2c fix: nearest-ancestor declared path, permissive extractor.
+  local ancestor="$filedir" anc_file anc_decl
+  while true; do
+    while IFS= read -r -d '' anc_file; do
+      anc_decl=$(grep -m1 -oE '#bibliography\("[^"]*"' "$anc_file" 2>/dev/null | sed -E 's/#bibliography\("([^"]*)"/\1/')
+      if [[ -n "$anc_decl" ]]; then
+        if [[ -f "${ancestor}/${anc_decl}" ]]; then
+          printf '%s\n' "${ancestor}/${anc_decl}"
+          return 0
+        elif [[ -f "${root}/${anc_decl}" ]]; then
+          printf '%s\n' "${root}/${anc_decl}"
+          return 0
+        fi
+      fi
+    done < <(find "$ancestor" -maxdepth 1 -type f -name '*.typ' -print0 2>/dev/null | sort -z)
+    if [[ "$ancestor" == "$root" ]]; then
+      break
+    fi
+    ancestor="$(dirname "$ancestor")"
+  done
+
+  # Branch (c) -- BUG 2b fix: single *.bib candidate under ROOT, vendored/build dirs excluded.
   local -a candidates=()
   while IFS= read -r -d '' bibf; do
     candidates+=("$bibf")
-  done < <(find "$root" -type f -name '*.bib' -print0 2>/dev/null)
+  done < <(find "$root" \
+    \( -path '*/.lake' -o -path '*/.git' -o -path '*/node_modules' -o -path '*/target' -o -path '*/build' \) -prune -o \
+    -type f -name '*.bib' -print0 2>/dev/null)
   if [[ ${#candidates[@]} -eq 1 ]]; then
     printf '%s\n' "${candidates[0]}"
     return 0
