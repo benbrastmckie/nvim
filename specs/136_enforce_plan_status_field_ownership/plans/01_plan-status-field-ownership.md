@@ -286,24 +286,24 @@ instruction instead, exactly as this hypothesis's fallback anticipated.
 
 ---
 
-### Phase 3: Lint Check G enforcing the ownership bullet [NOT STARTED]
+### Phase 3: Lint Check G enforcing the ownership bullet [COMPLETED]
 
 **Goal**: The ownership bullet's presence is a mechanical gate, not a one-time rollout, and it runs
 inside `verify-deploy.sh`.
 
 **Tasks**:
-- [ ] Add `check_g_plan_status_ownership_bullet()` to
+- [x] Add `check_g_plan_status_ownership_bullet()` to
       `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh`, following Check C's
       mechanism exactly: read the expected bullet text from
       `context/contracts/plan-status-ownership.md` **at runtime** (never hardcode it), iterate a
       curated `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` array, `log_fail` on a missing file or a missing
       bullet, `log_pass` per conforming file. A missing fragment is a Check-level fail with the
-      same message shape Check C uses.
-- [ ] Reuse `rel_path` and the `$AGENTS_ROOT` convention; do not re-derive the
-      dispatchable-agent detector.
-- [ ] Wire `check_g_plan_status_ownership_bullet` into `main()`, and extend both the file-header
-      check list and the `--help` output with Check G's one-line description.
-- [ ] Add fixture cases to `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh`
+      same message shape Check C uses. *(completed)*
+- [x] Reuse `rel_path` and the `$AGENTS_ROOT` convention; do not re-derive the
+      dispatchable-agent detector. *(completed)*
+- [x] Wire `check_g_plan_status_ownership_bullet` into `main()`, and extend both the file-header
+      check list and the `--help` output with Check G's one-line description. *(completed)*
+- [x] Add fixture cases to `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh`
       following its existing scratch-repo idiom (`mktemp -d`, `REPO_ROOT=<scratch>`, assert on exit
       code and specific `[FAIL]`/`[PASS]` lines, never instrument the lint script):
       (a) an in-scope fixture agent missing the bullet -> Check G FAILs, exit 1;
@@ -311,9 +311,12 @@ inside `verify-deploy.sh`.
       (c) a fixture whose bullet text is a near-miss paraphrase -> still FAILs (proves the check
           compares against the fragment, not a loose pattern);
       (d) fragment file absent from the scratch tree -> Check G reports the fragment-missing fail
-          rather than silently passing.
-- [ ] Copy the canonical fragment into the scratch fixture tree the way the suite already stages
-      `FRAGMENT_SRC` / `ARTIFACTS_FRAGMENT_SRC`, so the fixture exercises the real read path.
+          rather than silently passing. *(deviation: altered — (b) uses a different in-scope
+          fixture path (cslib/agents/cslib-implementation-agent.md) rather than reusing (a)'s
+          general-implementation-agent.md fixture, since that path is already committed as the
+          "missing bullet" negative case for Check C; all four cases pass)*
+- [x] Copy the canonical fragment into the scratch fixture tree the way the suite already stages
+      `FRAGMENT_SRC` / `ARTIFACTS_FRAGMENT_SRC`, so the fixture exercises the real read path. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -325,6 +328,10 @@ inside `verify-deploy.sh`.
 Confirm at implementation time that Check G's array and the fragment's recorded list are
 identical, and add a comment in the lint naming the fragment as the source of truth for the rule
 (as Check C does) so a future addition is classified rather than guessed.
+
+**CONFIRMED AT IMPLEMENTATION TIME**: 14 entries (not 13), identical to Phase 1's corrected
+enumeration including `founder/agents/founder-implement-agent.md`. `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS`
+and the fragment's recorded list agree file-for-file.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` - new Check G function,

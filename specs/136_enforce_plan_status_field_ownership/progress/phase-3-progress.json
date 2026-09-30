@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Lint Check G enforcing the ownership bullet",
+  "started_at": "2026-09-29T00:00:00Z",
+  "last_updated": "2026-09-29T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add check_g_plan_status_ownership_bullet() to lint-agent-contracts.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 2, "description": "Wire into main(), extend header comment and --help", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 3, "description": "Add 4 fixture cases to test-lint-agent-contracts.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"]},
+    {"id": 4, "description": "Deploy and verify: full suite 26/26, real-tree lint 0 failures, remove/restore bullet check", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4b",
+      "description": "Fixture (b) uses a different in-scope path than fixture (a)",
+      "type": "altered",
+      "reason": "general-implementation-agent.md is already committed as Check C's 'missing bullet' negative fixture, so fixture (b) (verbatim bullet, no FAIL) uses cslib/agents/cslib-implementation-agent.md instead, and fixture (c) (near-miss paraphrase) uses lean/agents/lean-implementation-agent.md. Both are genuine members of OWNERSHIP_IN_SCOPE_RELATIVE_PATHS.",
+      "annotation": "*(deviation: altered — fixture (b)/(c) use distinct in-scope paths, not (a)'s shared fixture)*"
+    }
+  ]
+}

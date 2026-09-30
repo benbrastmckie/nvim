@@ -30,6 +30,7 @@ LINT_SRC="$SCRIPT_DIR/../lint/lint-agent-contracts.sh"
 FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/no-task-references-bullet.md"
 ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifacts-template.md"
 STATUS_LIB_SRC="$SCRIPT_DIR/../lib/return-meta-status-vocabulary.sh"
+PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/plan-status-ownership.md"
 
 PASSED=0
 FAILED=0
@@ -54,6 +55,10 @@ if [ ! -f "$STATUS_LIB_SRC" ]; then
   echo "ERROR: expected shared library at $STATUS_LIB_SRC" >&2
   exit 1
 fi
+if [ ! -f "$PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" ]; then
+  echo "ERROR: expected canonical fragment at $PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" >&2
+  exit 1
+fi
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
@@ -67,8 +72,10 @@ mkdir -p "$WORKDIR/agent-system/extensions/core/scripts/lib"
 cp "$FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
 cp "$ARTIFACTS_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
 cp "$STATUS_LIB_SRC" "$WORKDIR/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
+cp "$PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/plan-status-ownership.md"
 
 BULLET_LINE='Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead'
+OWNERSHIP_BULLET_LINE='Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent'"'"'s plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items'
 
 # A correctly-shaped artifacts template, used by every fixture that should PASS Check F (i.e.
 # every fixture not specifically testing a Check F violation). Wrapped in a status-carrying
@@ -164,6 +171,58 @@ $ARTIFACTS_TEMPLATE_BLOCK
 
 **MUST NOT**:
 1. Do the wrong thing
+EOF
+
+# =====================================================================
+# Check G fixtures (added alongside Check G's implementation): a positive conforming fixture
+# (carries the verbatim bullet -> no Check G FAIL, explicit PASS by name) and a near-miss
+# paraphrase fixture (a plausible-looking but non-verbatim bullet -> still FAILs, proving the
+# check compares against the fragment text, not a loose pattern). Both use real
+# OWNERSHIP_IN_SCOPE_RELATIVE_PATHS entries other than general-implementation-agent.md (already
+# exercised above as the "missing bullet" negative case for both Check C and Check G).
+# =====================================================================
+mkdir -p "$WORKDIR/agent-system/extensions/cslib/agents"
+mkdir -p "$WORKDIR/agent-system/extensions/lean/agents"
+
+cat > "$WORKDIR/agent-system/extensions/cslib/agents/cslib-implementation-agent.md" <<EOF
+---
+name: cslib-implementation-agent
+description: fixture standing in for the real cslib-implementation-agent, carrying the verbatim bullet
+model: sonnet
+---
+
+# CSLib Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+2. $BULLET_LINE
+3. $OWNERSHIP_BULLET_LINE
+EOF
+
+cat > "$WORKDIR/agent-system/extensions/lean/agents/lean-implementation-agent.md" <<EOF
+---
+name: lean-implementation-agent
+description: fixture standing in for the real lean-implementation-agent, carrying a near-miss paraphrase instead of the verbatim bullet
+model: sonnet
+---
+
+# Lean Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+2. Never hand-edit the plan's Status metadata field -- that belongs to update-plan-status.sh
 EOF
 
 # =====================================================================
@@ -597,6 +656,38 @@ else
 fi
 
 # =====================================================================
+# Check G assertions
+# =====================================================================
+
+# (a) Positive: general-implementation-agent.md fixture (missing the bullet) fails Check G.
+if echo "$out" | grep -qF "core/agents/general-implementation-agent.md: missing the plan-level-Status ownership MUST-NOT bullet"; then
+  pass "(a) positive: general-implementation-agent.md fixture fails Check G (missing bullet)"
+else
+  fail "(a) positive: expected Check G failure for general-implementation-agent.md, not found in output"
+fi
+
+# (b) Negative: cslib-implementation-agent.md fixture (verbatim bullet) produces no FAIL, and
+# explicitly passes Check G by name.
+if echo "$out" | grep -F "cslib/agents/cslib-implementation-agent.md" | grep -q "FAIL"; then
+  fail "(b) negative: cslib-implementation-agent.md fixture unexpectedly failed a check"
+else
+  pass "(b) negative: cslib-implementation-agent.md fixture produces no FAIL against it"
+fi
+if echo "$out" | grep -qF "cslib/agents/cslib-implementation-agent.md: carries the plan-level-Status ownership bullet"; then
+  pass "(b) positive: cslib-implementation-agent.md fixture explicitly passes Check G"
+else
+  fail "(b) positive: expected an explicit Check G PASS line for cslib-implementation-agent.md, not found in output"
+fi
+
+# (c) Positive: lean-implementation-agent.md fixture (near-miss paraphrase, not the verbatim
+# bullet) still FAILs -- proves Check G compares against the fragment text, not a loose pattern.
+if echo "$out" | grep -qF "lean/agents/lean-implementation-agent.md: missing the plan-level-Status ownership MUST-NOT bullet"; then
+  pass "(c) positive: lean-implementation-agent.md near-miss paraphrase fixture fails Check G"
+else
+  fail "(c) positive: expected Check G failure for lean-implementation-agent.md near-miss fixture, not found in output"
+fi
+
+# =====================================================================
 # Fragment-missing fixture: Check C must fail loudly, by name, when the fragment file itself
 # is absent -- never a silent skip.
 # =====================================================================
@@ -622,6 +713,14 @@ if [ "$frag_code" -eq 1 ] && echo "$frag_out" | grep -qF "canonical fragment not
   pass "fragment-missing: Check C fails loudly by name when the fragment file is absent"
 else
   fail "fragment-missing: expected exit 1 + named fragment-missing failure, got exit=$frag_code"
+fi
+
+# (d) Fragment-missing fixture: Check G must ALSO fail loudly by name (never a silent pass) when
+# plan-status-ownership.md specifically is absent from the same bare scratch tree.
+if echo "$frag_out" | grep -qF "Check G: canonical fragment not found"; then
+  pass "(d) fragment-missing: Check G fails loudly by name when plan-status-ownership.md is absent"
+else
+  fail "(d) fragment-missing: expected a named Check G fragment-missing failure, not found in output"
 fi
 
 # =====================================================================

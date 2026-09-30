@@ -29,6 +29,11 @@
 #      anywhere in its body (the value the vocabulary explicitly forbids). A recorded exclusion
 #      list (agents using a legitimate extension-local, non-canonical terminal vocabulary) is
 #      skipped by the presence detector only, never by the completed-value prohibition.
+#   G. Plan-level-Status ownership bullet presence, for the curated in-scope agent set defined
+#      by the classification rule in context/contracts/plan-status-ownership.md (an agent must
+#      carry the bullet iff its contract instructs editing a `### Phase N: ... [MARKER]` heading
+#      during plan execution). The expected bullet text is read from that fragment file at
+#      runtime, never hardcoded here, mirroring Check C's own read-from-fragment mechanism.
 #
 # Dispatchable-agent detector (shared, reusable): a file under an `agents/`-named path counts as
 # a dispatchable agent only if its first line is `---` and its frontmatter block contains a
@@ -82,6 +87,7 @@ while [[ $# -gt 0 ]]; do
       echo "  C. No-task-references MUST-NOT bullet presence for the curated in-scope agent set"
       echo "  E. Terminal-metadata status presence (conformant inline status) + completed-value prohibition"
       echo "  F. Return-meta artifacts template presence (object-shaped, keys read from the fragment)"
+      echo "  G. Plan-level-Status ownership bullet presence for the curated in-scope agent set"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
       exit 0
@@ -107,6 +113,7 @@ AGENTS_ROOT="$REPO_ROOT/agent-system/extensions"
 STANDARD_FILE="$REPO_ROOT/agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"
 FRAGMENT_FILE="$REPO_ROOT/agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
 ARTIFACTS_TEMPLATE_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
+PLAN_STATUS_OWNERSHIP_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/plan-status-ownership.md"
 
 if [[ ! -d "$AGENTS_ROOT" ]]; then
   echo "ERROR: agents root not found at $AGENTS_ROOT" >&2
@@ -543,6 +550,72 @@ check_e_terminal_metadata_presence() {
   fi
 }
 
+# ── Check G: plan-level-Status ownership bullet presence ────────────────────────────────────
+# In-scope set per context/contracts/plan-status-ownership.md's classification rule (an agent
+# must carry the bullet iff its contract instructs editing a `### Phase N: ... [MARKER]` heading
+# during plan execution). This set is derived by a predicate sweep over every
+# agent-system/extensions/*/agents/*.md file (never a filename glob), NOT mechanically re-derived
+# by this lint at runtime -- the sweep itself requires reading each candidate's body for the
+# marker-editing instruction, which is not a single grep pattern. It is recorded here as a
+# curated, path-relative list, exactly as Check C's IN_SCOPE_RELATIVE_PATHS is recorded. A future
+# agent addition that should carry the bullet must be added to this list by a human/agent
+# applying the same classification rule; this check does not infer scope on its own.
+#
+# The set is 14 files, not the plan's own planning-time hypothesis of 13:
+# founder/agents/founder-implement-agent.md was re-swept at implementation time and found to
+# genuinely instruct editing `### Phase N: {Phase Name} [MARKER]` headings via the Edit tool,
+# identically to the other 13 confirmed agents -- see plan-status-ownership.md's own "Sweep
+# result diverges..." note for the full evidence.
+OWNERSHIP_IN_SCOPE_RELATIVE_PATHS=(
+  "core/agents/general-implementation-agent.md"
+  "cslib/agents/cslib-implementation-agent.md"
+  "cslib/agents/cslib-implementation-hard-agent.md"
+  "founder/agents/founder-implement-agent.md"
+  "latex/agents/latex-implementation-agent.md"
+  "lean/agents/lean-implementation-agent.md"
+  "lean/agents/lean-implementation-hard-agent.md"
+  "nix/agents/nix-implementation-agent.md"
+  "nvim/agents/neovim-implementation-agent.md"
+  "python/agents/python-implementation-agent.md"
+  "rust/agents/rust-implementation-agent.md"
+  "typst/agents/typst-implementation-agent.md"
+  "web/agents/web-implementation-agent.md"
+  "z3/agents/z3-implementation-agent.md"
+)
+
+check_g_plan_status_ownership_bullet() {
+  echo ""
+  echo "--- Check G: plan-level-Status ownership bullet presence ---"
+
+  if [[ ! -f "$PLAN_STATUS_OWNERSHIP_FRAGMENT" ]]; then
+    log_fail "Check G: canonical fragment not found at ${PLAN_STATUS_OWNERSHIP_FRAGMENT#"$REPO_ROOT"/} -- cannot verify bullet text"
+    return
+  fi
+
+  # Extract the bullet text from the fragment's fenced code block (the line containing
+  # 'Hand-edit the plan METADATA').
+  local expected
+  expected="$(grep -F 'Hand-edit the plan METADATA' "$PLAN_STATUS_OWNERSHIP_FRAGMENT" | head -n1)"
+  if [[ -z "$expected" ]]; then
+    log_fail "Check G: could not extract bullet text from fragment file"
+    return
+  fi
+
+  for rel in "${OWNERSHIP_IN_SCOPE_RELATIVE_PATHS[@]}"; do
+    local f="$AGENTS_ROOT/$rel"
+    if [[ ! -f "$f" ]]; then
+      log_fail "$rel: in-scope agent file not found"
+      continue
+    fi
+    log_info "Checking $rel"
+    if grep -qF "$expected" "$f"; then
+      log_pass "$rel: carries the plan-level-Status ownership bullet"
+    else
+      log_fail "$rel: missing the plan-level-Status ownership MUST-NOT bullet (expected text from $(rel_path "$PLAN_STATUS_OWNERSHIP_FRAGMENT"))"
+    fi
+  done
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
 # STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
@@ -588,6 +661,7 @@ main() {
   check_c_no_task_references_bullet
   check_f_artifacts_template
   check_e_terminal_metadata_presence
+  check_g_plan_status_ownership_bullet
 
   echo ""
   echo "========================================"
