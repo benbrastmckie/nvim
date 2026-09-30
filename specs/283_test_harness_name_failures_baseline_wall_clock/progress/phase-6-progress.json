@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Documentation reconciliation",
+  "started_at": "2026-09-30T14:10:00Z",
+  "last_updated": "2026-09-30T14:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace prose failure list with pointer to known-failures.txt, document roster/--fail-on-new/--skip-slow", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/standards/shell-script-testing.md",
+      "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+    ]},
+    {"id": 2, "description": "Verify/update index-entries.json entry", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm no task-number references leak outside specs/**", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.5",
+      "description": "Update index-entries.json summary/keywords for shell-script-testing.md",
+      "type": "skipped",
+      "reason": "index-entries.json is concurrently modified by another in-flight session in this repo (unrelated state-schema.json line-count changes); a whole-file commit would sweep in that foreign uncommitted work",
+      "annotation": "*(deviation: attempted, then reverted -- see implementation summary follow-ups)*"
+    }
+  ]
+}

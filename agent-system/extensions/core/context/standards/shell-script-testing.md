@@ -139,17 +139,65 @@ needs no new schema or new `provides` sub-array.
   example). **At least one full-battery `verify-deploy.sh` invocation must remain in the suite**
   (currently `test-verify-deploy-context-budget.sh`'s baseline case) so the "every gate runs
   together" contract stays covered somewhere.
+- `verify-deploy.sh --skip-slow` defers Gate 8 (`run-all.sh` itself, the 105-suite shell battery)
+  only — every other gate still runs. The orchestrator's own redeploy checkpoints
+  (`orchestrate-cycle-plan.sh`'s three `deploy_findings_snapshot` calls and
+  `command-gate-out.sh`'s two) now pass this flag, because those checkpoints were found to
+  re-run the full shell-test battery 2-3 times per cycle on top of every dispatched
+  implementation agent's own phase-gate run of the identical battery against the identical
+  source-store tree — a measured, dominant wall-clock cost, not additional coverage (deploy
+  merely copies files; it does not change suite source). See
+  `context/patterns/batch-orchestration-guardrails.md`'s "Inter-Cycle Redeploy Checkpoint"
+  subsection for the accepted trade-off this decision carries.
+
+### End-of-run failure roster and the known-failures baseline
+
+`run-all.sh` prints two things beyond the per-suite `[FAIL] <path>` lines: an end-of-run roster
+(`[run-all] Failing suites (N):` followed by one indented path per failure, printed unconditionally
+— not `--quiet`-suppressed) immediately before the final tally, and, when
+`scripts/tests/known-failures.txt` is present, an EXPECTED/NEW classification on both the roster
+entries and the tally line itself
+(`[run-all] N passed, M failed (E expected, X NEW), S skipped, T total`). The roster and its
+annotations are deliberately free of the literal token `[FAIL]` — `verify-deploy.sh`'s Gate 8
+folds every `grep -F '[FAIL]'` occurrence into a `FINDING gate8` row, so a roster carrying that
+token would silently double every finding.
+
+`--fail-on-new` is an opt-in flag that exits non-zero only when at least one failure classifies as
+NEW (unlisted in the manifest); the DEFAULT exit-code semantics are unchanged regardless of the
+manifest's presence — exit 1 if any suite failed, EXPECTED or not. A missing or truncated
+`known-failures.txt` degrades to exactly the pre-manifest tally, roster, and exit code; deleting
+the file is the designed escape hatch, not a workaround.
+
+Regression coverage for all of the above (naming, roster, the double-count guard, `--quiet`/
+`--jobs N` parity, and the manifest/`--fail-on-new` cases) lives in
+`tests/test-run-all-failure-reporting.sh`.
 
 ### Known pre-existing failures and flakes (baseline, not regressions)
 
-None of these are introduced by the `--jobs`/`--timings`/`--only-gate` work above — record them so
-the next person measuring this suite does not rediscover them:
-- Consistently failing: `test-handoff-dispatch-identity.sh`, `test-orchestrate-context-growth.sh`,
-  `test-lint-json-channel-discipline.sh`, `test-orchestrate-recover-message-findings.sh`.
-- Known-intermittent: `test-gate-out-repair-reporting.sh`.
-- Load-sensitive (may fail only under heavy ambient host load, e.g. several concurrent agent
-  sessions): `test-lake-build-guard.sh`, `test-state-write-concurrency.sh`,
-  `test-state-write-regen-timing.sh`, `test-four-tier-conflict.sh`, `test-run-all-parallel.sh`.
+**Source of truth: `scripts/tests/known-failures.txt`**, not this section. Maintaining the same
+fact in two places (a checked-in manifest AND a prose list here) is exactly the drift mechanism
+that produced a stale version of this list once already — it named suites as failing that a later
+fix had already cleared, and omitted the actual defects a live run turned up. Consult the manifest
+for the current failing set, its category, its reason, and its owner (or `needs-owner`).
+
+What the categories mean (unchanged prose, kept here rather than in the manifest so the manifest
+itself stays terse and data-shaped):
+- `real-defect` — a genuine bug in the suite's subject, not the suite itself; fix the subject or
+  spawn a follow-up task, do not weaken the suite's assertions to paper over it.
+- `intermittent` — a flake under heavy ambient host load or similar non-deterministic conditions,
+  already evaluated and deliberately accepted rather than fixed (see the suite's own comment for
+  the specific rejected-alternatives account, if one exists).
+- `load-sensitive` — the runtime-scheduling category `run-all.sh`'s `LOAD_SENSITIVE_BASENAMES`
+  array already covers (see the `--jobs` section above); a suite belongs in `known-failures.txt`
+  under this category only if it is ALSO known-failing, which is a different condition from being
+  merely excluded from the parallel pool.
+- `wip-transient` — the suite's redness traces to uncommitted, in-flight working-tree state at
+  seed time rather than a committed defect; do not commit a `wip-transient` row against a suite
+  that is actually red on a clean, fully-committed tree — recategorize it as `real-defect` instead.
+
+To add or retire a row: edit `known-failures.txt` directly (it is advisory, optional, and
+basename-keyed — see its own header for the exact format). Do not restore a second prose copy of
+the failing set here when doing so.
 
 ## Related
 

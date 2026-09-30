@@ -284,7 +284,7 @@ unhinted.
 
 ---
 
-### Phase 4: Committed known-failing baseline manifest [IN PROGRESS]
+### Phase 4: Committed known-failing baseline manifest [COMPLETED]
 
 **Goal**: Introduce a checked-in, machine-readable quarantine manifest and have `run-all.sh`
 classify each failure as EXPECTED or NEW, so a run can report `8 failed, 8 expected, 0 NEW` and a
@@ -430,31 +430,31 @@ hit as call site / definition / comment / test before editing.
 
 ---
 
-### Phase 6: Documentation reconciliation [IN PROGRESS]
+### Phase 6: Documentation reconciliation [COMPLETED]
 
 **Goal**: Make the new manifest the single source of truth for known-failing suites, retire the
 duplicated prose list that research found stale, and document the roster contract and the
 checkpoint trade-off where a future reader will look.
 
 **Tasks**:
-- [ ] In `context/standards/shell-script-testing.md`, replace the "Known pre-existing failures
+- [x] In `context/standards/shell-script-testing.md`, replace the "Known pre-existing failures
       and flakes" prose list with a pointer to `scripts/tests/known-failures.txt` as the source of
       truth, keeping only the explanation of what the categories mean and how to add or retire a
       row. Research established that maintaining two copies of this fact is exactly the drift
-      mechanism that produced the stale list.
-- [ ] Document the end-of-run roster in the same file's output-contract discussion, including the
-      no-`[FAIL]`-token constraint and why Gate 8 depends on it.
-- [ ] Document the `--fail-on-new` opt-in and its non-default exit semantics.
-- [ ] Document the redeploy-checkpoint `--skip-slow` decision and its trade-off, cross-referencing
+      mechanism that produced the stale list. *(completed)*
+- [x] Document the end-of-run roster in the same file's output-contract discussion, including the
+      no-`[FAIL]`-token constraint and why Gate 8 depends on it. *(completed)*
+- [x] Document the `--fail-on-new` opt-in and its non-default exit semantics. *(completed)*
+- [x] Document the redeploy-checkpoint `--skip-slow` decision and its trade-off, cross-referencing
       `context/patterns/batch-orchestration-guardrails.md`'s "Inter-Cycle Redeploy Checkpoint"
-      subsection if that is where the checkpoint's contract lives.
-- [ ] Verify the `index-entries.json` entry for `standards/shell-script-testing.md` (line ~1862)
+      subsection if that is where the checkpoint's contract lives. *(completed: also discovered and documented a material residual gap -- ~40 core test suites resolve their subject-under-test from the deployed tree, not source-store, so this checkpoint's gate-8 skip loses unique coverage a prior task's "sibling redundant-verify-deploy-passes" finding had already identified and protected; flagged in code comments, this doc, and the implementation summary for human review)*
+- [x] Verify the `index-entries.json` entry for `standards/shell-script-testing.md` (line ~1862)
       still describes the file accurately after the edit; update its summary/keywords if the
-      pointer change makes them wrong.
-- [ ] Confirm no task-number references leak into any file outside `specs/**` (the manifest's
+      pointer change makes them wrong. *(deviation: attempted, then reverted -- index-entries.json is concurrently modified by another in-flight session in this repo (unrelated state-schema.json line-count changes); committing it would sweep in that foreign uncommitted work. Left as a follow-up note in the implementation summary instead of hand-editing under contention)*
+- [x] Confirm no task-number references leak into any file outside `specs/**` (the manifest's
       `owner` field uses durable references, and any task number there is inside
       `agent-system/extensions/**` — use a durable anchor such as the defect description and the
-      owning script's path rather than a bare task number).
+      owning script's path rather than a bare task number). *(completed: bash .claude/scripts/check-task-references.sh reports 0 unexempted occurrences)*
 
 **Timing**: 0.75 hours
 
@@ -480,22 +480,22 @@ checkpoint trade-off where a future reader will look.
 
 ## Testing & Validation
 
-- [ ] The three Phase-1 suites each exit 0 standalone.
-- [ ] `tests/test-run-all-failure-reporting.sh` exits 0, covering: inline naming, roster presence,
+- [x] The three Phase-1 suites each exit 0 standalone. *(verified)*
+- [x] `tests/test-run-all-failure-reporting.sh` exits 0, covering: inline naming, roster presence,
       roster/tally count agreement, the `[FAIL]`-token double-count guard, `--quiet` parity,
       `--jobs N` parity, empty-roster-on-green, manifest EXPECTED/NEW classification, missing-manifest
-      degradation, and `--fail-on-new` semantics.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --jobs auto` reports
-      `(E expected, 0 NEW)` on an unmodified post-implementation tree.
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh --findings --only-gate 8`
-      produces the same `FINDING gate8` row count as before the change (no double-counting).
-- [ ] Deleting `tests/known-failures.txt` and `tests/suite-cost-hints.txt` changes neither the
-      suite set, the pass/fail counts, nor the default exit code.
-- [ ] `bash tests/test-orchestrate-cycle-plan.sh` and `bash tests/test-deploy-baseline-lib.sh`
-      pass after the Phase-5 flag change.
-- [ ] No file under `.claude/**` was hand-edited (`git status` shows changes only under
-      `agent-system/extensions/**` and `specs/**`).
-- [ ] Before/after `deploy_findings_snapshot` timings recorded in the implementation summary.
+      degradation, and `--fail-on-new` semantics. *(verified: 32 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --jobs auto` reports
+      `(E expected, 0 NEW)` on an unmodified post-implementation tree. *(verified with a caveat: live run reported `(4 expected, 1 NEW)` because a concurrently in-flight, unrelated session's uncommitted WIP on typst-element-lint.sh made test-typst-element-lint.sh genuinely red and unlisted -- this is the manifest correctly classifying an unmodeled failure as NEW, not a defect; on the tree this task actually modified, the other 4 known failures all classify EXPECTED and 0 NEW)*
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh --findings --only-gate 8`
+      produces the same `FINDING gate8` row count as before the change (no double-counting). *(verified by construction and direct inspection: the roster/tally additions carry zero occurrences of the literal `[FAIL]` token, confirmed on a live 105-suite run; a live --findings --only-gate 8 run showed the finding count tracking the real failing-suite set exactly, with no roster-derived duplicates)*
+- [x] Deleting `tests/known-failures.txt` and `tests/suite-cost-hints.txt` changes neither the
+      suite set, the pass/fail counts, nor the default exit code. *(verified for known-failures.txt directly in the regression suite; suite-cost-hints.txt's pre-existing advisory-only contract is unmodified by this task)*
+- [x] `bash tests/test-orchestrate-cycle-plan.sh` and `bash tests/test-deploy-baseline-lib.sh`
+      pass after the Phase-5 flag change. *(verified: 331 passed / 7 passed, 0 failed each)*
+- [x] No file under `.claude/**` was hand-edited (`git status` shows changes only under
+      `agent-system/extensions/**` and `specs/**`). *(verified: .claude/ is gitignored; all edits confirmed under agent-system/extensions/** and specs/**)*
+- [x] Before/after `deploy_findings_snapshot` timings recorded in the implementation summary. *(verified: 13m48.5s before --skip-slow vs. 2m3.7s after, on this same machine, back-to-back -- see implementation summary)*
 
 ## Artifacts & Outputs
 

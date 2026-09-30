@@ -634,6 +634,26 @@ changed as a result: `deploy-baseline-lib.sh`, this checkpoint's three
 `deploy_findings_snapshot` call sites, `deploy-ledger-lib.sh`, and `command-gate-out.sh` all
 remain exactly as documented elsewhere in this section.
 
+**Superseded by a LATER task's wall-clock fix — this pair now runs `--skip-slow`, accepting a
+narrower version of the exact gap named above**: a subsequent task (the harness-roster/baseline/
+wall-clock fix; see `agent-system/extensions/core/scripts/tests/run-all.sh`'s own header for the
+roster/manifest half of that work) found the full-depth pre/post pair to be a redundant THIRD
+full 105-suite run within one orchestration cycle -- on top of every dispatched implementation
+agent's own phase-gate run of the identical battery -- and a measured, dominant contributor to a
+single real dispatch consuming roughly 45 minutes of wall clock. That task added `--skip-slow` to
+all five `deploy_findings_snapshot` call sites (this checkpoint's three, plus
+`command-gate-out.sh`'s two), deferring gate 8 on BOTH sides of every pair rather than sharing one
+capture between them (the single-capture idea this section rejects above). This is a STRICTER
+version of the coverage loss the single-capture rejection warned about, not a rediscovery of a
+solved problem: gate 8 is now skipped entirely by this checkpoint, so the ~40 deploy-tree-first
+suites named above receive NO coverage from this checkpoint against a freshly-deployed tree,
+whereas the rejected single-capture idea would at least have run gate 8 once. This trade-off was
+made deliberately and is flagged, not silently accepted, in that task's own
+`orchestrate-cycle-plan.sh` comment (search "DEFECT A / --skip-slow WALL-CLOCK TRADE-OFF") and in
+its implementation summary; a narrower follow-up (running only the ~40 deploy-tree-first suites
+against gate 8 post-deploy, cheaply, instead of either the full battery or nothing) is recommended
+as a separate future task rather than attempted inline with the wall-clock fix.
+
 Two further alternatives that same task considered and rejected/deferred, recorded here so a
 later pass does not rediscover them:
 - **Cross-cycle whole-snapshot caching in the durable redeploy ledger** (extending
