@@ -435,6 +435,7 @@ done
 KNOWN_TOP_LEVEL_FIELDS=(
   next_project_number default_task_type active_projects active_topics completed_projects
   repository_health memory_health version vault_count vault_history
+  deployment_versions active_goal
 )
 unknown_top=$(jq -r 'keys[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; do
   known=0

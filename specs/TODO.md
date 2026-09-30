@@ -37,7 +37,7 @@ next_project_number: 286
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
-283 [PLANNED] — Fix the agent-system test harness...
+283 [IMPLEMENTING] — Fix the agent-system test harness...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 
@@ -239,7 +239,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 283. Test harness name failures baseline wall clock
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -645,6 +645,50 @@ behind unrelated work would be the wrong trade):
   dirty-worktree task. The edit here is a small comment/reader correction near line 1273, far from
   the worktree-landing block near line 836, but whichever lands second should re-read the file.
 - scripts/orchestrate-triage-classify.sh appears in no other active task's file_scope.
+
+
+=== TWO TOP-LEVEL FIELDS SETTLED BY HAND 2026-09-30 (outcome (a)); RE-DERIVE, DO NOT RE-LITIGATE ===
+Observed in ~/Projects/Logos/Verification (a DIFFERENT consumer repo from the BimodalLogic
+evidence above), where validate-state.sh --deep reported exactly two failures, both top-level
+unknown fields: `active_goal` and `deployment_versions`. Both are now modelled in
+context/schemas/state-schema.json and documented in
+context/reference/state-management-schema.md. Nothing was deleted; no data moved.
+
+`deployment_versions` IS THE STRONGEST CASE OF ALL EIGHT FIELDS, AND THIS TASK'S FIELD LIST DID
+NOT CONTAIN IT. The BimodalLogic snapshot that produced the list above had never run `/tag`, so
+the field never appeared. It has a live writer INSIDE the agent system:
+skills/skill-tag/SKILL.md circa lines 509-545 both creates the object when absent and updates
+`last_deployed`, `last_deployed_at` and a ten-deep `deployment_history` on every tag. So
+`additionalProperties: false` was rejecting a top-level field one of the system's own skills
+produces -- meaning every consumer repo that had ever run `/tag` failed the
+unknown-top-level-field check through no fault of its own, and would fail again on the next tag
+no matter what a consumer-side migration did. Outcome (c) was never available here and outcome
+(b) had nowhere to migrate to, so (a) was forced rather than chosen. Modelled with the exact
+sub-shape skill-tag writes, including the [0:9] history cap.
+
+`active_goal` was modelled, not retired, deliberately. This task's own finding stands -- no
+writer or reader in the agent system -- but that is not sufficient for (c) under this task's
+hard constraint, and the Verification repo's value is a real multi-sentence goal string. Note a
+CROSS-REPO COORDINATION POINT this task should not be surprised by: that repo's task 155 owns its
+`active_goal` content and its description offers two options, "rewrite it as the three-layer aim,
+or remove it, since validate-state.sh reports it as an unknown top-level field". Modelling the
+field here makes both of 155's options gate-clean, which is the point: 155 should choose on
+content grounds, not to appease a validator. Had this task ruled (c) while 155 chose "rewrite",
+the two repos would have deadlocked on the same failure.
+
+WHAT REMAINS THIS TASK'S: the other six fields (`artifacts` and `metadata` and `last_updated` at
+top level; `blockers`, `previous_status`, `researched`, `resume_phase` at entry level -- seven
+counting `metadata`), the postflight:1273-reader-versus-:1276-comment contradiction, the
+`blockers` string-versus-array shape, validator test coverage, and above all WORK ITEM (6), the
+`additionalProperties: false` posture. Work item (6) is untouched and is arguably now better
+motivated, not less: the two fields settled here were both false failures, and one of them was
+the system rejecting its own output, which is exactly the recurrence argument (6) exists to weigh.
+Work item (5)'s test coverage should pin these two alongside whatever else is ruled.
+
+FILE FOOTPRINT NOTE: context/schemas/state-schema.json and
+context/reference/state-management-schema.md were edited by hand for this, so re-read both before
+applying this task's own ruling rather than assuming the shapes recorded earlier in this
+description.
 
 ---
 

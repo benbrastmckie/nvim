@@ -73,6 +73,8 @@ authoritative source this table glosses).
 | `version` | string | No | Documented-optional, confirmed live. State-store schema/version marker string (e.g. `"1.1.0"`) |
 | `vault_count` | number | No | See Vault Fields below |
 | `vault_history` | array | No | See Vault Fields below |
+| `deployment_versions` | object | No | Documented-optional, confirmed live. Semantic-version deployment record written by `skill-tag` (the `/tag` command): `last_deployed`, `last_deployed_at`, and a `deployment_history` array of `{version, deployed_at, commit_sha}` capped at ten most-recent-first entries. Modelled because the agent system writes it itself -- until it was added here, `additionalProperties: false` rejected a field one of its own skills produces, so every repo that had run `/tag` failed the unknown-top-level-field check |
+| `active_goal` | string | No | Documented-optional. Free-prose statement of the repository's current overall aim, for human orientation. No script writes or reads it; it is authored by a repo owner or by whichever task owns the repository's framing. Modelled rather than retired so a repo holding a real goal string does not fail validation for it; omitting it is equally valid |
 
 ### Project Entry Fields
 

@@ -4,7 +4,10 @@
   "title": "specs/state.json Schema",
   "description": "JSON Schema for the top-level task-management state store, specs/state.json. This is the single machine-readable definition of the state.json shape and the closed task-status enum -- scripts/lib/status-vocabulary.sh exports the same enum as a sourced shell array and MUST be kept byte-equal to this schema's status enum (see scripts/tests/test-status-vocabulary.sh's drift assertion). Scope note: this schema targets the ACTIVE state store (specs/state.json) only. specs/archive/state.json has a materially different, looser shape (archived_projects/abandoned_projects/completed_projects arrays with many one-off historical fields such as researching_2, plan_metadata, previous_status) and is deliberately NOT validated against this schema -- see context/reference/state-management-schema.md's single-source note for why the two stores are not schema-unified in this pass. Modeled structurally on schemas/events-schema.json (draft-07, required/properties/additionalProperties: false).",
   "type": "object",
-  "required": ["next_project_number", "active_projects"],
+  "required": [
+    "next_project_number",
+    "active_projects"
+  ],
   "properties": {
     "next_project_number": {
       "type": "integer",
@@ -12,18 +15,25 @@
       "description": "Next task number to assign. Vault archival (see state-management-schema.md's Vault Fields) resets this when it exceeds 1000."
     },
     "default_task_type": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "description": "Optional override of the /task keyword-routing table for all new tasks in this project (null by default; meta keywords and extension keyword_overrides still take precedence -- see the root CLAUDE.md's Task-Type-Based Routing section). Documented-optional: absent in the current live snapshot, but a real, consumed field (commands/task.md)."
     },
     "active_projects": {
       "type": "array",
       "description": "In-flight task entries. Terminal-status entries (completed/abandoned/expanded) are archived out of this array by /todo, not deleted in place.",
-      "items": { "$ref": "#/definitions/projectEntry" }
+      "items": {
+        "$ref": "#/definitions/projectEntry"
+      }
     },
     "active_topics": {
       "type": "array",
       "description": "Documented-optional, confirmed live. Distinct topic strings currently in use across active_projects entries' topic field.",
-      "items": { "type": "string" }
+      "items": {
+        "type": "string"
+      }
     },
     "completed_projects": {
       "type": "array",
@@ -39,7 +49,13 @@
         },
         "status": {
           "type": "string",
-          "enum": ["healthy", "manageable", "concerning", "critical", "unknown"],
+          "enum": [
+            "healthy",
+            "manageable",
+            "concerning",
+            "critical",
+            "unknown"
+          ],
           "description": "Derived from build_errors: null -> \"unknown\" (no applicable structural probe found -- not measured); 0 -> \"healthy\"; >0 -> \"critical\". \"manageable\" and \"concerning\" are reserved for a future graded metric and are not currently emitted by any producer."
         },
         "todo_count": {
@@ -51,7 +67,10 @@
           "description": "Documented-optional sub-field, confirmed live. Count of FIXME:/FIX: tags found by the last scan."
         },
         "build_errors": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "description": "Documented-optional sub-field, confirmed live. Count of build/lint errors found by the last scan. null means no applicable structural probe found -- not measured (same nullable-field pattern as memory_health.last_distilled below), distinct from both 0 and any positive count."
         },
         "phantom_paths": {
@@ -65,12 +84,27 @@
       "type": "object",
       "description": "Documented-optional, confirmed live. Memory-vault health snapshot maintained by /distill.",
       "properties": {
-        "last_distilled": { "type": ["string", "null"] },
-        "distill_count": { "type": "integer" },
-        "total_memories": { "type": "integer" },
-        "never_retrieved": { "type": "integer" },
-        "health_score": { "type": "number" },
-        "status": { "type": "string" }
+        "last_distilled": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "distill_count": {
+          "type": "integer"
+        },
+        "total_memories": {
+          "type": "integer"
+        },
+        "never_retrieved": {
+          "type": "integer"
+        },
+        "health_score": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string"
+        }
       },
       "additionalProperties": false
     },
@@ -86,7 +120,50 @@
     "vault_history": {
       "type": "array",
       "description": "Documented-optional. History of vault operations with metadata; empty until the first vault operation fires.",
-      "items": { "$ref": "#/definitions/vaultHistoryEntry" }
+      "items": {
+        "$ref": "#/definitions/vaultHistoryEntry"
+      }
+    },
+    "deployment_versions": {
+      "type": "object",
+      "description": "Documented-optional. Semantic-version deployment record, written by skill-tag (the /tag command) when a version tag is created and pushed; see skills/skill-tag/SKILL.md, which both creates this object when absent and updates it on every subsequent tag. Modelled here because the agent system itself writes it: before this entry, the schema's additionalProperties:false rejected a field one of its own skills produces, so any repo that had ever run /tag failed validate-state.sh's unknown-top-level-field check through no fault of its own.",
+      "properties": {
+        "last_deployed": {
+          "type": "string",
+          "description": "The most recently deployed semantic version tag, e.g. \"v0.1.0\"."
+        },
+        "last_deployed_at": {
+          "type": "string",
+          "description": "ISO8601 UTC timestamp of the most recent deployment."
+        },
+        "deployment_history": {
+          "type": "array",
+          "description": "Most-recent-first list of past deployments. skill-tag retains at most ten entries (it prepends the new one and slices [0:9]).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "description": "The semantic version tag deployed."
+              },
+              "deployed_at": {
+                "type": "string",
+                "description": "ISO8601 UTC timestamp of that deployment."
+              },
+              "commit_sha": {
+                "type": "string",
+                "description": "Full SHA of the commit the tag pointed at."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "active_goal": {
+      "type": "string",
+      "description": "Documented-optional. A free-prose statement of the repository's current overall aim, used for human orientation. No script in the agent system writes or reads it; it is authored by a repo owner or by a task that owns the repository's framing. Modelled rather than retired so that a repo carrying a real goal string does not fail validation for holding it; a repo is equally free to omit it."
     }
   },
   "additionalProperties": false,
@@ -111,7 +188,11 @@
     },
     "artifactEntry": {
       "type": "object",
-      "required": ["type", "path", "summary"],
+      "required": [
+        "type",
+        "path",
+        "summary"
+      ],
       "properties": {
         "type": {
           "type": "string",
@@ -130,18 +211,40 @@
     },
     "memoryCandidateEntry": {
       "type": "object",
-      "required": ["content", "category", "source_artifact", "confidence", "suggested_keywords"],
+      "required": [
+        "content",
+        "category",
+        "source_artifact",
+        "confidence",
+        "suggested_keywords"
+      ],
       "properties": {
-        "content": { "type": "string" },
+        "content": {
+          "type": "string"
+        },
         "category": {
           "type": "string",
-          "enum": ["TECHNIQUE", "PATTERN", "CONFIG", "WORKFLOW", "INSIGHT"]
+          "enum": [
+            "TECHNIQUE",
+            "PATTERN",
+            "CONFIG",
+            "WORKFLOW",
+            "INSIGHT"
+          ]
         },
-        "source_artifact": { "type": "string" },
-        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "source_artifact": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
         "suggested_keywords": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false
@@ -150,10 +253,18 @@
       "type": "object",
       "description": "Overwrite (not append) semantics -- see state-management-schema.md's Reflection Field section.",
       "properties": {
-        "what_worked": { "type": "string" },
-        "what_was_hard": { "type": "string" },
-        "what_was_missed": { "type": "string" },
-        "successes": { "type": "string" }
+        "what_worked": {
+          "type": "string"
+        },
+        "what_was_hard": {
+          "type": "string"
+        },
+        "what_was_missed": {
+          "type": "string"
+        },
+        "successes": {
+          "type": "string"
+        }
       },
       "additionalProperties": false
     },
@@ -177,7 +288,9 @@
           "minLength": 1,
           "description": "Snake_case slug from title."
         },
-        "status": { "$ref": "#/definitions/taskStatus" },
+        "status": {
+          "$ref": "#/definitions/taskStatus"
+        },
         "task_type": {
           "type": "string",
           "minLength": 1,
@@ -206,7 +319,12 @@
         },
         "priority": {
           "type": "string",
-          "enum": ["critical", "high", "medium", "low"],
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
           "description": "Documented-optional. Relative urgency, independent of dependency order: a wave-1 task may be low and a wave-3 task high. Written by /review's severity mapping and by task-creation paths that carry an explicit urgency signal; absent means unranked, NOT low. Admitted to the schema after five live entries (53, 66, 74, 75, 76) failed validate-state.sh --deep against additionalProperties: false -- the field carried real signal, so it was admitted rather than stripped."
         },
         "created": {
@@ -220,21 +338,29 @@
         "dependencies": {
           "type": "array",
           "description": "Task numbers that must complete before this task can start. No self-reference, no cycles.",
-          "items": { "type": "integer" }
+          "items": {
+            "type": "integer"
+          }
         },
         "file_scope": {
           "type": "array",
           "description": "Documented-optional. Anticipated repo-relative paths/prefixes this task expects to touch (prospective, not filesystem-validated).",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "research_questions": {
           "type": "array",
           "description": "Documented-optional. Planner-issued focused question list, present only after a needs_research verdict; overwrite-on-write (not additive, unlike file_scope) -- see context/reference/state-management-schema.md's Research Questions Field section.",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "artifacts": {
           "type": "array",
-          "items": { "$ref": "#/definitions/artifactEntry" }
+          "items": {
+            "$ref": "#/definitions/artifactEntry"
+          }
         },
         "next_artifact_number": {
           "type": "integer",
@@ -248,27 +374,52 @@
         "roadmap_items": {
           "type": "array",
           "description": "Documented-optional. Explicit ROADMAP.md item texts (non-meta tasks only).",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "memory_candidates": {
           "type": "array",
           "description": "Documented-optional. Structured memory candidates emitted by agents; append-only during the task lifecycle, consumed and removed during archival.",
-          "items": { "$ref": "#/definitions/memoryCandidateEntry" }
+          "items": {
+            "$ref": "#/definitions/memoryCandidateEntry"
+          }
         },
-        "reflection": { "$ref": "#/definitions/reflectionObject" }
+        "reflection": {
+          "$ref": "#/definitions/reflectionObject"
+        }
       },
       "additionalProperties": false
     },
     "vaultHistoryEntry": {
       "type": "object",
-      "required": ["vault_number", "vault_dir", "created_at", "task_range", "archived_count", "final_task_number"],
+      "required": [
+        "vault_number",
+        "vault_dir",
+        "created_at",
+        "task_range",
+        "archived_count",
+        "final_task_number"
+      ],
       "properties": {
-        "vault_number": { "type": "integer" },
-        "vault_dir": { "type": "string" },
-        "created_at": { "type": "string" },
-        "task_range": { "type": "string" },
-        "archived_count": { "type": "integer" },
-        "final_task_number": { "type": "integer" }
+        "vault_number": {
+          "type": "integer"
+        },
+        "vault_dir": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "task_range": {
+          "type": "string"
+        },
+        "archived_count": {
+          "type": "integer"
+        },
+        "final_task_number": {
+          "type": "integer"
+        }
       },
       "additionalProperties": false
     }
