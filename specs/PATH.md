@@ -87,9 +87,15 @@ removes the destructive branch itself, and 279 is independent (wave 1 alongside 
 | Task | What lands | Note |
 |---|---|---|
 | **278** | Forbid forwarding the Agent tool's harness-level `isolation` parameter in Move 2; `orchestrate-cycle-plan.sh` already emits `isolation`/`worktree_path` on every dispatch row with nothing prohibiting their use | Documentation and contract only, no executable logic. **Cheapest of the four and it closes the trigger** — do it first |
-| **277** | `git-commit-scoped.sh` cannot commit inside a dispatch worktree and fails as a **false negative that reads as success** to its caller: `PROJECT_ROOT` is derived from `BASH_SOURCE[0]`, so it always targets the main tree with no retarget flag | The single sanctioned commit path for every skill postflight. 276's fix is not trustworthy until this one lands |
-| **276** | `orchestrate-cycle-postflight.sh` folds `landed` and `nothing_to_land` into one success branch, which then releases the worktree — so a dispatch that authored verified work but failed to commit it has that work destroyed silently | **HIGHEST SEVERITY: silent data loss.** Shares `dispatch-worktree.sh` with 268 |
-| **279** | State schema rejects live orchestration fields; decide the per-field policy and ship a migration tool if one is warranted | Observed in BimodalLogic; that repo's data migration is its owner's separate action. **Gates 271** (call D) |
+| **277** | `git-commit-scoped.sh` cannot commit inside a dispatch worktree and fails as a **false negative that reads as success** to its caller: `PROJECT_ROOT` is derived from `BASH_SOURCE[0]`, so it always targets the main tree with no retarget flag | The single sanctioned commit path for every skill postflight. 276's fix is not trustworthy until this one lands. **Depends on 278**; admits in cycle 1 |
+| **276** | `orchestrate-cycle-postflight.sh` folds `landed` and `nothing_to_land` into one success branch, which then releases the worktree — so a dispatch that authored verified work but failed to commit it has that work destroyed silently | **HIGHEST SEVERITY: silent data loss.** Shares `dispatch-worktree.sh` with 268. **Depends on 277**; admits last |
+| **279** | State schema rejects live orchestration fields; decide the per-field policy and ship a migration tool if one is warranted | Observed in BimodalLogic; that repo's data migration is its owner's separate action. No edge: admits in cycle 0 beside 278. **Gates 271** (call D) |
+
+Measured on the edges (`--dry-run`, 2026-09-30): cycle 0 dispatches **278 and 279 in parallel**;
+277 and 276 are held silently (they appear in neither `deferred[]` nor `blocked[]`) and admit as
+their predecessors reach a terminal status. The consequence to know: **`/orchestrate 277` or
+`/orchestrate 276` on its own now stops with `no_eligible_stuck` and dispatches nothing.** Either
+run the lane as the one call above, or name the predecessor alongside it.
 
 ---
 
@@ -170,8 +176,9 @@ front pair on their own.
   — **space-separated**; admits what you expect, `md5sum specs/state.json` unchanged. Research and
   plan dispatches are exempt from the self-modifying defer (`--phase-map`), so overlap only
   serializes at implement time.
-- `bash .claude/scripts/validate-state.sh --deep` — 0 failures. Three `file_scope` warnings are
-  expected today (268, 270); treat any *new* warning as real.
+- `bash .claude/scripts/validate-state.sh --deep` — 0 failures. **One** `file_scope` warning is
+  expected today (270's, coarse enough to overlap 20 non-terminal tasks); 268 now declares one.
+  Treat any *new* warning as real. Re-measured 2026-09-30: 18 passed, 1 warning, 0 failed.
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh` — green, on an idle machine, exit
   code read directly (never through `tail`/`head`). `--jobs 4` is opt-in and reproduces the
   serial pass/fail set except under heavy contention (261's finding).
