@@ -161,27 +161,30 @@ additions only, zero deletions, and every added line outside a ``` fence).
 
 ---
 
-### Phase 2: State the never-forward rule in the emitting script's header [NOT STARTED]
+### Phase 2: State the never-forward rule in the emitting script's header [COMPLETED]
 
 **Goal**: The output-schema header that documents `isolation`/`worktree_path` says explicitly that
 these fields record a posture already in effect and are never arguments to forward to the Agent
 tool, rather than leaving "dispatch-site wiring" to carry that meaning implicitly.
 
 **Tasks**:
-- [ ] Re-read `scripts/orchestrate-cycle-plan.sh`'s header block immediately before editing
+- [x] Re-read `scripts/orchestrate-cycle-plan.sh`'s header block immediately before editing
       (Territory contract — this file is co-owned by four other tasks, one of which decomposes it).
-- [ ] Locate the `isolation`/`worktree_path` documentation by CONTENT anchor — the sentence
+      *(completed: content anchor unchanged since research)*
+- [x] Locate the `isolation`/`worktree_path` documentation by CONTENT anchor — the sentence
       beginning `` `isolation` (`"none"` or `"worktree"` `` — not by line number. If the file has
       been decomposed or the header relocated since this plan was written, re-derive where the
       note belongs in the new layout rather than assuming the original location.
-- [ ] Extend that documentation with an explicit statement: both fields RECORD a posture already
+      *(completed: located via grep on content anchor, no decomposition occurred)*
+- [x] Extend that documentation with an explicit statement: both fields RECORD a posture already
       put into effect before the row was built (the worktree, if any, was provisioned earlier in
       this same function) and are consumed only by this pipeline's own downstream bookkeeping —
-      never an argument passed to the Agent tool call.
-- [ ] Add a forward pointer to the new Move 2 MUST NOT by section name (`skill-orchestrate/SKILL.md`'s
-      Move 2), never by line number and never by task number.
-- [ ] Keep every changed line inside the `#` comment region; change no executable line.
-- [ ] Commit this file's hunk alone with an explicit pathspec.
+      never an argument passed to the Agent tool call. *(completed)*
+- [x] Add a forward pointer to the new Move 2 MUST NOT by section name (`skill-orchestrate/SKILL.md`'s
+      Move 2), never by line number and never by task number. *(completed)*
+- [x] Keep every changed line inside the `#` comment region; change no executable line.
+      *(completed: verified via diff grep, all changed lines begin with `#`)*
+- [x] Commit this file's hunk alone with an explicit pathspec. *(completed)*
 
 **Timing**: 20 minutes
 

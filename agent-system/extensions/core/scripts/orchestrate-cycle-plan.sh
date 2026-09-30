@@ -221,6 +221,16 @@
 # Move 2/Move 3 and `orchestrate-cycle-postflight.sh` read named fields, never positionally, and
 # neither needed an edit for this addition (confirmed by reading both before this change; see
 # the decision record for the full evidence this predicate implements).
+# Both `isolation` and `worktree_path` RECORD a working-tree/build isolation posture already put
+# into effect before this row was built (the worktree, if any, was provisioned earlier in this
+# same function, via dispatch-worktree.sh) -- they are consumed only by this pipeline's own
+# downstream bookkeeping (Move 3's per-task postflight and this script's own row builders) and
+# are NEVER an argument to pass to the Agent tool call itself. `isolation`'s value `"worktree"`
+# collides with the Agent tool's own `isolation` parameter, whose enum also includes `"worktree"`,
+# so a forwarded row value would be syntactically valid and raise no error while silently
+# stacking a second harness checkout on top of the one already provisioned. See
+# `skill-orchestrate/SKILL.md`'s Move 2 MUST NOT for the enforced point-of-use prohibition and
+# the full stacked-checkout/cross-checkout-git-refusal consequence.
 #
 # Exit codes:
 #   0 - a plan was printed on stdout, regardless of its dispatch/deferred/blocked/stop contents
