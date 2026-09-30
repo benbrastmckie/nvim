@@ -335,44 +335,44 @@ identical, and add a comment in the lint naming the fragment as the source of tr
 
 ---
 
-### Phase 4: Shared plan-status-line grammar library and validator wiring [NOT STARTED]
+### Phase 4: Shared plan-status-line grammar library and validator wiring [COMPLETED]
 
 **Goal**: `validate-artifact.sh` rejects M1/M2/M3 on a plan artifact and accepts the conforming
 shape including trailing annotations, with the classification in a shared library rather than a
 third independent copy of the regex.
 
 **Tasks**:
-- [ ] Re-run the conformance sweep over every `specs/*/plans/*.md` and
+- [x] Re-run the conformance sweep over every `specs/*/plans/*.md` and
       `specs/archive/*/plans/*.md` with the M1/M2/M3 predicate. Planning measured **193 plans, 0
       non-conforming**. If the count is still 0, land the new check at **error** level. If any
       plan is non-conforming, land it at **warn** level instead and record the promotion criterion
       in the script (the same advisory-first idiom the Verification Tier check documents) — do not
-      silently error and flood gate-out.
-- [ ] Create `agent-system/extensions/core/scripts/lib/plan-status-line.sh` exporting a
+      silently error and flood gate-out. *(completed: re-swept at implementation time, 199 plans (6 more than the planning-time count), 0 non-conforming; landed at error level)*
+- [x] Create `agent-system/extensions/core/scripts/lib/plan-status-line.sh` exporting a
       classifier, e.g. `plan_status_classify FILE` printing one of `OK`, `M1`, `M2`, `M3` plus the
       offending line number and content on the malformed arms. Mirror
       `update-plan-status.sh:77-118`'s logic exactly: `^- \*\*Status\*\*:` prefix detection,
       then `^-\ \*\*Status\*\*:\ \[[^]]*\]` for well-formed (trailing text after `]` tolerated by
-      design), then a bare `\[[^]]*\]` presence test to separate M3 from M2.
-- [ ] Give the library a header comment that (a) names `update-plan-status.sh` as the sibling
+      design), then a bare `\[[^]]*\]` presence test to separate M3 from M2. *(completed)*
+- [x] Give the library a header comment that (a) names `update-plan-status.sh` as the sibling
       implementation whose behavior it must agree with, (b) states the accept-trailing-text policy
       and points to `plan-format.md`'s "Plan-level vs. phase-level markers" subsection, and (c)
       records that refactoring `update-plan-status.sh` onto this library is deferred follow-up
       (out of this task's scope boundary), with the Phase 5 conformance test named as the guard in
-      the meantime.
-- [ ] Source the library in `validate-artifact.sh`'s `plan` branch using the **same lazy,
+      the meantime. *(completed)*
+- [x] Source the library in `validate-artifact.sh`'s `plan` branch using the **same lazy,
       `${BASH_SOURCE[0]}`-relative, exit-5-on-missing idiom** already used for
       `phase-heading-patterns.sh` (correct in both the source store and the deployed tree; never
       fall through to an inline pattern). Extend the script's exit-code header comment to name the
-      second library.
-- [ ] Emit a shape-specific `log_error` per malformed arm, quoting the line number and content:
+      second library. *(completed)*
+- [x] Emit a shape-specific `log_error` per malformed arm, quoting the line number and content:
       M1 "plan-level Status line not found (expected: `- **Status**: [STATUS]`)"; M2 "plan-level
       Status line has no [STATUS] bracket pair"; M3 "plan-level Status line has unexpected text
       between the prefix and the bracket". Keep the wording aligned with
       `update-plan-status.sh`'s own three diagnostics so an operator sees the same language from
-      both layers.
-- [ ] **Do not add a `--fix` repair arm.** Add a comment block at the check stating the decision
-      and its reasoning (see Verification below for the reasoning that must be recorded).
+      both layers. *(completed)*
+- [x] **Do not add a `--fix` repair arm.** Add a comment block at the check stating the decision
+      and its reasoning (see Verification below for the reasoning that must be recorded). *(completed: reasoning recorded in validate-artifact.sh's header comment)*
 
 **Timing**: 1.25 hours
 

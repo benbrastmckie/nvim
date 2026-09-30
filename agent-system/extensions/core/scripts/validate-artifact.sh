@@ -6,9 +6,26 @@
 # Types: report, plan, summary
 # Exit codes: 0 = valid, 1 = errors found, 2 = auto-fixed, 3 = file not found, 4 = unknown type,
 #             5 = environment error (plan-type only: scripts/lib/phase-heading-patterns.sh, the
-#             shared phase-heading pattern library, could not be found at its expected sibling
-#             path -- see context/formats/plan-format.md's "Canonical phase-heading shape"
-#             subsection)
+#             shared phase-heading pattern library, OR scripts/lib/plan-status-line.sh, the
+#             shared plan-level Status-line grammar library, could not be found at its expected
+#             sibling path -- see context/formats/plan-format.md's "Canonical phase-heading
+#             shape" subsection and its "Plan-level vs. phase-level markers" subsection)
+#
+# --fix NON-PARTICIPATION (plan-level Status-line grammar only): the Status-line grammar check
+# added below deliberately does NOT participate in --fix. A malformed plan-level Status line is
+# reported as an error and left byte-identical. Reasoning: (1) the existing --fix machinery in
+# this script only ever inserts a placeholder for an ABSENT metadata field -- it has never
+# rewritten an author-supplied value, so a grammar repair would be a new mutation class, not an
+# extension of the existing one; (2) M3 (text between the prefix and the bracket) offers no
+# derivable intent and M1 (no Status line at all) offers no anchor, so two of the three malformed
+# shapes are unrepairable by any general rule anyway; (3) most importantly, auto-repair would
+# erase the only signal that an agent hand-wrote the line, defeating the producer-side purpose
+# this check exists for. This is consistent with the shipped decision recorded as decision D-A
+# ("--fix remains in-place-mutating on the gate-out path in general") -- it is declined here on
+# these three grounds specifically, not because in-place repair is categorically forbidden.
+# Because artifact validation is non-blocking at every call site (skill-base.sh,
+# orchestrator-postflight.sh all downgrade a non-zero exit to a counted warning), this error
+# surfaces loudly in the aggregated counters without ever blocking a status transition.
 
 set -euo pipefail
 
@@ -204,6 +221,48 @@ if [ "$artifact_type" = "plan" ]; then
   fi
   # shellcheck disable=SC1090
   . "$_phase_lib"
+
+  # --- Shared plan-level Status-line grammar library (lazy: only the "plan" branch needs it) ---
+  # Same lazy, ${BASH_SOURCE[0]}-relative, exit-5-on-missing idiom as phase-heading-patterns.sh
+  # above -- correct in both the source store and the deployed tree. Never falls through to an
+  # inline pattern.
+  _status_line_lib_candidates=(
+    "$_validate_script_dir/lib/plan-status-line.sh"
+  )
+  _status_line_lib=""
+  for _candidate in "${_status_line_lib_candidates[@]}"; do
+    if [ -f "$_candidate" ]; then
+      _status_line_lib="$_candidate"
+      break
+    fi
+  done
+  if [ -z "$_status_line_lib" ]; then
+    echo "Error: shared library plan-status-line.sh not found at any of:" >&2
+    for _candidate in "${_status_line_lib_candidates[@]}"; do
+      echo "  $_candidate" >&2
+    done
+    exit 5
+  fi
+  # shellcheck disable=SC1090
+  . "$_status_line_lib"
+
+  # --- Plan-level Status-line grammar check (error level: DEFECT 2 -- the validator previously
+  # checked only field PRESENCE via the whole-document grep above, so a hand-typed, bracket-losing
+  # value like "- **Status**: COMPLETED" validated as [PASS]. Landed at error, not warn, because a
+  # repo-wide sweep of every specs/*/plans/*.md and specs/archive/*/plans/*.md file found zero
+  # non-conforming plans as of this check's authoring -- see this task's own summary for the sweep
+  # command and count. No --fix participation: see the header comment above for the reasoning. ---
+  _status_classification="$(plan_status_classify "$artifact_path")"
+  _status_shape="${_status_classification%% *}"
+  if [ "$_status_shape" != "OK" ]; then
+    _status_error_msg="$(plan_status_error_message "$_status_classification")"
+    _status_line_num="$(echo "$_status_classification" | awk '{print $2}')"
+    if [ -n "$_status_line_num" ]; then
+      log_error "${_status_error_msg} (line ${_status_line_num})"
+    else
+      log_error "${_status_error_msg}"
+    fi
+  fi
 
   # Check for at least one Phase heading. Uses the LOOSE "claims to be a phase heading" form
   # (PHASE_HEADING_LOOSE_ERE) rather than the canonical form, so a plan whose only headings are
