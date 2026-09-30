@@ -627,34 +627,45 @@ per-file pass rather than duplicating the contract text into that file.
 
 ---
 
-### Phase 8: Redeploy, full gate set, and decision record [NOT STARTED]
+### Phase 8: Redeploy, full gate set, and decision record [COMPLETED]
 
 **Goal**: Confirm every change survives `.claude/` regeneration and the whole gate set is green,
 then record the three required decisions.
 
 **Tasks**:
-- [ ] Run the full test suite from the source store:
-      `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate `.claude/`.
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` and confirm gate 6 (agent
-      contracts lint) passes with Check G included.
-- [ ] Re-verify from the **deployed** tree, not only the source store: Check G passes via
+- [x] Run the full test suite from the source store:
+      `bash agent-system/extensions/core/scripts/tests/run-all.sh`. *(completed: 97 passed, 8
+      failed, 105 total; both this task's own suites (test-validate-artifact.sh,
+      test-lint-agent-contracts.sh) independently confirmed 18/18 and 26/26 green; the 8 failures
+      are in suites outside this task's file_scope -- see summary Follow-ups)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate `.claude/`.
+      *(completed, run twice: once mid-implementation to unblock Phase 5's own suite, once for
+      final Phase 8 confirmation)*
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh` and confirm gate 6 (agent
+      contracts lint) passes with Check G included. *(completed: gate 6 passes; full gate set
+      surfaced 2 real, now-fixed findings from this task -- doc-lint's missing index-entries.json
+      entry, and a TODO.md/state.json sync warning -- plus several pre-existing, out-of-scope
+      findings recorded in the summary's Follow-ups)*
+- [x] Re-verify from the **deployed** tree, not only the source store: Check G passes via
       `.claude/scripts/lint/lint-agent-contracts.sh`; the new fixtures pass via
       `.claude/scripts/validate-artifact.sh`; `.claude/scripts/lib/plan-status-line.sh` exists and
       is sourced without the exit-5 environment error. This is the dispatch's "confirm the fix
-      survives regeneration" criterion.
-- [ ] Validate this plan file itself with the newly hardened validator:
+      survives regeneration" criterion. *(completed: 187/187 passed on Check G's real-tree run;
+      18/18 on the deployed test-validate-artifact.sh; library confirmed present, no exit-5)*
+- [x] Validate this plan file itself with the newly hardened validator:
       `bash .claude/scripts/validate-artifact.sh <this plan> plan` -> PASS, and confirm its own
-      `- **Status**:` line is classified `OK`.
-- [ ] Write the summary recording, explicitly: (1) the `--fix` non-participation decision with its
+      `- **Status**:` line is classified `OK`. *(completed: [PASS], 0 warnings; Status line
+      classifies OK)*
+- [x] Write the summary recording, explicitly: (1) the `--fix` non-participation decision with its
       three-ground reasoning and its consistency with task 13's shipped D-A (noted as **closed**,
       not open); (2) the fan-out resolution (prohibited, with the read-only carve-out) and the
       terminal-status corollary; (3) the bidirectional marker/commit-synchrony resolution. Include
       the grep evidence for the ownership-boundary rollout and the machine-check table for the
-      core skeleton enumeration.
-- [ ] Record the deferred follow-up: refactor `update-plan-status.sh`'s three classification
+      core skeleton enumeration. *(completed: summaries/01_plan-status-field-ownership-summary.md)*
+- [x] Record the deferred follow-up: refactor `update-plan-status.sh`'s three classification
       branches onto `scripts/lib/plan-status-line.sh`, deliberately excluded here by the
       dispatch's scope boundary and currently guarded by Phase 5's conformance test.
+      *(completed: recorded in the summary's Follow-ups section)*
 
 **Timing**: 1 hour
 
@@ -679,27 +690,38 @@ then record the three required decisions.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` exits 0,
-      including the four new Check G cases.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0,
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh` exits 0,
+      including the four new Check G cases. *(confirmed: 26/26 PASS)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0,
       including all Status-grammar, `--fix`-non-participation, report-heading, depth-tolerance,
-      and cross-script conformance cases.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 and discovers the new
-      suite with no `run-all.sh` edit.
-- [ ] `REPO_ROOT=$PWD bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose`
+      and cross-script conformance cases. *(confirmed: 18/18 PASS)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 and discovers the new
+      suite with no `run-all.sh` edit. *(deviation: altered — run-all.sh exits 1 (97 passed, 8
+      failed, 105 total); the new suite IS discovered and passes (confirmed independently, 18/18);
+      the 8 failures are in unrelated suites outside this task's file_scope, predominantly
+      task 255's concurrently-active typst-extension territory -- see summary Follow-ups)*
+- [x] `REPO_ROOT=$PWD bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose`
       exits 0 with a Check G pass line per in-scope agent; removing the bullet from any one agent
-      makes it exit 1 naming that file.
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh` exits 0 (gate 6 included).
-- [ ] The M2 fixture (`- **Status**: COMPLETED`) that validated `[PASS]` before this work now
-      FAILs, and `--fix` leaves its Status line byte-identical.
-- [ ] The conforming-plus-trailing-annotation fixture PASSes, matching task 91's shipped
-      accept-and-preserve policy.
-- [ ] The report fixture with near-miss Recommendations headings FAILs; with a conforming
+      makes it exit 1 naming that file. *(confirmed: 187/187 passed, 0 failed; remove/restore
+      cycle verified on general-implementation-agent.md)*
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh` exits 0 (gate 6 included).
+      *(deviation: altered — gate 6 itself passes clean; the full gate set surfaced 2 real findings
+      from this task (both fixed: doc-lint's index-entries.json entry, and a TODO.md sync
+      regeneration) plus several pre-existing, out-of-scope findings recorded in the summary's
+      Follow-ups)*
+- [x] The M2 fixture (`- **Status**: COMPLETED`) that validated `[PASS]` before this work now
+      FAILs, and `--fix` leaves its Status line byte-identical. *(confirmed)*
+- [x] The conforming-plus-trailing-annotation fixture PASSes, matching task 91's shipped
+      accept-and-preserve policy. *(confirmed)*
+- [x] The report fixture with near-miss Recommendations headings FAILs; with a conforming
       `## Recommendations` added it PASSes; with `## Context Extension Recommendations` alone it
-      still FAILs.
-- [ ] Repo-wide `check-task-references.sh` reports no new finding (every file touched outside
-      `specs/**` describes incidents by symptom, never by task number).
-- [ ] All 193 existing plan files still validate without a new Status-grammar error.
+      still FAILs. *(confirmed)*
+- [x] Repo-wide `check-task-references.sh` reports no new finding (every file touched outside
+      `specs/**` describes incidents by symptom, never by task number). *(confirmed: 0 unexempted
+      occurrences repo-wide)*
+- [x] All 193 existing plan files still validate without a new Status-grammar error. *(deviation:
+      altered — 199 plans re-swept at implementation time (6 more than the planning-time count),
+      all 199 confirmed 0 non-conforming)*
 
 ## Artifacts & Outputs
 

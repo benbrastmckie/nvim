@@ -2463,7 +2463,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
-      "line_count": 110,
+      "line_count": 175,
       "keywords": [
         "depth-first",
         "phase-closure",
@@ -2537,6 +2537,35 @@
         "wrap-up",
         "contracts",
         "handoff"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "contracts/plan-status-ownership.md",
+      "domain": "core",
+      "subdomain": "contracts",
+      "summary": "Canonical source text for the plan-level-Status ownership MUST-NOT bullet carried by in-scope implementation agents; a generated-copy source read by humans and by lint-agent-contracts.sh Check G, never an @-import resolved at spawn time. States that the plan METADATA `- **Status**:` field is owned by update-plan-status.sh, never hand-edited by an implementation agent, whose plan-file write authority is limited to phase-heading markers and checklist items",
+      "line_count": 120,
+      "keywords": [
+        "plan-status-ownership",
+        "canonical-fragment",
+        "generated-copy",
+        "agent-contract",
+        "lint",
+        "must-not-bullet",
+        "phase-heading",
+        "status-field"
+      ],
+      "topics": [
+        "contracts",
+        "agent-contracts",
+        "deliverable-hygiene",
+        "plan-format"
       ],
       "load_when": {
         "agents": [],
@@ -3034,7 +3063,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 509,
+      "line_count": 541,
       "keywords": [
         "runtime-files",
         "cleanup",
@@ -3224,7 +3253,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 164,
+      "line_count": 165,
       "keywords": [
         "patterns",
         "orchestrate",
