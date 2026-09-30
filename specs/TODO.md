@@ -11,7 +11,7 @@ next_project_number: 276
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,51,89,127,136,165,184,217,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,51,89,127,165,184,217,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,270,271,272 | 22,44,51,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 170,273,275 | 51,184,250,251,271,272 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -28,7 +28,6 @@ next_project_number: 276
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
-136 [IMPLEMENTING] — Implementation-agent contract corrections: plan-level Status...
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
@@ -2052,12 +2051,13 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 136. Implementation-agent contract corrections: plan-level Status ownership, no fan-out, marker/commit sync, validator catch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 139
 - **Research**: [136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md]
 - **Plan**: [136_enforce_plan_status_field_ownership/plans/01_plan-status-field-ownership.md]
+- **Summary**: [136_enforce_plan_status_field_ownership/summaries/01_plan-status-field-ownership-summary.md]
 
 **Description**: PRODUCER-SIDE root cause of the malformed plan-level Status line that task 91 handles from the consumer side. Task 91 makes update-plan-status.sh diagnose the malformed line loudly; this task stops the line being written in the first place, and makes the validator catch it if it ever is.
 

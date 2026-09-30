@@ -45,28 +45,47 @@
       "category": "PATTERN",
       "source_artifact": "specs/136_enforce_plan_status_field_ownership/summaries/01_plan-status-field-ownership-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["scope-hypothesis", "predicate-sweep", "plan-deviation", "in-scope-enumeration"]
+      "suggested_keywords": [
+        "scope-hypothesis",
+        "predicate-sweep",
+        "plan-deviation",
+        "in-scope-enumeration"
+      ]
     },
     {
       "content": "A test suite that resolves its script-under-test via a deploy-tree-first / source-store-fallback candidate list (the established convention for scripts under agent-system/extensions/core/scripts/tests/) will silently test the STALE deployed copy if the source-store change has not yet been redeployed. When authoring a new suite alongside a source-store-only change, run deploy-headless.sh once early (not only at the end) so the suite's own acceptance criterion (exits 0) can be satisfied during authoring, not deferred entirely to a later redeploy phase.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/136_enforce_plan_status_field_ownership/summaries/01_plan-status-field-ownership-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-tree-first", "test-authoring", "redeploy", "shell-script-testing"]
+      "suggested_keywords": [
+        "deploy-tree-first",
+        "test-authoring",
+        "redeploy",
+        "shell-script-testing"
+      ]
     },
     {
       "content": "The full verify-deploy.sh gate set (not just deploy-headless.sh's fast subset) can surface real defects introduced by a task's own new files that neither the task's own new test suite nor the fast gates catch -- e.g. a new context/contracts/*.md fragment file with no corresponding entry in the extension's index-entries.json (caught by check-extension-docs.sh's Rule S, doc-lint gate). Always run the full gate set at least once before declaring a task's redeploy phase done, not only the fast/default subset.",
       "category": "INSIGHT",
       "source_artifact": "specs/136_enforce_plan_status_field_ownership/summaries/01_plan-status-field-ownership-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "doc-lint", "index-entries", "full-gate-set"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "doc-lint",
+        "index-entries",
+        "full-gate-set"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790721762_ff3d8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
   }

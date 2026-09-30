@@ -2,7 +2,7 @@
 
 - **Task**: 136 - Implementation-agent contract corrections: plan-level Status ownership, no
   fan-out, marker/commit sync, validator catch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: 139 (completed), 91 (completed, archived), 13 (completed, archived)
 - **Research Inputs**: specs/136_enforce_plan_status_field_ownership/reports/01_plan-status-field-ownership.md
