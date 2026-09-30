@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Clear the shared stale-fixture bug (3 red suites)",
+  "started_at": "2026-09-30T12:20:00Z",
+  "last_updated": "2026-09-30T12:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Reproduce failures in the three suites", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm return-meta-status-vocabulary.sh exists and is the actual dependency", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Apply fix (glob-copy) to all three suites", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh"
+    ]},
+    {"id": 4, "description": "Re-run each of the three suites standalone, confirm green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "glob-copy lib/*.sh instead of hardcoded per-file LIBS/require_file list", "result": "success", "reason": "matches test-force-phases.sh:106 precedent; only 16 files / 188K in lib/, no material sandbox-setup slowdown"}
+  ],
+  "handoff_count": 0
+}

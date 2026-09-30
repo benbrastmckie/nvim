@@ -254,12 +254,15 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
   require_file "$CORE_DIR/$f"
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done
-for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
-         phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh \
-         runtime-file-patterns.sh; do
-  require_file "$CORE_DIR/lib/$f"
-  cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
-done
+# Glob-copy the whole lib/ directory rather than a hardcoded per-file list (see
+# test-force-phases.sh:106 for the precedent): a hardcoded list drifts silently whenever
+# orchestrate-cycle-postflight.sh (or a script it transitively sources) grows a new lib/
+# dependency, as happened with return-meta-status-vocabulary.sh.
+if [ ! -d "$CORE_DIR/lib" ]; then
+  echo "ERROR: expected directory $CORE_DIR/lib" >&2
+  exit 2
+fi
+cp "$CORE_DIR"/lib/*.sh "$WORKDIR/.claude/scripts/lib/"
 mkdir -p "$WORKDIR/.claude/context/reference"
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
    "$WORKDIR/.claude/context/reference/orchestrator-critical-paths.json" 2>/dev/null || true

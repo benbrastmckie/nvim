@@ -2,7 +2,7 @@
 
 - **Task**: 283 - Fix the agent-system test harness (run-all.sh): name failing suites, add a
   known-failing baseline, and reduce wall clock
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/283_test_harness_name_failures_baseline_wall_clock/reports/01_test-harness-defects-research.md
@@ -123,7 +123,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Clear the shared stale-fixture bug (3 red suites) [NOT STARTED]
+### Phase 1: Clear the shared stale-fixture bug (3 red suites) [COMPLETED]
 
 **Goal**: Turn `test-handoff-dispatch-identity.sh`, `test-orchestrate-context-growth.sh`, and
 `test-orchestrate-recover-message-findings.sh` green by supplying the `lib/` dependency their
@@ -131,23 +131,23 @@ synthetic sandboxes fail to copy, and decide whether to make that class of drift
 impossible.
 
 **Tasks**:
-- [ ] Reproduce: run each of the three suites standalone from the source store and confirm the
-      failure text is `shared library return-meta-status-vocabulary.sh not found` in each.
-- [ ] Confirm `agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh` exists
-      and is the dependency `orchestrate-cycle-postflight.sh` actually sources.
-- [ ] Decide between (a) adding the filename to each suite's hardcoded `LIBS` list and
+- [x] Reproduce: run each of the three suites standalone from the source store and confirm the
+      failure text is `shared library return-meta-status-vocabulary.sh not found` in each. *(completed)*
+- [x] Confirm `agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh` exists
+      and is the dependency `orchestrate-cycle-postflight.sh` actually sources. *(completed)*
+- [x] Decide between (a) adding the filename to each suite's hardcoded `LIBS` list and
       `require_file` loop, and (b) replacing the three hardcoded lists with the glob-copy pattern
       already used at `tests/test-force-phases.sh:106`
       (`cp "$CORE_DIR"/lib/*.sh "$WORKDIR/.claude/scripts/lib/"`). Prefer (b) if it does not
       materially slow the sandbox setup or pull in a lib that changes suite behavior; record the
-      rationale either way in the commit message.
-- [ ] Apply the chosen fix to all three suites. Note the copy-list in
+      rationale either way in the commit message. *(completed: chose (b) glob-copy; lib/ is only 16 files/188K, no material slowdown)*
+- [x] Apply the chosen fix to all three suites. Note the copy-list in
       `test-handoff-dispatch-identity.sh` is at lines ~90-93, in
       `test-orchestrate-context-growth.sh` at the `LIBS=(...)` array feeding lines ~79 and ~93,
-      and in `test-orchestrate-recover-message-findings.sh` at lines ~257-262.
-- [ ] If (a) is chosen, record the recurring-drift risk in a comment at each site naming the
-      glob-copy alternative, so the next occurrence is not re-diagnosed from scratch.
-- [ ] Re-run each of the three suites standalone and confirm all cases pass.
+      and in `test-orchestrate-recover-message-findings.sh` at lines ~257-262. *(completed)*
+- [x] If (a) is chosen, record the recurring-drift risk in a comment at each site naming the
+      glob-copy alternative, so the next occurrence is not re-diagnosed from scratch. *(deviation: skipped — (b) glob-copy was chosen instead of (a), so this task does not apply)*
+- [x] Re-run each of the three suites standalone and confirm all cases pass. *(completed: 8/8, 6/6, 23/23 passed)*
 
 **Timing**: 0.75 hours
 

@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/283_test_harness_name_failures_baseline_wall_clock/plans/01_harness-roster-baseline-wall-clock.md",
-      "summary": "6-phase plan: end-of-run failure roster in run-all.sh, regression test for the naming contract, committed known-failures baseline manifest with EXPECTED/NEW classification, a one-cause fix clearing 3 of 8 red suites, and --skip-slow on the 5 redeploy-checkpoint Gate 8 call sites."
-    }
-  ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 283 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790795029_d00973_283",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": [[1, 2, 5], [3], [4], [6]]
+    "session_id": "sess_1790795029_d00973",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }

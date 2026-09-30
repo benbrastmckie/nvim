@@ -69,14 +69,16 @@ SCRIPTS=(
   state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh
   errors-append.sh events-append.sh
 )
-LIBS=(
-  common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh
-  phase-heading-patterns.sh deploy-baseline-lib.sh status-vocabulary.sh task-lookup-lib.sh
-  deploy-ledger-lib.sh runtime-file-patterns.sh
-)
+# Glob-copy the whole lib/ directory rather than a hardcoded per-file list (see
+# test-force-phases.sh:106 for the precedent): a hardcoded list drifts silently whenever any
+# script in SCRIPTS grows a new lib/ dependency, as happened with
+# return-meta-status-vocabulary.sh.
 
 for f in "${SCRIPTS[@]}"; do require_file "$CORE_DIR/$f"; done
-for f in "${LIBS[@]}"; do require_file "$CORE_DIR/lib/$f"; done
+if [ ! -d "$CORE_DIR/lib" ]; then
+  echo "ERROR: expected directory $CORE_DIR/lib" >&2
+  exit 2
+fi
 require_file "$CORE_DIR/../context/reference/orchestrator-critical-paths.json"
 
 if ! command -v jq >/dev/null 2>&1; then
@@ -90,7 +92,7 @@ trap cleanup EXIT
 
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in "${SCRIPTS[@]}"; do cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"; done
-for f in "${LIBS[@]}"; do cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"; done
+cp "$CORE_DIR"/lib/*.sh "$WORKDIR/.claude/scripts/lib/"
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
    "$WORKDIR/.claude/context/reference/orchestrator-critical-paths.json"
 chmod +x "$WORKDIR"/.claude/scripts/*.sh
