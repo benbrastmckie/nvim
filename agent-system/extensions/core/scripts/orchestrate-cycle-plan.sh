@@ -933,24 +933,36 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
       #
       # DEFECT A / --skip-slow WALL-CLOCK TRADE-OFF (this comment replaces an earlier version
       # that documented the OPPOSITE choice -- full depth, deliberately preserved -- as the fix
-      # for the same underlying tension; read on for why the decision flipped). This pre/post
-      # pair now ALSO runs `--skip-slow`, deferring gate 8 (tests/run-all.sh, the 105-suite shell
-      # battery) here too, matching deploy-headless.sh's own internal verify depth exactly. The
-      # prior full-depth choice existed so this baseline comparison could catch a gate-8
-      # regression that deploy-headless.sh's own fast verify would miss; but every dispatched
-      # implementation agent's OWN phase gate already runs this exact 105-suite battery against
-      # this exact source-store tree immediately before reaching this checkpoint (deploy-headless
-      # copies files, it does not re-run or alter suite source), so the full-depth pair here was
-      # measured to be a redundant THIRD full run of the same battery within one cycle -- the
-      # dominant wall-clock cost this task's Phase 5 exists to remove. Accepted trade-off: a
-      # gate-8 regression can now slip past this SPECIFIC checkpoint if, and only if, no
-      # dispatched agent in the cycle happened to run the shell-test gate itself; this is judged
-      # acceptable because (a) the agent-side gate is not optional for any task that touches
-      # agent-system/**, and (b) Phase 2-4 of the task that added this comment made agent-side
-      # failures far cheaper to see (named roster + known-failures baseline), lowering the cost of
-      # relying on that gate instead of this one. If a shell-test regression is ever traced to a
-      # deploy that skipped this checkpoint's own gate-8 check, revert this specific flag pass
-      # (see the plan's Rollback/Contingency section) rather than reverting all of Phase 5.
+      # for the same underlying tension; read on for why the decision flipped, AND for a residual
+      # gap this flip re-opens that the earlier "resolved" note below this comment already found
+      # and rejected weakening once). This pre/post pair now ALSO runs `--skip-slow`, deferring
+      # gate 8 (tests/run-all.sh, the 105-suite shell battery) here too, matching
+      # deploy-headless.sh's own internal verify depth exactly. Measured cost: this full-depth
+      # pair was a redundant THIRD full run of the same battery within one cycle on top of every
+      # dispatched implementation agent's own phase-gate run -- the dominant wall-clock cost this
+      # task's Phase 5 exists to remove.
+      #
+      # RESIDUAL GAP THIS TRADE-OFF DOES NOT FULLY COVER (read alongside the "Resolved: the
+      # sibling redundant-verify-deploy-passes task's outcome" note in
+      # context/patterns/batch-orchestration-guardrails.md's Inter-Cycle Redeploy Checkpoint
+      # section, which already investigated a WEAKER version of this same idea -- single-capture
+      # Gate-8 sharing between pre and post -- and REJECTED it for exactly this reason): of the
+      # suites under agent-system/extensions/core/scripts/tests/, roughly 40 resolve their own
+      # subject-under-test preferentially from the DEPLOYED tree (`$REPO_ROOT/.claude/scripts/...`
+      # via a `git rev-parse --show-toplevel` + deploy-tree-first / source-store-fallback
+      # pattern -- see e.g. test-assess-repo-health.sh's own REPO_ROOT resolution), not the
+      # source-store sibling. For those suites, a dispatched agent's OWN pre-deploy phase-gate run
+      # of run-all.sh tests the STALE, pre-deploy copy of their subject, never its own just-made
+      # source-store edits; only a run AFTER deploy-headless.sh has landed tests the FRESH,
+      # just-deployed copy. This checkpoint's full-depth pre/post pair was the one thing that
+      # exercised those ~40 suites against the freshly-deployed tree; deferring gate 8 here
+      # removes that specific coverage, not merely a redundant re-check of source already tested
+      # elsewhere. This is a MATERIAL, KNOWN gap, not merely a theoretical one -- flagged for
+      # human review in this task's implementation summary rather than silently accepted. A
+      # narrower future fix (running only the deploy-tree-first suites against gate 8 post-deploy,
+      # cheaply, instead of either the full 105-suite battery or nothing) is recommended as a
+      # follow-up task; it is out of this task's scope (see the plan's Non-Goals on the
+      # changed-files-to-affected-suites selector).
       # The pre/post pair itself MUST stay at IDENTICAL depth (both --skip-slow, or both not) --
       # an asymmetric pair would make every non-gate-8 finding's comparison invalid in the other
       # direction, which is a strictly worse bug than the coverage gap accepted above.

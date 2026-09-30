@@ -189,12 +189,14 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
       #
       # --skip-slow (harness-wall-clock fix): defers gate 8 (tests/run-all.sh, the 105-suite
       # shell battery) on both this pre- and the post-redeploy call below, matching
-      # orchestrate-cycle-plan.sh's own redeploy-checkpoint pair (same rationale: the dispatched
-      # implementation agent's own phase gate already ran this exact battery against this exact
-      # source-store tree immediately before reaching this postflight gate, so re-running it here
-      # a third time is redundant wall-clock cost, not additional coverage). MUST stay symmetric
-      # with the post-redeploy call -- an asymmetric pair would make every gate-8 finding look
-      # "new" simply because pre never looked for it.
+      # orchestrate-cycle-plan.sh's own redeploy-checkpoint pair -- see that file's own
+      # post_findings comment (search "DEFECT A / --skip-slow WALL-CLOCK TRADE-OFF") for the full
+      # rationale AND the material residual gap it documents (roughly 40 core test suites resolve
+      # their subject-under-test preferentially from the DEPLOYED tree, not source-store, so this
+      # checkpoint's full-depth pair was the only thing exercising them against a freshly-deployed
+      # copy; deferring gate 8 here removes that specific coverage, not just a redundant re-check).
+      # MUST stay symmetric with the post-redeploy call -- an asymmetric pair would make every
+      # gate-8 finding look "new" simply because pre never looked for it.
       gate_out_pre_findings="$(deploy_findings_snapshot .claude/scripts/verify-deploy.sh --skip-slow)"
 
       gate_out_deploy_rc=0
