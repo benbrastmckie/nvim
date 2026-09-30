@@ -1,7 +1,7 @@
 # orchestrate-cycle-postflight.sh: Unified Per-Task Postflight
 
 **Status**: Current architecture — result of Phase 7 of the task that built
-`orchestrate-cycle-postflight.sh` (Stage A.4 of `specs/PATH.md`, "The four moves per cycle").
+`orchestrate-cycle-postflight.sh` (Stage A.4 of `specs/ROADMAP.md`, "The four moves per cycle").
 
 **See Also**: `handoff-schema.md`, `orchestrate-state-machine.md`
 

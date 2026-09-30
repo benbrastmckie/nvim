@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # orchestrate-cycle-postflight.sh — Per-task postflight composer for /orchestrate (Stage A.4 of
-# specs/PATH.md, "The four moves per cycle"). ONE script performing everything the orchestrator
+# specs/ROADMAP.md, "The four moves per cycle"). ONE script performing everything the orchestrator
 # lead does after a single dispatched agent returns, for BOTH engines (single-task Stage 5 and
 # multi-task Stage MT-4 step 1 onward), emitting one compact JSON line. This is the third and
 # last of the per-cycle scripts, alongside orchestrate-build-dispatch.sh (pre-dispatch) and
