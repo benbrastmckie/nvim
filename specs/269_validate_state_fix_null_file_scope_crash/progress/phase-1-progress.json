@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Extend the --fix fixture and prove it RED",
+  "started_at": "2026-09-30T00:00:00Z",
+  "last_updated": "2026-09-30T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-validate-state.sh, locate FIX_FIXTURE_DIR heredoc", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add project 3 (null file_scope) and project 4 (absent file_scope key) entries", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 3, "description": "Extend fixture comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 4, "description": "Add fix_p3_null and fix_p4_has_key capture lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 5, "description": "Extend if condition with three new conjuncts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 6, "description": "Extend fail message and add info lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 7, "description": "Run suite and confirm --fix fixture FAILS (red)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Commit red fixture", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

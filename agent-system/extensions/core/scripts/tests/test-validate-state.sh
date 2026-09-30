@@ -589,19 +589,22 @@ JSON
     info "$out"
   fi
 
-  # --- --fix fixture: exact duplicates removed order-preservingly, Class B untouched, other
-  # fields unchanged. D3 requires --fix to write ONLY through a DEPLOYED state-write.sh, so this
-  # fixture's state file is placed inside THIS repo's own git tree (under specs/) rather than the
-  # generic $WORKDIR (which sits outside the repo, under /tmp, where no deployed tree can
-  # resolve) -- letting the D3 git-toplevel candidate reach the real deployed
-  # .claude/scripts/state-write.sh, exactly as a real invocation would. Gracefully SKIPPED (not
-  # FAILED) when no deployed state-write.sh exists yet (e.g. before a first deploy).
+  # --- --fix fixture: exact duplicates removed order-preservingly (project 1, Class A),
+  # Class B untouched (project 2), null-valued file_scope untouched (project 3 -- this is the
+  # crash-triggering shape: has("file_scope") is true for a literal null, so a has()-gated
+  # mutation filter aborts jq mid-reduce on this entry), absent-key file_scope untouched
+  # (project 4), other fields unchanged. D3 requires --fix to write ONLY through a DEPLOYED
+  # state-write.sh, so this fixture's state file is placed inside THIS repo's own git tree
+  # (under specs/) rather than the generic $WORKDIR (which sits outside the repo, under /tmp,
+  # where no deployed tree can resolve) -- letting the D3 git-toplevel candidate reach the real
+  # deployed .claude/scripts/state-write.sh, exactly as a real invocation would. Gracefully
+  # SKIPPED (not FAILED) when no deployed state-write.sh exists yet (e.g. before a first deploy).
   if [[ -f "$REPO_ROOT/.claude/scripts/state-write.sh" ]]; then
     FIX_FIXTURE_DIR="$REPO_ROOT/specs/_tmp_fso_fix_fixture_$$"
     mkdir -p "$FIX_FIXTURE_DIR"
     cat > "$FIX_FIXTURE_DIR/state.json" <<'JSON'
 {
-  "next_project_number": 3,
+  "next_project_number": 5,
   "active_projects": [
     {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
      "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
@@ -610,7 +613,14 @@ JSON
     {"project_number": 2, "project_name": "b", "status": "not_started", "task_type": "general",
      "created": "2026-01-02T00:00:00Z", "last_updated": "2026-01-02T00:00:00Z",
      "dependencies": [],
-     "file_scope": ["src/foo/", "src/foo"]}
+     "file_scope": ["src/foo/", "src/foo"]},
+    {"project_number": 3, "project_name": "c", "status": "not_started", "task_type": "general",
+     "created": "2026-01-03T00:00:00Z", "last_updated": "2026-01-03T00:00:00Z",
+     "dependencies": [],
+     "file_scope": null},
+    {"project_number": 4, "project_name": "d", "status": "not_started", "task_type": "general",
+     "created": "2026-01-04T00:00:00Z", "last_updated": "2026-01-04T00:00:00Z",
+     "dependencies": []}
   ]
 }
 JSON
@@ -620,18 +630,25 @@ JSON
     rc=$?
     fix_fs1=$(jq -c '.active_projects[] | select(.project_number==1) | .file_scope' "$FIX_FIXTURE_DIR/state.json" 2>/dev/null)
     fix_fs2=$(jq -c '.active_projects[] | select(.project_number==2) | .file_scope' "$FIX_FIXTURE_DIR/state.json" 2>/dev/null)
+    fix_p3_null=$(jq -r '.active_projects[] | select(.project_number==3) | [has("file_scope"), (.file_scope == null)] | @tsv' "$FIX_FIXTURE_DIR/state.json" 2>/dev/null)
+    fix_p4_has_key=$(jq -r '.active_projects[] | select(.project_number==4) | has("file_scope")' "$FIX_FIXTURE_DIR/state.json" 2>/dev/null)
     fix_other_diff=$(diff <(jq -S 'del(.active_projects[].file_scope)' "$FIX_FIXTURE_DIR/state.json.orig") \
                            <(jq -S 'del(.active_projects[].file_scope)' "$FIX_FIXTURE_DIR/state.json"))
     if [[ "$rc" -eq 0 ]] \
         && [[ "$fix_fs1" == '["docs/README.md","src/foo.lua","src/bar.lua"]' ]] \
         && [[ "$fix_fs2" == '["src/foo/","src/foo"]' ]] \
-        && [[ -z "$fix_other_diff" ]]; then
-      pass "--fix fixture: exact duplicates removed order-preservingly (project 1), Class B untouched (project 2), other fields unchanged"
+        && [[ "$fix_p3_null" == $'true\ttrue' ]] \
+        && [[ "$fix_p4_has_key" == "false" ]] \
+        && [[ -z "$fix_other_diff" ]] \
+        && ! grep -q -- '--fix: state-write.sh failed' <<< "$out"; then
+      pass "--fix fixture: exact duplicates removed order-preservingly (project 1), Class B untouched (project 2), null-valued file_scope untouched (project 3), absent-key file_scope untouched (project 4), other fields unchanged"
     else
-      fail "--fix fixture: expected order-preserving dedup on project 1, untouched Class B on project 2, unchanged other fields (rc=$rc)"
+      fail "--fix fixture: expected order-preserving dedup on project 1, untouched Class B on project 2, null-valued project 3 untouched, absent-key project 4 untouched, unchanged other fields, and no state-write.sh failure (rc=$rc)"
       info "$out"
       info "project 1 file_scope: $fix_fs1"
       info "project 2 file_scope: $fix_fs2"
+      info "project 3 has(file_scope)\\tis-null: $fix_p3_null"
+      info "project 4 has(file_scope): $fix_p4_has_key"
       info "other-fields diff: $fix_other_diff"
     fi
     rm -rf "$FIX_FIXTURE_DIR"

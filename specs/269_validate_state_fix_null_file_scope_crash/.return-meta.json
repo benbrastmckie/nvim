@@ -1,30 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/269_validate_state_fix_null_file_scope_crash/plans/01_null-file-scope-fix-crash.md",
-      "summary": "3-phase sequential plan (1.5h): red-then-green regression fixture, has()->type-test mutation-filter swap plus comment rewrite in validate-state.sh, full verification of the three file_scope dedup invariants."
-    }
-  ],
-  "next_steps": "Run /implement 269 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 11,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1790788666_f8aaca_269",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 1.5,
-    "dependency_waves": [[1], [2], [3]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo's validate-state.sh, a failed --fix write is EXIT-CODE-INVISIBLE: the failure branch uses a raw `echo -e \"${RED}[FAIL]${NC} ...\"` rather than log_fail(), so it never increments FAILED, and base (non---strict) mode gates the exit code on FAILED alone while Checks 8-11 are WARN-only. Consequence for any test or caller: `--fix` exiting 0 does NOT prove a repair landed; only asserting the post-state (e.g. the duplicate is actually gone) does. Generalizes to a paired-filter hazard: when a validator runs a null-guarded REPORT filter (`($t.f // []) as $fs`) alongside a separate MUTATION filter handed to state-write.sh, the two must agree on their guard. A `has(\"key\")` presence test is true for a literal-null value, so `has(\"f\") then .f |= (reduce .[] ...)` aborts jq on null; the correct gate is the type test `(.f|type) == \"array\"`, which also preserves no-manufacture for free (null keeps its null, absent key stays absent) where a `// []` default at the assignment site would wrongly write `f: []`.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/269_validate_state_fix_null_file_scope_crash/plans/01_null-file-scope-fix-crash.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["validate-state", "jq-has-vs-type", "null-guard", "exit-code-invisible", "state-write", "file_scope-dedup"]
-    }
-  ],
-  "dispatch_seq": 8
+    "session_id": "sess_1790788666_f8aaca",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 3
+  }
 }

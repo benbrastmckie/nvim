@@ -1,7 +1,7 @@
 # Implementation Plan: validate-state.sh --fix crashes on literal-null file_scope
 
 - **Task**: 269 - validate-state.sh --fix crashes on literal-null file_scope
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/269_validate_state_fix_null_file_scope_crash/reports/01_null-file-scope-fix-crash.md
@@ -122,37 +122,39 @@ No `roadmap_path` was provided in the dispatch context; no roadmap consultation 
 Phases within the same wave can execute in parallel. This plan is fully sequential by design: the
 regression fixture must be proven RED before the fix lands, or it proves nothing about the fix.
 
-### Phase 1: Extend the --fix fixture and prove it RED [NOT STARTED]
+### Phase 1: Extend the --fix fixture and prove it RED [COMPLETED]
 
 **Goal**: `FIX_FIXTURE_DIR` carries the crash-triggering shape and fails against the unfixed
 filter, establishing that the new assertions have teeth.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-validate-state.sh` (territory:
-      sibling 279 declares this file) and locate the `FIX_FIXTURE_DIR` heredoc.
-- [ ] Add two entries to the fixture's `active_projects`, keeping projects 1 (Class A exact
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-validate-state.sh` (territory:
+      sibling 279 declares this file) and locate the `FIX_FIXTURE_DIR` heredoc. *(completed)*
+- [x] Add two entries to the fixture's `active_projects`, keeping projects 1 (Class A exact
       duplicate) and 2 (Class B normalization-equivalent) exactly as they are:
       project 3 with `"file_scope": null`, and project 4 with **no `file_scope` key at all**.
       Give both the same `project_name`/`status`/`task_type`/`created`/`last_updated`/`dependencies`
-      shape the existing entries use, and bump `next_project_number` to 5.
-- [ ] Extend the comment above the fixture to state what the four entries now cover (Class A
+      shape the existing entries use, and bump `next_project_number` to 5. *(completed)*
+- [x] Extend the comment above the fixture to state what the four entries now cover (Class A
       repair, Class B untouched, null-valued untouched, absent-key untouched) and that the null
-      entry is the crash-triggering shape.
-- [ ] Add two capture lines beside the existing `fix_fs1`/`fix_fs2` captures:
+      entry is the crash-triggering shape. *(completed)*
+- [x] Add two capture lines beside the existing `fix_fs1`/`fix_fs2` captures:
       `fix_p3_null=$(jq -r '.active_projects[] | select(.project_number==3) | [has("file_scope"), (.file_scope == null)] | @tsv' ...)`
       and
-      `fix_p4_has_key=$(jq -r '.active_projects[] | select(.project_number==4) | has("file_scope")' ...)`.
-- [ ] Extend the `if` condition with three new conjuncts: `fix_p3_null` is `true\ttrue`,
+      `fix_p4_has_key=$(jq -r '.active_projects[] | select(.project_number==4) | has("file_scope")' ...)`. *(completed)*
+- [x] Extend the `if` condition with three new conjuncts: `fix_p3_null` is `true\ttrue`,
       `fix_p4_has_key` is `false`, and `$out` does NOT contain
-      `--fix: state-write.sh failed` (e.g. `! grep -q '\-\-fix: state-write.sh failed' <<< "$out"`).
-- [ ] Extend the `fail` message and add `info` lines for the two new captures, matching the
-      existing block's diagnostic style.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` and confirm the
+      `--fix: state-write.sh failed` (e.g. `! grep -q '\-\-fix: state-write.sh failed' <<< "$out"`). *(completed)*
+- [x] Extend the `fail` message and add `info` lines for the two new captures, matching the
+      existing block's diagnostic style. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` and confirm the
       `--fix fixture` assertion **FAILS**, with the `info` output showing project 1 still carrying
       its duplicates and `--fix: state-write.sh failed` present in `$out`. A green run here means
       the fixture does not exercise the crash — stop and diagnose rather than proceeding.
-- [ ] Commit the red fixture on its own (the fixture edit is complete and verified-red; the RED
-      state belongs to the code under test, not to a half-applied edit).
+      *(completed: 24 passed, 1 failed -- the new --fix fixture; info showed project 1 unchanged
+      and rc=0 with `--fix: state-write.sh failed` in $out)*
+- [x] Commit the red fixture on its own (the fixture edit is complete and verified-red; the RED
+      state belongs to the code under test, not to a half-applied edit). *(completed)*
 
 **Timing**: 0.5 hours
 
