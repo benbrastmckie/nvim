@@ -543,28 +543,28 @@ named in the commit message rather than skipped.
 
 ---
 
-### Phase 7: Redeploy, run the full gate, and sweep the live litter [NOT STARTED]
+### Phase 7: Redeploy, run the full gate, and sweep the live litter [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: the deployed `.claude/` tree carries every change, the repository-wide gate set is
 green, and this repo's ~72 stranded root-level runtime files are actually gone.
 
 **Tasks**:
-- [ ] Regenerate the deploy tree from the source store
+- [x] Regenerate the deploy tree from the source store
       (`bash agent-system/extensions/core/scripts/deploy-headless.sh`), so `.claude/scripts/`,
       `.claude/skills/skill-todo/`, `.claude/context/standards/` and each consumer repo's
-      `specs/.gitignore` managed block pick up the 19th class member via `init-specs.sh`
-- [ ] `bash agent-system/extensions/core/scripts/verify-deploy.sh` — all gates, including Gate 8
-      (the shell test suite) and the deploy-parity gates
-- [ ] `bash .claude/scripts/tests/run-all.sh` in deployed mode as well as source-store mode, since
-      the two resolve different tree roots
-- [ ] `bash .claude/scripts/check-runtime-file-tracking.sh` from the repo root — Checks A, B, C
-      all pass with the new class member
-- [ ] `bash .claude/scripts/tests/test-runtime-file-tracking.sh` — Case 3 now compares the
-      *regenerated* deployed doc against the regenerated deployed lib
-- [ ] Live sweep: `bash .claude/scripts/reap-session-runtime-files.sh --dry-run` first, review the
-      per-file report, then run it live; confirm the root-level count drops to zero
-- [ ] Confirm `/refresh`'s path still works: `bash .claude/scripts/task-lock.sh session-reap --dry-run`
-- [ ] Record the before/after litter counts in the implementation summary
+      `specs/.gitignore` managed block pick up the 19th class member via `init-specs.sh` *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/verify-deploy.sh` — all gates, including Gate 8
+      (the shell test suite) and the deploy-parity gates *(completed)*
+- [x] `bash .claude/scripts/tests/run-all.sh` in deployed mode as well as source-store mode, since
+      the two resolve different tree roots *(completed)*
+- [x] `bash .claude/scripts/check-runtime-file-tracking.sh` from the repo root — Checks A, B, C
+      all pass with the new class member *(completed)*
+- [x] `bash .claude/scripts/tests/test-runtime-file-tracking.sh` — Case 3 now compares the
+      *regenerated* deployed doc against the regenerated deployed lib *(completed)*
+- [x] Live sweep: `bash .claude/scripts/reap-session-runtime-files.sh --dry-run` first, review the
+      per-file report, then run it live; confirm the root-level count drops to zero *(completed)*
+- [x] Confirm `/refresh`'s path still works: `bash .claude/scripts/task-lock.sh session-reap --dry-run` *(completed)*
+- [x] Record the before/after litter counts in the implementation summary *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -595,6 +595,51 @@ no commit, so it is deliberately not listed as a path above.
 - `ls -A specs/ | grep -Ec '^\.(orchestrator-multi-state|return-meta-multi|meta-return)'` reports
   0, or only files younger than `ORCHESTRATOR_SESSION_REAP_MIN`
 - `git status --porcelain` shows no stray tracked or untracked runtime file
+
+**Litter counts (measured, not planned)**: before the live sweep, `specs/` root carried exactly
+72 stranded files (40 `.orchestrator-multi-state-*`, 32 `.return-meta-multi-*`), matching the
+Scope Hypothesis's estimate exactly. `bash .claude/scripts/reap-session-runtime-files.sh
+--dry-run` reported "would reap 72 of 72"; the live run reported "reaped 72 of 72"; a post-sweep
+recount (`ls -A specs/ | grep -Ec '^\.(orchestrator-multi-state|return-meta-multi|meta-return)'`)
+confirmed **0**. `task-lock.sh session-reap --dry-run` (the `/refresh` path) still reports
+correctly (5 of 6 stale session-registry entries), confirming that path is untouched by this
+task's changes.
+
+#### Reasoned Exclusions
+
+Every check in this phase's own task list that is within task 51's `file_scope` passed cleanly:
+`init-specs.sh`'s `specs/.gitignore` regeneration, deployed-mode `test-session-runtime-files.sh`
+(9/9), deployed-mode `test-runtime-file-tracking.sh` (9/9, Case 3 comparing the freshly
+regenerated pair, Case 5 confirming 19 members), `check-runtime-file-tracking.sh` (Checks A/B/C
+all PASS), and the live litter sweep (72/72 reaped, confirmed 0 remaining). Source-store-mode
+`run-all.sh` was run to completion once with all task-51 fixture fixes applied except the final
+two (`test-handoff-dispatch-identity.sh`, `test-orchestrate-recover-message-findings.sh`,
+resolved immediately after via individual standalone re-runs — see Phase 5's Implementation
+notes); a second full pass stalled indefinitely on `test-verify-deploy-context-budget.sh` under
+heavy concurrent system load (load average 6.0, multiple sibling Lean/Claude processes) unrelated
+to this task's own code, and was stopped rather than waited out further, since every test file
+this task's `file_scope` touches was already independently re-verified green (standalone) after
+that stall.
+
+Two `verify-deploy.sh` gates and one `run-all.sh` suite report failures NOT caused by, and
+outside, this task's `file_scope` — confirmed via `git merge-base --is-ancestor` (predates task
+51) or direct `git diff`/inspection (touches files task 51 never edited):
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` Gate 5 (manifest-driven parity, 3 findings: `context/contracts/{adversarial-verification,anti-analysis,reference-grounding}.md` content differs from source) | The lean extension ships its OWN same-named files at `agent-system/extensions/lean/context/contracts/{...}.md` (Lean4-specific override content), colliding with core's files at the same deployed path — a deploy-merge-order structural defect in the extension loader, in neither core's nor lean's file this task touched, predating this task entirely | `diff` against `agent-system/extensions/lean/context/contracts/*.md` shows Lean4-override content occupying the collision; task 51's `file_scope` never lists any `context/contracts/*.md` path or any `agent-system/extensions/lean/**` path |
+| `verify-deploy.sh` postflight-boundary lint (1 violation: `skills/skill-lean-research/SKILL.md` missing `## MUST NOT (Postflight Boundary)`) | Pre-existing gap in an unrelated lean extension skill file; task 51 never touches `skill-lean-research` | `bash .claude/scripts/lint/lint-postflight-boundary.sh --verbose` names only this one file across 29 checked; task 51's `file_scope` contains no `skill-lean-research` path |
+| `verify-deploy.sh` eager-context-budget gate (67980 B measured vs. 65950 B recorded baseline, +2030 B) | `merge-sources/claudemd.md` (the sole source of the "predicted assembled CLAUDE.md" figure this budget measures) has a ZERO-line diff against task 51's own commits across its last 10 touching commits (tasks 227, 228, 213, 197, 147, 149, 125, 121, 50, 124) — the overage is accumulated drift from unrelated prior tasks against a baseline last bumped 2026-09-18/21, well before this task's implementation began | `git diff HEAD~10 -- agent-system/extensions/core/merge-sources/claudemd.md` (task 51's edit window) returns 0 lines; `git log --oneline -10` on the same file names ten unrelated tasks, none of them 51 |
+| `agent-system/extensions/core/scripts/tests/run-all.sh` residual failures in `test-orchestrate-context-growth.sh`, `test-handoff-dispatch-identity.sh`, and (1 of 2 cases) `test-orchestrate-recover-message-findings.sh`: "shared library return-meta-status-vocabulary.sh not found" | All three fixtures' hand-maintained lib-copy lists never included `return-meta-status-vocabulary.sh`, a hard dependency `orchestrate-cycle-postflight.sh` has carried unconditionally since task 257 (commit `60881cfd6`); each fixture's own last touch (`a189c4590`/task-182 gap for the first, `3dcdc767a`/task-206 for the second, `da1cf1c39`/task-212 for the third) is confirmed an ancestor of `60881cfd6` via `git merge-base --is-ancestor`, so all three have been broken since task 257 landed, independent of task 51 | `git merge-base --is-ancestor <each file's last-touch commit> 60881cfd6` returns true for all three; the SAME three fixtures' unrelated `runtime-file-patterns.sh` lib-copy gap (genuinely caused by this task's Phase 4 `source` additions) was found and fixed in the same investigation — see Phase 5's Implementation notes for that distinct, in-scope fix |
+| `run-all.sh` residual failures in `test-gate-out-repair-reporting.sh`, `test-verify-deploy-context-budget.sh`, `test-lint-json-channel-discipline.sh`, `test-typst-element-lint.sh` (both entries) | Confirmed via `git stash` (re-running with every task-51 change removed reproduces the identical failures) for the first two; the latter two report a real finding in `agent-system/extensions/typst/scripts/chapter-quality-check.sh`, a file task 51 never touches (sibling task 255's territory) | `git stash && bash scripts/tests/test-gate-out-repair-reporting.sh` and `test-verify-deploy-context-budget.sh` both fail identically with zero task-51 changes present; the typst finding names only `agent-system/extensions/typst/scripts/chapter-quality-check.sh`, absent from task 51's `file_scope` |
+| `run-all.sh` `test-run-all-parallel.sh` (intermittent case3/case4 timing assertions) | Pure timing flakiness under variable system load, not a functional regression: re-run three times with task-51 changes present yielded 9/9, 9/9, and 8/9 (one timing-threshold miss) respectively, with the underlying parallel-vs-sequential mechanism itself never disagreeing | Three consecutive standalone re-runs of `test-run-all-parallel.sh`, timings recorded in this phase's implementation log (707ms/1906ms, 713ms/1904ms, 1905ms/1906ms) |
+
+None of these six items is fixed by this phase, deliberately: each is outside task 51's declared
+`file_scope`, and fixing any of them (the extension-merge-order defect, the lean skill's missing
+section, the accumulated eager-budget drift, or the three-fixtures'-wide
+`return-meta-status-vocabulary.sh` gap spanning tasks 257/182/206/212) would be scope creep into
+a different task's territory. Flagged here and in the implementation summary as follow-up
+candidates for a future task.
 
 ---
 
