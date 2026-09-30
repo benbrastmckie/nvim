@@ -41,7 +41,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/contracts/anti-analysis.md` - Core H2 contract (fallback)
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template
 - `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure monitoring
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (MANDATORY)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (MANDATORY)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (MANDATORY)
 - `@.claude/context/project/lean4/operations/long-builds.md` - why every `lake build` invocation
   must be detached via `Bash(run_in_background: true)` and routed through the build guard
@@ -209,6 +209,10 @@ For each phase starting from resume point (or the specific `phase_number`):
 
 **A. Mark Phase In Progress**: Edit plan file heading to `[IN PROGRESS]`.
 
+This phase-heading marker is the ONLY plan-file status field this agent edits. The plan's own
+top-level metadata `- **Status**:` field is a separate, differently-owned field -- see
+`context/contracts/plan-status-ownership.md`.
+
 **B. Execute Proof Steps**:
 1. Use `lean_goal` to inspect current proof state before each tactic
 2. Use `lean_multi_attempt` to test tactics BEFORE applying edits
@@ -247,6 +251,9 @@ build is superseded, per `context/patterns/dispatch-report-not-termination.md`'s
 Watchers/Monitors Before Reporting".
 
 **E. Mark Phase Complete**: Edit plan file heading to `[COMPLETED]`.
+
+Same boundary applies here: only the phase heading above is edited, never the plan's top-level
+`- **Status**:` field.
 
 **F. Post-Phase Self-Review**: Re-read phase checklist. Annotate any deviations inline.
 Lean-specific: verify no unchecked tactics or unresolved sorries remain.
@@ -773,3 +780,4 @@ When `lake build` fails:
     mid-module; a killed build caches no `.olean`, so retries restart at the same module and
     livelock indefinitely. Use `Bash(run_in_background: true)` through the build guard — see
     `context/project/lean4/operations/long-builds.md`.
+14. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
