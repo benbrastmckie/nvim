@@ -23,28 +23,48 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/255_typst_scope_and_chapter_quality_bib_resolution/summaries/01_typst-scope-bib-resolution-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "source", "subshell", "pipe", "function-scope"]
+      "suggested_keywords": [
+        "bash",
+        "source",
+        "subshell",
+        "pipe",
+        "function-scope"
+      ]
     },
     {
       "content": "When a bash test asserts a substring against output containing ANSI color codes (e.g. `${GREEN}TEXT${NC} suffix`), a color-reset escape sequence sits literally between spans that look visually contiguous. An assert_contains checking a string that spans across that reset boundary (e.g. 'TEXT suffix') will fail even though the rendered text looks contiguous, because the raw bytes include the escape code in between. Split such assertions at the color-code boundary into separate checks instead of one spanning substring.",
       "category": "PATTERN",
       "source_artifact": "specs/255_typst_scope_and_chapter_quality_bib_resolution/summaries/01_typst-scope-bib-resolution-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["ansi-color", "bash-testing", "assert-contains", "shell-script-testing"]
+      "suggested_keywords": [
+        "ansi-color",
+        "bash-testing",
+        "assert-contains",
+        "shell-script-testing"
+      ]
     },
     {
       "content": "Pattern for adding a new resolution branch to an existing ordered fallback chain (branch a -> branch b -> ...) without touching either neighbor: insert the new branch's code strictly between the two existing ones, give it its own extraction/matching logic (do not relax the existing branches' regexes to cover the new case), and update the header/contract comment to name the new branch's position in the order. This preserves the old branches' documented behavior exactly (verifiable via their existing tests) while extending coverage.",
       "category": "PATTERN",
       "source_artifact": "specs/255_typst_scope_and_chapter_quality_bib_resolution/summaries/01_typst-scope-bib-resolution-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["fallback-chain", "resolution-branch", "backward-compatibility", "shell-script-design"]
+      "suggested_keywords": [
+        "fallback-chain",
+        "resolution-branch",
+        "backward-compatibility",
+        "shell-script-design"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790721762_ff3d8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }

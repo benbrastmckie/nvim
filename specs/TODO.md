@@ -11,7 +11,7 @@ next_project_number: 276
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,255,263,265,268,269,272 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,269,272 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,270,271,275 | 22,44,127,184,241,265,269,272 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 170,273 | 184,250,251,271 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -39,7 +39,6 @@ next_project_number: 276
 
 241 [PLANNING] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
-255 [IMPLEMENTING] — Reconcile typst extension scope ownership and fix...
 
 ### Literature
 
@@ -1096,12 +1095,13 @@ PHASES: (A) grant token + /please hook + integrity + push guard + destructive-gi
 
 ### 255. Reconcile typst extension scope ownership and fix chapter-quality-check.sh Rule 1.3 bib resolution
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [255_typst_scope_and_chapter_quality_bib_resolution/reports/01_typst-scope-bib-resolution.md]
 - **Plan**: [255_typst_scope_and_chapter_quality_bib_resolution/plans/01_typst-scope-bib-resolution.md]
+- **Summary**: [255_typst_scope_and_chapter_quality_bib_resolution/summaries/01_typst-scope-bib-resolution-summary.md]
 
 **Description**: Reconcile the typst extension's declared scope with what it actually owns, and fix chapter-quality-check.sh silently skipping BLOCKING Rule 1.3
 

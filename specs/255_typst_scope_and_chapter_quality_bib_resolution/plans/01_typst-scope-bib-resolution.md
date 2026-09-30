@@ -1,7 +1,7 @@
 # Implementation Plan: Task #255
 
 - **Task**: 255 - Reconcile typst extension scope ownership and fix chapter-quality-check.sh Rule 1.3 bib resolution
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/255_typst_scope_and_chapter_quality_bib_resolution/reports/01_typst-scope-bib-resolution.md
