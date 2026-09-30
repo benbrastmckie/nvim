@@ -837,5 +837,6 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
     section. An inherited `[COMPLETED]` or `[IN PROGRESS]` marker on a resumed dispatch must be
     re-verified by actually running that phase's verification in this dispatch, never trusted on
     sight because the heading already says so.
+13. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-orchestrate) will report partial status to the user, who can re-run `/orchestrate` to resume.
