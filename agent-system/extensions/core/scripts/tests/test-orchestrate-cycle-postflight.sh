@@ -61,7 +61,7 @@ trap cleanup EXIT
 
 setup_sandbox() {
   rm -rf "$WORKDIR"
-  mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs"
+  mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
   for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
@@ -75,7 +75,7 @@ setup_sandbox() {
   # unrelated branch, recording spurious defects. See plans/01_recovery-decline-attribution.md.
   for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
            phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
-           return-meta-status-vocabulary.sh; do
+           return-meta-status-vocabulary.sh runtime-file-patterns.sh; do
     cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
   done
   cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -1569,7 +1569,7 @@ write_state <<'EOF'
 EOF
 echo "## Tasks" > "$WORKDIR/specs/TODO.md"
 commit_fixture
-cat > "$WORKDIR/specs/.orchestrator-multi-state-sess_708.json" <<'EOF'
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_708.json" <<'EOF'
 {"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"708": 1}, "dispatch_start_ts": {}}
 EOF
 cat > "$WORKDIR/specs/708_candidate/.return-meta.json" <<'EOF'
@@ -1591,7 +1591,7 @@ else
   fail "invariant: stray handoff was NOT moved aside"
 fi
 if jq -e '.detected_defects | map(select(.defect_class == "HANDOFF_MISLOCATED")) | length >= 1' \
-     "$WORKDIR/specs/.orchestrator-multi-state-sess_708.json" >/dev/null 2>&1; then
+     "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_708.json" >/dev/null 2>&1; then
   pass "invariant: HANDOFF_MISLOCATED recorded in the multi-state file (not just the loop guard)"
 else
   fail "invariant: no HANDOFF_MISLOCATED recorded in the multi-state file"
@@ -1733,7 +1733,7 @@ EOF
 echo "## Tasks" > "$WORKDIR/specs/TODO.md"
 commit_fixture
 build_deploy_stale_fixture
-cat > "$WORKDIR/specs/.orchestrator-multi-state-sess_709.json" <<'EOF'
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_709.json" <<'EOF'
 {"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"709": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
 EOF
 cat > "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" <<EOF
@@ -1753,7 +1753,7 @@ if [ "$dp_status_after" = "implementing" ]; then
 else
   fail "characterization: expected status still 'implementing' after refusal, got: $dp_status_after"
 fi
-dp_mt_file="$WORKDIR/specs/.orchestrator-multi-state-sess_709.json"
+dp_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_709.json"
 if jq -e '.cycle_modified_files == ["agent-system/extensions/core/scripts/foo.sh"]' "$dp_mt_file" >/dev/null 2>&1; then
   pass "characterization: cycle_modified_files accumulated the refused task's modified_files despite the exit-6 refusal"
 else
@@ -1789,7 +1789,7 @@ EOF
   echo "## Tasks" > "$WORKDIR/specs/TODO.md"
   commit_fixture
   build_deploy_stale_fixture
-  cat > "$WORKDIR/specs/.orchestrator-multi-state-sess_709.json" <<'EOF'
+  cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_709.json" <<'EOF'
 {"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"709": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
 EOF
   cat > "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" <<EOF
@@ -1801,7 +1801,7 @@ EOF
   anchor_restore
   trap cleanup EXIT
 
-  if jq -e '.cycle_modified_files == []' "$WORKDIR/specs/.orchestrator-multi-state-sess_709.json" >/dev/null 2>&1; then
+  if jq -e '.cycle_modified_files == []' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_709.json" >/dev/null 2>&1; then
     pass "characterization: artificially re-gating the WORK (j) block flips this case red (anchor confirmed live)"
   else
     fail "characterization: artificially re-gating the WORK (j) block did NOT flip this case red -- the case is not exercising the block"
@@ -1825,7 +1825,7 @@ EOF
 echo "## Tasks" > "$WORKDIR/specs/TODO.md"
 commit_fixture
 build_deploy_stale_fixture
-cat > "$WORKDIR/specs/.orchestrator-multi-state-sess_710.json" <<'EOF'
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_710.json" <<'EOF'
 {"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"710": 1}, "dispatch_start_ts": {}, "cycle_modified_files": []}
 EOF
 cat > "$WORKDIR/specs/${dp2_candidate_num}_candidate/.return-meta.json" <<EOF

@@ -97,7 +97,7 @@ trap cleanup EXIT
 # ─── build the isolated fixture repo: deployed dependency chain, THEN overlay the four ────────
 # task-edited files with whichever candidate resolve_inverted picked above (source-store,
 # normally -- deploy only as the documented absent-fallback).
-mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/specs"
+mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in update-task-status.sh state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh \
          update-plan-status.sh update-phase-status.sh; do
   cp "$DEPLOY_SCRIPTS_SRC/$f" "$WORKDIR/.claude/scripts/$f"
@@ -391,7 +391,7 @@ run_cycle_plan() {
 mkdir -p "$WORKDIR/specs/002_fixture_task_fphase/reports"
 
 FPHASE_SESSION="sess_test_fphase"
-FPHASE_MT_STATE="$WORKDIR/specs/.orchestrator-multi-state-${FPHASE_SESSION}.json"
+FPHASE_MT_STATE="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${FPHASE_SESSION}.json"
 rm -f "$FPHASE_MT_STATE"
 find "$WORKDIR/specs" -maxdepth 2 -type d -name '.lock' -exec rm -rf {} + 2>/dev/null || true
 
@@ -486,7 +486,7 @@ fi
   --session-id "sess_test_unforced_setup"
 mkdir -p "$WORKDIR/specs/003_fixture_task_unforced/reports"
 UNFORCED_SESSION="sess_test_unforced"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-${UNFORCED_SESSION}.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${UNFORCED_SESSION}.json"
 
 unforced_cycle1_out=$(run_cycle_plan --session "$UNFORCED_SESSION" --no-plan-cache 3)
 unforced_phase_1=$(echo "$unforced_cycle1_out" | jq -r '.dispatch | map(select(.task == 3)) | .[0].phase // ""')

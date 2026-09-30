@@ -87,6 +87,7 @@ trap cleanup EXIT
 
 mkdir -p "$TMPROOT/.claude/scripts/lib"
 mkdir -p "$TMPROOT/specs/000_probe"
+mkdir -p "$TMPROOT/specs/.orchestration"
 cp "$SCRIPT_DIR/reap-session-runtime-files.sh" "$TMPROOT/.claude/scripts/reap-session-runtime-files.sh"
 cp "$SCRIPT_DIR/lib/common.sh" "$TMPROOT/.claude/scripts/lib/common.sh"
 chmod +x "$TMPROOT/.claude/scripts/reap-session-runtime-files.sh"
@@ -408,6 +409,44 @@ if [ "$case8_ok" = true ]; then
   pass "8: fresh (within-threshold) superseded-shape files are never deleted by --dry-run or a live run"
 else
   fail "8: superseded-shape-fresh case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 9: two-location sweep -- a stale file in specs/.orchestration/ (current location) and a
+# stale file at the legacy specs/ root are BOTH reaped by the same run, with correct rel_path
+# reporting for each (direct mitigation for "relocation creates a fourth orphaned generation" --
+# the legacy root must stay permanently reapable, never dropped once writers relocate)
+# =====================================================================
+rm -f "$TMPROOT/specs/.orchestrator-multi-state"*.json "$TMPROOT/specs/.return-meta-multi"*.json
+rm -f "$TMPROOT/specs/.orchestration/.orchestrator-multi-state"*.json "$TMPROOT/specs/.orchestration/.return-meta-multi"*.json
+
+SID_E="sess_1000000005_eeeeee"
+SID_F="sess_1000000006_ffffff"
+NEW_LOCATION_MULTI="$TMPROOT/specs/.orchestration/.orchestrator-multi-state-${SID_E}.json"
+LEGACY_ROOT_RETURN="$TMPROOT/specs/.return-meta-multi-${SID_F}.json"
+
+jq -n --arg sid "$SID_E" '{"session_id": $sid, "cycle_count": 4}' > "$NEW_LOCATION_MULTI"
+jq -n --arg sid "$SID_F" '{"status": "partial", "session_id": $sid}' > "$LEGACY_ROOT_RETURN"
+touch_minutes_ago "$NEW_LOCATION_MULTI" 500
+touch_minutes_ago "$LEGACY_ROOT_RETURN" 500
+
+case9_ok=true
+two_loc_dry_out=$(ORCHESTRATOR_SESSION_REAP_MIN=240 "$REAP" --dry-run 2>&1)
+echo "$two_loc_dry_out" | grep -qF "specs/.orchestration/.orchestrator-multi-state-${SID_E}.json" || { case9_ok=false; info "dry-run output missing correctly-reported specs/.orchestration/ rel_path"; }
+echo "$two_loc_dry_out" | grep -qF "specs/.return-meta-multi-${SID_F}.json" || { case9_ok=false; info "dry-run output missing correctly-reported legacy specs/ root rel_path"; }
+[ -f "$NEW_LOCATION_MULTI" ] || { case9_ok=false; info "dry-run deleted $NEW_LOCATION_MULTI"; }
+[ -f "$LEGACY_ROOT_RETURN" ] || { case9_ok=false; info "dry-run deleted $LEGACY_ROOT_RETURN"; }
+
+two_loc_live_out=$(ORCHESTRATOR_SESSION_REAP_MIN=240 "$REAP" 2>&1)
+[ -f "$NEW_LOCATION_MULTI" ] && { case9_ok=false; info "specs/.orchestration/ stale file was NOT reaped by a live run"; }
+[ -f "$LEGACY_ROOT_RETURN" ] && { case9_ok=false; info "legacy specs/ root stale file was NOT reaped by a live run"; }
+echo "$two_loc_live_out" | grep -qF "specs/.orchestration/.orchestrator-multi-state-${SID_E}.json" || { case9_ok=false; info "live output missing correctly-reported specs/.orchestration/ rel_path"; }
+echo "$two_loc_live_out" | grep -qF "specs/.return-meta-multi-${SID_F}.json" || { case9_ok=false; info "live output missing correctly-reported legacy specs/ root rel_path"; }
+
+if [ "$case9_ok" = true ]; then
+  pass "9: a stale specs/.orchestration/ file and a stale legacy specs/ root file are both reaped by the same run, each with a correctly two-location-aware rel_path"
+else
+  fail "9: two-location-sweep case failed (see INFO lines above)"
 fi
 
 # =====================================================================

@@ -2,13 +2,14 @@
 # reap-session-runtime-files.sh — mtime-based reap for abandoned session-scoped orchestration
 # runtime files.
 #
-# Purpose: session-scoping specs/.orchestrator-multi-state-{session_id}.json and
-# specs/.return-meta-multi-{session_id}.json (see
+# Purpose: session-scoping specs/.orchestration/.orchestrator-multi-state-{session_id}.json and
+# specs/.orchestration/.return-meta-multi-{session_id}.json (see
 # context/standards/orchestrator-runtime-files.md's Class Table) trades batch-collision risk for
 # unbounded litter — a batch orchestration that never reaches its own cleanup path (crash,
 # killed session, interrupted terminal) leaves its session-suffixed file behind forever. This
-# script sweeps at the specs/ root and deletes matches whose mtime exceeds
-# ORCHESTRATOR_SESSION_REAP_MIN minutes.
+# script sweeps both specs/.orchestration/ (the current location) and the legacy specs/ root
+# (permanent coverage, never dropped — see "Filename shapes swept" below), deleting matches
+# whose mtime exceeds ORCHESTRATOR_SESSION_REAP_MIN minutes.
 #
 # Filename shapes swept (four naming generations per family, eight globs total): the current
 # hyphen-suffixed shape (`.orchestrator-multi-state-*.json`) plus three superseded generations
@@ -129,11 +130,27 @@ reaped_count=0
 # Restored via a trap-independent explicit unset at the end since this script always exits
 # through the same tail regardless of branch taken.
 #
-# Four shapes per family, eight globs total (see header comment). The dot-separator glob
+# Four shapes per family, eight globs per location, sixteen globs total. The dot-separator glob
 # (`.orchestrator-multi-state.*.json`) also matches every `.prev-` file, so the same path can
 # appear twice in the expanded array; de-duplicated below before any counting or reaping.
+#
+# Two locations are swept, PERMANENTLY, not transitionally: the current `specs/.orchestration/`
+# location (see context/standards/orchestrator-runtime-files.md's Class Table) AND the legacy
+# `specs/` root, which every writer used before this task's relocation. Keeping the legacy root
+# globs is deliberate and permanent — every already-stranded file at the `specs/` root, in this
+# repo and in every other consumer repo that has not yet redeployed this change, stays reapable
+# forever. Dropping the legacy globs once every writer relocates would create exactly the fourth
+# orphaned generation this task's own risk table warns against.
 shopt -s nullglob
 candidates=(
+  "$PROJECT_ROOT"/specs/.orchestration/.orchestrator-multi-state.json
+  "$PROJECT_ROOT"/specs/.orchestration/.orchestrator-multi-state-*.json
+  "$PROJECT_ROOT"/specs/.orchestration/.orchestrator-multi-state.*.json
+  "$PROJECT_ROOT"/specs/.orchestration/.orchestrator-multi-state.prev-*.json
+  "$PROJECT_ROOT"/specs/.orchestration/.return-meta-multi.json
+  "$PROJECT_ROOT"/specs/.orchestration/.return-meta-multi-*.json
+  "$PROJECT_ROOT"/specs/.orchestration/.return-meta-multi.*.json
+  "$PROJECT_ROOT"/specs/.orchestration/.return-meta-multi.prev-*.json
   "$PROJECT_ROOT"/specs/.orchestrator-multi-state.json
   "$PROJECT_ROOT"/specs/.orchestrator-multi-state-*.json
   "$PROJECT_ROOT"/specs/.orchestrator-multi-state.*.json
@@ -165,7 +182,10 @@ for f in "${candidates[@]}"; do
     continue
   fi
   age_min=$(( ( $(now_epoch) - file_mtime ) / 60 ))
-  rel_path="specs/$(basename "$f")"
+  # Two-location-aware: strip PROJECT_ROOT/ rather than hardcoding "specs/<basename>", which was
+  # only ever correct for the (formerly sole) specs/ root location and would silently mis-report
+  # a specs/.orchestration/ file as if it still sat at the specs/ root.
+  rel_path="${f#"$PROJECT_ROOT"/}"
 
   if [ "$age_min" -gt "$ORCHESTRATOR_SESSION_REAP_MIN" ]; then
     reaped_count=$(( reaped_count + 1 ))

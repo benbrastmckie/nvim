@@ -40,7 +40,7 @@ REQUIRED_CORE_SCRIPTS=(
 REQUIRED_LIB_SCRIPTS=(
   common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh
   phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh status-vocabulary.sh
-  deploy-ledger-lib.sh
+  deploy-ledger-lib.sh runtime-file-patterns.sh
 )
 
 missing=()
@@ -85,7 +85,8 @@ GITIGNORE_BLOCK='**/.lock/
 **/.deploy-lock/
 **/.scope-lock/
 **/.commit-lock/
-**/.errors.lock'
+**/.errors.lock
+**/.orchestration/'
 
 # --- build_repo -- a scratch git repo with every real collaborator deployed. Echoes its path. ---
 build_repo() {
@@ -94,7 +95,7 @@ build_repo() {
   git -C "$repo" init -q
   git -C "$repo" config user.email "test@example.com"
   git -C "$repo" config user.name "Test Suite"
-  mkdir -p "$repo/.claude/scripts/lib" "$repo/.claude/context/reference" "$repo/specs"
+  mkdir -p "$repo/.claude/scripts/lib" "$repo/.claude/context/reference" "$repo/specs" "$repo/specs/.orchestration"
   local f
   for f in "${REQUIRED_CORE_SCRIPTS[@]}"; do
     cp "$CORE_DIR/$f" "$repo/.claude/scripts/$f"

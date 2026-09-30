@@ -381,34 +381,77 @@ them — sibling territory.
 
 ---
 
-### Phase 5: Extend the reaper and repoint every test fixture [NOT STARTED]
+### Phase 5: Extend the reaper and repoint every test fixture [COMPLETED]
 
 **Goal**: the reaper sweeps both `specs/.orchestration/` and the legacy `specs/` root (so already
 stranded files in all five affected repos stay reapable), and all seven test suites carrying
 literal paths assert against the new location.
 
 **Tasks**:
-- [ ] Extend `reap-session-runtime-files.sh`'s candidate array (widened in Phase 2) with the same
+- [x] Extend `reap-session-runtime-files.sh`'s candidate array (widened in Phase 2) with the same
       four shapes per family under `specs/.orchestration/`, **keeping every legacy root glob** —
       state in the header comment that the root globs are permanent legacy coverage, not
-      transitional, so no fourth orphaned generation is created
-- [ ] Update the reaper's `rel_path` computation so reported paths are correct for both locations
-      (currently hardcoded `specs/$(basename "$f")`)
-- [ ] Repoint the literal paths in `scripts/test-session-runtime-files.sh` (13 refs), adding
+      transitional, so no fourth orphaned generation is created *(completed)*
+- [x] Update the reaper's `rel_path` computation so reported paths are correct for both locations
+      (currently hardcoded `specs/$(basename "$f")`) *(completed)*
+- [x] Repoint the literal paths in `scripts/test-session-runtime-files.sh` (13 refs), adding
       `mkdir -p "$TMPROOT/specs/.orchestration"` to setup, and add a case asserting a legacy
-      root-level stale file is still reaped
-- [ ] Repoint `scripts/tests/test-orchestrate-cycle-plan.sh` (92 refs) with one mechanical
+      root-level stale file is still reaped *(completed)*
+- [x] Repoint `scripts/tests/test-orchestrate-cycle-plan.sh` (92 refs) with one mechanical
       substitution (`/specs/.orchestrator-multi-state-` -> `/specs/.orchestration/.orchestrator-multi-state-`),
       adding `mkdir -p "$WORKDIR/specs/.orchestration"` to setup; re-read the file immediately
-      before editing (sibling territory)
-- [ ] Repoint `scripts/tests/test-orchestrate-cycle-postflight.sh` (7 refs) the same way; re-read
-      first (sibling territory)
-- [ ] Repoint `scripts/tests/test-orchestrate-context-growth.sh` (3 refs, including its
+      before editing (sibling territory) *(completed)*
+- [x] Repoint `scripts/tests/test-orchestrate-cycle-postflight.sh` (7 refs) the same way; re-read
+      first (sibling territory) *(completed)*
+- [x] Repoint `scripts/tests/test-orchestrate-context-growth.sh` (3 refs, including its
       `compgen -G` and `git status --porcelain` assertions),
       `scripts/tests/test-init-specs.sh` (3 refs), `scripts/tests/test-force-phases.sh` (2 refs),
-      and `scripts/tests/test-orchestrate-unwind-dispatch.sh` (1 ref)
-- [ ] Update `scripts/tests/test-runtime-file-tracking.sh` only if Phase 4's 19th member requires
-      it (Case 3 and Case 5 are generated from the lib, so likely a no-op — confirm, do not assume)
+      and `scripts/tests/test-orchestrate-unwind-dispatch.sh` (1 ref) *(completed)*
+- [x] Update `scripts/tests/test-runtime-file-tracking.sh` only if Phase 4's 19th member requires
+      it (Case 3 and Case 5 are generated from the lib, so likely a no-op — confirm, do not assume) *(completed)*
+
+**Implementation notes**:
+- `test-init-specs.sh`'s 3 refs and `test-orchestrate-unwind-dispatch.sh`'s 1 ref turned out to
+  be genuine no-ops for their literal path assertions: both exercise the PERMANENTLY-retained
+  legacy `specs/` root shape on purpose (proving the untrack sweep and gitignore coverage still
+  work at the pre-relocation location), which the `**/`-prefixed patterns already covered before
+  and after this task with no change. `test-orchestrate-unwind-dispatch.sh` DID need one real fix
+  though: its `REQUIRED_LIB_SCRIPTS` array was missing `runtime-file-patterns.sh`, now a hard
+  dependency of `orchestrate-unwind-dispatch.sh` since Phase 4 — added, plus its hand-copied
+  `GITIGNORE_BLOCK` fixture and a `mkdir -p .../specs/.orchestration` for parity with the live
+  gitignore block, neither counted in the plan's original ref tally.
+- Contrary to the Scope Hypothesis's "likely a no-op" prediction, `test-runtime-file-tracking.sh`
+  DID need a real change: Case 5 hardcodes the expected member count as a literal `18` (both the
+  `-eq 18` comparison and the pass/fail message text), which does not auto-derive from the lib's
+  own array length. Updated both to `19`.
+- `test-orchestrate-cycle-plan.sh`, `test-orchestrate-cycle-postflight.sh`,
+  `test-orchestrate-context-growth.sh`, and `test-orchestrate-unwind-dispatch.sh` each needed
+  `runtime-file-patterns.sh` added to their own lib-copy list/array — a fixture-completeness gap
+  the plan's ref-count tally did not separately track, since it counts literal path occurrences,
+  not lib dependencies newly introduced by Phase 4's `source` additions.
+- A full `run-all.sh` pass (not run until Phase 5's own verification step) surfaced TWO more
+  fixtures with the identical lib-copy gap, outside this phase's original file list entirely
+  because they carry zero literal `orchestrator-multi-state`/`return-meta-multi` path references:
+  `test-handoff-dispatch-identity.sh` and `test-orchestrate-recover-message-findings.sh` both
+  build their own sandbox copy of `orchestrate-cycle-postflight.sh` and needed
+  `runtime-file-patterns.sh` added to their lib lists for the same reason as the four above.
+  Fixed both, folded into this phase's scope (same defect class, discovered only by exercising
+  the full suite rather than the ref-count grep). Each retains a SEPARATE, pre-existing residual
+  failure after that fix (traced below) — the `runtime-file-patterns.sh` fix was necessary and
+  correctly landed, but did not make either suite fully green.
+- While investigating an unrelated `test-orchestrate-context-growth.sh` failure (candidates
+  801/802/803 failing postflight with "shared library return-meta-status-vocabulary.sh not
+  found"), confirmed via `git merge-base --is-ancestor` that this is a PRE-EXISTING defect
+  predating task 51 entirely (task 257's commit `60881cfd6`, introducing that dependency, is an
+  ancestor of HEAD, and no commit since has updated this test's `LIBS` array to include it). The
+  SAME systemic gap (missing `return-meta-status-vocabulary.sh` in a hand-maintained lib-copy
+  list, all three suites' last touch confirmed via `git merge-base --is-ancestor` to predate
+  `60881cfd6`) also accounts for the residual failures in `test-handoff-dispatch-identity.sh` (8
+  cases, all 4 exercised cases fail identically once past the now-fixed `runtime-file-patterns.sh`
+  blocker) and 1 of the 2 residual `test-orchestrate-recover-message-findings.sh` failures. Left
+  unfixed in all cases as out-of-scope scope creep — a broader hand-maintained-fixture-drift
+  defect spanning multiple prior tasks, not something this task's own edits caused or that this
+  task's `file_scope` covers; flagged here and in the implementation summary for a future task.
 
 **Timing**: 1.75 hours
 
@@ -446,27 +489,27 @@ edited since planning.
 
 ---
 
-### Phase 6: Documentation sweep for the relocated paths [NOT STARTED]
+### Phase 6: Documentation sweep for the relocated paths [COMPLETED]
 
 **Goal**: no prose in the source store still names `specs/.orchestrator-multi-state-{sid}.json` or
 `specs/.return-meta-multi-{sid}.json` at the `specs/` root as the live location.
 
 **Tasks**:
-- [ ] `commands/refresh.md` (~lines 155-156): update the two paths in the reap documentation
-- [ ] `commands/orchestrate.md` (~line 238): update the `mt_state_file` path
-- [ ] `commands/todo.md`: update the paths in the §5.8 subsection added in Phase 1
-- [ ] `docs/architecture/orchestrate-state-machine.md` (~lines 1011, 1038): update both paths;
-      re-read immediately before editing (sibling territory)
-- [ ] `context/patterns/batch-orchestration-guardrails.md` (~line 798): update the path
-- [ ] `context/patterns/orchestrate-batch-results-template.md` (~line 143): update the
-      `.return-meta-multi.json` mention
-- [ ] `context/formats/return-metadata-file.md` (~lines 84, 122): update both mentions; re-read
-      immediately before editing (sibling territory)
-- [ ] `skills/skill-refresh/SKILL.md` (~lines 209-210): update Step 4.5's two paths — prose only,
-      the invocation itself stays byte-identical
-- [ ] `scripts/lib/deploy-ledger-lib.sh` (~line 12): update the comment's path mention
-- [ ] Final sweep: `grep -rn 'specs/\.orchestrator-multi-state\|specs/\.return-meta-multi' agent-system/extensions/core/`
-      returns only intentional legacy-coverage mentions in the reaper and its tests
+- [x] `commands/refresh.md` (~lines 155-156): update the two paths in the reap documentation *(completed)*
+- [x] `commands/orchestrate.md` (~line 238): update the `mt_state_file` path *(completed)*
+- [x] `commands/todo.md`: update the paths in the §5.8 subsection added in Phase 1 *(completed)*
+- [x] `docs/architecture/orchestrate-state-machine.md` (~lines 1011, 1038): update both paths;
+      re-read immediately before editing (sibling territory) *(completed)*
+- [x] `context/patterns/batch-orchestration-guardrails.md` (~line 798): update the path *(completed)*
+- [x] `context/patterns/orchestrate-batch-results-template.md` (~line 143): update the
+      `.return-meta-multi.json` mention *(completed)*
+- [x] `context/formats/return-metadata-file.md` (~lines 84, 122): update both mentions; re-read
+      immediately before editing (sibling territory) *(completed)*
+- [x] `skills/skill-refresh/SKILL.md` (~lines 209-210): update Step 4.5's two paths — prose only,
+      the invocation itself stays byte-identical *(completed)*
+- [x] `scripts/lib/deploy-ledger-lib.sh` (~line 12): update the comment's path mention *(completed)*
+- [x] Final sweep: `grep -rn 'specs/\.orchestrator-multi-state\|specs/\.return-meta-multi' agent-system/extensions/core/`
+      returns only intentional legacy-coverage mentions in the reaper and its tests *(completed)*
 
 **Timing**: 1 hour
 

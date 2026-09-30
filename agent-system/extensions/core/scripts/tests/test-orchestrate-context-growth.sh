@@ -72,7 +72,7 @@ SCRIPTS=(
 LIBS=(
   common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh
   phase-heading-patterns.sh deploy-baseline-lib.sh status-vocabulary.sh task-lookup-lib.sh
-  deploy-ledger-lib.sh
+  deploy-ledger-lib.sh runtime-file-patterns.sh
 )
 
 for f in "${SCRIPTS[@]}"; do require_file "$CORE_DIR/$f"; done
@@ -88,7 +88,7 @@ WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs"
+mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in "${SCRIPTS[@]}"; do cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"; done
 for f in "${LIBS[@]}"; do cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"; done
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -190,7 +190,7 @@ fi
 plan_json_bytes=$(printf '%s' "$plan_json" | wc -c | tr -d ' ')
 info "plan_json bytes (one call, 3-task cycle): $plan_json_bytes"
 
-mt_state_file="$WORKDIR/specs/.orchestrator-multi-state-${SESSION_ID}.json"
+mt_state_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${SESSION_ID}.json"
 if [ ! -f "$mt_state_file" ]; then
   fail "mt_state_file not written by live cycle-plan: $mt_state_file"
   exit 1
@@ -312,8 +312,9 @@ if git -C "$CORE_DIR/../../../.." status --porcelain -- specs/ 2>/dev/null | gre
 else
   pass "no real specs/ state was created or mutated by this probe"
 fi
-if compgen -G "$CORE_DIR/../../../../specs/.orchestrator-multi-state-*.json" > /dev/null 2>&1; then
-  info "note: pre-existing real multi-state files present (unrelated to this probe; not asserted against)"
+if compgen -G "$CORE_DIR/../../../../specs/.orchestration/.orchestrator-multi-state-*.json" > /dev/null 2>&1 \
+   || compgen -G "$CORE_DIR/../../../../specs/.orchestrator-multi-state-*.json" > /dev/null 2>&1; then
+  info "note: pre-existing real multi-state files present, at specs/.orchestration/ and/or the legacy specs/ root (unrelated to this probe; not asserted against)"
 fi
 
 echo ""

@@ -69,14 +69,15 @@ WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs"
+mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage-classify.sh \
          task-lock.sh orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh; do
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
-         phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh deploy-ledger-lib.sh; do
+         phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh deploy-ledger-lib.sh \
+         runtime-file-patterns.sh; do
   cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
 done
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -334,7 +335,7 @@ else
   fail "session-id invariant: implement preflight argv missing bare session id (argv: '$implement_preflight')"
 fi
 
-mt_state_file_live="$WORKDIR/specs/.orchestrator-multi-state-g45_sess.json"
+mt_state_file_live="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g45_sess.json"
 if [ -f "$mt_state_file_live" ]; then
   dispatch_seq_count=$(jq -r '.dispatch_seq | keys | length' "$mt_state_file_live" 2>/dev/null)
   if [ "$dispatch_seq_count" = "2" ]; then
@@ -382,7 +383,7 @@ fi
 # ORDINARY status-derived classification (implement) -- it must NOT any more. No --force-phases
 # is passed this time, proving the exclusion is driven by the persisted forced_round_seeded
 # marker, not by the flag's absence alone.
-g5_mt_state="$WORKDIR/specs/.orchestrator-multi-state-g5_fallthrough_sess.json"
+g5_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g5_fallthrough_sess.json"
 g5_status_before=$(jq -r '.active_projects[] | select(.project_number == 501) | .status' "$STATE_FILE")
 g5_cycle_before=$(jq -r --arg t "501" '.cycle_counts[$t] // 0' "$g5_mt_state" 2>/dev/null)
 run_sut --session g5_fallthrough_sess --no-plan-cache -- 501
@@ -421,7 +422,7 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g6_sess.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g6_sess.json"
 rm -rf "$WORKDIR/specs/601_g6_candidate"
 before_checksum=$(find "$WORKDIR/specs" -type f | sort | xargs -I{} md5sum {} 2>/dev/null | md5sum)
 run_sut --session g6_sess --dry-run -- 601
@@ -533,7 +534,7 @@ reset_lock_dirs
 rm -rf "$WORKDIR/specs/801_g8_budget"
 mkdir -p "$WORKDIR/specs/801_g8_budget"
 jq -n '{cycle_count: 5}' > "$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_sess_a.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_sess_a.json"
 
 run_sut --session g8_sess_a -- 801
 if [ "$(jqf '.dispatch | map(select(.task == 801)) | length')" = "1" ]; then
@@ -541,7 +542,7 @@ if [ "$(jqf '.dispatch | map(select(.task == 801)) | length')" = "1" ]; then
 else
   fail "budget: a fresh session was blocked despite starting at cycle_counts=0 (stdout: $LAST_STDOUT)"
 fi
-g8a_mt_state="$WORKDIR/specs/.orchestrator-multi-state-g8_sess_a.json"
+g8a_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_sess_a.json"
 if [ "$(jq -r --arg t "801" '.cycle_counts[$t] // 0' "$g8a_mt_state" 2>/dev/null)" = "1" ]; then
   pass "budget: in-session cycle_counts[801] is 1 after one dispatch this run (not 6)"
 else
@@ -565,9 +566,9 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_base.json" "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_hard.json"
-jq -n --arg t "802" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_base.json"
-jq -n --arg t "802" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestrator-multi-state-g8_mode_hard.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_mode_base.json" "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_mode_hard.json"
+jq -n --arg t "802" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_mode_base.json"
+jq -n --arg t "802" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_mode_hard.json"
 
 run_sut --session g8_mode_base -- 802
 if [ "$(jqf '.blocked | map(select(.task == 802)) | length')" = "1" ] && \
@@ -594,8 +595,8 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_exhausted_sess.json"
-jq -n --arg t "803" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestrator-multi-state-g8_exhausted_sess.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_exhausted_sess.json"
+jq -n --arg t "803" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_exhausted_sess.json"
 
 run_sut --session g8_exhausted_sess -- 803
 if [ "$(jqf '.stop.reason')" = "max_cycles" ]; then
@@ -633,8 +634,8 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_mixed_sess.json"
-jq -n --arg t "804" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestrator-multi-state-g8_mixed_sess.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_mixed_sess.json"
+jq -n --arg t "804" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_mixed_sess.json"
 
 run_sut --session g8_mixed_sess -- 804 805
 if [ "$(jqf '.blocked | map(select(.task == 804)) | length')" = "1" ] && \
@@ -665,7 +666,7 @@ for i in 1 2 3 4 5 6; do
   if [ "$i" -gt 1 ]; then
     bash "$WORKDIR/.claude/scripts/task-lock.sh" release 806 "g8_six_run_$((i - 1))" >/dev/null 2>&1 || true
   fi
-  rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_six_run_${i}.json"
+  rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_six_run_${i}.json"
   run_sut --session "g8_six_run_${i}" --force-phases research -- 806
   if [ "$(jqf '.dispatch | map(select(.task == 806)) | length')" != "1" ]; then
     six_runs_ok=false
@@ -694,7 +695,7 @@ write_state <<'EOF'
 EOF
 reset_lock_dirs
 rm -rf "$WORKDIR/specs/807_g8_seq_no_repeat"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g8_seq_run1.json" "$WORKDIR/specs/.orchestrator-multi-state-g8_seq_run2.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_seq_run1.json" "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_seq_run2.json"
 
 run_sut --session g8_seq_run1 -- 807
 g8_durable_seq_after_run1=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/807_g8_seq_no_repeat/.orchestrator-loop-guard" 2>/dev/null)
@@ -731,7 +732,7 @@ cat > "$WORKDIR/specs/901_g9_nonconforming/plans/01_plan.md" <<'EOF'
 ### Phase 1: One [COMPLETED]
 ### Phase 3a: Bad heading [NOT STARTED]
 EOF
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g9a_sess.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9a_sess.json"
 : > "$ARGV_LOG"
 run_sut --session g9a_sess --hard -- 901
 if [ "$(jqf '.dispatch | map(select(.task == 901)) | length')" = "0" ] && \
@@ -766,7 +767,7 @@ EOF
 cat > "$WORKDIR/specs/902_g9_mismatch/.orchestrator-handoff.json" <<'EOF'
 {"status": "partial", "phases_completed": 0, "phases_total": 2}
 EOF
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g9b_sess.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9b_sess.json"
 : > "$ARGV_LOG"
 run_sut --session g9b_sess --hard -- 902
 if [ "$(jqf '.dispatch | map(select(.task == 902)) | length')" = "0" ] && \
@@ -805,7 +806,7 @@ EOF
 cat > "$WORKDIR/specs/903_g9_dispatch/.orchestrator-handoff.json" <<'EOF'
 {"status": "partial", "phases_completed": 1, "phases_total": 2}
 EOF
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g9c_sess.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9c_sess.json"
 : > "$ARGV_LOG"
 run_sut --session g9c_sess --hard -- 903
 if [ "$(jqf '.dispatch | map(select(.task == 903)) | length')" = "1" ] && \
@@ -845,7 +846,7 @@ EOF
 cat > "$WORKDIR/specs/904_g9_fallthrough/.orchestrator-handoff.json" <<'EOF'
 {"status": "partial", "phases_completed": 1, "phases_total": 1}
 EOF
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g9d_sess.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9d_sess.json"
 : > "$ARGV_LOG"
 run_sut --session g9d_sess --hard -- 904
 if [ "$(jqf '.dispatch | map(select(.task == 904)) | length')" = "1" ] && \
@@ -928,12 +929,12 @@ cat > "$WORKDIR/specs/1001_g10_aux/plans/01_plan.md" <<'EOF'
 
 ### Phase 1: One [NOT STARTED]
 EOF
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"
 
 # ── Case A: aux_pending = blocker-research produces exactly one aux_dispatch[] row with
 # agent=fork, orchestrator_mode=false, and a dispatch file with no memory/lit block ──────────────
 jq -n --arg t "1001" '{aux_pending: {($t): {kind: "blocker-research", blocker_desc: "widget X is missing"}}}' \
-  > "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json"
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"
 run_sut --session g10_a -- 1001
 if [ "$(jqf '.aux_dispatch | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].kind')" = "blocker-research" ] && \
@@ -949,32 +950,32 @@ if [ -n "$aux_file_a" ] && [ -f "$aux_file_a" ] && ! grep -qi "memory\|literatur
 else
   fail "aux: blocker-research dispatch file missing or unexpectedly carries a memory/lit block ($aux_file_a)"
 fi
-if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ] && \
-   [ "$(jq -r --arg t "1001" '.blocker_escalation_count[$t] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json")" = "1" ]; then
+if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ] && \
+   [ "$(jq -r --arg t "1001" '.blocker_escalation_count[$t] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "1" ]; then
   pass "aux: blocker-research clears aux_pending and increments blocker_escalation_count to 1"
 else
-  fail "aux: aux_pending not cleared or counter not incremented ($(cat "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json"))"
+  fail "aux: aux_pending not cleared or counter not incremented ($(cat "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"))"
 fi
 
 # ── Case B: MAX_BLOCKER_ESCALATIONS=2 cap -- a third blocker-research signal emits no row ───────
 jq -n --arg t "1001" '{blocker_escalation_count: {($t): 2}, aux_pending: {($t): {kind: "blocker-research", blocker_desc: "third strike"}}}' \
-  > "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json"
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"
 run_sut --session g10_a -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
   pass "aux: MAX_BLOCKER_ESCALATIONS cap suppresses a third blocker-research row"
 else
   fail "aux: blocker-research cap did not suppress the row (stdout: $LAST_STDOUT)"
 fi
-if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ]; then
+if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ]; then
   pass "aux: a capped-out aux_pending entry is still cleared (never re-evaluated next cycle)"
 else
   fail "aux: capped-out aux_pending entry was not cleared"
 fi
 
 # ── Case C: MAX_DRIFT_INSPECTIONS=1 cap -- base mode ─────────────────────────────────────────────
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_c.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_c.json"
 jq -n --arg t "1001" '{aux_pending: {($t): {kind: "drift-inspection"}}}' \
-  > "$WORKDIR/specs/.orchestrator-multi-state-g10_c.json"
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_c.json"
 run_sut --session g10_c -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "drift-inspection")) | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].agent')" = "fork" ]; then
@@ -983,7 +984,7 @@ else
   fail "aux: drift-inspection row missing or malformed (stdout: $LAST_STDOUT)"
 fi
 jq -n --arg t "1001" '{drift_inspection_count: {($t): 1}, aux_pending: {($t): {kind: "drift-inspection"}}}' \
-  > "$WORKDIR/specs/.orchestrator-multi-state-g10_c.json"
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_c.json"
 run_sut --session g10_c -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
   pass "aux: MAX_DRIFT_INSPECTIONS cap suppresses a second drift-inspection row"
@@ -993,9 +994,9 @@ fi
 
 # ── Case D: mutual exclusion -- drift-inspection aux_pending under --hard is suppressed, never
 # co-occurring with divergence-audit's own hard-mode-only gate ──────────────────────────────────
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_d.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_d.json"
 jq -n --arg t "1001" '{aux_pending: {($t): {kind: "drift-inspection"}}}' \
-  > "$WORKDIR/specs/.orchestrator-multi-state-g10_d.json"
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_d.json"
 run_sut --session g10_d --hard -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
   pass "aux: mutual exclusion -- a drift-inspection aux_pending under --hard emits no row"
@@ -1003,9 +1004,9 @@ else
   fail "aux: drift-inspection under --hard unexpectedly emitted a row (stdout: $LAST_STDOUT)"
 fi
 
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_e.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_e.json"
 jq -n --arg t "1001" '{aux_pending: {($t): {kind: "divergence-audit", target: "the flaky step", verbatim_goal: "make it pass"}}}' \
-  > "$WORKDIR/specs/.orchestrator-multi-state-g10_e.json"
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_e.json"
 run_sut --session g10_e -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
   pass "aux: mutual exclusion -- a divergence-audit aux_pending in base mode emits no row"
@@ -1015,10 +1016,10 @@ fi
 
 # ── Case E: divergence-audit under --hard dispatches with the task's own already-resolved
 # research agent, never task-type re-resolved through command-route-agent.sh ────────────────────
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_f.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_f.json"
 jq -n --arg t "1001" \
   '{research_agents: {($t): "stub-research-agent"}, aux_pending: {($t): {kind: "divergence-audit", target: "the flaky step", verbatim_goal: "make it pass"}}}' \
-  > "$WORKDIR/specs/.orchestrator-multi-state-g10_f.json"
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_f.json"
 run_sut --session g10_f --hard -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "divergence-audit")) | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].agent')" = "stub-research-agent" ]; then
@@ -1030,7 +1031,7 @@ fi
 # ── Case F: chaining -- a completed blocker-research fork's .blocker-research.json produces a
 # plan-revision row (agent=reviser-agent, model read from that agent's own frontmatter), and the
 # marker file is consumed (removed) once the row is built ───────────────────────────────────────
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_g.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_g.json"
 jq -n '{summary: "root cause found", blocker_desc: "widget X is missing", root_cause: "typo", solution_path: "fix the typo"}' \
   > "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
 run_sut --session g10_g -- 1001
@@ -1049,7 +1050,7 @@ fi
 
 # ── Case G: chaining -- drift_pct <= 0.30 logs "Drift check passed" and emits NO row; the marker
 # file is still consumed either way ──────────────────────────────────────────────────────────────
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_h.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_h.json"
 jq -n '{drift_pct: 0.10, summary: "low drift"}' > "$WORKDIR/specs/1001_g10_aux/.drift-inspection.json"
 run_sut --session g10_h -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ] && [[ "$LAST_STDERR" == *"Drift check passed"* ]]; then
@@ -1105,9 +1106,9 @@ EOF
 reset_lock_dirs
 rm -rf "$WORKDIR/specs/1002_g10_terminal_aux"
 mkdir -p "$WORKDIR/specs/1002_g10_terminal_aux"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g10_j.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_j.json"
 jq -n --arg t "1002" '{failed_tasks: [1002], aux_pending: {($t): {kind: "blocker-research", blocker_desc: "widget X is missing"}}}' \
-  > "$WORKDIR/specs/.orchestrator-multi-state-g10_j.json"
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_j.json"
 run_sut --session g10_j -- 1002
 if [ "$(jqf '.stop.reason')" = "all_terminal" ]; then
   pass "aux: fixture confirms the all-terminal short-circuit actually fires this cycle (failed_tasks pre-seeded)"
@@ -1253,7 +1254,7 @@ EOF
   reset_lock_dirs
   rm -f "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
   rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
-  local mt_file="$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+  local mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${session}.json"
   rm -f "$mt_file"
   jq -n --argjson tn "[9101,9111]" --argjson cmf '[".claude/scripts/orchestrate-cycle-plan.sh"]' '{
     task_numbers: $tn,
@@ -1283,7 +1284,7 @@ g11_reset_mt() {
 EOF
   reset_lock_dirs
   rm -f "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
-  local mt_file="$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+  local mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${session}.json"
   rm -f "$mt_file"
   jq -n --argjson tn "[9101]" --argjson cmf "$cmf_json" '{
     task_numbers: $tn,
@@ -1309,7 +1310,7 @@ g11_seed_state_and_mt() {
 # modified_files would look like) rather than the `.claude` deploy-mirror path cases (a)-(k) use.
 g11_set_cycle_modified_files() {
   local session="$1" cmf_json="$2"
-  local mt_file="$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+  local mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${session}.json"
   jq --argjson cmf "$cmf_json" '.cycle_modified_files = $cmf' "$mt_file" > "${mt_file}.tmp" && mv "${mt_file}.tmp" "$mt_file"
 }
 
@@ -1363,7 +1364,7 @@ g11_seed_state_and_mt "g11_a"
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
 write_g11_deploy_headless_stub 1
 run_sut --session g11_a -- 9101
-mt_a="$WORKDIR/specs/.orchestrator-multi-state-g11_a.json"
+mt_a="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_a.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_a" 2>/dev/null)" = "true" ]; then
   pass "checkpoint (a): deploy-headless.sh exit 1 defers the batch (deferred_deploy_checkpoint contains the task)"
 else
@@ -1387,7 +1388,7 @@ g11_seed_state_and_mt "g11_b"
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
 write_g11_deploy_headless_stub 3
 run_sut --session g11_b -- 9101
-mt_b="$WORKDIR/specs/.orchestrator-multi-state-g11_b.json"
+mt_b="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_b.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_b" 2>/dev/null)" = "true" ]; then
   pass "checkpoint (b): a NEW finding on exit 3 still defers the batch"
 else
@@ -1407,7 +1408,7 @@ g11_seed_state_and_mt "g11_c"
 write_g11_verify_stub "FINDING gate1 pre-existing" "" 1
 write_g11_deploy_headless_stub 3
 run_sut --session g11_c -- 9101
-mt_c="$WORKDIR/specs/.orchestrator-multi-state-g11_c.json"
+mt_c="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_c.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_c" 2>/dev/null)" = "false" ] || \
    [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_c" 2>/dev/null)" = "0" ]; then
   pass "checkpoint (c): a pre-existing-only finding set on exit 3 does NOT defer the batch"
@@ -1432,7 +1433,7 @@ g11_seed_state_and_mt "g11_d"
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1 ""
 write_g11_deploy_headless_stub 3
 run_sut --session g11_d -- 9101
-mt_d="$WORKDIR/specs/.orchestrator-multi-state-g11_d.json"
+mt_d="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_d.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_d" 2>/dev/null)" = "false" ] || \
    [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_d" 2>/dev/null)" = "0" ]; then
   pass "checkpoint (d): a flaky (non-reproducing) new finding does NOT defer the batch"
@@ -1457,7 +1458,7 @@ g11_seed_state_and_mt "g11_e"
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate8 [FAIL] test-lake-build-guard.sh" 1
 write_g11_deploy_headless_stub 3
 run_sut --session g11_e -- 9101
-mt_e="$WORKDIR/specs/.orchestrator-multi-state-g11_e.json"
+mt_e="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_e.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_e" 2>/dev/null)" = "false" ] || \
    [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_e" 2>/dev/null)" = "0" ]; then
   pass "checkpoint (e): a confirmed but unrelated new finding does NOT defer the batch"
@@ -1477,7 +1478,7 @@ g11_seed_state_and_mt "g11_f"
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate3 [FAIL] .claude/scripts/orchestrate-cycle-plan.sh" 1
 write_g11_deploy_headless_stub 3
 run_sut --session g11_f -- 9101
-mt_f="$WORKDIR/specs/.orchestrator-multi-state-g11_f.json"
+mt_f="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_f.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_f" 2>/dev/null)" = "true" ]; then
   pass "checkpoint (f): a confirmed, attributable new finding still defers the batch"
 else
@@ -1504,7 +1505,7 @@ g11_seed_state_and_mt "g11_h"
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
 write_g11_deploy_headless_stub 3
 run_sut --session g11_h -- 9101
-mt_h="$WORKDIR/specs/.orchestrator-multi-state-g11_h.json"
+mt_h="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_h.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_h" 2>/dev/null)" = "true" ]; then
   pass "checkpoint (h): an identifier-free confirmed finding still defers (fail-safe attribution)"
 else
@@ -1518,7 +1519,7 @@ g11_seed_state_and_mt "g11_i"
 write_g11_verify_stub "FINDING gate8 [FAIL] test-lake-build-guard.sh" "FINDING gate8 [FAIL] test-lake-build-guard.sh" 1
 write_g11_deploy_headless_stub 3
 run_sut --session g11_i -- 9101
-mt_i="$WORKDIR/specs/.orchestrator-multi-state-g11_i.json"
+mt_i="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_i.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_i" 2>/dev/null)" = "false" ] || \
    [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_i" 2>/dev/null)" = "0" ]; then
   pass "checkpoint (i): a gate-8 finding present in BOTH pre and post is not treated as new"
@@ -1560,7 +1561,7 @@ g11_seed_state_and_mt "g11_k"
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate3 [FAIL] .claude/scripts/orchestrate-cycle-plan.sh" 1
 write_g11_deploy_headless_stub 0
 run_sut --session g11_k -- 9101
-mt_k="$WORKDIR/specs/.orchestrator-multi-state-g11_k.json"
+mt_k="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_k.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_k" 2>/dev/null)" = "true" ]; then
   pass "checkpoint (k): still defers despite deploy-headless.sh's own fast verify passing"
 else
@@ -1587,7 +1588,7 @@ g11_seed_ledger '[9101]' "clean" 60
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
 write_g11_deploy_headless_stub 1
 run_sut --session g11_l -- 9101
-mt_l="$WORKDIR/specs/.orchestrator-multi-state-g11_l.json"
+mt_l="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_l.json"
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "0" ]; then
   pass "checkpoint (l): skip_hash never invokes deploy-headless.sh"
 else
@@ -1620,7 +1621,7 @@ g11_set_cycle_modified_files "g11_m" '["agent-system/extensions/core/scripts/orc
 write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
 write_g11_deploy_headless_stub 1
 run_sut --session g11_m -- 9101
-mt_m="$WORKDIR/specs/.orchestrator-multi-state-g11_m.json"
+mt_m="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_m.json"
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "0" ]; then
   pass "checkpoint (m): skip_attributed never invokes deploy-headless.sh"
 else
@@ -1647,7 +1648,7 @@ g11_set_cycle_modified_files "g11_n" '["agent-system/extensions/core/scripts/orc
 write_g11_verify_stub "" "" 0
 write_g11_deploy_headless_stub 0
 run_sut --session g11_n -- 9101
-mt_n="$WORKDIR/specs/.orchestrator-multi-state-g11_n.json"
+mt_n="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_n.json"
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
   pass "checkpoint (n): outside the recency window, the full pipeline runs (deploy-headless.sh called)"
 else
@@ -1840,7 +1841,7 @@ if echo "$LAST_STDERR" | grep -q "touched 0 orchestrator-critical path(s)"; then
 else
   pass "checkpoint (s): no misleading 'touched 0 orchestrator-critical path(s)' line"
 fi
-mt_s="$WORKDIR/specs/.orchestrator-multi-state-g11_s.json"
+mt_s="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_s.json"
 if [ "$(jq -r '.cycle_modified_files' "$mt_s" 2>/dev/null)" = "[]" ]; then
   pass "checkpoint (s): cycle_modified_files is still reset to [] after the widened-path run (unconditional reset preserved)"
 else
@@ -1928,7 +1929,7 @@ if echo "$LAST_STDERR" | grep -qiE 'unbound variable|syntax error|unexpected (to
 else
   pass "checkpoint (u): stderr carries none of the incident's crash signatures"
 fi
-mt_u="$WORKDIR/specs/.orchestrator-multi-state-g11_u.json"
+mt_u="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_u.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_u" 2>/dev/null)" = "true" ] && \
    [ "$(jq -r '.deferred_deploy_checkpoint | index(9111) != null' "$mt_u" 2>/dev/null)" = "true" ]; then
   pass "checkpoint (u): both the terminal fixture task and the live candidate are deferred (deploy-failure defer not weakened by the rewrite)"
@@ -2425,7 +2426,7 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-g18_mt_state="$WORKDIR/specs/.orchestrator-multi-state-g18_sess.json"
+g18_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g18_sess.json"
 rm -f "$g18_mt_state"
 
 run_sut --session g18_sess -- 1801
@@ -2509,7 +2510,7 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-g18b_mt_state="$WORKDIR/specs/.orchestrator-multi-state-g18b_sess.json"
+g18b_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g18b_sess.json"
 rm -f "$g18b_mt_state"
 run_sut --session g18b_sess -- 1802
 if [ "$(jqf '.dispatch | length')" = "0" ]; then
@@ -2587,7 +2588,7 @@ if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "3" ]; t
 else
   fail "Group 19 case 1: expected durable dispatch_seq_counter unchanged at 3 after a replay; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
 fi
-g19_mt_state_1="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case1.json"
+g19_mt_state_1="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g19_sess_case1.json"
 if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_1" 2>/dev/null)" = "0" ]; then
   pass "Group 19 case 1: in-memory cycle_counts[1901] starts at 0 THIS run (per-run budget contract; NOT seeded from the durable cycle_count=2)"
 else
@@ -2611,7 +2612,7 @@ if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
 else
   pass "Group 19 case 2: a phase mismatch does not replay"
 fi
-g19_mt_state_2="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case2.json"
+g19_mt_state_2="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g19_sess_case2.json"
 if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_2" 2>/dev/null)" = "1" ]; then
   pass "Group 19 case 2: in-session cycle_counts[1901] charges normally (0 -> 1) on a phase mismatch"
 else
@@ -2640,7 +2641,7 @@ if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
 else
   pass "Group 19 case 3: a missing dispatch_file does not replay"
 fi
-g19_mt_state_3="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case3.json"
+g19_mt_state_3="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g19_sess_case3.json"
 if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_3" 2>/dev/null)" = "1" ]; then
   pass "Group 19 case 3: in-session cycle_counts[1901] charges normally (0 -> 1) when the dispatch_file is missing"
 else
@@ -2659,7 +2660,7 @@ cat > "$g19_guard_file" <<EOF
 EOF
 reset_lock_dirs
 run_sut --session g19_sess_case4 -- 1901
-g19_mt_state_4="$WORKDIR/specs/.orchestrator-multi-state-g19_sess_case4.json"
+g19_mt_state_4="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g19_sess_case4.json"
 if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_4" 2>/dev/null)" = "1" ]; then
   pass "Group 19 case 4: no pending_dispatch charges normally in-session (0 -> 1)"
 else
@@ -2781,7 +2782,7 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21a.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21a.json"
 run_sut --session g21a --dry-run --force-phases research -- 2101
 if [ "$LAST_EXIT" -eq 0 ]; then
   pass "Case A: SUT exits 0"
@@ -2816,7 +2817,7 @@ EOF
 rm -rf "$WORKDIR/specs/archive/2102_g21b_archived_completed"
 mkdir -p "$WORKDIR/specs/archive/2102_g21b_archived_completed/reports"
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21b.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21b.json"
 run_sut --session g21b --force-phases research -- 2102
 if [ "$LAST_EXIT" -eq 0 ]; then
   pass "Case B: SUT exits 0 (LIVE)"
@@ -2850,7 +2851,7 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21c.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21c.json"
 run_sut --session g21c --dry-run -- 2103
 if [ "$(jqf '.stop.reason')" = "all_terminal" ]; then
   pass "Case C: unforced terminal candidate #2103 stops with all_terminal (Non-Goal regression guard)"
@@ -2874,7 +2875,7 @@ EOF
 rm -rf "$WORKDIR/specs/2105_g21d_live_no_regression"
 mkdir -p "$WORKDIR/specs/2105_g21d_live_no_regression/reports"
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21d.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21d.json"
 d_status_before=$(jq -r '.active_projects[] | select(.project_number == 2105) | .status' "$WORKDIR/specs/state.json")
 run_sut --session g21d --force-phases research -- 2105
 d_status_after=$(jq -r '.active_projects[] | select(.project_number == 2105) | .status' "$WORKDIR/specs/state.json")
@@ -2913,7 +2914,7 @@ reset_lock_dirs
 rm -rf "$WORKDIR/specs/2104_g21e_forced_implement"
 mkdir -p "$WORKDIR/specs/2104_g21e_forced_implement/plans"
 printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2104_g21e_forced_implement/plans/01_fixture-plan.md"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g21e.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21e.json"
 run_sut --session g21e --dry-run --force-phases implement -- 2104
 if [ "$(jqf '.dispatch | map(select(.task == 2104 and .phase == "implement" and .force == true)) | length')" = "1" ]; then
   pass "Case E: --force-phases implement on a completed task WITH a plan dispatches with phase=implement, force=true"
@@ -2949,7 +2950,7 @@ EOF
 rm -rf "$WORKDIR/specs/2201_g22a_focus_only"
 mkdir -p "$WORKDIR/specs/2201_g22a_focus_only/reports"
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22a.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g22a.json"
 run_sut --session g22a --force-phases research --focus "Q1? Q2?" -- 2201
 if [ "$LAST_EXIT" -eq 0 ]; then
   pass "Group 22 Case A: SUT exits 0"
@@ -2980,7 +2981,7 @@ EOF
 rm -rf "$WORKDIR/specs/2202_g22b_focus_and_rq"
 mkdir -p "$WORKDIR/specs/2202_g22b_focus_and_rq/reports"
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22b.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g22b.json"
 run_sut --session g22b --force-phases research --focus "Extra context here" -- 2202
 g22b_dispatch_file=$(jqf '.dispatch | map(select(.task == 2202)) | .[0].dispatch_file // ""')
 if [ -n "$g22b_dispatch_file" ] && [ -f "$g22b_dispatch_file" ] && \
@@ -3003,7 +3004,7 @@ EOF
 rm -rf "$WORKDIR/specs/2203_g22c_rq_only_no_focus"
 mkdir -p "$WORKDIR/specs/2203_g22c_rq_only_no_focus/reports"
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22c.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g22c.json"
 run_sut --session g22c --force-phases research -- 2203
 g22c_dispatch_file=$(jqf '.dispatch | map(select(.task == 2203)) | .[0].dispatch_file // ""')
 if [ -n "$g22c_dispatch_file" ] && [ -f "$g22c_dispatch_file" ] && \
@@ -3029,7 +3030,7 @@ EOF
 rm -rf "$WORKDIR/specs/2204_g22d_focus_quotes_spaces"
 mkdir -p "$WORKDIR/specs/2204_g22d_focus_quotes_spaces/reports"
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22d.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g22d.json"
 run_sut --session g22d --force-phases research --focus 'has "quoted" words and spaces' -- 2204
 g22d_dispatch_file=$(jqf '.dispatch | map(select(.task == 2204)) | .[0].dispatch_file // ""')
 if [ -n "$g22d_dispatch_file" ] && [ -f "$g22d_dispatch_file" ] && \
@@ -3048,7 +3049,7 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g22e.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g22e.json"
 run_sut --session g22e --dry-run --force-phases research --focus "dry run focus text" -- 2205
 if [ "$(jqf '.dispatch | map(select(.task == 2205)) | .[0].focus // ""')" = "From the user: dry run focus text" ]; then
   pass "Group 22 Case E: --dry-run emits a non-empty .dispatch[].focus carrying the --focus text"
@@ -3079,7 +3080,7 @@ reset_lock_dirs
 rm -rf "$WORKDIR/specs/2301_g23a_implement_with_plan"
 mkdir -p "$WORKDIR/specs/2301_g23a_implement_with_plan/plans"
 printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2301_g23a_implement_with_plan/plans/01_fixture-plan.md"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23a.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23a.json"
 run_sut --session g23a --force-phases implement -- 2301
 if [ "$(jqf '.dispatch | map(select(.task == 2301 and .phase == "implement" and .force == true)) | length')" = "1" ]; then
   pass "Group 23 Case A: --implement on a RESEARCHED task WITH a plan dispatches implement"
@@ -3098,7 +3099,7 @@ write_state <<'EOF'
 EOF
 reset_lock_dirs
 rm -rf "$WORKDIR/specs/2302_g23b_implement_no_plan"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23b.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23b.json"
 g23b_status_before=$(jq -r '.active_projects[] | select(.project_number == 2302) | .status' "$STATE_FILE")
 run_sut --session g23b --force-phases implement -- 2302
 g23b_status_after=$(jq -r '.active_projects[] | select(.project_number == 2302) | .status' "$STATE_FILE")
@@ -3141,7 +3142,7 @@ reset_lock_dirs
 rm -rf "$WORKDIR/specs/2303_g23c_plan_revise"
 mkdir -p "$WORKDIR/specs/2303_g23c_plan_revise/plans" "$WORKDIR/specs/2303_g23c_plan_revise/reports"
 printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2303_g23c_plan_revise/plans/01_fixture-plan.md"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23c.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23c.json"
 run_sut --session g23c --force-phases plan -- 2303
 if [ "$(jqf '.dispatch | map(select(.task == 2303)) | .[0].agent // ""')" = "reviser-agent" ]; then
   pass "Group 23 Case C: --plan with an existing plan resolves reviser-agent"
@@ -3168,7 +3169,7 @@ EOF
 reset_lock_dirs
 rm -rf "$WORKDIR/specs/2304_g23d_plan_author"
 mkdir -p "$WORKDIR/specs/2304_g23d_plan_author/reports"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23d.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23d.json"
 run_sut --session g23d --force-phases plan -- 2304
 if [ "$(jqf '.dispatch | map(select(.task == 2304)) | .[0].agent // ""')" = "planner-agent" ]; then
   pass "Group 23 Case D: --plan with no plan resolves planner-agent"
@@ -3191,7 +3192,7 @@ rm -rf "$WORKDIR/specs/2305_g23e_terminal_plan_revise" "$WORKDIR/specs/2306_g23f
 mkdir -p "$WORKDIR/specs/2305_g23e_terminal_plan_revise/plans"
 printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2305_g23e_terminal_plan_revise/plans/01_fixture-plan.md"
 mkdir -p "$WORKDIR/specs/2306_g23f_terminal_plan_author"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g23ef.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23ef.json"
 run_sut --session g23ef --dry-run --force-phases plan -- 2305 2306
 if [ "$(jqf '.dispatch | map(select(.task == 2305)) | .[0].agent // ""')" = "reviser-agent" ]; then
   pass "Group 23 Case E: terminal (completed) task with a plan still resolves reviser-agent when forced"
@@ -3228,7 +3229,7 @@ rm -rf "$WORKDIR/specs/2401_g24_prior_image"
 mkdir -p "$WORKDIR/specs/2401_g24_prior_image"
 jq -n '{dispatch_seq_counter: 7}' > "$WORKDIR/specs/2401_g24_prior_image/.orchestrator-loop-guard"
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g24_case1.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g24_case1.json"
 
 run_sut --session g24_case1 --force-phases plan -- 2401
 g24_guard_file="$WORKDIR/specs/2401_g24_prior_image/.orchestrator-loop-guard"
@@ -3275,7 +3276,7 @@ fi
 g24_pending_before_case2="$(jq -c '.pending_dispatch' "$g24_guard_file" 2>/dev/null)"
 
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g24_case2.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g24_case2.json"
 run_sut --session g24_case2 --force-phases plan -- 2401
 
 if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
@@ -3402,7 +3403,7 @@ fi
 # command line) never receives --territory at all -- no siblings are scheduled this cycle.
 reset_lock_dirs
 : > "$G25_ARGV_LOG"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g25_solo.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g25_solo.json"
 run_sut --session g25_solo -- 2501
 g25_solo_argv=$(grep '^2501 implement' "$G25_ARGV_LOG" || true)
 if [ -n "$g25_solo_argv" ] && ! echo "$g25_solo_argv" | grep -q -- "--territory"; then
@@ -3433,7 +3434,7 @@ cat > "$WORKDIR/specs/2601_g25_hard_h1/.orchestrator-handoff.json" <<'EOF'
 {"status": "partial", "phases_completed": 1, "phases_total": 2}
 EOF
 : > "$G25_ARGV_LOG"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g25_hard.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g25_hard.json"
 run_sut --session g25_hard --hard -- 2601 2602
 g25_hard_argv=$(grep '^2601 implement' "$G25_ARGV_LOG" || true)
 if echo "$g25_hard_argv" | grep -q -- "--phase-number 2"; then
@@ -3616,7 +3617,7 @@ reset_lock_dirs
 rm -rf "$WORKDIR/specs/2703_g27_live"
 mkdir -p "$WORKDIR/specs/2703_g27_live/plans"
 printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDIR/specs/2703_g27_live/plans/01_fixture-plan.md"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g27live.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27live.json"
 
 run_sut --session g27live --no-plan-cache -- 2703
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | length')" = "1" ]; then
@@ -3624,7 +3625,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | 
 else
   fail "Group 27 Case C: cycle 1 did not dispatch candidate #2703 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
 fi
-g27_streak_after_1=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g27live.json")
+g27_streak_after_1=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27live.json")
 if [ "$g27_streak_after_1" = "1" ]; then
   pass "Group 27 Case C: streak recorded as 1 after the first dispatch"
 else
@@ -3646,7 +3647,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | 
 else
   fail "Group 27 Case D: expected a normal dispatch for genuinely different content, got exit=$LAST_EXIT stdout: $LAST_STDOUT"
 fi
-g27_streak_after_2=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g27live.json")
+g27_streak_after_2=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27live.json")
 if [ "$g27_streak_after_2" = "1" ]; then
   pass "Group 27 Case D: streak stays at 1 when the dispatch content genuinely differs from the previous cycle"
 else
@@ -3667,14 +3668,14 @@ write_state <<'EOF'
 }
 EOF
 reset_lock_dirs
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g27dry.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27dry.json"
 run_sut --session g27dry --dry-run -- 2704
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2704 and .phase == "research")) | length')" = "1" ]; then
   pass "Group 27 Case E: --dry-run still dispatches normally"
 else
   fail "Group 27 Case E: --dry-run behavior changed (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
 fi
-if [ ! -f "$WORKDIR/specs/.orchestrator-multi-state-g27dry.json" ]; then
+if [ ! -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27dry.json" ]; then
   pass "Group 27 Case E: --dry-run never persists a multi-state file (no accounting side effect)"
 else
   fail "Group 27 Case E: --dry-run unexpectedly wrote a multi-state file"
@@ -3695,7 +3696,7 @@ write_state <<'EOF'
 EOF
 reset_lock_dirs
 rm -rf "$WORKDIR/specs/2801_g28_halt"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g28halt.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g28halt.json"
 
 # Cycle 1: an ordinary, first-ever dispatch -- dispatches ok, streak=1, no halt.
 run_sut --session g28halt --no-plan-cache -- 2801
@@ -3718,7 +3719,7 @@ g28_entry_after_1=$(jq -c '.active_projects[] | select(.project_number == 2801)'
 g28_lu_after_1=$(echo "$g28_entry_after_1" | jq -r '.last_updated // ""')
 g28_sid_after_1=$(echo "$g28_entry_after_1" | jq -r '.session_id // ""')
 g28_seq_counter_after_1=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/2801_g28_halt/.orchestrator-loop-guard")
-g28_cycle_count_after_1=$(jq -r '.cycle_counts["2801"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g28halt.json")
+g28_cycle_count_after_1=$(jq -r '.cycle_counts["2801"] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g28halt.json")
 [ -d "$WORKDIR/specs/2801_g28_halt/.dispatch" ] && [ -f "$WORKDIR/specs/2801_g28_halt/.dispatch/1.md" ]
 g28_dispatch_1_present=$?
 [ -d "$WORKDIR/specs/2801_g28_halt/.lock" ]
@@ -3792,7 +3793,7 @@ else
 fi
 
 # Back-out assertion 5: the per-task cycle budget was not charged a second time.
-g28_cycle_count_after_2=$(jq -r '.cycle_counts["2801"] // 0' "$WORKDIR/specs/.orchestrator-multi-state-g28halt.json")
+g28_cycle_count_after_2=$(jq -r '.cycle_counts["2801"] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g28halt.json")
 if [ "$g28_cycle_count_after_2" = "$g28_cycle_count_after_1" ]; then
   pass "Group 28: the per-task cycle budget was not charged for the halted cycle ($g28_cycle_count_after_1 -> $g28_cycle_count_after_2)"
 else
@@ -3821,7 +3822,7 @@ write_state <<'EOF'
 EOF
 reset_lock_dirs
 rm -rf "$WORKDIR/specs/2802_g28_norepeat_a" "$WORKDIR/specs/2803_g28_norepeat_b"
-rm -f "$WORKDIR/specs/.orchestrator-multi-state-g28norepeat.json"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g28norepeat.json"
 run_sut --session g28norepeat --no-plan-cache -- 2802 2803
 if [ "$(jqf '.dispatch | length')" = "2" ] && [ "$(jqf '.blocked | length')" = "0" ]; then
   pass "Group 28: a non-repeating two-candidate composition dispatches both, with zero blocked[] rows"
@@ -3939,14 +3940,14 @@ g29_seed_state_and_mt() {
   done
   jq -n --argjson ap "$projects" '{active_projects: $ap}' > "$STATE_FILE"
   reset_lock_dirs
-  rm -f "$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+  rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${session}.json"
   rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
   # Group 11 hygiene, applied here too (per-group hygiene convention this file already follows):
   # a leftover call-count marker from Group 11's own many cases must never leak into this new
   # group's fresh write_g11_verify_stub/write_g11_deploy_headless_stub invocations below.
   rm -f "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
   jq -n --argjson tn "$tns" --argjson cmf "$cmf" '{task_numbers: $tn, cycle_modified_files: $cmf}' \
-    > "$WORKDIR/specs/.orchestrator-multi-state-${session}.json"
+    > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${session}.json"
 }
 
 # ── Arm A (dispatch verification item 1): the defect, resolved -- a deploy-pending candidate with
@@ -4020,7 +4021,7 @@ if [ "$c_dispatch_count_1" = "2" ]; then
 else
   fail "Arm C: cycle 1 expected 2 dispatch rows, got $c_dispatch_count_1 (stdout: $LAST_STDOUT)"
 fi
-mt_c="$WORKDIR/specs/.orchestrator-multi-state-g29_c.json"
+mt_c="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g29_c.json"
 c_streak_9203_after_1=$(jq -r '.identical_dispatch_streak["9203"] // 0' "$mt_c")
 
 run_sut --session g29_c --no-plan-cache -- 9203 9204

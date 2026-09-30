@@ -1,0 +1,84 @@
+{
+  "phase": 5,
+  "phase_name": "Extend the reaper and repoint every test fixture",
+  "started_at": "2026-09-30T00:31:00Z",
+  "last_updated": "2026-09-30T00:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend reap-session-runtime-files.sh candidates array with specs/.orchestration/ location alongside permanent legacy root globs; fix rel_path for two-location awareness",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/reap-session-runtime-files.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Repoint test-session-runtime-files.sh fixtures, add .orchestration setup, add Case 9 two-location sweep",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/test-session-runtime-files.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Repoint test-orchestrate-cycle-plan.sh (92 refs) mechanical substitution + lib copy fix",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Repoint test-orchestrate-cycle-postflight.sh (7 refs) + lib copy fix",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Repoint test-orchestrate-context-growth.sh (3 refs) + lib array + compgen/git-status assertions",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh"]
+    },
+    {
+      "id": 6,
+      "description": "test-init-specs.sh (3 refs, confirmed no-op) and test-force-phases.sh (2 refs, repointed)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-force-phases.sh"]
+    },
+    {
+      "id": 7,
+      "description": "test-orchestrate-unwind-dispatch.sh (1 ref no-op, but real lib-copy fix + gitignore fixture parity)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"]
+    },
+    {
+      "id": 8,
+      "description": "test-runtime-file-tracking.sh Case 5 hardcoded 18->19 member count (real fix, not the predicted no-op)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"]
+    },
+    {
+      "id": 9,
+      "description": "Full run-all.sh pass surfaced two more fixtures needing runtime-file-patterns.sh in their lib-copy lists: test-handoff-dispatch-identity.sh and test-orchestrate-recover-message-findings.sh (each build their own sandbox copy of orchestrate-cycle-postflight.sh)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.8",
+      "description": "test-runtime-file-tracking.sh Case 5 hardcoded member count",
+      "type": "altered",
+      "reason": "Scope Hypothesis predicted a likely no-op; found a real hardcoded 18 requiring update to 19",
+      "annotation": "documented inline in plan Phase 5 Implementation notes"
+    },
+    {
+      "task_id": "5.9",
+      "description": "test-handoff-dispatch-identity.sh and test-orchestrate-recover-message-findings.sh needed runtime-file-patterns.sh added to their lib-copy lists",
+      "type": "altered",
+      "reason": "Discovered only by running the full suite (neither file carries a literal orchestrator-multi-state/return-meta-multi path reference, so the ref-count grep never surfaced them); same defect class as the four files already in this phase's file list",
+      "annotation": "documented inline in plan Phase 5 Implementation notes"
+    }
+  ]
+}
