@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 279,
+  "phase": "plan",
+  "session_id": "sess_1790788666_f8aaca_279",
+  "dispatch_seq": 6,
+  "phases_completed": 0,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/279_state_schema_rejects_live_orchestration_fields/plans/01_widen-state-schema-fields.md",
+      "summary": "7-phase plan applying the 5-widen/3-retire state-schema ruling, advisory-first Checks 3/4, the postflight blockers reader/comment fix, a consumer-runnable migration script, and a schema-to-validator drift test."
+    }
+  ],
+  "blockers": [],
+  "next_steps": "Run /implement 279 to execute the plan"
+}

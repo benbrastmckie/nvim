@@ -1,47 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 2,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/279_state_schema_rejects_live_orchestration_fields/reports/01_state-schema-field-ruling.md",
-      "summary": "Per-field (a)/(b)/(c) ruling for all eight rejected fields plus the two top-level legacy fields, with writer/reader evidence re-verified against ~/Projects/BimodalLogic and a corrected finding that active_goal and previous_status have live canonical writers the dispatch missed."
-    }
-  ],
-  "next_steps": "Run /plan 279 to turn the eight field rulings into concrete state-schema.json / validate-state.sh / orchestrate-cycle-postflight.sh edits, the migration script, and the validator test coverage.",
-  "proposed_file_scope": [
-    "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md",
-    "agent-system/extensions/core/context/patterns/inline-status-update.md",
-    "agent-system/extensions/core/context/processes/implementation-workflow.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "This codebase's commands/skills are markdown-defined and executed literally by the agent following their embedded jq/bash snippets -- there is no compiled script for many state.json writers. A grep restricted to *.sh when checking 'does anything write field X on state.json' will miss real, live writers embedded in commands/*.md or skills/*/SKILL.md (confirmed for active_goal in commands/review.md and previous_status in skills/skill-spawn/SKILL.md). Always grep *.md alongside *.sh when establishing 'no writer found' for a state.json field.",
-      "category": "PATTERN",
-      "source_artifact": "specs/279_state_schema_rejects_live_orchestration_fields/reports/01_state-schema-field-ruling.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["state.json", "writer-discovery", "markdown-commands", "grep-scope", "active_goal"]
-    },
-    {
-      "content": "A context/patterns/*.md file being actively cross-referenced by other live docs does not mean every jq/bash snippet inside it is still executed by a current skill -- individual snippets within an otherwise-live file can be vestigial/superseded (e.g. jq-escaping-workarounds.md's 'researched: $ts' Research Postflight template vs. skill-status-sync/SKILL.md's actual postflight_update operation, which omits that field). Verify at the operation level (the skill's actual Execution steps), not just at the file-reference level, before concluding a documented write pattern is live.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/279_state_schema_rejects_live_orchestration_fields/reports/01_state-schema-field-ruling.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["documentation-drift", "context-patterns", "stale-snippet", "skill-verification"]
-    },
-    {
-      "content": "When a consumer repo's state.json carries top-level bookkeeping fields (metadata{generated_at,total_tasks,last_sync}, task_counts, stray top-level artifacts/last_updated) that no current agent-system script reads or writes, check git history with `git log -S'<field>' -- specs/state.json` before ruling: this repeatedly surfaced a pre-agent-system generator/tooling era whose output is now manually, ad-hoc reconciled by the consumer repo's own maintainer (who had already independently started retiring the same field family by hand, e.g. task_counts). That history is strong, fast evidence for a (c) RETIRE ruling versus guessing from static grep alone.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/279_state_schema_rejects_live_orchestration_fields/reports/01_state-schema-field-ruling.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["state.json", "git-archaeology", "legacy-fields", "schema-widening", "consumer-repo"]
+      "type": "plan",
+      "path": "specs/279_state_schema_rejects_live_orchestration_fields/plans/01_widen-state-schema-fields.md",
+      "summary": "7-phase plan applying the 5-widen/3-retire state-schema ruling, the advisory-first Checks 3/4 posture, the postflight blockers reader/comment fix, a consumer-runnable migration script, and a new schema-to-validator drift test."
     }
   ],
   "metadata": {
     "session_id": "sess_1790788666_f8aaca_279",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 12
-  }
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 8.5,
+    "dependency_waves": 5
+  },
+  "memory_candidates": [
+    {
+      "content": "In the agent-system source store, several pairs of definitions are kept byte-equal BY HAND with no drift test, and each pair is a latent silent-failure site. The known pairs: context/schemas/state-schema.json's property key sets vs scripts/validate-state.sh's KNOWN_TOP_LEVEL_FIELDS/KNOWN_ENTRY_FIELDS arrays (validate-state.sh's own comment admits the hand-sync and the missing drift test), and the status enum vs scripts/lib/status-vocabulary.sh (this one IS guarded, by scripts/tests/test-status-vocabulary.sh). Concrete evidence the unguarded pair drifts: research_questions has been modelled in state-schema.json since the needs_research feature landed but was never added to KNOWN_ENTRY_FIELDS, so any repo whose planner returned a needs_research verdict gets an unexplained validator FAIL on a field the schema explicitly models. When planning any schema or vocabulary widening in this repo, treat the paired hand-maintained list as part of the same phase (they must move together) and add a set-equality drift test modelled on test-status-vocabulary.sh; do not assume a schema edit alone is sufficient.",
+      "category": "PATTERN",
+      "source_artifact": "specs/279_state_schema_rejects_live_orchestration_fields/plans/01_widen-state-schema-fields.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["state-schema", "validate-state", "drift-test", "hand-maintained-pair", "schema-validator-sync", "known-fields"]
+    }
+  ],
+  "next_steps": "Run /implement 279 to execute the plan",
+  "dispatch_seq": 6
 }
