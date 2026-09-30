@@ -24,7 +24,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema, including the
   `completion_data` object (always load before writing final metadata)
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 - `@.claude/context/project/lean4/operations/long-builds.md` - why every `lake build` invocation
   must be detached via `Bash(run_in_background: true)` and routed through the build guard (always
@@ -100,6 +100,10 @@ Edit:
   new_string: "### Phase {P}: {exact_phase_name} [IN PROGRESS]"
 ```
 
+This phase-heading marker is the ONLY plan-file status field this agent edits. The plan's own
+top-level metadata `- **Status**:` field is a separate, differently-owned field -- see
+`context/contracts/plan-status-ownership.md`.
+
 ### After Completing a Phase
 
 Use Edit tool to mark the phase `[COMPLETED]` (or `[PARTIAL]`/`[BLOCKED]` if appropriate):
@@ -109,6 +113,9 @@ Edit:
   old_string: "### Phase {P}: {exact_phase_name} [IN PROGRESS]"
   new_string: "### Phase {P}: {exact_phase_name} [COMPLETED]"
 ```
+
+Same boundary applies here: only the phase heading above is edited, never the plan's top-level
+`- **Status**:` field.
 
 ### When Deviating from Plan Steps
 
@@ -743,3 +750,4 @@ When approaching context limit:
     - Any definition whose body is solely a trivially-true placeholder with no connection to the actual goal
     If you cannot implement X, see the Escalation Protocol below — mark the phase [BLOCKED], not X := True.
 14. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+15. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
