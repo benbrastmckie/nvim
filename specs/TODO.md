@@ -1,5 +1,5 @@
 ---
-next_project_number: 276
+next_project_number: 279
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 276
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,269,272 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,269,272,276,277,278 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,270,271,275 | 22,44,127,184,241,265,269,272 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 170,273 | 184,250,251,271 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -59,11 +59,114 @@ next_project_number: 276
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
+276 [NOT STARTED] — Stop releasing a dirty worktree on a nothingtoland verdict:...
+277 [NOT STARTED] — git-commit-scoped.sh cannot commit inside a dispatch...
+278 [NOT STARTED] — Forbid forwarding the Agent tool isolation parameter in...
 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
   └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 
 ## Tasks
+
+### 278. Forbid forwarding the Agent tool isolation parameter in skill-orchestrate Move 2, and mark plan.sh isolation/worktree_path fields descriptive
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md and agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh (never .claude/**, a disposable deploy tree). Documentation-and-contract change only; no executable logic changes.
+
+VERIFIED IN THE SOURCE STORE. `grep -n isolation` over skills/skill-orchestrate/SKILL.md returns NOTHING: Move 2 does not forbid passing the Agent tool's harness-level `isolation` parameter. Meanwhile orchestrate-cycle-plan.sh emits `isolation` and `worktree_path` on EVERY `dispatch[]` row (documented in its own output-schema header block, and produced identically in both the live and --dry-run row builders). A dispatching lead reading a dispatch row that says `isolation: "worktree"` is actively invited to forward it to the Agent tool as that tool's own `isolation` argument. Nothing at the point of use tells it not to.
+
+WHY FORWARDING IS DESTRUCTIVE. Forwarding stacks a SECOND harness checkout on top of the worktree that dispatch-worktree.sh already provisioned. The harness then refuses all cross-checkout git BY DESIGN, while still permitting file writes and `lake` runs. The agent therefore authors work, verifies it green, and then cannot commit it -- the worst possible split, because every signal short of the commit says success.
+
+OBSERVED EVIDENCE. During a multi-task /orchestrate run of task 703 in the BimodalLogic repository, this cost one dispatch 20 of its 21 phases. Treat that repository as read-only evidence: land nothing there.
+
+WHERE THE PROHIBITION CURRENTLY LIVES. Only as rationale prose in context/patterns/batch-orchestration-guardrails.md under "Deliberate Divergences" (around line 1492). That is a file a dispatching lead has no reason to open mid-dispatch. A prohibition that exists only in a rationale document adjacent to the decision, and not at the point of use, is not an enforced prohibition.
+
+PROPOSED FIX, two edits plus an optional third:
+
+(a) skills/skill-orchestrate/SKILL.md, Move 2: add an explicit MUST NOT line forbidding the `isolation` parameter (and `worktree_path`) in the Agent call. The Agent-call shape shown there already omits an `isolation` key, but only IMPLICITLY -- an omission in an example is not a rule, and a lead reconciling that example against a dispatch row carrying `isolation: "worktree"` will reasonably conclude the example is simply abbreviated. State the consequence in one clause (a second stacked checkout; harness refuses cross-checkout git; work authored and verified but uncommittable) so the rule is self-justifying at the point of use.
+
+(b) orchestrate-cycle-plan.sh header: document that `isolation` and `worktree_path` are DESCRIPTIVE dispatch-site wiring -- they RECORD a posture already in effect (the worktree was provisioned before the row was emitted) and are NEVER arguments to forward to the Agent tool. The existing header already calls `isolation` "dispatch-site wiring"; that phrase is too weak to carry the prohibition, since it reads as a description of what the field configures rather than a statement that the field configures nothing at the Agent call.
+
+(c) Optional: leave a one-line pointer from batch-orchestration-guardrails.md's "Deliberate Divergences" passage to the new MUST NOT line, so the rationale and the rule stay linked in both directions and a future edit to one surfaces the other.
+
+CONSIDER GENERALIZING: check whether other harness-level Agent parameters are exposed the same way by any dispatch-row schema, and whether the MUST NOT should be phrased as a category ("no field of a dispatch row is an Agent-tool argument unless Move 2 names it") rather than enumerating `isolation` alone.
+
+FILE FOOTPRINT / COORDINATION NOTES (no hard dependency edges declared -- file_scope-driven serialization at admission is the designed mechanism, and hard edges here would block a small documentation fix behind five unrelated tasks):
+- skills/skill-orchestrate/SKILL.md also appears in the file_scope of tasks 263, 273, 274 and 275.
+- orchestrate-cycle-plan.sh also appears in the file_scope of tasks 250, 165, 265 and 272. Task 250 in particular DECOMPOSES this file, which will move or rewrite the header block that edit (b) targets. 250 is currently blocked behind six dependencies (199, 245, 249, 259, 265, 266), so serializing this task behind it would be the wrong order; do this first and expect 250 to carry the note forward. If 250 happens to land first, re-derive where the header note belongs in the decomposed layout rather than assuming the original location.
+
+---
+
+### 277. git-commit-scoped.sh cannot commit inside a dispatch worktree: let the caller target one, and make an unresolvable pathspec a hard error
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**, a disposable deploy tree).
+
+VERIFIED IN THE SOURCE STORE. git-commit-scoped.sh -- the single sanctioned, mutex-serialized, path-scoped commit path used by every skill postflight -- cannot commit inside a dispatch worktree, and FAILS AS A FALSE NEGATIVE that reads as success to its caller.
+
+THE MECHANISM. Near the top of the script: `PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"`, derived from `BASH_SOURCE[0]` and then used for the `cd`. The script therefore always operates on the MAIN tree regardless of the caller's cwd, and offers no flag to retarget: there is no `--repo-root` and no `--worktree` in its argument parser (verified by reading the parse loop; the only flags are `--message`, `--session`, `--honest-index-rows`, `--task`, and `--`).
+
+Invoked from a dispatch worktree, the consequences compose into silence:
+- The worktree's new/modified files are not present at PROJECT_ROOT, so each pathspec falls through to the unmatched-pathspec branch, which WARNs and DROPS it: "git-commit-scoped.sh dropping unmatched pathspec '...' (no such file/directory on disk and not tracked by git); this path will NOT be part of the commit." A dropped pathspec is not an error and does not affect the exit status.
+- With every pathspec dropped there is nothing staged, so the script reaches "NOTE: Nothing to commit or git commit failed (non-blocking)" and returns success.
+
+A caller sees a zero exit and no failure. The work is simply not committed.
+
+OBSERVED EVIDENCE. During a multi-task /orchestrate run of task 703 in the BimodalLogic repository, a dispatched agent hit exactly this and fell back to a plain `git -C <worktree> commit` with an explicit file list. Commit b6f5c8c2e in that run consequently LACKS its `Co-Authored-By` and `Claude-Session` trailers, because the fallback path does not carry them. That missing-trailer commit is the durable fingerprint of this defect. Treat that repository as read-only evidence: land nothing there.
+
+PROPOSED FIX, two parts:
+
+(a) Let the caller target a worktree. Either honor cwd when it resolves inside a REGISTERED worktree of the SAME repository (compare `git rev-parse --git-common-dir` / `--show-toplevel` against the main tree's, and refuse a cwd that resolves to an unrelated repo), or add an explicit `--repo-root` / `--worktree` flag, or both. Prefer whichever keeps the refusal surface small and auditable.
+
+(b) Make an unresolvable pathspec a HARD ERROR rather than a silent skip. The WARN-and-drop behavior is what converts a wrong-tree invocation into a false success; without (b), any future retargeting bug degrades the same silent way.
+
+HARD CONSTRAINT: this script is the sanctioned commit path for ordinary main-tree skill postflights. The fix MUST NOT change its behavior for those callers. In particular, (b) has a behavioral-compatibility question that planning must settle before implementation: existing main-tree callers may be relying, knowingly or not, on the drop-and-continue posture for pathspecs that legitimately do not exist yet (e.g. a postflight passing `specs/` plus an artifact path that a phase did not produce). Audit the call sites before making the drop fatal, and consider gating the hard error behind the new worktree-targeting mode, or distinguishing "pathspec matched nothing but its parent exists" from "pathspec is outside the repo".
+
+TESTS. agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh already exists. Add cases for: (i) invocation from inside a registered worktree commits into that worktree's branch and carries the trailers; (ii) invocation from an unrelated repository is refused rather than silently committing nothing; (iii) whatever posture (b) settles on, pinned as an explicit assertion so it cannot regress. Note that test-lint-scoped-commit-boundary.sh also constrains this script's boundary -- check it still passes.
+
+FILE FOOTPRINT / COORDINATION NOTES: git-commit-scoped.sh appears in NO other active task's declared file_scope, so this task has a clean footprint. Task 263 (consent-gated git push) concerns the adjacent push path and mentions this script in prose only; no edge declared.
+
+---
+
+### 276. Stop releasing a dirty worktree on a nothing_to_land verdict: convert silent destruction of uncommitted work into a BLOCKED verdict
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh and agent-system/extensions/core/scripts/dispatch-worktree.sh (never .claude/**, a disposable deploy tree).
+
+HIGHEST SEVERITY: SILENT DATA LOSS, VERIFIED IN THE SOURCE STORE. A dispatch that authored verified work but failed to commit it has that work destroyed, with no error raised anywhere.
+
+THE MECHANISM (both halves confirmed by reading the source, not the deployed copy):
+
+1. orchestrate-cycle-postflight.sh, in its `phase = "implement"` worktree-landing block, folds two verdicts into ONE success branch: `case "$land_verdict" in landed|nothing_to_land)`. That branch immediately runs `dispatch-worktree.sh release "$task_number"`, deleting the worktree.
+
+2. dispatch-worktree.sh `land` returns `nothing_to_land` from a pure BRANCH-ancestry test: `if git -C "$PROJECT_ROOT" merge-base --is-ancestor "$branch" HEAD` then `{verdict: "nothing_to_land", branch: $branch}` and return 0. It never inspects the worktree's working tree. UNCOMMITTED worktree content is therefore completely invisible to it -- a worktree whose branch never diverged from HEAD reports `nothing_to_land` no matter how much uncommitted verified work it holds.
+
+Composed: uncommitted work + a non-diverged branch => `nothing_to_land` => release => destroyed.
+
+OBSERVED EVIDENCE. During a multi-task /orchestrate run of task 703 in the BimodalLogic repository, this would have destroyed 456 verified, sorry-free, build-green Lean lines. It was caught ONLY because the orchestrator inspected the worktree by hand and committed before running postflight. Nothing in the system would have reported the loss. Treat that checkout as read-only evidence: land nothing there; it is a separate repository with its own task system.
+
+PROPOSED FIX. Before accepting a `nothing_to_land` verdict, check `git status --porcelain` in the worktree; if non-empty, emit a loud BLOCKED verdict that PRESERVES the branch and the worktree instead of releasing. Reuse the shape of the existing land-blocked path in the same file: the `conflict|refused_specs_paths|refused_dirty_overlap` branch sets `worktree_land_blocked=true` and a `worktree_land_reason`, and the `implemented)` status arm then sets `implemented_gate_passed=false`, performs NO state.json transition, and leaves the branch and worktree in place for human resolution. That is exactly the posture wanted here.
+
+Decide during planning WHERE the dirty check belongs. Preferred: inside `dispatch-worktree.sh land` itself, as a new verdict (e.g. `refused_dirty_uncommitted`) added to the blocked set that postflight already handles -- `land` owns the worktree knowledge, and every future caller then inherits the protection rather than each re-implementing it. The alternative (checking in postflight before the release call) protects only this one call site.
+
+WHY THIS FRAMING MATTERS: the fix must convert the whole failure CLASS from silent destruction into a visible block, whatever the cause of the missing commit. Do not narrow it to the one cause observed in this run. A missing commit can come from an agent that forgot, an agent that crashed, a commit path that silently no-oped (see the separately-tracked git-commit-scoped.sh worktree defect), or a harness refusal. All of them must block, not release.
+
+REGRESSION TEST. Add coverage under agent-system/extensions/core/scripts/tests/ (test-dispatch-worktree.sh already exists and is the natural home) for a DIRTY worktree whose branch IS already an ancestor of HEAD -- the precise combination that currently returns `nothing_to_land`. Assert the verdict is blocking and that the worktree still exists afterward.
+
+FILE FOOTPRINT / COORDINATION NOTES (no hard dependency edges declared -- file_scope-driven serialization at admission is the designed mechanism, and a blocked edge on a silent-data-loss fix would be the wrong trade):
+- orchestrate-cycle-postflight.sh also appears in the file_scope of tasks 184, 263 and 273.
+- dispatch-worktree.sh appears in NO other active task's declared file_scope, BUT task 268's fix (the lake-build-guard false-green replay, whose newly-identified mechanism is dispatch-worktree.sh's `cp -al` clone of .lake/) will touch this same file in its `provision` path. 268 currently has a null file_scope, so admission cannot see that overlap. The two edits are in different functions (`land`/release handling here vs. `provision`'s clone there), but whichever lands second should re-read the file.
+
+---
 
 ### 275. Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
 - **Status**: [NOT STARTED]
@@ -559,11 +662,26 @@ DETERMINE WHICH OF THESE HOLDS:
 (b) the observed replay came from a record written before scope_key existed, and the documented fail-closed branch did not actually fire -- i.e. get_record_field returning something non-empty for an absent key, or the record being read by a path that bypasses decide_sharing;
 (c) the report was a misdiagnosis and some other mechanism produced the appearance of a successful build with no .olean written.
 
-If (a) or (b), fix at source and add a regression test under agent-system/extensions/core/scripts/tests/ covering the scoped-vs-full collision directly. If (c), record the real cause; a false-green report against this guard should not be left unexplained.
+(d) MOST LIKELY EXPLANATION FOR A WORKTREE-HOSTED OBSERVATION -- CROSS-TREE RECORD REPLAY VIA THE cp -al CLONE. Identified with direct source evidence after the original report, and NOT covered by (a), (b) or (c). agent-system/extensions/core/scripts/dispatch-worktree.sh hardlink-clones .lake/ into every dispatch worktree: `if [ -d "$PROJECT_ROOT/.lake" ]; then cp -al "$PROJECT_ROOT/.lake" "$worktree_path/.lake"; fi`, immediately after the same treatment of .claude/ (`cp -al "$PROJECT_ROOT/.claude" "$worktree_path/.claude"`). Because `cp -al` creates HARDLINKS, the worktree and the main tree share the SAME INODE for .lake/build-guard.result, .log, .lock, .stdout and .stderr -- they are one file under two paths, not two files. The guard's own replay policy in decide_sharing() keys on state, post-build fingerprint, scope_key and age, and has NO notion of WHICH TREE produced the record. So a build run inside a dispatch worktree can LEGITIMATELY satisfy all five documented sharing conditions against a record written by the main tree, and replay it -- reporting exit_status=0 for a module that never compiled and for which no .olean was written in that tree. This is consistent with the original report in every detail and explains it WITHOUT requiring any scope_key bug, which matters because the scope_key condition it would otherwise have to implicate was already implemented and fail-closed before the observation.
+
+Corroborating detail from the same /orchestrate run of task 703: --no-share had to be passed on EVERY build after the first, which is the signature of a shared record being replayed rather than of a per-invocation scoping error.
+
+PROPOSED FIX FOR (d), either:
+  - exclude build-guard.* from the `cp -al` clone in dispatch-worktree.sh (clone .lake/ but not the guard's own state files), or
+  - include TREE IDENTITY in the written record and in the share decision -- `git rev-parse --show-toplevel`, or the `--git-common-dir` relationship -- so a cross-tree record is never replayable.
+Prefer whichever keeps the guard's record format forward-compatible; if tree identity is added to the record, decide explicitly what an OLD record with no tree-identity field means, and fail closed on it (the same posture the scope_key condition already takes for a missing key).
+
+--no-share MUST NOT remain the only defence. It depends on every caller remembering to pass it, and in the observed run every build after the first had to -- that is a workaround the system imposed on an agent, not a guarantee the system provides.
+
+If (a), (b) or (d), fix at source and add a regression test under agent-system/extensions/core/scripts/tests/ covering the scoped-vs-full collision directly. If (c), record the real cause; a false-green report against this guard should not be left unexplained.
 
 REPRODUCTION ENVIRONMENT. This repository contains no Lean project (no lakefile.toml anywhere under it), so the guard cannot be exercised end to end here. Reproduction needs a real Lean project with a lake build; ~/Projects/BimodalLogic is where the observation occurred and is the natural harness. Treat that checkout as read-only test fixture: land no change there, and note it is a separate repository with its own task system.
 
 Note the guard is deployed into consumer repositories at .claude/scripts/lake-build-guard.sh. Never hand-patch a deployed copy -- fix the source above and redeploy, per the source-store/deploy-boundary rule.
+
+REPRODUCTION IS AVAILABLE, AND FOR MECHANISM (d) NEEDS NO LEAN AT ALL. The named harness (~/Projects/BimodalLogic) is available and remains the right fixture for any end-to-end check -- still read-only, still a separate repository with its own task system, land nothing there. But (d) is reproducible in this repository with no Lean project whatsoever: create two git worktrees, `cp -al` a .lake/ directory between them, and make two guard invocations -- one writing a record from the first tree, one reading it from the second. Assert the second does not replay. That makes a regression test for (d) cheap and hostable under agent-system/extensions/core/scripts/tests/ (test-lake-build-guard.sh and test-dispatch-worktree.sh both already exist), which removes the reproduction blocker this task was otherwise gated on. Establish (d) or rule it out this way BEFORE investing in an end-to-end Lean reproduction for (a) or (b).
+
+FILE FOOTPRINT NOTE: this task's file_scope is currently null, and mechanism (d)'s fix targets agent-system/extensions/core/scripts/dispatch-worktree.sh in addition to lake-build-guard.sh. dispatch-worktree.sh is ALSO the edit target of the separately-tracked `land`/release silent-data-loss task (the `nothing_to_land` verdict released a dirty worktree). The two edits sit in different functions -- `provision`'s clone here, `land`/release handling there -- but admission cannot serialize them while this file_scope stays null, so whichever lands second must re-read the file. Setting this task's file_scope at planning time would make that serialization automatic.
 
 ---
 

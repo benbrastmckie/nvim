@@ -2,73 +2,87 @@
 
 *Forward-only: what remains, in what order, and the checks that gate each step. Finished work is
 removed, not archived here — it lives in git history, task summaries and `specs/archive/`.
-Last rewritten 2026-09-29 (seventh pass).*
+Last rewritten 2026-09-30 (eighth pass).*
 
 ## Goal
 
 `/orchestrate` is the only lifecycle entry point, and the orchestrator is token-cheap by
 construction: it delegates, reads back compact verdicts, and asks the user only when a decision is
 genuinely the user's. Both halves are met in shape and in measurement. The engine-convergence lane
-that dominated the last two passes is **closed**: the deploy-pending / identical-dispatch
-composition defect, the git-safety contracts, and the `file_scope` chain all landed. What remains
-splits into three lanes: **cut per-invocation cost and clutter** now that the engine is quiet,
-**finish the orchestrator's own operational surface** (queue, liveness, conclusion stage), and
-**correct the consumer repos**, which have drifted STALE behind this pass's source-store changes.
+closed in the seventh pass and has stayed closed. Call A's first half landed on 2026-09-30 — the
+session-runtime relocation, the plan-`Status` ownership contract, the comparator NixOS fixes and
+the typst scope/bib work are all shipped and removed from this file.
 
-## Where things stand (measured 2026-09-29, seventh pass)
+What remains splits into four lanes: **restore the deploy gate to green** (new, and blocking —
+see Next), **cut per-invocation cost and clutter**, **finish the orchestrator's own operational
+surface** (queue, liveness, conclusion stage), and **correct the consumer repos**, which have
+drifted badly STALE behind this pass's source-store changes.
+
+## Where things stand (measured 2026-09-30, eighth pass)
 
 | Measure | Value | Bearing |
 |---|---|---|
-| Open tasks | **28** | Archive holds 190 completed, 48 abandoned, 18 orphan, 1 expanded |
-| `validate-state.sh --deep` | 0 failures, **3 warnings** | New: 163's Check 10/11 is live and firing — 268 has no `file_scope`, 270's is coarse enough to overlap 17 tasks. Fix both at creation, not later |
-| `verify-deploy.sh --skip-slow` | **PASS, 33 of 33** | Working tree clean at rewrite time |
-| Eager context load | 65,949 B / baseline 65,950 | **1 B headroom** — was 1,802 B last pass. Any eager addition now fails the gate; offset before adding |
-| `skills/skill-orchestrate/SKILL.md` | 19,983 B / ceiling 20,000 | **17 B headroom** — 263's relay text must be offset |
-| `commands/orchestrate.md` | 20,228 B / ceiling 21,000 | 772 B headroom |
-| Redeploy checkpoint cost | full-depth verify ×2–3 per fire; Gate 8 ≈ 9 of 11 min | See call A (265) |
-| Stranded session files in `specs/` root | **72** (39 multi-state, 32 return-meta-multi, 1 meta-return) | Was 67; grows every run. 51 builds the reaper trigger |
-| Consumer deploys | **7 of 11 repos carry a STALE extension** | `core` is 44 behind in .dotfiles, ModelChecker, PersonalWebsite, Hardware, PossibleWorlds; `literature` 9 behind in three; `typst` 1 and `lean` 1 in several. Only BimodalLogic is fully FRESH. This pass's nine completed tasks caused it — redeploy in each repo before running a batch there |
+| Open tasks | **24** | Plus 4 `completed` awaiting `/todo` archive. `specs/archive/` holds 211 task directories |
+| `validate-state.sh --deep` | 0 failures, **3 warnings** | Unchanged in shape: 268 has no `file_scope`; 270's is coarse enough to overlap 15 non-terminal tasks. Fix both at creation, not later |
+| `verify-deploy.sh` | **FAIL — 3 of 33** | **Regression from 33 of 33.** Blocks the Inter-Cycle Redeploy Checkpoint, so it blocks every multi-cycle batch. See Next |
+| Eager context load | 67,980 B / baseline 65,950 | **2,030 B OVER** — was 1 B of headroom. Gate 20 now fails outright; 89 and 251 are the tasks that create room |
+| `skills/skill-orchestrate/SKILL.md` | 20,137 B / ceiling 20,000 | **137 B OVER** (gate is `warn` mode, so it reports rather than fails) |
+| `commands/orchestrate.md` | 20,243 B / ceiling 21,000 | 757 B headroom |
+| Redeploy checkpoint cost | full-depth verify per fire; one fire exceeded a 30-min budget | Still the biggest per-invocation cost. See call A (265) |
+| Stranded session files in `specs/` root | **0** (was 72) | Files now live in `specs/.orchestration/`, and `/todo` reaps on every invocation |
+| Consumer deploys | **8 of 8 consumers STALE** | `core` is 58 behind in .dotfiles, ModelChecker, PersonalWebsite, cslib, Logos/Theory, Logos/Hardware, PossibleWorlds; 14 behind in BimodalLogic, which was fully FRESH last pass. Redeploy in a repo before running a batch there |
 
 **`MAX_TASKS` is 8**, enforced in `commands/orchestrate.md` (the command truncates to the first 8
 with a warning); `orchestrate-cycle-plan.sh` itself accepts any count, so a dry-run over more than
 8 is not evidence a call will run them.
 
-**Every open task is accounted for below**: A 8 + B 8 + C 4 + D 8 = 28. If that sum stops
+**Every open task is accounted for below**: A 4 + B 8 + C 4 + D 8 = 24. If that sum stops
 matching `state.json`, this file has drifted.
 
 ---
 
 ## Next
 
-Call A. The dry-run (2026-09-29) admits all 8 at cycle 0 with nothing deferred and nothing
-blocked, and leaves `state.json` unchanged. The engine-convergence work that previously gated
-263, 165, 136 and 265 has all landed, so nothing is outstanding before it.
+**Fix the three red gates first. They are not any one task's scope, and they block every
+multi-cycle batch.** The Inter-Cycle Redeploy Checkpoint fires whenever a cycle touches an
+orchestrator-critical path, redeploys, and re-verifies; a red tree there stops the run. On
+2026-09-30 a batch lost its remaining four tasks to exactly this, after the checkpoint's own
+verify exceeded a 30-minute budget and still reported red:
 
-The one thing worth doing first is unrelated to the batch: **the consumer repos are STALE.** If
-the next work touches a consumer, run `deploy-headless.sh` there before dispatching into it.
+1. **Manifest content-hash** — `core: context/contracts/adversarial-verification.md` differs from
+   source. A `lean`/`core` filename collision in deploy-merge order; the `lean` extension was
+   loaded into this repo for the first time on 2026-09-30, which is what exposed it.
+2. **Postflight boundary lint** — failures in the full corpus; `skill-lean-research/SKILL.md` is
+   missing its postflight-boundary section.
+3. **Eager-load total** — 67,980 B against a 65,950 B baseline, accumulated across roughly ten
+   unrelated prior tasks. Either offset it or re-derive the baseline deliberately.
+
+None of the three is caused by, or fixable within, the scope of any task listed below. File them
+as one task (they share a single acceptance check: `verify-deploy.sh` returns 33 of 33) and run it
+before call A's remainder.
+
+Then: **the consumer repos are STALE across the board.** If the next work touches a consumer, run
+`deploy-headless.sh` there before dispatching into it.
 
 ---
 
-## Call A — push consent, admission posture, contracts, checkpoint cost (8)
+## Call A — push consent, admission posture, checkpoint cost (4)
 
 ```
-/orchestrate 263, 165, 136, 265, 51, 223, 255, 241
+/orchestrate 263, 165, 265, 241
 ```
+
+All four are `planned` with plans in hand as of 2026-09-30; each needs only its implement phase.
 
 | Task | What lands | Note |
 |---|---|---|
-| **263** (+224, 264) | One grant token; `/please` mint hook with integrity; push guard; grant check in the destructive-git guard; user-only command, never-list, rule exception; dispatch relay + two-cycle non-replay test | 139's predicate landed, so the gate is clear. Offset any SKILL.md growth byte-for-byte — 17 B headroom |
-| **165** (+190) | Admission posture for an absent `file_scope`; cross-session visibility for self-modifying candidates | 162 and 163 landed; gate clear. 268's missing key is a live specimen to design against |
-| **136** (+166, 14) | Plan-level `Status` ownership and grammar; fan-out prohibition; marker/commit sync; research-report heading conformance | 139 landed; gate clear |
-| **265** (+267) | Gate 8 via `run-all.sh --jobs` (conservative default + env override); inline verify in `deploy-headless.sh` narrowed or opt-out | 266 landed; gate clear. Biggest per-checkpoint saving available |
-| **51** | Session runtime files out of the `specs/` root; reaper widened and wired into `/todo` | 72 stranded now, and it gates 272 and 275 in call D |
-| **223** (+177) (researched) | Comparator-on-NixOS fixes; Lean 4 dependency-tracing recipe | Plan dispatch first |
-| **255** | typst scope statement matches what it ships; `chapter-quality-check.sh` Rule 1.3 bib resolution | Deployed to 5 repos, `typst` currently 1 behind in four of them |
-| **241** | Drop two playwright grant lists and five dead `mcp_servers` fields; fix ownership doc and nix README | Re-verify the user-scope grant count is 9 first |
+| **263** (+224, 264) | One grant token; `/please` mint hook with integrity; push guard; grant check in the destructive-git guard; user-only command, never-list, rule exception; dispatch relay + two-cycle non-replay test | 13-phase plan. Push-scope question is **settled** (decision 12). SKILL.md is already 137 B over its ceiling — offset any growth byte-for-byte |
+| **165** (+190) | Admission posture for an absent `file_scope`; cross-session visibility for self-modifying candidates | 6-phase plan, fully sequential. Also closes a found defect: the `defer_reason` consumer `case` in `orchestrate-cycle-plan.sh` has no default arm, so a new reason would drop a task from dispatch with no ledger entry |
+| **265** (+267) | Gate 8 via `run-all.sh --jobs` (conservative default + env override); `deploy-headless.sh --skip-verify` with a distinct exit 4 | 8-phase plan, all single-phase waves (three are whole-tree timing measurements). Biggest per-checkpoint saving available, and the 30-min checkpoint overrun makes it more urgent than last pass |
+| **241** | Drop two playwright grant lists and five dead `mcp_servers` fields; fix ownership doc and nix README | 7-phase plan, 2.75 h. Grew from 9 files to 10: `web/.../playwright-mcp-guide.md`'s Permission-Tiers section is also falsified. Re-verify the user-scope grant count is 9 first |
 
-Dry-run 2026-09-29: all 8 admit at cycle 0 (223 at `plan`, the rest at `research`); 0 deferred,
-0 blocked, `state.json` md5 unchanged. Implement-phase serialization: 51 → 165 → 265 → 263
-(self-modifying, lowest first).
+Implement-phase serialization: **165 → 265 → 263** (self-modifying, lowest first). 241 is outside
+the self-modifying gate and has no live in-batch collision, so it can run alongside any of them.
 
 ## Call B — cost, clutter, corpus probe (8)
 
@@ -78,14 +92,14 @@ Dry-run 2026-09-29: all 8 admit at cycle 0 (223 at `plan`, the rest at `research
 
 | Task | What lands | Note |
 |---|---|---|
-| **250** | Script-inventory probe (reuse 261's timing baseline); decompose `orchestrate-cycle-plan.sh` into `lib/`, byte-identical `--dry-run` | 199 and 266 landed; wait on 265 (call A) so the file is quiet |
-| **89** | Mode-gate `skill-literature` (84 KB) and `skill-distill` (93 KB) | ~24.8k tokens per invocation |
+| **250** | Script-inventory probe (reuse 261's timing baseline); decompose `orchestrate-cycle-plan.sh` into `lib/`, byte-identical `--dry-run` | Wait on 265 (call A) so the file is quiet |
+| **89** | Mode-gate `skill-literature` (84 KB) and `skill-distill` (93 KB) | ~24.8k tokens per invocation. **Now load-bearing**: one of two tasks that can clear the eager-load failure |
 | **44** (planned) | Slim `commands/task.md` (41 KB per `/task`) into lazy context files | Implement dispatch first. Also fix its abandon-mode text (see observations) |
-| **127** | Collapse the routing ladder to the two agent blocks; retire `command-route-skill.sh`; lint nonexistent agent targets | Clears the gate16 WARN |
+| **127** | Collapse the routing ladder to the two agent blocks; retire `command-route-skill.sh`; lint nonexistent agent targets | Clears the gate 16 WARN (`lean` still declares `routing_hard`/`routing_agents_hard`) |
 | **217** (+218, 219) | `/refresh` PSS accounting, CPU-delta idleness, prompt-never-kill | Utility, not engine |
 | **39** (planned) | Zotero metadata resolution; MCP decision; quota gate; Zotero 10 swap plan | Needs the dotfiles translation-server |
-| **185** | Retarget live "Stage N" / "Stage MT-N" citations to Move vocabulary; keep historical ones | 266 and 199 landed; still after 184. Research adds the rest of the 72 files to scope |
-| **184** | Skeleton-plan `sorry_inventory` follow-ups reported append-only at completion | 266 landed; gate clear. Gates 273 in call D |
+| **185** | Retarget live "Stage N" / "Stage MT-N" citations to Move vocabulary; keep historical ones | Still after 184. Research adds the rest of the 72 files to scope |
+| **184** | Skeleton-plan `sorry_inventory` follow-ups reported append-only at completion | Gate clear. Gates 273 in call D |
 
 ## Call C — reachability, test isolation, picker lane (4)
 
@@ -95,8 +109,8 @@ Dry-run 2026-09-29: all 8 admit at cycle 0 (223 at `plan`, the rest at `research
 
 | Task | What lands | Note |
 |---|---|---|
-| **251** | Context-reachability probe (filename, directory, `index.json`) with the 16 present templates as the fixture; telemetry cross-check; remove what is genuinely dead | After 44, 127. With 1 B of eager headroom, anything this frees is directly useful |
-| **170** | Isolate shell suites from ambient host state (memory and timing axes); record the convention; repeated-run acceptance under load | Last: after 51, 250, 251 |
+| **251** | Context-reachability probe (filename, directory, `index.json`) with the 16 present templates as the fixture; telemetry cross-check; remove what is genuinely dead | After 44, 127. **Now load-bearing**: the other task that can clear the eager-load failure |
+| **170** | Isolate shell suites from ambient host state (memory and timing axes); record the convention; repeated-run acceptance under load | After 250, 251. 265's Phase 1 fixes one instance of exactly this class — an inherited `RUN_ALL_NESTED` making a timing assertion fail deterministically rather than under load, as previously attributed |
 | **22** (+45) | Silence opencode fragment spam; fix the fake-tool line; record the frozen-mirror policy; honest `[Reload All]`/`[Regenerate]`; Global Update registry | Lua, not agent-system |
 | **29** (+30) | `merge_targets.mcp` → repository-root `.mcp.json`; register obsidian-memory through it | After 22, 241 |
 
@@ -106,19 +120,19 @@ Dry-run 2026-09-29: all 8 admit at cycle 0 (223 at `plan`, the rest at `research
 /orchestrate 268, 269, 270, 271, 272, 273, 274, 275
 ```
 
-Filed after the sixth pass; **this is a lane, not a runnable batch of 8.** Dry-run 2026-09-29
-admits only 268 and 269 at cycle 0 — the other six chain behind 269, 51 (call A), 184 (call B)
-and 165 (call A). Run calls A and B first, or dispatch the front pair on their own.
+**This is a lane, not a runnable batch of 8.** 268 and 269 admit with no dependencies; the other
+six chain behind 269, 184 (call B) and 165 (call A). Run calls A and B first, or dispatch the
+front pair on their own.
 
 | Task | What lands | Note |
 |---|---|---|
 | **268** | Reproduce-first on the `lake-build-guard.sh` false green: the `scope_key` sharing condition that would prevent the replay is already implemented and predates the observation, so determine which of the candidate causes actually holds | No deps; admits now. **Has no `file_scope`** — declare one before dispatch |
 | **269** | `validate-state.sh --fix`: presence test → type test, so a null `file_scope` cannot abort the repair | No deps; admits now. Gates 270 and 271 |
-| **270** | Re-runnable null-safety audit of jq mutation sites across core scripts; rule on a shared guard idiom in `scripts/lib/` | After 269. **`file_scope` is coarse** (`.../core/scripts/`, overlapping 17 tasks) — narrow it or it will serialize against most of the backlog |
+| **270** | Re-runnable null-safety audit of jq mutation sites across core scripts; rule on a shared guard idiom in `scripts/lib/` | After 269. **`file_scope` is coarse** (`.../core/scripts/`, overlapping 15 non-terminal tasks) — narrow it or it will serialize against most of the backlog |
 | **271** | Finish the `parent_task` edge: declare in schema, validate, render in TODO, survive renumbering | After 269. Gates 273 |
-| **272** | Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, give each orchestration its own identity | After 51 (call A) |
+| **272** | Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, give each orchestration its own identity | No outstanding dependency. Pairs naturally with the sweep defect in observations |
 | **273** | Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage | After 271 and 184 (call B) |
-| **275** | Per-repo orchestration queue: registered, live, archived on finish, consumed by admission | After 272 and 51 |
+| **275** | Per-repo orchestration queue: registered, live, archived on finish, consumed by admission | After 272 |
 | **274** | Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script | Tail of everything: after 272, 273, 275, 165. Once it lands, this file's call groupings become computable rather than hand-maintained |
 
 ---
@@ -134,11 +148,12 @@ and 165 (call A). Run calls A and B first, or dispatch the front pair on their o
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh` — green, on an idle machine, exit
   code read directly (never through `tail`/`head`). `--jobs 4` is opt-in and reproduces the
   serial pass/fail set except under heavy contention (261's finding).
-- `bash .claude/scripts/verify-deploy.sh --skip-slow` — PASS (33 of 33 on 2026-09-29), and
-  both engine files under their ceilings. A self-modifying task is not finished until `.claude/`
-  is resynced.
+- `bash .claude/scripts/verify-deploy.sh --skip-slow` — **currently FAIL, 3 of 33** (2026-09-30).
+  Until the three gates in Next are fixed this check is red for reasons unrelated to whatever you
+  just changed, so measure it *before* your work as well as after, and compare. A self-modifying
+  task is not finished until `.claude/` is resynced.
 - After any call that ran in a consumer: `check-consumer-freshness.sh` here, `deploy-headless.sh`
-  there if STALE. **Seven of eleven consumer repos are STALE right now.**
+  there if STALE. **All eight consumer repos are STALE right now.**
 
 ---
 
@@ -151,12 +166,15 @@ and 165 (call A). Run calls A and B first, or dispatch the front pair on their o
 3. **Research-first is the default** for a fresh task; `--fast` restores planner-first.
 4. **`--dry-run` prints the plan it would dispatch.** There is no separate dry-run report.
 5. **No fixed consumer validation gates.** The checks above are recommended, not blocking.
-6. **A linear chain of small tasks that serialize on one file is one task with phases.** Applied
-   six more times in the sixth pass; apply it at creation time.
-7. **No analysis surface over `file_scope` until the field is reliably populated.** 162 and 163
-   landed, so the field is now harvested at plan postflight and its absence is visible — the
-   condition is met. Build the surface in 165, and treat the two live warnings (268, 270) as the
-   first real input rather than noise to suppress.
+6. **A linear chain of small tasks that serialize on one file is one task with phases.** Apply it
+   at creation time.
+7. **No analysis surface over `file_scope` until the field is reliably populated.** The field is
+   harvested at plan postflight and its absence is visible, so the condition is met. Build the
+   surface in 165, and treat the two live warnings (268, 270) as the first real input rather than
+   noise to suppress. Measured coverage is uneven across repos — near-complete here, but only
+   about 42% of BimodalLogic's non-terminal tasks carry the field, which is why 165's ruling
+   splits by scope kind (in-batch blocking, cross-batch advisory) rather than issuing one blanket
+   posture.
 8. **Rule before mechanism** for the vimtex hazard. 167 shipped the rule; the mechanism tasks
    (74–76) stayed abandoned rather than conditional. Re-file only if the rule proves insufficient.
 9. **Skeleton plans terminate through the completion-claim gate**; only the sorry-inventory
@@ -167,6 +185,12 @@ and 165 (call A). Run calls A and B first, or dispatch the front pair on their o
     single-use token bound to action, remote, branch and sha, minted only where the harness can
     prove the user typed it. Nothing the model can write is a grant. PR/MR creation and `/merge`
     stay user-only (263).
+12. **A grant may authorize a plain push of the default branch** (user ruling, 2026-09-30). Every
+    force form on the default branch, bare `--force` anywhere, and all bulk or deletion refspecs
+    stay categorically excluded, checked before any grant lookup. Rationale: `git-workflow.md`'s
+    pre-existing "Never Run" is specifically force-to-master, and this repository's own working
+    branch *is* master, so a blanket default-branch exclusion would exceed the rule being
+    narrowed and make the mechanism unusable where it lives.
 
 ## Standing rules
 
@@ -180,19 +204,35 @@ and 165 (call A). Run calls A and B first, or dispatch the front pair on their o
 
 ## Unfiled observations (none worth a task yet)
 
+- **The runtime-file sweep deletes the live run's own state.** `/todo`'s new reap stage (and
+  `reap-session-runtime-files.sh` generally) does not exclude the *active* session's runtime
+  files, though a session registry exists for exactly that purpose. Observed on 2026-09-30: a
+  sweep that took the root from 72 stranded files to 0 also removed the in-flight batch's
+  `.orchestrator-multi-state-<session>.json`, losing `completed_tasks`, `failed_tasks` and cycle
+  bookkeeping mid-run. Recovered by hand from the surviving `.dispatch/*.md` mtimes, but an
+  unattended run would have lost it silently. **This is the one observation here closest to
+  deserving a task**; it belongs with 272's session-identity work.
+- A `Monitor`-armed wait can never fire. An implementation agent armed a monitor for a long
+  `run-all.sh`, went idle, and no event ever arrived — the dispatch stalled indefinitely until
+  resumed by hand. Prefer in-band polling with productive work between checks over arm-and-idle.
 - The runtime wave-split check (`orchestrate-cycle-plan.sh` step 4.5) defers a cross-batch scope
   collision on every run and records nothing. Persisting it as a `dependencies[]` edge is a
   one-line `state-write.sh` call, after 165 rules on absent scope.
 - The write-time task-reference hook fires on files in the session scratchpad. Its path filter
   could exempt `/tmp/**`.
 - A subagent parked on genuinely slow background work emits repeated interim notifications that
-  read like stalling. Notification semantics, not agent behaviour.
+  read like stalling — confirmed again on 2026-09-30, where most dispatches reported completion
+  twice. Notification semantics, not agent behaviour.
 - `commands/task.md`'s abandon mode documents the archive target as `completed_projects`; the
   live archive puts abandoned entries in `archived_projects` with `archived_at`. 44 rewrites that
   file and should fix the text.
-- `/todo`'s archive-orphan scan checks only `completed_projects`, so the 48 correctly-tracked
+- `/todo`'s archive-orphan scan checks only `completed_projects`, so correctly-tracked
   `archived_projects` entries surface as false orphans on every run. Harmless today because the
   prompt is declinable, but it is a real defect in `commands/todo.md` Step 2.5 and the mirrored
   `skill-todo` Stage 3.
-- Eager context has 1 B of headroom against its baseline. The next task that adds an eager rule
-  or CLAUDE.md line will fail gate 20 outright; 89 and 251 are the two tasks that create room.
+- `plan-file-scope-harvest.sh` parses a `**Files to modify**:` field and finds nothing in a plan
+  that uses a "Territory Contract" table instead. At least one BimodalLogic plan is invisible to
+  the harvester for this reason.
+- The in-scope agent set for a contract rolled across implementation agents is **14** files, not
+  the 13 a sweep by directory suggests — `founder-implement-agent.md` also edits phase-heading
+  markers. Worth remembering the next time a contract is rolled out this way.
