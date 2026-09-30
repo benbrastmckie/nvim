@@ -1,0 +1,26 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790788666_f8aaca_278",
+  "dispatch_seq": 1,
+  "task_number": 278,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/278_forbid_agent_isolation_forwarding_in_move_2/reports/01_forbid-isolation-forwarding.md",
+      "summary": "Confirms no existing isolation-forwarding prohibition in skill-orchestrate/SKILL.md Move 2, enumerates every dispatch-row field's actual use, and recommends three source-store edits: a categorical MUST NOT in SKILL.md Move 2, a strengthened isolation/worktree_path header note in orchestrate-cycle-plan.sh, and an optional cross-link from batch-orchestration-guardrails.md's Deliberate Divergences bullet."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "The orchestrate-cycle-plan.sh dispatch[] row schema carries an `isolation` field (\"none\"/\"worktree\") that is purely descriptive dispatch-site wiring, never consumed by skill-orchestrate/SKILL.md's Move 2 Agent-tool call. This collides dangerously with the harness Agent tool's own real `isolation` parameter (enum \"worktree\"/\"remote\"): a dispatch row's isolation:\"worktree\" value is a syntactically valid value for that argument, so accidental forwarding produces no schema error, only a stacked second worktree checkout that the harness then refuses to git-commit across. When reviewing any dispatch-row-to-tool-call wiring, check field names against the target tool's own parameter names, not just against local schema consistency.",
+      "category": "PATTERN",
+      "source_artifact": "specs/278_forbid_agent_isolation_forwarding_in_move_2/reports/01_forbid-isolation-forwarding.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "isolation", "worktree", "Agent tool", "dispatch row", "cross-checkout git"]
+    }
+  ],
+  "next_steps": "Run /plan 278 to create implementation plan"
+}
