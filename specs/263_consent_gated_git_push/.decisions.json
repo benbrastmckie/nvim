@@ -1,0 +1,9 @@
+[
+  {
+    "question": "Consent-gated push: may a plain (non-force) push of the default branch be authorized by a /please grant, or should every push to the default branch stay categorically excluded as the research report recommended?",
+    "answer": "Admit plain non-force default-branch pushes under a valid grant; keep every force form on the default branch, bare --force anywhere, and all bulk/deletion refspecs categorically excluded.",
+    "decided_by": "user",
+    "session_id": "sess_1790721762_ff3d8e",
+    "timestamp": "2026-09-29T23:54:31Z"
+  }
+]
