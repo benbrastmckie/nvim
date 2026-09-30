@@ -232,29 +232,36 @@ above it documents the type test instead of endorsing the defect.
 
 ---
 
-### Phase 3: Full verification of the green state and the invariants [NOT STARTED]
+### Phase 3: Full verification of the green state and the invariants [COMPLETED]
 
 **Goal**: The extended fixture is green, the whole suite is green, and all three invariants are
 confirmed by direct observation rather than by inference from the fixture alone.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` and confirm the
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` and confirm the
       `--fix fixture` case now PASSES and the total is `0 failed`, with no previously-passing case
-      regressed (compare the passed count against the Phase 1 red run).
-- [ ] Re-run the direct repro against the patched source-store filter text, confirming exit 0 and
+      regressed (compare the passed count against the Phase 1 red run). *(completed: 25 passed,
+      0 failed, up from 24 passed/1 failed in the Phase 1 red run -- the `--fix fixture` case is
+      the one that flipped)*
+- [x] Re-run the direct repro against the patched source-store filter text, confirming exit 0 and
       all three shapes handled in one input:
       `echo '{"active_projects":[{"project_number":1,"file_scope":null},{"project_number":2,"file_scope":["a","a","b"]},{"project_number":3}]}' | jq -c '.active_projects = [.active_projects[] | if (.file_scope|type) == "array" then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]'`
       Expect `{"active_projects":[{"project_number":1,"file_scope":null},{"project_number":2,"file_scope":["a","b"]},{"project_number":3}]}`:
       null preserved, dedup order-preserving (`["a","b"]`, not sorted), no key manufactured.
-- [ ] Confirm idempotence on a real `--fix` path: build a throwaway null-bearing fixture under
+      *(completed: output matched exactly)*
+- [x] Confirm idempotence on a real `--fix` path: build a throwaway null-bearing fixture under
       `specs/_tmp_*_$$` (the pattern the suite itself uses, so the deployed `state-write.sh`
       resolves), run `--fix` twice, and confirm the second run reports "nothing to repair" and
       leaves the file byte-identical to the first run's output. Remove the fixture directory
-      afterward.
-- [ ] Confirm no `.claude/**` path was modified: `git status --short` shows changes only under
-      `agent-system/extensions/core/scripts/`, and no path under `.claude/` appears.
-- [ ] Review `git status --short` and `git diff --staged` for foreign edits from siblings
+      afterward. *(completed: rc=0 both runs, second run logged "nothing to repair", diff between
+      post-run-1 and post-run-2 state was empty; fixture directory removed)*
+- [x] Confirm no `.claude/**` path was modified: `git status --short` shows changes only under
+      `agent-system/extensions/core/scripts/`, and no path under `.claude/` appears. *(completed:
+      no `.claude/` entries in git status)*
+- [x] Review `git status --short` and `git diff --staged` for foreign edits from siblings
       268/278/279 before the final commit; stage only this task's two files by explicit name.
+      *(completed: sibling 278's edit to batch-orchestration-guardrails.md and siblings' other
+      in-flight files were left uncommitted; only this task's own files were staged)*
 
 **Timing**: 0.5 hours
 
@@ -274,17 +281,21 @@ confirmed by direct observation rather than by inference from the fixture alone.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` exits 0 with
-      `0 failed`, and the `--fix fixture` case PASSES rather than SKIPS.
-- [ ] The `--fix fixture` case FAILED before Phase 2 and PASSES after it (the red-then-green proof
-      that the regression test has teeth).
-- [ ] Project 1's Class A duplicates are removed order-preservingly; project 2's Class B pair is
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-state.sh` exits 0 with
+      `0 failed`, and the `--fix fixture` case PASSES rather than SKIPS. *(completed: 25 passed,
+      0 failed)*
+- [x] The `--fix fixture` case FAILED before Phase 2 and PASSES after it (the red-then-green proof
+      that the regression test has teeth). *(completed: 24/1 red in Phase 1, 25/0 green in Phase 3)*
+- [x] Project 1's Class A duplicates are removed order-preservingly; project 2's Class B pair is
       untouched; project 3 still satisfies `has("file_scope") == true and .file_scope == null`;
-      project 4 still satisfies `has("file_scope") == false`.
-- [ ] `$out` from the fixture run contains no `--fix: state-write.sh failed` line.
-- [ ] `bash -n` passes on both modified files.
-- [ ] `NOMFG_FIXTURE_DIR` and its assertions are unchanged and still pass.
-- [ ] Running `--fix` twice over a null-bearing fixture is idempotent.
+      project 4 still satisfies `has("file_scope") == false`. *(completed: asserted directly in
+      the fixture)*
+- [x] `$out` from the fixture run contains no `--fix: state-write.sh failed` line. *(completed)*
+- [x] `bash -n` passes on both modified files. *(completed)*
+- [x] `NOMFG_FIXTURE_DIR` and its assertions are unchanged and still pass. *(completed: D4
+      `--fix non-manufacture fixture` still PASSES, block untouched)*
+- [x] Running `--fix` twice over a null-bearing fixture is idempotent. *(completed: verified via
+      a throwaway specs/_tmp_269_idemp_$$ fixture, byte-identical after two runs)*
 
 ## Artifacts & Outputs
 

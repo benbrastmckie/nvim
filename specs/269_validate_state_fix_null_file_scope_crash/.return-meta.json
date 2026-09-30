@@ -1,13 +1,35 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 11,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/269_validate_state_fix_null_file_scope_crash/summaries/01_null-file-scope-fix-crash-summary.md",
+      "summary": "3-phase implementation: red-then-green --fix fixture extension, has()->type-test mutation-filter swap plus comment rewrite in validate-state.sh, full verification of the three file_scope dedup invariants (D3 order, no-manufacture, idempotence)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed validate-state.sh --fix crashing on literal-null file_scope by swapping the mutation filter's has(\"file_scope\") presence test for the type test (.file_scope|type)==\"array\", rewrote the comment block that had endorsed the defective form, and extended the FIX_FIXTURE_DIR regression fixture with red-then-green proof (24/1 failed before, 25/0 failed after) plus direct-repro and double-run idempotence verification."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a fix targets a jq filter that silently no-ops instead of crashing loudly on some code paths (this repo's validate-state.sh --fix: rc could be 0 even when the write was refused, because the failure branch used a raw echo instead of log_fail), a regression fixture's rc check alone proves nothing. The load-bearing proof is: (1) confirm the fixture is RED against the UNFIXED code first (here: 24 passed/1 failed, with diagnostics showing the write did NOT land and the specific failure string present in $out) before applying the fix, then (2) after the fix, assert the fixture went GREEN (25/0) AND that a genuine change elsewhere in the same fixture actually landed (e.g. a real duplicate was actually removed), not just that the run didn't crash. A fixture that only asserts 'no crash' or 'rc==0' can pass vacuously when the underlying write silently failed.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/269_validate_state_fix_null_file_scope_crash/summaries/01_null-file-scope-fix-crash-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["regression-fixture", "red-then-green", "jq-filter-fix", "exit-code-invisible", "vacuous-pass", "validate-state"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790788666_f8aaca",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 3,
     "phases_total": 3
   }
 }
