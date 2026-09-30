@@ -538,14 +538,23 @@ echo "stderr" > "$repo_t14/.lake/build-guard.stderr"
 out_t14="$(run_dw "$repo_t14" provision 1401 --session sess_t14 --seq 1)"
 path_t14="$(echo "$out_t14" | jq -r '.path' 2>/dev/null)"
 
+# Two implementations both satisfy the goal (never hardlink these five in the first place, OR
+# delete them immediately and unconditionally post-clone -- see the plan's Phase 2 task list,
+# "T14 asserts the end state either way"): the worktree's copy may be ABSENT entirely, or
+# PRESENT with an inode distinct from the main tree's. Either is a pass; only "present with the
+# SAME inode as the main tree's" (the pre-fix hardlink-sharing defect) is a fail.
 GUARD_STATE_FILES_T14=(build-guard.lock build-guard.result build-guard.log build-guard.stdout build-guard.stderr)
 for f in "${GUARD_STATE_FILES_T14[@]}"; do
   main_inode_t14="$(stat -c '%i' "$repo_t14/.lake/$f" 2>/dev/null)"
+  if [ ! -f "$path_t14/.lake/$f" ]; then
+    pass "T14: .lake/$f is absent from the worktree (never hardlinked in, not shared with the main tree)"
+    continue
+  fi
   wt_inode_t14="$(stat -c '%i' "$path_t14/.lake/$f" 2>/dev/null)"
-  if [ -f "$path_t14/.lake/$f" ] && [ -n "$main_inode_t14" ] && [ -n "$wt_inode_t14" ] && [ "$main_inode_t14" != "$wt_inode_t14" ]; then
+  if [ -n "$main_inode_t14" ] && [ -n "$wt_inode_t14" ] && [ "$main_inode_t14" != "$wt_inode_t14" ]; then
     pass "T14: .lake/$f is an independent inode in the worktree (not hardlinked to the main tree)"
   else
-    fail "T14: .lake/$f expected a distinct worktree inode; main_inode=$main_inode_t14 wt_inode=$wt_inode_t14 exists=$([ -f "$path_t14/.lake/$f" ] && echo yes || echo no)"
+    fail "T14: .lake/$f expected absent or a distinct worktree inode; main_inode=$main_inode_t14 wt_inode=$wt_inode_t14"
   fi
 done
 

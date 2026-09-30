@@ -234,7 +234,7 @@ directives before assuming its dependency set.
 
 ---
 
-### Phase 2: Exclude `build-guard.*` from the `.lake/` hardlink clone [NOT STARTED]
+### Phase 2: Exclude `build-guard.*` from the `.lake/` hardlink clone [COMPLETED]
 
 **Goal**: Fix the root cause in `cmd_provision()` so every provisioned worktree starts with
 independent guard state, turning Phase 1's two red cases green without touching
@@ -242,23 +242,23 @@ independent guard state, turning Phase 1's two red cases green without touching
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/dispatch-worktree.sh` in full immediately
+- [x] Re-read `agent-system/extensions/core/scripts/dispatch-worktree.sh` in full immediately
       before editing — it is also the `land`/release task's edit target and a sibling may have
       changed it.
-- [ ] In `cmd_provision()`, change the `.lake/` clone so the five `build-guard.*` files are never
+- [x] In `cmd_provision()`, change the `.lake/` clone so the five `build-guard.*` files are never
       hardlinked into the worktree, leaving everything else (notably `.lake/build/`) shared.
       Prefer a form that cannot leave a stale hardlinked file behind if a later step in
       `cmd_provision()` fails; if a post-`cp -al` removal is used, place it immediately after the
       clone and before the `resolved_root` assertion, and make it unconditional
       (`rm -f` on each named path, never a glob that could reach a non-guard file).
-- [ ] Keep the exclusion list explicit and named (the five documented paths from
+- [x] Keep the exclusion list explicit and named (the five documented paths from
       `lake-build-guard.sh`'s header), not a wildcard over `.lake/`, so a future unrelated
       `.lake/` file is not silently dropped from the clone.
-- [ ] Leave the `.claude/` clone at line ~293 unchanged — no ephemeral guard state lives there
+- [x] Leave the `.claude/` clone at line ~293 unchanged — no ephemeral guard state lives there
       today, and widening the change is out of scope.
-- [ ] Re-run `test-dispatch-worktree.sh`: T14 and T15 must now pass, T1-T13 unchanged.
-- [ ] Run the full suite set: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Commit this phase's own hunks with an explicit path list.
+- [x] Re-run `test-dispatch-worktree.sh`: T14 and T15 must now pass, T1-T13 unchanged.
+- [x] Run the full suite set: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
+- [x] Commit this phase's own hunks with an explicit path list.
 
 **Timing**: 0.75 hours
 
@@ -282,12 +282,17 @@ to confirm no second `.lake/` clone site exists.
 **Verification**:
 
 - `test-dispatch-worktree.sh` exits 0 with T14 and T15 passing and T1-T13 unchanged.
+  *(completed)*
 - `run-all.sh` exits 0 (this is the tier-`full` gate; `test-dispatch-isolation-fixture.sh`, the
-  other suite referencing this script, is inside it).
+  other suite referencing this script, is inside it). *(deviation: altered — run-all.sh reports
+  97 passed, 8 failed, 0 skipped, 105 total; all 8 failures confirmed pre-existing and unrelated
+  to dispatch-worktree.sh/lake-build-guard.sh -- see progress/phase-2-progress.json for the full
+  evidence. test-dispatch-worktree.sh (49/49) and test-lake-build-guard.sh (48/48), the two
+  suites in this task's own file_scope, both pass cleanly)*
 - `bash -n dispatch-worktree.sh` clean; `shellcheck` (if available in this environment) reports no
-  new findings against the changed hunk.
+  new findings against the changed hunk. *(completed)*
 - Manual confirmation that `.lake/build/`-style content is still hardlink-shared after provision
-  (T14's positive assertion covers this mechanically).
+  (T14's positive assertion covers this mechanically). *(completed)*
 
 ---
 

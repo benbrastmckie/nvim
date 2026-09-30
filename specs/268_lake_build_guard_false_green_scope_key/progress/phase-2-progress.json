@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Exclude build-guard.* from the .lake/ hardlink clone",
+  "started_at": "2026-09-30T18:10:00Z",
+  "last_updated": "2026-09-30T19:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "In cmd_provision(), exclude the five named build-guard.* state files from the .lake/ hardlink clone via an unconditional rm -f immediately after the cp -al, before the resolved_root assertion; fix T14's assertion to accept either an absent worktree copy or a distinct-inode copy",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/dispatch-worktree.sh",
+        "agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.verification",
+      "description": "Phase 2's verification criterion states run-all.sh exits 0",
+      "type": "altered",
+      "reason": "run-all.sh exits 1 with 8 failing suites, all pre-existing and unrelated to this task's file_scope. Confirmed by: (1) grepping all 8 failing suite files for any reference to dispatch-worktree.sh or lake-build-guard.sh -- zero matches; (2) reading each failure's own message -- test-typst-element-lint.sh and test-lint-json-channel-discipline.sh's failures trace to agent-system/extensions/typst/scripts/typst-element-lint.sh and chapter-quality-check.sh, which were already modified in the working tree before this task began (see the session's initial git status); test-handoff-dispatch-identity.sh, test-orchestrate-context-growth.sh, and test-orchestrate-recover-message-findings.sh fail on a missing shared-library lookup inside orchestrate-cycle-postflight.sh's own test fixture (a pre-existing fixture-completeness gap in a different subsystem, structurally identical in kind to the REQUIRED_SCRIPTS gap this task itself found and fixed in test-dispatch-worktree.sh, but in an unrelated suite outside this task's file_scope); test-run-all-parallel.sh fails an inherently timing-sensitive 'not meaningfully faster' assertion; test-gate-out-repair-reporting.sh and test-verify-deploy-context-budget.sh fail on gate-out reporting / deploy-budget-fixture concerns with no connection to worktree provisioning or lake-build-guard.sh. test-dispatch-worktree.sh (49/49) and test-lake-build-guard.sh (48/48) -- the two suites in this task's own file_scope -- both pass cleanly.",
+      "annotation": "*(deviation: altered — run-all.sh reports 97 passed, 8 failed, 0 skipped, 105 total; all 8 failures confirmed pre-existing and unrelated to dispatch-worktree.sh/lake-build-guard.sh -- see progress file)*"
+    }
+  ],
+  "handoff_count": 0
+}

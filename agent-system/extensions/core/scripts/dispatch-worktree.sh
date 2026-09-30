@@ -295,6 +295,25 @@ cmd_provision() {
   # .lake/ is populated the same way, only when the main tree actually has one.
   if [ -d "$PROJECT_ROOT/.lake" ]; then
     cp -al "$PROJECT_ROOT/.lake" "$worktree_path/.lake"
+
+    # Exclude lake-build-guard.sh's own ephemeral runtime state from the hardlink clone --
+    # confirmed root cause of a false green: a hardlink clone shares the INODE of every
+    # pre-existing file, so these five files would otherwise be the SAME FILE under two paths,
+    # and the guard's own finalize_record() (a truncate-in-place write) silently overwrites the
+    # other tree's record, log, and captured output. The same shared inode also makes
+    # build-guard.lock serialize builds across trees, defeating the very build-contention
+    # isolation per-dispatch worktrees exist to provide (see the header's mode 2). Named
+    # explicitly (never a glob over .lake/), matching lake-build-guard.sh's own documented state
+    # files, so an unrelated .lake/ file is never silently dropped from the clone. Removed
+    # immediately after the clone and before the resolved_root assertion below, so a
+    # partially-failed provision can never leave one of these five hardlinked into a torn-down
+    # worktree.
+    rm -f \
+      "$worktree_path/.lake/build-guard.lock" \
+      "$worktree_path/.lake/build-guard.result" \
+      "$worktree_path/.lake/build-guard.log" \
+      "$worktree_path/.lake/build-guard.stdout" \
+      "$worktree_path/.lake/build-guard.stderr"
   fi
 
   local resolved_root canonical_worktree
