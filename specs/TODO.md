@@ -11,8 +11,8 @@ next_project_number: 283
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,269,272,277,279,280 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,270,271,275,276,281 | 22,44,127,184,241,265,269,272,277,279,280 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,276,281 | 22,44,127,184,241,265,272,277,279,280 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
@@ -54,8 +54,7 @@ next_project_number: 283
 ### File Scope Lifecycle
 
 165 [PLANNED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
-269 [IMPLEMENTING] — validate-state.sh --fix: replace the presence test with a...
-  └─ 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
+270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
 ### Orchestrator
 
@@ -1022,12 +1021,13 @@ RELATED, DELIBERATELY NOT MERGED. scripts/orchestrate-cycle-postflight.sh's modi
 ---
 
 ### 269. validate-state.sh --fix: replace the presence test with a type test so a null file_scope cannot abort the repair
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
 - **Research**: [269_validate_state_fix_null_file_scope_crash/reports/01_null-file-scope-fix-crash.md]
 - **Plan**: [269_validate_state_fix_null_file_scope_crash/plans/01_null-file-scope-fix-crash.md]
+- **Summary**: [269_validate_state_fix_null_file_scope_crash/summaries/01_null-file-scope-fix-crash-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/validate-state.sh (never .claude/**). The deployed copy at a consumer repo's .claude/scripts/validate-state.sh was confirmed byte-for-byte identical (diff -q) and is listed in .claude-extensions.json's installed_files under the core extension, so it is a deploy artifact only -- fix at source and redeploy, per rules/source-store-deploy-boundary.md.
 

@@ -21,14 +21,25 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/269_validate_state_fix_null_file_scope_crash/summaries/01_null-file-scope-fix-crash-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["regression-fixture", "red-then-green", "jq-filter-fix", "exit-code-invisible", "vacuous-pass", "validate-state"]
+      "suggested_keywords": [
+        "regression-fixture",
+        "red-then-green",
+        "jq-filter-fix",
+        "exit-code-invisible",
+        "vacuous-pass",
+        "validate-state"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790788666_f8aaca",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   }

@@ -851,7 +851,7 @@
     {
       "project_number": 269,
       "project_name": "validate_state_fix_null_file_scope_crash",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "validate-state.sh --fix: replace the presence test with a type test so a null file_scope cannot abort the repair",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/validate-state.sh (never .claude/**). The deployed copy at a consumer repo's .claude/scripts/validate-state.sh was confirmed byte-for-byte identical (diff -q) and is listed in .claude-extensions.json's installed_files under the core extension, so it is a deploy artifact only -- fix at source and redeploy, per rules/source-store-deploy-boundary.md.\n\nCONFIRMED DEFECT, ALREADY MECHANICALLY REPRODUCED. `validate-state.sh --fix` aborts with `jq: error (at <stdin>:1): Cannot iterate over null (null)` on any state.json holding an active_projects entry whose file_scope is literal null. Net effect: --fix REPORTS its findings correctly and then repairs NOTHING, because state-write.sh sees the jq transform fail and correctly refuses the write. The refusal is working as designed; the defect is strictly upstream of it.\n\nROOT CAUSE -- A PRESENCE-TEST vs TYPE-TEST ASYMMETRY BETWEEN TWO FILTERS THAT MUST AGREE. Inside the --fix block, the report filter (circa line 305) is correctly null-guarded with `($t.file_scope // []) as $fs`, but the mutation filter handed to state-write.sh (circa line 322) is not:\n\n  .active_projects = [.active_projects[] | if has(\"file_scope\") then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]\n\n`has(\"file_scope\")` returns TRUE when the value is literal null, because the KEY exists. The reduce then iterates over null and jq aborts. Reproduction:\n\n  $ echo '{\"active_projects\":[{\"project_number\":1,\"file_scope\":null}]}' | jq -c '.active_projects = [.active_projects[] | if has(\"file_scope\") then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]'\n  jq: error (at <stdin>:1): Cannot iterate over null (null)\n\nThe type-test form is correct and idempotent, leaving null-valued and absent entries byte-identical:\n\n  $ echo '{\"active_projects\":[{\"project_number\":1,\"file_scope\":null}]}' | jq -c '.active_projects = [.active_projects[] | if (.file_scope|type) == \"array\" then .file_scope |= (reduce .[] as $x ([]; if index($x) then . else . + [$x] end)) else . end]'\n  {\"active_projects\":[{\"project_number\":1,\"file_scope\":null}]}\n\nINVARIANTS THE FIX MUST PRESERVE (all three are load-bearing and documented in the comment block above the filter):\n  1. D3 order-preserving dedup. jq's `unique` SORTS and must not be substituted for the reduce.\n  2. The filter must never introduce a `file_scope: []` field on an entry that never had one. A type test satisfies this for free: a null-valued entry keeps its null, an absent-key entry stays absent.\n  3. Idempotence -- an entry whose file_scope already has no duplicates is left byte-identical.\nUpdate that comment block too: it currently explains and endorses the `has(\"file_scope\")` form, so leaving it in place would re-document the defect.\n\nREGRESSION TEST. scripts/tests/test-validate-state.sh already carries a --fix fixture block (FIX_FIXTURE_DIR, circa line 600) and is the natural home; do not add a new test file. The fixture must drive a null-bearing state.json through --fix end to end and assert (a) exit status is success, (b) genuinely duplicated file_scope arrays elsewhere in the same fixture were actually deduplicated -- proving the write landed rather than merely that nothing crashed, and (c) the null-valued and absent-key entries are untouched, still null and still absent respectively. Note the existing suite already probes `has(\"file_scope\")` on fixtures at test-validate-state.sh circa line 807 as an ASSERTION about state shape; that usage is legitimate and is not what this task changes.\n\nPROVENANCE. Encountered live during an /orchestrate implement dispatch. Five projects in the ~/Projects/BimodalLogic consumer repo's specs/state.json currently carry literal-null file_scope, so the crash triggers there today. That dispatch worked around it with an equivalent project-scoped null-safe filter applied through state-write.sh and deliberately did NOT hand-patch the deployed copy. The broader missing-or-null file_scope visibility class in that repo is 28 entries -- a different and larger set than the null-valued subset; do not conflate the two figures. The --fix block's Check 8/9 lineage traces to the completed task that surfaced missing and empty file_scope in validate-state.sh and orchestrate-predispatch-review.sh.",
@@ -862,7 +862,7 @@
         "agent-system/extensions/core/scripts/validate-state.sh"
       ],
       "created": "2026-09-29T05:48:51Z",
-      "last_updated": "2026-09-30T17:34:39Z",
+      "last_updated": "2026-09-30T18:23:39Z",
       "session_id": "sess_1790788666_f8aaca",
       "artifacts": [
         {
@@ -874,9 +874,15 @@
           "path": "specs/269_validate_state_fix_null_file_scope_crash/plans/01_null-file-scope-fix-crash.md",
           "type": "plan",
           "summary": "3-phase sequential plan (1.5h) for the null-file_scope --fix crash: red-then-green fixture, type-test filter swap plus comment rewrite, full invariant verification."
+        },
+        {
+          "path": "specs/269_validate_state_fix_null_file_scope_crash/summaries/01_null-file-scope-fix-crash-summary.md",
+          "type": "summary",
+          "summary": "3-phase implementation: red-then-green --fix fixture extension, has()->type-test mutation-filter swap plus comment rewrite in validate-state.sh, full verification of the three file_scope dedup invariants."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed validate-state.sh --fix crashing on literal-null file_scope by swapping the mutation filter's has(\"file_scope\") presence test for the type test (.file_scope|type)==\"array\", rewrote the comment block that had endorsed the defective form, and extended the FIX_FIXTURE_DIR regression fixture with red-then-green proof (24/1 failed before, 25/0 failed after) plus direct-repro and double-run idempotence verification."
     },
     {
       "project_number": 270,

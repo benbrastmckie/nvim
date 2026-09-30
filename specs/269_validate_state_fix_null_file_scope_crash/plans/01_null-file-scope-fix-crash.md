@@ -1,7 +1,7 @@
 # Implementation Plan: validate-state.sh --fix crashes on literal-null file_scope
 
 - **Task**: 269 - validate-state.sh --fix crashes on literal-null file_scope
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/269_validate_state_fix_null_file_scope_crash/reports/01_null-file-scope-fix-crash.md
