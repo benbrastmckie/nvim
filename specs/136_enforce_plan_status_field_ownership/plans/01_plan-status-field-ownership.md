@@ -422,38 +422,38 @@ conditional on its result.
 
 ---
 
-### Phase 5: Validator test suite and cross-script conformance guard [NOT STARTED]
+### Phase 5: Validator test suite and cross-script conformance guard [COMPLETED]
 
 **Goal**: Both the Status-grammar behavior and the report-heading behavior are fixture-locked, and
 the new library is mechanically prevented from drifting away from `update-plan-status.sh`.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` following
+- [x] Create `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` following
       `context/standards/shell-script-testing.md`'s core convention (`pass`/`fail`/`info`
       helpers, PASSED/FAILED counters, `mktemp -d` workdir with `trap EXIT` cleanup, exit 0 on
-      all-pass / 1 on any-fail). Never instrument `validate-artifact.sh`.
-- [ ] Status-grammar cases: conforming PASS; conforming-with-trailing-annotation PASS; M1 FAIL;
-      M2 FAIL; M3 FAIL; each malformed case asserted on its own distinct message.
-- [ ] `--fix` non-participation case: run `--fix` on the M2 fixture and assert the Status line is
-      byte-identical afterward and the error is still reported.
-- [ ] Report-heading cases (the absorbed former-task-166 thread): a report fixture carrying
+      all-pass / 1 on any-fail). Never instrument `validate-artifact.sh`. *(completed)*
+- [x] Status-grammar cases: conforming PASS; conforming-with-trailing-annotation PASS; M1 FAIL;
+      M2 FAIL; M3 FAIL; each malformed case asserted on its own distinct message. *(completed)*
+- [x] `--fix` non-participation case: run `--fix` on the M2 fixture and assert the Status line is
+      byte-identical afterward and the error is still reported. *(completed)*
+- [x] Report-heading cases (the absorbed former-task-166 thread): a report fixture carrying
       `## Context Extension Recommendations` and `## Recommended Next Steps (for the plan phase)`
       but no `## Recommendations` FAILs with `Missing required section: ## Recommendations`; the
       same fixture with a top-level `## Recommendations` added and nothing else changed PASSes;
       and — the dispatch's explicit requirement — a fixture carrying
       `## Context Extension Recommendations` **alone** still FAILs, proving the check was not
-      relaxed into a false pass.
-- [ ] Depth-tolerance case: a report whose only conforming heading is `### Recommendations`
+      relaxed into a false pass. *(completed)*
+- [x] Depth-tolerance case: a report whose only conforming heading is `### Recommendations`
       (nested under `## Findings`) PASSes, locking in the `^##+` any-depth semantics so a future
-      change cannot quietly narrow it.
-- [ ] Cross-script conformance guard: for each of the five Status-grammar fixtures, build a
+      change cannot quietly narrow it. *(completed)*
+- [x] Cross-script conformance guard: for each of the five Status-grammar fixtures, build a
       throwaway `specs/{NNN}_{slug}/plans/01_*.md` layout inside the scratch dir, invoke the real
       `update-plan-status.sh` against it, and assert its accept/reject outcome agrees with
       `plan-status-line.sh`'s verdict for the same fixture. This is read-only with respect to
       `update-plan-status.sh` — it is never edited — and it fails loudly if the two
-      classifications ever diverge.
-- [ ] No `run-all.sh` edit: it auto-globs `scripts/tests/test-*.sh`, so the suite self-registers.
-      `suite-cost-hints.txt` is advisory and deliberately left alone.
+      classifications ever diverge. *(completed)*
+- [x] No `run-all.sh` edit: it auto-globs `scripts/tests/test-*.sh`, so the suite self-registers.
+      `suite-cost-hints.txt` is advisory and deliberately left alone. *(confirmed: run-all.sh untouched, suite self-registers via glob)*
 
 **Timing**: 1.75 hours
 

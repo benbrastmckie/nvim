@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Validator test suite and cross-script conformance guard",
+  "started_at": "2026-09-29T00:00:00Z",
+  "last_updated": "2026-09-29T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-validate-artifact.sh with Status-grammar, --fix, report-heading, depth-tolerance, and conformance-guard cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh", "agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Deploy and verify suite runs green (18/18)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Mutation checks: revert grammar check -> red; perturb M3 branch -> red; restore both -> green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.deploy",
+      "description": "Ran deploy-headless.sh early (ahead of Phase 8) to get the suite green now",
+      "type": "altered",
+      "reason": "test-validate-artifact.sh, mirroring test-update-plan-status.sh's convention, resolves its scripts-under-test deploy-tree-first. Phase 5's own verification requires the suite to exit 0 now, so deploy-headless.sh was run early to sync the deployed tree with this task's source-store changes. verify-deploy.sh's full gate set reported unrelated pre-existing failures (orchestrator eager-load context budget growth, skill-orchestrate size ceiling, lean hard_contracts migration warning) not caused by this task's changes.",
+      "annotation": null
+    }
+  ]
+}
