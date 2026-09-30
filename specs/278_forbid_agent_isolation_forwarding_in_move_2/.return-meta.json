@@ -21,7 +21,11 @@
     "session_id": "sess_1790788666_f8aaca",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }

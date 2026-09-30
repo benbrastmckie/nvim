@@ -11,9 +11,9 @@ next_project_number: 283
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,269,272,278,279,280 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,270,271,275,277,281 | 22,44,127,184,241,265,269,272,278,279,280 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 170,273,276,282 | 184,250,251,271,277,281 | core-agent-system, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,269,272,277,279,280 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,270,271,275,276,281 | 22,44,127,184,241,265,269,272,277,279,280 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -33,7 +33,7 @@ next_project_number: 283
 265 [PLANNED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
-268 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
+268 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
@@ -54,7 +54,7 @@ next_project_number: 283
 ### File Scope Lifecycle
 
 165 [PLANNED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
-269 [PLANNED] — validate-state.sh --fix: replace the presence test with a...
+269 [IMPLEMENTING] — validate-state.sh --fix: replace the presence test with a...
   └─ 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
 ### Orchestrator
@@ -62,9 +62,8 @@ next_project_number: 283
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-278 [PLANNED] — Forbid forwarding the Agent tool isolation parameter in...
-  └─ 277 [NOT STARTED] — git-commit-scoped.sh cannot commit inside a dispatch...
-    └─ 276 [NOT STARTED] — Stop releasing a dirty worktree on a nothingtoland verdict:...
+277 [NOT STARTED] — git-commit-scoped.sh cannot commit inside a dispatch...
+  └─ 276 [NOT STARTED] — Stop releasing a dirty worktree on a nothingtoland verdict:...
 279 [PLANNED] — Reconcile state-schema.json with the live fields the...
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
@@ -450,12 +449,13 @@ behind unrelated work would be the wrong trade):
 ---
 
 ### 278. Forbid forwarding the Agent tool isolation parameter in skill-orchestrate Move 2, and mark plan.sh isolation/worktree_path fields descriptive
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [278_forbid_agent_isolation_forwarding_in_move_2/reports/01_forbid-isolation-forwarding.md]
 - **Plan**: [278_forbid_agent_isolation_forwarding_in_move_2/plans/01_forbid-isolation-forwarding.md]
+- **Summary**: [278_forbid_agent_isolation_forwarding_in_move_2/summaries/01_forbid-isolation-forwarding-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/skills/skill-orchestrate/SKILL.md and agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh (never .claude/**, a disposable deploy tree). Documentation-and-contract change only; no executable logic changes.
 
@@ -1022,7 +1022,7 @@ RELATED, DELIBERATELY NOT MERGED. scripts/orchestrate-cycle-postflight.sh's modi
 ---
 
 ### 269. validate-state.sh --fix: replace the presence test with a type test so a null file_scope cannot abort the repair
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
@@ -1060,7 +1060,7 @@ PROVENANCE. Encountered live during an /orchestrate implement dispatch. Five pro
 ---
 
 ### 268. Lake build guard false green scope key
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: general
 - **Topic**: core-agent-system
 - **Dependencies**: None

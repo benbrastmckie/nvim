@@ -1,7 +1,7 @@
 # Implementation Plan: Task #278
 
 - **Task**: 278 - Forbid Agent isolation forwarding in Move 2
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (no hard dependency edges declared; file_scope-driven serialization at
   admission handles coordination with the SKILL.md and orchestrate-cycle-plan.sh co-owners)
