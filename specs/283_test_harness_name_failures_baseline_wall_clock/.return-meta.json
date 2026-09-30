@@ -30,14 +30,26 @@
       "category": "INSIGHT",
       "source_artifact": "specs/283_test_harness_name_failures_baseline_wall_clock/summaries/01_harness-roster-baseline-wall-clock-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["run-all.sh", "deploy-tree-first", "gate8", "redundant-verify", "test-resolution"]
+      "suggested_keywords": [
+        "run-all.sh",
+        "deploy-tree-first",
+        "gate8",
+        "redundant-verify",
+        "test-resolution"
+      ]
     },
     {
       "content": "When a checked-in advisory manifest classifies test-harness output (e.g. EXPECTED vs. NEW failures), design the tally/roster extension so the pre-manifest prefix stays byte-identical and the annotation is a pure suffix/append -- this lets an existing regression test's substring/prefix assertions keep working unmodified across the manifest-aware extension, verified in this task by re-running the Phase 3 regression suite unchanged after Phase 4 landed and seeing all cases still pass.",
       "category": "PATTERN",
       "source_artifact": "specs/283_test_harness_name_failures_baseline_wall_clock/summaries/01_harness-roster-baseline-wall-clock-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["output-contract", "backward-compatible", "manifest", "tally-line", "byte-identical-prefix"]
+      "suggested_keywords": [
+        "output-contract",
+        "backward-compatible",
+        "manifest",
+        "tally-line",
+        "byte-identical-prefix"
+      ]
     }
   ],
   "user_decision": {
@@ -53,8 +65,14 @@
     "session_id": "sess_1790795029_d00973",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

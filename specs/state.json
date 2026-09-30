@@ -22,6 +22,11 @@
           "path": "specs/283_test_harness_name_failures_baseline_wall_clock/plans/01_harness-roster-baseline-wall-clock.md",
           "type": "plan",
           "summary": "6-phase implementation plan for the run-all.sh harness: failure roster, regression test, known-failures baseline manifest, stale-fixture fix, and redeploy-checkpoint wall-clock fix."
+        },
+        {
+          "path": "specs/283_test_harness_name_failures_baseline_wall_clock/summaries/01_harness-roster-baseline-wall-clock-summary.md",
+          "type": "summary",
+          "summary": "All 6 phases completed: stale-fixture fix, failure roster, regression test, known-failures.txt manifest, --skip-slow wall-clock fix, and documentation reconciliation."
         }
       ],
       "next_artifact_number": 2,
@@ -39,7 +44,8 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh",
         "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh"
-      ]
+      ],
+      "completion_summary": "Fixed the agent-system test harness's three named defects: failing suites are now named in a consolidated, regression-tested end-of-run roster; a committed known-failures.txt baseline classifies each failure as EXPECTED or NEW; and --skip-slow on all five deploy_findings_snapshot call sites removed the dominant wall-clock cost (measured 85% reduction, 13m48s to 2m4s per invocation). Also fixed a shared stale-fixture bug that accounted for 3 of the 8 originally-named failures."
     },
     {
       "project_number": 279,

@@ -245,6 +245,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Dependencies**: None
 - **Research**: [283_test_harness_name_failures_baseline_wall_clock/reports/01_test-harness-defects-research.md]
 - **Plan**: [283_test_harness_name_failures_baseline_wall_clock/plans/01_harness-roster-baseline-wall-clock.md]
+- **Summary**: [283_test_harness_name_failures_baseline_wall_clock/summaries/01_harness-roster-baseline-wall-clock-summary.md]
 
 **Description**: Fix the agent-system test harness (agent-system/extensions/core/scripts/tests/run-all.sh), which is a systemic bottleneck for refactor work in three compounding ways. Research the harness and address all three.
 
