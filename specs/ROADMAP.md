@@ -8,26 +8,27 @@ Measured 2026-09-30.*
 
 `/orchestrate` is the only lifecycle entry point, and the orchestrator is token-cheap by
 construction: it delegates, reads back compact verdicts, and asks the user only when a decision is
-genuinely the user's. Both halves are met in shape and in measurement; the engine-convergence lane
-is closed.
+genuinely the user's.
 
-What remains splits into five lanes: **restore the deploy gate to green** (blocking — see Next),
-**worktree dispatch integrity** (silent data loss — call 0), **cut per-invocation cost and
-clutter**, **finish the orchestrator's own operational surface** (queue, liveness, conclusion
-stage), and **correct the consumer repos**, which have drifted badly STALE.
+What remains splits into six lanes: **restore the deploy gate to green** (blocking — see Next),
+**worktree dispatch integrity** (silent data loss — call 0), **push consent and admission posture**
+(call A), **cut per-invocation cost and clutter** (calls B and C), **finish the orchestrator's own
+operational surface** (queue, liveness, conclusion stage — call D), and **record-versioning policy
+plus two contract defects** (call E). Orthogonal to all six: the consumer repos have drifted badly
+STALE.
 
 ## Where things stand
 
 | Measure | Value | Bearing |
 |---|---|---|
-| Open tasks | **31** | Up from 28: three record-versioning tasks and two live-observed contract defects were filed. Plus 7 `completed` awaiting `/todo` archive; `specs/archive/` holds 211 task directories |
-| `validate-state.sh --deep` | 18 passed, **2 warnings**, 0 failed | Both warnings are 270's two coarse `file_scope` entries; the broader one now overlaps **23** non-terminal tasks (was 20). TODO.md is byte-identical to a regenerated one |
+| Open tasks | **31** | Plus 7 `completed` awaiting `/todo` archive — run it before the next call, or they keep inflating every scope-overlap count below. `specs/archive/` holds 211 task directories |
+| `validate-state.sh --deep` | 18 passed, **2 warnings**, 0 failed | Both warnings are 270's two coarse `file_scope` entries; the broader one overlaps **23** non-terminal tasks. TODO.md is byte-identical to a regenerated one |
 | `verify-deploy.sh` | **FAIL — 3 of 33** | The Inter-Cycle Redeploy Checkpoint proceeds anyway on a `pre=N post=N new=0` baseline comparison, so a red tree does not stop a run — it masks whatever finding is genuinely new. See Next |
 | Eager context load | 67,980 B / baseline 65,950 | **2,030 B OVER.** Gate 20 fails outright, and it is *also* why `test-verify-deploy-context-budget.sh` is red — one fix clears both. 89 and 251 are the tasks that create room |
-| `skills/skill-orchestrate/SKILL.md` | 21,317 B / ceiling 20,000 | **1,317 B OVER**, up from 137 B over. Growing, not shrinking — gate is `warn` mode, so it reports rather than fails |
+| `skills/skill-orchestrate/SKILL.md` | 21,317 B / ceiling 20,000 | **1,317 B OVER.** Gate is `warn` mode, so it reports rather than fails. Any task touching this file offsets its growth byte-for-byte |
 | `commands/orchestrate.md` | 20,243 B / ceiling 21,000 | 757 B headroom |
-| Harness failures | **101 passed, 5 failed (4 expected, 1 NEW), 106 total** | Roster, baseline manifest and `--fail-on-new` all landed and verified end to end: the run names every failing suite and classifies it. The 1 NEW is `test-typst-element-lint.sh`, correctly flagging **uncommitted WIP** in `typst/scripts/typst-element-lint.sh` (Check 4, with a stale fixture) — commit or revert it. `known-failures.txt` carries the 4 EXPECTED rows, 3 `real-defect` + 1 `intermittent`, all `needs-owner` except the accepted flake |
-| Redeploy checkpoint cost | `--skip-slow` on all 5 call sites; 13m48s → 2m4s measured | No longer the biggest per-invocation cost. **But** a fire that must actually deploy still exceeded a 30-min budget and was killed; the immediate re-run over a fresh tree finished in under 500 s |
+| Harness failures | **101 passed, 5 failed (4 expected, 1 NEW), 106 total** | The 1 NEW is `test-typst-element-lint.sh`, flagging **uncommitted WIP** in `typst/scripts/typst-element-lint.sh` (Check 4, with a stale fixture) — commit or revert it and the baseline is clean. The 4 EXPECTED are `known-failures.txt`'s rows: 3 `real-defect` + 1 `intermittent`, all `needs-owner` except the accepted flake |
+| Redeploy checkpoint cost | 2m4s over a fresh tree; **>30 min when it must deploy** | A fire that found the tree stale, deployed and re-verified exceeded a 30-min budget and was killed; the immediate re-run over the now-fresh tree finished in under 500 s. The residual cost is the deploy plus full verify |
 | Consumer deploys | **8 of 8 consumers STALE** | `core` is **75** behind in .dotfiles, ModelChecker, PersonalWebsite, cslib, Logos/Theory, Logos/Hardware, PossibleWorlds; **2** behind in BimodalLogic. Redeploy in a repo before running a batch there |
 
 **`MAX_TASKS` is 8**, enforced in `commands/orchestrate.md` (the command truncates to the first 8
@@ -63,6 +64,10 @@ a dispatch that authored correct work can have it destroyed with no error raised
 Then: **the consumer repos are STALE across the board.** If the next work touches a consumer, run
 `deploy-headless.sh` there before dispatching into it.
 
+Two cheap housekeeping items that make everything below read more accurately: run `/todo` to
+archive the 7 `completed` tasks still in `active_projects`, and commit or revert the uncommitted
+`typst-element-lint.sh` WIP so the harness baseline has 0 NEW.
+
 ---
 
 ## Call 0 — worktree dispatch integrity and state schema (3)
@@ -73,8 +78,7 @@ Then: **the consumer repos are STALE across the board.** If the next work touche
 
 **This lane comes first.** Ordering is enforced by declared dependency edges (277 ← 276), not left
 to `file_scope` serialization — the footprints are disjoint, so admission alone would run them in
-parallel. The lane's cheapest member has already landed: the contract fix that stops the hazard
-being *triggered* is done and removed from this file, which is why 277 now leads.
+parallel.
 
 | Task | What lands | Note |
 |---|---|---|
@@ -100,7 +104,7 @@ All four are `planned` with plans in hand; each needs only its implement phase.
 |---|---|---|
 | **263** (+224, 264) | One grant token; `/please` mint hook with integrity; push guard; grant check in the destructive-git guard; user-only command, never-list, rule exception; dispatch relay + two-cycle non-replay test | 13-phase plan. Push-scope question is **settled** (decisions 11–12). SKILL.md is now 1,317 B over its ceiling — offset any growth byte-for-byte |
 | **165** (+190) | Admission posture for an absent `file_scope`; cross-session visibility for self-modifying candidates | 6-phase plan, fully sequential. Also closes a found defect: the `defer_reason` consumer `case` in `orchestrate-cycle-plan.sh` has no default arm, so a new reason would drop a task from dispatch with no ledger entry |
-| **265** (+267) | Gate 8 via `run-all.sh --jobs` (conservative default + env override); `deploy-headless.sh --skip-verify` with a distinct exit 4 | 8-phase plan, all single-phase waves. **Less urgent than last pass** — `--skip-slow` already took the checkpoint from 13m48s to 2m4s — but `--skip-verify` remains the fix for the *deploying* fire that still overran 30 min |
+| **265** (+267) | Gate 8 via `run-all.sh --jobs` (conservative default + env override); `deploy-headless.sh --skip-verify` with a distinct exit 4 | 8-phase plan, all single-phase waves. **`--skip-verify` is the urgent half**: it is the fix for the deploying fire that overruns 30 min. The `--jobs` half now buys much less, since Gate 8 is no longer the dominant checkpoint cost |
 | **241** | Drop two playwright grant lists and five dead `mcp_servers` fields; fix ownership doc and nix README | 7-phase plan, 2.75 h. 10 files: `web/.../playwright-mcp-guide.md`'s Permission-Tiers section is also falsified. Re-verify the user-scope grant count is 9 first |
 
 Implement-phase serialization: **165 → 265 → 263** (self-modifying, lowest first). 241 is outside
@@ -142,15 +146,14 @@ the self-modifying gate and has no live in-batch collision, so it can run alongs
 /orchestrate 268, 270, 271, 272, 273, 274, 275
 ```
 
-**This is a lane, not a runnable batch of 7.** 268 and 272 carry no outstanding dependency; the
-others chain behind 279 (call 0), 184 (call B) and 165 (call A). Run calls A and B first, or
-dispatch the front pair on their own. The `validate-state.sh --fix` null-safety crash that used to
-lead this lane has landed and is removed from this file, which is what unblocks 270 and 271.
+**This is a lane, not a runnable batch of 7.** 268, 270 and 272 carry no outstanding dependency;
+the others chain behind 279 (call 0), 184 (call B) and 165 (call A). Run calls A and B first, or
+dispatch the front group on their own.
 
 | Task | What lands | Note |
 |---|---|---|
 | **268** | Reproduce-first on the `lake-build-guard.sh` false green: the `scope_key` sharing condition that would prevent the replay is already implemented and predates the observation, so determine which candidate cause actually holds | Already `implementing`. `file_scope` includes `dispatch-worktree.sh`, so it serializes against 276 — take the cross-tree replay hypothesis with it |
-| **270** | Re-runnable null-safety audit of jq mutation sites across core scripts; rule on a shared guard idiom in `scripts/lib/` | Unblocked now. **`file_scope` is coarse** (`.../core/scripts/`, overlapping 23 non-terminal tasks) — narrow it or it will serialize against most of the backlog |
+| **270** | Re-runnable null-safety audit of jq mutation sites across core scripts; rule on a shared guard idiom in `scripts/lib/` | **`file_scope` is coarse** (`.../core/scripts/`, overlapping 23 non-terminal tasks) — narrow it or it will serialize against most of the backlog |
 | **271** | Finish the `parent_task` edge: declare in schema, validate, render in TODO, survive renumbering | After **279** (the per-field schema policy must land before another field is declared). Gates 273 |
 | **272** | Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, give each orchestration its own identity | No outstanding dependency. Pairs naturally with the runtime-sweep defect in observations |
 | **273** | Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage | After 271 and 184 (call B) |
@@ -164,7 +167,7 @@ lead this lane has landed and is removed from this file, which is what unblocks 
 /orchestrate 284, 285
 ```
 
-Two independent groups, filed after the eighth pass. The first is a **three-task chain** on
+Two independent groups. The first is a **three-task chain** on
 declared edges (280 ← 281 ← 282), deliberately split policy-then-consumers; run it as one call and
 let the edges order it. The second pair is independent of everything and cheap.
 
@@ -218,8 +221,8 @@ let the edges order it. The second pair is independent of everything and cheap.
    suppress. Measured coverage is uneven across repos — near-complete here, but only about 42% of
    BimodalLogic's non-terminal tasks carry the field, which is why 165's ruling splits by scope
    kind (in-batch blocking, cross-batch advisory) rather than issuing one blanket posture.
-8. **Rule before mechanism** for the vimtex hazard. The rule shipped; the mechanism tasks stayed
-   abandoned rather than conditional. Re-file only if the rule proves insufficient.
+8. **Rule before mechanism** for the vimtex hazard. Re-file a mechanism task only if the rule
+   proves insufficient.
 9. **Skeleton plans terminate through the completion-claim gate**; only the sorry-inventory
    follow-up report is ported (184). No `pr_ready` routing outside `type=pr`.
 10. **No third automated deploy-trigger site.** The batch postflight defers its redeploy to the
@@ -234,18 +237,15 @@ let the edges order it. The second pair is independent of everything and cheap.
     pre-existing "Never Run" is specifically force-to-master, and this repository's own working
     branch *is* master, so a blanket default-branch exclusion would exceed the rule being narrowed
     and make the mechanism unusable where it lives.
-13. **`known-failures.txt` is the only known-failing list.** Advisory by construction: deleting or
-    truncating it restores pre-manifest reporting exactly, and it never changes which suites run.
-    Prose copies elsewhere are the drift mechanism that produced a stale list, so
-    `shell-script-testing.md` points here instead of maintaining one. A `needs-owner` row is a
-    known gap, not an accepted steady state.
-14. **Gate 8's deployed-tree coverage is knowingly reduced** (agent-surfaced decision, accepted).
-    `--skip-slow` on all 5 redeploy-checkpoint call sites bought 13m48s → 2m4s, at the cost of the
-    ~40 core suites that resolve their subject-under-test from the *deployed* tree no longer being
-    verified against a fresh deploy by this checkpoint. Accepted because a single dispatch had
-    previously burned ~45 minutes and still terminated without writing its handoff. The narrower
-    fix — running only those ~40 suites post-redeploy — is a live follow-up, not a settled
-    dismissal; see observations.
+13. **`known-failures.txt` is the only known-failing list.** Advisory by construction: it never
+    changes which suites run, and deleting it only removes the EXPECTED/NEW annotation. Never keep
+    a prose copy anywhere else — that is the drift mechanism, so `shell-script-testing.md` points
+    here. A `needs-owner` row is a known gap, not an accepted steady state.
+14. **Gate 8's deployed-tree coverage is knowingly reduced** (accepted trade-off). The redeploy
+    checkpoint runs `--skip-slow`, so the ~40 core suites that resolve their subject-under-test
+    from the *deployed* tree are not verified against a fresh deploy there. Accepted on wall-clock
+    grounds; the narrower fix — running only those ~40 suites post-redeploy — is a live follow-up,
+    not a settled dismissal. See observations.
 
 ## Standing rules
 
@@ -266,12 +266,10 @@ let the edges order it. The second pair is independent of everything and cheap.
   but the follow-up it names does not exist as a task: run only the ~40 deploy-tree-first suites
   against Gate 8 post-redeploy, so the coverage returns without the 13-minute bill. **This is the
   observation here closest to deserving a task**, and it belongs with 265.
-- **A checkpoint fire that must actually deploy still overruns.** With `--skip-slow` live on all
-  five call sites, a checkpoint that found the tree stale, deployed, and re-verified exceeded a
-  30-minute budget and was killed; the immediate re-run over the now-fresh tree finished in under
-  500 s. So the residual cost is the *deploy plus full verify*, not Gate 8 — which is 265's
-  `--skip-verify` half, not its `--jobs` half.
-- **The deploy gate's refusal path works, and its remedy is not obvious.** A completion postflight
+- **A checkpoint fire that must actually deploy overruns.** The residual cost is the *deploy plus
+  full verify*, not Gate 8, so it is 265's `--skip-verify` half that addresses it, not its `--jobs`
+  half. Measured in the status table above.
+- **The deploy gate's refusal remedy is not discoverable.** A completion postflight
   whose `modified_files` touch `agent-system/extensions/**` is correctly refused with exit 6, and
   leaves `state.json` and the plan's `**Status**` header *both* unwritten — consistent, but the
   operator-visible remedy is `reconcile-task-status.sh <N> <session>`, not a re-run of postflight
