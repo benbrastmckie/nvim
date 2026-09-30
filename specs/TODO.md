@@ -1,5 +1,5 @@
 ---
-next_project_number: 284
+next_project_number: 286
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 284
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,283 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,283,284,285 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,276,281 | 22,44,127,184,241,265,272,277,279,280 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -38,6 +38,8 @@ next_project_number: 284
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 283 [NOT STARTED] — Fix the agent-system test harness...
+284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
+285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 
 ### Extensions
 
@@ -70,6 +72,171 @@ next_project_number: 284
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 
 ## Tasks
+
+### 285. Add the missing .decisions.json writer script and correct the postflight handoff-recovery notice
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per
+rules/source-store-deploy-boundary.md.
+
+Close two lead-facing contract-surface defects in the /orchestrate loop: .decisions.json has a
+documented writer but no writer script, and the postflight handoff-recovery notice is both
+mislabelled and factually wrong about which phases write a handoff.
+
+Both observed live 2026-09-30, ~/Projects/Logos/Verification, session sess_1790791567_96a2e0.
+They are grouped because they share one root: the orchestrate contract tells the LEAD either to
+do something, or what just happened, and the instruction is unexecutable as written or untrue.
+
+--- DEFECT 1: A DOCUMENTED WRITER WITH NO WRITER ---
+
+docs/architecture/handoff-schema.md's "Decisions File Schema" section names the loop's own
+branch move as the writer of specs/{NNN}_{slug}/.decisions.json, and
+skills/skill-orchestrate/SKILL.md Move 4 instructs the lead to "Append each answer to that
+task's specs/{padded}_{project}/.decisions.json per handoff-schema.md's 'Decisions File Schema'
+section". No script implements it. Every comparable state write in this system goes through one
+-- state-write.sh is the mutex-guarded single writer for state.json, update-task-status.sh for
+status transitions -- so .decisions.json is the sole place a lead is told to hand-author JSON.
+
+It is additionally the only place where the instruction and the schema live in DIFFERENT files:
+Move 4 does not restate the shape, and the shape (a FLAT array of objects carrying question,
+answer, cycle, timestamp) sits at handoff-schema.md circa line 960. A lead that follows Move 4
+without opening that second file is guessing.
+
+OBSERVED CONSEQUENCE. The lead wrote {"decisions":[...]} instead of [...]. The reader
+(orchestrate-build-dispatch.sh:389-392) aborted; that script exited 5; orchestrate-cycle-plan.sh
+deferred the task on two consecutive cycles of a five-cycle run with the message
+`orchestrate-build-dispatch.sh failed; deferring to a later cycle`, naming neither the file nor
+the expectation. Work-cycle budget was consumed for zero work, and the cause was found only by
+re-running the planner with stderr captured.
+
+DELIVERABLE 1a. Add the writer. The natural shape is
+scripts/orchestrate-record-decision.sh --task N --session SID --cycle C --question TEXT
+--answer TEXT, appending exactly one schema-valid entry, creating the file when absent, and
+additive only -- handoff-schema.md is explicit that existing entries are never removed or
+rewritten by a later append. scripts/system-defect-record.sh, already in this directory, is the
+precedent to follow for an append-one-entry-to-a-JSON-file writer. Register the new script in
+docs/reference/utility-scripts-inventory.md.
+DELIVERABLE 1b. Repoint SKILL.md Move 4 at the script rather than at the prose schema, so the
+lead never hand-authors this file. Keep the schema section as the reference for readers.
+NOTE THE SPLIT, DO NOT DUPLICATE IT. The reader-side hardening at
+orchestrate-build-dispatch.sh:389-392 -- a `length` gate that establishes neither emptiness nor
+type before iterating -- is recorded on task 270 as a jq type-safety instance, with the evidence
+from this same session. This task owns the AUTHORING surface only. Both should land; neither
+blocks the other.
+
+--- DEFECT 2: A RECOVERY NOTICE THAT IS MISLABELLED AND WRONG ---
+
+scripts/orchestrate-cycle-postflight.sh:598 emits, on the research postflight:
+  "RECOVERY: no handoff written for this dispatch -- expected outcome for this phase's writer
+   (base-mode research/plan/implement never write one). .return-meta.json (fresh, within this
+   dispatch window) reports status=researched; recovering the dispatch outcome from it."
+Two problems in one sentence. (i) It carries the RECOVERY label, which the script also uses for
+genuine degradation, while simultaneously declaring itself the EXPECTED outcome -- so a lead
+cannot distinguish a normal path from a fault. (ii) The parenthetical is FALSE. In this same run
+the base-mode PLAN dispatch and the base-mode IMPLEMENT dispatch each wrote a handoff, both
+confirmed by the script's own following line, "dispatch_seq match (4) -- handoff confirmed as
+this dispatch's own report", and the same at seq 5. So base-mode plan and implement do write
+handoffs; on this evidence it is research alone that does not.
+
+DELIVERABLE 2. Establish which phases actually write .orchestrator-handoff.json in base mode by
+reading the writers -- do not trust this message and do not restate it. Then: correct the
+parenthetical to match what the writers do; and split the notice by severity, so the expected
+no-handoff path reads as an ordinary informational fallback naming the source it recovered from,
+while a genuinely unexpected absence keeps the RECOVERY label and its current prominence. If the
+answer is phase-dependent, name the phases in the message itself rather than generalising.
+
+ACCEPTANCE. A lead can record a user decision with one documented script call and no knowledge
+of the JSON shape, and a malformed .decisions.json is no longer reachable through the sanctioned
+path. The new script is registered in the utility-scripts inventory, and SKILL.md Move 4 cites it
+instead of the prose schema. The handoff notice's phase claim is verified against the writers and
+matches them, and the expected and unexpected cases are distinguishable at a glance. shellcheck
+clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 284. Exempt a task’s own directory from the postflight file_scope excursion advisory, so the aggregator signal it was built for is visible
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per
+rules/source-store-deploy-boundary.md.
+
+Make the postflight modified_files-vs-file_scope excursion advisory carry signal, by exempting
+the dispatching task's own task directory -- which the lifecycle REQUIRES it to write.
+
+DEFECT (observed live 2026-09-30, ~/Projects/Logos/Verification, session sess_1790791567_96a2e0,
+an ordinary single-task /orchestrate run). The advisory fired on EVERY phase, each time naming
+only the artifact that phase had been dispatched to produce:
+  - research postflight: ["specs/160_.../reports/01_recentre-task-graph-three-layer-aim.md"]
+  - plan postflight:     ["specs/160_.../plans/01_recentre-task-graph-three-layer-aim.md"]
+Both are the canonical artifact paths mandated by CLAUDE.md's "Artifact Paths" section and
+rules/artifact-formats.md. A task cannot close a phase WITHOUT writing them, so no task can ever
+avoid the advisory: it is unconditional, and therefore carries zero information while training
+the reader to ignore the channel.
+
+SITE. scripts/orchestrate-cycle-postflight.sh:1121-1132. The excursion predicate at lines
+1128-1129 compares reported modified_files against the declared file_scope alone; there is no
+implicit member for the dispatching task's own specs/{NNN}_{slug}/ tree.
+
+READ THE PROVENANCE BEFORE DESIGNING -- THIS IS NOT COSMETIC. This advisory is direction (a) of
+task 100 (close_aggregator_file_scope_blind_spot), now ABANDONED and held in
+specs/archive/state.json. Its purpose was specific and narrow: make an AGGREGATOR edit outside a
+declared scope visible, after two lean4 tasks were each found editing a module aggregator that
+appeared nowhere in their file_scope (one adding `import` plus a docstring index entry to
+Metalogic/BXCanonical.lean, the other to Semantics.lean), where the omitted edit was
+structurally required for the new module to be reachable from the build. Its acceptance read:
+"an aggregator edit made outside a task's declared file_scope is no longer silent -- at minimum
+it is reported against that task." As shipped, that genuine aggregator signal arrives in the
+same channel as, and is outnumbered by, every task's own required artifacts on every phase. The
+detection direction the abandoned task chose was sound; the filter is what defeats it.
+
+ALSO REPAIR A DANGLING CROSS-REFERENCE. Task 270's "RELATED, DELIBERATELY NOT MERGED" paragraph
+states that this excursion check's advisory-vs-blocking question "was recorded separately". The
+separate record is abandoned task 100, so the follow-on is not live and the pointer misleads a
+reader into believing it is. Repoint 270 at this task, or restate the status there.
+
+DELIBERATELY NOT BUNDLED INTO 270. Task 270 owns the same file and says explicitly "Touching the
+same file is not a reason to bundle it." Its subject is null/type-safety in jq guards; this is
+filter correctness and signal quality. Honour that boundary in both directions: if 270's audit
+finds null-safety problems INSIDE lines 1121-1132 it fixes those and leaves this filter alone.
+
+DELIVERABLE. Exempt the dispatching task's own task directory from the excursion comparison. The
+natural form is to add the resolved specs/{NNN}_{slug}/ prefix as an implicit file_scope member
+for the duration of the check, so that no task ever has to declare its own artifact home. Decide
+and RECORD whether the exemption covers the whole task directory or only the sanctioned artifact
+subdirectories plus runtime dotfiles (reports/, plans/, summaries/, .dispatch/,
+.return-meta.json, .orchestrator-handoff.json, .decisions.json); prefer the whole directory
+unless there is a concrete reason that a task writing elsewhere beneath its own tree is worth
+surfacing. Note that an archived task's directory moves to specs/archive/{NNN}_{slug}/ -- a
+forced round dispatched against an archived task writes there, so resolve the exemption from the
+task directory the dispatch actually used rather than assuming the active path.
+
+SECOND, SEPARABLE QUESTION -- ANSWER IT OR DEFER IT EXPLICITLY. Once the channel is quiet, is
+advisory still the right enforcement level, or should a genuine excursion gate? Task 165's
+recorded prior art is the pattern: advisory-first, write down the promotion criterion, promote
+only once coverage is complete. Deciding to STAY advisory and recording the threshold is a
+defensible outcome and a real decision -- but it goes in the script header either way. Do NOT
+promote to blocking in the same change that fixes the filter: a gate sitting on a
+known-false-positive predicate would block correct work.
+
+ACCEPTANCE. A single-task /orchestrate run through research, plan and implement produces ZERO
+excursion advisories when every modified file is either inside the declared file_scope or inside
+the task's own directory. A task that genuinely edits an undeclared file outside its own tree --
+the aggregator case -- still produces exactly one advisory naming that file, demonstrated with a
+concrete case rather than argued. The enforcement-level ruling and its reasoning sit in the
+script header alongside the existing documentation. shellcheck clean per
+context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 283. Test harness name failures baseline wall clock
 - **Status**: [NOT STARTED]
@@ -1049,6 +1216,56 @@ DELIVERABLE 1 -- A RE-RUNNABLE CHECK, NOT A ONE-TIME SWEEP. A prose findings lis
 DELIVERABLE 2 -- DECIDE, WITH A RECORDED RATIONALE, WHETHER A SHARED GUARD IDIOM BELONGS IN scripts/lib/. A genuine decision, not a foregone conclusion: if the audit finds the single already-known site, a helper is over-engineering and the check script plus a documented idiom is the proportionate answer. If it finds several, scripts/lib/file-scope-overlap.sh is the precedent to follow -- it already exports jq `def` source text as FILE_SCOPE_OVERLAP_JQ_DEFS via a quoted heredoc for splicing into callers' own jq programs, and its header records exactly why that shape beat a standalone .jq file. A dedup/guard def could ride the same mechanism. Record the decision either way so a future reader does not re-litigate it.
 
 RELATED, DELIBERATELY NOT MERGED. scripts/orchestrate-cycle-postflight.sh's modified_files-vs-file_scope excursion check (circa lines 1053-1069) is detection-only, emitting a stderr advisory where it should be an enforcement gate. That is a genuine follow-on but a DIFFERENT defect class -- advisory-vs-blocking, not null-safety -- and it was recorded separately. Touching the same file is not a reason to bundle it. If the audit turns up null-safety problems inside that same excursion block, fix those here and leave the enforcement-gate question to its own task.
+
+=== ADDITIONAL EVIDENCE (2026-09-30, ~/Projects/Logos/Verification, session sess_1790791567_96a2e0) ===
+A LIVE ABORT FROM THIS DEFECT CLASS, AT A SITE THIS TASK'S INVENTORY DID NOT SURVEY, PLUS A
+CORRECTION TO ONE OF THAT INVENTORY'S SAFETY CLAIMS.
+
+SITE: scripts/orchestrate-build-dispatch.sh:389-392, the Prior Decisions read path over
+specs/{NNN}_{slug}/.decisions.json.
+
+MECHANISM (observed, not derived). An /orchestrate lead wrote .decisions.json as an OBJECT
+wrapper, {"decisions":[...]}, rather than the flat array the schema in
+docs/architecture/handoff-schema.md's "Decisions File Schema" section requires. Then:
+  - line 389: `jq 'length'` over the file returned 1 -- the KEY count of an object, not an
+    element count -- which passed the `-gt 0` gate on line 390;
+  - lines 391-392: `.[] | "... \(.question) ..."` iterated the object's VALUES, yielding the
+    inner array, and indexing that array with a string aborted jq:
+    `jq: error (at <stdin>:13): Cannot index array with string ("timestamp")`.
+Line 389 carries `2>/dev/null || decisions_count=0`; line 391 carries NO guard, so the abort
+propagated and the script exited 5.
+
+BLAST RADIUS -- AN ADVISORY SECTION BLOCKED DISPATCH ENTIRELY. Prior Decisions is context
+enrichment, not a gate. Yet orchestrate-cycle-plan.sh reported only
+`orchestrate-build-dispatch.sh failed; deferring to a later cycle` and deferred the task on two
+consecutive cycles (2 and 3 of a five-cycle run), consuming work-cycle budget for zero work,
+with nothing in either the plan JSON or stderr naming the malformed file or the expected schema.
+Worth weighing as part of DELIVERABLE 2: a type-guard that degrades to "omit the section" would
+have turned this abort into a warning.
+
+CORRECTION TO THIS TASK'S STARTING INVENTORY. That inventory records of
+scripts/orchestrate-cycle-postflight.sh circa line 1059: "pipes `jq 'length'` over a file_scope
+JSON value. `length` on null yields 0 rather than aborting, so this is safe today -- but record
+WHY it is safe, because that safety is incidental to jq's semantics rather than intentional in
+the code." The incidental safety is NARROWER than stated. `length` is total over null and over
+objects alike, and on an object it returns a POSITIVE key count. A `length`-based gate therefore
+establishes NEITHER emptiness NOR type, and is unsafe for any value that could arrive
+object-shaped. The postflight site is safe only because its producer is jq-generated and cannot
+hand it an object; record that as the reason, not `length` itself.
+
+SIGNATURE TO ADD TO DELIVERABLE 1's HUNT. Alongside the has()-presence-vs-iteration pairing,
+flag COUNT-GUARDED / TYPE-UNGUARDED iteration: any `length`-or-count gate followed by `.[]`,
+`map`, or `reduce` over a value whose type was never asserted. The correct idiom is an explicit
+type test (`jq -e 'type == "array"'`) before iterating, never a count. Extend the sweep beyond
+state.json and errors.json to the other lead- and agent-authored JSON the orchestrator reads:
+.decisions.json, .return-meta.json, .orchestrator-handoff.json, .drift-inspection.json -- these
+are hand- or agent-written, so unlike jq-generated values they can legitimately arrive
+object-shaped, which is exactly the exposure `length` does not cover.
+
+SCOPE NOTE. This is the type-safety half only. The companion defects at the same site -- that
+.decisions.json has a documented writer but no writer script, and that its schema lives in a
+different file from the Move 4 instruction to write it -- are an authoring-surface gap rather
+than a jq guard, and are recorded on their own task.
 
 ---
 
