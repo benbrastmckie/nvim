@@ -1,39 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790795029_d00973_283",
-  "dispatch_seq": 1,
-  "findings_count": 12,
-  "next_steps": "Run /plan 283 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/283_test_harness_name_failures_baseline_wall_clock/reports/01_test-harness-defects-research.md",
-      "summary": "Live-run-verified triage of all 3 named defects in run-all.sh: Defect 1's per-suite [FAIL] naming is already shipped (task 261, 2026-09-25) and only the end-of-run roster is missing; Defect 2's baseline manifest is genuinely absent (the existing prose list in shell-script-testing.md is stale, missing 2 of 8 live failures); root-caused 3 of 8 failures to one shared stale-fixture bug (missing lib/return-meta-status-vocabulary.sh in three suites' hardcoded sandbox copy-lists), 2 to real unrelated repo defects (Gate 20 budget drift, a JSON-channel-discipline violation), 1 to an uncommitted WIP edit elsewhere in the repo, 1 to a distinct real aggregation bug, and 1 to the already-documented ambient-load flake; Defect 3's wall-clock highest-leverage fix identified is passing --skip-slow to orchestrate-cycle-plan.sh's deploy_findings_snapshot() calls, which re-run the full 105-suite Gate 8 battery 2-3x per cycle."
+      "type": "plan",
+      "path": "specs/283_test_harness_name_failures_baseline_wall_clock/plans/01_harness-roster-baseline-wall-clock.md",
+      "summary": "6-phase plan: end-of-run failure roster in run-all.sh, regression test for the naming contract, committed known-failures baseline manifest with EXPECTED/NEW classification, a one-cause fix clearing 3 of 8 red suites, and --skip-slow on the 5 redeploy-checkpoint Gate 8 call sites."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "When a shell-test suite builds a synthetic sandbox by copying a hardcoded list of collaborator lib/*.sh filenames (rather than globbing lib/*.sh), the list silently drifts stale whenever the real script under test gains a new lib dependency, causing every case to fail identically with a 'shared library not found' error that looks like a logic regression but is a fixture-maintenance gap. Check git blame on the SUT's dependency-loading block against the suite's own copy-list age before assuming a red test describes a real defect.",
-      "category": "PATTERN",
-      "source_artifact": "specs/283_test_harness_name_failures_baseline_wall_clock/reports/01_test-harness-defects-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["test-harness", "stale-fixture", "sandbox-copy-list", "run-all.sh", "shell-testing"]
-    },
-    {
-      "content": "orchestrate-cycle-plan.sh's redeploy checkpoint calls lib/deploy-baseline-lib.sh's deploy_findings_snapshot() 2-3x per cycle (pre/post/confirm), each running the full verify-deploy.sh --findings --quiet with no --skip-slow or --only-gate, i.e. re-running the entire ~105-suite Gate 8 shell-test battery 2-3 times per cycle on top of whatever the dispatched agent already ran as its own phase gate. This is the concrete mechanism behind orchestration wall-clock complaints about run-all.sh being invoked repeatedly in one dispatch.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/283_test_harness_name_failures_baseline_wall_clock/reports/01_test-harness-defects-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-cycle-plan", "deploy_findings_snapshot", "verify-deploy", "wall-clock", "redeploy-checkpoint"]
-    },
-    {
-      "content": "run-all.sh's [FAIL] <suite path> line is deliberately unprefixed (unlike [RUN]/[PASS]/[SKIP], which carry a '[run-all] ' prefix and are suppressed by --quiet). A caller or human grepping for the '[run-all] ' prefix pattern consistently will find zero FAIL lines even though the harness has emitted the per-suite failure-naming contract since 2026-09-25 (task 261 phase 6.1) -- verify current source/behavior with a live run before trusting a described symptom about this harness's output.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/283_test_harness_name_failures_baseline_wall_clock/reports/01_test-harness-defects-research.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["run-all.sh", "FAIL-line", "grep-prefix", "verify-before-trusting"]
-    }
-  ]
+  "memory_candidates": [],
+  "next_steps": "Run /implement 283 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1790795029_d00973_283",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7,
+    "dependency_waves": [[1, 2, 5], [3], [4], [6]]
+  },
+  "dispatch_seq": 2
 }

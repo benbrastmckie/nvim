@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 283,
+  "session_id": "sess_1790795029_d00973_283",
+  "agent_type": "planner-agent",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/283_test_harness_name_failures_baseline_wall_clock/plans/01_harness-roster-baseline-wall-clock.md",
+      "summary": "6-phase implementation plan for the run-all.sh harness: failure roster, regression test, known-failures baseline manifest, stale-fixture fix, and redeploy-checkpoint wall-clock fix."
+    }
+  ],
+  "next_steps": "Run /implement 283 to execute the plan"
+}
