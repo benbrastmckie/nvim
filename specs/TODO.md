@@ -1,5 +1,5 @@
 ---
-next_project_number: 283
+next_project_number: 284
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 283
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,283 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,276,281 | 22,44,127,184,241,265,272,277,279,280 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -37,6 +37,7 @@ next_project_number: 283
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
+283 [NOT STARTED] — Fix the agent-system test harness...
 
 ### Extensions
 
@@ -69,6 +70,37 @@ next_project_number: 283
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 
 ## Tasks
+
+### 283. Test harness name failures baseline wall clock
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Fix the agent-system test harness (agent-system/extensions/core/scripts/tests/run-all.sh), which is a systemic bottleneck for refactor work in three compounding ways. Research the harness and address all three.
+
+DEFECT 1 -- FAILING SUITES ARE NEVER NAMED. run-all.sh prints a tally ("97 passed, 8 failed, 0 skipped, 105 total") but emits NO per-suite failure line. Measured in an 855-line real run log: 110 "[run-all] [RUN]" markers, 97 "[run-all] [PASS]" markers, and ZERO "[FAIL]" markers of any kind. The identities of the 8 failing suites are recoverable ONLY by set-differencing unique [RUN] paths against [PASS] paths. This is the root cause of the orchestration cost below: an agent that sees "8 failed" cannot tell whether a failure is its own or pre-existing, so it must either block on work it cannot diagnose or commit on a green it has not established. FIX: emit an explicit, greppable per-suite failure line naming each failing suite path, plus an end-of-run failure roster.
+
+DEFECT 2 -- NO KNOWN-FAILING BASELINE. There is no committed manifest of already-failing suites, so "my change broke this" is indistinguishable from "this was already red" without a clean-tree control run (which costs another full suite -- see Defect 3). FIX: a committed baseline/quarantine manifest that run-all.sh reads, so a run can report "8 failed, 8 expected-failing, 0 NEW" and a gate can fail only on NEW failures.
+
+THE 8 CURRENTLY-FAILING SUITES (recovered by set difference; 7 of 8 are core orchestrator tests):
+  core/scripts/tests/test-gate-out-repair-reporting.sh
+  core/scripts/tests/test-handoff-dispatch-identity.sh
+  core/scripts/tests/test-lint-json-channel-discipline.sh
+  core/scripts/tests/test-orchestrate-context-growth.sh
+  core/scripts/tests/test-orchestrate-recover-message-findings.sh
+  core/scripts/tests/test-run-all-parallel.sh
+  core/scripts/tests/test-verify-deploy-context-budget.sh
+  typst/scripts/tests/test-typst-element-lint.sh
+Triage each: fix, or quarantine into the baseline manifest with a reason and an owning task. Note test-handoff-dispatch-identity.sh is failing while the handoff-identity contract it covers was simultaneously violated in a live orchestration run (an implementation dispatch terminated without writing its handoff, so postflight read 0/0 phases against 4 committed phases) -- check whether the red test describes a real live defect rather than being merely stale.
+
+DEFECT 3 -- WALL CLOCK. A full run takes ~4.5 minutes, measured twice on the same machine (4m35s and 4m32s). A separate "run-all.sh --quiet" verification sweep invoked from inside orchestrate-cycle-plan.sh's own inter-cycle checkpoint exceeded 8m27s and was still running when observed. 5 suites are declared load-sensitive and excluded from the parallel pool entirely, so they serialize: core/scripts/tests/test-lake-build-guard.sh, core/scripts/tests/test-run-all-parallel.sh, core/scripts/test-four-tier-conflict.sh, core/scripts/test-state-write-concurrency.sh, core/scripts/test-state-write-regen-timing.sh. Research whether these genuinely require serialization or whether isolation (per-suite temp roots, distinct lock paths) would let them join the pool. FIX candidates: a fast-subset gate mode; a changed-files-to-affected-suites selector so a phase gate runs only relevant suites instead of all 105; caching or budget-capping the timing-sensitive suites.
+
+MEASURED COST. In one real implementation dispatch, the agent ran the full 105-suite harness twice as a phase gate and the orchestrator's own Move 1 checkpoint ran it a third time. Combined with the agent repeatedly idling on background-completion notifications, that single dispatch consumed roughly 45 minutes of wall clock and still terminated without writing its handoff. Because the 8 failures were unnamed, whether they were pre-existing could not be settled during the run and had to be recorded as an unresolved gap.
+
+SCOPE NOTE: all edits belong in the source store under agent-system/extensions/**, never hand-authored under .claude/** (see rules/source-store-deploy-boundary.md). Any fix to run-all.sh's own reporting needs a regression test asserting that a deliberately-failing fixture suite IS named in the output -- the current absence of [FAIL] lines would otherwise silently regress.
+
+---
 
 ### 282. Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives
 - **Status**: [NOT STARTED]
