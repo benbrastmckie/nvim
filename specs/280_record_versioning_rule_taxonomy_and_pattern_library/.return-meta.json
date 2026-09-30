@@ -1,0 +1,44 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 3 tasks for a rule forbidding record-versioning language in deliverables outside specs/: the rule plus its exemption taxonomy and shared pattern library (280), the repo-wide lint consumer with a blocking/advisory tier split (281), and the write-time PreToolUse blocking hook (282). Linear dependency chain 280 -> 281 -> 282.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks 280, 281, 282 added to TODO.md under topic core-agent-system"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Three active_projects entries added; next_project_number advanced to 283"
+    },
+    {
+      "type": "task_directory",
+      "path": "/home/benjamin/.config/nvim/specs/280_record_versioning_rule_taxonomy_and_pattern_library/",
+      "summary": "Task directory for the rule, taxonomy standard, and shared pattern library"
+    },
+    {
+      "type": "task_directory",
+      "path": "/home/benjamin/.config/nvim/specs/281_record_versioning_repo_wide_lint/",
+      "summary": "Task directory for the repo-wide lint consumer"
+    },
+    {
+      "type": "task_directory",
+      "path": "/home/benjamin/.config/nvim/specs/282_record_versioning_write_time_hook/",
+      "summary": "Task directory for the write-time blocking hook consumer"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790784904_89cbc3_meta",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 3,
+    "task_numbers": [280, 281, 282],
+    "topic": "core-agent-system"
+  },
+  "next_steps": "Run /research 280 to begin research on the foundational task (rule, taxonomy, pattern library)."
+}
