@@ -113,6 +113,20 @@
 #     per ancestor level; two siblings at the same level with conflicting or unresolvable
 #     declarations fall through to branch (c) rather than erroring, the same under-firing bias
 #     Rule 1.2 documents below.
+#   - NOT-EVALUATED SURFACING (deliberate, revisited -- see RULE_SEVERITY below): a NOT EVALUATED
+#     **BLOCKING** MECHANICAL rule (1.2, 1.3, 1.5, 3.2) prints at `[WARN]` tier instead of `[INFO]`
+#     and increments a global `TOTAL_BLOCKING_SKIPPED` counter; a NOT EVALUATED **ADVISORY**
+#     MECHANICAL rule (2.1, 2.3, 3.3) keeps the plain `[INFO]` posture. When
+#     `TOTAL_BLOCKING_SKIPPED > 0`, the final PASSED banner is qualified with a
+#     "(N BLOCKING rule(s) not evaluated)" suffix, and the Summary block reports the same count on
+#     a "Skipped:" line -- so a reader of only the last line is not misled into believing every
+#     BLOCKING rule actually fired clean. The exit code is deliberately left at 0 in both cases:
+#     an unresolved environment fact (e.g. no `.bib` found) is not itself a content defect, and
+#     this script's never-fail-on-unresolved-bibliography posture is preserved -- only the
+#     finding's *visibility* changes. This was a judgement call, argued here rather than silently
+#     shipped: the alternative (leaving it at plain `[INFO]`, as originally documented) under-
+#     surfaces a BLOCKING rule to a reader who only checks the final banner line, which is the
+#     common case in agent gate output.
 #   - Rule 1.2's path-shape heuristic is deliberately biased toward under-firing: a backtick
 #     token is treated as path-shaped only when it contains `/` or ends in a recognized file
 #     extension. Since Rules 1.2/1.3 are BLOCKING, a false positive on a correct chapter is the
@@ -154,6 +168,18 @@ VERBOSE=false
 
 # The standard's own 7 MECHANICAL rules (excludes the delegated, non-numbered placement check).
 MECH_RULES=(1.2 1.3 1.5 3.2 2.1 2.3 3.3)
+
+# Each MECHANICAL rule's axis-1 severity, sourced verbatim from the RULE INVENTORY above -- kept
+# as a lookup rather than hardcoded at any one call site, so a future BLOCKING rule that can go
+# NOT EVALUATED wires itself into the loud-surfacing behavior (see emit_not_evaluated below)
+# automatically instead of needing a second edit.
+declare -A RULE_SEVERITY=([1.2]=BLOCKING [1.3]=BLOCKING [1.5]=BLOCKING [3.2]=BLOCKING [2.1]=ADVISORY [2.3]=ADVISORY [3.3]=ADVISORY)
+
+# Global count of BLOCKING rules that went NOT EVALUATED across the whole run (never per-file:
+# FILE_RULE_NOTEVAL below is reset per file and cannot answer "did any file skip a BLOCKING rule"
+# by the time the final banner prints). Read by the qualified-PASSED-banner logic at the end of
+# this script.
+TOTAL_BLOCKING_SKIPPED=0
 
 # Rule 2.1 threshold: warn when a section's words-per-claim ratio exceeds this (a "claim" is a
 # `@key` citation or a semantic-element invocation within the section). UNREVIEWED -- no corpus
@@ -309,11 +335,19 @@ emit_info() {
 }
 
 # emit_not_evaluated RULE LOCATION MESSAGE -- marks a rule NOT EVALUATED for this file (excluded
-# from the MECHANICAL score denominator), and prints the reason as an [INFO] note.
+# from the MECHANICAL score denominator). Severity-aware surfacing (looked up from RULE_SEVERITY,
+# never hardcoded per rule at the call site): a BLOCKING rule prints at [WARN] tier and increments
+# the global TOTAL_BLOCKING_SKIPPED counter; an ADVISORY rule keeps the plain [INFO] posture.
+# Deliberate and unchanged either way: this never affects the exit code (see EXIT CODES header).
 emit_not_evaluated() {
   local rule="$1" loc="$2" msg="$3"
   FILE_RULE_NOTEVAL["$rule"]=1
-  emit_info "$loc" "Rule ${rule} NOT EVALUATED: ${msg}"
+  if [[ "${RULE_SEVERITY[$rule]:-}" == "BLOCKING" ]]; then
+    TOTAL_BLOCKING_SKIPPED=$((TOTAL_BLOCKING_SKIPPED + 1))
+    echo -e "${YELLOW}[WARN]${NC} ${loc}: Rule ${rule} NOT EVALUATED: ${msg}"
+  else
+    emit_info "$loc" "Rule ${rule} NOT EVALUATED: ${msg}"
+  fi
 }
 
 # emit_judged RULE DIMENSION SEVERITY LOCATION QUESTION -- structured reviewer prompt for a
@@ -704,12 +738,17 @@ echo "Files checked: ${FILES_CHECKED}"
 echo -e "Blocking:      ${RED}${TOTAL_BLOCKING}${NC}"
 echo -e "Advisory:      ${YELLOW}${TOTAL_ADVISORY}${NC}"
 echo -e "Judged:        ${BLUE}${TOTAL_JUDGED}${NC} reviewer prompts pending"
+echo -e "Skipped:       ${YELLOW}${TOTAL_BLOCKING_SKIPPED}${NC} BLOCKING rule(s) not evaluated"
 echo ""
 
 if [[ "$TOTAL_BLOCKING" -gt 0 ]]; then
   echo -e "${RED}CHAPTER QUALITY CHECK FAILED (${TOTAL_BLOCKING} blocking findings)${NC}"
   exit 1
 else
-  echo -e "${GREEN}CHAPTER QUALITY CHECK PASSED${NC} (mechanical coverage only -- judged rules still pending adjudication)"
+  skip_qualifier=""
+  if [[ "$TOTAL_BLOCKING_SKIPPED" -gt 0 ]]; then
+    skip_qualifier=" (${TOTAL_BLOCKING_SKIPPED} BLOCKING rule(s) not evaluated)"
+  fi
+  echo -e "${GREEN}CHAPTER QUALITY CHECK PASSED${NC}${skip_qualifier} (mechanical coverage only -- judged rules still pending adjudication)"
   exit 0
 fi

@@ -321,41 +321,46 @@ than proceeding — a changed baseline may indicate a sibling task's in-flight e
 
 ---
 
-### Phase 3: Surface skipped BLOCKING rules loudly [NOT STARTED]
+### Phase 3: Surface skipped BLOCKING rules loudly [COMPLETED]
 
 **Goal**: A NOT EVALUATED **BLOCKING** rule emits at `[WARN]` tier and qualifies the final PASSED
 banner, while the exit code stays 0 and ADVISORY skips keep their `[INFO]` posture.
 
 **Tasks**:
-- [ ] Re-read the emitter block (~lines 265-335) and the final banner block (~lines 655-670)
-      immediately before editing.
-- [ ] Add a declared severity map beside `MECH_RULES` (line ~145), e.g.
+- [x] Re-read the emitter block (~lines 265-335) and the final banner block (~lines 655-670)
+      immediately before editing. *(completed)*
+- [x] Add a declared severity map beside `MECH_RULES` (line ~145), e.g.
       `declare -A RULE_SEVERITY=([1.2]=BLOCKING [1.3]=BLOCKING [1.5]=BLOCKING [3.2]=BLOCKING
       [2.1]=ADVISORY [2.3]=ADVISORY [3.3]=ADVISORY)`, matching the header's rule inventory exactly.
-- [ ] Make `emit_not_evaluated` look the rule's severity up in that map (never hardcode "1.3 is
+      *(completed)*
+- [x] Make `emit_not_evaluated` look the rule's severity up in that map (never hardcode "1.3 is
       BLOCKING" at the call site): on `BLOCKING`, print at `[WARN]` tier and increment a new
       global counter (e.g. `TOTAL_BLOCKING_SKIPPED`); otherwise keep the existing `[INFO]` line.
       A new BLOCKING rule that can go NOT EVALUATED then wires itself in automatically.
-- [ ] Keep `FILE_RULE_NOTEVAL` and the per-file MECHANICAL denominator behavior exactly as is —
+      *(completed)*
+- [x] Keep `FILE_RULE_NOTEVAL` and the per-file MECHANICAL denominator behavior exactly as is —
       the new counter is global precisely because `FILE_RULE_NOTEVAL` is reset per file and cannot
-      answer "did any file skip a BLOCKING rule" by banner time.
-- [ ] Append a qualifier to the PASSED banner when `TOTAL_BLOCKING_SKIPPED > 0`, e.g.
+      answer "did any file skip a BLOCKING rule" by banner time. *(completed: unchanged)*
+- [x] Append a qualifier to the PASSED banner when `TOTAL_BLOCKING_SKIPPED > 0`, e.g.
       `CHAPTER QUALITY CHECK PASSED (N BLOCKING rule(s) not evaluated) (mechanical coverage only
       -- judged rules still pending adjudication)`, and **leave `exit 0` unchanged**.
-- [ ] Add the skipped count to the Summary block alongside Blocking/Advisory/Judged.
-- [ ] Update the header to document the new posture: the `[WARN]`-tier rule, the banner qualifier,
+      *(completed)*
+- [x] Add the skipped count to the Summary block alongside Blocking/Advisory/Judged.
+      *(completed: "Skipped:" line)*
+- [x] Update the header to document the new posture: the `[WARN]`-tier rule, the banner qualifier,
       and an explicit restatement that a NOT EVALUATED BLOCKING rule still never affects the exit
       code (the deliberate never-fail-on-unresolved-bibliography design is preserved, only its
       visibility changes). Record the argument for the change in the header so the judgement call
-      is documented where the contract lives.
-- [ ] Add a test case asserting the qualified banner: reuse a bib-less fixture (case-f's shape),
-      assert exit 0, `[WARN]`, `NOT EVALUATED`, and the banner qualifier text.
-- [ ] Add a test case asserting an ADVISORY-only run's banner is NOT qualified (guards against the
-      counter firing on the wrong severity).
-- [ ] Re-run the full suite and confirm no existing assertion broke — in particular case-f's
+      is documented where the contract lives. *(completed: NOT-EVALUATED SURFACING bullet)*
+- [x] Add a test case asserting the qualified banner: reuse a bib-less fixture (case-f's shape),
+      assert exit 0, `[WARN]`, `NOT EVALUATED`, and the banner qualifier text. *(completed: case-n)*
+- [x] Add a test case asserting an ADVISORY-only run's banner is NOT qualified (guards against the
+      counter firing on the wrong severity). *(completed: case-o)*
+- [x] Re-run the full suite and confirm no existing assertion broke — in particular case-f's
       `assert_exit ... 0` and the `assert_not_contains ... "[FAIL]"` cases (a `[WARN]` line is not
-      a `[FAIL]` line, so these must still hold).
-- [ ] Commit this phase alone with an explicit two-path `git add --`.
+      a `[FAIL]` line, so these must still hold). *(completed: all prior assertions still pass)*
+- [x] Commit this phase alone with an explicit two-path `git add --`. *(completed: 83 passed,
+      0 failed — up from Phase 2's 72)*
 
 **Timing**: 1.25 hours
 

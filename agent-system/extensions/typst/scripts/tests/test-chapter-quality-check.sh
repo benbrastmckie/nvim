@@ -270,6 +270,63 @@ assert_contains "case-m (BUG 2b vendored .bib excluded)" "$out_m" "refs.bib"
 assert_not_contains "case-m (BUG 2b vendored .bib excluded)" "$out_m" "1.3 NOT EVALUATED"
 
 # ----------------------------------------------------------------------------------------------
+# Case (n): NOT-EVALUATED surfacing -- a NOT EVALUATED BLOCKING rule (1.3, on a bib-less fixture
+# reusing case-f's shape without modifying case-f itself) must print at [WARN] tier and qualify
+# the final PASSED banner, while the exit code stays 0.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/nobib-qualified"
+cat > "$WORKDIR/nobib-qualified/case-n.typ" <<'EOF'
+= Chapter Six
+
+Nothing special here, just prose with no citations.
+EOF
+out_n=$(bash "$CHECKER" "$WORKDIR/nobib-qualified/case-n.typ" 2>&1); ec_n=$?
+assert_exit "case-n (qualified PASSED banner, BLOCKING rule skipped)" 0 "$ec_n"
+assert_contains "case-n (qualified PASSED banner, BLOCKING rule skipped)" "$out_n" "[WARN]"
+assert_contains "case-n (qualified PASSED banner, BLOCKING rule skipped)" "$out_n" "Rule 1.3 NOT EVALUATED"
+assert_contains "case-n (qualified PASSED banner, BLOCKING rule skipped)" "$out_n" \
+  "CHAPTER QUALITY CHECK PASSED"
+# The qualifier suffix follows a color-reset escape, so it is checked on its own rather than as
+# one contiguous substring spanning the reset code.
+assert_contains "case-n (qualified PASSED banner, BLOCKING rule skipped)" "$out_n" \
+  "(1 BLOCKING rule(s) not evaluated) (mechanical coverage only"
+
+# ----------------------------------------------------------------------------------------------
+# Case (o): NOT-EVALUATED surfacing, negative control -- an ADVISORY-only run (Rule 3.3, with a
+# resolvable bibliography so no BLOCKING rule is skipped) must NOT qualify the PASSED banner.
+# Guards against the TOTAL_BLOCKING_SKIPPED counter firing on the wrong severity.
+# ----------------------------------------------------------------------------------------------
+mkdir -p "$WORKDIR/advisory-qualified"
+cat > "$WORKDIR/advisory-qualified/refs.bib" <<'EOF'
+@article{smith2020,
+  author = {Smith, John},
+  title = {An Important Paper},
+  year = {2020},
+}
+EOF
+python3 -c "
+words = ' '.join(['word'] * 200)
+print('#bibliography(\"refs.bib\")')
+print()
+print('= Chapter Seven')
+print()
+print('This chapter cites @smith2020 as evidence.')
+print()
+print(words)
+" > "$WORKDIR/advisory-qualified/case-o.typ"
+out_o=$(bash "$CHECKER" "$WORKDIR/advisory-qualified/case-o.typ" 2>&1); ec_o=$?
+assert_exit "case-o (ADVISORY-only, banner NOT qualified)" 0 "$ec_o"
+assert_not_contains "case-o (ADVISORY-only, banner NOT qualified)" "$out_o" "[FAIL]"
+assert_contains "case-o (ADVISORY-only, banner NOT qualified)" "$out_o" "[WARN]"
+assert_contains "case-o (ADVISORY-only, banner NOT qualified)" "$out_o" "3.3"
+assert_contains "case-o (ADVISORY-only, banner NOT qualified)" "$out_o" "CHAPTER QUALITY CHECK PASSED"
+# The Summary block's own "Skipped: 0 BLOCKING rule(s) not evaluated" line always contains that
+# phrase regardless of count, so the banner-qualifier check below targets the qualified banner's
+# distinctive adjacency ("not evaluated) (mechanical") rather than the phrase alone.
+assert_not_contains "case-o (ADVISORY-only, banner NOT qualified)" "$out_o" \
+  "not evaluated) (mechanical coverage only"
+
+# ----------------------------------------------------------------------------------------------
 # Case (g): advisory-only fixture (Rule 3.3, paragraph length) -- exit 0 AND the advisory
 # finding IS printed. The non-vacuity guard: a checker that passes silently on a fixture with a
 # real defect is the failure mode being guarded against.
