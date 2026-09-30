@@ -16,12 +16,18 @@ genre convention; the actual load-bearing mechanism, in this codebase, is an exp
 contract carries that bullet in `agents/general-implementation-agent.md` (standard mode, and —
 since core's standalone hard-mode implementation agent was deleted and merged into
 `skill-orchestrate`'s H1 per-phase dispatch branch — the sole surviving core implement-dispatch
-target for hard mode too), and `skills/skill-orchestrate/SKILL.md` (a discoverability reference —
-the skill delegates loading to its agent). It is additionally referenced from every non-core extension
-implementer agent that runs a plan-phase loop, and from any extension skill file maintaining its
-own contract-bullet list, following the same explicit-bullet mechanism rather than a separate
-injection path. See `context/architecture/context-layers.md`'s "Contracts directory: convention
-vs. load path" subsection for the full finding.
+target for hard mode too). It is additionally referenced from every non-core extension
+implementer agent that runs a plan-phase loop, and from at least one extension skill file
+maintaining its own contract-bullet list (`cslib/skills/skill-cslib-implementation-hard/SKILL.md`),
+following the same explicit-bullet mechanism rather than a separate injection path. See
+`context/architecture/context-layers.md`'s "Contracts directory: convention vs. load path"
+subsection for the full finding.
+
+**Correction (re-verified by grep, this task)**: an earlier version of this section additionally
+claimed `skills/skill-orchestrate/SKILL.md` carries a discoverability reference to this file. A
+repo-wide `grep -rl "phase-closure.md"` found no such reference in that file — the claim was
+stale and has been removed rather than repeated. `skill-orchestrate/SKILL.md` delegates entirely
+to the dispatched agent's own contract, with no separate pointer of its own.
 
 ## Close-before-open
 
@@ -108,3 +114,62 @@ Both observed failure shapes are in scope:
   `NOT STARTED` phase is opened, regardless of heading position.** This contract does not modify
   the selector regex itself — the override is a behavioral constraint layered on top of the
   existing selection mechanism, not a rewrite of it.
+
+## No fan-out to phase sub-agents
+
+A dispatched implementation agent MUST NOT delegate plan-phase execution to sub-agents. This
+resolves, as a flat prohibition, the question of whether a single dispatch may fan out to
+per-phase children: it may not.
+
+**Reasoning.** The dispatched agent alone owns its `.return-meta.json` and, when running under
+`orchestrator_mode: true`, its `.orchestrator-handoff.json`. A child sub-agent cannot write the
+parent's terminal status on the parent's behalf — only the parent dispatch itself can. A parent
+that returns while its children are still running is precisely the observed failure mode: twice
+in one dispatch batch, a dispatched implementation agent fanned out to per-phase sub-agents,
+returned before they finished, and left `.return-meta.json` at `status: "in_progress"` — which
+`context/formats/return-metadata-file.md` documents as early-metadata-only and never a legal
+terminal dispatch outcome. Both occurrences cost a full recovery cycle even though real work (a
+majority of the plan's phases, in each case) had already landed.
+
+**Carve-out.** Read-only search/exploration fan-out is permitted — spawning a helper to search
+the codebase, run a read-only grep sweep, or gather context cannot itself leave plan-phase work
+uncommitted, so it does not create the hazard this section closes.
+
+**Terminal-status corollary.** The dispatched agent writes its own terminal `.return-meta.json`
+**before returning**, covering all work performed under it during this dispatch — never partway,
+and never assuming a status update will happen later. `in_progress` is early-metadata-only (set
+at dispatch start, per Stage 0 of `agents/general-implementation-agent.md`) and is never a legal
+terminal dispatch outcome; see `context/formats/return-metadata-file.md` for the full status
+vocabulary. This corollary retires the per-dispatch prompt text that was used as the incident
+workaround (explicitly instructing a resumed dispatch to "write the handoff FIRST") — that
+wording is known to work, and the point of this section is that it now lives in the contract
+every in-scope agent already loads, rather than needing to be re-typed into dispatch prompts.
+
+## Marker/commit synchrony is bidirectional
+
+A phase-heading marker and the commit(s) implementing that phase must never be allowed to
+diverge silently. Both directions are requirements, not just one:
+
+- **Promotion-on-commit (the under-claim direction).** A phase's marker promotion — its heading
+  advancing to `[COMPLETED]` or `[COMPLETED WITH EXCLUSIONS]` — is committed together with that
+  phase's final work, never deferred to a later commit or to the end of the dispatch.
+  `agents/general-implementation-agent.md`'s existing scoped-commit staging set already includes
+  `{plan_path}` alongside the task directory, so satisfying this is a sequencing requirement
+  (commit the marker promotion in the SAME commit as the phase's landing work), not a new
+  staging requirement. Failing this direction is what let sub-agent-committed phases sit at
+  `[NOT STARTED]` against landed commits in the incident that motivated this section — a resume
+  driven by markers alone would have redone already-completed work.
+- **No-promotion-without-evidence (the over-claim direction).** A marker is promoted only after
+  that phase's own declared verification has been **run in this dispatch and observed green**.
+  An inherited `[COMPLETED]` or `[IN PROGRESS]` marker on a resumed dispatch is re-verified by
+  actually running the phase's verification, never trusted on sight just because the heading
+  already says so. Failing this direction produced the inverse incident: a plan carrying five of
+  seven phases marked `[COMPLETED]` while its sole declared `file_scope` target was unmodified
+  against `HEAD` — a resume driven by those markers would have skipped real work that had never
+  landed.
+
+**Both directions are needed independently.** The over-claim case above was caught only because
+the orchestrator cross-checked the marker count against the working tree; a fix that merely
+tightened promotion-on-commit (the first bullet) would not have caught it, since that direction
+says nothing about verifying an INHERITED marker. Treating this as one problem with one fix would
+have left the other direction's failure mode open.

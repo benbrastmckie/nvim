@@ -529,27 +529,27 @@ further gaps exist — the enumeration, not just the one fix, is an acceptance c
 
 ---
 
-### Phase 7: Fan-out prohibition and bidirectional marker/commit synchrony [NOT STARTED]
+### Phase 7: Fan-out prohibition and bidirectional marker/commit synchrony [COMPLETED]
 
 **Goal**: Answer the two open questions absorbed from former task 14, in one normative statement
 that all 13 in-scope agents already load, plus MUST NOT bullets in the normative core agent.
 
 **Tasks**:
-- [ ] Add a `## No fan-out to phase sub-agents` section to
+- [x] Add a `## No fan-out to phase sub-agents` section to
       `agent-system/extensions/core/context/contracts/phase-closure.md`, resolving question 1 as a
       **prohibition**: a dispatched implementation agent MUST NOT delegate plan-phase execution to
       sub-agents. Reasoning to record: the dispatched agent alone owns its `.return-meta.json` and
       `.orchestrator-handoff.json`, a child cannot write the parent's terminal status, and a
       parent returning while children still run is precisely the observed failure (twice in one
       lean4 batch, both leaving `status: "in_progress"`). Carve out read-only search/exploration
-      fan-out, which cannot leave work uncommitted.
-- [ ] State the terminal-status corollary in the same section: the dispatched agent writes its own
+      fan-out, which cannot leave work uncommitted. *(completed)*
+- [x] State the terminal-status corollary in the same section: the dispatched agent writes its own
       terminal `.return-meta.json` **before returning**, covering all work performed under it;
       `in_progress` is early-metadata-only and never a legal terminal dispatch outcome. Point at
       `context/formats/return-metadata-file.md` for the vocabulary rather than restating it. Note
       that this retires the per-dispatch prompt text used as the incident workaround — the wording
-      is known to work; the point is that it now lives in the contract.
-- [ ] Add a `## Marker/commit synchrony is bidirectional` section resolving question 2, with both
+      is known to work; the point is that it now lives in the contract. *(completed)*
+- [x] Add a `## Marker/commit synchrony is bidirectional` section resolving question 2, with both
       directions stated as requirements:
       - **Promotion-on-commit** (under-claim direction): a phase's marker promotion is committed
         together with that phase's final work, never deferred to a later commit or to the end of
@@ -563,16 +563,21 @@ that all 13 in-scope agents already load, plus MUST NOT bullets in the normative
         why both directions are needed: the over-claim case (five of seven phases `[COMPLETED]`
         against an unmodified declared `file_scope`) was caught only because the orchestrator
         cross-checked markers against the working tree, and a fix that merely tightened
-        promotion-on-commit would not have caught it.
-- [ ] Add two MUST NOT bullets to `general-implementation-agent.md` (the normative contract; the
+        promotion-on-commit would not have caught it. *(completed)*
+- [x] Add two MUST NOT bullets to `general-implementation-agent.md` (the normative contract; the
       12 extension agents are conformers reached by the `@`-reference they already carry): no
       fan-out of plan-phase execution to sub-agents; no marker promotion without this dispatch's
       own green verification. Point both at `phase-closure.md` rather than restating the reasoning.
-- [ ] Re-read `phase-closure.md`'s existing "Loaded via explicit reference in BOTH modes" section
+      *(deviation: altered — 13 extension agents, not 12, per Phase 1's corrected 14-file total
+      in-scope enumeration; founder-implement-agent.md is also a conformer reached by its
+      existing @-reference)*
+- [x] Re-read `phase-closure.md`'s existing "Loaded via explicit reference in BOTH modes" section
       and, if its claim about extension coverage is stale relative to the grep evidence, correct
-      it to match what is actually referenced.
-- [ ] Do **not** touch `orchestrate-recover-outcome.sh` or `skill-orchestrate/SKILL.md`'s
-      `in_progress` handling — already correct, explicitly out of scope.
+      it to match what is actually referenced. *(completed: the section's claim that
+      skill-orchestrate/SKILL.md carries a discoverability reference was stale -- grep found zero
+      occurrences -- and has been corrected)*
+- [x] Do **not** touch `orchestrate-recover-outcome.sh` or `skill-orchestrate/SKILL.md`'s
+      `in_progress` handling — already correct, explicitly out of scope. *(confirmed: neither file touched)*
 
 **Timing**: 1.25 hours
 

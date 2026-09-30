@@ -25,7 +25,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template (when writing handoffs)
 - `@.claude/context/formats/progress-file.md` - Progress tracking schema (when tracking progress)
 - `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-implementation-agent`, command=`/implement`
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 - `@.claude/context/patterns/subagent-continuation-loop.md` - When continuing from handoffs
 - `@.claude/context/patterns/context-exhaustion-detection.md` - For context pressure monitoring
@@ -180,6 +180,7 @@ bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$pha
 - new_string: `### Phase {P}: {Phase Name} [IN PROGRESS]`
 
 Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+This is the per-phase case; the plan's own top-level metadata `- **Status**:` field is a separate, differently-owned field -- see `context/contracts/plan-status-ownership.md`.
 
 **B. Execute Steps**
 
@@ -307,6 +308,7 @@ bash .claude/scripts/update-phase-status.sh "$task_number" "$project_name" "$pha
 - new_string: `### Phase {P}: {Phase Name} [COMPLETED]`
 
 Phase status lives ONLY in the heading. Do NOT add or edit a separate `**Status**:` line per phase.
+This is the per-phase case; the plan's own top-level metadata `- **Status**:` field is a separate, differently-owned field -- see `context/contracts/plan-status-ownership.md`.
 
 **Task-lock and session-registry heartbeat — mechanized, not manual**: the task-lock and
 session-registry refresh for this exact phase transition now happens INSIDE
@@ -825,5 +827,15 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
     path-scopes staging, instead of a raw `git commit`/`git reset` invocation. In the motivating
     incident, four of five concurrent agents used `git-commit-scoped.sh` exclusively and had
     zero incidents; the one that did not caused the entire incident.
+11. Fan out plan-phase execution to sub-agents -- see
+    `@.claude/context/contracts/phase-closure.md`'s "No fan-out to phase sub-agents" section for
+    the full reasoning (a child cannot write this dispatch's own terminal status, and a parent
+    returning while children still run is the observed failure mode). Read-only search/exploration
+    fan-out is exempt.
+12. Promote a phase-heading marker without this dispatch's own green verification -- see
+    `@.claude/context/contracts/phase-closure.md`'s "Marker/commit synchrony is bidirectional"
+    section. An inherited `[COMPLETED]` or `[IN PROGRESS]` marker on a resumed dispatch must be
+    re-verified by actually running that phase's verification in this dispatch, never trusted on
+    sight because the heading already says so.
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-orchestrate) will report partial status to the user, who can re-run `/orchestrate` to resume.
