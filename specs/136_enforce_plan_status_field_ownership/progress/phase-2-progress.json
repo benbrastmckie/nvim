@@ -1,0 +1,39 @@
+{
+  "phase": 2,
+  "phase_name": "Roll the ownership bullet into every in-scope agent contract",
+  "started_at": "2026-09-29T00:00:00Z",
+  "last_updated": "2026-09-29T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert ownership bullet verbatim into all 14 in-scope agents", "status": "done", "files_touched": [
+      "agent-system/extensions/core/agents/general-implementation-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+      "agent-system/extensions/founder/agents/founder-implement-agent.md",
+      "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+      "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+      "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+      "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+      "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+      "agent-system/extensions/python/agents/python-implementation-agent.md",
+      "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+      "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+      "agent-system/extensions/web/agents/web-implementation-agent.md",
+      "agent-system/extensions/z3/agents/z3-implementation-agent.md"
+    ]},
+    {"id": 2, "description": "Add adjacent clarifying sentence (anchor or own-instruction placement)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Update phase-closure.md reference-description line in all 14 files", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Commit per file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.scope",
+      "description": "14 files, not 13, per Phase 1's corrected sweep (founder-implement-agent.md added)",
+      "type": "altered",
+      "reason": "Phase 1 found founder-implement-agent.md genuinely instructs editing ### Phase N ... [MARKER] headings, contradicting the plan's hypothesis. Rolled the ownership bullet into it as the 14th file.",
+      "annotation": "*(deviation: altered — 14 files rolled out, not 13; founder-implement-agent.md added)*"
+    }
+  ]
+}

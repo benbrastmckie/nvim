@@ -210,30 +210,30 @@ sweep yields a different set, the sweep wins and the fragment records the differ
 
 ---
 
-### Phase 2: Roll the ownership bullet into every in-scope agent contract [NOT STARTED]
+### Phase 2: Roll the ownership bullet into every in-scope agent contract [COMPLETED]
 
 **Goal**: Every in-scope implementation agent carries the verbatim ownership bullet, and its
 `phase-closure.md` reference line reflects that contract's widened scope.
 
 **Tasks**:
-- [ ] For each in-scope agent from Phase 1's enumeration: re-read the file immediately before
+- [x] For each in-scope agent from Phase 1's enumeration: re-read the file immediately before
       editing (territory contract, concurrent siblings this cycle), then insert the fragment's
       bullet **verbatim** as the next sequential numbered item in the existing
       `## Critical Requirements` -> `**MUST NOT**:` list. Do not renumber or reword any
       surrounding bullet. Where an agent has no MUST NOT list, add one under
-      `## Critical Requirements` rather than inventing a new section shape.
-- [ ] In each agent that carries the existing sentence "Phase status lives ONLY in the heading. Do
+      `## Critical Requirements` rather than inventing a new section shape. *(completed: all 14 in-scope files, verified by grep)*
+- [x] In each agent that carries the existing sentence "Phase status lives ONLY in the heading. Do
       NOT add or edit a separate `**Status**:` line per phase." (present in
       `general-implementation-agent.md` at both the Mark-Phase-In-Progress and Mark-Phase-Complete
       steps), append one sentence distinguishing the *plan-level metadata* `- **Status**:` field
       from the per-phase case that sentence already covers, pointing at the new fragment. This puts
       the boundary adjacent to the instruction that produced the generalization, not only in the
-      MUST NOT list at the end of the file.
-- [ ] Update each agent's `@.claude/context/contracts/phase-closure.md` reference description from
+      MUST NOT list at the end of the file. *(completed: anchor sentence confirmed present in 7 files -- general-implementation-agent.md, latex, nvim, python, rust, typst, z3 -- each getting the clarifying sentence at both occurrences; the other 7 -- cslib, cslib-hard, founder, lean, lean-hard, nix, web -- got the clarifying sentence placed next to their own phase-marker Edit instruction instead)*
+- [x] Update each agent's `@.claude/context/contracts/phase-closure.md` reference description from
       "depth-first phase closure: close one phase before opening the next" to also name the
       no-fan-out and marker/commit-synchrony content Phase 7 adds, so the one-line description
-      stays accurate.
-- [ ] Commit per file (each file is its own independently green sub-step).
+      stays accurate. *(completed: all 14 files)*
+- [x] Commit per file (each file is its own independently green sub-step). *(completed: 14 separate commits, one per file)*
 
 **Timing**: 1.5 hours
 
@@ -248,6 +248,13 @@ sentence (where the anchor sentence exists), and one reference-description updat
 sentence is confirmed present in `general-implementation-agent.md`; its presence in the other 12
 is a hypothesis — where absent, place the clarifying sentence next to that agent's own
 `update-phase-status.sh` / phase-heading Edit instruction instead, and record which files differed.
+
+**CONFIRMED AT IMPLEMENTATION TIME (deviation from hypothesis)**: 14 files, not 13 —
+`founder/agents/founder-implement-agent.md` is in scope per Phase 1's corrected sweep. Of the 14,
+7 carry the anchor sentence (`general-implementation-agent.md`, `latex`, `nvim`, `python`, `rust`,
+`typst`, `z3`) and 7 do not (`cslib`, `cslib-hard`, `founder`, `lean`, `lean-hard`, `nix`, `web`) —
+the non-anchor 7 got the clarifying sentence placed next to their own phase-marker Edit
+instruction instead, exactly as this hypothesis's fallback anticipated.
 
 **Files to modify**:
 - `agent-system/extensions/core/agents/general-implementation-agent.md` - MUST NOT bullet,
@@ -264,6 +271,8 @@ is a hypothesis — where absent, place the clarifying sentence next to that age
 - `agent-system/extensions/nvim/agents/neovim-implementation-agent.md` - same three edits
 - `agent-system/extensions/nix/agents/nix-implementation-agent.md` - same three edits
 - `agent-system/extensions/web/agents/web-implementation-agent.md` - same three edits
+- `agent-system/extensions/founder/agents/founder-implement-agent.md` - same three edits
+  *(added: deviation from the 13-file hypothesis, per Phase 1's corrected sweep)*
 
 **Verification**:
 - `grep -lF "<the fragment's bullet opening clause>"` across the in-scope set returns every file
