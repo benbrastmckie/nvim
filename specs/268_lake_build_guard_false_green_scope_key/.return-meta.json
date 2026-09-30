@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790788666_f8aaca_268",
-  "dispatch_seq": 3,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/268_lake_build_guard_false_green_scope_key/reports/01_false_green_scope_key_defect.md",
-      "summary": "Reproduces the reported false green: rules out scope_key normalization (a) and a fail-open missing-scope_key branch (b) by code reading; empirically REFUTES the literal cross-tree decide_sharing()-replay hypothesis (d) because compute_fingerprint()'s hash embeds each file's own path, which differs per worktree; but CONFIRMS a related, reproducible defect in the same dispatch-worktree.sh cp -al hardlink clone of .lake/: cross-tree flock lock serialization, and cross-tree build-guard.result/log clobbering exploitable as a real false green via the `result` subcommand's unguarded (no --expect-pid) read path. Recommends excluding build-guard.* from the .lake/ clone (not a tree-identity record field alone) since it also fixes the lock-contention defect, and names three regression tests to add under scripts/tests/."
+      "type": "plan",
+      "path": "specs/268_lake_build_guard_false_green_scope_key/plans/01_cross-tree-guard-state-clone.md",
+      "summary": "5-phase plan fixing the confirmed cross-tree guard-state false green at its root (exclude build-guard.* from dispatch-worktree.sh's .lake/ hardlink clone), with red-then-green regression tests, an incidental-protection pin, header hazard notes, and redeploy."
     }
   ],
+  "next_steps": "Run /implement 268 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1790788666_f8aaca_268",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 4.5,
+    "dependency_waves": [[1, 3], [2], [4], [5]]
+  },
   "memory_candidates": [
     {
-      "content": "lake-build-guard.sh's compute_fingerprint() hashes a pre-image that embeds each source file's own absolute path (stat -c '%n %s %y', and sha256sum's own '<hash>  <filename>' output format does the same even in hash mode). This incidentally makes cross-tree fingerprint collisions impossible whenever two trees live at different absolute paths (e.g. main repo vs a dispatch-worktree.sh worktree under .orchestrate-worktrees/), which protects decide_sharing()'s replay branch from cross-tree false-sharing even though nothing in the design deliberately encodes tree identity. Don't rely on this staying true if compute_fingerprint() is ever changed to a pure content hash with no filename in the stream.",
+      "content": "A hardlink clone (cp -al) used for workspace isolation shares the INODE of every file that already exists in the source directory: the clone and the original are one file under two paths, not two files. Isolation therefore holds only for files created AFTER the clone, or for writers that replace a path by atomic rename (write-temp-then-mv, which rebinds the directory entry and breaks the link). A writer that truncates in place (`> \"$PATH\"`) writes through to the shared inode and clobbers the other tree silently, and an flock() lock file cloned this way serializes the very processes the isolation was meant to decouple. Rule: when cloning a directory for isolation, exclude its ephemeral runtime state (locks, result records, logs, captured output) by name, and keep sharing only immutable build output. Confirmed and reproduced for dispatch-worktree.sh's cp -al of .lake/ (lake-build-guard.sh's five build-guard.* files), where it produced a real false green: a worktree build's record overwrote the main tree's, and `result` without --expect-pid reported the foreign tree's exit_status=0 as the main tree's own.",
       "category": "INSIGHT",
-      "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/reports/01_false_green_scope_key_defect.md",
+      "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/plans/01_cross-tree-guard-state-clone.md",
       "confidence": 0.85,
-      "suggested_keywords": ["lake-build-guard", "fingerprint", "decide_sharing", "cross-tree", "worktree-isolation"]
-    },
-    {
-      "content": "dispatch-worktree.sh's cp -al hardlink clone of .lake/ (and .claude/) shares the SAME INODE for any ephemeral runtime state file the cloned directory contains across the main tree and every worktree cloned from it. For lake-build-guard.sh this caused two confirmed, reproducible defects: (1) build-guard.lock being shared serializes a worktree's build against the main tree's build (defeats the 'mode 2' build-contention isolation dispatch-worktree.sh exists to provide), and (2) build-guard.result/.log/.stdout/.stderr being shared means a real build finishing in ANY cloned tree silently truncate-overwrites every other tree's own last verdict/log via finalize_record()'s '>' redirect -- exploitable as a false green through the `result` subcommand's unguarded (no --expect-pid) read path, though `build` mode's own exit code stays accurate since it never reads the record for its own return value. General lesson for any future hardlink-cloned directory: exclude ephemeral runtime/lock/result state files from the clone, only share build-output caches.",
-      "category": "PATTERN",
-      "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/reports/01_false_green_scope_key_defect.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["dispatch-worktree", "cp -al", "hardlink-clone", "false-green", "lock-contention", "cross-tree-state"]
-    },
-    {
-      "content": "git rev-parse --git-common-dir is IDENTICAL across every worktree of one repository (it resolves to the shared main .git directory), so it cannot serve as a per-worktree tree-identity tag. git rev-parse --show-toplevel DOES differ per worktree (each worktree has its own checkout root) and is the correct source for a tree-identity field. Confirmed empirically with a throwaway git worktree pair.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/reports/01_false_green_scope_key_defect.md",
-      "confidence": 0.95,
-      "suggested_keywords": ["git", "worktree", "show-toplevel", "git-common-dir", "tree-identity"]
+      "suggested_keywords": ["hardlink-clone", "cp -al", "worktree-isolation", "shared-inode", "runtime-state", "false-green"]
     }
   ],
-  "next_steps": "Run /plan 268 to create implementation plan"
+  "dispatch_seq": 7
 }
