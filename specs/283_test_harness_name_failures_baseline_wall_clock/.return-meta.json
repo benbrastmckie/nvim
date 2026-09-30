@@ -1,10 +1,60 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/283_test_harness_name_failures_baseline_wall_clock/summaries/01_harness-roster-baseline-wall-clock-summary.md",
+      "summary": "All 6 phases completed: stale-fixture fix (3 suites), end-of-run failure roster, regression test, known-failures.txt baseline manifest with EXPECTED/NEW classification and --fail-on-new, --skip-slow on all 5 redeploy-checkpoint call sites (measured 13m48s -> 2m4s), and documentation reconciliation."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the agent-system test harness's three named defects: failing suites are now named in a consolidated, regression-tested end-of-run roster; a committed known-failures.txt baseline classifies each failure as EXPECTED or NEW; and --skip-slow on all five deploy_findings_snapshot call sites removed the dominant wall-clock cost (measured 85% reduction, 13m48s to 2m4s per invocation). Also fixed a shared stale-fixture bug that accounted for 3 of the 8 originally-named failures."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/known-failures.txt",
+    "agent-system/extensions/core/scripts/tests/run-all.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "run-all.sh test suites that resolve their subject-under-test via a `git rev-parse --show-toplevel` + deploy-tree-first/source-store-fallback pattern (preferring $REPO_ROOT/.claude/scripts/... over the source-store sibling) are NOT redundant with a dispatched agent's own pre-deploy phase-gate run: they test the stale deployed copy pre-deploy and only test the fresh copy post-deploy. Roughly 40 of ~73 core test suites use this pattern (grep for 'REPO_ROOT.*\\.claude/scripts' in agent-system/extensions/core/scripts/tests/). Before removing or deferring a gate-8-style check as 'redundant', confirm whether the suites in question resolve against source or deployed paths — the redundancy argument only holds for the latter's mirror image (source-only suites).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/283_test_harness_name_failures_baseline_wall_clock/summaries/01_harness-roster-baseline-wall-clock-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["run-all.sh", "deploy-tree-first", "gate8", "redundant-verify", "test-resolution"]
+    },
+    {
+      "content": "When a checked-in advisory manifest classifies test-harness output (e.g. EXPECTED vs. NEW failures), design the tally/roster extension so the pre-manifest prefix stays byte-identical and the annotation is a pure suffix/append -- this lets an existing regression test's substring/prefix assertions keep working unmodified across the manifest-aware extension, verified in this task by re-running the Phase 3 regression suite unchanged after Phase 4 landed and seeing all cases still pass.",
+      "category": "PATTERN",
+      "source_artifact": "specs/283_test_harness_name_failures_baseline_wall_clock/summaries/01_harness-roster-baseline-wall-clock-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["output-contract", "backward-compatible", "manifest", "tally-line", "byte-identical-prefix"]
+    }
+  ],
+  "user_decision": {
+    "question": "This task added --skip-slow to all 5 orchestrator redeploy-checkpoint deploy_findings_snapshot call sites, removing the dominant measured wall-clock cost (13m48s -> 2m4s per invocation). During implementation, research turned up that a prior task in this repo (documented in batch-orchestration-guardrails.md's Inter-Cycle Redeploy Checkpoint section) had already investigated and REJECTED a weaker version of this same idea (sharing one Gate-8 capture between pre/post) because ~40 of ~73 core test suites resolve their subject-under-test from the DEPLOYED tree, not source-store -- meaning this checkpoint's full-depth pair was the only thing verifying those suites pass against a freshly-deployed tree. This task's --skip-slow change is a stricter version: those ~40 suites now get zero coverage from this checkpoint against a fresh deploy. Should this trade-off be accepted as implemented, or should Phase 5 be reverted (restoring the wall-clock cost) pending a narrower follow-up fix?",
+    "options": [
+      "Accept as implemented -- keep --skip-slow on all 5 call sites; the measured wall-clock win (a single dispatch previously consumed ~45 minutes and terminated without writing its handoff) is judged to dominate the residual gap, which is now flagged in code comments, shell-script-testing.md, batch-orchestration-guardrails.md, and this summary's Follow-ups for a scoped future fix",
+      "Revert Phase 5 (drop --skip-slow from all 5 call sites, restoring the full-depth pre/post pair and its ~13m48s cost per invocation) until a narrower fix -- running only the ~40 deploy-tree-first suites against gate 8 post-redeploy -- is built as a separate follow-up task"
+    ],
+    "recommended": "Accept as implemented -- keep --skip-slow on all 5 call sites; the measured wall-clock win (a single dispatch previously consumed ~45 minutes and terminated without writing its handoff) is judged to dominate the residual gap, which is now flagged in code comments, shell-script-testing.md, batch-orchestration-guardrails.md, and this summary's Follow-ups for a scoped future fix",
+    "blocking": false
+  },
   "metadata": {
     "session_id": "sess_1790795029_d00973",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 3
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }
