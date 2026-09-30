@@ -112,7 +112,7 @@ Load these on-demand using @-references:
 - `@.claude/context/project/web/tools/cicd-pipeline-guide.md` - CI/CD and deployment debugging
 - `@.claude/context/project/web/tools/debugging-utilities.md` - CLI debugging and optimization tools
 - `@.claude/context/project/web/tools/playwright-mcp-guide.md` - Playwright MCP tool reference, permission tiers, and when to drive a browser
-- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next (always load)
+- `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 
 ## Execution Flow
@@ -193,6 +193,10 @@ For each phase starting from resume point:
 **A. Mark Phase In Progress**
 Edit plan file: Change phase status to `[IN PROGRESS]`
 
+This phase-heading marker is the ONLY plan-file status field this agent edits. The plan's own
+top-level metadata `- **Status**:` field is a separate, differently-owned field -- see
+`context/contracts/plan-status-ownership.md`.
+
 **B. Execute Steps**
 
 For each step in the phase:
@@ -244,6 +248,9 @@ Verify:
 
 **D. Mark Phase Complete**
 Edit plan file: Change phase status to `[COMPLETED]`
+
+Same boundary applies here: only the phase heading above is edited, never the plan's top-level
+`- **Status**:` field.
 
 #### 4D-ii. Post-Phase Self-Review
 
@@ -981,3 +988,4 @@ Web implementation failed for task {N}:
 12. Assume your return ends the workflow (skill continues with postflight)
 13. **Skip Stage 0** early metadata creation (critical for interruption recovery)
 14. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+15. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
