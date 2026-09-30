@@ -330,6 +330,87 @@ else
 fi
 
 # =====================================================================
+# Case 7: reap, superseded shapes stale -- the three previously-unreapable naming generations
+# (un-suffixed, dot-separator, .prev-) are now reaped when stale, for both families
+# =====================================================================
+rm -f "$TMPROOT/specs/.orchestrator-multi-state"*.json "$TMPROOT/specs/.return-meta-multi"*.json
+
+SID_C="sess_1000000003_cccccc"
+UNSUFFIXED_MULTI="$TMPROOT/specs/.orchestrator-multi-state.json"
+UNSUFFIXED_RETURN="$TMPROOT/specs/.return-meta-multi.json"
+DOTSEP_MULTI="$TMPROOT/specs/.orchestrator-multi-state.${SID_C}.json"
+DOTSEP_RETURN="$TMPROOT/specs/.return-meta-multi.${SID_C}.json"
+PREV_MULTI="$TMPROOT/specs/.orchestrator-multi-state.prev-${SID_C}.json"
+PREV_RETURN="$TMPROOT/specs/.return-meta-multi.prev-${SID_C}.json"
+
+jq -n --arg sid "$SID_C" '{"session_id": $sid, "cycle_count": 2}' > "$UNSUFFIXED_MULTI"
+jq -n --arg sid "$SID_C" '{"status": "partial", "session_id": $sid}' > "$UNSUFFIXED_RETURN"
+jq -n --arg sid "$SID_C" '{"session_id": $sid, "cycle_count": 2}' > "$DOTSEP_MULTI"
+jq -n --arg sid "$SID_C" '{"status": "partial", "session_id": $sid}' > "$DOTSEP_RETURN"
+jq -n --arg sid "$SID_C" '{"session_id": $sid, "cycle_count": 2}' > "$PREV_MULTI"
+jq -n --arg sid "$SID_C" '{"status": "partial", "session_id": $sid}' > "$PREV_RETURN"
+
+for superseded_f in "$UNSUFFIXED_MULTI" "$UNSUFFIXED_RETURN" "$DOTSEP_MULTI" "$DOTSEP_RETURN" "$PREV_MULTI" "$PREV_RETURN"; do
+  touch_minutes_ago "$superseded_f" 500
+done
+
+case7_ok=true
+superseded_dry_out=$(ORCHESTRATOR_SESSION_REAP_MIN=240 "$REAP" --dry-run 2>&1)
+for superseded_f in "$UNSUFFIXED_MULTI" "$UNSUFFIXED_RETURN" "$DOTSEP_MULTI" "$DOTSEP_RETURN" "$PREV_MULTI" "$PREV_RETURN"; do
+  [ -f "$superseded_f" ] || { case7_ok=false; info "dry-run deleted superseded-shape fixture $superseded_f"; }
+done
+echo "$superseded_dry_out" | grep -q "would reap" || { case7_ok=false; info "dry-run output missing 'would reap' for superseded shapes"; }
+
+superseded_live_out=$(ORCHESTRATOR_SESSION_REAP_MIN=240 "$REAP" 2>&1)
+for superseded_f in "$UNSUFFIXED_MULTI" "$UNSUFFIXED_RETURN" "$DOTSEP_MULTI" "$DOTSEP_RETURN" "$PREV_MULTI" "$PREV_RETURN"; do
+  [ -f "$superseded_f" ] && { case7_ok=false; info "superseded-shape fixture $superseded_f was NOT reaped by a live run"; }
+done
+echo "$superseded_live_out" | grep -q "reaped:" || { case7_ok=false; info "live output missing 'reaped:' for superseded shapes"; }
+
+if [ "$case7_ok" = true ]; then
+  pass "7: all three previously-unreapable naming generations (un-suffixed, dot-separator, .prev-) are now reaped when stale, for both families"
+else
+  fail "7: superseded-shape-stale case failed (see INFO lines above)"
+fi
+
+# =====================================================================
+# Case 8: reap, superseded shapes fresh -- a fresh file in each superseded shape is never
+# deleted, matching the existing fresh-shape guarantee (Case 5)
+# =====================================================================
+rm -f "$TMPROOT/specs/.orchestrator-multi-state"*.json "$TMPROOT/specs/.return-meta-multi"*.json
+
+SID_D="sess_1000000004_dddddd"
+FRESH_UNSUFFIXED_MULTI="$TMPROOT/specs/.orchestrator-multi-state.json"
+FRESH_DOTSEP_RETURN="$TMPROOT/specs/.return-meta-multi.${SID_D}.json"
+FRESH_PREV_MULTI="$TMPROOT/specs/.orchestrator-multi-state.prev-${SID_D}.json"
+
+jq -n --arg sid "$SID_D" '{"session_id": $sid, "cycle_count": 1}' > "$FRESH_UNSUFFIXED_MULTI"
+jq -n --arg sid "$SID_D" '{"status": "implemented", "session_id": $sid}' > "$FRESH_DOTSEP_RETURN"
+jq -n --arg sid "$SID_D" '{"session_id": $sid, "cycle_count": 1}' > "$FRESH_PREV_MULTI"
+for fresh_f in "$FRESH_UNSUFFIXED_MULTI" "$FRESH_DOTSEP_RETURN" "$FRESH_PREV_MULTI"; do
+  touch_minutes_ago "$fresh_f" 10
+done
+
+case8_ok=true
+fresh_superseded_dry_out=$(ORCHESTRATOR_SESSION_REAP_MIN=240 "$REAP" --dry-run 2>&1)
+for fresh_f in "$FRESH_UNSUFFIXED_MULTI" "$FRESH_DOTSEP_RETURN" "$FRESH_PREV_MULTI"; do
+  [ -f "$fresh_f" ] || { case8_ok=false; info "dry-run removed fresh superseded-shape fixture $fresh_f"; }
+done
+
+fresh_superseded_live_out=$(ORCHESTRATOR_SESSION_REAP_MIN=240 "$REAP" 2>&1)
+for fresh_f in "$FRESH_UNSUFFIXED_MULTI" "$FRESH_DOTSEP_RETURN" "$FRESH_PREV_MULTI"; do
+  [ -f "$fresh_f" ] || { case8_ok=false; info "live run removed fresh superseded-shape fixture $fresh_f"; }
+done
+echo "$fresh_superseded_dry_out" | grep -qF "$SID_D" && { case8_ok=false; info "fresh superseded-shape file appeared in --dry-run 'would reap' output"; }
+echo "$fresh_superseded_live_out" | grep -qF "$SID_D" && { case8_ok=false; info "fresh superseded-shape file appeared in live 'reaped:' output"; }
+
+if [ "$case8_ok" = true ]; then
+  pass "8: fresh (within-threshold) superseded-shape files are never deleted by --dry-run or a live run"
+else
+  fail "8: superseded-shape-fresh case failed (see INFO lines above)"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

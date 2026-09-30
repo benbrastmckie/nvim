@@ -7,17 +7,30 @@
 # context/standards/orchestrator-runtime-files.md's Class Table) trades batch-collision risk for
 # unbounded litter — a batch orchestration that never reaches its own cleanup path (crash,
 # killed session, interrupted terminal) leaves its session-suffixed file behind forever. This
-# script sweeps both globs at the specs/ root and deletes ones whose mtime exceeds
+# script sweeps at the specs/ root and deletes matches whose mtime exceeds
 # ORCHESTRATOR_SESSION_REAP_MIN minutes.
+#
+# Filename shapes swept (four naming generations per family, eight globs total): the current
+# hyphen-suffixed shape (`.orchestrator-multi-state-*.json`) plus three superseded generations
+# that gitignore's shell-glob patterns already tolerate but this script's own literal candidate
+# array used to miss entirely — un-suffixed (`.orchestrator-multi-state.json`), dot-separator
+# (`.orchestrator-multi-state.sess_{sid}.json`), and `.prev-` (`.orchestrator-multi-state.prev-sess_{sid}.json`).
+# Widening this array (rather than a one-shot legacy-name migration script) was chosen because
+# the gitignore side already tolerates all four shapes at any depth — widening protects every
+# consumer repo permanently, not just this one repo once. The dot-separator glob
+# (`.orchestrator-multi-state.*.json`) also matches every `.prev-` file, since `.prev-sess_{sid}`
+# is itself a valid match for the wildcard after the separating dot; both patterns are kept
+# explicit in the candidate array (matching the four-shapes-named contract) and the resulting
+# duplicate path is de-duplicated before reaping, never reaped or reported twice.
 #
 # Modeled on task-lock.sh's `reap` subcommand: same --dry-run contract, same
 # report-then-delete-or-report shape, so `skill-refresh/SKILL.md` can echo this script's output
 # verbatim the same way it already does for task-lock.sh reap.
 #
-# Scope: ONLY the two repo-level singleton globs directly under specs/. Deliberately does NOT
-# recurse into specs/{NNN}_{SLUG}/ — per-task runtime files (.orchestrator-loop-guard,
-# .orchestrator-churn-state.json, .drift-inspection.json, .lock/) are already correctly isolated
-# by task directory and are out of scope for this sweep.
+# Scope: ONLY the two repo-level singleton families (all four naming generations of each)
+# directly under specs/. Deliberately does NOT recurse into specs/{NNN}_{SLUG}/ — per-task
+# runtime files (.orchestrator-loop-guard, .orchestrator-churn-state.json, .drift-inspection.json,
+# .lock/) are already correctly isolated by task directory and are out of scope for this sweep.
 #
 # Staleness criterion: file mtime, matching task-lock.sh cmd_reap's own fallback path. This does
 # NOT conflict with the "no freshness check on read" principle documented in
@@ -71,15 +84,36 @@ now_epoch() {
 }
 
 # --- extract_session_id: best-effort session_id extraction from filename or file content ---
-# Filename shape: specs/.orchestrator-multi-state-{session_id}.json or
-# specs/.return-meta-multi-{session_id}.json. Falls back to the file's own "session_id" JSON
-# field (return-meta-multi always carries one; multi-state always carries one per
-# skill-orchestrate/SKILL.md Stage MT-1) if the filename shape does not parse cleanly.
+# Filename shapes (four naming generations per family — see the header comment's "Filename
+# shapes swept" note): hyphen-suffixed (`.orchestrator-multi-state-{session_id}.json`,
+# `.return-meta-multi-{session_id}.json`), dot-separator
+# (`.orchestrator-multi-state.{session_id}.json`, `.return-meta-multi.{session_id}.json`),
+# `.prev-` (`.orchestrator-multi-state.prev-{session_id}.json`,
+# `.return-meta-multi.prev-{session_id}.json`), and un-suffixed
+# (`.orchestrator-multi-state.json`, `.return-meta-multi.json` — no embedded session id at all).
+# Falls back to the file's own "session_id" JSON field (return-meta-multi always carries one;
+# multi-state always carries one per skill-orchestrate/SKILL.md Stage MT-1) whenever the
+# filename shape does not parse cleanly, including for the un-suffixed shape by construction.
 extract_session_id() {
   local f="$1" base sid
   base=$(basename "$f")
+  case "$base" in
+    .orchestrator-multi-state.json|.return-meta-multi.json)
+      # Un-suffixed shape carries no filename-embedded session id at all — go straight to the
+      # file-content fallback rather than falling through to the generic strips below, which
+      # would otherwise mis-parse ".json" as a leftover "session id".
+      sid=$(jq -r '.session_id // "unknown"' "$f" 2>/dev/null) || true
+      [ -n "$sid" ] || sid="unknown"
+      echo "$sid"
+      return
+      ;;
+  esac
   sid="${base#.orchestrator-multi-state-}"
   sid="${sid#.return-meta-multi-}"
+  sid="${sid#.orchestrator-multi-state.prev-}"
+  sid="${sid#.return-meta-multi.prev-}"
+  sid="${sid#.orchestrator-multi-state.}"
+  sid="${sid#.return-meta-multi.}"
   sid="${sid%.json}"
   if [ "$sid" = "$base" ] || [ -z "$sid" ]; then
     sid=$(jq -r '.session_id // "unknown"' "$f" 2>/dev/null) || true
@@ -94,9 +128,31 @@ reaped_count=0
 # nullglob so a no-match glob expands to zero words rather than the literal pattern string.
 # Restored via a trap-independent explicit unset at the end since this script always exits
 # through the same tail regardless of branch taken.
+#
+# Four shapes per family, eight globs total (see header comment). The dot-separator glob
+# (`.orchestrator-multi-state.*.json`) also matches every `.prev-` file, so the same path can
+# appear twice in the expanded array; de-duplicated below before any counting or reaping.
 shopt -s nullglob
-candidates=( "$PROJECT_ROOT"/specs/.orchestrator-multi-state-*.json "$PROJECT_ROOT"/specs/.return-meta-multi-*.json )
+candidates=(
+  "$PROJECT_ROOT"/specs/.orchestrator-multi-state.json
+  "$PROJECT_ROOT"/specs/.orchestrator-multi-state-*.json
+  "$PROJECT_ROOT"/specs/.orchestrator-multi-state.*.json
+  "$PROJECT_ROOT"/specs/.orchestrator-multi-state.prev-*.json
+  "$PROJECT_ROOT"/specs/.return-meta-multi.json
+  "$PROJECT_ROOT"/specs/.return-meta-multi-*.json
+  "$PROJECT_ROOT"/specs/.return-meta-multi.*.json
+  "$PROJECT_ROOT"/specs/.return-meta-multi.prev-*.json
+)
 shopt -u nullglob
+
+declare -A _seen_candidate
+deduped_candidates=()
+for f in "${candidates[@]}"; do
+  [ -n "${_seen_candidate[$f]+x}" ] && continue
+  _seen_candidate["$f"]=1
+  deduped_candidates+=("$f")
+done
+candidates=( "${deduped_candidates[@]}" )
 
 for f in "${candidates[@]}"; do
   [ -f "$f" ] || continue

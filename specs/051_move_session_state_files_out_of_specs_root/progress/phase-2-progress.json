@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Widen the reaper's candidate globs",
+  "started_at": "2026-09-29T23:58:30Z",
+  "last_updated": "2026-09-30T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Widen candidates array to 8 globs (4 shapes x 2 families) with de-duplication; extend extract_session_id; update header comments",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/reap-session-runtime-files.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add test cases 7-8 for superseded-shape stale/fresh behavior",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/test-session-runtime-files.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

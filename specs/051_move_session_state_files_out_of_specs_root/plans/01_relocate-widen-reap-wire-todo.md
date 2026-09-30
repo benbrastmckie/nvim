@@ -213,26 +213,26 @@ are planning-time observations, not facts.
 
 ---
 
-### Phase 2: Widen the reaper's candidate globs [NOT STARTED]
+### Phase 2: Widen the reaper's candidate globs [COMPLETED]
 
 **Goal**: `reap-session-runtime-files.sh` sweeps all four naming generations of both file
 families, and `extract_session_id` parses the session id out of each shape.
 
 **Tasks**:
-- [ ] Replace the two-entry `candidates=( ... )` array with one covering, for each family, the
+- [x] Replace the two-entry `candidates=( ... )` array with one covering, for each family, the
       un-suffixed (`.orchestrator-multi-state.json`), hyphen-suffixed
       (`.orchestrator-multi-state-*.json`), dot-separator (`.orchestrator-multi-state.*.json`) and
       `.prev-` (`.orchestrator-multi-state.prev-*.json`) shapes, and the `.return-meta-multi`
       equivalents — keeping `shopt -s nullglob` around it and de-duplicating any path a widened
-      glob matches twice
-- [ ] Extend `extract_session_id` to strip the dot-separator and `.prev-` prefixes in addition to
-      the two existing hyphen prefixes, keeping the existing `jq -r '.session_id'` fallback
-- [ ] Update the script's header comment block (`# Scope:` and the `# Filename shape:` note above
+      glob matches twice *(completed)*
+- [x] Extend `extract_session_id` to strip the dot-separator and `.prev-` prefixes in addition to
+      the two existing hyphen prefixes, keeping the existing `jq -r '.session_id'` fallback *(completed)*
+- [x] Update the script's header comment block (`# Scope:` and the `# Filename shape:` note above
       `extract_session_id`) to name all four shapes and state why widening was chosen over a
       one-shot migration (the gitignore side already tolerates all four; widening protects every
-      consumer repo permanently)
-- [ ] Add cases to `scripts/test-session-runtime-files.sh` asserting each of the three previously
-      unreapable shapes is now reaped when stale, and that a fresh one of each is left alone
+      consumer repo permanently) *(completed)*
+- [x] Add cases to `scripts/test-session-runtime-files.sh` asserting each of the three previously
+      unreapable shapes is now reaped when stale, and that a fresh one of each is left alone *(completed)*
 
 **Timing**: 1 hour
 
