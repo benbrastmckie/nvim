@@ -1,5 +1,5 @@
 ---
-next_project_number: 280
+next_project_number: 283
 ---
 
 # TODO
@@ -11,9 +11,9 @@ next_project_number: 280
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,269,272,276,277,278,279 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,270,271,275 | 22,44,127,184,241,265,269,272,279 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 170,273 | 184,250,251,271 | core-agent-system, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,269,272,278,279,280 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,270,271,275,277,281 | 22,44,127,184,241,265,269,272,278,279,280 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 170,273,276,282 | 184,250,251,271,277,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -34,6 +34,9 @@ next_project_number: 280
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 268 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
+  └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
+    └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 
 ### Extensions
 
@@ -59,15 +62,261 @@ next_project_number: 280
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-276 [NOT STARTED] — Stop releasing a dirty worktree on a nothingtoland verdict:...
-277 [NOT STARTED] — git-commit-scoped.sh cannot commit inside a dispatch...
 278 [NOT STARTED] — Forbid forwarding the Agent tool isolation parameter in...
+  └─ 277 [NOT STARTED] — git-commit-scoped.sh cannot commit inside a dispatch...
+    └─ 276 [NOT STARTED] — Stop releasing a dirty worktree on a nothingtoland verdict:...
 279 [NOT STARTED] — Reconcile state-schema.json with the live fields the...
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 
 ## Tasks
+
+### 282. Write-time PreToolUse hook blocking record-versioning language, registered bare so exit 2 survives
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 280, Task 281
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. Build the write-time enforcement consumer for the record-versioning rule: a PreToolUse hook
+that blocks a Write/Edit introducing forbidden record-version language into a deliverable, driven
+ENTIRELY by the shared pattern library, plus its fixture test and its settings.json registration.
+
+DELIVERABLES:
+(1) hooks/validate-no-record-versioning.sh -- modeled on hooks/validate-no-task-references.sh, whose
+    header records three non-obvious contracts this hook must inherit verbatim:
+      - BLOCK VIA EXIT CODE 2 + a stderr message, NOT via `permissionDecision: deny`, which is
+        documented-buggy for allow-listed Write/Edit tool calls (settings.json carries bare
+        "Write"/"Edit" permissions.allow entries; upstream issues #4669, #13214, #18312).
+      - FAIL OPEN (exit 0, with a WARNING on stderr) if the shared library is missing OR fails to
+        source. The sibling guards BOTH cases explicitly, because under `set -e` an unguarded `.`
+        failure would abort before reaching the fallthrough. A broken guard must never block every
+        write in the repo.
+      - Resolve the library relative to the hook's own directory via BASH_SOURCE, so resolution is
+        independent of the tool's cwd.
+(2) hooks/... registration in root-files/settings.json, appended to the existing PreToolUse
+    "Write|Edit" matcher block that already carries validate-no-task-references.sh. REGISTER IT BARE
+    -- no `2>/dev/null || echo '{}'` wrapper. That wrapper converts exit 2 into exit 0 and silently
+    disables the block; the sibling's header calls this out as a specific trap, and the PostToolUse
+    entries in the same file DO use that wrapper, so the contrast is easy to get wrong by copying the
+    wrong neighbor.
+(3) scripts/tests/test-validate-no-record-versioning.sh -- fixture test modeled on
+    scripts/tests/test-validate-no-task-references.sh.
+
+=== THE ADVISORY TIER AT WRITE TIME -- RESOLVE THIS EXPLICITLY ===
+A hook has only two outcomes (block or allow), so the taxonomy's advisory tier has no direct
+write-time expression. Decide and RECORD the posture rather than leaving it implicit: the default
+recommendation is that the hook blocks on BLOCKING-tier findings only and stays SILENT on advisory
+ones, leaving advisory surfacing to the repo-wide lint. A hook that printed advisory noise on every
+Write would train users to ignore it. If research concludes advisory findings warrant a
+non-blocking stderr note instead, say so in the hook header and in the taxonomy's Enforcement
+section, and keep the two documents consistent.
+
+=== DEPENDENCY NOTE ===
+Edges on both prior tasks. On the rule/taxonomy/library task: substantive -- there is no library to
+source and no tier to honor until it exists. On the lint task: partly substantive, partly footprint.
+Substantive because the lint is where the discriminator gets its first real-corpus exercise, and a
+write-time blocker inheriting an unvalidated discriminator would block legitimate writes across the
+repo -- the highest-cost failure mode in this batch. Footprint because both touch manifest.json.
+
+=== WIRING ===
+  - manifest.json: add the hook to provides.hooks and the test to the tests list (the sibling's
+    entries are the `validate-no-task-references.sh` and `tests/test-validate-no-task-references.sh`
+    lines).
+
+ACCEPTANCE. Hook shellcheck clean per context/standards/shell-strict-mode.md. Fixture test covers:
+blocking finding denied with exit 2 and an actionable stderr message naming the rule; a specs/**
+path allowed; an advisory-only finding allowed; marker-exempted content allowed; and a
+deliberately-broken/absent library failing OPEN with exit 0. settings.json registration verified
+bare (grep the deployed-form command string for the absence of `|| echo` on this entry). After
+registration, confirm an ordinary Write to a docs/ file carrying only durable-axis version language
+(a toolchain pin, a schema filename, a CI cache key) is NOT blocked -- a false positive here is
+worse than no hook. No task-number references in deliverables outside specs/**.
+
+---
+
+### 281. Repo-wide record-versioning lint with a blocking/advisory tier split, driven by the shared pattern library
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 280
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. Build the repo-wide lint consumer for the record-versioning rule: a script that scans every
+git-tracked file outside specs/** for unexempted record-version language, driven ENTIRELY by the
+shared pattern library, plus its fixture test.
+
+DELIVERABLES:
+(1) scripts/check-record-versioning.sh -- modeled line-for-line on scripts/check-task-references.sh,
+    which is the established shape for this class of lint and already solves several problems worth
+    inheriting rather than rediscovering:
+      - scans via `git ls-files`, so gitignored/vendored/generated paths are excluded by
+        construction (this is what keeps .claude/** out of scope automatically)
+      - three exit codes with distinct meanings: 0 clean, 1 findings, 2 environment/usage error, so
+        a broken invocation is never mistaken for a clean tree
+      - `--quiet` summary mode and an optional positional PATH_SCOPE argument scoping the scan to a
+        subtree or single file, where a nonexistent PATH_SCOPE prints [SKIP] and exits 0
+      - a `REPO_ROOT=$(pwd)` source-store invocation override, required because
+        .claude/scripts/... does not exist until a deploy runs
+      - NO hard-coded directory list: the sibling's own header records "Default to Repo-Wide Scope,
+        Never a Hard-Coded Directory List" as a design principle, so a consumer repo with any layout
+        is scanned in full rather than scanning nothing.
+(2) scripts/tests/test-check-record-versioning.sh -- fixture test modeled on
+    scripts/tests/test-check-task-references.sh.
+
+=== BLOCKING VS ADVISORY -- THE ONE GENUINELY NEW DESIGN SURFACE ===
+The sibling lint has a single severity. This one does not: the tiering decided in the taxonomy means
+findings split into BLOCKING (affect the exit code) and ADVISORY (reported, never affect the exit
+code). Implement the tier split by consuming the library's per-category tier rather than
+re-classifying here, and make the reporting format state the tier per finding. The precedent for
+exactly this two-tier reporting contract already exists in this repo -- see
+scripts/chapter-quality-check.sh and scripts/typst-element-lint.sh, both of which report advisory
+findings without affecting the exit code -- so follow that established convention rather than
+inventing a third.
+
+=== DEPENDENCY NOTE ===
+Edge on the rule/taxonomy/library task is SUBSTANTIVE, not merely footprint: this script defines
+none of its own patterns, exemptions, or tiers, so there is nothing to consume until the library
+exists and the taxonomy has fixed the per-category tiers. file_scope also overlaps on manifest.json
+and on the library itself (tier refinement driven by what the real scan finds), and the edge
+serializes that overlap rather than leaving it to chance.
+
+=== WIRING ===
+  - manifest.json: add the script to provides.scripts and the test to the tests list (the sibling's
+    entries are the `check-task-references.sh` and `tests/test-check-task-references.sh` lines).
+  - docs/reference/utility-scripts-inventory.md: catalogue the new lint there -- that file is the
+    documented home for standalone repo-health/doc-lint scripts not invoked in the normal
+    research/plan/implement lifecycle, per the CLAUDE.md "Utility Scripts" pointer.
+
+ACCEPTANCE. Script shellcheck clean per context/standards/shell-strict-mode.md. All four sibling
+behaviors present and exercised by the fixture test: clean tree, blocking finding, advisory finding
+that does NOT change the exit code, and marker-exempted content. Running the lint with no arguments
+against the Verification repo returns exit 0 (the de-versioning sweep is committed; a nonzero exit
+means either a real miss in the sweep or a discriminator bug -- resolve which, do not relax the
+pattern to make it green). Running it against docs/ci.md, docs/consuming.md,
+docs/stability-and-versioning-policy.md and docs/setup-without-nix.md individually produces zero
+BLOCKING findings, since those carry only durable-axis version language. No task-number references
+in deliverables outside specs/**.
+
+---
+
+### 280. Forbid record-versioning language in deliverables: the rule, its exemption taxonomy, and the shared pattern library that discriminates draft history from durable version axes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. State the policy that deliverables outside specs/ describe the CURRENT DESIGN ONLY and never
+narrate their own draft history, and build the single mechanical source of truth that this rule's
+two enforcement consumers (repo-wide lint, write-time hook) will both consume. This task produces
+policy plus mechanism; the consumers are separate tasks and deliberately come later.
+
+DELIVERABLES (three files plus wiring):
+(1) rules/no-record-versioning-in-deliverables.md -- the rule, shaped EXACTLY like its sibling
+    rules/no-task-references-in-deliverables.md: a "## Path Pattern" section, a "## Principle"
+    section, an explicit exceptions list, and a closing pointer to the fuller taxonomy under
+    context/standards/. Carry the sibling's deliberate no-`paths:`-frontmatter HTML comment
+    rationale if the same universal-scope reasoning applies (it does: any deliverable in any
+    location could receive version language).
+(2) context/standards/record-version-exemptions.md -- the full taxonomy and enforcement narrative,
+    the lazy companion the rule points at.
+(3) scripts/lib/record-version-patterns.sh -- the ONLY place detection patterns, axis
+    discrimination, and exemption logic are defined. Both later consumers source it and neither
+    defines any of that locally. Model its header, its exported-variable shape, its
+    `is_exempt_path`, and its `strip_exempt_regions` stdin/stdout filter on
+    scripts/lib/task-reference-patterns.sh.
+
+=== SUBSTANCE OF THE RULE -- RULED, DO NOT RE-OPEN ===
+Deliverable files (docs/**, README.md, code, and other work product) must state the current design
+only and must never narrate their own draft history. Specifically FORBIDDEN in deliverables:
+  - page-level version labels in titles or status lines: "The X convention (v2)";
+    "**Status**: v2, accepted <date>; supersedes v1"
+  - "this is the second version" / "supersedes v1" framing
+  - supersession or disposition tables mapping an earlier draft's decisions onto the current ones
+  - "(v1 Decision N)" attributions attached to rejected alternatives
+  - phrasing relative to an unstated past: "no longer", "previously", "formerly", "used to",
+    "carried forward from v1", "withdrawn", "every v1 field removed"
+
+Rejected alternatives are KEPT -- they are the point of a decision record -- but stated on their own
+merits rather than attributed to an earlier draft of the same document.
+
+=== EXEMPT ZONES -- RULED, VERSION LANGUAGE IS PERMITTED, NO MARKER NEEDED ===
+1. Everything under specs/** -- task descriptions, plans, reports, summaries, `completion_summary`
+   fields, TODO.md, state.json, ROADMAP.md. THIS IS THE PRIMARY EXEMPTION and was confirmed
+   explicitly by the owner.
+2. Git commit messages; PR/branch metadata.
+3. Three DURABLE NON-RECORD version axes that are not draft history:
+   (a) software/toolchain versions -- `Lean v4.31.0`, `actions/checkout@v4`, `schema = 2` semantics
+   (b) file-format and schema versions -- `book.toml` `schema = 2`, `books/schema/book-toml-v2.md`,
+       `book-cert-v2.md`
+   (c) CI cache-key epoch segments -- `pnpm-v1-`, `lake-recheck-v3-` in docs/ci.md
+4. An explicit, DATED cross-document amendment note in a decision record, recording that a decision
+   the record OWNS was amended -- docs/architecture-decisions.md's "**Amended by** <doc>, <date>:"
+   house style. This records a real change to an accepted decision, not a draft lineage, and MUST
+   stay permitted. (Verified present: docs/architecture-decisions.md carries exactly one such note.)
+
+Beyond these four, an exception requires EXPLICIT USER PERMISSION. Provide a marker convention for a
+user-permitted exception mirroring the sibling's `task-ref-ok` marker: a block form
+(`version-ok:begin` ... `version-ok:end`, matched as plain substrings so comment syntax is
+irrelevant) and an inline form, both requiring a trailing reason naming a taxonomy category. Name
+the marker in the taxonomy and implement its stripping in the shared library, not in either
+consumer.
+
+=== THE HARD DESIGN PROBLEM -- THIS IS WHAT THE TASK IS ACTUALLY ABOUT ===
+The forbidden vocabulary OVERLAPS HEAVILY with the legitimate uses in exempt zone 3: `v1`/`v2`
+appear in toolchain pins, CI cache keys and schema filenames, so a naive regex is noisy. The shared
+library must DISCRIMINATE the record-version axis from the three durable axes. Verified footprint in
+the Verification repo at the time of writing: eight files under docs/ plus README.md match a bare
+`\bv[0-9]\b`, and docs/book-convention.md still legitimately carries 4 such mentions AFTER the sweep
+-- so the discriminator's job is to return zero findings on that already-clean tree while still
+catching the patterns in the FORBIDDEN list above. It is ACCEPTABLE for some categories to be
+ADVISORY rather than BLOCKING; decide the tier per category in the taxonomy and encode the tiering
+in the library so both consumers inherit it rather than each choosing. The bare-past-tense
+vocabulary ("no longer", "previously", "formerly", "used to", "withdrawn") is the most
+false-positive-prone category and is the leading advisory candidate.
+
+=== RATIONALE TO RECORD IN THE RULE (cite durable anchors, no task numbers) ===
+docs/book-convention.md shipped carrying 68 v1/v2 mentions across 1,705 lines, a 22-line "How this
+record relates to v1" supersession table with 15 disposition rows, eight "(v1 Decision N)"-attributed
+rejected alternatives, and an "Every v1 field removed" migration table -- while BOTH "versions" were
+dated the same day and nothing in the repository had ever been built against v1 (no `book.toml`
+existed anywhere). The file documented its own authoring process rather than its design, and the
+label leaked outward into docs/architecture-decisions.md (5 references), docs/README.md,
+specs/ROADMAP.md and eight open task descriptions in state.json. It was also off house style: every
+other decision record in docs/architecture-decisions.md carries a bare "**Status**: accepted, <date>"
+with no page version. The de-versioning sweep is already committed -- see the commit titled "docs:
+state the book convention without version history" -- and this rule is the durable guard against
+recurrence.
+
+=== WIRING (do not skip; the sibling occupies all of these surfaces) ===
+  - manifest.json: add the rule to provides.rules, the standard to provides.context, and the library
+    to provides.scripts (the sibling's entries are at the `no-task-references-in-deliverables.md`,
+    `standards/task-reference-exemptions.md` and `lib/task-reference-patterns.sh` lines -- follow
+    their exact shape).
+  - index-entries.json: add a discovery entry for the standard, modeled on the existing
+    `standards/task-reference-exemptions.md` entry (path, summary, keywords).
+  - merge-sources/claudemd.md: add the rule to the "Rules References" core-rules list beside the
+    `no-task-references-in-deliverables.md` line, so the deployed CLAUDE.md advertises it.
+
+ACCEPTANCE. Rule file structurally parallel to its sibling (same four sections, same pointer
+discipline). Taxonomy standard enumerates every category with its blocking/advisory tier and
+documents the marker convention. Shared library is shellcheck clean per
+context/standards/shell-strict-mode.md, exports its patterns and both exemption helpers, and is
+sourceable standalone. All three manifest/index/claudemd surfaces wired. A one-off manual run of the
+library's discriminator over the Verification repo's docs/ and README.md returns zero BLOCKING
+findings (the sweep is committed, so a green tree is the expected baseline and any finding is either
+a real miss in the sweep or a discriminator bug -- resolve which before closing). No task-number
+references in deliverables outside specs/**.
+
+---
 
 ### 279. Reconcile state-schema.json with the live fields the orchestrator reads: rule per field (widen, migrate, or retire), and fix the blockers reader/comment contradiction
 - **Status**: [NOT STARTED]
@@ -234,7 +483,7 @@ FILE FOOTPRINT / COORDINATION NOTES (no hard dependency edges declared -- file_s
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 278
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**, a disposable deploy tree).
 
@@ -268,7 +517,7 @@ FILE FOOTPRINT / COORDINATION NOTES: git-commit-scoped.sh appears in NO other ac
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 277
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh and agent-system/extensions/core/scripts/dispatch-worktree.sh (never .claude/**, a disposable deploy tree).
 
@@ -292,7 +541,7 @@ WHY THIS FRAMING MATTERS: the fix must convert the whole failure CLASS from sile
 
 REGRESSION TEST. Add coverage under agent-system/extensions/core/scripts/tests/ (test-dispatch-worktree.sh already exists and is the natural home) for a DIRTY worktree whose branch IS already an ancestor of HEAD -- the precise combination that currently returns `nothing_to_land`. Assert the verdict is blocking and that the worktree still exists afterward.
 
-FILE FOOTPRINT / COORDINATION NOTES (no hard dependency edges declared -- file_scope-driven serialization at admission is the designed mechanism, and a blocked edge on a silent-data-loss fix would be the wrong trade):
+FILE FOOTPRINT / COORDINATION NOTES (one hard dependency edge declared: this task depends on the git-commit-scoped.sh worktree-targeting task, which itself depends on the Move 2 isolation-forwarding contract fix. That chain is deliberate -- the trigger closes first, then the commit path this fix attests to is repaired, then the destructive release branch is removed -- and file_scope overlap alone would not have ordered it, since the three footprints are disjoint. All other coordination below remains file_scope-driven serialization at admission):
 - orchestrate-cycle-postflight.sh also appears in the file_scope of tasks 184, 263 and 273.
 - dispatch-worktree.sh appears in NO other active task's declared file_scope, BUT task 268's fix (the lake-build-guard false-green replay, whose newly-identified mechanism is dispatch-worktree.sh's `cp -al` clone of .lake/) will touch this same file in its `provision` path. 268 currently has a null file_scope, so admission cannot see that overlap. The two edits are in different functions (`land`/release handling here vs. `provision`'s clone there), but whichever lands second should re-read the file.
 

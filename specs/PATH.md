@@ -78,9 +78,11 @@ Then: **the consumer repos are STALE across the board.** If the next work touche
 ```
 
 Filed 2026-09-30, all four verified by reading the source store rather than inferred. **This lane
-comes first.** Ordering within it is deliberate: 278 is a contract-only change that stops the
-hazard being triggered at all, 277 restores the commit path the fix depends on, 276 removes the
-destructive branch itself, and 279 is independent.
+comes first.** Ordering within it is deliberate and now **enforced by declared dependency
+edges** (278 <- 277 <- 276), not left to file_scope serialization -- the three footprints are
+disjoint, so admission alone would have run them in parallel. 278 is a contract-only change that
+stops the hazard being triggered at all, 277 restores the commit path the fix depends on, 276
+removes the destructive branch itself, and 279 is independent (wave 1 alongside 278).
 
 | Task | What lands | Note |
 |---|---|---|
