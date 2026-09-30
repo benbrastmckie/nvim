@@ -11,9 +11,9 @@ next_project_number: 276
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,51,89,127,165,184,217,241,255,263,265,268,269 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,270,271,272 | 22,44,51,127,184,241,265,269 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 170,273,275 | 51,184,250,251,271,272 | core-agent-system, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,255,263,265,268,269,272 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,270,271,275 | 22,44,127,184,241,265,269,272 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 170,273 | 184,250,251,271 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -23,8 +23,6 @@ next_project_number: 276
 44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-51 [IMPLEMENTING] — Move session runtime files out of the specs root and make the...
-  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
@@ -59,11 +57,11 @@ next_project_number: 276
 
 ### Orchestrator
 
-271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
-  └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
-    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
+271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
+  └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 
 ## Tasks
@@ -2258,12 +2256,13 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 ---
 
 ### 51. Move session runtime files out of the specs root and make the reap path run
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 143, Task 209
 - **Research**: [051_move_session_state_files_out_of_specs_root/reports/01_relocate-widen-reap-wire-todo.md]
 - **Plan**: [051_move_session_state_files_out_of_specs_root/plans/01_relocate-widen-reap-wire-todo.md]
+- **Summary**: [051_move_session_state_files_out_of_specs_root/summaries/01_relocate-widen-reap-wire-todo-summary.md]
 
 **Description**: Stop session-scoped orchestration runtime files from accumulating at the specs/ root, and make the existing reap path actually run. Originally scoped as "move the files into a dot-prefixed directory"; widened after a manual cleanup swept 79 stranded files across 5 repos (oldest dated 2026-07-11), because relocation alone hides the clutter without stopping the growth.
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #51
 
 - **Task**: 51 - Move session runtime files out of the specs root and make the reap path run
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None (task 143 and task 209 are both completed/archived and non-blocking)
 - **Research Inputs**: specs/051_move_session_state_files_out_of_specs_root/reports/01_relocate-widen-reap-wire-todo.md

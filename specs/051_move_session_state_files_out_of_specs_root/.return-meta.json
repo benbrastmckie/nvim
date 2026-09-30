@@ -47,21 +47,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/051_move_session_state_files_out_of_specs_root/summaries/01_relocate-widen-reap-wire-todo-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["path-relocation", "shared-resolver", "test-fixture-drift", "runtime-file-patterns", "lib-copy-list"]
+      "suggested_keywords": [
+        "path-relocation",
+        "shared-resolver",
+        "test-fixture-drift",
+        "runtime-file-patterns",
+        "lib-copy-list"
+      ]
     },
     {
       "content": "When a full run-all.sh pass surfaces test failures unrelated to the current task's edits, use `git merge-base --is-ancestor <file's-last-touch-commit> <commit-that-introduced-the-now-unmet-dependency>` to prove a failure predates the current task, rather than assuming or hand-waving 'probably pre-existing'. Pair with `git stash` + re-run for failures with no clear introducing commit (confirms the failure reproduces identically with zero current-task changes present). This produces citable evidence for a plan's #### Reasoned Exclusions table (the [COMPLETED WITH EXCLUSIONS] phase-heading marker's required record) instead of an unsubstantiated claim.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/051_move_session_state_files_out_of_specs_root/summaries/01_relocate-widen-reap-wire-todo-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["pre-existing-defect", "git-merge-base", "reasoned-exclusions", "test-triage", "git-stash-verification"]
+      "suggested_keywords": [
+        "pre-existing-defect",
+        "git-merge-base",
+        "reasoned-exclusions",
+        "test-triage",
+        "git-stash-verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790721762_ff3d8e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }
