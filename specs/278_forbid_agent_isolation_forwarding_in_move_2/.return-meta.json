@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/278_forbid_agent_isolation_forwarding_in_move_2/plans/01_forbid-isolation-forwarding.md",
-      "summary": "4-phase documentation-and-contract plan adding a categorical point-of-use MUST NOT against forwarding dispatch-row isolation/worktree_path to the Agent tool, strengthening the emitting script's header, and cross-linking the design record."
-    }
-  ],
-  "next_steps": "Run /implement 278 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "Contract-placement pattern for orchestration systems: a prohibition that exists only as rationale prose in a design-record/guardrails document is not enforced, because a dispatching lead has no reason to open that file mid-dispatch. The enforceable form is a point-of-use MUST NOT in the section that performs the action, stated categorically over the data shape ('no field of a dispatch row is a tool argument unless this section names it') rather than enumerating the one known offender, with the consequence stated in one clause so the rule is self-justifying where it is read. The motivating instance: a dispatch-row field named identically to a real harness Agent-tool parameter (isolation, enum worktree/remote) makes accidental forwarding syntactically valid and error-free, so no type or schema check catches it. The emitting script's own header must say the field RECORDS a posture already in effect and is never an argument to forward -- descriptive phrasing like 'dispatch-site wiring' reads as a description of what the field configures, not as a statement that it configures nothing downstream.",
-      "category": "PATTERN",
-      "source_artifact": "specs/278_forbid_agent_isolation_forwarding_in_move_2/plans/01_forbid-isolation-forwarding.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["point-of-use-contract", "dispatch-row-schema", "agent-tool-arguments", "categorical-must-not", "harness-parameter-collision", "orchestration-prohibition"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 9,
   "metadata": {
-    "session_id": "sess_1790788666_f8aaca_278",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 1.5,
-    "dependency_waves": [[1], [2, 3], [4]]
-  },
-  "dispatch_seq": 5
+    "session_id": "sess_1790788666_f8aaca",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 4
+  }
 }

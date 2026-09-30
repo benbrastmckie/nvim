@@ -1,7 +1,7 @@
 # Implementation Plan: Task #278
 
 - **Task**: 278 - Forbid Agent isolation forwarding in Move 2
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (no hard dependency edges declared; file_scope-driven serialization at
   admission handles coordination with the SKILL.md and orchestrate-cycle-plan.sh co-owners)
@@ -101,20 +101,20 @@ No `roadmap_path` provided for this dispatch; no ROADMAP.md consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add the categorical MUST NOT to Move 2 [NOT STARTED]
+### Phase 1: Add the categorical MUST NOT to Move 2 [COMPLETED]
 
 **Goal**: Move 2 carries an explicit, self-justifying prohibition on forwarding any un-named
 dispatch-row field to the Agent tool, so a lead reconciling the abbreviated Agent-call comment
 against a row carrying `isolation: "worktree"` reaches the right conclusion at the point of use.
 
 **Tasks**:
-- [ ] Re-read `skills/skill-orchestrate/SKILL.md` immediately before editing (Territory contract);
+- [x] Re-read `skills/skill-orchestrate/SKILL.md` immediately before editing (Territory contract);
       confirm the `### Move 2: Dispatch` section and its two `while read` code fences are still
-      shaped as the research report found them.
-- [ ] Insert a new `**MUST NOT**:` paragraph inside the Move 2 section, as prose OUTSIDE any code
+      shaped as the research report found them. *(completed: re-grepped, 0 matches, unchanged)*
+- [x] Insert a new `**MUST NOT**:` paragraph inside the Move 2 section, as prose OUTSIDE any code
       fence — adjacent to the existing `**MUST NOT**:` paragraph about `aux_dispatch[]` rows,
-      matching that paragraph's formatting convention exactly.
-- [ ] Required content, all five elements present:
+      matching that paragraph's formatting convention exactly. *(completed)*
+- [x] Required content, all five elements present:
       (1) the categorical rule — no field of a `dispatch[]` or `aux_dispatch[]` row is an
       Agent-tool argument unless this section names it as one, which today means `agent`
       (-> `subagent_type`) and `model` only;
@@ -127,11 +127,13 @@ against a row carrying `isolation: "worktree"` reaches the right conclusion at t
       all cross-checkout git by design while still permitting file writes and build runs, so the
       agent authors and verifies its work green and then cannot commit it;
       (5) a forward pointer to `context/patterns/batch-orchestration-guardrails.md`'s
-      "Deliberate Divergences" for the complementary rationale.
-- [ ] Optionally cite the observed cost as a parenthetical, phrased with NO task number and NO
+      "Deliberate Divergences" for the complementary rationale. *(completed: all five present)*
+- [x] Optionally cite the observed cost as a parenthetical, phrased with NO task number and NO
       repository name (e.g. "observed cost in one production run: 20 of a dispatch's 21 phases").
-- [ ] Verify the new paragraph's wording does not depend on any surrounding line number.
-- [ ] Commit this file's hunk alone with an explicit pathspec.
+      *(completed)*
+- [x] Verify the new paragraph's wording does not depend on any surrounding line number.
+      *(completed)*
+- [x] Commit this file's hunk alone with an explicit pathspec. *(completed)*
 
 **Timing**: 25 minutes
 

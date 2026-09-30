@@ -164,6 +164,21 @@ its only effect is a written file or a revised plan a later cycle picks up. `age
 Log every `plan_json.deferred[]`/`plan_json.blocked[]` row's `reason` verbatim — informational;
 deferred tasks become eligible again later.
 
+**MUST NOT**: no field of a `dispatch[]` or `aux_dispatch[]` row is ever forwarded as an
+Agent-tool argument unless this section names it as one — today that is `agent`
+(-> `subagent_type`) and `model` only; the `Context: {...}` fields above are prompt text handed
+to the dispatched agent, never Agent-tool arguments themselves. In particular, never forward a
+row's `isolation`/`worktree_path` fields to the Agent tool's own `isolation` parameter:
+`isolation` is a real Agent-tool parameter whose enum includes `"worktree"`, so a forwarded row
+value is syntactically valid and raises no error. The row's `isolation`/`worktree_path` only
+RECORD a worktree `dispatch-worktree.sh` already provisioned before the row was built; forwarding
+it stacks a SECOND harness checkout on top of that one, the harness then refuses all
+cross-checkout git BY DESIGN while still permitting file writes and build/test runs, so the
+dispatched agent authors and verifies its work green and then cannot commit it (observed cost in
+one production run: 20 of a dispatch's 21 phases). See
+`context/patterns/batch-orchestration-guardrails.md`'s "Deliberate Divergences" for the
+complementary rationale.
+
 ### Move 3: Postflight
 
 **After ALL Agent calls from Move 2 complete** (never interleaved with dispatch), run this once

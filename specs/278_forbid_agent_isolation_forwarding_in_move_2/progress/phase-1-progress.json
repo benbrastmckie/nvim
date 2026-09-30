@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Add the categorical MUST NOT to Move 2",
+  "started_at": "2026-09-30T00:00:00Z",
+  "last_updated": "2026-09-30T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read SKILL.md Move 2 section before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert MUST NOT paragraph with 5 required elements", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Verify insertion and commit", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
