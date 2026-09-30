@@ -391,29 +391,35 @@ if the header and map disagree, the header is the source of truth and the discre
 
 ---
 
-### Phase 4: End-to-end acceptance verification [NOT STARTED]
+### Phase 4: End-to-end acceptance verification [COMPLETED]
 
 **Goal**: All eight ACCEPTANCE items demonstrated by execution, and the source-store/deploy
 boundary confirmed intact.
 
 **Tasks**:
-- [ ] Run the live reproduction using the **source-store** script (not the stale deployed copy) in
+- [x] Run the live reproduction using the **source-store** script (not the stale deployed copy) in
       the reproduction repo, read-only:
       `bash /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/chapter-quality-check.sh
       --verbose /home/benjamin/Projects/Logos/Verification/typst/manual/chapters/01-introduction.typ`
       and confirm Rule 1.3 now **evaluates** against `typst/manual/bibliography.bib` rather than
       reporting NOT EVALUATED (ACCEPTANCE 4 and 5 in their live form). Make no edits in that repo.
-- [ ] Record the before/after output lines side by side in the phase's progress record.
-- [ ] Re-run all five `detect_task_type` probes from Phase 1 as a regression check (ACCEPTANCE 2, 3).
-- [ ] Re-run the full test suite one final time (ACCEPTANCE 6).
-- [ ] Confirm `git diff --name-only` since the task's first commit touches only the four files in
+      *(completed: see below and progress/phase-4-progress.json)*
+- [x] Record the before/after output lines side by side in the phase's progress record.
+      *(completed)*
+- [x] Re-run all five `detect_task_type` probes from Phase 1 as a regression check (ACCEPTANCE 2, 3).
+      *(completed: all five unchanged from Phase 1)*
+- [x] Re-run the full test suite one final time (ACCEPTANCE 6). *(completed: 83 passed, 0 failed)*
+- [x] Confirm `git diff --name-only` since the task's first commit touches only the four files in
       the declared `file_scope`, and that nothing under any `.claude/` tree was modified
-      (SCOPE DISCIPLINE, source-store-deploy-boundary rule).
-- [ ] Confirm `scripts/typst-element-lint.sh` and `index-entries.json` still carry only their
+      (SCOPE DISCIPLINE, source-store-deploy-boundary rule). *(completed: this task's three
+      commits touch exactly the four declared file_scope paths plus this task's own specs/
+      artifacts; zero .claude/** paths)*
+- [x] Confirm `scripts/typst-element-lint.sh` and `index-entries.json` still carry only their
       pre-existing, unstaged modifications — untouched and uncommitted by this task.
-- [ ] Walk the eight ACCEPTANCE items one by one and record, for each, the command run and its
+      *(completed: both remain modified-but-uncommitted, unchanged by this task)*
+- [x] Walk the eight ACCEPTANCE items one by one and record, for each, the command run and its
       observed output. Any item that cannot be demonstrated is reported as an explicit exclusion,
-      not quietly marked done.
+      not quietly marked done. *(completed: see the ACCEPTANCE table in the implementation summary)*
 
 **Timing**: 0.75 hours
 
