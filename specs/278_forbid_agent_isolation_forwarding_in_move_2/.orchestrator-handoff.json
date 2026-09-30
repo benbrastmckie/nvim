@@ -1,0 +1,20 @@
+{
+  "status": "planned",
+  "task_number": 278,
+  "session_id": "sess_1790788666_f8aaca_278",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Authored a 4-phase implementation plan for the isolation-forwarding prohibition. Phase 1 inserts a categorical MUST NOT in skill-orchestrate/SKILL.md Move 2 (no dispatch-row field is an Agent-tool argument unless Move 2 names it; isolation/worktree_path named as the motivating example, with the stacked-checkout/uncommittable-work consequence stated in one clause). Phase 2 strengthens orchestrate-cycle-plan.sh's output-schema header from 'dispatch-site wiring' to an explicit never-an-Agent-tool-argument statement, located by content anchor rather than line number so the co-owning decomposition task cannot invalidate it. Phase 3 adds the two-way cross-link in batch-orchestration-guardrails.md's Deliberate Divergences. Phase 4 runs the final gate set (check-task-references.sh, bash -n, deploy-boundary confirmation). Waves: [1], [2,3], [4]. Documentation-and-comment-only; no executable logic changes; all edits in the source store under agent-system/extensions/core, none under .claude/**.",
+  "blockers": [],
+  "sorry_inventory": [],
+  "continuation_path": null,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/278_forbid_agent_isolation_forwarding_in_move_2/plans/01_forbid-isolation-forwarding.md",
+      "summary": "4-phase documentation-and-contract plan: Move 2 categorical MUST NOT, orchestrate-cycle-plan.sh header strengthening, guardrails cross-link, final gate verification."
+    }
+  ],
+  "next_steps": "Run /implement 278 to execute the plan"
+}

@@ -1,26 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790788666_f8aaca_278",
-  "dispatch_seq": 1,
-  "task_number": 278,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/278_forbid_agent_isolation_forwarding_in_move_2/reports/01_forbid-isolation-forwarding.md",
-      "summary": "Confirms no existing isolation-forwarding prohibition in skill-orchestrate/SKILL.md Move 2, enumerates every dispatch-row field's actual use, and recommends three source-store edits: a categorical MUST NOT in SKILL.md Move 2, a strengthened isolation/worktree_path header note in orchestrate-cycle-plan.sh, and an optional cross-link from batch-orchestration-guardrails.md's Deliberate Divergences bullet."
+      "type": "plan",
+      "path": "specs/278_forbid_agent_isolation_forwarding_in_move_2/plans/01_forbid-isolation-forwarding.md",
+      "summary": "4-phase documentation-and-contract plan adding a categorical point-of-use MUST NOT against forwarding dispatch-row isolation/worktree_path to the Agent tool, strengthening the emitting script's header, and cross-linking the design record."
     }
   ],
+  "next_steps": "Run /implement 278 to execute the plan",
   "memory_candidates": [
     {
-      "content": "The orchestrate-cycle-plan.sh dispatch[] row schema carries an `isolation` field (\"none\"/\"worktree\") that is purely descriptive dispatch-site wiring, never consumed by skill-orchestrate/SKILL.md's Move 2 Agent-tool call. This collides dangerously with the harness Agent tool's own real `isolation` parameter (enum \"worktree\"/\"remote\"): a dispatch row's isolation:\"worktree\" value is a syntactically valid value for that argument, so accidental forwarding produces no schema error, only a stacked second worktree checkout that the harness then refuses to git-commit across. When reviewing any dispatch-row-to-tool-call wiring, check field names against the target tool's own parameter names, not just against local schema consistency.",
+      "content": "Contract-placement pattern for orchestration systems: a prohibition that exists only as rationale prose in a design-record/guardrails document is not enforced, because a dispatching lead has no reason to open that file mid-dispatch. The enforceable form is a point-of-use MUST NOT in the section that performs the action, stated categorically over the data shape ('no field of a dispatch row is a tool argument unless this section names it') rather than enumerating the one known offender, with the consequence stated in one clause so the rule is self-justifying where it is read. The motivating instance: a dispatch-row field named identically to a real harness Agent-tool parameter (isolation, enum worktree/remote) makes accidental forwarding syntactically valid and error-free, so no type or schema check catches it. The emitting script's own header must say the field RECORDS a posture already in effect and is never an argument to forward -- descriptive phrasing like 'dispatch-site wiring' reads as a description of what the field configures, not as a statement that it configures nothing downstream.",
       "category": "PATTERN",
-      "source_artifact": "specs/278_forbid_agent_isolation_forwarding_in_move_2/reports/01_forbid-isolation-forwarding.md",
+      "source_artifact": "specs/278_forbid_agent_isolation_forwarding_in_move_2/plans/01_forbid-isolation-forwarding.md",
       "confidence": 0.85,
-      "suggested_keywords": ["orchestrate", "isolation", "worktree", "Agent tool", "dispatch row", "cross-checkout git"]
+      "suggested_keywords": ["point-of-use-contract", "dispatch-row-schema", "agent-tool-arguments", "categorical-must-not", "harness-parameter-collision", "orchestration-prohibition"]
     }
   ],
-  "next_steps": "Run /plan 278 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1790788666_f8aaca_278",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 1.5,
+    "dependency_waves": [[1], [2, 3], [4]]
+  },
+  "dispatch_seq": 5
 }
