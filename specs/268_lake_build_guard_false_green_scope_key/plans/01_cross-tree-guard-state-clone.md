@@ -350,7 +350,7 @@ it does not, that is itself the finding.
 
 ---
 
-### Phase 4: Record the hazard class in both script headers [NOT STARTED]
+### Phase 4: Record the hazard class in both script headers [COMPLETED]
 
 **Goal**: Make the "exclude ephemeral runtime state from a hardlink clone" convention discoverable
 where a future sibling guard author will read it, so the hazard is inherited by default rather
@@ -358,23 +358,23 @@ than rediscovered.
 
 **Tasks**:
 
-- [ ] In `dispatch-worktree.sh`'s header, extend the "WHY A HARDLINK CLONE, NEVER A SYMLINK"
+- [x] In `dispatch-worktree.sh`'s header, extend the "WHY A HARDLINK CLONE, NEVER A SYMLINK"
       note: a hardlink clone shares the INODE of every pre-existing file, so any ephemeral
       runtime state file already present in a cloned directory is one file under two paths.
       Name `build-guard.*` as the confirmed, reproduced, now-excluded case (record/log clobbering
       and cross-tree `flock` serialization), and state the rule for future cloned directories.
       Note that the "independently rebindable via atomic rename" property holds only for writers
       that actually rename, and that a truncate-in-place writer does not get it.
-- [ ] Update the header's `RUNTIME PATHS THIS SCRIPT OWNS` / provision description if it implies
+- [x] Update the header's `RUNTIME PATHS THIS SCRIPT OWNS` / provision description if it implies
       `.lake/` is cloned in full, so the documented behavior matches the code.
-- [ ] In `lake-build-guard.sh`'s header, under `FAMILY CONVENTIONS` (and/or `RECORDED DEAD ENDS`),
+- [x] In `lake-build-guard.sh`'s header, under `FAMILY CONVENTIONS` (and/or `RECORDED DEAD ENDS`),
       record that the five state files must never be hardlink-shared across trees, that
       `dispatch-worktree.sh` now excludes them at provision, and that `result --expect-pid` is the
       working caller-side mitigation for any residual case. Also record, as a dead end, that
       `--git-common-dir` is identical across every worktree of one repository and is therefore
       useless as a tree-identity source; `git rev-parse --show-toplevel` is the one that differs
       (while remaining forbidden for `ROOT` resolution, which is a different purpose).
-- [ ] Re-read both files immediately before editing; keep every edit inside comment regions.
+- [x] Re-read both files immediately before editing; keep every edit inside comment regions.
 
 **Timing**: 0.75 hours
 
@@ -412,17 +412,17 @@ actually execute, and close the task on a full green gate.
 
 **Tasks**:
 
-- [ ] Run `bash .claude/scripts/deploy-headless.sh`.
-- [ ] Verify deployed-vs-source parity for the four touched files by diffing
+- [x] Run `bash .claude/scripts/deploy-headless.sh`.
+- [x] Verify deployed-vs-source parity for the four touched files by diffing
       `.claude/scripts/dispatch-worktree.sh`, `.claude/scripts/lake-build-guard.sh`,
       `.claude/scripts/tests/test-dispatch-worktree.sh` and
       `.claude/scripts/tests/test-lake-build-guard.sh` against their
       `agent-system/extensions/core/scripts/` sources — each must be identical.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` if present (its Gate 8 runs the suite set in
+- [x] Run `bash .claude/scripts/verify-deploy.sh` if present (its Gate 8 runs the suite set in
       deployed mode, which is the configuration live dispatches use).
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` once more as the final
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` once more as the final
       full gate.
-- [ ] Confirm `git status --short` shows no unexpected tracked modification outside this task's
+- [x] Confirm `git status --short` shows no unexpected tracked modification outside this task's
       four source files (`.claude/` is gitignored, so the redeploy is expected to be invisible to
       git).
 

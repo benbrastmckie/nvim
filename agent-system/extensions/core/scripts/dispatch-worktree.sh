@@ -15,8 +15,10 @@
 #       Preflights free disk space and the concurrent-worktree cap, creates
 #       `<PROJECT_ROOT>/.orchestrate-worktrees/<task_number>-<seq>` on branch
 #       `orchestrate/task-<task_number>-<seq>` from HEAD, hardlink-clones `.claude/` (and `.lake/`
-#       when the main tree has one) into it, asserts PROJECT_ROOT resolves INSIDE the new
-#       worktree (never back to the main tree), and records the provision under
+#       when the main tree has one, EXCLUDING lake-build-guard.sh's own five ephemeral
+#       build-guard.* state files -- see "HARDLINK-CLONE HAZARD" below) into it, asserts
+#       PROJECT_ROOT resolves INSIDE the new worktree (never back to the main tree), and records
+#       the provision under
 #       `specs/.worktree-registry/<task_number>-<seq>.json`. Idempotent: re-provisioning the
 #       same `<task_number>-<seq>` while its record and worktree both still exist reuses them
 #       rather than erroring or double-creating. Emits a JSON verdict on stdout; every diagnostic
@@ -63,6 +65,26 @@
 # resource hazard isolation exists to remove. A hardlink clone (`cp -al`) gives the worktree its
 # own directory entries (independently rebindable via the same atomic-rename mechanism Phase 1
 # confirmed Lake itself uses) while sharing disk blocks for anything unchanged.
+#
+# HARDLINK-CLONE HAZARD -- EPHEMERAL RUNTIME STATE MUST BE EXCLUDED: a `cp -al` hardlink clone
+# does not copy a pre-existing file's bytes -- it shares its INODE. So any file already present
+# in a cloned source directory that some OTHER script treats as ephemeral, in-place-mutable
+# runtime state (not tracked build output) becomes the literal SAME FILE under two paths, one in
+# the main tree and one in every worktree ever provisioned from it. This was confirmed and
+# reproduced for `lake-build-guard.sh`'s own `<lake-root>/.lake/build-guard.{lock,result,log,
+# stdout,stderr}`: its `finalize_record()` truncates-in-place (`> "$RESULT_PATH"`), so a build
+# run inside a provisioned worktree silently overwrote the MAIN tree's own record/log, producing
+# a false green for a module that never actually rebuilt there; the same shared inode also made
+# `build-guard.lock` serialize builds ACROSS trees, defeating the very build-contention isolation
+# per-dispatch worktrees exist to provide (mode 2 above). The "independently rebindable via
+# atomic rename" property stated two paragraphs up holds ONLY for a writer that actually renames
+# into place -- a truncate-in-place writer (like `finalize_record()`) never gets it, hardlink or
+# not. `cmd_provision()` now excludes these five named guard-state files from the `.lake/` clone
+# (see the `rm -f` immediately after the `cp -al` below) -- named explicitly, never a glob, so an
+# unrelated `.lake/` file is never silently dropped. A FUTURE sibling guard (or any other script
+# that keeps ephemeral runtime state inside a directory this script clones) MUST follow the same
+# convention: either keep no mutable per-invocation state inside a cloned directory, or have its
+# own provisioning path exclude that state by name, the same way this one now does.
 #
 # `specs/` IS TRACKED, SO IT IS NEVER TOUCHED HERE: a fresh worktree carries a HEAD-stale copy of
 # `specs/state.json`/`specs/TODO.md`/every task directory. This script does not read or write
