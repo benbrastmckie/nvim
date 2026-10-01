@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Trim the restated forced-phase documentation and fix destination reciprocity",
+  "started_at": "2026-10-01T00:00:00Z",
+  "last_updated": "2026-10-01T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read destination sections and clause-by-clause coverage check", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace four Options table rows with summary+pointer form", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Replace forced-phase Constraints bullet with summary+pointer form", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Re-measure with wc -c, trim further if needed, commit", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Reciprocity fix in destination doc (drop backward pointers), commit", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

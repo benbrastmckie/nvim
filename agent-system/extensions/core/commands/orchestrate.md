@@ -26,15 +26,13 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
   throughput-only optimization — see `context/patterns/batch-orchestration-guardrails.md`'s
   "Batching Is the Default" section for which tasks to batch together.
 - `--research`/`--plan`/`--implement` (phase-forcing flags): honored uniformly across every
-  task_number in multi-task mode too, via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`
-  — each task tracks its own remaining-forced-phases position independently, and STOPS (never
-  falls through to ordinary status-derived classification) once its own forced sequence is
-  exhausted for the rest of this run: the task is excluded with a `blocked[]` row naming the
-  reason, whether or not a later call in the same run repeats the flag. Re-invoking `/orchestrate`
-  (a new run) is the way to continue. Separately, forced admission itself is keyed on artifacts,
-  not status: `--plan` is always admitted (reviser-agent when a plan already exists,
-  planner-agent otherwise); `--implement` is admitted only when a plan artifact exists, else
-  blocked with "no plan artifact; run --plan first".
+  task_number in multi-task mode too, via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`.
+  Each task stops (never falls through to ordinary status-derived classification) once its own
+  forced sequence is exhausted for the rest of this run; re-invoke `/orchestrate` to continue.
+  Admission is artifact-keyed, not status-keyed (`--plan` always admitted; `--implement` only
+  when a plan artifact exists). See `docs/architecture/orchestrate-state-machine.md`'s "Forced
+  Phases on a Terminal or Archived Task" and "Dependency Gating Model" sections for the full
+  contract.
 - No confirmation gates between lifecycle phases.
 - Terminates on success, `MAX_CYCLES` exceeded, `MAX_INFRA_FAILURES` exceeded (repeated Agent-tool
   transport/API failures — distinct from work-budget exhaustion), or an unrecoverable blocker.
@@ -50,15 +48,15 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate; deliberate human intent, never a general-purpose weakening | false |
 | `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the CROSS-BATCH `file_scope_collision` gate only (never `in_batch`); deliberate human intent | false |
 | `--clean` | Skip automatic memory retrieval | false |
-| `--fast` | Low-effort mode: lighter reasoning, faster responses, AND changes WHICH PHASES RUN for a `not_started` task. The default (no `--fast`) is research-first: an un-researched task dispatches research before it is planned. `--fast` skips that default research phase and dispatches straight to plan instead — the planner can still send the task to research via a `needs_research` verdict if the description does not suffice (see `docs/architecture/orchestrate-state-machine.md`'s "The `needs_research` Fork"). `--hard` does NOT skip research (only the literal value `fast` alters routing); `--research` forces the research phase even under `--fast` | false |
+| `--fast` | Low-effort mode: lighter reasoning, AND skips the default research-first phase for a `not_started` task (planner can still route back via `needs_research`); `--research` still forces research even under `--fast`. See `docs/architecture/orchestrate-state-machine.md`'s "The `needs_research` Fork" | false |
 | `--hard` | High-effort mode: injects hard-mode contracts (churn/three-strikes/burnout counters); ~3-5x cost; composable with `--lit`, `--compare`, model flags, and the phase-forcing flags | false |
 | `--haiku` | Use Haiku model (fastest, lowest cost). Applies to research/plan/implement dispatches only — diagnostic dispatches retain their frontmatter model | false |
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |
 | `--fable` | Use Fable model (claude-fable-5) | false |
-| `--research` | Force a research round even if the task progressed past it -- including a TERMINAL task (`completed`/`abandoned`/`expanded`), whether it is still in `active_projects` or has already been moved to `specs/archive/{NNN}_{slug}/` by `/todo`. Composable with `--plan`/`--implement`: canonical lifecycle order (research, plan, implement) regardless of typed order, STOPS after the last named phase, opens a new `MM_` artifact round (landing in the archive directory for an archived task), never regresses status -- a terminal task's status stays exactly what it was before, during, and after the forced round. Honored per-task in multi-task mode too, via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`/`force_phases_remaining`. An `/orchestrate` invocation with NO phase-forcing flag on a fully terminal set is unaffected by any of this and still stops with `all_terminal`, dispatching nothing -- only an explicitly forced phase admits a terminal task | false |
-| `--plan` | Force a plan round even if the task progressed past it. Composable on the same terms as `--research` above, including the terminal/archived posture: applies to a terminal task in `active_projects` or already archived, never regresses status, and an unforced `/orchestrate` on the same terminal set still stops with `all_terminal`. Honored per-task in multi-task mode too, on the same terms. Always admitted (never blocked): dispatches `reviser-agent` (a revision, in the current round, same as `/revise`) when the task already has a plan (`plans/*.md` exists), or `planner-agent` otherwise -- there is no separate `--revise` flag; `/revise N` stays the standalone command, unchanged | false |
-| `--implement` | Force an implement round even if the task progressed past it. Composable on the same terms as `--research` above, including the terminal/archived posture. On a `completed` task specifically: this RE-RUNS implementation work against already-shipped code -- deliberately permitted (implement is, on the status axis, the safest of the three forcing flags, since `postflight:implement` always resolves to `completed` and cannot regress anything), but the choice to force it is the user's alone; there is no additional confirmation gate. Honored per-task in multi-task mode too, on the same terms. Admitted ONLY when the task already has a plan (`plans/*.md` exists), at any status, including terminal -- with no plan, it is blocked with reason "no plan artifact; run --plan first" and nothing is dispatched (run `--plan` first) | false |
+| `--research` | Force a research round, including on a TERMINAL/archived task; composable with `--plan`/`--implement` in canonical order; never regresses status. See `docs/architecture/orchestrate-state-machine.md`'s "Forced Phases on a Terminal or Archived Task" for the full per-flag contract (admission rules, status preservation, archived-task directory resolution) | false |
+| `--plan` | Force a plan round on the same terms as `--research` above. Always admitted: dispatches `reviser-agent` when a plan already exists, `planner-agent` otherwise. See the same doc section | false |
+| `--implement` | Force an implement round on the same terms as `--research` above. Admitted only when a plan artifact exists, else blocked with "no plan artifact; run --plan first". See the same doc section | false |
 
 ## Anti-Bypass Constraint
 

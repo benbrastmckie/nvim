@@ -1,7 +1,7 @@
 # Implementation Plan: Task #305
 
 - **Task**: 305 - Trim `agent-system/extensions/core/commands/orchestrate.md` below its 21,000 B ceiling, then promote `ORCHESTRATOR_BUDGET_GATE_MODE` from warn to hard
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/305_trim_orchestrate_md_and_promote_budget_gate/reports/01_trim-orchestrate-md-budget-gate.md`
@@ -126,7 +126,7 @@ and the measurement are both narrated by the record refresh; verification covers
 
 ---
 
-### Phase 1: Trim the restated forced-phase documentation and fix destination reciprocity [NOT STARTED]
+### Phase 1: Trim the restated forced-phase documentation and fix destination reciprocity [IN PROGRESS]
 
 **Goal**: `agent-system/extensions/core/commands/orchestrate.md` measures <= 20,500 B with every
 cut clause verifiably still present in
