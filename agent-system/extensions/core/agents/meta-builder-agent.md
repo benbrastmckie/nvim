@@ -461,6 +461,12 @@ This runs automatically (no AskUserQuestion gate) and re-validates the augmented
 **3.5.1: Extract Topic Indicators**
 
 For each task in task_list, extract:
+- **Shared-Target Indicator**: the anticipated narrow `file_scope` path(s) the task would declare,
+  and any named acceptance gate or check it resolves (e.g. a specific validator script, a named
+  CI gate). See Component 0 (Task-Count Reasoning) in
+  `.claude/docs/reference/standards/multi-task-creation-standard.md` for the full rule and its
+  narrowness exclusion (a directory root or broad, widely-edited infrastructure file does not
+  count).
 - **Key Terms**: Significant words (nouns, verbs) from title/description, ignoring stop words (a, the, in, on, for, to, and, or)
 - **Component Type**: Identify component (command, skill, agent, rule, context, documentation)
 - **Affected Area**: Parse for directory mentions and map to source-store paths (agent-system/extensions/core/commands/, agent-system/extensions/core/skills/, agent-system/extensions/core/agents/, etc.) — never the `.claude/` deploy tree; see the Known limitation note under Component 4a above (defaults to `core`, extension-scoped tasks need human correction)
@@ -483,7 +489,10 @@ Task: "Add export skill to handle PDF generation"
 
 **3.5.2: Cluster Tasks by Shared Indicators**
 
-Apply clustering algorithm (matches /fix-it pattern):
+Apply clustering algorithm (matches /fix-it pattern). The shared-target/shared-gate branch below
+is the **primary** match criterion — it runs first because it is the sharper, structural signal
+Component 0 names (shared narrow `file_scope` entry or a single named acceptance gate), ahead of
+the fuzzy `component_type`/`affected_area` and key-term branches, which cannot see it:
 
 ```python
 groups = []
@@ -491,15 +500,26 @@ groups = []
 for task in task_list:
   matched = False
 
-  # Primary match: same component_type AND same affected_area
+  # Primary match: shares a narrow file_scope entry or the same named acceptance gate
+  # (Component 0, multi-task-creation-standard.md). Excludes directory-root or broad
+  # widely-edited infrastructure files -- see the narrowness qualifier there.
   for group in groups:
-    if task.component_type == group.component_type and task.affected_area == group.affected_area:
+    if shares_narrow_file_target(task, group) or shares_acceptance_gate(task, group):
       group.items.append(task)
       group.key_terms = union(group.key_terms, task.key_terms)
       matched = True
       break
 
-  # Secondary match: 2+ shared key_terms
+  # Secondary match: same component_type AND same affected_area
+  if not matched:
+    for group in groups:
+      if task.component_type == group.component_type and task.affected_area == group.affected_area:
+        group.items.append(task)
+        group.key_terms = union(group.key_terms, task.key_terms)
+        matched = True
+        break
+
+  # Tertiary match: 2+ shared key_terms
   if not matched:
     for group in groups:
       shared = intersection(task.key_terms, group.key_terms)

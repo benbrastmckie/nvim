@@ -255,34 +255,34 @@ the literal number 2.5.
 
 ---
 
-### Phase 3: Add shared-target/shared-gate as a primary match in both clustering copies [NOT STARTED]
+### Phase 3: Add shared-target/shared-gate as a primary match in both clustering copies [COMPLETED]
 
 **Goal**: `/meta` Stage 3.5 and `/fix-it` Step 7.5 mechanically catch the shared-edit-target /
 shared-gate case instead of relying on fuzzy key-term overlap, and the two mirrored algorithms stay
 in sync.
 
 **Tasks**:
-- [ ] Re-read both files' clustering sections immediately before editing.
-- [ ] In `agents/meta-builder-agent.md` Stage 3.5: add a shared-target indicator to the 3.5.1
+- [x] Re-read both files' clustering sections immediately before editing. *(completed)*
+- [x] In `agents/meta-builder-agent.md` Stage 3.5: add a shared-target indicator to the 3.5.1 *(completed)*
       extraction list (the anticipated narrow `file_scope` paths and any named acceptance
       gate/check the item resolves), and add a new **first** primary-match branch to the 3.5.2
       clustering pseudocode — before the existing `component_type` + `affected_area` branch —
       matching when two items share a narrow `file_scope` entry or the same named acceptance gate.
-- [ ] In `skills/skill-fix-it/SKILL.md` Step 7.5: make the identical change to the "Topic Indicator
+- [x] In `skills/skill-fix-it/SKILL.md` Step 7.5: make the identical change to the "Topic Indicator *(completed)*
       Extraction" list and to the numbered clustering algorithm, keeping the two copies'
       criteria-ordering and wording aligned so a future reader cannot read them as two different
       rules.
-- [ ] In both files, state the narrowness exclusion inline (one line each): a directory root or
+- [x] In both files, state the narrowness exclusion inline (one line each): a directory root or *(completed)*
       broad, widely-edited infrastructure file does not trigger this primary match; cross-reference
       Component 0 in `multi-task-creation-standard.md` for the full rule rather than restating it.
-- [ ] In both files, point to Component 0 by path as the authority for the default and the reason
+- [x] In both files, point to Component 0 by path as the authority for the default and the reason *(completed)*
       lists, keeping the local text limited to the mechanical match criterion.
-- [ ] Leave each file's existing Component 4a overlap check (`skill-fix-it/SKILL.md` Step 8.2;
+- [x] Leave each file's existing Component 4a overlap check (`skill-fix-it/SKILL.md` Step 8.2; *(completed)*
       `meta-builder-agent.md`'s 4a passage) untouched — it still runs afterward on whatever
       separate tasks survive consolidation.
-- [ ] Leave the existing user-facing grouped/separate/combined pickers and their option wording
+- [x] Leave the existing user-facing grouped/separate/combined pickers and their option wording *(completed)*
       unchanged; this phase changes what gets *suggested*, not the user's control over it.
-- [ ] No task-number citations in either file.
+- [x] No task-number citations in either file. *(completed)*
 
 **Timing**: 0.75 hours
 

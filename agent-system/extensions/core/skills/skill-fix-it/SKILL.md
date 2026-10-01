@@ -203,15 +203,26 @@ If "Select all" is chosen, include all TODOs. Otherwise, only selected items.
 This grouping algorithm applies to both TODO items (Step 7.5) and QUESTION items (Step 7.7). Skip if only 1 item selected.
 
 **Topic Indicator Extraction** per item:
+- **Shared-Target Indicator**: the anticipated narrow `file_scope` path(s) the item would declare,
+  and any named acceptance gate or check it resolves. See Component 0 (Task-Count Reasoning) in
+  `.claude/docs/reference/standards/multi-task-creation-standard.md` for the full rule and its
+  narrowness exclusion (a directory root or broad, widely-edited infrastructure file does not
+  count).
 - **Key Terms**: Significant words (nouns, verbs), ignoring stop words
 - **File Section**: Group by file path prefix
 - **Action Type**: Inferred from content (Add/Create -> implementation, Fix -> fix, Document -> docs, Test -> testing, Refactor -> improvement). For QUESTION items, action_type is always "research".
 
-**Clustering Algorithm**:
+**Clustering Algorithm**: the shared-target/shared-gate branch (step 2) is the **primary** match
+criterion — it runs first because it is the sharper, structural signal Component 0 names, ahead
+of the fuzzy file_section/action_type and key-term branches, which cannot see it.
 1. Start with first item as initial group
-2. For each remaining item: add to existing group if shares 2+ key terms OR shares file_section + action_type; otherwise start new group
-3. Generate topic label from most common shared terms
-4. Single-item groups are kept as-is
+2. **Primary match**: add to existing group if it shares a narrow `file_scope` entry or the same
+   named acceptance gate with that group (per Component 0's narrowness qualifier); otherwise
+   continue to step 3
+3. **Secondary match**: add to existing group if shares 2+ key terms OR shares file_section +
+   action_type; otherwise start new group
+4. Generate topic label from most common shared terms
+5. Single-item groups are kept as-is
 
 **Store result**: `topic_groups[]` with `{label, items[], shared_terms[], action_type}`
 
