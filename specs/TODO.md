@@ -11,9 +11,9 @@ next_project_number: 289
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,286 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,287 | 22,44,127,184,241,265,272,279,280,286 | core-agent-system, extensions, orchestrator |
-| 3 | 170,273,282,288 | 184,250,251,271,281,287 | core-agent-system, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,287 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281,288 | 22,44,127,184,241,265,272,279,280,287 | core-agent-system, extensions, orchestrator |
+| 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -68,9 +68,8 @@ next_project_number: 289
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
-286 [IMPLEMENTING] — Revise the working-tree isolation posture to a blanket...
-  └─ 287 [NOT STARTED] — Refuse to co-schedule two build-heavy implement tasks in one...
-    └─ 288 [NOT STARTED] — Remove the per-dispatch worktree isolation layer and unwire...
+287 [RESEARCHED] — Refuse to co-schedule two build-heavy implement tasks in one...
+  └─ 288 [NOT STARTED] — Remove the per-dispatch worktree isolation layer and unwire...
 
 ## Tasks
 
@@ -129,10 +128,11 @@ ACCEPTANCE. The three files are gone. No reference to dispatch-worktree.sh survi
 ---
 
 ### 287. Refuse to co-schedule two build-heavy implement tasks in one cycle
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 286
+- **Research**: [287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh (never .claude/**, a disposable deploy tree).
 
@@ -157,7 +157,7 @@ ACCEPTANCE. Rule implemented inside the existing cycle-split layer with its own 
 ---
 
 ### 286. Revise the working-tree isolation posture to a blanket shared-tree verdict
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None

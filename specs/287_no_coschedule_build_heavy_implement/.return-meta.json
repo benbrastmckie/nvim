@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790813213_9179fb_287",
+  "dispatch_seq": 4,
+  "findings_count": 6,
+  "next_steps": "Run /plan 287 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md",
+      "summary": "Pinpoints the exact insertion point (the shared bucketing loop at orchestrate-cycle-plan.sh:1786-1839, common to --dry-run and live) and renaming/reuse strategy (rename WORKTREE_ISOLATED_TASK_TYPES to BUILD_HEAVY_TASK_TYPES, reuse task_selected_for_worktree_isolation() as sole reader) for the Mode 2 build-heavy co-scheduling admission rule, plus test-fixture guidance (Group 32, avoiding the pre-existing file_scope_collision confound documented in Group 31)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh, the per-task bucketing loop that builds dispatch_candidates/out_deferred_rows/out_blocked_rows (around line 1786) runs identically for both --dry-run and the live path -- the dry-run/live fork happens later, at the lock-probe/H1/row-builder stage. Any new cross-candidate admission rule (comparing one eligible task against others in the same cycle) placed in that shared loop gets byte-for-byte --dry-run/live parity for free, with no second row builder to keep in sync.",
+      "category": "PATTERN",
+      "source_artifact": "specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-cycle-plan", "dry-run parity", "admission rule", "bucketing loop", "dispatch_candidates"]
+    },
+    {
+      "content": "test-orchestrate-cycle-plan.sh Group 31 discovered that orchestrate-batch-admit.sh's pre-existing in-batch file_scope_collision check (exact-string or directory-prefix match) already defers one of two same-cycle candidates whose file_scope entries overlap -- with no override for in-batch pairs. Any new same-cycle fixture meant to exercise a DIFFERENT admission mechanism must use empty or clearly disjoint file_scope values, or this unrelated pre-existing check silently absorbs the test.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["orchestrate-batch-admit", "file_scope_collision", "test fixture", "confound", "in-batch"]
+    }
+  ]
+}

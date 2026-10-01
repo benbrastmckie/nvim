@@ -45,7 +45,7 @@
       "project_number": 287,
       "project_name": "no_coschedule_build_heavy_implement",
       "title": "Refuse to co-schedule two build-heavy implement tasks in one cycle",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -58,13 +58,22 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
       ],
       "created": "2026-09-30T23:58:50Z",
-      "last_updated": "2026-09-30T23:58:50Z"
+      "last_updated": "2026-10-01T00:32:58Z",
+      "session_id": "sess_1790813213_9179fb",
+      "artifacts": [
+        {
+          "path": "specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md",
+          "type": "report",
+          "summary": "Pinpoints the exact insertion point (the shared bucketing loop at orchestrate-cycle-plan.sh:1786-1839, common to --dry-run and live) and renaming/reuse strategy (rename WORKTREE_ISOLATED_TASK_TYPES to BUILD_HEAVY_TASK_TYPES, reuse task_selected_for_worktree_isolation() as sole reader) for the Mode 2 build-heavy co-scheduling admission rule, plus test-fixture guidance (Group 32, avoiding the pre-existing file_scope_collision confound documented in Group 31)."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 286,
       "project_name": "shared_tree_isolation_posture_verdict",
       "title": "Revise the working-tree isolation posture to a blanket shared-tree verdict",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -74,7 +83,7 @@
         "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
       ],
       "created": "2026-09-30T23:58:41Z",
-      "last_updated": "2026-10-01T00:13:53Z",
+      "last_updated": "2026-10-01T00:26:53Z",
       "session_id": "sess_1790813213_9179fb",
       "artifacts": [
         {
