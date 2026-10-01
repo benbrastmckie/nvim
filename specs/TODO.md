@@ -231,6 +231,28 @@ Task 44 ("Slim commands/task.md, the largest per-invocation context contributor"
 - Task 302 also edits commands/todo.md, for a narrow commit-staging pathspec change. RECOMMENDATION ONLY (deliberately not a dependency edge, which would overconstrain): this task's restructure should land first so 302 then edits a settled file. The file_scope_collision admission gate serializes the two.
 - manifest.json is broad shared infrastructure also claimed by tasks 263, 280, 281 and 282, so expect some serialization there.
 
+=== FOLDED IN: orphan/misplaced detection ignores archived_projects (correctness bug, found live) ===
+
+A live `/todo` run surfaced a detection bug that belongs to this task rather than its own, because it exists SIX times across the two duplicate implementations this task's Phase 1 consolidates. Fixing it without consolidating first would mean fixing it twice and leaving the two copies free to diverge again — which is this task's own stated rationale, now with a concrete instance attached.
+
+THE DEFECT. Orphan and misplaced-directory detection queries only `.completed_projects[]` in `specs/archive/state.json`. Abandoned tasks route to the SIBLING `.archived_projects[]` array. So every directory belonging to an abandoned-then-archived task reads as untracked.
+
+SIX AFFECTED SITES (three per copy, same three logical checks):
+- `commands/todo.md`: line 71 (Step 2.5, orphaned-in-specs), line 88 (Step 2.5, orphaned-in-archive), line 127 (Step 2.6, misplaced)
+- `skills/skill-todo/SKILL.md`: line 241, line 258, line 289
+
+THE ASYMMETRY IS INTERNAL TO EACH FILE, which is what makes it a latent bug rather than a design choice: each copy's WRITE path already handles both arrays correctly (`commands/todo.md:582-583`, `skill-todo/SKILL.md:500-501` both split completed/expanded into `completed_projects` and abandoned into `archived_projects`), while its own DETECTION path reads just the one. The prose carries the error too: `skill-todo/SKILL.md:269` instructs "Cross-reference each against active_projects and archive completed_projects".
+
+MEASURED BLAST RADIUS (live, 2026-10-01, this repository). A `/todo` run with 15 archivable tasks reported SIX false-positive orphans in `specs/archive/`: 202, 208, 224, 256, 264, 267. All six were verified correctly tracked in `.archived_projects[]`. Real orphan count was 0, and real misplaced count was 0.
+
+WHY THIS IS NOT COSMETIC. A false positive here feeds Step 4.5's `AskUserQuestion` ("Found N orphaned directories... Track all orphans?"). Answering "Track all orphans" runs Step 5.E.2, which appends a SECOND `completed_projects` entry with `status: "orphan_archived"` and `source: "orphan_recovery"` for a task that already has a correct `archived_projects` entry — producing a duplicate, mis-statused record for an already-correctly-archived task, in an append-only archive whose stated purpose is an audit trail. The operator is being prompted to corrupt state, with the prompt's own framing ("not tracked in state files") asserting something false. On the live run the prompt was declined and no state was written.
+
+FIX. Every one of the six detection sites must test BOTH arrays before concluding "untracked" — treat a hit in either `.completed_projects[]` or `.archived_projects[]` as tracked. Per Phase 1's consolidation this should collapse to THREE sites in the single surviving implementation, not six. Use `[]?` (optional iteration) so a missing array is empty rather than an error, matching the existing `.archived_projects[]?` convention already used elsewhere. Correct the `skill-todo/SKILL.md:269` prose in the same change so the instruction stops encoding the defect.
+
+ALSO CORRECT the misplaced-directory category table in `context/patterns/todo-archival-reference.md` ("Directory Categories Summary", the `Tracked in archive/state.json?` column), which describes archive tracking as a single yes/no and so cannot express the two-array reality that caused this. That file is NOT in this task's declared file_scope — add it via the research phase's `proposed_file_scope` mechanism if the fix needs to touch it, rather than widening scope silently.
+
+REGRESSION TEST. Assert that a directory whose task sits in `.archived_projects[]` is NOT reported as an orphan or as misplaced. The six task numbers above are a ready-made fixture.
+
 ---
 
 ### 306. Make ROADMAP.md a generated artifact: extend the format into a generation contract and add regenerate and prune modes
