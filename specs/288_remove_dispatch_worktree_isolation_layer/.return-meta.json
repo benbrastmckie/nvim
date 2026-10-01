@@ -1,10 +1,58 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/288_remove_dispatch_worktree_isolation_layer/summaries/01_worktree-isolation-layer-removal-summary.md",
+      "summary": "All 9 plan phases completed: dispatch-worktree.sh and its two test files deleted outright, every live caller unwired, two correctness fixes landed, both byte-budget gates re-measured and reported, and the full shell harness shows zero NEW failures attributable to this removal."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Removed the per-dispatch git-worktree isolation layer (dispatch-worktree.sh and its two test files) and unwired every caller across the source store; renamed and narrowed the build-heavy selection predicate to its one surviving co-scheduling call site; fixed the contention-manifest false negative; reconciled five affected test suites (all green); re-measured both byte-budget gates with honest numbers (SKILL.md 20,325 B, still 325 B over ceiling; eager-load unchanged at 67,980 B, confirmed untouchable by this task)."
+  },
+  "modified_files": [
+    ".gitignore",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/contracts/territory.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/dispatch-worktree.sh",
+    "agent-system/extensions/core/scripts/lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-dispatch-isolation-fixture.sh",
+    "agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh",
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a test fixture needs two same-cycle candidates to both be admitted into one orchestrator dispatch cycle despite declaring overlapping file_scope paths, a plain concrete-vs-concrete overlap (identical path, or directory-prefix relationship) is structurally unreachable: orchestrate-batch-admit.sh's own pre-existing in-batch file_scope_collision check (scopes_overlap_first) unconditionally defers one of any two same-cycle candidates whose scopes are identical or in a directory relationship, before any downstream contention-accounting logic ever sees them. The only admission-invisible overlap is a GLOB entry on one side (scopes_overlap_first treats a glob-shaped string as an opaque literal and never expands it), which is also the one case a correctness fix might need to specifically target. Verify any new overlap-based fixture by actually running it in a sandboxed harness rather than assuming the shape works.",
+      "category": "PATTERN",
+      "source_artifact": "specs/288_remove_dispatch_worktree_isolation_layer/summaries/01_worktree-isolation-layer-removal-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file_scope", "orchestrate-batch-admit", "glob blind spot", "contention manifest", "test fixture design"]
+    },
+    {
+      "content": "A background harness run started before a file edit lands can observe transient mid-edit state and produce a spurious failure (e.g. an unbound-variable error from a half-completed removal). Treat a baseline captured concurrently with ongoing edits as contaminated and not authoritative; re-run the full harness only after all edits for the unit of work are committed, and use that clean run as the comparison point instead.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/288_remove_dispatch_worktree_isolation_layer/summaries/01_worktree-isolation-layer-removal-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test harness", "baseline contamination", "concurrent edits", "verification timing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790813213_9179fb",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 9,
+    "phases_total": 9
   }
 }
