@@ -79,7 +79,7 @@
         {
           "path": "specs/292_task_count_reasoning_in_task_creation/summaries/01_task-count-reasoning-summary.md",
           "type": "summary",
-          "summary": "Phases 1-4 complete and committed: Component 0 (Task-Count Reasoning) authored and wired into /task, meta-builder-agent.md, skill-fix-it/SKILL.md, and /errors. Phase 5's cross-reference and non-deploy verification complete; deploy deferred."
+          "summary": "All 5 phases complete and committed: Component 0 (Task-Count Reasoning) authored and wired into /task, meta-builder-agent.md, skill-fix-it/SKILL.md, and /errors; Phase 5's cross-reference, deploy verification, and full gate set complete."
         }
       ],
       "next_artifact_number": 2
