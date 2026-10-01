@@ -11,8 +11,8 @@ next_project_number: 312
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,306,309,310,311 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306 | core-agent-system, extensions, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,306,309,311 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274,304 | 165,263,273,275,277,284,285 | orchestrator |
 
@@ -83,9 +83,8 @@ next_project_number: 312
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 309 [NOT STARTED] — Replace directory pathspecs with explicit file lists at the...
-310 [NOT STARTED] — Make the session registry a trustworthy cross-batch...
+  └─ 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
-302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 
 ## Tasks
 
@@ -97,17 +96,6 @@ next_project_number: 312
 - **Dependencies**: None
 
 **Description**: Two folded parts sharing one document. PART 1 -- MEASURED BUILD WEIGHT: BUILD_HEAVY_TASK_TYPES=("lean4" "cslib") at orchestrate-cycle-plan.sh line 1819 is a static task-type family list, so any two lean4 implement candidates are categorically refused co-scheduling regardless of real build weight -- a Mathlib-free lean4 package measured at 6 s wall / 17 jobs from an empty .lake/ is blocked exactly as a full Mathlib build is. This is the binding constraint on real parallelism for Lean-heavy batches, which is the primary intended application of concurrent batching here. Replace family membership with a measured or probed signal (recorded prior job count / wall-clock duration per task, or a cheap dry-run probe) and explicitly design the fallback behavior for a task with no measurement history yet. PART 2 -- ISOLATION POSTURE RECORD (folded in per the research report's own Context Extension Recommendation): append to batch-orchestration-guardrails.md's "Working-Tree and Build Isolation Posture" section (i) the two new hazard classes -- repo-scanning pollution from in-tree worktree provisioning, and mode 2's guard-bypass-via-bare-invocation recurrence, evidenced by a plan-sanctioned certify.sh bypassing lake-build-guard.sh via a bare `lake` call -- and (ii) the CoW/reflink/overlayfs/clone-nothing evaluation including the ext4 no-reflink blocker, cross-referencing specs/decisions/worktree-isolation-removal-reaffirmation.md so any future re-opening of the worktree question starts from a complete evidence base. WHY ONE TASK: that single doc carries both the build-heavy co-scheduling rule and the isolation posture in adjacent sections, and the build-weight change must edit it anyway; territory.md also carries build-heavy references. All edits land under agent-system/extensions/core/ per .claude/rules/source-store-deploy-boundary.md, never under .claude/**. Evidence base: specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. NON-GOALS: do NOT restore per-dispatch git worktree isolation (that verdict was re-opened, re-argued and CONFIRMED -- see the decision record); do NOT attempt a Lake/Mathlib shared-cache feasibility spike (named as a possible future spike, not requested). SELF-MODIFICATION: this task IS self-modifying (scripts/orchestrate-cycle-plan.sh is an orchestrator-critical path); expect the admission gate to defer it and re-invoke /orchestrate rather than passing --allow-self-modifying.
-
----
-
-### 310. Make the session registry a trustworthy cross-batch contention signal
-- **Effort**: medium
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: orchestrator
-- **Dependencies**: None
-
-**Description**: Two defects under one research question: "is the session registry a trustworthy contention signal, and what makes it so?" (a) WIRING ORDER: commands/orchestrate.md mints batch_session_id AFTER calling orchestrate-predispatch-review.sh, so --session-id is never passed and Class E (session-registry contention) prints SKIPPED on every run -- reproduced live. That pre-dispatch review is the ONLY surface designed to warn an operator that another live batch already covers these files before dispatch, so the skip silently removes the whole cross-batch warning. Remedy: mint the session earlier and pass --session-id. (b) REGISTRY HYGIENE: specs/.sessions/ holds five dead entries dating to 2026-09-08, never reaped, plus a leftover specs/.contention-manifest/. `session-reap` is explicit-invocation-only by deliberate design (task-lock.sh line 184) and no lifecycle site calls it. The task must ARGUE the choice between reaping opportunistically on `session-register` and wiring reap into /refresh's documented sweep, rather than assuming either -- the current restriction is intentional and the plan must engage with why it was made before overriding it. Motivating risk: PID recycling makes a leaked entry read as live and false-defers a candidate indefinitely. Also fix the stale, self-contradicting MAX_TASKS warning "Batching is not yet supported. Running with first $MAX_TASKS tasks only." at commands/orchestrate.md line 235 and docs/architecture/orchestrate-state-machine.md line 714 -- batching is the default, per batch-orchestration-guardrails.md's own "Batching Is the Default" section. SCOPE BOUNDARY (load-bearing): this task deliberately does NOT declare context/patterns/batch-orchestration-guardrails.md in file_scope, because it changes a wiring order and a maintenance policy, not the admission contract that doc describes -- this is what keeps its footprint disjoint from the build-weight/isolation-posture task. If research concludes the contract itself needs amending, add that path to file_scope AT THAT POINT and accept the resulting serializing dependencies[] edge. All edits land under agent-system/extensions/core/ per .claude/rules/source-store-deploy-boundary.md, never under .claude/**. Evidence base: specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. SELF-MODIFICATION: this task IS self-modifying (commands/orchestrate.md and scripts/task-lock.sh are both orchestrator-critical paths); expect the admission gate to defer it and re-invoke /orchestrate rather than passing --allow-self-modifying.
 
 ---
 
@@ -429,7 +417,7 @@ The `research_questions` / `KNOWN_ENTRY_FIELDS` schema-validator drift. Task 279
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 44, Task 292, Task 300
+- **Dependencies**: Task 44, Task 292, Task 300, Task 309
 
 **Description**: Replace the bare `-- specs/` DIRECTORY pathspec at every commit-staging site that uses it, and pass `--task` at those sites so `git-commit-scoped.sh`'s contended-path lease is actually consulted. This is a narrow, verified fix with a known mechanism — research confirms the per-site ruling, it does not re-litigate whether the defect is real.
 
@@ -498,6 +486,17 @@ Hence `dependencies: [44, 292, 300]`. These files are the defect sites themselve
 2. Every ruling recorded in `context/standards/git-staging-scope.md` with its reasoning.
 3. `scripts/lint/lint-scoped-commit-boundary.sh` still passes. Assess whether it can be extended to catch a bare directory pathspec mechanically (it already carries 8 references to the commit script) and RECORD that assessment as a recommendation — do NOT edit it here: `scripts/` is wholesale-declared by 270 [not_started], and this task's file_scope is deliberately all-`.md` so no `scripts/` edge is forced.
 4. `--task` added at each site in file_scope that commits a task-scoped path; sites outside file_scope reported, not edited.
+
+
+## NARROWED AT CREATION-TIME RECONCILIATION
+
+Three paths were REMOVED from this task's file_scope because task 309 now owns them exclusively: `skills/skill-git-workflow/SKILL.md` (line 216, the generic "Task Commit" recipe), `agents/meta-builder-agent.md` (line 1496, Stage 6), `skills/skill-meta/SKILL.md` (line 287, postflight commit block). Do NOT re-add them -- that would recreate the duplication this narrowing resolves, and would make both tasks edit the same three files without either knowing.
+
+WHY THE SPLIT, rather than abandoning 309 into this task: this task is blocked behind #44 [PLANNED] (which itself waits on #87/#149/#210), so it cannot run soon, while the three sites 309 owns are the live cross-session commit-bleed route that makes concurrent batching unsafe right now. 309 is unblocked and runs first.
+
+THIS TASK NOW DEPENDS ON 309, and its remaining scope is the SIX further defective staging sites plus the shared contract: `commands/todo.md` (7 sites), `commands/task.md` (2 sites), `extensions/epidemiology/commands/epi.md`, `extensions/present/commands/grant.md`, `extensions/present/commands/slides.md`, `extensions/present/commands/timeline.md`, and the per-site ruling record in `context/standards/git-staging-scope.md` -- together with the missing-`--task` audit (engaging the contended-path lease), which 309 does not cover at all and which remains this task's distinctive contribution.
+
+TWO ITEMS 309 ADDS that this task's acceptance criteria declined: (i) verifying whether `git-commit-scoped.sh`'s V5 per-path contention-claim check matches a DIRECTORY pathspec entry or slips past it; (ii) a regression check that no commit recipe in the source store passes a bare directory pathspec (this task's criterion 3 explicitly declines to edit `lint-scoped-commit-boundary.sh`, only recommending an assessment). Consume 309's findings on both rather than re-deriving them.
 
 ---
 
@@ -2240,6 +2239,7 @@ context/standards/shell-strict-mode.md. No task-number references in deliverable
 ---
 
 ### 272. Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, and give each orchestration its own identity
+- **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
@@ -2349,6 +2349,18 @@ reproduces the two-live-sessions overlap case and the stale-but-pid-alive case, 
 the current scripts. No change to orchestrate-batch-admit.sh. Existing consumers of task-lock.sh's
 output lines (which read them as prefixes/substrings) keep working. Shellcheck clean per
 context/standards/shell-strict-mode.md. No task-number references in deliverables outside specs/**.
+
+## ABSORBED AT CREATION-TIME RECONCILIATION (two defects, with evidence)
+
+These two items were drafted as a separate task and folded in here instead, because this task already states the same goal and owns the session-registry trust question. Both are newly verified live; neither was stated by this task before.
+
+(a) CLASS E CONTENTION REVIEW IS DEAD ON ARRIVAL. `commands/orchestrate.md` mints `batch_session_id` AFTER it calls `orchestrate-predispatch-review.sh`, so `--session-id` is never passed and that script's Class E (session-registry contention) section prints `SKIPPED (no --session-id supplied to this script; orchestrate-batch-admit.sh's session-registry input was itself skipped via its own D6 degradation)` on EVERY run. Reproduced live. This is the only surface designed to warn an operator, before dispatch, that another live batch already covers the candidate files -- precisely the capability this task's GOAL section describes. Remedy: mint the session earlier in `commands/orchestrate.md` and pass `--session-id` through. Note the ordering subtlety: the review runs BEFORE `session-register`, so self-exclusion is a no-op on the caller's own not-yet-registered id, which is harmless and still surfaces OTHER live sessions correctly.
+
+(b) STALE, SELF-CONTRADICTING BATCH MESSAGE. The MAX_TASKS guard prints "Batching is not yet supported. Running with first $MAX_TASKS tasks only." at `commands/orchestrate.md` line 235 and `docs/architecture/orchestrate-state-machine.md` line 714. Batching is the DEFAULT -- `context/patterns/batch-orchestration-guardrails.md` opens with a "Batching Is the Default" section. This is the message an operator sees exactly when pushing batch size, so it misleads at the worst moment. Text-only fix.
+
+ALSO OBSERVED (bears on this task's heartbeat diagnosis): `specs/.sessions/` currently holds five dead registry entries dating to 2026-09-08, all reading `live:false / liveness_reason:dead-pid`, never reaped, plus a leftover `specs/.contention-manifest/` directory. `session-reap` is explicit-invocation-only by deliberate design (`task-lock.sh` line 184) and no lifecycle site calls it. They are correctly EXCLUDED today because their PIDs are dead, so this is not presently a false-defer -- but PID recycling would make a leaked entry read as live and false-defer a candidate indefinitely. Argue the reap-policy choice (opportunistic on `session-register` vs. wired into `/refresh`'s documented sweep) rather than assuming either; the current restriction is intentional.
+
+FILE_SCOPE WIDENED by this absorption: `commands/orchestrate.md`, `scripts/orchestrate-predispatch-review.sh`, `docs/architecture/orchestrate-state-machine.md`. The first and third overlap open tasks #273 and #265, so the admission gate will serialize against them -- expected and correct, not a defect.
 
 ---
 
