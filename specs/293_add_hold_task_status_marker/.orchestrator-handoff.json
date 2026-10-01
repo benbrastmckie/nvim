@@ -1,20 +1,25 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 8,
   "phases_total": 8,
-  "dispatch_seq": 3,
+  "dispatch_seq": 5,
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md",
       "summary": "8-phase plan adding the hold task status (enum/schema twin, dispatch exclusion, operator set/lift, /todo audit, docs, prose sweep, acceptance) across the core source store."
+    },
+    {
+      "type": "summary",
+      "path": "specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md",
+      "summary": "All 8 plan phases completed: hold is a 13th task-status enum value, excluded from /orchestrate dispatch and single-command gate-in, operator-settable/reversible via preflight:hold/unhold, never archived by /todo, documented as a third non-terminal-yet-non-dispatchable category, and verified live against the consumer repo (12 FAILs -> 0, [HOLD] renders, forced --implement preserves the hold)."
     }
   ],
   "metadata": {
-    "session_id": "sess_1790826658_06dbd3_293",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1790826658_06dbd3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "next_steps": "Run /implement 293 to execute the plan"
+  "next_steps": "Implementation complete. Consider: (1) redeploying this repo's own .claude/ tree once the sibling batch's deploy coordination completes, to clear the two stale-copy test-harness failures noted in the summary; (2) a follow-up task for the pre-existing, out-of-scope commands/orchestrate.md STAGE 0 terminal-arm $FORCE_PHASES_FLAG gap."
 }

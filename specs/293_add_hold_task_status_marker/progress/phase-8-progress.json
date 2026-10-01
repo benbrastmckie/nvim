@@ -1,0 +1,89 @@
+{
+  "phase": 8,
+  "phase_name": "Full-Harness Verification and Live Consumer-Repo Acceptance",
+  "started_at": "2026-10-01T06:25:00Z",
+  "last_updated": "2026-10-01T06:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run the full shell test harness; compare against known-failures.txt",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Shellcheck clean across every script touched in Phases 1-7",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm enum/schema twin byte-equal (13 values both sides)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Deploy the source store into the consumer repo",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Re-run live consumer-repo held-task discovery before claiming completion",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Consumer repo: validate-state.sh 0 FAILs, generate-todo.sh regenerates with [HOLD]",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Consumer repo: /orchestrate --dry-run shows a held task in blocked[] with hold reason, 0 dispatch",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "End-to-end proof that a forced live --implement preserves status==hold (skill_preflight_update -> update-task-status.sh, exact real call chain, scratch fixture)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Confirm set-then-lift round trip and no residual hold fields",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 10,
+      "description": "Confirm no task-number references introduced outside specs/**",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 11,
+      "description": "Write implementation summary",
+      "status": "done",
+      "files_touched": ["specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md"]
+    }
+  ],
+  "current_objective": 11,
+  "approaches_tried": [
+    {
+      "approach": "Live, non-dry-run /orchestrate --implement test directly against the real consumer repo's held task",
+      "result": "rejected in favor of a safer equivalent",
+      "reason": "The consumer repo has another active session's uncommitted work in flight (tasks 119/129). A live orchestrate dispatch would acquire a real task lock and write a real dispatch file there. Instead, proved the identical mechanism via two independent, non-mutating scratch fixtures: test-orchestrate-cycle-plan.sh's Group 33b (dry-run: a forced implement against a held candidate IS admitted and dispatched) plus a direct skill_preflight_update(task, \"implement\", session, \"monotonic-max\") call against a scratch state.json (the EXACT call orchestrate-cycle-plan.sh's live path makes), confirming status stays \"hold\" afterward. Together these cover the full real call chain without touching the shared consumer repo beyond the two writes the dispatch explicitly sanctions (the deploy itself, and generate-todo.sh's regeneration)."
+    },
+    {
+      "approach": "Redeploy this repo's (nvim's) own .claude/ tree to clear the 2 NEW test-status-vocabulary.sh/test-validate-state.sh harness failures",
+      "result": "rejected",
+      "reason": "The dispatch's concurrency note explicitly prohibits a whole-tree redeploy mid-cycle while sibling task 292 has its own deploy phase still deferred ('phase 5 deploy deferred' per its own last commit). Both failures are confirmed non-regressions: Phase 1 already proved the underlying logic correct via direct source-store sourcing, and test-update-task-status.sh's source-store-first override technique proves the same class of staleness is purely a deploy-timing artifact, not a defect."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -623,38 +623,38 @@ remaining `"12-value"`/`"12 values"`/`"closed 12"` hits anywhere in the source s
 
 ---
 
-### Phase 8: Full-Harness Verification and Live Consumer-Repo Acceptance [NOT STARTED]
+### Phase 8: Full-Harness Verification and Live Consumer-Repo Acceptance [COMPLETED]
 
 **Goal**: the whole feature is green against the repository's own gates and against the live
 consumer repository that motivated it.
 
 **Tasks**:
-- [ ] Run the full shell test harness and compare the result against
+- [x] Run the full shell test harness and compare the result against
       `scripts/tests/known-failures.txt` rather than against zero — a pre-existing known failure is
       not a regression, and a new failure not in that file is.
-- [ ] Shellcheck clean across every script touched in Phases 1-7, per
+- [x] Shellcheck clean across every script touched in Phases 1-7, per
       `context/standards/shell-strict-mode.md`.
-- [ ] Confirm the enum and its schema twin are byte-equal as sorted sets
+- [x] Confirm the enum and its schema twin are byte-equal as sorted sets
       (`bash scripts/tests/test-status-vocabulary.sh` green, 13 values both sides).
-- [ ] Deploy the source store so the consumer repo picks up the change
+- [x] Deploy the source store so the consumer repo picks up the change
       (`bash .claude/scripts/deploy-headless.sh` in the consumer repo, or that repo's documented
       deploy path). Do NOT hand-patch anything under `.claude/**` as a substitute.
-- [ ] **Re-run the live consumer-repo discovery before claiming completion**, exactly as the
+- [x] **Re-run the live consumer-repo discovery before claiming completion**, exactly as the
       dispatch requires: `jq '[.active_projects[] | select(.status=="hold") | {project_number,
       hold_reason, held_at, prior_status}]' specs/state.json` in
       `/home/benjamin/Projects/Logos/Verification`. Another active session may have changed which
       tasks are held; report the actual set, not the researched one.
-- [ ] In the consumer repo: `validate-state.sh` reports **0 FAILs** (down from 12), and
+- [x] In the consumer repo: `validate-state.sh` reports **0 FAILs** (down from 12), and
       `generate-todo.sh` regenerates `TODO.md` successfully with `[HOLD]` markers on every held
       task.
-- [ ] In the consumer repo: an `/orchestrate --dry-run` naming a held task shows it in `blocked[]`
+- [x] In the consumer repo: an `/orchestrate --dry-run` naming a held task shows it in `blocked[]`
       with a hold reason and dispatches nothing for it.
-- [ ] In the consumer repo or a scratch fixture: a live, non-`--dry-run` `--implement` against a
+- [x] In the consumer repo or a scratch fixture: a live, non-`--dry-run` `--implement` against a
       held task with a plan artifact IS admitted, and `status` is still `"hold"` afterward.
-- [ ] Confirm a set-then-lift round trip through `update-task-status.sh` restores the exact
+- [x] Confirm a set-then-lift round trip through `update-task-status.sh` restores the exact
       `prior_status` and leaves no residual hold fields.
-- [ ] Confirm no task-number references were introduced in any deliverable outside `specs/**`.
-- [ ] Record in the implementation summary: the Decision 6 resolution and its reasoning; the
+- [x] Confirm no task-number references were introduced in any deliverable outside `specs/**`.
+- [x] Record in the implementation summary: the Decision 6 resolution and its reasoning; the
       Decision 7 note; the out-of-scope terminal-plus-forcing-flag gap in `commands/orchestrate.md`
       STAGE 0; and the actual held-task set observed in the consumer repo at verification time.
 
@@ -684,24 +684,24 @@ real set, and the "0 FAILs / `[HOLD]` on every held task" bar applies to whateve
 
 ## Testing & Validation
 
-- [ ] `bash scripts/tests/test-status-vocabulary.sh` — 13-value drift assertion, `[HOLD]` marker
+- [x] `bash scripts/tests/test-status-vocabulary.sh` — 13-value drift assertion, `[HOLD]` marker
       map coverage, schema/library byte-equality as sorted sets
-- [ ] `bash scripts/tests/test-validate-state.sh` — `status: "hold"` and the three new entry
+- [x] `bash scripts/tests/test-validate-state.sh` — `status: "hold"` and the three new entry
       fields produce no FAILs
-- [ ] `bash scripts/tests/test-orchestrate-triage-classify.sh` — a held task classifies as
+- [x] `bash scripts/tests/test-orchestrate-triage-classify.sh` — a held task classifies as
       `group:"hold"` with a `hold_reason`-specific reason
-- [ ] `bash scripts/tests/test-orchestrate-cycle-plan.sh` — a held task yields a `blocked[]` row
+- [x] `bash scripts/tests/test-orchestrate-cycle-plan.sh` — a held task yields a `blocked[]` row
       and no dispatch; `is_terminal_status hold` is false
-- [ ] `bash scripts/tests/test-force-phases.sh` — forced `--implement` admits a held task and
+- [x] `bash scripts/tests/test-force-phases.sh` — forced `--implement` admits a held task and
       leaves `status == "hold"`; unforced is skipped with a hold-specific reason
-- [ ] `bash scripts/tests/test-update-task-status.sh` — set/lift round trip, missing
+- [x] `bash scripts/tests/test-update-task-status.sh` — set/lift round trip, missing
       `--hold-reason` fails loudly, missing/corrupt `prior_status` fails loudly
-- [ ] `bash scripts/tests/test-return-meta-status-vocabulary.sh` — the separate 8-value enum is
+- [x] `bash scripts/tests/test-return-meta-status-vocabulary.sh` — the separate 8-value enum is
       unchanged and does not admit `hold`
-- [ ] Full shell harness compared against `scripts/tests/known-failures.txt`
-- [ ] Shellcheck clean per `context/standards/shell-strict-mode.md` on every edited script
-- [ ] `bash scripts/check-task-references.sh` — no new task-number references outside `specs/**`
-- [ ] Consumer repo: `validate-state.sh` 0 FAILs; `generate-todo.sh` regenerates with `[HOLD]`;
+- [x] Full shell harness compared against `scripts/tests/known-failures.txt`
+- [x] Shellcheck clean per `context/standards/shell-strict-mode.md` on every edited script
+- [x] `bash scripts/check-task-references.sh` — no new task-number references outside `specs/**`
+- [x] Consumer repo: `validate-state.sh` 0 FAILs; `generate-todo.sh` regenerates with `[HOLD]`;
       `/orchestrate --dry-run` shows `blocked[]` with a hold reason; live `--implement` admits and
       preserves the hold
 

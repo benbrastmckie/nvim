@@ -1,12 +1,66 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md",
+      "summary": "All 8 plan phases completed: hold is a 13th task-status enum value, excluded from /orchestrate dispatch and single-command gate-in, operator-settable/reversible via preflight:hold/unhold, never archived by /todo, documented as a third non-terminal-yet-non-dispatchable category, and verified live against the consumer repo (12 FAILs -> 0, [HOLD] renders, forced --implement preserves the hold)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added hold as the 13th closed task-status enum value with hold_reason/held_at/prior_status fields, dispatch exclusion in /orchestrate (dedicated triage group + blocked[] bucketing) and single-command gate-in, an operator-settable/reversible preflight:hold/unhold surface with a hold-sticky guard that is the actual mechanism preserving the hold across a forced dispatch, /todo archival audit (hold excluded by construction, held-subtask blocking left correct-as-is with an improved report), full documentation, a repo-wide 12->13 prose sweep, and live re-verification against the consumer repository that motivated the task (validate-state.sh 0 FAILs, down from 12)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/command-gate-in.sh",
+    "agent-system/extensions/core/scripts/generate-todo.sh",
+    "agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh",
+    "agent-system/extensions/core/scripts/lib/status-vocabulary.sh",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/validate-return-meta.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A rank-based 'monotonic-max' status clamp (comparing lifecycle ranks to decide whether a forced status write would regress) does NOT protect a status that is deliberately left UNRANKED/omitted from the rank table -- the clamp's own 'unranked means no regression, write proceeds' rule lets an ordinary forced write through unguarded. If a new status must be STICKY (survive an otherwise-forced write unconditionally, e.g. a human-set pause that must outlast a one-off forcing-flag override), it needs a DEDICATED guard keyed on the CURRENT status value itself (e.g. 'if current status is X, downgrade every write except the X-set/X-lift operations to a status-field no-op'), not an extension of the rank table. Verify this by tracing the exact live call chain (e.g. skill_preflight_update -> the status-writer script) end-to-end against a scratch fixture, not just the dispatch-planning layer in isolation -- the planning layer (e.g. a dry-run plan builder) can correctly show the write being ADMITTED while a separate layer (the actual status writer) is what must prevent the status FIELD from changing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["status-clamp", "monotonic-max", "sticky-status", "rank-table", "forced-dispatch"]
+    },
+    {
+      "content": "To regression-test a bash snippet embedded in a markdown command file (e.g. commands/*.md, which is documentation executed by an agent at runtime, not a sourced script), extract the exact snippet with awk anchored on distinctive start/end lines directly from the source-store file, verify the extraction actually contains the expected new code (grep for a marker string) before trusting it, then `eval` it inside a subshell with the needed input variables pre-set and cwd pointed at a synthetic fixture directory. This is the only way to exercise such logic in an automated test without invoking the full agent/command dispatch machinery, and catches drift between the documented STAGE 0-style bash and what a test suite assumes it does.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["markdown-embedded-bash", "command-file-testing", "awk-extraction", "stage0-testing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790826658_06dbd3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 7,
+    "phases_completed": 8,
     "phases_total": 8
   }
 }
