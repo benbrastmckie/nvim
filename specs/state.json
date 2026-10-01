@@ -1621,7 +1621,7 @@
       "project_number": 301,
       "project_name": "reopen_worktree_isolation_verdict",
       "title": "Re-open the per-dispatch worktree isolation verdict: audit, external research, complexity measurement, and a decision under a hard user-approval gate",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -1633,15 +1633,15 @@
       "dependencies": [],
       "artifacts": [
         {
+          "path": "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
           "type": "report",
-          "path": "specs/301_reopen_worktree_isolation_verdict/reports/01_worktree-run-live-evidence.md",
-          "summary": "Operator-supplied live evidence record from a successful worktree-isolation run (4/4 lands, zero conflicts), including the postflight non-landing failure and five other findings"
+          "summary": "Re-opens and re-closes the per-dispatch worktree-isolation removal verdict: audits prior tasks, independently re-verifies this task's own round-1 live-evidence artifact (including a newly-surfaced fourth defect -- postflight failing to land a worktree yet marking the task completed), measures current budget headroom (now near-zero and hard-gated), evaluates CoW/reflink/overlayfs/clone-nothing alternatives against the ext4 host filesystem, and answers all 15 carried research questions. Concludes CONFIRM."
         }
       ],
-      "next_artifact_number": 2,
-      "session_id": "sess_1790831010_c477da",
+      "next_artifact_number": 3,
+      "session_id": "sess_1790872161_63b5e7",
       "created": "2026-10-01T05:07:59Z",
-      "last_updated": "2026-10-01T05:34:03Z"
+      "last_updated": "2026-10-01T16:42:11Z"
     },
     {
       "project_number": 302,

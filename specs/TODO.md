@@ -79,7 +79,7 @@ next_project_number: 306
       └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
-301 [NOT STARTED] — Re-open the per-dispatch worktree isolation verdict: audit,...
+301 [RESEARCHED] — Re-open the per-dispatch worktree isolation verdict: audit,...
 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 
 ## Tasks
@@ -384,11 +384,11 @@ Hence `dependencies: [44, 292, 300]`. These files are the defect sites themselve
 
 ### 301. Re-open the per-dispatch worktree isolation verdict: audit, external research, complexity measurement, and a decision under a hard user-approval gate
 - **Effort**: large
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
-- **Research**: [301_reopen_worktree_isolation_verdict/reports/01_worktree-run-live-evidence.md]
+- **Research**: [301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md]
 
 **Description**: Re-open the question closed by `specs/decisions/worktree-isolation-removal-verdict.md` — whether per-dispatch `git worktree` isolation should be restored to the agent system — and terminate in a decision that either formally SUPERSEDES or formally CONFIRMS that record. The record is marked "verdict, not re-openable"; this task may not quietly route around it. Either outcome is acceptable and must be argued from evidence, not from regret.
 

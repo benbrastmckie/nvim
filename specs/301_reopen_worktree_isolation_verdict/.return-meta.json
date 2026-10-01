@@ -1,47 +1,57 @@
 {
-  "status": "tasks_created",
-  "summary": "Created one research-and-decide task (301) to re-open the per-dispatch worktree isolation verdict: audits the removal and the archived/abandoned refinement tasks, researches external worktree-orchestration and build-cache-sharing practice, re-measures the complexity the layer adds against task 288's removal footprint, generalizes beyond lean4 to all task types, and terminates in a decision record that formally supersedes or confirms specs/decisions/worktree-isolation-removal-verdict.md behind a hard user-approval gate. No implementation performed. AMENDED: folded in a second, previously unrecorded hazard class -- repo-scanning pollution from in-repo worktree provisioning (task 122 closed two of sixteen phases as [COMPLETED WITH EXCLUSIONS] because sibling worktrees 119-12/129-14 were counted as duplicate component roots by certificate-export.sh's fixture suite, status-counts.sh and typst-component-index.sh) -- plus 15 research questions carried in the description.",
+  "status": "researched",
+  "dispatch_seq": 1,
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "active_projects entry for task 301 (status not_started, task_type meta, topic orchestrator, 12 research_questions, file_scope scoped to the decision record only); next_project_number advanced to 302"
+      "type": "report",
+      "path": "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
+      "summary": "Re-opens and re-closes the per-dispatch worktree-isolation removal verdict: audits prior tasks, independently re-verifies this task's own round-1 live-evidence artifact (including a newly-surfaced fourth defect -- postflight failing to land a worktree yet marking the task completed), measures current budget headroom (now near-zero and hard-gated), evaluates CoW/reflink/overlayfs/clone-nothing alternatives against the ext4 host filesystem, and answers all 15 carried research questions. Concludes CONFIRM."
     },
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task 301 entry regenerated into TODO.md (wave 1, unblocked, no dependencies)"
+      "type": "report",
+      "path": "specs/decisions/worktree-isolation-removal-reaffirmation.md",
+      "summary": "New decision record formally CONFIRMING specs/decisions/worktree-isolation-removal-verdict.md, citing the gate-question answer (no structural CoW/reflink fix available on this system's ext4 filesystem today), the now near-zero and hard-gated budget headroom, the newly-found fourth defect (postflight non-landing under a completed status), and the repo-scanning-pollution hazard class; the original verdict file is cross-linked, not replaced."
+    }
+  ],
+  "next_steps": "No implementation follow-up. Review the CONFIRM verdict (user_decision below) and, if agreed, consider spawning narrow follow-up tasks named in the report's Recommendations section (a measured-build-weight revision of task 287; a `-- specs/` directory-pathspec fix in meta-builder-agent.md/skill-meta/SKILL.md; an independent PATH-shim re-evaluation for mode 2) -- none created by this dispatch.",
+  "user_decision": {
+    "question": "This research concludes the per-dispatch git-worktree isolation removal verdict should be CONFIRMED (stay removed), not superseded -- based on: no structural CoW/reflink fix is available on this system's actual (ext4) filesystem today; the SKILL.md/eager-context budget headroom the removal bought is now almost entirely consumed by unrelated growth and the gate is now hard, not warn; a newly-found fourth defect (orchestrate-cycle-postflight.sh failing to land a worktree automatically yet marking the task completed anyway, in the same live run this task's round-1 artifact recorded); and a newly-named repo-scanning-pollution hazard class. Do you agree with CONFIRM, or do you want the resurrection path (SUPERSEDE) reconsidered despite this evidence?",
+    "options": [
+      "Accept CONFIRM as written (no further action; the reaffirmation decision record stands)",
+      "Reconsider SUPERSEDE -- request a follow-up task to design a resurrection grounded in the 'clone nothing, reuse a content-addressed build cache' pattern this research surfaced, after a feasibility spike on this system's non-Mathlib Lean targets",
+      "Request narrower follow-ups only (the 287 build-weight revision, the commit-pathspec fix, the PATH-shim re-evaluation) without reopening the isolation posture itself"
+    ],
+    "recommended": "Accept CONFIRM as written (no further action; the reaffirmation decision record stands)",
+    "blocking": false
+  },
+  "memory_candidates": [
+    {
+      "content": "When evaluating whether to clone a shared build/cache directory across concurrent worktrees (hardlink or reflink), check first whether the toolchain already has a read-only content-addressed artifact store that can be populated independently per worktree instead (e.g. Lake's `lake exe cache get` oelean store, sccache, pnpm's content-addressed store). 'Share a read-only content-addressed store, never a writable working directory' is the external best practice this research found, and it dissolves the per-writer atomic-rename hazard structurally without needing CoW/reflink filesystem support at all.",
+      "category": "PATTERN",
+      "source_artifact": "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["worktree", "build-cache", "content-addressed", "lake", "sccache", "reflink"]
     },
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/301_reopen_worktree_isolation_verdict/",
-      "summary": "Task directory with reports/, plans/, summaries/ subdirectories"
+      "content": "Before resurrecting or trusting a cloned/shared-filesystem optimization (hardlink, reflink, or otherwise), check the host filesystem type first with `findmnt -no FSTYPE <path>` -- ext4 has no CoW/reflink (FICLONE) support, which forecloses an entire class of 'structurally correct' designs that are real and shipped elsewhere (git-cow, buck2 casd) but unavailable here without a filesystem migration.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["ext4", "reflink", "cow", "filesystem", "findmnt"]
+    },
+    {
+      "content": "A git-commit-scoped.sh-style commit convention that prescribes a DIRECTORY pathspec (e.g. `-- specs/`) rather than an explicit per-file list reproduces cross-task commit bleed even when every other concurrency guard (file_scope, contended-path lease) is working correctly, because the bleed happens at the pathspec-staging layer, below where those guards act. Observed live in this repository's own task-301 creation commit, which swept 4 files belonging to two other concurrently-live sessions. Prefer an explicit file list in any commit-convention documentation.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-commit-scoped", "pathspec", "mode-1b", "commit-bleed", "file_scope"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1790831010_c477da",
-    "agent_type": "meta-builder-agent",
+    "session_id": "sess_1790872161_63b5e7_301",
+    "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "meta",
-      "meta-builder-agent"
-    ],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1,
-    "task_numbers": [
-      301
-    ],
-    "amendments": 1
-  },
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/state.json",
-    "/home/benjamin/.config/nvim/specs/TODO.md"
-  ],
-  "proposed_file_scope": [
-    "specs/decisions/worktree-isolation-removal-verdict.md"
-  ],
-  "next_steps": "Run /research 301 in /home/benjamin/.config/nvim. Capture the time-limited live evidence from /home/benjamin/Projects/Logos/Verification (its stale .claude/ deploy still contains dispatch-worktree.sh, 30411 bytes, with .orchestrate-worktrees/119-12 and 129-14 live on disk) BEFORE that repo redeploys, since the redeploy destroys the evidence source. NOTE: validate-state.sh resolves `specs/state.json` RELATIVE to CWD -- always pass --state with an absolute path, or cd to the repo root first, or it silently validates whatever repo you happen to be standing in."
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 17
+  }
 }
