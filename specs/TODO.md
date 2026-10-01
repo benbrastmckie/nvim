@@ -11,8 +11,8 @@ next_project_number: 289
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,287 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,288 | 22,44,127,184,241,265,272,279,280,287 | core-agent-system, extensions, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,288 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281 | 22,44,127,184,241,265,272,279,280 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
@@ -68,16 +68,16 @@ next_project_number: 289
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
-287 [IMPLEMENTING] — Refuse to co-schedule two build-heavy implement tasks in one...
-  └─ 288 [NOT STARTED] — Remove the per-dispatch worktree isolation layer and unwire...
+288 [RESEARCHED] — Remove the per-dispatch worktree isolation layer and unwire...
 
 ## Tasks
 
 ### 288. Remove the per-dispatch worktree isolation layer and unwire every caller
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 286, Task 287
+- **Research**: [288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree -- see rules/source-store-deploy-boundary.md).
 
@@ -128,7 +128,7 @@ ACCEPTANCE. The three files are gone. No reference to dispatch-worktree.sh survi
 ---
 
 ### 287. Refuse to co-schedule two build-heavy implement tasks in one cycle
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 286

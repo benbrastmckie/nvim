@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md",
+      "summary": "Re-derived, verified inventory of every file needing a change to remove the per-dispatch worktree isolation layer: corrects the dispatch's named footprint (10 false-positive files, 4 missing test files carrying ~118 references), flags a dual-purpose function that must be renamed not deleted, two correctness fixes the removal enables, a repo-root .gitignore edit outside the source store, and honest pre-removal byte-budget baselines for the SKILL.md ceiling and eager-load gates."
+    }
+  ],
+  "dispatch_seq": 7,
+  "next_steps": "Run /plan 288 to create implementation plan",
+  "findings_count": 11,
+  "metadata": {
+    "session_id": "sess_1790813213_9179fb_288",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When a dispatch's description names a mechanically-counted reference inventory (e.g. 'N references across M files' from a grep) as the removal footprint, re-derive it before trusting it. In one case, 10 of ~18 named files were false positives (generic git-worktree or unrelated-parameter prose matching the same grep terms) and 4 files carrying ~118 real references were missing entirely because the original count only grepped a narrower term set. Re-grep with the exact literal dependency string (e.g. the script's filename) separately from the broad conceptual term to separate hard dependencies from incidental prose hits.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["removal-footprint", "grep-verification", "false-positive", "inventory-re-derivation", "shell-script-removal"]
+    },
+    {
+      "content": "Before deleting a function slated for removal as part of a feature teardown, enumerate ALL of its call sites, not just the ones belonging to the feature being removed. A function can be dual-purpose: here, task_selected_for_worktree_isolation() was built for worktree-isolation selection but was later reused, unchanged, as the sole array-membership reader for an unrelated co-scheduling admission rule. Deleting the function wholesale would have silently broken the surviving feature. The fix is rename-and-narrow (keep the function, drop only the call sites belonging to the removed feature) rather than delete-and-recreate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dual-purpose-function", "call-site-enumeration", "safe-deletion", "refactor-safety"]
+    },
+    {
+      "content": "A byte-budget gate (SKILL.md ceiling, eager-context-load baseline) should not be assumed to gain headroom from a removal just because the removal deletes a lot of text somewhere in the repo -- check whether the specific edited files are actually part of that gate's measured set. In one case, an eager-context-load gate was assumed to improve from a large documentation/code removal, but none of the removed/edited files were in the eager-loaded set (CLAUDE.md merge sources, eagerly-loaded rules) at all, so that gate's number was provably unaffected while a separate ceiling gate (a specific skill file) was genuinely affected. Verify gate membership before claiming a gate will improve.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["byte-budget-gate", "eager-context-load", "ceiling-verification", "measure-before-claiming"]
+    }
+  ]
+}

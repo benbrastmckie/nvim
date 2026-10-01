@@ -6,7 +6,7 @@
       "project_number": 288,
       "project_name": "remove_dispatch_worktree_isolation_layer",
       "title": "Remove the per-dispatch worktree isolation layer and unwire every caller",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -39,13 +39,22 @@
         "agent-system/extensions/core/docs/architecture/extension-system.md"
       ],
       "created": "2026-09-30T23:59:02Z",
-      "last_updated": "2026-09-30T23:59:02Z"
+      "last_updated": "2026-10-01T01:35:08Z",
+      "session_id": "sess_1790813213_9179fb",
+      "artifacts": [
+        {
+          "path": "specs/288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md",
+          "type": "report",
+          "summary": "Re-derived, verified inventory of every file needing a change to remove the per-dispatch worktree isolation layer: corrects the dispatch's named footprint (10 false-positive files, 4 missing test files carrying ~118 references), flags a dual-purpose function that must be renamed not deleted, two correctness fixes the removal enables, a repo-root .gitignore edit outside the source store, and honest pre-removal byte-budget baselines for the SKILL.md ceiling and eager-load gates."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 287,
       "project_name": "no_coschedule_build_heavy_implement",
       "title": "Refuse to co-schedule two build-heavy implement tasks in one cycle",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -58,7 +67,7 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
       ],
       "created": "2026-09-30T23:58:50Z",
-      "last_updated": "2026-10-01T00:39:34Z",
+      "last_updated": "2026-10-01T01:26:04Z",
       "session_id": "sess_1790813213_9179fb",
       "artifacts": [
         {
