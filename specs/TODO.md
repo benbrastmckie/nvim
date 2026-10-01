@@ -1,5 +1,5 @@
 ---
-next_project_number: 302
+next_project_number: 304
 ---
 
 # TODO
@@ -12,8 +12,8 @@ next_project_number: 302
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,294,295,296,297,299,300,301 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,298 | 22,44,127,184,241,265,272,279,280,297 | core-agent-system, extensions, orchestrator |
-| 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
+| 2 | 29,185,250,251,271,275,281,298,302 | 22,44,127,184,241,265,272,279,280,292,297,300 | core-agent-system, extensions, orchestrator |
+| 3 | 170,273,282,303 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -77,10 +77,161 @@ next_project_number: 302
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
+    └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 301 [NOT STARTED] — Re-open the per-dispatch worktree isolation verdict: audit,...
+302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 
 ## Tasks
+
+### 303. Make validate-state.sh resolve its omitted-argument state-file default against the repository being validated, not the current working directory
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 271, Task 279
+
+**Description**: Make `validate-state.sh`'s omitted-argument state-file default resolve against the repository being validated rather than the current working directory, and survey sibling scripts for the same latent pattern. A narrow, verified fix with a known mechanism — research confirms the resolution strategy and the survey, it does not re-litigate whether the defect is real.
+
+== THE DEFECT (precisely located) ==
+
+`scripts/validate-state.sh:241-243`:
+
+    if [[ -z "$STATE_FILE" ]]; then
+      STATE_FILE="specs/state.json"
+    fi
+
+A bare relative path, so the default resolves against the invoking shell's CWD. The script's own header documents this at line 41 ("STATE_FILE defaults to specs/state.json relative to the current working directory when omitted"). Invoking the validator from one repository while LOADING the script from another repository's deploy therefore silently validates the WRONG repository's state and reports findings belonging to a completely different repository.
+
+**The deliberate design this fix must NOT break.** Header line 14 asserts the script is "Deliberately argument-relative, not PROJECT_ROOT-relative: this script takes a state-file path" — and the body honors that throughout: the sibling `TODO.md`, the sibling `archive/state.json`, and the `--fix` writer's `state-write.sh` candidate search are all located relative to `STATE_FILE`'s own directory (lines 274, 716, 326), not relative to `PROJECT_ROOT`. That argument-relative design is correct and intentional; it is what lets the script validate archive and vault targets. The defect is ONLY the DEFAULT applied when the argument is omitted. The fix is therefore scoped to that default — do not convert the script to PROJECT_ROOT-relative resolution throughout.
+
+**Interface correction, verified:** `validate-state.sh` has NO `--state` flag. The override is a bare POSITIONAL `STATE_FILE` argument (argument parser default case, line 215). `--state` belongs to `generate-todo.sh`, which `validate-state.sh` invokes internally at line 725. Any report or acceptance criterion written against a `--state` flag on this script is wrong; do not add one without a reason beyond this task.
+
+== CANDIDATE FIXES (research rules between them; all three are legitimate) ==
+
+1. Resolve the default from the git toplevel of the CWD, so a repo-relative default still lands in the repo the caller is standing in.
+2. Resolve the default from the script's own location via `lib/common.sh`'s `common_repo_root "$SCRIPT_DIR" 2` (already the documented idiom for `scripts/` callers; `SCRIPT_DIR` is computed at line 147 but is not used for the default today). This makes the default name the repo whose deploy the script came from — note this is NOT the same answer as (1) under cross-repo invocation, and choosing between them IS the design decision.
+3. Refuse (exit 2) when the argument is omitted and the CWD-relative and script-relative candidates disagree, naming both. Fails loud rather than guessing.
+
+Whichever is chosen, the resolved path MUST be echoed in the existing `Validating state file: $STATE_FILE` banner (line 408) as an ABSOLUTE path, so a false finding is self-diagnosing. In the incident below, printing the resolved path is exactly how the problem was found.
+
+== OBSERVED DAMAGE (verified, today) ==
+
+A dispatched agent with its shell CWD in `/home/benjamin/Projects/Logos/Verification` but loading the generator from the `/home/benjamin/.config/nvim` deploy reported a `TODO.md is OUT OF SYNC with specs/state.json` FAILURE (Check at line 729) against the nvim repo. No such failure existed. It was reading Verification's state — a repo legitimately mid-`/orchestrate` with drifted files. The agent caught it only by probing the validator to print its resolved paths, then re-ran with an absolute positional STATE_FILE and got 0 failures / 17 passed / 7 warnings.
+
+**The failure mode is a false POSITIVE attributed to the wrong repository**, which is the dangerous direction: it invites someone to "fix" a repo that is not broken. This is the motivating severity argument — a false negative would merely be missed coverage.
+
+== WHY A TASK AND NOT A NOTE ==
+
+Cross-repo invocation is NORMAL in this architecture: one source store deploys into many consumer repos, and dispatched agents routinely run with CWD in one repo while a script resolves from another. Any script sharing this resolution pattern carries the same latent bug.
+
+**Part (b) — survey, REPORT, do not necessarily fix.** A first pass over `scripts/*.sh` for a bare relative `specs/{state.json,TODO.md,errors.json,events.jsonl}` default already finds siblings:
+- `scripts/command-gate-out.sh:63` — `state_file="specs/state.json"`, and `:87` — `task_dir="specs/${padded_num}_${project_name}"`
+- `scripts/git-snapshot.sh:248, 332, 337` — bare `specs/state.json` in the task-inference and `file_scope`-read paths; note `:250` and `:333` already print `(cwd: $(pwd))` in their failure messages, which is the right instinct but does not prevent reading the wrong repo
+- `scripts/command-gate-in.sh:65`, `scripts/orchestrate-build-dispatch.sh:213` — same literal, context to confirm
+- `scripts/init-specs.sh:101-125` — CWD-relative BY DESIGN (it bootstraps `specs/` into the repo the caller is standing in). Confirm and exclude; do not "fix" it.
+
+Report every sibling with a per-site verdict (same defect / by design / needs its own task). Remediate ONLY `validate-state.sh` here. Siblings live under directories declared wholesale by other tasks (270 declares `scripts/` and `scripts/lib/`), so fixing them inside this task would force avoidable serializing edges — recommend a follow-up task instead.
+
+== DECLARED FILE_SCOPE OVERLAP WITH TASK 279 (declared honestly, not dodged) ==
+
+Task 279 ("Reconcile state-schema.json with the live fields the orchestrator reads", `planned`) already declares BOTH `scripts/validate-state.sh` and `scripts/tests/test-validate-state.sh` in its file_scope — for a DIFFERENT change: adding `research_questions` to the hand-maintained `KNOWN_ENTRY_FIELDS` array (279's plan line 157), with a regression fixture (line 272) and a bidirectional schema/validator drift test (line 279). Grepping 279's plan for CWD or path-resolution language returns nothing, so 279 does NOT cover this defect and this is not duplicate work.
+
+Task 271 ("Finish the parent_task edge", `not_started`) also declares both files, again for a `KNOWN_ENTRY_FIELDS`/schema change.
+
+Both are genuine footprint collisions on the same two files. Declared as `dependencies: [271, 279]` rather than hidden, and `validate-state.sh` is deliberately NOT dropped from this task's file_scope to dodge them. Sequencing rationale: 271 and 279 both edit the `KNOWN_ENTRY_FIELDS` data array and the schema; this task edits the argument-resolution block (lines 241-243) and the banner (line 408). The regions do not touch, so either order merges cleanly — the edges exist to serialize the edits, not because the changes conflict semantically. **This task does NOT touch `KNOWN_ENTRY_FIELDS` or `context/schemas/state-schema.json`.**
+
+== EXPLICITLY OUT OF SCOPE ==
+
+The `research_questions` / `KNOWN_ENTRY_FIELDS` schema-validator drift. Task 279 owns it with an explicit checklist item, a regression fixture, and a bidirectional drift test. Verified — do not re-file or re-implement it.
+
+== ACCEPTANCE ==
+
+1. Invoking `validate-state.sh` with NO positional argument, from a CWD in a DIFFERENT repository than the one the script was loaded from, either validates the intended repository or refuses loudly naming both candidates. It never silently validates the other repo.
+2. The `Validating state file:` banner prints an absolute resolved path.
+3. An explicit positional `STATE_FILE` continues to behave exactly as today, including the argument-relative location of the sibling `TODO.md`, the sibling `archive/state.json`, and the `--fix` `state-write.sh` candidate search. Regression-test this — it is the property most at risk from a careless fix.
+4. `scripts/tests/test-validate-state.sh` gains a case for the cross-repo omitted-argument invocation, constructed so it cannot pass vacuously (it must fail against the pre-fix script).
+5. `bash scripts/tests/test-validate-state.sh` passes in full; `scripts/verify-deploy.sh` gate 10 (`--deep`, the only production `--deep` caller) still passes.
+6. The sibling survey is recorded in the task report with a per-site verdict.
+
+---
+
+### 302. Replace the bare `-- specs/` directory pathspec at commit-staging sites and pass `--task` to engage the contended-path lease
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 44, Task 292, Task 300
+
+**Description**: Replace the bare `-- specs/` DIRECTORY pathspec at every commit-staging site that uses it, and pass `--task` at those sites so `git-commit-scoped.sh`'s contended-path lease is actually consulted. This is a narrow, verified fix with a known mechanism — research confirms the per-site ruling, it does not re-litigate whether the defect is real.
+
+== THE DEFECT (two halves) ==
+
+**Half 1 — the directory pathspec over-stages.** `git-commit-scoped.sh`'s own header states that `<pathspec>...` is taken "exactly as would be passed to `git add`/`git commit --`"; the script performs no narrowing of a directory pathspec. A call ending `-- specs/` therefore stages EVERY dirty file under `specs/`, including files authored by concurrently-dispatched agents. This is precisely the harm `rules/git-workflow.md` already prohibits (lines 88-91): a "directory or glob `git add` pathspec (e.g. `git add -- some/dir/`)" is "the identical over-staging harm as `git add -A`/`git add .` in a narrower disguise", while "the sanctioned explicit multi-file list (e.g. `git add -- a.lean b.lean`) is unaffected and remains permitted". The convention contradicts an explicit, already-written rule in the same system. NOTE: the rule text is CORRECT and needs no change — this task fixes the call sites that violate it, not the rule.
+
+**Half 2 — the guard was never consulted.** `git-commit-scoped.sh` already implements the mechanism that would have prevented the damage: `--task <task_number>` (header line 17; opt-in, empty-value-skips-flag, fails open unconditionally) consults the cycle-scoped contended-path manifest (`specs/.contention-manifest/*.json`) for each POSITIVE pathspec entry, claims each listed path via a first-claim lease (`specs/.contention-claims/<path>`), and REFUSES before any `git add` (exit 3) when another live task holds a path. `skill-meta/SKILL.md:287` passes `--honest-index-rows` but OMITS `--task`, so the lease never ran. The mechanism did not fail — it was never consulted. This is the same systemic shape the worktree-isolation removal verdict already records about an absent `file_scope` ("The guard did not fail; it was never consulted"), making this a third instance. That is the argument for auditing commit sites for the missing `--task`, not merely fixing the pathspec.
+
+== MEASURED SCOPE (verified; an earlier count of 41 files conflated two distinct pathspec forms) ==
+
+`grep -rln -- "-- specs/" agent-system/extensions/` returns 41 files, but most are the ALREADY-COMPLIANT explicit-file-list form (`-- specs/state.json specs/TODO.md`). Narrowing to the actual bare-directory form (`grep -rn -E -- '--[[:space:]]+specs/([[:space:]]|$|\\)'`) returns 14 files, which split cleanly:
+
+**(a) Defective commit-STAGING sites — 9 files, 17 occurrences. These are the work:**
+- core/commands/todo.md:993, 999, 1002, 1005, 1008, 1011, 1014  (7 occurrences)
+- core/commands/task.md:259, 893
+- core/agents/meta-builder-agent.md:1496
+- core/skills/skill-meta/SKILL.md:287
+- core/skills/skill-git-workflow/SKILL.md:216
+- epidemiology/commands/epi.md:325
+- present/commands/grant.md:223, 476
+- present/commands/slides.md:323
+- present/commands/timeline.md:227
+
+**(b) Legitimate READ-ONLY query sites — 5 files. Explicitly OUT OF SCOPE; do not touch:**
+`git ls-files -- specs/` / `git status --porcelain -- specs/` stage nothing. These are core/scripts/init-specs.sh:174, core/scripts/tests/test-init-specs.sh:243,245, core/scripts/tests/test-verify-deploy-context-budget.sh:274, core/scripts/tests/test-orchestrate-context-growth.sh:312, core/docs/architecture/orchestrate-state-machine.md:940.
+
+**Corrections to earlier reporting, verified:** `skill-orchestrate/SKILL.md` and `skill-fix-it/SKILL.md` were previously named as defective instances. They are NOT. skill-fix-it passes `-- specs/TODO.md specs/state.json` (compliant); skill-orchestrate's only `-- specs/` occurrence is the read-only residue check at SKILL.md:272. Likewise `cslib/commands/pr.md`, `founder/commands/project.md` and `context/standards/git-safety.md` all use explicit file lists and are compliant.
+
+== THE RULING PER SITE IS THE WORK ==
+
+A blanket mechanical replacement is WRONG. Rule on each of the 9 staging sites individually:
+- `commands/todo.md`'s 7 sites are the genuinely interesting case: a `/todo` archival sweep moves task directories into `specs/archive/`, so it may legitimately touch a large, not-enumerable-in-advance set under `specs/`. The ruling there may be "enumerate from the archival manifest the command already computes" rather than "list two files", or may be a justified whole-directory exception WITH `--task` engaged. Decide and record the reasoning.
+- The other sites (`task.md`, `meta-builder-agent.md`, `skill-meta/SKILL.md`, `skill-git-workflow/SKILL.md`, and the four extension command files) create or update a bounded, knowable set — typically `specs/state.json`, `specs/TODO.md`, and the one task directory just written. These convert to explicit lists.
+- Record every ruling in `context/standards/git-staging-scope.md`, the documented home of the per-operation commit-scope contract, so the next author does not re-derive it.
+
+== THE `--task` AUDIT ==
+
+Audit of all `git-commit-scoped.sh` call sites across `agent-system/extensions/` (~130 files): only `scripts/orchestrate-cycle-postflight.sh` and `scripts/orchestrator-postflight.sh` pass `--task` in production (plus the script's own test suite, and `memory/skills/skill-learn/SKILL.md` once). Every other site omits it. `--task` fails open unconditionally and is byte-identical to omitting it for any path not listed in a manifest, so adding it is low-risk. Scope the audit's REMEDIATION to this task's own file_scope; for sites outside it, REPORT the finding rather than editing, and recommend a follow-up.
+
+== OBSERVED DAMAGE (verified, today) ==
+
+Commit `4dfe7af61` in this repo swept four files belonging to two other live sessions under a foreign task message and `Session:` trailer: `specs/292_task_count_reasoning_in_task_creation/.blocker-research.json`, `specs/293_add_hold_task_status_marker/.return-meta.json`, `specs/293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md`, `specs/299_detect_plan_revision_during_implement/.return-meta.json`. It also recorded two foreign state transitions (292 `partial` -> `implementing`, 293 `implementing` -> `completed`). The owning session `sess_1790826658_06dbd3` (holding 293 and 292) was live in the registry with `heartbeat_at` ~7 minutes before the commit, and with `acquired_at: null`.
+
+**No history rewrite.** No data was lost and no reference was left dangling; the cost is provenance smear in history. The repo has live writers. Do NOT propose or perform a history rewrite as part of this task.
+
+== BOUNDARY WITH TASK 277 ==
+
+277 ("Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop", `not_started`) is adjacent but distinct: 277 concerns an UNMATCHED pathspec being silently dropped; this task concerns a DIRECTORY pathspec over-staging. 277's file_scope is exactly `scripts/git-commit-scoped.sh` and `scripts/tests/test-git-commit-scoped.sh`.
+
+This task's file_scope DELIBERATELY EXCLUDES both of those files, so the two do not collide and no serializing dependency edge is forced. If this task's research concludes that `git-commit-scoped.sh` should ADDITIONALLY refuse a bare directory pathspec outright (a V6-style gate alongside the existing V3 exclude-only refusal), that is a FINDING TO HAND TO 277 — write it into this task's report as a recommendation for 277 and do not widen this task's footprint to implement it.
+
+== DECLARED FILE_SCOPE OVERLAPS (not hidden; serializing edges declared) ==
+
+- `core/agents/meta-builder-agent.md` is also declared by 292 [implementing] and 300 [not_started]
+- `core/commands/task.md` is also declared by 292 [implementing] and 44 [planned]
+- `core/skills/skill-meta/SKILL.md` is also declared by 300 [not_started]
+- `core/commands/todo.md`'s other declarers (288, 51, 293) are all COMPLETED — no edge needed
+- `core/context/standards/git-staging-scope.md` and the four extension command files are unclaimed
+
+Hence `dependencies: [44, 292, 300]`. These files are the defect sites themselves; dropping them from file_scope to dodge the edges is not an option.
+
+== ACCEPTANCE ==
+
+1. `grep -rn -E -- '--[[:space:]]+specs/([[:space:]]|$|\\)' agent-system/extensions/` returns ONLY the 5 read-only query files from (b), plus any site whose whole-directory form this task explicitly ruled justified and documented.
+2. Every ruling recorded in `context/standards/git-staging-scope.md` with its reasoning.
+3. `scripts/lint/lint-scoped-commit-boundary.sh` still passes. Assess whether it can be extended to catch a bare directory pathspec mechanically (it already carries 8 references to the commit script) and RECORD that assessment as a recommendation — do NOT edit it here: `scripts/` is wholesale-declared by 270 [not_started], and this task's file_scope is deliberately all-`.md` so no `scripts/` edge is forced.
+4. `--task` added at each site in file_scope that commits a task-scoped path; sites outside file_scope reported, not edited.
+
+---
 
 ### 301. Re-open the per-dispatch worktree isolation verdict: audit, external research, complexity measurement, and a decision under a hard user-approval gate
 - **Effort**: large
