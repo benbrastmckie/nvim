@@ -54,18 +54,17 @@
 #     result MUST key that decision on a normalized form of the wrapped command's own argument
 #     vector, in addition to input staleness. Inputs unchanged does not imply the requested work
 #     is the same requested work -- see scope_key below.
-#   - this guard's own state files must never be hardlink-shared across trees (NEW): the five
-#     `<root>/.lake/build-guard.*` files below are ephemeral, per-invocation runtime state, not
-#     build output -- a consumer that clones a Lean package root via `cp -al` (dispatch-
-#     worktree.sh's per-dispatch worktree provisioning is the confirmed, reproduced case) MUST
-#     exclude these five named files from that clone, never hardlink them. A hardlinked copy is
-#     the SAME FILE under two paths, and `finalize_record()`'s truncate-in-place write silently
-#     overwrites the OTHER tree's record/log/captured output -- a false green for a build that
-#     never ran there -- while the shared `build-guard.lock` inode also serializes builds across
-#     the two trees, defeating whatever build-contention isolation the clone existed to provide.
-#     dispatch-worktree.sh now does this exclusion at its own clone step (see its header's
-#     "HARDLINK-CLONE HAZARD" note); this script's `result --expect-pid <pid>` remains the
-#     working caller-side mitigation for any OTHER, not-yet-audited cross-tree-clone consumer.
+#   - this guard's own state files must never be hardlink-shared across trees (standing
+#     convention for any future `cp -al`-cloning consumer): the five `<root>/.lake/build-guard.*`
+#     files below are ephemeral, per-invocation runtime state, not build output -- a consumer
+#     that clones a Lean package root via `cp -al` MUST exclude these five named files from that
+#     clone, never hardlink them. A hardlinked copy is the SAME FILE under two paths, and
+#     `finalize_record()`'s truncate-in-place write silently overwrites the OTHER tree's
+#     record/log/captured output -- a false green for a build that never ran there -- while the
+#     shared `build-guard.lock` inode also serializes builds across the two trees, defeating
+#     whatever build-contention isolation the clone existed to provide. This script's
+#     `result --expect-pid <pid>` remains the working caller-side mitigation for any
+#     not-yet-audited cross-tree-clone consumer.
 #
 # RECORDED DEAD ENDS (do not re-attempt these as a "quick fix" for build concurrency):
 #   - Lake 5.0.0 exposes no `-j`/`--jobs` flag (confirmed against a live `lake build --help`).
@@ -78,13 +77,13 @@
 #     thread pool, not Lake's job scheduler. This script MUST NOT read, set, export, or document
 #     LEAN_NUM_THREADS as a concurrency lever -- every other appearance of the string in this
 #     file is documentation of that fact, never an assignment.
-#   - `git rev-parse --git-common-dir` is USELESS as a tree-identity source for distinguishing a
-#     dispatch worktree from its main tree: it resolves to the same shared `.git` metadata
-#     directory for every worktree of one repository, by design -- it is identical everywhere a
-#     tree-identity check would need it to differ. `git rev-parse --show-toplevel`, by contrast,
-#     DOES differ per worktree and is the one that would matter here -- though it remains
-#     forbidden for this script's OWN `resolve_project_root()` purpose (a Lean package is
-#     frequently a subdirectory of a larger repo; see that function's own comment).
+#   - `git rev-parse --git-common-dir` is USELESS as a tree-identity source for distinguishing
+#     one git worktree from another: it resolves to the same shared `.git` metadata directory for
+#     every worktree of one repository, by design -- it is identical everywhere a tree-identity
+#     check would need it to differ. `git rev-parse --show-toplevel`, by contrast, DOES differ per
+#     worktree and is the one that would matter here -- though it remains forbidden for this
+#     script's OWN `resolve_project_root()` purpose (a Lean package is frequently a subdirectory
+#     of a larger repo; see that function's own comment).
 #
 # LAKE SUBCOMMAND ALLOWLIST (build mode; see LAKE_SUBCOMMANDS below):
 #   build mode validates lake_args[0] against a hardcoded allowlist before dispatch, rather than

@@ -21,8 +21,8 @@ separate single-task code path. Full state table, transition diagram, design rat
 - `.claude/scripts/orchestrate-recover-message-findings.sh` — Move 3's `report_missing=true`
   branch: saves a research dispatch's message-borne findings as a clearly-tagged recovered
   artifact (D4)
-- `.claude/docs/architecture/orchestrate-state-machine.md` — state table, loop diagram,
-  `mt_state_file` field reference, exit-status resolution, and `handoff-schema.md` cross-reference
+- `.claude/docs/architecture/orchestrate-state-machine.md` — full state-machine reference (see
+  above)
 
 ---
 
@@ -167,17 +167,7 @@ deferred tasks become eligible again later.
 **MUST NOT**: no field of a `dispatch[]` or `aux_dispatch[]` row is ever forwarded as an
 Agent-tool argument unless this section names it as one — today that is `agent`
 (-> `subagent_type`) and `model` only; the `Context: {...}` fields above are prompt text handed
-to the dispatched agent, never Agent-tool arguments themselves. In particular, never forward a
-row's `isolation`/`worktree_path` fields to the Agent tool's own `isolation` parameter:
-`isolation` is a real Agent-tool parameter whose enum includes `"worktree"`, so a forwarded row
-value is syntactically valid and raises no error. The row's `isolation`/`worktree_path` only
-RECORD a worktree `dispatch-worktree.sh` already provisioned before the row was built; forwarding
-it stacks a SECOND harness checkout on top of that one, the harness then refuses all
-cross-checkout git BY DESIGN while still permitting file writes and build/test runs, so the
-dispatched agent authors and verifies its work green and then cannot commit it (observed cost in
-one production run: 20 of a dispatch's 21 phases). See
-`context/patterns/batch-orchestration-guardrails.md`'s "Deliberate Divergences" for the
-complementary rationale.
+to the dispatched agent, never Agent-tool arguments themselves.
 
 ### Move 3: Postflight
 
@@ -310,7 +300,7 @@ commands, use MCP/WebSearch/domain tools, analyze or grep source, or write repor
 summaries — that is dispatched-agent work. This skill only reads the handoff, drives the state
 transition, and cleans up temp/marker files.
 
-**D4 exception, operational only** (rationale: the two references above): when
+**D4 exception** (operational only; rationale above): when
 `postflight_json.report_missing` is `true`, the lead writes that row's own Agent-tool return
 text **verbatim** to `${task_dir_rel}/.dispatch/${dispatch_seq}.agent-message.md`, then calls
 `orchestrate-recover-message-findings.sh` (Move 3 above) to persist it into `reports/` — the
@@ -318,8 +308,7 @@ ONLY case this skill writes into `reports/`, `plans/`, or `summaries/`.
 
 Also: never hardcode a phase order (dispatch whatever phase `orchestrate-cycle-plan.sh` names);
 never let `detected_defects` call `AskUserQuestion` (accumulate-then-render only, per
-`orchestrate-state-machine.md`'s `mt_state_file` field reference); never let `aux_dispatch[]`
-reach Move 3.
+`orchestrate-state-machine.md`'s `mt_state_file` field reference).
 
 ## Skill-to-Agent Mapping
 

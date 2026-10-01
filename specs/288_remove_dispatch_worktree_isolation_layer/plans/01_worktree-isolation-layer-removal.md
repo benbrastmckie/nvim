@@ -370,7 +370,7 @@ sites were exhaustive.
 
 ---
 
-### Phase 5: Prose and contract reconciliation [NOT STARTED]
+### Phase 5: Prose and contract reconciliation [COMPLETED]
 
 **Goal**: Bring every surviving document to the post-removal truth — delete live constraints derived
 from the removed mechanism, keep genuine history as history, and fix the two factually wrong
@@ -378,18 +378,18 @@ passages.
 
 **Tasks**:
 
-- [ ] `skills/skill-orchestrate/SKILL.md`: in the Move 2 **MUST NOT** block, **keep** the opening
+- [x] `skills/skill-orchestrate/SKILL.md`: in the Move 2 **MUST NOT** block, **keep** the opening
       general sentence ("no field of a `dispatch[]` or `aux_dispatch[]` row is ever forwarded as an
       Agent-tool argument unless this section names it ... `agent` and `model` only") — it still has
       force for `agent`/`model` and any future row field. Delete only from "In particular, never
       forward a row's `isolation`/`worktree_path` fields..." through "...complementary rationale."
       (≈950 B).
-- [ ] Re-measure `wc -c skills/skill-orchestrate/SKILL.md`. If still over the 20,000 B ceiling (it
+- [x] Re-measure `wc -c skills/skill-orchestrate/SKILL.md`. If still over the 20,000 B ceiling (it
       likely will be, ~370 B over by estimate), do a small wording-economy pass **inside this same
       file** over passages already covered by `docs/architecture/orchestrate-state-machine.md` and
       `docs/architecture/handoff-schema.md`, removing no operational content. Record the final
       number; do not assume the ceiling cleared.
-- [ ] `scripts/lake-build-guard.sh`: at ~lines 58–60, reword to drop the now-dead
+- [x] `scripts/lake-build-guard.sh`: at ~lines 58–60, reword to drop the now-dead
       `dispatch-worktree.sh` example while **keeping the standing convention itself** ("this guard's
       own state files must never be hardlink-shared across trees") as a rule for any future
       `cp -al`-cloning consumer. At ~lines 65–66, the claim that `dispatch-worktree.sh` "now does
@@ -398,14 +398,14 @@ passages.
       `git rev-parse --git-common-dir` finding, reworded to drop the "dispatch worktree vs. its main
       tree" framing and state it as a fact about `git rev-parse` and this script's own
       `resolve_project_root()`.
-- [ ] `context/contracts/territory.md` line 136: rewrite the "Working-tree or build isolation ... is
+- [x] `context/contracts/territory.md` line 136: rewrite the "Working-tree or build isolation ... is
       a distinct, **unimplemented** remedy **owned elsewhere**" clause. Both halves are now wrong:
       working-tree isolation was implemented and is deliberately removed (not unimplemented), and
       build isolation (mode 2) is implemented in-repo via the co-scheduling admission rule in
       `orchestrate-cycle-plan.sh` (not owned elsewhere). State the current posture: a single shared
       working tree for every dispatch, with build contention handled by the co-scheduling admission
       rule. **This is a correctness fix** — it directly affects guidance a dispatched agent reads.
-- [ ] `context/standards/orchestrator-runtime-files.md`: delete the
+- [x] `context/standards/orchestrator-runtime-files.md`: delete the
       `.orchestrate-worktrees/<task_number>-<seq>/` row and the
       `specs/.worktree-registry/<task_number>-<seq>.json` row from the Class Table outright,
       following that file's own "Retired conventions" precedent for a zero-writer convention with no
@@ -413,7 +413,7 @@ passages.
       the clause "excluding any task selected for worktree isolation (it has no shared working copy
       to contend over)" — the documentation form of the same now-false exclusion fixed in Phase 2.
       Leave the rest of that row, including its `.gitignore` cross-reference, intact.
-- [ ] `context/patterns/batch-orchestration-guardrails.md` (see the Decisions note for why this file
+- [x] `context/patterns/batch-orchestration-guardrails.md` (see the Decisions note for why this file
       is in scope): reconcile its four `dispatch-worktree.sh` references. At ~line 1436 and in the
       `## Related Documents` entry at ~line 1612, the script and the selection predicate are
       described as superseded but "remaining in the tree pending a separately sequenced removal
@@ -424,7 +424,7 @@ passages.
       removal is a separately sequenced task"; update that sentence to record that the removal has
       landed while keeping the rationale itself. Before editing, run `git status --short` on this
       file to confirm no concurrent writer.
-- [ ] Across all of the above: use durable anchors (filenames, section headings, decision-record
+- [x] Across all of the above: use durable anchors (filenames, section headings, decision-record
       names) — never task numbers — per `.claude/rules/no-task-references-in-deliverables.md`, since
       every file here lives outside `specs/**`.
 

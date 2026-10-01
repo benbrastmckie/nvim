@@ -133,10 +133,13 @@ covers more than it does**:
   entirely by `orchestrate-batch-admit.sh`'s own admission gate, a separate piece of work. This
   section only REPRESENTS the absence/coarseness so a dispatched agent can see and react to it —
   it never decides whether that same task should have been admitted at all.
-- **Working-tree or build isolation** between concurrent dispatches (e.g. separate worktrees, or
-  serialized builds) is a distinct, unimplemented remedy owned elsewhere. This payload is a
-  necessary but partial mitigation: it informs agents sharing one tree, it does not give them
-  separate trees.
+- **Working-tree and build isolation** between concurrent dispatches: every dispatch runs in the
+  repository's single shared working tree (per-dispatch `git worktree` isolation was implemented
+  and has since been deliberately removed); build contention is closed instead by the build-heavy
+  co-scheduling admission rule in `orchestrate-cycle-plan.sh` (never dispatch two build-heavy
+  implement tasks in the same cycle). See the isolation-removal decision record under
+  `specs/decisions/` for the full verdict. This payload is a necessary but partial mitigation on
+  top of that posture: it informs agents sharing one tree, it does not give them separate trees.
 
 ## Plan-Section Territory
 

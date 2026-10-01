@@ -1433,11 +1433,10 @@ a different layer (see Option 3(ii) below).
 **Per-dispatch `git worktree` isolation is removed, not narrowed.** Every dispatch — every phase,
 every `task_type` — runs in the repository's single working tree. There is no selection predicate
 of any kind: no dispatch is routed to isolation by phase, by task family, or by any other
-property. `dispatch-worktree.sh`, the `task_selected_for_worktree_isolation()` selection
-predicate, and all provisioning, landing, releasing and pruning wiring are superseded by this
-verdict; their deletion is a separately sequenced removal task (see `## Related Documents`
-below), not performed by this document. This section records the verdict and the reasoning behind
-it, not the removal mechanics.
+property. The per-dispatch worktree-provisioning script, its former selection predicate, and all
+provisioning, landing, releasing and pruning wiring were deleted outright by the removal task
+(see `## Related Documents` below). This section records the verdict and the reasoning behind it,
+not the removal mechanics.
 
 Concurrency safety rests entirely on declared `file_scope`, `dependencies[]` edges, and the five
 contention inputs already built and in service: creation-time auto-dependency edges, the runtime
@@ -1461,7 +1460,7 @@ reproduce them, not overturn the decision.
 
 | Defect | Mechanism | Consequence |
 |---|---|---|
-| Destructive release on `nothing_to_land` | `dispatch-worktree.sh land` derives `nothing_to_land` from a pure branch-ancestry test (`merge-base --is-ancestor`) and never inspects the working tree; the orchestration postflight step folds that verdict into the same success branch as `landed` and immediately releases | Silent destruction of uncommitted work. Nearly destroyed verified, sorry-free, build-green work; caught only because an operator inspected the worktree by hand. Nothing in the system would have reported the loss |
+| Destructive release on `nothing_to_land` | the now-deleted worktree-provisioning script's `land` subcommand derived `nothing_to_land` from a pure branch-ancestry test (`merge-base --is-ancestor`) and never inspected the working tree; the orchestration postflight step folded that verdict into the same success branch as `landed` and immediately released | Silent destruction of uncommitted work. Nearly destroyed verified, sorry-free, build-green work; caught only because an operator inspected the worktree by hand. Nothing in the system would have reported the loss |
 | `git-commit-scoped.sh`'s false success inside a worktree | `PROJECT_ROOT` is derived from `BASH_SOURCE[0]`, with no `--repo-root` or `--worktree` flag; every pathspec falls through the WARN-and-drop branch, nothing stages, and the script returns success | A false negative that reads as success to its caller. Produced a commit lacking its required attribution trailers via a manual fallback |
 | `lake-build-guard.sh`'s false green via the `cp -al` inode share | `cp -al` of the build directory shares inodes for the guard's own `build-guard.*` state files; the guard's `finalize_record()` truncates in place, so a worktree build overwrote the main tree's record | Reported a successful build while writing no output for the requested module. A false green is the dangerous direction of wrong for a build gate |
 
@@ -1552,10 +1551,10 @@ are retained verbatim rather than restated so a future reader can re-run them di
 
 ### A Corrected Rationale for Hardlink-Over-Symlink
 
-Historical: this subsection records `dispatch-worktree.sh`'s own internal hardlink-vs-symlink
-rationale. The script is not deleted by this verdict — its removal is a separately sequenced task
-— so the rationale is retained rather than dropped, and may be cited again before that removal
-lands.
+Historical: this subsection records the now-deleted worktree-provisioning script's own internal
+hardlink-vs-symlink rationale. The script's removal has landed; the rationale is retained here
+as history rather than dropped, since the same reasoning may be relevant to a future
+`cp -al`-cloning consumer.
 
 A materialized deploy tree (the directory a dispatched agent's own tooling lives under) must be
 physically present inside an isolated worktree, not merely symlinked there — but the reason is
@@ -1607,15 +1606,15 @@ argument.
 
 This document states principles only. The mechanisms are defined, exactly once each, elsewhere:
 
-- **Working-tree and build isolation posture**: this document's own "Working-Tree and Build
-  Isolation Posture" section above decides the shared-tree-vs-isolated-worktree question, now a
-  blanket shared-tree verdict with no surviving selection predicate. `dispatch-worktree.sh`
-  implemented the now-superseded split verdict's provisioning/land/release lifecycle and remains
-  in the tree pending a separately sequenced removal task — it is not live and not selected by
-  this document, but it is also not unexplained dead code: this entry is that explanation until
-  the removal lands. The mode-1b contended-path commit refusal in `git-commit-scoped.sh` and the
-  staging qualification in `context/standards/git-staging-scope.md` are unaffected by the posture
-  change and remain exactly as before.
+- **Working-tree and build isolation posture**: this document's own "The Blanket Shared-Tree
+  Verdict" section above decides the shared-tree-vs-isolated-worktree question, a blanket
+  shared-tree verdict with no surviving selection predicate. The per-dispatch worktree-
+  provisioning script implemented the now-superseded split verdict's provisioning/land/release
+  lifecycle; it has been deleted outright, along with its selection predicate and all
+  provisioning/land/release/prune wiring. The mode-1b contended-path commit refusal in
+  `git-commit-scoped.sh` and the staging qualification in
+  `context/standards/git-staging-scope.md` are unaffected by the posture change and remain
+  exactly as before.
 - **Build-contention (mode 2) admission rule**: the "Mode 2: An Admission Rule, Not a Layer"
   subsection above states the never-co-schedule-two-build-heavy-implement-tasks principle only;
   the admission predicate that enforces it belongs in `orchestrate-cycle-plan.sh`'s own header,
