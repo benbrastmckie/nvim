@@ -1,5 +1,12 @@
 # Decision Record: Per-Dispatch Working-Tree Isolation — Removal Verdict
 
+**Reaffirmed 2026-10-01.** Task 301 re-opened this verdict under new evidence (a live production
+observation of the layer still running in a stale deploy, plus targeted external research into
+CoW/reflink alternatives) and formally CONFIRMED it. See
+`specs/decisions/worktree-isolation-removal-reaffirmation.md` for the reaffirmation record and
+`specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md` for the
+full evidentiary basis. This record's content below is unchanged and remains authoritative.
+
 This record closes the split verdict recorded in
 `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`'s
 `## Working-Tree and Build Isolation Posture` section and replaces it with a blanket shared-tree
