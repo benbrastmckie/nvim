@@ -1,5 +1,5 @@
 ---
-next_project_number: 299
+next_project_number: 300
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 299
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,293,294,295,296,297 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,293,294,295,296,297,299 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298 | 22,44,127,184,241,265,272,279,280,297 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -77,8 +77,46 @@ next_project_number: 299
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
+299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 
 ## Tasks
+
+### 299. Guarantee detection of in-place plan revision concurrent with a live implement dispatch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Guarantee that an in-place plan revision landing concurrently with a live implement dispatch is DETECTED, by adopting two complementary remedies together.
+
+THE DEFECT. scripts/orchestrate-cycle-plan.sh can emit a `plan-revision` aux row for the same task and the same cycle as that task's implement dispatch: mutual exclusion is asserted between aux KINDS (drift-inspection vs divergence-audit), never between an aux row and the implement row. See the AUX DECISION comment at orchestrate-cycle-plan.sh:1241-1247 ("Mutual exclusion between `drift-inspection` (base mode) and `divergence-audit` (hard mode) is asserted defensively...") and the `aux_emit_kind` declaration at :1250. skills/skill-orchestrate/SKILL.md's Move 2 then requires every `dispatch[]` AND `aux_dispatch[]` row be issued in ONE message (SKILL.md:131-133, "Issue every Agent call named by `dispatch[]` AND `aux_dispatch[]` in **one message**"). So reviser-agent (the fixed agent for `plan-revision`, orchestrate-cycle-plan.sh:1359) edits plans/*.md IN PLACE while the implement agent is reading that same file. Nothing in any contract makes the implement agent aware the file changed underneath it.
+
+OBSERVED COST (real production run: BimodalLogic, task 703, cycle 5). The implement dispatch excerpted one phase from the post-revision file and another from the pre-revision file, noticing only because line numbers shifted between two reads. It reported a plan bullet as uncorrected when the revision had already corrected it, propagated that false claim into the phase handoff and the round summary, and required a retraction plus two further plan revisions to unwind. It was caught ONLY because reviser-agent chose, on its own initiative, to message the live implement dispatch when its revision landed. Confirmed: agents/reviser-agent.md contains no notification machinery whatsoever (no SendMessage, notify, or concurrent-dispatch obligation anywhere in the file). That load-bearing behavior is entirely discretionary today.
+
+REMEDY 1 - make the landed-revision notification routine rather than discretionary. The aux plan-revision dispatch file must instruct reviser-agent to message the live implement dispatch when its revision lands. Landing site: scripts/orchestrate-build-aux-dispatch.sh - the `plan-revision` arm of the prompt case statement at :189-195, and/or the dispatch-file emit block beginning at :201. This is precisely the mechanism that already worked; the change makes it contractual.
+
+OPEN DECISION (settle during research/plan; do not assume it is free). Remedy 1 stated conditionally - "whenever a plan-revision aux row is co-dispatched with that same task's implement row" - is NOT directly expressible at the point the aux dispatch file is built, for two independently verified reasons. (a) orchestrate-build-aux-dispatch.sh's argument interface (usage block at :59-66) has no parameter carrying any knowledge of a sibling implement row. (b) More fundamentally, the AUX DECISION and AUX EMISSION blocks run at orchestrate-cycle-plan.sh:1241 and :1343, which is BEFORE the all-terminal check (:1500), eligibility (:1517), classification (:1635), force-phase consumption (:1676), admission (:1714), and dispatch-candidate bucketing (:1829). At aux-emission time the cycle does not yet know which tasks receive an implement row this cycle. Three resolutions, in recommended order:
+  (c) RECOMMENDED - emit the notification instruction UNCONDITIONALLY in every `plan-revision` aux dispatch file. Requires no reordering and no new flag; the instruction is inert when no implement dispatch is live. Cheapest correct option.
+  (b) Defer only the dispatch-file WRITE for plan-revision rows until after bucketing, then pass a new flag. More precise, but splits the aux emission block and must preserve its live-only-side-effect ordering (aux_pending consumption, marker-file consumption, escalation counters) and the shared-decision-section mandate that --dry-run and live render identical choices.
+  (a) NOT RECOMMENDED - reorder the aux decision after bucketing. Most invasive; touches the script's documented decision-section structure.
+
+REMEDY 2 - add an implement-side obligation to re-read every excerpted plan phase before writing. This catches a tear that lands between two reads before any message arrives, which is the failure mode remedy 1 alone misses. Landing sites: scripts/orchestrate-build-dispatch.sh's implement-phase "## Plan" block at :435-439 (currently emits only `plan_path`), and/or agents/general-implementation-agent.md (plus extensions/lean/agents/lean-implementation-agent.md for parity).
+
+REMEDY 2 IS GENUINELY NEW - do not mistake it for existing coverage. Two adjacent mechanisms look like they already cover it and do not: (i) the `--territory` payload's "generic re-read-before-editing" note (orchestrate-build-dispatch.sh:67-69) governs re-reading the TARGET files an agent is about to edit, not the plan that instructs it; (ii) context/contracts/pre-edit-gate.md treats "a planning-time list as a hypothesis about the codebase" - it validates plan CLAIMS against the tree, not the plan FILE against its own later revision. Remedy 2's subject is the instruction source itself.
+
+TENSION TO RECONCILE EXPLICITLY. agents/general-implementation-agent.md:59 currently reads "Do NOT re-read the full plan unless necessary (the handoff References section points to deeper context if needed)". It sits under **Successor Behavior** (:55-60), so it is scoped to handoff resumption rather than the primary read path - but a successor dispatch is exactly the case where the plan is most likely to have been revised since the prior read. Remedy 2 must reconcile with this line rather than silently contradict it, and the reconciliation should keep the obligation narrow: re-read the specific excerpted phase before writing, not the full plan.
+
+BYTE-BUDGET INTERACTION (affects the design, not just the ordering). skills/skill-orchestrate/SKILL.md is already 325 B over its 20,000 B ceiling, and a concurrent task promotes ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard (see task #289, which owns agent-system/extensions/core/context/config/orchestrator-context-budget.json and the same SKILL.md). Therefore: prefer putting the actual contract text in a context/ file and emitting only a short pointer into SKILL.md and the dispatch files, rather than adding prose to SKILL.md. No blocking dependency is declared on #289 in either direction - whichever lands second re-measures the budget - but a byte-heavy SKILL.md edit here would re-breach a gate that is becoming hard.
+
+REJECTED ALTERNATIVE (recorded as rejected, NOT as a future phase). Remedy 3: never co-dispatch a plan-revision aux row with the same task's implement row, deferring the revision one cycle. It is the only option that REMOVES the race rather than detecting it. Rejected because it costs a full cycle and contradicts the current one-message dispatch rule at SKILL.md:131. Do not re-scope it into this task or a successor.
+
+DEFERRED OBSERVATION (record only; explicitly OUT OF SCOPE). The same incident surfaced a second finding: a header-only correction label in a long plan does not survive a line-range excerpt, because a reader excerpting from below the labelled block drops the label silently. That was fixed in the affected plan directly. It is a documentation-form finding about plan authoring, not an orchestrator defect, and must not be scoped into this task.
+
+SOURCE-STORE BOUNDARY. All edits land under agent-system/extensions/core/** (and extensions/lean/** for the lean agent). Never edit a deployed .claude/** copy - the next redeploy wipes it (.claude/rules/source-store-deploy-boundary.md). Script behavior changes should carry coverage in agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh and the aux/cycle-plan test siblings.
+
+SHARED-FILE CONTENTION (for batch admission awareness, not dependencies). Other active tasks declare overlapping file_scope: #289, #273, #274, #275, #285 and #263 touch skill-orchestrate/SKILL.md; #250, #165, #272, #265 and #293 touch orchestrate-cycle-plan.sh; #263 touches orchestrate-build-dispatch.sh. Do not batch this task concurrently with those.
+
+---
 
 ### 298. Author the books extension context corpus under context/project/books/
 - **Effort**: 3-6 hours
