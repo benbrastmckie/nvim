@@ -180,16 +180,21 @@ fi
 # (commands/orchestrate.md, skills/skill-orchestrate/SKILL.md against
 # context/config/orchestrator-context-budget.json). Mirrors the SCHEMA_CONFORMANCE_GATE_MODE /
 # STRICT_CORE_DEPLOY precedent (check-extension-docs.sh): one env-var default a maintainer flips
-# in a follow-up commit, not a persisted auto-promotion counter. Promotion to "hard" was
-# attempted on 2026-10-01 once the sibling task concurrently editing commands/orchestrate.md
-# (the `[HOLD]` status-marker change) had landed, and skills/skill-orchestrate/SKILL.md plus the
-# eager-load total were brought under their ceilings by a deliberate duplication trim -- but that
-# same landed sibling commit grew commands/orchestrate.md itself to 21,328 B, 328 B over its own
-# 21,000 B ceiling (a newly-discovered, unrelated overage; trimming that file is out of scope for
-# the task that did this trim). Promotion is deferred again until commands/orchestrate.md is back
-# under ceiling. Does NOT gate the eager-load regression check or the volatile-file check, both
-# of which have their own fixed severity (see gate20 below).
-ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-warn}"
+# in a follow-up commit, not a persisted auto-promotion counter. A first promotion attempt on
+# 2026-10-01 was reverted same-day: a sibling commit (the `[HOLD]` status-marker change) grew
+# commands/orchestrate.md to 21,328 B, 328 B over its own 21,000 B ceiling, just as
+# skills/skill-orchestrate/SKILL.md and the eager-load total were brought under their ceilings by
+# a deliberate duplication trim. Promotion to "hard" landed successfully later the same day
+# (2026-10-01), once a restatement trim of commands/orchestrate.md's Options table rows
+# (`--fast`/`--research`/`--plan`/`--implement`) and forced-phase Constraints bullet -- relocating
+# duplicated detail behind pointers into docs/architecture/orchestrate-state-machine.md, the
+# single authoritative long-form source -- brought the file to 19,024 B. Both per-file ceilings
+# were clear at promotion time (commands/orchestrate.md 19,024 B / 21,000 B;
+# skills/skill-orchestrate/SKILL.md 19,993 B / 20,000 B); neither ceiling_bytes nor
+# eager_load.baseline_bytes in orchestrator-context-budget.json was moved to effect this
+# promotion. Does NOT gate the eager-load regression check or the volatile-file check, both of
+# which have their own fixed severity (see gate20 below).
+ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-hard}"
 
 FAILURES=0
 CHECKS=0

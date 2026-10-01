@@ -126,7 +126,7 @@ and the measurement are both narrated by the record refresh; verification covers
 
 ---
 
-### Phase 1: Trim the restated forced-phase documentation and fix destination reciprocity [IN PROGRESS]
+### Phase 1: Trim the restated forced-phase documentation and fix destination reciprocity [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/commands/orchestrate.md` measures <= 20,500 B with every
 cut clause verifiably still present in
@@ -209,31 +209,32 @@ measured `wc -c` result being <= 20,500 B, not the estimate matching.
 
 ---
 
-### Phase 2: Promote `ORCHESTRATOR_BUDGET_GATE_MODE` from warn to hard [NOT STARTED]
+### Phase 2: Promote `ORCHESTRATOR_BUDGET_GATE_MODE` from warn to hard [IN PROGRESS]
 
 **Goal**: Gate 20's per-file ceiling sub-check defaults to `fail()` severity, with its dated
 comment block narrating the successful promotion instead of the deferred attempt.
 
 **Tasks**:
 
-- [ ] Re-confirm the gate precondition before flipping:
+- [x] Re-confirm the gate precondition before flipping:
       `wc -c agent-system/extensions/core/commands/orchestrate.md` is under 21,000 B AND
       `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` is under its 20,000 B
       ceiling. Both per-file entries in the config become `fail()`-tier at once, so both must be
       clear — not just the one this task trimmed. If either is over, stop and report rather than
-      flipping.
-- [ ] Change `agent-system/extensions/core/scripts/verify-deploy.sh` line ~192 from
+      flipping. *(completed: 19,024 B and 19,993 B respectively)*
+- [x] Change `agent-system/extensions/core/scripts/verify-deploy.sh` line ~192 from
       `ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-warn}"` to
-      `...:-hard}"`, leaving the env-var override mechanism itself untouched.
-- [ ] Rewrite the dated comment block above it (currently lines ~179-191) to record the
+      `...:-hard}"`, leaving the env-var override mechanism itself untouched. *(completed)*
+- [x] Rewrite the dated comment block above it (currently lines ~179-191) to record the
       successful 2026-10-01 promotion: the restatement trim that closed the
       `commands/orchestrate.md` overage, the fact that both per-file ceilings were clear at
       promotion time, and that no ceiling or `baseline_bytes` was moved. Keep the existing
       `SCHEMA_CONFORMANCE_GATE_MODE` / `STRICT_CORE_DEPLOY` precedent sentence and the closing
       note that this variable does NOT gate the eager-load regression or volatile-file sub-checks.
-- [ ] `bash -n agent-system/extensions/core/scripts/verify-deploy.sh` to confirm the script still
-      parses.
-- [ ] Commit this sub-step.
+      *(completed)*
+- [x] `bash -n agent-system/extensions/core/scripts/verify-deploy.sh` to confirm the script still
+      parses. *(completed)*
+- [x] Commit this sub-step. *(completed)*
 
 **Timing**: 0.5 hours
 
