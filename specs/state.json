@@ -5,12 +5,12 @@
     {
       "project_number": 305,
       "project_name": "trim_orchestrate_md_and_promote_budget_gate",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "description": "Trim agent-system/extensions/core/commands/orchestrate.md below its 21,000 B ceiling, then promote ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard. The file measures 21,328 B -- 328 B over -- and is the last open finding in verify-deploy Gate 20 (orchestrator context budget lock): the eager-load total (65,402 B / 65,950 B baseline) and skills/skill-orchestrate/SKILL.md (19,993 B / 20,000 B ceiling) were both brought under their limits by deliberate duplication trims, but the promotion was reverted because this file had concurrently grown past its own ceiling via the [HOLD] status-marker change's STAGE 0 documentation landing. The remedy is already on record in this file's derivation narrative inside agent-system/extensions/core/context/config/orchestrator-context-budget.json: a restatement trim of the Options table's --fast/--research/--plan/--implement rows and the forced-phase Constraints bullet, all of which duplicate docs/architecture/orchestrate-state-machine.md. Constraints: (a) do not move ceiling_bytes or baseline_bytes -- the config's own note requires any such move be deliberate, dated and reviewed, and the established remedy is content relocation behind a plain pointer; (b) verify every relocated clause is present in its non-eager destination before cutting the eager copy; (c) the file's ~10 KB STAGE 0 executable bash block is out of scope -- relocating it is a code-relocation change, not a documentation trim; (d) target headroom (~20,500 B) rather than the bare limit, since this file has been pushed over its ceiling by sibling commits three times in the growth history recorded in the config. Close by flipping ORCHESTRATOR_BUDGET_GATE_MODE to hard in the same change and confirming Gate 20 plus its 13-case test suite (scripts/tests/test-verify-deploy-context-budget.sh) pass.",
       "topic": "orchestrator",
       "created": "2026-10-01T12:51:06Z",
-      "last_updated": "2026-10-01T13:08:11Z",
+      "last_updated": "2026-10-01T13:26:14Z",
       "session_id": "sess_1790859334_f418e2",
       "artifacts": [
         {
@@ -22,6 +22,11 @@
           "path": "specs/305_trim_orchestrate_md_and_promote_budget_gate/plans/01_trim-orchestrate-md-promote-gate.md",
           "type": "plan",
           "summary": "4-phase implementation plan for the orchestrate.md restatement trim and the budget-gate promotion to hard."
+        },
+        {
+          "path": "specs/305_trim_orchestrate_md_and_promote_budget_gate/summaries/01_trim-orchestrate-md-promote-gate-summary.md",
+          "type": "summary",
+          "summary": "Trimmed commands/orchestrate.md to 19,024 B, fixed destination-doc reciprocity, promoted ORCHESTRATOR_BUDGET_GATE_MODE to hard, refreshed the measurement/narrative record, and ran narrow Gate 20 verification (clean under hard mode)."
         }
       ],
       "next_artifact_number": 2,
@@ -31,7 +36,8 @@
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/scripts/verify-deploy.sh",
         "specs/ROADMAP.md"
-      ]
+      ],
+      "completion_summary": "Closed the last open Gate 20 finding by trimming commands/orchestrate.md to 19,024 B (under its 21,000 B ceiling with headroom) while relocating duplicated detail behind pointers into orchestrate-state-machine.md, then promoted ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard in verify-deploy.sh. Gate 20 passes clean (0 findings, mode: hard, both per-file ceilings under) and the measurement/narrative record (orchestrator-context-budget.json, specs/ROADMAP.md) was refreshed to match."
     },
     {
       "project_number": 298,

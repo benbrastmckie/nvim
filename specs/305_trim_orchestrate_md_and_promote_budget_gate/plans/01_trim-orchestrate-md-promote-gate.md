@@ -1,7 +1,7 @@
 # Implementation Plan: Task #305
 
 - **Task**: 305 - Trim `agent-system/extensions/core/commands/orchestrate.md` below its 21,000 B ceiling, then promote `ORCHESTRATOR_BUDGET_GATE_MODE` from warn to hard
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/305_trim_orchestrate_md_and_promote_budget_gate/reports/01_trim-orchestrate-md-budget-gate.md`

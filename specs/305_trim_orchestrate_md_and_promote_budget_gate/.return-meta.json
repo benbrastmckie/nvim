@@ -24,21 +24,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/305_trim_orchestrate_md_and_promote_budget_gate/summaries/01_trim-orchestrate-md-promote-gate-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["documentation-trim", "reciprocity", "cross-reference", "context-budget", "duplication"]
+      "suggested_keywords": [
+        "documentation-trim",
+        "reciprocity",
+        "cross-reference",
+        "context-budget",
+        "duplication"
+      ]
     },
     {
       "content": "verify-deploy.sh's gate20 test fixture symlinks its FIXTURE/.claude to the REAL repo's .claude/ rather than copying it, so the baseline-fixture full-battery check can fail for reasons entirely unrelated to the gate under test (e.g. any source-store edit not yet deployed via deploy-headless.sh shows up as gate3/gate5 content-drift findings against the live .claude symlink). When a source-store-only task's own edits make the baseline-fixture check newly fail, run the optional deploy sync before concluding the suite is broken -- it is often the fastest way to confirm the new failure is deploy-staleness rather than a real regression, since the narrower --only-gate 20 check stays unaffected either way.",
       "category": "INSIGHT",
       "source_artifact": "specs/305_trim_orchestrate_md_and_promote_budget_gate/summaries/01_trim-orchestrate-md-promote-gate-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["verify-deploy", "gate20", "test-fixture", "deploy-staleness", "source-store"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate20",
+        "test-fixture",
+        "deploy-staleness",
+        "source-store"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790859334_f418e2",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
