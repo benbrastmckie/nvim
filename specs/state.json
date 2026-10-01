@@ -64,7 +64,7 @@
       "project_number": 286,
       "project_name": "shared_tree_isolation_posture_verdict",
       "title": "Revise the working-tree isolation posture to a blanket shared-tree verdict",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -74,7 +74,7 @@
         "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
       ],
       "created": "2026-09-30T23:58:41Z",
-      "last_updated": "2026-10-01T00:13:42Z",
+      "last_updated": "2026-10-01T00:13:53Z",
       "session_id": "sess_1790813213_9179fb",
       "artifacts": [
         {
@@ -86,9 +86,15 @@
           "path": "specs/286_shared_tree_isolation_posture_verdict/plans/01_shared-tree-isolation-posture.md",
           "type": "plan",
           "summary": "Four-phase documentation-only plan rewriting the split working-tree isolation verdict into a blanket shared-tree verdict in batch-orchestration-guardrails.md."
+        },
+        {
+          "path": "specs/286_shared_tree_isolation_posture_verdict/summaries/01_shared-tree-isolation-posture-summary.md",
+          "type": "summary",
+          "summary": "Rewrote the split working-tree isolation verdict into a blanket shared-tree verdict in batch-orchestration-guardrails.md, per the closed decision record."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Rewrote the Working-Tree and Build Isolation Posture section of batch-orchestration-guardrails.md from a split verdict to a blanket shared-tree verdict with no surviving selection predicate, transcribing specs/decisions/worktree-isolation-removal-verdict.md: cost disclaimed as the reason, all three layer-induced defects and the structural argument recorded, taxonomy and measurements preserved verbatim, the mode 2 principle stated with its mechanism pointed at orchestrate-cycle-plan.sh, and the Related Documents list corrected to stop presenting dispatch-worktree.sh as live."
     },
     {
       "project_number": 283,
