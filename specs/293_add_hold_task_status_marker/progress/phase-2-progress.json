@@ -1,0 +1,42 @@
+{
+  "phase": 2,
+  "phase_name": "Exclude Held Tasks from /orchestrate Dispatch",
+  "started_at": "2026-10-01T04:25:00Z",
+  "last_updated": "2026-10-01T04:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "orchestrate-triage-classify.sh: dedicated hold group arm + header table row",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-triage-classify.sh"]
+    },
+    {
+      "id": 2,
+      "description": "orchestrate-cycle-plan.sh: hold) bucketing arm + is_terminal_status comment",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]
+    },
+    {
+      "id": 3,
+      "description": "test-orchestrate-triage-classify.sh: group:hold coverage with hold_reason",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh"]
+    },
+    {
+      "id": 4,
+      "description": "test-orchestrate-cycle-plan.sh: Group 33/33b blocked[] row + forced override coverage",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "Investigated whether the existing monotonic-max rank clamp alone preserves status==hold across a forced live dispatch",
+      "result": "finding",
+      "reason": "It does not: hold is deliberately unranked (Phase 1), so status_vocabulary_would_regress(hold, implementing) returns false (no regression), letting the ordinary preflight write proceed and overwrite hold -> implementing. The actual hold-persistence mechanism must live in update-task-status.sh itself (Phase 3), not in the rank-based clamp -- noted for Phase 3 design."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

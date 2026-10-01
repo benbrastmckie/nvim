@@ -222,48 +222,48 @@ and reconcile rather than duplicating.
 
 ---
 
-### Phase 2: Exclude Held Tasks from `/orchestrate` Dispatch [NOT STARTED]
+### Phase 2: Exclude Held Tasks from `/orchestrate` Dispatch [COMPLETED]
 
 **Goal**: a hold actually holds in the orchestrate engine. Phase 1 alone makes `hold` validate and
 render, so the status *looks* supported while nothing yet prevents dispatch — do not stop between
 the two.
 
 **Tasks**:
-- [ ] `scripts/orchestrate-triage-classify.sh`: add a dedicated `hold` arm to the jq `if/elif`
+- [x] `scripts/orchestrate-triage-classify.sh`: add a dedicated `hold` arm to the jq `if/elif`
       classification chain (which currently ends in a catch-all `else` at ≈lines 514-517 producing
       `group:"skip"` with reason `status "..." is transitional/unknown; skip` — exactly where a
       `hold` task falls today). Emit `group:"hold"` per Decision 1, with a reason string built from
       the task's own `hold_reason` field so the text is specific, not generic.
-- [ ] Add the corresponding `hold` row to the documented status -> group classification table in
+- [x] Add the corresponding `hold` row to the documented status -> group classification table in
       this file's header (≈lines 71-90), covering both engines as the existing rows do. State in
       that row's text *why* `hold` is its own group rather than `needs_human` or `skip`.
-- [ ] `scripts/orchestrate-cycle-plan.sh`: add a `hold)` arm to the bucketing
+- [x] `scripts/orchestrate-cycle-plan.sh`: add a `hold)` arm to the bucketing
       `case "$g" in ...` switch (≈line 1831), mirroring the `forced_round_complete)` arm
       (≈lines 1838-1848) exactly: push a reasoned row via `out_blocked_rows+=(...)` naming the
       hold and its `hold_reason`, then `continue` **before** the lock probe, dispatch_seq mint,
       `skill_preflight_update`, and `orchestrate-build-dispatch.sh`. No lock touched, no dispatch
       file written, no status write, no cycle charge.
-- [ ] Confirm by reading the code that the `hold` group does NOT fall into the
+- [x] Confirm by reading the code that the `hold` group does NOT fall into the
       `skip|terminal|exit_partial|"")` arm (≈line 1853) — that arm `continue`s with no row and no
       reason, which would fail the acceptance criterion silently.
-- [ ] Leave `is_terminal_status()` (≈line 1459) **unchanged** at its three cases per Decision 3.
+- [x] Leave `is_terminal_status()` (≈line 1459) **unchanged** at its three cases per Decision 3.
       Add a comment there stating that `hold` is deliberately excluded and why (archival; the
       dependency-discharge check).
-- [ ] Leave `task_has_forced_phase()` (≈line 1483) **unchanged** — research confirmed it is a pure
+- [x] Leave `task_has_forced_phase()` (≈line 1483) **unchanged** — research confirmed it is a pure
       function of CLI/state, independent of status, and already works for hold. Verify by reading
       the `effective_group` precedence (≈lines 1679-1702) that a forced phase is resolved before
       `triage_group[$t]` is consulted, so a forced round already overrides `group:"hold"` with no
       further change. Record the verification in the phase's commit message rather than adding
       redundant code.
-- [ ] Confirm a forced round does not clear the hold: no code path in this file writes `.status`
+- [x] Confirm a forced round does not clear the hold: no code path in this file writes `.status`
       for a forced dispatch beyond the normal preflight transition, so the hold's persistence is a
       property of Phase 3's `map_status()` work plus the absence of a clearing write here. Assert
       it in the test below, not by adding a guard.
-- [ ] `scripts/tests/test-orchestrate-triage-classify.sh`: assert a `hold`-status task classifies
+- [x] `scripts/tests/test-orchestrate-triage-classify.sh`: assert a `hold`-status task classifies
       as `group:"hold"` with a reason containing its `hold_reason`, and is not `skip`/`needs_human`.
-- [ ] `scripts/tests/test-orchestrate-cycle-plan.sh`: assert a held task produces a `blocked[]` row
+- [x] `scripts/tests/test-orchestrate-cycle-plan.sh`: assert a held task produces a `blocked[]` row
       naming the hold and no dispatch; assert `is_terminal_status hold` returns 1 (false).
-- [ ] Shellcheck both edited scripts.
+- [x] Shellcheck both edited scripts.
 
 **Timing**: 1.75 hours
 

@@ -89,6 +89,16 @@
 #   | blocked, previous_status missing or unrecognized (discharge otherwise satisfied) | needs_human | needs_human |
 #   | researching (NEW -- was skip, folded into the old "researching, planning, unknown" row) | research | research |
 #   | planning (NEW -- was skip, folded into the old "researching, planning, unknown" row)    | plan     | plan     |
+#   | hold                                         | hold        | hold          |
+#     ^-- a DEDICATED group, not a reuse of `needs_human` (which connotes an error state needing
+#     triage; a hold is a deliberate, informed pause) nor `skip` (whose existing reason text says
+#     "transitional/unknown", which would misdescribe a deliberately-set status). Both engines
+#     converge on `hold` with a `reason` built from the task's own `hold_reason` field. A held
+#     task is never dispatched by status-derived routing; it surfaces in `blocked[]` (see
+#     orchestrate-cycle-plan.sh's `hold)` bucketing arm) naming the hold. An explicit
+#     --research/--plan/--implement forcing flag overrides this verdict for exactly one dispatch
+#     via `task_has_forced_phase`/`effective_group` (unchanged, pre-existing machinery) and
+#     preserves `status == "hold"` afterward.
 #   | unknown (unrecognized/garbage status)       | skip        | skip          |
 #   | terminal (completed/abandoned/expanded)      | terminal    | terminal      |
 #
@@ -511,6 +521,11 @@ if verdicts=$(jq -n -c \
          reason:("task #" + ($c|tostring) + " is blocked but discharged (all dependencies completed, no handoff blockers); routes via previous_status \"" + $p + "\" to " + $routed_group)}
       end
     end
+  elif $status == "hold" then
+    (($entry.hold_reason // "no reason recorded")) as $hr |
+    {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"hold",
+     handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,
+     reason:("task #" + ($c|tostring) + " is held (" + $hr + "); excluded from dispatch until a human lifts the hold (update-task-status.sh preflight unhold), or admitted for exactly one dispatch via an explicit --research/--plan/--implement forcing flag")}
   else
     {"$schema":"orchestrate-triage-v1", task_number:$c, engine:$engine, status:$status, group:"skip",
      handoff_state:"not_applicable", blocker_count:0, handoff_age_min:null,

@@ -1457,6 +1457,13 @@ else
 fi
 
 is_terminal_status() {
+  # "hold" is deliberately EXCLUDED from this set, not an oversight: a hold is a human-initiated
+  # pause, not an archival-eligible terminus. Widening this to include "hold" would let /todo
+  # archive a held task's directory, and would let a held dependency wrongly satisfy a
+  # dependent task's completion-discharge check in section (c) below (which routes a `blocked`
+  # candidate through only when every dependency's status is exactly "completed"). A held task
+  # is excluded from dispatch via its own dedicated bucketing arm (the `hold)` case below), not
+  # via this predicate.
   case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]')" in
     completed|abandoned|expanded) return 0 ;;
     *) return 1 ;;
@@ -1833,6 +1840,23 @@ for t in "${eligible_tasks[@]}"; do
     needs_human)
       mt_set --arg t "$t" '.failed_tasks = ((.failed_tasks + [($t|tonumber)]) | unique)'
       out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg r "${triage_reason[$t]:-handoff-triage needs_human}" '{task:$t, reason:$r}')")
+      continue
+      ;;
+    hold)
+      # A held task reaches here only when it was NOT forced this run --
+      # task_has_forced_phase()/effective_group above already route a forced phase straight to
+      # "research"/"plan"/"implement", bypassing triage_group[$t]="hold" entirely (see the
+      # effective_group assignment loop's `elif [ "$seeded_this_run" ...`/else branches), so this
+      # arm is reached only by ordinary, unforced status-derived routing. Mirrors the
+      # forced_round_complete) arm immediately below: push a reasoned blocked[] row naming the
+      # hold and `continue` strictly BEFORE the lock probe, dispatch_seq mint,
+      # skill_preflight_update, and orchestrate-build-dispatch.sh -- so no lock is touched, no
+      # dispatch file is written, no status write happens, and no cycle charge accrues for this
+      # task this cycle. is_terminal_status() is deliberately NOT widened to include "hold" (see
+      # that function's own definition above): a hold is a pause, not an archival-eligible
+      # terminus, and widening it would let /todo archive held tasks and would let a held
+      # dependency wrongly satisfy a dependent task's completion-discharge check in section (c).
+      out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg r "${triage_reason[$t]:-task is held}" '{task: $t, reason: $r}')")
       continue
       ;;
     forced_round_complete)

@@ -4478,6 +4478,50 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 33: held tasks are excluded from dispatch via a dedicated blocked[] row, never silently
+# dropped. This is also the behavioral proof that is_terminal_status() does NOT treat "hold" as
+# terminal: if it did, candidate #3301 would be excluded by the (b)/(c) eligibility checks before
+# ever reaching the bucketing switch, producing NO blocked[] row at all (a silent skip) rather
+# than the named, reasoned row asserted below.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 33: held tasks -> blocked[] row naming the hold, never dispatched"
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3301, "project_name": "g33_held", "task_type": "general", "status": "hold", "hold_reason": "Awaiting upstream API decision", "held_at": "2026-01-01", "prior_status": "planned", "description": "a held candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g33_sess --dry-run -- 3301
+if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.blocked | map(select(.task == 3301)) | length')" = "1" ]; then
+  pass "Group 33: held candidate #3301 is excluded from dispatch and lands in blocked[]"
+else
+  fail "Group 33: expected 0 dispatch / 1 blocked[] row for candidate #3301, got: $LAST_STDOUT"
+fi
+g33_reason=$(jqf '.blocked | map(select(.task == 3301)) | .[0].reason // ""')
+if echo "$g33_reason" | grep -q "Awaiting upstream API decision"; then
+  pass "Group 33: the blocked[] reason names the hold's own hold_reason text"
+else
+  fail "Group 33: blocked[] reason missing the expected hold_reason text (got: '$g33_reason')"
+fi
+
+# Group 33b: an explicit forced phase overrides a hold for exactly one dispatch (via the
+# pre-existing task_has_forced_phase/effective_group machinery, unchanged by this feature) --
+# the task dispatches despite status=="hold". A forced "implement" requires an on-disk plan
+# artifact (Phase 5's artifact-based admission check), so seed one.
+mkdir -p "$WORKDIR/specs/3301_g33_held/plans"
+echo "# plan" > "$WORKDIR/specs/3301_g33_held/plans/01_plan.md"
+reset_lock_dirs
+run_sut --session g33b_sess --dry-run --force-phases implement -- 3301
+if [ "$(jqf '.dispatch | map(select(.task == 3301)) | length')" = "1" ] && \
+   [ "$(jqf '.dispatch | map(select(.task == 3301)) | .[0].phase')" = "implement" ]; then
+  pass "Group 33b: --force-phases implement admits held candidate #3301 for exactly this dispatch"
+else
+  fail "Group 33b: expected candidate #3301 to dispatch to implement under --force-phases, got: $LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

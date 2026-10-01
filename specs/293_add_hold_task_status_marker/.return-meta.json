@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md",
-      "summary": "8-phase plan adding the hold task status: enum + schema twin + field allowlist (standalone Phase 1), dispatch exclusion, operator-settable/reversible hold, /todo audit, documentation, 13-value prose sweep, and live consumer-repo acceptance."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 5,
   "metadata": {
-    "session_id": "sess_1790826658_06dbd3_293",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 10.5,
-    "dependency_waves": [[1], [2, 3, 4], [5], [6, 7], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When adding a status value whose semantics are a THIRD category relative to an existing binary split, the mechanical cost is concentrated in every two-arm `case` statement that encodes the old binary. In this codebase that pattern recurs as `case \"$status\" in completed|abandoned|expanded) ... ;; *) ... ;; esac` and appears in orchestrate STAGE 0, command-gate-in.sh, generate-todo.sh's count split, and the /todo subtask-blocking check -- the last of which is near-byte-duplicated between skills/skill-todo/SKILL.md and commands/todo.md, so any decision must be applied to both or they silently diverge. Plan such a feature by enumerating the two-arm case sites first (grep the shared pattern, not the feature name), deciding per site whether the new value joins an existing arm or needs its own, and recording a 'leave unmodified' decision explicitly where no change is correct -- an unrecorded non-change is indistinguishable from an oversight. Separately: a closed enum's size asserted in PROSE comments spreads far beyond the enum's own file (11 files here), including disambiguating cross-references in unrelated scripts; sweep by grepping the number, not the enum name.",
-      "category": "PATTERN",
-      "source_artifact": "specs/293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["status-enum", "two-arm-case", "duplicated-code-sites", "third-category", "prose-drift"]
-    }
-  ],
-  "next_steps": "Run /implement 293 to execute the plan",
-  "dispatch_seq": 3
+    "session_id": "sess_1790826658_06dbd3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

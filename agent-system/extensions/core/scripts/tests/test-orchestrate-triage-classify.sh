@@ -255,7 +255,8 @@ cat > "$WORKDIR/specs/state.json" <<'EOF'
     {"project_number": 107, "project_name": "fixture_planned", "status": "planned"},
     {"project_number": 108, "project_name": "fixture_implementing", "status": "implementing"},
     {"project_number": 109, "project_name": "fixture_terminal", "status": "completed"},
-    {"project_number": 110, "project_name": "fixture_garbage_status", "status": "not_a_real_status"}
+    {"project_number": 110, "project_name": "fixture_garbage_status", "status": "not_a_real_status"},
+    {"project_number": 111, "project_name": "fixture_hold", "status": "hold", "hold_reason": "Awaiting upstream API decision", "held_at": "2026-01-01", "prior_status": "planned"}
   ]
 }
 EOF
@@ -307,6 +308,20 @@ check_fixture "single" 110 "not_applicable" "skip" \
   "unrecognized status string -> skip"
 check_fixture "mt" 110 "not_applicable" "skip" \
   "unrecognized status string -> skip cross-engine agreement"
+
+# --- hold -> dedicated 'hold' group (NOT skip, NOT needs_human), both engines ---
+check_fixture "single" 111 "not_applicable" "hold" \
+  "hold status -> dedicated hold group"
+check_fixture "mt" 111 "not_applicable" "hold" \
+  "hold status -> dedicated hold group cross-engine agreement"
+
+hold_out="$(bash "$TOOL" single 111 2>&1)"
+hold_reason_text="$(echo "$hold_out" | jq -r '.reason' 2>/dev/null)"
+if echo "$hold_reason_text" | grep -q "Awaiting upstream API decision"; then
+  pass "hold status reason contains the task's own hold_reason text"
+else
+  fail "hold status reason does not contain hold_reason text (got: $hold_reason_text)"
+fi
 
 # =====================================================================
 # Discriminated blocked sub-cases (REPLACES the old single fixture_blocked divergence pair --
