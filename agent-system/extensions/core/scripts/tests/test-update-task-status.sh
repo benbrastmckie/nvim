@@ -62,6 +62,29 @@ for req in "${REQUIRED_SCRIPTS[@]}"; do
   fi
 done
 
+# ─── SOURCE-STORE-FIRST OVERRIDE for the files THIS suite's hold coverage actually tests ────────
+# Same deliberate inversion test-force-phases.sh documents at its own header (this repository's
+# .claude/ tree is a gitignored, disposable deploy artifact regenerated from
+# agent-system/extensions/** -- every OTHER loader in this codebase resolves deploy-tree-first,
+# correct for validating what actually runs in production, but WRONG for a suite that must prove
+# a pre-deploy source-store edit landed correctly). Scoped to EXACTLY the three files this task's
+# hold-related work touches -- update-task-status.sh (preflight:hold/unhold, the hold-sticky
+# guard), generate-todo.sh (the "- **Held**:" line), and lib/status-vocabulary.sh (the "hold"
+# enum member/marker-map entry both of those depend on) -- never the rest of the dependency
+# chain, which stays deploy-sourced exactly as every other case in this suite already relies on.
+SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
+HOLD_OVERRIDE_FILES=(update-task-status.sh generate-todo.sh)
+for hf in "${HOLD_OVERRIDE_FILES[@]}"; do
+  if [[ ! -f "$SOURCE_STORE_SCRIPTS/$hf" ]]; then
+    echo "ERROR: source-store override file missing: $SOURCE_STORE_SCRIPTS/$hf" >&2
+    exit 2
+  fi
+done
+if [[ ! -f "$SOURCE_STORE_SCRIPTS/lib/status-vocabulary.sh" ]]; then
+  echo "ERROR: source-store override file missing: $SOURCE_STORE_SCRIPTS/lib/status-vocabulary.sh" >&2
+  exit 2
+fi
+
 PASSED=0
 FAILED=0
 
@@ -84,6 +107,14 @@ build_fixture_repo() {
     chmod +x "$root/.claude/scripts/$f"
   done
   cp "$DEPLOY_SCRIPTS_SRC"/lib/*.sh "$root/.claude/scripts/lib/" 2>/dev/null || true
+  # Source-store-first override (see the header comment above this suite's HOLD_OVERRIDE_FILES
+  # declaration): re-copy exactly the three hold-related files from agent-system/extensions/core/
+  # ON TOP of the deploy-sourced copies above, so this suite exercises the pre-deploy edit.
+  for hf in "${HOLD_OVERRIDE_FILES[@]}"; do
+    cp "$SOURCE_STORE_SCRIPTS/$hf" "$root/.claude/scripts/$hf"
+    chmod +x "$root/.claude/scripts/$hf"
+  done
+  cp "$SOURCE_STORE_SCRIPTS/lib/status-vocabulary.sh" "$root/.claude/scripts/lib/status-vocabulary.sh"
   cat > "$root/specs/state.json" << 'EOF'
 {
   "next_project_number": 2,
@@ -558,6 +589,173 @@ else
   else
     fail "11h: rejection error does not name both permitted target statuses (see $WORKDIR/c11h.err)"
   fi
+fi
+
+task_field() { jq -r --arg f "$1" '.active_projects[0][$f] // ""' "$FIXTURE_ROOT/specs/state.json" 2>/dev/null; }
+task_has_field() { jq -e --arg f "$1" '.active_projects[0] | has($f)' "$FIXTURE_ROOT/specs/state.json" >/dev/null 2>&1; }
+
+# =====================================================================
+# Case 12: preflight:hold sets all three new fields and the [HOLD] marker, capturing
+# prior_status from the real current status (planned, not a hardcoded literal).
+# =====================================================================
+info "=== Case 12: preflight:hold sets hold_reason/held_at/prior_status ==="
+FIXTURE_ROOT="$WORKDIR/case12"
+build_fixture_repo "$FIXTURE_ROOT"
+UTS preflight 1 plan sess_test_c12 >/dev/null 2>&1
+UTS postflight 1 plan sess_test_c12 >/dev/null 2>&1   # -> planned, the pre-hold status to capture
+
+if UTS preflight 1 hold sess_test_c12 --hold-reason="Awaiting upstream API decision" \
+    >"$WORKDIR/c12.out" 2>"$WORKDIR/c12.err"; then
+  st="$(task_status)"
+  if [[ "$st" == "hold" ]]; then
+    pass "12a: preflight:hold sets status to 'hold'"
+  else
+    fail "12a: expected status 'hold', got '$st' (see $WORKDIR/c12.err)"
+  fi
+  hr="$(task_field hold_reason)"
+  if [[ "$hr" == "Awaiting upstream API decision" ]]; then
+    pass "12b: hold_reason captured from --hold-reason"
+  else
+    fail "12b: expected hold_reason 'Awaiting upstream API decision', got '$hr'"
+  fi
+  ha="$(task_field held_at)"
+  if [[ "$ha" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+    pass "12c: held_at is a YYYY-MM-DD date ('$ha')"
+  else
+    fail "12c: held_at is not a YYYY-MM-DD date, got '$ha'"
+  fi
+  ps="$(task_field prior_status)"
+  if [[ "$ps" == "planned" ]]; then
+    pass "12d: prior_status captured from the REAL current status ('planned'), not a literal"
+  else
+    fail "12d: expected prior_status 'planned', got '$ps'"
+  fi
+  if grep -q '\[HOLD\]' "$FIXTURE_ROOT/specs/TODO.md" 2>/dev/null; then
+    pass "12e: TODO.md regenerated with the [HOLD] marker"
+  else
+    fail "12e: TODO.md missing the [HOLD] marker (see $FIXTURE_ROOT/specs/TODO.md)"
+  fi
+  if grep -q -- '- \*\*Held\*\*:' "$FIXTURE_ROOT/specs/TODO.md" 2>/dev/null; then
+    pass "12f: TODO.md renders the '- **Held**:' line"
+  else
+    fail "12f: TODO.md missing the '- **Held**:' line"
+  fi
+else
+  fail "12: preflight:hold exited nonzero unexpectedly (see $WORKDIR/c12.err)"
+fi
+
+# =====================================================================
+# Case 13: preflight:hold WITHOUT --hold-reason fails loudly (hard validation error), writing
+# nothing to state.json.
+# =====================================================================
+info "=== Case 13: preflight:hold without --hold-reason fails loudly ==="
+FIXTURE_ROOT="$WORKDIR/case13"
+build_fixture_repo "$FIXTURE_ROOT"
+BEFORE_13="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+if UTS preflight 1 hold sess_test_c13 >"$WORKDIR/c13.out" 2>"$WORKDIR/c13.err"; then
+  fail "13: preflight:hold with no --hold-reason unexpectedly exited 0"
+else
+  AFTER_13="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+  if [[ "$BEFORE_13" == "$AFTER_13" ]]; then
+    pass "13a: missing --hold-reason is rejected, state.json unchanged"
+  else
+    fail "13a: missing --hold-reason rejection exited nonzero but state.json changed anyway"
+  fi
+  if grep -qi "hold-reason" "$WORKDIR/c13.err"; then
+    pass "13b: rejection error names --hold-reason"
+  else
+    fail "13b: rejection error does not mention --hold-reason (see $WORKDIR/c13.err)"
+  fi
+fi
+
+# =====================================================================
+# Case 14: a set-then-lift round trip (preflight:unhold) restores prior_status EXACTLY and
+# removes all three hold fields (field omission via del(), not nulling).
+# =====================================================================
+info "=== Case 14: preflight:unhold restores prior_status and clears hold fields ==="
+FIXTURE_ROOT="$WORKDIR/case14"
+build_fixture_repo "$FIXTURE_ROOT"
+UTS preflight 1 plan sess_test_c14 >/dev/null 2>&1
+UTS postflight 1 plan sess_test_c14 >/dev/null 2>&1
+UTS preflight 1 hold sess_test_c14 --hold-reason="pausing for case 14" >/dev/null 2>&1
+
+if UTS preflight 1 unhold sess_test_c14 >"$WORKDIR/c14.out" 2>"$WORKDIR/c14.err"; then
+  st="$(task_status)"
+  if [[ "$st" == "planned" ]]; then
+    pass "14a: preflight:unhold restores status to the exact recorded prior_status ('planned')"
+  else
+    fail "14a: expected status 'planned' after unhold, got '$st' (see $WORKDIR/c14.err)"
+  fi
+  if task_has_field hold_reason || task_has_field held_at || task_has_field prior_status; then
+    fail "14b: one or more of hold_reason/held_at/prior_status still present after unhold"
+  else
+    pass "14b: hold_reason/held_at/prior_status all removed (field omission, not nulling)"
+  fi
+else
+  fail "14: preflight:unhold exited nonzero unexpectedly (see $WORKDIR/c14.err)"
+fi
+
+# =====================================================================
+# Case 15: preflight:unhold with a MISSING prior_status fails loudly and writes nothing -- never
+# falls back to 'not_started' or any other default.
+# =====================================================================
+info "=== Case 15: preflight:unhold with missing prior_status fails loudly ==="
+FIXTURE_ROOT="$WORKDIR/case15"
+build_fixture_repo "$FIXTURE_ROOT"
+# Hand-craft a "hold" entry with NO prior_status field at all (simulating a corrupted/pre-feature
+# entry), bypassing UTS's own preflight:hold (which always sets prior_status) on purpose.
+jq '.active_projects[0].status = "hold" | .active_projects[0].hold_reason = "manually corrupted fixture"' \
+  "$FIXTURE_ROOT/specs/state.json" > "$WORKDIR/c15-state.json.tmp" && mv "$WORKDIR/c15-state.json.tmp" "$FIXTURE_ROOT/specs/state.json"
+BEFORE_15="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+if UTS preflight 1 unhold sess_test_c15 >"$WORKDIR/c15.out" 2>"$WORKDIR/c15.err"; then
+  fail "15: preflight:unhold with no prior_status unexpectedly exited 0"
+else
+  AFTER_15="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+  if [[ "$BEFORE_15" == "$AFTER_15" ]]; then
+    pass "15a: missing prior_status is rejected, state.json unchanged"
+  else
+    fail "15a: missing-prior_status rejection exited nonzero but state.json changed anyway"
+  fi
+  if grep -qi "prior_status" "$WORKDIR/c15.err"; then
+    pass "15b: rejection error names prior_status"
+  else
+    fail "15b: rejection error does not mention prior_status (see $WORKDIR/c15.err)"
+  fi
+fi
+
+# =====================================================================
+# Case 16: a forced ordinary operation (preflight:implement) against an ALREADY-held task does
+# NOT clear the hold -- the sticky guard keeps status=="hold" and every hold field intact. This
+# is the actual mechanism (not the rank-based monotonic-max clamp) that preserves a hold across
+# an /orchestrate forcing-flag override.
+# =====================================================================
+info "=== Case 16: an ordinary preflight write on an already-held task does not clear the hold ==="
+FIXTURE_ROOT="$WORKDIR/case16"
+build_fixture_repo "$FIXTURE_ROOT"
+UTS preflight 1 plan sess_test_c16 >/dev/null 2>&1
+UTS postflight 1 plan sess_test_c16 >/dev/null 2>&1
+UTS preflight 1 hold sess_test_c16 --hold-reason="pausing for case 16" >/dev/null 2>&1
+
+if UTS preflight 1 implement sess_test_c16 >"$WORKDIR/c16.out" 2>"$WORKDIR/c16.err"; then
+  st="$(task_status)"
+  if [[ "$st" == "hold" ]]; then
+    pass "16a: preflight:implement on a held task leaves status == 'hold' (sticky guard fired)"
+  else
+    fail "16a: expected status to stay 'hold', got '$st' (see $WORKDIR/c16.err)"
+  fi
+  ps="$(task_field prior_status)"
+  if [[ "$ps" == "planned" ]]; then
+    pass "16b: prior_status is still intact ('planned'), untouched by the forced implement"
+  else
+    fail "16b: expected prior_status to remain 'planned', got '$ps'"
+  fi
+  if grep -qi "does not clear the hold" "$WORKDIR/c16.err"; then
+    pass "16c: a NOTICE names the skipped status write"
+  else
+    fail "16c: expected a NOTICE naming the skipped status write (see $WORKDIR/c16.err)"
+  fi
+else
+  fail "16: preflight:implement on a held task exited nonzero unexpectedly (see $WORKDIR/c16.err)"
 fi
 
 # =====================================================================

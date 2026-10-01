@@ -1,0 +1,68 @@
+{
+  "phase": 3,
+  "phase_name": "Make the Hold Operator-Settable and Reversible",
+  "started_at": "2026-10-01T04:50:00Z",
+  "last_updated": "2026-10-01T05:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "update-task-status.sh: target_status validation, usage, header comment for hold/unhold",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]
+    },
+    {
+      "id": 2,
+      "description": "map_status() preflight:hold arm + extended postflight-only comment",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]
+    },
+    {
+      "id": 3,
+      "description": "--hold-reason flag parsing + validation (required, restricted)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]
+    },
+    {
+      "id": 4,
+      "description": "hold_reason/held_at/prior_status field writes on preflight:hold (fresh hold and reason-update cases)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]
+    },
+    {
+      "id": 5,
+      "description": "preflight:unhold dynamic STATE_STATUS preamble + del() field clearing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]
+    },
+    {
+      "id": 6,
+      "description": "hold-sticky guard (scope addition -- see plan deviation note) so an ordinary forced preflight write never clears an existing hold",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]
+    },
+    {
+      "id": 7,
+      "description": "generate-todo.sh: render '- **Held**: YYYY-MM-DD' line (scope addition)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/generate-todo.sh"]
+    },
+    {
+      "id": 8,
+      "description": "test-update-task-status.sh: Cases 12-16 (set, missing-reason, lift round trip, missing-prior_status, sticky guard) + source-store-first override for the three touched files",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-update-task-status.sh"]
+    }
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.scope",
+      "description": "Plan's Phase 3 files-to-modify list named only update-task-status.sh and its test; implementation added generate-todo.sh (render the Held line) and a hold-sticky guard inside update-task-status.sh beyond the plan's literal task bullets.",
+      "type": "altered",
+      "reason": "The rank-based monotonic-max clamp does not protect an unranked status like hold, so the plan's own Phase 2 claim ('hold's persistence is a property of Phase 3's map_status() work') required an actual guard, not just the hold/unhold arms. generate-todo.sh rendering was needed to make the TODO.md '- **Held**:' line (named by Phase 1 and Phase 3's task text) real rather than aspirational.",
+      "annotation": "*(deviation: altered -- added generate-todo.sh rendering and a hold-sticky guard; see plan Phase 3's Deviation note)*"
+    }
+  ]
+}

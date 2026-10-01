@@ -287,46 +287,46 @@ the two.
 
 ---
 
-### Phase 3: Make the Hold Operator-Settable and Reversible [NOT STARTED]
+### Phase 3: Make the Hold Operator-Settable and Reversible [COMPLETED]
 
 **Goal**: an operator can set a hold and lift it, through supported paths, with `prior_status`
 making the lift exact.
 
 **Tasks**:
-- [ ] `scripts/update-task-status.sh`: add `hold` and `unhold` to the `target_status` validation
+- [x] `scripts/update-task-status.sh`: add `hold` and `unhold` to the `target_status` validation
       chain (≈line 211) and its error message (≈line 212), and to the usage text (≈line 202) and
       the header comment block (≈lines 15-18).
-- [ ] Add a `preflight:hold)` arm to `map_status()` (≈line 285) resolving
+- [x] Add a `preflight:hold)` arm to `map_status()` (≈line 285) resolving
       `STATE_STATUS="hold"`, `TODO_STATUS="HOLD"`. **Extend** the existing comment above the
       `postflight:partial)`/`postflight:blocked)` arms — which explicitly reasons that there is
       deliberately no `preflight:partial`/`blocked`/`needs_research` because those are
       dispatch-outcome-derived — to state that `hold` is the first human-initiated status in this
       enum and therefore the deliberate exception to that pattern. Do not silently contradict it.
-- [ ] Add a `--hold-reason=<string>` CLI flag following the exact validation shape
+- [x] Add a `--hold-reason=<string>` CLI flag following the exact validation shape
       `--file-scope-add` / `--research-questions` already establish: a malformed value, or an
       absent value when `target_status == hold`, is a hard validation error, never a silent no-op.
-- [ ] Writing a hold must set, in the same atomic state write: `hold_reason` (from the flag),
+- [x] Writing a hold must set, in the same atomic state write: `hold_reason` (from the flag),
       `held_at` (today's date, `YYYY-MM-DD`, reusing the same timestamp source the jq transform
       already uses for `last_updated` rather than a second `date` call), and `prior_status` (the
       task's CURRENT `.status`, read from state.json **before** the overwrite). Also emit the
       TODO.md `- **Held**: YYYY-MM-DD` line.
-- [ ] Implement the lift as `preflight:unhold` per Decision 5. Its `STATE_STATUS` is **not** a
+- [x] Implement the lift as `preflight:unhold` per Decision 5. Its `STATE_STATUS` is **not** a
       fixed literal: read `prior_status` from the task's entry at call time, validate it with
       `status_vocabulary_is_valid`, and only then use it as the write target. A missing, empty, or
       off-enum `prior_status` MUST fail loudly — never fall back to `not_started` or any other
       default. Because `map_status()`'s other arms are closed `case` literals, this needs a short
       preamble that resolves `prior_status` before (or in place of) the `map_status()` call; keep
       the post-`map_status()` enum backstop (≈lines 324-331) in force for the resolved value.
-- [ ] Clear the three fields on lift with `del(.hold_reason, .held_at, .prior_status)` in the jq
+- [x] Clear the three fields on lift with `del(.hold_reason, .held_at, .prior_status)` in the jq
       transform — field omission, not nulling, matching this codebase's convention for
       present-only-in-one-state fields (`completion_summary`). Also remove the TODO.md
       `- **Held**:` line.
-- [ ] `scripts/tests/test-update-task-status.sh`: cover (a) `preflight:hold` sets all three fields
+- [x] `scripts/tests/test-update-task-status.sh`: cover (a) `preflight:hold` sets all three fields
       and the `[HOLD]` marker, capturing `prior_status` from the real current status; (b)
       `preflight:hold` without `--hold-reason` fails loudly; (c) `preflight:unhold` with a valid
       `prior_status` restores it exactly and removes all three fields; (d) `preflight:unhold` with
       a missing or off-enum `prior_status` fails loudly and writes nothing.
-- [ ] Shellcheck the edited script.
+- [x] Shellcheck the edited script.
 
 **Timing**: 2 hours
 
@@ -335,8 +335,23 @@ making the lift exact.
 **Verification Tier**: full
 
 **Files to modify**:
-- `scripts/update-task-status.sh` - validation chain, usage, header comment, `preflight:hold` and `preflight:unhold` arms, `--hold-reason` flag, jq field writes and `del(...)`, extended postflight-only comment
-- `scripts/tests/test-update-task-status.sh` - the four set/lift cases above
+- `scripts/update-task-status.sh` - validation chain, usage, header comment, `preflight:hold` and `preflight:unhold` arms, `--hold-reason` flag, jq field writes and `del(...)`, extended postflight-only comment, and the hold-sticky guard (see deviation note below)
+- `scripts/tests/test-update-task-status.sh` - the four set/lift cases above, plus a fifth (Case 16) covering the sticky guard
+- `scripts/generate-todo.sh` *(deviation: added -- not in this phase's original files list)*: renders the `- **Held**: YYYY-MM-DD` line for a hold-status task, reading the new `held_at` field through the same positional-field pipeline `effort`/`topic` already use
+
+**Deviation (scope addition, not a plan error)**: implementation surfaced a real gap the plan's
+granular task list did not spell out: the rank-based `monotonic-max` clamp
+(`skill-base.sh`/`orchestrate-cycle-plan.sh`) does NOT preserve `status == "hold"` across a
+forced live dispatch, because `hold` is deliberately UNRANKED (Phase 1) -- `status_vocabulary_would_regress(hold,
+implementing)` returns false ("no regression"), so that clamp alone lets an ordinary preflight
+write overwrite `hold` -> `implementing`. The plan's own Phase 2 task list anticipated this
+("the hold's persistence is a property of Phase 3's map_status() work"), so the fix landed here:
+a hold-sticky guard in `update-task-status.sh` that, when the task's CURRENT status is already
+`hold`, overrides `STATE_STATUS`/`TODO_STATUS` back to `hold`/`HOLD` for every operation except
+`preflight:hold` (updating the reason) and `preflight:unhold` (the lift) -- making the status
+write a true no-op while every other side effect (TODO.md regen, hooks, events) still runs. This
+is the actual mechanism the Phase 5/8 "forced --implement preserves hold" acceptance criterion
+depends on. Covered by Case 16 above.
 
 **Verification**:
 - `bash scripts/tests/test-update-task-status.sh` passes, including both loud-failure cases.

@@ -183,7 +183,7 @@ format_artifact_type() {
 # full-file jq pass plus its one-base64-spawn-per-row decode) -- no jq or base64 is spawned here.
 generate_task_entry() {
   local task_num="$1" project_name="$2" title="$3" status="$4" task_type="$5" topic="$6" \
-        effort="$7" description="$8" deps_csv="$9" artifacts_raw="${10}"
+        effort="$7" description="$8" deps_csv="$9" artifacts_raw="${10}" held_at="${11:-}"
 
   # Title fallback: derive from project_name if title is empty. (The upstream jq pass already
   # applies `// ""` / `// "general"` defaults, so a bash-level "null" string check -- as the
@@ -217,6 +217,12 @@ generate_task_entry() {
 
   # Status
   printf -- '- **Status**: [%s]\n' "$status_display"
+
+  # Held date (hold-status only): the TODO.md twin of state.json's held_at field, per
+  # context/standards/status-markers.md's [HOLD] Required Information block.
+  if [[ "$status" == "hold" && -n "$held_at" ]]; then
+    printf -- '- **Held**: %s\n' "$held_at"
+  fi
 
   # Task Type
   if [[ -n "$task_type" ]]; then
@@ -393,7 +399,8 @@ generate_todo() {
         (.effort // ""),
         (.description // ""),
         ((.dependencies // []) | map(tostring) | join(",")),
-        ((.artifacts // []) | map((.type // "unknown") + "|" + (.path // "")) | join("\n"))
+        ((.artifacts // []) | map((.type // "unknown") + "|" + (.path // "")) | join("\n")),
+        (.held_at // "")
       ]
       | join("\u001f")
       | @base64
@@ -440,13 +447,14 @@ generate_todo() {
     mapfile -d $'\x1f' -t f <<< "$decoded"
     local task_num="${f[0]:-}" pname="${f[1]:-}" title="${f[2]:-}" task_status="${f[3]:-}" \
           ttype="${f[4]:-}" topic="${f[5]:-}" effort="${f[6]:-}" description="${f[7]:-}" \
-          deps_csv="${f[8]:-}" artifacts_raw="${f[9]:-}"
+          deps_csv="${f[8]:-}" artifacts_raw="${f[9]:-}" held_at="${f[10]:-}"
     _strip_trailing_nl pname
     _strip_trailing_nl title
     _strip_trailing_nl ttype
     _strip_trailing_nl topic
     _strip_trailing_nl effort
     _strip_trailing_nl description
+    _strip_trailing_nl held_at
     [[ -z "$task_num" ]] && continue
     total_count=$((total_count + 1))
 
@@ -462,7 +470,7 @@ generate_todo() {
     first_entry=0
 
     generate_task_entry "$task_num" "$pname" "$title" "$task_status" "$ttype" "$topic" "$effort" \
-      "$description" "$deps_csv" "$artifacts_raw"
+      "$description" "$deps_csv" "$artifacts_raw" "$held_at"
 
   done <<< "$task_rows"
 

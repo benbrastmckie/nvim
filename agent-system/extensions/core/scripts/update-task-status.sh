@@ -7,15 +7,17 @@
 #   3. Plan file (optional, via update-plan-status.sh)
 #
 # Usage:
-#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>]
+#   .claude/scripts/update-task-status.sh <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>] [--hold-reason=<string>]
 #
 # Arguments:
 #   operation     - "preflight" or "postflight"
 #   task_number   - Task number (integer)
-#   target_status - "research", "plan", "implement", "pr_ready", "needs_research", "partial", or
-#                    "blocked" (pr_ready is reserved for task_type == "pr" unless --allow-pr-ready
-#                    is passed; needs_research/partial/blocked are postflight-only task-level
-#                    termini -- see map_status() below for the preflight rejection)
+#   target_status - "research", "plan", "implement", "pr_ready", "needs_research", "partial",
+#                    "blocked", "hold", or "unhold" (pr_ready is reserved for task_type == "pr"
+#                    unless --allow-pr-ready is passed; needs_research/partial/blocked are
+#                    postflight-only task-level termini -- see map_status() below for the
+#                    preflight rejection; hold/unhold are PREFLIGHT-only -- see map_status()'s own
+#                    comment for why a hold is the deliberate exception to that pattern)
 #   session_id    - Session identifier string
 #
 # Exit codes:
@@ -87,6 +89,22 @@
 #   is a validation error naming the restriction.
 #   The write rides along inside update_state_json()'s existing single state-write.sh invocation,
 #   scoped to the matching active_projects[] entry -- never a second write.
+#
+# Optional flag: --hold-reason=<string>
+#   Required (non-empty) when operation==preflight && target_status==hold -- a malformed (empty)
+#   value, or an absent flag when setting a hold, is a hard validation error (exit 1), never a
+#   silent no-op, matching --file-scope-add/--research-questions's own shape. RESTRICTED to
+#   operation==preflight && target_status==hold; passing it with any other combination is a
+#   validation error naming the restriction (it is meaningless on `unhold`, which CLEARS
+#   hold_reason rather than setting it).
+#   Writing a hold sets THREE fields in the same state-write.sh invocation this flag rides along
+#   in: hold_reason (this flag's value), held_at (today's date, YYYY-MM-DD, derived from the same
+#   timestamp this call already computes for last_updated -- no second `date` call), and
+#   prior_status (the task's status immediately before this write -- or, if the task is ALREADY
+#   held and this is a reason update, the EXISTING prior_status is preserved rather than
+#   overwritten with "hold" itself, which would otherwise break the eventual unhold). See
+#   map_status()'s own preflight:hold arm and the unhold preamble immediately below it for the
+#   reversal half of this field triple.
 #
 # Phase-heading grammar: sourced from scripts/lib/phase-heading-patterns.sh, the single anchor
 # for the canonical `### Phase N: {name} [STATUS]` shape, the closed status-marker enum, and
@@ -177,6 +195,7 @@ ALLOW_PR_READY=false
 PHASE_CHECK=""
 FILE_SCOPE_ADD=""
 RESEARCH_QUESTIONS=""
+HOLD_REASON=""
 POSITIONAL_ARGS=()
 
 for arg in "$@"; do
@@ -186,6 +205,7 @@ for arg in "$@"; do
     --phase-check=*) PHASE_CHECK="${arg#--phase-check=}" ;;
     --file-scope-add=*) FILE_SCOPE_ADD="${arg#--file-scope-add=}" ;;
     --research-questions=*) RESEARCH_QUESTIONS="${arg#--research-questions=}" ;;
+    --hold-reason=*) HOLD_REASON="${arg#--hold-reason=}" ;;
     *) POSITIONAL_ARGS+=("$arg") ;;
   esac
 done
@@ -197,9 +217,9 @@ session_id="${POSITIONAL_ARGS[3]:-}"
 
 # --- Validation ---
 if [[ -z "$operation" || -z "$task_number" || -z "$target_status" || -z "$session_id" ]]; then
-  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>]" >&2
+  echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>] [--hold-reason=<string>]" >&2
   echo "  operation:     preflight | postflight" >&2
-  echo "  target_status: research | plan | implement | pr_ready | needs_research | partial | blocked (pr_ready requires task_type==pr unless --allow-pr-ready; needs_research/partial/blocked are postflight-only)" >&2
+  echo "  target_status: research | plan | implement | pr_ready | needs_research | partial | blocked | hold | unhold (pr_ready requires task_type==pr unless --allow-pr-ready; needs_research/partial/blocked are postflight-only; hold/unhold are preflight-only)" >&2
   exit 1
 fi
 
@@ -208,8 +228,18 @@ if [[ "$operation" != "preflight" && "$operation" != "postflight" ]]; then
   exit 1
 fi
 
-if [[ "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" && "$target_status" != "pr_ready" && "$target_status" != "needs_research" && "$target_status" != "partial" && "$target_status" != "blocked" ]]; then
-  echo "Error: target_status must be 'research', 'plan', 'implement', 'pr_ready', 'needs_research', 'partial', or 'blocked', got '$target_status'" >&2
+if [[ "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" && "$target_status" != "pr_ready" && "$target_status" != "needs_research" && "$target_status" != "partial" && "$target_status" != "blocked" && "$target_status" != "hold" && "$target_status" != "unhold" ]]; then
+  echo "Error: target_status must be 'research', 'plan', 'implement', 'pr_ready', 'needs_research', 'partial', 'blocked', 'hold', or 'unhold', got '$target_status'" >&2
+  exit 1
+fi
+
+# hold/unhold are PREFLIGHT-only (Decision 5: a hold is human-initiated, not derived from a
+# dispatch outcome -- see map_status()'s own preflight:hold comment for the full reasoning).
+# Neither is meaningful as a postflight target: there is no dispatch outcome that resolves to
+# "pause this task" or "resume this task", so postflight:hold/postflight:unhold are hard
+# validation errors rather than silently accepted and misinterpreted.
+if [[ ( "$target_status" == "hold" || "$target_status" == "unhold" ) && "$operation" != "preflight" ]]; then
+  echo "Error: target_status '$target_status' is only valid with operation=preflight (got operation='$operation')." >&2
   exit 1
 fi
 
@@ -259,6 +289,28 @@ if [[ -n "$RESEARCH_QUESTIONS" ]]; then
   fi
 fi
 
+# --hold-reason validation: RESTRICTED to operation==preflight && target_status==hold -- it is
+# meaningless on `unhold` (which CLEARS hold_reason, never sets it) and on every other
+# operation/target_status combination, so passing it anywhere else is a validation error naming
+# the restriction, never a silent no-op (same precedent as --file-scope-add/--research-questions
+# above).
+if [[ -n "$HOLD_REASON" ]]; then
+  if [[ "$operation" != "preflight" || "$target_status" != "hold" ]]; then
+    echo "Error: --hold-reason is only valid with operation=preflight and target_status=hold (got operation='$operation', target_status='$target_status')." >&2
+    exit 1
+  fi
+fi
+
+# A malformed (empty) --hold-reason, or an absent flag, is a hard validation error on
+# preflight:hold specifically -- a hold with no recorded reason is never acceptable, matching the
+# "a typo/omission cannot quietly drop coverage" precedent the other optional flags establish
+# above. This check is unconditional on HOLD_REASON being set (unlike the restriction check
+# above) because it must also catch the "flag never passed at all" case.
+if [[ "$operation" == "preflight" && "$target_status" == "hold" && -z "$HOLD_REASON" ]]; then
+  echo "Error: --hold-reason=<string> is required when setting target_status=hold (a hold with no recorded reason is never acceptable)." >&2
+  exit 1
+fi
+
 # Only a genuinely non-empty array triggers the merge clause below -- an empty array (or an
 # absent flag) skips the jq file_scope clause entirely rather than running `unique` over an
 # unchanged array, so the empty/absent case is a byte-for-byte no-op (including array element
@@ -299,7 +351,15 @@ map_status() {
     # permissive transition model admits partial/blocked from [IMPLEMENTING] on timeout/error).
     # There is deliberately no preflight:partial, preflight:blocked, or preflight:needs_research
     # case here -- the catch-all below rejects that nonsensical combination with exit 1, which is
-    # the desired fail-loud behavior.
+    # the desired fail-loud behavior. `hold` BREAKS this pattern, deliberately: every other
+    # postflight-only status above is DERIVED from a dispatch outcome (a timeout, an error, a
+    # planner's own needs_research verdict) -- there is no human sitting at a keyboard choosing to
+    # set them. A hold is the opposite: it is ALWAYS human-initiated (an operator deciding to pause
+    # a task), never a dispatch outcome, so `preflight:hold` is the sensible combination and a
+    # postflight-only hold would be unsettable by an operator in the first place. See the
+    # preflight:hold arm immediately below, and the `unhold` preamble ahead of the map_status()
+    # call further down this file for the reversal half.
+    preflight:hold)      STATE_STATUS="hold";          TODO_STATUS="HOLD" ;;
     postflight:partial)  STATE_STATUS="partial";       TODO_STATUS="PARTIAL" ;;
     postflight:blocked)  STATE_STATUS="blocked";       TODO_STATUS="BLOCKED" ;;
     # needs_research is a planner-only outcome: the planner declined to write a plan and is
@@ -318,7 +378,29 @@ map_status() {
   esac
 }
 
-map_status "$operation" "$target_status"
+# --- unhold: a DYNAMIC resting state, unlike every other map_status() arm ---
+# Decision 5: `preflight:unhold`'s resolved STATE_STATUS is whatever `prior_status` this task's
+# own hold recorded -- not a fixed literal map_status()'s closed case statement could express.
+# Resolved and validated HERE, ahead of the map_status() call, so the SAME post-map_status() enum
+# backstop a few lines below still re-validates this resolved value exactly as it does for every
+# other arm (never bypassed for this one dynamic case).
+if [[ "$operation" == "preflight" && "$target_status" == "unhold" ]]; then
+  _unhold_prior_status=$(jq -r --argjson num "$task_number" \
+    '.active_projects[] | select(.project_number == ($num | tonumber)) | .prior_status // ""' \
+    "$STATE_FILE")
+  if [[ -z "$_unhold_prior_status" ]]; then
+    echo "Error: cannot unhold task $task_number -- no prior_status recorded on this entry (never falls back to 'not_started' or any other default; fix the entry manually, or confirm the task is actually held)." >&2
+    exit 1
+  fi
+  if ! status_vocabulary_is_valid "$_unhold_prior_status"; then
+    echo "Error: cannot unhold task $task_number -- recorded prior_status '$_unhold_prior_status' is not a member of the closed task-status enum (never falls back to a default; fix the entry manually)." >&2
+    exit 1
+  fi
+  STATE_STATUS="$_unhold_prior_status"
+  TODO_STATUS="$(status_vocabulary_todo_marker "$STATE_STATUS")"
+else
+  map_status "$operation" "$target_status"
+fi
 
 # --- Validate the resolved resting state against the closed enum ---
 # map_status()'s own case statement is closed (no `revise` case -- revising/revised stay
@@ -367,6 +449,56 @@ fi
 current_state_status=$(jq -r --arg num "$task_number" \
   '.active_projects[] | select(.project_number == ($num | tonumber)) | .status' \
   "$STATE_FILE")
+
+# --- unhold sanity guard: nothing to lift if the task is not actually held ---
+if [[ "$target_status" == "unhold" && "$current_state_status" != "hold" ]]; then
+  echo "Error: task $task_number is not held (current status: '$current_state_status') -- nothing to unhold." >&2
+  exit 1
+fi
+
+# --- Hold field resolution (preflight:hold only) ---
+# prior_status to persist: if the task is not already held, capture its REAL current status; if
+# it IS already held (this call is a hold-reason update, not a fresh hold), preserve the
+# EXISTING prior_status rather than overwriting it with "hold" itself, which would otherwise
+# permanently break the eventual unhold (prior_status must never itself be "hold").
+HOLD_SET=false
+UNHOLD_SET=false
+if [[ "$operation" == "preflight" && "$target_status" == "hold" ]]; then
+  HOLD_SET=true
+  if [[ "$current_state_status" == "hold" ]]; then
+    HOLD_PRIOR_STATUS=$(jq -r --arg num "$task_number" \
+      '.active_projects[] | select(.project_number == ($num | tonumber)) | .prior_status // ""' \
+      "$STATE_FILE")
+    if [[ -z "$HOLD_PRIOR_STATUS" ]]; then
+      echo "Error: task $task_number is already held but carries no prior_status -- refusing to re-hold a corrupted entry; fix it manually." >&2
+      exit 1
+    fi
+  else
+    HOLD_PRIOR_STATUS="$current_state_status"
+  fi
+elif [[ "$target_status" == "unhold" ]]; then
+  UNHOLD_SET=true
+fi
+
+# --- Hold sticky guard ---
+# A hold is a deliberate, human-set pause; an ordinary preflight/postflight status write must
+# never silently clear it. Only preflight:hold (above) and preflight:unhold (the explicit lift)
+# may move a task OFF status=="hold" -- every OTHER operation:target_status pair, when the
+# task's CURRENT status is already "hold", downgrades to a no-op on the status field alone:
+# STATE_STATUS/TODO_STATUS are overridden back to hold/HOLD so the idempotency check immediately
+# below makes the state.json status write a true no-op, while every other side effect (TODO.md
+# regen, plan/phase file updates, hooks, events) still runs exactly as on any other path. THIS
+# guard -- not the rank-based monotonic-max clamp in skill-base.sh/orchestrate-cycle-plan.sh --
+# is the actual mechanism that lets an explicit /orchestrate --research/--plan/--implement
+# forcing-flag override admit a held task for one dispatch while leaving status == "hold"
+# afterward: "hold" is deliberately UNRANKED in status-vocabulary.sh's
+# STATUS_VOCABULARY_LIFECYCLE_RANK, so status_vocabulary_would_regress(hold, implementing)
+# returns false ("no regression") and that clamp alone would let the write through unguarded.
+if [[ "$current_state_status" == "hold" && "$HOLD_SET" != "true" && "$UNHOLD_SET" != "true" ]]; then
+  echo "NOTICE: task $task_number is held; ${operation}:${target_status} does not clear the hold -- status write skipped (status stays 'hold'). Lift the hold with 'preflight unhold' to resume ordinary status transitions." >&2
+  STATE_STATUS="hold"
+  TODO_STATUS="HOLD"
+fi
 
 state_is_noop=false
 if [[ "$current_state_status" == "$STATE_STATUS" ]]; then
@@ -688,6 +820,12 @@ update_state_json() {
     if [[ "$RESEARCH_QUESTIONS_LEN" -gt 0 ]]; then
       echo "[dry-run] state.json: research_questions overwrite -> ${RESEARCH_QUESTIONS}"
     fi
+    if [[ "$HOLD_SET" == "true" ]]; then
+      echo "[dry-run] state.json: hold_reason -> '${HOLD_REASON}', held_at -> '${ts:0:10}', prior_status -> '${HOLD_PRIOR_STATUS}'"
+    fi
+    if [[ "$UNHOLD_SET" == "true" ]]; then
+      echo "[dry-run] state.json: clearing hold_reason/held_at/prior_status (unhold -> '${STATE_STATUS}')"
+    fi
     echo "[dry-run] TODO.md: regenerate from state.json via generate-todo.sh"
     return 0
   fi
@@ -719,6 +857,23 @@ update_state_json() {
         --argjson rq "$RESEARCH_QUESTIONS" \
         --regen-todo || {
         echo "Warning: state-write.sh failed during no-op research_questions overwrite (non-fatal)" >&2
+      }
+    elif [[ "$HOLD_SET" == "true" ]]; then
+      # Reached only when the task was ALREADY held (STATE_STATUS="hold" == current_state_status
+      # made this a status no-op) -- i.e. this preflight:hold call is updating an existing hold's
+      # reason, not setting a fresh one. prior_status was already resolved as the EXISTING
+      # recorded value above (never overwritten with "hold" itself).
+      "$SCRIPT_DIR/state-write.sh" \
+        '(.active_projects[] | select(.project_number == ($num | tonumber)) | .hold_reason) = $hold_reason
+         | (.active_projects[] | select(.project_number == ($num | tonumber)) | .held_at) = $held_at
+         | (.active_projects[] | select(.project_number == ($num | tonumber)) | .prior_status) = $prior_status' \
+        --session-id "$session_id" \
+        --arg num "$task_number" \
+        --arg hold_reason "$HOLD_REASON" \
+        --arg held_at "${ts:0:10}" \
+        --arg prior_status "$HOLD_PRIOR_STATUS" \
+        --regen-todo || {
+        echo "Warning: state-write.sh failed during no-op hold-reason update (non-fatal)" >&2
       }
     else
       "$SCRIPT_DIR/state-write.sh" '.' --session-id "$session_id" --regen-todo || {
@@ -787,6 +942,32 @@ update_state_json() {
       session_id: $sid
     } | (.active_projects[] | select(.project_number == ($num | tonumber)) | .research_questions) = $rq'
     jq_args+=(--argjson rq "$RESEARCH_QUESTIONS")
+  fi
+
+  # preflight:hold -- sets the three new fields in the SAME state-write.sh invocation as the
+  # status write (never a second write). Mutually exclusive with FILE_SCOPE_ADD/RESEARCH_QUESTIONS
+  # above by the flags' own operation/target_status restrictions.
+  if [[ "$HOLD_SET" == "true" ]]; then
+    jq_filter='(.active_projects[] | select(.project_number == ($num | tonumber))) |= . + {
+      status: $status,
+      last_updated: $ts,
+      session_id: $sid,
+      hold_reason: $hold_reason,
+      held_at: $held_at,
+      prior_status: $prior_status
+    }'
+    jq_args+=(--arg hold_reason "$HOLD_REASON" --arg held_at "${ts:0:10}" --arg prior_status "$HOLD_PRIOR_STATUS")
+  fi
+
+  # preflight:unhold -- restores STATE_STATUS (resolved to the recorded prior_status above, ahead
+  # of map_status()) and clears the three hold fields via del(...) -- field OMISSION, not nulling,
+  # matching this codebase's convention for present-only-in-one-state fields (completion_summary).
+  if [[ "$UNHOLD_SET" == "true" ]]; then
+    jq_filter='(.active_projects[] | select(.project_number == ($num | tonumber))) |= (. + {
+      status: $status,
+      last_updated: $ts,
+      session_id: $sid
+    } | del(.hold_reason, .held_at, .prior_status))'
   fi
 
   if ! "$SCRIPT_DIR/state-write.sh" \
