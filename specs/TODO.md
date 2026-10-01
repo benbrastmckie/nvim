@@ -1,5 +1,5 @@
 ---
-next_project_number: 313
+next_project_number: 314
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 313
 |------|-------|------------|--------|
 | 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,306,309,311 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
-| 3 | 170,273,282,303 | 184,250,251,271,281 | core-agent-system, orchestrator |
+| 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,277,282,284,285,300 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -44,6 +44,7 @@ next_project_number: 313
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
+    └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 
 ### Extensions
 
@@ -88,6 +89,79 @@ next_project_number: 313
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 313. Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md phase blocks
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 306, Task 308
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task numbers in deliverable files outside specs/**.
+
+GOAL. Add an ADVISORY lint that validates hand-authored /orchestrate batch proposals written into specs/ROADMAP.md phase blocks, so an under-inclusive batch is caught at authoring time instead of only at dispatch -- or never.
+
+=== THE OBSERVED FAILURE (real, not hypothetical) ===
+An agent hand-edited a ROADMAP.md phase batch and REMOVED a task from it because that task depended on another task already in the batch. That reasoning is wrong: /orchestrate performs dependency-aware wave dispatch, so an intra-batch dependency edge merely sequences the two tasks into successive waves. The two tasks also declared overlapping file_scope (three files under one component's certificate/ directory), which under the dominance rule makes batching them MANDATORY rather than optional. Nothing caught either error, because the proposed batch existed only as prose in a markdown file. The user corrected it by hand.
+
+=== RULING ON THE SCOPE-NOTE OBJECTION (settled; do not re-litigate) ===
+context/patterns/batch-orchestration-guardrails.md's scope note "Territory is a human judgment, not a machine derivation" does NOT forbid this lint. Its own first sentence draws the line: "This document's admission layers (below) derive collisions mechanically from `file_scope`; the selection criterion here is different". The note excludes machine derivation as a SELECTION input. A lint that reads a batch a human already typed and mechanically compares declared file_scope is an admission-layer act, which that same sentence sanctions.
+
+Corroboration: docs/architecture/batch-admit-schema.md's `idle_overlap_advisory` (v5) ALREADY emits finding (a)'s fact at dispatch time -- it names a cross_batch overlapping task that is not in the batch, with `overlapping_path` and a remedy string. This lint is therefore the AUTHORING-TIME ANALOGUE of a mechanism that already ships. The gap it closes is WHEN the signal arrives, not whether the fact is derivable. Scope the novelty claim accordingly.
+
+=== FINDINGS TO IMPLEMENT (all ADVISORY, never blocking) ===
+(a) TERRITORY UNDER-INCLUSION -- the primary and only mandatory-defect finding. A non-terminal task whose declared file_scope overlaps an in-batch task but which is ABSENT from the batch. Rule 1 (shared file territory) is unconditional and does not depend on topic cohesion; this is the one case where an omitted task is a real defect.
+(c) The batch exceeds MAX_TASKS=8 (commands/orchestrate.md:232; contract at docs/architecture/orchestrate-state-machine.md's "Batch Size Cap").
+(d) The batch cites a task number that is terminal or does not exist in state.json.
+(e) DECLARATIVE, and arguably the actual fix: when the batch block is specified in the format contract, state plainly that a batch MAY contain intra-batch dependency edges, that such edges sequence tasks into successive waves rather than disqualifying them, and that a dependent's presence or absence is the author's judgment. The failure above was an author's false BELIEF; a lint can only catch its symptom, so the declarative sentence carries real weight. This is a pointer plus one sentence -- NOT new doctrine. The guardrails document already classifies an unmet predecessor as an ORDERING CONSTRAINT in its Gate Catalogue; cite that rather than re-explaining it.
+
+ALL findings are ADVISORY. They fail the Blocking-vs-Advisory criterion's condition 2: a prose markdown file is never dispatched, so an under-inclusive batch causes no silent concurrent write -- the real admission gate still fires at dispatch time regardless.
+
+=== FINDING (b) WAS CONSIDERED AND DELIBERATELY REJECTED -- DO NOT RE-PROPOSE ===
+A proposed finding (b) would have reported "a non-terminal dependent of an in-batch prerequisite that is absent from the batch" as rule-3 under-inclusion. It is dropped ENTIRELY, including its weaker informational variant, for two reasons:
+1. It overstates the guardrails document on that document's own terms. In its worked example the dependent C joins as a topic-cohesive OPTIONAL add whose edge means it "cannot dispatch usefully apart from the same invocation" -- a width/fill preference under rule 3, not an unconditional mandate like rule 1's territory requirement. As a defect finding it would assert a rule that does not exist.
+2. Even as information it would fire on nearly every batch, given a dense dependency graph and a cap of 8, and it would push batches to grow transitively against that cap. Noise on a never-actionable signal is precisely what trains operators to ignore advisories, degrading finding (a), which IS actionable.
+The aim is to ALLOW intra-batch dependency edges where they make sense -- never to mandate pulling dependents in. A dependency edge must simply never be grounds for EXCLUDING a task from a batch. Finding (e) carries that positive half declaratively.
+
+=== HARD CONSTRAINT: THIS IS A VALIDATOR, NEVER A PROPOSER ===
+The lint validates a batch a human already wrote. It must NEVER author, suggest, or rank a batch. Machine-derived batch SELECTION is the territory of the next-admissible-batch suggestion task (topic orchestrator), which is gated behind several prerequisites precisely because it is the harder, riskier mechanism. Copy that task's binding constraint as precedent: a second copy of an admission predicate drifts from the real one, and a suggestion the real script then refuses is worse than no suggestion at all.
+
+=== REUSE, DO NOT REBUILD ===
+- SPLICE $FILE_SCOPE_OVERLAP_JQ_DEFS from scripts/lib/file-scope-overlap.sh (the `norm` / `scopes_overlap_first` / `edge_connected_nums` defs). NEVER fork, restate, or re-derive the overlap algorithm. Note that scopes_overlap_first is deliberately glob-free and symmetric; do not "improve" it locally.
+- ADD this lint to the Consumers list in context/patterns/file-footprint-overlap.md, which names that algorithm's callers. That list currently says three active callers; this becomes a new one.
+- REUSE generate-task-order.sh's compute_waves (Kahn's algorithm) for any wave reasoning. Do NOT modify generate-task-order.sh -- it is in another task's file_scope, and consuming rather than modifying is what keeps this task free of a dependency on it.
+- RESPECT the truncation precedence rule in the guardrails document: a cap-driven trim to 8 can never split a territory-mandatory group off the end. Finding (c) must not recommend a trim that violates this.
+
+=== OPEN RESEARCH QUESTION: WHICH SEAM ===
+Research must settle the call site. Note first that verify-deploy.sh, through which all ten existing scripts/lint/*.sh are wired, is the WRONG seam here: it validates the source store and deploy, whereas this lint reads a CONSUMER repo's specs/ROADMAP.md against that repo's specs/state.json. The precedent does not transfer, which is why a roadmap-touching command is the only seam.
+  SEAM A: a new mode on scripts/roadmap-integration.sh, which the /review rewiring already invokes. This may need no commands/review.md edit at all, dissolving the territory overlap noted below -- but it enters the roadmap-generation task's territory.
+  SEAM B: a standalone scripts/lint/lint-roadmap-batch-proposals.sh called explicitly from commands/review.md, following the naming and test/manifest-registration precedent of the ten existing lint scripts.
+LEAN: seam B for the script itself, with the call site decided in research. If seam A wins, narrow file_scope accordingly and say so.
+
+=== EMPIRICAL FINDING THE ROADMAP-GENERATION TASK NEEDS ===
+The batch-block convention is DIVERGENT ACROSS REPOSITORIES, so a lint written to one shape silently no-ops on the other:
+  - The consumer repo uses a literal `**Run**:` marker followed by a fenced block containing `/orchestrate 120,121,...`.
+  - The global agent-system repo uses NO such marker: it uses a `## Call N -- <description>` header followed by a bare fenced block that may contain SEVERAL `/orchestrate ...` lines, i.e. several distinct batches under one header.
+This matters beyond this task: the roadmap-generation task's own description asserts that the live file uses a `**Run**` line, which is true only in the consumer repo. That task should reconcile the two shapes into one specified grammar before this lint can parse anything. This is FLAGGED HERE DELIBERATELY rather than by silently editing that task's description. Confirm the divergence still holds at research time; the two files drift.
+
+=== DEPENDENCIES ===
+- On the roadmap-generation task (hard, substantive): there is no parseable grammar to lint until the batch block is specified as a structure element in context/formats/roadmap-format.md, which today specifies only phase headers, checkboxes, status tables, priority markers and completion annotations -- it is 65 lines with zero occurrences of "Run". That task already owns both roadmap-format.md and roadmap-integration.sh and already has the batch-block spec in its scope, so DO NOT duplicate that work here; consume it.
+- On the /review rewiring task (hard, footprint-corroborated): it rewrites the /review Step 2.5 call site this lint would hook. Landing this first would simply be overwritten. The edge is deliberately kept EXPLICIT alongside the roadmap-generation edge even though the latter is transitively implied through it, per the standing documented-redundant-edge convention: the two edges record different facts (grammar availability vs. call-site ordering) and a redundant edge costs only a wave.
+- NOT a dependency, but note the absent-file_scope admission-posture task: it rules whether an absent file_scope is admission-relevant. For this lint an absent file_scope simply means "no evidence of overlap", so finding (a) cannot fire on it. Adopt the softer posture and RECORD in the script header which absent-scope posture was assumed, so the ruling can be reconciled later. Do not hold this task on it.
+
+=== CROSS-REPO TERRITORY CONSTRAINT (not expressible as an edge) ===
+A consumer repository has its own in-flight task that ALSO edits the /review command, to add a Book health section. That is a different repository's task number, so it CANNOT be expressed as a dependencies[] edge on this task. Whoever implements this MUST check for concurrent /review-command work in consumer repos before editing commands/review.md. Choosing seam A would avoid this hazard entirely.
+
+=== ACCEPTANCE ===
+- A fixture ROADMAP batch that omits a task whose file_scope overlaps an in-batch task produces finding (a); the real failure case above is reproduced as that fixture and the lint flags it.
+- A fixture in which the only omitted task is a DEPENDENT with no territory overlap produces NO finding, demonstrating (b) is genuinely absent.
+- Findings (c) and (d) each have a fixture.
+- No copy of the overlap predicate exists anywhere in the new code: the lint splices scripts/lib/file-scope-overlap.sh.
+- context/patterns/file-footprint-overlap.md's Consumers list names this lint.
+- Every finding is advisory: the lint's exit code is unaffected by findings, and this is stated in its header.
+- Registered in manifest.json with a scripts/tests/test-*.sh companion, matching the existing lint-script convention.
+- shellcheck clean per context/standards/shell-strict-mode.md.
+
+---
 
 ### 312. Backlog reconciliation as a required task-creation component: compare every proposed task against the open backlog before it is written
 - **Effort**: large
