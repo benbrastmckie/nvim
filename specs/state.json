@@ -45,7 +45,7 @@
       "project_number": 287,
       "project_name": "no_coschedule_build_heavy_implement",
       "title": "Refuse to co-schedule two build-heavy implement tasks in one cycle",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -58,7 +58,7 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
       ],
       "created": "2026-09-30T23:58:50Z",
-      "last_updated": "2026-10-01T00:39:25Z",
+      "last_updated": "2026-10-01T00:39:34Z",
       "session_id": "sess_1790813213_9179fb",
       "artifacts": [
         {
@@ -70,9 +70,15 @@
           "path": "specs/287_no_coschedule_build_heavy_implement/plans/01_build-heavy-coschedule-rule.md",
           "type": "plan",
           "summary": "4-phase plan: hoist+rename BUILD_HEAVY_TASK_TYPES, add the in-loop defer rule with its own reason and header contract, Group 32 fixtures for the four acceptance cases, harness regression gate."
+        },
+        {
+          "path": "specs/287_no_coschedule_build_heavy_implement/summaries/01_build-heavy-coschedule-rule-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: what changed, decisions, plan deviations, verification evidence, and impacts."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented the Mode 2 build-heavy co-scheduling admission rule in orchestrate-cycle-plan.sh: never dispatch two build-heavy (lean4/cslib) implement tasks in the same cycle, closing the one concurrency failure mode declared file_scope structurally cannot cover. All 4 phases complete; 339/339 targeted tests pass; wider harness shows no new failures attributable to this task."
     },
     {
       "project_number": 286,

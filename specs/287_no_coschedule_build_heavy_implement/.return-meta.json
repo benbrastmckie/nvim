@@ -23,22 +23,41 @@
       "category": "INSIGHT",
       "source_artifact": "specs/287_no_coschedule_build_heavy_implement/summaries/01_build-heavy-coschedule-rule-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "function-definition-order", "nested-function", "set-euo-pipefail", "silent-false", "shellcheck-blind-spot"]
+      "suggested_keywords": [
+        "bash",
+        "function-definition-order",
+        "nested-function",
+        "set-euo-pipefail",
+        "silent-false",
+        "shellcheck-blind-spot"
+      ]
     },
     {
       "content": "When a new cross-task admission rule is added to a shared bucketing/dispatch loop, re-run the FULL existing fixture suite (not just the new fixtures) before declaring done -- an old fixture that happens to co-trigger the new rule's precondition (e.g. two candidates of the exact task_type family the new rule targets, dispatched together in one test cycle) will silently lose coverage of whatever it originally tested, as the new rule's defer now fires before the old code path is ever reached. This is not a bug in the new rule; it is the new rule correctly doing its job and exposing an old fixture whose shape has become invalid. Fix by decoupling the old fixture's cycle grouping (split into separate single-concern cycles) rather than weakening either rule's assertions.",
       "category": "PATTERN",
       "source_artifact": "specs/287_no_coschedule_build_heavy_implement/summaries/01_build-heavy-coschedule-rule-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["test-fixture-confound", "admission-rule", "orchestrate-cycle-plan", "fixture-decoupling", "regression-gate"]
+      "suggested_keywords": [
+        "test-fixture-confound",
+        "admission-rule",
+        "orchestrate-cycle-plan",
+        "fixture-decoupling",
+        "regression-gate"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790813213_9179fb",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
