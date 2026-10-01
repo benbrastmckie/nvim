@@ -1,39 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790832943_f8ab6f_289",
-  "dispatch_seq": 1,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/289_clear_orchestrator_context_budget_gate/reports/01_context-budget-gate-trim.md",
-      "summary": "Measures the live eager-load overage (68,289 B vs 65,950 B baseline, worse than the task description's snapshot), identifies the single highest-leverage trim (the 1,670 B /orchestrate table-cell in core's merge-sources/claudemd.md, duplicating docs/architecture/orchestrate-state-machine.md), finds a second genuine duplicate in skill-orchestrate/SKILL.md (detected_defects/AskUserQuestion restated twice) to close its 325 B ceiling overage alongside the task-named 3-row collapse, confirms the hard-mode promotion precondition (sibling task 293 completed) is satisfied, and recommends trim-not-baseline-move with a strict do-trims-then-flip-mode ordering."
+      "type": "plan",
+      "path": "specs/289_clear_orchestrator_context_budget_gate/plans/01_clear-context-budget-gate.md",
+      "summary": "6-phase plan clearing verify-deploy Gate 20's eager-load and SKILL.md ceiling overages by duplication trim (not a baseline move), then promoting ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "verify-deploy.sh Gate 20's measure-eager-context.sh classifies eager content via four channels (parent CLAUDE.md chain, predicted assembled .claude/CLAUDE.md, @-imports, rules/*.md with a paths: glob matching specs/** or .claude/**). docs/architecture/*.md and context/patterns/*.md are NOT eager under this model (only agent-system/extensions/*/rules/*.md is scanned for the rules channel), so pointer-extraction from a merge-sources/claudemd.md fragment or a rules/*.md file into docs/ or context/patterns/ is a reliable way to shrink the eager-load total without content loss.",
-      "category": "PATTERN",
-      "source_artifact": "specs/289_clear_orchestrator_context_budget_gate/reports/01_context-budget-gate-trim.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["eager-context", "verify-deploy", "gate20", "claudemd-budget", "context-trim"]
-    },
-    {
-      "content": "When checking whether a config-recorded 'deferred until sibling task X settles' precondition is satisfied, the authoritative check is state.json's active_projects status for X (and for any OTHER task whose file_scope also names the contested file) plus git log on the contested file to find the actual most recent editor -- not just assuming the config comment's date is still current. test files for such gates (e.g. test-verify-deploy-context-budget.sh) often already exercise both the pre- and post-promotion severity via explicit env-var overrides per case rather than relying on the script's own default, so flipping a default value is usually safe to verify by reading the test harness rather than guessing.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/289_clear_orchestrator_context_budget_gate/reports/01_context-budget-gate-trim.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["precondition-check", "gate-mode-promotion", "state.json", "file_scope", "test-harness"]
-    }
-  ],
-  "context_gaps": [
-    {
-      "topic": "eager-context trim precedent catalogue",
-      "gap": "No context/patterns/ file catalogues known-safe eager-context trim candidates (duplicate constraint restatements, oversized table cells duplicating a docs/architecture/*.md reference). This report had to re-derive two such duplicates by direct byte measurement and manual reading.",
-      "recommendation": "Consider a future context/patterns/eager-context-trim-candidates.md if overage cycles recur (this appears to be at least the second cycle against this gate per the stale specs/ROADMAP.md Budgets snapshot)."
-    }
-  ],
-  "next_steps": "Run /plan 289 to create implementation plan"
+  "next_steps": "Run /implement 289 to execute the plan",
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1790832943_f8ab6f_289",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 3.75,
+    "dependency_waves": 4
+  },
+  "dispatch_seq": 2
 }
