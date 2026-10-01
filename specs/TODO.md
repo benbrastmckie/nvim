@@ -148,13 +148,17 @@ During a live `/orchestrate 119,122,129,151,154,159` run in `~/Projects/Logos/Ve
 
 Task 154 then transitioned to `completed`. **No commit was attempted for ANY of the 26 valid paths.** Nothing was ultimately lost only because that dispatch happened to have committed its own source incrementally across ten commits, so the residue was just the plan marker and `.return-meta.json`, recovered by hand afterwards. **A dispatch that relied on the postflight commit instead would have reached `completed` with its work entirely uncommitted.** That is the severity argument: a false green over silent non-persistence, triggered by one entry out of thirty.
 
-== SECOND VERIFIED FINDING: THE CONTRACT IS NOT PROPAGATED TO THE PRODUCERS ==
+== SECOND VERIFIED FINDING: THE CONTRACT IS NOT PROPAGATED TO THE PRODUCERS (THIS IS THE ROOT CAUSE) ==
 
 Of the 13 implementation agents under `agent-system/extensions/*/agents/`, only **4** mention `modified_files` at all (`general-implementation-agent.md`, and email/nix/nvim); all 4 of those do state the repo-relative constraint. The other **9 never mention the field** -- including `agent-system/extensions/lean/agents/lean-implementation-agent.md`, the exact agent that produced the 30-entry list above. They emit the field with no instruction about it, inheriting the contract only if they happen to load the format spec. There is also **no JSON schema** for `.return-meta.json` anywhere under `context/schemas/`, so no mechanical validation of the field exists at any point.
 
-**Propagation to those 9 agents is OUT OF SCOPE here and should be a follow-up task** -- it is a 9-file producer-side surface, and excluding it is a scope judgment, NOT an overlap dodge (those 9 files carry no competing declarations found in this survey). It is recorded here so the follow-up is filed against evidence rather than rediscovered. Note that it also reinforces the consumer-side fix: the field will keep being produced by agents that were never told the rule, so the consumer must be robust to violation regardless.
+**This is the ROOT CAUSE of the observed incident, and it explains it completely.** The constraint existed; the agent that produced the offending 30-entry list was never told it. Nothing further is needed to account for the defect.
 
-**The producing agent's behaviour was reasonable, not negligent.** Recording every file it touched, across both repositories, is a defensible reading of a field named `modified_files` by an agent that was never shown the constraint. Do not frame any part of this as an agent error to be trained away.
+**Propagation to those 9 agents is OUT OF SCOPE here and should be a follow-up task** -- it is a 9-file producer-side surface, and excluding it is a scope judgment, NOT an overlap dodge (those 9 files carry no competing declarations found in this survey). **That follow-up is NOT a nice-to-have: it is the root-cause remediation, and this task is the containment.** Whoever triages it should treat it with the severity that implies, not as documentation tidying. Recorded here so it is filed against evidence rather than rediscovered.
+
+It also reinforces why the consumer-side fix is needed REGARDLESS of propagation: until every producer is told the rule, the field will keep carrying violations, so the consumer must be robust to them.
+
+**The producing agent's behaviour was reasonable against what it was actually given -- not against the contract.** State the distinction precisely, because the looser version invites the wrong fix: the agent DID violate a documented constraint, so this is not a case of defensible divergence from a rule it had seen. It is a case of an agent reasonably recording every file it touched, across both repositories, under a field name that suggests exactly that, having never been shown the rule its own definition omits. Do not frame any part of this as an agent error to be trained away, and do not frame it as the contract being wrong either.
 
 == THE CENTRAL QUESTION: SILENT FILTERING VS LOUD REFUSAL ==
 
