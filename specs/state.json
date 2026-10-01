@@ -5,22 +5,31 @@
     {
       "project_number": 292,
       "project_name": "task_count_reasoning_in_task_creation",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "Add an explicit task-count reasoning step to task creation so the system picks the right NUMBER of tasks instead of defaulting to one-per-observation. Today commands/task.md's Create Task Mode has steps for description improvement, task_type detection, topic assignment and slug creation, but nothing that asks whether a set of findings is one task or several -- and /meta, /fix-it and /errors all create tasks from multi-finding inputs with the same gap. Observed failure: a batch postflight surfaced two findings that both edited the SAME config file (context/config/orchestrator-context-budget.json) and both resolved the SAME verify-deploy gate, and they were drafted as two separate tasks; as separate tasks they would have declared overlapping file_scope and this system's own in-batch file_scope_collision check would have deferred one behind the other, so the split was not merely cosmetic but actively self-defeating. Add a consolidation-versus-division test naming the legitimate reasons to divide -- genuinely different file_scope with no overlap, different task_type or owning domain, a real dependency ordering, or a size that will not fit one agent dispatch (cf. the phase-sizing bound in the hard-mode contracts) -- and the reasons NOT to divide, chiefly that findings sharing an edit target or a single acceptance gate belong in one task. State the default explicitly: consolidate unless a named divide reason applies. Apply the same test to the division direction too, so an over-large task is still split when size or domain genuinely calls for it, and cross-reference context/patterns/batch-orchestration-guardrails.md's \"Batching Is the Default\" section, which already argues the sibling point for how tasks are RUN rather than how they are CREATED.",
       "topic": "core-agent-system",
       "file_scope": [
+        "agent-system/extensions/core/agents/meta-builder-agent.md",
+        "agent-system/extensions/core/commands/errors.md",
         "agent-system/extensions/core/commands/task.md",
-        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+        "agent-system/extensions/core/skills/skill-fix-it/SKILL.md"
       ],
       "created": "2026-10-01T03:46:50Z",
-      "last_updated": "2026-10-01T04:01:15Z",
-      "session_id": "sess_1790826658_06dbd3_292",
+      "last_updated": "2026-10-01T04:08:10Z",
+      "session_id": "sess_1790826658_06dbd3",
       "artifacts": [
         {
           "path": "specs/292_task_count_reasoning_in_task_creation/reports/01_task-count-reasoning.md",
           "type": "report",
           "summary": "Identifies multi-task-creation-standard.md as the single reference point for a new consolidation-vs-division test; documents the gap in task.md's Create and Expand modes, /meta and /fix-it's fuzzy clustering, and /errors' total absence of grouping; confirms the motivating incident (task 289) was a correctly-resolved near-miss."
+        },
+        {
+          "path": "specs/292_task_count_reasoning_in_task_creation/plans/01_task-count-reasoning-test.md",
+          "type": "plan",
+          "summary": "5-phase plan adding Component 0 (Task-Count Reasoning) to multi-task-creation-standard.md and wiring it into /task create+expand, /errors, /meta and /fix-it, with deploy verification."
         }
       ],
       "next_artifact_number": 2

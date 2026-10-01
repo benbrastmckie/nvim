@@ -41,7 +41,7 @@ next_project_number: 294
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 289 [NOT STARTED] — Clear verify-deploy gate 20 (orchestrator context budget...
 290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
-292 [PLANNING] — Add an explicit task-count reasoning step to task creation so...
+292 [PLANNED] — Add an explicit task-count reasoning step to task creation so...
 293 [PLANNED] — Add a HOLD task status marker that pauses a task and excludes...
 
 ### Extensions
@@ -221,11 +221,12 @@ This is the phase that makes a hold actually hold. Phase 1 alone makes "hold" va
 ---
 
 ### 292. Task count reasoning in task creation
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [292_task_count_reasoning_in_task_creation/reports/01_task-count-reasoning.md]
+- **Plan**: [292_task_count_reasoning_in_task_creation/plans/01_task-count-reasoning-test.md]
 
 **Description**: Add an explicit task-count reasoning step to task creation so the system picks the right NUMBER of tasks instead of defaulting to one-per-observation. Today commands/task.md's Create Task Mode has steps for description improvement, task_type detection, topic assignment and slug creation, but nothing that asks whether a set of findings is one task or several -- and /meta, /fix-it and /errors all create tasks from multi-finding inputs with the same gap. Observed failure: a batch postflight surfaced two findings that both edited the SAME config file (context/config/orchestrator-context-budget.json) and both resolved the SAME verify-deploy gate, and they were drafted as two separate tasks; as separate tasks they would have declared overlapping file_scope and this system's own in-batch file_scope_collision check would have deferred one behind the other, so the split was not merely cosmetic but actively self-defeating. Add a consolidation-versus-division test naming the legitimate reasons to divide -- genuinely different file_scope with no overlap, different task_type or owning domain, a real dependency ordering, or a size that will not fit one agent dispatch (cf. the phase-sizing bound in the hard-mode contracts) -- and the reasons NOT to divide, chiefly that findings sharing an edit target or a single acceptance gate belong in one task. State the default explicitly: consolidate unless a named divide reason applies. Apply the same test to the division direction too, so an over-large task is still split when size or domain genuinely calls for it, and cross-reference context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default" section, which already argues the sibling point for how tasks are RUN rather than how they are CREATED.
 

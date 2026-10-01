@@ -1,32 +1,29 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790826658_06dbd3_292",
-  "dispatch_seq": 2,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/292_task_count_reasoning_in_task_creation/reports/01_task-count-reasoning.md",
-      "summary": "Identifies multi-task-creation-standard.md as the single reference point for a new consolidation-vs-division test; documents the gap in task.md's Create and Expand modes, /meta and /fix-it's fuzzy clustering, and /errors' total absence of grouping; confirms the motivating incident (task 289) was a correctly-resolved near-miss."
+      "type": "plan",
+      "path": "specs/292_task_count_reasoning_in_task_creation/plans/01_task-count-reasoning-test.md",
+      "summary": "5-phase documentation plan adding a bidirectional consolidation-versus-division test as Component 0 of multi-task-creation-standard.md and wiring it into /task (create + expand), /errors, /meta and /fix-it, plus deploy verification."
     }
   ],
-  "findings_count": 6,
+  "metadata": {
+    "session_id": "sess_1790826658_06dbd3_292",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.5,
+    "dependency_waves": [[1], [2, 3, 4], [5]]
+  },
   "memory_candidates": [
     {
-      "content": "This repo's multi-task-creation-standard.md is the single shared reference every multi-task creator (/meta, /fix-it, /errors, /task --review) already points to by path. When adding a new cross-cutting rule for task creation, add it there once and have consumers reference it, rather than editing each command file separately -- matches the existing convention.",
-      "category": "PATTERN",
-      "source_artifact": "specs/292_task_count_reasoning_in_task_creation/reports/01_task-count-reasoning.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["multi-task-creation-standard", "task creation", "meta", "fix-it", "errors", "cross-reference"]
-    },
-    {
-      "content": "task.md's --expand mode (context/standards/task-management.md) documents an inline creation-time division variant delegating to a 'task-divider' component, but no such agent or skill file exists anywhere in agent-system/extensions/core -- this is stale/aspirational documentation, not implemented prior art. Verify referenced delegation targets actually exist in the source store before citing them as existing mechanisms.",
+      "content": "Architectural anti-pattern found in this agent-system: a mechanism that REACTS to proposed-task file_scope overlap (multi-task-creation-standard.md Component 4a adds a serializing dependency edge between overlapping tasks) without any upstream step that QUESTIONS whether the split should have happened at all. The result is a self-defeating division: two findings sharing one edit target become two tasks that the system's own in-batch file_scope_collision check then serializes, so they were never independently dispatchable. General lesson for pipeline design: when a downstream stage can only mitigate a bad upstream decision (serialize rather than merge), add the decision test upstream of it rather than strengthening the mitigation. Related: fuzzy clustering keys (shared key terms, component_type, affected_area) systematically miss the sharper structural signals (shared narrow file target, shared acceptance gate) that actually determine dispatchability.",
       "category": "INSIGHT",
-      "source_artifact": "specs/292_task_count_reasoning_in_task_creation/reports/01_task-count-reasoning.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["task-divider", "stale documentation", "expand mode", "source store verification"]
+      "source_artifact": "specs/292_task_count_reasoning_in_task_creation/plans/01_task-count-reasoning-test.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["task-count", "consolidation", "file_scope-overlap", "pipeline-design", "clustering-criteria", "multi-task-creation"]
     }
   ],
-  "next_steps": "Run /plan 292 to create implementation plan"
+  "dispatch_seq": 4
 }
