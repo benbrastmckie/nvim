@@ -1,0 +1,41 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#312) requiring backlog reconciliation before any task is written. Starts in NOT STARTED status.",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/312_backlog_reconciliation_required_at_task_creation/",
+      "summary": "Task directory for backlog-reconciliation task-creation component"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #312 added to TODO.md; Task Order wave 4 now carries 312 behind 165/282/300"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task #312 appended to active_projects; next_project_number advanced to 313"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790875972_4b7da0",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "tasks_status": "not_started",
+    "task_numbers": [312],
+    "topic": "orchestrator",
+    "dependencies_declared": [165, 300, 282],
+    "commit": "b2c3b078d"
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md"
+  ],
+  "next_steps": "Task #312 is blocked behind #165, #300 and #282. Run /research 312 once those clear; research must RULE on the (a) state-write-boundary hook vs (b) per-surface wiring question and then extend file_scope via proposed_file_scope."
+}
