@@ -299,34 +299,34 @@ above (evidence-backed additional duplicate hunting) to be genuinely required, a
 
 ---
 
-### Phase 5: Promote the gate to hard and record the derivation [NOT STARTED]
+### Phase 5: Promote the gate to hard and record the derivation [COMPLETED]
 
 **Goal**: Flip `ORCHESTRATOR_BUDGET_GATE_MODE`'s default from `warn` to `hard` now that the
 precondition is satisfied, and record in the config that both findings were closed by a deliberate
 content trim rather than a baseline move.
 
 **Tasks**:
-- [ ] Re-verify both gating measurements before editing anything: eager `TOTAL:` ≤ 65,950 B and
+- [x] Re-verify both gating measurements before editing anything: eager `TOTAL:` ≤ 65,950 B and
       SKILL.md < 20,000 B. If either is not satisfied, STOP and return to Phase 2/3/4 — do not
-      flip the default
-- [ ] Re-confirm the promotion precondition holds (no in-flight task is editing
+      flip the default *(completed: 65,402 B / 19,993 B, both satisfied)*
+- [x] Re-confirm the promotion precondition holds (no in-flight task is editing
       `commands/orchestrate.md`; check `git log --oneline -5 -- agent-system/extensions/core/commands/orchestrate.md`
-      and the `file_scope` of every non-terminal task in `specs/state.json`)
-- [ ] Flip `ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-warn}"` to `:-hard}` at
-      `agent-system/extensions/core/scripts/verify-deploy.sh` (line ~190)
-- [ ] Rewrite the explanatory comment above it (lines ~179–189): drop the stale "concurrently being
+      and the `file_scope` of every non-terminal task in `specs/state.json`) *(completed: the sibling task -- the [HOLD] status-marker change -- is status=completed; no other task actively dispatched this session touches the file)*
+- [x] Flip `ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-warn}"` to `:-hard}` at
+      `agent-system/extensions/core/scripts/verify-deploy.sh` (line ~190) *(completed)*
+- [x] Rewrite the explanatory comment above it (lines ~179–189): drop the stale "concurrently being
       edited" / "promote once that concurrent edit settles" deferral, and record the dated
       re-checked precondition using a durable anchor (commit SHA or change description), **not** a
-      task number
-- [ ] Mirror the same change in `context/config/orchestrator-context-budget.json`'s top-level
-      `_comment`, removing the matching deferred-promotion language so the two cannot contradict
-- [ ] Refresh the informational snapshots only — `files."skills/skill-orchestrate/SKILL.md"
+      task number *(completed: used 'the `[HOLD]` status-marker change')*
+- [x] Mirror the same change in `context/config/orchestrator-context-budget.json`'s top-level
+      `_comment`, removing the matching deferred-promotion language so the two cannot contradict *(completed)*
+- [x] Refresh the informational snapshots only — `files."skills/skill-orchestrate/SKILL.md"
       .measured_bytes/.measured_at` and `eager_load.measured_bytes/.measured_at` — to the true
-      post-trim values
-- [ ] Append one dated sentence to the SKILL.md `derivation` and to the `eager_load.note` recording
+      post-trim values *(completed: 19,993 B / 65,402 B, both dated 2026-10-01)*
+- [x] Append one dated sentence to the SKILL.md `derivation` and to the `eager_load.note` recording
       that the overage was closed by a deliberate duplication trim, naming the files trimmed, and
-      stating explicitly that `baseline_bytes` and both `ceiling_bytes` were left unmoved
-- [ ] Leave `ceiling_bytes` (both files) and `eager_load.baseline_bytes` byte-identical
+      stating explicitly that `baseline_bytes` and both `ceiling_bytes` were left unmoved *(completed)*
+- [x] Leave `ceiling_bytes` (both files) and `eager_load.baseline_bytes` byte-identical *(completed: verified via jq, unchanged from HEAD)*
 
 **Timing**: 0.5 hours
 

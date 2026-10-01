@@ -180,14 +180,15 @@ fi
 # (commands/orchestrate.md, skills/skill-orchestrate/SKILL.md against
 # context/config/orchestrator-context-budget.json). Mirrors the SCHEMA_CONFORMANCE_GATE_MODE /
 # STRICT_CORE_DEPLOY precedent (check-extension-docs.sh): one env-var default a maintainer flips
-# in a follow-up commit, not a persisted auto-promotion counter. Defaults to "warn" as of
-# 2026-09-18: both tracked files are currently at or under their configured ceiling, but
-# commands/orchestrate.md is concurrently being edited by another in-flight task this cycle --
-# promoting to "hard" now would turn any of that task's growth into a hard deploy failure.
-# Promote once that concurrent edit settles and the file's ceiling margin is confirmed stable.
+# in a follow-up commit, not a persisted auto-promotion counter. Promoted to "hard" on 2026-10-01:
+# the sibling task that was concurrently editing commands/orchestrate.md (the `[HOLD]`
+# status-marker change) has landed, and both tracked files were re-confirmed under their
+# configured ceiling (eager-load TOTAL 65,402 B against a 65,950 B baseline; SKILL.md 19,993 B
+# against a 20,000 B ceiling) by a deliberate duplication trim across merge-sources/claudemd.md,
+# rules/git-workflow.md, and skills/skill-orchestrate/SKILL.md -- not by moving either ceiling.
 # Does NOT gate the eager-load regression check or the volatile-file check, both of which have
 # their own fixed severity (see gate20 below).
-ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-warn}"
+ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-hard}"
 
 FAILURES=0
 CHECKS=0
