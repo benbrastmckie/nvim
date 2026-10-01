@@ -1,0 +1,20 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/286_shared_tree_isolation_posture_verdict/reports/01_shared-tree-isolation-posture.md",
+      "summary": "Maps the closed worktree-isolation-removal decision record onto the exact subsection-by-subsection rewrite plan for batch-orchestration-guardrails.md's Working-Tree and Build Isolation Posture section, including two dispatch-silent passages flagged with explicit recommendations."
+    }
+  ],
+  "findings_count": 6,
+  "next_steps": "Run /plan 286 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1790813213_9179fb_286",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": []
+}

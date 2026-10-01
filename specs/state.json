@@ -64,7 +64,7 @@
       "project_number": 286,
       "project_name": "shared_tree_isolation_posture_verdict",
       "title": "Revise the working-tree isolation posture to a blanket shared-tree verdict",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -74,7 +74,16 @@
         "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
       ],
       "created": "2026-09-30T23:58:41Z",
-      "last_updated": "2026-09-30T23:58:41Z"
+      "last_updated": "2026-10-01T00:10:38Z",
+      "session_id": "sess_1790813213_9179fb",
+      "artifacts": [
+        {
+          "path": "specs/286_shared_tree_isolation_posture_verdict/reports/01_shared-tree-isolation-posture.md",
+          "type": "report",
+          "summary": "Maps the closed worktree-isolation-removal decision record onto the exact subsection-by-subsection rewrite plan for batch-orchestration-guardrails.md's Working-Tree and Build Isolation Posture section, including two dispatch-silent passages flagged with explicit recommendations."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 283,
