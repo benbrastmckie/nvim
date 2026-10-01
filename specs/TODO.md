@@ -1,5 +1,5 @@
 ---
-next_project_number: 312
+next_project_number: 313
 ---
 
 # TODO
@@ -14,7 +14,7 @@ next_project_number: 312
 | 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,306,309,311 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303 | 184,250,251,271,281 | core-agent-system, orchestrator |
-| 4 | 274,304 | 165,263,273,275,277,284,285 | orchestrator |
+| 4 | 274,304,312 | 165,263,273,275,277,282,284,285,300 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -85,8 +85,76 @@ next_project_number: 312
 309 [NOT STARTED] — Replace directory pathspecs with explicit file lists at the...
   └─ 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
+312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 312. Backlog reconciliation as a required task-creation component: compare every proposed task against the open backlog before it is written
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 165, Task 300, Task 282
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
+
+## Goal
+
+No task may be created without first being compared against the open backlog, so that a genuinely new task is created, an existing task is revised or widened, a dependency edge is added, or a `file_scope` is narrowed -- whichever the comparison warrants. Today no creation surface does this, and the standard does not require it.
+
+## The motivating incident (live, this session, not hypothetical)
+
+Three tasks (309, 310, 311) were created from a research report without any comparison against the open backlog. Outcome on inspection:
+- Task 310 was a near-total duplicate of open task 272, whose goal statement is almost verbatim identical and which is better scoped (it additionally carries `task-lock.md`, `orchestrator-runtime-files.md`, `test-session-registry.sh`, `test-conflict-predicate.sh` and a heartbeat-never-fires diagnosis). 310 was abandoned and its two unique items folded into 272.
+- Task 309 was a strict subset of open task 302's `file_scope` and named the same three line numbers. Resolved by narrowing 302 to drop those three paths and ordering 302 behind 309.
+- Task 311 was genuinely new (no open task mentions `BUILD_HEAVY` or build weight) -- so the mechanism must be able to return "genuinely new", not merely flag suspicion.
+
+Only 311 of the three survived creation unchanged. That is the failure rate this task exists to eliminate.
+
+## The precise gap
+
+`docs/reference/standards/multi-task-creation-standard.md` already has Component 4a, "File Footprint Capture and Overlap Detection (Automatic)". Its step 2 reads: apply the overlap check "to every unordered pair of proposed tasks **in the current batch**". The scan scope is the creation batch only. Nothing compares a proposed task against the non-terminal tasks already in `specs/state.json`.
+
+This is corroborated by the predicate's own doc: `context/patterns/file-footprint-overlap.md` describes an "O(n^2) pairwise scan over the items in a single batch (task-creation batch...)" and its Non-Goals section states it holds "No opinion on scan scope... each caller chooses its own scan scope, and this document is not extended" for it. So the PREDICATE is sound and reusable; the missing thing is a caller that applies it against the backlog. Do not rework the predicate.
+
+A second, independent gap: **file overlap alone is insufficient.** Tasks 310 and 272 shared exactly ONE path (`scripts/task-lock.sh`) yet were near-total duplicates in intent. A purely mechanical footprint pass would have added a serializing dependency edge and declared success, never surfacing the duplication. So the mechanism needs two passes, and the second cannot be a footprint comparison.
+
+A third gap, from the standard's own Current Compliance Status table: `/review` and `/errors` do not perform even the existing in-batch Component 4a check ("No" in the Footprint Overlap column). Any new requirement must account for surfaces that do not yet satisfy the old one.
+
+## Required outcomes
+
+1. A new REQUIRED component in `multi-task-creation-standard.md` (sequenced after the existing 4a, before Component 7's user confirmation) specifying backlog reconciliation: its inputs, its two passes, its verdict vocabulary, and its non-silence obligation. Update the Current Compliance Status table to carry the new component as a column, honestly marking each surface's state.
+2. A single shared implementation, `scripts/audit-open-tasks.sh`, that every creation surface calls rather than each re-implementing. It must take proposed task(s) and return, per proposal, a structured verdict drawn from a fixed vocabulary -- at minimum: genuinely new; duplicate-of-N; subset-of-N; superset-of-N; overlaps-N-add-edge; narrow-N. It must reuse the existing overlap predicate for the mechanical pass rather than forking it.
+3. The semantic/intent pass, which must catch the 310-vs-272 class (near-identical goal, almost no shared paths). Title/description/topic similarity is the obvious approach; the task must rule on the method and state its false-negative posture explicitly.
+4. Enforcement, so this cannot be skipped by a surface that forgets to call it. `hooks/validate-task-creation-audit.sh` is declared in `file_scope` as the candidate site.
+
+## The central design question -- research must RULE on this, not assume it
+
+Two enforcement designs, with the trade-off already measured:
+
+(a) **One hook at the state-write boundary.** A new task appearing in `state.json` without a recorded audit is refused. Uniform across every creation surface -- present and future -- and the user has explicitly stated that uniformity and avoiding needless complexity are the governing values here. COST: registering the hook requires `agent-system/extensions/core/manifest.json` and `agent-system/extensions/core/root-files/settings.json`, which are owned by open tasks 263, 280, 281, 282 and 307 -- five serializing dependency edges.
+
+(b) **Per-surface wiring.** Each creation surface calls the shared script: `agents/meta-builder-agent.md`, `commands/task.md`, `skills/skill-fix-it/SKILL.md`, `skills/skill-spawn/SKILL.md`, `commands/review.md`, `commands/errors.md`. COST: six wirings that a seventh future surface can silently omit, and serializing edges against open tasks 44, 300, 302, 308 and 309 -- with 44 itself transitively blocked behind 87/149/210.
+
+Both cost roughly five edges, so edge count does not decide it; uniformity versus blocking depth does. **Neither option's registration or wiring paths are declared in this task's `file_scope` yet, deliberately** -- that would prejudge the ruling. Once research rules, add the chosen option's paths to `file_scope` at that point (via the research phase's `proposed_file_scope` mechanism) and accept the serializing edges then.
+
+## Why the three declared dependencies are functional, not merely serializing
+
+- **#300** (AskUserQuestion unreachability in dispatched subagents): the audit's verdicts need a human ruling, and `/meta`'s creator is a dispatched subagent where that gate is unreachable. 300 resolves exactly this. Without it, a reconciliation that must ask "is this a duplicate of 272?" has nowhere to ask from.
+- **#165** (posture for an absent `file_scope`): a backlog comparison keyed on `file_scope` is blind to any task that declares none. 165 settles whether an absent `file_scope` is admission-relevant, which determines whether the mechanical pass can be trusted or must degrade loudly.
+- **#282** (write-time PreToolUse hook registered bare so `exit 2` survives): establishes the registration pattern a blocking hook needs. Load-bearing only if design (a) is chosen, but the hook file is in this task's declared scope.
+
+## Explicit non-goals
+
+- Do NOT rework the overlap predicate in `file-footprint-overlap.md`. It is sound and deliberately scope-agnostic.
+- Do NOT rework the admission-time layers (the three/five-input model in `batch-orchestration-guardrails.md`). This task is about CREATION time; admission time already works and is a different scan scope.
+- Do NOT auto-abandon, auto-merge or auto-rewrite any existing task. Every reconciliation verdict beyond adding a dependency edge is surfaced for a human ruling. Silent mutation of a task a human wrote is a worse failure than the duplication this fixes.
+
+## Acceptance
+
+A task-creation attempt that duplicates, subsumes or is subsumed by an open task cannot complete without the verdict being surfaced; the 309/310/311 incident above is reproducible as a regression fixture and yields the three correct verdicts (309 subset-of-302, 310 duplicate-of-272, 311 genuinely-new).
+
+---
 
 ### 311. Replace static build-heavy family membership with a measured co-scheduling signal, and record the isolation-posture findings
 - **Effort**: medium
