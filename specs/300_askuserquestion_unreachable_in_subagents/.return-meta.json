@@ -1,0 +1,55 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#300, topic=core-agent-system, priority=high) to resolve AskUserQuestion's unreachability in dispatched subagents. Six measurements are recorded with their exact probes, including two the originating report did not have: (1) a first-hand ToolSearch probe from inside a dispatched meta-builder-agent, which corrects the earlier 'only SendMessage' characterisation -- a large deferred-tool set IS available and AskUserQuestion specifically is absent from it, pointing at per-tool withholding rather than a near-empty subagent toolset; and (2) skill-meta's own frontmatter declares allowed-tools: Agent, Bash, Edit, Read, Write, omitting AskUserQuestion, so the 'rehome the gate into the skill' remedy requires an allowed-tools edit and is not a pure relocation. The task's first obligation is explicitly left as VERIFICATION, not remediation: whether the withholding is categorical regardless of frontmatter is marked STILL UNVERIFIED, with four named probe dimensions. Blast radius is scoped down in the record: 23 agent files plus the standard plus three fork-to-agent skills, with the other 25 direct-execution SKILL.md files named as explicitly out of scope so the implementation does not over-reach.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task #300 added to active_projects via state-write.sh; next_project_number advanced to 301"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #300 entry added to TODO.md (regenerated via generate-todo.sh) and registered under the core-agent-system topic"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/300_askuserquestion_unreachable_in_subagents/",
+      "summary": "Task directory created with reports/, plans/, summaries/ subdirectories"
+    }
+  ],
+  "next_steps": "Run /research 300 at /home/benjamin/.config/nvim. The research phase must FIRST settle the mechanism rather than inherit the description's reading of it: probe whether a tools: allowlist naming AskUserQuestion exposes it, whether disallowedTools: omission differs from tools: omission, whether an All-tools subagent_type differs from a restricted one, and whether context: fork differs from a plain Agent dispatch. Four remediation options are recorded unranked except for one stated preference (remove the dependence over documenting the workaround) and one unconditional item (correcting both 'inherit the full tool set' occurrences in agent-frontmatter-standard.md, which is required regardless of which option wins). Do not batch concurrently with other tasks touching agent-system/extensions/core/skills/skill-meta/SKILL.md or core/agents/meta-builder-agent.md.",
+  "metadata": {
+    "session_id": "sess_1790830409_34c071",
+    "agent_type": "meta-builder-agent",
+    "duration_seconds": 480,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [300],
+    "topic": "core-agent-system",
+    "confirmation": "pre-approved by user before dispatch; AskUserQuestion was unavailable to this agent, which is itself the subject of the created task"
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md",
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+    "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+    "agent-system/extensions/core/skills/skill-fix-it/SKILL.md",
+    "agent-system/extensions/core/scripts/tests/",
+    "agent-system/extensions/literature/agents/literature-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-vet-agent.md",
+    "agent-system/extensions/epidemiology/agents/",
+    "agent-system/extensions/founder/agents/",
+    "agent-system/extensions/present/agents/",
+    "agent-system/extensions/present/skills/skill-slide-critic/SKILL.md",
+    "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md"
+  ]
+}
