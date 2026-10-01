@@ -167,9 +167,7 @@
       "created": "2026-09-28T21:23:38Z",
       "last_updated": "2026-09-30T17:34:36Z",
       "file_scope": [
-        "agent-system/extensions/core/scripts/dispatch-worktree.sh",
         "agent-system/extensions/core/scripts/lake-build-guard.sh",
-        "agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh",
         "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
       ],
       "session_id": "sess_1790788666_f8aaca",
@@ -702,7 +700,9 @@
         269
       ],
       "file_scope": [
-        "agent-system/extensions/core/scripts/",
+        "agent-system/extensions/core/scripts/check-jq-null-safety.sh",
+        "agent-system/extensions/core/scripts/tests/test-check-jq-null-safety.sh",
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
         "agent-system/extensions/core/scripts/lib/",
         "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
       ],
@@ -929,7 +929,10 @@
       "priority": "high",
       "description": "Review issue from all review on 2026-10-01:\n\n**File**: `CLAUDE.md:30-36`\n**Severity**: high\n**Description**: The Documentation Policy, Box Drawing, Character Encoding and Emoji Policy, and Lua Testing Assertion Patterns sections in root CLAUDE.md point to .claude/extensions/nvim/context/project/neovim/standards/{documentation-policy,box-drawing-guide,emoji-policy,lua-assertion-patterns}.md. None of these four paths exist -- .claude/extensions/nvim/ is the extension manifest/source directory, not a deploy-context path. The real files live at .claude/context/project/neovim/standards/*.md (confirmed present) and are correct and current; only the four pointers in root CLAUDE.md are wrong.\n**Impact**: Every /document, /plan, /test, /test-all, /implement dispatch that follows these [Used by: ...] pointers resolves to a dead path instead of the real standard.\n**Recommended Fix**: Change the four paths in root CLAUDE.md from .claude/extensions/nvim/context/project/neovim/standards/... to .claude/context/project/neovim/standards/.... This is the repo-root CLAUDE.md (Neovim Configuration Guidelines), a separate hand-maintained file outside .claude/**, distinct from the auto-generated .claude/CLAUDE.md (Agent System file) -- the source-store-deploy-boundary rule does not apply here, since the target path is not under .claude/**.",
       "created": "2026-10-01T04:08:22Z",
-      "title": "Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory"
+      "title": "Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory",
+      "file_scope": [
+        "CLAUDE.md"
+      ]
     },
     {
       "project_number": 295,
@@ -940,7 +943,22 @@
       "priority": "medium",
       "description": "Review issue from all review on 2026-10-01:\n\n**File**: `lua/neotex/util/notifications.lua`, `lua/neotex/util/url.lua`, `lua/neotex/config/notifications.lua`, `lua/neotex/config/autocmds.lua`, `lua/neotex/config/keymaps.lua`, `lua/neotex/plugins/tools/luasnip.lua`, `lua/neotex/plugins/tools/autopairs.lua`, `lua/neotex/plugins/tools/mail.lua`, `lua/neotex/plugins/tools/himalaya/data/templates.lua`, `lua/neotex/plugins/tools/himalaya/data/search.lua`, `lua/neotex/plugins/tools/himalaya/ui/features.lua`, `lua/neotex/plugins/ui/neo-tree.lua`, `lua/neotex/plugins/ai/shared/extensions/picker.lua`\n**Severity**: medium\n**Description**: Of 88 `vim.keymap.set(...)` calls in active (non-deprecated) code, 44 (50%) have no `desc` field, violating CLAUDE.md's own Lua Code Style standard (\"Keymaps: ... use vim.keymap.set with descriptive options\") and the Neovim extension's Common Operations note (\"Use vim.keymap.set with description for all keymaps\"). Concentration: himalaya/ui/features.lua (10), plugins/ui/neo-tree.lua (8), himalaya/data/templates.lua (4), util/notifications.lua (4), himalaya/data/search.lua (2), config/notifications.lua (2), plugins/tools/luasnip.lua (2), plugins/ai/shared/extensions/picker.lua (2), and one each in util/url.lua, config/autocmds.lua, config/keymaps.lua, plugins/tools/autopairs.lua, plugins/tools/mail.lua.\n**Impact**: Reduces discoverability via which-key/:map introspection; conflicts with the project's own documented standard.\n**Recommended Fix**: Add a concise `desc` string to each flagged `vim.keymap.set` call, describing what the mapping does. Start with himalaya/ui/features.lua and plugins/ui/neo-tree.lua (18 of the 44 between them).",
       "created": "2026-10-01T04:08:34Z",
-      "title": "Add desc field to 44 keymap.set calls missing documentation"
+      "title": "Add desc field to 44 keymap.set calls missing documentation",
+      "file_scope": [
+        "lua/neotex/util/notifications.lua",
+        "lua/neotex/util/url.lua",
+        "lua/neotex/config/notifications.lua",
+        "lua/neotex/config/autocmds.lua",
+        "lua/neotex/config/keymaps.lua",
+        "lua/neotex/plugins/tools/luasnip.lua",
+        "lua/neotex/plugins/tools/autopairs.lua",
+        "lua/neotex/plugins/tools/mail.lua",
+        "lua/neotex/plugins/tools/himalaya/data/search.lua",
+        "lua/neotex/plugins/tools/himalaya/data/templates.lua",
+        "lua/neotex/plugins/tools/himalaya/ui/features.lua",
+        "lua/neotex/plugins/ui/neo-tree.lua",
+        "lua/neotex/plugins/ai/shared/extensions/picker.lua"
+      ]
     },
     {
       "project_number": 296,
@@ -951,7 +969,12 @@
       "priority": "medium",
       "description": "Review issues from all review on 2026-10-01 (grouped -- 3 independent small fixes, no shared file):\n\n1. [medium] `init.lua.backup` - stale, tracked, byte-identical duplicate of `init.lua` (present since old task 516/518, pre-vault numbering).\n   Impact: dead weight inviting confusion about which file is authoritative; silent drift risk if init.lua changes without the backup.\n   Fix: delete init.lua.backup (git history already preserves prior states of init.lua), or move the backup convention to .gitignore if intentional.\n\n2. [medium] `.claude/context/repo/project-overview.md` - still carries the `<!-- GENERIC TEMPLATE -->` notice despite 200+ archived tasks of repo history.\n   Impact: any command/agent reading this file for repo orientation gets generic boilerplate instead of a real description.\n   Fix: run /project-overview to generate a repo-specific version, then add context/repo/project-overview.md to .syncprotect per the file's own header instruction. Note: this file lives under .claude/context/repo/ -- confirm via .claude-extensions.json's source_dir whether it should be authored in a source store instead of hand-edited under .claude/** directly (source-store-deploy-boundary.md).\n\n3. [low] `README.md:185` - links to a non-existent `.claude/README.md` (\"For details on the agent system architecture... see [.claude/README.md](.claude/README.md)\"). Only `.claude/CLAUDE.md` exists there, and it is itself marked \"generated automatically... do not edit directly\" rather than written as a navigable README.\n   Impact: minor broken link for a reader following the architecture pointer from root README.\n   Fix: point the link at `.claude/docs/docs-README.md` (the actual architecture entry point per .claude/CLAUDE.md's own Quick Reference) or at `.claude/CLAUDE.md` directly.\n\nRelated files: init.lua.backup, .claude/context/repo/project-overview.md, README.md",
       "created": "2026-10-01T04:08:46Z",
-      "title": "Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link"
+      "title": "Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link",
+      "file_scope": [
+        "init.lua.backup",
+        "README.md",
+        "agent-system/extensions/core/context/repo/project-overview.md"
+      ]
     },
     {
       "project_number": 299,

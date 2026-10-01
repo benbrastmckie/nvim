@@ -1,7 +1,7 @@
 {
   "_schema_version": "1.0.0",
   "_comment": "Review state tracking",
-  "_last_updated": "2026-10-01T03:56:12Z",
+  "_last_updated": "2026-10-01",
   "reviews": [
     {
       "review_id": "review-2026-04-10",
@@ -130,12 +130,29 @@
         296
       ],
       "registries_updated": []
+    },
+    {
+      "review_id": "review-2026-10-01-backlog-reconciliation",
+      "date": "2026-10-01",
+      "scope": "all 48 non-terminal tasks + specs/ROADMAP.md",
+      "report_path": "specs/reviews/review-2026-10-01-backlog-reconciliation.md",
+      "summary": {
+        "files_reviewed": 48,
+        "critical_issues": 0,
+        "high_issues": 1,
+        "medium_issues": 5,
+        "low_issues": 0
+      },
+      "tasks_created": [],
+      "registries_updated": [
+        "specs/ROADMAP.md"
+      ]
     }
   ],
   "statistics": {
-    "total_reviews": 7,
+    "total_reviews": 8,
     "last_review": "2026-10-01",
-    "total_issues_found": 48,
+    "total_issues_found": 54,
     "total_tasks_created": 17
   }
 }
