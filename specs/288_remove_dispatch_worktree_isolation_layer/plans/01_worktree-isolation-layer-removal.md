@@ -638,37 +638,37 @@ caught.
 
 ---
 
-### Phase 9: Verification, gate re-measurement, and honest reporting [NOT STARTED]
+### Phase 9: Verification, gate re-measurement, and honest reporting [COMPLETED]
 
 **Goal**: Prove the removal is complete and regression-free, re-measure both byte-budget gates, and
 report what the removal actually produced rather than what was assumed.
 
 **Tasks**:
 
-- [ ] Run the full shell harness: `bash scripts/tests/run-all.sh --jobs auto --fail-on-new`,
+- [x] Run the full shell harness: `bash scripts/tests/run-all.sh --jobs auto --fail-on-new`,
       backgrounded and polled per `context/patterns/bounded-build-waiter.md` (hard timeout,
       `kill -0` on the captured PID for writer liveness, one waiter per log — never
       `ps | grep`/`pgrep -f`). Diff the result against the Phase 1 baseline and against
       `scripts/tests/known-failures.txt`. Any NEW failure not explained by the two intentional
       behavior changes (the contention-accounting fix, the removed row fields) is a real regression
       to fix before closing.
-- [ ] Run `shellcheck` on every edited `.sh` per `context/standards/shell-strict-mode.md`:
+- [x] Run `shellcheck` on every edited `.sh` per `context/standards/shell-strict-mode.md`:
       `orchestrate-cycle-plan.sh`, `orchestrate-cycle-postflight.sh`, `orchestrate-build-dispatch.sh`,
       `lake-build-guard.sh`, and the four edited test suites. No strict-mode classification changes
       from this removal, so no new Class A/B/C admission question is raised.
-- [ ] Confirm no surviving caller invokes a deleted subcommand:
+- [x] Confirm no surviving caller invokes a deleted subcommand:
       `grep -rn "provision\|\<land\>\|release\|prune" agent-system/extensions/core/scripts/orchestrate-*.sh`
       and confirm every hit is unrelated to the removed layer. In particular confirm
       `orchestrate-cycle-postflight.sh` shells out to no missing script anywhere on the implement
       path.
-- [ ] Confirm the row shape: a `--dry-run` cycle plan's
+- [x] Confirm the row shape: a `--dry-run` cycle plan's
       `jq '.dispatch[0] | has("isolation"), has("worktree_path")'` is `false, false`.
-- [ ] Re-measure and **report** both gates:
+- [x] Re-measure and **report** both gates:
       `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` (pre-removal 21,317 B
       against a 20,000 B ceiling) and
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
       (pre-removal 67,980 B against a 65,950 B baseline). State both numbers as measured.
-- [ ] Update `context/config/orchestrator-context-budget.json`'s
+- [x] Update `context/config/orchestrator-context-budget.json`'s
       `files["skills/skill-orchestrate/SKILL.md"]` `measured_bytes`, `measured_at`, and `derivation`
       with the real post-edit number and a dated note, per that file's own "measured_bytes/measured_at
       fields are informational snapshots and may be refreshed freely" convention. **Do not** move
@@ -676,13 +676,13 @@ report what the removal actually produced rather than what was assumed.
       eager-loaded, so this task produces no eager-load change, and that baseline is a deliberate,
       reviewed ceiling. Refresh `eager_load.measured_bytes`/`measured_at` only with the measured
       figure and a note recording that the overage predates and is untouched by this removal.
-- [ ] Reconcile `scripts/tests/known-failures.txt`'s `test-verify-deploy-context-budget.sh` row. Its
+- [x] Reconcile `scripts/tests/known-failures.txt`'s `test-verify-deploy-context-budget.sh` row. Its
       recorded reason is exactly "SKILL.md is over its context-budget ceiling **and** the eager-load
       total is over its recorded baseline". If the SKILL.md half clears, narrow the reason to the
       surviving eager-load half; remove the row only if the suite actually runs green. Use durable
       anchors in the reason/owner fields, never a task number — this file lives under
       `agent-system/**`.
-- [ ] Record in the implementation summary: the re-derived reference counts, the two measured gate
+- [x] Record in the implementation summary: the re-derived reference counts, the two measured gate
       numbers with their deltas, the explicit statement that the eager-load overage is out of this
       task's reach (with the reason), the harness NEW-failure verdict, and the expected-not-a-loss
       status of the build-guard `cp -al` exclusion that went with the deleted script.
@@ -719,22 +719,22 @@ the comparison point and say so.
 
 ## Testing & Validation
 
-- [ ] `bash scripts/tests/run-all.sh --jobs auto --fail-on-new` — zero NEW failures against
+- [x] `bash scripts/tests/run-all.sh --jobs auto --fail-on-new` — zero NEW failures against
       `scripts/tests/known-failures.txt`.
-- [ ] `bash scripts/tests/test-orchestrate-cycle-plan.sh` green, with Groups 31 and 32 passing (the
+- [x] `bash scripts/tests/test-orchestrate-cycle-plan.sh` green, with Groups 31 and 32 passing (the
       proof the stub extraction preserved them) and the new positive contention case passing.
-- [ ] `bash scripts/tests/test-orchestrate-cycle-postflight.sh` green — it can now even *start*,
+- [x] `bash scripts/tests/test-orchestrate-cycle-postflight.sh` green — it can now even *start*,
       which it cannot while `dispatch-worktree.sh` is in its `require_file` list and deleted.
-- [ ] `bash scripts/tests/test-orchestrate-build-dispatch.sh` green.
-- [ ] `bash scripts/tests/test-lake-build-guard.sh` green with an unchanged case count.
-- [ ] `shellcheck` clean on all eight edited `.sh` files per `context/standards/shell-strict-mode.md`.
-- [ ] `bash -n` clean on every edited shell file.
-- [ ] `jq .` parses `manifest.json` and `orchestrator-context-budget.json`.
-- [ ] A `--dry-run` cycle plan emits `dispatch[]` rows with neither an `isolation` nor a
+- [x] `bash scripts/tests/test-orchestrate-build-dispatch.sh` green.
+- [x] `bash scripts/tests/test-lake-build-guard.sh` green with an unchanged case count.
+- [x] `shellcheck` clean on all eight edited `.sh` files per `context/standards/shell-strict-mode.md`.
+- [x] `bash -n` clean on every edited shell file.
+- [x] `jq .` parses `manifest.json` and `orchestrator-context-budget.json`.
+- [x] A `--dry-run` cycle plan emits `dispatch[]` rows with neither an `isolation` nor a
       `worktree_path` key.
-- [ ] `grep -rn "dispatch-worktree\|orchestrate-worktrees\|worktree-registry" agent-system/ .gitignore`
+- [x] `grep -rn "dispatch-worktree\|orchestrate-worktrees\|worktree-registry" agent-system/ .gitignore`
       returns nothing.
-- [ ] Exactly one call site of `task_is_build_heavy_implement()` survives, and the co-scheduling
+- [x] Exactly one call site of `task_is_build_heavy_implement()` survives, and the co-scheduling
       admission tests still pass.
 
 ## Artifacts & Outputs
