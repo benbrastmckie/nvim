@@ -330,20 +330,20 @@ its consumer branch so the live implement path cannot reference an uninitialized
 
 ---
 
-### Phase 4: `orchestrate-build-dispatch.sh` — remove the `--worktree` flag and its section [NOT STARTED]
+### Phase 4: `orchestrate-build-dispatch.sh` — remove the `--worktree` flag and its section [COMPLETED]
 
 **Goal**: Remove the flag no caller passes any more, and the dispatch-file section it rendered.
 
 **Tasks**:
 
-- [ ] Delete the `--worktree PATH` header-comment block (~lines 80–88).
-- [ ] Delete the `[--worktree PATH]` usage line (~line 119).
-- [ ] Delete the `worktree_path=""` default (~line 155) and the `--worktree)` case arm (~line 172).
+- [x] Delete the `--worktree PATH` header-comment block (~lines 80–88).
+- [x] Delete the `[--worktree PATH]` usage line (~line 119).
+- [x] Delete the `worktree_path=""` default (~line 155) and the `--worktree)` case arm (~line 172).
       Confirm an unrecognized `--worktree` now falls through to the script's existing
       unknown-argument handling rather than being silently ignored.
-- [ ] Delete the entire `if [ -n "$worktree_path" ]; then ... fi` block rendering the
+- [x] Delete the entire `if [ -n "$worktree_path" ]; then ... fi` block rendering the
       `## Isolated Working Tree` section (~lines 480–498).
-- [ ] Grep for `worktree` and `Isolated Working Tree` — expect zero hits.
+- [x] Grep for `worktree` and `Isolated Working Tree` — expect zero hits.
 
 **Timing**: 0.75 hours
 
