@@ -1621,7 +1621,7 @@
       "project_number": 301,
       "project_name": "reopen_worktree_isolation_verdict",
       "title": "Re-open the per-dispatch worktree isolation verdict: audit, external research, complexity measurement, and a decision under a hard user-approval gate",
-      "status": "researched",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -1641,7 +1641,7 @@
       "next_artifact_number": 3,
       "session_id": "sess_1790872161_63b5e7",
       "created": "2026-10-01T05:07:59Z",
-      "last_updated": "2026-10-01T16:42:11Z"
+      "last_updated": "2026-10-01T16:56:31Z"
     },
     {
       "project_number": 302,

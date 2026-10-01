@@ -11,7 +11,7 @@ next_project_number: 306
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,301 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302 | 22,44,127,184,241,265,272,279,280,297,300 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274,304 | 165,263,273,275,277,284,285 | orchestrator |
@@ -79,7 +79,6 @@ next_project_number: 306
       └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
-301 [RESEARCHED] — Re-open the per-dispatch worktree isolation verdict: audit,...
 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 
 ## Tasks
@@ -384,7 +383,7 @@ Hence `dependencies: [44, 292, 300]`. These files are the defect sites themselve
 
 ### 301. Re-open the per-dispatch worktree isolation verdict: audit, external research, complexity measurement, and a decision under a hard user-approval gate
 - **Effort**: large
-- **Status**: [RESEARCHED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
