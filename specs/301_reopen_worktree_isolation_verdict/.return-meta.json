@@ -1,6 +1,6 @@
 {
   "status": "tasks_created",
-  "summary": "Created one research-and-decide task (301) to re-open the per-dispatch worktree isolation verdict: audits the removal and the archived/abandoned refinement tasks, researches external worktree-orchestration and build-cache-sharing practice, re-measures the complexity the layer adds against task 288's removal footprint, generalizes beyond lean4 to all task types, and terminates in a decision record that formally supersedes or confirms specs/decisions/worktree-isolation-removal-verdict.md behind a hard user-approval gate. No implementation performed.",
+  "summary": "Created one research-and-decide task (301) to re-open the per-dispatch worktree isolation verdict: audits the removal and the archived/abandoned refinement tasks, researches external worktree-orchestration and build-cache-sharing practice, re-measures the complexity the layer adds against task 288's removal footprint, generalizes beyond lean4 to all task types, and terminates in a decision record that formally supersedes or confirms specs/decisions/worktree-isolation-removal-verdict.md behind a hard user-approval gate. No implementation performed. AMENDED: folded in a second, previously unrecorded hazard class -- repo-scanning pollution from in-repo worktree provisioning (task 122 closed two of sixteen phases as [COMPLETED WITH EXCLUSIONS] because sibling worktrees 119-12/129-14 were counted as duplicate component roots by certificate-export.sh's fixture suite, status-counts.sh and typst-component-index.sh) -- plus 15 research questions carried in the description.",
   "artifacts": [
     {
       "type": "task_entry",
@@ -22,12 +22,19 @@
     "session_id": "sess_1790831010_c477da",
     "agent_type": "meta-builder-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "meta",
+      "meta-builder-agent"
+    ],
     "mode": "prompt",
     "mode_target": "global",
     "target_root": "/home/benjamin/.config/nvim",
     "tasks_created": 1,
-    "task_numbers": [301]
+    "task_numbers": [
+      301
+    ],
+    "amendments": 1
   },
   "modified_files": [
     "/home/benjamin/.config/nvim/specs/state.json",
@@ -36,5 +43,5 @@
   "proposed_file_scope": [
     "specs/decisions/worktree-isolation-removal-verdict.md"
   ],
-  "next_steps": "Run /research 301 in /home/benjamin/.config/nvim. Capture the time-limited live evidence from /home/benjamin/Projects/Logos/Verification (its stale .claude/ deploy still contains dispatch-worktree.sh, 30411 bytes, with .orchestrate-worktrees/119-12 and 129-14 live on disk) BEFORE that repo redeploys, since the redeploy destroys the evidence source."
+  "next_steps": "Run /research 301 in /home/benjamin/.config/nvim. Capture the time-limited live evidence from /home/benjamin/Projects/Logos/Verification (its stale .claude/ deploy still contains dispatch-worktree.sh, 30411 bytes, with .orchestrate-worktrees/119-12 and 129-14 live on disk) BEFORE that repo redeploys, since the redeploy destroys the evidence source. NOTE: validate-state.sh resolves `specs/state.json` RELATIVE to CWD -- always pass --state with an absolute path, or cd to the repo root first, or it silently validates whatever repo you happen to be standing in."
 }
