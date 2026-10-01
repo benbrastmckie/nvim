@@ -1,20 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/286_shared_tree_isolation_posture_verdict/reports/01_shared-tree-isolation-posture.md",
-      "summary": "Maps the closed worktree-isolation-removal decision record onto the exact subsection-by-subsection rewrite plan for batch-orchestration-guardrails.md's Working-Tree and Build Isolation Posture section, including two dispatch-silent passages flagged with explicit recommendations."
+      "type": "plan",
+      "path": "specs/286_shared_tree_isolation_posture_verdict/plans/01_shared-tree-isolation-posture.md",
+      "summary": "Four-phase documentation-only plan rewriting the split working-tree isolation verdict into a blanket shared-tree verdict in batch-orchestration-guardrails.md."
     }
   ],
-  "findings_count": 6,
-  "next_steps": "Run /plan 286 to create implementation plan",
+  "next_steps": "Run /implement 286 to execute the plan",
+  "memory_candidates": [],
+  "phase_count": 4,
+  "estimated_hours": 1.75,
+  "dependency_waves": 4,
   "metadata": {
     "session_id": "sess_1790813213_9179fb_286",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": []
+  "dispatch_seq": 2
 }

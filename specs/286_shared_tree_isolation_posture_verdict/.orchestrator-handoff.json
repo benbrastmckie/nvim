@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "task_number": 286,
+  "session_id": "sess_1790813213_9179fb_286",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/286_shared_tree_isolation_posture_verdict/plans/01_shared-tree-isolation-posture.md",
+      "summary": "Four-phase documentation-only plan rewriting the split working-tree isolation verdict into a blanket shared-tree verdict in batch-orchestration-guardrails.md."
+    }
+  ],
+  "next_steps": "Run /implement 286 to execute the plan"
+}
