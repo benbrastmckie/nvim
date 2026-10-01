@@ -162,6 +162,23 @@ the bullets below point to it rather than restating it.
 - Use `run_in_background` or arm a Monitor to watch a CI/remote wait from within this dispatched
   subagent -- Rule 3.
 
+**Local Long-Running Command Discipline** (distinct from the external/remote case above: a build,
+test harness or lint sweep run on this machine). The waiter model is
+`@.claude/context/patterns/bounded-build-waiter.md` -- a captured `pid`, a `kill -0` loop, an
+outer `timeout`. The prohibition that file defers to this contract layer:
+
+**MUST NOT** end the turn on an unresolved local background wait. Detaching a local command and
+then stopping to wait for a harness completion notification hands the dispatch back unfinished
+with no handoff and no `.return-meta.json` -- bounded-build-waiter.md's symptom 2. A notification
+may already have fired, may be pending delivery, or may never arrive; none of those is a reason
+to stop.
+
+**MUST**, when a local command has been detached and its outcome is not yet known: read its
+output/log file and its writer's liveness DIRECTLY (`kill -0 "$pid"`, then read the log once
+liveness ends) rather than waiting to be told. If the wait genuinely cannot be resolved within
+this dispatch, write a handoff (Stage 4C) with the concrete resume command and return
+`status: "partial"` -- never a bare stop.
+
 **Derive `project_name` and `task_number` before first use**: delegation context supplies
 `plan_path` (`specs/{NNN}_{SLUG}/plans/...`). Derive `project_name` as the `{SLUG}` portion of
 that path component (strip the zero-padded `{NNN}_` prefix), and `task_number` as `{NNN}` with

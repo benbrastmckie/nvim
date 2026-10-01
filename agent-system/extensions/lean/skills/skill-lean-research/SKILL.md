@@ -257,6 +257,22 @@ Keep status as "researching" for resume.
 
 ---
 
+## MUST NOT (Postflight Boundary)
+
+After the agent returns, this skill MUST NOT:
+1. **Re-run Lean searches** - All MCP searches are done by agent
+2. **Re-verify type signatures** - Verification is done by agent
+3. **Edit research reports** - Artifact creation is agent work
+
+The postflight phase is LIMITED TO:
+- Reading agent metadata file
+- Updating state.json via jq
+- Updating TODO.md status marker via Edit
+- Linking artifacts in state.json
+- Git commit
+
+---
+
 ## Return Format
 
 This skill returns a **brief text summary** (NOT JSON). The JSON metadata is written to the file and processed internally.
