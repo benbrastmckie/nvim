@@ -100,18 +100,27 @@
     {
       "project_number": 289,
       "project_name": "clear_orchestrator_context_budget_gate",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "description": "Clear verify-deploy gate 20 (orchestrator context budget lock) entirely and promote it from warn to hard. Both of the gate's open findings are governed by the single config file agent-system/extensions/core/context/config/orchestrator-context-budget.json, so they are one change, not two. (a) Eager-load total measures 67,980 B against a recorded baseline_bytes of 65,950 B -- 2,030 B over, a FAIL. The overage pre-dates the worktree-isolation removal batch and none of that batch's files are eager-loaded. Largest eager contributors are the assembled .claude/CLAUDE.md (36,659 B) and the git-workflow.md rule (9,740 B); the established remedy is extracting detail into context/ behind a plain pointer, as source-store-deploy-boundary.md already does. The config's own note requires that baseline_bytes never be silently re-derived, so either outcome -- content trim or a dated, reviewed baseline move -- must be deliberate and recorded in that file's derivation narrative. (b) skills/skill-orchestrate/SKILL.md measures 20,325 B against its 20,000 B ROADMAP-derived ceiling -- 325 B over, a WARN. A known-safe trim remains available: the Skill-to-Agent Mapping table's three lifecycle-dispatch rows (research, plan, implement) restate one identical resolution-and-context clause and collapse to a single row for roughly 133 B, so further compression of contract prose is also needed. (c) The config comment defers promoting ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard until commands/orchestrate.md settles past its concurrent sibling task; that sibling has now landed, so re-check the precondition and promote the gate in the same change that clears both findings above.",
       "topic": "core-agent-system",
       "created": "2026-10-01T03:44:56Z",
-      "last_updated": "2026-10-01T03:46:33Z",
+      "last_updated": "2026-10-01T05:43:20Z",
       "file_scope": [
         "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
         "agent-system/extensions/core/rules/git-workflow.md",
         "agent-system/extensions/core/scripts/verify-deploy.sh"
-      ]
+      ],
+      "session_id": "sess_1790832943_f8ab6f",
+      "artifacts": [
+        {
+          "path": "specs/289_clear_orchestrator_context_budget_gate/reports/01_context-budget-gate-trim.md",
+          "type": "report",
+          "summary": "Measures the live eager-load overage (68,289 B vs 65,950 B baseline, worse than the task description's snapshot), identifies the single highest-leverage trim (the 1,670 B /orchestrate table-cell in core's merge-sources/claudemd.md, duplicating docs/architecture/orchestrate-state-machine.md), finds a second genuine duplicate in skill-orchestrate/SKILL.md (detected_defects/AskUserQuestion restated twice) to close its 325 B ceiling overage alongside the task-named 3-row collapse, confirms the hard-mode promotion precondition (sibling task 293 completed) is satisfied, and recommends trim-not-baseline-move with a strict do-trims-then-flip-mode ordering."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 288,
