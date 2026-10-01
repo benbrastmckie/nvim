@@ -146,7 +146,7 @@ fi
 . "$PHASE_LIB"
 
 # --- Shared status-vocabulary library ---
-# Single sourced anchor for the closed 12-value task-status enum -- see
+# Single sourced anchor for the closed 13-value task-status enum -- see
 # context/schemas/state-schema.json's definitions.taskStatus and
 # scripts/lib/status-vocabulary.sh's own header. Same deploy-tree-first / source-store-fallback
 # resolution as the phase-heading library above; a missing library is a loud environment error

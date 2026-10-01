@@ -566,28 +566,28 @@ non-dispatchable — and the forcing-flag decision is recorded where a future re
 
 ---
 
-### Phase 7: The 13-Value Prose Sweep [NOT STARTED]
+### Phase 7: The 13-Value Prose Sweep [COMPLETED]
 
 **Goal**: no stale `"12-value"` prose is left asserting a closed enum size that is no longer true —
 including the cross-reference comments in unrelated scripts that deliberately disambiguate the
 task-level enum from the narrower `.return-meta.json` enum.
 
 **Tasks**:
-- [ ] Re-derive the occurrence set with a fresh grep rather than trusting the enumerated list
+- [x] Re-derive the occurrence set with a fresh grep rather than trusting the enumerated list
       below: `grep -rn "12-value\|12 values\|closed 12" --include="*.sh" --include="*.md"
       --include="*.json" .` from `agent-system/extensions/core/`.
-- [ ] Update each occurrence from 12 to 13, preserving each comment's surrounding intent. Expected
+- [x] Update each occurrence from 12 to 13, preserving each comment's surrounding intent. Expected
       sites (re-derive, do not trust): `index-entries.json`,
       `scripts/orchestrate-recover-outcome.sh`, `scripts/update-task-status.sh`,
       `scripts/generate-todo.sh` (two), `scripts/lint/lint-agent-contracts.sh`,
       `scripts/validate-return-meta.sh`, `scripts/lib/return-meta-status-vocabulary.sh`,
       `scripts/validate-state.sh` (two), plus any site Phase 1 did not already cover in
       `scripts/lib/status-vocabulary.sh` and `scripts/tests/test-status-vocabulary.sh`.
-- [ ] Leave the **separate** 8-value `.return-meta.json` enum untouched: adding `hold` to the
+- [x] Leave the **separate** 8-value `.return-meta.json` enum untouched: adding `hold` to the
       task-level enum does not change it, and `scripts/tests/test-return-meta-status-vocabulary.sh`
       asserts 8 (≈line 83). Confirm that test still passes and that `hold` is not wrongly admitted
       to the narrower enum.
-- [ ] Shellcheck every edited `.sh` file; `jq .` the edited `index-entries.json` to confirm it
+- [x] Shellcheck every edited `.sh` file; `jq .` the edited `index-entries.json` to confirm it
       still parses.
 
 **Timing**: 0.5 hours
@@ -601,6 +601,12 @@ task-level enum from the narrower `.return-meta.json` enum.
 above before editing and again afterward — the post-edit grep for the 12-value forms must return
 zero hits outside intentional historical prose, and a count that differs from 14 means the
 hypothesis was wrong and the actual set governs, not this number.
+
+**Hypothesis outcome**: the fresh grep at implementation time found **8 files, 10 occurrences**
+(status-vocabulary.sh and test-status-vocabulary.sh were already fixed in Phase 1 and correctly
+carried no remaining hits; the other 8 files/10 occurrences were fixed here). The actual,
+smaller set governs per the hypothesis's own stated rule; the post-edit grep confirmed zero
+remaining `"12-value"`/`"12 values"`/`"closed 12"` hits anywhere in the source store.
 
 **Files to modify**:
 - The files the fresh grep returns; expected set named above (all comment/prose lines, plus one

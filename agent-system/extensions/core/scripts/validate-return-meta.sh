@@ -60,7 +60,7 @@ fi
 . "$LIB_FILE"
 
 # ─── Shared status vocabulary library (deploy-tree-first / source-store-fallback) ──────────────
-# Never scripts/lib/status-vocabulary.sh -- that is the unrelated 12-value TASK-LEVEL enum and
+# Never scripts/lib/status-vocabulary.sh -- that is the unrelated 13-value TASK-LEVEL enum and
 # legitimately contains "completed". See return-meta-status-vocabulary.sh's own header for the
 # full trap explanation.
 STATUS_LIB_CANDIDATES=(

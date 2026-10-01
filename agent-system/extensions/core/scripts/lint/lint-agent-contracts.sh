@@ -122,7 +122,7 @@ fi
 
 # ── Shared status vocabulary library (deploy-tree-first / source-store-fallback) ────────────────
 # Check E's accepted values are never hardcoded here, mirroring Check C/F's read-from-source
-# discipline. Never scripts/lib/status-vocabulary.sh -- the unrelated 12-value TASK-LEVEL enum
+# discipline. Never scripts/lib/status-vocabulary.sh -- the unrelated 13-value TASK-LEVEL enum
 # that legitimately contains "completed"; see return-meta-status-vocabulary.sh's own header.
 STATUS_LIB_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/return-meta-status-vocabulary.sh"

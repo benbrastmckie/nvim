@@ -1,0 +1,53 @@
+{
+  "phase": 7,
+  "phase_name": "The 13-Value Prose Sweep",
+  "started_at": "2026-10-01T06:10:00Z",
+  "last_updated": "2026-10-01T06:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Fresh grep for 12-value/12 values/closed 12 prose across the source store",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Update each of the 10 found occurrences (8 files) from 12 to 13, preserving intent",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh",
+        "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+        "agent-system/extensions/core/scripts/update-task-status.sh",
+        "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+        "agent-system/extensions/core/scripts/generate-todo.sh",
+        "agent-system/extensions/core/scripts/validate-return-meta.sh",
+        "agent-system/extensions/core/scripts/validate-state.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Confirm the separate 8-value .return-meta.json enum untouched (test-return-meta-status-vocabulary.sh green)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Post-edit grep returns zero hits; shellcheck clean; jq . index-entries.json parses",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.scope",
+      "description": "Plan hypothesized 11 files / 14 occurrences; the actual fresh grep found 8 files / 10 occurrences (status-vocabulary.sh and test-status-vocabulary.sh were already fixed in Phase 1).",
+      "type": "altered",
+      "reason": "The hypothesis was measured at planning time before Phase 1 landed; the plan's own text anticipated and accepted this ('a count that differs from 14 means the hypothesis was wrong and the actual set governs').",
+      "annotation": "*(deviation: altered -- actual count 8 files/10 occurrences, not 11/14; see plan Phase 7's Hypothesis outcome note)*"
+    }
+  ]
+}

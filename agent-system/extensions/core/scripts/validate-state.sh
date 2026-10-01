@@ -77,7 +77,7 @@
 #   - required top-level fields present: next_project_number, active_projects
 #   - no unknown top-level fields (mirrors the schema's additionalProperties: false)
 #   - no unknown active_projects[] entry fields (same)
-#   - every active_projects[].status value is a member of the closed 12-value enum
+#   - every active_projects[].status value is a member of the closed 13-value enum
 #     (scripts/lib/status-vocabulary.sh)
 #   - every active_projects[].project_number is a number
 #   - every active_projects[].task_type is a non-empty string
@@ -488,7 +488,7 @@ while IFS=$'\t' read -r pnum status; do
   if status_vocabulary_is_valid "$status"; then
     :
   else
-    log_fail "project_number $pnum has off-schema status '$status' (not in the closed 12-value enum)"
+    log_fail "project_number $pnum has off-schema status '$status' (not in the closed 13-value enum)"
     bad_status_count=$((bad_status_count + 1))
   fi
 done < <(jq -r '.active_projects[] | [(.project_number|tostring), (.status // "__MISSING__")] | @tsv' "$STATE_FILE")

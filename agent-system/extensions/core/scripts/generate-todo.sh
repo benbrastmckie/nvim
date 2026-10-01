@@ -31,7 +31,7 @@ PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 
 # --- Shared status-vocabulary library ---
-# Single sourced anchor for the closed 12-value task-status enum and its state.json-value ->
+# Single sourced anchor for the closed 13-value task-status enum and its state.json-value ->
 # TODO.md-marker mapping -- see context/schemas/state-schema.json's definitions.taskStatus and
 # scripts/lib/status-vocabulary.sh's own header. Deploy-tree-first / source-store-fallback
 # candidate list, matching update-task-status.sh's resolution of phase-heading-patterns.sh. Never
@@ -144,8 +144,8 @@ fi
 
 format_status() {
   local raw="$1"
-  # Sourced from scripts/lib/status-vocabulary.sh -- the single anchor for the closed 12-value
-  # enum and its TODO.md-marker mapping -- rather than re-typed as 12 inline case arms. Returns
+  # Sourced from scripts/lib/status-vocabulary.sh -- the single anchor for the closed 13-value
+  # enum and its TODO.md-marker mapping -- rather than re-typed as 13 inline case arms. Returns
   # nonzero (printing nothing) on an off-schema value; the CALLER is responsible for the loud,
   # task-identifying failure (see generate_task_entry() below) because status_vocabulary_todo_marker
   # is invoked via command substitution here, and `exit` inside a command-substitution subshell

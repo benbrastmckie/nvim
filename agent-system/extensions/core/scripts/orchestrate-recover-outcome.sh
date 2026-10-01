@@ -139,7 +139,7 @@ fi
 # This is a side-effect-free constants/predicates library, not skill-base.sh -- sourcing it does
 # not violate this script's deliberate "does not source skill-base.sh" posture documented above
 # (that posture is about artifacts NORMALIZATION; this is a status-vocabulary lookup, an
-# unrelated concern). Never scripts/lib/status-vocabulary.sh -- the unrelated 12-value TASK-LEVEL
+# unrelated concern). Never scripts/lib/status-vocabulary.sh -- the unrelated 13-value TASK-LEVEL
 # enum that legitimately contains "completed"; see return-meta-status-vocabulary.sh's own header.
 _SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 _REPO_ROOT="$(git -C "$_SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"

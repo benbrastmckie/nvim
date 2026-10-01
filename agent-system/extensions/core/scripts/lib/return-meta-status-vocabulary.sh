@@ -5,9 +5,9 @@
 # vocabulary below.
 #
 # ─── THE TRAP THIS FILE EXISTS TO AVOID ────────────────────────────────────────────────────────
-# scripts/lib/status-vocabulary.sh is the 12-value TASK-LEVEL enum for
+# scripts/lib/status-vocabulary.sh is the 13-value TASK-LEVEL enum for
 # specs/state.json `.active_projects[].status` (not_started, researching, researched, planning,
-# planned, implementing, pr_ready, completed, blocked, abandoned, partial, expanded). It contains
+# planned, implementing, pr_ready, completed, blocked, abandoned, partial, expanded, hold). It contains
 # "completed" AS A VALID MEMBER, by design -- a task legitimately reaches state.json status
 # "completed". Sourcing THAT file for .return-meta.json purposes is the exact defect this library
 # exists to prevent: it would yield a lint/validator that ACCEPTS "status": "completed" in a

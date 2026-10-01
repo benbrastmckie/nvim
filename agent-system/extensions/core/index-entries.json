@@ -1410,7 +1410,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 545,
+      "line_count": 547,
       "keywords": [
         "reference",
         "state",
@@ -1567,8 +1567,8 @@
       "path": "schemas/state-schema.json",
       "domain": "core",
       "subdomain": "schemas",
-      "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 12-value task-status enum",
-      "line_count": 276,
+      "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 13-value task-status enum",
+      "line_count": 427,
       "keywords": [
         "state",
         "schema",
@@ -1863,7 +1863,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 160,
+      "line_count": 208,
       "keywords": [
         "standards",
         "shell",
@@ -2436,7 +2436,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H7 territory contract: file ownership, plan-section territory, commit protocol for hard-mode single-phase dispatch (also applicable to parallel dispatch)",
-      "line_count": 219,
+      "line_count": 222,
       "keywords": [
         "territory",
         "file-ownership",
@@ -2660,7 +2660,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 1546,
+      "line_count": 1651,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3063,7 +3063,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 541,
+      "line_count": 539,
       "keywords": [
         "runtime-files",
         "cleanup",
