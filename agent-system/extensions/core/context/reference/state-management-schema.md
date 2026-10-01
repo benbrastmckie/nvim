@@ -94,6 +94,9 @@ authoritative source this table glosses).
 | `dependencies` | array | No | Array of task numbers this depends on |
 | `file_scope` | array of strings | No | Anticipated repo-relative paths/prefixes this task expects to touch (default: `[]`) |
 | `research_questions` | array of strings | No | Planner-issued focused question list, present only after a `needs_research` verdict; overwrite-on-write, see [Research Questions Field](#research-questions-field) |
+| `hold_reason` | string | No | Documented-optional; present only while status is `hold`. Why the task is paused. See [Hold Fields](#hold-fields) |
+| `held_at` | string | No | Documented-optional; present only while status is `hold`. YYYY-MM-DD date the hold was set -- the state.json twin of TODO.md's `- **Held**: YYYY-MM-DD` line. See [Hold Fields](#hold-fields) |
+| `prior_status` | string | No | Documented-optional; present only while status is `hold`. The status the task returns to when the hold lifts -- the field that makes a hold reversible. See [Hold Fields](#hold-fields) |
 | `artifacts` | array | No | Array of artifact objects |
 | `next_artifact_number` | number | No | Next artifact sequence number (default: 1). Zero occurrences in the current active snapshot -- same lifecycle-timing sparsity as `effort`, 308 occurrences in `specs/archive/state.json` |
 
@@ -303,6 +306,46 @@ containing a non-string element) is a hard validation error (exit 1) at `update-
 never a silent no-op.
 
 **state.json-only**: no TODO.md rendering, matching `file_scope`'s own convention.
+
+### Hold Fields
+
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|--------------|
+| `hold_reason` | string | No | absent | Why the task is paused. Required (non-empty) whenever `status == "hold"` -- `scripts/update-task-status.sh`'s `--hold-reason=<string>` flag hard-fails rather than setting a hold with no recorded reason |
+| `held_at` | string | No | absent | YYYY-MM-DD date the hold was set -- the state.json twin of TODO.md's `- **Held**: YYYY-MM-DD` line (rendered by `scripts/generate-todo.sh`) |
+| `prior_status` | string | No | absent | The status the task returns to when the hold lifts |
+
+**Producer**: `scripts/update-task-status.sh`'s `preflight:hold` arm, invoked via
+`update-task-status.sh preflight <N> hold <session_id> --hold-reason=<string>`. All three fields
+are written in the SAME `state-write.sh` invocation as the `status` field itself -- never a
+second write. `prior_status` is captured from the task's REAL current status, read before the
+overwrite -- EXCEPT when the task is already held (a `hold_reason` update, not a fresh hold), in
+which case the EXISTING `prior_status` is preserved rather than overwritten with `"hold"` itself,
+which would otherwise permanently break the eventual lift.
+
+**`prior_status` is what makes a hold reversible** -- the single field that distinguishes a hold
+from a one-way archival. Every other postflight-only terminus in this enum (`partial`, `blocked`,
+`abandoned`) either resumes via the permissive "any non-terminal status -> any command" model or
+is terminal outright; `hold` is the one status that is both non-resumable by ordinary commands
+AND explicitly reversible, and `prior_status` is the mechanism that makes the reversal exact
+rather than a guess.
+
+**Lift surface (Decision 5)**: `preflight:unhold` -- `update-task-status.sh preflight <N> unhold
+<session_id>`. Unlike every other `map_status()` arm (a closed `case` literal), `unhold`'s
+resolved resting state is DYNAMIC: a preamble reads the task's own `prior_status`, validates it
+against the closed status enum (`status_vocabulary_is_valid`), and uses it as the write target --
+a missing, empty, or off-enum `prior_status` fails loudly, never falling back to `not_started` or
+any other default. The three hold fields are removed via `del(.hold_reason, .held_at,
+.prior_status)` -- field OMISSION, not nulling, matching this codebase's convention for
+present-only-in-one-state fields (`completion_summary`).
+
+**Sticky across a forced dispatch**: an ordinary preflight/postflight status write (research,
+plan, implement, etc.) on an ALREADY-held task is downgraded to a no-op on the status field alone
+by a dedicated hold-sticky guard in `update-task-status.sh` -- the actual mechanism (not the
+rank-based `monotonic-max` clamp, which does not protect an unranked status) that lets an
+explicit `/orchestrate --research|--plan|--implement` forcing-flag override admit a held task for
+one dispatch while `status` stays `"hold"` afterward. See
+`context/standards/status-markers.md`'s `[HOLD]` section for the full decision record.
 
 ### Repository Health Fields
 

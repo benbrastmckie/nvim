@@ -147,6 +147,59 @@ PR review finds issues (re-dispatch).
 - `- **Blocked**: YYYY-MM-DD` timestamp
 - `- **Blocking Reason**: {reason}` or `- **Blocked by**: {dependency}`
 
+#### `[HOLD]`
+**TODO.md Format**: `- **Status**: [HOLD]`
+**state.json Value**: `"status": "hold"`
+**Meaning**: An operator has deliberately PAUSED the task. `[HOLD]` is non-terminal — the task is
+not finished, abandoned, or archival-eligible — **yet non-dispatchable**: the property no other
+marker on this page has. `[BLOCKED]`'s own "Valid Transitions" line above states plainly that
+"any command (research, plan, implement, revise) can run from this status" — a later
+`/orchestrate` run resumes a blocked task anyway. `[HOLD]` is the deliberate exception: it is
+excluded from `/orchestrate`'s default status-derived dispatch and from single-command gate-in
+(`/research`, `/plan`, `/implement`) until a human lifts it. `/revise` remains exempt from the
+hold guard (skill-reviser's documented contract is "no status-based ABORT rules"), identical to
+its exemption from the terminal-status guard above.
+
+**Valid Transitions**: Set via `preflight:hold` from ANY non-terminal status (never from
+`[HOLD]` itself as a resting-state transition, though re-issuing `preflight:hold` on an
+already-held task is supported — it updates `hold_reason` in place without disturbing the
+recorded `prior_status`). Lifted via `preflight:unhold`, which restores the EXACT `prior_status`
+recorded at hold time. No other command may move a task off `[HOLD]` — see "Forcing-Flag
+Override" below for the one deliberate exception.
+
+**Required Information** — unlike `[BLOCKED]`'s "Blocking Reason" above, which is TODO.md prose
+only (no corresponding state.json field exists anywhere in this codebase), all three of these are
+**machine-checked schema fields** (`context/schemas/state-schema.json`'s
+`definitions.projectEntry.properties`, enforced by `scripts/validate-state.sh`):
+- `hold_reason` — why the task is held (state.json field; required when status is `hold`)
+- `- **Held**: YYYY-MM-DD` — the TODO.md rendering of `held_at`, the date the hold was set
+  (rendered by `scripts/generate-todo.sh` from the `held_at` state.json field)
+- `prior_status` — the status the task RETURNS TO when the hold lifts. This is what makes a hold
+  **reversible** rather than a one-way pause: `preflight:unhold` reads this field, validates it
+  against the closed status enum, and writes it back as the resting state. A hold with a missing
+  or off-enum `prior_status` fails the lift loudly (`update-task-status.sh`'s `preflight:unhold`
+  preamble) rather than falling back to `not_started` or any other default.
+
+**Forcing-Flag Override (decision record)**: an explicit `/orchestrate N
+--research|--plan|--implement` CAN admit a held task for **exactly one dispatch**, and the hold
+status is PRESERVED afterward (`status` stays `"hold"`; only `hold_reason`/`held_at`/
+`prior_status` would ever change, and only via `preflight:hold`/`preflight:unhold`, never as a
+side effect of the forced dispatch itself). The rationale, recorded here rather than re-litigated
+elsewhere: a human typing an explicit forcing flag at the command line **is** the human lifting
+the hold for one dispatch, without needing a separate `unhold` round-trip. This reuses the
+EXISTING `task_has_forced_phase()` predicate and `effective_group` precedence in
+`orchestrate-cycle-plan.sh` — both already resolve a forced phase before `triage_group[$t]` is
+even consulted, so no second override mechanism was minted. `scripts/command-gate-in.sh`
+deliberately has NO such override: that gate serves one bare `/research`, `/plan`, or
+`/implement` call with no forcing-flag plumbing of its own, so a held task simply ABORTs there
+until lifted, or until routed through `/orchestrate`'s forcing-flag path instead. The actual
+mechanism that keeps `status == "hold"` across a forced live dispatch is NOT the rank-based
+`monotonic-max` clamp (`skill-base.sh`/`orchestrate-cycle-plan.sh`) — `hold` is deliberately
+UNRANKED in `scripts/lib/status-vocabulary.sh`'s `STATUS_VOCABULARY_LIFECYCLE_RANK`, so that
+clamp alone would let an ordinary forced write through unguarded. It is a dedicated hold-sticky
+guard in `update-task-status.sh` that treats every operation except `preflight:hold`/
+`preflight:unhold` as a no-op on the status field while a task is already held.
+
 #### `[ABANDONED]`
 **TODO.md Format**: `- **Status**: [ABANDONED]`  
 **state.json Value**: `"status": "abandoned"`  
@@ -281,6 +334,7 @@ semantically-overlapping fourth marker would require re-touching every site
 | `[COMPLETED]` | `completed` | Task fully completed |
 | `[PARTIAL]` | `partial` | Implementation partially complete |
 | `[BLOCKED]` | `blocked` | Task blocked |
+| `[HOLD]` | `hold` | Task deliberately paused by an operator; non-terminal yet non-dispatchable |
 | `[ABANDONED]` | `abandoned` | Task abandoned |
 | `[EXPANDED]` | `expanded` | Task expanded into subtasks |
 
@@ -300,6 +354,8 @@ semantically-overlapping fourth marker would require re-touching every site
 | `/revise` | N/A (preflight status update skipped by design) | `[PLANNED]` | Creates new plan version; `skill-reviser/SKILL.md` documents skipping the intermediate mid-revision status entirely (see the removal note above) |
 | `/implement` | `[IMPLEMENTING]` | `[COMPLETED]` or `[PARTIAL]` | Executes implementation |
 | `/review` | N/A | N/A | Creates new tasks |
+| `update-task-status.sh preflight ... hold` | `[HOLD]` | N/A (preflight-only) | Operator-initiated pause; sets `hold_reason`/`held_at`/`prior_status` |
+| `update-task-status.sh preflight ... unhold` | `[{prior_status}]` | N/A (preflight-only) | Lifts the hold; restores the recorded `prior_status` exactly, clears the three hold fields |
 
 **Preflight**: Status updated BEFORE work begins  
 **Postflight**: Status updated AFTER work completes
@@ -370,6 +426,31 @@ permits unconditionally only for `task_type == "pr"`.
     Terminal states (no further transitions):
     [COMPLETED], [ABANDONED], [EXPANDED]
 ```
+
+**`[HOLD]` is deliberately drawn OUTSIDE the "Any Non-Terminal Status" box above, not added as a
+member of it.** That box's whole premise is "/research, /plan, /implement all work from here" —
+precisely false for `[HOLD]`, which is excluded from ordinary dispatch by design. Two edges exist,
+neither of which the diagram above can express without misrepresenting it as just another
+resumable non-terminal state:
+
+```
+   Any Non-Terminal Status  ──(preflight:hold)──▶  [HOLD]  ──(preflight:unhold)──▶  {prior_status}
+   (the box above)                                   │
+                                                        │
+                              (explicit /orchestrate --research|--plan|--implement
+                               forcing flag -- ONE dispatch, status stays [HOLD])
+                                                        │
+                                                        ▼
+                                         research / plan / implement dispatch
+```
+
+The forcing-flag edge is a **dispatch-time override, not a status transition**: `status` stays
+`"hold"` through and after the forced dispatch (the hold-sticky guard in `update-task-status.sh`
+makes the forced phase's own preflight/postflight status write a no-op on the status field — see
+the `[HOLD]` section above). Only an explicit `preflight:unhold` afterward actually moves the
+task off `[HOLD]`. See the `[HOLD]` section above ("Forcing-Flag Override (decision record)")
+for the full reasoning, including why this reuses `task_has_forced_phase()` rather than minting a
+second override concept, and why `command-gate-in.sh` deliberately carries no such override.
 
 ---
 

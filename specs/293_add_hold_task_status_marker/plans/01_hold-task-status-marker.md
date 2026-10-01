@@ -501,48 +501,48 @@ override actually working in the live (non-dry-run) path.
 
 ---
 
-### Phase 6: Documentation and the Decision Record [NOT STARTED]
+### Phase 6: Documentation and the Decision Record [COMPLETED]
 
 **Goal**: `[HOLD]` is documented as what it is — a third category, non-terminal yet
 non-dispatchable — and the forcing-flag decision is recorded where a future reader will find it.
 
 **Tasks**:
-- [ ] `context/standards/status-markers.md`: add a new `#### [HOLD]` section placed beside
+- [x] `context/standards/status-markers.md`: add a new `#### [HOLD]` section placed beside
       `#### [PARTIAL]` and `#### [BLOCKED]` (≈lines 132-149, the two most directly analogous
       non-terminal exception states). State plainly that `[HOLD]` is non-terminal yet
       non-dispatchable — the property no existing marker has — and that `[BLOCKED]`'s documented
       "any command can run from this status" is exactly what `[HOLD]` does not permit.
-- [ ] Add a Required Information block to that section listing `hold_reason`,
+- [x] Add a Required Information block to that section listing `hold_reason`,
       `- **Held**: YYYY-MM-DD` (the TODO.md line), and `prior_status`, and note that unlike
       `[BLOCKED]`'s prose-only "Blocking Reason", these three are machine-checked schema fields.
-- [ ] Add a `hold` / `[HOLD]` row to the TODO.md-vs-state.json mapping table (≈lines 272-285) and
+- [x] Add a `hold` / `[HOLD]` row to the TODO.md-vs-state.json mapping table (≈lines 272-285) and
       to the Command -> Status mapping table (≈lines 296-302), the latter naming
       `preflight:hold` / `preflight:unhold`.
-- [ ] Update the Valid Transition Diagram (≈lines 345-369). Add `hold` as a **distinct annotation
+- [x] Update the Valid Transition Diagram (≈lines 345-369). Add `hold` as a **distinct annotation
       outside** the "Any Non-Terminal Status" box, not as a member of it: that box's whole premise
       is "/research, /plan, /implement all work from here", which is precisely false for `hold`.
       Document the two edges that exist — any non-terminal status -> `hold` (via
       `preflight:hold`), and `hold` -> `prior_status` (via `preflight:unhold`) — plus the
       single-dispatch forcing-flag override that does not change the status.
-- [ ] `merge-sources/claudemd.md`: the status-marker list (≈lines 39-40) currently has exactly two
+- [x] `merge-sources/claudemd.md`: the status-marker list (≈lines 39-40) currently has exactly two
       categories, "Terminal states" and "Exception states (non-terminal; any command can resume
       from these)". `[HOLD]` fits NEITHER. Add a **third** bullet rather than straining either
       existing one — e.g. a "Paused state" category: non-terminal, but not resumable by any
       ordinary command; only an explicit `/orchestrate --research|--plan|--implement` override (for
       one dispatch, status preserved) or an operator-run lift.
-- [ ] `context/reference/state-management-schema.md`: add three rows to the Project Entry Fields
+- [x] `context/reference/state-management-schema.md`: add three rows to the Project Entry Fields
       table (≈lines 76-93) following the "Documented-optional... present only after X" phrasing
       convention already used for `research_questions`. Add a short `### Hold Fields` subsection
       (mirroring `### Research Questions Field` at ≈line 278) narrating that `prior_status` is what
       makes the hold reversible — the field that distinguishes a hold from a one-way archival — and
       documenting the `preflight:unhold` lift surface chosen in Decision 5.
-- [ ] Record the forcing-flag decision with its reasoning where a future reader will find it: in
+- [x] Record the forcing-flag decision with its reasoning where a future reader will find it: in
       the new `#### [HOLD]` section of `status-markers.md`, state that an explicit forcing flag IS
       the human lifting the hold for exactly one dispatch, that the hold is preserved afterward,
       and that this reuses the existing `task_has_forced_phase` predicate rather than minting a
       second override concept. Cross-reference that `command-gate-in.sh` deliberately has no such
       override (Decision 4).
-- [ ] Verify no task-number references appear in any of these deliverables
+- [x] Verify no task-number references appear in any of these deliverables
       (`rules/no-task-references-in-deliverables.md`) — all four files live outside `specs/**`.
 
 **Timing**: 1.5 hours

@@ -38,6 +38,10 @@ Task management and agent orchestration for project development. For comprehensi
 - `[PR READY]` -> `[IMPLEMENTING]` - type=pr only: if PR review finds issues (re-dispatch)
 - `[ABANDONED]`, `[EXPANDED]` - Terminal states (no further transitions)
 - `[BLOCKED]`, `[PARTIAL]` - Exception states (non-terminal; any command can resume from these)
+- `[HOLD]` - Paused state (non-terminal, but NOT resumable by any ordinary command; only an
+  explicit `/orchestrate --research|--plan|--implement` override, which admits the task for one
+  dispatch and preserves the hold afterward, or an operator-run lift via
+  `update-task-status.sh preflight ... unhold`)
 
 These are *resting* states. A status value passed to `update-task-status.sh` as a target argument
 is not always the value that persists — see `.claude/context/standards/status-markers.md`'s
