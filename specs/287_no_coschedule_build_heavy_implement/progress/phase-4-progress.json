@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Harness regression gate and acceptance sweep",
+  "started_at": "2026-09-30T02:45:00Z",
+  "last_updated": "2026-09-30T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run run-all.sh and diff against known-failures.txt", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm no new failure (or report finding)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run shellcheck on both edited files vs baselines", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run task-reference lint on both edited files", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Walk acceptance list with evidence", "status": "done", "files_touched": ["specs/287_no_coschedule_build_heavy_implement/plans/01_build-heavy-coschedule-rule.md"]},
+    {"id": 6, "description": "Confirm no .claude/** hand-edit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.run-all-typst",
+      "description": "run-all.sh showed 1 failure not listed in known-failures.txt (test-typst-element-lint.sh). Investigated: traced to a pre-existing, uncommitted, concurrently in-flight working-tree change to agent-system/extensions/typst/scripts/typst-element-lint.sh (confirmed via git status/log -- last committed by an unrelated task, modified-but-uncommitted at session start, before this task's work began). known-failures.txt's own header documents this exact scenario for this exact file and excludes it unless red against a clean, fully-committed tree. Not attributable to this task; no fixture was altered to hide it.",
+      "type": "none-required",
+      "reason": "Pre-existing, out-of-scope, already-documented exclusion pattern; reported per Phase 4's own verification instructions.",
+      "annotation": "n/a (no plan checklist item needed changing beyond noting the finding)"
+    }
+  ]
+}

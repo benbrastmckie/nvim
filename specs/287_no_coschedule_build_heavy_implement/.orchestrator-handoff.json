@@ -1,19 +1,24 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 5,
-  "summary": "Authored a 4-phase implementation plan for the Mode 2 build-heavy co-scheduling admission rule in orchestrate-cycle-plan.sh, correcting a latent defect in the research report's insertion plan (the predicate is defined below the loop that would call it, inside one enclosing main function, so the call would silently return a swallowed 127).",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 6,
+  "summary": "Implemented the Mode 2 build-heavy co-scheduling admission rule in orchestrate-cycle-plan.sh across 4 phases: hoisted+renamed BUILD_HEAVY_TASK_TYPES above the bucketing loop, added the in-loop defer rule with its own named reason and header-contract documentation, added Group 32's four acceptance-case fixtures (plus a necessary repair to Group 30's old fixture, which the new rule correctly exposed as co-scheduling two build-heavy candidates), and ran the harness regression gate. 339/339 targeted tests pass; the wider harness shows no new failure attributable to this task.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/287_no_coschedule_build_heavy_implement/summaries/01_build-heavy-coschedule-rule-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, verification evidence, and impacts."
+    },
     {
       "type": "plan",
       "path": "specs/287_no_coschedule_build_heavy_implement/plans/01_build-heavy-coschedule-rule.md",
-      "summary": "4-phase plan: hoist+rename BUILD_HEAVY_TASK_TYPES, add the in-loop defer rule with its own reason and header contract, Group 32 fixtures for the four acceptance cases, harness regression gate."
+      "summary": "4-phase plan, all phases marked [COMPLETED] with checklist items checked off and acceptance evidence recorded inline."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
-  "plan_markers_verified": null,
+  "plan_markers_verified": true,
   "continuation_path": null,
-  "next_action_hint": "Dispatch implement for task 287 against plans/01_build-heavy-coschedule-rule.md; Phase 1 (hoist+rename) must land before Phase 2 adds any predicate call site."
+  "next_action_hint": "Task 287 implementation is complete. Standard terminus for a meta-type task: postflight should transition status toward [COMPLETED]. No further implement dispatch needed."
 }

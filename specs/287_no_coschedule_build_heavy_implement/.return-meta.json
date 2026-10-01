@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/287_no_coschedule_build_heavy_implement/summaries/01_build-heavy-coschedule-rule-summary.md",
+      "summary": "4-phase implementation of the Mode 2 build-heavy co-scheduling admission rule in orchestrate-cycle-plan.sh: hoisted+renamed BUILD_HEAVY_TASK_TYPES, added the in-loop defer rule with its own reason and header contract, Group 32 fixtures for the four acceptance cases (plus a Group 30 fixture repair the new rule exposed), harness regression gate with no attributable new failures."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the Mode 2 build-heavy co-scheduling admission rule in orchestrate-cycle-plan.sh: never dispatch two build-heavy (lean4/cslib) implement tasks in the same cycle, closing the one concurrency failure mode declared file_scope structurally cannot cover. All 4 phases complete; 339/339 targeted tests pass; wider harness shows no new failures attributable to this task."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "specs/287_no_coschedule_build_heavy_implement/plans/01_build-heavy-coschedule-rule.md",
+    "specs/287_no_coschedule_build_heavy_implement/summaries/01_build-heavy-coschedule-rule-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In bash, a function defined inside another function's body is only registered once execution reaches that `name() { ... }` statement. A large script whose entire body from an early line through EOF lives inside one main() invoked on the script's last line (e.g. orchestrate-cycle-plan.sh's orchestrate_cycle_plan_main) therefore has a strict definition-before-use ordering constraint INSIDE that body: a call to a helper still defined further down returns 127 ('command not found'), and under `set -euo pipefail` an `if helper ...; then` guard silently swallows that 127 as a false branch -- the predicate compiles, shellcheck stays clean, and the call site simply never fires. When adding a new call site to such a script, verify the callee's definition line is strictly less than every call line, and hoist the definition rather than trusting top-of-file-style ordering intuition.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/287_no_coschedule_build_heavy_implement/summaries/01_build-heavy-coschedule-rule-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "function-definition-order", "nested-function", "set-euo-pipefail", "silent-false", "shellcheck-blind-spot"]
+    },
+    {
+      "content": "When a new cross-task admission rule is added to a shared bucketing/dispatch loop, re-run the FULL existing fixture suite (not just the new fixtures) before declaring done -- an old fixture that happens to co-trigger the new rule's precondition (e.g. two candidates of the exact task_type family the new rule targets, dispatched together in one test cycle) will silently lose coverage of whatever it originally tested, as the new rule's defer now fires before the old code path is ever reached. This is not a bug in the new rule; it is the new rule correctly doing its job and exposing an old fixture whose shape has become invalid. Fix by decoupling the old fixture's cycle grouping (split into separate single-concern cycles) rather than weakening either rule's assertions.",
+      "category": "PATTERN",
+      "source_artifact": "specs/287_no_coschedule_build_heavy_implement/summaries/01_build-heavy-coschedule-rule-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["test-fixture-confound", "admission-rule", "orchestrate-cycle-plan", "fixture-decoupling", "regression-gate"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790813213_9179fb",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 6
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }
