@@ -363,34 +363,34 @@ logic has since appeared, amend it in place rather than adding a second, competi
 
 ---
 
-### Phase 5: Inbound cross-reference, deploy, and full verification [NOT STARTED]
+### Phase 5: Inbound cross-reference, deploy, and full verification [BLOCKED]
 
 **Goal**: The guardrails document points back at the new component, the deployed tree matches the
 source store, and the whole change passes the repository gate set with no restated-criteria drift.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`'s
+- [x] Re-read `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`'s *(completed)*
       "Batching Is the Default" section immediately before editing.
-- [ ] Add a short inbound cross-reference in that section (no relocation, no restatement per
+- [x] Add a short inbound cross-reference in that section (no relocation, no restatement per *(completed)*
       research Rec 6): this section governs which already-created tasks are run together; how many
       tasks to create in the first place is governed by Component 0 in
       `.claude/docs/reference/standards/multi-task-creation-standard.md`.
-- [ ] Run the drift check: `grep -rn 'consolidate unless' agent-system/extensions/core/` must match
+- [x] Run the drift check: `grep -rn 'consolidate unless' agent-system/extensions/core/` must match *(completed)*
       the standard only; no other file may carry a full copy of the divide-reason list.
-- [ ] Before deploying, run `git status --short agent-system/` and confirm no foreign uncommitted
+- [x] Before deploying, run `git status --short agent-system/` and confirm no foreign uncommitted *(completed)*
       modifications outside this task's file_scope. If any are present, STOP, report the
       observation, and leave this phase `[BLOCKED]` rather than deploying another writer's partial
       work (see the concurrency note in this dispatch and
       `context/contracts/territory.md`'s Cross-Task Territory section).
-- [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh`.
-- [ ] Confirm the six edited source files' deployed counterparts match byte-for-byte (`diff` each
+- [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh`. *(deviation: deferred to a later cycle -- see Phase 5 progress file)*
+- [ ] Confirm the six edited source files' deployed counterparts match byte-for-byte (`diff` each *(deviation: deferred to a later cycle -- see Phase 5 progress file)*
       source/deployed pair, or `bash .claude/scripts/verify-deploy.sh`).
-- [ ] Run `bash .claude/scripts/check-deploy-freshness.sh` and confirm `core` is no longer reported
+- [ ] Run `bash .claude/scripts/check-deploy-freshness.sh` and confirm `core` is no longer reported *(deviation: deferred to a later cycle -- see Phase 5 progress file)*
       stale.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` repo-wide and confirm no new violations.
-- [ ] Run `bash .claude/scripts/validate-wiring.sh` and `bash .claude/scripts/check-extension-docs.sh`
+- [x] Run `bash .claude/scripts/check-task-references.sh` repo-wide and confirm no new violations. *(completed)*
+- [ ] Run `bash .claude/scripts/validate-wiring.sh` and `bash .claude/scripts/check-extension-docs.sh` *(deviation: deferred to a later cycle -- see Phase 5 progress file)*
       and confirm no new failures attributable to these edits.
-- [ ] Read the new Component 0 once end-to-end as a reader who has never seen the motivating
+- [x] Read the new Component 0 once end-to-end as a reader who has never seen the motivating *(completed)*
       incident, confirming the default, both reason lists, the bidirectionality paragraph and the
       guardrails boundary are each unambiguous.
 

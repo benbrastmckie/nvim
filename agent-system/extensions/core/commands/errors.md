@@ -111,10 +111,9 @@ Before drafting fix-task entries, apply a mechanical, non-interactive pre-merge 
 patterns identified in Step 2: group the patterns that would otherwise each become a separate
 task when they share a narrow file target or resolve the same named acceptance gate/check, and
 draft one task per resulting group. This is the Task-Count Reasoning default from Component 0 in
-`.claude/docs/reference/standards/multi-task-creation-standard.md` — consolidate unless a named
-divide reason (disjoint `file_scope`, different `task_type`/domain, real dependency ordering, or
-size exceeding one agent dispatch) applies; see that component for the full reason list rather
-than restating it here.
+`.claude/docs/reference/standards/multi-task-creation-standard.md`: default to one task per group
+unless a named divide reason applies — see that component for the full default statement and
+reason list rather than restating them here.
 
 This step adds **no user gate and no `AskUserQuestion`** — `/errors` keeps its fast, automatic
 triage posture. The separate `--interactive` enhancement (manual selection) remains a distinct,

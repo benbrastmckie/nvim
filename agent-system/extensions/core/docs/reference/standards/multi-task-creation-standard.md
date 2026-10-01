@@ -89,11 +89,13 @@ are also the tasks the guardrails document expects to see batched at dispatch ti
 config file,
 `agent-system/extensions/core/context/config/orchestrator-context-budget.json`, and both resolved
 the same `verify-deploy.sh` gate. They were drafted as two separate tasks. As separate tasks they
-would each have declared `orchestrator-context-budget.json` in `file_scope`, and Component 4a's
-own in-batch `file_scope_collision` check would then have deferred one task behind the other — so
-the split was not merely cosmetic, it was self-defeating: the two tasks could never have been
-dispatched independently. Under this component's default, a single shared edit target and a
-single shared acceptance gate are exactly the signal that calls for one task, not two.
+would each have declared `orchestrator-context-budget.json` in `file_scope`; Component 4a's
+overlap check would then have auto-added a serializing dependency edge between them, and
+`/orchestrate`'s own dispatch-time `file_scope_collision` admission gate would have deferred
+whichever ran second regardless — so the split was not merely cosmetic, it was self-defeating:
+the two tasks could never have been dispatched independently. Under this component's default, a
+single shared edit target and a single shared acceptance gate are exactly the signal that calls
+for one task, not two.
 
 ### 1. Item Discovery (Required)
 

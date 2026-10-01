@@ -64,11 +64,10 @@ When $ARGUMENTS contains a description (no flags).
    observations in the same session (e.g. `/meta`, `/fix-it`, `/errors`, or an ad hoc multi-finding
    batch), run the Task-Count Reasoning test — Component 0 in
    `.claude/docs/reference/standards/multi-task-creation-standard.md` — across the whole set
-   BEFORE assigning each finding its own description. Consolidate findings that share an edit
-   target (the same file or files) or a single acceptance gate into one description; divide only
-   where a named reason (disjoint `file_scope`, different `task_type`/domain, real dependency
-   ordering, or size exceeding one agent dispatch) applies. A single-task invocation with no
-   sibling findings to weigh against skips this step.
+   BEFORE assigning each finding its own description: default to consolidating findings into one
+   description, dividing only where Component 0's named divide reasons apply (see that component
+   for the full list; it is not restated here). A single-task invocation with no sibling findings
+   to weigh against skips this step.
 
    **Standards Reference**: `.claude/docs/reference/standards/multi-task-creation-standard.md`
    (Component 0: Task-Count Reasoning).
@@ -397,11 +396,10 @@ Parse task number and optional prompt:
 
 2. **Apply the divide-reason list** to DESCRIPTION (exported by gate-in) to find legitimate
    breakpoints. A breakpoint is legitimate only where a named divide reason from Component 0 in
-   `.claude/docs/reference/standards/multi-task-creation-standard.md` holds: disjoint `file_scope`
-   with no overlap, a different `task_type`/owning domain, a real dependency ordering between the
-   parts, or a size exceeding one agent dispatch. Do not split on a bare topical breakpoint that
-   fails all four — the same bidirectional test that governs consolidation at creation time governs
-   division here.
+   `.claude/docs/reference/standards/multi-task-creation-standard.md` holds (see that component for
+   the full list; it is not restated here). Do not split on a bare topical breakpoint that fails
+   every named reason — the same bidirectional test that governs consolidation at creation time
+   governs division here.
 
 2.5. **Read parent topic** for inheritance:
    ```bash

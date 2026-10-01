@@ -17,6 +17,16 @@ this system, not a specialized throughput optimization reserved for large backlo
 invocation remains fully correct and unpenalized — it is simply the batch-of-one case of the same
 mechanism, not a separate default posture.
 
+**Boundary with task-count reasoning at creation time**: this section governs which
+*already-created* tasks are RUN together in one `/orchestrate` invocation. How many tasks are
+CREATED from a set of findings in the first place is a separate, upstream decision governed by
+Component 0 (Task-Count Reasoning) in
+`.claude/docs/reference/standards/multi-task-creation-standard.md`. Neither section subsumes the
+other, but they are complementary: findings correctly consolidated into one task under Component
+0 never reach this section's batching question at all, while tasks correctly left separate under
+Component 0 (a genuine `file_scope`/domain/dependency/size divide) are exactly the candidates this
+section's selection criteria then decide whether to batch.
+
 ### Why batch-as-default, not batch-as-optimization
 
 The strongest argument for batching is not throughput — it is collision visibility. The three
