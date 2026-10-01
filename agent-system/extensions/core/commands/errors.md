@@ -105,9 +105,30 @@ Create these tasks to address errors:
 2. Task: "Fix {error type}" - Medium priority
 ```
 
+### 3.5 Consolidate findings before drafting tasks
+
+Before drafting fix-task entries, apply a mechanical, non-interactive pre-merge of the error
+patterns identified in Step 2: group the patterns that would otherwise each become a separate
+task when they share a narrow file target or resolve the same named acceptance gate/check, and
+draft one task per resulting group. This is the Task-Count Reasoning default from Component 0 in
+`.claude/docs/reference/standards/multi-task-creation-standard.md` — consolidate unless a named
+divide reason (disjoint `file_scope`, different `task_type`/domain, real dependency ordering, or
+size exceeding one agent dispatch) applies; see that component for the full reason list rather
+than restating it here.
+
+This step adds **no user gate and no `AskUserQuestion`** — `/errors` keeps its fast, automatic
+triage posture. The separate `--interactive` enhancement (manual selection) remains a distinct,
+still-open item tracked in the standard's Gaps section, not part of this pre-merge.
+
+A shared broad, widely-edited infrastructure file or directory-root scope does not, by itself,
+merge two findings — see Component 0's narrowness qualifier.
+
+The `## Suggested Tasks` report above presents the **consolidated** set of tasks (after this
+pre-merge), not the pre-merge set of raw patterns.
+
 ### 4. Create Fix Tasks
 
-For significant error patterns, create tasks:
+For significant error patterns (after Step 3.5's consolidation pre-merge), create tasks:
 
 ```
 /task "Fix: {error description} ({N} occurrences)"
@@ -208,6 +229,7 @@ This command implements the multi-task creation pattern. See `.claude/docs/refer
 
 | Component | Status | Notes |
 |-----------|--------|-------|
+| Task-Count Reasoning (0) | Yes (non-interactive) | Step 3.5 mechanical pre-merge on shared file target/acceptance gate |
 | Discovery | Yes | Error patterns from errors.json |
 | Selection | No | Automatic task creation |
 | Grouping | Partial | Groups by error type/severity |
@@ -217,7 +239,7 @@ This command implements the multi-task creation pattern. See `.claude/docs/refer
 | Confirmation | No | Automatic mode |
 | State Updates | Yes | Standard task creation |
 
-**Rationale**: The `/errors` command intentionally uses automatic task creation without interactive selection. This design prioritizes quick error triage - when errors are detected, immediate task creation is more valuable than manual curation.
+**Rationale**: The `/errors` command intentionally uses automatic task creation without interactive selection. This design prioritizes quick error triage - when errors are detected, immediate task creation is more valuable than manual curation. The Task-Count Reasoning pre-merge (Step 3.5) is mechanical and non-interactive, consistent with that design.
 
 **Gap**: No interactive selection or dependency support.
 

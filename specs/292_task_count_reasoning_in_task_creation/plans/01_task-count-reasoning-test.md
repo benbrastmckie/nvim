@@ -313,31 +313,31 @@ items). Confirm before editing with
 
 ---
 
-### Phase 4: Give `/errors` a non-interactive consolidation pre-pass [NOT STARTED]
+### Phase 4: Give `/errors` a non-interactive consolidation pre-pass [COMPLETED]
 
 **Goal**: `/errors` applies the default-to-consolidate rule mechanically before drafting task
 entries, without acquiring an interactive picker.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/commands/errors.md` immediately before editing.
-- [ ] Insert a new step before `### 4. Create Fix Tasks` (currently line 108), e.g. `### 3.5
+- [x] Re-read `agent-system/extensions/core/commands/errors.md` immediately before editing. *(completed)*
+- [x] Insert a new step before `### 4. Create Fix Tasks` (currently line 108), e.g. `### 3.5 *(completed)*
       Consolidate findings before drafting tasks`, specifying a mechanical, non-interactive
       pre-merge: group the errors/findings that would otherwise each become a task when they share
       a narrow file target or resolve the same named acceptance gate, and draft one task per
       resulting group.
-- [ ] Reference `.claude/docs/reference/standards/multi-task-creation-standard.md`'s Component 0 as
+- [x] Reference `.claude/docs/reference/standards/multi-task-creation-standard.md`'s Component 0 as *(completed)*
       the authority for the default and the divide-reason list; do not restate the lists here.
-- [ ] State explicitly that this step adds no user gate and no `AskUserQuestion` — `/errors` keeps
+- [x] State explicitly that this step adds no user gate and no `AskUserQuestion` — `/errors` keeps *(completed)*
       its fast automatic triage posture, and the separate `--interactive` enhancement remains out
       of scope.
-- [ ] Carry the narrowness exclusion in one line (a shared broad infrastructure file does not merge
+- [x] Carry the narrowness exclusion in one line (a shared broad infrastructure file does not merge *(completed)*
       findings).
-- [ ] Make sure the existing `## Suggested Tasks` report section (line 101) and
+- [x] Make sure the existing `## Suggested Tasks` report section (line 101) and *(completed)*
       `### 4a. Update Task Order Section` still read coherently with the pre-pass inserted — the
       report should present the consolidated set, not the pre-merge set.
-- [ ] Keep the existing Standards Reference line at 205 and extend it only if needed to name
+- [x] Keep the existing Standards Reference line at 205 and extend it only if needed to name *(completed)*
       Component 0.
-- [ ] No task-number citations in this file.
+- [x] No task-number citations in this file. *(completed)*
 
 **Timing**: 0.5 hours
 
