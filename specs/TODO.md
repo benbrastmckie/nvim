@@ -1,5 +1,5 @@
 ---
-next_project_number: 289
+next_project_number: 293
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 289
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,291,292 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281 | 22,44,127,184,241,265,272,279,280 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -39,6 +39,10 @@ next_project_number: 289
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
+289 [NOT STARTED] — Clear verify-deploy gate 20 (orchestrator context budget...
+290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
+291 [NOT STARTED] — Add a HOLD] task status marker that pauses a task and...
+292 [NOT STARTED] — Add an explicit task-count reasoning step to task creation so...
 
 ### Extensions
 
@@ -70,6 +74,179 @@ next_project_number: 289
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 
 ## Tasks
+
+### 292. Task count reasoning in task creation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Add an explicit task-count reasoning step to task creation so the system picks the right NUMBER of tasks instead of defaulting to one-per-observation. Today commands/task.md's Create Task Mode has steps for description improvement, task_type detection, topic assignment and slug creation, but nothing that asks whether a set of findings is one task or several -- and /meta, /fix-it and /errors all create tasks from multi-finding inputs with the same gap. Observed failure: a batch postflight surfaced two findings that both edited the SAME config file (context/config/orchestrator-context-budget.json) and both resolved the SAME verify-deploy gate, and they were drafted as two separate tasks; as separate tasks they would have declared overlapping file_scope and this system's own in-batch file_scope_collision check would have deferred one behind the other, so the split was not merely cosmetic but actively self-defeating. Add a consolidation-versus-division test naming the legitimate reasons to divide -- genuinely different file_scope with no overlap, different task_type or owning domain, a real dependency ordering, or a size that will not fit one agent dispatch (cf. the phase-sizing bound in the hard-mode contracts) -- and the reasons NOT to divide, chiefly that findings sharing an edit target or a single acceptance gate belong in one task. State the default explicitly: consolidate unless a named divide reason applies. Apply the same test to the division direction too, so an over-large task is still split when size or domain genuinely calls for it, and cross-reference context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default" section, which already argues the sibling point for how tasks are RUN rather than how they are CREATED.
+
+---
+
+### 291. Add a [HOLD] task status marker that pauses a task and excludes it from dispatch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree -- see rules/source-store-deploy-boundary.md).
+
+Add a non-terminal, operator-set [HOLD] / "hold" task status that PAUSES a task: it is excluded from /orchestrate wave dispatch and from status-derived classification generally until a human lifts it, while all artifacts are preserved and /todo never archives it.
+
+WHY A NEW MARKER. [BLOCKED] is the closest existing marker but records a pause without enforcing one -- status-markers.md's [BLOCKED] section states "Any command (research, plan, implement, revise) can run from this status", so a later /orchestrate run resumes the task anyway. [ABANDONED] does enforce a stop but is terminal and causes /todo to archive the task directory, overstating a pause as a cancellation. HOLD fills exactly that gap.
+
+THIS IS A LIVE BREAKAGE, NOT ONLY A FEATURE. The consumer repository /home/benjamin/Projects/Logos/Verification has already hand-set 9 logos-fragment tasks (125, 126, 127, 128, 141, 142, 143, 162, 165) to status "hold" ahead of this support landing. Measured there at task-creation time:
+  - generate-todo.sh HARD-FAILS with "Nothing was written." -- TODO.md regeneration is entirely
+    broken in that repo, because status_vocabulary_todo_marker returns exit 1 for "hold".
+  - validate-state.sh emits 12 FAILs: 9 off-schema-status plus 3 unknown-entry-field.
+Pre-existing hand-written "hold" values are VALID INPUT requiring no migration step -- they simply become legal the moment phase 1 lands. Do not write a migration.
+
+THE TRUE SOURCE OF TRUTH. scripts/lib/status-vocabulary.sh holds the closed 12-value task-status enum ($STATUS_VOCABULARY_ENUM) and its state.json-value -> TODO.md-marker map. context/schemas/state-schema.json's definitions.taskStatus.enum is its machine-readable twin and the two MUST stay byte-equal; scripts/tests/test-status-vocabulary.sh asserts exactly that by extracting the schema enum via jq and diffing. validate-state.sh validates THROUGH this library (status_vocabulary_is_valid, ~line 487) and generate-todo.sh renders through it (status_vocabulary_todo_marker, ~line 155), so both are fixed transitively by the enum edit rather than needing their own status arms. Re-derive every line number below before editing rather than trusting it.
+
+FORCING-FLAG DECISION (decided; implement it, do not re-open). An explicit --research / --plan / --implement CAN override a hold, making HOLD a default-dispatch exclusion rather than an absolute lock -- and the forced round MUST PRESERVE the hold status, so the pause stays durable afterward. Reuse the existing, already-tested task_has_forced_phase predicate in orchestrate-cycle-plan.sh (~line 1478) rather than minting a second override concept; this matches the existing status-preserving contract for forced dispatch into a terminal task. Rationale to record, not re-litigate: a human typing an explicit forcing flag IS the human lifting the hold for one dispatch.
+
+hold_reason IS A GENUINELY NEW KIND OF FIELD, NOT A MIRROR OF blocking_reason. Verify before assuming otherwise: blocking_reason appears NOWHERE in any script or schema in the source store -- [BLOCKED]'s documented "Required Information" is TODO.md prose only. The consumer repo has already hand-written three new fields INTO state.json, so these are real schema additions.
+
+--- PHASE 1: enum, schema twin, and the three-field allowlist (STANDALONE, COMMIT ON ITS OWN) ---
+
+Land and commit this phase by itself, first: it alone un-breaks the consumer repo's generate-todo.sh and clears all 12 validate-state.sh FAILs.
+
+  - scripts/lib/status-vocabulary.sh: add "hold" to STATUS_VOCABULARY_ENUM (12 -> 13 values) and
+    ["hold"]="HOLD" to STATUS_VOCABULARY_TODO_MARKER_MAP. Update the header comment, which names
+    the "closed 12-value task-status enum" in prose in several places.
+  - context/schemas/state-schema.json: add "hold" to definitions.taskStatus.enum, keeping literal
+    ORDER aligned with the bash array so a manual diff of the pair stays trivial.
+  - ALL THREE new entry fields must be allowlisted in BOTH places, or validation still fails:
+      hold_reason   -- why the task is held
+      held_at       -- YYYY-MM-DD date the hold was set (the state.json twin of TODO.md's
+                       "- **Held**: YYYY-MM-DD" line)
+      prior_status  -- the status the task RETURNS TO when the hold lifts; this is what makes a
+                       hold reversible. Live values in the consumer repo are "not_started" and
+                       "planned", so it carries real data already.
+    Add all three to: scripts/validate-state.sh's KNOWN_ENTRY_FIELDS array (~line 461), AND
+    context/schemas/state-schema.json's definitions.projectEntry.properties (which sets
+    additionalProperties: false, so an unlisted field is rejected outright).
+  - scripts/tests/test-status-vocabulary.sh: update the 12-value drift assertion to 13 and add
+    hold to the marker-map coverage.
+  - scripts/tests/test-validate-state.sh: cover the three new permitted fields.
+
+Phase 1 acceptance: in the consumer repo, validate-state.sh reports 0 FAILs and generate-todo.sh regenerates TODO.md successfully with [HOLD] markers on all 9 tasks.
+
+--- PHASE 2: exclude held tasks from dispatch and from command gate-in ---
+
+This is the phase that makes a hold actually hold. Phase 1 alone makes "hold" validate and render, so the status LOOKS supported while nothing yet prevents dispatch -- do not stop between the two.
+
+  - scripts/orchestrate-triage-classify.sh: add a `hold` row to the documented classification
+    table in the header AND the corresponding jq arm. Held tasks must NOT be dispatched. The
+    existing group vocabulary is skip / terminal / needs_human / research / plan / implement;
+    decide deliberately between a new dedicated group and reusing needs_human, and state the
+    reason. The requirement is a visible blocked[] row naming the hold, never a dispatch.
+  - scripts/orchestrate-cycle-plan.sh: exclude held tasks from eligibility with a blocked[] row
+    naming the hold (follow the precedent at ~line 1845, which deliberately uses blocked[] rather
+    than a new top-level excluded[] array, as an inert non-fatal per-task outcome). is_terminal_status
+    (~line 1459) must NOT be widened -- hold is not terminal, and conflating the two would let
+    /todo archive held tasks. Wire the forcing-flag override through task_has_forced_phase, and
+    ensure a forced round does not clear the hold.
+  - commands/orchestrate.md: the STAGE 0 validated_tasks loop (~line 169) has a
+    `completed|abandoned|expanded)` arm that can only express "terminal". HOLD is a THIRD category
+    -- non-terminal but still skipped -- which that arm cannot express; restructure it, and report
+    held tasks distinctly from terminal ones in the skipped_tasks warnings.
+  - scripts/command-gate-in.sh: the terminal-status guard (~line 81) gates the single-command
+    entry points (/research, /plan, /implement). A hold enforced only in /orchestrate would leave
+    single-command dispatch wide open, so add a hold guard here too. Preserve the existing
+    "revise" exemption posture (skill-reviser's contract is "no status-based ABORT rules"), and
+    keep the guard ahead of task-lock acquisition so held tasks fail fast without touching the lock.
+  - Tests: test-orchestrate-triage-classify.sh, test-orchestrate-cycle-plan.sh, test-force-phases.sh.
+
+--- PHASE 3: make hold operator-settable, and reversible ---
+
+  - scripts/update-task-status.sh: add `hold` to the target_status validation list (~line 211),
+    add a map_status() case arm (~line 304), and update the usage text (~line 202).
+    MAKE IT PREFLIGHT-SETTABLE, unlike postflight-only blocked/partial/needs_research: a hold is
+    human-initiated rather than derived from a dispatch outcome, so `preflight:hold` is the
+    sensible combination and a postflight-only hold would be unsettable by an operator. Note the
+    script's existing comment explicitly reasoning about why there is deliberately no
+    preflight:partial/blocked/needs_research -- hold is the case that breaks that pattern, so
+    extend the comment rather than silently contradicting it.
+  - Writing a hold must set hold_reason, held_at (YYYY-MM-DD), and prior_status (captured from the
+    CURRENT status before overwrite), plus the TODO.md "- **Held**: YYYY-MM-DD" line.
+  - Lifting a hold must RESTORE prior_status and clear the three fields. Decide and document the
+    lift surface (a target_status on this same script vs. a /task flag) -- a hold that can be set
+    but not lifted through any supported path is not acceptable.
+  - Tests: test-update-task-status.sh.
+
+--- PHASE 4: /todo archival, and the held-subtask question (REAL DESIGN UNCERTAINTY HERE) ---
+
+  - skills/skill-todo/SKILL.md: held tasks are ALREADY never archived -- the Stage 2.5 selector at
+    ~lines 164-166 is inverted (`select(.status == "completed" | not)` etc.), so "hold" falls
+    outside the archive set by construction. VERIFY this rather than adding a redundant guard.
+  - THE ACTUAL OPEN QUESTION is at ~line 127: the subtask-blocking check for a parent [EXPANDED]
+    task counts any non-terminal subtask status as blocking. Because a hold is non-terminal and
+    only a human lifts it, a single held subtask BLOCKS ITS PARENT'S ARCHIVAL INDEFINITELY. Decide
+    explicitly and state the resolution in the summary. Candidate readings: (a) correct as-is --
+    a parent with paused work genuinely is not done; (b) treat held subtasks as non-blocking and
+    surface them in the deferred_expanded report instead. Do not leave this implicit.
+  - scripts/generate-todo.sh: the terminal_count/active_count grouping at ~line 454 is a
+    hand-rolled case arm, not enum-driven, so hold falls to active_count. Confirm that is intended
+    (a held task is non-terminal, so counting it active is defensible) and leave a note either way.
+  - commands/todo.md: the `completed|abandoned|expanded)` arm at ~line 184 -- audit for the same
+    three-category problem as orchestrate.md.
+  - Also audit Stage 1.5 ReconcileScan (~line 54), whose four reconcilable statuses are
+    researching/planning/implementing/partial. A held task must not be silently promoted out of
+    hold by reconciliation; confirm hold is absent from that selector.
+
+--- PHASE 5: documentation and the decision record ---
+
+  - context/standards/status-markers.md: a new #### [HOLD] section (place it beside [BLOCKED] and
+    [PARTIAL], the other non-terminal exception states), a row in the TODO.md-vs-state.json
+    mapping table, the Command -> Status mapping, the Valid Transition Diagram, and a Required
+    Information block listing hold_reason, "- **Held**: YYYY-MM-DD", and prior_status. State
+    plainly that HOLD is non-terminal yet non-dispatchable -- the property no existing marker has.
+  - merge-sources/claudemd.md: the status-marker list at ~lines 39-40 currently has exactly two
+    categories, "Terminal states" and "Exception states (non-terminal; any command can resume from
+    these)". HOLD fits NEITHER -- it is non-terminal but explicitly NOT resumable by any command.
+    Add a third category rather than straining either existing one.
+  - context/reference/state-management-schema.md: document all three new fields, including that
+    prior_status is what makes the hold reversible.
+  - Record the forcing-flag decision above, with its reasoning, where a future reader will find it.
+
+--- VERIFICATION AND ACCEPTANCE ---
+
+  - Run the full shell harness and compare against scripts/tests/known-failures.txt rather than
+    against zero.
+  - Shellcheck clean per context/standards/shell-strict-mode.md.
+  - The enum and its schema twin are byte-equal as sorted sets (test-status-vocabulary.sh green).
+  - In the consumer repo: validate-state.sh 0 FAILs, generate-todo.sh regenerates TODO.md with
+    [HOLD] on all 9 tasks, and an /orchestrate --dry-run naming a held task shows it in blocked[]
+    with a hold reason and dispatches nothing for it.
+  - An explicit --implement against a held task IS admitted and leaves status == "hold" afterward.
+  - Re-run the live consumer-repo discovery before claiming completion: the other active session
+    may have changed which tasks are held.
+  - No task-number references in deliverables outside specs/** (rules/no-task-references-in-deliverables.md).
+
+---
+
+### 290. Verify lua cross extension override precedence
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Teach verify-deploy gate 5 (verify.lua content-hash equality) about cross-extension override precedence. The gate reports three standing false positives: context/contracts/adversarial-verification.md, anti-analysis.md and reference-grounding.md are each flagged as "core: Content differs from source", but the deployed .claude/context/contracts/ copies match the lean extension's deliberate override and parity-copy sources byte-for-byte (verified by diff). The lean extension intentionally owns those three deployed paths -- two are documented as Lean4 Override, one as a Lean4 Parity Copy for lean-only deployments -- while verify.lua compares only against core's copy and has no notion of which extension legitimately won the path. Fix the comparison in agent-system/extensions/core/ so a deployed path resolves against its actual deploying owner and deliberate overrides verify clean, without weakening real divergence detection for single-owner paths. Note while in here: gate 16's warning text tells an extension to migrate routing_hard/routing_agents_hard to the hard_contracts manifest key, but context/guides/manifest-routing-schema.md states hard_contracts is unrelated to that pair -- it resolves injected contract files, not skill or agent names -- so the nudge's wording is misleading even though the gate itself is a deliberate interim warning awaiting two known follow-on tasks.
+
+---
+
+### 289. Clear orchestrator context budget gate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Clear verify-deploy gate 20 (orchestrator context budget lock) entirely and promote it from warn to hard. Both of the gate's open findings are governed by the single config file agent-system/extensions/core/context/config/orchestrator-context-budget.json, so they are one change, not two. (a) Eager-load total measures 67,980 B against a recorded baseline_bytes of 65,950 B -- 2,030 B over, a FAIL. The overage pre-dates the worktree-isolation removal batch and none of that batch's files are eager-loaded. Largest eager contributors are the assembled .claude/CLAUDE.md (36,659 B) and the git-workflow.md rule (9,740 B); the established remedy is extracting detail into context/ behind a plain pointer, as source-store-deploy-boundary.md already does. The config's own note requires that baseline_bytes never be silently re-derived, so either outcome -- content trim or a dated, reviewed baseline move -- must be deliberate and recorded in that file's derivation narrative. (b) skills/skill-orchestrate/SKILL.md measures 20,325 B against its 20,000 B ROADMAP-derived ceiling -- 325 B over, a WARN. A known-safe trim remains available: the Skill-to-Agent Mapping table's three lifecycle-dispatch rows (research, plan, implement) restate one identical resolution-and-context clause and collapse to a single row for roughly 133 B, so further compression of contract prose is also needed. (c) The config comment defers promoting ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard until commands/orchestrate.md settles past its concurrent sibling task; that sibling has now landed, so re-check the precondition and promote the gate in the same change that clears both findings above.
+
+---
 
 ### 288. Remove the per-dispatch worktree isolation layer and unwire every caller
 - **Status**: [COMPLETED]
