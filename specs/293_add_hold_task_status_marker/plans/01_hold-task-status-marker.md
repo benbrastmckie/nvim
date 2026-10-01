@@ -1,7 +1,7 @@
 # Implementation Plan: Task #293
 
 - **Task**: 293 - Add a HOLD task status marker that pauses a task and excludes it from dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/293_add_hold_task_status_marker/reports/01_hold-task-status-marker.md

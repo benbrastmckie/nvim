@@ -1,5 +1,5 @@
 ---
-next_project_number: 301
+next_project_number: 302
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 301
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,293,294,295,296,297,299,300 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,294,295,296,297,299,300,301 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298 | 22,44,127,184,241,265,272,279,280,297 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -41,8 +41,7 @@ next_project_number: 301
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 289 [NOT STARTED] — Clear verify-deploy gate 20 (orchestrator context budget...
 290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
-292 [PARTIAL] — Add an explicit task-count reasoning step to task creation so...
-293 [IMPLEMENTING] — Add a HOLD task status marker that pauses a task and excludes...
+292 [IMPLEMENTING] — Add an explicit task-count reasoning step to task creation so...
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 
 ### Extensions
@@ -79,8 +78,90 @@ next_project_number: 301
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
+301 [NOT STARTED] — Re-open the per-dispatch worktree isolation verdict: audit,...
 
 ## Tasks
+
+### 301. Re-open the per-dispatch worktree isolation verdict: audit, external research, complexity measurement, and a decision under a hard user-approval gate
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Re-open the question closed by `specs/decisions/worktree-isolation-removal-verdict.md` — whether per-dispatch `git worktree` isolation should be restored to the agent system — and terminate in a decision that either formally SUPERSEDES or formally CONFIRMS that record. The record is marked "verdict, not re-openable"; this task may not quietly route around it. Either outcome is acceptable and must be argued from evidence, not from regret.
+
+THIS TASK IMPLEMENTS NOTHING. It produces a research report, a complexity measurement, a design (only if the evidence supports resurrection), and a decision record. No script under `agent-system/extensions/core/scripts/` may be modified by it. All orchestration scripts are READ-ONLY inputs here — note the self-modification hazard: the subject of this task IS the orchestrator that would dispatch it.
+
+HARD APPROVAL GATE (requirement 4, not a courtesy). If the research concludes in favor of resurrection, the design MUST be surfaced to the user and explicitly approved BEFORE any implementation task is dispatched. No implementation follow-up may be created-and-dispatched in the same breath as the decision. Note that `AskUserQuestion` is not reachable from a dispatched subagent on this harness (that is task 300's subject), so the gate must be designed to work from wherever it actually runs — most likely by surfacing the design to the root session for approval rather than prompting from inside a dispatch. A gate that silently degrades to "assumed approved" is a failure of this task.
+
+## Mandatory first input
+
+Read `specs/decisions/worktree-isolation-removal-verdict.md` (181 lines) in full before anything else. Its claims are the ones the new research must answer. In particular:
+
+1. COST IS NOT AVAILABLE AS AN OBJECTION. The record measures `git worktree add` at 0.09–0.2 s and a hardlink-clone of a 16 GiB `.lake/` at ~0.8 s for 157,000+ files, every link count verified > 1. Resurrecting the cost argument against the layer is arguing against the repo's own evidence. Do not do it.
+2. THREE DEFECTS, EVERY ONE INDUCED BY THE LAYER. (a) destructive release on `nothing_to_land` — a pure `merge-base --is-ancestor` ancestry test never inspected the working tree, and postflight folded that verdict into the same success branch as `landed`, then released; it nearly destroyed 456 verified, sorry-free, build-green Lean lines, caught only by manual operator inspection. (b) `git-commit-scoped.sh` cannot commit inside a worktree — `PROJECT_ROOT` derived from `BASH_SOURCE[0]` with no `--repo-root`/`--worktree` flag, so every pathspec fell through WARN-and-drop, nothing staged, and the script returned success. (c) `lake-build-guard.sh` false green — `cp -al` shared inodes for the five `build-guard.*` state files, `finalize_record()` truncates in place, so a worktree build overwrote the main tree's record and reported "Build completed successfully (1200 jobs)" while writing no `.olean`.
+3. THE DECISIVE STRUCTURAL ARGUMENT, distinct from any single defect. Hardlink-clone correctness rests on "independently rebindable via atomic rename", which is a PER-WRITER property, not a property of the clone. A truncate-in-place writer never gets it. So every script that keeps mutable per-invocation state inside a cloned directory is a fresh instance of the hazard, and the exclusion list is a hand-maintained enumeration of named files. "A layer whose correctness depends on the continuing discipline of unrelated scripts that do not know it exists cannot be audited once and then trusted." THIS IS THE STRONGEST ARGUMENT AGAINST RESURRECTION AND IT IS THE GATE. Any resurrected design must answer it STRUCTURALLY. If the only available answer is a promise of more discipline or a longer hand-maintained exclusion list, that is strong evidence for leaving the layer removed, and this task must say so plainly.
+4. THE LAYER DEFEATED ONE OF ITS OWN JUSTIFICATIONS. The shared `build-guard.lock` inode serialized builds ACROSS trees, defeating exactly the build-contention isolation worktrees existed to provide.
+
+## Complexity must be measured, not asserted (requirement 3)
+
+Re-measure against the removal footprint table in the record: `dispatch-worktree.sh` 670 lines, `test-dispatch-worktree.sh` 661 lines, `test-dispatch-isolation-fixture.sh` 471 lines, plus ~228 wiring references across 20 non-test files (heaviest: `orchestrate-cycle-plan.sh` 36, `orchestrate-cycle-postflight.sh` 24, `orchestrate-build-dispatch.sh` 14, `batch-orchestration-guardrails.md` 18). Two byte budgets gained headroom from the removal and are HARD CONSTRAINTS any resurrection must fit inside: `skill-orchestrate/SKILL.md` was 1,317 B over its ceiling, and eager context load was 2,030 B over baseline. A resurrection that re-breaks either budget is not admissible without saying what it gives back.
+
+Also re-measure the DERIVED hazard class the removal deleted: a provisioned worktree holds a HEAD-stale tracked copy of `specs/`, which forced task artifacts to be written to the main tree by absolute path and forced merge-back to refuse any branch touching `specs/**`. A resurrected design inherits this or must dispose of it.
+
+## Prior tasks to audit (requirement 1)
+
+- `specs/archive/199_concurrent_dispatch_isolation_posture` — built `dispatch-worktree.sh` (commits `a355c02de` provision/path/release, `267a5df0f` land/merge-back).
+- `specs/archive/276_worktree_land_dirty_release_data_loss` — the data-loss defect. Disposition was ABANDON, on the rationale that its subject (the `nothing_to_land` -> `release` path) ceases to exist under removal. IF THE LAYER RETURNS, THIS ABANDONMENT MUST BE REVISITED; it is the single most safety-critical of the resurrectable tasks.
+- Task 286 (completed) — revised the isolation posture to the blanket shared-tree verdict.
+- Task 287 (completed) — "Refuse to co-schedule two build-heavy implement tasks in one cycle." The replacement mechanism for mode 2 (build contention), keyed on the `task_type` family (`lean4`, `cslib`) repurposed from "isolate this" to "do not co-schedule this".
+- Task 288 (completed) — the removal itself; 9 phases, commits `d1ab60b92`..`770ed356d`; research report at `specs/288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md`.
+- Task 278 (completed) — forbids forwarding the Agent tool `isolation` parameter in skill-orchestrate Move 2; marks `plan.sh` `isolation`/`worktree_path` fields descriptive.
+- Task 277 (not_started) — narrowed to part (b) only: an unresolvable pathspec should be a hard error in `git-commit-scoped.sh` instead of a silent WARN-and-drop. Part (a), worktree targeting, was ruled moot by the removal; IT BECOMES LIVE AGAIN IF THE LAYER RETURNS.
+- Task 268 (implementing) — `lake-build-guard` false green; phases 1-4 complete, phase 5 (redeploy + final gate) remains. Its phase-2 deliverable (the `build-guard.*` exclusion from the `cp -al` clone) lived inside the deleted file.
+- Task 165 (planned) — absent-`file_scope` admission posture; PROMOTED by the removal verdict, since under a shared tree an absent `file_scope` is the only remaining silent path to mode 1b. If the layer returns, re-score whether 165 is still promoted.
+- Also: `specs/archive/228_establish_batch_orchestration_as_default`, and `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md` — its "Working-Tree and Build Isolation Posture" section, the three-failure-mode taxonomy and the scoring table, which the verdict says remain valid as written.
+
+## Time-limited live evidence — CAPTURE IT INTO THE REPORT FIRST, IT DISAPPEARS ON REDEPLOY
+
+Observed in `/home/benjamin/Projects/Logos/Verification` during an `/orchestrate 119,122,129,151,154,159` batch run on 2026-09-30/10-01. CRITICAL FRAMING FACT: that repo's deployed `.claude/` tree is STALE for the `core` and `lean` extensions and therefore STILL CONTAINS `dispatch-worktree.sh` (30,411 bytes, present and executable at `.claude/scripts/dispatch-worktree.sh`), even though it is deleted from the source store. Verified: the source-store path no longer exists; the deployed path does; `.orchestrate-worktrees/119-12` and `.orchestrate-worktrees/129-14` are both live on disk. So this run is live observational evidence of the REMOVED layer in action, and the evidence source is destroyed the moment that repo redeploys. Record these observations before doing anything else that could trigger a redeploy.
+
+- WORKTREE ISOLATION WORKED CLEANLY FOR THE TWO LEAN4 TASKS. Tasks 119 and 129 each got a worktree on its own branch. 129 landed 10 clean per-phase commits (`e3da7eb`..`f30d4b6`), left the worktree clean, and its true footprint measured from the merge base (`e06ba69`) was 26 files ENTIRELY under `components/distsys/` — exactly its declared scope.
+- COMMITTING FROM INSIDE THE WORKTREE SUCCEEDED. This is notable against defect (b) and must be investigated: determine whether the dispatched agent used `git-commit-scoped.sh` or raw `git`, because that distinguishes "defect (b) was fixed" from "the agent worked around it", and the answer changes the resurrection cost materially.
+- THE TASK-278 HAZARD WAS AVOIDED ONLY BY ORCHESTRATOR DISCIPLINE, NOT STRUCTURE. The dispatch rows carried `isolation: "worktree"` and `worktree_path`, which merely RECORD an already-provisioned checkout. Forwarding them to the Agent tool's own `isolation` parameter would be syntactically valid (its enum includes `"worktree"`) and raise no error, while stacking a SECOND harness checkout — after which the harness refuses all cross-checkout git by design but still permits file writes and builds, so an agent authors and verifies green and then cannot commit. Observed historical cost: 20 of a dispatch's 21 phases. Today it was avoided only because Move 2's PROSE forbids the forwarding. A resurrected design must make this structurally impossible, not prose-guarded.
+- OBSERVED COST OF THE SHARED TREE, AS A COUNTERWEIGHT. The two in-tree tasks (122 typst, 151 typst, `isolation: none`) interleaved 21 commits directly onto `main`, braided together (`task 122 phase 7`, `task 151 phase 6`, `task 122 phase 12`, ...). 151 reported having to hand-stage carefully to exclude its siblings' in-flight files. That is mode-1b pressure absorbed by agent discipline rather than closed structurally — a real, observed cost of the shared tree that the removal verdict's re-scoring treats as "covered by `file_scope` serialization".
+- `task_type` IS A POOR PROXY FOR BUILD WEIGHT — directly relevant to requirement 5. Task 129 is a Mathlib-free Lake package; its clean build from an empty `.lake/` with the network blocked was 6 s wall, 17 jobs. Yet `lean4` is exactly the family task 287's admission rule treats as build-heavy and refuses to co-schedule. The replacement rule therefore forecloses parallelism that in this instance cost almost nothing. Consider MEASURING build weight rather than inferring it from `task_type` — as a revision of 287 whether or not the layer returns.
+- THE CENTRAL TRADE, SHARPENED BY THIS RUN. Tasks 119 and 129 are both `lean4`, both "build-heavy" by the predicate, and both ran CONCURRENTLY under the old deployed code with worktrees. Task 287's admission rule now FORBIDS exactly that co-scheduling. Worktrees bought parallelism at the cost of structural complexity; the admission rule buys safety by surrendering that parallelism. This is the crux of "is it worth it" and the report must frame it this way.
+- A HAZARD CLASS THE DECISION RECORD DOES NOT NAME: unlanded branch work is invisible to a later-cycle sibling. Task 159 was deferred this cycle for a `file_scope` overlap with 129 at `components/distsys/README.md`. Because 129's work sits on an unmerged branch, when 159 is later dispatched it will read a tree that does not contain 129's work at all. Under a shared tree the dependent would have seen it. This is a genuine new finding about worktree isolation interacting with deferral/wave scheduling and it belongs in scope.
+
+## External research (requirement 2)
+
+Research current practice online, do not rely on memory: `git worktree` orchestration for concurrent coding agents; build-cache sharing strategies across worktrees (Lake/`.lake/`, cargo target dirs, typst caches, sccache/ccache-style content-addressed caches); copy-on-write/reflink (`cp --reflink`, btrfs/XFS/ZFS, overlayfs) as alternatives to hardlink-cloning that do NOT depend on per-writer atomic-rename discipline; and how other agent harnesses isolate concurrent writers. A CoW or overlay mechanism that structurally dissolves the per-writer argument in item 3 above would be the single most decision-changing finding available; look for it specifically.
+
+## Design requirements if resurrection is proposed
+
+- ALL TASK TYPES, not lean-only (requirement 5). Lean is the stress case (large `.lake/`, mandatory builds) but typst/rust/z3/general must work too. A per-type carve-out matrix is a likely smell — say so if the design drifts into one.
+- STRUCTURAL answer to the per-writer atomic-rename argument, per item 3. This is the gate.
+- Make the Move 2 `isolation`-forwarding hazard structurally impossible.
+- Fit inside the `SKILL.md` ceiling and the eager-context baseline, or state explicitly what is given back.
+- Dispose of, or inherit and justify, the HEAD-stale `specs/` derived hazard class.
+- Say what happens to the unlanded-branch-invisibility interaction with wave deferral.
+- HUNT FOR ISSUES IN THE RESURRECTED DESIGN (requirement 6). Adversarially review it; enumerate the hazards it creates, not only the ones it closes. Avoid needless complexity while providing the most robust feature set (requirement 7).
+
+## Permitted outcomes
+
+Either is valid and must follow the evidence:
+
+A. CONFIRM the removal verdict. Write a decision record that confirms it, citing the new evidence (including the counterweights above, which do NOT automatically favor resurrection), and name the narrower improvements the evidence does support — most likely a revision of 287 toward measured build weight rather than `task_type` inference, and any re-scoring of 165.
+
+B. SUPERSEDE the removal verdict. Write the superseding record, then STOP AT THE APPROVAL GATE. Name the resurrection/revision follow-ups as CONDITIONAL on approval — resurrecting 199 and 276 (276's ABANDON must be revisited; it is the safety-critical one), un-narrowing 277 part (a), re-scoping 268 phase 2, and revising 287 — and do NOT pre-create them as implementation tasks.
+
+## Out of scope
+
+Creating implementation tasks before approval. Modifying any orchestration script. Re-litigating the cost objection. Deciding the `MAX_TASKS` cap, the PATH-shim wrapper, or the state-schema field rulings, each of which the existing record explicitly leaves to its own task.
+
+---
 
 ### 300. Resolve AskUserQuestion's unreachability in dispatched subagents: verify the mechanism, correct the frontmatter standard's tool-inheritance claim, and rehome every user-choice gate
 - **Effort**: 3-6 hours
@@ -467,12 +548,13 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 293. Add a HOLD task status marker that pauses a task and excludes it from dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [293_add_hold_task_status_marker/reports/01_hold-task-status-marker.md]
 - **Plan**: [293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md]
+- **Summary**: [293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree -- see rules/source-store-deploy-boundary.md).
 
@@ -612,7 +694,7 @@ This is the phase that makes a hold actually hold. Phase 1 alone makes "hold" va
 ---
 
 ### 292. Task count reasoning in task creation
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

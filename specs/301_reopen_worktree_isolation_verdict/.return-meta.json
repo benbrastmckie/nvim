@@ -1,0 +1,40 @@
+{
+  "status": "tasks_created",
+  "summary": "Created one research-and-decide task (301) to re-open the per-dispatch worktree isolation verdict: audits the removal and the archived/abandoned refinement tasks, researches external worktree-orchestration and build-cache-sharing practice, re-measures the complexity the layer adds against task 288's removal footprint, generalizes beyond lean4 to all task types, and terminates in a decision record that formally supersedes or confirms specs/decisions/worktree-isolation-removal-verdict.md behind a hard user-approval gate. No implementation performed.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "active_projects entry for task 301 (status not_started, task_type meta, topic orchestrator, 12 research_questions, file_scope scoped to the decision record only); next_project_number advanced to 302"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task 301 entry regenerated into TODO.md (wave 1, unblocked, no dependencies)"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/301_reopen_worktree_isolation_verdict/",
+      "summary": "Task directory with reports/, plans/, summaries/ subdirectories"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790831010_c477da",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [301]
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md"
+  ],
+  "proposed_file_scope": [
+    "specs/decisions/worktree-isolation-removal-verdict.md"
+  ],
+  "next_steps": "Run /research 301 in /home/benjamin/.config/nvim. Capture the time-limited live evidence from /home/benjamin/Projects/Logos/Verification (its stale .claude/ deploy still contains dispatch-worktree.sh, 30411 bytes, with .orchestrate-worktrees/119-12 and 129-14 live on disk) BEFORE that repo redeploys, since the redeploy destroys the evidence source."
+}

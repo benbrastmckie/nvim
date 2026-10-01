@@ -1,0 +1,40 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#299, topic=orchestrator) to guarantee detection of an in-place plan revision landing concurrently with a live implement dispatch, adopting remedies 1 (contractual landed-revision notification from reviser-agent) and 2 (implement-side re-read of every excerpted plan phase before writing) together. Remedy 3 (never co-dispatching) recorded as a rejected alternative.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #299 entry added to TODO.md (regenerated via generate-todo.sh)"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task #299 added to active_projects; next_project_number advanced to 300"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/299_detect_plan_revision_during_implement/",
+      "summary": "Task directory created with reports/, plans/, summaries/ subdirectories"
+    }
+  ],
+  "next_steps": "Run /research 299 at /home/benjamin/.config/nvim to begin research. The task description names one OPEN DECISION the research phase must settle: how to condition remedy 1, given that orchestrate-cycle-plan.sh's AUX EMISSION block runs before dispatch-candidate bucketing (recommended resolution: emit the notification instruction unconditionally).",
+  "metadata": {
+    "session_id": "sess_1790826000_c7d4e1",
+    "agent_type": "meta-builder-agent",
+    "duration_seconds": 420,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [299],
+    "topic": "orchestrator",
+    "commit": "c97194247"
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/state.json"
+  ]
+}
