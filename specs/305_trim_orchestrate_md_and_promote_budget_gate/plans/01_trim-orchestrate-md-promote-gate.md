@@ -260,7 +260,7 @@ comment block narrating the successful promotion instead of the deferred attempt
 
 ---
 
-### Phase 3: Refresh the measurement and narrative record [IN PROGRESS]
+### Phase 3: Refresh the measurement and narrative record [COMPLETED]
 
 **Goal**: No file in the repo still claims the `commands/orchestrate.md` overage is open or that
 the gate promotion is pending.
@@ -313,29 +313,42 @@ the gate promotion is pending.
 
 ---
 
-### Phase 4: Narrow verification and deploy sync [NOT STARTED]
+### Phase 4: Narrow verification and deploy sync [COMPLETED]
 
 **Goal**: Gate 20 passes in `hard` mode and the 13-case suite is green, with the pre-existing
 out-of-scope findings explicitly distinguished rather than chased.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
       and record the pass/fail tally. The expectation is 15/15 once the trim removes the one
       pre-existing per-file ceiling WARN that the baseline-fixture check tolerates at `-le 1`.
-- [ ] If the baseline-fixture case still fails, confirm the cause is the pre-existing lean
+      *(deviation: altered — result is 14 passed / 1 failed, not 15/15; gate20 finding lines=0
+      confirms the ceiling WARN is gone, but the baseline-fixture full-battery run still fails on
+      pre-existing, out-of-scope lean staleness; see next item)*
+- [x] If the baseline-fixture case still fails, confirm the cause is the pre-existing lean
       staleness (gate3/gate5/gate16) and NOT gate20, by inspecting the reported finding lines
       before concluding anything. Do not treat an unrelated FAIL as this task's failure.
-- [ ] Run the narrow gate check over the real repo (a `--only-gate 20` invocation, or a
+      *(completed: confirmed by direct re-run of the baseline's own full-battery command against
+      the fixture — 0 gate20 FINDING lines; the only FAILs/WARN are gate3/gate5 lean
+      content-drift and gate16's routing_hard warning, identical to the pre-existing findings
+      already named in this dispatch's own deploy-freshness-context block)*
+- [x] Run the narrow gate check over the real repo (a `--only-gate 20` invocation, or a
       `--findings` run filtered with `grep gate20`) and confirm no gate20 FINDING remains and the
-      live-figures block shows `mode: hard` with both files `under`.
-- [ ] Optional deploy sync: run `bash .claude/scripts/deploy-headless.sh` so the deployed
+      live-figures block shows `mode: hard` with both files `under`. *(completed: PASS -- 4
+      checks, 0 failures; live-figures block shows mode: hard, commands/orchestrate.md 19024 B
+      under 21000 B, SKILL.md 19993 B under 20000 B)*
+- [x] Optional deploy sync: run `bash .claude/scripts/deploy-headless.sh` so the deployed
       `.claude/commands/orchestrate.md` matches the trimmed source (and the dispatch's noted lean
       staleness clears). `.claude/` is gitignored and untracked, so this changes nothing
       committable. If the deploy surfaces unrelated failures, record them and move on — it is
-      hygiene, not an acceptance criterion for this task.
-- [ ] Commit any remaining task-scoped changes and record the verification evidence (tallies,
-      byte counts, gate output excerpts) in the implementation summary.
+      hygiene, not an acceptance criterion for this task. *(completed: deploy landed; a
+      post-deploy --findings run shows the four core files this task touched — orchestrate.md,
+      orchestrate-state-machine.md, verify-deploy.sh, orchestrator-context-budget.json — no
+      longer drift from source; remaining findings are the pre-existing lean staleness plus 3
+      pre-existing unrelated core contracts-file drifts also already present before this task)*
+- [x] Commit any remaining task-scoped changes and record the verification evidence (tallies,
+      byte counts, gate output excerpts) in the implementation summary. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -363,19 +376,20 @@ out-of-scope findings explicitly distinguished rather than chased.
 
 ## Testing & Validation
 
-- [ ] `wc -c agent-system/extensions/core/commands/orchestrate.md` <= 20,500 B.
-- [ ] Every assertion removed from the trimmed spots has a confirmed home in
+- [x] `wc -c agent-system/extensions/core/commands/orchestrate.md` <= 20,500 B. *(19,024 B)*
+- [x] Every assertion removed from the trimmed spots has a confirmed home in
       `docs/architecture/orchestrate-state-machine.md` (clause-by-clause, per Phase 1).
-- [ ] No backward "see `commands/orchestrate.md`'s Options table for the full per-flag wording"
+- [x] No backward "see `commands/orchestrate.md`'s Options table for the full per-flag wording"
       pointer remains in the destination doc.
-- [ ] `bash -n agent-system/extensions/core/scripts/verify-deploy.sh` exits 0 and the sole
+- [x] `bash -n agent-system/extensions/core/scripts/verify-deploy.sh` exits 0 and the sole
       `ORCHESTRATOR_BUDGET_GATE_MODE:-` default reads `hard`.
-- [ ] `jq -e .` passes on `orchestrator-context-budget.json`; `ceiling_bytes` and
+- [x] `jq -e .` passes on `orchestrator-context-budget.json`; `ceiling_bytes` and
       `eager_load.baseline_bytes` are byte-identical to their pre-task values.
-- [ ] `test-verify-deploy-context-budget.sh`: 15 passed, 0 failed (or a documented pre-existing,
-      non-gate20 failure).
-- [ ] No `FINDING gate20` in a `verify-deploy.sh --findings` run.
-- [ ] No new occurrence of a task-number reference in any file outside `specs/**`.
+- [x] `test-verify-deploy-context-budget.sh`: 15 passed, 0 failed (or a documented pre-existing,
+      non-gate20 failure). *(14 passed / 1 failed; the 1 failure is documented pre-existing lean
+      staleness, not gate20 — gate20 finding lines=0)*
+- [x] No `FINDING gate20` in a `verify-deploy.sh --findings` run.
+- [x] No new occurrence of a task-number reference in any file outside `specs/**`.
 
 ## Artifacts & Outputs
 

@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Narrow verification and deploy sync",
+  "started_at": "2026-10-01T01:15:00Z",
+  "last_updated": "2026-10-01T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run 13-case test suite, record tally (14/15)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm baseline-fixture failure is pre-existing lean staleness, not gate20", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Narrow gate20 check over real repo (mode: hard, both files under)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Optional deploy sync (deploy-headless.sh)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record verification evidence in summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "test-verify-deploy-context-budget.sh reports 15 passed / 0 failed",
+      "type": "altered",
+      "reason": "Result is 14/15, not 15/15: gate20 finding lines=0 confirms the per-file ceiling WARN this task's trim was meant to clear is gone, but the baseline-fixture check is a full-battery run that also trips on pre-existing, out-of-scope lean-extension deploy staleness (gate3/gate5/gate16), which this task's constraints explicitly exclude from scope.",
+      "annotation": "*(deviation: altered — result is 14 passed / 1 failed, not 15/15; gate20 finding lines=0 confirms the ceiling WARN is gone, but the baseline-fixture full-battery run still fails on pre-existing, out-of-scope lean staleness; see next item)*"
+    }
+  ]
+}
