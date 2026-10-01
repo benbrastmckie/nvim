@@ -45,22 +45,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["status-clamp", "monotonic-max", "sticky-status", "rank-table", "forced-dispatch"]
+      "suggested_keywords": [
+        "status-clamp",
+        "monotonic-max",
+        "sticky-status",
+        "rank-table",
+        "forced-dispatch"
+      ]
     },
     {
       "content": "To regression-test a bash snippet embedded in a markdown command file (e.g. commands/*.md, which is documentation executed by an agent at runtime, not a sourced script), extract the exact snippet with awk anchored on distinctive start/end lines directly from the source-store file, verify the extraction actually contains the expected new code (grep for a marker string) before trusting it, then `eval` it inside a subshell with the needed input variables pre-set and cwd pointed at a synthetic fixture directory. This is the only way to exercise such logic in an automated test without invoking the full agent/command dispatch machinery, and catches drift between the documented STAGE 0-style bash and what a test suite assumes it does.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/293_add_hold_task_status_marker/summaries/01_hold-task-status-marker-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["markdown-embedded-bash", "command-file-testing", "awk-extraction", "stage0-testing"]
+      "suggested_keywords": [
+        "markdown-embedded-bash",
+        "command-file-testing",
+        "awk-extraction",
+        "stage0-testing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790826658_06dbd3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
