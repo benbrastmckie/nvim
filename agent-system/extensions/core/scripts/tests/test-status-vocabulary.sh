@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test-status-vocabulary.sh - Fixture-driven regression suite for scripts/lib/status-vocabulary.sh,
-# the single sourced anchor for the closed 12-value task-status enum (specs/state.json
+# the single sourced anchor for the closed 13-value task-status enum (specs/state.json
 # `.active_projects[].status`).
 #
 # Two assertion families:
@@ -104,10 +104,10 @@ fi
 
 schema_count=$(jq -r '.definitions.taskStatus.enum | length' "$SCHEMA")
 lib_count="${#STATUS_VOCABULARY_ENUM[@]}"
-if [[ "$schema_count" -eq 12 && "$lib_count" -eq 12 ]]; then
-  pass "both schema (n=$schema_count) and library (n=$lib_count) enums have exactly 12 values"
+if [[ "$schema_count" -eq 13 && "$lib_count" -eq 13 ]]; then
+  pass "both schema (n=$schema_count) and library (n=$lib_count) enums have exactly 13 values"
 else
-  fail "expected exactly 12 enum values; schema has $schema_count, library has $lib_count"
+  fail "expected exactly 13 enum values; schema has $schema_count, library has $lib_count"
 fi
 
 # =====================================================================
@@ -156,6 +156,13 @@ if [[ "$marker" == "NOT STARTED" ]]; then
   pass "status_vocabulary_todo_marker('not_started') == 'NOT STARTED'"
 else
   fail "status_vocabulary_todo_marker('not_started') returned '$marker', expected 'NOT STARTED'"
+fi
+
+marker=$(status_vocabulary_todo_marker "hold") || marker="__CALL_FAILED__"
+if [[ "$marker" == "HOLD" ]]; then
+  pass "status_vocabulary_todo_marker('hold') == 'HOLD'"
+else
+  fail "status_vocabulary_todo_marker('hold') returned '$marker', expected 'HOLD'"
 fi
 
 if status_vocabulary_todo_marker "revising" >/dev/null 2>&1; then

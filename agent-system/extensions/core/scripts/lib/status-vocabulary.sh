@@ -3,7 +3,7 @@
 # `.active_projects[].status`, i.e. the TASK-LEVEL vocabulary -- a different, wider enum than
 # the phase-heading vocabulary phase-heading-patterns.sh anchors).
 #
-# This is the ONLY place the closed 12-value task-status enum and its state.json-value ->
+# This is the ONLY place the closed 13-value task-status enum and its state.json-value ->
 # TODO.md-marker mapping are defined as executable data. context/schemas/state-schema.json's
 # `definitions.taskStatus.enum` is the machine-readable twin of this array -- the two MUST stay
 # byte-equal (see scripts/tests/test-status-vocabulary.sh's drift assertion, which extracts the
@@ -31,7 +31,7 @@
 #     `status_vocabulary_todo_marker <value>` for the state.json-value -> TODO.md-marker mapping
 #     (uppercase, space-separated, no brackets -- callers wrap in `[...]` themselves).
 
-# ─── Closed task-status enum (12 values) ───────────────────────────────────────────────────────
+# ─── Closed task-status enum (13 values) ───────────────────────────────────────────────────────
 # Order matches context/schemas/state-schema.json's definitions.taskStatus.enum exactly -- the
 # drift test compares both as sorted sets, but keeping the literal order aligned makes a manual
 # diff between the two files trivial.
@@ -48,6 +48,7 @@ STATUS_VOCABULARY_ENUM=(
   "abandoned"
   "partial"
   "expanded"
+  "hold"
 )
 
 # ─── state.json value -> TODO.md marker mapping ────────────────────────────────────────────────
@@ -66,10 +67,11 @@ declare -A STATUS_VOCABULARY_TODO_MARKER_MAP=(
   ["abandoned"]="ABANDONED"
   ["partial"]="PARTIAL"
   ["expanded"]="EXPANDED"
+  ["hold"]="HOLD"
 )
 
 # ─── status_vocabulary_is_valid <value> ────────────────────────────────────────────────────────
-# Returns 0 (true) iff <value> is exactly one of the twelve closed enum values, 1 (false)
+# Returns 0 (true) iff <value> is exactly one of the thirteen closed enum values, 1 (false)
 # otherwise. Never partial-matches (e.g. "not_started_x" is rejected).
 status_vocabulary_is_valid() {
   local candidate="$1" v
@@ -98,7 +100,10 @@ status_vocabulary_todo_marker() {
 # diagram in context/standards/status-markers.md documents. `blocked`, `partial`, `abandoned`,
 # and `expanded` are deliberately OMITTED: per rules/state-management.md's permissive model these
 # are non-terminal exception states or terminal states that live outside the linear axis, and the
-# monotonic-max clamp below concerns only ordinary lifecycle-progress regression. `pr_ready` is
+# monotonic-max clamp below concerns only ordinary lifecycle-progress regression. `hold` is
+# deliberately omitted too -- it is a human-initiated pause, not a point on the linear-progress
+# axis, and belongs in the same omitted set as blocked/partial/abandoned/expanded rather than
+# being assigned a rank. `pr_ready` is
 # included at rank 6 -- it sits on the linear axis between `implementing` and `completed` -- even
 # though the status-markers.md transition diagram's research-cited ordering text stopped at
 # `completed`.

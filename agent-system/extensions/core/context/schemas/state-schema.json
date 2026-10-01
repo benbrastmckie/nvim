@@ -183,7 +183,8 @@
         "blocked",
         "abandoned",
         "partial",
-        "expanded"
+        "expanded",
+        "hold"
       ]
     },
     "artifactEntry": {
@@ -370,6 +371,18 @@
         "completion_summary": {
           "type": "string",
           "description": "Required when status is completed; a 1-3 sentence summary of accomplishment. Schema-optional here since only completed entries carry it."
+        },
+        "hold_reason": {
+          "type": "string",
+          "description": "Required when status is hold; why the task is paused. Schema-optional here since only held entries carry it."
+        },
+        "held_at": {
+          "type": "string",
+          "description": "Required when status is hold; YYYY-MM-DD date the hold was set -- the state.json twin of TODO.md's \"- **Held**: YYYY-MM-DD\" line. Schema-optional here since only held entries carry it."
+        },
+        "prior_status": {
+          "type": "string",
+          "description": "Required when status is hold; the status the task returns to when the hold lifts (preflight:unhold), making the hold reversible. Schema-optional here since only held entries carry it."
         },
         "roadmap_items": {
           "type": "array",

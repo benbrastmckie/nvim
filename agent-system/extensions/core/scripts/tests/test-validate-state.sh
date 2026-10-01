@@ -154,6 +154,47 @@ else
 fi
 
 # =====================================================================
+# Positive fixture: hold status + the three new entry fields -> exit 0
+# =====================================================================
+cat > "$WORKDIR/hold-state.json" <<'JSON'
+{
+  "next_project_number": 3,
+  "active_projects": [
+    {
+      "project_number": 1,
+      "project_name": "alpha",
+      "status": "hold",
+      "task_type": "general",
+      "created": "2026-01-01T00:00:00Z",
+      "last_updated": "2026-01-01T00:00:00Z",
+      "dependencies": [],
+      "hold_reason": "Awaiting upstream decision",
+      "held_at": "2026-01-01",
+      "prior_status": "planned"
+    }
+  ]
+}
+JSON
+
+out=$(bash "$VALIDATOR" "$WORKDIR/hold-state.json" 2>&1)
+rc=$?
+if [[ "$rc" -eq 0 ]]; then
+  pass "positive fixture: status 'hold' + hold_reason/held_at/prior_status exits 0 (no off-schema-status FAIL, no unknown-entry-field FAIL)"
+else
+  fail "positive fixture: hold state expected exit 0, got $rc"
+  info "$out"
+fi
+
+out_deep=$(bash "$VALIDATOR" --deep "$WORKDIR/hold-state.json" 2>&1)
+rc_deep=$?
+if [[ "$rc_deep" -eq 0 ]]; then
+  pass "positive fixture: hold state exits 0 under --deep"
+else
+  fail "positive fixture: hold state expected exit 0 under --deep, got $rc_deep"
+  info "$out_deep"
+fi
+
+# =====================================================================
 # Defect fixture 1: stray undocumented field (top-level)
 # =====================================================================
 cat > "$WORKDIR/stray-field.json" <<'JSON'
