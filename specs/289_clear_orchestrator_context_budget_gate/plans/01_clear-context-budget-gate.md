@@ -206,26 +206,26 @@ rather than trusting these figures.
 
 ---
 
-### Phase 3: Relocate git-workflow.md destructive-git narrative [NOT STARTED]
+### Phase 3: Relocate git-workflow.md destructive-git narrative [COMPLETED]
 
 **Goal**: Move the two operational-narrative paragraphs out of the second-largest eager rule into
 the narrative sidecar that already owns that elaboration, adding eager headroom with no information
 loss.
 
 **Tasks**:
-- [ ] Compress the rollback-procedure walkthrough in "No Destructive Git on Uncommitted Work"
+- [x] Compress the rollback-procedure walkthrough in "No Destructive Git on Uncommitted Work"
       (~964 B: the explicit-task-number rationale, the `file_scope` refusal story, and the
       `--allow-out-of-scope` override walkthrough) to a bare MUST + pointer to
       `context/standards/git-workflow-narrative.md` and `context/contracts/recovery.md`'s rollback
-      rung
-- [ ] Compress the "never emit `git-snapshot.sh` in its default (reverting) form" paragraph
+      rung *(completed)*
+- [x] Compress the "never emit `git-snapshot.sh` in its default (reverting) form" paragraph
       (~430 B) to the bare MUST NOT plus its existing
-      `context/patterns/checkpoint-before-overflow.md` pointer
-- [ ] **Add** both removed narratives to `context/standards/git-workflow-narrative.md`'s existing
+      `context/patterns/checkpoint-before-overflow.md` pointer *(completed)*
+- [x] **Add** both removed narratives to `context/standards/git-workflow-narrative.md`'s existing
       "No Destructive Git on Uncommitted Work — Snapshot Mode Detail" section (which today covers
-      only the exemption's per-mode detail), so the detail is relocated, not deleted
-- [ ] Verify the rule still states every MUST/MUST NOT it stated before: the forbidden-command
-      list, both exemptions, and the enforcement-hook attribution must all survive verbatim
+      only the exemption's per-mode detail), so the detail is relocated, not deleted *(completed)*
+- [x] Verify the rule still states every MUST/MUST NOT it stated before: the forbidden-command
+      list, both exemptions, and the enforcement-hook attribution must all survive verbatim *(completed: combined grep count matches pre-trim exactly at 8)*
 
 **Timing**: 0.75 hours
 

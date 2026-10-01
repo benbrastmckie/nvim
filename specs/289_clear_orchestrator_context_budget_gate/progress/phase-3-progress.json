@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Relocate git-workflow.md destructive-git narrative",
+  "started_at": "2026-10-01T06:02:00Z",
+  "last_updated": "2026-10-01T06:08:00Z",
+  "objectives": [
+    {"id": 1, "description": "Compress rollback-procedure walkthrough to bare MUST + pointer", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 2, "description": "Compress never-emit-default-form paragraph to bare MUST NOT + pointer", "status": "done", "note": "kept literal 'MUST NOT' phrasing (not just bolded 'Never emit') to preserve the grep-count verification", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 3, "description": "Add both removed narratives to git-workflow-narrative.md's Snapshot Mode Detail section", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-workflow-narrative.md"]},
+    {"id": 4, "description": "Verify rule still states every MUST/MUST NOT and exemption", "status": "done", "note": "combined grep -c 'MUST NOT|Forbidden on a dirty tree|guard-destructive-git.sh' matches pre-trim count of 8 exactly", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "measurements": {
+    "git_workflow_after_phase3_bytes": 9061,
+    "git_workflow_narrative_after_phase3_bytes": 9247,
+    "eager_total_after_phase3_bytes": 65402
+  }
+}

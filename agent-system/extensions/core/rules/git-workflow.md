@@ -126,24 +126,14 @@ dirty and no fresh snapshot exists.
    per-mode detail (default / `--branch` / `--no-revert`).
 
 Before any intentional rollback that would otherwise be blocked, run
-`bash .claude/scripts/git-snapshot.sh <task-number>` first, then retry the destructive
-command. Pass the task number explicitly — the no-argument form only resolves when
-exactly one task in `specs/state.json` has status `implementing`, which does not hold
-when several tasks are in flight at once. Default (and `--branch`) mode REFUSES this
-invocation, naming every offending path, when the dirty tree carries tracked
-modifications outside the task's declared `file_scope` (or when the task has no declared
-`file_scope` at all) — see `git-snapshot.sh --help` and
-`context/contracts/recovery.md`'s rollback rung. A genuine whole-tree rollback (the case
-this paragraph documents) is exactly the deliberate scenario the guard's
-`--allow-out-of-scope` override exists for: append it to the invocation above
-(`bash .claude/scripts/git-snapshot.sh <task-number> --allow-out-of-scope`) to proceed.
-
-**Never emit `git-snapshot.sh` in its default (reverting) form as a routine,
-non-rollback checkpoint** — that idiom is exactly the incident this guard and
-`agents/planner-agent.md`'s corresponding MUST NOT bullet exist to close. An ordinary
-defensive checkpoint before risky work belongs to `--no-revert` instead (durable,
-non-reverting; see `context/patterns/checkpoint-before-overflow.md`), never to a bare
-default-mode call.
+`bash .claude/scripts/git-snapshot.sh <task-number>` first (task number explicit, not the
+no-argument form), then retry the destructive command. Agents MUST NOT emit `git-snapshot.sh` in
+its default (reverting) form as a routine, non-rollback checkpoint — use `--no-revert` for an
+ordinary defensive checkpoint instead. See
+`context/standards/git-workflow-narrative.md`'s "No Destructive Git on Uncommitted Work —
+Snapshot Mode Detail" section for the full rollback-procedure walkthrough, the
+`file_scope`/`--allow-out-of-scope` refusal mechanics, and `context/patterns/checkpoint-before-overflow.md`
+for the `--no-revert` checkpoint pattern.
 
 **Not blocked** (do not discard uncommitted changes): `git stash` (push),
 `git stash pop` / `git stash apply`, `git restore --staged <path>`, and non-forced

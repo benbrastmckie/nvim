@@ -58,6 +58,25 @@ the intended behavior at this call site, because the snapshot sits immediately b
 already-decided destructive command. For a purely defensive checkpoint where work
 continues afterwards, use `--no-revert`, which leaves the tree untouched.
 
+**Rollback-procedure walkthrough.** Before any intentional rollback that would otherwise be
+blocked by the dirty-tree guard, run `bash .claude/scripts/git-snapshot.sh <task-number>` first,
+then retry the destructive command. Pass the task number explicitly — the no-argument form only
+resolves when exactly one task in `specs/state.json` has status `implementing`, which does not
+hold when several tasks are in flight at once. Default (and `--branch`) mode REFUSES this
+invocation, naming every offending path, when the dirty tree carries tracked modifications
+outside the task's declared `file_scope` (or when the task has no declared `file_scope` at all)
+— see `git-snapshot.sh --help` and `context/contracts/recovery.md`'s rollback rung. A genuine
+whole-tree rollback is exactly the deliberate scenario the guard's `--allow-out-of-scope`
+override exists for: append it to the invocation above
+(`bash .claude/scripts/git-snapshot.sh <task-number> --allow-out-of-scope`) to proceed.
+
+**Why the default form is never a routine checkpoint.** `git-snapshot.sh`'s default (reverting)
+form must never be emitted as a routine, non-rollback checkpoint — that idiom is exactly the
+incident this guard and `agents/planner-agent.md`'s corresponding MUST NOT bullet exist to close.
+An ordinary defensive checkpoint before risky work belongs to `--no-revert` instead (durable,
+non-reverting; see `context/patterns/checkpoint-before-overflow.md`), never to a bare
+default-mode call.
+
 ## No History Rewrites While Another Writer Is Live — Incident and Full Detail
 
 The eager core keeps the rule, the one-sentence dirtiness-vs-concurrency distinction, a brief
