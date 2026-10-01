@@ -1,5 +1,5 @@
 ---
-next_project_number: 297
+next_project_number: 299
 ---
 
 # TODO
@@ -8,13 +8,11 @@ next_project_number: 297
 
 *Updated 2026-10-01. Generated from state.json dependency graph.*
 
-**Goal**: Clear the 3 red verify-deploy gates, then collapse dispatch onto one shared working tree and push consent/admission posture (see specs/ROADMAP.md).
-
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,293,294,295,296 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281 | 22,44,127,184,241,265,272,279,280 | core-agent-system, extensions, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,293,294,295,296,297 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281,298 | 22,44,127,184,241,265,272,279,280,297 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
@@ -50,6 +48,8 @@ next_project_number: 297
 
 241 [PLANNED] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
+297 [NOT STARTED] — Scaffold the books extension: manifest, four-block routing,...
+  └─ 298 [NOT STARTED] — Author the books extension context corpus under...
 
 ### Literature
 
@@ -79,6 +79,178 @@ next_project_number: 297
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 
 ## Tasks
+
+### 298. Author the books extension context corpus under context/project/books/
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 297
+
+**Description**: Author the domain context corpus for the `books` extension under `agent-system/extensions/books/context/project/books/`. The extension's wiring — manifest, four-block routing, agents, skills, commands, rule, registration files and tests — is the dependency task; this task supplies the knowledge those agents and skills point at.
+
+SCOPE: source store only, and within it `context/project/books/**` only. The dependency task owns `manifest.json`, `agents/`, `skills/`, `commands/`, `rules/` and `scripts/tests/`; this task does not edit them. Nothing is hand-authored under `.claude/**` (`rules/source-store-deploy-boundary.md`); each repo regenerates its own `.claude/` through the loader picker.
+
+Write against the DESIGN RECORD — `docs/book-convention.md` (2450 lines, 18 accepted decisions) and `books/schema/book-toml-v2.md` (normative) in the Logos/Verification repository, plus `docs/architecture-decisions.md` decisions 2, 3, 8, 9 — rather than against the half-landed tooling, and keep the known-gap register honest about what is not yet built.
+
+== DOCUMENTS TO AUTHOR ==
+
+This corpus is one coherent reading; do not fragment it further.
+
+**1. Layer vocabulary and the may-import matrix.** The twelve `book_layer` values: the eight layers `interface | laws | extraction | impl | instances | refinement | challenge | evidence` plus the four opt-in split tiers `impl.defs`, `impl.proofs`, `instances.defs`, `instances.proofs` (Decision 2). The may-import matrix (Decision 3) replacing a total order, enforced at elaboration by `book_layer` over DIRECT imports only and at certification over the computed graph. `challenge` and `evidence` are terminal. The two universal rules that sit OUTSIDE the matrix and are the certifier's responsibility, not `book_layer`'s: Mathlib/Aeneas confinement, and terminal layers.
+
+**2. `book.toml` v2 and what is computed instead.** `schema = 2`; `[book]` name/module/version/status/license/maintainers; `[trust]` with the six ground classes G0_checker, G1_translation, G2_ir_faithfulness, G3_models, G4_specification, G5_binding; `[provenance]` rust_crate/rust_paths/extractor for bridged books only; `[docs] entry`. Fifteen fields across seventeen keys — record that the design record's own "twelve fields" headline is a historical name which the schema document corrects. `status` in {draft, certified, deprecated}; each trust verdict in {verified, validated, trusted, not_applicable}; `stale` is DERIVED, never authored. Computed and never authored: `[layers]`, `[exports]`, `[[depends]]`, `[external]`, `[axioms]`, the summary (which is the book module's docstring), and packages.
+
+**3. The certificate and ledger shape.** `book.cert.json` sits DIRECTLY in the book directory — never a `certificate/` subdirectory, because the framed_channel export tooling treats every `certificate` directory as a discovery root — and is THE ONLY INPUT of every non-Lean tool (Decisions 8, 9, 11). The per-export ledger. And `book.record.json` as the separate, NON-digested reconciliation record binding each guarantee's text hash to its export's ledger digest, with who signed and when.
+
+**4. Identity, chaining and the versioning rule.** Per-export Merkle digests over the statement cone with axiom sets, rolled into `interface_identity` and a full `identity`, chained per export through dependencies' certificates. Versioning keys on canonical statement serialisation; NO bump on a Lean toolchain bump alone.
+
+**5. Status and trust vocabularies** — the three `status` values and the four trust verdicts, with what each licenses and what it forbids. A `certified` book whose record is not fully reconciled FAILS the docs stage and is not certified; a `draft` book only reports.
+
+**6. The metadata split, as an authoring rule.** Facts in Lean, judgments in TOML, everything else computed (Decision 6). In a code module, exactly two things: `@[book_export]` on a declaration (no kind argument — kind is derived from `getOriginalConstKind?`) and one `book_layer <layer>` line. In the book module, everything else: `book`, `book_assume "<id>" "<text>" [<anchor>]`, `book_not_claimed "<text>"`, `book_axioms [...]`, `book_policy`, `book_requires` — all read back by `#book_ledger`. A `book_*` command in a code module WARNS and the build succeeds.
+
+**7. The build -> test -> certify -> document workflow, as an executable checklist.** Measured from the landed reference implementation over `components/distsys/lean/`: nine layer-assigned code modules, four book modules, four `book.toml` manifests, four docs entries.
+
+AUTHOR — code modules with the licence header on line 1 and `module` on line 2, one `book_layer` per code module, `@[book_export]` on each intended export, added by hand to the lakefile's explicit globs list. Then the book module: a PLAIN (private) import of the provider, PUBLIC imports of its own code modules (which is what makes a cross-book dependency declaration resolvable), a module docstring that IS the book's summary, `book <Name>`, `book_axioms [...]` naming the permitted set, per-layer `book_policy` confinement lines, `book_assume` with its discharging anchor, `book_not_claimed`, and `book_requires` for cross-book hypotheses (checked transitively against statement cones, so naming a constant whose declaring module is in the closure is correct and sufficient). Then `book.toml` v2 and the `docs/` entry.
+
+BUILD/TEST — clean build green from an empty `.lake/` with no network, wall time recorded; zero-`sorry` census, no `native_decide`, no search tactic, no vacuously-true definition; axiom audit enumerating every export's axioms against the declared budget with choice absent, and the number of SOURCES distinguished from the number of carrying declarations; universe audit; Mathlib-freedom audit (no require, no import, no mention, in any module or lakefile); `#book_ledger` reporting every code module layered, the book module carrying no layer, every intended export rowed with the right derived kind and NO forged-row flag; `books-tool validate` over each manifest (it decodes and checks all seventeen keys — a stronger check than counting files); `books-tool check --lib` reporting zero unassigned and zero doubly-assigned modules; a rebuild-isolation spot check (a proof-body edit rebuilds exactly that module; a figure materially above 1 means the exposure surface widened); a declaration-inventory diff signature by signature against the design artifact — a weakened restatement that still type-checks is exactly what this catches; `check-spdx.sh`; the regex layer lint, recording EXPLICITLY when it passes VACUOUSLY over a package no rule's file-half reaches; and the task-reference lint. Every figure is recorded as LANDED, never inherited from the design artifact, and a deviation is written as a deviation note rather than silently absorbed.
+
+CERTIFY — the certifier over the built environment: dependencies first in topological order, `reverify`, the advisory shake, computed `depends`, the per-export ledger, `interface_identity` and `identity`, the version check as a ledger diff, the authored judgments copied in with `source: authored`, then the docs stage. Mechanics worth recording: a reader script run under `lake env lean` inside the certified package's workspace does the environment work at the `.private` olean level, where `loadExts := true` after `enableInitializersExecution` is MANDATORY and SILENT when omitted; `reverify` re-verifies every recorded entry against constants and is the only first-implementation pass; the shell driver builds module targets with `lake build --wfail <Module>` and runs `lake shake` ADVISORILY, because shake refuses non-`module` packages on the pin — so that stage reports SKIPPED and never propagates its rc — and refuses on any failed check. Output is byte-stable: an unchanged tree regenerates the certificate byte for byte.
+
+DOCUMENT — author `docs/book.typ` against the certificate ALONE, in three tiers; compile each tier standalone and once embedded through `typst/scripts/build.sh`; then the tier-one prohibition lint, the drift and completeness checks, the element-placement lint and the chapter-quality check with no blocking finding.
+
+**8. The three-tier Typst template contract**, with the constraints that are VERIFIED on Typst 0.14.2 rather than assumed. `typst/lib/book.typ` (183 lines) is the per-book document template: tiers `overview | full | reference` via `--input tier=`, modes `standalone | embedded` via `--input mode=`. Its ONLY data input is the book's `book.cert.json`, loaded by the book DOCUMENT (`json("book.cert.json")`, a path relative to itself) and handed in via `#show: book.with(certificate: ...)`. The library never calls `json()` for a certificate, never reads `book.toml`, never reads `book.record.json` and never reads Lean source — because a relative `json()`/`read()`/`image()` path resolves against the file whose SOURCE TEXT contains the call, so a shared library cannot read a different certificate per book. `typst/lib/phrases.toml` is the only other file it reads, root-absolutely.
+
+Label mechanics: every label is book-id-prefixed from a `state()` so labels cannot collide once several books are embedded in one build; a label built in a SEPARATE `context` block and placed after already-realized content SILENTLY fails to attach, so labelled content and its label must be constructed together inside ONE `context` block (the `tagged`/`tagged-metadata` helpers); and every `metadata` value carries an explicit `kind` field so a generic `typst query <file> 'metadata'` returns every tagged element from every embedded book and the consumer filters on `.value.kind`.
+
+The compile root is the REPOSITORY root (`--root .`, architecture Decision 9) through `bash typst/scripts/build.sh`, so a book's `docs/` outside `typst/` compiles standalone AND embeds in the manual. Pins: thmbox 0.3.0, fletcher 0.5.8, cetz 0.3.4 on Typst 0.14.2. The test suite `typst/tests/book-template/run.sh` runs against `typst/tests/book-template/probe/` (book.toml, book.cert.json, book.record.json, docs/book.typ): three standalone tier compiles, one embedded compile, `typst query` for `<lean-decl>`/`<guarantee>`/`<book-meta>` metadata, and tier=overview containing no backtick span and no math.
+
+The tier-one content bar: no symbols, no Lean identifiers, no tool names; every guarantee names an export and every export has a guarantee; assumptions and not-claimed items rendered FROM the certificate, never retyped; a book that cannot support a section carries a scope note naming what is missing; a reworded guarantee needs re-approval exactly as a changed statement does; and a mechanical tier-one prohibition lint is part of the docs stage.
+
+**9. The reconciliation contract and the agents-write-prose / people-write-records boundary.** Reconciliation is triggered by CERTIFICATION, never by file save or commit: a proof-only edit changes no digest and touches no guarantee; an interface change always does, once. The contract: inputs limited to the documenter pack (certificate + tiers one and two + the phrase table + the record); writes limited to `docs/book.typ` of the NAMED book; only guarantees whose digests changed are touched; every tier compiled and the docs stage and lints green before finishing; and the record, `book.toml`, approvals and book module NEVER edited. The summary names each guarantee touched with old and new digest. Agents write prose; PEOPLE write records — the command prints the signing invocation and never runs it.
+
+**10. The tooling inventory**, naming what each piece READS and WRITES, and marking what the extension consumes rather than reimplements.
+
+`books/` at the repo root is a tooling directory, not a component: nothing there is digested, carries a certificate, or is depended on by a component gate. `books/lean/` — package `books`, library root `Books`, module `Books.Meta` (413 lines), the metadata provider; declares NO `require`; a PRIVATE import of code modules, since `public import Books.Meta` would make every consumer load `Lean`, so only book modules and the certifier import it publicly. `books/tool/` — package `booksTool`, the `books-tool` lean_exe (`Books.Manifest`, `Books.EnvWalk`, `Books.LayerCheck`), invoked as `books-tool validate` and `books-tool check --lib <built lib dir>`. `books/tests/manifest/run.sh` — the fixture suite driving the real `lake build`, the real elaborator and the real executable, with no copy of the provider's rules in the harness; cases BUILD, WF, TIERS, UNASSIGNED, DOUBLE, MATRIX-C, MATRIX-E, DIVERGE, XBOOK, LEDGER, FORGE-A..D, WARN, MANIFEST.
+
+Authoring rules under `books/`: the proprietary header within the first three lines of every `.lean`/`.sh` (comment line 1, `module` line 2, since a comment parses ahead of the `module` keyword), enforced by `components/framed_channel/scripts/check-spdx.sh`; explicit per-module lakefile `globs` and NEVER `Books.+`, because both `books/lean` and `books/tool` use the root `Books`, so a wildcard glob makes each claim the other's modules and the build fails with "bad import 'Books.Meta'"; and fixture packages use library roots distinct from `Books`.
+
+Repo-side documentation machinery to know about and NOT duplicate: `typst/manual/generated/` (every file generated, never hand-edited), `typst-component-doc.sh`, `typst-component-index.sh`, `status-counts.sh`, `script-reference.sh`, `certificate-export.sh`, `typst-manual-sync-check.sh` (regenerate-and-diff; exits non-zero naming the file and its exact regeneration command), `chapter-drift.sh` (non-blocking by design, `--mark` left to the person) and `name-resolution-check.sh`. The typst extension already ships `typst-element-lint.sh` and `chapter-quality-check.sh`.
+
+**11. The known-gap register**, kept honest rather than aspirational:
+
+- The matrix check's domain on the real tree is currently EMPTY. Measured: of 36 built module headers, 0 carry a `book_layer`. So the matrix check and the regex layer lint CANNOT yet disagree.
+- `lake shake` refuses non-`module` packages on the pin, so the certifier's shake stage reports SKIPPED and never propagates its rc — it is advisory by necessity, not by preference.
+- The regex layer lint `interface/scripts/layer-lint.sh` (plus `layer-rules.sh`, nine rules) runs BESIDE the matrix check during the pilot. Four rules reproduced, four reproduced-by-declaration, one — Mathlib/Aeneas confinement — deliberately not in the matrix at all. It can pass VACUOUSLY over a package no rule's file-half reaches, and that must be recorded as a vacuous pass rather than a pass.
+- NOT yet landed (certifier phases 13-23 of 23): the certificate writer, `books/schema/book-cert-v2.md`, the shell driver and the acceptance suite. Planned and named in `docs/development.md`: the certifier's docs stage emitting the documentation queue JSON, `books/tool/approve-guarantees.sh` (the only writer of `book.record.json`) and `books/tool/book-health.sh --json`.
+- Also in flight and defining contracts this corpus describes: the ledger-tool-and-certifier build, the two-smallest-books pilot, the framed_channel book family, the documentation-honesty checks, the three-tier book documentation, the provider-side trust defences and the deferred certifier passes.
+
+== CONSTRAINTS ==
+
+No task-number references in any file written into the source store: cite file paths, decision numbers and script names instead (`rules/no-task-references-in-deliverables.md`). Refer to in-flight Verification work by its title and deliverables only.
+
+---
+
+### 297. Scaffold the books extension: manifest, four-block routing, agents, skills, commands, rule and tests
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Build a new `books` extension in the agent-system source store at `agent-system/extensions/books/`, providing the `books` task type for authoring, certifying and documenting **lean books** as that standard is defined in the Logos/Verification repository.
+
+This task owns the extension's WIRING. The domain context corpus under `context/project/books/` is a separate task that depends on this one; author the agents and skills here with plain backticked path pointers into `context/project/books/...` (the system's lazy-loading convention), never eager imports.
+
+SCOPE: source store only. Implementation edits `agent-system/extensions/books/**`; each repo regenerates its own `.claude/` through the loader picker. Nothing is hand-authored under `.claude/**` (see `rules/source-store-deploy-boundary.md`).
+
+== PRECEDENT ==
+
+`agent-system/extensions/cslib/` is the structural precedent: a lean-dependent extension with its own task type and full four-block routing. Measured from its `manifest.json`: `task_type: "cslib"`, `dependencies: ["core","lean","literature"]`, `provides` for agents/skills/commands/rules/context, all four routing blocks (`routing`, `routing_hard`, `routing_agents`, `routing_agents_hard`), `keyword_overrides` with `keywords` + `aliases`, and `merge_targets` for claudemd (with `section_id`) and index. Its `routing_agents.plan` maps to core's `planner-agent` rather than a bespoke planner — follow that unless research justifies otherwise.
+
+For contrast: `lean/manifest.json` has `task_type: "lean4"` and `keyword_overrides: null`; `typst/manifest.json` has `dependencies: ["core"]` and keyword_overrides whose keywords are all `typst `-prefixed.
+
+== WHAT A LEAN BOOK IS (grounding) ==
+
+Design record: `docs/book-convention.md` (2450 lines, 18 accepted decisions) plus `docs/architecture-decisions.md` decisions 2, 3, 8, 9.
+
+A book is a certified unit inside a Lake package, not a directory. It is named by the `book <Name>` command in its book module, and `book.toml`'s `name` must equal it. Its modules are its book module's DIRECT imports, read from the `.olean` header — no module list is ever authored; every module of a package is imported directly by exactly one book module, and unassigned or doubly-assigned modules are certifier errors. Book module naming is `<Root>.Book` (single-book package) or `<Root>.Book.<Name>` (multi-book). The book directory is `<package-dir>/books/<name>/` holding `book.toml`, `book.cert.json` and `docs/`, while Lean sources stay in the package's `lean/` tree and are never moved. The consumer's unit of `require` is the package, the book is the trust/documentation/versioning unit, the module is the build unit.
+
+Metadata split (Decision 6): facts in Lean, judgments in TOML, everything else computed. A code module carries exactly two things — `@[book_export]` on a declaration (no kind argument; kind is derived from `getOriginalConstKind?`) and one `book_layer <layer>` line. The book module carries everything else: `book`, `book_assume`, `book_not_claimed`, `book_axioms`, `book_policy`, `book_requires`, all read back by `#book_ledger`.
+
+Twelve `book_layer` values (Decision 2): the eight layers `interface | laws | extraction | impl | instances | refinement | challenge | evidence` plus the four opt-in split tiers `impl.defs`, `impl.proofs`, `instances.defs`, `instances.proofs`. A may-import matrix (Decision 3) replaces a total order, enforced at elaboration by `book_layer` over DIRECT imports only, and at certification over the computed graph. `challenge` and `evidence` are terminal. Two universal rules sit OUTSIDE the matrix and are the certifier's responsibility, not `book_layer`'s: Mathlib/Aeneas confinement, and terminal layers.
+
+`book.cert.json` sits directly in the book directory — never a `certificate/` subdirectory, because the framed_channel export tooling treats every `certificate` directory as a discovery root — and is THE ONLY INPUT of every non-Lean tool.
+
+== DELIVERABLES ==
+
+1. `manifest.json`: `name`/`version`/`description`; `task_type: "books"`; `dependencies: ["core", "lean", "typst"]` (literature arrives transitively through lean); `provides` for agents, skills, commands, rules, context (`project/books`), scripts and hooks; all four routing blocks keyed on `books`, with compound sub-routes for the lifecycle stages following lean's `lean4:lake`/`lean4:version` precedent (candidates `books:certify`, `books:document` — research decides the exact sub-route set; this description deliberately does not fix it); `keyword_overrides` (see the MANDATORY RESEARCH DECISION below); `merge_targets` for claudemd (`EXTENSION.md`, `section_id: extension_books`), index (`index-entries.json`) and opencode_json (`opencode-agents.json`).
+
+2. Agents: at minimum a research agent and an implementation agent for the `books` task type, with `--hard` variants DECIDED (not assumed) by research, plus whatever the certify/document sub-routes need. Model tier per `docs/reference/standards/agent-frontmatter-standard.md`: Sonnet for workers.
+
+3. Skills: the research/implementation pair plus the lifecycle skills the sub-routes name.
+
+4. Commands: research decides the set. Strong candidates, each to be justified or dropped: a `/book` command driving author -> build -> test -> certify over one book, and a `/certify` command. Read the MANDATORY RECONCILIATION DECISION below before scoping anything reconciliation-shaped.
+
+5. Rules: a `books`-scoped rule with a `paths:` frontmatter glob matching book directories, book modules and `book.toml`, carrying the non-negotiables — the facts-in-Lean/judgments-in-TOML split; the certificate as the only non-Lean input; explicit per-module lakefile `globs` and NEVER `Books.+` (both `books/lean` and `books/tool` use the root `Books`, so a wildcard glob makes each claim the other's modules and the build fails with "bad import 'Books.Meta'"); the licence-header-then-`module` line order (the proprietary header within the first three lines of every `.lean`/`.sh`; in a `module` file the comment is line 1 and `module` line 2, since a comment parses ahead of the `module` keyword, enforced by `components/framed_channel/scripts/check-spdx.sh`); never hand-editing a generated certificate or a generated Typst fragment; and never authoring a computed field.
+
+6. `EXTENSION.md`, `index-entries.json`, `README.md`, `opencode-agents.json`.
+
+7. Fixtures/tests under `scripts/tests/` for any script the extension ships, in the style of the lean and typst extensions' own suites.
+
+== MANDATORY RESEARCH DECISION: task-type detection (possible OUT-OF-EXTENSION scope) ==
+
+`books` keyword detection has a measured structural problem that research MUST resolve and record with evidence before anything is wired.
+
+Measured by sourcing `agent-system/extensions/core/scripts/lib/task-type-detect.sh` and calling `detect_task_type` directly against the real `specs/state.json` and the real extensions directory:
+
+```
+"Certify the framed_channel book and reconcile its guarantees against the ledger" -> general
+"Add book_layer to Interface.lean and declare book_export"                        -> lean4
+"Author the book.toml v2 manifest and the three-tier docs entry"                  -> general
+```
+
+Two directional facts behind those outputs, both read from the script itself:
+
+- Step 1 strong anchors resolve IMMEDIATELY, before the step 2 extension `keyword_overrides` scan. The lean4 strong anchors are `\.lean\b` (regex) plus the literals `mathlib`, `lean4`. So a `books` task description naming any `.lean` file, or Mathlib, can never reach a `books` keyword_override — it is captured by `lean4` unconditionally, no matter what `books` declares.
+- The keyword_overrides scan iterates `<extensions_dir>/*/manifest.json` in alphabetical directory-name order, and the FIRST match wins and is FINAL (explicitly not subject to alias remapping). `books` sorts first among all 21 current extensions, so its overrides are scanned ahead of every other extension's — which means over-broad keywords (a bare "ledger", "guarantee" or "certify") would capture lean's, cslib's and typst's own tasks.
+
+Research weighs at least these two branches and records the verdict with its evidence:
+
+(a) Amend core's strong anchors in `scripts/lib/task-type-detect.sh` to recognise `book.toml`, `book_layer`, `book.cert.json`. This edits a file OUTSIDE `extensions/books/`, so it is ADDED SCOPE TO SPAWN, NOT TO ABSORB — do not touch core on this task's own authority.
+
+(b) Narrow `keyword_overrides` to unambiguous multi-word book tokens (`book.toml`, `book_layer`, `book_export`, `book module`, `book.cert.json`, `layer matrix`, `certified unit`, ...) and rely on an explicitly-set `task_type` at task creation for the cases strong anchors preempt.
+
+Whichever branch is chosen, the collision against lean's and typst's keyword sets must be explicitly checked and the check RECORDED — a `books` task would otherwise be silently captured by `lean4` or `typst`.
+
+== MANDATORY RECONCILIATION DECISION (do not silently reimplement) ==
+
+The Verification repository already carries a NOT STARTED task titled *"add reconcile command to agent system"* whose scope places: a `/reconcile [N | book...]` command and skill in the TYPST extension; a lifecycle postflight hook in the LEAN extension running the docs stage for every book in a finished task's file scope and offering reconcile-now / follow-up-task / skip; a write guard enforcing the reconciliation contract's file boundary; person-only signing; a Book-health section in `/review`; the manual's drifted chapters under the chapter-quality contract; and five fixtures (stale-by-digest, missing, orphaned, contract violation, and a red docs stage after the agent's edit).
+
+The `books` extension is the more natural home for all of that. Research MUST explicitly decide whether those pieces move into `books` or stay where that task placed them, and MUST NOT silently reimplement them. If they move, that is added scope to spawn, not to absorb. Refer to that work by its title and deliverables only — never by a task number.
+
+== WRITE AGAINST THE DESIGN RECORD, NOT THE HALF-LANDED TOOL ==
+
+Write the extension against the design record (`docs/book-convention.md` and `books/schema/book-toml-v2.md`, both normative) rather than against the in-flight tooling, and NAME which of the extension's own pieces are blocked on the certifier's outstanding phases rather than assuming a finished certifier.
+
+Landed and usable today:
+- `books/lean/` — package `books`, library root `Books`, one module `Books.Meta` (413 lines): the metadata provider. Two persistent env extensions plus a fact extension, `@[book_export]`, `book_layer` with the matrix checked at elaboration, the six book-module fact commands and `#book_ledger`. Declares NO `require`. It is a PRIVATE import of code modules, since `public import Books.Meta` would make every consumer load `Lean`; only book modules and the certifier import it publicly.
+- `books/tool/` — package `booksTool`, the `books-tool` lean_exe: `Books.Manifest` (the book.toml v2 validator), `Books.EnvWalk` (module-grain environment walker running a cheap header pass plus a record-of-truth pass, where a divergence is an error) and `Books.LayerCheck`. Invoked as `books-tool validate` and `books-tool check --lib <built lib dir>`.
+- `books/tests/manifest/run.sh` — the fixture suite, driving the real `lake build`, the real elaborator and the real executable, with no copy of the provider's rules in the harness. Cases: BUILD, WF, TIERS, UNASSIGNED, DOUBLE, MATRIX-C (refused at certification), MATRIX-E (refused at elaboration, messages compared), DIVERGE, XBOOK, LEDGER, FORGE-A..D, WARN, MANIFEST.
+
+NOT yet landed — phases 1-12 of the certifier's plan are complete, 13-23 outstanding: the certificate writer, `books/schema/book-cert-v2.md`, the shell driver, and the acceptance suite. Also only planned, named in `docs/development.md`: the certifier's docs stage emitting the documentation queue JSON, `books/tool/approve-guarantees.sh` (the only writer of `book.record.json`), and `books/tool/book-health.sh --json`.
+
+`books/` at the repo root is a TOOLING directory, not a component: nothing there is digested, carries a certificate, or is depended on by a component gate.
+
+Also in flight in Verification and defining the contracts this extension consumes: the ledger-tool-and-certifier build, the two-smallest-books pilot, the framed_channel book family, the documentation-honesty checks, the three-tier book documentation, the provider-side trust defences and the deferred certifier passes.
+
+== FOLLOW-UP, NOT SCOPE ==
+
+Enabling the extension in the Verification repo — adding `books` to its `.claude-extensions.json` extensions list via the loader picker — is the user's own action, not this task's work.
+
+No task-number references in any file written into the source store: cite file paths, decision numbers and script names instead (`rules/no-task-references-in-deliverables.md`).
+
+---
 
 ### 296. Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link
 - **Status**: [NOT STARTED]

@@ -1,0 +1,48 @@
+{
+  "status": "tasks_created",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task 297 entry added to TODO.md (Task Order wave 1, no dependencies)"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task 297 added to active_projects with topic extensions and empty dependencies"
+    }
+  ],
+  "next_steps": "Run /research 297 to begin research on the books extension scaffold; research must resolve the task-type detection decision and the reconciliation-ownership decision before any wiring is authored",
+  "metadata": {
+    "session_id": "sess_1790829564_3abc0d",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": [
+      "orchestrator",
+      "meta",
+      "skill-meta",
+      "meta-builder-agent"
+    ],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "created": "2026-10-01T04:49:03Z",
+    "tasks_created": 2
+  },
+  "proposed_file_scope": [
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/EXTENSION.md",
+    "agent-system/extensions/books/index-entries.json",
+    "agent-system/extensions/books/README.md",
+    "agent-system/extensions/books/opencode-agents.json",
+    "agent-system/extensions/books/agents/",
+    "agent-system/extensions/books/skills/",
+    "agent-system/extensions/books/commands/",
+    "agent-system/extensions/books/rules/",
+    "agent-system/extensions/books/scripts/tests/"
+  ],
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/state.json"
+  ]
+}
