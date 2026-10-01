@@ -196,15 +196,15 @@ at planning time and a sibling task's edits or an unrelated commit may have shif
 
 ---
 
-### Phase 2: Wire `commands/task.md` Create Task Mode and Expand Mode [NOT STARTED]
+### Phase 2: Wire `commands/task.md` Create Task Mode and Expand Mode [COMPLETED]
 
 **Goal**: Both single-task-creation paths point at the new component at the moment task count is
 actually decided, by reference rather than by restatement.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/commands/task.md` around both insertion points
+- [x] Re-read `agent-system/extensions/core/commands/task.md` around both insertion points *(completed)*
       immediately before editing.
-- [ ] Insert a new step in Create Task Mode between current Step 2 ("Parse description") and
+- [x] Insert a new step in Create Task Mode between current Step 2 ("Parse description") and *(completed)*
       Step 3 ("Improve description"), numbered `2.5`, titled "Task-count check (when drafting more
       than one task in the same session)". Its body: when this invocation is one of several
       task-creation calls drafting a related set of findings or observations in the same session,
@@ -213,22 +213,22 @@ actually decided, by reference rather than by restatement.
       BEFORE assigning each finding its own description; consolidate findings sharing an edit
       target or a single acceptance gate into one description. Keep it to a few lines plus the path
       pointer — no restatement of the reason lists.
-- [ ] Add the standard's path to Create Task Mode as an explicit reference (this mode currently has
+- [x] Add the standard's path to Create Task Mode as an explicit reference (this mode currently has *(completed)*
       no pointer to the standard at all, unlike `--review` mode at line 888). A one-line
       "Standards Reference" note adjacent to the new Step 2.5 is sufficient.
-- [ ] Replace Expand Mode Step 2's bare "Analyze description for natural breakpoints (use
+- [x] Replace Expand Mode Step 2's bare "Analyze description for natural breakpoints (use *(completed)*
       DESCRIPTION exported by gate-in)" with a version that applies the divide-reason list by
       reference: a breakpoint is legitimate only where a named divide reason holds (disjoint
       `file_scope`, different `task_type`/domain, real dependency ordering, or size exceeding one
       agent dispatch), citing
       `.claude/docs/reference/standards/multi-task-creation-standard.md`'s Component 0.
-- [ ] Reframe Step 3's "Create 2-5 subtasks" so the count is a consequence of the test rather than
+- [x] Reframe Step 3's "Create 2-5 subtasks" so the count is a consequence of the test rather than *(completed)*
       an unexplained bound: the number of subtasks is however many the applicable divide reasons
       justify, with 2-5 retained as the expected practical range and a note that a task admitting
       no divide reason should not be expanded at all.
-- [ ] Do NOT cite `context/standards/task-management.md`'s `task-divider` delegation as prior art —
+- [x] Do NOT cite `context/standards/task-management.md`'s `task-divider` delegation as prior art — *(completed)*
       research confirmed no such agent or skill exists in the source store.
-- [ ] No task-number citations in this file.
+- [x] No task-number citations in this file. *(completed)*
 
 **Timing**: 0.5 hours
 

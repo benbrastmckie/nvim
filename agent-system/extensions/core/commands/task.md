@@ -59,6 +59,20 @@ When $ARGUMENTS contains a description (no flags).
    - Remove any trailing flags (--effort, --task-type)
    - Extract optional: effort, task_type
 
+2.5. **Task-count check** (when drafting more than one task in the same session): if this
+   invocation is one of several `/task` creation calls drafting a related set of findings or
+   observations in the same session (e.g. `/meta`, `/fix-it`, `/errors`, or an ad hoc multi-finding
+   batch), run the Task-Count Reasoning test — Component 0 in
+   `.claude/docs/reference/standards/multi-task-creation-standard.md` — across the whole set
+   BEFORE assigning each finding its own description. Consolidate findings that share an edit
+   target (the same file or files) or a single acceptance gate into one description; divide only
+   where a named reason (disjoint `file_scope`, different `task_type`/domain, real dependency
+   ordering, or size exceeding one agent dispatch) applies. A single-task invocation with no
+   sibling findings to weigh against skips this step.
+
+   **Standards Reference**: `.claude/docs/reference/standards/multi-task-creation-standard.md`
+   (Component 0: Task-Count Reasoning).
+
 3. **Improve description** (transform raw input into well-structured task description):
 
    **3.1 Slug Expansion** (if input looks like snake_case or abbreviated):
@@ -381,7 +395,13 @@ Parse task number and optional prompt:
    # gate_in exits with error if task not found or in terminal status
    ```
 
-2. Analyze description for natural breakpoints (use DESCRIPTION exported by gate-in)
+2. **Apply the divide-reason list** to DESCRIPTION (exported by gate-in) to find legitimate
+   breakpoints. A breakpoint is legitimate only where a named divide reason from Component 0 in
+   `.claude/docs/reference/standards/multi-task-creation-standard.md` holds: disjoint `file_scope`
+   with no overlap, a different `task_type`/owning domain, a real dependency ordering between the
+   parts, or a size exceeding one agent dispatch. Do not split on a bare topical breakpoint that
+   fails all four — the same bidirectional test that governs consolidation at creation time governs
+   division here.
 
 2.5. **Read parent topic** for inheritance:
    ```bash
@@ -417,7 +437,12 @@ Parse task number and optional prompt:
    - If user selects an existing topic → `parent_topic="$selected"`
    - If user selects "New topic..." → free-text follow-up, capture as `parent_topic`
 
-3. **Create 2-5 subtasks** using the Create Task jq pattern for each, inheriting parent topic:
+3. **Create subtasks** using the Create Task jq pattern for each, inheriting parent topic. The
+   subtask count is a consequence of Step 2's divide-reason test, not an independently chosen
+   number: create one subtask per part that Step 2 justified splitting out. In practice this is
+   usually 2-5 subtasks, but that range is an expected outcome, not a target — a task for which
+   Step 2 found no applicable divide reason should not be expanded at all; report that finding
+   back to the user instead of forcing a split.
    ```bash
    # Each subtask jq entry MUST include a "description" field:
    # where $subtask_desc is the subtask's description derived from the parent task analysis.
