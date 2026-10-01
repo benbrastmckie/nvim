@@ -363,7 +363,7 @@ logic has since appeared, amend it in place rather than adding a second, competi
 
 ---
 
-### Phase 5: Inbound cross-reference, deploy, and full verification [BLOCKED]
+### Phase 5: Inbound cross-reference, deploy, and full verification [COMPLETED]
 
 **Goal**: The guardrails document points back at the new component, the deployed tree matches the
 source store, and the whole change passes the repository gate set with no restated-criteria drift.
@@ -382,14 +382,21 @@ source store, and the whole change passes the repository gate set with no restat
       observation, and leave this phase `[BLOCKED]` rather than deploying another writer's partial
       work (see the concurrency note in this dispatch and
       `context/contracts/territory.md`'s Cross-Task Territory section).
-- [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh`. *(deviation: deferred to a later cycle -- see Phase 5 progress file)*
-- [ ] Confirm the six edited source files' deployed counterparts match byte-for-byte (`diff` each *(deviation: deferred to a later cycle -- see Phase 5 progress file)*
-      source/deployed pair, or `bash .claude/scripts/verify-deploy.sh`).
-- [ ] Run `bash .claude/scripts/check-deploy-freshness.sh` and confirm `core` is no longer reported *(deviation: deferred to a later cycle -- see Phase 5 progress file)*
-      stale.
+- [x] Redeploy: `bash .claude/scripts/deploy-headless.sh`. *(completed: a whole-tree deploy already ran *(completed)*
+      in this cycle's Inter-Cycle Redeploy Checkpoint, resyncing all 7 extensions; no re-deploy
+      needed)*
+- [x] Confirm the six edited source files' deployed counterparts match byte-for-byte (`diff` each *(completed)*
+      source/deployed pair, or `bash .claude/scripts/verify-deploy.sh`). *(completed: direct diff of
+      all six source/deployed pairs confirms byte-for-byte match; verify-deploy.sh's full run
+      reports 3 pre-existing failures unrelated to these six files -- see Phase 5 progress file)*
+- [x] Run `bash .claude/scripts/check-deploy-freshness.sh` and confirm `core` is no longer reported *(completed)*
+      stale. *(completed: exit 0, no stale report)*
 - [x] Run `bash .claude/scripts/check-task-references.sh` repo-wide and confirm no new violations. *(completed)*
-- [ ] Run `bash .claude/scripts/validate-wiring.sh` and `bash .claude/scripts/check-extension-docs.sh` *(deviation: deferred to a later cycle -- see Phase 5 progress file)*
-      and confirm no new failures attributable to these edits.
+- [x] Run `bash .claude/scripts/validate-wiring.sh` and `bash .claude/scripts/check-extension-docs.sh` *(completed)*
+      and confirm no new failures attributable to these edits. *(completed: check-extension-docs.sh
+      reports core PASS; validate-wiring.sh's 41 failures are all pre-existing OpenCode
+      project/memory, project/nix, project/neovim context-file gaps unrelated to this task's six
+      files -- see Phase 5 progress file)*
 - [x] Read the new Component 0 once end-to-end as a reader who has never seen the motivating *(completed)*
       incident, confirming the default, both reason lists, the bidirectionality paragraph and the
       guardrails boundary are each unambiguous.
