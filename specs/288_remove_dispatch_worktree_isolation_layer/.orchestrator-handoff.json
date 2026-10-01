@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 8,
+  "summary": "Authored a 9-phase, 5-wave implementation plan for removing the per-dispatch worktree isolation layer, built on the research report's corrected footprint (10 false-positive files excluded, 4 unnamed test files added) plus three planning-time findings: Group 30 stages shared stubs two surviving test groups depend on, batch-orchestration-guardrails.md must be in scope to meet the ACCEPTANCE bar, and the eager-load gate provably cannot improve from this removal.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/288_remove_dispatch_worktree_isolation_layer/plans/01_worktree-isolation-layer-removal.md",
+      "summary": "9-phase, 5-wave removal plan: predicate rename-and-narrow, two correctness fixes, four test-suite reconciliations, three outright deletions, and post-removal gate re-measurement."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 9,
+  "blockers": []
+}

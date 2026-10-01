@@ -68,16 +68,17 @@ next_project_number: 289
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
-288 [RESEARCHED] — Remove the per-dispatch worktree isolation layer and unwire...
+288 [PLANNED] — Remove the per-dispatch worktree isolation layer and unwire...
 
 ## Tasks
 
 ### 288. Remove the per-dispatch worktree isolation layer and unwire every caller
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 286, Task 287
 - **Research**: [288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md]
+- **Plan**: [288_remove_dispatch_worktree_isolation_layer/plans/01_worktree-isolation-layer-removal.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree -- see rules/source-store-deploy-boundary.md).
 
