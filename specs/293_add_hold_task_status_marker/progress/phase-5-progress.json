@@ -1,0 +1,44 @@
+{
+  "phase": 5,
+  "phase_name": "Hold Guard at Single-Command Gate-In and /orchestrate STAGE 0",
+  "started_at": "2026-10-01T04:30:00Z",
+  "last_updated": "2026-10-01T05:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "command-gate-in.sh: hold ABORT arm inside the non-revise block, ahead of the lock acquire, no forcing-flag override",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/command-gate-in.sh"]
+    },
+    {
+      "id": 2,
+      "description": "commands/orchestrate.md STAGE 0: three-category restructure (hold branches on FORCE_PHASES_FLAG), distinct skipped_tasks reporting",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]
+    },
+    {
+      "id": 3,
+      "description": "test-force-phases.sh: rank-unranked coverage (hold vs researched) plus a new STAGE 0 extraction harness proving unforced-skip and forced-admit",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-force-phases.sh"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Test STAGE 0's hold admission logic",
+      "result": "worked",
+      "reason": "commands/orchestrate.md is markdown with embedded bash, not a sourced script, so the STAGE 0 validated_tasks loop was extracted via awk directly from the source-store file and run in an isolated subshell against a synthetic specs/state.json -- same technique used for the ad hoc /todo subtask-blocking smoke test in Phase 4, now landed as a permanent regression case."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.ordering",
+      "description": "command-gate-in.sh and commands/orchestrate.md were actually implemented earlier in this dispatch (during the orchestrate-triage-classify.sh/orchestrate-cycle-plan.sh work), before this phase's own progress file existed, because the hold-dispatch-exclusion work and the single-command-gate work are closely related and were done in one sitting. No functional impact -- the files were left uncommitted until this phase's checklist and tests were complete, and are committed together with this phase.",
+      "type": "altered",
+      "reason": "Efficiency: avoided re-reading/re-deriving the same orchestrate.md/command-gate-in.sh context twice across two separate phase sessions.",
+      "annotation": "*(deviation: altered -- command-gate-in.sh/orchestrate.md edits were made earlier in the dispatch, committed here)*"
+    }
+  ]
+}

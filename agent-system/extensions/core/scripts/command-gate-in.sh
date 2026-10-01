@@ -83,6 +83,21 @@ gate_in() {
         echo "  Use --force to override (implement only), or check task status with /task --sync" >&2
         return 1
         ;;
+      hold)
+        # Non-terminal, so it falls outside the case arm above, yet single-command dispatch has
+        # no forcing-flag plumbing of its own (that override exists only in
+        # orchestrate-cycle-plan.sh's task_has_forced_phase()/effective_group machinery, reached
+        # via `/orchestrate N --research|--plan|--implement`, which never calls this gate) -- a
+        # held task simply ABORTs here until lifted. Preserves the "revise" exemption above
+        # (skill-reviser's contract is "no status-based ABORT rules") and sits ahead of the
+        # task-lock acquire below so a held task fails fast without ever touching the lock.
+        local hold_reason
+        hold_reason=$(echo "$task_data" | jq -r '.hold_reason // "no reason recorded"')
+        echo "ABORT: Task $task_number is held: $hold_reason" >&2
+        echo "  Lift the hold with: bash .claude/scripts/update-task-status.sh preflight $task_number unhold <session_id>" >&2
+        echo "  Or override for exactly one dispatch with: /orchestrate $task_number --research|--plan|--implement" >&2
+        return 1
+        ;;
     esac
   fi
 

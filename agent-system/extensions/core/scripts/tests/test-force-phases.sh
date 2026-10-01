@@ -227,6 +227,12 @@ else
   pass "blocked -> researched: unranked side means the clamp does not apply (returns 1)"
 fi
 
+if status_vocabulary_would_regress hold researched; then
+  fail "hold -> researched: expected non-regression (1, unranked side -- hold is deliberately omitted from STATUS_VOCABULARY_LIFECYCLE_RANK alongside blocked/partial/abandoned/expanded), got regression"
+else
+  pass "hold -> researched: unranked side means the clamp does not apply (returns 1)"
+fi
+
 # =====================================================================
 # Clamp: skill_postflight_update's monotonic-max mode (positional 7)
 # =====================================================================
@@ -517,6 +523,76 @@ if [ "$unforced_phase_3" = "implement" ]; then
 else
   fail "unforced counter-case: cycle 3 expected phase=implement, got '$unforced_phase_3': $unforced_cycle3_out"
 fi
+
+# =====================================================================
+# STAGE 0 hold admission: an explicit forcing flag admits a held candidate through
+# commands/orchestrate.md's STAGE 0 validated_tasks loop; without one, the candidate is skipped
+# with a hold-specific reason distinct from the terminal-status skip. Extracted directly from the
+# source-store markdown command file (never the deployed copy, matching this suite's own
+# source-store-first inversion rationale at its header) and run in isolation against a synthetic
+# specs/state.json -- the command file is markdown with embedded bash, not a sourced script, so
+# this is the only way to exercise its STAGE 0 logic without invoking the full /orchestrate flow.
+# NOTE on fixture numbering (matching test-orchestrate-cycle-plan.sh's own convention): the
+# project_number below is synthetic fixture data for this suite only -- messages say "candidate
+# #N", never "task N".
+# =====================================================================
+info "=== STAGE 0 hold admission (commands/orchestrate.md) ==="
+ORCH_MD="$SOURCE_STORE_SCRIPTS/../commands/orchestrate.md"
+if [[ ! -f "$ORCH_MD" ]]; then
+  echo "ERROR: expected commands/orchestrate.md at $ORCH_MD" >&2
+  exit 2
+fi
+STAGE0_SNIPPET=$(awk '/^validated_tasks=\(\); skipped_tasks=\(\)$/{flag=1} flag{print} flag && /^done$/{exit}' "$ORCH_MD")
+if [[ -z "$STAGE0_SNIPPET" ]]; then
+  echo "ERROR: could not extract the STAGE 0 validated_tasks loop from $ORCH_MD (anchor text drifted?)" >&2
+  exit 2
+fi
+if ! echo "$STAGE0_SNIPPET" | grep -q "hold)"; then
+  echo "ERROR: extracted STAGE 0 snippet has no hold) arm -- extraction anchor or source file is wrong" >&2
+  exit 2
+fi
+
+STAGE0_WORKDIR="$(mktemp -d)"
+mkdir -p "$STAGE0_WORKDIR/specs"
+cat > "$STAGE0_WORKDIR/specs/state.json" << 'EOF'
+{
+  "active_projects": [
+    {"project_number": 42, "project_name": "held_fixture", "status": "hold", "hold_reason": "waiting on vendor decision"}
+  ]
+}
+EOF
+
+run_stage0() {
+  # $1 = FORCE_PHASES_FLAG value ("" or "implement")
+  (
+    cd "$STAGE0_WORKDIR" || exit 2
+    # shellcheck disable=SC2034  # consumed by `eval "$STAGE0_SNIPPET"` below, invisible to static analysis
+    TASK_NUMBERS=(42)
+    FORCE_PHASES_FLAG="$1"
+    eval "$STAGE0_SNIPPET"
+    printf 'validated_tasks=%s\n' "${validated_tasks[*]:-}"
+    printf 'skipped_tasks=%s\n' "${skipped_tasks[*]:-}"
+  )
+}
+
+stage0_unforced_out="$(run_stage0 "")"
+stage0_unforced_validated=$(echo "$stage0_unforced_out" | grep '^validated_tasks=' | cut -d= -f2-)
+stage0_unforced_skipped=$(echo "$stage0_unforced_out" | grep '^skipped_tasks=' | cut -d= -f2-)
+if [[ -z "$stage0_unforced_validated" ]] && echo "$stage0_unforced_skipped" | grep -q "held \[waiting on vendor decision\]"; then
+  pass "STAGE 0, no forcing flag: held candidate #42 is skipped with a hold-specific reason, not validated"
+else
+  fail "STAGE 0, no forcing flag: expected empty validated_tasks and a hold-specific skip reason, got validated='$stage0_unforced_validated' skipped='$stage0_unforced_skipped'"
+fi
+
+stage0_forced_out="$(run_stage0 "implement")"
+stage0_forced_validated=$(echo "$stage0_forced_out" | grep '^validated_tasks=' | cut -d= -f2-)
+if [[ "$stage0_forced_validated" == "42" ]]; then
+  pass "STAGE 0, --force-phases set: held candidate #42 IS admitted into validated_tasks"
+else
+  fail "STAGE 0, --force-phases set: expected validated_tasks='42', got '$stage0_forced_validated'"
+fi
+
+rm -rf "$STAGE0_WORKDIR"
 
 # =====================================================================
 # Summary

@@ -438,26 +438,26 @@ assumption.
 
 ---
 
-### Phase 5: Hold Guard at Single-Command Gate-In and `/orchestrate` STAGE 0 [NOT STARTED]
+### Phase 5: Hold Guard at Single-Command Gate-In and `/orchestrate` STAGE 0 [COMPLETED]
 
 **Goal**: close the single-command entry points, and restructure `/orchestrate` STAGE 0's
 two-category arm into the three categories `[HOLD]` requires — with the decided forcing-flag
 override actually working in the live (non-dry-run) path.
 
 **Tasks**:
-- [ ] `scripts/command-gate-in.sh`: add a `hold` arm inside the **same**
+- [x] `scripts/command-gate-in.sh`: add a `hold` arm inside the **same**
       `if [ "$operation" != "revise" ]` block that holds the terminal guard (≈lines 77-85),
       preserving the `revise` exemption (skill-reviser's contract is "no status-based ABORT
       rules") and keeping the guard **ahead of** the task-lock acquire (≈line 89) so held tasks
       fail fast without touching the lock. Emit a distinct ABORT message referencing `hold_reason`
       and naming the lift path (`update-task-status.sh preflight N unhold`), not a reuse of the
       terminal message.
-- [ ] Add no forcing-flag override here, per Decision 4: this gate serves one bare `/research`,
+- [x] Add no forcing-flag override here, per Decision 4: this gate serves one bare `/research`,
       `/plan`, or `/implement N` and has no forcing-flag plumbing. A held task ABORTs here until
       lifted, or until routed through `/orchestrate N --research|--plan|--implement`, whose
       override is a different mechanism that never calls this guard. State this in the ABORT
       message so the operator's next step is unambiguous.
-- [ ] `commands/orchestrate.md`: restructure the STAGE 0 `validated_tasks` loop's
+- [x] `commands/orchestrate.md`: restructure the STAGE 0 `validated_tasks` loop's
       `case "$status" in completed|abandoned|expanded)` arm (≈line 169), which can only express
       "terminal". Add a third category: a `hold)` arm that branches on `$FORCE_PHASES_FLAG`
       directly (already populated at this point in the script — it is parsed earlier and referenced
@@ -465,18 +465,18 @@ override actually working in the live (non-dry-run) path.
       `orchestrate-cycle-plan.sh`'s own `task_has_forced_phase`/`effective_group` machinery take
       over downstream. Without one: skip with a reason distinct from the terminal one (e.g.
       `"$task_num: held [$hold_reason]"`).
-- [ ] Report held tasks **distinctly** from terminal ones in the `skipped_tasks` warnings, so an
+- [x] Report held tasks **distinctly** from terminal ones in the `skipped_tasks` warnings, so an
       operator can tell a pause from a true terminal skip.
-- [ ] Do NOT copy the existing terminal arm's unconditional-skip shape, and do NOT fix the
+- [x] Do NOT copy the existing terminal arm's unconditional-skip shape, and do NOT fix the
       adjacent pre-existing gap research flagged (that arm never checks `$FORCE_PHASES_FLAG`,
       apparently leaving its own documented forced-terminal-admission claim honored only in the
       `--dry-run` path). Record that gap as an out-of-scope observation in the phase commit
       message and in the Phase 8 summary so it is not lost.
-- [ ] `scripts/tests/test-force-phases.sh`: assert that an explicit `--implement` against a held
+- [x] `scripts/tests/test-force-phases.sh`: assert that an explicit `--implement` against a held
       task **is** admitted through STAGE 0 and dispatched, and that `status` remains `"hold"`
       afterward; assert that the same task with no forcing flag is skipped with a hold-specific
       reason.
-- [ ] Shellcheck `command-gate-in.sh` and any extracted bash in the edited command file.
+- [x] Shellcheck `command-gate-in.sh` and any extracted bash in the edited command file.
 
 **Timing**: 1.25 hours
 

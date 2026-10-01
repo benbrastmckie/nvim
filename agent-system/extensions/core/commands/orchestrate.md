@@ -170,6 +170,24 @@ for task_num in "${TASK_NUMBERS[@]}"; do
       skipped_tasks+=("$task_num: terminal status [$status]")
       continue
       ;;
+    hold)
+      # A THIRD category distinct from terminal above: non-terminal (so this task can still be
+      # admitted), yet non-dispatchable by DEFAULT (so ordinary status-derived routing must not
+      # reach it). An explicit forcing flag, already parsed into $FORCE_PHASES_FLAG above STAGE 0's
+      # top, IS the human lifting the hold for exactly this one dispatch -- admit the task and let
+      # orchestrate-cycle-plan.sh's own task_has_forced_phase()/effective_group machinery
+      # (unchanged by this feature) take over downstream; it already overrides a status-derived
+      # "hold" verdict with zero further change here. Without a forcing flag, skip with a reason
+      # distinct from the terminal one above so an operator can tell a pause from a true terminal
+      # skip at a glance.
+      if [ -n "${FORCE_PHASES_FLAG:-}" ]; then
+        validated_tasks+=("$task_num")
+        continue
+      fi
+      hold_reason=$(echo "$task_data" | jq -r '.hold_reason // "no reason recorded"')
+      skipped_tasks+=("$task_num: held [$hold_reason]")
+      continue
+      ;;
   esac
   validated_tasks+=("$task_num")
 done
