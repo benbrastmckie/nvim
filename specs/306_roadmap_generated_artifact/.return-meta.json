@@ -1,0 +1,53 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 3 tasks for generated ROADMAP.md and /todo + /review efficiency. Task 306 (foundational, wave 1) extends roadmap-format.md into a generation contract and adds regenerate/prune modes to roadmap-integration.sh, consuming the existing wave table rather than modifying generate-task-order.sh. Tasks 307 (/todo) and 308 (/review) depend on 306 and are parallel to each other.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks 306, 307, 308 added to TODO.md; Task Order and Dependency Waves regenerated"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Three not_started meta tasks added; next_project_number advanced to 309"
+    },
+    {
+      "type": "task_dir",
+      "path": "/home/benjamin/.config/nvim/specs/306_roadmap_generated_artifact/",
+      "summary": "Task 306 directory (foundational, no dependencies, wave 1)"
+    },
+    {
+      "type": "task_dir",
+      "path": "/home/benjamin/.config/nvim/specs/307_todo_consolidate_and_optimize/",
+      "summary": "Task 307 directory (depends on 306)"
+    },
+    {
+      "type": "task_dir",
+      "path": "/home/benjamin/.config/nvim/specs/308_review_roadmap_regen_and_optimize/",
+      "summary": "Task 308 directory (depends on 306)"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790873284_9c7efd",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 3,
+    "task_numbers": [306, 307, 308],
+    "topic": "core-agent-system",
+    "task_type": "meta",
+    "commit": "meta: create 3 tasks for generated ROADMAP.md and /todo + /review efficiency",
+    "component_0_decision": "Divided along the file boundary rather than the concern boundary, under divide reasons (d) size beyond one dispatch, (a) 307 and 308 genuinely disjoint, and (c) both need the modes 306 creates. Each task consolidates both the roadmap-wiring and efficiency concerns for its own files, so file_scope overlap between the three created tasks is zero.",
+    "scope_decision": "User chose Option B: efficiency work covers /todo and /review only. /revise, skill-reviser and reviser-agent are out of scope and appear in no created task's file_scope.",
+    "task_44_decision": "Kept separate rather than folded. Task 44's file_scope is disjoint and it already has an approved plan that folding would invalidate. Task 307 cross-references it and records that 44's 'largest per-invocation context contributor' claim is now false (commands/todo.md 1152 lines > commands/task.md 1005). Task 44 was not edited.",
+    "deliberate_non_dependencies": [
+      "Task 271 (owns generate-task-order.sh): avoided by having 306 consume `generate-task-order.sh --print` read-only instead of modifying the script, which keeps 306 in wave 1 rather than serializing it behind 279 -> 271.",
+      "Task 302 (also edits commands/todo.md): recorded in 307's description as an ordering recommendation only; the file_scope_collision admission gate serializes them, and an explicit edge would overconstrain."
+    ]
+  },
+  "next_steps": "Run /research 306 to begin research on the foundational task. 307 and 308 unblock together once 306 completes and can be researched in parallel."
+}
