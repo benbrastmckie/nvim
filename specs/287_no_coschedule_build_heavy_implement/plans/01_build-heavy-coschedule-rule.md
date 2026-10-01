@@ -1,7 +1,7 @@
 # Implementation Plan: Task #287
 
 - **Task**: 287 - No co-schedule build-heavy implement (Mode 2 admission rule)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: `specs/decisions/worktree-isolation-removal-verdict.md` ("Mode 2 Ruling: an Admission Rule, Not a PATH Shim" — the specification, not re-openable)
 - **Research Inputs**: `specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md`

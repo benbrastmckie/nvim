@@ -1,7 +1,7 @@
 # Implementation Plan: Task #286
 
 - **Task**: 286 - Shared-tree isolation posture verdict (rewrite the split verdict to a blanket verdict)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/286_shared_tree_isolation_posture_verdict/reports/01_shared-tree-isolation-posture.md

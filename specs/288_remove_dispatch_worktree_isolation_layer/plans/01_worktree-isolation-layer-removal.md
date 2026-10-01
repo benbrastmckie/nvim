@@ -1,7 +1,7 @@
 # Implementation Plan: Task #288
 
 - **Task**: 288 - Remove the per-dispatch worktree isolation layer and unwire every caller
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: 286 (decision-record revision), 287 (co-scheduling admission rule) — both verified `completed` in `specs/state.json`; prerequisites satisfied, this plan is cleared to execute
 - **Research Inputs**: `specs/288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md`
