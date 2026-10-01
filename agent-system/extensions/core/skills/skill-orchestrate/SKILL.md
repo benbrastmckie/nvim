@@ -21,8 +21,6 @@ separate single-task code path. Full state table, transition diagram, design rat
 - `.claude/scripts/orchestrate-recover-message-findings.sh` — Move 3's `report_missing=true`
   branch: saves a research dispatch's message-borne findings as a clearly-tagged recovered
   artifact (D4)
-- `.claude/docs/architecture/orchestrate-state-machine.md` — full state-machine reference (see
-  above)
 
 ---
 
@@ -307,16 +305,13 @@ text **verbatim** to `${task_dir_rel}/.dispatch/${dispatch_seq}.agent-message.md
 ONLY case this skill writes into `reports/`, `plans/`, or `summaries/`.
 
 Also: never hardcode a phase order (dispatch whatever phase `orchestrate-cycle-plan.sh` names);
-never let `detected_defects` call `AskUserQuestion` (accumulate-then-render only, per
-`orchestrate-state-machine.md`'s `mt_state_file` field reference).
+the `detected_defects` constraint above (Move 4) applies here too.
 
 ## Skill-to-Agent Mapping
 
 | Operation | `subagent_type` | Notes |
 |-----------|----------------|-------|
-| Research dispatch | `$RESEARCH_AGENT` (resolved by task type inside `orchestrate-cycle-plan.sh`, via `command-route-agent.sh`) | Fresh context; `orchestrator_mode: true` |
-| Plan dispatch | `$PLANNER_AGENT` (same resolution) | Fresh context; `orchestrator_mode: true` |
-| Implement dispatch | `$IMPLEMENT_AGENT` (same resolution) | Fresh context; `orchestrator_mode: true` |
+| Research / Plan / Implement dispatch | `$RESEARCH_AGENT` / `$PLANNER_AGENT` / `$IMPLEMENT_AGENT` (all resolved by task type inside `orchestrate-cycle-plan.sh`, via `command-route-agent.sh`) | Fresh context; `orchestrator_mode: true` |
 | Blocker research | `"fork"` | Inherits parent cache; fast blocker research |
 | Plan revision (blocker) | `"reviser-agent"` | Fresh context; `orchestrator_mode: false` |
 | Drift inspection | `"fork"` | Inherits parent cache; reads plan file, writes `.drift-inspection.json` |

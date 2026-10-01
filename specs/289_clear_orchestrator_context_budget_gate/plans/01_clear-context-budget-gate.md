@@ -254,24 +254,24 @@ under baseline.
 
 ---
 
-### Phase 4: Trim SKILL.md under its ceiling [NOT STARTED]
+### Phase 4: Trim SKILL.md under its ceiling [COMPLETED]
 
 **Goal**: Bring `skills/skill-orchestrate/SKILL.md` from 20,325 B to under its 20,000 B
 ROADMAP-derived ceiling with margin, using only the two verified true duplicates.
 
 **Tasks**:
-- [ ] Collapse the three Skill-to-Agent Mapping lifecycle-dispatch rows (lines ~317–319: Research /
+- [x] Collapse the three Skill-to-Agent Mapping lifecycle-dispatch rows (lines ~317–319: Research /
       Plan / Implement dispatch, which differ only in the `$AGENT` variable and restate one
       identical resolution-and-context clause) into a single row naming all three agent variables
-      once (~133 B)
-- [ ] Collapse the duplicated `detected_defects`-never-prompts constraint: keep Move 4's full
+      once (~133 B) *(completed: saved 140 B)*
+- [x] Collapse the duplicated `detected_defects`-never-prompts constraint: keep Move 4's full
       statement (line ~268) and reduce the "MUST NOT (Postflight Boundary)" restatement (lines
       ~310–311) to a short pointer back to it, preserving the distinct phase-order MUST NOT that
-      precedes it untouched (~150–200 B)
-- [ ] Re-measure; if still at or above 19,700 B, find additional savings **only** by producing
+      precedes it untouched (~150–200 B) *(completed: saved 86 B)*
+- [x] Re-measure; if still at or above 19,700 B, find additional savings **only** by producing
       fresh duplicate-detection evidence (two passages stating the same constraint in full) —
-      never by compressing a uniquely-stated contract
-- [ ] Confirm no MUST/MUST NOT clause count dropped and no inlined bash snippet was altered
+      never by compressing a uniquely-stated contract *(completed: landed at 20,099 B after the first two cuts; found one more genuine duplicate -- the Context References bullet self-admitted '(see above)' duplicating the opening paragraph's pointer to the same doc -- removed it, landing at 19,993 B, under the 20,000 B ceiling. Did not reach the 19,700 stretch target; no further genuine duplicate prose found)*
+- [x] Confirm no MUST/MUST NOT clause count dropped and no inlined bash snippet was altered *(completed: MUST NOT 7->7, MUST 7->7; git diff touches zero lines inside any fenced bash block)*
 
 **Timing**: 0.75 hours
 

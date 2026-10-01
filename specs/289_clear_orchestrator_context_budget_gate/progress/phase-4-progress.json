@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Trim SKILL.md under its ceiling",
+  "started_at": "2026-10-01T06:12:00Z",
+  "last_updated": "2026-10-01T06:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Collapse three Skill-to-Agent Mapping lifecycle-dispatch rows into one", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "Collapse duplicated detected_defects-never-prompts restatement to a pointer", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Re-measure; find additional evidence-backed duplicate savings if still >= 19,700 B", "status": "done", "note": "first two cuts landed at 20,099 B (99 B over the 20,000 B ceiling, worse than the plan's estimate). Found one more genuine duplicate: the Context References bullet for orchestrate-state-machine.md explicitly said '(see above)', duplicating the opening paragraph's own pointer to the same doc -- removed the redundant bullet. Final: 19,993 B, under the 20,000 B ceiling with 7 B headroom. Did not reach the 19,700 B stretch target; no further genuine duplicate prose was found by n-gram/sentence-level automated search, and the plan forbids compressing uniquely-stated contract prose to chase the stretch target", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "Confirm no MUST/MUST NOT clause count dropped and no bash snippet altered", "status": "done", "note": "MUST NOT count 7->7, MUST count 7->7 (identical); git diff shows zero lines changed inside any fenced bash block", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "compress detected_defects restatement to a longer pointer sentence naming Move 4's paragraph title", "result": "insufficient", "reason": "only saved 26 B; rewrote to a terser 2-clause pointer that saved 86 B instead"}
+  ],
+  "handoff_count": 0,
+  "measurements": {
+    "skill_orchestrate_after_phase4_bytes": 19993,
+    "skill_orchestrate_ceiling_bytes": 20000,
+    "skill_orchestrate_stretch_target_bytes": 19700
+  }
+}
