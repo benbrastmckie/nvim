@@ -42,6 +42,12 @@ Read specs/TODO.md and cross-reference:
 - Entries marked [ABANDONED]
 - Entries marked [EXPANDED]
 
+**VERIFIED, not guarded**: this selection and Step 5A's archive-write jq (`.completed_projects =
+... select(.status == "completed" or .status == "expanded") ...` /
+`.archived_projects = ... select(.status == "abandoned") ...`) both POSITIVE-match only
+`completed`/`abandoned`/`expanded`, so a `hold`-status task is excluded from the archive set by
+construction at two independent points -- no redundant hold-specific guard is added.
+
 ### 2.5. Detect Orphaned Directories
 
 Scan for project directories not tracked in any state file.
@@ -154,6 +160,11 @@ below — it carries the safe jq/shell escaping patterns this guard depends on (
 archivable_tasks=()
 deferred_expanded=()
 deferred_expanded_nums=()
+deferred_expanded_detail=()   # one entry per deferred parent, naming WHICH subtask(s) block it
+                               # and why (Decision 6 mitigation -- a reporting improvement only;
+                               # the blocking case statement below is unchanged, and a held
+                               # subtask continues to block exactly as every other non-terminal
+                               # status does)
 
 for task in "${candidate_tasks[@]}"; do
   status=$(echo "$task" | jq -r '.status')
@@ -180,6 +191,13 @@ for task in "${candidate_tasks[@]}"; do
           continue
         fi
 
+        # AUDITED (not a three-category gap like commands/orchestrate.md's STAGE 0 arm): this
+        # case statement governs archival CANDIDACY of the PARENT via its subtasks' statuses --
+        # it is not a dispatch gate a held task needs to "reach". A held subtask correctly falls
+        # to the `*)` catch-all below and continues to block its parent's archival exactly as any
+        # other non-terminal status does (Decision 6: correct as-is -- a parent with paused work
+        # genuinely is not done). Nothing to restructure here; the Decision 6 mitigation is the
+        # reporting-detail addition above/below, not a change to this classification.
         case "$subtask_status" in
           completed|abandoned|expanded)
             # Terminal - not blocking.
@@ -194,6 +212,31 @@ for task in "${candidate_tasks[@]}"; do
       if [ "$blocking_count" -gt 0 ]; then
         deferred_expanded+=("$task")
         deferred_expanded_nums+=("$project_num")
+        # Reporting-only detail pass (Decision 6 mitigation): names which subtask(s) are
+        # blocking and, for a held one specifically, its hold_reason -- so the operator reads
+        # "subtask 123 is held (reason: ...)" rather than a generic "still active" line. This is
+        # a SEPARATE pass over the same subtasks[] already resolved above; it does not re-decide
+        # blocking and does not alter the case statement above.
+        detail_parts=()
+        for subtask_num in $(echo "$subtasks" | jq -r '.[]'); do
+          d_status=$(jq -r --argjson n "$subtask_num" \
+            '.active_projects[] | select(.project_number == $n) | .status' \
+            specs/state.json)
+          [ -z "$d_status" ] && continue
+          case "$d_status" in
+            completed|abandoned|expanded) ;;
+            hold)
+              d_reason=$(jq -r --argjson n "$subtask_num" \
+                '.active_projects[] | select(.project_number == $n) | .hold_reason // "no reason recorded"' \
+                specs/state.json)
+              detail_parts+=("subtask $subtask_num is held (reason: $d_reason)")
+              ;;
+            *)
+              detail_parts+=("subtask $subtask_num is $d_status")
+              ;;
+          esac
+        done
+        deferred_expanded_detail+=("$project_num: $(IFS='; '; echo "${detail_parts[*]}")")
       else
         archivable_tasks+=("$task")
       fi
@@ -380,6 +423,9 @@ Expanded:
 
 Deferred (expanded, subtasks still active): {N}
 - #{N11}: {title} ({blocking_count} subtask(s) still active)
+  - {deferred_expanded_detail[] entry for N11} (Decision 6 mitigation: names a held blocking
+    subtask specifically, e.g. "subtask 123 is held (reason: Awaiting upstream API decision)",
+    rather than folding it into the generic count above)
 
 Orphaned directories in specs/ (will be moved to archive/): {N}
 - {N4}_{SLUG4}/

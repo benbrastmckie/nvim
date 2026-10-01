@@ -363,41 +363,41 @@ depends on. Covered by Case 16 above.
 
 ---
 
-### Phase 4: `/todo` Archival Audit and the Held-Subtask Resolution [NOT STARTED]
+### Phase 4: `/todo` Archival Audit and the Held-Subtask Resolution [COMPLETED]
 
 **Goal**: confirm (not assume) that held tasks are already never archived, apply Decision 6's
 held-subtask resolution identically in both duplicated code sites, and leave notes where a future
 reader will look.
 
 **Tasks**:
-- [ ] `skills/skill-todo/SKILL.md`: VERIFY rather than guard — Stage 2 `ScanTasks` (≈lines 79-83)
+- [x] `skills/skill-todo/SKILL.md`: VERIFY rather than guard — Stage 2 `ScanTasks` (≈lines 79-83)
       and the archive-write jq (≈lines 454-455) both POSITIVE-match only
       `completed`/`abandoned`/`expanded`, so a `hold` task is excluded from the archive set by
       construction at two independent points. Add no redundant guard. Record the verification as a
       short comment at the Stage 2 selector naming `hold` as excluded-by-construction.
-- [ ] Note in that same place that the dispatch's `~164-166` pointer actually names the Stage 2.5
+- [x] Note in that same place that the dispatch's `~164-166` pointer actually names the Stage 2.5
       `TopicRevision` selector (a different, inverted-select mechanism for `topic` backfill), not
       the archival guard — so a future reader following that line number is not misled.
-- [ ] Apply Decision 6 to the `expanded)` arm's subtask-blocking loop (`skill-todo/SKILL.md`
+- [x] Apply Decision 6 to the `expanded)` arm's subtask-blocking loop (`skill-todo/SKILL.md`
       ≈lines 106-131; `commands/todo.md` ≈lines 163-190, the near-byte-identical duplicate): leave
       the `case "$subtask_status" in completed|abandoned|expanded) ;; *) ((blocking_count++)) ;;`
       pattern **unchanged** — a held subtask continues to block its parent's archival, because a
       hold is a pause and not a completion-equivalent.
-- [ ] Implement the Decision 6 mitigation in **both** files in lockstep: when a
+- [x] Implement the Decision 6 mitigation in **both** files in lockstep: when a
       `blocking_count` increment is attributable specifically to a `hold` status, name it in the
       existing `deferred_expanded[]` reporting message so the operator reads "deferred because
       subtask N is held (reason: ...)" rather than a generic "still active" line with no actionable
       next step. Edit both files, then diff the two blocks to confirm they have not drifted.
-- [ ] `scripts/generate-todo.sh`: confirm `hold` falls to `active_count` via the existing `*)` arm
+- [x] `scripts/generate-todo.sh`: confirm `hold` falls to `active_count` via the existing `*)` arm
       (≈lines 454-455) and leave the split unmodified per Decision 7. Add a one-line comment at
       that `case` recording that this is intended (a held task is non-terminal, so counting it
       active is correct) so the omission is not re-litigated.
-- [ ] `commands/todo.md`: audit the `completed|abandoned|expanded)` arm at ≈line 184 for the same
+- [x] `commands/todo.md`: audit the `completed|abandoned|expanded)` arm at ≈line 184 for the same
       three-category problem Phase 5 fixes in `commands/orchestrate.md`. If it governs archival
       candidacy only (where hold is correctly excluded by construction), record that in a comment
       and change nothing; if it gates something a held task must reach, restructure it the way
       Phase 5 restructures orchestrate.md's and say so in the commit message.
-- [ ] Audit Stage 1.5 `ReconcileScan` (`skill-todo/SKILL.md` ≈lines 48-56): confirm its four
+- [x] Audit Stage 1.5 `ReconcileScan` (`skill-todo/SKILL.md` ≈lines 48-56): confirm its four
       positive-match statuses are exactly `researching`/`planning`/`implementing`/`partial` and
       that `hold` is absent, so reconciliation can never silently promote a task out of hold.
       Record the confirmation; add no code.

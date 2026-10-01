@@ -1,0 +1,48 @@
+{
+  "phase": 4,
+  "phase_name": "/todo Archival Audit and the Held-Subtask Resolution",
+  "started_at": "2026-10-01T05:15:00Z",
+  "last_updated": "2026-10-01T05:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "skill-todo/SKILL.md Stage 2: verify hold excluded by construction + correct dispatch's stale line-number pointer",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Decision 6 mitigation: deferred_expanded_detail[] reporting (held subtask named with reason) in both skill-todo/SKILL.md and commands/todo.md, lockstep, diffed",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md", "agent-system/extensions/core/commands/todo.md"]
+    },
+    {
+      "id": 3,
+      "description": "generate-todo.sh: Decision 7 comment on active_count catch-all",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/generate-todo.sh"]
+    },
+    {
+      "id": 4,
+      "description": "commands/todo.md ~line 184/189 audit: confirmed archival-candidacy-only (not a dispatch gate), no restructure needed, unlike orchestrate.md's STAGE 0",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/todo.md"]
+    },
+    {
+      "id": 5,
+      "description": "Stage 1.5 ReconcileScan: confirmed hold absent from the four reconcilable statuses",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Considered splitting the existing blocking case statement's catch-all into a dedicated hold) arm to get hold_reason text",
+      "result": "rejected",
+      "reason": "The phase's own Verification Tier (prose) explicitly forbids changing any case pattern or control flow in the ORIGINAL blocking-decision loop. Instead added a SEPARATE, reporting-only detail pass after the blocking decision is already made, leaving the original loop byte-for-byte unchanged."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

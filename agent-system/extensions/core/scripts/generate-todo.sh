@@ -458,6 +458,11 @@ generate_todo() {
     [[ -z "$task_num" ]] && continue
     total_count=$((total_count + 1))
 
+    # Decision 7 (intentional, not an oversight): "hold" falls to the `*)` catch-all below and
+    # counts as active, not terminal. A held task is non-terminal (a human-initiated pause, not
+    # an archival-eligible terminus -- see is_terminal_status()'s own comment in
+    # orchestrate-cycle-plan.sh), so counting it active here is correct and this split is left
+    # unmodified.
     case "$task_status" in
       completed|abandoned|expanded) terminal_count=$((terminal_count + 1)) ;;
       *) active_count=$((active_count + 1)) ;;

@@ -47,7 +47,10 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          ```
       2. Select the same four reconcilable statuses used by the `/task --sync` and `/orchestrate`
          triggers (positive-match against the four statuses `reconcile-task-status.sh` knows how
-         to reconcile -- no `!=`/negation selector needed):
+         to reconcile -- no `!=`/negation selector needed). CONFIRMED (not assumed): `hold` is
+         absent from this positive-match list, so this stage can never silently promote a held
+         task out of its hold -- a hold is lifted only through the explicit
+         `preflight:unhold` path, never as a side effect of reconciliation:
          ```bash
          reconcile_scan_targets=$(jq -r '
            .active_projects[] |
@@ -86,6 +89,15 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       5. Read specs/TODO.md and cross-reference (including entries marked [EXPANDED])
       6. Track counts: completed_count, abandoned_count, expanded_count
 
+      **VERIFIED, not guarded**: this stage's archive-candidate selection (steps 2-4 above) and
+      the archive-write jq at Stage 10 both POSITIVE-match only `completed`/`abandoned`/
+      `expanded`, so a `hold`-status task is excluded from the archive set by construction at
+      two independent points -- no redundant hold-specific guard is added here. (The task
+      dispatch that motivated this feature pointed at "Stage 2.5, lines ~164-166" for this
+      guard; that line range actually belongs to the Stage 2.5 `TopicRevision` selector below, a
+      different, inverted-select mechanism for topic backfill -- noted here so a future reader
+      following that line number is not misled.)
+
       **Subtasks-defer guard**: identical semantics to `commands/todo.md`'s Step 3 guard (see that
       file's "Prepare Archive List" section, which is the reference implementation this mirrors).
       Partition the tasks identified above into `archivable_tasks[]` (proceeds) and
@@ -97,6 +109,11 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       archivable_tasks=()
       deferred_expanded=()
       deferred_expanded_nums=()
+      deferred_expanded_detail=()   # one entry per deferred parent, naming WHICH subtask(s) block
+                                     # it and why (Decision 6 mitigation -- a reporting
+                                     # improvement only; the blocking case statement below is
+                                     # unchanged, and a held subtask continues to block exactly
+                                     # as every other non-terminal status does)
 
       for task in "${candidate_tasks[@]}"; do
         status=$(echo "$task" | jq -r '.status')
@@ -137,6 +154,31 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
             if [ "$blocking_count" -gt 0 ]; then
               deferred_expanded+=("$task")
               deferred_expanded_nums+=("$project_num")
+              # Reporting-only detail pass (Decision 6 mitigation): names which subtask(s) are
+              # blocking and, for a held one specifically, its hold_reason -- so the operator
+              # reads "subtask 123 is held (reason: ...)" rather than a generic "still active"
+              # line. This is a SEPARATE pass over the same subtasks[] already resolved above; it
+              # does not re-decide blocking and does not alter the case statement above.
+              detail_parts=()
+              for subtask_num in $(echo "$subtasks" | jq -r '.[]'); do
+                d_status=$(jq -r --argjson n "$subtask_num" \
+                  '.active_projects[] | select(.project_number == $n) | .status' \
+                  specs/state.json)
+                [ -z "$d_status" ] && continue
+                case "$d_status" in
+                  completed|abandoned|expanded) ;;
+                  hold)
+                    d_reason=$(jq -r --argjson n "$subtask_num" \
+                      '.active_projects[] | select(.project_number == $n) | .hold_reason // "no reason recorded"' \
+                      specs/state.json)
+                    detail_parts+=("subtask $subtask_num is held (reason: $d_reason)")
+                    ;;
+                  *)
+                    detail_parts+=("subtask $subtask_num is $d_status")
+                    ;;
+                esac
+              done
+              deferred_expanded_detail+=("$project_num: $(IFS='; '; echo "${detail_parts[*]}")")
             else
               archivable_tasks+=("$task")
             fi
@@ -349,6 +391,10 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            - Format: `Deferred: {N} expanded parent(s) held back (subtasks still active)`
            - If `deferred_expanded[]` is empty: `Deferred: none` (mirrors the neighbouring
              memory-candidate and status-reconciliation dry-run lines)
+           - Follow with one indented line per `deferred_expanded_detail[]` entry (Decision 6
+             mitigation), so a hold specifically is named rather than folded into the generic
+             "subtasks still active" summary, e.g. `  - 42: subtask 123 is held (reason: Awaiting
+             upstream API decision)`
          - Orphaned directories count
          - Misplaced directories count
          - Roadmap updates needed: same three-way branch as `commands/todo.md`'s dry-run output —
