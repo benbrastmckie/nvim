@@ -80,17 +80,18 @@ next_project_number: 306
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 301 [NOT STARTED] — Re-open the per-dispatch worktree isolation verdict: audit,...
-305 [RESEARCHED] — Trim agent-system/extensions/core/commands/orchestrate.md...
+305 [PLANNED] — Trim agent-system/extensions/core/commands/orchestrate.md...
 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 
 ## Tasks
 
 ### 305. Trim orchestrate md and promote budget gate
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [305_trim_orchestrate_md_and_promote_budget_gate/reports/01_trim-orchestrate-md-budget-gate.md]
+- **Plan**: [305_trim_orchestrate_md_and_promote_budget_gate/plans/01_trim-orchestrate-md-promote-gate.md]
 
 **Description**: Trim agent-system/extensions/core/commands/orchestrate.md below its 21,000 B ceiling, then promote ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard. The file measures 21,328 B -- 328 B over -- and is the last open finding in verify-deploy Gate 20 (orchestrator context budget lock): the eager-load total (65,402 B / 65,950 B baseline) and skills/skill-orchestrate/SKILL.md (19,993 B / 20,000 B ceiling) were both brought under their limits by deliberate duplication trims, but the promotion was reverted because this file had concurrently grown past its own ceiling via the [HOLD] status-marker change's STAGE 0 documentation landing. The remedy is already on record in this file's derivation narrative inside agent-system/extensions/core/context/config/orchestrator-context-budget.json: a restatement trim of the Options table's --fast/--research/--plan/--implement rows and the forced-phase Constraints bullet, all of which duplicate docs/architecture/orchestrate-state-machine.md. Constraints: (a) do not move ceiling_bytes or baseline_bytes -- the config's own note requires any such move be deliberate, dated and reviewed, and the established remedy is content relocation behind a plain pointer; (b) verify every relocated clause is present in its non-eager destination before cutting the eager copy; (c) the file's ~10 KB STAGE 0 executable bash block is out of scope -- relocating it is a code-relocation change, not a documentation trim; (d) target headroom (~20,500 B) rather than the bare limit, since this file has been pushed over its ceiling by sibling commits three times in the growth history recorded in the config. Close by flipping ORCHESTRATOR_BUDGET_GATE_MODE to hard in the same change and confirming Gate 20 plus its 13-case test suite (scripts/tests/test-verify-deploy-context-budget.sh) pass.
 
