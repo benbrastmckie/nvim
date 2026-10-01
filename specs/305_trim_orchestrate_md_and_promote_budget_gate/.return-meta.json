@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790859334_f418e2_305",
+  "dispatch_seq": 1,
+  "findings_count": 8,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/305_trim_orchestrate_md_and_promote_budget_gate/reports/01_trim-orchestrate-md-budget-gate.md",
+      "summary": "Identifies and byte-measures the five restatement-trim spots in commands/orchestrate.md (Options table's --fast/--research/--plan/--implement rows plus the forced-phase Constraints bullet), confirms every clause duplicates docs/architecture/orchestrate-state-machine.md (already present, more detailed), drafts replacement text saving ~2,304 B (target ~19,000 B, well under the 20,500 B headroom goal), confirms the ORCHESTRATOR_BUDGET_GATE_MODE default-flip location in verify-deploy.sh, and confirms via an actual test run that the 13-case suite needs no code changes and that the current 1 test failure plus several full-battery verify-deploy.sh findings are pre-existing lean-extension staleness unrelated to this task."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 305 to create implementation plan"
+}
