@@ -103,6 +103,21 @@ This task was filed on the hypothesis that `.return-meta.json`'s `modified_files
 
 The source-store copy and the deployed copy are byte-identical, so this is not deploy staleness. **Documenting the contract is therefore ALREADY DONE — do not re-do it.** The defect is not underspecification. It is that nothing anywhere ENFORCES the documented contract, and the consumer's failure mode on violation is maximally destructive.
 
+== THE SIBLING-FIELD COMPARISON (narrowing evidence, with its inference corrected) ==
+
+In the SAME dispatch, `.orchestrator-handoff.json`'s `artifacts[]` carried **only repo-relative paths** -- verified, two entries, both `specs/154_.../...`. Meanwhile all four absolute paths were confined to `modified_files`, and they appear nowhere else that is consumed as a pathspec. So the incident is narrow and field-specific, NOT general path carelessness by the agent: it put repo-relative paths in one field and absolute paths in another.
+
+**This exonerates the producing agent and rules out a plausible wrong diagnosis.** Do not read the incident as an agent that was sloppy about paths and needs tighter instructions.
+
+**But the natural inference from it is BACKWARDS, and the research must not repeat it.** The tempting reading is "the sibling schema'd field already has the correct repo-relative contract, so constraining `modified_files` is merely alignment with existing precedent." Verified against the schema, that is false:
+
+- `context/schemas/orchestrator-handoff-schema.json`'s `artifacts[].path` is documented as "**Repo-relative or absolute** path to the artifact." It **permits** absolute. It is schema'd but LOOSE.
+- `modified_files` has **no schema at all** (confirmed: nothing under `context/schemas/` covers `.return-meta.json`), but its prose contract is the STRICTEST path statement in the system -- "Absolute paths are not permitted."
+
+So the asymmetry runs the opposite way from the framing above: the field that broke is the one with the STRICTER stated contract and NO schema and NO enforcement; the field that behaved is the one with the LOOSER stated contract, a schema, and no pathspec consumer to punish looseness. `artifacts[]` got repo-relative paths by practice (artifact paths are naturally built from the task directory), not because any contract demanded it.
+
+**Consequence for the design, and this is the load-bearing conclusion:** there is NO in-system precedent of a path field being successfully constrained by documentation. The strictest prose contract in the system was violated anyway, by an agent that was never shown it. **That is a direct argument that candidate 1 is insufficient on its own** -- stronger than the generic version, because the counter-example is this very field. Enforcement (candidate 2, or a schema with validation) is required. If research wants to cite `artifacts[]` as precedent for anything, the honest citation is: a loose contract on a field with no pathspec consumer is harmless, which is why nobody noticed the asymmetry.
+
 == THE DEFECT (precisely located) ==
 
 `scripts/git-commit-scoped.sh:292`, the drop-pass predicate:
@@ -140,6 +155,15 @@ Of the 13 implementation agents under `agent-system/extensions/*/agents/`, only 
 **Propagation to those 9 agents is OUT OF SCOPE here and should be a follow-up task** -- it is a 9-file producer-side surface, and excluding it is a scope judgment, NOT an overlap dodge (those 9 files carry no competing declarations found in this survey). It is recorded here so the follow-up is filed against evidence rather than rediscovered. Note that it also reinforces the consumer-side fix: the field will keep being produced by agents that were never told the rule, so the consumer must be robust to violation regardless.
 
 **The producing agent's behaviour was reasonable, not negligent.** Recording every file it touched, across both repositories, is a defensible reading of a field named `modified_files` by an agent that was never shown the constraint. Do not frame any part of this as an agent error to be trained away.
+
+== THE CENTRAL QUESTION: SILENT FILTERING VS LOUD REFUSAL ==
+
+Filtering `modified_files` to entries under the repository root BEFORE staging would have let the observed commit succeed for its 26 valid entries instead of aborting all 30. **Candidate 2 is therefore demonstrably sufficient to close the observed incident** -- this is established, not open. What remains open, and is this task's central decision, is the behavior on a filtered entry:
+
+- **Silent filtering** recovers the valid work but HIDES that an agent produced an out-of-contract entry. The contract violation goes unrecorded and the 9 unpropagated agents keep emitting them undetected.
+- **Loud refusal** surfaces the violation but MUST NOT preserve the current behavior of reporting success while staging nothing. A refusal that leaves the task at `completed` with nothing committed is strictly worse than silent filtering.
+
+**The status quo is the worst of both options: it neither commits the valid work nor reports failure.** Any ruling must beat that bar on both axes. The likely shape is filter-and-commit paired with a loud, non-suppressible report plus a non-terminal status or an explicit operator-visible record -- but research rules on it, and must say which axis it is trading if it does not get both.
 
 == CANDIDATE SURFACES (research RULES between these; do not presuppose) ==
 
@@ -187,7 +211,8 @@ Six live tasks contending on `scripts/orchestrate-cycle-postflight.sh` is itself
 4. A path inside the repository but given as an ABSOLUTE path continues to work (it is a legal `git add` argument today); the fix must distinguish "absolute" from "outside the repository" and not break the former. State the chosen predicate explicitly.
 5. The cross-repository-edit question (surface 3) is RULED ON in the report: either a field/mechanism is specified, or the format spec states that such edits are outside `modified_files` and names what an agent should do instead.
 6. The non-blocking-policy question is ruled on in the report with reasoning, whether or not code changes.
-7. `bash scripts/tests/test-git-commit-scoped.sh` passes in full, and `scripts/verify-deploy.sh` passes.
+7. The silent-filtering-vs-loud-refusal decision is stated in the report, and the chosen behavior is shown to beat the status quo on BOTH axes (valid work committed AND the violation reported). If only one axis is achieved, the report says which was traded and why.
+8. `bash scripts/tests/test-git-commit-scoped.sh` passes in full, and `scripts/verify-deploy.sh` passes.
 
 ---
 
