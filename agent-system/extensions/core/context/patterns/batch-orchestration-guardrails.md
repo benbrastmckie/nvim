@@ -1383,8 +1383,13 @@ against a bounded set such as non-terminal tasks, never an unbounded scan of eve
 
 This section decides a question the sections above assume settled: when several dispatches run
 concurrently against one repository, do they share one working tree and one build directory, or
-does each get its own? The answer is a **split verdict**, evidence-backed, scored below against
-three distinct failure modes observed in live concurrent-dispatch batches.
+does each get its own? **The verdict is blanket, not split: every dispatch — every phase, every
+`task_type` — runs in the repository's single working tree, and no selection predicate routes any
+dispatch to an isolated `git worktree`.** Concurrency safety rests entirely on declared
+`file_scope`, `dependencies[]` edges, and the five contention inputs already in service. The three
+failure modes below, and the scoring and measurements that follow them, remain valid as the
+taxonomy and evidence that were used to reach this verdict — they are retained as history and
+reference, not as a live selection rationale, and are not re-scored or re-derived here.
 
 ### The Three Failure Modes
 
@@ -1423,7 +1428,84 @@ against concurrent same-file dispatch — a narrower, additional hazard the over
 was never designed to catch, and does not need to be widened to catch, because the fix belongs at
 a different layer (see Option 3(ii) below).
 
+### The Blanket Shared-Tree Verdict
+
+**Per-dispatch `git worktree` isolation is removed, not narrowed.** Every dispatch — every phase,
+every `task_type` — runs in the repository's single working tree. There is no selection predicate
+of any kind: no dispatch is routed to isolation by phase, by task family, or by any other
+property. `dispatch-worktree.sh`, the `task_selected_for_worktree_isolation()` selection
+predicate, and all provisioning, landing, releasing and pruning wiring are superseded by this
+verdict; their deletion is a separately sequenced removal task (see `## Related Documents`
+below), not performed by this document. This section records the verdict and the reasoning behind
+it, not the removal mechanics.
+
+Concurrency safety rests entirely on declared `file_scope`, `dependencies[]` edges, and the five
+contention inputs already built and in service: creation-time auto-dependency edges, the runtime
+wave/cycle-split check, the repo-wide held-lock scan at `task-lock.sh acquire`, the
+`specs/state.json` collision scan, and the session registry at `specs/.sessions/*.json` carrying
+each live session's unioned `file_scope`. Two orchestrations in different sessions of the same
+repository may run concurrently in that one working tree when no `file_scope` collision and no
+dependency edge relates them; when a conflict exists, the orchestrator refuses and names the task
+sets that could run instead.
+
+#### Cost Was Not the Reason
+
+Recorded explicitly so a future reader does not cite the disk-and-latency objection as this
+verdict's basis: that objection was measured, in this codebase (see "Measurements That Informed
+the Verdict" below), and found small. Isolation was cheap to provision. **It is removed for
+reliability and complexity reasons, not cost ones.** An argument from cost against this verdict is
+an argument against this repository's own evidence — re-running the measurements below will
+reproduce them, not overturn the decision.
+
+#### Three Defects, Every One Induced by the Layer
+
+| Defect | Mechanism | Consequence |
+|---|---|---|
+| Destructive release on `nothing_to_land` | `dispatch-worktree.sh land` derives `nothing_to_land` from a pure branch-ancestry test (`merge-base --is-ancestor`) and never inspects the working tree; the orchestration postflight step folds that verdict into the same success branch as `landed` and immediately releases | Silent destruction of uncommitted work. Nearly destroyed verified, sorry-free, build-green work; caught only because an operator inspected the worktree by hand. Nothing in the system would have reported the loss |
+| `git-commit-scoped.sh`'s false success inside a worktree | `PROJECT_ROOT` is derived from `BASH_SOURCE[0]`, with no `--repo-root` or `--worktree` flag; every pathspec falls through the WARN-and-drop branch, nothing stages, and the script returns success | A false negative that reads as success to its caller. Produced a commit lacking its required attribution trailers via a manual fallback |
+| `lake-build-guard.sh`'s false green via the `cp -al` inode share | `cp -al` of the build directory shares inodes for the guard's own `build-guard.*` state files; the guard's `finalize_record()` truncates in place, so a worktree build overwrote the main tree's record | Reported a successful build while writing no output for the requested module. A false green is the dangerous direction of wrong for a build gate |
+
+No defect of any other origin was ever recorded against this dispatch path. Every known failure in
+it was created by it.
+
+#### The Structural Argument
+
+Atomic-rename rebindability — the property that let a hardlink-cloned build directory safely
+diverge per worktree (see "Measurements That Informed the Verdict" below) — is a **per-writer**
+property, not a property of the clone: a truncate-in-place writer never gets it, hardlink or not.
+Consequently, the exclusion list a hardlink-clone layer needs is a hand-maintained enumeration of
+named files, and every unrelated script that keeps mutable state under a cloned directory is a
+fresh instance of the same hazard — the `lake-build-guard.sh` defect above is one instance, not
+the only possible one. A layer whose correctness depends on the ongoing discipline of scripts that
+do not know it exists cannot be audited once and then trusted. This reason outlives all three
+defects recorded above: it would hold even if every one of them were independently patched.
+
+#### Mode 2: An Admission Rule, Not a Layer
+
+Build contention (mode 2 above) was one of the three failure modes worktree isolation was adopted
+to close, and worktree isolation defeated its own mitigation for it: the same shared inode that
+made the hardlink clone cheap also let a build-serialization lock file serialize builds *across*
+trees, defeating the very build-contention isolation per-dispatch worktrees existed to provide.
+
+Mode 2 is instead closed as a **principle**: build contention is closed by refusing to
+co-schedule two build-heavy implement tasks in one cycle. This document states principles only —
+the admission predicate that enforces this belongs in `orchestrate-cycle-plan.sh`'s own header
+(see `## Related Documents` below for the pointer); it is not restated or implemented here.
+
+**Considered and declined, for now**: a PATH-shim wrapper for unguarded build-tool callers —
+the system-level answer, making every direct invocation of the build tool participate in the
+serialization lock without editing each caller. It is not adopted; it remains deferred as its own
+follow-up with its own feasibility question. Its residual is stated rather than hidden: a bare
+invocation of the build tool from outside an orchestration — an operator's own shell, or a script
+this system does not own — remains unguarded. That is a different threat model from
+in-orchestration contention, and it is the same exposure the opt-in guard carried before worktrees
+existed, so removal does not worsen it. If it ever produces an observed harm, the shim is the
+answer, and this paragraph is the record that it was weighed.
+
 ### Scoring Table
+
+This table is retained as history: it is the comparison that originally produced the now-
+superseded split verdict, not a live scoring of a choice still open today.
 
 | Option | Mode 1a | Mode 1b | Mode 2 | Cost | Concurrency effect |
 |---|---|---|---|---|---|
@@ -1438,26 +1520,11 @@ patch closing one more enumerated hole. Option 2 is the only single option that 
 three modes at once. Option 3(i) is infeasible as verified below. Option 3(ii) addresses 1b
 cheaply but leaves 1a and 2 open — it is a shared-tree option, not a replacement for isolation.
 
-### The Split Verdict and Its Selection Predicate
-
-**Verdict**: per-dispatch git-worktree isolation (Option 2) for **implement**-phase dispatches of
-task types whose builds are expensive and collision-prone (the lean4/cslib family in this
-codebase); the shared tree plus Option 3(ii)'s contended-path commit refusal for every other
-dispatch (general/meta/markdown and any other cheap, doc-shaped task type). Option 3(i) is ruled
-out outright, not merely deprioritized.
-
-**Selection predicate** (stated once, in the form a script implements it): `phase == "implement"`
-AND the task's type is in the lean4/cslib family → isolated worktree. Every other dispatch keeps
-the shared tree and gains the contended-path refusal.
-
-This is a genuine split, not a compromise-by-indecision: the two failure-mode profiles differ by
-task family. A lean4/cslib implement dispatch pays for a full Lean build and touches a shared
-`.lake/`, making modes 1a/1b/2 all live simultaneously and expensively; a general/meta/markdown
-dispatch has no comparable build directory and a much smaller collision surface, so the cheaper
-Option 3(ii) is proportionate there and full worktree isolation would be paying worktree-cold-build
-cost for a hazard that barely exists in that family.
-
 ### Measurements That Informed the Verdict
+
+These measurements are the proof behind "Cost Was Not the Reason" above: they are what was
+actually measured when the disk-and-latency objection to worktree isolation was weighed, and they
+are retained verbatim rather than restated so a future reader can re-run them directly.
 
 - **Reference-repo scale**: a build directory (`.lake/`) of 16 GiB against roughly 26–27 GiB free
   on the same filesystem.
@@ -1485,6 +1552,11 @@ cost for a hazard that barely exists in that family.
 
 ### A Corrected Rationale for Hardlink-Over-Symlink
 
+Historical: this subsection records `dispatch-worktree.sh`'s own internal hardlink-vs-symlink
+rationale. The script is not deleted by this verdict — its removal is a separately sequenced task
+— so the rationale is retained rather than dropped, and may be cited again before that removal
+lands.
+
 A materialized deploy tree (the directory a dispatched agent's own tooling lives under) must be
 physically present inside an isolated worktree, not merely symlinked there — but the reason is
 narrower than it first appears, and the narrower, verified reason is the one that should be
@@ -1510,6 +1582,12 @@ the operative rationale; the disproven symlink-resolution mechanism is not.
 
 ### Deliberate Divergences
 
+Historical: this subsection records why a harness-level whole-repo isolation parameter was
+refused in favor of a dedicated provisioning script. The posture it argues for is superseded by
+the blanket verdict above, but the reasoning is retained because it may be cited again — a future
+proposal to relocate an agent's repository copy opaquely would face the same `specs/`-staleness
+argument.
+
 - **Script-provisioned worktrees, not a harness-level isolation parameter.** A tracked `specs/`
   directory (carrying every task's state and artifacts) means a fresh worktree holds a
   HEAD-stale, tracked copy of that state — task artifacts must keep being written to the main
@@ -1524,22 +1602,25 @@ the operative rationale; the disproven symlink-resolution mechanism is not.
   second harness checkout on top of the one this script already provisioned, and the harness then
   refuses all cross-checkout git while still permitting file writes and build runs — a distinct
   failure mode from the `specs/`-staleness argument above.
-- **A PATH-shim wrapper for unguarded build-tool callers is named, not built here.** The
-  build-serialization guard's opt-in nature (Mode 2) is a real, confirmed defect: any bare
-  invocation of the build tool bypasses the lock, including from a script this agent system does
-  not own and cannot edit. The system-level answer — making every such caller participate without
-  editing each one — is a PATH-shim wrapper. It is deferred as its own follow-up with its own
-  feasibility question, not attempted as part of this decision.
 
 ## Related Documents
 
 This document states principles only. The mechanisms are defined, exactly once each, elsewhere:
 
 - **Working-tree and build isolation posture**: this document's own "Working-Tree and Build
-  Isolation Posture" section above decides the shared-tree-vs-isolated-worktree question; the
-  provisioning/land/release lifecycle it selects is implemented in `dispatch-worktree.sh`, the
-  contended-path commit refusal in `git-commit-scoped.sh`, and the mode-1b staging qualification
-  lives in `context/standards/git-staging-scope.md`.
+  Isolation Posture" section above decides the shared-tree-vs-isolated-worktree question, now a
+  blanket shared-tree verdict with no surviving selection predicate. `dispatch-worktree.sh`
+  implemented the now-superseded split verdict's provisioning/land/release lifecycle and remains
+  in the tree pending a separately sequenced removal task — it is not live and not selected by
+  this document, but it is also not unexplained dead code: this entry is that explanation until
+  the removal lands. The mode-1b contended-path commit refusal in `git-commit-scoped.sh` and the
+  staging qualification in `context/standards/git-staging-scope.md` are unaffected by the posture
+  change and remain exactly as before.
+- **Build-contention (mode 2) admission rule**: the "Mode 2: An Admission Rule, Not a Layer"
+  subsection above states the never-co-schedule-two-build-heavy-implement-tasks principle only;
+  the admission predicate that enforces it belongs in `orchestrate-cycle-plan.sh`'s own header,
+  as a stated intent for that mechanism's eventual home rather than a claim that the predicate is
+  implemented there today.
 - **Overlap algorithm**: `file-footprint-overlap.md` — the directory-prefix overlap predicate and
   its pairwise-set application, used by all three admission layers above.
 - **Lock protocol**: `task-lock.md` — the lockfile schema, acquire/heartbeat/release contract, and

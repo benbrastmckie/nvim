@@ -1,7 +1,7 @@
 # Implementation Plan: Task #286
 
 - **Task**: 286 - Shared-tree isolation posture verdict (rewrite the split verdict to a blanket verdict)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/286_shared_tree_isolation_posture_verdict/reports/01_shared-tree-isolation-posture.md
@@ -106,7 +106,7 @@ Phases within the same wave can execute in parallel. Every phase here edits the 
 chain is strictly linear by design — not because of logical dependency alone, but to keep the
 edits non-overlapping and each one independently reviewable in the diff.
 
-### Phase 1: Replace the Verdict Core [NOT STARTED]
+### Phase 1: Replace the Verdict Core [COMPLETED]
 
 **Goal**: The section's opening framing and its `### The Split Verdict and Its Selection
 Predicate` subsection are replaced by the blanket verdict, the cost disclaimer, the defect
@@ -114,25 +114,25 @@ record, the structural argument, and the mode 2 principle. After this phase no s
 predicate remains in the section.
 
 **Tasks**:
-- [ ] Read the current section in full (`## Working-Tree and Build Isolation Posture` through the
-      end of `### Deliberate Divergences`) and confirm its boundaries before editing.
-- [ ] Rewrite the intro paragraph: it currently frames a question answered by a "**split
+- [x] Read the current section in full (`## Working-Tree and Build Isolation Posture` through the
+      end of `### Deliberate Divergences`) and confirm its boundaries before editing. *(completed)*
+- [x] Rewrite the intro paragraph: it currently frames a question answered by a "**split
       verdict**... scored below". Replace with a direct statement of the blanket verdict — every
       dispatch, every phase, every `task_type` runs in the repository's single working tree — and
       a statement that there is no selection predicate. Note that concurrency safety rests
       entirely on declared `file_scope`, `dependencies[]` edges, and the five contention inputs
-      already in service.
-- [ ] Leave `### The Three Failure Modes` and `### Why Mode 1b Is the Decisive Evidence`
-      byte-identical. Do not retype, reorder, or reword them.
-- [ ] Replace `### The Split Verdict and Its Selection Predicate` with a new verdict subsection
+      already in service. *(completed)*
+- [x] Leave `### The Three Failure Modes` and `### Why Mode 1b Is the Decisive Evidence`
+      byte-identical. Do not retype, reorder, or reword them. *(completed)*
+- [x] Replace `### The Split Verdict and Its Selection Predicate` with a new verdict subsection
       stating the blanket ruling, that `git worktree` isolation is removed rather than narrowed,
       and that two orchestrations in different sessions of one repository may run concurrently in
-      that single tree when no `file_scope` collision and no dependency edge relates them.
-- [ ] Add `#### Cost Was Not the Reason` (or an equivalently titled subsection): state explicitly
+      that single tree when no `file_scope` collision and no dependency edge relates them. *(completed)*
+- [x] Add `#### Cost Was Not the Reason` (or an equivalently titled subsection): state explicitly
       that the disk-and-latency objection was measured and found small, cite the measurements
       block below by name rather than restating its numbers, and state that an argument from cost
-      against this verdict is an argument against this repository's own evidence.
-- [ ] Add the defect record as a table mirroring the decision record's own three rows: the
+      against this verdict is an argument against this repository's own evidence. *(completed)*
+- [x] Add the defect record as a table mirroring the decision record's own three rows: the
       destructive release on a `nothing_to_land` verdict (branch-ancestry test that never inspects
       the working tree, folded into the same success branch as `landed`, then released);
       `git-commit-scoped.sh`'s false success inside a worktree (`PROJECT_ROOT` from
@@ -140,24 +140,24 @@ predicate remains in the section.
       returns success); and the `lake-build-guard.sh` false green (`cp -al` sharing inodes for the
       guard's `build-guard.*` state files, `finalize_record()` truncating in place). Close with
       the explicit statement that no defect of any other origin was ever recorded against that
-      dispatch path.
-- [ ] Add the structural argument as its own subsection: atomic-rename rebindability is a
+      dispatch path. *(completed)*
+- [x] Add the structural argument as its own subsection: atomic-rename rebindability is a
       PER-WRITER property, not a property of the clone; a truncate-in-place writer never gets it;
       the exclusion list is therefore a hand-maintained enumeration of named files; every
       unrelated script keeping mutable state under a cloned directory is a fresh instance of the
       same hazard; and a layer whose correctness depends on the ongoing discipline of scripts
       that do not know it exists cannot be audited once and then trusted. State that this reason
-      outlives all three defects.
-- [ ] Add the mode 2 ruling as a PRINCIPLE ONLY: build contention is closed by refusing to
+      outlives all three defects. *(completed)*
+- [x] Add the mode 2 ruling as a PRINCIPLE ONLY: build contention is closed by refusing to
       co-schedule two build-heavy implement tasks in one cycle. Do not state, restate, or
       implement the predicate — this document states principles only, so note that the mechanism
       belongs in `orchestrate-cycle-plan.sh`'s own header and that the pointer lives in
-      `## Related Documents`.
-- [ ] In that same mode 2 subsection, name the declined alternative: the PATH-shim wrapper is
+      `## Related Documents`. *(completed)*
+- [x] In that same mode 2 subsection, name the declined alternative: the PATH-shim wrapper is
       considered and not adopted, and its residual is stated explicitly — a bare build-tool
       invocation from outside an orchestration remains unguarded; that is a different threat
       model from in-orchestration contention and the same exposure the opt-in guard carried
-      before worktrees existed, so removal does not worsen it.
+      before worktrees existed, so removal does not worsen it. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -186,38 +186,38 @@ the file) before editing, and never by line offset alone.
 
 ---
 
-### Phase 2: Reframe the Surviving Passages [NOT STARTED]
+### Phase 2: Reframe the Surviving Passages [COMPLETED]
 
 **Goal**: Every passage that survives for its measurement, taxonomy, or historical-record value
 is correctly framed under the new verdict — none silently dropped, none left reading as a live
 selection rationale.
 
 **Tasks**:
-- [ ] `### Scoring Table`: keep the four-row table verbatim. Add one lead sentence identifying it
+- [x] `### Scoring Table`: keep the four-row table verbatim. Add one lead sentence identifying it
       as the historical comparison that produced the now-superseded split verdict, so a reader
       does not mistake it for a live scoring of a live choice. Leave the honest-scoring paragraph
-      beneath it intact.
-- [ ] `### Measurements That Informed the Verdict`: keep every bullet verbatim (worktree add at
+      beneath it intact. *(completed)*
+- [x] `### Measurements That Informed the Verdict`: keep every bullet verbatim (worktree add at
       0.09-0.2s; the 16 GiB hardlink clone at ~0.8s with disk movement on the order of 1 GiB; the
       verified atomic-rename/inode experiment; the hunk-attribution infeasibility finding that
       rules out option 3(i)). Add a short lead-in tying the block explicitly to the cost
-      disclaimer added in phase 1 — a cross-reference, not a second copy of the numbers.
-- [ ] `### A Corrected Rationale for Hardlink-Over-Symlink`: mark historical with a one-line
+      disclaimer added in phase 1 — a cross-reference, not a second copy of the numbers. *(completed)*
+- [x] `### A Corrected Rationale for Hardlink-Over-Symlink`: mark historical with a one-line
       lead-in (it records `dispatch-worktree.sh`'s own internal hardlink-vs-symlink rationale,
       and that script is not deleted by this change). Do not delete the passage; do not re-argue
-      it.
-- [ ] `### Deliberate Divergences`, first bullet (script-provisioned worktrees vs. a
+      it. *(completed)*
+- [x] `### Deliberate Divergences`, first bullet (script-provisioned worktrees vs. a
       harness-level isolation parameter, including the `specs/`-staleness argument and the Move 2
       isolation-forwarding MUST NOT): mark historical rather than dropping it, per the dispatch's
       explicit instruction — it is the record of why a harness-level whole-repo isolation
-      parameter was refused, and that reasoning may be cited again.
-- [ ] `### Deliberate Divergences`, second bullet (PATH-shim wrapper, named-not-built): drop the
+      parameter was refused, and that reasoning may be cited again. *(completed)*
+- [x] `### Deliberate Divergences`, second bullet (PATH-shim wrapper, named-not-built): drop the
       standalone bullet, now that phase 1 states the decline and its residual in the mode 2
       subsection where the dispatch requires it. Confirm no content is lost in the move — the
       opt-in bypass mechanism, the "system-level answer" framing, and the deferral must all be
-      present in their new home before this bullet is removed.
-- [ ] Re-read the whole section end to end for coherence: a reader arriving cold must see one
-      verdict, clearly-labelled history, and no residual ambiguity about which posture is live.
+      present in their new home before this bullet is removed. *(completed)*
+- [x] Re-read the whole section end to end for coherence: a reader arriving cold must see one
+      verdict, clearly-labelled history, and no residual ambiguity about which posture is live. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -242,30 +242,30 @@ selection rationale.
 
 ---
 
-### Phase 3: Correct the Related Documents List [NOT STARTED]
+### Phase 3: Correct the Related Documents List [COMPLETED]
 
 **Goal**: `## Related Documents` no longer presents `dispatch-worktree.sh` as the live mechanism
 this document selects, and it points at the mode 2 mechanism's intended home without claiming the
 predicate exists today.
 
 **Tasks**:
-- [ ] Rewrite the first bullet ("Working-tree and build isolation posture") so it states the
+- [x] Rewrite the first bullet ("Working-tree and build isolation posture") so it states the
       posture above is now blanket shared-tree; that the `dispatch-worktree.sh`
       provisioning/land/release lifecycle implemented the now-superseded split verdict and
       remains in the tree pending a separately sequenced removal (so a reader who greps for it is
       not left thinking it vanished, or that it is unexplained dead code); and that the mode-1b
       contended-path refusal in `git-commit-scoped.sh` and the staging qualification in
       `context/standards/git-staging-scope.md` are unchanged, those mechanisms being unaffected by
-      the posture change.
-- [ ] Add the mode 2 mechanism pointer, naming `orchestrate-cycle-plan.sh`'s own header as where
+      the posture change. *(completed)*
+- [x] Add the mode 2 mechanism pointer, naming `orchestrate-cycle-plan.sh`'s own header as where
       the build-heavy co-scheduling rule belongs. Word it as a stated intent / pointer to that
       mechanism's home, not as a claim that a predicate is implemented there today. Do not
-      restate the principle and do not state the predicate.
-- [ ] Confirm no other bullet in the list needs touching (`file-footprint-overlap.md`,
+      restate the principle and do not state the predicate. *(completed)*
+- [x] Confirm no other bullet in the list needs touching (`file-footprint-overlap.md`,
       `task-lock.md`, `commands/orchestrate.md` + `skill-orchestrate/SKILL.md`,
       `handoff-schema.md`, `multi-task-creation-standard.md`,
       `orchestrator-critical-paths.json`, `regeneration-is-manual-only.md` are all mechanisms
-      unaffected by the isolation-posture change).
+      unaffected by the isolation-posture change). *(completed)*
 
 **Timing**: 0.25 hours
 
@@ -288,29 +288,29 @@ predicate exists today.
 
 ---
 
-### Phase 4: Verify Acceptance and Diff Boundary [NOT STARTED]
+### Phase 4: Verify Acceptance and Diff Boundary [COMPLETED]
 
 **Goal**: Every acceptance criterion in the dispatch is mechanically confirmed, and the diff is
 proven to touch exactly one file.
 
 **Tasks**:
-- [ ] Walk the dispatch's ACCEPTANCE list item by item against the edited file and record the
+- [x] Walk the dispatch's ACCEPTANCE list item by item against the edited file and record the
       confirming evidence for each: one blanket verdict with no surviving selection predicate;
       cost explicitly disclaimed as the reason; all three defects and the structural argument
       recorded; measurements and taxonomy survived; mode 2 principle stated with its mechanism
       pointed at rather than duplicated; `## Related Documents` no longer presenting
-      `dispatch-worktree.sh` as live.
-- [ ] Run the repo-wide task-reference check (`bash .claude/scripts/check-task-references.sh`, or
+      `dispatch-worktree.sh` as live. *(completed)*
+- [x] Run the repo-wide task-reference check (`bash .claude/scripts/check-task-references.sh`, or
       the equivalent entry point present in this deploy) and confirm the edited file introduces no
-      task-number citation — it lives outside `specs/**`, so the rule applies in full.
-- [ ] Confirm `git status --porcelain` shows exactly one modified path under
+      task-number citation — it lives outside `specs/**`, so the rule applies in full. *(completed)*
+- [x] Confirm `git status --porcelain` shows exactly one modified path under
       `agent-system/extensions/core/context/patterns/`, and that nothing under `.claude/`,
-      `scripts/`, or `tests/` is modified by this task.
-- [ ] Confirm `dispatch-worktree.sh`, `task_selected_for_worktree_isolation()`, and
+      `scripts/`, or `tests/` is modified by this task. *(completed)*
+- [x] Confirm `dispatch-worktree.sh`, `task_selected_for_worktree_isolation()`, and
       `WORKTREE_ISOLATED_TASK_TYPES` are all still present and untouched — this task changes
-      documentation only.
-- [ ] Read the final rendered section once more top to bottom as a cold reader would, confirming
-      a future reader re-running the measurements cannot conclude the decision was a cost mistake.
+      documentation only. *(completed)*
+- [x] Read the final rendered section once more top to bottom as a cold reader would, confirming
+      a future reader re-running the measurements cannot conclude the decision was a cost mistake. *(completed)*
 
 **Timing**: 0.25 hours
 
@@ -331,22 +331,22 @@ proven to touch exactly one file.
 
 ## Testing & Validation
 
-- [ ] The section states exactly one verdict; no conditional selects a posture by phase or
+- [x] The section states exactly one verdict; no conditional selects a posture by phase or
       `task_type` except the mode 2 co-scheduling principle, which selects a *scheduling*
-      constraint, not an isolation posture.
-- [ ] Cost is explicitly disclaimed as the reason, with the measurements cited as proof.
-- [ ] All three layer-induced defects are recorded with their mechanisms, plus the statement that
-      no defect of any other origin was ever recorded against that dispatch path.
-- [ ] The structural (per-writer atomic-rename) argument is recorded as outliving all three
-      defects.
-- [ ] The three-failure-mode taxonomy, the mode-1b decisive-evidence reasoning, and the full
-      measurements block survive with unchanged interiors.
-- [ ] The scoring table survives, reframed as history.
-- [ ] The mode 2 mechanism is pointed at, never duplicated or implemented here.
-- [ ] The declined PATH-shim alternative and its residual are stated exactly once.
-- [ ] `## Related Documents` no longer presents `dispatch-worktree.sh` as a live mechanism.
-- [ ] Exactly one file modified; no script, test, or `.claude/**` path touched.
-- [ ] No task-number reference introduced outside `specs/**`.
+      constraint, not an isolation posture. *(completed)*
+- [x] Cost is explicitly disclaimed as the reason, with the measurements cited as proof. *(completed)*
+- [x] All three layer-induced defects are recorded with their mechanisms, plus the statement that
+      no defect of any other origin was ever recorded against that dispatch path. *(completed)*
+- [x] The structural (per-writer atomic-rename) argument is recorded as outliving all three
+      defects. *(completed)*
+- [x] The three-failure-mode taxonomy, the mode-1b decisive-evidence reasoning, and the full
+      measurements block survive with unchanged interiors. *(completed)*
+- [x] The scoring table survives, reframed as history. *(completed)*
+- [x] The mode 2 mechanism is pointed at, never duplicated or implemented here. *(completed)*
+- [x] The declined PATH-shim alternative and its residual are stated exactly once. *(completed)*
+- [x] `## Related Documents` no longer presents `dispatch-worktree.sh` as a live mechanism. *(completed)*
+- [x] Exactly one file modified; no script, test, or `.claude/**` path touched. *(completed)*
+- [x] No task-number reference introduced outside `specs/**`. *(completed)*
 
 ## Artifacts & Outputs
 
