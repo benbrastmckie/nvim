@@ -1,5 +1,5 @@
 ---
-next_project_number: 306
+next_project_number: 309
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 306
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,298,302 | 22,44,127,184,241,265,272,279,280,297,300 | core-agent-system, extensions, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,306 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274,304 | 165,263,273,275,277,284,285 | orchestrator |
 
@@ -41,6 +41,9 @@ next_project_number: 306
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
+306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
+  └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
+  └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
 
 ### Extensions
 
@@ -82,6 +85,87 @@ next_project_number: 306
 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 
 ## Tasks
+
+### 308. /review: wire roadmap regeneration and collapse the redundant jq and generate-todo passes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 306
+
+**Description**: Wire /review to regenerate specs/ROADMAP.md completely, and remove redundant work from the command.
+
+1. ROADMAP REGENERATION. /review Step 2.5 (commands/review.md:71-134) currently calls roadmap-integration.sh --annotate, which only annotates completed checkboxes. Rewire it to the regenerate mode created by the roadmap-generation task, so /review rebuilds the roadmap completely -- including regenerating each phase's and batch's brief description of what it accomplishes, while preserving the authored per-phase description text per the generation contract. Responsibility split: /review regenerates completely; /todo prunes.
+
+2. EFFICIENCY. Collapse the ten separate jq processes spawned over one in-memory string at commands/review.md:88-101 into a single pass. Remove the redundant generate-todo.sh invocation: it is called both per-task (:671) and again for the whole run (:720-721).
+
+CONSTRAINT: keep the existing error-handling contract intact. The missing-script and non-zero-exit guards at :103-134, and the always-on roadmap-structure marker plus warning banners, must survive -- they are what stops a regeneration no-op from masquerading as success.
+
+---
+
+### 307. /todo: consolidate the duplicated skill-todo implementation, then wire roadmap pruning and cut the per-task jq and subprocess fan-out
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 306
+
+**Description**: Make /todo faster, cheaper and more reliable, and wire it to the roadmap prune mode. TWO PHASES, IN THIS ORDER. The order is a REQUIREMENT, not a suggestion.
+
+=== PHASE 1 (FIRST, and the bulk of the value): consolidate the duplicated /todo implementation ===
+
+skills/skill-todo/SKILL.md is 1170 lines of prose that hand-implements the same 16 archival stages that commands/todo.md implements, and commands/todo.md never dispatches it: its allowed-tools line (commands/todo.md:3) has no Skill entry, and the string "skill-todo" appears nowhere in that file. Every out-of-directory reference to skill-todo is documentation, manifest registration or a lint registry -- none is a dispatch. The duplication is already written down at scripts/deprecated/README.md:19 ("hand-implement[s] the identical archival behavior directly"), and context/patterns/context-protective-lead.md:260 records skill-todo as direct execution with no subagent.
+
+FRAME THIS AS CONSOLIDATION, NOT DELETION. skill-todo is registered at manifest.json:72 and is deployed, so it appears in the harness's own Skill listing and IS directly invocable as Skill(skill-todo) even though commands/todo.md does not call it. Removing the file alone would break that invocation path. Pick ONE of the two as the single source of truth; make the other a thin delegator, or remove it together with its manifest.json registration in the same change; then reconcile the docs.
+
+Also correct context/architecture/system-overview.md:417, which lists `/todo | Direct | skill-todo | (no agent)` and so implies skill-todo is in /todo's execution path. It is not. That misleading line is the reason this duplication survived.
+
+At roughly 1170 lines this consolidation is about half the 2322-line /todo footprint, and it dwarfs every per-call jq saving in the command. Do NOT spend the dispatch budget collapsing jq subprocesses while leaving the duplicate in place. Two divergence surfaces for identical behaviour is a reliability defect, not only a token one, which matches the stated goals of speed, token efficiency and reliability directly.
+
+=== PHASE 2 (ONLY AFTER PHASE 1): wire roadmap pruning ===
+
+Wire /todo to the roadmap prune mode created by the roadmap-generation task, so /todo removes completed tasks from specs/ROADMAP.md and drops a whole batch or phase once every task in it is complete. Today Stage 11 only appends *(Completed: ...)* annotations via roadmap-integration.sh --annotate; it never removes an item and never drops a phase.
+
+PHASE-ORDERING RATIONALE, which must not be reversed: wiring prune before consolidating would write the new prune behaviour into two divergent copies and then throw one away. Remove the divergence surface BEFORE new behaviour lands on it. Note also that Stage 11's elaborate mktemp filtered-snapshot dance exists only because the script can annotate but not prune, so pruning may let that whole mechanism collapse.
+
+=== SECONDARY micro-optimizations (only after the above; listed, but not the point of this task) ===
+- Up to 3k full jq reads of state.json for an expanded parent with k subtasks (skill-todo/SKILL.md:132-180, which itself notes the second pass is separate).
+- One reconcile-task-status.sh subprocess per in-flight task, run serially (:65-73).
+- Per-orphan state-write.sh calls (:566-577), where the main batch at :499-508 is already correctly batched.
+- scripts/memory-harvest.sh exists but its own header says it is bypassed in favour of inline prose.
+
+=== RELATIONSHIP TO TASK 44 ===
+Task 44 ("Slim commands/task.md, the largest per-invocation context contributor", status planned) is DELIBERATELY kept separate rather than absorbing this work. Its file_scope (commands/task.md, six task-mode pattern files, index-entries.json) is disjoint from this task's, and 44 already has an approved plan that folding new scope in would invalidate. Reuse 44's slimming approach as precedent. Record that 44's title claim is now false: commands/todo.md is 1152 lines and commands/task.md is 1005, so commands/todo.md is the larger per-invocation contributor; that claim should be corrected when 44 is next touched. Do NOT silently edit 44.
+
+=== OVERLAP NOTES ===
+- Task 302 also edits commands/todo.md, for a narrow commit-staging pathspec change. RECOMMENDATION ONLY (deliberately not a dependency edge, which would overconstrain): this task's restructure should land first so 302 then edits a settled file. The file_scope_collision admission gate serializes the two.
+- manifest.json is broad shared infrastructure also claimed by tasks 263, 280, 281 and 282, so expect some serialization there.
+
+---
+
+### 306. Make ROADMAP.md a generated artifact: extend the format into a generation contract and add regenerate and prune modes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Turn specs/ROADMAP.md into a generated artifact with a standardized format, so its phase/batch structure is derived mechanically from state.json dependencies instead of being hand-maintained.
+
+MOTIVATION (verified): specs/TODO.md's generated "Dependency Waves" table already contains exactly the same waves that a hand rewrite of ROADMAP.md derived by hand -- identical task sets, identical "Blocked by" and "Topics" columns. The roadmap was re-deriving by hand a table the system already computes. Hand-maintained roadmap prose also goes stale silently: the file carried a claim that the `hold` status was unsupported and would break generate-todo.sh and validate-state.sh, which had been false since the HOLD marker landed (validate-state.sh knows hold_reason, held_at and prior_status).
+
+SCOPE:
+1. Extend context/formats/roadmap-format.md from a 65-line parse spec into a generation contract. It currently specifies only phase headers, checkboxes, status tables and the completion annotation; it does NOT specify the **Status**, **Milestones**, **Blocked by**, **Topics** or **Run** lines the live file actually uses. The contract must cover these; must keep the per-phase structure with copy-pasteable /orchestrate Run blocks and task batches; and must drop the lengthy header, introduction and narrative description, which duplicate README.md and do not serve the user.
+2. Add two modes to scripts/roadmap-integration.sh, which today has only parse-only and --annotate: a regenerate mode that rebuilds the phase/batch structure wholly from the wave data, and a prune mode that removes completed tasks and drops a whole batch or phase once every task in it is complete.
+3. Specify which content is authored and which is generated. ONLY the short per-phase/per-batch description of what the phase accomplishes is authored; everything else is derived.
+
+REUSE, DO NOT REBUILD. This is a wiring job, not a generator-building job:
+- Wave derivation already exists: compute_waves (scripts/generate-task-order.sh line 393, Kahn's algorithm) and generate_wave_table (line 708), which already emit "Wave | Tasks | Blocked by | Topics". `generate-task-order.sh --print` emits that table read-only and was verified working. roadmap-integration.sh must CONSUME that output. Do NOT write a new wave or DAG implementation, and do NOT modify generate-task-order.sh: that file is in task 271's file_scope, and consuming rather than modifying is precisely what keeps this task free of any dependency on 271.
+- Preserving authored prose across regeneration already exists: read_existing_goal (generate-task-order.sh line 905) reads the existing **Goal** line out of TODO.md and retains it unless overridden. Copy that mechanism for the authored per-phase descriptions.
+- orchestrate-cycle-plan.sh and orchestrate-batch-admit.sh also compute eligibility and in-batch ordering from the same dependencies[] data. Check any new logic against them for duplication before writing it.
+
+Research must settle the remaining details and is explicitly directed to AVOID NEEDLESS COMPLEXITY: prefer reusing and extending what exists over introducing new machinery. Open questions include where held and user-only tasks live in a generated structure (the hand-written roadmap had a Phase 0 of user-only owner decisions and a wholly-held phase, neither of which appears in the wave table), and whether the cut lines and risk table survive at all.
+
+RESPONSIBILITY SPLIT, implemented by the two dependent tasks: /todo prunes; /review regenerates completely, including regenerating each phase's and batch's brief description of what it accomplishes.
+
+---
 
 ### 305. Trim orchestrate md and promote budget gate
 - **Status**: [COMPLETED]
