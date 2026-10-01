@@ -1,7 +1,7 @@
 # Implementation Plan: Task #292
 
 - **Task**: 292 - Add task-count reasoning step to task creation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/292_task_count_reasoning_in_task_creation/reports/01_task-count-reasoning.md
@@ -112,20 +112,20 @@ all depend only on Phase 1's authored text existing to point at.
 
 ---
 
-### Phase 1: Author "Component 0: Task-Count Reasoning" in the standard [NOT STARTED]
+### Phase 1: Author "Component 0: Task-Count Reasoning" in the standard [COMPLETED]
 
 **Goal**: The full bidirectional test exists in exactly one place, with the standard's own
 checklist, compliance table and gaps section updated to match.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md`
+- [x] Re-read `agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md` *(completed)*
       in full immediately before editing (sibling-concurrency precaution).
-- [ ] Insert a new `### 0. Task-Count Reasoning (Required)` subsection under `## Core Components`,
+- [x] Insert a new `### 0. Task-Count Reasoning (Required)` subsection under `## Core Components`, *(completed)*
       immediately before `### 1. Item Discovery (Required)` (currently line 31), so it reads as the
       step that runs before any item is turned into a task entry.
-- [ ] State the default explicitly and unmistakably: **consolidate unless a named divide reason
+- [x] State the default explicitly and unmistakably: **consolidate unless a named divide reason *(completed)*
       applies**.
-- [ ] Enumerate the legitimate reasons to divide, as a closed list:
+- [x] Enumerate the legitimate reasons to divide, as a closed list: *(completed)*
       (a) genuinely disjoint `file_scope` with no overlap under the
       `context/patterns/file-footprint-overlap.md` rule (reference it by path, do not restate it);
       (b) a different `task_type` or owning domain/extension;
@@ -133,40 +133,40 @@ checklist, compliance table and gaps section updated to match.
       other lands;
       (d) a size that will not fit one agent dispatch — cross-reference the phase-sizing bound in
       `merge-sources/claudemd.md`'s Hard Mode section (H8) rather than restating a line count.
-- [ ] Enumerate the reasons NOT to divide, chiefly: findings that share an edit target (the same
+- [x] Enumerate the reasons NOT to divide, chiefly: findings that share an edit target (the same *(completed)*
       file or files) or share a single acceptance gate belong in ONE task. Explain why the split is
       actively self-defeating and not merely cosmetic: separate tasks would declare overlapping
       `file_scope`, and Component 4a's own in-batch overlap check would then serialize one behind
       the other, so the two "tasks" were never independently dispatchable.
-- [ ] State the narrowness qualifier: the shared-edit-target signal means a shared *narrow*
+- [x] State the narrowness qualifier: the shared-edit-target signal means a shared *narrow* *(completed)*
       `file_scope` entry or one named acceptance gate — not a broad, widely-edited infrastructure
       file or a directory root. Cross-reference `validate-state.sh` Check 8 (WARN-only) as the
       existing detector of coarse directory-root scopes.
-- [ ] State bidirectionality in its own short paragraph: the same closed divide-reason list governs
+- [x] State bidirectionality in its own short paragraph: the same closed divide-reason list governs *(completed)*
       the division direction, so an over-large task is still split when (b), (c) or (d) genuinely
       applies — the test is not a one-way bias toward fewer tasks.
-- [ ] Add the outbound cross-reference to `context/patterns/batch-orchestration-guardrails.md`'s
+- [x] Add the outbound cross-reference to `context/patterns/batch-orchestration-guardrails.md`'s *(completed)*
       "Batching Is the Default" section, explicitly naming the boundary: that section governs which
       already-created tasks are RUN together in one `/orchestrate` invocation; this component
       governs how many tasks are CREATED in the first place. State that neither subsumes the other.
-- [ ] Relate the new component to the existing `## Task Minimization Principle` section (lines
+- [x] Relate the new component to the existing `## Task Minimization Principle` section (lines *(completed)*
       9-25) with a forward pointer from that section, so the principle and its now-named test are
       not read as two unrelated things. Do NOT duplicate the reason lists there.
-- [ ] Note in the component that Component 3 (Topic Grouping) and Component 4a (File Footprint
+- [x] Note in the component that Component 3 (Topic Grouping) and Component 4a (File Footprint *(completed)*
       Overlap) remain unchanged in behavior, and that this component runs upstream of both.
-- [ ] Update `## Implementation Checklist` -> `### Required Components` with a
+- [x] Update `## Implementation Checklist` -> `### Required Components` with a *(completed)*
       `- [ ] **Task-Count Reasoning (0)**: ...` line.
-- [ ] Update `## Current Compliance Status` to add a "Task-Count Reasoning (0)" column, with
+- [x] Update `## Current Compliance Status` to add a "Task-Count Reasoning (0)" column, with *(completed)*
       per-command values reflecting the post-implementation state of Phases 2-4 (`/task` create and
       expand: Yes; `/errors`: Yes (non-interactive); `/meta`, `/fix-it`: Yes (primary-match
       criterion)). Leave `/review` and `/task --review` honestly marked as not yet wired, since
       they are out of this plan's scope.
-- [ ] Update `## Gaps and Future Enhancements` -> `### /errors` so its rationale line no longer
+- [x] Update `## Gaps and Future Enhancements` -> `### /errors` so its rationale line no longer *(completed)*
       implies the consolidation gap is intentional; keep the `--interactive` enhancement listed as
       the separate, still-open item.
-- [ ] Add `.claude/context/patterns/batch-orchestration-guardrails.md` to `## Related
+- [x] Add `.claude/context/patterns/batch-orchestration-guardrails.md` to `## Related *(completed)*
       Documentation`.
-- [ ] Describe the motivating incident using durable anchors only — the config file path
+- [x] Describe the motivating incident using durable anchors only — the config file path *(completed)*
       `agent-system/extensions/core/context/config/orchestrator-context-budget.json`, the
       verify-deploy gate, the `file_scope_collision` check. NO task-number citation anywhere in this
       file (see `.claude/rules/no-task-references-in-deliverables.md`).

@@ -24,9 +24,76 @@ Multi-task creators should proactively analyze user-provided items and suggest c
 - Keep as separate tasks (user preference)
 - Customize groupings (fine-grained control)
 
+This principle is now given a named, mechanical test — see Component 0 below. Component 0 is
+the test; this section is the motivation for having one.
+
 ## Core Components
 
-Multi-task creators implement these 8 components. Components marked **Required** must be implemented; **Optional** components enhance the user experience but may be omitted based on context.
+Multi-task creators implement these 8 components, plus Component 0 which runs upstream of all of
+them. Components marked **Required** must be implemented; **Optional** components enhance the
+user experience but may be omitted based on context.
+
+### 0. Task-Count Reasoning (Required)
+
+Before any discovered item (Component 1) is turned into a task entry, decide how MANY tasks the
+set of items should become. This runs upstream of Component 3 (Topic Grouping) and Component 4a
+(File Footprint Overlap): Component 3's fuzzy key-term/`affected_area` clustering and Component
+4a's after-the-fact overlap-to-dependency-edge mechanism both operate on a split that has already
+been decided, and neither asks whether the split should have happened at all. Component 0 asks
+that question first; Components 3 and 4a are unchanged and still run afterward on whatever
+separate tasks survive this test.
+
+**The default: consolidate unless a named divide reason applies.** Findings, observations, or
+discovered items default to ONE task. Only a closed, enumerated reason overrides that default.
+
+**Legitimate reasons to divide** (closed list):
+- **(a) Disjoint file scope**: the parts' anticipated `file_scope` entries genuinely do not
+  overlap, under the rule in `.claude/context/patterns/file-footprint-overlap.md` (see that file
+  for the overlap definition; it is not restated here).
+- **(b) Different task_type or owning domain**: the parts belong to different `task_type` values
+  or different extensions/owning domains, and so would route to different research/plan/
+  implementation agents.
+- **(c) Real dependency ordering**: one part genuinely cannot be verified until the other part
+  has landed — a true sequencing constraint, not merely a shared topic.
+- **(d) Size exceeding one agent dispatch**: the combined work will not fit one agent dispatch —
+  see the phase-sizing bound (H8) in `.claude/merge-sources/claudemd.md`'s Hard Mode section
+  (~100-500 lines of output per phase) rather than a line count restated here.
+
+**Reasons NOT to divide** (chiefly): findings that share an edit target (the same file or files)
+or share a single acceptance gate belong in ONE task. This is not merely a style preference — the
+split is actively self-defeating. Two findings that edit the same file and are drafted as two
+separate tasks will each declare overlapping `file_scope`; Component 4a's own in-batch overlap
+check then adds a serializing dependency edge between them, so the two "tasks" were never
+independently dispatchable in the first place. Consolidating them is the only way the resulting
+tasks are actually run as the batch-dispatch system expects.
+
+**Narrowness qualifier**: the shared-edit-target signal means a shared *narrow* `file_scope`
+entry or one named acceptance gate/check — not a broad, widely-edited infrastructure file or a
+directory-root scope. `.claude/scripts/validate-state.sh` Check 8 (WARN-only) already detects
+coarse directory-root `file_scope` declarations; a file that trips Check 8 does not, by itself,
+trigger consolidation under this component.
+
+**Bidirectional**: the same closed divide-reason list above governs the division direction too.
+An over-large or multi-domain task is still split when (b), (c), or (d) genuinely applies — this
+component is not a one-way bias toward fewer tasks. Reasoned division under a named reason is
+exactly as correct as reasoned consolidation under the default.
+
+**Relationship to `batch-orchestration-guardrails.md`**: this component governs how many tasks
+are CREATED from a set of findings. `.claude/context/patterns/batch-orchestration-guardrails.md`'s
+"Batching Is the Default" section governs which *already-created* tasks are RUN together in one
+`/orchestrate` invocation. Neither subsumes the other — one is a creation-time decision, the
+other a dispatch-time decision — but they are complementary: tasks correctly consolidated here
+are also the tasks the guardrails document expects to see batched at dispatch time.
+
+**Motivating example**: a batch postflight once surfaced two findings that both edited the same
+config file,
+`agent-system/extensions/core/context/config/orchestrator-context-budget.json`, and both resolved
+the same `verify-deploy.sh` gate. They were drafted as two separate tasks. As separate tasks they
+would each have declared `orchestrator-context-budget.json` in `file_scope`, and Component 4a's
+own in-batch `file_scope_collision` check would then have deferred one task behind the other — so
+the split was not merely cosmetic, it was self-defeating: the two tasks could never have been
+dispatched independently. Under this component's default, a single shared edit target and a
+single shared acceptance gate are exactly the signal that calls for one task, not two.
 
 ### 1. Item Discovery (Required)
 
@@ -411,6 +478,9 @@ insert_after_heading("## Tasks", batch_markdown)
 For any command/skill/agent that creates multiple tasks:
 
 ### Required Components
+- [ ] **Task-Count Reasoning (0)**: Default to consolidate unless a named divide reason (disjoint
+      file_scope, different task_type/domain, real dependency ordering, or size exceeding one
+      agent dispatch) applies
 - [ ] **Discovery**: Clear criteria for identifying potential tasks
 - [ ] **Selection UI**: AskUserQuestion with multiSelect
 - [ ] **Confirmation**: Summary table + explicit "Yes, create tasks" selection
@@ -452,19 +522,24 @@ See `.claude/agents/meta-builder-agent.md` for complete implementation details.
 
 ## Current Compliance Status
 
-| Command | Required | Grouping | Footprint Overlap (4a) | Dependencies | Ordering | Visualization |
-|---------|----------|----------|-------------------------|--------------|----------|---------------|
-| `/meta` | Yes | **Automatic** | Yes (meta-builder-agent) | Full DAG | Kahn's | Linear/Layered |
-| `/fix-it` | Yes | Yes | Yes (skill-fix-it) | Internal only | No | No |
-| `/review` | Yes | Yes | No | No | No | No |
-| `/errors` | Partial* | No | No | No | No | No |
-| `/task --review` | Yes | No | No | parent_task | No | No |
+| Command | Task-Count Reasoning (0) | Required | Grouping | Footprint Overlap (4a) | Dependencies | Ordering | Visualization |
+|---------|---------------------------|----------|----------|-------------------------|--------------|----------|---------------|
+| `/meta` | Yes (primary-match criterion) | Yes | **Automatic** | Yes (meta-builder-agent) | Full DAG | Kahn's | Linear/Layered |
+| `/fix-it` | Yes (primary-match criterion) | Yes | Yes | Yes (skill-fix-it) | Internal only | No | No |
+| `/review` | No (not yet wired) | Yes | Yes | No | No | No | No |
+| `/errors` | Yes (non-interactive) | Partial* | No | No | No | No | No |
+| `/task --review` | No (not yet wired) | Yes | No | No | parent_task | No | No |
 
 *`/errors` creates tasks automatically without interactive selection (intentional for error triage workflow).
 
 `/spawn` (single-task-follow-up creator, `spawn-agent` + `skill-spawn`) also implements
 Footprint Overlap (4a) even though it is not a multi-task *creation* command in the strict
 Component-1-8 sense; see `.claude/agents/spawn-agent.md` and `.claude/skills/skill-spawn/SKILL.md`.
+
+`/task` Create Task Mode and Expand Mode (single/few-task creators, not strict Component-1-8
+multi-task creators) also implement Task-Count Reasoning (0): **Yes** for both, applied at the
+point task count is decided (Create Task Mode Step 2.5; Expand Mode Steps 2-3). See
+`.claude/commands/task.md`.
 
 **Enhanced `/meta` Features**:
 - **Automatic Task Consolidation** (Stage 3.5): Proactively analyzes user-provided task breakdown and suggests consolidation opportunities
@@ -477,7 +552,10 @@ Component-1-8 sense; see `.claude/agents/spawn-agent.md` and `.claude/skills/ski
 
 ### /errors
 - **Gap**: No interactive selection, no dependency support
-- **Rationale**: Automatic mode is intentional for quick error triage
+- **Rationale**: Automatic mode is intentional for quick error triage; `/errors` now applies the
+  Task-Count Reasoning (0) default-to-consolidate rule non-interactively before drafting task
+  entries (see Component 0 above), so the remaining gap is selection/dependency UI, not
+  consolidation
 - **Enhancement**: Add `--interactive` flag for manual selection mode
 
 ### /fix-it
@@ -494,3 +572,6 @@ Component-1-8 sense; see `.claude/agents/spawn-agent.md` and `.claude/skills/ski
 - `.claude/agents/meta-builder-agent.md` - Reference implementation
 - `.claude/commands/fix-it.md` - Topic grouping example
 - `.claude/commands/review.md` - Issue grouping example
+- `.claude/context/patterns/batch-orchestration-guardrails.md` - "Batching Is the Default":
+  governs which already-created tasks are run together, complementary to Component 0's
+  how-many-to-create decision
