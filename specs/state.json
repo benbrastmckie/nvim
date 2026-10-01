@@ -1323,7 +1323,7 @@
     {
       "project_number": 293,
       "project_name": "add_hold_task_status_marker",
-      "title": "Add a [HOLD] task status marker that pauses a task and excludes it from dispatch",
+      "title": "Add a HOLD task status marker that pauses a task and excludes it from dispatch",
       "status": "not_started",
       "task_type": "meta",
       "topic": "core-agent-system",

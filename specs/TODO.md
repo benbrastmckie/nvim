@@ -1,5 +1,5 @@
 ---
-next_project_number: 293
+next_project_number: 294
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 293
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,291,292 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,293 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281 | 22,44,127,184,241,265,272,279,280 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -41,8 +41,8 @@ next_project_number: 293
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 289 [NOT STARTED] — Clear verify-deploy gate 20 (orchestrator context budget...
 290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
-291 [NOT STARTED] — Add a HOLD] task status marker that pauses a task and...
 292 [NOT STARTED] — Add an explicit task-count reasoning step to task creation so...
+293 [NOT STARTED] — Add a HOLD task status marker that pauses a task and excludes...
 
 ### Extensions
 
@@ -75,17 +75,7 @@ next_project_number: 293
 
 ## Tasks
 
-### 292. Task count reasoning in task creation
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-
-**Description**: Add an explicit task-count reasoning step to task creation so the system picks the right NUMBER of tasks instead of defaulting to one-per-observation. Today commands/task.md's Create Task Mode has steps for description improvement, task_type detection, topic assignment and slug creation, but nothing that asks whether a set of findings is one task or several -- and /meta, /fix-it and /errors all create tasks from multi-finding inputs with the same gap. Observed failure: a batch postflight surfaced two findings that both edited the SAME config file (context/config/orchestrator-context-budget.json) and both resolved the SAME verify-deploy gate, and they were drafted as two separate tasks; as separate tasks they would have declared overlapping file_scope and this system's own in-batch file_scope_collision check would have deferred one behind the other, so the split was not merely cosmetic but actively self-defeating. Add a consolidation-versus-division test naming the legitimate reasons to divide -- genuinely different file_scope with no overlap, different task_type or owning domain, a real dependency ordering, or a size that will not fit one agent dispatch (cf. the phase-sizing bound in the hard-mode contracts) -- and the reasons NOT to divide, chiefly that findings sharing an edit target or a single acceptance gate belong in one task. State the default explicitly: consolidate unless a named divide reason applies. Apply the same test to the division direction too, so an over-large task is still split when size or domain genuinely calls for it, and cross-reference context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default" section, which already argues the sibling point for how tasks are RUN rather than how they are CREATED.
-
----
-
-### 291. Add a [HOLD] task status marker that pauses a task and excludes it from dispatch
+### 293. Add a HOLD task status marker that pauses a task and excludes it from dispatch
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -225,6 +215,16 @@ This is the phase that makes a hold actually hold. Phase 1 alone makes "hold" va
   - Re-run the live consumer-repo discovery before claiming completion: the other active session
     may have changed which tasks are held.
   - No task-number references in deliverables outside specs/** (rules/no-task-references-in-deliverables.md).
+
+---
+
+### 292. Task count reasoning in task creation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Add an explicit task-count reasoning step to task creation so the system picks the right NUMBER of tasks instead of defaulting to one-per-observation. Today commands/task.md's Create Task Mode has steps for description improvement, task_type detection, topic assignment and slug creation, but nothing that asks whether a set of findings is one task or several -- and /meta, /fix-it and /errors all create tasks from multi-finding inputs with the same gap. Observed failure: a batch postflight surfaced two findings that both edited the SAME config file (context/config/orchestrator-context-budget.json) and both resolved the SAME verify-deploy gate, and they were drafted as two separate tasks; as separate tasks they would have declared overlapping file_scope and this system's own in-batch file_scope_collision check would have deferred one behind the other, so the split was not merely cosmetic but actively self-defeating. Add a consolidation-versus-division test naming the legitimate reasons to divide -- genuinely different file_scope with no overlap, different task_type or owning domain, a real dependency ordering, or a size that will not fit one agent dispatch (cf. the phase-sizing bound in the hard-mode contracts) -- and the reasons NOT to divide, chiefly that findings sharing an edit target or a single acceptance gate belong in one task. State the default explicitly: consolidate unless a named divide reason applies. Apply the same test to the division direction too, so an over-large task is still split when size or domain genuinely calls for it, and cross-reference context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default" section, which already argues the sibling point for how tasks are RUN rather than how they are CREATED.
 
 ---
 
