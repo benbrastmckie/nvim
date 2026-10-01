@@ -1,7 +1,7 @@
 {
   "_schema_version": "1.0.0",
   "_comment": "Review state tracking",
-  "_last_updated": "2026-08-11T22:32:00Z",
+  "_last_updated": "2026-10-01T03:56:12Z",
   "reviews": [
     {
       "review_id": "review-2026-04-10",
@@ -111,12 +111,31 @@
         50
       ],
       "registries_updated": []
+    },
+    {
+      "review_id": "review-2026-10-01",
+      "date": "2026-10-01",
+      "scope": "all",
+      "report_path": "specs/reviews/review-2026-10-01.md",
+      "summary": {
+        "files_reviewed": "322 lua files (285 active) + repo-root docs",
+        "critical_issues": 0,
+        "high_issues": 1,
+        "medium_issues": 3,
+        "low_issues": 3
+      },
+      "tasks_created": [
+        294,
+        295,
+        296
+      ],
+      "registries_updated": []
     }
   ],
   "statistics": {
-    "total_reviews": 6,
-    "last_review": "2026-08-11",
-    "total_issues_found": 41,
-    "total_tasks_created": 14
+    "total_reviews": 7,
+    "last_review": "2026-10-01",
+    "total_issues_found": 48,
+    "total_tasks_created": 17
   }
 }

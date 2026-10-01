@@ -1,5 +1,5 @@
 ---
-next_project_number: 294
+next_project_number: 297
 ---
 
 # TODO
@@ -8,10 +8,12 @@ next_project_number: 294
 
 *Updated 2026-10-01. Generated from state.json dependency graph.*
 
+**Goal**: Clear the 3 red verify-deploy gates, then collapse dispatch onto one shared working tree and push consent/admission posture (see specs/ROADMAP.md).
+
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,293 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,289,290,292,293,294,295,296 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281 | 22,44,127,184,241,265,272,279,280 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
@@ -41,8 +43,8 @@ next_project_number: 294
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 289 [NOT STARTED] — Clear verify-deploy gate 20 (orchestrator context budget...
 290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
-292 [PLANNED] — Add an explicit task-count reasoning step to task creation so...
-293 [PLANNED] — Add a HOLD task status marker that pauses a task and excludes...
+292 [IMPLEMENTING] — Add an explicit task-count reasoning step to task creation so...
+293 [IMPLEMENTING] — Add a HOLD task status marker that pauses a task and excludes...
 
 ### Extensions
 
@@ -56,6 +58,9 @@ next_project_number: 294
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
+294 [NOT STARTED] — Fix CLAUDE.md standards pointer paths to the nonexistent...
+295 [NOT STARTED] — Add desc field to 44 keymap.set calls missing documentation
+296 [NOT STARTED] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
 ### File Scope Lifecycle
 
@@ -75,8 +80,64 @@ next_project_number: 294
 
 ## Tasks
 
+### 296. Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: Review issues from all review on 2026-10-01 (grouped -- 3 independent small fixes, no shared file):
+
+1. [medium] `init.lua.backup` - stale, tracked, byte-identical duplicate of `init.lua` (present since old task 516/518, pre-vault numbering).
+   Impact: dead weight inviting confusion about which file is authoritative; silent drift risk if init.lua changes without the backup.
+   Fix: delete init.lua.backup (git history already preserves prior states of init.lua), or move the backup convention to .gitignore if intentional.
+
+2. [medium] `.claude/context/repo/project-overview.md` - still carries the `<!-- GENERIC TEMPLATE -->` notice despite 200+ archived tasks of repo history.
+   Impact: any command/agent reading this file for repo orientation gets generic boilerplate instead of a real description.
+   Fix: run /project-overview to generate a repo-specific version, then add context/repo/project-overview.md to .syncprotect per the file's own header instruction. Note: this file lives under .claude/context/repo/ -- confirm via .claude-extensions.json's source_dir whether it should be authored in a source store instead of hand-edited under .claude/** directly (source-store-deploy-boundary.md).
+
+3. [low] `README.md:185` - links to a non-existent `.claude/README.md` ("For details on the agent system architecture... see [.claude/README.md](.claude/README.md)"). Only `.claude/CLAUDE.md` exists there, and it is itself marked "generated automatically... do not edit directly" rather than written as a navigable README.
+   Impact: minor broken link for a reader following the architecture pointer from root README.
+   Fix: point the link at `.claude/docs/docs-README.md` (the actual architecture entry point per .claude/CLAUDE.md's own Quick Reference) or at `.claude/CLAUDE.md` directly.
+
+Related files: init.lua.backup, .claude/context/repo/project-overview.md, README.md
+
+---
+
+### 295. Add desc field to 44 keymap.set calls missing documentation
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: Review issue from all review on 2026-10-01:
+
+**File**: `lua/neotex/util/notifications.lua`, `lua/neotex/util/url.lua`, `lua/neotex/config/notifications.lua`, `lua/neotex/config/autocmds.lua`, `lua/neotex/config/keymaps.lua`, `lua/neotex/plugins/tools/luasnip.lua`, `lua/neotex/plugins/tools/autopairs.lua`, `lua/neotex/plugins/tools/mail.lua`, `lua/neotex/plugins/tools/himalaya/data/templates.lua`, `lua/neotex/plugins/tools/himalaya/data/search.lua`, `lua/neotex/plugins/tools/himalaya/ui/features.lua`, `lua/neotex/plugins/ui/neo-tree.lua`, `lua/neotex/plugins/ai/shared/extensions/picker.lua`
+**Severity**: medium
+**Description**: Of 88 `vim.keymap.set(...)` calls in active (non-deprecated) code, 44 (50%) have no `desc` field, violating CLAUDE.md's own Lua Code Style standard ("Keymaps: ... use vim.keymap.set with descriptive options") and the Neovim extension's Common Operations note ("Use vim.keymap.set with description for all keymaps"). Concentration: himalaya/ui/features.lua (10), plugins/ui/neo-tree.lua (8), himalaya/data/templates.lua (4), util/notifications.lua (4), himalaya/data/search.lua (2), config/notifications.lua (2), plugins/tools/luasnip.lua (2), plugins/ai/shared/extensions/picker.lua (2), and one each in util/url.lua, config/autocmds.lua, config/keymaps.lua, plugins/tools/autopairs.lua, plugins/tools/mail.lua.
+**Impact**: Reduces discoverability via which-key/:map introspection; conflicts with the project's own documented standard.
+**Recommended Fix**: Add a concise `desc` string to each flagged `vim.keymap.set` call, describing what the mapping does. Start with himalaya/ui/features.lua and plugins/ui/neo-tree.lua (18 of the 44 between them).
+
+---
+
+### 294. Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: Review issue from all review on 2026-10-01:
+
+**File**: `CLAUDE.md:30-36`
+**Severity**: high
+**Description**: The Documentation Policy, Box Drawing, Character Encoding and Emoji Policy, and Lua Testing Assertion Patterns sections in root CLAUDE.md point to .claude/extensions/nvim/context/project/neovim/standards/{documentation-policy,box-drawing-guide,emoji-policy,lua-assertion-patterns}.md. None of these four paths exist -- .claude/extensions/nvim/ is the extension manifest/source directory, not a deploy-context path. The real files live at .claude/context/project/neovim/standards/*.md (confirmed present) and are correct and current; only the four pointers in root CLAUDE.md are wrong.
+**Impact**: Every /document, /plan, /test, /test-all, /implement dispatch that follows these [Used by: ...] pointers resolves to a dead path instead of the real standard.
+**Recommended Fix**: Change the four paths in root CLAUDE.md from .claude/extensions/nvim/context/project/neovim/standards/... to .claude/context/project/neovim/standards/.... This is the repo-root CLAUDE.md (Neovim Configuration Guidelines), a separate hand-maintained file outside .claude/**, distinct from the auto-generated .claude/CLAUDE.md (Agent System file) -- the source-store-deploy-boundary rule does not apply here, since the target path is not under .claude/**.
+
+---
+
 ### 293. Add a HOLD task status marker that pauses a task and excludes it from dispatch
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -221,7 +282,7 @@ This is the phase that makes a hold actually hold. Phase 1 alone makes "hold" va
 ---
 
 ### 292. Task count reasoning in task creation
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

@@ -1,11 +1,11 @@
 {
   "version": "1.1.0",
-  "next_project_number": 294,
+  "next_project_number": 297,
   "active_projects": [
     {
       "project_number": 292,
       "project_name": "task_count_reasoning_in_task_creation",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Add an explicit task-count reasoning step to task creation so the system picks the right NUMBER of tasks instead of defaulting to one-per-observation. Today commands/task.md's Create Task Mode has steps for description improvement, task_type detection, topic assignment and slug creation, but nothing that asks whether a set of findings is one task or several -- and /meta, /fix-it and /errors all create tasks from multi-finding inputs with the same gap. Observed failure: a batch postflight surfaced two findings that both edited the SAME config file (context/config/orchestrator-context-budget.json) and both resolved the SAME verify-deploy gate, and they were drafted as two separate tasks; as separate tasks they would have declared overlapping file_scope and this system's own in-batch file_scope_collision check would have deferred one behind the other, so the split was not merely cosmetic but actively self-defeating. Add a consolidation-versus-division test naming the legitimate reasons to divide -- genuinely different file_scope with no overlap, different task_type or owning domain, a real dependency ordering, or a size that will not fit one agent dispatch (cf. the phase-sizing bound in the hard-mode contracts) -- and the reasons NOT to divide, chiefly that findings sharing an edit target or a single acceptance gate belong in one task. State the default explicitly: consolidate unless a named divide reason applies. Apply the same test to the division direction too, so an over-large task is still split when size or domain genuinely calls for it, and cross-reference context/patterns/batch-orchestration-guardrails.md's \"Batching Is the Default\" section, which already argues the sibling point for how tasks are RUN rather than how they are CREATED.",
       "topic": "core-agent-system",
@@ -18,7 +18,7 @@
         "agent-system/extensions/core/skills/skill-fix-it/SKILL.md"
       ],
       "created": "2026-10-01T03:46:50Z",
-      "last_updated": "2026-10-01T04:08:10Z",
+      "last_updated": "2026-10-01T04:08:34Z",
       "session_id": "sess_1790826658_06dbd3",
       "artifacts": [
         {
@@ -1342,7 +1342,7 @@
       "project_number": 293,
       "project_name": "add_hold_task_status_marker",
       "title": "Add a HOLD task status marker that pauses a task and excludes it from dispatch",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -1404,8 +1404,41 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-09-30",
-      "last_updated": "2026-10-01T04:08:04Z",
+      "last_updated": "2026-10-01T04:08:30Z",
       "session_id": "sess_1790826658_06dbd3"
+    },
+    {
+      "project_number": 294,
+      "project_name": "fix_claude_md_standards_pointer_paths_to",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "neovim",
+      "priority": "high",
+      "description": "Review issue from all review on 2026-10-01:\n\n**File**: `CLAUDE.md:30-36`\n**Severity**: high\n**Description**: The Documentation Policy, Box Drawing, Character Encoding and Emoji Policy, and Lua Testing Assertion Patterns sections in root CLAUDE.md point to .claude/extensions/nvim/context/project/neovim/standards/{documentation-policy,box-drawing-guide,emoji-policy,lua-assertion-patterns}.md. None of these four paths exist -- .claude/extensions/nvim/ is the extension manifest/source directory, not a deploy-context path. The real files live at .claude/context/project/neovim/standards/*.md (confirmed present) and are correct and current; only the four pointers in root CLAUDE.md are wrong.\n**Impact**: Every /document, /plan, /test, /test-all, /implement dispatch that follows these [Used by: ...] pointers resolves to a dead path instead of the real standard.\n**Recommended Fix**: Change the four paths in root CLAUDE.md from .claude/extensions/nvim/context/project/neovim/standards/... to .claude/context/project/neovim/standards/.... This is the repo-root CLAUDE.md (Neovim Configuration Guidelines), a separate hand-maintained file outside .claude/**, distinct from the auto-generated .claude/CLAUDE.md (Agent System file) -- the source-store-deploy-boundary rule does not apply here, since the target path is not under .claude/**.",
+      "created": "2026-10-01T04:08:22Z",
+      "title": "Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory"
+    },
+    {
+      "project_number": 295,
+      "project_name": "add_desc_field_to_44_keymapset_calls_mis",
+      "status": "not_started",
+      "task_type": "general",
+      "topic": "neovim",
+      "priority": "medium",
+      "description": "Review issue from all review on 2026-10-01:\n\n**File**: `lua/neotex/util/notifications.lua`, `lua/neotex/util/url.lua`, `lua/neotex/config/notifications.lua`, `lua/neotex/config/autocmds.lua`, `lua/neotex/config/keymaps.lua`, `lua/neotex/plugins/tools/luasnip.lua`, `lua/neotex/plugins/tools/autopairs.lua`, `lua/neotex/plugins/tools/mail.lua`, `lua/neotex/plugins/tools/himalaya/data/templates.lua`, `lua/neotex/plugins/tools/himalaya/data/search.lua`, `lua/neotex/plugins/tools/himalaya/ui/features.lua`, `lua/neotex/plugins/ui/neo-tree.lua`, `lua/neotex/plugins/ai/shared/extensions/picker.lua`\n**Severity**: medium\n**Description**: Of 88 `vim.keymap.set(...)` calls in active (non-deprecated) code, 44 (50%) have no `desc` field, violating CLAUDE.md's own Lua Code Style standard (\"Keymaps: ... use vim.keymap.set with descriptive options\") and the Neovim extension's Common Operations note (\"Use vim.keymap.set with description for all keymaps\"). Concentration: himalaya/ui/features.lua (10), plugins/ui/neo-tree.lua (8), himalaya/data/templates.lua (4), util/notifications.lua (4), himalaya/data/search.lua (2), config/notifications.lua (2), plugins/tools/luasnip.lua (2), plugins/ai/shared/extensions/picker.lua (2), and one each in util/url.lua, config/autocmds.lua, config/keymaps.lua, plugins/tools/autopairs.lua, plugins/tools/mail.lua.\n**Impact**: Reduces discoverability via which-key/:map introspection; conflicts with the project's own documented standard.\n**Recommended Fix**: Add a concise `desc` string to each flagged `vim.keymap.set` call, describing what the mapping does. Start with himalaya/ui/features.lua and plugins/ui/neo-tree.lua (18 of the 44 between them).",
+      "created": "2026-10-01T04:08:34Z",
+      "title": "Add desc field to 44 keymap.set calls missing documentation"
+    },
+    {
+      "project_number": 296,
+      "project_name": "repo_hygiene_remove_stale_initluabackup_",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "neovim",
+      "priority": "medium",
+      "description": "Review issues from all review on 2026-10-01 (grouped -- 3 independent small fixes, no shared file):\n\n1. [medium] `init.lua.backup` - stale, tracked, byte-identical duplicate of `init.lua` (present since old task 516/518, pre-vault numbering).\n   Impact: dead weight inviting confusion about which file is authoritative; silent drift risk if init.lua changes without the backup.\n   Fix: delete init.lua.backup (git history already preserves prior states of init.lua), or move the backup convention to .gitignore if intentional.\n\n2. [medium] `.claude/context/repo/project-overview.md` - still carries the `<!-- GENERIC TEMPLATE -->` notice despite 200+ archived tasks of repo history.\n   Impact: any command/agent reading this file for repo orientation gets generic boilerplate instead of a real description.\n   Fix: run /project-overview to generate a repo-specific version, then add context/repo/project-overview.md to .syncprotect per the file's own header instruction. Note: this file lives under .claude/context/repo/ -- confirm via .claude-extensions.json's source_dir whether it should be authored in a source store instead of hand-edited under .claude/** directly (source-store-deploy-boundary.md).\n\n3. [low] `README.md:185` - links to a non-existent `.claude/README.md` (\"For details on the agent system architecture... see [.claude/README.md](.claude/README.md)\"). Only `.claude/CLAUDE.md` exists there, and it is itself marked \"generated automatically... do not edit directly\" rather than written as a navigable README.\n   Impact: minor broken link for a reader following the architecture pointer from root README.\n   Fix: point the link at `.claude/docs/docs-README.md` (the actual architecture entry point per .claude/CLAUDE.md's own Quick Reference) or at `.claude/CLAUDE.md` directly.\n\nRelated files: init.lua.backup, .claude/context/repo/project-overview.md, README.md",
+      "created": "2026-10-01T04:08:46Z",
+      "title": "Repo hygiene: remove stale init.lua.backup, regenerate project-overview.md, fix README.md link"
     }
   ],
   "completed_projects": [],
@@ -1442,5 +1475,6 @@
       "vault_dir": "specs/vault/01-vault/",
       "created_at": "2026-08-10T19:49:05Z"
     }
-  ]
+  ],
+  "active_goal": "Clear the 3 red verify-deploy gates, then collapse dispatch onto one shared working tree and push consent/admission posture (see specs/ROADMAP.md)."
 }
