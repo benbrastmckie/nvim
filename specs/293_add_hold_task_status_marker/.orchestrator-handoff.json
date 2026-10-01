@@ -1,0 +1,20 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 8,
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md",
+      "summary": "8-phase plan adding the hold task status (enum/schema twin, dispatch exclusion, operator set/lift, /todo audit, docs, prose sweep, acceptance) across the core source store."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790826658_06dbd3_293",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "next_steps": "Run /implement 293 to execute the plan"
+}

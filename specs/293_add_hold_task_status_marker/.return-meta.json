@@ -1,40 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790826658_06dbd3_293",
-  "dispatch_seq": 1,
-  "task_number": 293,
-  "findings_count": 23,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/293_add_hold_task_status_marker/reports/01_hold-task-status-marker.md",
-      "summary": "Full 5-phase research for the HOLD task-status marker: confirms the live consumer-repo breakage (12 validate-state.sh FAILs, generate-todo.sh hard-fail) that Phase 1 fixes, maps every file/line the dispatch names, resolves the lift-surface and held-subtask-blocking design questions, and flags a pre-existing (out-of-scope) orchestrate.md STAGE 0 forced-terminal-admission gap that the new hold guard must not silently copy."
+      "type": "plan",
+      "path": "specs/293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md",
+      "summary": "8-phase plan adding the hold task status: enum + schema twin + field allowlist (standalone Phase 1), dispatch exclusion, operator-settable/reversible hold, /todo audit, documentation, 13-value prose sweep, and live consumer-repo acceptance."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1790826658_06dbd3_293",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 10.5,
+    "dependency_waves": [[1], [2, 3, 4], [5], [6, 7], [8]]
+  },
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh, the 'forced_round_complete)' case arm in the bucketing switch (pushes a reasoned blocked[] row via out_blocked_rows+=(...) and continues BEFORE the lock probe/dispatch_seq mint/status write) is the reusable precedent for adding any new non-dispatch-but-visible-reason status bucket to /orchestrate. Mirror this shape rather than inventing a new top-level excluded[] array -- blocked[] already carries 'no-defect-just-a-rule' reasons and needs no schema change downstream.",
+      "content": "When adding a status value whose semantics are a THIRD category relative to an existing binary split, the mechanical cost is concentrated in every two-arm `case` statement that encodes the old binary. In this codebase that pattern recurs as `case \"$status\" in completed|abandoned|expanded) ... ;; *) ... ;; esac` and appears in orchestrate STAGE 0, command-gate-in.sh, generate-todo.sh's count split, and the /todo subtask-blocking check -- the last of which is near-byte-duplicated between skills/skill-todo/SKILL.md and commands/todo.md, so any decision must be applied to both or they silently diverge. Plan such a feature by enumerating the two-arm case sites first (grep the shared pattern, not the feature name), deciding per site whether the new value joins an existing arm or needs its own, and recording a 'leave unmodified' decision explicitly where no change is correct -- an unrecorded non-change is indistinguishable from an oversight. Separately: a closed enum's size asserted in PROSE comments spreads far beyond the enum's own file (11 files here), including disambiguating cross-references in unrelated scripts; sweep by grepping the number, not the enum name.",
       "category": "PATTERN",
-      "source_artifact": "specs/293_add_hold_task_status_marker/reports/01_hold-task-status-marker.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-cycle-plan", "blocked-rows", "forced_round_complete", "dispatch-bucketing", "status-exclusion"]
-    },
-    {
-      "content": "This codebase's convention for a projectEntry schema field that is valid only in one task status (e.g. completion_summary, 'required when status is completed... schema-optional here since only completed entries carry it') is to OMIT the key entirely when not applicable, never to set it to null. When a status like hold is lifted/reversed, clearing its associated fields should use jq del(...) rather than nulling them, to stay consistent with this existing pattern and with additionalProperties:false schema semantics.",
-      "category": "PATTERN",
-      "source_artifact": "specs/293_add_hold_task_status_marker/reports/01_hold-task-status-marker.md",
+      "source_artifact": "specs/293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md",
       "confidence": 0.75,
-      "suggested_keywords": ["state-schema", "optional-fields", "jq-del", "additionalProperties", "field-lifecycle"]
-    },
-    {
-      "content": "commands/orchestrate.md's STAGE 0 validated_tasks loop unconditionally skips any completed|abandoned|expanded task without ever checking $FORCE_PHASES_FLAG, even though that variable is already populated at that point in the script. This appears to contradict the same file's own documented claim (lines ~59-61) that --research/--plan/--implement admit a terminal (even archived) task -- that admission machinery (task_has_forced_phase/effective_group) lives entirely inside orchestrate-cycle-plan.sh, which the live dispatch path never reaches for a task STAGE 0 already dropped. Only the --dry-run path (which forwards raw, unfiltered $TASK_NUMBERS) actually exercises the forced-terminal-admission logic. Pre-existing gap, confirmed by reading the code, not yet fixed as of this finding.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/293_add_hold_task_status_marker/reports/01_hold-task-status-marker.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["orchestrate.md", "force-phases", "STAGE-0", "dry-run-divergence", "terminal-task-admission"]
+      "suggested_keywords": ["status-enum", "two-arm-case", "duplicated-code-sites", "third-category", "prose-drift"]
     }
   ],
-  "next_steps": "Run /plan 293 to create implementation plan"
+  "next_steps": "Run /implement 293 to execute the plan",
+  "dispatch_seq": 3
 }

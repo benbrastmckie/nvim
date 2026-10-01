@@ -41,8 +41,8 @@ next_project_number: 294
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 289 [NOT STARTED] — Clear verify-deploy gate 20 (orchestrator context budget...
 290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
-292 [RESEARCHED] — Add an explicit task-count reasoning step to task creation so...
-293 [RESEARCHED] — Add a HOLD task status marker that pauses a task and excludes...
+292 [PLANNING] — Add an explicit task-count reasoning step to task creation so...
+293 [PLANNED] — Add a HOLD task status marker that pauses a task and excludes...
 
 ### Extensions
 
@@ -76,11 +76,12 @@ next_project_number: 294
 ## Tasks
 
 ### 293. Add a HOLD task status marker that pauses a task and excludes it from dispatch
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [293_add_hold_task_status_marker/reports/01_hold-task-status-marker.md]
+- **Plan**: [293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree -- see rules/source-store-deploy-boundary.md).
 
@@ -220,7 +221,7 @@ This is the phase that makes a hold actually hold. Phase 1 alone makes "hold" va
 ---
 
 ### 292. Task count reasoning in task creation
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
