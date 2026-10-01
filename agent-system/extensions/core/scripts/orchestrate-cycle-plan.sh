@@ -213,7 +213,8 @@
 # artifact-round advance.
 # `isolation` (`"none"` or `"worktree"`, working-tree and build isolation posture dispatch-site
 # wiring) is selected by task_selected_for_worktree_isolation() -- phase == "implement" AND a
-# lean4/cslib-family task_type -- and is emitted identically in BOTH modes. `worktree_path` is
+# BUILD_HEAVY_TASK_TYPES-family task_type (currently lean4/cslib) -- and is emitted identically
+# in BOTH modes. `worktree_path` is
 # `null` whenever `isolation` is `"none"`, and ALSO always `null` under --dry-run regardless of
 # what `isolation` says (--dry-run provisions nothing -- see that mode's own row builder); in the
 # live path a `"worktree"` row's `worktree_path` is the real path `dispatch-worktree.sh provision`
@@ -231,6 +232,27 @@
 # stacking a second harness checkout on top of the one already provisioned. See
 # `skill-orchestrate/SKILL.md`'s Move 2 MUST NOT for the enforced point-of-use prohibition and
 # the full stacked-checkout/cross-checkout-git-refusal consequence.
+#
+# Decision (this task) — Mode 2 build-heavy co-scheduling admission: the shared bucketing loop
+# (same loop as the `file_scope_collision`/`self_modifying`/`session_active` defers surfaced by
+# orchestrate-batch-admit.sh above) now also enforces "never dispatch two build-heavy implement
+# tasks in the same cycle" — closing the one concurrency failure mode declared `file_scope` is
+# structurally unable to cover (no task declares `.lake/` in its `file_scope`, so two
+# source-disjoint build-heavy implement tasks previously admitted together and collided in one
+# shared build directory). Implement-phase-only, same rationale as
+# `task_selected_for_worktree_isolation()` itself: a research or plan dispatch does not build, so
+# two build-heavy candidates in different phases still co-schedule freely. The deferred second
+# (and any later) build-heavy implement candidate gets its OWN `deferred[]` reason — distinct text,
+# never the `file_scope_collision` string, whose payload (`collision_scope`/cross-task detail)
+# would be empty here — phrased `build-heavy implement co-scheduling: candidate #<N> is already
+# this cycle's one build-heavy implement dispatch; deferring to a later cycle`. Emitted identically
+# in --dry-run and the live path, for the same structural reason `isolation`/`worktree_path` are
+# above: one shared loop, one row builder for this decision, no second copy to keep in sync. See
+# `specs/decisions/worktree-isolation-removal-verdict.md`'s "Mode 2 Ruling: an Admission Rule, Not
+# a PATH Shim" section for the full ruling this implements. Deliberately NOT a PATH-shim wrapper
+# around build tools — a bare build invocation from outside an orchestration (an operator's own
+# shell, or a script this system does not own) still bypasses `lake-build-guard.sh`'s opt-in lock;
+# that residual is named and declined in the decision record, not solved here.
 #
 # Exit codes:
 #   0 - a plan was printed on stdout, regardless of its dispatch/deferred/blocked/stop contents
@@ -1820,6 +1842,11 @@ task_selected_for_worktree_isolation() {
 
 # ── Bucket eligible_tasks into dispatch-candidates / deferred / blocked / skip ───────────────────
 declare -a dispatch_candidates=()
+# Mode 2 build-heavy co-scheduling admission (specs/decisions/worktree-isolation-removal-verdict.md
+# "Mode 2 Ruling") -- holds the task number of the first build-heavy implement candidate admitted
+# THIS cycle, or "" if none yet. Checked/set inside the loop below, immediately before a candidate
+# is pushed onto dispatch_candidates.
+build_heavy_implement_admitted=""
 for t in "${eligible_tasks[@]}"; do
   g="${effective_group[$t]}"
   case "$g" in
@@ -1872,6 +1899,26 @@ for t in "${eligible_tasks[@]}"; do
     out_deferred_rows+=("$(jq -n -c --argjson t "$t" --arg r "${admit_reason[$t]:-file_scope or self-modification admission defer}" '{task:$t, reason:$r}')")
     continue
   fi
+
+  # Mode 2 build-heavy co-scheduling admission rule: never dispatch two build-heavy implement
+  # tasks in the same cycle. Implement-phase-scoped for the same reason the underlying predicate
+  # already is -- a research or plan dispatch does not build, so two build-heavy candidates in
+  # different phases are unaffected and both admit normally below. This sits in the SAME shared
+  # bucketing loop that both --dry-run and the live path already run through (no second row
+  # builder exists for this decision), so the two modes render the identical choice by
+  # construction -- not by keeping two copies in sync. Deferred, never failed: the second (and
+  # any later) build-heavy implement candidate simply waits for a future cycle, exactly like a
+  # file_scope_collision defer today. Calls the single reader of BUILD_HEAVY_TASK_TYPES (defined
+  # above this loop -- see that block's hoisting note) rather than re-iterating the array here, so
+  # "single array, single reader" holds literally.
+  if task_selected_for_worktree_isolation "$g" "${task_types[$t]:-}"; then
+    if [ -n "$build_heavy_implement_admitted" ]; then
+      out_deferred_rows+=("$(jq -n -c --argjson t "$t" --arg r "build-heavy implement co-scheduling: candidate #${build_heavy_implement_admitted} is already this cycle's one build-heavy implement dispatch; deferring to a later cycle" '{task:$t, reason:$r}')")
+      continue
+    fi
+    build_heavy_implement_admitted="$t"
+  fi
+
   dispatch_candidates+=("$t")
 done
 mt_save

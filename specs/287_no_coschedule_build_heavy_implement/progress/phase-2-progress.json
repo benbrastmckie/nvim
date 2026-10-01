@@ -1,0 +1,35 @@
+{
+  "phase": 2,
+  "phase_name": "Add the Mode 2 co-scheduling admission rule and its header contract",
+  "started_at": "2026-09-30T01:10:00Z",
+  "last_updated": "2026-09-30T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Declare scalar tracking first build-heavy implement candidate admitted this cycle", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Add admission check in bucketing loop before dispatch_candidates+=", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Push deferred row on second-hit; set scalar on first-hit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Distinct grep-able reason string using candidate #<N> phrasing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Inline decision comment at new check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Update header isolation paragraph to name BUILD_HEAVY_TASK_TYPES", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Add header Decision-N paragraph documenting new deferred[] reason", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "No defer_ledger entry added", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.manual-smoke",
+      "description": "Phase 2 verification's 'manual two-candidate smoke run' was folded into writing Phase 3's Group 32 Case (i) directly, rather than a separate throwaway smoke test, since Group 32 needed the identical fixture shape anyway.",
+      "type": "altered",
+      "reason": "Avoids duplicating the exact same fixture twice; Group 32 Case (i) IS the smoke-test evidence.",
+      "annotation": "*(deviation: altered -- smoke run folded into Phase 3's Group 32 Case (i))*"
+    },
+    {
+      "task_id": "2.group30-fixture",
+      "description": "Discovered during Phase 2/3 verification: Group 30's pre-existing Cases D-F live fixture co-scheduled two build-heavy implement candidates (3004 lean4 + 3005 cslib) in one cycle -- exactly the combination Mode 2 now forbids. The new rule correctly deferred 3005 for the NEW reason before it ever reached the lock-probe/provision step Case E was designed to exercise, breaking that assertion. Split Group 30's live fixture into two cycles (3004+3006, then 3005 alone) to decouple isolation-selection/provision-failure testing (Group 30's own concern) from cross-task co-scheduling (Group 32's concern). Every original Group 30 assertion is preserved unchanged, just regrouped.",
+      "type": "altered",
+      "reason": "This is a genuine, correctly-attributed interaction between the new rule and an old fixture's shape, not an implementation defect -- reported here per Phase 2's own verification guidance ('a real finding to report, not a fixture to silence') rather than silently patched.",
+      "annotation": "*(deviation: altered -- Group 30 Cases D-F split into two live cycles to decouple from Mode 2)*"
+    }
+  ]
+}

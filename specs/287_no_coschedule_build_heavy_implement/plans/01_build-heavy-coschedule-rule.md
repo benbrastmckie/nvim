@@ -167,21 +167,21 @@ name 1 definition + 3 call sites + its own comment mentions.
 
 ---
 
-### Phase 2: Add the Mode 2 co-scheduling admission rule and its header contract [NOT STARTED]
+### Phase 2: Add the Mode 2 co-scheduling admission rule and its header contract [COMPLETED]
 
 **Goal**: at most one build-heavy implement task is admitted per cycle; every later one lands in
 `deferred[]` with its own named reason, identically in `--dry-run` and the live path.
 
 **Tasks**:
 
-- [ ] Declare a scalar before the bucketing loop (beside `declare -a dispatch_candidates=()` at line 1785) holding the first build-heavy implement candidate admitted this cycle, e.g. `build_heavy_implement_admitted=""`.
-- [ ] Inside the loop, immediately before `dispatch_candidates+=("$t")` (after the existing `admit_decision` defer check), test candidacy via `task_selected_for_worktree_isolation "$g" "${task_types[$t]:-}"` — calling the predicate, never re-iterating the array, so "single array, single reader" holds literally.
-- [ ] On a hit with the scalar already set: push a `{task, reason}` row onto `out_deferred_rows` and `continue` (never reaching `dispatch_candidates`). On a hit with the scalar empty: set it to `$t` and fall through to admission.
-- [ ] Use a distinct, grep-able reason string that names the colliding in-cycle candidate inline as prose (the way `MAX_INFRA_FAILURES`/`MAX_CYCLES` reasons already interpolate detail), never the literal `file_scope_collision`. Phrase the cross-reference as `candidate #<N>`, not `task <N>` — see the Risks table's lint entry. Suggested text: `build-heavy implement co-scheduling: candidate #<N> is already this cycle's one build-heavy implement dispatch; deferring to a later cycle`.
-- [ ] Add an inline comment at the new check in the style of the surrounding `Decision N` / Phase-N comments: state the rule, that it is implement-phase-scoped (a research or plan dispatch does not build), that it sits in the shared loop so `--dry-run` and live render the identical choice with no second row builder, and that it is deferred-never-failed.
-- [ ] Update the header's `isolation` paragraph (~line 215) to name `BUILD_HEAVY_TASK_TYPES`.
-- [ ] Add a short header paragraph beside it, in the existing `Decision N` style, documenting the new `deferred[]` reason to the standard of the existing reasons: what it means, that it is implement-phase-only, that it is emitted identically in both modes, and a pointer to `specs/decisions/worktree-isolation-removal-verdict.md`'s "Mode 2 Ruling" section.
-- [ ] Do **not** add a `defer_ledger` entry (see Non-Goals).
+- [x] Declare a scalar before the bucketing loop (beside `declare -a dispatch_candidates=()` at line 1785) holding the first build-heavy implement candidate admitted this cycle, e.g. `build_heavy_implement_admitted=""`. *(completed)*
+- [x] Inside the loop, immediately before `dispatch_candidates+=("$t")` (after the existing `admit_decision` defer check), test candidacy via `task_selected_for_worktree_isolation "$g" "${task_types[$t]:-}"` — calling the predicate, never re-iterating the array, so "single array, single reader" holds literally. *(completed)*
+- [x] On a hit with the scalar already set: push a `{task, reason}` row onto `out_deferred_rows` and `continue` (never reaching `dispatch_candidates`). On a hit with the scalar empty: set it to `$t` and fall through to admission. *(completed)*
+- [x] Use a distinct, grep-able reason string that names the colliding in-cycle candidate inline as prose (the way `MAX_INFRA_FAILURES`/`MAX_CYCLES` reasons already interpolate detail), never the literal `file_scope_collision`. Phrase the cross-reference as `candidate #<N>`, not `task <N>` — see the Risks table's lint entry. Suggested text: `build-heavy implement co-scheduling: candidate #<N> is already this cycle's one build-heavy implement dispatch; deferring to a later cycle`. *(completed: used the suggested text verbatim)*
+- [x] Add an inline comment at the new check in the style of the surrounding `Decision N` / Phase-N comments: state the rule, that it is implement-phase-scoped (a research or plan dispatch does not build), that it sits in the shared loop so `--dry-run` and live render the identical choice with no second row builder, and that it is deferred-never-failed. *(completed)*
+- [x] Update the header's `isolation` paragraph (~line 215) to name `BUILD_HEAVY_TASK_TYPES`. *(completed)*
+- [x] Add a short header paragraph beside it, in the existing `Decision N` style, documenting the new `deferred[]` reason to the standard of the existing reasons: what it means, that it is implement-phase-only, that it is emitted identically in both modes, and a pointer to `specs/decisions/worktree-isolation-removal-verdict.md`'s "Mode 2 Ruling" section. *(completed)*
+- [x] Do **not** add a `defer_ledger` entry (see Non-Goals). *(completed: confirmed none added)*
 
 **Timing**: 0.7 hours
 
