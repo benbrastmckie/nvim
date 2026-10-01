@@ -202,20 +202,21 @@ name 1 definition + 3 call sites + its own comment mentions.
 
 ---
 
-### Phase 3: Group 32 fixture coverage for the four acceptance cases [NOT STARTED]
+### Phase 3: Group 32 fixture coverage for the four acceptance cases [COMPLETED]
 
 **Goal**: the four dispatch-named behaviors are pinned by fixtures, including the dry-run/live
 parity assertion.
 
 **Tasks**:
 
-- [ ] Append a new `# Group 32:` banner + `info` line after Group 31 (currently ending at line 4501), following the file's established `write_state`/`reset_lock_dirs`/`run_sut`/`jqf`/`pass`/`fail` idiom.
-- [ ] Case (i): two build-heavy `implementing` candidates (one `lean4`, one `cslib`), both with `"file_scope": []`, under `--dry-run` -> assert `.dispatch | length == 1` **and** `.deferred | length == 1` **and** that `.deferred[0].reason` contains the new rule's distinguishing substring. Assert on counts and reason text, not on which specific number dispatched.
-- [ ] Case (ii): one build-heavy (`lean4`) + one `general` candidate, both `implementing` -> assert `.dispatch | length == 2` and `.deferred | length == 0` (ordinary implement traffic unchanged).
-- [ ] Case (iii): two build-heavy candidates in different phases (one `"status": "implementing"`, one `"status": "researched"`) -> assert `.dispatch | length == 2`, confirming implement-phase scoping.
-- [ ] Case (iv): the Case (i) fixture run once under `--dry-run` and once live -> assert the two runs' `.deferred[].reason` strings are byte-for-byte identical and both `.dispatch | length == 1`. Reuse Group 30 Cases D-F's already-staged `dispatch-worktree.sh` and `orchestrate-build-dispatch.sh` stubs (they persist in `$WORKDIR/.claude/scripts/` per Group 31's header note); pick task numbers that avoid 3005, the one number Group 30's stub is coded to fail provision for.
-- [ ] Keep every fixture's project numbers off any `critical_paths` entry so `self_modifying` stays false and does not confound the result.
-- [ ] Phrase all `pass`/`fail` messages as `candidate #N` / `project #N`, per the test file's own documented NOTE and `rules/no-task-references-in-deliverables.md`.
+- [x] Append a new `# Group 32:` banner + `info` line after Group 31 (currently ending at line 4501), following the file's established `write_state`/`reset_lock_dirs`/`run_sut`/`jqf`/`pass`/`fail` idiom. *(completed)*
+- [x] Case (i): two build-heavy `implementing` candidates (one `lean4`, one `cslib`), both with `"file_scope": []`, under `--dry-run` -> assert `.dispatch | length == 1` **and** `.deferred | length == 1` **and** that `.deferred[0].reason` contains the new rule's distinguishing substring. Assert on counts and reason text, not on which specific number dispatched. *(completed)*
+- [x] Case (ii): one build-heavy (`lean4`) + one `general` candidate, both `implementing` -> assert `.dispatch | length == 2` and `.deferred | length == 0` (ordinary implement traffic unchanged). *(completed)*
+- [x] Case (iii): two build-heavy candidates in different phases (one `"status": "implementing"`, one `"status": "researched"`) -> assert `.dispatch | length == 2`, confirming implement-phase scoping. *(completed)*
+- [x] Case (iv): the Case (i) fixture run once under `--dry-run` and once live -> assert the two runs' `.deferred[].reason` strings are byte-for-byte identical and both `.dispatch | length == 1`. Reuse Group 30 Cases D-F's already-staged `dispatch-worktree.sh` and `orchestrate-build-dispatch.sh` stubs (they persist in `$WORKDIR/.claude/scripts/` per Group 31's header note); pick task numbers that avoid 3005, the one number Group 30's stub is coded to fail provision for. *(completed: used fresh numbers 3207/3208, distinct from Group 30's own 3004/3005/3006)*
+- [x] Keep every fixture's project numbers off any `critical_paths` entry so `self_modifying` stays false and does not confound the result. *(completed)*
+- [x] Phrase all `pass`/`fail` messages as `candidate #N` / `project #N`, per the test file's own documented NOTE and `rules/no-task-references-in-deliverables.md`. *(completed)*
+- [x] *(deviation: altered)* Group 30's own pre-existing Cases D-F live fixture was discovered, during this phase's verification, to co-schedule two build-heavy implement candidates (3004 lean4 + 3005 cslib) in one cycle -- exactly what the new rule now forbids, pre-empting Case E's provision-failure coverage. Split into two live cycles (3004+3006, then 3005 alone) to decouple Group 30's own concern from Mode 2's; every original Group 30 assertion preserved unchanged. See Phase 2/3 progress files for the full deviation record.
 
 **Timing**: 1.0 hours
 

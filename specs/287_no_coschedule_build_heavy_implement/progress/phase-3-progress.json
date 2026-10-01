@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Group 32 fixture coverage for the four acceptance cases",
+  "started_at": "2026-09-30T02:10:00Z",
+  "last_updated": "2026-09-30T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append Group 32 banner + info line after Group 31", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Case (i): two build-heavy candidates -> 1 dispatch + 1 deferred with new reason", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Case (ii): one build-heavy + one general -> both dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Case (iii): two build-heavy in different phases -> both dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Case (iv): dry-run vs live parity, byte-for-byte identical reason", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Fixtures avoid critical_paths/task 3005; candidate #N phrasing", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Fix confounded Group 30 Cases D-F fixture (split into two cycles)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.group30-fixture",
+      "description": "See Phase 2 progress file deviation of the same name -- Group 30's live fixture was split into two cycles to decouple from the new Mode 2 rule, preserving all original assertions.",
+      "type": "altered",
+      "reason": "Genuine interaction between new and old fixtures, reported and fixed rather than silenced.",
+      "annotation": "*(deviation: altered -- see Phase 2 progress file)*"
+    }
+  ]
+}

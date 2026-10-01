@@ -4150,10 +4150,17 @@ else
   fail "Case C: expected isolation=none worktree_path=null; got exit=$LAST_EXIT stdout=$LAST_STDOUT stderr=$LAST_STDERR"
 fi
 
-# Cases D-F: LIVE path, one three-candidate batch -- a lean4 candidate whose provision succeeds,
-# a cslib candidate whose provision FAILS (deferred, never falling through to a shared-tree
-# dispatch), and a general candidate that is never selected at all (dispatch-worktree.sh must
-# never even be invoked for it).
+# Cases D-F: LIVE path -- a lean4 candidate whose provision succeeds, a cslib candidate whose
+# provision FAILS (deferred, never falling through to a shared-tree dispatch), and a general
+# candidate that is never selected at all (dispatch-worktree.sh must never even be invoked for
+# it). Split across TWO live cycles (3004+3006, then 3005 alone) rather than one three-candidate
+# batch: the Mode 2 build-heavy co-scheduling admission rule added by this task now forbids
+# dispatching two build-heavy implement candidates (3004 lean4 + 3005 cslib) in the SAME cycle --
+# the original single-cycle shape would have 3005 deferred by that NEW rule before it ever reaches
+# the lock probe/provision step this fixture exists to exercise, silently losing Case E's coverage.
+# Splitting decouples this group's own concern (per-candidate isolation selection and
+# provision-failure handling) from Mode 2's cross-task concern (covered independently by Group 32),
+# while every original assertion below is preserved unchanged.
 WT_ARGV_LOG="$WORKDIR/g30-dispatch-worktree-argv.log"
 : > "$WT_ARGV_LOG"
 cat > "$WORKDIR/.claude/scripts/dispatch-worktree.sh" <<EOF
@@ -4192,43 +4199,23 @@ write_state <<'EOF'
 {
   "active_projects": [
     {"project_number": 3004, "project_name": "g30_lean_success", "task_type": "lean4", "status": "implementing", "description": "provision succeeds", "dependencies": [], "file_scope": []},
-    {"project_number": 3005, "project_name": "g30_cslib_fail", "task_type": "cslib", "status": "implementing", "description": "provision fails", "dependencies": [], "file_scope": []},
     {"project_number": 3006, "project_name": "g30_general_untouched", "task_type": "general", "status": "implementing", "description": "not selected, dispatch-worktree.sh never invoked", "dependencies": [], "file_scope": []}
   ]
 }
 EOF
 reset_lock_dirs
-run_sut --session g30live -- 3004 3005 3006
+run_sut --session g30live_df -- 3004 3006
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Cases D-F: SUT exits 0 despite one candidate's provision failure"
+  pass "Cases D,F: SUT exits 0 for the isolated-success + unselected-candidate cycle"
 else
-  fail "Cases D-F: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  fail "Cases D,F: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 3004)) | length')" = "1" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3004) | .isolation')" = "worktree" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3004) | .worktree_path')" = "/fake/.orchestrate-worktrees/3004-1" ]; then
   pass "Case D: lean4 candidate #3004 dispatches with isolation=worktree and the provisioned path"
 else
   fail "Case D: candidate #3004 row wrong (stdout: $LAST_STDOUT)"
-fi
-
-if [ "$(jqf '.dispatch | map(select(.task == 3005)) | length')" = "0" ] &&    [ "$(jqf '.deferred | map(select(.task == 3005)) | length')" = "1" ]; then
-  pass "Case E: cslib candidate #3005 (provision failure) is absent from dispatch, present in deferred"
-else
-  fail "Case E: candidate #3005 bucketing wrong (stdout: $LAST_STDOUT)"
-fi
-
-e_reason="$(jqf '.deferred[] | select(.task == 3005) | .reason')"
-if echo "$e_reason" | grep -qi "provision"; then
-  pass "Case E: deferred reason for #3005 names the provision failure, never a shared-tree fallthrough"
-else
-  fail "Case E: deferred reason for #3005 does not mention provision (reason: '$e_reason')"
-fi
-
-if ! grep -q '^3005 implement' "$G30_BUILD_ARGV_LOG" 2>/dev/null; then
-  pass "Case E: orchestrate-build-dispatch.sh was NEVER invoked for the deferred candidate #3005 (no shared-tree fallthrough)"
-else
-  fail "Case E: orchestrate-build-dispatch.sh was invoked for #3005 despite the provision failure -- shared-tree fallthrough regression"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 3006)) | length')" = "1" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3006) | .isolation')" = "none" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3006) | .worktree_path')" = "null" ]; then
@@ -4253,6 +4240,44 @@ if grep '^3006 implement' "$G30_BUILD_ARGV_LOG" 2>/dev/null | grep -q -- "--work
   fail "Case F: orchestrate-build-dispatch.sh unexpectedly received --worktree for unselected candidate #3006"
 else
   pass "Case F: orchestrate-build-dispatch.sh received no --worktree flag for unselected candidate #3006"
+fi
+
+# Case E: a SEPARATE live cycle containing only the cslib provision-failure candidate -- kept out
+# of the 3004/3006 cycle above (see this block's header comment) so Mode 2's new one-build-heavy-
+# per-cycle rule cannot pre-empt it before the lock probe/provision step runs.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3005, "project_name": "g30_cslib_fail", "task_type": "cslib", "status": "implementing", "description": "provision fails", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g30live_e -- 3005
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Case E: SUT exits 0 despite the candidate's provision failure"
+else
+  fail "Case E: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+if [ "$(jqf '.dispatch | map(select(.task == 3005)) | length')" = "0" ] &&    [ "$(jqf '.deferred | map(select(.task == 3005)) | length')" = "1" ]; then
+  pass "Case E: cslib candidate #3005 (provision failure) is absent from dispatch, present in deferred"
+else
+  fail "Case E: candidate #3005 bucketing wrong (stdout: $LAST_STDOUT)"
+fi
+
+e_reason="$(jqf '.deferred[] | select(.task == 3005) | .reason')"
+if echo "$e_reason" | grep -qi "provision"; then
+  pass "Case E: deferred reason for #3005 names the provision failure, never a shared-tree fallthrough"
+else
+  fail "Case E: deferred reason for #3005 does not mention provision (reason: '$e_reason')"
+fi
+
+if ! grep -q '^3005 implement' "$G30_BUILD_ARGV_LOG" 2>/dev/null; then
+  pass "Case E: orchestrate-build-dispatch.sh was NEVER invoked for the deferred candidate #3005 (no shared-tree fallthrough)"
+else
+  fail "Case E: orchestrate-build-dispatch.sh was invoked for #3005 despite the provision failure -- shared-tree fallthrough regression"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -4489,6 +4514,122 @@ if [ "$g31g_rc2" -eq 1 ]; then
   pass "Case G: an unrelated directory does not contend with a disjoint file (rc=1)"
 else
   fail "Case G: expected rc=1 for disjoint paths, got rc=$g31g_rc2"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 32: Mode 2 build-heavy co-scheduling admission -- never dispatch two build-heavy implement
+# tasks in the same cycle (specs/decisions/worktree-isolation-removal-verdict.md's "Mode 2 Ruling").
+# Reuses Group 30's dispatch-worktree.sh/orchestrate-build-dispatch.sh/update-task-status.sh stubs,
+# still live in $WORKDIR/.claude/scripts/ (Group 31's own header note confirms they persist this
+# far). Every fixture below declares "file_scope": [] (Group 30's safe pattern) so the PRE-EXISTING
+# in-batch file_scope_collision check can never be what fires here -- this group's new rule is, by
+# construction, the only thing that can produce these deferred rows. Project numbers avoid 3005,
+# the one number Group 30's dispatch-worktree.sh stub is coded to fail provision for.
+# =====================================================================================================
+info "Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heavy implement tasks per cycle)"
+
+# Case (i): two build-heavy implement candidates (lean4 + cslib) in one cycle, both file_scope: [].
+# Exactly one dispatches, the other defers with the new rule's own named reason -- never the
+# file_scope_collision string, since no file_scope overlap exists.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3201, "project_name": "g32_lean_implement", "task_type": "lean4", "status": "implementing", "description": "build-heavy candidate A", "dependencies": [], "file_scope": []},
+    {"project_number": 3202, "project_name": "g32_cslib_implement", "task_type": "cslib", "status": "implementing", "description": "build-heavy candidate B", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g32a --dry-run -- 3201 3202
+g32a_dispatched=$(jqf '.dispatch | length')
+g32a_deferred=$(jqf '.deferred | length')
+if [ "$g32a_dispatched" = "1" ] && [ "$g32a_deferred" = "1" ]; then
+  pass "Case (i): two build-heavy implement candidates in one cycle -> 1 dispatch + 1 deferred"
+else
+  fail "Case (i): expected 1 dispatch/1 deferred, got dispatch=$g32a_dispatched deferred=$g32a_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+g32a_reason=$(jqf '.deferred[0].reason')
+if echo "$g32a_reason" | grep -q "build-heavy implement co-scheduling"; then
+  pass "Case (i): deferred row carries the new rule's own named reason"
+else
+  fail "Case (i): deferred reason does not mention the new rule (reason: '$g32a_reason')"
+fi
+if ! echo "$g32a_reason" | grep -qi "file_scope"; then
+  pass "Case (i): deferred reason is NOT the file_scope_collision string (confirms the new rule fired, not the pre-existing check)"
+else
+  fail "Case (i): deferred reason unexpectedly mentions file_scope (reason: '$g32a_reason')"
+fi
+
+# Case (ii): one build-heavy (lean4) + one ordinary implement candidate -- both dispatch, unchanged.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3203, "project_name": "g32_lean_implement_2", "task_type": "lean4", "status": "implementing", "description": "build-heavy candidate", "dependencies": [], "file_scope": []},
+    {"project_number": 3204, "project_name": "g32_general_implement", "task_type": "general", "status": "implementing", "description": "ordinary implement candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g32b --dry-run -- 3203 3204
+g32b_dispatched=$(jqf '.dispatch | length')
+g32b_deferred=$(jqf '.deferred | length')
+if [ "$g32b_dispatched" = "2" ] && [ "$g32b_deferred" = "0" ]; then
+  pass "Case (ii): one build-heavy + one ordinary implement candidate -> both dispatch, unchanged"
+else
+  fail "Case (ii): expected 2 dispatch/0 deferred, got dispatch=$g32b_dispatched deferred=$g32b_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+
+# Case (iii): two build-heavy candidates in DIFFERENT phases (one implementing, one researched/plan)
+# -- both dispatch, confirming the rule is implement-phase-scoped (a plan dispatch does not build).
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3205, "project_name": "g32_lean_implement_3", "task_type": "lean4", "status": "implementing", "description": "build-heavy implement-phase candidate", "dependencies": [], "file_scope": []},
+    {"project_number": 3206, "project_name": "g32_cslib_plan", "task_type": "cslib", "status": "researched", "description": "build-heavy plan-phase candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g32c --dry-run -- 3205 3206
+g32c_dispatched=$(jqf '.dispatch | length')
+g32c_deferred=$(jqf '.deferred | length')
+if [ "$g32c_dispatched" = "2" ] && [ "$g32c_deferred" = "0" ]; then
+  pass "Case (iii): two build-heavy candidates in different phases -> both dispatch (implement-phase scoping)"
+else
+  fail "Case (iii): expected 2 dispatch/0 deferred, got dispatch=$g32c_dispatched deferred=$g32c_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+fi
+
+# Case (iv): Case (i)'s own fixture, run once under --dry-run and once live -- the deferred
+# reason strings must be byte-for-byte identical, and both runs dispatch exactly 1 candidate. The
+# shared bucketing loop produces this decision identically in both modes by construction (no
+# second row builder exists for it), so this case is the behavioral proof of that claim.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3207, "project_name": "g32_lean_parity", "task_type": "lean4", "status": "implementing", "description": "parity candidate A", "dependencies": [], "file_scope": []},
+    {"project_number": 3208, "project_name": "g32_cslib_parity", "task_type": "cslib", "status": "implementing", "description": "parity candidate B", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g32d_dry --dry-run -- 3207 3208
+g32d_dry_dispatched=$(jqf '.dispatch | length')
+g32d_dry_reason=$(jqf '.deferred[0].reason')
+
+reset_lock_dirs
+run_sut --session g32d_live -- 3207 3208
+g32d_live_dispatched=$(jqf '.dispatch | length')
+g32d_live_reason=$(jqf '.deferred[0].reason')
+
+if [ "$g32d_dry_dispatched" = "1" ] && [ "$g32d_live_dispatched" = "1" ]; then
+  pass "Case (iv): both --dry-run and live dispatch exactly 1 of the 2 build-heavy candidates"
+else
+  fail "Case (iv): expected 1/1, got dry-run=$g32d_dry_dispatched live=$g32d_live_dispatched"
+fi
+if [ -n "$g32d_dry_reason" ] && [ "$g32d_dry_reason" = "$g32d_live_reason" ]; then
+  pass "Case (iv): --dry-run and live report byte-for-byte identical deferred reasons"
+else
+  fail "Case (iv): deferred reasons differ -- dry-run='$g32d_dry_reason' live='$g32d_live_reason'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
