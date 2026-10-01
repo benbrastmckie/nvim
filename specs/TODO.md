@@ -68,7 +68,7 @@ next_project_number: 289
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
-287 [RESEARCHED] — Refuse to co-schedule two build-heavy implement tasks in one...
+287 [PLANNED] — Refuse to co-schedule two build-heavy implement tasks in one...
   └─ 288 [NOT STARTED] — Remove the per-dispatch worktree isolation layer and unwire...
 
 ## Tasks
@@ -128,11 +128,12 @@ ACCEPTANCE. The three files are gone. No reference to dispatch-worktree.sh survi
 ---
 
 ### 287. Refuse to co-schedule two build-heavy implement tasks in one cycle
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 286
 - **Research**: [287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md]
+- **Plan**: [287_no_coschedule_build_heavy_implement/plans/01_build-heavy-coschedule-rule.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh (never .claude/**, a disposable deploy tree).
 

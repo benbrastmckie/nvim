@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790813213_9179fb_287",
-  "dispatch_seq": 4,
-  "findings_count": 6,
-  "next_steps": "Run /plan 287 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md",
-      "summary": "Pinpoints the exact insertion point (the shared bucketing loop at orchestrate-cycle-plan.sh:1786-1839, common to --dry-run and live) and renaming/reuse strategy (rename WORKTREE_ISOLATED_TASK_TYPES to BUILD_HEAVY_TASK_TYPES, reuse task_selected_for_worktree_isolation() as sole reader) for the Mode 2 build-heavy co-scheduling admission rule, plus test-fixture guidance (Group 32, avoiding the pre-existing file_scope_collision confound documented in Group 31)."
+      "type": "plan",
+      "path": "specs/287_no_coschedule_build_heavy_implement/plans/01_build-heavy-coschedule-rule.md",
+      "summary": "4-phase plan for the Mode 2 build-heavy co-scheduling admission rule in orchestrate-cycle-plan.sh: hoist+rename BUILD_HEAVY_TASK_TYPES, add the in-loop defer rule with its own reason and header contract, Group 32 fixtures for the four acceptance cases, harness regression gate."
     }
   ],
+  "next_steps": "Run /implement 287 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1790813213_9179fb_287",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2.5,
+    "dependency_waves": [[1], [2], [3], [4]]
+  },
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh, the per-task bucketing loop that builds dispatch_candidates/out_deferred_rows/out_blocked_rows (around line 1786) runs identically for both --dry-run and the live path -- the dry-run/live fork happens later, at the lock-probe/H1/row-builder stage. Any new cross-candidate admission rule (comparing one eligible task against others in the same cycle) placed in that shared loop gets byte-for-byte --dry-run/live parity for free, with no second row builder to keep in sync.",
-      "category": "PATTERN",
-      "source_artifact": "specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-cycle-plan", "dry-run parity", "admission rule", "bucketing loop", "dispatch_candidates"]
-    },
-    {
-      "content": "test-orchestrate-cycle-plan.sh Group 31 discovered that orchestrate-batch-admit.sh's pre-existing in-batch file_scope_collision check (exact-string or directory-prefix match) already defers one of two same-cycle candidates whose file_scope entries overlap -- with no override for in-batch pairs. Any new same-cycle fixture meant to exercise a DIFFERENT admission mechanism must use empty or clearly disjoint file_scope values, or this unrelated pre-existing check silently absorbs the test.",
+      "content": "In bash, a function definition nested inside another function body is only registered when execution reaches that statement. A large script whose entire body from an early line through EOF lives inside one main() invoked on the last line (the shape of agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh) therefore has a strict definition-before-use ordering constraint INSIDE that body: calling a helper defined further down returns 127 ('command not found'), and under `set -euo pipefail` an `if helper ...; then` guard silently swallows that 127 as a false branch. The predicate compiles, shellcheck stays clean, and the rule never fires. When planning a new call site in such a script, verify the callee's definition line is strictly less than the call line, and hoist the definition rather than trusting top-of-file-style ordering intuition.",
       "category": "INSIGHT",
-      "source_artifact": "specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrate-batch-admit", "file_scope_collision", "test fixture", "confound", "in-batch"]
+      "source_artifact": "specs/287_no_coschedule_build_heavy_implement/plans/01_build-heavy-coschedule-rule.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "function-definition-order", "nested-function", "set-euo-pipefail", "silent-false", "shellcheck-blind-spot"]
     }
-  ]
+  ],
+  "dispatch_seq": 5
 }

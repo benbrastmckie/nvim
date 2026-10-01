@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 5,
+  "summary": "Authored a 4-phase implementation plan for the Mode 2 build-heavy co-scheduling admission rule in orchestrate-cycle-plan.sh, correcting a latent defect in the research report's insertion plan (the predicate is defined below the loop that would call it, inside one enclosing main function, so the call would silently return a swallowed 127).",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/287_no_coschedule_build_heavy_implement/plans/01_build-heavy-coschedule-rule.md",
+      "summary": "4-phase plan: hoist+rename BUILD_HEAVY_TASK_TYPES, add the in-loop defer rule with its own reason and header contract, Group 32 fixtures for the four acceptance cases, harness regression gate."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": [],
+  "plan_markers_verified": null,
+  "continuation_path": null,
+  "next_action_hint": "Dispatch implement for task 287 against plans/01_build-heavy-coschedule-rule.md; Phase 1 (hoist+rename) must land before Phase 2 adds any predicate call site."
+}
