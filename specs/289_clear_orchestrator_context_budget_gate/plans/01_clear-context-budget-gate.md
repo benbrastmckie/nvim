@@ -151,30 +151,30 @@ deltas from these numbers.
 
 ---
 
-### Phase 2: Trim the eager CLAUDE.md fragment behind pointers [NOT STARTED]
+### Phase 2: Trim the eager CLAUDE.md fragment behind pointers [COMPLETED]
 
 **Goal**: Remove the duplicated `/orchestrate` prose from core's `.claude/CLAUDE.md` merge source
 so the eager-load total drops at or under 65,950 B with headroom, without losing any documented
 behaviour.
 
 **Tasks**:
-- [ ] Trim the `/orchestrate` row of the Command Reference table (line ~116, ~1,670 B — the single
+- [x] Trim the `/orchestrate` row of the Command Reference table (line ~116, ~1,670 B — the single
       largest cell in the file) to a short behavioural summary plus
       `See .claude/docs/architecture/orchestrate-state-machine.md for the full forced-phase,
-      terminal-task-admission, artifact-keyed-admission and cycle-budget semantics`
-- [ ] Before removing each clause, confirm `docs/architecture/orchestrate-state-machine.md` already
+      terminal-task-admission, artifact-keyed-admission and cycle-budget semantics` *(completed)*
+- [x] Before removing each clause, confirm `docs/architecture/orchestrate-state-machine.md` already
       documents it; if any clause is NOT covered there, add it to that doc in this same phase
       rather than deleting it (that file is non-eager, so moving prose into it costs zero eager
-      bytes)
-- [ ] Trim the **Multi-task syntax** paragraph (line ~120, ~811 B) to one sentence plus its two
-      existing pointers (`multi-task-operations.md`, `batch-orchestration-guardrails.md`)
-- [ ] Trim the **Model Enforcement** paragraph (line ~167, ~842 B) to the tier rule in one sentence
-      plus its existing `agent-frontmatter-standard.md` pointer
-- [ ] Match the file's own established house style for this shape (its `## Hard Mode` and
-      `## Literature Mode` sections: short summary + `See <path> for the full X`)
-- [ ] Re-measure the eager total and stop when it is ≤ 64,500 B; if the three cuts above land short
+      bytes) *(completed: artifact-keyed-admission clause was missing; added a new paragraph to the Forced Phases section)*
+- [x] Trim the **Multi-task syntax** paragraph (line ~120, ~811 B) to one sentence plus its two
+      existing pointers (`multi-task-operations.md`, `batch-orchestration-guardrails.md`) *(completed)*
+- [x] Trim the **Model Enforcement** paragraph (line ~167, ~842 B) to the tier rule in one sentence
+      plus its existing `agent-frontmatter-standard.md` pointer *(completed)*
+- [x] Match the file's own established house style for this shape (its `## Hard Mode` and
+      `## Literature Mode` sections: short summary + `See <path> for the full X`) *(completed)*
+- [x] Re-measure the eager total and stop when it is ≤ 64,500 B; if the three cuts above land short
       of that, do NOT reach for a fourth target in this phase — record the measured value and let
-      Phase 3's cut close the remainder
+      Phase 3's cut close the remainder *(completed: TOTAL 66,081 B, still 131 B over 65,950 B -- Phase 3 required)*
 
 **Timing**: 1 hour
 

@@ -757,6 +757,15 @@ phase; this section covers their behavior once that task is TERMINAL (`completed
 `expanded`) -- including the case where `/todo` has already moved it out of `active_projects` and
 into `specs/archive/{NNN}_{slug}/`.
 
+**Admission is artifact-keyed, not status-keyed.** The three forcing flags are not admitted by
+identical rules. `--research` is always admitted regardless of task state. `--plan` is always
+admitted too, but resolves to one of two agents depending on artifact state -- `reviser-agent`
+when the task already has a plan (`plans/*.md` exists, producing a revision in the current round,
+same as `/revise`), or `planner-agent` otherwise. `--implement` is admitted ONLY when a plan
+artifact already exists; with no plan, the task is excluded via a `blocked[]` row with reason
+`"no plan artifact; run --plan first"` and nothing is dispatched for it. See
+`commands/orchestrate.md`'s Options table for the full per-flag wording.
+
 **Eligibility exemption, not a reordering.** The forced-phase exemption named in the Dependency
 Gating Model above is implemented as a per-task predicate (`task_has_forced_phase`) that guards
 the All-terminal check and the eligibility filter, computed from data (`--force-phases`,

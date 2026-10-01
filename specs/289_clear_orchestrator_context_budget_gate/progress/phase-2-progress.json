@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Trim the eager CLAUDE.md fragment behind pointers",
+  "started_at": "2026-10-01T05:55:00Z",
+  "last_updated": "2026-10-01T05:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Trim /orchestrate row to behavioral summary + pointer", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 2, "description": "Confirm orchestrate-state-machine.md covers removed clauses; add missing ones", "status": "done", "note": "artifact-keyed-admission clause was not covered -- added new paragraph to Forced Phases section", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 3, "description": "Trim Multi-task syntax paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 4, "description": "Trim Model Enforcement paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 5, "description": "Match house style (short summary + See <path> for full X)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-measure eager total and stop at <= 64,500 B, else leave remainder to Phase 3", "status": "done", "note": "eager TOTAL dropped from 68,289 B to 66,081 B (saved 2,208 B); still 131 B over the 65,950 B limit -- Phase 3's cut is required to close the gap, as the plan's Scope Hypothesis anticipated", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "measurements": {
+    "eager_total_after_phase2_bytes": 66081,
+    "claudemd_after_phase2_bytes": 17585
+  }
+}
