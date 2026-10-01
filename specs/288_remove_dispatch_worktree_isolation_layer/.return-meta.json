@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/288_remove_dispatch_worktree_isolation_layer/plans/01_worktree-isolation-layer-removal.md",
-      "summary": "9-phase, 5-wave plan to delete dispatch-worktree.sh and its two test suites and unwire all 13 surviving reference files, including the dual-purpose predicate rename, two correctness fixes, four test suites the dispatch never named, the repo-root .gitignore, and honest post-removal re-measurement of both byte-budget gates."
-    }
-  ],
-  "dispatch_seq": 8,
-  "next_steps": "Run /implement 288 to execute the plan",
-  "phase_count": 9,
-  "estimated_hours": 10,
-  "dependency_waves": [[1], [2, 3, 4, 5], [6, 7], [8], [9]],
+  "status": "in_progress",
+  "dispatch_seq": 9,
   "metadata": {
-    "session_id": "sess_1790813213_9179fb_288",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": [
-    {
-      "content": "Before deleting a test group as part of a feature teardown, check whether it stages shared fixtures (stubs, log files, sandbox scripts) that LATER groups in the same suite consume. Test suites commonly let one group write stubs into a sandbox and have subsequent groups document that they 'reuse' those still-live stubs rather than re-staging them. Here a group being deleted staged three stubs; only one belonged to the removed feature, and two later groups depended on the other two, so a wholesale group deletion would have broken surviving coverage with a confusing exec-not-found failure far from the edit. The fix is to extract the non-feature stub staging into a retained, clearly-labelled shared setup block (renaming any group-prefixed variable) and run the suite after the extraction but BEFORE the deletion, so the dependency is proven handled rather than assumed.",
-      "category": "PATTERN",
-      "source_artifact": "specs/288_remove_dispatch_worktree_isolation_layer/plans/01_worktree-isolation-layer-removal.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["test-fixture-coupling", "shared-stub-staging", "test-group-deletion", "feature-teardown", "sandbox-fixture"]
-    }
-  ]
+    "session_id": "sess_1790813213_9179fb",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

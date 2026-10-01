@@ -808,59 +808,6 @@ else
   fi
 fi
 
-# ─── WORK (f0): worktree land/release/prune wiring (Phase 7 addition) ──────────────────────────
-# Runs after the agent's return is read (above) and before the status transition (WORK (f)
-# below) — the one place the Postflight Boundary already puts main-tree writes, which is exactly
-# where a merge-back belongs. Isolation status is RE-DERIVED here via `dispatch-worktree.sh path`
-# rather than trusted from a flag threaded through the dispatch row: the row already carries
-# `isolation`/`worktree_path` fields (orchestrate-cycle-plan.sh, Phase 6), but threading them into
-# this script's CLI would require editing skill-orchestrate/SKILL.md's Move 3 argument-extraction
-# block, which is deliberately outside this phase's declared file_scope (see the Phase 6 handoff's
-# design correction). Re-deriving is also more robust: it correctly handles a resumed/continued
-# dispatch whose isolation decision was made in an EARLIER cycle's orchestrate-cycle-plan.sh run,
-# not necessarily this cycle's. `dispatch-worktree.sh path` exits 0 with a path on stdout when the
-# task IS isolated, or exit 3 (no record) when it is not — see that script's own header.
-worktree_land_blocked=false
-worktree_land_reason=""
-if [ "$phase" = "implement" ]; then
-  worktree_path_out="" worktree_path_rc=0
-  worktree_path_out="$(bash "${SCRIPT_DIR}/dispatch-worktree.sh" path "$task_number" 2>/dev/null)" || worktree_path_rc=$?
-  if [ "$worktree_path_rc" -eq 0 ] && [ -n "$worktree_path_out" ]; then
-    echo "${notice_prefix} Task ${task_number} is worktree-isolated (${worktree_path_out}) — landing before status transition." >&2
-    if is_live; then
-      land_out="" land_rc=0
-      land_out="$(bash "${SCRIPT_DIR}/dispatch-worktree.sh" land "$task_number" --session "$session_id" 2>/dev/null)" || land_rc=$?
-      [ -n "$land_out" ] || land_out="null"
-      land_verdict=$(echo "$land_out" | jq -r '.verdict // "unavailable"' 2>/dev/null) || land_verdict="unavailable"
-      case "$land_verdict" in
-        landed|nothing_to_land)
-          echo "${notice_prefix} dispatch-worktree.sh land: ${land_verdict} for task ${task_number} — releasing the worktree." >&2
-          bash "${SCRIPT_DIR}/dispatch-worktree.sh" release "$task_number" >/dev/null 2>&1 \
-            || echo "${notice_prefix} WARNING: dispatch-worktree.sh release failed for task ${task_number} (non-blocking) — worktree left for manual cleanup." >&2
-          ;;
-        conflict|refused_specs_paths|refused_dirty_overlap)
-          worktree_land_blocked=true
-          # Pull whichever field carries the offending paths verbatim: `land`'s conflict/
-          # refused_specs_paths verdicts use `.paths`, refused_dirty_overlap uses `.overlap`.
-          land_offending=$(echo "$land_out" | jq -r '(.paths // .overlap // []) | join(", ")' 2>/dev/null)
-          worktree_land_reason="dispatch-worktree.sh land verdict=${land_verdict} for task ${task_number} (offending paths: ${land_offending:-<none reported>})"
-          echo "${notice_prefix} WORKTREE LAND BLOCKED: ${worktree_land_reason} — branch and worktree preserved for human resolution; the phase is NOT claimed as landed this cycle." >&2
-          ;;
-        *)
-          # "unavailable" or any unrecognized verdict: fail open (never block a status transition
-          # on a manifest/tooling hiccup) but note it loudly.
-          echo "${notice_prefix} WARNING: dispatch-worktree.sh land returned verdict='${land_verdict}' (rc=${land_rc}) for task ${task_number} — proceeding without blocking (fail-open)." >&2
-          ;;
-      esac
-      # Reap this session's own crashed/stale worktrees once per cycle, independent of this
-      # task's own land outcome above.
-      bash "${SCRIPT_DIR}/dispatch-worktree.sh" prune --session "$session_id" >/dev/null 2>&1 || true
-    else
-      echo "${notice_prefix} [dry-run] would land/release task ${task_number}'s isolated worktree and prune stale records — no write performed." >&2
-    fi
-  fi
-fi
-
 # ─── WORK (f): status transition, completion-claim gate, completion propagation ────────────────
 offschema_dispatch_status=false
 implemented_gate_passed="null"
@@ -939,17 +886,10 @@ if [ "$have_outcome" = "true" ]; then
       fi
       ;;
     implemented)
-      if [ "$worktree_land_blocked" = "true" ]; then
-        # WORK (f0) above already logged the verdict and the offending paths verbatim, and
-        # deliberately left the branch and worktree in place. Mirror the deploy-pending-refusal
-        # shape (implemented_gate_passed=false, no status write) rather than trusting the agent's
-        # own claim of success — the merge-back did not land, so the phase did not land either.
-        implemented_gate_passed=false
-        echo "${notice_prefix} Dispatch status 'implemented' but the worktree land was blocked (${worktree_land_reason}) — no state.json transition performed; the task remains at its current in-flight status pending human resolution." >&2
       # skill_gate_completion_claim is a pure decision function (see is_live()'s own header
       # comment for its one KNOWN, DELIBERATE non-gated internal side effect) — always called,
       # even under --dry-run, so implemented_gate_passed is always a real decision in the output.
-      elif skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
+      if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
            "$plan_markers_verified" "$notice_prefix"; then
         implemented_gate_passed=true
         if is_live; then

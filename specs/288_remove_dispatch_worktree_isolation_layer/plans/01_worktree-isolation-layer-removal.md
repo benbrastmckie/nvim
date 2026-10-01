@@ -1,7 +1,7 @@
 # Implementation Plan: Task #288
 
 - **Task**: 288 - Remove the per-dispatch worktree isolation layer and unwire every caller
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: 286 (decision-record revision), 287 (co-scheduling admission rule) — both verified `completed` in `specs/state.json`; prerequisites satisfied, this plan is cleared to execute
 - **Research Inputs**: `specs/288_remove_dispatch_worktree_isolation_layer/reports/01_worktree-isolation-removal-inventory.md`
@@ -167,29 +167,29 @@ that is reported in Phase 9, not tracked as a roadmap edit here.
 
 Phases within the same wave touch disjoint files and can execute in parallel.
 
-### Phase 1: Baseline capture and footprint re-derivation [NOT STARTED]
+### Phase 1: Baseline capture and footprint re-derivation [COMPLETED]
 
 **Goal**: Establish the pre-removal measurements and the verified edit set, so Phase 9 can report
 real deltas and distinguish NEW harness failures from pre-existing ones.
 
 **Tasks**:
 
-- [ ] Confirm the source store: read `source_dir` for `core` from `.claude-extensions.json` and
+- [x] Confirm the source store: read `source_dir` for `core` from `.claude-extensions.json` and
       confirm it is `agent-system/extensions/core`. Every edit below is relative to it unless the
       path is explicitly the repo-root `.gitignore`.
-- [ ] Re-derive the literal dependency set: `grep -rln "dispatch-worktree" agent-system/` plus the
+- [x] Re-derive the literal dependency set: `grep -rln "dispatch-worktree" agent-system/` plus the
       repo-root `.gitignore`. Expect exactly the 15 source-store files named in this plan plus
       `.gitignore`. Record any file this plan does not name and stop to reconcile before editing.
-- [ ] Re-derive per-file counts with `grep -ci "worktree"` over each named file; note the numbers in
+- [x] Re-derive per-file counts with `grep -ci "worktree"` over each named file; note the numbers in
       the implementation summary rather than trusting the dispatch's 228/20 figures.
-- [ ] Record the pre-removal byte baselines: `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
+- [x] Record the pre-removal byte baselines: `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`
       and `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`.
       Planning-time values to diff against: 21,317 B and 67,980 B.
-- [ ] Capture the pre-removal harness baseline: run `scripts/tests/run-all.sh --jobs auto` in the
+- [x] Capture the pre-removal harness baseline: run `scripts/tests/run-all.sh --jobs auto` in the
       background, waiting per `context/patterns/bounded-build-waiter.md`. Save the roster/tally
       output to a scratch log and record which suites fail and how each is classified against
       `scripts/tests/known-failures.txt`.
-- [ ] Confirm no stray tracked runtime-path instance exists:
+- [x] Confirm no stray tracked runtime-path instance exists:
       `git ls-files -- '**/.worktree-registry*' '.orchestrate-worktrees/**'` returns empty.
 
 **Timing**: 0.75 hours (mostly waiting on the harness run)
@@ -216,7 +216,7 @@ this plan's per-phase file lists must be reconciled first.
 
 ---
 
-### Phase 2: `orchestrate-cycle-plan.sh` — rename, narrow, and fix contention accounting [NOT STARTED]
+### Phase 2: `orchestrate-cycle-plan.sh` — rename, narrow, and fix contention accounting [COMPLETED]
 
 **Goal**: Remove all worktree provisioning and row-field wiring from the cycle planner while keeping
 the build-heavy family predicate alive for the co-scheduling rule, and fix the now-wrong contention
@@ -224,33 +224,33 @@ exclusion.
 
 **Tasks**:
 
-- [ ] Rename `task_selected_for_worktree_isolation()` to `task_is_build_heavy_implement()` at its
+- [x] Rename `task_selected_for_worktree_isolation()` to `task_is_build_heavy_implement()` at its
       definition (~line 1834) and at the one surviving call site (~line 1914, inside the Mode 2
       co-scheduling admission loop).
-- [ ] Rewrite the `BUILD_HEAVY_TASK_TYPES` hoisting comment block (~lines 1805–1832): drop the "DUAL
+- [x] Rewrite the `BUILD_HEAVY_TASK_TYPES` hoisting comment block (~lines 1805–1832): drop the "DUAL
       meaning: (a) ... (b)" framing entirely — only the co-scheduling membership meaning remains —
       and correct the hoisting note's "plus the three pre-existing isolation call sites further down
       this function" clause to name the single surviving call site. **Keep** the
       `MUST STAY HOISTED HERE` warning itself; it is still true and still load-bearing.
-- [ ] Delete the dispatch-row schema documentation for `isolation`/`worktree_path` in the header
+- [x] Delete the dispatch-row schema documentation for `isolation`/`worktree_path` in the header
       comment block (~lines 200–251), including the `worktree_path}` entry in the row-shape sketch
       (~line 203).
-- [ ] Delete the `build_contended_manifest()` exclusion call (~line 2266,
+- [x] Delete the `build_contended_manifest()` exclusion call (~line 2266,
       `task_selected_for_worktree_isolation "$cg" ... && continue`) and the comment above the
       function that documents it (~line 2214). **This is the correctness fix**: under a shared tree a
       former build-heavy task does share the working copy, so the exclusion produced a false negative
       that hid a real `file_scope` collision from `git-commit-scoped.sh`'s refusal check.
-- [ ] Delete the `--dry-run` row builder's `dry_isolation` computation (~lines 2485–2488) and remove
+- [x] Delete the `--dry-run` row builder's `dry_isolation` computation (~lines 2485–2488) and remove
       the `isolation` and `worktree_path` keys from its `jq -n` template (~lines 2489–2490),
       including the now-unused `--arg iso`.
-- [ ] Delete the live-path provision block (~lines 2643–2671) in full: the `--worktree` header
+- [x] Delete the live-path provision block (~lines 2643–2671) in full: the `--worktree` header
       comment, `task_isolation`/`task_worktree_path` initialization, the
       `dispatch-worktree.sh provision` call via `run_capture_stdout`, the provision-failure
       `out_deferred_rows` branch, and `build_args+=(--worktree ...)`.
-- [ ] Delete the live row builder's `isolation`/`worktree_path` wiring (~lines 2857–2863): the
+- [x] Delete the live row builder's `isolation`/`worktree_path` wiring (~lines 2857–2863): the
       comment, `task_worktree_path_json`, and both keys plus `--arg iso`/`--argjson wtp` from the
       `jq -n` template.
-- [ ] Grep the file for `worktree`, `isolation`, `task_selected_for_worktree_isolation`,
+- [x] Grep the file for `worktree`, `isolation`, `task_selected_for_worktree_isolation`,
       `dry_isolation`, `task_isolation` — expect zero hits.
 
 **Timing**: 1.5 hours
@@ -282,7 +282,7 @@ line number, and re-grep after each edit.
 
 ---
 
-### Phase 3: `orchestrate-cycle-postflight.sh` — delete WORK (f0) and fix the `implemented` arm [NOT STARTED]
+### Phase 3: `orchestrate-cycle-postflight.sh` — delete WORK (f0) and fix the `implemented` arm [COMPLETED]
 
 **Goal**: Remove the land/release/prune stage that can no longer have anything to land, and remove
 its consumer branch so the live implement path cannot reference an uninitialized variable under
@@ -290,19 +290,19 @@ its consumer branch so the live implement path cannot reference an uninitialized
 
 **Tasks**:
 
-- [ ] Delete the entire WORK (f0) block (~lines 811–859): its `─── WORK (f0) ───` banner and header
+- [x] Delete the entire WORK (f0) block (~lines 811–859): its `─── WORK (f0) ───` banner and header
       comment, the `worktree_land_blocked=false` / `worktree_land_reason=""` initializations, the
       `dispatch-worktree.sh path`/`land`/`release`/`prune` invocations, the blocked/fail-open
       branches, and the `[dry-run] would land/release...` notice. The block ends immediately before
       the `─── WORK (f): status transition ───` banner; keep that banner and everything after it.
-- [ ] In the `implemented)` status-transition arm (~lines 941–948), delete the
+- [x] In the `implemented)` status-transition arm (~lines 941–948), delete the
       `if [ "$worktree_land_blocked" = "true" ]; then` branch and its body, and promote the
       following `elif skill_gate_completion_claim ...; then` to a plain `if`. Keep the
       `skill_gate_completion_claim` comment block above it intact.
-- [ ] Leave the ~line 1342 comment alone: it describes the *surviving* contended-path commit refusal
+- [x] Leave the ~line 1342 comment alone: it describes the *surviving* contended-path commit refusal
       (`git-commit-scoped.sh --task`), i.e. the mechanism that replaces isolation. It names no
       deleted script. Optional one-word clarity reword is permitted but is not part of the removal.
-- [ ] Grep for `worktree`, `worktree_land_blocked`, `worktree_land_reason`, `dispatch-worktree` —
+- [x] Grep for `worktree`, `worktree_land_blocked`, `worktree_land_reason`, `dispatch-worktree` —
       expect zero hits.
 
 **Timing**: 1 hour

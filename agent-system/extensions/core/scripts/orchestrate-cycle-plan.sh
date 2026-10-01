@@ -199,8 +199,7 @@
 # script's own perspective after its entry-point `exec 3>&1 1>&2`; a caller invoking this script
 # normally (without itself touching fd 3) observes it as plain stdout, unchanged from the
 # caller's point of view:
-#   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file, force, focus, isolation,
-#    worktree_path}],
+#   {cycle: int, dispatch: [{task, phase, agent, model, dispatch_file, force, focus}],
 #    aux_dispatch: [{task, kind, agent, model, dispatch_file, orchestrator_mode: false}],
 #    deferred: [{task, reason}], blocked: [{task, reason}], stop: null | {reason, message}}
 # `model`/`dispatch_file` are `null` on every dispatch row in --dry-run mode (nothing was built),
@@ -211,27 +210,11 @@
 # Stage MT-4's postflight call as `--force-invoked`, mirroring single-task Stage 5's own
 # `force_invoked` (A2) semantics for the monotonic-max status clamp and the forced-dispatch
 # artifact-round advance.
-# `isolation` (`"none"` or `"worktree"`, working-tree and build isolation posture dispatch-site
-# wiring) is selected by task_selected_for_worktree_isolation() -- phase == "implement" AND a
-# BUILD_HEAVY_TASK_TYPES-family task_type (currently lean4/cslib) -- and is emitted identically
-# in BOTH modes. `worktree_path` is
-# `null` whenever `isolation` is `"none"`, and ALSO always `null` under --dry-run regardless of
-# what `isolation` says (--dry-run provisions nothing -- see that mode's own row builder); in the
-# live path a `"worktree"` row's `worktree_path` is the real path `dispatch-worktree.sh provision`
-# returned. This row change is additive-only for existing consumers: `skill-orchestrate/SKILL.md`'s
-# Move 2/Move 3 and `orchestrate-cycle-postflight.sh` read named fields, never positionally, and
-# neither needed an edit for this addition (confirmed by reading both before this change; see
-# the decision record for the full evidence this predicate implements).
-# Both `isolation` and `worktree_path` RECORD a working-tree/build isolation posture already put
-# into effect before this row was built (the worktree, if any, was provisioned earlier in this
-# same function, via dispatch-worktree.sh) -- they are consumed only by this pipeline's own
-# downstream bookkeeping (Move 3's per-task postflight and this script's own row builders) and
-# are NEVER an argument to pass to the Agent tool call itself. `isolation`'s value `"worktree"`
-# collides with the Agent tool's own `isolation` parameter, whose enum also includes `"worktree"`,
-# so a forwarded row value would be syntactically valid and raise no error while silently
-# stacking a second harness checkout on top of the one already provisioned. See
-# `skill-orchestrate/SKILL.md`'s Move 2 MUST NOT for the enforced point-of-use prohibition and
-# the full stacked-checkout/cross-checkout-git-refusal consequence.
+#
+# Posture: every dispatch runs in the repository's single shared working tree -- no per-dispatch
+# isolation row fields exist. Build contention is closed by the Mode 2 co-scheduling admission
+# rule below. See the isolation-removal decision record under `specs/decisions/` for the full
+# verdict.
 #
 # Decision (this task) — Mode 2 build-heavy co-scheduling admission: the shared bucketing loop
 # (same loop as the `file_scope_collision`/`self_modifying`/`session_active` defers surfaced by
@@ -240,16 +223,16 @@
 # structurally unable to cover (no task declares `.lake/` in its `file_scope`, so two
 # source-disjoint build-heavy implement tasks previously admitted together and collided in one
 # shared build directory). Implement-phase-only, same rationale as
-# `task_selected_for_worktree_isolation()` itself: a research or plan dispatch does not build, so
+# `task_is_build_heavy_implement()` itself: a research or plan dispatch does not build, so
 # two build-heavy candidates in different phases still co-schedule freely. The deferred second
 # (and any later) build-heavy implement candidate gets its OWN `deferred[]` reason — distinct text,
 # never the `file_scope_collision` string, whose payload (`collision_scope`/cross-task detail)
 # would be empty here — phrased `build-heavy implement co-scheduling: candidate #<N> is already
 # this cycle's one build-heavy implement dispatch; deferring to a later cycle`. Emitted identically
-# in --dry-run and the live path, for the same structural reason `isolation`/`worktree_path` are
-# above: one shared loop, one row builder for this decision, no second copy to keep in sync. See
-# `specs/decisions/worktree-isolation-removal-verdict.md`'s "Mode 2 Ruling: an Admission Rule, Not
-# a PATH Shim" section for the full ruling this implements. Deliberately NOT a PATH-shim wrapper
+# in --dry-run and the live path: one shared loop, one row builder for this decision, no second
+# copy to keep in sync. See the isolation-removal decision record under `specs/decisions/`'s
+# "Mode 2 Ruling: an Admission Rule, Not a PATH Shim" section for the full ruling this implements.
+# Deliberately NOT a PATH-shim wrapper
 # around build tools — a bare build invocation from outside an orchestration (an operator's own
 # shell, or a script this system does not own) still bypasses `lake-build-guard.sh`'s opt-in lock;
 # that residual is named and declined in the decision record, not solved here.
@@ -1803,15 +1786,12 @@ else
 fi
 mt_save
 
-# ── Build-heavy task_type family (single array, single reader) -- this array now carries a DUAL
-# meaning: (a) it still drives the pre-existing, unremoved working-tree isolation selection
-# predicate immediately below (see context/patterns/batch-orchestration-guardrails.md's
-# "Working-Tree and Build Isolation Posture" section for that decision's full evidence, scoring,
-# and split verdict), and (b) it is the membership list for the NEW build-heavy co-scheduling
-# admission rule added inside the bucketing loop below (the Mode 2 ruling in
-# specs/decisions/worktree-isolation-removal-verdict.md: never dispatch two build-heavy implement
-# tasks in the same cycle). A future extension that needs either behavior adds its task_type to
-# this ONE array; nothing else changes.
+# ── Build-heavy task_type family (single array, single reader) -- this array is the membership
+# list for the build-heavy co-scheduling admission rule added inside the bucketing loop below
+# (the Mode 2 ruling in the isolation-removal decision record under specs/decisions/: never
+# dispatch two build-heavy implement tasks in the same cycle). A future extension that needs this
+# behavior adds
+# its task_type to this ONE array; nothing else changes.
 #
 # MUST STAY HOISTED HERE, above the bucketing loop below -- do not move this block back down to
 # its historical position near the lock-probe/row-builder call sites. Every line from
@@ -1820,18 +1800,17 @@ mt_save
 # execution actually reaches the `nested_fn() { ... }` statement. A call site earlier in the body
 # than this definition would hit "command not found" (exit 127), which an `if nested_fn ...;
 # then` guard silently swallows as a false branch under `set -euo pipefail` -- the predicate
-# would compile, shellcheck clean, and simply never fire. Keeping the definition above every call
-# site (the bucketing loop immediately below, plus the three pre-existing isolation call sites
-# further down this function) is what makes it callable at all.
+# would compile, shellcheck clean, and simply never fire. Keeping the definition above its call
+# site (the bucketing loop immediately below) is what makes it callable at all.
 #
 # Selected: phase == "implement" AND the task's own task_type is in the lean4/cslib family (the
 # two REAL task_type string values that family covers -- "lean4" and "cslib" are each extensions'
 # own `task_type` manifest field; "lean4" additionally appears as a cslib `keyword_overrides`
 # alias for auto-detecting task_type at /task creation time, which is a DIFFERENT mechanism this
 # predicate does not touch or depend on). Every other phase (research/plan) and every other
-# task_type is unaffected by either consumer of this array.
+# task_type is unaffected by this array's one consumer.
 BUILD_HEAVY_TASK_TYPES=("lean4" "cslib")
-task_selected_for_worktree_isolation() {
+task_is_build_heavy_implement() {
   local phase="$1" ttype="$2" candidate
   [ "$phase" = "implement" ] || return 1
   for candidate in "${BUILD_HEAVY_TASK_TYPES[@]}"; do
@@ -1842,8 +1821,9 @@ task_selected_for_worktree_isolation() {
 
 # ── Bucket eligible_tasks into dispatch-candidates / deferred / blocked / skip ───────────────────
 declare -a dispatch_candidates=()
-# Mode 2 build-heavy co-scheduling admission (specs/decisions/worktree-isolation-removal-verdict.md
-# "Mode 2 Ruling") -- holds the task number of the first build-heavy implement candidate admitted
+# Mode 2 build-heavy co-scheduling admission (the isolation-removal decision record under
+# specs/decisions/, "Mode 2 Ruling") -- holds the task number of the first build-heavy implement
+# candidate admitted
 # THIS cycle, or "" if none yet. Checked/set inside the loop below, immediately before a candidate
 # is pushed onto dispatch_candidates.
 build_heavy_implement_admitted=""
@@ -1911,7 +1891,7 @@ for t in "${eligible_tasks[@]}"; do
   # file_scope_collision defer today. Calls the single reader of BUILD_HEAVY_TASK_TYPES (defined
   # above this loop -- see that block's hoisting note) rather than re-iterating the array here, so
   # "single array, single reader" holds literally.
-  if task_selected_for_worktree_isolation "$g" "${task_types[$t]:-}"; then
+  if task_is_build_heavy_implement "$g" "${task_types[$t]:-}"; then
     if [ -n "$build_heavy_implement_admitted" ]; then
       out_deferred_rows+=("$(jq -n -c --argjson t "$t" --arg r "build-heavy implement co-scheduling: candidate #${build_heavy_implement_admitted} is already this cycle's one build-heavy implement dispatch; deferring to a later cycle" '{task:$t, reason:$r}')")
       continue
@@ -2211,9 +2191,9 @@ build_sibling_territory() {
 # under --dry-run too -- this function is only ever called from the live-only half below, which
 # --dry-run's own emit_and_exit return never reaches; a --dry-run cycle therefore performs no
 # manifest write or removal of its own, matching this phase's own "byte-identical in both cases"
-# requirement. A task selected for worktree isolation (task_selected_for_worktree_isolation) is
-# excluded from contention entirely -- it has no shared working copy to contend over, so listing
-# it would produce a false refusal downstream.
+# requirement. Every dispatched task shares the one working tree, so every task with a declared
+# `file_scope` participates in contention accounting -- including a build-heavy implement task;
+# there is no working-tree-isolation exclusion.
 CONTENDED_MANIFEST_DIR="$PROJECT_ROOT/specs/.contention-manifest"
 
 # _paths_contend <path_a> <gran_a> <path_b> <gran_b> -- true (rc 0) when two DECLARED file_scope
@@ -2259,11 +2239,9 @@ build_contended_manifest() {
 
   local -A path_granularity=()
   local -A path_declarers=()   # path -> space-joined, deduped task numbers that declare it
-  local ct cg ct_entry ct_scope_json path gran
+  local ct ct_entry ct_scope_json path gran
 
   for ct in "${tasks[@]}"; do
-    cg="${effective_group[$ct]:-}"
-    task_selected_for_worktree_isolation "$cg" "${task_types[$ct]:-}" && continue
     ct_entry=$(lookup_project "$ct") || ct_entry=""
     { [ -z "$ct_entry" ] || [ "$ct_entry" = "null" ]; } && continue
     ct_scope_json=$(echo "$ct_entry" | jq -c '.file_scope // []')
@@ -2481,13 +2459,8 @@ if [ "$dry_run" = "true" ]; then
     agent=$(resolve_agent "$g" "${task_types[$t]}" "$t")
     dry_force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && dry_force_json="true"
     dry_focus=$(compose_focus "$t" "$g")
-    # --dry-run surfaces the identical isolation CHOICE a live cycle would make, without ever
-    # provisioning: worktree_path stays null unconditionally here (see task_selected_for_
-    # worktree_isolation()'s header comment and this phase's own "provision nothing" contract).
-    dry_isolation="none"
-    task_selected_for_worktree_isolation "$g" "${task_types[$t]}" && dry_isolation="worktree"
-    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" --arg focus "$dry_focus" --arg iso "$dry_isolation" \
-      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force, focus: $focus, isolation: $iso, worktree_path: null}')")
+    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" --arg focus "$dry_focus" \
+      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force, focus: $focus}')")
   done
   emit_and_exit "$cycle_count"
 fi
@@ -2503,8 +2476,7 @@ cd "$SKILL_REPO_ROOT"
 new_cycle_count=$(( cycle_count + 1 ))
 
 # Contended-path manifest (Phase 8): computed ONCE per cycle, over the full dispatched-task set,
-# before any per-task work below (a task's own worktree-provision call further below does not
-# change its own contention status -- exclusion is by SELECTION, not by provisioning outcome).
+# before any per-task work below.
 build_contended_manifest "${probed_dispatch_post_h1[@]}"
 
 for t in "${probed_dispatch_post_h1[@]}"; do
@@ -2639,35 +2611,6 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   task_composed_focus=$(compose_focus "$t" "$g")
   if [ -n "$task_composed_focus" ]; then
     build_args+=(--focus "$task_composed_focus")
-  fi
-  # --worktree (dispatch-site wiring for the working-tree and build isolation posture decision):
-  # selected mechanically by task_selected_for_worktree_isolation() above. On ANY provision
-  # failure this task is deferred outright (out_deferred_rows) -- it NEVER falls through to a
-  # shared-tree dispatch, per this phase's own instruction and the decision record's Risk
-  # ("Worktree provisioning failure silently degrades to a shared-tree dispatch, reintroducing
-  # the hazard the task exists to remove"). Empty-value-skips-flag, same convention as every
-  # other flag in this block: an unselected task passes no --worktree flag at all, byte-for-byte
-  # unchanged from before this feature existed. Deliberately does NOT release the task-lock
-  # acquired above before deferring -- mirrors the existing "orchestrate-build-dispatch.sh
-  # failed" deferral immediately below, the only other post-acquire failure branch in this loop.
-  task_isolation="none"
-  task_worktree_path=""
-  if task_selected_for_worktree_isolation "$g" "${task_types[$t]}"; then
-    if run_capture_stdout _wt_provision_json bash "$SCRIPT_DIR/dispatch-worktree.sh" provision "$t" --session "$dispatch_session" --seq "$task_dispatch_seq"; then
-      _wt_provision_exit=0
-    else
-      _wt_provision_exit=$?
-    fi
-    if [ "$_wt_provision_exit" -eq 0 ]; then
-      task_worktree_path=$(printf '%s' "$_wt_provision_json" | jq -r '.path // ""' 2>/dev/null) || task_worktree_path=""
-    fi
-    if [ "$_wt_provision_exit" -ne 0 ] || [ -z "$task_worktree_path" ]; then
-      echo "[orchestrate] WARNING: dispatch-worktree.sh provision failed for task #$t (exit $_wt_provision_exit): ${CAPTURE_DIAG:-$_wt_provision_json}" >&2
-      out_deferred_rows+=("$(jq -n -c --argjson t "$t" '{task: $t, reason: "dispatch-worktree.sh provision failed; deferring to a later cycle rather than falling through to a shared-tree dispatch"}')")
-      continue
-    fi
-    task_isolation="worktree"
-    build_args+=(--worktree "$task_worktree_path")
   fi
   if run_capture_stdout dispatch_json bash "$SCRIPT_DIR/orchestrate-build-dispatch.sh" "$t" "$g" "${build_args[@]}"; then
     build_exit=0
@@ -2854,13 +2797,8 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # Threading it through the row (rather than recomputing it downstream) is the same shape as
   # every other per-task field this row already carries.
   force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && force_json="true"
-  # isolation/worktree_path (dispatch-site wiring, matching the --dry-run row shape above
-  # byte-for-byte): task_isolation/task_worktree_path were computed just above, before the
-  # orchestrate-build-dispatch.sh call this row's other fields already came from.
-  task_worktree_path_json="null"
-  [ -n "$task_worktree_path" ] && task_worktree_path_json="\"$task_worktree_path\""
-  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" --arg focus "$task_composed_focus" --arg iso "$task_isolation" --argjson wtp "$task_worktree_path_json" \
-    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force, focus: $focus, isolation: $iso, worktree_path: $wtp}')")
+  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" --arg focus "$task_composed_focus" \
+    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force, focus: $focus}')")
 done
 
 mt_set --argjson c "$new_cycle_count" '.cycle_count = $c'
