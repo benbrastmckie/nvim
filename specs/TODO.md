@@ -1,5 +1,5 @@
 ---
-next_project_number: 309
+next_project_number: 312
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 309
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,306 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,306,309,310,311 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274,304 | 165,263,273,275,277,284,285 | orchestrator |
@@ -82,9 +82,45 @@ next_project_number: 309
       └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
+309 [NOT STARTED] — Replace directory pathspecs with explicit file lists at the...
+310 [NOT STARTED] — Make the session registry a trustworthy cross-batch...
+311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 
 ## Tasks
+
+### 311. Replace static build-heavy family membership with a measured co-scheduling signal, and record the isolation-posture findings
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Two folded parts sharing one document. PART 1 -- MEASURED BUILD WEIGHT: BUILD_HEAVY_TASK_TYPES=("lean4" "cslib") at orchestrate-cycle-plan.sh line 1819 is a static task-type family list, so any two lean4 implement candidates are categorically refused co-scheduling regardless of real build weight -- a Mathlib-free lean4 package measured at 6 s wall / 17 jobs from an empty .lake/ is blocked exactly as a full Mathlib build is. This is the binding constraint on real parallelism for Lean-heavy batches, which is the primary intended application of concurrent batching here. Replace family membership with a measured or probed signal (recorded prior job count / wall-clock duration per task, or a cheap dry-run probe) and explicitly design the fallback behavior for a task with no measurement history yet. PART 2 -- ISOLATION POSTURE RECORD (folded in per the research report's own Context Extension Recommendation): append to batch-orchestration-guardrails.md's "Working-Tree and Build Isolation Posture" section (i) the two new hazard classes -- repo-scanning pollution from in-tree worktree provisioning, and mode 2's guard-bypass-via-bare-invocation recurrence, evidenced by a plan-sanctioned certify.sh bypassing lake-build-guard.sh via a bare `lake` call -- and (ii) the CoW/reflink/overlayfs/clone-nothing evaluation including the ext4 no-reflink blocker, cross-referencing specs/decisions/worktree-isolation-removal-reaffirmation.md so any future re-opening of the worktree question starts from a complete evidence base. WHY ONE TASK: that single doc carries both the build-heavy co-scheduling rule and the isolation posture in adjacent sections, and the build-weight change must edit it anyway; territory.md also carries build-heavy references. All edits land under agent-system/extensions/core/ per .claude/rules/source-store-deploy-boundary.md, never under .claude/**. Evidence base: specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. NON-GOALS: do NOT restore per-dispatch git worktree isolation (that verdict was re-opened, re-argued and CONFIRMED -- see the decision record); do NOT attempt a Lake/Mathlib shared-cache feasibility spike (named as a possible future spike, not requested). SELF-MODIFICATION: this task IS self-modifying (scripts/orchestrate-cycle-plan.sh is an orchestrator-critical path); expect the admission gate to defer it and re-invoke /orchestrate rather than passing --allow-self-modifying.
+
+---
+
+### 310. Make the session registry a trustworthy cross-batch contention signal
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Two defects under one research question: "is the session registry a trustworthy contention signal, and what makes it so?" (a) WIRING ORDER: commands/orchestrate.md mints batch_session_id AFTER calling orchestrate-predispatch-review.sh, so --session-id is never passed and Class E (session-registry contention) prints SKIPPED on every run -- reproduced live. That pre-dispatch review is the ONLY surface designed to warn an operator that another live batch already covers these files before dispatch, so the skip silently removes the whole cross-batch warning. Remedy: mint the session earlier and pass --session-id. (b) REGISTRY HYGIENE: specs/.sessions/ holds five dead entries dating to 2026-09-08, never reaped, plus a leftover specs/.contention-manifest/. `session-reap` is explicit-invocation-only by deliberate design (task-lock.sh line 184) and no lifecycle site calls it. The task must ARGUE the choice between reaping opportunistically on `session-register` and wiring reap into /refresh's documented sweep, rather than assuming either -- the current restriction is intentional and the plan must engage with why it was made before overriding it. Motivating risk: PID recycling makes a leaked entry read as live and false-defers a candidate indefinitely. Also fix the stale, self-contradicting MAX_TASKS warning "Batching is not yet supported. Running with first $MAX_TASKS tasks only." at commands/orchestrate.md line 235 and docs/architecture/orchestrate-state-machine.md line 714 -- batching is the default, per batch-orchestration-guardrails.md's own "Batching Is the Default" section. SCOPE BOUNDARY (load-bearing): this task deliberately does NOT declare context/patterns/batch-orchestration-guardrails.md in file_scope, because it changes a wiring order and a maintenance policy, not the admission contract that doc describes -- this is what keeps its footprint disjoint from the build-weight/isolation-posture task. If research concludes the contract itself needs amending, add that path to file_scope AT THAT POINT and accept the resulting serializing dependencies[] edge. All edits land under agent-system/extensions/core/ per .claude/rules/source-store-deploy-boundary.md, never under .claude/**. Evidence base: specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. SELF-MODIFICATION: this task IS self-modifying (commands/orchestrate.md and scripts/task-lock.sh are both orchestrator-critical paths); expect the admission gate to defer it and re-invoke /orchestrate rather than passing --allow-self-modifying.
+
+---
+
+### 309. Replace directory pathspecs with explicit file lists at the three task-commit sites
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Three commit recipes in the source store still pass a bare `-- specs/` directory pathspec to git-commit-scoped.sh: skills/skill-git-workflow/SKILL.md line 216 (the generic "Task Commit" recipe, the most-copied of the three), agents/meta-builder-agent.md line 1496 (Stage 6), and skills/skill-meta/SKILL.md line 287 (postflight commit block). Under two concurrent /orchestrate batches, session A's commit sweeps session B's in-progress specs/ artifacts into A's commit -- the mode-1b bleed observed live during this task's own evidence gathering. These three recipes also contradict .claude/rules/git-workflow.md's Git Safety section, which already forbids a directory `git add` pathspec outright, so this is a source-store drift fix, not a policy change. Remedy: replace each bare directory pathspec with an explicit per-file list. Research must VERIFY (not assume) whether git-commit-scoped.sh's V5 per-path contention-claim check (specs/.contention-claims/) matches a DIRECTORY pathspec entry or slips past it -- the expectation is that it slips past, meaning the primitive cannot compensate for a wide call site, but this must be confirmed by reading the implementation. Close by adding a regression check that no commit recipe in the source store passes a bare directory pathspec. All edits land under agent-system/extensions/core/ per .claude/rules/source-store-deploy-boundary.md, never under .claude/**. Evidence base: specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. Goal context: make concurrent /orchestrate batches (different sessions, different agents, non-conflicting file scope and dependencies) trustworthy. SCOPE NOTE: none of these three files is an orchestrator-critical path, so this task does NOT trip the self-modification admission gate -- keep it that way; do not widen file_scope to include any critical path.
+
+---
 
 ### 308. /review: wire roadmap regeneration and collapse the redundant jq and generate-todo passes
 - **Status**: [NOT STARTED]
