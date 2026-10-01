@@ -1,7 +1,7 @@
 # Implementation Plan: Task #289
 
 - **Task**: 289 - Clear orchestrator context budget gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.75 hours
 - **Dependencies**: None (the sibling task that last edited `commands/orchestrate.md` has landed)
 - **Research Inputs**: specs/289_clear_orchestrator_context_budget_gate/reports/01_context-budget-gate-trim.md
@@ -111,23 +111,23 @@ Phases within the same wave can execute in parallel. Phases 2, 3 and 4 touch thr
 
 ---
 
-### Phase 1: Widen file_scope and capture pre-trim baselines [NOT STARTED]
+### Phase 1: Widen file_scope and capture pre-trim baselines [COMPLETED]
 
 **Goal**: Record the authoritative pre-trim measurements and declare the two files this task edits
 that its current `file_scope` does not list, so no phase below touches an undeclared file.
 
 **Tasks**:
-- [ ] Record pre-trim figures from `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
-      (the `TOTAL:` line and the per-file table) into the phase's progress notes
-- [ ] Record `wc -c` for `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`,
+- [x] Record pre-trim figures from `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
+      (the `TOTAL:` line and the per-file table) into the phase's progress notes *(completed: TOTAL 68,289 B, matches plan's drift-confirmed figure)*
+- [x] Record `wc -c` for `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`,
       `merge-sources/claudemd.md`, `rules/git-workflow.md`, and
-      `context/standards/git-workflow-narrative.md`
-- [ ] Append `agent-system/extensions/core/merge-sources/claudemd.md` and
+      `context/standards/git-workflow-narrative.md` *(completed: 20,325 / 19,793 / 9,740 / 7,769 B)*
+- [x] Append `agent-system/extensions/core/merge-sources/claudemd.md` and
       `agent-system/extensions/core/context/standards/git-workflow-narrative.md` to task 289's
       `file_scope` in `specs/state.json` (append via `+=`, never a wholesale `.file_scope = [...]`
-      assignment), then run `bash .claude/scripts/generate-todo.sh`
-- [ ] Confirm `jq` shows the widened `file_scope` and that no other `active_projects` entry was
-      modified
+      assignment), then run `bash .claude/scripts/generate-todo.sh` *(completed: both paths already present in file_scope -- no append or regeneration needed)*
+- [x] Confirm `jq` shows the widened `file_scope` and that no other `active_projects` entry was
+      modified *(completed: jq confirms both paths present; 53 other active_projects entries untouched)*
 
 **Timing**: 0.25 hours
 

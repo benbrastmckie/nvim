@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "Widen file_scope and capture pre-trim baselines",
+  "started_at": "2026-10-01T05:47:42Z",
+  "last_updated": "2026-10-01T05:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record pre-trim eager-load measurement", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record wc -c for the four named files", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Append two files to task 289 file_scope and regenerate TODO.md", "status": "done", "note": "file_scope already contains both paths (merge-sources/claudemd.md and context/standards/git-workflow-narrative.md) -- no append needed, state.json left unmodified by this phase", "files_touched": []},
+    {"id": 4, "description": "Confirm jq shows widened file_scope and no other task modified", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "measurements": {
+    "eager_total_pretrim_bytes": 68289,
+    "skill_orchestrate_pretrim_bytes": 20325,
+    "claudemd_pretrim_bytes": 19793,
+    "git_workflow_pretrim_bytes": 9740,
+    "git_workflow_narrative_pretrim_bytes": 7769
+  }
+}
