@@ -1,0 +1,33 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#313) for an advisory lint validating hand-authored /orchestrate batch proposals in ROADMAP.md phase blocks; integrated with existing tasks 306 and 308 rather than duplicating their scope.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task 313 entry added to TODO.md, placed in dependency wave 3"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task 313 active_projects entry with dependencies [306, 308] and 5 file_scope paths"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/313_advisory_lint_for_roadmap_batch_proposals/",
+      "summary": "Task directory created"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790878010_2e2fdd",
+    "agent_type": "meta-builder-agent",
+    "duration_seconds": 900,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1
+  },
+  "next_steps": "Task 313 is gated behind tasks 306 and 308; no /research dispatch is useful until 306 specifies the ROADMAP batch-block grammar."
+}
