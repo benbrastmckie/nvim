@@ -529,33 +529,33 @@ after the extraction but before the deletion.
 
 ---
 
-### Phase 7: Remaining test-suite reconciliation [NOT STARTED]
+### Phase 7: Remaining test-suite reconciliation [COMPLETED]
 
 **Goal**: Make the three other affected suites start and pass against the removed layer.
 
 **Tasks**:
 
-- [ ] `scripts/tests/test-orchestrate-cycle-postflight.sh`: remove `dispatch-worktree.sh` from both
+- [x] `scripts/tests/test-orchestrate-cycle-postflight.sh`: remove `dispatch-worktree.sh` from both
       copy-lists — the top-level `require_file` loop (~line 44) and `setup_sandbox`'s `cp` loop
       (~line 69). These are hard dependencies: left in place the suite cannot start at all.
-- [ ] Same file: delete the `phase 7 (non-isolated regression)` micro-check (~lines 1905–1910),
+- [x] Same file: delete the `phase 7 (non-isolated regression)` micro-check (~lines 1905–1910),
       which asserts the absence of worktree notices and names the deleted script in its failure
       message.
-- [ ] Same file: delete the entire Phase 7 group (~lines 1912–2094): its banner and header comment,
+- [x] Same file: delete the entire Phase 7 group (~lines 1912–2094): its banner and header comment,
       the `provision_worktree_fixture` and `worktree_path_for` helpers, and all three cases (clean
       land, merge conflict, `specs/**` refusal). The block ends immediately before the
       `# task-ref-ok:begin` comment that precedes Phase 9; keep that comment and everything after
       it. Check whether `commit_specs_only()` (defined inside this block) is used by any surviving
       case before deleting it.
-- [ ] `scripts/tests/test-orchestrate-build-dispatch.sh`: delete Group 15 in full (~lines 851–900):
+- [x] `scripts/tests/test-orchestrate-build-dispatch.sh`: delete Group 15 in full (~lines 851–900):
       banner, header comment, Case A (section absent), Case B (section present with the flag), Case
       C (byte-identical proof), and the `NO_WORKTREE_DISPATCH_FILE`/`WORKTREE_FIXTURE_PATH`
       variables. Keep the unrelated "ISOLATION CONTRACT" sandbox-isolation naming at ~lines 15/95 —
       that is a guarantee about the test harness itself, not about this feature.
-- [ ] `scripts/tests/test-lake-build-guard.sh`: reword the two comments at ~lines 1018 and ~1032
+- [x] `scripts/tests/test-lake-build-guard.sh`: reword the two comments at ~lines 1018 and ~1032
       that name `dispatch-worktree.sh` while contrasting their own raw `cp -al` approach. No test
       logic changes — these cases never invoked the script.
-- [ ] Grep all three files for `dispatch-worktree` — expect zero hits.
+- [x] Grep all three files for `dispatch-worktree` — expect zero hits.
 
 **Timing**: 1.25 hours
 

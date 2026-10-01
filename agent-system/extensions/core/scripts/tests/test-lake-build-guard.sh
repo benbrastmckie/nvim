@@ -1015,9 +1015,9 @@ fi
 # never hash to an equal fingerprint, and decide_sharing()'s post_fingerprint comparison always
 # fails closed across trees. A future change to a pure content hash (dropping path-embedding)
 # would silently reopen a cross-tree replay at the decide_sharing() level. This case is
-# deliberately NOT routed through dispatch-worktree.sh's `provision` -- it uses a raw `cp -al`
-# directly -- so it pins the guard's OWN logic independent of that script's clone-side fix and
-# stays load-bearing (not vacuous) whether or not that fix is present.
+# deliberately NOT routed through a dedicated worktree-provisioning script's clone step -- it uses
+# a raw `cp -al` directly -- so it pins the guard's OWN logic independent of any such script and
+# stays load-bearing (not vacuous) whether or not one exists.
 # =====================================================================================
 TESTC_ROOT1="$WORKDIR/testc_root1"
 TESTC_ROOT2="$WORKDIR/testc_root2"
@@ -1029,10 +1029,11 @@ COUNTERC="$WORKDIR/testc_counter"
 # Real build in root1 at a given scope.
 FAKE_LAKE_COUNTER="$COUNTERC" run_guard "$TESTC_ROOT1" build build > /dev/null 2>&1
 
-# Raw, FULL cp -al clone of the whole root (mirrors dispatch-worktree.sh's own hardlink-clone
-# mechanism, but invoked directly rather than through that script) -- deliberately NOT a
-# selective per-file copy. A full hardlink clone gives root2 files with the SAME content AND
-# the SAME mtime as root1's (they are the same inode), so path is the ONLY thing that differs
+# Raw, FULL cp -al clone of the whole root (mirrors the hardlink-clone mechanism any
+# worktree-provisioning consumer would use, invoked directly rather than through such a script)
+# -- deliberately NOT a selective per-file copy. A full hardlink clone gives root2 files with the
+# SAME content AND the SAME mtime as root1's (they are the same inode), so path is the ONLY thing
+# that differs
 # between the two trees' fingerprint pre-images. A selective `cp -r` of the non-.lake/ files
 # would reset their mtime to copy time, which would ALSO defeat sharing in stat mode -- for a
 # reason having nothing to do with path-embedding -- and silently make this case pass for the
