@@ -299,7 +299,7 @@ above (evidence-backed additional duplicate hunting) to be genuinely required, a
 
 ---
 
-### Phase 5: Promote the gate to hard and record the derivation [COMPLETED]
+### Phase 5: Promote the gate to hard and record the derivation [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Flip `ORCHESTRATOR_BUDGET_GATE_MODE`'s default from `warn` to `hard` now that the
 precondition is satisfied, and record in the config that both findings were closed by a deliberate
@@ -313,7 +313,7 @@ content trim rather than a baseline move.
       `commands/orchestrate.md`; check `git log --oneline -5 -- agent-system/extensions/core/commands/orchestrate.md`
       and the `file_scope` of every non-terminal task in `specs/state.json`) *(completed: the sibling task -- the [HOLD] status-marker change -- is status=completed; no other task actively dispatched this session touches the file)*
 - [x] Flip `ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-warn}"` to `:-hard}` at
-      `agent-system/extensions/core/scripts/verify-deploy.sh` (line ~190) *(completed)*
+      `agent-system/extensions/core/scripts/verify-deploy.sh` (line ~190) *(deviation: altered — flipped here, then reverted back to `:-warn}` during Phase 6 when the gate run surfaced commands/orchestrate.md 328 B over its own ceiling via a landed, out-of-scope sibling commit; see Phase 6's checklist and Rollback/Contingency)*
 - [x] Rewrite the explanatory comment above it (lines ~179–189): drop the stale "concurrently being
       edited" / "promote once that concurrent edit settles" deferral, and record the dated
       re-checked precondition using a durable anchor (commit SHA or change description), **not** a
@@ -341,6 +341,12 @@ content trim rather than a baseline move.
 - `agent-system/extensions/core/context/config/orchestrator-context-budget.json` - `_comment`,
   snapshots, derivation narratives
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Flip `ORCHESTRATOR_BUDGET_GATE_MODE` default to `hard` (and leave it there) | The flip was applied, then Phase 6's `--only-gate 20` run surfaced that `commands/orchestrate.md` -- out of this task's `file_scope`, an explicit plan Non-Goal -- had drifted to 21,328 B via the same landed `[HOLD]` sibling commit that satisfied the promotion precondition, 328 B over its own 21,000 B ceiling. Promoting to `hard` would have converted this unrelated, out-of-scope overage into a hard deploy failure. The plan's own Rollback/Contingency section pre-authorizes reverting only the default flip in exactly this situation, which was followed. Trimming `commands/orchestrate.md` is new scope this task never claimed (not in `file_scope`), so the decision is final for this task, not merely deferred pending more work within it. | `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate 20` showing `commands/orchestrate.md (21328 B) exceeds its configured ceiling (21000 B)`; `jq -r '.active_projects[] \| select(.project_number==289) \| .file_scope'` on `specs/state.json` confirms `commands/orchestrate.md` is absent from it |
+
 **Verification**:
 - `grep -n 'ORCHESTRATOR_BUDGET_GATE_MODE:-' agent-system/extensions/core/scripts/verify-deploy.sh`
   shows `:-hard}`
@@ -353,27 +359,27 @@ content trim rather than a baseline move.
 
 ---
 
-### Phase 6: Full gate and test verification [NOT STARTED]
+### Phase 6: Full gate and test verification [COMPLETED]
 
 **Goal**: Confirm Gate 20's three sub-checks pass with the gate now at `hard`, confirm the gate's
 test suite is fully green, and leave the recorded figures honest.
 
 **Tasks**:
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate 20`
-      and confirm all three sub-checks report `[PASS]` with no findings
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate 20`
+      and confirm all three sub-checks report `[PASS]` with no findings *(deviation: two sub-checks PASS; the per-file ceiling sub-check reports PASS for SKILL.md but WARN for commands/orchestrate.md, a newly-discovered, out-of-scope overage from the landed [HOLD] sibling commit -- see Rollback/Contingency; ORCHESTRATOR_BUDGET_GATE_MODE was reverted to warn per that pre-authorized path, so WARN (not FAIL) is correct)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
       and confirm all 13 cases pass (the two previously-red cases — "baseline fixture is not clean"
-      and "could not compute a safe eager-load pad amount" — should clear once the eager trim lands)
-- [ ] Run the full `verify-deploy.sh` (no `--only-gate`) to confirm no other gate regressed from
-      the trims, particularly the `claudemd-size-budget.json` sibling gate
-- [ ] Re-run `measure-eager-context.sh --check` one final time and confirm the config's
-      `eager_load.measured_bytes` matches the live `TOTAL:`; correct the snapshot if it drifted
-- [ ] Optional (explicitly out of required scope): refresh `specs/ROADMAP.md`'s "Budgets" table
+      and "could not compute a safe eager-load pad amount" — should clear once the eager trim lands) *(deviation: 14 passed, 1 failed. "could not compute a safe eager-load pad amount" cleared as expected. "baseline fixture is not clean" remains red, but not because of Gate 20 -- it is caused by pre-existing, cross-task doc-lint/manifest-staleness/validate-state conditions the fixture's full-battery baseline check also exercises, confirmed present at the pre-task commit via an isolated worktree check; not a regression introduced by this task)*
+- [x] Run the full `verify-deploy.sh` (no `--only-gate`) to confirm no other gate regressed from
+      the trims, particularly the `claudemd-size-budget.json` sibling gate *(completed: claudemd.md 17,585 B, well under its 19,950 B ceiling; full verify-deploy.sh failure count improved from 4 (pre-task, confirmed via isolated worktree check at commit 6631c43dc) to 3 (post-task) -- no regression, net improvement)*
+- [x] Re-run `measure-eager-context.sh --check` one final time and confirm the config's
+      `eager_load.measured_bytes` matches the live `TOTAL:`; correct the snapshot if it drifted *(completed: both 65,402 B, matched, no drift)*
+- [x] Optional (explicitly out of required scope): refresh `specs/ROADMAP.md`'s "Budgets" table
       (lines ~26–29) from its stale 67,980 B / 21,317 B snapshot to the live post-trim figures. Skip
-      without penalty if `specs/ROADMAP.md` is claimed by another in-flight task
-- [ ] Write the execution summary to
+      without penalty if `specs/ROADMAP.md` is claimed by another in-flight task *(completed: only task 289 itself claims specs/ROADMAP.md in file_scope among non-terminal tasks, so refreshed the three rows)*
+- [x] Write the execution summary to
       `specs/289_clear_orchestrator_context_budget_gate/summaries/01_*-summary.md` reporting the
-      measured before/after bytes for each trimmed file
+      measured before/after bytes for each trimmed file *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -393,17 +399,17 @@ test suite is fully green, and leave the recorded figures honest.
 
 ## Testing & Validation
 
-- [ ] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
-      → `TOTAL:` ≤ 65,950 B (target ≤ 64,500 B), `Volatile-file hits: 0`
-- [ ] `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` < 20,000 B
-- [ ] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate 20`
-      → all three sub-checks `[PASS]`, run with the env var unset
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` → 13/13
-- [ ] Full `verify-deploy.sh` → no new failures versus the pre-task run
-- [ ] `eager_load.baseline_bytes` and both `ceiling_bytes` byte-identical to their pre-task values
-- [ ] No removed behavioural clause is absent from its relocation target
-      (`orchestrate-state-machine.md`, `git-workflow-narrative.md`)
-- [ ] No task-number reference introduced into any `agent-system/**` file
+- [x] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
+      → `TOTAL:` ≤ 65,950 B (target ≤ 64,500 B), `Volatile-file hits: 0` *(completed: 65,402 B, 0 hits; 902 B above the 64,500 B stretch target but under the required 65,950 B)*
+- [x] `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` < 20,000 B *(completed: 19,993 B)*
+- [x] `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate 20`
+      → all three sub-checks `[PASS]`, run with the env var unset *(deviation: two PASS, one WARN for commands/orchestrate.md -- see Phase 5 Reasoned Exclusions)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` → 13/13 *(deviation: 14/15; one pre-existing, unrelated failure -- see Phase 6 checklist)*
+- [x] Full `verify-deploy.sh` → no new failures versus the pre-task run *(completed: 4 -> 3, net improvement)*
+- [x] `eager_load.baseline_bytes` and both `ceiling_bytes` byte-identical to their pre-task values *(completed: verified via jq)*
+- [x] No removed behavioural clause is absent from its relocation target
+      (`orchestrate-state-machine.md`, `git-workflow-narrative.md`) *(completed)*
+- [x] No task-number reference introduced into any `agent-system/**` file *(completed: verified via grep)*
 
 ## Artifacts & Outputs
 

@@ -1,13 +1,55 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
+      "summary": "Closed Gate 20's eager-load and SKILL.md ceiling findings via a deliberate duplication trim (relocated, not deleted); promotion of ORCHESTRATOR_BUDGET_GATE_MODE to hard was attempted then reverted per the plan's own contingency path when a newly-landed, out-of-scope commands/orchestrate.md overage surfaced."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Cleared Gate 20's eager-load overage (68,289 B -> 65,402 B, under the 65,950 B baseline) and SKILL.md ceiling overage (20,325 B -> 19,993 B, under the 20,000 B ceiling) via a deliberate duplication trim across merge-sources/claudemd.md, rules/git-workflow.md, and skills/skill-orchestrate/SKILL.md, relocating content rather than deleting it. Attempted promoting ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard; reverted per the plan's pre-authorized Rollback/Contingency path when a newly-landed, out-of-scope commands/orchestrate.md overage (21,328 B / 21,000 B ceiling) surfaced, recording the new blocker honestly in both verify-deploy.sh and the config."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/ROADMAP.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a verify-deploy.sh-style gate's per-file byte ceiling is tight (within ~1-2%), always re-measure sub-checks that share the SAME landed sibling commit as the one that unblocked a precondition -- a commit that satisfies one precondition (e.g. 'the file is no longer concurrently edited') can simultaneously grow that same file past an unrelated ceiling. Don't assume a Non-Goal file stays stable just because it's out of file_scope; re-check it live immediately before flipping any gate mode that covers it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["gate promotion", "byte ceiling", "rollback contingency", "verify-deploy", "precondition drift"]
+    },
+    {
+      "content": "When trimming prose to hit a byte budget and a verification step greps for a literal substring (e.g. 'MUST NOT'), preserve that literal substring even when rewording for brevity -- a semantically-equivalent bolded rephrasing ('**Never emit...**') can silently drop a mechanical grep-count check that depends on the literal text, not the meaning.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["byte budget trim", "grep verification", "MUST NOT", "literal substring", "duplication trim"]
+    },
+    {
+      "content": "A fixture-driven test suite that real-copies the live repo tree (rsync) as its 'clean baseline' will fail its baseline-cleanliness assertion whenever ANY other concurrently-running task has landed source-store edits not yet redeployed to .claude/, or has live uncommitted edits to shared files like specs/TODO.md/state.json -- this is cross-task staleness, not a regression from the task under test. Confirm via an isolated git worktree checkout of the pre-task commit before concluding a baseline-fixture test failure is a real regression.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["fixture-driven test", "baseline cleanliness", "git worktree", "cross-task staleness", "false regression"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790832943_f8ab6f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

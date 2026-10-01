@@ -1,0 +1,34 @@
+{
+  "phase": 6,
+  "phase_name": "Full gate and test verification",
+  "started_at": "2026-10-01T06:45:00Z",
+  "last_updated": "2026-10-01T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run verify-deploy.sh --only-gate 20 and confirm three sub-checks PASS", "status": "done", "note": "eager-load and SKILL.md sub-checks PASS; the per-file ceiling sub-check is WARN (not FAIL) for commands/orchestrate.md due to a newly-discovered out-of-scope overage -- gate mode correctly reverted to warn per Rollback/Contingency", "files_touched": []},
+    {"id": 2, "description": "Run test-verify-deploy-context-budget.sh, confirm cases pass", "status": "done", "note": "14 passed, 1 failed (baseline fixture is not clean, caused by pre-existing cross-task conditions unrelated to Gate 20, confirmed present before this task started)", "files_touched": []},
+    {"id": 3, "description": "Run full verify-deploy.sh, confirm no regression", "status": "done", "note": "failure count improved 4 -> 3 (confirmed pre-task count via isolated git worktree at commit 6631c43dc)", "files_touched": []},
+    {"id": 4, "description": "Final eager-context re-measure and config sync check", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Optional: refresh ROADMAP.md Budgets table", "status": "done", "files_touched": ["specs/ROADMAP.md"]},
+    {"id": 6, "description": "Write execution summary", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "measurements": {
+    "pre_task_full_verify_deploy_failures": 4,
+    "post_task_full_verify_deploy_failures": 3,
+    "pre_task_failures_list": ["doc-lint", "manifest-driven-verification(9-findings)", "validate-state-deep", "gate20-eager-load-FAIL"],
+    "post_task_failures_list": ["doc-lint", "manifest-driven-verification(9-findings)", "validate-state-deep"],
+    "commands_orchestrate_md_bytes": 21328,
+    "commands_orchestrate_md_ceiling": 21000
+  },
+  "deviations": [
+    {
+      "task_id": "5",
+      "description": "Flip ORCHESTRATOR_BUDGET_GATE_MODE default from warn to hard",
+      "type": "altered",
+      "reason": "Re-verification before Phase 6's gate run surfaced that commands/orchestrate.md (out of this task's file_scope, an explicit Non-Goal) had drifted to 21,328 B via the landed [HOLD] status-marker sibling commit, 328 B over its 21,000 B ceiling. Flipping to hard would have converted this into a hard deploy failure. Followed the plan's own pre-authorized Rollback/Contingency path: reverted the default flip (kept at warn), kept the SKILL.md and eager-load trims and their config records (which stand on their own and are independently verified correct), and recorded the newly-surfaced blocker in both verify-deploy.sh's comment and the config's _comment and commands/orchestrate.md derivation.",
+      "annotation": "see Phase 5/6 checklist annotations and Rollback/Contingency section"
+    }
+  ]
+}

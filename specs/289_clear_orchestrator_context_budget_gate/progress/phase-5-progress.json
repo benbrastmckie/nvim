@@ -2,11 +2,11 @@
   "phase": 5,
   "phase_name": "Promote the gate to hard and record the derivation",
   "started_at": "2026-10-01T06:30:00Z",
-  "last_updated": "2026-10-01T06:40:00Z",
+  "last_updated": "2026-10-01T07:10:00Z",
   "objectives": [
     {"id": 1, "description": "Re-verify both gating measurements before editing anything", "status": "done", "note": "eager TOTAL 65,402 B <= 65,950 B; SKILL.md 19,993 B < 20,000 B", "files_touched": []},
     {"id": 2, "description": "Re-confirm the promotion precondition holds", "status": "done", "note": "task 293 (the HOLD status-marker change, the sibling that was editing commands/orchestrate.md) is status=completed in specs/state.json. Two other non-terminal tasks (263 planned, 273 not_started, 280 not_started) list commands/orchestrate.md or merge-sources/claudemd.md in file_scope but none is actively dispatched this session (sibling agent roster: impl-292-p5, impl-293 (already completed), plan-292, plan-293, research-292, research-293 -- none against 263/273/280)", "files_touched": []},
-    {"id": 3, "description": "Flip ORCHESTRATOR_BUDGET_GATE_MODE default to hard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Flip ORCHESTRATOR_BUDGET_GATE_MODE default to hard", "status": "done", "note": "EXCLUDED during Phase 6: flipped here, then reverted back to warn when the gate run surfaced commands/orchestrate.md 328 B over its own ceiling via the same landed sibling commit -- an out-of-scope, newly-discovered overage. Reverted per the plan's own Rollback/Contingency path. See the plan's Phase 5 #### Reasoned Exclusions record and phase-6-progress.json's deviations array.", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
     {"id": 4, "description": "Rewrite the explanatory comment with a durable anchor, not a task number", "status": "done", "note": "used 'the [HOLD] status-marker change' per the plan's own suggested durable anchor example", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
     {"id": 5, "description": "Mirror the change in the config's top-level _comment", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]},
     {"id": 6, "description": "Refresh SKILL.md and eager_load informational snapshots", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]},
