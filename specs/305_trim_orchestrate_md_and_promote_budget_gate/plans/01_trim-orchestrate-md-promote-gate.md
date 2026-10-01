@@ -135,12 +135,12 @@ destination doc no longer points back at the trimmed file as the fuller source.
 
 **Tasks**:
 
-- [ ] Read the three destination sections in full before cutting anything:
+- [x] Read the three destination sections in full before cutting anything:
       `## The \`needs_research\` Fork (the \`--fast\` Escape Hatch)` (~line 75),
       `### Forced Phases on a Terminal or Archived Task` (~line 752), and
       `### Dependency Gating Model` (~line 720) of
-      `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`.
-- [ ] Clause-by-clause coverage check (constraint (b)): for each of the five source spots, confirm
+      `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`. *(completed)*
+- [x] Clause-by-clause coverage check (constraint (b)): for each of the five source spots, confirm
       each distinct assertion has a home in the destination. The assertions to account for are:
       `--fast` skips the default research-first phase for a `not_started` task; the planner can
       still route back via `needs_research`; `--hard` does not skip research; `--research` forces
@@ -154,25 +154,26 @@ destination doc no longer points back at the trimmed file as the fuller source.
       mode via `scripts/orchestrate-cycle-plan.sh`'s `--force-phases`; each task stops rather than
       falling through to status-derived classification once its forced sequence is exhausted, with
       a `blocked[]` row naming the reason. Any assertion WITHOUT a destination home is kept in the
-      source file (or added to the destination first), never silently dropped.
-- [ ] Replace the four Options table rows (`--fast`, `--research`, `--plan`, `--implement`) with
+      source file (or added to the destination first), never silently dropped. *(completed: all
+      assertions confirmed present in the three destination sections)*
+- [x] Replace the four Options table rows (`--fast`, `--research`, `--plan`, `--implement`) with
       short summaries plus a pointer to the named destination sections, preserving the
       `| flag | description | false |` table shape and the surrounding row order. The
       byte-measured draft in the research report's "Drafted replacement text" block is a usable
-      starting point, not a mandate.
-- [ ] Replace the forced-phase Constraints bullet (currently lines 28-37) with the short
+      starting point, not a mandate. *(completed)*
+- [x] Replace the forced-phase Constraints bullet (currently lines 28-37) with the short
       summary-plus-pointer form, keeping the multi-task `--force-phases` mechanism named and the
       artifact-keyed-admission distinction intact (both are operationally load-bearing one-liners,
-      not restatement).
-- [ ] Re-measure: `wc -c agent-system/extensions/core/commands/orchestrate.md`. If the result is
+      not restatement). *(completed)*
+- [x] Re-measure: `wc -c agent-system/extensions/core/commands/orchestrate.md`. If the result is
       above 20,500 B, continue trimming restatement in the same five spots (never the STAGE 0
-      bash block) until it is at or below that figure.
-- [ ] Commit this sub-step.
-- [ ] Reciprocity fix: in `docs/architecture/orchestrate-state-machine.md`, drop or reword the two
+      bash block) until it is at or below that figure. *(completed: 19,024 B)*
+- [x] Commit this sub-step. *(completed)*
+- [x] Reciprocity fix: in `docs/architecture/orchestrate-state-machine.md`, drop or reword the two
       backward sentences (~lines 754 and 767, "See `commands/orchestrate.md`'s Options table for
       the full per-flag wording") so the doc reads as self-sufficient long-form rather than
-      deferring to a now-short summary.
-- [ ] Commit this sub-step.
+      deferring to a now-short summary. *(completed)*
+- [x] Commit this sub-step. *(completed)*
 
 **Timing**: 1.25 hours
 

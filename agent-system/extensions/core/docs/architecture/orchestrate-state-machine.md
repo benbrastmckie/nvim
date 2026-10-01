@@ -751,8 +751,8 @@ If a predecessor is still in-progress (e.g., `researched`, `planned`), the depen
 
 ### Forced Phases on a Terminal or Archived Task
 
-`--research`/`--plan`/`--implement` are the phase-forcing flags (see `commands/orchestrate.md`'s
-Options table). Ordinarily they matter only for a task that has already progressed past the named
+`--research`/`--plan`/`--implement` are the `/orchestrate` phase-forcing flags. Ordinarily they
+matter only for a task that has already progressed past the named
 phase; this section covers their behavior once that task is TERMINAL (`completed`/`abandoned`/
 `expanded`) -- including the case where `/todo` has already moved it out of `active_projects` and
 into `specs/archive/{NNN}_{slug}/`.
@@ -763,8 +763,9 @@ admitted too, but resolves to one of two agents depending on artifact state -- `
 when the task already has a plan (`plans/*.md` exists, producing a revision in the current round,
 same as `/revise`), or `planner-agent` otherwise. `--implement` is admitted ONLY when a plan
 artifact already exists; with no plan, the task is excluded via a `blocked[]` row with reason
-`"no plan artifact; run --plan first"` and nothing is dispatched for it. See
-`commands/orchestrate.md`'s Options table for the full per-flag wording.
+`"no plan artifact; run --plan first"` and nothing is dispatched for it. `commands/orchestrate.md`'s
+Options table carries only a short summary of each flag plus a pointer back to this section,
+which is the authoritative full contract.
 
 **Eligibility exemption, not a reordering.** The forced-phase exemption named in the Dependency
 Gating Model above is implemented as a per-task predicate (`task_has_forced_phase`) that guards
