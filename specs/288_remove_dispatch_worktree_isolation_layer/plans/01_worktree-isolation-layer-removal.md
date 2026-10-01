@@ -583,29 +583,29 @@ before accepting it as unrelated.
 
 ---
 
-### Phase 8: Delete the three files, the manifest entries, and the `.gitignore` block [NOT STARTED]
+### Phase 8: Delete the three files, the manifest entries, and the `.gitignore` block [COMPLETED]
 
 **Goal**: Perform the outright deletions once nothing references them, and remove the two retired
 runtime paths from version-control bookkeeping.
 
 **Tasks**:
 
-- [ ] Re-confirm zero remaining references before deleting:
+- [x] Re-confirm zero remaining references before deleting:
       `grep -rln "dispatch-worktree" agent-system/` should name only the three files about to be
       deleted plus `manifest.json`.
-- [ ] `git rm` the three files: `scripts/dispatch-worktree.sh` (670 lines),
+- [x] `git rm` the three files: `scripts/dispatch-worktree.sh` (670 lines),
       `scripts/tests/test-dispatch-worktree.sh` (661 lines),
       `scripts/tests/test-dispatch-isolation-fixture.sh` (471 lines).
-- [ ] `manifest.json`: remove the three file-listing entries — `"dispatch-worktree.sh"` (~line 94),
+- [x] `manifest.json`: remove the three file-listing entries — `"dispatch-worktree.sh"` (~line 94),
       `"tests/test-dispatch-worktree.sh"` (~line 199),
       `"tests/test-dispatch-isolation-fixture.sh"` (~line 200). Validate the file still parses
       (`jq . manifest.json >/dev/null`) and that no array is left with a trailing comma.
-- [ ] Repo-root `/home/benjamin/.config/nvim/.gitignore` (**not** the source store — this is a
+- [x] Repo-root `/home/benjamin/.config/nvim/.gitignore` (**not** the source store — this is a
       directly-tracked repository file, distinct from
       `agent-system/extensions/core/root-files/.gitignore`): delete the four-line comment block plus
       the `/.orchestrate-worktrees/` and `**/.worktree-registry/` patterns at ~lines 55–60. Leave the
       adjacent `**/.contention-manifest/` block and everything else untouched.
-- [ ] Confirm `grep -rn "dispatch-worktree\|orchestrate-worktrees\|worktree-registry" agent-system/ .gitignore`
+- [x] Confirm `grep -rn "dispatch-worktree\|orchestrate-worktrees\|worktree-registry" agent-system/ .gitignore`
       returns nothing.
 
 **Timing**: 0.5 hours

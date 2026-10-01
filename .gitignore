@@ -52,12 +52,6 @@
 **/.scope-lock/
 **/.sessions/
 **/.freshness-warn-streak.json
-# Per-dispatch git-worktree isolation (dispatch-worktree.sh): the worktree checkout itself is
-# root-scoped (every writer targets the repo root, never a per-task directory), while its
-# registry record lives under specs/. Neither has a freshness gate on read -- see
-# .claude/context/standards/orchestrator-runtime-files.md's Class Table for the full rationale.
-/.orchestrate-worktrees/
-**/.worktree-registry/
 # Contended-path manifest (orchestrate-cycle-plan.sh's build_contended_manifest, Option 3(ii)'s
 # cheap precondition): one file per session, overwritten every multi-task cycle. No freshness
 # gate on read -- see orchestrator-runtime-files.md's Class Table for the full rationale.
