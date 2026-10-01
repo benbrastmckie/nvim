@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Hoist and rename the build-heavy task_type array",
+  "started_at": "2026-09-30T00:00:00Z",
+  "last_updated": "2026-09-30T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Move array+predicate block above bucketing banner", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Rename WORKTREE_ISOLATED_TASK_TYPES to BUILD_HEAVY_TASK_TYPES", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Rewrite comment to state dual meaning", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add why-here/must-not-move-back note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Confirm 3 call sites untouched and downstream", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

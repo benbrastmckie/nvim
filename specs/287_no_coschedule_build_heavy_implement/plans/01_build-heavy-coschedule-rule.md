@@ -1,7 +1,7 @@
 # Implementation Plan: Task #287
 
 - **Task**: 287 - No co-schedule build-heavy implement (Mode 2 admission rule)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: `specs/decisions/worktree-isolation-removal-verdict.md` ("Mode 2 Ruling: an Admission Rule, Not a PATH Shim" — the specification, not re-openable)
 - **Research Inputs**: `specs/287_no_coschedule_build_heavy_implement/reports/01_build-heavy-coschedule-admission.md`
@@ -129,18 +129,18 @@ the acceptance gate over everything.
 
 ---
 
-### Phase 1: Hoist and rename the build-heavy task_type array [NOT STARTED]
+### Phase 1: Hoist and rename the build-heavy task_type array [COMPLETED]
 
 **Goal**: `BUILD_HEAVY_TASK_TYPES` and its single reader are defined *before* the bucketing loop,
 with no behavior change anywhere, so Phase 2 can call the predicate at all.
 
 **Tasks**:
 
-- [ ] Move the comment block + `WORKTREE_ISOLATED_TASK_TYPES=(...)` + `task_selected_for_worktree_isolation()` (currently lines ~1975-1993) to immediately **above** the `# ── Bucket eligible_tasks into dispatch-candidates / deferred / blocked / skip ──` banner at line 1784.
-- [ ] Rename the array identifier to `BUILD_HEAVY_TASK_TYPES` at both occurrences (its assignment and the `for candidate in "${...[@]}"` loop inside the predicate). Change nothing else about the predicate — not its name, not its signature, not its body logic.
-- [ ] Rewrite the block's leading comment to state the array's now-dual meaning: it drives (a) the pre-existing, unremoved worktree-isolation selection predicate and (b) the new build-heavy co-scheduling admission rule, and it is the single place a future extension adds its task_type.
-- [ ] Add to that comment an explicit note on **why the block lives here and must not be moved back down**: everything from line 749 through EOF is inside `orchestrate_cycle_plan_main`, so a nested definition is only registered when execution reaches it; a call from the bucketing loop to a predicate defined later returns 127, which an `if` guard swallows as a silent false.
-- [ ] Confirm the three existing call sites (originally lines 2205, 2427, 2594) are untouched and still downstream of the new definition position.
+- [x] Move the comment block + `WORKTREE_ISOLATED_TASK_TYPES=(...)` + `task_selected_for_worktree_isolation()` (currently lines ~1975-1993) to immediately **above** the `# ── Bucket eligible_tasks into dispatch-candidates / deferred / blocked / skip ──` banner at line 1784. *(completed)*
+- [x] Rename the array identifier to `BUILD_HEAVY_TASK_TYPES` at both occurrences (its assignment and the `for candidate in "${...[@]}"` loop inside the predicate). Change nothing else about the predicate — not its name, not its signature, not its body logic. *(completed)*
+- [x] Rewrite the block's leading comment to state the array's now-dual meaning: it drives (a) the pre-existing, unremoved worktree-isolation selection predicate and (b) the new build-heavy co-scheduling admission rule, and it is the single place a future extension adds its task_type. *(completed)*
+- [x] Add to that comment an explicit note on **why the block lives here and must not be moved back down**: everything from line 749 through EOF is inside `orchestrate_cycle_plan_main`, so a nested definition is only registered when execution reaches it; a call from the bucketing loop to a predicate defined later returns 127, which an `if` guard swallows as a silent false. *(completed)*
+- [x] Confirm the three existing call sites (originally lines 2205, 2427, 2594) are untouched and still downstream of the new definition position. *(completed: now at 2219, 2441, 2608, all downstream of definition at 1811)*
 
 **Timing**: 0.3 hours
 

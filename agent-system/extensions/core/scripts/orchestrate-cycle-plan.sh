@@ -1781,6 +1781,43 @@ else
 fi
 mt_save
 
+# ── Build-heavy task_type family (single array, single reader) -- this array now carries a DUAL
+# meaning: (a) it still drives the pre-existing, unremoved working-tree isolation selection
+# predicate immediately below (see context/patterns/batch-orchestration-guardrails.md's
+# "Working-Tree and Build Isolation Posture" section for that decision's full evidence, scoring,
+# and split verdict), and (b) it is the membership list for the NEW build-heavy co-scheduling
+# admission rule added inside the bucketing loop below (the Mode 2 ruling in
+# specs/decisions/worktree-isolation-removal-verdict.md: never dispatch two build-heavy implement
+# tasks in the same cycle). A future extension that needs either behavior adds its task_type to
+# this ONE array; nothing else changes.
+#
+# MUST STAY HOISTED HERE, above the bucketing loop below -- do not move this block back down to
+# its historical position near the lock-probe/row-builder call sites. Every line from
+# "orchestrate_cycle_plan_main() {" through EOF is the body of ONE function, invoked only on the
+# script's last line; a function definition nested inside that body is registered only when
+# execution actually reaches the `nested_fn() { ... }` statement. A call site earlier in the body
+# than this definition would hit "command not found" (exit 127), which an `if nested_fn ...;
+# then` guard silently swallows as a false branch under `set -euo pipefail` -- the predicate
+# would compile, shellcheck clean, and simply never fire. Keeping the definition above every call
+# site (the bucketing loop immediately below, plus the three pre-existing isolation call sites
+# further down this function) is what makes it callable at all.
+#
+# Selected: phase == "implement" AND the task's own task_type is in the lean4/cslib family (the
+# two REAL task_type string values that family covers -- "lean4" and "cslib" are each extensions'
+# own `task_type` manifest field; "lean4" additionally appears as a cslib `keyword_overrides`
+# alias for auto-detecting task_type at /task creation time, which is a DIFFERENT mechanism this
+# predicate does not touch or depend on). Every other phase (research/plan) and every other
+# task_type is unaffected by either consumer of this array.
+BUILD_HEAVY_TASK_TYPES=("lean4" "cslib")
+task_selected_for_worktree_isolation() {
+  local phase="$1" ttype="$2" candidate
+  [ "$phase" = "implement" ] || return 1
+  for candidate in "${BUILD_HEAVY_TASK_TYPES[@]}"; do
+    [ "$ttype" = "$candidate" ] && return 0
+  done
+  return 1
+}
+
 # ── Bucket eligible_tasks into dispatch-candidates / deferred / blocked / skip ───────────────────
 declare -a dispatch_candidates=()
 for t in "${eligible_tasks[@]}"; do
@@ -1967,29 +2004,6 @@ compose_focus() {
   else
     printf '%s' "$research_seg"
   fi
-}
-
-# ── Working-tree isolation selection predicate (dispatch-site wiring for the working-tree and
-# build isolation posture decision -- see context/patterns/batch-orchestration-guardrails.md's
-# "Working-Tree and Build Isolation Posture" section for the full evidence, scoring, and split
-# verdict this predicate implements). Kept as one small helper, called from both the --dry-run
-# row builder and the live per-task loop below, so the decision record and this code state the
-# predicate exactly once each rather than two independently-maintained copies.
-#
-# Selected: phase == "implement" AND the task's own task_type is in the lean4/cslib family
-# (the two REAL task_type string values that family covers -- "lean4" and "cslib" are each
-# extensions' own `task_type` manifest field; "lean4" additionally appears as a cslib
-# `keyword_overrides` alias for auto-detecting task_type at /task creation time, which is a
-# DIFFERENT mechanism this predicate does not touch or depend on). Every other phase
-# (research/plan) and every other task_type keeps the shared tree, unchanged.
-WORKTREE_ISOLATED_TASK_TYPES=("lean4" "cslib")
-task_selected_for_worktree_isolation() {
-  local phase="$1" ttype="$2" candidate
-  [ "$phase" = "implement" ] || return 1
-  for candidate in "${WORKTREE_ISOLATED_TASK_TYPES[@]}"; do
-    [ "$ttype" = "$candidate" ] && return 0
-  done
-  return 1
 }
 
 # ── Sibling territory (base mode AND hard mode; the task that carries concurrent-sibling
