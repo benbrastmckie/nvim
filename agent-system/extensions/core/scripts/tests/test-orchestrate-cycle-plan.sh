@@ -4086,104 +4086,19 @@ else
   fail "Arm E: expected status 'implementing' unchanged, got '$e_status'"
 fi
 
-# =====================================================================================================
-# Group 30: working-tree isolation dispatch-site wiring -- selection predicate (phase == implement
-# AND a lean4/cslib-family task_type), the two new dispatch[] row fields (isolation/worktree_path)
-# in BOTH modes, and deferral (never a shared-tree fallthrough) on a provision failure. See
-# context/patterns/batch-orchestration-guardrails.md's "Working-Tree and Build Isolation Posture"
-# section for the decision this predicate implements.
-# =====================================================================================================
-info "Group 30: working-tree isolation selection predicate, row fields, and provision-failure deferral"
-
-# Cases A-C run under --dry-run, WITHOUT ever staging a dispatch-worktree.sh stub in the fixture's
-# .claude/scripts/ tree -- matching Groups 1-3/6's own "no stubbing needed for dry-run" convention.
-# If the predicate's own "must provision nothing" contract were violated, the SUT would try to
-# exec a nonexistent script and fail loudly, rather than this suite silently passing.
-
-# Case A: phase == implement AND task_type == lean4 -- selected. isolation="worktree",
-# worktree_path stays null (nothing is ever provisioned under --dry-run).
-write_state <<'EOF'
-{
-  "active_projects": [
-    {"project_number": 3001, "project_name": "g30_lean_implement", "task_type": "lean4", "status": "implementing", "description": "predicate true case", "dependencies": [], "file_scope": []}
-  ]
-}
-EOF
-reset_lock_dirs
-run_sut --session g30a --dry-run -- 3001
-if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].isolation')" = "worktree" ] && [ "$(jqf '.dispatch[0].worktree_path')" = "null" ]; then
-  pass "Case A: lean4 implement candidate selected (isolation=worktree, worktree_path=null under --dry-run)"
-else
-  fail "Case A: expected isolation=worktree worktree_path=null; got exit=$LAST_EXIT stdout=$LAST_STDOUT stderr=$LAST_STDERR"
-fi
-
-# Case B: task_type == cslib but phase == plan (status researched, not implementing) -- NOT
-# selected despite the family task_type, because phase must also be implement.
-write_state <<'EOF'
-{
-  "active_projects": [
-    {"project_number": 3002, "project_name": "g30_cslib_plan", "task_type": "cslib", "status": "researched", "description": "predicate false: phase mismatch", "dependencies": [], "file_scope": []}
-  ]
-}
-EOF
-reset_lock_dirs
-run_sut --session g30b --dry-run -- 3002
-if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].isolation')" = "none" ] && [ "$(jqf '.dispatch[0].worktree_path')" = "null" ]; then
-  pass "Case B: cslib PLAN-phase candidate not selected (isolation=none) despite family task_type"
-else
-  fail "Case B: expected isolation=none worktree_path=null; got exit=$LAST_EXIT stdout=$LAST_STDOUT stderr=$LAST_STDERR"
-fi
-
-# Case C: phase == implement but task_type == general -- NOT selected (task_type not in family).
-write_state <<'EOF'
-{
-  "active_projects": [
-    {"project_number": 3003, "project_name": "g30_general_implement", "task_type": "general", "status": "implementing", "description": "predicate false: task_type mismatch", "dependencies": [], "file_scope": []}
-  ]
-}
-EOF
-reset_lock_dirs
-run_sut --session g30c --dry-run -- 3003
-if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].isolation')" = "none" ] && [ "$(jqf '.dispatch[0].worktree_path')" = "null" ]; then
-  pass "Case C: general implement candidate not selected (isolation=none, wrong task_type)"
-else
-  fail "Case C: expected isolation=none worktree_path=null; got exit=$LAST_EXIT stdout=$LAST_STDOUT stderr=$LAST_STDERR"
-fi
-
-# Cases D-F: LIVE path -- a lean4 candidate whose provision succeeds, a cslib candidate whose
-# provision FAILS (deferred, never falling through to a shared-tree dispatch), and a general
-# candidate that is never selected at all (dispatch-worktree.sh must never even be invoked for
-# it). Split across TWO live cycles (3004+3006, then 3005 alone) rather than one three-candidate
-# batch: the Mode 2 build-heavy co-scheduling admission rule added by this task now forbids
-# dispatching two build-heavy implement candidates (3004 lean4 + 3005 cslib) in the SAME cycle --
-# the original single-cycle shape would have 3005 deferred by that NEW rule before it ever reaches
-# the lock probe/provision step this fixture exists to exercise, silently losing Case E's coverage.
-# Splitting decouples this group's own concern (per-candidate isolation selection and
-# provision-failure handling) from Mode 2's cross-task concern (covered independently by Group 32),
-# while every original assertion below is preserved unchanged.
-WT_ARGV_LOG="$WORKDIR/g30-dispatch-worktree-argv.log"
-: > "$WT_ARGV_LOG"
-cat > "$WORKDIR/.claude/scripts/dispatch-worktree.sh" <<EOF
-#!/usr/bin/env bash
-echo "\$*" >> "$WT_ARGV_LOG"
-if [ "\$1" = "provision" ]; then
-  task_num="\$2"
-  if [ "\$task_num" = "3005" ]; then
-    echo "stub: simulated provision failure for candidate #3005" >&2
-    exit 84
-  fi
-  jq -n -c --arg p "/fake/.orchestrate-worktrees/\${task_num}-1" '{status:"provisioned", path: \$p}'
-  exit 0
-fi
-exit 0
-EOF
-chmod +x "$WORKDIR/.claude/scripts/dispatch-worktree.sh"
-
-G30_BUILD_ARGV_LOG="$WORKDIR/g30-build-dispatch-argv.log"
-: > "$G30_BUILD_ARGV_LOG"
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Shared setup for Groups 31-32: stage the orchestrate-build-dispatch.sh and update-task-status.sh
+# stubs once, reused by both groups below. (The per-dispatch working-tree isolation layer these
+# groups used to also exercise here -- its selection predicate, the dispatch[] row isolation/
+# worktree_path fields, and its own worktree-provisioning-script stub -- has been removed; see the
+# isolation-removal decision record under specs/decisions/. These two stubs are the only ones
+# Groups 31/32 still depend on.)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+SHARED_BUILD_ARGV_LOG="$WORKDIR/shared-build-dispatch-argv.log"
+: > "$SHARED_BUILD_ARGV_LOG"
 cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
-echo "\$*" >> "$G30_BUILD_ARGV_LOG"
+echo "\$*" >> "$SHARED_BUILD_ARGV_LOG"
 proj_num="\$1"; phase="\$2"
 jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
 EOF
@@ -4195,96 +4110,9 @@ exit 0
 EOF
 chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
 
-write_state <<'EOF'
-{
-  "active_projects": [
-    {"project_number": 3004, "project_name": "g30_lean_success", "task_type": "lean4", "status": "implementing", "description": "provision succeeds", "dependencies": [], "file_scope": []},
-    {"project_number": 3006, "project_name": "g30_general_untouched", "task_type": "general", "status": "implementing", "description": "not selected, dispatch-worktree.sh never invoked", "dependencies": [], "file_scope": []}
-  ]
-}
-EOF
-reset_lock_dirs
-run_sut --session g30live_df -- 3004 3006
-
-if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Cases D,F: SUT exits 0 for the isolated-success + unselected-candidate cycle"
-else
-  fail "Cases D,F: SUT exited $LAST_EXIT ($LAST_STDERR)"
-fi
-
-if [ "$(jqf '.dispatch | map(select(.task == 3004)) | length')" = "1" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3004) | .isolation')" = "worktree" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3004) | .worktree_path')" = "/fake/.orchestrate-worktrees/3004-1" ]; then
-  pass "Case D: lean4 candidate #3004 dispatches with isolation=worktree and the provisioned path"
-else
-  fail "Case D: candidate #3004 row wrong (stdout: $LAST_STDOUT)"
-fi
-
-if [ "$(jqf '.dispatch | map(select(.task == 3006)) | length')" = "1" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3006) | .isolation')" = "none" ] &&    [ "$(jqf '.dispatch[] | select(.task == 3006) | .worktree_path')" = "null" ]; then
-  pass "Case F: general candidate #3006 dispatches normally with isolation=none"
-else
-  fail "Case F: candidate #3006 row wrong (stdout: $LAST_STDOUT)"
-fi
-
-if ! grep -q '^provision 3006' "$WT_ARGV_LOG" 2>/dev/null; then
-  pass "Case F: dispatch-worktree.sh was NEVER invoked for the unselected candidate #3006"
-else
-  fail "Case F: dispatch-worktree.sh was invoked for #3006 despite it not being selected"
-fi
-
-if grep -q -- "--worktree /fake/.orchestrate-worktrees/3004-1" "$G30_BUILD_ARGV_LOG" 2>/dev/null; then
-  pass "Case D: orchestrate-build-dispatch.sh received --worktree with the provisioned path for #3004"
-else
-  fail "Case D: --worktree missing/wrong in orchestrate-build-dispatch.sh argv for #3004 (log: $(cat "$G30_BUILD_ARGV_LOG" 2>/dev/null))"
-fi
-
-if grep '^3006 implement' "$G30_BUILD_ARGV_LOG" 2>/dev/null | grep -q -- "--worktree"; then
-  fail "Case F: orchestrate-build-dispatch.sh unexpectedly received --worktree for unselected candidate #3006"
-else
-  pass "Case F: orchestrate-build-dispatch.sh received no --worktree flag for unselected candidate #3006"
-fi
-
-# Case E: a SEPARATE live cycle containing only the cslib provision-failure candidate -- kept out
-# of the 3004/3006 cycle above (see this block's header comment) so Mode 2's new one-build-heavy-
-# per-cycle rule cannot pre-empt it before the lock probe/provision step runs.
-write_state <<'EOF'
-{
-  "active_projects": [
-    {"project_number": 3005, "project_name": "g30_cslib_fail", "task_type": "cslib", "status": "implementing", "description": "provision fails", "dependencies": [], "file_scope": []}
-  ]
-}
-EOF
-reset_lock_dirs
-run_sut --session g30live_e -- 3005
-
-if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case E: SUT exits 0 despite the candidate's provision failure"
-else
-  fail "Case E: SUT exited $LAST_EXIT ($LAST_STDERR)"
-fi
-
-if [ "$(jqf '.dispatch | map(select(.task == 3005)) | length')" = "0" ] &&    [ "$(jqf '.deferred | map(select(.task == 3005)) | length')" = "1" ]; then
-  pass "Case E: cslib candidate #3005 (provision failure) is absent from dispatch, present in deferred"
-else
-  fail "Case E: candidate #3005 bucketing wrong (stdout: $LAST_STDOUT)"
-fi
-
-e_reason="$(jqf '.deferred[] | select(.task == 3005) | .reason')"
-if echo "$e_reason" | grep -qi "provision"; then
-  pass "Case E: deferred reason for #3005 names the provision failure, never a shared-tree fallthrough"
-else
-  fail "Case E: deferred reason for #3005 does not mention provision (reason: '$e_reason')"
-fi
-
-if ! grep -q '^3005 implement' "$G30_BUILD_ARGV_LOG" 2>/dev/null; then
-  pass "Case E: orchestrate-build-dispatch.sh was NEVER invoked for the deferred candidate #3005 (no shared-tree fallthrough)"
-else
-  fail "Case E: orchestrate-build-dispatch.sh was invoked for #3005 despite the provision failure -- shared-tree fallthrough regression"
-fi
-
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-# Group 31: contended-path manifest producer -- build_contended_manifest. Reuses Group 30's
-# already-active dispatch-worktree.sh/orchestrate-build-dispatch.sh/update-task-status.sh stubs
-# (persist in $WORKDIR/.claude/scripts/ from Group 30 above; every task number below avoids 3005,
-# the one number Group 30's dispatch-worktree.sh stub is coded to fail provision for).
+# Group 31: contended-path manifest producer -- build_contended_manifest. Reuses the shared
+# orchestrate-build-dispatch.sh/update-task-status.sh stubs staged immediately above.
 #
 # IMPORTANT DISCOVERY, recorded here so a future maintainer does not "fix" these fixtures back to
 # the plan's literal wording: orchestrate-batch-admit.sh's PRE-EXISTING in_batch file_scope
@@ -4436,14 +4264,25 @@ else
   fail "Case D: expected no manifest file for a single-task cycle, found: $(cat "$g31d_manifest" 2>/dev/null)"
 fi
 
-# Case E: a task selected for worktree isolation is excluded from contention entirely -- its
-# declared file_scope must not make an otherwise-solo sibling's path look contended. Uses the same
-# glob-vs-concrete shape as Case A (so both admit together) with the GLOB side isolated.
+# Case E: a former build-heavy (lean4) implement candidate's own declared file_scope now
+# PARTICIPATES in contention accounting -- the worktree-isolation exclusion that used to skip such
+# a candidate entirely (treating it as having "no shared working copy to contend over") is gone
+# under the shared-tree posture, and this is the correctness fix build_contended_manifest's own
+# header now documents. A concrete-vs-concrete overlap between the lean4 task and its sibling
+# cannot be exercised directly (admission's own PRE-EXISTING in_batch collision check -- see the
+# IMPORTANT DISCOVERY note above -- already defers one of any two same-cycle candidates whose
+# scopes are identical or in a directory relationship, before build_contended_manifest ever runs),
+# so this case keeps the admission-invisible glob pairing Case A already established (the only
+# live-reachable way to get two overlapping-scope candidates into the SAME cycle) but puts the
+# CONCRETE (non-glob) file on the lean4 side and the glob on its sibling -- the reverse of the
+# since-removed isolation case's arrangement. The assertion that matters is the concrete file row:
+# it must now list BOTH tasks, proving the lean4 candidate's own file_scope entry is no longer
+# skipped.
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 3108, "project_name": "g31_isolated", "task_type": "lean4", "status": "implementing", "description": "worktree-isolated implement candidate (glob side)", "dependencies": [], "file_scope": ["docs/shared2/*.md"]},
-    {"project_number": 3109, "project_name": "g31_shared2_solo", "task_type": "general", "status": "implementing", "description": "the glob would match this file, but the isolated sibling must not count", "dependencies": [], "file_scope": ["docs/shared2/file.md"]}
+    {"project_number": 3108, "project_name": "g31_lean_concrete", "task_type": "lean4", "status": "implementing", "description": "former build-heavy implement candidate, concrete file", "dependencies": [], "file_scope": ["docs/shared2/file.md"]},
+    {"project_number": 3109, "project_name": "g31_general_glob", "task_type": "general", "status": "implementing", "description": "sibling declares the glob the lean4 task's file matches", "dependencies": [], "file_scope": ["docs/shared2/*.md"]}
   ]
 }
 EOF
@@ -4451,20 +4290,27 @@ reset_lock_dirs
 run_sut --session g31e -- 3108 3109
 g31e_manifest="$MANIFEST_DIR/g31e.json"
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case E: SUT exits 0 with one isolated and one non-isolated candidate in the same cycle"
+  pass "Case E: SUT exits 0 with the former build-heavy candidate and its sibling in the same cycle"
 else
   fail "Case E: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 g31e_dispatched=$(jqf '.dispatch | length')
 if [ "$g31e_dispatched" = "2" ]; then
-  pass "Case E: both candidates still admit together (glob blind spot, independent of isolation)"
+  pass "Case E: both candidates admit together (glob blind spot, same mechanism as Case A)"
 else
   fail "Case E: expected both candidates admitted, got $g31e_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
-if [ ! -f "$g31e_manifest" ]; then
-  pass "Case E: the isolated task's file_scope is excluded from contention -- no manifest entry, no manifest file"
+e_concrete_row=$(jq -c '.contended[] | select(.path == "docs/shared2/file.md")' "$g31e_manifest" 2>/dev/null)
+if [ "$e_concrete_row" = '{"path":"docs/shared2/file.md","tasks":[3108,3109],"granularity":"file"}' ]; then
+  pass "Case E: the lean4 candidate's own concrete file_scope entry names BOTH tasks -- no longer excluded"
 else
-  fail "Case E: expected no manifest file (isolated task must be excluded), found: $(cat "$g31e_manifest" 2>/dev/null)"
+  fail "Case E: expected the lean4 task's concrete entry to name both tasks; got: $e_concrete_row (manifest: $(cat "$g31e_manifest" 2>/dev/null))"
+fi
+e_glob_row=$(jq -c '.contended[] | select(.path == "docs/shared2/*.md")' "$g31e_manifest" 2>/dev/null)
+if [ "$e_glob_row" = '{"path":"docs/shared2/*.md","tasks":[3108,3109],"granularity":"glob"}' ]; then
+  pass "Case E: the sibling's glob entry also names both tasks"
+else
+  fail "Case E: unexpected glob row: $e_glob_row"
 fi
 
 # Case F: --dry-run writes nothing, even for a 2-task cycle with a glob-vs-concrete pair that
@@ -4518,13 +4364,12 @@ fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 32: Mode 2 build-heavy co-scheduling admission -- never dispatch two build-heavy implement
-# tasks in the same cycle (specs/decisions/worktree-isolation-removal-verdict.md's "Mode 2 Ruling").
-# Reuses Group 30's dispatch-worktree.sh/orchestrate-build-dispatch.sh/update-task-status.sh stubs,
-# still live in $WORKDIR/.claude/scripts/ (Group 31's own header note confirms they persist this
-# far). Every fixture below declares "file_scope": [] (Group 30's safe pattern) so the PRE-EXISTING
-# in-batch file_scope_collision check can never be what fires here -- this group's new rule is, by
-# construction, the only thing that can produce these deferred rows. Project numbers avoid 3005,
-# the one number Group 30's dispatch-worktree.sh stub is coded to fail provision for.
+# tasks in the same cycle (the isolation-removal decision record under specs/decisions/, "Mode 2
+# Ruling"). Reuses the shared orchestrate-build-dispatch.sh/update-task-status.sh stubs staged
+# above Group 31, still live in $WORKDIR/.claude/scripts/. Every fixture below declares
+# "file_scope": [] so the PRE-EXISTING in-batch file_scope_collision check can never be what fires
+# here -- this group's own rule is, by construction, the only thing that can produce these
+# deferred rows.
 # =====================================================================================================
 info "Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heavy implement tasks per cycle)"
 

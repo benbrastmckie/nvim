@@ -462,7 +462,7 @@ confirm the trim size and the residual by `wc -c` after, not by this estimate.
 
 ---
 
-### Phase 6: `test-orchestrate-cycle-plan.sh` — Group 30 removal with stub preservation [NOT STARTED]
+### Phase 6: `test-orchestrate-cycle-plan.sh` — Group 30 removal with stub preservation [COMPLETED]
 
 **Goal**: Remove the worktree-isolation test coverage without stranding the two surviving groups
 that reuse Group 30's non-worktree stubs, and replace the deleted exclusion test with a positive
@@ -470,35 +470,35 @@ test of the corrected contention behavior.
 
 **Tasks**:
 
-- [ ] **Before deleting anything**, extract Group 30's two non-worktree stub-staging blocks — the
+- [x] **Before deleting anything**, extract Group 30's two non-worktree stub-staging blocks — the
       `orchestrate-build-dispatch.sh` stub with its `G30_BUILD_ARGV_LOG` (~lines 4182–4190) and the
       `update-task-status.sh` stub (~lines 4192–4196) — into a retained, clearly-labelled shared
       setup block positioned where Group 30 was, immediately above Group 31. Groups 31 and 32 both
       document that they reuse these persisting stubs; without this step both break. Rename the log
       variable to something not tied to a deleted group (e.g. `SHARED_BUILD_ARGV_LOG`) and update
       every surviving reference.
-- [ ] Delete Group 30 in full (~lines 4090–4282): its banner and header comment, Cases A/B/C
+- [x] Delete Group 30 in full (~lines 4090–4282): its banner and header comment, Cases A/B/C
       (dry-run selection predicate), the inline `dispatch-worktree.sh` stub heredoc and
       `WT_ARGV_LOG` (~lines 4164–4180), Cases D/F (live provisioning and `--worktree` argv
       assertions), and Case E (provision-failure deferral).
-- [ ] Rewrite Group 31's header comment (~lines 4284–4288) so it references the new shared setup
+- [x] Rewrite Group 31's header comment (~lines 4284–4288) so it references the new shared setup
       block instead of "Group 30's already-active dispatch-worktree.sh/... stubs", and drop the
       "every task number below avoids 3005, the one number Group 30's dispatch-worktree.sh stub is
       coded to fail provision for" caveat, which no longer applies.
-- [ ] Delete Group 31 Case E (~lines 4439–4465), which asserts the now-removed — and now incorrect —
+- [x] Delete Group 31 Case E (~lines 4439–4465), which asserts the now-removed — and now incorrect —
       exclusion of an isolated task from contention.
-- [ ] **Add a replacement case** in its place asserting the corrected behavior: a `lean4` `implement`
+- [x] **Add a replacement case** in its place asserting the corrected behavior: a `lean4` `implement`
       candidate's declared `file_scope` now **does** participate in contention accounting. Use a
       concrete-vs-concrete overlapping pair (not the glob-vs-concrete shape the deleted case used)
       so the pre-existing glob blind spot documented in Group 31's own header cannot mask the
       result, and assert the manifest file is written and names both tasks. Derive the exact expected
       manifest shape by running the fixture, not by assumption.
-- [ ] Rewrite Group 32's header comment (~lines 4520–4528): it currently says it "reuses Group 30's
+- [x] Rewrite Group 32's header comment (~lines 4520–4528): it currently says it "reuses Group 30's
       dispatch-worktree.sh/orchestrate-build-dispatch.sh/update-task-status.sh stubs" and repeats
       the 3005 caveat. Point it at the new shared setup block and drop the worktree framing. Group
       32's assertion bodies need no change (verified: they never reference worktrees, and every
       fixture already declares `"file_scope": []`).
-- [ ] Grep the file for `worktree`, `isolation`, `WT_ARGV_LOG`, `G30_` — expect zero hits apart from
+- [x] Grep the file for `worktree`, `isolation`, `WT_ARGV_LOG`, `G30_` — expect zero hits apart from
       the suite's own unrelated sandbox-isolation naming, if any; confirm each remaining hit is
       unrelated before accepting it.
 
