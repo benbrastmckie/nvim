@@ -6,7 +6,7 @@
       "project_number": 288,
       "project_name": "remove_dispatch_worktree_isolation_layer",
       "title": "Remove the per-dispatch worktree isolation layer and unwire every caller",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -47,7 +47,7 @@
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "created": "2026-09-30T23:59:02Z",
-      "last_updated": "2026-10-01T01:43:48Z",
+      "last_updated": "2026-10-01T01:43:57Z",
       "session_id": "sess_1790813213_9179fb",
       "artifacts": [
         {
@@ -59,9 +59,15 @@
           "path": "specs/288_remove_dispatch_worktree_isolation_layer/plans/01_worktree-isolation-layer-removal.md",
           "type": "plan",
           "summary": "9-phase, 5-wave removal plan: predicate rename-and-narrow, two correctness fixes, four test-suite reconciliations, three outright deletions, and post-removal gate re-measurement."
+        },
+        {
+          "path": "specs/288_remove_dispatch_worktree_isolation_layer/summaries/01_worktree-isolation-layer-removal-summary.md",
+          "type": "summary",
+          "summary": "All 9 plan phases completed: dispatch-worktree.sh and its two test files deleted outright, every live caller unwired, two correctness fixes landed, both byte-budget gates re-measured and reported, and the full shell harness shows zero NEW failures attributable to this removal."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Removed the per-dispatch git-worktree isolation layer (dispatch-worktree.sh and its two test files) and unwired every caller across the source store; renamed and narrowed the build-heavy selection predicate to its one surviving co-scheduling call site; fixed the contention-manifest false negative; reconciled five affected test suites (all green); re-measured both byte-budget gates with honest numbers (SKILL.md 20,325 B, still 325 B over ceiling; eager-load unchanged at 67,980 B, confirmed untouchable by this task)."
     },
     {
       "project_number": 287,

@@ -37,22 +37,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/288_remove_dispatch_worktree_isolation_layer/summaries/01_worktree-isolation-layer-removal-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "orchestrate-batch-admit", "glob blind spot", "contention manifest", "test fixture design"]
+      "suggested_keywords": [
+        "file_scope",
+        "orchestrate-batch-admit",
+        "glob blind spot",
+        "contention manifest",
+        "test fixture design"
+      ]
     },
     {
       "content": "A background harness run started before a file edit lands can observe transient mid-edit state and produce a spurious failure (e.g. an unbound-variable error from a half-completed removal). Treat a baseline captured concurrently with ongoing edits as contaminated and not authoritative; re-run the full harness only after all edits for the unit of work are committed, and use that clean run as the comparison point instead.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/288_remove_dispatch_worktree_isolation_layer/summaries/01_worktree-isolation-layer-removal-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test harness", "baseline contamination", "concurrent edits", "verification timing"]
+      "suggested_keywords": [
+        "test harness",
+        "baseline contamination",
+        "concurrent edits",
+        "verification timing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790813213_9179fb",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 9,
     "phases_total": 9
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
