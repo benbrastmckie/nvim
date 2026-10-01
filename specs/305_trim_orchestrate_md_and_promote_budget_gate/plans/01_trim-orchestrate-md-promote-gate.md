@@ -209,7 +209,7 @@ measured `wc -c` result being <= 20,500 B, not the estimate matching.
 
 ---
 
-### Phase 2: Promote `ORCHESTRATOR_BUDGET_GATE_MODE` from warn to hard [IN PROGRESS]
+### Phase 2: Promote `ORCHESTRATOR_BUDGET_GATE_MODE` from warn to hard [COMPLETED]
 
 **Goal**: Gate 20's per-file ceiling sub-check defaults to `fail()` severity, with its dated
 comment block narrating the successful promotion instead of the deferred attempt.
@@ -260,32 +260,33 @@ comment block narrating the successful promotion instead of the deferred attempt
 
 ---
 
-### Phase 3: Refresh the measurement and narrative record [NOT STARTED]
+### Phase 3: Refresh the measurement and narrative record [IN PROGRESS]
 
 **Goal**: No file in the repo still claims the `commands/orchestrate.md` overage is open or that
 the gate promotion is pending.
 
 **Tasks**:
 
-- [ ] In `agent-system/extensions/core/context/config/orchestrator-context-budget.json`, update
+- [x] In `agent-system/extensions/core/context/config/orchestrator-context-budget.json`, update
       the `files["commands/orchestrate.md"]` entry: `measured_bytes` to the figure actually
       measured in Phase 1, `measured_at` to the implementation date, and extend `derivation` with
       a dated sentence recording the restatement trim that closed the overage. Leave
-      `ceiling_bytes` at 21000 untouched (constraint (a)).
-- [ ] Update the same file's top-level `_comment`: replace the "ORCHESTRATOR_BUDGET_GATE_MODE
+      `ceiling_bytes` at 21000 untouched (constraint (a)). *(completed: measured_bytes 19024)*
+- [x] Update the same file's top-level `_comment`: replace the "ORCHESTRATOR_BUDGET_GATE_MODE
       therefore remains warn-tier pending a follow-up trim of commands/orchestrate.md" narrative
       with a dated record of the completed promotion. Leave `eager_load.baseline_bytes` and its
-      fixed-historical-record note untouched.
-- [ ] Optionally refresh `files["skills/skill-orchestrate/SKILL.md"]`'s `measured_bytes`/
+      fixed-historical-record note untouched. *(completed)*
+- [x] Optionally refresh `files["skills/skill-orchestrate/SKILL.md"]`'s `measured_bytes`/
       `measured_at` if it drifted (informational snapshots, explicitly refreshable per the
-      config's own `_comment`); do not touch its `ceiling_bytes`.
-- [ ] `jq -e '.files["commands/orchestrate.md"].ceiling_bytes == 21000 and .eager_load.baseline_bytes != null'`
-      on the edited config to confirm valid JSON and unmoved limits.
-- [ ] Update `specs/ROADMAP.md` line ~29's status row for `commands/orchestrate.md`: replace the
+      config's own `_comment`); do not touch its `ceiling_bytes`. *(completed: no drift, already
+      19,993 B / 2026-10-01, left unchanged)*
+- [x] `jq -e '.files["commands/orchestrate.md"].ceiling_bytes == 21000 and .eager_load.baseline_bytes != null'`
+      on the edited config to confirm valid JSON and unmoved limits. *(completed: true)*
+- [x] Update `specs/ROADMAP.md` line ~29's status row for `commands/orchestrate.md`: replace the
       "328 B OVER (new)... blocks promoting `ORCHESTRATOR_BUDGET_GATE_MODE` to `hard`" text with
       the measured under-ceiling figure and a note that the promotion landed, matching the
-      closure phrasing already used by the adjacent eager-load and `SKILL.md` rows.
-- [ ] Commit this sub-step.
+      closure phrasing already used by the adjacent eager-load and `SKILL.md` rows. *(completed)*
+- [x] Commit this sub-step. *(completed)*
 
 **Timing**: 0.5 hours
 
