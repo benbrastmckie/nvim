@@ -1,19 +1,19 @@
 ---
-next_project_number: 286
+next_project_number: 289
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-09-30. Generated from state.json dependency graph.*
+*Updated 2026-10-01. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,276,281 | 22,44,127,184,241,265,272,277,279,280 | core-agent-system, extensions, orchestrator |
-| 3 | 170,273,282 | 184,250,251,271,281 | core-agent-system, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,286 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281,287 | 22,44,127,184,241,265,272,279,280,286 | core-agent-system, extensions, orchestrator |
+| 3 | 170,273,282,288 | 184,250,251,271,281,287 | core-agent-system, orchestrator |
 | 4 | 274 | 165,273,275 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -63,14 +63,128 @@ next_project_number: 286
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-277 [NOT STARTED] — git-commit-scoped.sh cannot commit inside a dispatch...
-  └─ 276 [NOT STARTED] — Stop releasing a dirty worktree on a nothingtoland verdict:...
+277 [NOT STARTED] — Make an unresolvable pathspec a hard error in...
 279 [PLANNED] — Reconcile state-schema.json with the live fields the...
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
+286 [NOT STARTED] — Revise the working-tree isolation posture to a blanket...
+  └─ 287 [NOT STARTED] — Refuse to co-schedule two build-heavy implement tasks in one...
+    └─ 288 [NOT STARTED] — Remove the per-dispatch worktree isolation layer and unwire...
 
 ## Tasks
+
+### 288. Remove the per-dispatch worktree isolation layer and unwire every caller
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 286, Task 287
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy tree -- see rules/source-store-deploy-boundary.md).
+
+Read specs/decisions/worktree-isolation-removal-verdict.md first. Its "Removal Footprint" table is this task's inventory; its verdict is not re-openable here.
+
+DO NOT START UNTIL BOTH PREREQUISITES HAVE LANDED. The co-scheduling admission rule closes build contention -- the one capability the shared tree does not inherit for free -- so removing this layer before that rule exists reintroduces the collision class the layer was partly adopted to close. The decision-record revision must land first so no document describes a mechanism that no longer exists.
+
+WHAT IS DELETED OUTRIGHT:
+  scripts/dispatch-worktree.sh                      (670 lines)
+  scripts/tests/test-dispatch-worktree.sh           (661 lines)
+  scripts/tests/test-dispatch-isolation-fixture.sh  (471 lines)
+
+WHAT IS UNWIRED. Roughly 228 references across 20 non-test files. The counts below are a starting inventory measured at task-creation time -- re-derive them before editing rather than trusting them:
+  scripts/orchestrate-cycle-plan.sh (36) -- task_selected_for_worktree_isolation() and both its
+    call sites, the provision block and its provision-failure deferred row, --worktree in
+    build_args, the isolation/worktree_path fields in BOTH the live and --dry-run row builders,
+    and the worktree-isolation exclusion inside build_contended_manifest(). CRITICAL: the
+    task_type array itself is NOT deleted -- the co-scheduling rule now owns and reads it.
+  scripts/orchestrate-cycle-postflight.sh (24) -- the entire WORK (f0) land/release/prune block,
+    the worktree_land_blocked / worktree_land_reason variables, and their consumer in the
+    implemented) status arm.
+  scripts/orchestrate-build-dispatch.sh (14) -- the --worktree flag and its rendering.
+  skills/skill-orchestrate/SKILL.md (4) -- the Move 2 MUST NOT forbidding isolation forwarding to
+    the Agent tool becomes moot once no dispatch row carries the field. Removing it reclaims bytes
+    against a ceiling this file is currently over.
+  scripts/lake-build-guard.sh (5) -- the cross-tree hazard notes and the no-hardlink-sharing family
+    convention. KEEP the convention itself as a standing rule for any future sibling guard; delete
+    only what names dispatch-worktree.sh as a live caller.
+  scripts/assess-repo-health.sh (3), scripts/skill-base.sh (1), scripts/backfill-file-scope.sh (1),
+    commands/todo.md (2), manifest.json (2), context/schemas/state-schema.json (1),
+    context/reference/state-management-schema.md (1), context/contracts/territory.md (1),
+    context/standards/orchestrator-runtime-files.md (3),
+    context/patterns/mcp-server-ownership.md (3),
+    docs/reference/utility-scripts-inventory.md (1),
+    docs/reference/standards/agent-frontmatter-standard.md (1),
+    docs/architecture/extension-system.md (1).
+  context/patterns/batch-orchestration-guardrails.md (18) is deliberately NOT in this task's
+    file_scope -- the decision-record revision owns that file and lands first.
+
+A DELETION THAT IS EXPECTED, NOT A LOSS. The lake-build-guard false-green task's phase 2 deliverable -- excluding the five ephemeral build-guard.* state files from the cp -al clone -- lives inside dispatch-worktree.sh and goes with it. That task's durable value is elsewhere (the guard's own header conventions, its recorded dead ends, and the cases it added to test-lake-build-guard.sh) and survives untouched. Do not treat the loss of the exclusion as a regression to re-implement somewhere else.
+
+REMOVE THE DERIVED HAZARD REASONING TOO, NOT JUST THE CODE. A provisioned worktree held a HEAD-stale tracked copy of specs/, which is why task artifacts had to be written to the main tree by absolute path and why any merge-back had to refuse a branch that touched specs/**. Where that appears as a LIVE constraint on present behavior, it goes; where it is the record of why a harness-level whole-repo isolation parameter was refused, keep it as history.
+
+VERIFICATION. specs/.worktree-registry/ and the provisioned-worktree root are runtime paths inventoried in context/standards/orchestrator-runtime-files.md -- reconcile that inventory rather than leaving orphaned entries. Confirm no surviving caller invokes a deleted subcommand (provision, path, land, release, prune), and in particular that orchestrate-cycle-postflight.sh no longer shells out to a missing script anywhere on the implement path. Run the full shell harness and compare against known-failures.txt rather than against zero.
+
+ACCEPTANCE. The three files are gone. No reference to dispatch-worktree.sh survives anywhere in the source store. A --dry-run cycle plan emits dispatch rows with no isolation or worktree_path fields. The shell harness shows no NEW failures against the recorded baseline. Deploy-freshness and context-budget gates are re-measured and the new numbers REPORTED -- this removal is expected to create headroom against both the SKILL.md ceiling and the eager-context baseline, so record what it actually produced rather than assuming. Shellcheck clean per context/standards/shell-strict-mode.md. No task-number references in deliverables outside specs/**.
+
+---
+
+### 287. Refuse to co-schedule two build-heavy implement tasks in one cycle
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 286
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh (never .claude/**, a disposable deploy tree).
+
+THIS IS THE BLOCKING PREREQUISITE FOR REMOVING WORKTREE ISOLATION. Read specs/decisions/worktree-isolation-removal-verdict.md first; its "Mode 2 Ruling: an Admission Rule, Not a PATH Shim" section is this task's specification and is not re-openable here.
+
+THE GAP BEING CLOSED. Of the three concurrency failure modes worktree isolation covered, declared file_scope covers two and structurally cannot cover the third. Mode 2 is build contention: no task declares .lake/ in its file_scope, so two build-heavy implement tasks with provably DISJOINT source footprints are admitted concurrently and then collide in one shared build directory. Removing isolation without closing this would trade three known defects for an unguarded build collision.
+
+THE RULE. Never dispatch two build-heavy implement tasks in the SAME cycle. One per cycle; the second defers to a later cycle exactly as a file_scope collision defers today -- deferred, never failed.
+
+WHAT "BUILD-HEAVY" MEANS, AND WHERE THE LIST COMES FROM. Reuse the task_type family the deleted selection predicate already named: WORKTREE_ISOLATED_TASK_TYPES=("lean4" "cslib"), currently declared in orchestrate-cycle-plan.sh as the input to task_selected_for_worktree_isolation(). That array SURVIVES its predicate, repurposed from "isolate this" to "do not co-schedule this". Rename it to state what it now means (e.g. BUILD_HEAVY_TASK_TYPES) and keep it a single array with a single reader, so a future extension adds its type in exactly one place. The removal task is explicitly instructed not to delete it.
+
+PHASE SCOPING. The rule is implement-phase-scoped, for the same reason the deleted predicate was: a research or plan dispatch does not build. Two build-heavy tasks in different phases may still be co-scheduled.
+
+PLACEMENT. The existing cycle-split layer already defers a task for file_scope overlap with an in-cycle sibling; this is the same shape of decision at the same point in the same function, so it belongs beside it rather than in a new pass. Emit it as its OWN named defer reason in the deferred[] row -- do not overload the file_scope collision reason, whose payload carries a colliding task number, status and overlapping path, all of which would be empty here. This is the same reason-shape argument the absent-file_scope admission work makes for its own new reason value. Surface the choice identically under --dry-run, byte-for-byte with the live path, matching how the deleted isolation decision was surfaced in both row builders.
+
+DELIBERATE NON-GOAL, RECORDED SO IT IS NOT READ AS AN OMISSION. This closes contention WITHIN an orchestration. A bare build-tool invocation from outside one -- an operator's own shell, or a script this system does not own and cannot edit -- still bypasses lake-build-guard.sh's opt-in lock. That is the PATH-shim wrapper's job; the decision record declines it for now with the residual named. Do not build a shim here, and do not widen this task to wire the guard into call sites.
+
+TESTS. agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh is the natural home. Cover: (i) two build-heavy implement candidates in one cycle produce one dispatch row plus one deferred row carrying the new reason; (ii) one build-heavy plus one ordinary implement candidate both dispatch, unchanged; (iii) two build-heavy candidates in different phases both dispatch, confirming the implement-phase scoping; (iv) --dry-run reports the identical decision to the live path.
+
+ACCEPTANCE. Rule implemented inside the existing cycle-split layer with its own defer reason documented in the script's header contract to the same standard as the existing reasons. The task_type array has one reader and a name that states its current meaning. Shellcheck clean per context/standards/shell-strict-mode.md. All four test cases pass and the wider harness shows no NEW failures against known-failures.txt. No task-number references in deliverables outside specs/**.
+
+---
+
+### 286. Revise the working-tree isolation posture to a blanket shared-tree verdict
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md (never .claude/**, a disposable deploy artifact regenerated by the loader -- see rules/source-store-deploy-boundary.md).
+
+THE RULING IS ALREADY MADE -- THIS TASK TRANSCRIBES IT, IT DOES NOT RE-OPEN IT. The verdict, its evidence, its declined alternative and its residuals are recorded in specs/decisions/worktree-isolation-removal-verdict.md. Read that record first and treat it as ground truth. Do not re-score the options; do not re-derive the failure modes.
+
+WHAT CHANGES. The "## Working-Tree and Build Isolation Posture" section currently records a SPLIT verdict: per-dispatch git-worktree isolation for implement-phase dispatches of the lean4/cslib family, shared tree plus contended-path commit refusal for everything else. Replace it with a BLANKET shared-tree verdict: every dispatch, every phase, every task_type runs in the repository's single working tree, and concurrency safety rests entirely on declared file_scope, dependency edges, and the five contention inputs already in service.
+
+WHAT MUST SURVIVE THE REWRITE, VERBATIM OR NEARLY SO -- these are measurements and taxonomy, not verdict, and re-deriving them later would be expensive:
+  - The three-failure-mode taxonomy (1a working-tree revert, 1b cross-task commit bleed, 2 build contention), including the "Why Mode 1b Is the Decisive Evidence" reasoning that explicit-path staging addresses over-staging and is insufficient against same-file concurrent dispatch.
+  - The full "Measurements That Informed the Verdict" block: worktree add at 0.09-0.2s; a 16 GiB hardlink clone at ~0.8s with disk movement on the order of 1 GiB; the verified atomic-rename/inode experiment; and the hunk-attribution infeasibility finding that rules out option 3(i).
+  - The scoring table, re-framed as history rather than deleted.
+
+WHAT MUST BE ADDED:
+  - An explicit statement that COST WAS NOT THE REASON, with the measurements cited as the proof. A future reader who re-runs those numbers must not conclude the decision was mistaken.
+  - The defect record: three defects, every one induced by the layer (destructive release on a nothing_to_land verdict; git-commit-scoped.sh's false-success inside a worktree; the lake-build-guard false green via the cp -al inode share). No defect of any other origin was ever recorded against that dispatch path.
+  - The structural argument, which outlives all three defects: atomic-rename rebindability is a PER-WRITER property, not a property of the clone -- a truncate-in-place writer never gets it -- so the exclusion list is a hand-maintained enumeration of named files, and every unrelated script that keeps mutable state under a cloned directory is a fresh instance of the same hazard. A layer whose correctness depends on the ongoing discipline of scripts that do not know it exists cannot be audited once and then trusted.
+  - The mode 2 ruling as a PRINCIPLE only: build contention is closed by refusing to co-schedule two build-heavy implement tasks in one cycle. This document states principles only, so the mechanism belongs in orchestrate-cycle-plan.sh's own header -- add the pointer to the "Related Documents" list and do not restate or implement the predicate here.
+  - The declined alternative, named rather than hidden: the PATH-shim wrapper is not adopted, and its residual (a bare build-tool invocation from outside an orchestration remains unguarded) is stated explicitly.
+
+WHAT THIS TASK MUST NOT DO. It must not delete dispatch-worktree.sh or unwire any caller -- that belongs to the removal task, which is sequenced after the co-scheduling rule lands. This task changes DOCUMENTATION ONLY. The "Deliberate Divergences" passage on script-provisioned-versus-harness isolation and the specs/-staleness argument describes a layer about to be deleted: mark it historical rather than silently dropping it, since it is the record of why a harness-level whole-repo isolation parameter was refused and that reasoning may be cited again.
+
+ACCEPTANCE. The section states one blanket verdict with no surviving selection predicate. Cost is explicitly disclaimed as the reason. All three defects and the structural argument are recorded. The measurements and taxonomy survive. The mode 2 principle is stated and its mechanism pointed at, not duplicated. The "Related Documents" list no longer presents dispatch-worktree.sh as a live mechanism. No task-number references in deliverables outside specs/**.
+
+---
 
 ### 285. Add the missing .decisions.json writer script and correct the postflight handoff-recovery notice
 - **Status**: [NOT STARTED]
@@ -727,71 +841,31 @@ FILE FOOTPRINT / COORDINATION NOTES (no hard dependency edges declared -- file_s
 
 ---
 
-### 277. git-commit-scoped.sh cannot commit inside a dispatch worktree: let the caller target one, and make an unresolvable pathspec a hard error
+### 277. Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 278
+- **Dependencies**: None
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**, a disposable deploy tree).
 
-VERIFIED IN THE SOURCE STORE. git-commit-scoped.sh -- the single sanctioned, mutex-serialized, path-scoped commit path used by every skill postflight -- cannot commit inside a dispatch worktree, and FAILS AS A FALSE NEGATIVE that reads as success to its caller.
+NARROWED. This task originally had two parts: (a) let the caller target a dispatch worktree, and (b) make an unresolvable pathspec a hard error. Part (a) was DROPPED when per-dispatch worktree isolation was removed -- see specs/decisions/worktree-isolation-removal-verdict.md, whose task disposition table records this narrowing. There is no worktree to target, so there is nothing to retarget. What remains is part (b), which is a genuine defect in its own right and is NOT worktree-specific: it is the mechanism that converts any wrong-path invocation, present or future, into a false success.
 
-THE MECHANISM. Near the top of the script: `PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"`, derived from `BASH_SOURCE[0]` and then used for the `cd`. The script therefore always operates on the MAIN tree regardless of the caller's cwd, and offers no flag to retarget: there is no `--repo-root` and no `--worktree` in its argument parser (verified by reading the parse loop; the only flags are `--message`, `--session`, `--honest-index-rows`, `--task`, and `--`).
+THE DEFECT. git-commit-scoped.sh is the single sanctioned, mutex-serialized, path-scoped commit path used by every skill postflight. When a pathspec resolves to nothing, the script WARNs and DROPS it: "git-commit-scoped.sh dropping unmatched pathspec '...' (no such file/directory on disk and not tracked by git); this path will NOT be part of the commit." A dropped pathspec is not an error and does not affect the exit status. If every pathspec drops, nothing stages, the script reaches "NOTE: Nothing to commit or git commit failed (non-blocking)" and returns SUCCESS. A caller sees a zero exit and no failure, and the work is simply not committed.
 
-Invoked from a dispatch worktree, the consequences compose into silence:
-- The worktree's new/modified files are not present at PROJECT_ROOT, so each pathspec falls through to the unmatched-pathspec branch, which WARNs and DROPS it: "git-commit-scoped.sh dropping unmatched pathspec '...' (no such file/directory on disk and not tracked by git); this path will NOT be part of the commit." A dropped pathspec is not an error and does not affect the exit status.
-- With every pathspec dropped there is nothing staged, so the script reaches "NOTE: Nothing to commit or git commit failed (non-blocking)" and returns success.
+WHY THIS STILL MATTERS WITH THE WORKTREE PATH GONE. The observed instance was a wrong-tree invocation, but the drop-and-continue posture is cause-agnostic: a typo'd path, a renamed artifact directory, a path built from an unset variable that expands to empty, or a future refactor that changes where artifacts land all degrade the same silent way. The historical evidence remains readable: during a multi-task orchestration in the BimodalLogic repository a dispatched agent hit this and fell back to a plain git commit with an explicit file list, producing a commit that LACKS its Co-Authored-By and Claude-Session trailers because the fallback path does not carry them. That missing-trailer commit is the durable fingerprint. Treat that repository as read-only evidence: land nothing there.
 
-A caller sees a zero exit and no failure. The work is simply not committed.
+THE DECISION PLANNING MUST SETTLE -- THIS IS THE WHOLE DIFFICULTY, NOT A DETAIL. Existing main-tree callers may be relying, knowingly or not, on drop-and-continue for pathspecs that legitimately do not exist yet: a postflight passing specs/ plus an artifact path that its phase did not produce is the canonical shape. Making the drop unconditionally fatal would break those callers. AUDIT EVERY CALL SITE FIRST, then choose between:
+  (a) distinguish "pathspec matched nothing but its parent directory exists" (tolerable -- an artifact a phase legitimately did not write) from "pathspec is outside the repository or its parent does not exist" (a hard error, because no legitimate caller can produce it);
+  (b) require callers to mark optional pathspecs explicitly, so an unmarked drop becomes fatal and the tolerated case is declared rather than inferred;
+  (c) make it fatal only when EVERY pathspec dropped, since the false-success failure mode requires a wholly empty stage.
+Rank these on how small and auditable the refusal surface is, and pin whichever is chosen as an explicit assertion so it cannot regress.
 
-OBSERVED EVIDENCE. During a multi-task /orchestrate run of task 703 in the BimodalLogic repository, a dispatched agent hit exactly this and fell back to a plain `git -C <worktree> commit` with an explicit file list. Commit b6f5c8c2e in that run consequently LACKS its `Co-Authored-By` and `Claude-Session` trailers, because the fallback path does not carry them. That missing-trailer commit is the durable fingerprint of this defect. Treat that repository as read-only evidence: land nothing there.
+HARD CONSTRAINT. This script is the sanctioned commit path for every ordinary skill postflight. The fix MUST NOT change its behavior for a caller whose pathspecs all resolve.
 
-PROPOSED FIX, two parts:
+TESTS. agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh already exists. Add cases for: (i) the chosen posture, pinned as an explicit assertion; (ii) a wholly-empty stage caused by every pathspec dropping no longer returning success; (iii) an existing legitimate partial-drop caller continuing to succeed, whichever option is chosen. Note that test-lint-scoped-commit-boundary.sh also constrains this script's boundary -- check it still passes.
 
-(a) Let the caller target a worktree. Either honor cwd when it resolves inside a REGISTERED worktree of the SAME repository (compare `git rev-parse --git-common-dir` / `--show-toplevel` against the main tree's, and refuse a cwd that resolves to an unrelated repo), or add an explicit `--repo-root` / `--worktree` flag, or both. Prefer whichever keeps the refusal surface small and auditable.
-
-(b) Make an unresolvable pathspec a HARD ERROR rather than a silent skip. The WARN-and-drop behavior is what converts a wrong-tree invocation into a false success; without (b), any future retargeting bug degrades the same silent way.
-
-HARD CONSTRAINT: this script is the sanctioned commit path for ordinary main-tree skill postflights. The fix MUST NOT change its behavior for those callers. In particular, (b) has a behavioral-compatibility question that planning must settle before implementation: existing main-tree callers may be relying, knowingly or not, on the drop-and-continue posture for pathspecs that legitimately do not exist yet (e.g. a postflight passing `specs/` plus an artifact path that a phase did not produce). Audit the call sites before making the drop fatal, and consider gating the hard error behind the new worktree-targeting mode, or distinguishing "pathspec matched nothing but its parent exists" from "pathspec is outside the repo".
-
-TESTS. agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh already exists. Add cases for: (i) invocation from inside a registered worktree commits into that worktree's branch and carries the trailers; (ii) invocation from an unrelated repository is refused rather than silently committing nothing; (iii) whatever posture (b) settles on, pinned as an explicit assertion so it cannot regress. Note that test-lint-scoped-commit-boundary.sh also constrains this script's boundary -- check it still passes.
-
-FILE FOOTPRINT / COORDINATION NOTES: git-commit-scoped.sh appears in NO other active task's declared file_scope, so this task has a clean footprint. Task 263 (consent-gated git push) concerns the adjacent push path and mentions this script in prose only; no edge declared.
-
----
-
-### 276. Stop releasing a dirty worktree on a nothing_to_land verdict: convert silent destruction of uncommitted work into a BLOCKED verdict
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: orchestrator
-- **Dependencies**: Task 277
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh and agent-system/extensions/core/scripts/dispatch-worktree.sh (never .claude/**, a disposable deploy tree).
-
-HIGHEST SEVERITY: SILENT DATA LOSS, VERIFIED IN THE SOURCE STORE. A dispatch that authored verified work but failed to commit it has that work destroyed, with no error raised anywhere.
-
-THE MECHANISM (both halves confirmed by reading the source, not the deployed copy):
-
-1. orchestrate-cycle-postflight.sh, in its `phase = "implement"` worktree-landing block, folds two verdicts into ONE success branch: `case "$land_verdict" in landed|nothing_to_land)`. That branch immediately runs `dispatch-worktree.sh release "$task_number"`, deleting the worktree.
-
-2. dispatch-worktree.sh `land` returns `nothing_to_land` from a pure BRANCH-ancestry test: `if git -C "$PROJECT_ROOT" merge-base --is-ancestor "$branch" HEAD` then `{verdict: "nothing_to_land", branch: $branch}` and return 0. It never inspects the worktree's working tree. UNCOMMITTED worktree content is therefore completely invisible to it -- a worktree whose branch never diverged from HEAD reports `nothing_to_land` no matter how much uncommitted verified work it holds.
-
-Composed: uncommitted work + a non-diverged branch => `nothing_to_land` => release => destroyed.
-
-OBSERVED EVIDENCE. During a multi-task /orchestrate run of task 703 in the BimodalLogic repository, this would have destroyed 456 verified, sorry-free, build-green Lean lines. It was caught ONLY because the orchestrator inspected the worktree by hand and committed before running postflight. Nothing in the system would have reported the loss. Treat that checkout as read-only evidence: land nothing there; it is a separate repository with its own task system.
-
-PROPOSED FIX. Before accepting a `nothing_to_land` verdict, check `git status --porcelain` in the worktree; if non-empty, emit a loud BLOCKED verdict that PRESERVES the branch and the worktree instead of releasing. Reuse the shape of the existing land-blocked path in the same file: the `conflict|refused_specs_paths|refused_dirty_overlap` branch sets `worktree_land_blocked=true` and a `worktree_land_reason`, and the `implemented)` status arm then sets `implemented_gate_passed=false`, performs NO state.json transition, and leaves the branch and worktree in place for human resolution. That is exactly the posture wanted here.
-
-Decide during planning WHERE the dirty check belongs. Preferred: inside `dispatch-worktree.sh land` itself, as a new verdict (e.g. `refused_dirty_uncommitted`) added to the blocked set that postflight already handles -- `land` owns the worktree knowledge, and every future caller then inherits the protection rather than each re-implementing it. The alternative (checking in postflight before the release call) protects only this one call site.
-
-WHY THIS FRAMING MATTERS: the fix must convert the whole failure CLASS from silent destruction into a visible block, whatever the cause of the missing commit. Do not narrow it to the one cause observed in this run. A missing commit can come from an agent that forgot, an agent that crashed, a commit path that silently no-oped (see the separately-tracked git-commit-scoped.sh worktree defect), or a harness refusal. All of them must block, not release.
-
-REGRESSION TEST. Add coverage under agent-system/extensions/core/scripts/tests/ (test-dispatch-worktree.sh already exists and is the natural home) for a DIRTY worktree whose branch IS already an ancestor of HEAD -- the precise combination that currently returns `nothing_to_land`. Assert the verdict is blocking and that the worktree still exists afterward.
-
-FILE FOOTPRINT / COORDINATION NOTES (one hard dependency edge declared: this task depends on the git-commit-scoped.sh worktree-targeting task, which itself depends on the Move 2 isolation-forwarding contract fix. That chain is deliberate -- the trigger closes first, then the commit path this fix attests to is repaired, then the destructive release branch is removed -- and file_scope overlap alone would not have ordered it, since the three footprints are disjoint. All other coordination below remains file_scope-driven serialization at admission):
-- orchestrate-cycle-postflight.sh also appears in the file_scope of tasks 184, 263 and 273.
-- dispatch-worktree.sh appears in NO other active task's declared file_scope, BUT task 268's fix (the lake-build-guard false-green replay, whose newly-identified mechanism is dispatch-worktree.sh's `cp -al` clone of .lake/) will touch this same file in its `provision` path. 268 currently has a null file_scope, so admission cannot see that overlap. The two edits are in different functions (`land`/release handling here vs. `provision`'s clone there), but whichever lands second should re-read the file.
+FILE FOOTPRINT / COORDINATION NOTES: git-commit-scoped.sh appears in no other active task's declared file_scope. The consent-gated-push work concerns the adjacent push path and mentions this script in prose only; no edge declared. The dependency edge on the Move 2 isolation-forwarding contract task was dropped together with part (a) -- it existed only because worktree targeting had to wait for that contract.
 
 ---
 

@@ -11,7 +11,7 @@ construction: it delegates, reads back compact verdicts, and asks the user only 
 genuinely the user's.
 
 What remains splits into six lanes: **restore the deploy gate to green** (blocking — see Next),
-**worktree dispatch integrity** (silent data loss — call 0), **push consent and admission posture**
+**collapse dispatch onto one shared working tree** (call 0), **push consent and admission posture**
 (call A), **cut per-invocation cost and clutter** (calls B and C), **finish the orchestrator's own
 operational surface** (queue, liveness, conclusion stage — call D), and **record-versioning policy
 plus two contract defects** (call E). Orthogonal to all six: the consumer repos have drifted badly
@@ -21,7 +21,7 @@ STALE.
 
 | Measure | Value | Bearing |
 |---|---|---|
-| Open tasks | **31** | Plus 7 `completed` awaiting `/todo` archive — run it before the next call, or they keep inflating every scope-overlap count below. `specs/archive/` holds 211 task directories |
+| Open tasks | **33** | Plus 7 `completed` awaiting `/todo` archive — run it before the next call, or they keep inflating every scope-overlap count below. `specs/archive/` holds 211 task directories |
 | `validate-state.sh --deep` | 18 passed, **2 warnings**, 0 failed | Both warnings are 270's two coarse `file_scope` entries; the broader one overlaps **23** non-terminal tasks. TODO.md is byte-identical to a regenerated one |
 | `verify-deploy.sh` | **FAIL — 3 of 33** | The Inter-Cycle Redeploy Checkpoint proceeds anyway on a `pre=N post=N new=0` baseline comparison, so a red tree does not stop a run — it masks whatever finding is genuinely new. See Next |
 | Eager context load | 67,980 B / baseline 65,950 | **2,030 B OVER.** Gate 20 fails outright, and it is *also* why `test-verify-deploy-context-budget.sh` is red — one fix clears both. 89 and 251 are the tasks that create room |
@@ -35,7 +35,7 @@ STALE.
 with a warning); `orchestrate-cycle-plan.sh` itself accepts any count, so a dry-run over more than
 8 is not evidence a call will run them.
 
-**Every open task is accounted for below**: 0 → 3 + A 4 + B 8 + C 4 + D 7 + E 5 = 31. If that sum
+**Every open task is accounted for below**: 0 → 5 + A 4 + B 8 + C 4 + D 7 + E 5 = 33. If that sum
 stops matching `state.json`, this file has drifted.
 
 ---
@@ -58,8 +58,19 @@ None of the three is fixable within the scope of any task listed below. File the
 (they share a single acceptance check: `verify-deploy.sh` returns 33 of 33) and run it before
 call A.
 
-**Call 0 outranks even that.** 276 is verified silent data loss in the worktree dispatch path —
-a dispatch that authored correct work can have it destroyed with no error raised.
+**The three red gates now come first.** The urgency that used to outrank them was the verified
+silent data loss in the worktree dispatch path; that defect is now closed by deleting its host
+rather than repairing it (see call 0 and
+`specs/decisions/worktree-isolation-removal-verdict.md`), so it no longer competes for first
+place.
+
+**Interim exposure, stated rather than assumed.** Abandoning the destructive-release fix does not
+make the hazard go away today — it defers protection to the removal landing. Until call 0's
+removal lands *and is deployed*, a `lean4`/`cslib` implement dispatch still provisions a worktree
+and still carries the `nothing_to_land` → release path. This repository is not exposed: all 33
+open tasks here are `meta`/`general`/`markdown`, so the selection predicate never fires. A
+consumer repo with Lean tasks is exposed. Until then, in such a repo: avoid build-heavy implement
+dispatches, or inspect the worktree and commit by hand before postflight runs.
 
 Then: **the consumer repos are STALE across the board.** If the next work touches a consumer, run
 `deploy-headless.sh` there before dispatching into it.
@@ -70,25 +81,39 @@ archive the 7 `completed` tasks still in `active_projects`, and commit or revert
 
 ---
 
-## Call 0 — worktree dispatch integrity and state schema (3)
+## Call 0 — collapse dispatch onto one shared working tree, and the state schema (5)
 
 ```
-/orchestrate 277, 276, 279
+/orchestrate 286, 287, 288
+/orchestrate 277, 279
 ```
 
-**This lane comes first.** Ordering is enforced by declared dependency edges (277 ← 276), not left
-to `file_scope` serialization — the footprints are disjoint, so admission alone would run them in
-parallel.
+**Two groups, and the first is a hard chain.** 286 ← 287 ← 288 on declared edges: the verdict is
+recorded before any mechanism changes, the build-contention replacement lands before the layer it
+replaces is deleted, and only then is the layer removed. Run it as one call and let the edges order
+it; 288's `file_scope` additionally overlaps 287's and 279's, so admission will serialize further
+on its own. The second pair is independent of the first and of each other.
+
+The ruling these tasks implement is recorded in
+`specs/decisions/worktree-isolation-removal-verdict.md` and is **not re-openable** by any of them.
+Short form: per-dispatch `git worktree` isolation is removed wholesale. Every defect ever recorded
+against that dispatch path was induced by it (destructive release on a `nothing_to_land` verdict;
+`git-commit-scoped.sh` false-success inside a worktree; the `lake-build-guard` false green via the
+`cp -al` inode share), and cost was *not* the reason — provisioning was measured cheap, at
+0.09–0.2 s to add and ~0.8 s to hardlink-clone a 16 GiB `.lake/`.
 
 | Task | What lands | Note |
 |---|---|---|
-| **277** | `git-commit-scoped.sh` cannot commit inside a dispatch worktree and fails as a **false negative that reads as success** to its caller: `PROJECT_ROOT` is derived from `BASH_SOURCE[0]`, so it always targets the main tree with no retarget flag | The single sanctioned commit path for every skill postflight. 276's fix is not trustworthy until this lands |
-| **276** | `orchestrate-cycle-postflight.sh` folds `landed` and `nothing_to_land` into one success branch, which then releases the worktree — so a dispatch that authored verified work but failed to commit it has that work destroyed silently | **HIGHEST SEVERITY: silent data loss.** Shares `dispatch-worktree.sh` with 268. **Depends on 277**; admits last |
-| **279** | State schema rejects live orchestration fields; decide the per-field policy and ship a migration tool if one is warranted | `planned`, needs only its implement phase. No edge: admits in cycle 0 beside 277. **Gates 271** (call D) |
+| **286** | Rewrite the isolation-posture decision record from a split verdict (worktree for `lean4`/`cslib` implement, shared tree for everything else) to one blanket shared-tree verdict | Documentation only — deletes no code. Must **preserve** the three-failure-mode taxonomy and the measurement block, and must state explicitly that cost was not the reason, so a future reader re-running those numbers does not read the decision as mistaken. Gates both others |
+| **287** | Refuse to co-schedule two build-heavy implement tasks in one cycle — the mode 2 (build contention) replacement, as its own named defer reason in the existing cycle-split layer | **Blocking prerequisite for 288.** `file_scope` cannot reach this hazard: nobody declares `.lake/`, so two tasks with disjoint source footprints still collide in one build directory. Reuses the `task_type` array the deleted predicate named, repurposed from "isolate this" to "do not co-schedule this". **Depends on 286** |
+| **288** | Delete `dispatch-worktree.sh` and its two test files (1,802 lines) and unwire ~228 references across 20 non-test files | **Depends on 286, 287.** Expected to create headroom against two currently-failing budgets (`SKILL.md` 1,317 B over its ceiling; eager load 2,030 B over baseline) — record what it actually produced rather than assuming. Also deletes the derived `specs/`-staleness hazard class outright |
+| **277** | Make an unresolvable pathspec a **hard error** in `git-commit-scoped.sh` instead of a silent WARN-and-drop | **Narrowed**: the worktree-targeting half was dropped with the layer, and with it the dependency edge. What remains is cause-agnostic — drop-and-continue turns a typo, an unset variable, or a renamed artifact path into a false success on the single sanctioned commit path. The difficulty is the call-site audit: a postflight legitimately passes artifact paths its phase did not produce |
+| **279** | State schema rejects live orchestration fields; decide the per-field policy and ship a migration tool if one is warranted | `planned`, needs only its implement phase. **Gates 271** (call D) |
 
-The consequence to know: **`/orchestrate 276` on its own stops with `no_eligible_stuck` and
-dispatches nothing.** Either run the lane as the one call above, or name the predecessor alongside
-it.
+**Abandoned from this lane:** the destructive-release fix (`nothing_to_land` folded into the
+success branch, then released). Its mechanism ceases to exist under the verdict, so it is closed
+by deletion rather than repair; the defect itself is recorded in the decision record as the
+highest-severity of the three that justified removal. See the interim-exposure note under Next.
 
 ---
 
@@ -152,7 +177,7 @@ dispatch the front group on their own.
 
 | Task | What lands | Note |
 |---|---|---|
-| **268** | Reproduce-first on the `lake-build-guard.sh` false green: the `scope_key` sharing condition that would prevent the replay is already implemented and predates the observation, so determine which candidate cause actually holds | Already `implementing`. `file_scope` includes `dispatch-worktree.sh`, so it serializes against 276 — take the cross-tree replay hypothesis with it |
+| **268** | Reproduce-first on the `lake-build-guard.sh` false green: the `scope_key` sharing condition that would prevent the replay is already implemented and predates the observation, so determine which candidate cause actually holds | Already `implementing`, and nearly done: phases 1–4 complete, only phase 5 (redeploy and final gate) remains. The cross-tree replay hypothesis was **confirmed** and is the root cause. Its phase-2 deliverable — excluding the five `build-guard.*` state files from the `cp -al` clone — lives inside the file 288 deletes and goes with it; that is expected, not a regression. The durable value (header conventions, recorded dead ends, new test cases) survives |
 | **270** | Re-runnable null-safety audit of jq mutation sites across core scripts; rule on a shared guard idiom in `scripts/lib/` | **`file_scope` is coarse** (`.../core/scripts/`, overlapping 23 non-terminal tasks) — narrow it or it will serialize against most of the backlog |
 | **271** | Finish the `parent_task` edge: declare in schema, validate, render in TODO, survive renumbering | After **279** (the per-field schema policy must land before another field is declared). Gates 273 |
 | **272** | Honest session liveness for concurrent same-repo batches: diagnose why the wired heartbeat never fires, add a live-but-stale lock state, re-derive registry scope, give each orchestration its own identity | No outstanding dependency. Pairs naturally with the runtime-sweep defect in observations |
@@ -241,7 +266,16 @@ let the edges order it. The second pair is independent of everything and cheap.
     changes which suites run, and deleting it only removes the EXPECTED/NEW annotation. Never keep
     a prose copy anywhere else — that is the drift mechanism, so `shell-script-testing.md` points
     here. A `needs-owner` row is a known gap, not an accepted steady state.
-14. **Gate 8's deployed-tree coverage is knowingly reduced** (accepted trade-off). The redeploy
+14. **One shared working tree, always.** Per-dispatch `git worktree` isolation is removed, not
+    narrowed — no selection predicate survives. Concurrency safety rests entirely on declared
+    `file_scope`, dependency edges, and the five contention inputs already in service. Build
+    contention, the one hazard `file_scope` cannot reach, is closed by refusing to co-schedule two
+    build-heavy implement tasks in one cycle (287), not by isolation and not by a PATH shim — the
+    shim is declined for now with its residual named. Cost was not the reason for removal and must
+    not be cited as it: provisioning was measured cheap. Full record, including the structural
+    argument that outlives the three individual defects:
+    `specs/decisions/worktree-isolation-removal-verdict.md`.
+15. **Gate 8's deployed-tree coverage is knowingly reduced** (accepted trade-off). The redeploy
     checkpoint runs `--skip-slow`, so the ~40 core suites that resolve their subject-under-test
     from the *deployed* tree are not verified against a fresh deploy there. Accepted on wall-clock
     grounds; the narrower fix — running only those ~40 suites post-redeploy — is a live follow-up,
