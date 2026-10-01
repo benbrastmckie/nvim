@@ -32,20 +32,36 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/292_task_count_reasoning_in_task_creation/summaries/01_task-count-reasoning-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["drift-check", "single-source-of-truth", "cross-reference", "documentation-wiring", "restatement"]
+      "suggested_keywords": [
+        "drift-check",
+        "single-source-of-truth",
+        "cross-reference",
+        "documentation-wiring",
+        "restatement"
+      ]
     },
     {
       "content": "This agent-system has two distinct, same-domain mechanisms that both produce task serialization from file_scope overlap: multi-task-creation-standard.md's Component 4a (creation-time, auto-adds a dependencies[] edge when proposed tasks' file_scope overlaps) and orchestrate-batch-admit.sh's dispatch-time 'file_scope_collision' admission gate (defers a candidate at /orchestrate dispatch time). They are easy to conflate when writing an illustrative example because both are triggered by the same overlapping file_scope and both result in serialization -- but they fire at different times (creation vs. dispatch) via different code paths. Name both explicitly when illustrating a file_scope-overlap scenario rather than attributing the effect to either one alone.",
       "category": "INSIGHT",
       "source_artifact": "specs/292_task_count_reasoning_in_task_creation/summaries/01_task-count-reasoning-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["file_scope_collision", "Component 4a", "orchestrate-batch-admit", "task-creation", "dispatch-admission"]
+      "suggested_keywords": [
+        "file_scope_collision",
+        "Component 4a",
+        "orchestrate-batch-admit",
+        "task-creation",
+        "dispatch-admission"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790826658_06dbd3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   }
 }
