@@ -36,3 +36,4 @@ Rules (both apply to `**/*.lean`): `lean4.md` — Lean 4 conventions and MCP too
 - `.claude/context/project/lean4/patterns/mcp-fallback-table.md` - MCP tool fallback strategies
 - `.claude/context/project/lean4/patterns/dependency-tracing.md` - Mechanically tracing declaration dependencies; why `#print axioms` cannot answer it
 - `.claude/context/project/lean4/tools/comparator-guide.md` - Comparator trust model: what a green result does and does not certify
+- `.claude/context/project/lean4/domain/metadata-trust-surfaces.md` - Trust surfaces of Lean metadata on v4.31.0: what extension rows are not checked by, the public extension and linter registries, and the verified command-kind table for a syntax-level refusal

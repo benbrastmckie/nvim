@@ -18,6 +18,7 @@ This directory contains context files for Lean 4 theorem prover development.
 - `domain/hard-mode.md` - `--hard` routing, hard-mode agents, and behavioral contracts
 - `tools/comparator-guide.md` - Comparator trust model: what a green result does and does not certify
 - `domain/decidability-provenance.md` - What the MSO/Rabin decidability argument may be cited for, and the finite-model vs finite-presentation distinction
+- `domain/metadata-trust-surfaces.md` - What an environment extension's rows can and cannot be trusted to record on v4.31.0: the public `persistentEnvExtensionsRef`/`lintersRef` registries, why `meta_imports` is not a trace, `getModuleEntries`' non-degrading `level`, and the verified API/command-kind tables
 
 ## For Research
 

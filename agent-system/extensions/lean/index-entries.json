@@ -779,6 +779,33 @@
       ]
     },
     {
+      "path": "project/lean4/domain/metadata-trust-surfaces.md",
+      "line_count": 194,
+      "load_when": {
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent",
+          "lean-research-hard-agent",
+          "lean-implementation-hard-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "What Lean 4 environment-extension metadata can and cannot be trusted to record on v4.31.0, with verified API and command-kind tables",
+      "keywords": [
+        "lean4",
+        "metaprogramming",
+        "environment-extension",
+        "trust",
+        "provenance",
+        "linter",
+        "olean-level"
+      ]
+    },
+    {
       "path": "project/lean4/domain/challenge-snapshot.md",
       "line_count": 188,
       "load_when": {
