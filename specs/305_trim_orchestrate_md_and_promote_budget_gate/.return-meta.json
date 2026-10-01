@@ -1,10 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/305_trim_orchestrate_md_and_promote_budget_gate/summaries/01_trim-orchestrate-md-promote-gate-summary.md",
+      "summary": "Trimmed commands/orchestrate.md from 21,328 B to 19,024 B, fixed destination-doc reciprocity, promoted ORCHESTRATOR_BUDGET_GATE_MODE to hard, refreshed the measurement/narrative record, and ran narrow Gate 20 verification (clean under hard mode)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the last open Gate 20 finding by trimming commands/orchestrate.md to 19,024 B (under its 21,000 B ceiling with headroom) while relocating duplicated detail behind pointers into orchestrate-state-machine.md, then promoted ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard in verify-deploy.sh. Gate 20 passes clean (0 findings, mode: hard, both per-file ceilings under) and the measurement/narrative record (orchestrator-context-budget.json, specs/ROADMAP.md) was refreshed to match."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "specs/ROADMAP.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a markdown doc (e.g. a /orchestrate command file) is trimmed to relocate duplicated detail behind a pointer into another doc, check BOTH directions of the cross-reference: the trimmed file's new short-form pointer to the fuller doc, AND the fuller doc's own pointers back at the trimmed file (e.g. 'see X's table for the full wording') -- the latter become backward/stale the moment the trim lands and must be dropped or reworded in the same change, or the two docs end up pointing at each other as each other's 'fuller' source.",
+      "category": "PATTERN",
+      "source_artifact": "specs/305_trim_orchestrate_md_and_promote_budget_gate/summaries/01_trim-orchestrate-md-promote-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["documentation-trim", "reciprocity", "cross-reference", "context-budget", "duplication"]
+    },
+    {
+      "content": "verify-deploy.sh's gate20 test fixture symlinks its FIXTURE/.claude to the REAL repo's .claude/ rather than copying it, so the baseline-fixture full-battery check can fail for reasons entirely unrelated to the gate under test (e.g. any source-store edit not yet deployed via deploy-headless.sh shows up as gate3/gate5 content-drift findings against the live .claude symlink). When a source-store-only task's own edits make the baseline-fixture check newly fail, run the optional deploy sync before concluding the suite is broken -- it is often the fastest way to confirm the new failure is deploy-staleness rather than a real regression, since the narrower --only-gate 20 check stays unaffected either way.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/305_trim_orchestrate_md_and_promote_budget_gate/summaries/01_trim-orchestrate-md-promote-gate-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verify-deploy", "gate20", "test-fixture", "deploy-staleness", "source-store"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790859334_f418e2",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

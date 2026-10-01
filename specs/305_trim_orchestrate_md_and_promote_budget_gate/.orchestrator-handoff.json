@@ -1,17 +1,19 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 305,
-  "session_id": "sess_1790859334_f418e2_305",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
+  "session_id": "sess_1790859334_f418e2",
+  "dispatch_seq": 3,
+  "phase": "implement",
+  "summary": "Trimmed commands/orchestrate.md from 21,328 B to 19,024 B (relocating duplicated detail behind pointers into orchestrate-state-machine.md) and promoted ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard; Gate 20 now passes clean under hard mode with both per-file ceilings under.",
+  "phases_completed": 4,
   "phases_total": 4,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/305_trim_orchestrate_md_and_promote_budget_gate/plans/01_trim-orchestrate-md-promote-gate.md",
-      "summary": "4-phase implementation plan for the orchestrate.md restatement trim and the budget-gate promotion to hard."
+      "type": "summary",
+      "path": "specs/305_trim_orchestrate_md_and_promote_budget_gate/summaries/01_trim-orchestrate-md-promote-gate-summary.md",
+      "summary": "Trimmed commands/orchestrate.md to 19,024 B, fixed destination-doc reciprocity, promoted ORCHESTRATOR_BUDGET_GATE_MODE to hard, refreshed the measurement/narrative record, and ran narrow Gate 20 verification (clean under hard mode)."
     }
   ],
-  "next_steps": "Run /implement 305 to execute the plan",
+  "next_steps": "None -- all four plan phases complete and verified. Task ready for postflight completion.",
   "blockers": []
 }
