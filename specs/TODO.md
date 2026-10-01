@@ -1,5 +1,5 @@
 ---
-next_project_number: 305
+next_project_number: 306
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 305
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,301 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,301,305 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302 | 22,44,127,184,241,265,272,279,280,297,300 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303 | 184,250,251,271,281 | core-agent-system, orchestrator |
 | 4 | 274,304 | 165,263,273,275,277,284,285 | orchestrator |
@@ -80,9 +80,20 @@ next_project_number: 305
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 301 [NOT STARTED] — Re-open the per-dispatch worktree isolation verdict: audit,...
+305 [NOT STARTED] — Trim agent-system/extensions/core/commands/orchestrate.md...
 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 
 ## Tasks
+
+### 305. Trim orchestrate md and promote budget gate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Trim agent-system/extensions/core/commands/orchestrate.md below its 21,000 B ceiling, then promote ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard. The file measures 21,328 B -- 328 B over -- and is the last open finding in verify-deploy Gate 20 (orchestrator context budget lock): the eager-load total (65,402 B / 65,950 B baseline) and skills/skill-orchestrate/SKILL.md (19,993 B / 20,000 B ceiling) were both brought under their limits by deliberate duplication trims, but the promotion was reverted because this file had concurrently grown past its own ceiling via the [HOLD] status-marker change's STAGE 0 documentation landing. The remedy is already on record in this file's derivation narrative inside agent-system/extensions/core/context/config/orchestrator-context-budget.json: a restatement trim of the Options table's --fast/--research/--plan/--implement rows and the forced-phase Constraints bullet, all of which duplicate docs/architecture/orchestrate-state-machine.md. Constraints: (a) do not move ceiling_bytes or baseline_bytes -- the config's own note requires any such move be deliberate, dated and reviewed, and the established remedy is content relocation behind a plain pointer; (b) verify every relocated clause is present in its non-eager destination before cutting the eager copy; (c) the file's ~10 KB STAGE 0 executable bash block is out of scope -- relocating it is a code-relocation change, not a documentation trim; (d) target headroom (~20,500 B) rather than the bare limit, since this file has been pushed over its ceiling by sibling commits three times in the growth history recorded in the config. Close by flipping ORCHESTRATOR_BUDGET_GATE_MODE to hard in the same change and confirming Gate 20 plus its 13-case test suite (scripts/tests/test-verify-deploy-context-budget.sh) pass.
+
+---
 
 ### 304. Stop one out-of-repository pathspec entry from aborting staging for every valid path while the task still reports success
 - **Effort**: 1-3 hours

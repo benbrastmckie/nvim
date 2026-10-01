@@ -1,7 +1,7 @@
 # Implementation Plan: Task #289
 
 - **Task**: 289 - Clear orchestrator context budget gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.75 hours
 - **Dependencies**: None (the sibling task that last edited `commands/orchestrate.md` has landed)
 - **Research Inputs**: specs/289_clear_orchestrator_context_budget_gate/reports/01_context-budget-gate-trim.md

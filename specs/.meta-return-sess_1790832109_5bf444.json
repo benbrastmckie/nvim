@@ -1,0 +1,42 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 tasks: 302 (replace bare `-- specs/` directory pathspec at 9 commit-staging sites and engage git-commit-scoped.sh's --task contended-path lease) and 303 (make validate-state.sh's omitted-argument state-file default resolve against the repository being validated).",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Tasks 302 and 303 added to active_projects; next_project_number bumped to 304"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Regenerated via generate-todo.sh; 302 placed in dependency wave 2, 303 in wave 3"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/302_scoped_commit_directory_pathspec_and_task_lease/",
+      "summary": "Task directory for 302"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/303_validate_state_cwd_relative_default_resolution/",
+      "summary": "Task directory for 303"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790832109_5bf444",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2,
+    "task_numbers": [302, 303],
+    "topic": "orchestrator",
+    "commit_sha": "cb134148500acdbbfa414a35693eb4004c3cac60",
+    "commit_pathspec": ["specs/state.json", "specs/TODO.md"],
+    "commit_flags": ["--task 302"]
+  },
+  "next_steps": "Run /research 303 first (1-3 hours, 2-file footprint, blocked only by 271 and 279). 302 carries a 10-file footprint and dependencies on 44, 292, 300."
+}
