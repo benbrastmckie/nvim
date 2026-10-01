@@ -1,7 +1,7 @@
 # Implementation Plan: Task #293
 
 - **Task**: 293 - Add a HOLD task status marker that pauses a task and excludes it from dispatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/293_add_hold_task_status_marker/reports/01_hold-task-status-marker.md
@@ -146,38 +146,38 @@ trust.
 
 ---
 
-### Phase 1: Enum, Schema Twin, and the Three-Field Allowlist [NOT STARTED]
+### Phase 1: Enum, Schema Twin, and the Three-Field Allowlist [COMPLETED]
 
 **Goal**: `hold` validates and renders. This phase alone un-breaks the consumer repo's
 `generate-todo.sh` and clears all 12 of its `validate-state.sh` FAILs.
 
 **Tasks**:
-- [ ] `scripts/lib/status-vocabulary.sh`: add `"hold"` to `STATUS_VOCABULARY_ENUM` (12 -> 13
+- [x] `scripts/lib/status-vocabulary.sh`: add `"hold"` to `STATUS_VOCABULARY_ENUM` (12 -> 13
       values) and `["hold"]="HOLD"` to `STATUS_VOCABULARY_TODO_MARKER_MAP`. Update this file's own
       "closed 12-value" prose (header ≈line 6, section banner ≈line 34) to 13.
-- [ ] Leave `STATUS_VOCABULARY_LIFECYCLE_RANK` (≈lines 105-114) **unchanged**: it deliberately
+- [x] Leave `STATUS_VOCABULARY_LIFECYCLE_RANK` (≈lines 105-114) **unchanged**: it deliberately
       omits `blocked`/`partial`/`abandoned`/`expanded` as non-linear states, and `hold` belongs in
       that same omitted set. Add a one-line comment saying so, so a future reader does not read the
       omission as an oversight.
-- [ ] `context/schemas/state-schema.json`: add `"hold"` to `definitions.taskStatus.enum`, keeping
+- [x] `context/schemas/state-schema.json`: add `"hold"` to `definitions.taskStatus.enum`, keeping
       literal element ORDER aligned with the bash array so a manual diff of the pair stays trivial.
-- [ ] `context/schemas/state-schema.json`: add `hold_reason`, `held_at`, `prior_status` to
+- [x] `context/schemas/state-schema.json`: add `hold_reason`, `held_at`, `prior_status` to
       `definitions.projectEntry.properties` as typed `string` properties with doc comments
       following the `completion_summary` precedent ("Required when status is `hold`;
       schema-optional here since only held entries carry it"). `additionalProperties: false` means
       an unlisted field is rejected outright.
-- [ ] `scripts/validate-state.sh`: append the same three names to `KNOWN_ENTRY_FIELDS`
+- [x] `scripts/validate-state.sh`: append the same three names to `KNOWN_ENTRY_FIELDS`
       (≈lines 461-465). No status arm is needed here — Check 5 calls
       `status_vocabulary_is_valid` directly and is fixed transitively by the library edit.
-- [ ] `scripts/tests/test-status-vocabulary.sh`: bump the drift assertion from 12 to 13 (≈line
+- [x] `scripts/tests/test-status-vocabulary.sh`: bump the drift assertion from 12 to 13 (≈line
       107) and its pass/fail message text (≈lines 108, 110); add `hold` to the marker-map coverage
       so `[HOLD]` is asserted, not just counted.
-- [ ] `scripts/tests/test-validate-state.sh`: add coverage that an entry carrying `hold_reason`,
+- [x] `scripts/tests/test-validate-state.sh`: add coverage that an entry carrying `hold_reason`,
       `held_at`, and `prior_status` produces no unknown-entry-field FAIL, and that
       `status: "hold"` produces no off-schema-status FAIL.
-- [ ] Run `bash scripts/tests/test-status-vocabulary.sh` and
+- [x] Run `bash scripts/tests/test-status-vocabulary.sh` and
       `bash scripts/tests/test-validate-state.sh`; shellcheck both edited scripts.
-- [ ] Commit the declared file set as one atomic batch (see Commit Mode).
+- [x] Commit the declared file set as one atomic batch (see Commit Mode).
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,48 @@
+{
+  "phase": 1,
+  "phase_name": "Enum, Schema Twin, and the Three-Field Allowlist",
+  "started_at": "2026-10-01T04:10:00Z",
+  "last_updated": "2026-10-01T04:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "status-vocabulary.sh: add hold to enum + marker map + prose",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/status-vocabulary.sh"]
+    },
+    {
+      "id": 2,
+      "description": "state-schema.json: add hold to taskStatus.enum and three new projectEntry properties",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/schemas/state-schema.json"]
+    },
+    {
+      "id": 3,
+      "description": "validate-state.sh: append three names to KNOWN_ENTRY_FIELDS",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]
+    },
+    {
+      "id": 4,
+      "description": "test-status-vocabulary.sh: 13-value drift assertion + [HOLD] marker coverage",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh"]
+    },
+    {
+      "id": 5,
+      "description": "test-validate-state.sh: positive fixture for hold status + three fields",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Run test-status-vocabulary.sh / test-validate-state.sh directly to verify",
+      "result": "note",
+      "reason": "Test harness's LIB_CANDIDATES/VALIDATOR_CANDIDATES prefer the deployed .claude/ copy over the source store when both exist; since this repo's .claude/ is stale and a whole-tree redeploy is prohibited mid-cycle (concurrent sibling task), verification was done by directly sourcing the edited source-store status-vocabulary.sh and manually running the enum/marker assertions, which passed. Official test-script green run against the deployed copy is deferred to Phase 8's deploy step, per the plan's own escape hatch."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
