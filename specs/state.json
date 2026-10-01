@@ -130,9 +130,15 @@
           "path": "specs/289_clear_orchestrator_context_budget_gate/plans/01_clear-context-budget-gate.md",
           "type": "plan",
           "summary": "6-phase plan clearing Gate 20's two open findings via duplication trim, then promoting the gate from warn to hard."
+        },
+        {
+          "path": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
+          "type": "summary",
+          "summary": "Closed two of Gate 20's three open findings via a deliberate duplication trim; gate mode promotion attempted then reverted per the plan's own contingency path."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Cleared Gate 20's eager-load overage (68,289 B -> 65,402 B, under the 65,950 B baseline) and SKILL.md ceiling overage (20,325 B -> 19,993 B, under the 20,000 B ceiling) via a deliberate duplication trim across merge-sources/claudemd.md, rules/git-workflow.md, and skills/skill-orchestrate/SKILL.md, relocating content rather than deleting it. Attempted promoting ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard; reverted per the plan's pre-authorized Rollback/Contingency path when a newly-landed, out-of-scope commands/orchestrate.md overage (21,328 B / 21,000 B ceiling) surfaced, recording the new blocker honestly in both verify-deploy.sh and the config."
     },
     {
       "project_number": 288,

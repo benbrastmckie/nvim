@@ -39,7 +39,7 @@ next_project_number: 304
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
-289 [PLANNED] — Clear verify-deploy gate 20 (orchestrator context budget...
+289 [IMPLEMENTING] — Clear verify-deploy gate 20 (orchestrator context budget...
 290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 
@@ -238,6 +238,7 @@ Hence `dependencies: [44, 292, 300]`. These files are the defect sites themselve
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [301_reopen_worktree_isolation_verdict/reports/01_worktree-run-live-evidence.md]
 
 **Description**: Re-open the question closed by `specs/decisions/worktree-isolation-removal-verdict.md` — whether per-dispatch `git worktree` isolation should be restored to the agent system — and terminate in a decision that either formally SUPERSEDES or formally CONFIRMS that record. The record is marked "verdict, not re-openable"; this task may not quietly route around it. Either outcome is acceptable and must be argued from evidence, not from regret.
 
@@ -921,12 +922,13 @@ This is the phase that makes a hold actually hold. Phase 1 alone makes "hold" va
 ---
 
 ### 289. Clear orchestrator context budget gate
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [289_clear_orchestrator_context_budget_gate/reports/01_context-budget-gate-trim.md]
 - **Plan**: [289_clear_orchestrator_context_budget_gate/plans/01_clear-context-budget-gate.md]
+- **Summary**: [289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md]
 
 **Description**: Clear verify-deploy gate 20 (orchestrator context budget lock) entirely and promote it from warn to hard. Both of the gate's open findings are governed by the single config file agent-system/extensions/core/context/config/orchestrator-context-budget.json, so they are one change, not two. (a) Eager-load total measures 67,980 B against a recorded baseline_bytes of 65,950 B -- 2,030 B over, a FAIL. The overage pre-dates the worktree-isolation removal batch and none of that batch's files are eager-loaded. Largest eager contributors are the assembled .claude/CLAUDE.md (36,659 B) and the git-workflow.md rule (9,740 B); the established remedy is extracting detail into context/ behind a plain pointer, as source-store-deploy-boundary.md already does. The config's own note requires that baseline_bytes never be silently re-derived, so either outcome -- content trim or a dated, reviewed baseline move -- must be deliberate and recorded in that file's derivation narrative. (b) skills/skill-orchestrate/SKILL.md measures 20,325 B against its 20,000 B ROADMAP-derived ceiling -- 325 B over, a WARN. A known-safe trim remains available: the Skill-to-Agent Mapping table's three lifecycle-dispatch rows (research, plan, implement) restate one identical resolution-and-context clause and collapse to a single row for roughly 133 B, so further compression of contract prose is also needed. (c) The config comment defers promoting ORCHESTRATOR_BUDGET_GATE_MODE from warn to hard until commands/orchestrate.md settles past its concurrent sibling task; that sibling has now landed, so re-check the precondition and promote the gate in the same change that clears both findings above.
 

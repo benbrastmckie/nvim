@@ -27,29 +27,53 @@
       "category": "PATTERN",
       "source_artifact": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["gate promotion", "byte ceiling", "rollback contingency", "verify-deploy", "precondition drift"]
+      "suggested_keywords": [
+        "gate promotion",
+        "byte ceiling",
+        "rollback contingency",
+        "verify-deploy",
+        "precondition drift"
+      ]
     },
     {
       "content": "When trimming prose to hit a byte budget and a verification step greps for a literal substring (e.g. 'MUST NOT'), preserve that literal substring even when rewording for brevity -- a semantically-equivalent bolded rephrasing ('**Never emit...**') can silently drop a mechanical grep-count check that depends on the literal text, not the meaning.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["byte budget trim", "grep verification", "MUST NOT", "literal substring", "duplication trim"]
+      "suggested_keywords": [
+        "byte budget trim",
+        "grep verification",
+        "MUST NOT",
+        "literal substring",
+        "duplication trim"
+      ]
     },
     {
       "content": "A fixture-driven test suite that real-copies the live repo tree (rsync) as its 'clean baseline' will fail its baseline-cleanliness assertion whenever ANY other concurrently-running task has landed source-store edits not yet redeployed to .claude/, or has live uncommitted edits to shared files like specs/TODO.md/state.json -- this is cross-task staleness, not a regression from the task under test. Confirm via an isolated git worktree checkout of the pre-task commit before concluding a baseline-fixture test failure is a real regression.",
       "category": "INSIGHT",
       "source_artifact": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["fixture-driven test", "baseline cleanliness", "git worktree", "cross-task staleness", "false regression"]
+      "suggested_keywords": [
+        "fixture-driven test",
+        "baseline cleanliness",
+        "git worktree",
+        "cross-task staleness",
+        "false regression"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790832943_f8ab6f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
