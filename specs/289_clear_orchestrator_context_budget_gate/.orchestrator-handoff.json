@@ -1,18 +1,19 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 289,
-  "phase": "plan",
-  "session_id": "sess_1790832943_f8ab6f_289",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
-  "phases_total": 6,
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "session_id": "sess_1790832943_f8ab6f",
+  "summary": "Closed Gate 20's eager-load (68,289 B -> 65,402 B) and SKILL.md ceiling (20,325 B -> 19,993 B) findings via a deliberate duplication trim. Attempted promoting ORCHESTRATOR_BUDGET_GATE_MODE to hard; reverted per the plan's own Rollback/Contingency path when a newly-landed, out-of-scope commands/orchestrate.md overage (21,328 B / 21,000 B ceiling) surfaced. All 6 plan phases closed (Phase 5 as COMPLETED WITH EXCLUSIONS, with a Reasoned Exclusions record).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/289_clear_orchestrator_context_budget_gate/plans/01_clear-context-budget-gate.md",
-      "summary": "6-phase plan clearing Gate 20's two open findings via duplication trim, then promoting the gate from warn to hard."
+      "type": "summary",
+      "path": "specs/289_clear_orchestrator_context_budget_gate/summaries/01_clear-context-budget-gate-summary.md",
+      "summary": "Closed two of Gate 20's three open findings via a deliberate duplication trim; gate mode promotion attempted then reverted per the plan's own contingency path."
     }
   ],
-  "next_steps": "Run /implement 289 to execute the plan",
-  "notes": "Plan widens file_scope to include merge-sources/claudemd.md and context/standards/git-workflow-narrative.md (Phase 1). Live re-measurement at planning time confirms eager TOTAL 68289 B (2339 B over baseline) and SKILL.md 20325 B (325 B over ceiling)."
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "next_steps": "Task 289 is complete. A follow-up task should trim commands/orchestrate.md (currently 21,328 B, 328 B over its 21,000 B ceiling) before ORCHESTRATOR_BUDGET_GATE_MODE can be promoted to hard; a restatement-trim opportunity is already on record in orchestrator-context-budget.json's own derivation for that file."
 }
