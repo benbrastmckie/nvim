@@ -1,5 +1,5 @@
 ---
-next_project_number: 314
+next_project_number: 316
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 314
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,294,295,296,297,299,300,306,309,311 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,294,295,296,297,299,300,306,309,311,314,315 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,277,282,284,285,300 | orchestrator |
@@ -85,9 +85,205 @@ next_project_number: 314
 309 [NOT STARTED] — Replace directory pathspecs with explicit file lists at the...
   └─ 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
+314 [NOT STARTED] — Decide the unconsumed-dispatch replay seq before the dispatch...
+315 [NOT STARTED] — Stop the cycle postflight reporting a status it did not...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 315. Stop the cycle postflight reporting a status it did not persist, and attribute a seq mismatch by direction
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Stop `orchestrate-cycle-postflight.sh` reporting an outcome it did not persist, and make its `HANDOFF_STALE_OR_ABSENT` attribution depend on the DIRECTION of a dispatch_seq mismatch. Two independent honesty defects in one file, both surfaced by the same live incident, neither owned by any existing task.
+
+Both are diagnostic/reporting correctness, not the seq-minting bug itself; the minting fix is filed separately against `orchestrate-cycle-plan.sh` and shares no files with this task, so the two can proceed in parallel. DELIVERABLE 2 here is explicitly NOT contingent on that fix.
+
+== ORIGINATING INCIDENT (one live `/orchestrate` run over three tasks, Verification repo, 2026-10-02, session `sess_1790944701_f94b90`) ==
+
+A plan dispatch was composed with a newly minted `dispatch_seq` while multi-state was retroactively rewritten to a prior, never-consumed value. The agent wrote a valid, current handoff carrying the FILE's seq. The postflight then:
+
+- emitted "ERROR: DISPATCH_SEQ MISMATCH -- handoff carries dispatch_seq=<newer>, this cycle minted dispatch_seq=<older> ... treating as missing" (`:458`);
+- recorded a `HANDOFF_STALE_OR_ABSENT` system defect attributed to `skill-orchestrate/SKILL.md`, which did not author the fault;
+- declined return-meta recovery with `META_DISPATCH_SEQ_MISMATCH`, leaving `have_outcome=false`, so NO status transition was attempted;
+- and still RETURNED `status=planned` while `state.json` read `status=planning` with `plan_path` null.
+
+The last point is the one that drives control flow and is the subject of DELIVERABLE 2.
+
+== DELIVERABLE 1: attribute a seq mismatch by its direction, and fix a THREE-WAY documented inconsistency ==
+
+The attributed path is hardcoded at `scripts/orchestrate-cycle-postflight.sh:366`:
+
+    attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+
+and is used by both the stale-mtime arm (`:435-442`) and the dispatch_seq-mismatch arm (`:461-470`), with detecting site `${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch`.
+
+Rule on whether the mismatch arm should attribute to the MINTING script when the direction is handoff-NEWER-than-minted. That direction can only mean the dispatched lead was handed a dispatch file newer than the state multi-state records -- an authoring fault in whoever minted and composed, not a stale artifact from a defunct predecessor. Distinguish it from handoff-OLDER-than-minted, which is the genuine staleness case the gate was built for and where the current attribution and the RECOVERY framing are appropriate.
+
+THE DOCUMENTED ATTRIBUTION IS INCONSISTENT THREE WAYS, and no existing task owns the contradiction. Carry all three and reconcile them:
+
+1. `scripts/orchestrate-cycle-postflight.sh:366` attributes the class to `skills/skill-orchestrate/SKILL.md`.
+2. `commands/orchestrate.md:309` documents the SAME class attributed to the postflight script itself, with detecting site `orchestrate-cycle-postflight.sh:stale-handoff-gate` and detail "handoff mtime predates this dispatch window":
+
+    | #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh | orchestrate-cycle-postflight.sh:stale-handoff-gate | handoff mtime predates this dispatch window |
+
+3. `docs/architecture/orchestrate-state-machine.md:318-322` declares the misattribution KNOWN AND NOT A BUG: "a spurious `HANDOFF_STALE_OR_ABSENT` row in `detected_defects` attributed to `skills/skill-orchestrate/SKILL.md` ... None of this is a bug in the staleness gate; it is the gate correctly refusing to trust a handoff that predates the window a fresh dispatch just opened."
+
+That exoneration is sound ONLY for the stale direction it describes (an unwind or a fresh window opening over a valid older artifact). It does NOT cover handoff-newer-than-minted, where the gate is refusing an artifact that is newer than the state it is compared against. Correct the doc so it discriminates the two directions rather than exonerating the gate wholesale, and reconcile 1 and 2 so the code and the operator-facing table name the same attributed path.
+
+TEST GAP (verified). `scripts/tests/test-handoff-dispatch-identity.sh` has four cases; case 2 -- its own declared "LOAD-BEARING CASE" -- is `run_case "case2-mismatch-inside-window" 802 4 5 0 "false" 'DISPATCH_SEQ MISMATCH'`, i.e. handoff seq 4 against minted 5: handoff OLDER than minted. Case 1 is a match, case 3 an old mtime, case 4 an absent seq field. **The handoff-NEWER-than-minted direction central to this incident is not covered at all.** Add it, and assert on the attribution the new discrimination produces, not merely on rejection.
+
+ADJACENT, NOT DUPLICATE -- TASK 285. Task 285 ("Add the missing `.decisions.json` writer script and correct the postflight handoff-recovery notice") owns the SEVERITY-LABELLING of the handoff notice for the ABSENT case: its DELIVERABLE 2 splits the notice so "the expected no-handoff path reads as an ordinary informational fallback naming the source it recovered from, while a genuinely unexpected absence keeps the RECOVERY label and its current prominence." That is the absent axis (which phases contractually write a handoff). It says nothing about `defect_class` attribution and nothing about the stale-vs-newer direction, and its `file_scope` does not include `orchestrate-cycle-plan.sh`. Do not merge; do not re-do its notice split. Coordinate wording if both land, since both touch notice text in the same file.
+
+== DELIVERABLE 2: do not report a status this script did not persist ==
+
+At `:671-679`, when return-meta recovery is DECLINED, the reported status is still adopted for output:
+
+    if [ "$out_recovered_reported_status" != "unknown" ]; then
+      # Diagnostic only -- this does NOT make the outcome "recovered" (have_outcome stays false,
+      # so no status transition is ever attempted on the strength of this value alone). It only
+      # lets the final output JSON's own `status` field echo what the agent actually reported
+      dispatch_status="$out_recovered_reported_status"
+
+`dispatch_status` then flows into the verdict emits at `:1401` and `:1419` as the JSON's `status` field. The comment is candid that no transition occurs -- but the emitted JSON carries no flag saying so, so a consumer cannot distinguish "the agent reported this" from "this script persisted this". In the incident the script returned `status=planned` while `state.json` read `planning`.
+
+Either return the PERSISTED status, or carry an explicit flag discriminating agent-reported from script-persisted. Rule on which, and record the reasoning.
+
+THE MOVE 3 INTERACTION IS LOAD-BEARING. `skills/skill-orchestrate/SKILL.md` Move 3 drives loop control off exactly these two fields:
+
+    dispatch_status=$(echo "$postflight_json" | jq -r '.status')
+    verdict=$(echo "$postflight_json" | jq -r '.verdict')
+
+So any change here is a change to the loop's contract, not just to a diagnostic string. Two consequences research must address: (a) the existing `user_decision` relay path at `:1091` deliberately relies on `dispatch_status` echoing the agent's own reported status ("Status is left exactly as the agent reported it"), so a naive switch to the persisted status would degrade that message -- an added flag may be the better shape; (b) whatever is chosen, Move 3's reader must be updated in the same change, and the SKILL.md contract text must state which of the two meanings `.status` now carries.
+
+== BATCHING GUIDANCE (deliberately NOT dependencies[] edges) ==
+
+`dependencies` is intentionally EMPTY. Eight live tasks declare `scripts/orchestrate-cycle-postflight.sh` in `file_scope` -- 285, 279, 284, 273, 263, 304, 184, 185 -- each on a different, explicitly fenced region (285 the recovery notice at `:598`; 279 the blockers reader near `:1273`; 284 the file_scope excursion advisory at `:1121-1132`; 304 pathspec staging; 263 the `user_decision` relay; 273 a post-postflight stage; 184 skeleton follow-up surfacing; 185 a doc-citation sweep). Hard ordering edges on all eight would block this fix behind a large backlog for no correctness gain, since the regions do not touch. Treat them as NON-CONCURRENCY constraints instead, matching the phrasing tasks 250 and 299 already use: do not batch this task in the same `/orchestrate` wave as 285, 279, 284, 273, 263, 304, 184 or 185.
+
+Note that 263 is the one edge with semantic contact: it owns the `user_decision` relay that DELIVERABLE 2 must not degrade. If 263 lands first, re-check its relay against the chosen status semantics.
+
+Six-to-eight live tasks contending on this single file is itself a signal worth an operator's attention.
+
+== ACCEPTANCE ==
+
+1. A handoff whose `dispatch_seq` is NEWER than the minted value is attributed to the minting script, not to `skill-orchestrate/SKILL.md`, and is distinguished in both the notice text and the recorded `detected_defects` row from a handoff that is OLDER than the minted value.
+2. The handoff-newer-than-minted direction is covered by a new case in `scripts/tests/test-handoff-dispatch-identity.sh` that asserts the attribution, constructed so it cannot pass vacuously -- it must fail against the pre-fix script.
+3. The four existing cases in that suite keep their current behaviour, case 2 (handoff-older-than-minted) especially.
+4. `orchestrate-cycle-postflight.sh` never returns a `status` that implies a transition it did not perform: either the value is the persisted status, or an explicit flag in the emitted JSON discriminates agent-reported from script-persisted.
+5. `skills/skill-orchestrate/SKILL.md` Move 3 is updated in the same change to read the chosen shape, and its contract text states which meaning `.status` carries.
+6. The existing `user_decision` relay at `:1091` still reports the agent's own reported status, with that behaviour verified rather than assumed.
+7. `commands/orchestrate.md`'s attribution table and `docs/architecture/orchestrate-state-machine.md:318-322` agree with the code on the attributed path, and the latter's not-a-bug exoneration is narrowed to the stale direction it actually covers.
+8. `bash scripts/tests/test-handoff-dispatch-identity.sh` passes in full, the postflight suite passes, and shellcheck is clean per `context/standards/shell-strict-mode.md`.
+
+---
+
+### 314. Decide the unconsumed-dispatch replay seq before the dispatch file is composed, and assert file/state agreement
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Make the unconsumed-dispatch replay decide its dispatch_seq BEFORE the seq is minted and before the dispatch file is composed, so exactly one seq is in play across the dispatch file, multi-state, the handoff and `.return-meta.json`. Today the replay branch retroactively rewrites the seq roughly 140 lines AFTER the file was already composed with the newly minted value, which defeats every downstream seq check and silently loses the status transition.
+
+The cause is mechanically located and the fix shape is already RULED ON (see DELIVERABLE 1). Research should confirm the line anchors still hold and settle the mechanics of hoisting, not re-litigate whether the defect is real or which option to take.
+
+== ROOT CAUSE (verified against current source, not inferred) ==
+
+In `scripts/orchestrate-cycle-plan.sh` the ordering is:
+
+- `:2541-2544` -- section (i) mints the seq and writes it to multi-state in one atomic operation:
+
+    task_dispatch_seq=$(mt_get '(.dispatch_seq_counter // 0) + 1')
+    mt_set ... '.dispatch_start_ts[$t] = $ts | .dispatch_seq[$t] = $seq | .dispatch_seq_counter = $seq'
+
+- `:2579` builds `build_args` with `--seq "$task_dispatch_seq"`, and `:2639` invokes `orchestrate-build-dispatch.sh`, which WRITES the dispatch file whose `## Identity` section records `- dispatch_seq: N` (`orchestrate-build-dispatch.sh:400`).
+
+- `:2771-2786` -- the UNCONSUMED DISPATCH REPLAY branch then fires and retroactively rewrites it:
+
+    mt_set --arg t "$t" --argjson seq "$_pd_seq" '.dispatch_seq[$t] = $seq'
+    task_dispatch_seq="$_pd_seq"
+
+The branch reuses the recorded seq but NOT the recorded `dispatch_file`, and runs long after the file was composed with the new seq. The dispatched agent is handed an authoritative dispatch file declaring the NEW seq while multi-state records the OLD one. The branch's own comment at `:2766` states the intent -- "reuse the recorded seq (so a postflight dispatch_seq check against that prior, still-live attempt's own artifacts keeps matching)" -- which the current ordering defeats. The comment does not acknowledge the already-composed file.
+
+== OBSERVED DAMAGE (one live `/orchestrate` run over three tasks, Verification repo, 2026-10-02, session `sess_1790944701_f94b90`) ==
+
+CONSEQUENCE 1 -- handoff discarded. The planner-agent echoed the new seq from the dispatch file, explicitly flagging that its prompt Context block said one value while the file said another, and resolving in favour of the file. `orchestrate-cycle-postflight.sh` then emitted "ERROR: DISPATCH_SEQ MISMATCH -- handoff carries dispatch_seq=<new>, this cycle minted dispatch_seq=<old> ... treating as missing" (`:458`) and recorded a `HANDOFF_STALE_OR_ABSENT` system defect. The handoff was valid and current; only the seq bookkeeping was wrong. The postflight reads its expected value from multi-state at `:345` (`.dispatch_seq[$t]`), i.e. the rewritten one.
+
+CONSEQUENCE 2 -- status transition silently lost; THE DAMAGING ONE. `.return-meta.json` also carried the new seq, so `orchestrate-recover-outcome.sh` declined recovery with reason `META_DISPATCH_SEQ_MISMATCH`, leaving `have_outcome=false` at `orchestrate-cycle-postflight.sh:671-679`. No status transition is attempted on that path and `dispatch_status` is set for diagnostics only. A complete, correct 13-phase plan was written and committed, but `state.json` stayed at `status=planning` with `plan_path` null.
+
+CONSEQUENCE 3 -- near-redundant work. Because `state.json` never reached `planned`, the next cycle classified the task as still planning and queued a SECOND plan dispatch via `reviser-agent` against an already-complete plan. Only a hand-run `orchestrate-unwind-dispatch.sh` plus `reconcile-task-status.sh` prevented a spurious plan revision. Unattended, this burns a cycle and writes a redundant plan.
+
+== NOT DEPLOY STALENESS (verified) ==
+
+Deployed core in the observing repo is at `source_git_head` 7762078235, and `git log 7762078235..HEAD -- agent-system/` in the source store is EMPTY. The defect is in current source. Do not spend research effort re-checking this.
+
+== DELIVERABLE 1: hoist the replay decision above the mint (OPTION (a) -- SETTLED, NOT OPEN) ==
+
+Move the `pending_dispatch_seed[$t]` replay check from `:2771` to ABOVE the mint at `:2541`, so the minted seq IS the replayed seq and the dispatch file is composed with it. Exactly one seq then exists for the row.
+
+The alternative -- reuse the recorded `dispatch_file` verbatim on the replay path and do not recompose -- was considered and is REJECTED on verified evidence, so it should not be re-opened. `orchestrate-build-dispatch.sh` receives per-cycle-VARYING inputs that must still refresh:
+
+- `--territory`, which the comment block above the loop states is "Built fresh for THIS task from every OTHER task `probed_dispatch_post_h1` schedules this same cycle" -- so it is a function of the current cycle's sibling set, not of the task alone;
+- `--focus` (via `compose_focus`), `--phase-number` (hard-mode heading scan), `--dispatch-start-ts`, and `--model`.
+
+Reusing the recorded file verbatim would hand the agent stale sibling-territory data. Recompose, with the replayed seq.
+
+Mechanics research must settle: the hoisted check needs `$g` (phase) and `forced_this_cycle[$t]`, and must sit correctly relative to the forced-phase pop at `:2546`; confirm both are available at the earlier point and that no ordering invariant documented in the section (i) comments is broken.
+
+== DELIVERABLE 1b: the seq-counter leak (ADDITIONAL VERIFIED DEFECT -- same branch, must be fixed with it) ==
+
+The dispatch filename is seq-derived: `orchestrate-build-dispatch.sh:385` sets
+
+    dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
+
+and the replay branch deliberately never calls `--flush-seq`. So after a replay, `mt_json.dispatch_seq_counter` holds the freshly MINTED value while the durable `.orchestrator-loop-guard` file still holds the REUSED one. A later run seeds from the durable file, mints the same value again, and overwrites the orphaned dispatch file composed by this run -- a REPEATED `dispatch_seq` across separate runs. `scripts/orchestrate-cycle-plan.sh:1200` states this must never happen: "a dispatch_seq value must NEVER repeat within a task across separate /orchestrate runs".
+
+Ensure the counter is left consistent -- not double-minted, not leaked -- whichever way the hoist is implemented. Under a correct hoist the replayed seq is the only value minted, so the durable flush and the in-memory counter should agree by construction; verify that rather than patching the two into agreement after the fact.
+
+== DELIVERABLE 2: post-compose consistency assertion ==
+
+After the dispatch file is composed, assert that its `## Identity` `dispatch_seq` equals `mt_json.dispatch_seq[$t]`. On disagreement, fail the row LOUDLY -- emit a deferred row with an explicit reason -- rather than dispatching a file that disagrees with the state the postflight will later check it against. This is the backstop that makes the whole class non-silent, independently of whether the hoist is perfect.
+
+Note the adjacent existing surface: the Identity-section normalization at `:1984-2001` STRIPS `- dispatch_seq: N` (and `- dispatch_start_ts: N`) before hashing for the identical-dispatch guard, so the assertion must parse the field from the file itself and must not disturb that hash.
+
+== DELIVERABLE 3: regression coverage -- EXTEND GROUP 19, DO NOT WRITE A NEW SUITE ==
+
+`scripts/tests/test-orchestrate-cycle-plan.sh` ALREADY has Group 19 ("durable cross-invocation pending_dispatch and dispatch_seq_counter ledgers", from `:2528`), whose case 1 is a matched, file-present replay. It already asserts the UNCONSUMED DISPATCH REPLAY notice is logged and that the recorded seq is reused for `dispatch_seq[1901]`. Case 2 covers a phase mismatch; case 3 covers a missing dispatch file.
+
+The gap is precise: **every Group 19 assertion reads only the multi-state file and the durable guard file. None inspects the composed dispatch file's `## Identity` block.** That is exactly why this defect shipped green. Extend Group 19 case 1 to charge a dispatch, leave it unconsumed, re-enter the cycle plan, and assert that ALL FOUR agree: the dispatch file's Identity seq, `mt_json.dispatch_seq[$t]`, the handoff seq check, and the return-meta seq check -- and that the status transition persists to `state.json`.
+
+A CURRENTLY-GREEN ASSERTION MUST BE REVISED, AND THE REVISION MUST BE ARGUED. Group 19 case 1 asserts, as correct behaviour:
+
+    pass "Group 19 case 1: the durable guard file's dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)"
+
+That is precisely the counter leak of DELIVERABLE 1b. Task 265 holds that "No test may be weakened", so this task MUST argue the change explicitly as a CORRECTION of an assertion that encoded the defect, with the reasoning recorded in the report and in the test comment -- not silently relax or delete it. Reviewers should be able to see why the old assertion was wrong without reconstructing this analysis.
+
+One constraint that dissolved on inspection and needs no work: the `dispatch-seq-gate:begin`/`:end` sentinel-region parity diff was DELIBERATELY REMOVED from `scripts/tests/test-handoff-reader-parity.sh` (see its comment at `:343`) once the engines merged, because it would diff a region against itself. Nothing there constrains this task.
+
+== BATCHING GUIDANCE (deliberately NOT dependencies[] edges) ==
+
+`dependencies` is intentionally EMPTY. Six live tasks declare `scripts/orchestrate-cycle-plan.sh` in `file_scope` -- 311, 299, 272, 265, 250, 165 -- and 265 also declares `scripts/tests/test-orchestrate-cycle-plan.sh`. Hard ordering edges on all of them would block a live data-loss fix behind a large backlog, which is the wrong trade for this defect's severity. Treat these as NON-CONCURRENCY constraints instead, the same way tasks 250 and 299 already phrase them ("Do not batch this task concurrently with those"): do not batch this task in the same `/orchestrate` wave as 311, 299, 272, 265, 250 or 165.
+
+ORDERING NOTE ON TASK 250. Task 250 is a behaviour-preserving DECOMPOSITION of `orchestrate-cycle-plan.sh` into `lib/`. Whichever of this task and 250 lands second must carry the other's change along: if 250 lands first, every line anchor in this description moves and must be re-derived; if this task lands first, 250 must preserve the hoisted replay ordering, the DELIVERABLE 2 assertion, and the revised Group 19 assertions intact through the decomposition. They must not run concurrently.
+
+The postflight-side deliverables of this incident (defect attribution by mismatch direction, and the report-vs-persist divergence) are filed SEPARATELY and share no files with this task, so the two can proceed in parallel.
+
+== ACCEPTANCE ==
+
+1. A replayed unconsumed dispatch produces EXACTLY ONE seq across the dispatch file's `## Identity`, `mt_json.dispatch_seq[$t]`, the handoff's seq check and `.return-meta.json`'s seq check.
+2. The postflight CONSUMES the handoff on that path rather than discarding it, and the status transition PERSISTS to `state.json` (not merely reported).
+3. No redundant re-plan is queued on the following cycle for a task whose plan already completed via a replayed dispatch.
+4. `dispatch_seq_counter` is left consistent after a replay: no double-mint, no durable/in-memory divergence, and no later run can re-mint a value already used as a dispatch filename.
+5. A composed dispatch file whose Identity seq disagrees with multi-state produces a DEFERRED row with an explicit reason, never a dispatch.
+6. The extended Group 19 coverage FAILS against current source and PASSES after the fix -- demonstrated, not asserted. Construct it so it cannot pass vacuously.
+7. The revised `--flush-seq` assertion in Group 19 case 1 is accompanied by recorded reasoning explaining why the prior assertion encoded the defect.
+8. `bash scripts/tests/test-orchestrate-cycle-plan.sh` passes in full, and shellcheck is clean per `context/standards/shell-strict-mode.md`.
+
+---
 
 ### 313. Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md phase blocks
 - **Status**: [NOT STARTED]
