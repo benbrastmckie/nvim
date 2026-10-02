@@ -246,23 +246,25 @@ tense fix), 5, and 7 proceed normally — none of them depend on item 1.
 
 ---
 
-### Phase 2: Item 1 — empty the two redundant playwright enumerations [NOT STARTED]
+### Phase 2: Item 1 — empty the two redundant playwright enumerations [COMPLETED]
 
 **Goal**: Leave exactly one copy of the 9-tool safe-tier playwright enumeration in existence (user
 scope, owned outside this repository) by emptying the two identical extension copies, without
 introducing a wildcard in their place.
 
 **Tasks**:
-- [ ] Confirm Phase 1 recorded a playwright grant count of exactly 9. If not, skip this entire
-      phase per Phase 1's branch
-- [ ] Re-read `agent-system/extensions/web/settings-fragment.json` and rewrite it to exactly:
+- [x] Confirm Phase 1 recorded a playwright grant count of exactly 9. If not, skip this entire
+      phase per Phase 1's branch *(completed: count was 9, phase proceeds)*
+- [x] Re-read `agent-system/extensions/web/settings-fragment.json` and rewrite it to exactly:
       `{"permissions": {"allow": []}}` (2-space indent, trailing newline — see "Item 1's end
-      state" above for the byte-for-byte target)
-- [ ] Re-read `agent-system/extensions/present/settings-fragment.json` and rewrite it to the same
-      content
-- [ ] Confirm no `mcp__playwright__*` wildcard or any other playwright token was introduced into
-      either file
-- [ ] `jq empty` both files; commit them as one green sub-step
+      state" above for the byte-for-byte target) *(completed)*
+- [x] Re-read `agent-system/extensions/present/settings-fragment.json` and rewrite it to the same
+      content *(completed)*
+- [x] Confirm no `mcp__playwright__*` wildcard or any other playwright token was introduced into
+      either file *(completed: grep -c playwright is 0 in both files; wildcard grep found only
+      pre-existing, unrelated mentions in web-research-agent.md, playwright-mcp-guide.md, and the
+      ownership doc — none newly introduced into the fragments)*
+- [x] `jq empty` both files; commit them as one green sub-step *(completed)*
 
 **Timing**: 0.25 hours
 
