@@ -1065,7 +1065,7 @@
     {
       "project_number": 324,
       "project_name": "whitelist_scheduled_tasks_lock_in_orphan_detection",
-      "status": "researching",
+      "status": "researched",
       "task_type": "neovim",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -1075,8 +1075,16 @@
         "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md"
       ],
       "created": "2026-10-02T21:41:34Z",
-      "last_updated": "2026-10-02T21:56:00Z",
-      "session_id": "sess_1790978139_b07459_324"
+      "last_updated": "2026-10-02T21:59:50Z",
+      "session_id": "sess_1790978139_b07459",
+      "artifacts": [
+        {
+          "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/reports/01_whitelist-scheduled-tasks-lock.md",
+          "type": "report",
+          "summary": "Research report: exact-match pattern for scheduled_tasks.lock in is_runtime_artifact(), source-store doc table row to update, test template to extend, and a correction of the task-250 cross-reference (actual source is task 317, a different file)."
+        }
+      ],
+      "next_artifact_number": 2
     }
   ],
   "completed_projects": [],
