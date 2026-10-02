@@ -1488,12 +1488,18 @@ determine unambiguously where artifacts landed.
    implementation of path-scoped, mutex-serialized committing. Invoke the script at
    `$TARGET_ROOT`'s own path — this is the single documented exception to the absolute-path
    default (Stage 1 Path Qualification Convention) — so it derives `PROJECT_ROOT` (and therefore
-   `cd`s) from `$TARGET_ROOT` rather than the current repo; no separate `cd` is needed:
+   `cd`s) from `$TARGET_ROOT` rather than the current repo; no separate `cd` is needed. This
+   stage's own preceding steps write only `state.json` (the new task rows plus `active_topics`,
+   via `manage-topics.sh`) and the regenerated `TODO.md` — the newly created task directories are
+   still empty at this point and contribute nothing to the commit. `--honest-index-rows` is
+   deliberately NOT added here, mirroring `commands/todo.md`'s identical documented omission:
+   this commit creates N tasks in one call, so there is no single owning task number for the flag
+   to key on.
 ```bash
 bash "${TARGET_ROOT}/.claude/scripts/git-commit-scoped.sh" \
   --message "meta: create {N} tasks for {domain}" \
   --session "${session_id}" \
-  -- specs/
+  -- specs/TODO.md specs/state.json
 ```
 
 Note: skill-meta's postflight also issues a commit at `target_root` after this agent returns; if

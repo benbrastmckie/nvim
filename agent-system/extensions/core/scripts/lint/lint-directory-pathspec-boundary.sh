@@ -18,7 +18,8 @@
 # IMPORTANT DISTINCTION FROM lint-scoped-commit-boundary.sh
 # -----------------------------------------------------------
 # That sibling lint treats "ends in a trailing `-- <pathspec>`" as the COMPLIANT shape (it is
-# guarding against a bare `git commit -m` with no pathspec at all). This lint guards the
+# guarding against a hand-rolled bare commit invocation with no pathspec at all). This lint
+# guards the
 # opposite failure mode: a call that DOES end in a trailing pathspec, but that pathspec is
 # itself a bare, non-task-scoped directory. The two lints are complementary, not overlapping --
 # a call site can satisfy one and violate the other.

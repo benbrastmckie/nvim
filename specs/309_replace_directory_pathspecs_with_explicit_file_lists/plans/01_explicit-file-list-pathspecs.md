@@ -203,30 +203,30 @@ than forcing the number.
 
 ---
 
-### Phase 2: Fix the three named recipe sites [NOT STARTED]
+### Phase 2: Fix the three named recipe sites [COMPLETED]
 
 **Goal**: The three recipes the task names — the most-copied generic "Task Commit" template plus
 the two meta-task-creation commit blocks — stage explicit file lists.
 
 **Tasks**:
-- [ ] Re-read each file immediately before editing (concurrency note, item 1).
-- [ ] `skills/skill-git-workflow/SKILL.md:216` — the generic "Task Commit" recipe, the most-copied
+- [x] Re-read each file immediately before editing (concurrency note, item 1).
+- [x] `skills/skill-git-workflow/SKILL.md:216` — the generic "Task Commit" recipe, the most-copied
       of the three. Replace `-- specs/` with `-- specs/TODO.md specs/state.json {artifact paths}`,
       keeping the `{...}` placeholder convention already used by the "Standard Commit" recipe
       directly above it (`-- {files}`). Add `--honest-index-rows {N}` — this is a single-task
       commit by definition, and `git-staging-scope.md`'s "required at every site staging
       `specs/state.json` or `specs/TODO.md`" rule becomes directly applicable once the recipe
       names those two files explicitly.
-- [ ] `agents/meta-builder-agent.md:1496` (Stage 6) — replace `-- specs/` with
+- [x] `agents/meta-builder-agent.md:1496` (Stage 6) — replace `-- specs/` with
       `-- specs/TODO.md specs/state.json`. This recipe's own surrounding steps write only
       `state.json` (task rows plus `active_topics`, via `manage-topics.sh`) and the regenerated
       `TODO.md`; newly created task directories are empty at this point and contribute nothing to
       a commit. Add a one-line inline note recording why `--honest-index-rows` is deliberately
       **not** added here (the commit creates N tasks, so there is no single owning task number for
       the flag to key on), mirroring the equivalent documented omission at `commands/todo.md:985`.
-- [ ] `skills/skill-meta/SKILL.md:287` (postflight commit block) — replace `-- specs/` with
+- [x] `skills/skill-meta/SKILL.md:287` (postflight commit block) — replace `-- specs/` with
       `-- specs/TODO.md specs/state.json`. Leave the existing `--honest-index-rows {N}` in place.
-- [ ] Verify each edit landed inside the fenced `bash` block and that backslash continuations
+- [x] Verify each edit landed inside the fenced `bash` block and that backslash continuations
       still line up.
 
 **Timing**: 45 minutes

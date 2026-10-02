@@ -284,7 +284,7 @@ bash "${GLOBAL_ROOT}/.claude/scripts/git-commit-scoped.sh" \
   --message "task {N}: create {title}" \
   --session "${session_id}" \
   --honest-index-rows {N} \
-  -- specs/
+  -- specs/TODO.md specs/state.json
 ```
 
 In local mode, the identical block runs with `target_root` (the current repo root) substituted
