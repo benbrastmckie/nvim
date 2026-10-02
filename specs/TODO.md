@@ -1,5 +1,5 @@
 ---
-next_project_number: 323
+next_project_number: 325
 ---
 
 # TODO
@@ -8,10 +8,12 @@ next_project_number: 323
 
 *Updated 2026-10-02. Generated from state.json dependency graph.*
 
+**Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
+
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,322 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,322,323,324 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,185,250,251,273,275,281,298,302,303,307,308,318,319 | 22,127,184,265,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,274,282,304,313 | 165,250,251,263,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 165,282,300 | orchestrator |
@@ -43,6 +45,8 @@ next_project_number: 323
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
+323 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+324 [NOT STARTED] — DEFECT. verify-deploy.sh gate 13 (whole-tree orphan...
 
 ### Extensions
 
@@ -79,6 +83,67 @@ next_project_number: 323
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 
 ## Tasks
+
+### 324. Whitelist scheduled tasks lock in orphan detection
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: DEFECT. verify-deploy.sh gate 13 (whole-tree orphan detection) FAILs on .claude/scheduled_tasks.lock, which is not an orphan: it is a session-acquired runtime lock file whose contents are a live session.s own sessionId, pid and acquiredAt, created at execution time by the scheduled-task mechanism and never by the copy engine.
+
+That is exactly the class is_runtime_artifact() already whitelists -- tmp/workflow-active-*, RESUME.md, __pycache__/ and the literature venv -- but no pattern matches it, so the gate goes red. Verified 2026-10-02: the lock file was present (116 B) and is_runtime_artifact() at lua/neotex/plugins/ai/shared/extensions/verify.lua:869-884 has no matching branch.
+
+This is half of the current verify-deploy.sh --skip-slow regression from FAIL 1 of 33 to FAIL 2 of 33. The other half (gate 3 doc-lint, core manifest desync) is filed as task 323.
+
+IMPACT. A reproducible false-positive deploy failure that fires any time a scheduled or cron agent task has run before the gate. A gate that goes red with no real defect is the failure mode that trains the reader to stop believing it -- and it sits alongside a true positive right now, which is precisely what makes the true one easy to dismiss.
+
+NOTE ON THE EDIT TARGET. verify.lua under lua/ is real plugin source, not a deploy artifact, so it is edited in place. The companion context file IS a deploy artifact: edit agent-system/extensions/core/context/patterns/deploy-orphan-detection.md, never .claude/context/patterns/deploy-orphan-detection.md, per rules/source-store-deploy-boundary.md.
+
+WHAT TO CHANGE.
+1. Add a scheduled_tasks.lock pattern to is_runtime_artifact() in lua/neotex/plugins/ai/shared/extensions/verify.lua, alongside the existing tmp/workflow-active-* and RESUME.md branches.
+2. While there, check whether any sibling lock files exist in .claude/ that belong to the same class, and decide whether one pattern should cover them rather than enumerating each.
+3. Register the new exclusion in the exclusion-classes table in agent-system/extensions/core/context/patterns/deploy-orphan-detection.md so the whitelist and its documentation stay in step.
+4. Confirm gate 13 is green with a scheduled-task lock present -- not merely absent.
+
+PRECEDENT FOR ROUTING. Task 290 (verify.lua cross-extension override precedence, completed 2026-10-02) is the same shape: Lua-implemented deploy-gate logic carrying topic=core-agent-system with task_type=neovim.
+
+CROSS-REFERENCE. Task 250 records this failure in its own description as explicitly out of its scope, describing it as "a sandbox orphan tmp file"; today.s measurement identifies the orphan concretely as .claude/scheduled_tasks.lock. Re-confirm which it is before assuming the two notes describe the same file.
+
+Filed by the 2026-10-02 review: specs/reviews/review-2026-10-02.md
+
+---
+
+### 323. Declare migrate state legacy fields in core manifest
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact), per rules/source-store-deploy-boundary.md.
+
+DEFECT. scripts/migrate-state-legacy-fields.sh exists and is executable on disk at agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh (9,914 B) but is declared nowhere in core/manifest.json provides.scripts. check-extension-docs.sh reports, verified independently 2026-10-02:
+
+  [core]
+    FAIL: script file on disk NOT in provides.scripts: scripts/migrate-state-legacy-fields.sh
+    WARN: README.md older than manifest.json (possible drift)
+
+This is half of the current verify-deploy.sh --skip-slow regression from FAIL 1 of 33 to FAIL 2 of 33 (gate 3, doc lint). The other half is the gate 13 orphan false positive filed separately.
+
+PROVENANCE. The script shipped with task 279 phase 5 (commit 8fdfff0bf, "ship consumer-runnable migrate-state-legacy-fields.sh"); its manifest declaration was never added. Task 279 is completed and archived, so nothing else will return to this.
+
+WHY IT MATTERS BEYOND THE RED GATE. A live deployed script that is invisible to the manifest is a script no gate can verify, no consumer deploy will carry, and no reader will find from the manifest -- the same declared-vs-deployed parity defect class the content-hash gate exists to catch.
+
+WHAT TO CHANGE.
+1. Add scripts/migrate-state-legacy-fields.sh to provides.scripts in agent-system/extensions/core/manifest.json.
+2. Confirm agent-system/extensions/core/README.md names the script in its inventory and refresh if not -- this also addresses the adjacent README-older-than-manifest WARN.
+3. Re-run check-extension-docs.sh and confirm [core] returns OK, then confirm verify-deploy.sh gate 3 is green.
+
+CROSS-REFERENCE. Task 250 records this same failure in its own description as explicitly out of its scope ("neither in this task.s scope -- Re-check whether both are still live before Phase 1 treats them as noise"). This task is that re-check, resolved. 250 need not treat it as noise once this lands.
+
+Filed by the 2026-10-02 review: specs/reviews/review-2026-10-02.md
+
+---
 
 ### 322. Todo move vacated source never staged
 - **Status**: [NOT STARTED]
