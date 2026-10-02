@@ -23,7 +23,11 @@
     "session_id": "sess_1790978139_b07459",
     "agent_type": "neovim-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "neovim-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #324
 
 - **Task**: 324 - Whitelist scheduled_tasks.lock in orphan detection
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (task 323 is a concurrent sibling; disjoint file scope)
 - **Research Inputs**: specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/reports/01_whitelist-scheduled-tasks-lock.md

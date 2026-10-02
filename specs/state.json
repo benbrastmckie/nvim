@@ -1076,7 +1076,7 @@
     {
       "project_number": 324,
       "project_name": "whitelist_scheduled_tasks_lock_in_orphan_detection",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "neovim",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -1087,7 +1087,7 @@
         "lua/neotex/plugins/ai/shared/extensions/verify.lua"
       ],
       "created": "2026-10-02T21:41:34Z",
-      "last_updated": "2026-10-02T22:03:22Z",
+      "last_updated": "2026-10-02T22:26:32Z",
       "session_id": "sess_1790978139_b07459",
       "artifacts": [
         {
@@ -1099,9 +1099,15 @@
           "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/plans/01_whitelist-scheduled-tasks-lock.md",
           "type": "plan",
           "summary": "4-phase plan: verify.lua exclusion branch, source-store doc row, planted-lock regression assertion, real gate-13 confirmation."
+        },
+        {
+          "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/summaries/01_whitelist-scheduled-tasks-lock-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: exclusion branch, doc registration, regression assertion, gate-13 confirmation, and gate-count investigation."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a scheduled_tasks.lock exclusion branch to is_runtime_artifact() in verify.lua, registered it in the source-store deploy-orphan-detection.md exclusion-classes table, and added a planted-lock regression assertion (Assertion F) to test-deploy-orphans.sh with a negative control. Gate 13 confirmed PASS with a real lock file present on disk."
     }
   ],
   "completed_projects": [],

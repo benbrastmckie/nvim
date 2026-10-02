@@ -11,7 +11,7 @@ next_project_number: 325
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,322,324 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,322 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,185,250,251,273,275,281,298,302,303,307,308,318,319 | 22,127,184,265,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,274,282,304,313 | 165,250,251,263,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 165,282,300 | orchestrator |
@@ -43,7 +43,6 @@ next_project_number: 325
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
-324 [IMPLEMENTING] — DEFECT. verify-deploy.sh gate 13 (whole-tree orphan...
 
 ### Extensions
 
@@ -82,12 +81,13 @@ next_project_number: 325
 ## Tasks
 
 ### 324. Whitelist scheduled tasks lock in orphan detection
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [324_whitelist_scheduled_tasks_lock_in_orphan_detection/reports/01_whitelist-scheduled-tasks-lock.md]
 - **Plan**: [324_whitelist_scheduled_tasks_lock_in_orphan_detection/plans/01_whitelist-scheduled-tasks-lock.md]
+- **Summary**: [324_whitelist_scheduled_tasks_lock_in_orphan_detection/summaries/01_whitelist-scheduled-tasks-lock-summary.md]
 
 **Description**: DEFECT. verify-deploy.sh gate 13 (whole-tree orphan detection) FAILs on .claude/scheduled_tasks.lock, which is not an orphan: it is a session-acquired runtime lock file whose contents are a live session.s own sessionId, pid and acquiredAt, created at execution time by the scheduled-task mechanism and never by the copy engine.
 
