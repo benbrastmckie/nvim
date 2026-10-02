@@ -317,22 +317,25 @@ the recipe actually does rather than to this hypothesis.
 
 ---
 
-### Phase 4: Fix the non-core extension sites [NOT STARTED]
+### Phase 4: Fix the non-core extension sites [COMPLETED]
 
 **Goal**: The 5 occurrences in the epidemiology and present extensions stage explicit file lists,
 closing the same hazard outside core.
 
 **Tasks**:
-- [ ] Re-read each file immediately before editing.
-- [ ] `agent-system/extensions/epidemiology/commands/epi.md:325` (Step 5, task creation) —
+- [x] Re-read each file immediately before editing.
+- [x] `agent-system/extensions/epidemiology/commands/epi.md:325` (Step 5, task creation) —
       replace `-- specs/` with `-- specs/TODO.md specs/state.json`. Already passes
       `--honest-index-rows {N}`; leave it.
-- [ ] `agent-system/extensions/present/commands/grant.md:223` (task creation) and
+- [x] `agent-system/extensions/present/commands/grant.md:223` (task creation) and
       `grant.md:476` (CHECKPOINT 2 revision commit) — same replacement. Both already pass
-      `--honest-index-rows`.
-- [ ] `agent-system/extensions/present/commands/slides.md:323` (Step 5, task creation) — same
+      `--honest-index-rows`. *(completed: `grant.md:476`'s preceding STAGE 2 steps were re-read
+      directly -- they write only `state.json` and `TODO.md`, no grant-specific artifact file at
+      this checkpoint, so the Scope Hypothesis's "may also touch a grant-specific artifact path"
+      caveat did not materialize; a one-line note was added inline recording this.)*
+- [x] `agent-system/extensions/present/commands/slides.md:323` (Step 5, task creation) — same
       replacement.
-- [ ] `agent-system/extensions/present/commands/timeline.md:227` (task creation) — same
+- [x] `agent-system/extensions/present/commands/timeline.md:227` (task creation) — same
       replacement. Note this site's block is indented 5 spaces inside a numbered list; preserve
       the indentation and the backslash continuation alignment.
 

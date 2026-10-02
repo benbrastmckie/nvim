@@ -320,7 +320,7 @@ bash .claude/scripts/git-commit-scoped.sh \
   --message "task {N}: create {title}" \
   --session "{session_id}" \
   --honest-index-rows {N} \
-  -- specs/
+  -- specs/TODO.md specs/state.json
 ```
 
 ### Step 6: Output

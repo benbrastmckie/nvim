@@ -220,7 +220,7 @@ Capture all responses in a forcing_data object:
      --message "task {N}: create {title}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
-     -- specs/
+     -- specs/TODO.md specs/state.json
    ```
 
 9. **Output**:
@@ -468,12 +468,15 @@ Create a new task to revise an existing grant.
 
 ### CHECKPOINT 2: COMMIT
 
+This stage's own preceding steps (STAGE 2 above) write only `state.json` (the new revision task
+row) and `TODO.md` (the new task entry) -- no grant-specific artifact file is created yet at
+this checkpoint:
 ```bash
 bash .claude/scripts/git-commit-scoped.sh \
   --message "task {NEW_N}: create revision for grant {N}" \
   --session "{session_id}" \
   --honest-index-rows {NEW_N} \
-  -- specs/
+  -- specs/TODO.md specs/state.json
 ```
 
 **On success, output**:

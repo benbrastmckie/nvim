@@ -224,7 +224,7 @@ Capture all responses in a forcing_data object:
      --message "task {N}: create {title}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
-     -- specs/
+     -- specs/TODO.md specs/state.json
    ```
 
 9. **Output**:
