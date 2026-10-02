@@ -502,38 +502,68 @@ the six new ones, stop and account for why before continuing.
 
 ---
 
-### Phase 8: Mode-Executability Audit, Gate Run, and Measurement Table [NOT STARTED]
+### Phase 8: Mode-Executability Audit, Gate Run, and Measurement Table [COMPLETED]
 
 **Goal**: Prove that each of the six modes remains fully executable after extraction, that the
 full gate set passes, and that the mandated before/after byte measurement is recorded.
 
 **Tasks**:
-- [ ] **Per-mode executability audit** (the mitigation for this task's primary risk). For each of
+- [x] **Per-mode executability audit** (the mitigation for this task's primary risk). For each of
       the five extracted modes, read its file end-to-end and confirm: (a) the opening line states
       it is the complete and only specification and MUST be followed exactly; (b) every step the
       mode needs is present — no step references content that stayed behind in `task.md` other
       than Create Task Mode's jq pattern (now fully qualified) and the always-inline Constraints;
       (c) all fenced code blocks are balanced and complete. Record a per-mode pass/fail line.
-- [ ] **Dispatch-table audit**: all six Mode Detection entries present; the five pointer entries
+      *(completed — all five PASS: task-recover-mode.md PASS, task-expand-mode.md PASS,
+      task-sync-mode.md PASS, task-review-mode.md PASS (both its `### Review Mode Constraints`
+      and `### Standards Reference (--review mode)` subsections present; no reference to the
+      global `## Constraints` or to Create Task Mode content other than the now-qualified jq
+      pattern), task-abandon-mode.md PASS. All five fence counts even.)*
+- [x] **Dispatch-table audit**: all six Mode Detection entries present; the five pointer entries
       each contain `READ`, the `.claude/context/patterns/` deployed prefix, the correct filename,
-      and "follow it exactly"; the no-flag entry points inline.
-- [ ] **Byte ledger reconciliation**: bytes removed from `task.md` must equal total bytes
+      and "follow it exactly"; the no-flag entry points inline. *(completed — PASS on all six)*
+- [x] **Byte ledger reconciliation**: bytes removed from `task.md` must equal total bytes
       relocated plus the measured pointer/preamble delta, within an explicitly stated and
       explained residual. An unexplained residual means content was lost or duplicated.
-- [ ] **Content-loss sweep**: `grep` `task.md` for each of the five removed mode flag strings
+      *(completed, ZERO unexplained residual: total verbatim relocated content across Phases
+      3-5 = 1,415 (examples) + 3,111 (abandon) + 10,429 (review) + 5,400 (sync) + 4,236 (expand)
+      + 4,591 (recover) = 29,182 B. Total pointer/bullet text added to `task.md` in those same
+      phases = 179 B (new examples pointer) + 410 B (5 mode-bullet READ upgrades, old 238 B ->
+      new 648 B) + 59 B (no-flag bullet upgrade, old 47 B -> new 106 B) = 648 B. Expected net
+      removal = 29,182 - 648 = 28,534 B. Measured net removal across Phases 3-5 (42,632 B at
+      end of Phase 2 -> 14,098 B at end of Phase 5) = 28,534 B. Exact match, 0 B residual.
+      Phase 2's separate -211 B (merge-and-drop, not a relocation) and Phase 6's separate
+      +410 B (cross-ref qualification + editor-guard note, explicitly non-verbatim per that
+      phase's own note) are both accounted for outside this relocation-specific ledger.)*
+- [x] **Content-loss sweep**: `grep` `task.md` for each of the five removed mode flag strings
       (`--recover`, `--expand`, `--sync`, `--review`, `--abandon`) and confirm each survives only
-      in the dispatch table and frontmatter `argument-hint`.
-- [ ] **Gate run**: `bash agent-system/extensions/core/scripts/check-extension-docs.sh` (Rule R
+      in the dispatch table and frontmatter `argument-hint`. *(completed — confirmed, no other
+      occurrences)*
+- [x] **Gate run**: `bash agent-system/extensions/core/scripts/check-extension-docs.sh` (Rule R
       and Rule T clean, or no new findings vs. Phase 1 baseline);
       `generate-context-line-counts.sh --check` clean; `jq empty` on
       `index-entries.json`; repo task-reference lint clean for the new files
       (`check-task-references.sh`) — the extracted regions were confirmed free of literal task
       numbers during planning, but the new files are deliverables outside `specs/**` and are
-      subject to the rule.
-- [ ] **Measurement table** in the implementation summary, reproducing the precedent's shape:
+      subject to the rule. *(completed with the same concurrency caveat as Phase 7: at gate-run
+      time, `check-extension-docs.sh` core FAIL and `generate-context-line-counts.sh --check`
+      both show findings, but EVERY finding's path (`patterns/inline-status-update.md`,
+      `patterns/jq-escaping-workarounds.md`, `processes/implementation-workflow.md`,
+      `reference/state-management-schema.md`, `scripts/migrate-state-legacy-fields.sh`,
+      `scripts/tests/test-validate-state.sh`) is a VERBATIM member of task 279's declared
+      `file_scope` in this dispatch's territory block — sibling in-flight work, not this task's
+      regression. Two additional `literature` extension mismatches
+      (`zotero-item-creation.md`, `zotero-scripts.md`) are likewise outside this task's scope
+      (core extension only) and attributable to the literature-area sibling named in the
+      territory block. `jq empty index-entries.json` exits 0. `check-task-references.sh` run
+      individually against `commands/task.md` and each of the six new pattern files: all seven
+      report 0 unexempted occurrences, PASS.)*
+- [x] **Measurement table** in the implementation summary, reproducing the precedent's shape:
       before bytes/lines, after bytes/lines, absolute and percentage reduction for `task.md`, plus
-      a per-file size row for each of the six new files.
-- [ ] Confirm no file under `.claude/**` was written by this task.
+      a per-file size row for each of the six new files. *(completed, see implementation summary)*
+- [x] Confirm no file under `.claude/**` was written by this task. *(completed — verified via
+      `git show --name-only` on every commit this task made; zero `.claude/**` paths in any of
+      them)*
 
 **Timing**: 0.75 hours
 
@@ -545,6 +575,21 @@ full gate set passes, and that the mandated before/after byte measurement is rec
 directional estimate derived from the research report, not a target to be engineered toward —
 report the measured value whatever it is, and if it falls far outside this band, investigate
 before declaring the phase complete rather than adjusting the claim.
+
+**Measured outcome**: `task.md` landed at 14,508 B / 282 lines — a 66.14% byte reduction
+(42,843 B -> 14,508 B, -28,335 B), outside the absolute 12,300-13,400 B band but squarely within
+the plan's own Goals-section target of "~65-70%". Investigated per this hypothesis's own
+instruction rather than silently adjusted: the gap is fully explained by two factors established
+earlier in this plan, not by any lost or duplicated content (the byte ledger above reconciles to
+0 B residual). First, Phase 1 found the file had grown from the research baseline of 39,403 B to
+42,843 B before this task touched it (task 292's Component 0 wiring, landed after research) —
+a larger starting point mechanically raises the absolute end point even at a constant relative
+reduction. Second, the five "READ ... now and follow it exactly" pointers and the Phase 6
+editor-guard note are deliberately more verbose than a minimal one-line pointer would be (by
+design, per the Risks table's strongest-imperative-framing mitigation), adding back part of what
+a terser dispatch table would have saved. The relative-reduction goal (the plan's actual
+Goals-section commitment) is met; the absolute-byte sub-hypothesis here was a derived estimate
+from stale data and does not independently gate completion.
 
 **Files to modify**:
 - None (audit and measurement only; findings land in the implementation summary).
@@ -558,18 +603,28 @@ before declaring the phase complete rather than adjusting the claim.
 
 ## Testing & Validation
 
-- [ ] `agent-system/extensions/core/commands/task.md` reduced by ~65-70%, measured and recorded.
-- [ ] All six new `context/patterns/task-*.md` files exist, each opening with imperative
-      "complete and only specification / MUST be followed exactly" framing.
-- [ ] Every relocated region is byte-identical to its source, except the two Phase 6
-      cross-reference qualifications, which are individually documented.
-- [ ] Step 3.2 carries the full keyword union; no `Action Verb Categories` block exists anywhere.
-- [ ] Six `index-entries.json` entries with `load_when.commands: ["/task"]` and accurate
-      `line_count`; `generate-context-line-counts.sh --check` clean.
-- [ ] `check-extension-docs.sh` Rule R clean (no new findings vs. baseline).
-- [ ] `jq empty` passes on `index-entries.json`.
-- [ ] No writes under `.claude/**`; no `manifest.json` change.
-- [ ] No task-number references in any new file (all are deliverables outside `specs/**`).
+- [x] `agent-system/extensions/core/commands/task.md` reduced by ~65-70%, measured and recorded.
+      *(completed: 66.14% reduction, 42,843 B -> 14,508 B)*
+- [x] All six new `context/patterns/task-*.md` files exist, each opening with imperative
+      "complete and only specification / MUST be followed exactly" framing. *(completed)*
+- [x] Every relocated region is byte-identical to its source, except the two Phase 6
+      cross-reference qualifications, which are individually documented. *(completed — note:
+      Phase 6 made three qualification edits in total, not two: the plan's own task list named
+      the expand/review jq-pattern qualifications, and this phase's audit additionally found and
+      fixed two stale "Sync Mode above/below" positional references plus one in `task.md` itself
+      — all individually documented in Phase 6's checklist above)*
+- [x] Step 3.2 carries the full keyword union; no `Action Verb Categories` block exists anywhere.
+      *(completed)*
+- [x] Six `index-entries.json` entries with `load_when.commands: ["/task"]` and accurate
+      `line_count`; `generate-context-line-counts.sh --check` clean. *(completed with the
+      documented concurrency caveat: clean with respect to this task's own entries; sibling
+      tasks' files show in-flight findings unrelated to this task)*
+- [x] `check-extension-docs.sh` Rule R clean (no new findings vs. baseline). *(completed with the
+      same concurrency caveat — all findings attributable to sibling file_scope)*
+- [x] `jq empty` passes on `index-entries.json`. *(completed)*
+- [x] No writes under `.claude/**`; no `manifest.json` change. *(completed, verified)*
+- [x] No task-number references in any new file (all are deliverables outside `specs/**`).
+      *(completed, verified via check-task-references.sh on all seven files)*
 
 ## Artifacts & Outputs
 
