@@ -337,6 +337,51 @@ Follow top to bottom when adding a new server:
 
 ---
 
+## Registration vs. Reachability
+
+Both axes above — Registration and Permission — answer whether a server is *configured*. Neither
+answers whether it is *running right now, for this project*. That is a third, independent
+question, and a project can pass every registration and permission check while still having no
+live server to answer a tool call.
+
+**The general concept**: registration tells you a server *would* connect if asked; reachability
+tells you a server *is* connected right now. A correctly registered project — every check in the
+Registration section above passes, the entry is well-formed, the permission grant matches —
+passes silently even when no server process is actually running for it. Only reachability
+determines the evidence tier a dispatched agent is actually operating under: whether its first
+real tool call will be answered by a live index, or will come back in a state that looks like
+"nothing found" but actually means "nothing was asked." This distinction applies to any
+per-project MCP server this codebase registers under local scope (see "Choosing a registration
+surface" above), not only `lean-lsp` — any server whose registration is per-project and whose
+process lifecycle is independent of registration state is subject to the same gap. `lean-lsp`
+is the one with a concrete implementation: `lean-mcp-preflight-check.sh --dispatch-block` (see
+`agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh`) checks registration via
+`verify-lean-mcp.sh`, then — only once registration is confirmed — separately probes for a live
+`lean-lsp-mcp` process bound to this project's own path via `/proc/<pid>/environ`, and reports a
+three-state reachability tier (`reachable` / `not_reachable` / `unknown`) into the dispatch file
+before the agent's first tool call. No other per-project server in this repo has an equivalent
+reachability probe yet; this is recorded as a gap, not a precedent to copy mechanically — build
+one only when a server's per-project registration state can diverge from its running state in a
+way that would otherwise go unnoticed, the same way `lean-lsp`'s did.
+
+**A cheap manual diagnostic tell, stated generally (not automated probe logic)**: when a compiled
+or cached artifact might be stale relative to its source, check a field that is *defined as a
+projection of another field in the same declaration*. If field `X` is defined as a projection of
+field `Y` — `X := (Y).1` or equivalent — then a cached artifact cannot possibly resolve `X`
+without first resolving `Y`: they are the same compiled unit. If a query shows `X` resolving while
+`Y` does not, the artifact being queried and its purported source provably came from different
+revisions. This one check distinguishes "the cache is inconsistent" from "the code is broken" —
+the two most easily confused diagnoses when a probe reports an unexpected failure against a
+project with any compiled or hashed on-disk cache. This is recorded here as a manual sanity check
+an agent or operator can apply by hand; it is deliberately **not** implemented as automated probe
+logic in this task's scope, and it is a distinct concern from build-cache replay correctness
+(tracked separately — see `lake-build-guard.sh`'s stale-content-addressed-store detection, a
+different failure mechanism in the same general neighborhood: a build silently reusing a cached
+result across a differently-scoped build rather than a language server silently indexing a stale
+cache). The motivating incident that surfaced this tell is recorded as `err_20261002080500`.
+
+---
+
 ## Known gaps
 
 **Retirement (deliberate, four extensions).** `epidemiology` (`rmcp`), `filetypes` (`openpyxl`,

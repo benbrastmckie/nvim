@@ -103,6 +103,24 @@ Parameters:
 #### lean_local_search
 **Purpose**: Fast local search to verify declarations exist.
 
+**Reading the `index` field — a three-state vocabulary, not a boolean**: a result carries an
+`index` field with one of three values, and only one of them licenses treating an empty result
+as proof of absence:
+
+| `index` value | Meaning | Empty result means |
+|----------------|---------|---------------------|
+| `unavailable` | No language server is running for this project. | **Not** proof of absence — there was no index to search. Evidence of record has silently degraded to a grep sweep; interpret and report accordingly. |
+| `warming` | A language server is running but the index is still loading. | **Not** proof of absence — the search ran against an incomplete index. |
+| `consulted` | The index was actually searched. | Proof of absence. This is the **only** state in which an empty result licenses that conclusion. |
+
+Treating an `unavailable` (or `warming`) empty result as proof of absence is a false conclusion —
+the search never happened, so absence was never established. Before issuing the first
+`lean_local_search` call, check this task's dispatch file for a `<lean-readiness-context>` block
+(injected by `lean-mcp-preflight-check.sh --dispatch-block`; see
+`context/patterns/mcp-server-ownership.md`'s registration-vs-reachability section) — it states
+the server's reachability tier up front, so an `unavailable` index on the first real call is
+expected, not surprising.
+
 #### lean_minimal_hypotheses
 **Purpose**: Return only the hypotheses relevant to the goal at a position, instead of the
 full local context returned by a raw `lean_goal` call.

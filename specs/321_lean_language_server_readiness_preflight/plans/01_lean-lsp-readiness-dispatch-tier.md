@@ -397,31 +397,32 @@ and say so rather than editing only four.
 
 ---
 
-### Phase 6: Record the two context gaps research named [NOT STARTED]
+### Phase 6: Record the two context gaps research named [COMPLETED]
 
 **Goal**: the `lean_local_search` three-state vocabulary and the registered-vs-reachable
 distinction are written down, independent of whether an agent ever reads the injected block.
 
 **Tasks**:
-- [ ] In `mcp-tools-guide.md`'s `#### lean_local_search` subsection, add the three-state `index`
+- [x] In `mcp-tools-guide.md`'s `#### lean_local_search` subsection, add the three-state `index`
       vocabulary: `unavailable` = no language server running; `warming` = index still loading;
       `consulted` = the only state in which an empty result is proof of absence. State the
       interpretation rule explicitly, including that treating an `unavailable` empty result as
-      proof of absence is a false conclusion.
-- [ ] In `mcp-server-ownership.md`, add a short section naming **registration vs. reachability** as
+      proof of absence is a false conclusion. *(completed)*
+- [x] In `mcp-server-ownership.md`, add a short section naming **registration vs. reachability** as
       a distinct, general concept: a correctly registered project with no running server passes
       every registration check silently, and only reachability determines the evidence tier. Note
       that the same distinction applies to any per-project MCP server this codebase registers, and
-      point at the probe as the Lean-specific implementation.
-- [ ] In the same section, record the cheap diagnostic tell from the motivating incident as a
+      point at the probe as the Lean-specific implementation. *(completed)*
+- [x] In the same section, record the cheap diagnostic tell from the motivating incident as a
       durable manual technique, stated generally: if field `X` is *defined as* a projection of field
       `Y`, and `X` resolves while `Y` does not, the compiled artifact and the source provably came
       from different revisions — which distinguishes "cache is inconsistent" from "code is broken"
       in one check. Name it as a manual sanity check, explicitly **not** automated probe logic, and
-      cross-reference that the build-cache half is tracked separately.
-- [ ] Observe `.claude/rules/no-task-references-in-deliverables.md`: cite durable anchors (file
+      cross-reference that the build-cache half is tracked separately. *(completed: cross-references
+      lake-build-guard.sh by name, not by task number)*
+- [x] Observe `.claude/rules/no-task-references-in-deliverables.md`: cite durable anchors (file
       names, section headings, the error id `err_20261002080500`) and no task numbers in either
-      file.
+      file. *(completed: verified via check-task-references.sh, 0 occurrences in both files)*
 
 **Timing**: 0.75 hours
 
