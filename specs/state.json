@@ -596,12 +596,13 @@
         {
           "path": "specs/039_zotero_metadata_resolution_upgrade/plans/02_zotero-metadata-resolution.md",
           "type": "plan",
-          "summary": "implementation plan"
+          "summary": "9-phase plan, all phases marked [COMPLETED] with per-task annotations and a verified Testing & Validation checklist."
         }
       ],
       "created": "2026-08-11T16:05:00Z",
       "last_updated": "2026-10-02T19:22:53Z",
-      "session_id": "sess_1790968925_5ff73e"
+      "session_id": "sess_1790968925_5ff73e",
+      "completion_summary": "Implemented translation-server metadata resolution, a new item-add-json Web API write path and orphan-clean wrapper, an explicit quota-aware auto-attach policy with a reactive 413-seeded cache, resolution_path/attachment_state corpus-index surfacing, and recorded (not executed) decisions for zotero-mcp adoption (defer) and the Zotero 10 backend swap, across all 9 plan phases. Every edit landed under agent-system/extensions/literature/**; .claude/** and ~/.dotfiles were untouched."
     },
     {
       "project_number": 44,

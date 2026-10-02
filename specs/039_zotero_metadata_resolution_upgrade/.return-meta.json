@@ -27,22 +27,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/039_zotero_metadata_resolution_upgrade/summaries/02_zotero-metadata-resolution-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["unit-test", "sandbox", "bash", "isolation", "side-effect-free"]
+      "suggested_keywords": [
+        "unit-test",
+        "sandbox",
+        "bash",
+        "isolation",
+        "side-effect-free"
+      ]
     },
     {
       "content": "scripts/generate-context-line-counts.sh --write (and similar whole-repo drift-fix scripts) recompute/rewrite EVERY extension's index-entries.json, not just the one whose docs changed. Running it in --write mode while other tasks are concurrently dispatched in the same working tree risks introducing unrelated line_count changes into files outside your own file_scope, some of which may overlap a concurrently-dispatched sibling's declared territory. Prefer a surgical, single-entry Edit to the specific line_count field(s) that actually changed (confirmed via wc -l) over running a repo-wide --write pass during concurrent multi-task orchestration; reserve the bulk --write mode for a solo, non-concurrent maintenance pass.",
       "category": "INSIGHT",
       "source_artifact": "specs/039_zotero_metadata_resolution_upgrade/summaries/02_zotero-metadata-resolution-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["index-entries", "line_count", "concurrency", "territory", "generate-context-line-counts"]
+      "suggested_keywords": [
+        "index-entries",
+        "line_count",
+        "concurrency",
+        "territory",
+        "generate-context-line-counts"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790968925_5ff73e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 9,
     "phases_total": 9
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
