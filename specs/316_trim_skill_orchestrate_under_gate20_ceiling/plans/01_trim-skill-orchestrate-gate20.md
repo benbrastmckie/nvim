@@ -165,31 +165,34 @@ carry the shortfall forward into Phase 2's margin check rather than declaring th
 
 ---
 
-### Phase 2: Collapse the Two `MUST NOT` Section Bodies to Pointers [NOT STARTED]
+### Phase 2: Collapse the Two `MUST NOT` Section Bodies to Pointers [COMPLETED]
 
 **Goal**: Remove the redundant inline copy of the Postflight Boundary contract (~496 B) and
 tighten the Context Flatness Constraint wording (~151 B), bringing SKILL.md under 20000 B with
 margin.
 
 **Tasks**:
-- [ ] Re-read SKILL.md immediately before editing; record its post-Phase-1 `wc -c`
-- [ ] Replace the body beneath `## MUST NOT (Postflight Boundary)` with the report's drafted
+- [x] Re-read SKILL.md immediately before editing; record its post-Phase-1 `wc -c`
+      *(completed: 20502 B, matches Phase 1's end state)*
+- [x] Replace the body beneath `## MUST NOT (Postflight Boundary)` with the report's drafted
       628 B pointer text, leaving the heading line byte-identical (a `lint-postflight-boundary.sh`
       dependency) and retaining the "never hardcode a phase order" / `detected_defects` sentence
-- [ ] Verify the D4 operational rationale still stands in Move 3's own bash-comment block
+      *(completed: 20502 B -> 20006 B, delta 496 B, exactly matching hypothesis)*
+- [x] Verify the D4 operational rationale still stands in Move 3's own bash-comment block
       (untouched by this phase), since the new pointer text names the D4 exception without
-      restating it
-- [ ] Replace the body beneath `## MUST NOT (Context Flatness Constraint)` with the report's
+      restating it *(completed: lines 199-202 unchanged)*
+- [x] Replace the body beneath `## MUST NOT (Context Flatness Constraint)` with the report's
       drafted 494 B tightened version, retaining the `reports/*.md`/`plans/*.md`/`summaries/*.md`/
       `handoffs/*.md` read prohibition, the `orchestrate-cycle-postflight.sh` attribution, and
-      the measured 871 B/cycle/task figure
-- [ ] Confirm both pointer targets' cited headings exist verbatim
+      the measured 871 B/cycle/task figure *(completed: 20006 B -> 19855 B, delta 151 B, exactly
+      matching hypothesis)*
+- [x] Confirm both pointer targets' cited headings exist verbatim
       (`handoff-schema.md`'s "Postflight Boundary";
       `orchestrate-state-machine.md`'s `## Context Flatness Guarantee`;
-      `orchestrate-cycle-postflight.md`)
-- [ ] Measure `wc -c` on SKILL.md; confirm it is at or under 20000 B and record the remaining
-      margin
-- [ ] Commit this green sub-step with scoped staging (SKILL.md only)
+      `orchestrate-cycle-postflight.md`) *(completed: all three confirmed present)*
+- [x] Measure `wc -c` on SKILL.md; confirm it is at or under 20000 B and record the remaining
+      margin *(completed: 19855 B, 145 B margin under the 20000 B ceiling)*
+- [x] Commit this green sub-step with scoped staging (SKILL.md only) *(completed)*
 
 **Timing**: 0.5 hours
 

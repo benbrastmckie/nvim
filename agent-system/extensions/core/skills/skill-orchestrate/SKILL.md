@@ -288,28 +288,19 @@ remove `.dispatch/` for every task in
 
 ## MUST NOT (Context Flatness Constraint)
 
-Full accounting: `docs/architecture/orchestrate-cycle-postflight.md`. Never read `reports/*.md`,
-`plans/*.md`, `summaries/*.md`, or `handoffs/*.md` during the loop —
-`orchestrate-cycle-postflight.sh` performs every sanctioned read (the handoff, gated by
-mtime/`dispatch_seq`; the bounded `.return-meta.json`/phase-marker recovery fallbacks). Context
-grows a measured 871 B (~218 tokens) per cycle per task, regardless of artifact complexity — see
-`orchestrate-state-machine.md`'s `## Context Flatness Guarantee` for the re-runnable measurement
-(`scripts/tests/test-orchestrate-context-growth.sh`).
+Never read `reports/*.md`, `plans/*.md`, `summaries/*.md`, or `handoffs/*.md` during the loop —
+`orchestrate-cycle-postflight.sh` performs every sanctioned read on this skill's behalf (the
+handoff, gated by mtime/`dispatch_seq`; the bounded recovery fallbacks). Full accounting and the
+measured 871 B/cycle/task growth figure: `docs/architecture/orchestrate-cycle-postflight.md` and
+`orchestrate-state-machine.md`'s `## Context Flatness Guarantee`.
 
 ## MUST NOT (Postflight Boundary)
 
-Full accounting: `docs/architecture/handoff-schema.md`'s "Postflight Boundary" section and
-`context/standards/postflight-tool-restrictions.md` (additive to the Context Flatness Constraint
-above). After a dispatch returns (Move 3), this skill MUST NOT edit source, run build/test
-commands, use MCP/WebSearch/domain tools, analyze or grep source, or write reports/plans/
-summaries — that is dispatched-agent work. This skill only reads the handoff, drives the state
-transition, and cleans up temp/marker files.
-
-**D4 exception** (operational only; rationale above): when
-`postflight_json.report_missing` is `true`, the lead writes that row's own Agent-tool return
-text **verbatim** to `${task_dir_rel}/.dispatch/${dispatch_seq}.agent-message.md`, then calls
-`orchestrate-recover-message-findings.sh` (Move 3 above) to persist it into `reports/` — the
-ONLY case this skill writes into `reports/`, `plans/`, or `summaries/`.
+Full contract (the five prohibited operations, the D4 verbatim-recovery exception, and why
+`orchestrate-cycle-postflight.sh` is this boundary's sole implementation): see
+`docs/architecture/handoff-schema.md`'s "Postflight Boundary" section and
+`context/standards/postflight-tool-restrictions.md`. After a dispatch returns (Move 3), this
+skill only reads the handoff, drives the state transition, and cleans up temp/marker files.
 
 Also: never hardcode a phase order (dispatch whatever phase `orchestrate-cycle-plan.sh` names);
 the `detected_defects` constraint above (Move 4) applies here too.
