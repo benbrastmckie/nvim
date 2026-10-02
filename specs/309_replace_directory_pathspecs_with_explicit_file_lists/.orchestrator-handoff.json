@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 9,
-  "summary": "Wrote a 5-phase implementation plan. Research's V5 verdict is confirmed and integrated (directory pathspec slips past V5 by exact-string-equality design; the three named sites never pass --task, so V5 is never consulted). Scope widened from the 3 named sites to all 17 bare `-- specs/` occurrences across 9 files in 3 extensions, because the task's own closing requirement (a regression check that no commit recipe passes a bare directory pathspec) cannot be met with 14 known violations left standing. One material correction to the research report: scripts/verify-deploy.sh IS orchestrator-critical-path entry 12, so wiring the new lint as a deploy gate is excluded per the SCOPE NOTE and recorded as a follow-up; the lint still ships, registers in manifest.json, and is auto-discovered by run-all.sh. Territory checked: zero overlap with siblings 277/314/315/294.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 15,
+  "summary": "All 5 plan phases completed. Fixed all 19 real bare shared-directory pathspec violations across 11 files in 3 extensions (core, epidemiology, present) plus the memory extension -- 2 more than the plan's named 17/9, found by the new lint's own full-tree run; 1 raw hit was a lint false positive fixed in the classifier itself. Added lint-directory-pathspec-boundary.sh and its 14-case fixture test, registered in manifest.json, cross-referenced from git-staging-scope.md, and deployed via deploy-headless.sh. Full source-store lint scan exits 0 (zero violations); sibling lint-scoped-commit-boundary.sh unregressed (0 violations). verify-deploy.sh: 32/33 gates pass -- gate 20 (context budget) fails on skills/skill-orchestrate/SKILL.md, externally attributed via git log to sibling task 315's commit f9cac3ae6 (that file is in task 315's own file_scope, not this task's); independently verified by the team lead during this dispatch. Zero gate regressions introduced by this task.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/plans/01_explicit-file-list-pathspecs.md",
-      "summary": "5-phase plan: new directory-pathspec regression lint + fixture test (Phase 1), then three parallel site-fix phases (2-4), then close-out with lint-green verification, docs cross-reference, deploy, and follow-up recording (Phase 5)."
+      "type": "summary",
+      "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/summaries/01_explicit-file-list-pathspecs-summary.md",
+      "summary": "Full implementation summary: 19 violations fixed across 11 files, new lint + fixture test, deviations from the plan's 17/9 scope hypothesis, and the externally-attributed gate 20 finding."
+    },
+    {
+      "type": "other",
+      "path": "agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh",
+      "summary": "New standalone regression lint guarding against a bare shared-directory pathspec passed to git-commit-scoped.sh."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
-  "next_action_hint": "Run /implement 309 to execute the plan. Phases 2, 3, and 4 touch disjoint file sets and are safe to dispatch in parallel after Phase 1."
+  "next_action_hint": "Task 309 is complete. Follow-ups recorded in the summary: (1) wire lint-directory-pathspec-boundary.sh as a new verify-deploy.sh gate 18 -- requires a task that admits touching a critical path; (2) research whether the ~25 sanctioned task-scoped-directory pathspec sites should be narrowed further; (3) gate 20's context-budget regression on skills/skill-orchestrate/SKILL.md belongs to task 315 or a dedicated follow-up, not task 309."
 }

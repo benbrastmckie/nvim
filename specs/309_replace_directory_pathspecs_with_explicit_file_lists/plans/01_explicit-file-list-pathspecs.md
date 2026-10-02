@@ -365,7 +365,7 @@ path, which must then be enumerated rather than assumed away.
 
 ---
 
-### Phase 5: Close out — lint green, docs cross-reference, deploy, follow-up [NOT STARTED]
+### Phase 5: Close out — lint green, docs cross-reference, deploy, follow-up [COMPLETED]
 
 **Goal**: The regression lint runs green across the whole source store with no violation-covering
 allowlist entry, the standards doc points at it, the deploy tree reflects the source-store edits,
@@ -373,29 +373,41 @@ and the deliberately-excluded `verify-deploy.sh` gate wiring is recorded as a fo
 than left as an undocumented hole.
 
 **Tasks**:
-- [ ] Run the new lint across the full default scan root with no path arguments. It must exit 0.
+- [x] Run the new lint across the full default scan root with no path arguments. It must exit 0.
       If it still reports a violation, that is a Phase 2-4 miss — fix the site, never add an
       allowlist entry.
-- [ ] Re-run `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh
+- [x] Re-run `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh
       --verbose` to confirm the sibling lint was not regressed by any of the edits.
-- [ ] Add a cross-reference bullet to `agent-system/extensions/core/context/standards/git-staging-scope.md`'s
+- [x] Add a cross-reference bullet to `agent-system/extensions/core/context/standards/git-staging-scope.md`'s
       closing reference list (alongside the existing `lint-scoped-commit-boundary.sh` bullet at
       ~line 376), naming the new lint as the mechanical guardrail against the bare
       shared-directory pathspec, and stating that it is **not yet** wired as a `verify-deploy.sh`
       gate with the one-line reason (critical-path exclusion) so the gap is self-documenting.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` (or at minimum the two
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` (or at minimum the two
       lint test suites) and confirm the new suite is auto-discovered and passes — `run-all.sh`
       discovers `scripts/tests/test-*.sh` with no registration step, so discovery itself is the
-      check.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` so `.claude/` reflects the source-store edits,
+      check. *(deviation: altered — the full whole-tree `run-all.sh` (hundreds of suites across
+      every extension) exceeded this dispatch's reasonable wait bound; both relevant suites
+      (`test-lint-directory-pathspec-boundary.sh`: 14/14, `test-lint-scoped-commit-boundary.sh`:
+      8/8) were confirmed directly, matching the plan's own stated fallback. A partial run-all.sh
+      pass (through ~580 of its suites before the dispatch moved on) showed exactly 2 failures,
+      both tracing via `git log` to old pre-task commits (`test-gate-out-repair-reporting.sh` and
+      `test-lint-json-channel-discipline.sh`, unrelated to directory pathspecs) — zero failures
+      attributable to this task's own suites.)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` so `.claude/` reflects the source-store edits,
       then confirm the deployed copies of the two new scripts exist at
       `.claude/scripts/lint/lint-directory-pathspec-boundary.sh` and
       `.claude/scripts/tests/test-lint-directory-pathspec-boundary.sh` (this is what validates the
       `manifest.json` registration from Phase 1).
-- [ ] Run the full gate set (`bash .claude/scripts/verify-deploy.sh`) and confirm no gate
+- [x] Run the full gate set (`bash .claude/scripts/verify-deploy.sh`) and confirm no gate
       regressed — in particular gate 8 (shell test suites) and gate 17 (the sibling commit-boundary
-      lint).
-- [ ] Record the follow-up explicitly in the task summary: wire
+      lint). *(completed: gate 17 passes clean. Gate 20 (orchestrator context budget) FAILS --
+      `skills/skill-orchestrate/SKILL.md` at 20930 B against its 20000 B ceiling -- but this is
+      externally attributed, not a task 309 regression: `git log` names the last commit touching
+      that file as f9cac3ae6 "task 315 phase 6: thread persisted_status through Move 3 and its
+      mirrored doc copy", and that file is in task 315's own declared file_scope, not task 309's.
+      Zero gate regressions newly introduced by this task.)*
+- [x] Record the follow-up explicitly in the task summary: wire
       `lint-directory-pathspec-boundary.sh` as a new `verify-deploy.sh` gate (gate 18), which
       requires editing an orchestrator-critical path and therefore belongs to a task that admits
       one. Also record the second, separate follow-up research identified: the ~25

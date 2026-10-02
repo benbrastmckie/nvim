@@ -422,3 +422,12 @@ the addendum and falls through to the plain commit message — it must never bre
 - `.claude/scripts/lint/lint-scoped-commit-boundary.sh` — the mechanical guardrail against
   regrowth of the raw `git add` + bare `git commit -m` anti-pattern this doc describes; wired as
   `verify-deploy.sh` gate 17
+- `.claude/scripts/lint/lint-directory-pathspec-boundary.sh` — the complementary mechanical
+  guardrail against the OPPOSITE failure mode: a `git-commit-scoped.sh` call that correctly ends
+  in a trailing pathspec, but that pathspec is itself a bare SHARED directory (e.g. `-- specs/`
+  or `-- .memory/`) rather than the explicit file list this doc's per-operation scopes require.
+  It deliberately does not flag the sanctioned task-scoped directory form (`-- "${task_dir}/"`,
+  `-- "specs/${padded_num}_${slug}/reports/"`) described above. **Not yet** wired as a
+  `verify-deploy.sh` gate: the natural wiring point (`verify-deploy.sh` gate 17, alongside its
+  sibling) is itself an orchestrator-critical path, and the task that introduced this lint was
+  scoped to exclude touching any critical path — see that task's summary for the follow-up
