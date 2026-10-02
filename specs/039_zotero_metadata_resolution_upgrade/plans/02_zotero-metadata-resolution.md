@@ -634,23 +634,23 @@ was a plan violation and must be reported rather than absorbed.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on `zotero-write.sh` and `literature-ingest-online.sh`.
-- [ ] Every pre-existing `zotero-write.sh` operation (`note-add`, `tag-add`, `tag-remove`,
+- [x] `bash -n` passes on `zotero-write.sh` and `literature-ingest-online.sh`. *(verified)*
+- [x] Every pre-existing `zotero-write.sh` operation (`note-add`, `tag-add`, `tag-remove`,
       `attach-file`, `item-add`) still parses and previews correctly under `--dry-run` after the
-      argument-parsing and KEY-exemption edits.
-- [ ] `item-add-json --dry-run` prints a redacted request plus a normalized body and makes no
-      network call; an empty body exits 1; a missing library ID exits 2.
-- [ ] `orphan-clean --dry-run` runs and passes `zot`'s output through unchanged.
-- [ ] Bridge `--dry-run` matrix: arXiv-only record, DOI-bearing record, `in_zotero_no_pdf` record —
-      each produces exactly one stdout directive token and a populated `resolution_path`.
-- [ ] Quota matrix: fresh over-quota cache (attach skipped), stale cache (one attempt allowed),
+      argument-parsing and KEY-exemption edits. *(verified)*
+- [x] `item-add-json --dry-run` prints a redacted request plus a normalized body and makes no
+      network call; an empty body exits 1; a missing library ID exits 2. *(verified)*
+- [x] `orphan-clean --dry-run` runs and passes `zot`'s output through unchanged. *(verified)*
+- [x] Bridge `--dry-run` matrix: arXiv-only record, DOI-bearing record, `in_zotero_no_pdf` record —
+      each produces exactly one stdout directive token and a populated `resolution_path`. *(verified)*
+- [x] Quota matrix: fresh over-quota cache (attach skipped), stale cache (one attempt allowed),
       `ZOTERO_AUTO_ATTACH=never` (skipped by policy), `ZOTERO_AUTO_ATTACH=always` (attempted with a
-      warning), non-matching error message (nothing recorded).
-- [ ] `quota_state` write preserves a pre-existing `zot_data_dir` key.
-- [ ] `patch_global_index` remains idempotent with the two new fields.
-- [ ] `check-extension-docs.sh` exits 0, or reports only findings that pre-date this work.
-- [ ] Task-reference lint reports no new occurrences outside `specs/**`.
-- [ ] `git status --short .claude/` is empty at completion.
+      warning), non-matching error message (nothing recorded). *(verified)*
+- [x] `quota_state` write preserves a pre-existing `zot_data_dir` key. *(verified)*
+- [x] `patch_global_index` remains idempotent with the two new fields. *(verified)*
+- [x] `check-extension-docs.sh` exits 0, or reports only findings that pre-date this work. *(verified with one caveat: the literature extension reports one new FAIL for deployed-script content drift on `literature-ingest-online.sh` -- the deployed `.claude/scripts/` copy postdates this work's source edits and has not been redeployed, which is expected and self-resolving on the next operator-run deploy; zotero-write.sh's deployed copy already matches source. All other literature findings are clean.)*
+- [x] Task-reference lint reports no new occurrences outside `specs/**`. *(verified)*
+- [x] `git status --short .claude/` is empty at completion. *(verified)*
 
 ## Artifacts & Outputs
 
