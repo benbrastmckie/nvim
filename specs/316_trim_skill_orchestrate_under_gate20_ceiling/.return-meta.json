@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790957600_e00acf_316",
+  "dispatch_seq": 12,
+  "findings_count": 3,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/reports/01_trim_skill_orchestrate_gate20.md",
+      "summary": "Decides option (a) relocate-and-trim for the gate 20 ceiling breach on skill-orchestrate/SKILL.md; identifies 3 mechanically-found duplicate-prose relocations (status/persisted_status paragraph, Postflight Boundary section body, Context Flatness Constraint tightening) totaling 1075 B of verified savings against the 930 B needed, with exact before/after text."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh gate 20's per-file ceiling sub-check reads only the SOURCE STORE copy of a file via `wc -c` (agent-system/extensions/core/...), never the deployed .claude/ mirror -- so a gate-20 per-file-ceiling fix only needs to land in the source store to go green, even though the normal deploy/sync workflow should still be run afterward to keep the mirror in sync.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/reports/01_trim_skill_orchestrate_gate20.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy", "gate20", "orchestrator-context-budget", "source-store", "ceiling"]
+    },
+    {
+      "content": "lint-postflight-boundary.sh's has_postflight_boundary_section() check only greps for the exact heading text `^## MUST NOT (Postflight Boundary)` in a SKILL.md -- it does not check the body underneath. Any skill carrying that heading can safely shrink the body to a pointer (e.g. into docs/architecture/handoff-schema.md's own fuller 'Postflight Boundary' section) without tripping the lint, as long as the heading text is preserved verbatim.",
+      "category": "PATTERN",
+      "source_artifact": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/reports/01_trim_skill_orchestrate_gate20.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint-postflight-boundary", "SKILL.md", "heading-only-check", "postflight-boundary"]
+    }
+  ],
+  "next_steps": "Run /plan 316 to create implementation plan"
+}
