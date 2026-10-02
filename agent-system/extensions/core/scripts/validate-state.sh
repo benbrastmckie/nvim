@@ -432,6 +432,11 @@ done
 # Mirrors context/schemas/state-schema.json's top-level additionalProperties: false. Hardcoded
 # here (not parsed from the schema at runtime) matching validate-handoff.sh's own precedent of
 # hand-coded required-field lists.
+# RULED-RETIRED, deliberately NOT in this list: `artifacts`, `metadata`, top-level `last_updated`.
+# These are pre-agent-system generator-era bookkeeping with no writer or reader anywhere in
+# agent-system/ -- see context/reference/state-management-schema.md's "Retired Top-Level Fields"
+# subsection for the per-field last-known-value record and scripts/migrate-state-legacy-fields.sh
+# for the consumer-runnable removal tool. Do not "helpfully" re-admit them here.
 KNOWN_TOP_LEVEL_FIELDS=(
   next_project_number default_task_type active_projects active_topics completed_projects
   repository_health memory_health version vault_count vault_history
@@ -462,7 +467,8 @@ KNOWN_ENTRY_FIELDS=(
   project_number project_name status task_type title topic description session_id effort
   priority created last_updated dependencies file_scope artifacts next_artifact_number
   completion_summary roadmap_items memory_candidates reflection
-  hold_reason held_at prior_status
+  hold_reason held_at prior_status research_questions
+  blockers previous_status resume_phase researched
 )
 unknown_entry=$(jq -r '.active_projects[] | keys[]' "$STATE_FILE" 2>/dev/null | sort -u | while IFS= read -r k; do
   known=0

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #279
 
 - **Task**: 279 - Reconcile state-schema.json with the live fields the orchestrator reads: rule per field (widen, migrate, or retire), and fix the blockers reader/comment contradiction
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: None (coordinates with tasks 269 and 271 on shared files — see Risks)
 - **Research Inputs**: specs/279_state_schema_rejects_live_orchestration_fields/reports/01_state-schema-field-ruling.md
@@ -126,7 +126,7 @@ serialization above is within this task; the cross-task discipline is in Risks.
 
 ---
 
-### Phase 1: Apply the ruling to the schema and the validator's known-field arrays [NOT STARTED]
+### Phase 1: Apply the ruling to the schema and the validator's known-field arrays [IN PROGRESS]
 
 **Goal**: The five WIDEN fields are modelled in `state-schema.json` and accepted by
 `validate-state.sh`, the three RETIRE fields remain unmodelled deliberately, and the pre-existing
@@ -135,32 +135,39 @@ there is no drift test protecting the pair (Phase 3 adds one).
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/schemas/state-schema.json` and
+- [x] Re-read `agent-system/extensions/core/context/schemas/state-schema.json` and
       `agent-system/extensions/core/scripts/validate-state.sh` immediately before editing (task 269
-      may have already modified the validator this cycle).
-- [ ] Add to `properties` (top level): `active_goal`, `type: ["string", "null"]`, description naming
-      `commands/review.md`'s goal-selection step as the live writer.
-- [ ] Add to `definitions.projectEntry.properties`:
-  - [ ] `blockers`: `{"type": "array", "items": {"type": "string"}}`, description naming the
+      may have already modified the validator this cycle). *(completed)*
+- [x] Add to `properties` (top level): `active_goal`, `type: ["string", "null"]`, description naming
+      `commands/review.md`'s goal-selection step as the live writer. *(deviation: altered — already
+      present in the schema and validator, settled by hand 2026-09-30 per the two-field note in the
+      dispatch; re-verified in place, `type: "string"` not `["string","null"]`, left as-is)*
+- [x] Add to `definitions.projectEntry.properties`:
+  - [x] `blockers`: `{"type": "array", "items": {"type": "string"}}`, description naming the
         free-text human/session-authored convention (no canonical script writer) and the reader at
-        `scripts/orchestrate-cycle-postflight.sh`'s blocked-verdict branch.
-  - [ ] `previous_status`: `{"$ref": "#/definitions/taskStatus"}`, description naming `/spawn`'s
+        `scripts/orchestrate-cycle-postflight.sh`'s blocked-verdict branch. *(completed)*
+  - [x] `previous_status`: `{"$ref": "#/definitions/taskStatus"}`, description naming `/spawn`'s
         preflight update as writer and `orchestrate-triage-classify.sh`'s blocked-task discharge
-        routing as reader; mark explicitly load-bearing, not bookkeeping.
-  - [ ] `resume_phase`: `{"type": "integer", "minimum": 1}`, description marking it legacy/secondary
+        routing as reader; mark explicitly load-bearing, not bookkeeping. *(completed)*
+  - [x] `resume_phase`: `{"type": "integer", "minimum": 1}`, description marking it legacy/secondary
         to the live `continuation_context` resume mechanism, retained for no-information-loss.
-  - [ ] `researched`: `{"type": "string"}`, description stating it is an **ISO8601 phase-completion
+        *(completed)*
+  - [x] `researched`: `{"type": "string"}`, description stating it is an **ISO8601 phase-completion
         timestamp**, explicitly disambiguated from the `status: "researched"` enum value, and noting
         it has no current writer or reader and is retained because `last_updated` overwrites.
-- [ ] Add the same five names to `validate-state.sh`'s `KNOWN_TOP_LEVEL_FIELDS` (1 name) and
-      `KNOWN_ENTRY_FIELDS` (4 names).
-- [ ] Add the missing `research_questions` to `KNOWN_ENTRY_FIELDS` — pre-existing drift, modelled in
+        *(completed)*
+- [x] Add the same five names to `validate-state.sh`'s `KNOWN_TOP_LEVEL_FIELDS` (1 name) and
+      `KNOWN_ENTRY_FIELDS` (4 names). *(deviation: altered — `active_goal` was already present in
+      `KNOWN_TOP_LEVEL_FIELDS`; only the 4 entry names were newly added)*
+- [x] Add the missing `research_questions` to `KNOWN_ENTRY_FIELDS` — pre-existing drift, modelled in
       the schema since the research-questions feature landed but never mirrored into the validator.
-- [ ] Deliberately do NOT add `artifacts`, `metadata`, or top-level `last_updated`; add a short
+      *(completed)*
+- [x] Deliberately do NOT add `artifacts`, `metadata`, or top-level `last_updated`; add a short
       comment above `KNOWN_TOP_LEVEL_FIELDS` naming those three as ruled-retired so a future editor
-      does not "helpfully" re-admit them.
-- [ ] Confirm `additionalProperties: false` is left in place at both levels (unchanged by design).
-- [ ] Commit (schema + validator together, explicit two-file `git add`).
+      does not "helpfully" re-admit them. *(completed)*
+- [x] Confirm `additionalProperties: false` is left in place at both levels (unchanged by design).
+      *(completed — verified via `jq` after edit: both still `false`)*
+- [x] Commit (schema + validator together, explicit two-file `git add`). *(completed)*
 
 **Timing**: 1.5 hours
 

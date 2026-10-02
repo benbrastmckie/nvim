@@ -400,6 +400,26 @@
         },
         "reflection": {
           "$ref": "#/definitions/reflectionObject"
+        },
+        "blockers": {
+          "type": "array",
+          "description": "Documented-optional. Free-text, human/session-authored annotation naming what is blocking the task; no canonical script writer (composed ad hoc by whoever marks the task blocked/partial). Read by scripts/orchestrate-cycle-postflight.sh's blocked-verdict branch to surface the aux signal shown to the user. Canonical shape is array of strings; a legacy scalar-string value is tolerated by that reader through the migration window (see scripts/migrate-state-legacy-fields.sh).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "previous_status": {
+          "$ref": "#/definitions/taskStatus",
+          "description": "Load-bearing, not bookkeeping. Written by /spawn's preflight status update (skills/skill-spawn/SKILL.md) before it overwrites status to blocked, so a later discharge can route back through the status the task was in beforehand. Read by scripts/orchestrate-triage-classify.sh's blocked-task discharge routing: a discharged candidate with no recorded previous_status cannot determine its discharge phase and falls back to needs_human."
+        },
+        "resume_phase": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Documented-optional, legacy/secondary. Predates and is not consumed by the live continuation_context-based resume mechanism (see agents/general-implementation-agent.md); no current writer or reader in the agent system. Retained rather than retired because a live value on a blocked task (e.g. resume_phase: 1) is exactly the kind of resume-point information whose loss would be invisible until someone tries to resume. Reconciling this field with continuation_context is a separate, out-of-scope concern."
+        },
+        "researched": {
+          "type": "string",
+          "description": "Documented-optional, informational-only. An ISO8601 phase-completion TIMESTAMP, not a boolean and not to be confused with the unrelated status: \"researched\" enum value. No current writer (the template that minted it predates skill-status-sync's actual postflight_update operation, which sets only status and last_updated) and no current reader. Retained because entry-level last_updated is overwritten by every subsequent status change, so this is the only remaining record of when research completed for a task that has since moved on."
         }
       },
       "additionalProperties": false

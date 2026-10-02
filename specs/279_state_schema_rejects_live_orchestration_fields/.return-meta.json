@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/279_state_schema_rejects_live_orchestration_fields/plans/01_widen-state-schema-fields.md",
-      "summary": "7-phase plan applying the 5-widen/3-retire state-schema ruling, the advisory-first Checks 3/4 posture, the postflight blockers reader/comment fix, a consumer-runnable migration script, and a new schema-to-validator drift test."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 22,
   "metadata": {
-    "session_id": "sess_1790788666_f8aaca_279",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 8.5,
-    "dependency_waves": 5
-  },
-  "memory_candidates": [
-    {
-      "content": "In the agent-system source store, several pairs of definitions are kept byte-equal BY HAND with no drift test, and each pair is a latent silent-failure site. The known pairs: context/schemas/state-schema.json's property key sets vs scripts/validate-state.sh's KNOWN_TOP_LEVEL_FIELDS/KNOWN_ENTRY_FIELDS arrays (validate-state.sh's own comment admits the hand-sync and the missing drift test), and the status enum vs scripts/lib/status-vocabulary.sh (this one IS guarded, by scripts/tests/test-status-vocabulary.sh). Concrete evidence the unguarded pair drifts: research_questions has been modelled in state-schema.json since the needs_research feature landed but was never added to KNOWN_ENTRY_FIELDS, so any repo whose planner returned a needs_research verdict gets an unexplained validator FAIL on a field the schema explicitly models. When planning any schema or vocabulary widening in this repo, treat the paired hand-maintained list as part of the same phase (they must move together) and add a set-equality drift test modelled on test-status-vocabulary.sh; do not assume a schema edit alone is sufficient.",
-      "category": "PATTERN",
-      "source_artifact": "specs/279_state_schema_rejects_live_orchestration_fields/plans/01_widen-state-schema-fields.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["state-schema", "validate-state", "drift-test", "hand-maintained-pair", "schema-validator-sync", "known-fields"]
-    }
-  ],
-  "next_steps": "Run /implement 279 to execute the plan",
-  "dispatch_seq": 6
+    "session_id": "sess_1790968925_5ff73e",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_depth": 2
+  }
 }
