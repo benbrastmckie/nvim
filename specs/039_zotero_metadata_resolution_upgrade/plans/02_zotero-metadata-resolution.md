@@ -203,25 +203,25 @@ out false, prefer wrapping the `zot` subcommand and reduce this phase to a thin 
 
 ---
 
-### Phase 2: `zotero-write.sh` gains `orphan-clean` [NOT STARTED]
+### Phase 2: `zotero-write.sh` gains `orphan-clean` [COMPLETED]
 
 **Goal**: Expose `zot orphans clean` through the choke-point so the ingest bridge can attempt
 best-effort cleanup of file-less attachment records without any script calling `zot` directly.
 
 **Tasks**:
 
-- [ ] Add `orphan-clean` to the KEY-exemption list (it takes no item key).
-- [ ] Implement it as a thin wrapper: `zot orphans clean --yes`, forwarding `--dry-run` and
+- [x] Add `orphan-clean` to the KEY-exemption list (it takes no item key). *(completed)*
+- [x] Implement it as a thin wrapper: `zot orphans clean --yes`, forwarding `--dry-run` and
       `--idempotency-key` when supplied. Pass `zot`'s stdout straight through, unchanged, exactly
-      like the other wrapper operations.
-- [ ] Deliberately do **not** expose `--include-recoverable`. Document in the header that
-      discarding the server-side copy is an operator action taken manually with `zot` directly.
-- [ ] Document in the header and `show_usage()`: dead-only default; records never synced to the
+      like the other wrapper operations. *(completed)*
+- [x] Deliberately do **not** expose `--include-recoverable`. Document in the header that
+      discarding the server-side copy is an operator action taken manually with `zot` directly. *(completed)*
+- [x] Document in the header and `show_usage()`: dead-only default; records never synced to the
       server return `not_found` (the tool's own guidance is to remove those from the Zotero desktop);
       and `zot orphans list/clean` read local SQLite, so a Web-API-created orphan is invisible until
-      a desktop sync.
-- [ ] Exit codes: 0 on success or a no-op clean, 1 on `zot` failure. Callers are expected to treat
-      failure as non-fatal.
+      a desktop sync. *(completed)*
+- [x] Exit codes: 0 on success or a no-op clean, 1 on `zot` failure. Callers are expected to treat
+      failure as non-fatal. *(completed)*
 
 **Timing**: 0.75 hours
 

@@ -175,10 +175,10 @@ shift
 
 # item-add and item-add-json are CREATE-item operations -- they have no existing KEY to
 # require/consume (their first remaining argument is a flag: --pdf/--doi or --record-json).
-# -h/--help likewise take no KEY. Every other operation keeps the original mandatory-KEY-
-# positional behavior unchanged.
+# orphan-clean likewise takes no item key -- it operates library-wide. -h/--help also take no
+# KEY. Every other operation keeps the original mandatory-KEY-positional behavior unchanged.
 KEY=""
-if [[ "$OPERATION" != "-h" ]] && [[ "$OPERATION" != "--help" ]] && [[ "$OPERATION" != "item-add" ]] && [[ "$OPERATION" != "item-add-json" ]]; then
+if [[ "$OPERATION" != "-h" ]] && [[ "$OPERATION" != "--help" ]] && [[ "$OPERATION" != "item-add" ]] && [[ "$OPERATION" != "item-add-json" ]] && [[ "$OPERATION" != "orphan-clean" ]]; then
   KEY="${1:-}"
   if [[ -z "$KEY" ]]; then
     echo "zotero-write.sh: KEY argument required for operation: $OPERATION" >&2
@@ -470,6 +470,34 @@ case "$OPERATION" in
     # Non-2xx, or a 2xx with an unparseable body: surface the API's own response verbatim.
     jq -cn --arg status "$HTTP_STATUS" --arg body "$RESPONSE_BODY" '{ok:false,error:{http_status:$status,message:$body}}'
     exit 1
+    ;;
+
+  orphan-clean)
+    # Thin wrapper around `zot orphans clean --yes` -- dead-only orphans (no file anywhere) by
+    # default. Deliberately does NOT expose --include-recoverable: discarding the server-side
+    # copy too is an operator action taken manually with `zot` directly, never silently via this
+    # choke-point. `zot`'s stdout is passed straight through unchanged, exactly like every other
+    # wrapper operation here (item-add-json above is the one exception). Records never synced to
+    # the server return 'not_found' (zot's own guidance: remove those from the Zotero desktop
+    # instead); `zot orphans list/clean` read local SQLite, so a Web-API-created orphan is
+    # invisible here until a desktop sync.
+    ZOT_CMD=(zot orphans clean --yes)
+    if [[ "$DRY_RUN" == "true" ]]; then
+      ZOT_CMD+=(--dry-run)
+    fi
+    if [[ -n "$IDEM_KEY" ]]; then
+      ZOT_CMD+=(--idempotency-key "$IDEM_KEY")
+    fi
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+      echo "[dry-run] Would run: ${ZOT_CMD[*]}"
+      # Still execute to get dry-run preview from zot itself
+    fi
+
+    if ! "${ZOT_CMD[@]}"; then
+      echo "zotero-write.sh: orphan-clean failed" >&2
+      exit 1
+    fi
     ;;
 
   -h|--help)
