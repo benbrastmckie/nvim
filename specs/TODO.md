@@ -11,21 +11,19 @@ next_project_number: 322
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,270,272,279,280,284,285,295,296,297,299,300,306,311,317 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,298,302,307,308,318,319 | 22,44,127,184,241,265,272,279,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
-| 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
-| 4 | 274,304,312 | 165,263,273,275,282,284,285,300,302 | orchestrator |
+| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,317 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,185,250,251,273,275,281,298,302,303,307,308,318,319 | 22,127,184,265,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
+| 3 | 170,274,282,304,313 | 165,250,251,263,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
+| 4 | 312 | 165,282,300 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Core Agent System
 
-44 [IMPLEMENTING] — Slim commands/task.md, the largest per-invocation context...
-  └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
-    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
 127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
-  └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,... (see above)
+  └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
+    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
@@ -44,18 +42,13 @@ next_project_number: 322
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-317 [RESEARCHED] — Make the post-deploy reconcile promotion append to...
+317 [PLANNED] — Make the post-deploy reconcile promotion append to...
 
 ### Extensions
 
-241 [IMPLEMENTING] — Reconcile MCP registration surfaces: redundant playwright...
-  └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 297 [NOT STARTED] — Scaffold the books extension: manifest, four-block routing,...
   └─ 298 [NOT STARTED] — Author the books extension context corpus under...
-
-### Literature
-
-39 [IMPLEMENTING] — Upgrade Zotero metadata resolution and plan the Zotero 10...
+29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
 
@@ -70,15 +63,14 @@ next_project_number: 322
 
 ### Orchestrator
 
+271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
+  └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
+    └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
+  └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
-    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-279 [IMPLEMENTING] — Reconcile state-schema.json with the live fields the...
-  └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
-    └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
-      └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
-      └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
-    └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
@@ -347,11 +339,12 @@ The consequence is a BATCHING rule, not a dependency: the admission gate matches
 ---
 
 ### 317. Make the post-deploy reconcile promotion append to completed_tasks and commit its own completion transition
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 316
 - **Research**: [317_post_deploy_reconcile_completed_tasks_ledger/reports/01_post-deploy-reconcile-ledger.md]
+- **Plan**: [317_post_deploy_reconcile_completed_tasks_ledger/plans/01_reconcile-ledger-and-commit.md]
 
 **Description**: Make the post-deploy reconcile promotion append to the batch's `completed_tasks` ledger, so the consolidated batch output reports every task it actually completed. Today a task promoted by that path completes correctly in `specs/state.json` but is invisible to the batch's own reporting, and no commit is issued for its completion transition.
 
@@ -2043,7 +2036,7 @@ references in deliverables outside specs/**.
 ---
 
 ### 279. Reconcile state-schema.json with the live fields the orchestrator reads: rule per field (widen, migrate, or retire), and fix the blockers reader/comment contradiction
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -3655,7 +3648,7 @@ WHAT REMAINS: Phase 1 (the standing script-inventory probe, which must reuse tha
 ---
 
 ### 241. Reconcile MCP registration surfaces: redundant playwright grants, dead manifest mcp_servers fields, ownership doc and nix README
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -4222,7 +4215,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 
 ### 44. Slim commands/task.md, the largest per-invocation context contributor
 - **Effort**: 2-4 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 87, Task 149, Task 210
@@ -4236,12 +4229,13 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 
 ### 39. Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
 - **Research**: [039_zotero_metadata_resolution_upgrade/reports/02_zotero-metadata-resolution-design.md]
 - **Plan**: [039_zotero_metadata_resolution_upgrade/plans/02_zotero-metadata-resolution.md]
+- **Summary**: [039_zotero_metadata_resolution_upgrade/summaries/02_zotero-metadata-resolution-summary.md]
 
 **Description**: Upgrade the literature extension's Zotero integration beyond bare write-path activation: add a real metadata-resolution step for web-discovered sources, decide the MCP question, gate auto-attach on storage quota, and record the Zotero 10 backend-swap plan. Grounded in verified Aug-2026 tooling research — see the seed report before re-deriving any landscape claim.
 

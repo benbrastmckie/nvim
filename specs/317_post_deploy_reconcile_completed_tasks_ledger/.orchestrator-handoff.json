@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "task_number": 317,
+  "session_id": "sess_1790968925_5ff73e_317",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/317_post_deploy_reconcile_completed_tasks_ledger/plans/01_reconcile-ledger-and-commit.md",
+      "summary": "4-phase plan for the post-deploy reconcile ledger append and scoped commit, test-first."
+    }
+  ],
+  "dispatch_seq": 26
+}
