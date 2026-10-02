@@ -1,22 +1,31 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "summary": "Whitelisted scheduled_tasks.lock in is_runtime_artifact() (verify.lua), registered the exclusion in the source-store exclusion-classes doc, and added a planted-lock regression assertion (Assertion F) with a negative control. Gate 13 confirmed PASS with a real lock file present. Overall gate count (2-of-33: gate 3 + gate 5) investigated and attributed to sibling task 323's in-flight manifest declaration and this task's own source-store edits awaiting the orchestrator's sanctioned postflight redeploy -- neither reflects a defect in gate 13 or this task's change.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/plans/01_whitelist-scheduled-tasks-lock.md",
-      "summary": "4-phase plan to whitelist scheduled_tasks.lock in is_runtime_artifact(), register the exclusion in the source-store exclusion-classes doc, and add a planted-lock regression assertion plus a real gate-13 confirmation."
+      "type": "summary",
+      "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/summaries/01_whitelist-scheduled-tasks-lock-summary.md",
+      "summary": "Implementation summary: exclusion branch, doc registration, regression assertion, and gate-13 confirmation with verification detail and gate-count investigation."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 324 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1790978139_b07459_324",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 1.5,
-    "dependency_waves": [[1, 2], [3], [4]]
+  "completion_data": {
+    "completion_summary": "Added a scheduled_tasks.lock exclusion branch to is_runtime_artifact() in verify.lua, registered it in the source-store deploy-orphan-detection.md exclusion-classes table, and added a planted-lock regression assertion (Assertion F) to test-deploy-orphans.sh with a negative control. Gate 13 confirmed PASS with a real lock file present on disk.",
+    "roadmap_items": []
   },
-  "dispatch_seq": 4
+  "memory_candidates": [],
+  "next_steps": "Task implementation complete. Postflight should mark task 324 COMPLETED; the orchestrator's sanctioned postflight completion-deploy gate will redeploy the live .claude/ tree from the two modified agent-system/extensions/core/** source-store files, which should clear gate 5's transient content-differs findings.",
+  "modified_files": [
+    "lua/neotex/plugins/ai/shared/extensions/verify.lua",
+    "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md",
+    "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh"
+  ],
+  "metadata": {
+    "session_id": "sess_1790978139_b07459",
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "dispatch_seq": 6
 }

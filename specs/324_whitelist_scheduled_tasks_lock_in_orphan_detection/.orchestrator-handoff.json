@@ -1,17 +1,31 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 324,
-  "phase": "plan",
-  "session_id": "sess_1790978139_b07459_324",
-  "dispatch_seq": 4,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1790978139_b07459",
+  "dispatch_seq": 6,
+  "phases_completed": 4,
   "phases_total": 4,
+  "summary": "Whitelisted scheduled_tasks.lock in is_runtime_artifact() (verify.lua), registered the exclusion in the source-store exclusion-classes doc, added a planted-lock regression assertion (Assertion F) with negative control, and confirmed gate 13 PASS with a real lock file present. Overall FAIL count (2-of-33: gate 3 + gate 5) investigated -- both failures attributed to sibling task 323's in-flight manifest declaration and this task's own source-store edits awaiting the orchestrator's sanctioned postflight redeploy, neither a new defect.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/summaries/01_whitelist-scheduled-tasks-lock-summary.md",
+      "summary": "Implementation summary: exclusion branch, doc registration, regression assertion, gate-13 confirmation, and gate-count investigation."
+    },
     {
       "type": "plan",
       "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/plans/01_whitelist-scheduled-tasks-lock.md",
-      "summary": "4-phase plan: verify.lua exclusion branch, source-store doc row, planted-lock regression assertion, real gate-13 confirmation."
+      "summary": "4-phase plan, all phases COMPLETED with inline deviation annotations."
     }
   ],
-  "next_steps": "Run /implement 324 to execute the plan"
+  "blockers": [],
+  "plan_markers_verified": true,
+  "modified_files": [
+    "lua/neotex/plugins/ai/shared/extensions/verify.lua",
+    "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md",
+    "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh"
+  ],
+  "continuation_path": null,
+  "next_action_hint": "Task 324 implementation is complete across all 4 phases. Postflight should mark the task COMPLETED. The orchestrator's sanctioned postflight completion-deploy gate will redeploy the live .claude/ tree from the agent-system/extensions/core/** changes, clearing gate 5's transient content-differs findings."
 }
