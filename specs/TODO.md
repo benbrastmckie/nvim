@@ -1,5 +1,5 @@
 ---
-next_project_number: 322
+next_project_number: 323
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 322
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,322 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,185,250,251,273,275,281,298,302,303,307,308,318,319 | 22,127,184,265,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,274,282,304,313 | 165,250,251,263,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 165,282,300 | orchestrator |
@@ -42,6 +42,7 @@ next_project_number: 322
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
+322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
 
 ### Extensions
 
@@ -78,6 +79,85 @@ next_project_number: 322
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 
 ## Tasks
+
+### 322. Todo move vacated source never staged
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Fix /todo's directory-move staging gap: a moved task directory's vacated SOURCE path is never staged, so every archival commit leaves the deletion half of each `mv` unstaged. This is a verified REGRESSION introduced by the explicit-pathspec migration, found live during an archival run.
+
+== THE DEFECT ==
+
+`commands/todo.md` accumulates a `stage_paths[]` array and passes it to `git-commit-scoped.sh`. At each directory-move site the array receives ONLY the move's destination. The vacated source path is never added, so nothing in the pathspec list covers it, and `git add` is never asked to record its removal. The archive copy commits as a fresh `create mode`; the old tree stays in the index pointing at files that no longer exist on disk.
+
+THREE AFFECTED SITES in `commands/todo.md`, all dest-only:
+- line 665 -- Step 5D, archive a completed/abandoned/expanded task's directory: `mv "$src" "$dst"` then `stage_paths+=("$dst")`. `$src` is dropped.
+- line 686 -- Step 5E.1, move an approved orphan out of `specs/`: `mv "$orphan_dir" "specs/archive/${dir_name}"` then `stage_paths+=("specs/archive/${dir_name}")`. `$orphan_dir` is dropped.
+- line 752 -- Step 5F, move a misplaced directory: `mv "$dir" "$dst"` then `stage_paths+=("$dst")`. `$dir` is dropped.
+
+THE ASYMMETRY IS INTERNAL TO THE SAME FILE, which is what makes this a latent bug rather than a deliberate choice. The vault path in the SAME file already does it correctly and even explains why, at lines 907-912:
+
+    # Stage the rename's exact old and new paths together so `git add` records it as a rename
+    # rather than leaving the old tree's removal unstaged. [...]
+    stage_paths+=(specs/archive "${vault_path}/")
+
+and Step 5.7.7's prose at line 948 repeats the correct rule (`stage_paths+=("$old_dir" "$new_dir")`). So the file states the invariant twice and then violates it at its three ordinary move sites.
+
+== CONFIRMED CAUSE: REGRESSION FROM THE EXPLICIT-PATHSPEC MIGRATION ==
+
+Not inferred -- read directly out of git history. Before commit c482bf40c ("task 309 phase 3: fix remaining core command sites plus 2 extra findings"), Step 6 committed with a bare `-- specs/` directory pathspec. That single token swept up BOTH the vacated sources and the new archive paths, so the deletions were staged incidentally and the bug was invisible. Task 309 replaced the directory token with the explicit `stage_paths[]` accumulator -- correctly, for the cross-session-bleed reason that task documents -- but the accumulator was only ever taught to collect destinations. `git log -S 'stage_paths+=("$dst")'` on that file returns exactly one commit: c482bf40c.
+
+This is the predictable blind spot of a directory-pathspec-to-explicit-list migration: a directory token silently covered two sides of every rename, and an explicit list only covers what it names. Any other call site converted by that migration which performs a rename deserves the same audit.
+
+== MEASURED BLAST RADIUS (live, this repository) ==
+
+A `/todo` run archiving 15 completed tasks produced:
+- `todo: archive 15 completed tasks` -- 176 files changed, 19927 insertions(+), all 15 archive copies landing as `create mode`, ZERO `delete mode` entries.
+- 173 files left as unstaged ` D` deletions across the 15 vacated `specs/{NNN}_{slug}/` directories.
+- A follow-up remedial commit staging the 15 vacated paths recorded 173 files changed, 19270 deletions(-).
+
+SECOND-ORDER DAMAGE, and the reason this is not merely cosmetic: Step 6.5 runs `assess-repo-health.sh` AFTER Step 6's commit and writes the result into `state.json`'s `repository_health`. With the deletions unstaged, that probe measured `phantom_paths: 109` and persisted it. After the remedial staging commit the same probe returned `phantom_paths: 0`. So the run baked a wrong health metric into committed state -- precisely the failure that Step 6.5's own "run the probe after this run's own commit" re-sequencing rationale exists to prevent. The re-sequencing is correct; it was defeated by this staging gap upstream of it.
+
+Note the interaction with `assess-repo-health.sh`'s `phantom_paths` existence filter: that filter was added so a moved-but-still-tracked path does not inflate `build_errors`. It does its job for `build_errors` while `phantom_paths` faithfully reports the inflated count -- so the metric was accurate about a broken tree, and the tree was broken by this bug.
+
+== WHY NO EXISTING GATE CATCHES IT ==
+
+Verified by reading each guard, not assumed:
+- `scripts/lint/lint-directory-pathspec-boundary.sh` detects a bare SHARED-directory pathspec REGROWING at a call site. This bug is the opposite shape: an explicit list that is too NARROW. A missing token is an omission, not a textual pattern, so this lint structurally cannot see it.
+- `git-commit-scoped.sh`'s V2 gate classifies each positive pathspec into matched / already-staged-deletion / genuinely-unmatched. It only ever inspects pathspecs it is GIVEN; the vacated source is never passed, so V2 is never consulted about it. Same for V6's partial-drop refusal.
+- V5's contention lease is likewise per-passed-path.
+
+So the omission is invisible to every layer, and the commit exits 0 reporting success. A silent false success on the single sanctioned commit path is the same defect class task 277 closed for unresolvable pathspecs.
+
+== FIX ==
+
+1. At all three sites in `commands/todo.md`, stage the move's old and new path TOGETHER, mirroring the vault site's existing correct pattern and its comment:
+   - Step 5D: `stage_paths+=("$src" "$dst")` (inside the `[ -n "$src" ]` branch, so an absent source is still skipped).
+   - Step 5E.1: `stage_paths+=("$orphan_dir" "specs/archive/${dir_name}")`.
+   - Step 5F: `stage_paths+=("$dir" "$dst")`.
+   These are two exact paths per `mv`, NOT a bare shared-directory token, so the directory-pathspec lint stays satisfied by construction -- state that explicitly in a comment at each site so a future reader does not "simplify" it back to a directory token.
+
+2. Hoist the invariant out of the vault site's local comment into `context/standards/git-staging-scope.md` as a named rule: any `mv` whose two endpoints are both inside the staged tree must contribute BOTH endpoints to the pathspec list. That standard currently documents per-operation scope and the V2/V3/V5/V6 gate semantics but says nothing about renames, which is why three sites could violate an invariant the same file states twice.
+
+3. `skills/skill-todo/SKILL.md` has the SAME class of gap by a DIFFERENT mechanism and must be fixed too: its Stage 15 stages `git add specs/archive/ specs/TODO.md specs/state.json` (line 1076). `specs/archive/` covers the destinations, nothing covers the vacated `specs/{NNN}_*/` sources. Because the mechanism differs, this is a second distinct edit, not the same edit duplicated -- so unlike the orphan-detection defect folded into task 307, consolidating first saves nothing here.
+
+== SCOPE BOUNDARY (audited, keeps this task small) ==
+
+`scripts/orchestrate-cycle-postflight.sh` was checked and is CLEAN -- do not widen scope into it. Its `mv` calls are all atomic temp-rewrite-in-place (`foo.tmp && mv foo.tmp foo`, identical destination, no vacated source), and its one real move at line 483 lands inside `${TASK_DIR}`, which line 1349 already stages as the task-scoped directory token `"${TASK_DIR}/"` -- covering both endpoints. A repo-wide sweep found no other source-store site that both performs a directory `mv` and builds a commit pathspec.
+
+== REGRESSION TEST ==
+
+Assert that after an archival run which moves at least one directory, `git status --porcelain` reports NO unstaged ` D` entries under `specs/`, and that the resulting commit contains `delete mode` entries for the vacated paths matching the `create mode` entries for their destinations. A one-task fixture is enough; the three move sites should each get a case. Also assert the post-commit `assess-repo-health.sh` probe returns `phantom_paths: 0`, which pins the second-order damage above.
+
+== RELATIONSHIP TO EXISTING TASKS (cross-references, deliberately NOT dependency edges) ==
+
+- Task 307 (`todo_consolidate_and_optimize`, not_started) owns the two-phase /todo consolidation and already folds in a separate live-found /todo correctness bug (orphan/misplaced detection reading only `.completed_projects[]`). This task is kept SEPARATE because the two defects differ in urgency and in fix shape: 307's folded bug requires the operator to answer "Track all orphans" before it can corrupt anything (declined on its live run, no harm done), whereas this one fires unconditionally on every archival run with no operator involvement; and this one needs two different edits across the two copies rather than the same edit twice, so 307's "fix it once after consolidating" argument does not apply. No dependency edge is declared, matching 307's own stated preference not to overconstrain. The `file_scope_collision` admission gate will serialize the two against `commands/todo.md` and `skills/skill-todo/SKILL.md`.
+- Task 302 (`scoped_commit_directory_pathspec_and_task_lease`) also edits `commands/todo.md` and `context/standards/git-staging-scope.md`, for the `--task` lease wiring and the carve-out ruling. Its HALF 1 (the directory-pathspec-to-explicit-list migration) is the change that introduced this regression. The rename rule from fix step 2 lands in the same standard 302 touches -- expect serialization there.
+- Task 318 (`wire_directory_pathspec_lint_as_verify_deploy_gate`) wires the directory-pathspec lint as a gate. Record there, or here, that the lint's coverage is one-sided: it catches a too-WIDE pathspec regrowing but not a too-NARROW one omitting a rename endpoint. Whether that second check is worth automating is an open question for 318, not a requirement of this task.
+
+---
 
 ### 319. Surface cross-task claim invalidation when a research dispatch refutes a filed premise
 - **Effort**: large
@@ -191,6 +271,14 @@ NOTE: `scripts/verify-deploy.sh` IS an orchestrator-critical path, so this task 
 **Shared file, distinct regions: `context/standards/git-staging-scope.md`.** Three live tasks declare this file and each owns a different region of it: the `--task` lease task owns the task-scoped pathspec carve-out ruling, the out-of-repository-pathspec task owns the exit-code table, and THIS task owns only the gate-number reference beside the existing `lint-directory-pathspec-boundary.sh` cross-reference (already present at the "complementary mechanical" bullet). No `dependencies[]` edge is declared between them, deliberately and on precedent: a live plan in this system already records the same posture for a file shared by eight tasks with no shared region, taking no edge and documenting the reasoning instead. A false serializing edge here would push this small gate-wiring task several waves later for no real conflict.
 
 The consequence is a BATCHING rule, not a dependency: the admission gate matches `file_scope` at FILE granularity, not region granularity, so these three tasks WILL hard-defer each other if placed in the same `/orchestrate` batch. Run them in separate invocations. If a future change makes two of them genuinely contend for the same region, add the edge then.
+
+== OBSERVATION (not a requirement of this task): THE LINT'S COVERAGE IS ONE-SIDED ==
+
+Surfaced by the live regression now tracked as task 322, and recorded here because this task is the one wiring the lint as a gate.
+
+`lint-directory-pathspec-boundary.sh` detects a pathspec that is too WIDE -- a bare shared-directory token regrowing at a call site. It cannot detect a pathspec that is too NARROW. Task 322's defect is exactly that second shape: `commands/todo.md`'s three directory-move sites pass an explicit list naming only each `mv`'s destination and omitting the vacated source, so the deletion half of every rename goes unstaged and the commit still exits 0. A missing pathspec token is an omission rather than a textual pattern, so the lint structurally cannot see it -- and neither can `git-commit-scoped.sh`'s V2/V6 gates, which only ever classify pathspecs they are given.
+
+This does NOT change this task's scope, which remains the gate wiring, and it is NOT a licence to broaden the classifier (see the HARD CONSTRAINT above -- that prohibition still stands). It is recorded so that whoever wires the gate knows a green gate certifies "no over-wide pathspec", not "pathspecs are correct". Whether a complementary too-narrow check (e.g. flagging a `mv` whose source is absent from the nearby staging accumulator) is worth automating is an open question; if judged worthwhile it belongs in its own task, not bolted onto this wiring.
 
 ---
 
@@ -419,6 +507,15 @@ FIX. Every one of the six detection sites must test BOTH arrays before concludin
 ALSO CORRECT the misplaced-directory category table in `context/patterns/todo-archival-reference.md` ("Directory Categories Summary", the `Tracked in archive/state.json?` column), which describes archive tracking as a single yes/no and so cannot express the two-array reality that caused this. That file is NOT in this task's declared file_scope — add it via the research phase's `proposed_file_scope` mechanism if the fix needs to touch it, rather than widening scope silently.
 
 REGRESSION TEST. Assert that a directory whose task sits in `.archived_projects[]` is NOT reported as an orphan or as misplaced. The six task numbers above are a ready-made fixture.
+== CROSS-REFERENCE: THE MOVE-STAGING REGRESSION IS TRACKED SEPARATELY (task 322) ==
+
+A second live /todo defect was found during a later archival run and was deliberately filed as its own task (322, `todo_move_vacated_source_never_staged`) rather than folded in here, unlike the orphan-detection bug above. Recorded so this task's Phase 1 does not re-derive it, clobber its fix, or assume it is covered.
+
+THE DEFECT, in one line: all three directory-move sites in `commands/todo.md` (lines 665, 686, 752) add only the move's DESTINATION to `stage_paths[]`, never the vacated source, so every archival commit leaves the deletion half of each `mv` unstaged. It is a confirmed regression from the task-309 explicit-pathspec migration (commit c482bf40c), which replaced a bare `-- specs/` token that had been covering both rename endpoints incidentally.
+
+WHY IT WAS NOT FOLDED IN HERE, in this task's own "would we fix it twice" terms: `skills/skill-todo/SKILL.md` has the same class of gap by a DIFFERENT mechanism -- its Stage 15 stages `git add specs/archive/ ...` (line 1076), a directory token covering destinations with nothing covering vacated sources. Two different edits, not the same edit duplicated, so consolidating first saves nothing. It also fires unconditionally on every archival run, whereas the orphan-detection bug above needs an operator to answer "Track all orphans" before it can corrupt state.
+
+CONSEQUENCE FOR PHASE 1. Task 322 owns the staging fix in BOTH copies, including `skill-todo/SKILL.md`'s Stage 15 line. If 322 lands first, Phase 1's consolidation must carry its fix into the surviving implementation rather than reintroducing the dest-only pattern. If Phase 1 lands first, 322 narrows to the single surviving copy. Either order is fine; the `file_scope_collision` admission gate serializes the two. No dependency edge is declared, consistent with this task's stated preference not to overconstrain.
 
 ---
 
@@ -722,6 +819,16 @@ Demonstrate that a `--task`-engaged recipe site actually refuses on a contended 
 All edits land under `agent-system/extensions/` per `.claude/rules/source-store-deploy-boundary.md`, never under `.claude/**`.
 
 SCOPE NOTE: none of the recipe files in `file_scope` is an orchestrator-critical path, so this task does NOT trip the self-modification admission gate -- keep it that way; do not widen `file_scope` to include `git-commit-scoped.sh` or any critical path. If the ruling requires a change to `git-commit-scoped.sh` itself, record it as a follow-up instead.
+
+== HALF 1 INTRODUCED A REGRESSION, NOW TRACKED AS TASK 322 ==
+
+Recorded here because this task's HALF 1 (declared complete above) is the confirmed cause, and because this task edits both files the fix touches.
+
+Replacing the bare `-- specs/` directory pathspec with explicit file lists was correct for the cross-session-bleed reason documented above, but at a RENAME site a directory token had been covering both endpoints incidentally. The explicit lists only ever collected move DESTINATIONS, so the vacated source paths stopped being staged. In `commands/todo.md` this left all three directory-move sites (lines 665, 686, 752) committing the archive copy as a fresh `create mode` while the old tree's deletion stayed unstaged -- measured live at 173 unstaged ` D` entries after one 15-task archival run, plus a wrong `phantom_paths: 109` baked into `state.json`'s `repository_health`.
+
+Task 322 owns that fix. It also lands a named rename rule in `context/standards/git-staging-scope.md` -- a file THIS task also declares -- so expect serialization there, and do not re-derive the rule independently.
+
+GENERAL LESSON FOR THE REMAINING HALF 2 RULING: when ruling on whether the sanctioned task-scoped directory carve-out should be narrowed, treat renames as a first-class case. A directory pathspec covers both endpoints of a `mv` by construction; any explicit list replacing it must name both endpoints explicitly. Narrowing the carve-out without that rule in hand risks reproducing this same regression at whatever sites the ruling converts.
 
 ---
 
