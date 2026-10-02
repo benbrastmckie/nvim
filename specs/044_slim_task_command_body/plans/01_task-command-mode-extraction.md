@@ -434,29 +434,43 @@ resolvable.
 
 ---
 
-### Phase 7: Register New Context Files in index-entries.json (MANDATORY) [NOT STARTED]
+### Phase 7: Register New Context Files in index-entries.json (MANDATORY) [COMPLETED]
 
 **Goal**: Register all six new context files with accurate `line_count`, so
 `check-extension-docs.sh` Rule R and `verify-deploy` gate3 pass. A sibling task in this batch
 failed exactly this gate by editing context files without updating declared line counts.
 
 **Tasks**:
-- [ ] Add six entries to `agent-system/extensions/core/index-entries.json`, each structurally
+- [x] Add six entries to `agent-system/extensions/core/index-entries.json`, each structurally
       copied from the existing `patterns/todo-archival-reference.md` /
       `patterns/orchestrate-batch-results-template.md` entries: keys `path`, `domain` (`core`),
       `subdomain` (`patterns`), `summary`, `line_count`, `keywords`, `topics`,
-      `load_when.commands: ["/task"]` with empty `agents`/`task_types`.
-- [ ] Paths are relative to the extension's `context/`: `patterns/task-recover-mode.md`,
+      `load_when.commands: ["/task"]` with empty `agents`/`task_types`. *(completed)*
+- [x] Paths are relative to the extension's `context/`: `patterns/task-recover-mode.md`,
       `patterns/task-expand-mode.md`, `patterns/task-sync-mode.md`,
       `patterns/task-review-mode.md`, `patterns/task-abandon-mode.md`,
-      `patterns/task-description-transformation-examples.md`.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
+      `patterns/task-description-transformation-examples.md`. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
       set every `line_count` from `wc -l` — including for **any** context file this task modified,
-      not only the six created.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and
+      not only the six created. *(completed: 0 changed beyond my 6 additions, confirming each
+      entry's manually-computed `line_count` was already exact)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and
       require a clean exit. If baseline (Phase 1) was already dirty, require that the set of
-      remaining findings is a subset of the baseline set — no new ones.
-- [ ] Confirm `manifest.json` needs no edit (`.provides.context` already lists `patterns`).
+      remaining findings is a subset of the baseline set — no new ones. *(completed with a
+      documented concurrency caveat: this is a live shared working tree with 3 sibling tasks
+      (265, 279, 241) actively committing during this dispatch. At the moment of this phase's
+      `--check` the only finding was `reference/state-management-schema.md` declared 590 actual
+      594 -- a file in task 279's own declared file_scope, mid-edit by that sibling between my
+      `--write` and `--check` calls seconds apart, not a file this task touched. Per the territory
+      contract this is treated as a sibling in-flight edit, not a regression of this phase. The
+      commit itself was isolated at the git-index level (HEAD content plus only this task's six
+      new entries, staged via a dedicated blob rather than a plain `git add` of the dirty working
+      tree) to contain ONLY this task's six new entries, so no sibling line_count change --
+      committed, in-flight, or otherwise -- was ever included in or attributed to this task's
+      commit. The sibling's pending fixes were left untouched in the working tree for their own
+      commit.)*
+- [x] Confirm `manifest.json` needs no edit (`.provides.context` already lists `patterns`).
+      *(completed: confirmed, no edit made)*
 
 **Timing**: 0.5 hours
 
@@ -472,11 +486,19 @@ the six new ones, stop and account for why before continuing.
 - `agent-system/extensions/core/index-entries.json` - six entries added, line counts recomputed.
 
 **Verification**:
-- `jq empty agent-system/extensions/core/index-entries.json` exits 0.
+- `jq empty agent-system/extensions/core/index-entries.json` exits 0. **Verified.**
 - `jq '[.entries[] | select(.path | startswith("patterns/task-"))] | length'` returns 6.
+  **Correction**: this query actually returns 7 — a pre-existing, unrelated
+  `patterns/task-lock.md` entry also matches the `patterns/task-` prefix and was not accounted
+  for when this verification criterion was written. The six entries this phase added were
+  confirmed by name instead: `task-recover-mode.md`, `task-expand-mode.md`, `task-sync-mode.md`,
+  `task-review-mode.md`, `task-abandon-mode.md`, `task-description-transformation-examples.md` —
+  all six present, plus the pre-existing `task-lock.md`, nothing missing or duplicated.
 - Each of the six entries has `load_when.commands == ["/task"]` and a non-null integer
-  `line_count`.
+  `line_count`. **Verified.**
 - `generate-context-line-counts.sh --check` exits clean (or with no findings beyond baseline).
+  **Verified with the concurrency caveat recorded above** (one in-flight sibling finding outside
+  this task's file_scope, not a regression introduced here).
 
 ---
 
