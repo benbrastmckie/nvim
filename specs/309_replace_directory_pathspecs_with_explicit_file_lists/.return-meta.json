@@ -1,33 +1,29 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790947016_5ff368_309",
-  "dispatch_seq": 4,
-  "task_number": 309,
-  "findings_count": 4,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md",
-      "summary": "Confirms by direct code reading that git-commit-scoped.sh's V5 contention check, guard-destructive-git.sh's hook, and the script's own V2 classification all fail to catch a bare directory pathspec; finds 17 occurrences of the `-- specs/` anti-pattern across 3 extensions (not the 3 named in the dispatch), and confirms widening fix scope would not trip the self-modification admission gate."
+      "type": "plan",
+      "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/plans/01_explicit-file-list-pathspecs.md",
+      "summary": "5-phase plan replacing all 17 bare `-- specs/` pathspec occurrences across 9 recipe files in 3 extensions with explicit file lists, plus a new standalone directory-pathspec regression lint and its both-polarity fixture test."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1790947016_5ff368_309",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 4.5,
+    "dependency_waves": [[1], [2, 3, 4], [5]]
+  },
   "memory_candidates": [
     {
-      "content": "git-commit-scoped.sh's V5 contended-path check (specs/.contention-manifest/) matches pathspec entries by EXACT STRING EQUALITY (`.path == $p`) against the caller's own literal pathspec token. A directory-shaped token (e.g. `specs/`) can never equal a specific file path, so it silently slips past V5 regardless of manifest contents -- and separately, the manifest is populated only from task file_scope declarations, which essentially never include specs/ artifact paths, so V5 is structurally orthogonal to specs/-artifact cross-task bleed. guard-destructive-git.sh's directory/glob pathspec hook also misses this class: its detector only fires on the literal substring 'git add' in the Bash tool command text, never on a wrapper script invocation like `bash .../git-commit-scoped.sh ... -- specs/`.",
+      "content": "When a task's scope note forbids touching any orchestrator-critical path (context/reference/orchestrator-critical-paths.json), adding a NEW lint script is admissible but WIRING it as a gate is not: scripts/verify-deploy.sh is itself critical-path entry 12. The lint ships, registers in the extension manifest's provides arrays, and is auto-discovered by scripts/tests/run-all.sh (which globs scripts/tests/test-*.sh with no registration step) -- but it is inert until a later, gate-admitting task adds the verify-deploy.sh gate. Plan for this split up front and record the gate wiring as an explicit follow-up with its reason, rather than discovering the constraint mid-implementation and either violating the scope note or silently shipping an unenforced lint.",
       "category": "INSIGHT",
-      "source_artifact": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["git-commit-scoped.sh", "V5", "contention-manifest", "directory-pathspec", "guard-destructive-git.sh"]
-    },
-    {
-      "content": "When a task description cites a specific count of 'N occurrences' of a code anti-pattern as the basis for a small-effort fix, re-verify the count with a full-tree grep before accepting the scope as given -- in task 309, 'three commit recipes pass a bare -- specs/ pathspec' undercounted the actual source-store footprint (17 occurrences across 3 extensions) by more than 5x. Cross-check against context/reference/orchestrator-critical-paths.json before recommending a scope widening, to confirm it would not trip the self-modification admission gate.",
-      "category": "PATTERN",
-      "source_artifact": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["scope-verification", "grep-inventory", "self-modification-admission-gate", "task-description-accuracy"]
+      "source_artifact": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/plans/01_explicit-file-list-pathspecs.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["orchestrator-critical-paths", "verify-deploy", "lint-gate-wiring", "scope-note", "manifest-provides", "run-all-discovery"]
     }
   ],
-  "next_steps": "Run /plan 309 to create implementation plan"
+  "dispatch_seq": 9
 }
