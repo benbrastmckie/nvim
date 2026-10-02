@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Blocking in-batch absence -- new absent_file_scope defer_reason, v5 -> v6",
+  "started_at": "2026-10-02T23:45:00Z",
+  "last_updated": "2026-10-03T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "designated_absent_candidate computation + phase_group lift", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 2, "description": "new absent_file_scope defer branch + payload fields", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 3, "description": "header docs: enum, override semantics, precedence mutual-exclusivity, v6 bump", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "docs/architecture/batch-admit-schema.md v6 Version History + consumer table + field defs + ruling section", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 5, "description": "flip IN-BATCH-ABSENCE (already target-shaped), bump schema-literal case, add SOLO-ABSENT-SCOPE-NON-REGRESSION case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 6, "description": "bump the one pinning assertion in test-conflict-predicate.sh; confirm test-four-tier-conflict.sh needs no edit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-conflict-predicate.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "jq-embedded comments using possessive apostrophes (this cycle's, the task's)", "result": "failed", "reason": "Same class of bug as Phase 2: terminates the enclosing bash single-quoted jq program early. Fixed by rewording to avoid apostrophes, matching the file's existing convention (e.g. 'of the task' instead of \"the task's\")."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

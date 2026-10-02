@@ -340,32 +340,33 @@ lines on the three `source`/`.` lines, confirmed via `git show HEAD:...` diff).
 
 ---
 
-### Phase 3: Blocking in-batch absence — new `absent_file_scope` defer_reason, v5 -> v6 [NOT STARTED]
+### Phase 3: Blocking in-batch absence — new `absent_file_scope` defer_reason, v5 -> v6 [COMPLETED]
 
 **Goal**: Make in-batch absence blocking via a new `defer_reason` with its own payload fields and
 documented override semantics, converging through a designated-candidate tie-breaker, and bump the
 verdict schema to v6 with the matching Version History entry.
 
 **Tasks**:
-- [ ] Compute an invocation-level `$designated_absent_candidate`: the LOWEST task number among
+- [x] Compute an invocation-level `$designated_absent_candidate`: the LOWEST task number among
       this cycle's candidates that is known, non-terminal, and has an absent/empty `file_scope`.
       Model it directly on the existing `$designated_sm_candidate` computation (same
       ascending-first-match determinism, same `null`-when-none result, computed once over the full
-      `$cands` set outside the fold).
-- [ ] Lift the `$phase_group` lookup (`($phase_map[($c|tostring)] // null)`) so it is in scope at
+      `$cands` set outside the fold). *(completed)*
+- [x] Lift the `$phase_group` lookup (`($phase_map[($c|tostring)] // null)`) so it is in scope at
       the absent-scope branch, not only inside the final `else`. Apply the same unconditional
       `research`/`plan` exemption the self-mod branch already applies, for the identical D-phase
       rationale — a research or plan dispatch touches only the task's own `reports/`/`plans/`
-      subtree. Record that rationale inline.
-- [ ] In the absent-scope branch, defer with `defer_reason: "absent_file_scope"` when ALL hold:
+      subtree. Record that rationale inline. *(completed)*
+- [x] In the absent-scope branch, defer with `defer_reason: "absent_file_scope"` when ALL hold:
       `$inv_count > 1`, the candidate is not `$designated_absent_candidate`, and the candidate is
       not phase-exempt. Otherwise admit (carrying Phase 2's advisory). Attach
       `absent_scope_advisory` to the defer verdict too, so the advisory is never lost by deferring.
-- [ ] Payload fields for the new reason: `designated_absent_candidate` (int, the peer that admits
+      *(completed)*
+- [x] Payload fields for the new reason: `designated_absent_candidate` (int, the peer that admits
       this cycle) and `reason` (machine-templated; states this is a one-cycle ORDERING constraint
       that self-clears, names the real remedy — declare a `file_scope` — and never instructs the
-      operator to isolate the dispatch).
-- [ ] Document in the header, to the same standard as the existing three reasons: the new value's
+      operator to isolate the dispatch). *(completed)*
+- [x] Document in the header, to the same standard as the existing three reasons: the new value's
       payload fields; that `colliding_task_number`, `colliding_task_status`, `overlapping_path`,
       `collision_scope`, and `corroborated_by` are **deliberately absent** because there is no
       colliding task and no overlapping path — this is missing information, not a detected
@@ -374,25 +375,37 @@ verdict schema to v6 with the matching Version History entry.
       its **override semantics**: NO override flag, sitting alongside `file_scope_collision` and
       `session_active` rather than `self_modifying`, because the defer self-clears next cycle
       (tie-breaker convergence) and the remedy is a one-line `file_scope` declaration, not a
-      bypass.
-- [ ] Extend the header's Precedence block: the absent-scope branch resolves BEFORE the
+      bypass. *(completed)*
+- [x] Extend the header's Precedence block: the absent-scope branch resolves BEFORE the
       self-modification check (it already does, structurally — an empty scope can match no
       critical path), so `absent_file_scope` and `self_modifying` are mutually exclusive by
-      construction. State that explicitly rather than leaving it to be inferred.
-- [ ] Bump every `$schema` literal from `orchestrate-batch-admit-v5` to `orchestrate-batch-admit-v6`
+      construction. State that explicitly rather than leaving it to be inferred. *(completed)*
+- [x] Bump every `$schema` literal from `orchestrate-batch-admit-v5` to `orchestrate-batch-admit-v6`
       in this script, and add the new value to the header's `defer_reason` enumeration.
-- [ ] Add the v5 -> v6 Version History entry to `docs/architecture/batch-admit-schema.md` with the
+      *(completed: 12 literals in this script bumped via sed, re-derived count was 12 not the
+      scope hypothesis's estimated 11 — one extra occurrence came from this phase's own new
+      defer/admit branches added in the same edit, not a miscounted pre-existing one)*
+- [x] Add the v5 -> v6 Version History entry to `docs/architecture/batch-admit-schema.md` with the
       explicit consumer table every prior `defer_reason` addition carried (naming
       `orchestrate-cycle-plan.sh` and `orchestrate-predispatch-review.sh`, and recording that
       `orchestrate-dry-run-report.sh` is retired and `SKILL.md` no longer branches on
       `defer_reason`). Update the doc's `**Status**` line, Complete JSON Schema, and Field
-      Definitions for the new reason and both new additive fields.
-- [ ] Flip fixture case **IN-BATCH-ABSENCE** to positive: exactly one admit (the lowest-numbered
+      Definitions for the new reason and both new additive fields. *(completed: added a new
+      "Admission Posture for an Absent `file_scope` (v6 Ruling)" section mirroring the script
+      header, plus the `absent_file_scope` Deferral-Direction bullet, the Precedence
+      mutual-exclusivity note, two new example verdict JSON blocks, and the `designated_absent_candidate`
+      /`absent_scope_advisory` Field Definitions rows)*
+- [x] Flip fixture case **IN-BATCH-ABSENCE** to positive: exactly one admit (the lowest-numbered
       candidate, named as `designated_absent_candidate` on each of the other seven), seven defers
       with `defer_reason == "absent_file_scope"`, and **no** `colliding_task_number` /
-      `overlapping_path` / `collision_scope` / `corroborated_by` on any of them.
-- [ ] Update the single `$schema`-literal fixture case to v6. Confirm **PHASE-EXEMPT-ABSENCE**
-      still admits.
+      `overlapping_path` / `collision_scope` / `corroborated_by` on any of them. *(completed: this
+      case was already written against this exact target shape in Phase 1 per that phase's own
+      deviation note — no further text change needed here, only the implementation above)*
+- [x] Update the single `$schema`-literal fixture case to v6. Confirm **PHASE-EXEMPT-ABSENCE**
+      still admits. *(completed; also added a new SOLO-ABSENT-SCOPE-NON-REGRESSION fixture case
+      per this phase's own Verification requirement "a single-candidate invocation of an
+      absent-scope task still admits ... assert this as its own case, not by inspection", which
+      the task list above did not separately enumerate as a checklist bullet)*
 
 **Timing**: 2 hours
 
@@ -438,6 +451,21 @@ retroactively.
 - A single-candidate invocation of an absent-scope task still admits (`$inv_count == 1` never
   defers) — assert this as its own case, not by inspection.
 - `shellcheck` clean on every `.sh` touched.
+
+**Phase Completion Note**: Full suite results after this phase: `test-orchestrate-batch-admit.sh`
+8 passed, 1 failed (SOLO-SELF-MOD-CROSS-SESSION — EXPECTED, as this Verification section
+requires, until Phase 4); `test-conflict-predicate.sh` 33 passed, 0 failed;
+`test-four-tier-conflict.sh` 13 passed, 0 failed. `shellcheck` clean on all four touched `.sh`
+files (identical to each file's own pre-task baseline — confirmed via `git show HEAD:...` diffs
+for each). Live re-derivation of the Scope Hypothesis counts: `grep -rc
+'orchestrate-batch-admit-v5' agent-system/extensions/core/` found the script's own count already
+at 0 post-edit (all 12 bumped to v6), `test-conflict-predicate.sh` 2 (1 narrative kept, 1 pinning
+assertion bumped), `test-four-tier-conflict.sh` 3 (all narrative, left unchanged — confirmed by
+reading each occurrence), `docs/architecture/batch-admit-schema.md` now 0 v5 / all-v6 for
+current-version claims (7 bumped), and the two `context/patterns/*.md` files deferred to Phase 6
+per the plan's own sequencing. `scripts/test-four-tier-conflict.sh` needed NO edit (confirmed by
+reading all 3 occurrences: each narrates the v5 idle-collider narrowing historically, never
+asserting a current-version literal).
 
 ---
 

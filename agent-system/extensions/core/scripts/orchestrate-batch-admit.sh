@@ -105,9 +105,9 @@
 # instruction to isolate the dispatch by itself.
 #
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order. Verdict
-# schema (pinned as "orchestrate-batch-admit-v5"; field order is stable):
+# schema (pinned as "orchestrate-batch-admit-v6"; field order is stable):
 #
-#   $schema                 string   Literal "orchestrate-batch-admit-v5".
+#   $schema                 string   Literal "orchestrate-batch-admit-v6".
 #   task_number              int     The candidate task number, echoed back.
 #   decision                 string  "admit" or "defer". Never "fail" — a candidate this script
 #                                     cannot resolve (unknown task, terminal status, empty/null
@@ -122,16 +122,17 @@
 #                                     a self-modifying candidate still carries `true` here, so
 #                                     the hazard stays visible even when it is not deferred.
 #   defer_reason              string  Present only when decision == "defer". Exactly one of
-#                                     "self_modifying", "file_scope_collision", or (NEW in v4)
-#                                     "session_active" — REQUIRED discriminator. Existing
-#                                     consumers MUST branch on this field before falling into any
-#                                     pre-v2 default handling. As of v4 all three defer reasons
-#                                     remain wave/cycle-scoped (none is a whole-invocation
+#                                     "self_modifying", "file_scope_collision", "session_active"
+#                                     (NEW in v4), or "absent_file_scope" (NEW in v6) — REQUIRED
+#                                     discriminator. Existing consumers MUST branch on this field
+#                                     before falling into any pre-v2 default handling. Every defer
+#                                     reason is wave/cycle-scoped (none is a whole-invocation
 #                                     exclusion); the discriminator exists to name the HAZARD
 #                                     behind the defer and select the operator remedy
 #                                     (self_modifying's remedy is the `--allow-self-modifying`
-#                                     override; file_scope_collision and session_active have
-#                                     none — see docs/architecture/batch-admit-schema.md).
+#                                     override; file_scope_collision, session_active, and
+#                                     absent_file_scope have none — see
+#                                     docs/architecture/batch-admit-schema.md).
 #   critical_path              string Present only when defer_reason == "self_modifying". The
 #                                     matched declared critical path (post scope-root expansion).
 #   critical_label              string Present only when defer_reason == "self_modifying". The
@@ -167,6 +168,16 @@
 #                                     — always one of pid-alive / dead-pid-within-grace / corrupt /
 #                                     undeterminable here, since dead-pid/stale-heartbeat sessions
 #                                     are excluded by D4 before this verdict can fire.
+#   designated_absent_candidate int   Present only when defer_reason == "absent_file_scope" (NEW
+#                                     in v6). The lowest task number among this cycle's
+#                                     absent-scope candidates — the peer that admits this cycle in
+#                                     this candidate's place. Deliberately NO
+#                                     colliding_task_number/colliding_task_status/overlapping_path/
+#                                     collision_scope/corroborated_by on this defer: there is no
+#                                     colliding task and no overlapping path (this is MISSING
+#                                     information, not a detected conflict), so this value is its
+#                                     own field rather than overloading file_scope_collision's
+#                                     shape with fields that would all be present-but-empty.
 #   reason                    string Present only when decision == "defer". Machine-templated
 #                                     human-readable summary; never the sole carrier of any fact
 #                                     already present as a structured field above.
@@ -270,6 +281,15 @@
 # `corroborated_by` field — the new `session_active` flavor fires strictly where the pre-v4
 # predicate emitted `admit`.
 #
+# NEW in v6: the absent-scope branch (empty/null/missing file_scope) resolves BEFORE the
+# self-modification check — it already did, structurally, since an empty file_scope can match no
+# critical path — so `absent_file_scope` and `self_modifying` are MUTUALLY EXCLUSIVE BY
+# CONSTRUCTION: no verdict ever carries both a `defer_reason: "absent_file_scope"` and
+# `self_modifying: true`, and no candidate reaching the `absent_file_scope` branch ever also runs
+# the collision scan or the session-registry pass this cycle (the absent-scope branch's own
+# `if`/`elif`/`else` fully resolves the verdict without falling through to any of them). Stated
+# explicitly here rather than left to be inferred from branch order alone.
+#
 # Held-lock scan rejection (recorded, not the file's pre-existing D5 above — this convergence's
 # OWN separate decision not to add a fourth contention input): `orchestrate-batch-admit.sh` does
 # NOT gain a held-lock scan. Held locks supply no `file_scope` of their own (`holder.json`
@@ -300,8 +320,10 @@
 # unaffected. Silent disablement (returning false as if no candidate were ever self-modifying) is
 # the one behavior this script must never produce for a degraded data file.
 #
-# Degenerate candidates (self_modifying still computed per the rule above; decision always
-# resolves to a plain "admit" verdict with no collision fields, exactly as in v1):
+# Degenerate candidates (self_modifying still computed per the rule above; decision resolves to a
+# plain "admit" verdict with no collision fields in the FIRST two cases below, exactly as in v1
+# — the THIRD case gained its own blocking posture in v6, see "Admission Posture for an ABSENT
+# file_scope" above):
 #   - task_number absent from active_projects (unknown task) — self_modifying: false (no
 #     file_scope to test) unless degraded, then null.
 #   - task_number's status is terminal (completed, abandoned, expanded — case-insensitive) — the
@@ -309,7 +331,10 @@
 #     candidate that WOULD be self-modifying is still visible in the verdict), but a terminal
 #     candidate is never deferred by this script — it will not be dispatched regardless.
 #   - task_number's file_scope is null, missing, or an empty array — self_modifying: false
-#     (trivially no scope to match) unless degraded, then null.
+#     (trivially no scope to match) unless degraded, then null; decision is "admit" carrying
+#     absent_scope_advisory for a cross_batch comparison, or (NEW in v6) "defer" with
+#     defer_reason "absent_file_scope" for an in_batch comparison when this candidate is not this
+#     cycle's designated absent-scope candidate and is not phase-exempt — see the ruling above.
 #
 # Comparison set for the collision scan (per candidate, only reached when self_modifying is not
 # true): every entry in active_projects whose status is NOT one of {completed, abandoned,
@@ -344,6 +369,36 @@
 #     evidence-gating, not batch-size-gating: the check still runs the full comparison set at any
 #     batch size, and an idle overlap discovered in a batch of one behaves identically to one
 #     discovered in a batch of fifty.
+#
+# Deferral rule for absent_file_scope (NEW in v6 — a DIFFERENT kind of fact from
+# file_scope_collision above, read carefully): an absent file_scope has NO colliding task and NO
+# overlapping path to name — this is MISSING information, not a detected conflict — so it does
+# not reuse file_scope_collision's payload shape (which would leave colliding_task_number,
+# colliding_task_status, overlapping_path, collision_scope, and corroborated_by all
+# present-but-empty, violating this schema's "present only when..." discipline). It is its own
+# defer_reason with its own payload field, designated_absent_candidate (see the field list
+# above):
+#   - in_batch (co-dispatched this wave/cycle, `--invocation-count` > 1): the candidate defers
+#     UNLESS it is this cycle's designated absent-scope candidate (the lowest task number among
+#     this cycle's absent-scope candidates — the SAME ascending-first-match tie-breaker
+#     convention `self_modifying` already uses) OR it is phase-exempt (mapped via --phase-map to
+#     "research" or "plan" — a research/plan dispatch touches only the task's own reports/ or
+#     plans/ subdirectory, never orchestrator machinery, so its IMPLEMENTATION footprint being
+#     undeclared is a pure false positive, identical rationale to the self-mod branch's own
+#     phase-aware gate). This is a one-cycle ORDERING CONSTRAINT, not an exclusion: the deferred
+#     candidate resolves in a later cycle once the designated candidate clears (dispatches,
+#     completes, or otherwise leaves this cycle's candidate set) — self-clearing, same as every
+#     other defer_reason this script emits.
+#   - cross_batch (not co-dispatched this cycle, or `--invocation-count` == 1): NEVER defers —
+#     see "Admission Posture for an ABSENT file_scope" above for the full advisory-only ruling and
+#     its recorded promotion criterion.
+#   - Override semantics: NO override flag exists for absent_file_scope, unlike self_modifying's
+#     consumer-side `--allow-self-modifying`. This is deliberate, not an oversight: the defer
+#     self-clears next cycle via the same tie-breaker convergence self_modifying already relies
+#     on, and the real remedy — declare a file_scope — is a one-line state.json edit available to
+#     any operator immediately, so no bypass flag is needed to unblock a legitimately urgent
+#     dispatch. absent_file_scope sits alongside file_scope_collision and session_active in this
+#     respect (neither of those has an override flag either), not alongside self_modifying.
 #
 # Determinism: among the surviving comparison set (terminal-excluded, edge-excluded, and — for
 # in_batch pairs only — direction-filtered), tasks are visited in ASCENDING project_number order;
@@ -618,44 +673,90 @@ if verdicts=$(jq -n -c \
    | if length > 0 then min else null end
   ) as $designated_sm_candidate |
 
+  # Designated absent-scope candidate (NEW, Phase-3-of-the-absent-scope-ruling): the LOWEST task
+  # number, among the candidates in this cycle, that is known, non-terminal, and has an
+  # absent/empty file_scope (missing key, literal null, or empty array) -- same
+  # ascending-project_number-first-match determinism convention as $designated_sm_candidate
+  # above. Computed once per invocation, over the full $cands set, independent of any one
+  # candidate branch below. null when no candidate in this cycle has an absent file_scope.
+  ($cands
+   | map(. as $n |
+       ([$all[] | select(.project_number == $n)] | first) as $e |
+       (
+         if ($e == null) then false
+         elif (($e.status // "") | is_terminal) then false
+         else (($e.file_scope // []) | length) == 0
+         end
+       ) as $matches |
+       if $matches then $n else null end
+     )
+   | map(select(. != null))
+   | if length > 0 then min else null end
+  ) as $designated_absent_candidate |
+
   (
     reduce ($cands | sort)[] as $c (
       {results: {}};
       . as $acc |
       (
     ([$all[] | select(.project_number == $c)] | first) as $entry |
+    ($phase_map[($c|tostring)] // null) as $phase_group |
 
     if ($entry == null) then
-      {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
+      {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit",
        self_modifying: (if $is_degraded then null else false end)}
     elif (($entry.status // "") | is_terminal) then
-      {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
+      {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit",
        self_modifying: (if $is_degraded then null else (self_mod_match($entry.file_scope; $crit) != null) end)}
     elif (($entry.file_scope // []) | length) == 0 then
-      # Admission Posture for an ABSENT file_scope (see the header ruling above): this branch is
-      # reached for a cross_batch-only comparison today; the in_batch blocking case is handled by
-      # the designated-absent-candidate branch added in a later version of this script (see the
-      # defer_reason field above). scope_state distinguishes the three sub-states BEFORE the
-      # `// []` coalesce above erases the difference between them -- same vocabulary
-      # validate-state.sh Check 10 and orchestrate-predispatch-review.sh Class F already use.
+      # Admission Posture for an ABSENT file_scope (see the header ruling above): cross_batch
+      # stays advisory-only (admit, carrying absent_scope_advisory); in_batch is BLOCKING via the
+      # absent_file_scope defer_reason below, converging through the SAME designated-candidate
+      # tie-breaker pattern self_modifying already uses (lowest task number among the
+      # absent-scope candidates in this cycle admits; every other one defers this wave/cycle). A
+      # research or plan dispatch is exempt unconditionally, for the identical D-phase rationale
+      # the self-mod branch below already applies: it touches only the own reports/ or plans/
+      # subdirectory of the task, never orchestrator machinery, so deferring it merely because its
+      # IMPLEMENTATION footprint is undeclared would be a pure false positive. scope_state
+      # distinguishes the three sub-states BEFORE the `// []` coalesce above erases the
+      # difference between them -- same vocabulary validate-state.sh Check 10 and
+      # orchestrate-predispatch-review.sh Class F already use.
       (if (($entry | has("file_scope")) | not) then "missing_key"
        elif ($entry.file_scope == null) then "null_value"
        else "empty_array"
        end) as $scope_state |
-      {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
-       self_modifying: (if $is_degraded then null else false end),
-       absent_scope_advisory: {
-         scope_state: $scope_state,
-         codispatch_count: $inv_count,
-         reason: ("file_scope is " + $scope_state + " for candidate #" + ($c|tostring) +
-                  "; declare a file_scope, or run plan-file-scope-harvest.sh / backfill-file-scope.sh once a plan exists")
-       }}
+      {
+        scope_state: $scope_state,
+        codispatch_count: $inv_count,
+        reason: ("file_scope is " + $scope_state + " for candidate #" + ($c|tostring) +
+                 "; declare a file_scope, or run plan-file-scope-harvest.sh / backfill-file-scope.sh once a plan exists")
+      } as $absent_advisory |
+      if ($phase_group == "research" or $phase_group == "plan") then
+        {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit",
+         self_modifying: (if $is_degraded then null else false end),
+         absent_scope_advisory: $absent_advisory}
+      elif ($inv_count > 1 and $c != $designated_absent_candidate) then
+        {
+          "$schema": "orchestrate-batch-admit-v6",
+          task_number: $c,
+          decision: "defer",
+          self_modifying: (if $is_degraded then null else false end),
+          defer_reason: "absent_file_scope",
+          designated_absent_candidate: $designated_absent_candidate,
+          reason: ("candidate #" + ($c|tostring) + " has an absent file_scope (" + $scope_state +
+                   "); deferred this wave/cycle in favor of designated absent-scope candidate #" +
+                   ($designated_absent_candidate|tostring) + " (lowest task number among the absent-scope candidates in this cycle) -- this is a one-cycle ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($designated_absent_candidate|tostring) + " clears; the real remedy is to declare a file_scope, which clears this defer immediately")
+        } + {absent_scope_advisory: $absent_advisory}
+      else
+        {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit",
+         self_modifying: (if $is_degraded then null else false end),
+         absent_scope_advisory: $absent_advisory}
+      end
     else
       ($entry.dependencies // []) as $c_deps |
       ($entry.file_scope) as $c_scope |
       (if $is_degraded then null else self_mod_match($c_scope; $crit) end) as $sm_hit |
       (if $is_degraded then null else ($sm_hit != null) end) as $sm_flag |
-      ($phase_map[($c|tostring)] // null) as $phase_group |
       if ($sm_flag == true) then
         if ($phase_group == "research" or $phase_group == "plan") then
           # Phase-aware gate (D-phase, NEW): a research or plan dispatch touches only the own
@@ -665,14 +766,14 @@ if verdicts=$(jq -n -c \
           # path is a pure false positive. Exempt unconditionally from both
           # the tie-breaker and the raw inv_count check; self_modifying stays true (hazard visible).
           {
-            "$schema": "orchestrate-batch-admit-v5",
+            "$schema": "orchestrate-batch-admit-v6",
             task_number: $c,
             decision: "admit",
             self_modifying: true
           }
         elif ($inv_count > 1 and $c != $designated_sm_candidate) then
           {
-            "$schema": "orchestrate-batch-admit-v5",
+            "$schema": "orchestrate-batch-admit-v6",
             task_number: $c,
             decision: "defer",
             self_modifying: true,
@@ -683,7 +784,7 @@ if verdicts=$(jq -n -c \
           }
         else
           {
-            "$schema": "orchestrate-batch-admit-v5",
+            "$schema": "orchestrate-batch-admit-v6",
             task_number: $c,
             decision: "admit",
             self_modifying: true
@@ -752,10 +853,10 @@ if verdicts=$(jq -n -c \
           # this addition; this new flavor fires strictly where the predicate used to admit.
           session_contention($c_scope; $c; $own_sid; $all; $sess_list) as $sess_hit |
           if $sess_hit == null then
-            {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag
+            {"$schema": "orchestrate-batch-admit-v6", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag
           else
             {
-              "$schema": "orchestrate-batch-admit-v5",
+              "$schema": "orchestrate-batch-admit-v6",
               task_number: $c,
               decision: "defer",
               self_modifying: $sm_flag,
@@ -785,7 +886,7 @@ if verdicts=$(jq -n -c \
             ["non_terminal_status"] + (if $session_corroborates then ["session_registry"] else [] end)
           ) as $corroborated_by |
           {
-            "$schema": "orchestrate-batch-admit-v5",
+            "$schema": "orchestrate-batch-admit-v6",
             task_number: $c,
             decision: "defer",
             self_modifying: $sm_flag,

@@ -280,7 +280,7 @@ if [ "$c27_ok" = true ]; then pass "2.7: cross_batch defers for every in-flight 
 # =============================================================================
 v840_full=$("$BA" 840 2>/dev/null | jq -c '.')
 c3_ok=true
-[ "$(echo "$v840_full" | jq -r '."$schema"')" = "orchestrate-batch-admit-v5" ] || { c3_ok=false; info "schema is not v5: $v840_full"; }
+[ "$(echo "$v840_full" | jq -r '."$schema"')" = "orchestrate-batch-admit-v6" ] || { c3_ok=false; info "schema is not v6: $v840_full"; }
 for f in task_number decision self_modifying defer_reason colliding_task_number colliding_task_status overlapping_path collision_scope reason; do
   echo "$v840_full" | jq -e "has(\"$f\")" >/dev/null 2>&1 || { c3_ok=false; info "v4 collision verdict missing pre-existing field: $f"; }
 done

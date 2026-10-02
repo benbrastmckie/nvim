@@ -416,15 +416,47 @@ jq --argjson np "$NUM_PEA" --argjson np2 "$NUM_PEA2" \
   "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
 
 # =============================================================================
+# Fixture case: SOLO-ABSENT-SCOPE-NON-REGRESSION -- a single absent-scope candidate invoked
+# ALONE (--invocation-count 1) must still admit: the absent_file_scope defer requires
+# $inv_count > 1 by construction, so a solo absent-scope task is never blocked by this ruling.
+# =============================================================================
+NUM_SOLO_ABSENT=340
+
+solo_absent_json=$(jq \
+  --argjson ns "$NUM_SOLO_ABSENT" \
+  '.active_projects += [
+    {"project_number": $ns, "project_name": "solo_absent", "status": "not_started", "task_type": "general", "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$solo_absent_json" > "$STATE_FILE"
+
+out_solo_absent=$("$BA" --invocation-count 1 "$NUM_SOLO_ABSENT" 2>/dev/null)
+v_solo_absent=$(echo "$out_solo_absent" | jq -c "select(.task_number == $NUM_SOLO_ABSENT)")
+
+solo_absent_ok=true
+[ "$(echo "$v_solo_absent" | jq -r '.decision')" = "admit" ] || { solo_absent_ok=false; info "SOLO-ABSENT-SCOPE-NON-REGRESSION: candidate did not admit: $v_solo_absent"; }
+[ "$(echo "$v_solo_absent" | jq -r 'has("defer_reason")')" = "false" ] || { solo_absent_ok=false; info "SOLO-ABSENT-SCOPE-NON-REGRESSION: unexpectedly carries defer_reason: $v_solo_absent"; }
+if [ "$solo_absent_ok" = true ]; then
+  pass "SOLO-ABSENT-SCOPE-NON-REGRESSION: a solo (invocation-count 1) absent-scope candidate always admits"
+else
+  fail "SOLO-ABSENT-SCOPE-NON-REGRESSION: non-regression assertion failed (see INFO lines above)"
+fi
+
+jq --argjson ns "$NUM_SOLO_ABSENT" \
+  '.active_projects |= map(select(.project_number != $ns))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
 # Fixture case: schema-literal pin -- exactly ONE assertion in this suite reads the raw $schema
 # string value. Every other new assertion added by this phase reads decision/defer_reason/field
 # presence only, per this suite's own documented convention (see the header's two-defect list).
 # =============================================================================
 out_schema=$("$BA" --invocation-count 1 "$NUM_A" 2>/dev/null)
 schema_ok=true
-[ "$(echo "$out_schema" | jq -r '."$schema"')" = "orchestrate-batch-admit-v5" ] || { schema_ok=false; info "SCHEMA-LITERAL: schema was not v5: $out_schema"; }
+# Bumped to v6 in the phase that introduced the absent_file_scope defer_reason -- see this
+# script's own Version History for why that was a version bump, not an additive field.
+[ "$(echo "$out_schema" | jq -r '."$schema"')" = "orchestrate-batch-admit-v6" ] || { schema_ok=false; info "SCHEMA-LITERAL: schema was not v6: $out_schema"; }
 if [ "$schema_ok" = true ]; then
-  pass "SCHEMA-LITERAL: \$schema reads orchestrate-batch-admit-v5 (will be bumped to v6 in a later phase)"
+  pass "SCHEMA-LITERAL: \$schema reads orchestrate-batch-admit-v6"
 else
   fail "SCHEMA-LITERAL: schema-literal pin failed (see INFO lines above)"
 fi
