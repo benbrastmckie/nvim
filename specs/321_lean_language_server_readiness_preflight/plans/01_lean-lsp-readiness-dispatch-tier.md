@@ -352,27 +352,33 @@ harness and record that the scope was wider than estimated.
 
 ---
 
-### Phase 5: Thread the readiness finding into the direct-command path's delegation context [NOT STARTED]
+### Phase 5: Thread the readiness finding into the direct-command path's delegation context [COMPLETED]
 
 **Goal**: the four lean skills capture their existing Stage 2 probe output instead of discarding it,
 and pass it to the subagent in Stage 3's delegation context — closing the same
 finding-never-reaches-the-agent gap on the direct `/research|/plan|/implement` path.
 
 **Tasks**:
-- [ ] For each of `skill-lean-research`, `skill-lean-research-hard`, `skill-lean-implementation`,
+- [x] For each of `skill-lean-research`, `skill-lean-research-hard`, `skill-lean-implementation`,
       `skill-lean-implementation-hard`: re-read the file, then change the Stage 2 snippet to invoke
       the probe with `--dispatch-block`, capture stdout into a shell variable, and still emit the
       human-readable no-flag output for the transcript (two invocations are acceptable here — this
       path is not latency-critical — or one capture plus an echo, whichever the file's existing
-      snippet shape makes cleaner; state which was used).
-- [ ] Keep the `|| true` and the `[ -x ... ]` guard, so a deploy without the lean probe is still
-      silent and non-blocking.
-- [ ] Add a `lean_readiness` field to each file's Stage 3 delegation-context JSON block, alongside
+      snippet shape makes cleaner; state which was used). *(completed: used TWO invocations in all
+      four files — the original no-flag call unchanged, plus a second `--dispatch-block` call
+      whose stdout is captured into `lean_readiness`)*
+- [x] Keep the `|| true` and the `[ -x ... ]` guard, so a deploy without the lean probe is still
+      silent and non-blocking. *(completed)*
+- [x] Add a `lean_readiness` field to each file's Stage 3 delegation-context JSON block, alongside
       `focus_prompt`, documented as carrying Stage 2's captured block (empty string when the probe
-      is absent or the directory is not a Lean project).
-- [ ] Add a one-line note at each Stage 4 invocation directive that `lean_readiness`, when
+      is absent or the directory is not a Lean project). *(completed: in
+      `skill-lean-implementation`, which has no `focus_prompt` field, placed alongside `plan_path`
+      instead; in `skill-lean-implementation-hard`, whose delegation-context stage is numbered
+      Stage 4 not Stage 3, placed alongside `continuation_context`)*
+- [x] Add a one-line note at each Stage 4 invocation directive that `lean_readiness`, when
       non-empty, must be included in the subagent prompt — the field is useless if the prompt
-      composer drops it.
+      composer drops it. *(completed: in `skill-lean-implementation-hard`, whose invocation
+      directive is numbered Stage 5 not Stage 4, the note was added there instead)*
 
 **Timing**: 0.75 hours
 

@@ -74,9 +74,15 @@ bash .claude/scripts/update-task-status.sh preflight "$task_number" research "$s
 ```
 
 ```bash
-# WARN-only: reports lean-lsp MCP registration drift without blocking dispatch.
+# WARN-only: reports lean-lsp MCP registration drift without blocking dispatch. Two
+# invocations: the no-flag call keeps the human-readable transcript message unchanged; the
+# --dispatch-block call separately captures the evidence-tier block for Stage 3's
+# lean_readiness field, so the finding reaches the subagent instead of being discarded after
+# printing to the transcript. Not latency-critical on this (non-/orchestrate) path.
+lean_readiness=""
 if [ -x .claude/scripts/lean-mcp-preflight-check.sh ]; then
   bash .claude/scripts/lean-mcp-preflight-check.sh || true
+  lean_readiness="$(bash .claude/scripts/lean-mcp-preflight-check.sh --dispatch-block 2>/dev/null)" || lean_readiness=""
 fi
 ```
 
@@ -100,6 +106,7 @@ Prepare delegation context for the subagent:
     "task_type": "lean4"
   },
   "focus_prompt": "{optional focus — if contains 'divergence' or 'audit', agent activates H5}",
+  "lean_readiness": "{Stage 2's captured --dispatch-block output; empty string when the probe is absent or this is not a Lean project}",
   "metadata_file_path": "specs/{N}_{SLUG}/.return-meta.json"
 }
 ```
@@ -119,6 +126,9 @@ Parameters:
   - prompt: [Include task_context, delegation_context, focus_prompt, metadata_file_path]
   - description: "Execute hard-mode Lean research for task {N}"
 ```
+
+When `lean_readiness` is non-empty, include it verbatim in the subagent prompt — the field is
+useless if the prompt composer drops it.
 
 **DO NOT** use `Skill(lean-research-hard-agent)` - this will FAIL.
 
