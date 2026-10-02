@@ -323,31 +323,36 @@ anything, rather than assuming the count recorded here.
 
 ---
 
-### Phase 4: Resolve the postflight blockers reader-vs-comment contradiction [NOT STARTED]
+### Phase 4: Resolve the postflight blockers reader-vs-comment contradiction [COMPLETED]
 
 **Goal**: The blocked-verdict branch renders an array-shaped `blockers` value correctly instead of
 emitting raw JSON, and the sibling branch's comment no longer asserts a falsehood about the field.
 
 **Tasks**:
 
-- [ ] Re-read `orchestrate-cycle-postflight.sh` around lines 1255-1295 — four other active tasks
-      declare this file.
-- [ ] Fix the reader in the `verdict == "blocked"` branch so it tolerates both shapes through the
+- [x] Re-read `orchestrate-cycle-postflight.sh` around lines 1255-1295 — four other active tasks
+      declare this file. *(completed; lines had shifted slightly to ~1302-1330, re-located by
+      content)*
+- [x] Fix the reader in the `verdict == "blocked"` branch so it tolerates both shapes through the
       migration window and converges on array-only afterwards:
       `(.blockers // ["Unspecified blocker"]) | if type == "array" then join("; ") else . end`.
-- [ ] Correct the `else`-branch comment: delete the false claim that
+      *(completed; verified standalone against scalar-string, array, and absent inputs — all three
+      render correctly with no raw JSON)*
+- [x] Correct the `else`-branch comment: delete the false claim that
       `.active_projects[].blockers` is never written by any script. Replace it with the accurate
       statement — the field is a free-text, human/session-authored annotation with no canonical
       script writer, it **is** populated in practice, and it is consumed by the `verdict ==
       "blocked"` branch immediately above; the `partial + blockers[]` branch derives its description
       from the handoff's own object-shaped `blockers[]` array, which is a different document and a
       different field, and that distinction is why this branch does not read the entry field.
-- [ ] Leave the `partial_with_blockers` handoff-derived logic itself unchanged — only its comment
-      was wrong.
-- [ ] Add a one-line pointer near `orchestrate-triage-classify.sh`'s `previous_status` read
+      *(completed)*
+- [x] Leave the `partial_with_blockers` handoff-derived logic itself unchanged — only its comment
+      was wrong. *(completed — logic untouched, confirmed by diff)*
+- [x] Add a one-line pointer near `orchestrate-triage-classify.sh`'s `previous_status` read
       confirming the field is now modelled in `state-schema.json` (no behavioural change; this file
-      is declared in `file_scope` for exactly this provenance note).
-- [ ] Commit (explicit two-file list).
+      is declared in `file_scope` for exactly this provenance note). *(completed; full
+      test-orchestrate-triage-classify.sh suite re-run, 60/60 passed, no regression)*
+- [x] Commit (explicit two-file list). *(completed)*
 
 **Timing**: 0.75 hours
 

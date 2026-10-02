@@ -466,6 +466,9 @@ if verdicts=$(jq -n -c \
     end
   elif $status == "blocked" then
     ($entry.dependencies // []) as $deps |
+    # previous_status is now modelled in state-schema.json, in definitions.projectEntry (reuses
+    # #/definitions/taskStatus) -- written by /spawn preflight status update, read here for
+    # blocked-task discharge routing. No behavioural change; this is a provenance note only.
     ($entry.previous_status // null) as $prev |
     (($hinfo.state // "absent")) as $hstate |
     (($hinfo.blocker_count // 0)) as $bc |

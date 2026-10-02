@@ -1307,13 +1307,21 @@ if [ "$verdict" = "blocked" ] || [ "$partial_with_blockers" = "true" ]; then
   # Blocker-research aux signal: unconditional on hard_mode (single-task Stage 6's own Blocker
   # Escalation handler applies in either mode).
   if [ "$verdict" = "blocked" ]; then
+    # `.active_projects[].blockers` IS populated in practice (a free-text, human/session-authored
+    # annotation with no canonical script writer -- see context/reference/state-management-schema.md)
+    # and has two live shapes: a plain string (legacy) and an array of strings (canonical, per
+    # state-schema.json's definitions.projectEntry.blockers). Tolerate both through the migration
+    # window (scripts/migrate-state-legacy-fields.sh normalizes legacy scalars to arrays) rather
+    # than emitting raw JSON for an array value.
     blocker_desc=$(jq -r --argjson num "$task_number" \
-      '.active_projects[] | select(.project_number == $num) | .blockers // "Unspecified blocker"' \
+      '.active_projects[] | select(.project_number == $num) | (.blockers // ["Unspecified blocker"]) | if type == "array" then join("; ") else . end' \
       "$STATE_FILE" 2>/dev/null) || blocker_desc="Unspecified blocker"
   else
-    # partial + blockers[]: `.active_projects[].blockers` is never written by any script (would
-    # degrade to "Unspecified blocker" every time) -- derive the description from the handoff's
-    # own blockers[0] instead: target, plus why_it_failed when present.
+    # partial + blockers[]: this is the HANDOFF file's own structured, object-shaped blockers[]
+    # array (see validate-handoff.sh / orchestrate-triage-classify.sh:348) -- a different document
+    # from the active_projects[] entry field read in the `blocked` branch above, which is why this
+    # branch derives its description from the handoff instead. Derive the description from the
+    # handoff's own blockers[0]: target, plus why_it_failed when present.
     blocker_desc=$(echo "${handoff:-null}" | jq -r '
       (.blockers[0] // {}) as $b
       | if ($b.target // "") == "" then "Unspecified blocker"
