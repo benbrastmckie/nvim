@@ -444,9 +444,15 @@
           "path": "specs/241_reconcile_mcp_registration_surfaces/plans/01_reconcile-mcp-surfaces.md",
           "type": "plan",
           "summary": "7-phase plan for the four MCP registration-surface items, with a hard precondition gate on item 1 and a flagged one-file scope addition."
+        },
+        {
+          "path": "specs/241_reconcile_mcp_registration_surfaces/summaries/01_reconcile-mcp-surfaces-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the four-item MCP registration-surface reconciliation."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Reconciled four MCP registration/permission surfaces in the agent-system source store: emptied the redundant playwright enumerations in web/present settings-fragment.json, deleted five dead manifest.json mcp_servers fields (including nix's trap-name mcp-nixos), corrected mcp-server-ownership.md's five stale passages, corrected nix/README.md's registration passage, and repointed playwright-mcp-guide.md's grant-location claims as a scope addition."
     },
     {
       "project_number": 217,

@@ -29,15 +29,28 @@
       "category": "PATTERN",
       "source_artifact": "specs/241_reconcile_mcp_registration_surfaces/summaries/01_reconcile-mcp-surfaces-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless", "verify-deploy", "check-extension-docs", "concurrent-siblings", "territory", "gate-attribution"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "verify-deploy",
+        "check-extension-docs",
+        "concurrent-siblings",
+        "territory",
+        "gate-attribution"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790968925_5ff73e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
