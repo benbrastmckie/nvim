@@ -1,12 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 20,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/321_lean_language_server_readiness_preflight/summaries/01_lean-lsp-readiness-dispatch-tier-summary.md",
+      "summary": "Execution summary for all 7 plan phases: reachability probe + --dispatch-block mode, test fixtures J-N and Mutation 3, dispatch-builder injection and its test coverage, the four lean skills' direct-path threading, the two context-doc gaps, and the final redeploy/gate."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extended lean-mcp-preflight-check.sh with language-server reachability detection and a --dispatch-block mode, and threaded the resulting <lean-readiness-context> evidence-tier block into every /orchestrate dispatch file (task_type-agnostic, closing the formal-typed-Lean-project gap) and into the four lean skills' direct-command delegation context, with full fixture/mutation test coverage on both the probe and the two injection points."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/lean/skills/skill-lean-research/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+    "specs/321_lean_language_server_readiness_preflight/plans/01_lean-lsp-readiness-dispatch-tier.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Bash gotcha, recurring in shell test harnesses that spawn a long-lived background fixture process: capturing a function's own stdout via `pid=$(some_func)` when `some_func` backgrounds a child with `&` hangs until that child exits, even after the function's own `echo` runs -- a backgrounded job started inside a command-substitution subshell inherits that subshell's stdout fd, and `$(...)` waits for ALL holders of its capture pipe to close it, not just the function's own output. Two independent fixes compose: (1) explicitly redirect the backgrounded command's own stdout/stderr to /dev/null so it never holds the capture pipe open, and (2) avoid `$(...)` entirely for a function that must also mutate a caller-visible array/variable as a side effect (e.g. appending to a cleanup-PID array for a trap EXIT) -- a function invoked via command substitution runs in a subshell, so any array append or variable set inside it is silently lost once the subshell exits; have the function set a global variable instead and call it without `$(...)`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/321_lean_language_server_readiness_preflight/progress/phase-2-progress.json",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "command substitution", "subshell", "background process", "trap EXIT", "test harness", "stdout pipe hang"]
+    },
+    {
+      "content": "When a shell test mutates process-table-visible state (e.g. matching a live process by an argv substring via `ps`) to prove a safety check is load-bearing, the test is NOT hermetic by default: a genuinely running, unrelated host process (e.g. this very coding session's own long-lived MCP server subprocess) can satisfy the SAME loosened match once the safety check is deliberately deleted (a mutation test), producing a false mutation-control failure unrelated to the fixture under test. Fix: install a PATH-shadowing stub for the matched command (e.g. `ps`) that filters its real output down to rows under the test's own scratch WORKDIR, and pass any filter pattern that itself contains the matched substring via an environment variable (ENVIRON lookup in awk) rather than a literal argv string -- otherwise the filter process's OWN invocation self-matches the very pattern it is filtering for.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/321_lean_language_server_readiness_preflight/progress/phase-2-progress.json",
+      "confidence": 0.75,
+      "suggested_keywords": ["ps", "mutation testing", "test isolation", "hermetic tests", "awk ENVIRON", "process matching"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790957600_e00acf",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 6,
+    "phases_completed": 7,
     "phases_total": 7
-  },
-  "dispatch_seq": 20
+  }
 }

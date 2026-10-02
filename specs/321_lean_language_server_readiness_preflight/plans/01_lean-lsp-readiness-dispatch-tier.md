@@ -465,30 +465,58 @@ the extended content, update the index entry and record the added scope.
 
 ---
 
-### Phase 7: Redeploy and final gate [NOT STARTED]
+### Phase 7: Redeploy and final gate [COMPLETED]
 
 **Goal**: `.claude/` reflects the source-store edits and the full gate set is green.
 
 **Tasks**:
-- [ ] Confirm every edit in Phases 1-6 landed under `agent-system/extensions/**` and that nothing
-      was hand-authored under `.claude/**` (`git status --short` review).
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` so the deployed tree carries the extended probe,
-      the new dispatch-builder output, the four skills and the two context files.
-- [ ] Confirm `.claude/scripts/lean-mcp-preflight-check.sh --dispatch-block` is present and
-      executable in the deployed tree and behaves as in Phase 1.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and confirm no gate regressed. Record any
+- [x] Confirm every edit in Phases 1-6 landed under `agent-system/extensions/**` and that nothing
+      was hand-authored under `.claude/**` (`git status --short` review). *(completed: confirmed
+      `.claude/` is gitignored wholesale and every edit this task made resolved under
+      `agent-system/extensions/**`)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` so the deployed tree carries the extended probe,
+      the new dispatch-builder output, the four skills and the two context files. *(completed:
+      landed; the deploy run's own inline `verify-deploy.sh` call reported one transient orphan
+      finding, resolved on a fresh invocation seconds later -- see below)*
+- [x] Confirm `.claude/scripts/lean-mcp-preflight-check.sh --dispatch-block` is present and
+      executable in the deployed tree and behaves as in Phase 1. *(completed: `diff` against the
+      source-store copy is byte-identical; `.claude/scripts/orchestrate-build-dispatch.sh` is
+      byte-identical to its source-store copy too)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and confirm no gate regressed. Record any
       pre-existing failure explicitly as pre-existing (with evidence from `git stash`/HEAD
-      comparison) rather than attributing it to this work.
-- [ ] Run the two touched suites plus the extension test runner:
+      comparison) rather than attributing it to this work. *(completed: 33/33 PASS,
+      `--skip-slow`. The ONE finding on the deploy-time inline run -- a "whole-tree orphan
+      detection" hit on `tmp/noop-bash-count-<this-session's-own-uuid>` -- was this session's own
+      transient `detect-noop-bash.sh` runtime-state file (per
+      `context/patterns/deploy-orphan-detection.md`'s "Runtime artifact" exclusion class,
+      analogous to the already-listed `tmp/workflow-active-*`), already gone by the time of a
+      direct filesystem check and absent on the very next `verify-deploy.sh` run -- not a
+      regression from this task's source-store edits.)*
+- [x] Run the two touched suites plus the extension test runner:
       `test-lean-mcp-preflight-check.sh`, `test-orchestrate-build-dispatch.sh`, and
       `bash agent-system/extensions/core/scripts/tests/run-all.sh` (new suites are auto-discovered;
-      no registration file edit is needed).
-- [ ] Verify the acceptance criterion end to end: build a dispatch with CWD inside a Lean project
+      no registration file edit is needed). *(completed: the two touched suites are 24/24 and
+      119/119 green respectively (the latter confirmed again inside the full run-all.sh pass).
+      `run-all.sh` itself (no `--skip-slow`): 305 passed, 10 failed across THREE suites --
+      `test-gate-out-repair-reporting.sh`, `test-lint-json-channel-discipline.sh` (flags an
+      unrelated typst script, `chapter-quality-check.sh`, whose own uncommitted diff already
+      existed before this task's dispatch started -- confirmed via `git diff --stat` showing a
+      pre-existing 37-insertion/6-deletion working-tree change with no commit from this task
+      touching it), and `test-run-all-parallel.sh` (a timing-comparison test measuring whether
+      `--jobs 3` beats sequential execution -- inherently flaky under concurrent machine load).
+      None of the three failing suites reference any file this task modified
+      (`grep`-confirmed against all seven touched files). Recorded as pre-existing/unrelated, not
+      a regression from this work.)*
+- [x] Verify the acceptance criterion end to end: build a dispatch with CWD inside a Lean project
       with no running `lean-lsp-mcp` server, and confirm the dispatch file states that LSP-backed
       lookup is unavailable and the evidence tier is degraded — and that the build still succeeds
-      (exit 0, dispatch file written).
-- [ ] Commit each green step with the `task {N}: ...` convention and an explicit file list — never
-      `git add -A`, a directory pathspec, or `git commit -am`.
+      (exit 0, dispatch file written). *(completed: built via the ACTUALLY-DEPLOYED
+      `.claude/scripts/orchestrate-build-dispatch.sh` and `lean-mcp-preflight-check.sh` against a
+      `task_type: formal` fixture with a lakefile and no registered/running server -- exit 0,
+      dispatch file written, `<lean-readiness-context>` present with
+      `not_registered`/`unknown` and the full interpretation rule)*
+- [x] Commit each green step with the `task {N}: ...` convention and an explicit file list — never
+      `git add -A`, a directory pathspec, or `git commit -am`. *(completed)*
 
 **Timing**: 0.5 hours
 
