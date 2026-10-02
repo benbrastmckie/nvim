@@ -47,6 +47,7 @@ next_project_number: 322
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 316 [NOT STARTED] — Trim skill-orchestrate/SKILL.md back under its gate-20...
   └─ 317 [NOT STARTED] — Make the post-deploy reconcile promotion append to...
+  └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into... (see above)
 320 [NOT STARTED] — Run the orphaned .return-meta.json validator in the...
 
 ### Extensions
@@ -302,7 +303,7 @@ Replaying the observed incident -- the `NoFiniteWidthModel` refutation against t
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 265
+- **Dependencies**: Task 265, Task 316
 
 **Description**: Wire the directory-pathspec boundary lint into `verify-deploy.sh` as a numbered gate, so the rule it enforces cannot silently regress. The lint and its fixture test already exist and pass; only the gate wiring is missing, and it was deliberately deferred because the wiring target is an orchestrator-critical path.
 
@@ -336,6 +337,14 @@ Run `bash .claude/scripts/verify-deploy.sh` and confirm the new gate appears, pa
 All edits land under `agent-system/extensions/core/` per `.claude/rules/source-store-deploy-boundary.md`, never under `.claude/**`.
 
 NOTE: `scripts/verify-deploy.sh` IS an orchestrator-critical path, so this task trips the self-modification admission gate by design. It also shares `verify-deploy.sh` with the Gate-8-parallelism task, hence the dependency edge -- do not run the two concurrently.
+
+== BATCHING CONSTRAINT (added after a batchability review) ==
+
+**Ordering dependency on the gate-20 trim task.** This task and the SKILL.md trim task both declare `scripts/tests/test-verify-deploy-context-budget.sh`. That is a genuine ordering dependency, not incidental file sharing: the trim task may re-derive gate 20's per-file ceiling, and this task may renumber the gates that same test refers to. A `dependencies[]` edge now records it -- do not remove it, and do not run the two concurrently.
+
+**Shared file, distinct regions: `context/standards/git-staging-scope.md`.** Three live tasks declare this file and each owns a different region of it: the `--task` lease task owns the task-scoped pathspec carve-out ruling, the out-of-repository-pathspec task owns the exit-code table, and THIS task owns only the gate-number reference beside the existing `lint-directory-pathspec-boundary.sh` cross-reference (already present at the "complementary mechanical" bullet). No `dependencies[]` edge is declared between them, deliberately and on precedent: a live plan in this system already records the same posture for a file shared by eight tasks with no shared region, taking no edge and documenting the reasoning instead. A false serializing edge here would push this small gate-wiring task several waves later for no real conflict.
+
+The consequence is a BATCHING rule, not a dependency: the admission gate matches `file_scope` at FILE granularity, not region granularity, so these three tasks WILL hard-defer each other if placed in the same `/orchestrate` batch. Run them in separate invocations. If a future change makes two of them genuinely contend for the same region, add the edge then.
 
 ---
 
