@@ -1,7 +1,7 @@
 # Implementation Plan: Declare migrate-state-legacy-fields.sh in core manifest
 
 - **Task**: 323 - Declare migrate-state-legacy-fields.sh in core manifest
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/323_declare_migrate_state_legacy_fields_in_core_manifest/reports/01_declare-script-in-manifest.md

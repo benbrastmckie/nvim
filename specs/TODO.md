@@ -11,7 +11,7 @@ next_project_number: 325
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,322,323,324 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,322,324 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,185,250,251,273,275,281,298,302,303,307,308,318,319 | 22,127,184,265,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,274,282,304,313 | 165,250,251,263,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 165,282,300 | orchestrator |
@@ -43,8 +43,7 @@ next_project_number: 325
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
-323 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
-324 [PLANNED] — DEFECT. verify-deploy.sh gate 13 (whole-tree orphan...
+324 [IMPLEMENTING] — DEFECT. verify-deploy.sh gate 13 (whole-tree orphan...
 
 ### Extensions
 
@@ -83,7 +82,7 @@ next_project_number: 325
 ## Tasks
 
 ### 324. Whitelist scheduled tasks lock in orphan detection
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: neovim
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -115,12 +114,13 @@ Filed by the 2026-10-02 review: specs/reviews/review-2026-10-02.md
 ---
 
 ### 323. Declare migrate state legacy fields in core manifest
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [323_declare_migrate_state_legacy_fields_in_core_manifest/reports/01_declare-script-in-manifest.md]
 - **Plan**: [323_declare_migrate_state_legacy_fields_in_core_manifest/plans/01_declare-script-in-manifest.md]
+- **Summary**: [323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact), per rules/source-store-deploy-boundary.md.
 

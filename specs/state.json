@@ -1041,7 +1041,7 @@
     {
       "project_number": 323,
       "project_name": "declare_migrate_state_legacy_fields_in_core_manifest",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -1051,7 +1051,7 @@
         "agent-system/extensions/core/manifest.json"
       ],
       "created": "2026-10-02T21:41:16Z",
-      "last_updated": "2026-10-02T22:03:01Z",
+      "last_updated": "2026-10-02T22:26:26Z",
       "session_id": "sess_1790978139_b07459",
       "artifacts": [
         {
@@ -1063,14 +1063,20 @@
           "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/plans/01_declare-script-in-manifest.md",
           "type": "plan",
           "summary": "3-phase plan to declare the script in core manifest.json, refresh core README.md script count, and verify gate 3 green."
+        },
+        {
+          "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering the manifest/README edits and the gate-3/gate-5/gate-13 verification narrative."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added migrate-state-legacy-fields.sh to agent-system/extensions/core/manifest.json's provides.scripts and refreshed the core README's stale script count (27 -> 200). Resolved two unanticipated side effects (sibling task 324's undeployed source edit and a transient self-caused orphan file) via a standard non-destructive deploy-headless.sh redeploy, bringing verify-deploy.sh --skip-slow to a full PASS (33/33, 0 failures)."
     },
     {
       "project_number": 324,
       "project_name": "whitelist_scheduled_tasks_lock_in_orphan_detection",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "neovim",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -1081,7 +1087,7 @@
         "lua/neotex/plugins/ai/shared/extensions/verify.lua"
       ],
       "created": "2026-10-02T21:41:34Z",
-      "last_updated": "2026-10-02T22:03:06Z",
+      "last_updated": "2026-10-02T22:03:22Z",
       "session_id": "sess_1790978139_b07459",
       "artifacts": [
         {

@@ -27,21 +27,37 @@
       "category": "INSIGHT",
       "source_artifact": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["check-extension-docs.sh", "verify-deploy.sh", "verify.lua", "manifest.json", "deploy-gate-parity"]
+      "suggested_keywords": [
+        "check-extension-docs.sh",
+        "verify-deploy.sh",
+        "verify.lua",
+        "manifest.json",
+        "deploy-gate-parity"
+      ]
     },
     {
       "content": "deploy-headless.sh's default mode is a non-destructive resync of the gitignored .claude/ deploy tree from the source store, safe to run mid-task when verify-deploy.sh/check-extension-docs.sh report drift caused by a just-committed source-store edit (yours or a concurrent sibling's) that hasn't been redeployed yet. It creates no git commits and touches no git-tracked files, so it never conflicts with commit-scope rules.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless.sh", "redeploy", "source-store-deploy-boundary", "verify-deploy.sh", "non-destructive"]
+      "suggested_keywords": [
+        "deploy-headless.sh",
+        "redeploy",
+        "source-store-deploy-boundary",
+        "verify-deploy.sh",
+        "non-destructive"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790978139_b07459",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   }
