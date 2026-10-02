@@ -1,12 +1,21 @@
 {
-  "dispatch_seq": 11,
+  "dispatch_seq": 23,
   "task_number": 44,
-  "phase": "plan",
-  "status": "planned",
-  "session_id": "sess_1787016315_a436d0_44",
-  "next_action": "Run /implement 44 to execute the plan",
-  "artifact_path": "specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md",
-  "phase_count": 8,
-  "estimated_hours": 6.0,
-  "summary": "8-phase plan for whole-mode extraction from commands/task.md into six context/patterns files with imperative READ pointers at the Mode Detection dispatch table. Action Verb Categories discrepancy resolved explicitly as MERGE-AND-DROP (union merged into step 3.2 inline, standalone table deleted) because today's effective keyword set is already the union and option (b) would make 7 of ~19 keywords conditional on a READ. Named a previously-unflagged hazard: grep '^## ' reports a fence-interior '## Task Review' decoy inside Review Mode, so naive boundary detection silently truncates 209 lines; Phase 1 produces a fence-validated anchor map and extraction runs bottom-up. Phase 7 is the mandated index-entries.json line_count phase (generate-context-line-counts.sh --write then --check). Phase 8 is a full-tier per-mode executability audit plus byte-ledger reconciliation and the required before/after measurement table. No parallelism: phases 2-6 all mutate one file, stated explicitly rather than manufacturing unsafe waves."
+  "phase": "implement",
+  "status": "implemented",
+  "session_id": "sess_1790968925_5ff73e",
+  "summary": "Extracted /task's five non-default modes (Recover, Expand, Sync, Review, Abandon) plus Create Task Mode's worked-examples/edge-cases region into six new context/patterns files with imperative READ pointers at the Mode Detection dispatch table, reducing commands/task.md from 42,843 B to 14,508 B (66.14%) with a zero-residual byte ledger and zero behavior change. All eight plan phases completed.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/044_slim_task_command_body/summaries/01_task-command-mode-extraction-summary.md",
+      "summary": "8-phase extraction of /task's five non-default modes plus the Create Task Mode worked-examples sub-region into six context/patterns files, reducing commands/task.md by 66.14%."
+    }
+  ],
+  "phases_completed": 8,
+  "phases_total": 8,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete; ready for postflight to mark [PR READY]/[COMPLETED] per task_type meta's standard terminus."
 }
