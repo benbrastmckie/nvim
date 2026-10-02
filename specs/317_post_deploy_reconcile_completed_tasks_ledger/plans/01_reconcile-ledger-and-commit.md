@@ -1,7 +1,7 @@
 # Implementation Plan: Task #317
 
 - **Task**: 317 - Post-deploy reconcile promotion must append to the batch's `completed_tasks` ledger
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: Overlaps task 265's `file_scope` (same two files) — per this task's own dispatch, the two MUST NOT run concurrently. No blocking artifact dependency.
 - **Research Inputs**: specs/317_post_deploy_reconcile_completed_tasks_ledger/reports/01_post-deploy-reconcile-ledger.md
@@ -119,7 +119,7 @@ edit the same ~16-line loop in the same file and are deliberately serialized rat
 
 ---
 
-### Phase 1: Add the RED regression arm to Group 29 [NOT STARTED]
+### Phase 1: Add the RED regression arm to Group 29 [COMPLETED]
 
 **Goal**: A new arm in `test-orchestrate-cycle-plan.sh` Group 29 that drives a post-deploy reconcile
 promotion in a real git repository and asserts the ledger append, the commit, and the absence of
@@ -127,36 +127,46 @@ uncommitted residue — demonstrated RED against unfixed source, so the assertio
 non-vacuous.
 
 **Tasks**:
-- [ ] Copy the real `git-commit-scoped.sh` into the sandbox alongside Group 29's other real
+- [x] Copy the real `git-commit-scoped.sh` into the sandbox alongside Group 29's other real
       collaborators: `cp "$CORE_DIR/git-commit-scoped.sh" "$WORKDIR/.claude/scripts/git-commit-scoped.sh"`
       (and `chmod +x`). Confirm its own dependencies are already real in this suite: `lib/common.sh`,
       `deploy-root-guard.sh`, `task-lock.sh` (all present per the suite's `require_file` preamble).
-- [ ] Add a new arm (Arm F) immediately after Arm E, reusing `g29_seed_state_and_mt` +
+      *(completed)*
+- [x] Add a new arm (Arm F) immediately after Arm E, reusing `g29_seed_state_and_mt` +
       `g29_write_task_fixture` with a fresh synthetic task number and `deploy_pending=true`,
-      `with_summary=true` — the same shape as Arm A.
-- [ ] Make `$WORKDIR` a git repository scoped to this arm, mirroring
+      `with_summary=true` — the same shape as Arm A. *(completed: task #9207)*
+- [x] Make `$WORKDIR` a git repository scoped to this arm, mirroring
       `test-orchestrate-cycle-postflight.sh:86-121`: `git init -q "$WORKDIR"`,
       `git -C "$WORKDIR" config user.email`/`user.name`, then stage and commit an initial fixture
       commit (`git -C "$WORKDIR" add specs .claude && git -C "$WORKDIR" commit -q -m fixture`) so
       `git rev-parse HEAD` resolves. Exclude the nested `g29-source-repo` from staging if git
-      complains about it (it is a nested repo and should stay untracked).
-- [ ] Capture `before_head="$(git -C "$WORKDIR" rev-parse HEAD)"` before `run_sut`.
-- [ ] Run the SUT with the usual Group 29 stubs (`write_g11_verify_stub`,
+      complains about it (it is a nested repo and should stay untracked). *(completed: no
+      complaint occurred — g29-source-repo sits outside both `specs` and `.claude`)*
+- [x] Capture `before_head="$(git -C "$WORKDIR" rev-parse HEAD)"` before `run_sut`. *(completed)*
+- [x] Run the SUT with the usual Group 29 stubs (`write_g11_verify_stub`,
       `write_g11_deploy_headless_stub 0`) and assert the existing baseline still holds for this arm
       (stderr `post-deploy reconcile for task #<N> ... promoted`, `state.json` status `completed`) so
-      a RED result is attributable to the new assertions, not a broken fixture.
-- [ ] Add the three NEW assertions:
+      a RED result is attributable to the new assertions, not a broken fixture. *(completed: both
+      baseline assertions PASS)*
+- [x] Add the three NEW assertions:
       (i) `jq -r '.completed_tasks' "$mt_state_file"` contains the promoted task number;
       (ii) `git -C "$WORKDIR" rev-parse HEAD` differs from `before_head`;
       (iii) `git -C "$WORKDIR" status --porcelain -- specs/state.json specs/TODO.md` is empty.
-- [ ] Tear the repo down at arm end (`rm -rf "$WORKDIR/.git"`) so Groups 31-33b see the same
-      sandbox they do today.
-- [ ] Run the arm against UNFIXED source and record the RED evidence: assertion (i) must fail
+      *(completed)*
+- [x] Tear the repo down at arm end (`rm -rf "$WORKDIR/.git"`) so Groups 31-33b see the same
+      sandbox they do today. *(completed)*
+- [x] Run the arm against UNFIXED source and record the RED evidence: assertion (i) must fail
       (`.completed_tasks` lacks the number) and assertions (ii)/(iii) must fail (HEAD unchanged,
       residue present). Capture the actual failing output in the phase's commit body or progress
-      notes — a RED claim without captured output is not evidence.
-- [ ] Run the ENTIRE suite and confirm Groups 1-33b are unchanged in pass count except for the new
-      arm's expected failures.
+      notes — a RED claim without captured output is not evidence. *(completed: RED confirmed —
+      `[FAIL] Arm F: expected 9207 in .completed_tasks, got: []`,
+      `[FAIL] Arm F: expected HEAD to advance from the promotion's own commit, still at
+      addf0f3618d3416ff90542f877516f82eb218891`,
+      `[FAIL] Arm F: expected no uncommitted residue, got:  M specs/TODO.md`)*
+- [x] Run the ENTIRE suite and confirm Groups 1-33b are unchanged in pass count except for the new
+      arm's expected failures. *(completed: 337 passed, 3 failed — all three failures are Arm F's
+      new assertions; every pre-existing case, including Groups 31-33b that run after the new
+      arm-scoped git repo, is unaffected)*
 
 **Timing**: 1.5 hours
 

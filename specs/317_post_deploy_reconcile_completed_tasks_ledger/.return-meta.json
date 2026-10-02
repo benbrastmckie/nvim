@@ -1,22 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/317_post_deploy_reconcile_completed_tasks_ledger/plans/01_reconcile-ledger-and-commit.md",
-      "summary": "4-phase plan: RED regression arm first, then the .completed_tasks append and the promotion's own scoped commit at orchestrate-cycle-plan.sh's post-deploy reconcile site, then the invariant comment plus the full gate."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790968925_5ff73e_317",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 4,
-    "dependency_waves": [[1], [2], [3], [4]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 317 to execute the plan",
-  "dispatch_seq": 26
+    "session_id": "sess_1790968925_5ff73e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

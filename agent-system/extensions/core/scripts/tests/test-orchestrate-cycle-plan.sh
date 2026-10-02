@@ -53,7 +53,7 @@ require_file "$SUT_SRC"
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh \
          orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh \
-         orchestrate-recover-outcome.sh \
+         orchestrate-recover-outcome.sh git-commit-scoped.sh \
          lib/common.sh lib/file-scope-overlap.sh lib/continuation-pointer-lib.sh \
          lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh lib/deploy-baseline-lib.sh \
          lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh lib/return-meta-status-vocabulary.sh; do
@@ -4080,6 +4080,10 @@ cp "$CORE_DIR/generate-task-order.sh" "$WORKDIR/.claude/scripts/generate-task-or
 cp "$CORE_DIR/update-plan-status.sh" "$WORKDIR/.claude/scripts/update-plan-status.sh"
 cp "$CORE_DIR/update-phase-status.sh" "$WORKDIR/.claude/scripts/update-phase-status.sh"
 cp "$CORE_DIR/lib/deploy-freshness-lib.sh" "$WORKDIR/.claude/scripts/lib/deploy-freshness-lib.sh"
+# git-commit-scoped.sh, for Arm F below (the post-deploy reconcile promotion's own scoped
+# commit). Its own dependencies -- lib/common.sh, deploy-root-guard.sh, task-lock.sh -- are
+# already real in this sandbox as of the suite's own preamble copy loop above.
+cp "$CORE_DIR/git-commit-scoped.sh" "$WORKDIR/.claude/scripts/git-commit-scoped.sh"
 chmod +x "$WORKDIR"/.claude/scripts/*.sh
 
 # g29_build_source_and_extensions: a throwaway git repo standing in for the source store, plus a
@@ -4307,6 +4311,76 @@ if [ "$e_status" = "implementing" ]; then
 else
   fail "Arm E: expected status 'implementing' unchanged, got '$e_status'"
 fi
+
+# ── Arm F (dispatch verification item 4 -- NEW: batch ledger + scoped commit): a post-deploy
+# reconcile promotion must ALSO (i) append the promoted task number to the multi-state file's own
+# `.completed_tasks` accumulator -- the array skill-orchestrate/SKILL.md's Move 4 derives its
+# `### Succeeded` table and `.dispatch/` cleanup set from -- and (ii) commit its own
+# `specs/state.json` + `specs/TODO.md` transition via `git-commit-scoped.sh` before this SAME
+# invocation can stop on `all_terminal` with no intervening postflight. Neither is exercised by
+# Arm A above (same promotion, but no git repository and no ledger assertion), which is exactly
+# why this is a separate arm rather than an addition to Arm A.
+#
+# $WORKDIR is made a REAL git repository SCOPED TO THIS ARM ONLY (git init here, `rm -rf
+# "$WORKDIR/.git"` at the arm's end below) so Groups 31-33b after it see the same non-git sandbox
+# they always have -- mirroring test-orchestrate-cycle-postflight.sh:86-121's own git-fixture
+# precedent, not introducing a new one.
+g29_seed_state_and_mt "g29_f" '[".claude/scripts/orchestrate-cycle-plan.sh"]' 9207 "g29_arm_f" "implementing"
+g29_write_task_fixture 9207 "g29_arm_f" "true" '["agent-system/extensions/core/scripts/foo.sh"]' "true"
+( cd "$WORKDIR" && git init -q && git config user.email "test@example.com" && git config user.name "Test" )
+# g29-source-repo is a NESTED git repository (its own .git/, created by
+# g29_build_source_and_extensions above) sitting directly under $WORKDIR; `git add specs .claude`
+# never traverses into it (it is outside both pathspecs), so no exclusion is needed in practice --
+# named here only because the originating task called for confirming that, not because it fired.
+( cd "$WORKDIR" && git add specs .claude >/dev/null 2>&1 && git commit -q -m "g29 arm f fixture" >/dev/null 2>&1 )
+g29_f_before_head="$(cd "$WORKDIR" && git rev-parse HEAD)"
+
+write_g11_verify_stub "" "" 0
+write_g11_deploy_headless_stub 0
+run_sut --session g29_f --no-plan-cache -- 9207
+
+# Baseline (same shape as Arm A): the promotion itself must still fire and land, independent of
+# the new ledger/commit assertions below -- so a RED result on those is attributable to the
+# missing ledger-append/commit, never to a broken fixture.
+if [[ "$LAST_STDERR" == *"post-deploy reconcile for task #9207"*"promoted"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
+  pass "Arm F: the post-deploy reconcile line fires and reports 'promoted' (baseline)"
+else
+  fail "Arm F: expected a promoted post-deploy reconcile line on stderr, got: $LAST_STDERR"
+fi
+f_status="$(jq -r '.active_projects[] | select(.project_number == 9207) | .status' "$STATE_FILE")"
+if [ "$f_status" = "completed" ]; then
+  pass "Arm F: candidate #9207's state.json status becomes 'completed' within this single run (baseline)"
+else
+  fail "Arm F: expected status 'completed', got '$f_status' (baseline)"
+fi
+
+# NEW assertion (i): the batch ledger reflects the promotion.
+mt_f="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g29_f.json"
+if jq -e '(.completed_tasks // []) | index(9207) != null' "$mt_f" >/dev/null 2>&1; then
+  pass "Arm F: candidate #9207 is appended to the batch's .completed_tasks ledger"
+else
+  fail "Arm F: expected 9207 in .completed_tasks, got: $(jq -c '.completed_tasks // []' "$mt_f" 2>/dev/null)"
+fi
+
+# NEW assertion (ii): the promotion issues its own scoped commit -- HEAD must advance.
+g29_f_after_head="$(cd "$WORKDIR" && git rev-parse HEAD)"
+if [ "$g29_f_before_head" != "$g29_f_after_head" ]; then
+  pass "Arm F: the promotion's own scoped commit advances HEAD"
+else
+  fail "Arm F: expected HEAD to advance from the promotion's own commit, still at $g29_f_before_head"
+fi
+
+# NEW assertion (iii): no uncommitted completion transition is left behind.
+g29_f_porcelain="$(cd "$WORKDIR" && git status --porcelain -- specs/state.json specs/TODO.md)"
+if [ -z "$g29_f_porcelain" ]; then
+  pass "Arm F: no uncommitted residue in specs/state.json or specs/TODO.md after the promotion"
+else
+  fail "Arm F: expected no uncommitted residue, got: $g29_f_porcelain"
+fi
+
+# Arm-scoped git repo teardown -- Groups 31-33b below must see the same non-git $WORKDIR they
+# always have.
+rm -rf "$WORKDIR/.git"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Shared setup for Groups 31-32: stage the orchestrate-build-dispatch.sh and update-task-status.sh
