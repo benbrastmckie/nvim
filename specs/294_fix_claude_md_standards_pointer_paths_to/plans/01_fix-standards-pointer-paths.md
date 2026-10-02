@@ -101,7 +101,7 @@ proceeding.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Correct the four standards pointer prefixes in root CLAUDE.md [IN PROGRESS]
+### Phase 1: Correct the four standards pointer prefixes in root CLAUDE.md [COMPLETED]
 
 **Goal**: All four `[Used by: ...]` standards pointers in root `CLAUDE.md` resolve to existing
 files, with no other content changed.
@@ -152,19 +152,19 @@ than assuming the planned line numbers.
 
 ---
 
-### Phase 2: Repo-wide confirming grep and close-out [NOT STARTED]
+### Phase 2: Repo-wide confirming grep and close-out [IN PROGRESS]
 
 **Goal**: Establish that no deliverable file outside `specs/**` still carries the dead prefix, so
 the task can close without a known residual occurrence.
 
 **Tasks**:
-- [ ] Run `grep -rn "extensions/nvim/context/project/neovim/standards" .` across the repository
-- [ ] Classify every hit: expected and permitted are `specs/**` task artifacts, `specs/reviews/**`,
+- [x] Run `grep -rn "extensions/nvim/context/project/neovim/standards" .` across the repository *(completed)*
+- [x] Classify every hit: expected and permitted are `specs/**` task artifacts, `specs/reviews/**`,
       `specs/ROADMAP.md`, `specs/TODO.md`, `specs/state.json`, and `specs/vault/**` archives — all
-      historical records that correctly quote the defect and are excluded by Non-Goals
-- [ ] Assert zero hits in any file outside `specs/**`
-- [ ] If an unexpected out-of-scope hit appears, do not silently widen scope: record it in the
-      summary as a follow-up finding and report it
+      historical records that correctly quote the defect and are excluded by Non-Goals *(completed: every hit falls into one of these permitted categories)*
+- [x] Assert zero hits in any file outside `specs/**` *(completed: confirmed via `grep -rln ... | grep -v '^\./specs/'` returning only specs/** paths)*
+- [x] If an unexpected out-of-scope hit appears, do not silently widen scope: record it in the
+      summary as a follow-up finding and report it *(completed: not applicable — no out-of-scope hit found)*
 
 **Timing**: 0.1 hours
 
