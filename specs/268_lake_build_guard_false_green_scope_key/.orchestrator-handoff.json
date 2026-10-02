@@ -1,17 +1,17 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 268,
-  "session_id": "sess_1790788666_f8aaca_268",
-  "dispatch_seq": 7,
-  "phases_completed": 0,
+  "session_id": "sess_1790957600_e00acf",
+  "dispatch_seq": 11,
+  "phases_completed": 5,
   "phases_total": 5,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/268_lake_build_guard_false_green_scope_key/plans/01_cross-tree-guard-state-clone.md",
-      "summary": "5-phase plan fixing the confirmed cross-tree guard-state false green at its root, with red-then-green regression tests and redeploy."
+      "type": "summary",
+      "path": "specs/268_lake_build_guard_false_green_scope_key/summaries/01_cross-tree-guard-state-clone-summary.md",
+      "summary": "All 5 plan phases closed. Fix and regression tests landed in Phases 1-4; a separately-tracked sibling task then deleted dispatch-worktree.sh and its tests entirely, making the targeted false-green mechanism structurally unreachable. Phase 5 redeployed and ran the full gate set, documenting two confirmed pre-existing, unrelated failures rather than treating them as blockers."
     }
   ],
-  "next_steps": "Run /implement 268 to execute the plan",
-  "notes": "Root cause adopted from research: dispatch-worktree.sh cmd_provision()'s cp -al of .lake/ makes the five build-guard.* files one shared inode across trees. Hypotheses (a) and (b) ruled out; literal (d) refuted; '(d) amended' confirmed and reproduced. file_scope harvests to 4 files, including dispatch-worktree.sh which overlaps the separately-tracked land/release task."
+  "next_steps": "Task implementation complete; no further dispatch needed for this plan.",
+  "notes": "Mid-implementation finding: a separately-tracked, now-completed worktree-isolation-layer-removal task deleted agent-system/extensions/core/scripts/dispatch-worktree.sh and its two test files (source store and deployed tree alike) after this task's Phase 4 commit landed. This removes the only cp -al-cloning consumer in the codebase, so the specific false-green mechanism this task fixed is now structurally unreachable rather than merely patched. Phase 1's T14/T15 and Phase 2's fix lived inside the deleted files and cannot be re-verified going forward; Phase 3's Test C and Phase 4's lake-build-guard.sh header convention survive intact and remain a standing guard against any future cp -al-cloning consumer. Final gates: test-lake-build-guard.sh 48/48; run-all.sh 102 passed/4 failed (3 expected per known-failures.txt, 1 NEW confirmed pre-existing/unrelated per that manifest's own header); verify-deploy.sh full run 2/34 checks failed (Gate 8 same NEW failure, Gate 20 skill-orchestrate SKILL.md budget already tracked by a separate sibling task this cycle). Neither failure touches this task's files."
 }
