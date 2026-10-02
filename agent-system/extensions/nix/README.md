@@ -23,14 +23,16 @@ Provides real-time package and option lookups against nixpkgs and NixOS modules.
 uvx mcp-nixos
 ```
 
-`mcp-nixos` is **not currently registered** by anything in this repository -- registering an MCP
-server requires a write to user-scope `~/.claude.json` (a host-level/home-manager activation
-block or a `core/scripts/` setup script), and no such mechanism exists yet for this server. The
-`mcpServers` block that may appear in this extension's `settings-fragment.json` has no effect;
-Claude Code never reads settings files for server definitions. Agents therefore fall back to the
-WebSearch/CLI path already documented in
-[mcp-nixos-integration.md](context/project/nix/tools/mcp-nixos-integration.md). Registering
-this server in user scope is a pending follow-up. See
+The `mcp-nixos` server is registered at user scope, under the name `nixos`, by a home-manager
+activation block in a separate configuration repository -- a write to user-scope `~/.claude.json`
+performed once, outside of any single project's lifecycle. The matching `mcp__nixos__nix` /
+`mcp__nixos__nix_versions` grants live in this extension's `settings-fragment.json`. The
+registration name is `nixos`, not `mcp-nixos`: the trap name would produce `mcp__mcp-nixos__*`
+tools, breaking both those grants and every doc cross-reference that assumes the `nixos` name --
+which is why a dead `mcp-nixos`-named declaration that once sat in this extension's own
+`manifest.json` has been deleted. When MCP is unavailable, agents fall back to the WebSearch/CLI
+path already documented in
+[mcp-nixos-integration.md](context/project/nix/tools/mcp-nixos-integration.md). See
 [MCP Server Ownership](../core/context/patterns/mcp-server-ownership.md) for the full
 registration/permission split. Requires `uv` to be installed on your system (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
 

@@ -441,35 +441,37 @@ hit. Report any seventh site found rather than silently expanding.
 
 ---
 
-### Phase 5: Item 4 — correct the nix README registration passage [NOT STARTED]
+### Phase 5: Item 4 — correct the nix README registration passage [COMPLETED]
 
 **Goal**: Stop telling a reader of `nix/README.md` that the MCP path is unregistered and the
 WebSearch/CLI degradation path is the normal case, when user-scope registration under the name
 `nixos` is live.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/nix/README.md`
-- [ ] Rewrite the registration passage under `### mcp-nixos` (the paragraph beginning
+- [x] Re-read `agent-system/extensions/nix/README.md` *(completed)*
+- [x] Rewrite the registration passage under `### mcp-nixos` (the paragraph beginning
       "`mcp-nixos` is **not currently registered**...") to record that the server is registered at
       user scope under the name **`nixos`** by a home-manager activation block in a separate
       configuration repository — the very mechanism the old text named as hypothetical — and that
       the matching `mcp__nixos__nix` / `mcp__nixos__nix_versions` grants live in this extension's
-      `settings-fragment.json`
-- [ ] Add one sentence reinforcing why the registration name is `nixos` and not `mcp-nixos`: the
+      `settings-fragment.json` *(completed)*
+- [x] Add one sentence reinforcing why the registration name is `nixos` and not `mcp-nixos`: the
       trap name would produce `mcp__mcp-nixos__*` tools, breaking both existing grants and every
       doc cross-reference — which is why the manifest declaration under that name was deleted
-- [ ] **Drop** the dangling sentence "The `mcpServers` block that may appear in this extension's
+      *(completed)*
+- [x] **Drop** the dangling sentence "The `mcpServers` block that may appear in this extension's
       `settings-fragment.json` has no effect; Claude Code never reads settings files for server
       definitions." — `nix/settings-fragment.json` contains no such block. Drop it rather than
-      rewriting it
-- [ ] **Drop** the "Registering this server in user scope is a pending follow-up." sentence
-- [ ] Keep the conditional "when MCP is unavailable" degradation framing and the
+      rewriting it *(completed)*
+- [x] **Drop** the "Registering this server in user scope is a pending follow-up." sentence *(completed)*
+- [x] Keep the conditional "when MCP is unavailable" degradation framing and the
       [mcp-nixos-integration.md] link; keep the `uv` install note and the
-      [MCP Server Ownership] cross-reference
-- [ ] Confirm the six upstream-name occurrences of `mcp-nixos` outside this passage (the `uvx
+      [MCP Server Ownership] cross-reference *(completed: all four kept)*
+- [x] Confirm the six upstream-name occurrences of `mcp-nixos` outside this passage (the `uvx
       mcp-nixos` invocation, the `### mcp-nixos` heading context, the tools column, the GitHub
       project URL, the overview line) are untouched — only the server *registration name* is
-      `nixos`
+      `nixos` *(completed: `git diff` confirms only the passage block changed; the six occurrences
+      at lines 3, 18, 23, 94, 103, 197 are byte-identical pre/post)*
 
 **Timing**: 0.5 hours
 
