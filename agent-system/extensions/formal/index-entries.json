@@ -1103,6 +1103,35 @@
         "source",
         "reference"
       ]
+    },
+    {
+      "path": "project/logic/domain/ztime-no-finite-carrier-fmp.md",
+      "summary": "Z-time finite model property refutations and the certificate design rule they force: the finite-CARRIER fmp fails for L and L-plus over Z-time (witness theta, probe Probe706), so a certificate class must present an infinite finitely presented carrier Z x Fin n via FrameOver.ofSlicedStep, never FrameOver.ofStep; that rule is necessary but not sufficient because the finite-WIDTH property fails too (witness Phi, probe Probe710, Koenig plus pigeonhole), so no class with finite per-time fibres is complete for targets carrying stab; the time-sliced graph diagnosis; the published counterpart (GKWZ repeating finite pieces, HWZ quasimodel over Z); and the warning that fmp failure is not undecidability (Krommes 2020, GKWZ 5.28/5.32)",
+      "category": "domain",
+      "line_count": 397,
+      "load_when": {
+        "agents": [
+          "logic-research-agent",
+          "formal-research-agent"
+        ],
+        "task_types": [
+          "logic",
+          "formal"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "logic",
+      "topics": [
+        "ztime",
+        "finite-model-property",
+        "finite-carrier",
+        "finite-width",
+        "sliced-certificate",
+        "quasimodel",
+        "koenig",
+        "decidability",
+        "pumping"
+      ]
     }
   ]
 }

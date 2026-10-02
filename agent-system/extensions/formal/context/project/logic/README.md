@@ -40,6 +40,7 @@ In all logic documentation, use **"sentence letter"** instead of "propositional 
 - `domain/spatial-domain.md` - Spatial logic
 - `domain/task-semantics.md` - Task-based semantics
 - `domain/frame-constraint-landscape.md` - Task-frame constraint landscape: independence matrix, Saturation/Completion and dense/discrete separations, ForMathlib siting rule
+- `domain/ztime-no-finite-carrier-fmp.md` - Z-time finite-carrier and finite-width fmp refutations, the certificate design rule (infinite finitely presented carrier; finite fibres still incomplete), quasimodel counterpart, fmp failure is not undecidability
 - `domain/topological-foundations-domain.md` - Topological logic
 
 ### Process Files
