@@ -198,24 +198,29 @@ path) and by counting the new `pass`/`fail` pairs in the arm. If a `require_file
 
 ---
 
-### Phase 2: Append the promoted task to `.completed_tasks` [NOT STARTED]
+### Phase 2: Append the promoted task to `.completed_tasks` [COMPLETED]
 
 **Goal**: A promotion reflects itself into the batch ledger, turning Phase 1's assertion (i) GREEN
 and restoring both Move 4 consumers (the `### Succeeded` table and the `.dispatch/` cleanup set).
 
 **Tasks**:
-- [ ] In `scripts/orchestrate-cycle-plan.sh`'s promotion loop (the `_pdr_outcome` block, currently
+- [x] In `scripts/orchestrate-cycle-plan.sh`'s promotion loop (the `_pdr_outcome` block, currently
       lines 1132-1148), add — gated on the already-computed `_pdr_outcome = "promoted"` condition —
       an `mt_set` append mirroring `orchestrate-cycle-postflight.sh:1427`'s idiom:
       `mt_set --argjson t "$_pdr_t" '.completed_tasks = ((.completed_tasks // []) + [$t] | unique)'`.
-- [ ] Rely on the existing `mt_save` at the end of the loop rather than adding a per-iteration save
+      *(completed)*
+- [x] Rely on the existing `mt_save` at the end of the loop rather than adding a per-iteration save
       (avoids an extra temp-file write per promoted task in a multi-promotion cycle). Confirm
       `.completed_tasks` needs no additional default guard — it is already `//= []` at initial
-      mt_json construction (`orchestrate-cycle-plan.sh:542`).
-- [ ] Confirm the append does NOT fire for `refused` or `no-op` outcomes, nor for the
+      mt_json construction (`orchestrate-cycle-plan.sh:542`). *(completed: no per-iteration save
+      added; `//= []` default confirmed in place)*
+- [x] Confirm the append does NOT fire for `refused` or `no-op` outcomes, nor for the
       `-> researched` / `-> planned` promotions (the existing `grep -q "promoted .* -> completed"`
-      already excludes them).
-- [ ] Re-run Phase 1's arm: assertion (i) GREEN; (ii)/(iii) still RED.
+      already excludes them). *(completed: append is nested inside `if [ "$_pdr_outcome" =
+      "promoted" ]`, which only the `-> completed` grep match can set)*
+- [x] Re-run Phase 1's arm: assertion (i) GREEN; (ii)/(iii) still RED. *(completed: 338 passed, 2
+      failed — assertion (i) `.completed_tasks` GREEN; (ii) HEAD-advanced and (iii) no-residue
+      still RED as expected)*
 
 **Timing**: 0.5 hours
 

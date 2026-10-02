@@ -1144,6 +1144,18 @@ if [ "$dry_run" != "true" ] && [ "$post_deploy_reconcile_json" != "[]" ]; then
     echo "[orchestrate] REDEPLOY CHECKPOINT: post-deploy reconcile for task #${_pdr_t} — ${_pdr_outcome}" >&2
     mt_set --argjson entry "$(jq -n -c --argjson c "$cycle_count" --argjson t "$_pdr_t" --arg o "$_pdr_outcome" --argjson rc "$_pdr_rc" '{cycle:$c, task:$t, outcome:$o, exit_code:$rc}')" \
       '.post_deploy_reconcile_notices += [$entry]'
+    if [ "$_pdr_outcome" = "promoted" ]; then
+      # Batch-ledger reflection: a promotion via this self-heal path must land in
+      # `.completed_tasks` exactly as an ordinary postflight-driven completion does
+      # (orchestrate-cycle-postflight.sh's own identical `.completed_tasks = ((.completed_tasks
+      # // []) + [$t] | unique)` idiom) -- this is the array skill-orchestrate/SKILL.md's Move 4
+      # derives BOTH its `### Succeeded` table and its `.dispatch/` cleanup set from. Without
+      # this, a reconcile-promoted task completes correctly in specs/state.json but is invisible
+      # to the batch's own reporting. Gated on `_pdr_outcome = "promoted"` only -- never fires
+      # for `refused`/`no-op`, nor for the `-> researched`/`-> planned` promotions the `grep -q
+      # "promoted .* -> completed"` check above already excludes.
+      mt_set --argjson t "$_pdr_t" '.completed_tasks = ((.completed_tasks // []) + [$t] | unique)'
+    fi
   done
   mt_save
 fi
