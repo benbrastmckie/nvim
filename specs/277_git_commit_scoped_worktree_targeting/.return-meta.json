@@ -1,33 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 277,
-  "session_id": "sess_1790947016_5ff368_277",
-  "dispatch_seq": 3,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md",
-      "summary": "Audits every git-commit-scoped.sh call site, empirically reproduces current behavior in scratch repos, finds the task's literal premise (all-drop -> exit 0) is already fixed by an existing V3 post-filter gate, identifies the real residual gap (partial drop + empty resulting commit, indistinguishable from benign no-op), and recommends a corrected option (c) over (a)/(b)."
+      "type": "plan",
+      "path": "specs/277_git_commit_scoped_worktree_targeting/plans/01_pathspec-drop-hard-error.md",
+      "summary": "4-phase plan implementing corrected option (c): a dropped-pathspec ledger plus a new V6 refusal gate (exit 4) in git-commit-scoped.sh, with constraint-pinning tests landed before the script change and the caller-escalation scope decision recorded explicitly."
     }
   ],
   "memory_candidates": [
     {
-      "content": "git-commit-scoped.sh already refuses (exit 2) when 100% of positive pathspecs drop as unmatched (V3 post-filter gate, added in task 226 phase 2, commit 94256557d). The remaining false-success gap is narrower: a PARTIAL drop (one or more pathspecs unmatched) combined with the surviving matched pathspecs having zero actual working-tree diff produces the same exit 1 'nothing to commit' as the fully benign all-zero-drop case -- these two are indistinguishable at the exit-code level today. Any future fix must key off (drop_count > 0 AND commit produced nothing), not literally '100% dropped', since the literal framing is already handled.",
+      "content": "In this agent-system, every call site of git-commit-scoped.sh wraps it as `cmd || echo \"WARN: ...(non-blocking)\"`. Because bash's `A || B` yields B's exit status (echo's 0), ANY nonzero exit from the script -- 1, 2, 3, or a newly added code -- collapses to success for the caller's own control flow. Consequence: making a script-level failure louder by introducing a new exit code is necessary but NOT sufficient to change caller behavior; at least one caller must branch on $? explicitly. Generalizable rule when hardening any shared helper script's failure posture: audit the caller idiom before assuming a new exit code will be observed. The `|| echo` idiom is an exit-code sink, not an error handler.",
       "category": "INSIGHT",
-      "source_artifact": "specs/277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["git-commit-scoped", "pathspec", "silent-failure", "exit-code", "false-success"]
-    },
-    {
-      "content": "Every caller of git-commit-scoped.sh in this codebase uses the idiom `bash .../git-commit-scoped.sh ... || echo \"WARN: ...(non-blocking)\"`. Because `A || B` evaluates to B's exit status in bash, ANY nonzero exit from the script (1, 2, 3, or a future new code) collapses to exit 0 for the calling script's own control flow. A louder/more distinguishing exit code added inside the script is necessary but NOT sufficient to prevent a repeat incident -- at least one caller must be changed to branch on $? explicitly and escalate, or the fix is correct-but-inert in practice.",
-      "category": "PATTERN",
-      "source_artifact": "specs/277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["bash-idiom", "non-blocking-warning", "exit-code-swallowing", "git-commit-scoped"]
+      "source_artifact": "specs/277_git_commit_scoped_worktree_targeting/plans/01_pathspec-drop-hard-error.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["exit-code", "bash", "error-propagation", "git-commit-scoped", "caller-audit", "non-blocking"]
     }
   ],
-  "next_steps": "Run /plan 277 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1790947016_5ff368_277",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 3,
+    "dependency_waves": [[1], [2], [3], [4]]
+  },
+  "next_steps": "Run /implement 277 to execute the plan",
+  "dispatch_seq": 8
 }

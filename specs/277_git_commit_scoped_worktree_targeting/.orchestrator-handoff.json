@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/277_git_commit_scoped_worktree_targeting/plans/01_pathspec-drop-hard-error.md",
+      "summary": "4-phase plan implementing corrected option (c): a dropped-pathspec ledger plus a new V6 refusal gate (exit 4) in git-commit-scoped.sh, with constraint-pinning tests landed before the script change and the caller-escalation scope decision recorded explicitly."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790947016_5ff368_277",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}
