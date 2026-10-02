@@ -1070,23 +1070,29 @@
     {
       "project_number": 324,
       "project_name": "whitelist_scheduled_tasks_lock_in_orphan_detection",
-      "status": "planning",
+      "status": "planned",
       "task_type": "neovim",
       "topic": "core-agent-system",
       "priority": "medium",
       "description": "DEFECT. verify-deploy.sh gate 13 (whole-tree orphan detection) FAILs on .claude/scheduled_tasks.lock, which is not an orphan: it is a session-acquired runtime lock file whose contents are a live session.s own sessionId, pid and acquiredAt, created at execution time by the scheduled-task mechanism and never by the copy engine.\n\nThat is exactly the class is_runtime_artifact() already whitelists -- tmp/workflow-active-*, RESUME.md, __pycache__/ and the literature venv -- but no pattern matches it, so the gate goes red. Verified 2026-10-02: the lock file was present (116 B) and is_runtime_artifact() at lua/neotex/plugins/ai/shared/extensions/verify.lua:869-884 has no matching branch.\n\nThis is half of the current verify-deploy.sh --skip-slow regression from FAIL 1 of 33 to FAIL 2 of 33. The other half (gate 3 doc-lint, core manifest desync) is filed as task 323.\n\nIMPACT. A reproducible false-positive deploy failure that fires any time a scheduled or cron agent task has run before the gate. A gate that goes red with no real defect is the failure mode that trains the reader to stop believing it -- and it sits alongside a true positive right now, which is precisely what makes the true one easy to dismiss.\n\nNOTE ON THE EDIT TARGET. verify.lua under lua/ is real plugin source, not a deploy artifact, so it is edited in place. The companion context file IS a deploy artifact: edit agent-system/extensions/core/context/patterns/deploy-orphan-detection.md, never .claude/context/patterns/deploy-orphan-detection.md, per rules/source-store-deploy-boundary.md.\n\nWHAT TO CHANGE.\n1. Add a scheduled_tasks.lock pattern to is_runtime_artifact() in lua/neotex/plugins/ai/shared/extensions/verify.lua, alongside the existing tmp/workflow-active-* and RESUME.md branches.\n2. While there, check whether any sibling lock files exist in .claude/ that belong to the same class, and decide whether one pattern should cover them rather than enumerating each.\n3. Register the new exclusion in the exclusion-classes table in agent-system/extensions/core/context/patterns/deploy-orphan-detection.md so the whitelist and its documentation stay in step.\n4. Confirm gate 13 is green with a scheduled-task lock present -- not merely absent.\n\nPRECEDENT FOR ROUTING. Task 290 (verify.lua cross-extension override precedence, completed 2026-10-02) is the same shape: Lua-implemented deploy-gate logic carrying topic=core-agent-system with task_type=neovim.\n\nCROSS-REFERENCE. Task 250 records this failure in its own description as explicitly out of its scope, describing it as \"a sandbox orphan tmp file\"; today.s measurement identifies the orphan concretely as .claude/scheduled_tasks.lock. Re-confirm which it is before assuming the two notes describe the same file.\n\nFiled by the 2026-10-02 review: specs/reviews/review-2026-10-02.md",
       "file_scope": [
-        "lua/neotex/plugins/ai/shared/extensions/verify.lua",
-        "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md"
+        "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md",
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+        "lua/neotex/plugins/ai/shared/extensions/verify.lua"
       ],
       "created": "2026-10-02T21:41:34Z",
-      "last_updated": "2026-10-02T22:00:07Z",
-      "session_id": "sess_1790978139_b07459_324",
+      "last_updated": "2026-10-02T22:03:06Z",
+      "session_id": "sess_1790978139_b07459",
       "artifacts": [
         {
           "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/reports/01_whitelist-scheduled-tasks-lock.md",
           "type": "report",
           "summary": "Research report: exact-match pattern for scheduled_tasks.lock in is_runtime_artifact(), source-store doc table row to update, test template to extend, and a correction of the task-250 cross-reference (actual source is task 317, a different file)."
+        },
+        {
+          "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/plans/01_whitelist-scheduled-tasks-lock.md",
+          "type": "plan",
+          "summary": "4-phase plan: verify.lua exclusion branch, source-store doc row, planted-lock regression assertion, real gate-13 confirmation."
         }
       ],
       "next_artifact_number": 2

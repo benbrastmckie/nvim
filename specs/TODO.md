@@ -44,7 +44,7 @@ next_project_number: 325
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
 323 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
-324 [PLANNING] — DEFECT. verify-deploy.sh gate 13 (whole-tree orphan...
+324 [PLANNED] — DEFECT. verify-deploy.sh gate 13 (whole-tree orphan...
 
 ### Extensions
 
@@ -83,11 +83,12 @@ next_project_number: 325
 ## Tasks
 
 ### 324. Whitelist scheduled tasks lock in orphan detection
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: neovim
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [324_whitelist_scheduled_tasks_lock_in_orphan_detection/reports/01_whitelist-scheduled-tasks-lock.md]
+- **Plan**: [324_whitelist_scheduled_tasks_lock_in_orphan_detection/plans/01_whitelist-scheduled-tasks-lock.md]
 
 **Description**: DEFECT. verify-deploy.sh gate 13 (whole-tree orphan detection) FAILs on .claude/scheduled_tasks.lock, which is not an orphan: it is a session-acquired runtime lock file whose contents are a live session.s own sessionId, pid and acquiredAt, created at execution time by the scheduled-task mechanism and never by the copy engine.
 

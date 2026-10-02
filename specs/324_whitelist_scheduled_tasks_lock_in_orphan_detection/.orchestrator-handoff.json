@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 324,
+  "phase": "plan",
+  "session_id": "sess_1790978139_b07459_324",
+  "dispatch_seq": 4,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/plans/01_whitelist-scheduled-tasks-lock.md",
+      "summary": "4-phase plan: verify.lua exclusion branch, source-store doc row, planted-lock regression assertion, real gate-13 confirmation."
+    }
+  ],
+  "next_steps": "Run /implement 324 to execute the plan"
+}
