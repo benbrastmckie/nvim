@@ -11,7 +11,7 @@ next_project_number: 316
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,294,295,296,297,299,300,306,309,311,315 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,295,296,297,299,300,306,309,311,315 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,282,284,285,300 | orchestrator |
@@ -59,7 +59,6 @@ next_project_number: 316
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-294 [IMPLEMENTING] — Fix CLAUDE.md standards pointer paths to the nonexistent...
 295 [NOT STARTED] — Add desc field to 44 keymap.set calls missing documentation
 296 [NOT STARTED] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
@@ -1249,12 +1248,13 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 294. Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [294_fix_claude_md_standards_pointer_paths_to/reports/01_fix-standards-pointer-paths.md]
 - **Plan**: [294_fix_claude_md_standards_pointer_paths_to/plans/01_fix-standards-pointer-paths.md]
+- **Summary**: [294_fix_claude_md_standards_pointer_paths_to/summaries/01_fix-standards-pointer-paths-summary.md]
 
 **Description**: Review issue from all review on 2026-10-01:
 

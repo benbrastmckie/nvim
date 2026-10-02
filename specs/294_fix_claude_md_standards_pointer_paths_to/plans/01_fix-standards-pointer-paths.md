@@ -1,7 +1,7 @@
 # Implementation Plan: Task #294
 
 - **Task**: 294 - Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/294_fix_claude_md_standards_pointer_paths_to/reports/01_fix-standards-pointer-paths.md

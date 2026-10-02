@@ -11,13 +11,19 @@
   "completion_data": {
     "completion_summary": "Corrected all four standards pointer paths in root CLAUDE.md (Documentation Policy, Box Drawing, Character Encoding and Emoji Policy, Lua Testing Assertion Patterns) from the nonexistent .claude/extensions/nvim/context/... prefix to the real .claude/context/project/neovim/standards/ path, and confirmed via repo-wide grep that no deliverable file outside specs/** still carries the dead prefix."
   },
-  "modified_files": ["CLAUDE.md"],
+  "modified_files": [
+    "CLAUDE.md"
+  ],
   "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1790947016_5ff368",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 2,
     "phases_total": 2
   }

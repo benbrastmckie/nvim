@@ -990,7 +990,7 @@
     {
       "project_number": 294,
       "project_name": "fix_claude_md_standards_pointer_paths_to",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "neovim",
       "priority": "high",
@@ -1000,7 +1000,7 @@
       "file_scope": [
         "CLAUDE.md"
       ],
-      "last_updated": "2026-10-02T13:36:42Z",
+      "last_updated": "2026-10-02T14:37:48Z",
       "session_id": "sess_1790947016_5ff368",
       "artifacts": [
         {
@@ -1012,9 +1012,15 @@
           "path": "specs/294_fix_claude_md_standards_pointer_paths_to/plans/01_fix-standards-pointer-paths.md",
           "type": "plan",
           "summary": "2-phase, 0.25h plan correcting the four dead .claude/extensions/nvim/context/... standards pointers in root CLAUDE.md to the flat .claude/context/project/neovim/standards/ form, plus a repo-wide confirming grep."
+        },
+        {
+          "path": "specs/294_fix_claude_md_standards_pointer_paths_to/summaries/01_fix-standards-pointer-paths-summary.md",
+          "type": "summary",
+          "summary": "Corrected the four dead .claude/extensions/nvim/context/... standards pointers in root CLAUDE.md to the real flat .claude/context/project/neovim/standards/ path, and confirmed repo-wide no occurrence remains outside specs/**."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Corrected all four standards pointer paths in root CLAUDE.md (Documentation Policy, Box Drawing, Character Encoding and Emoji Policy, Lua Testing Assertion Patterns) from the nonexistent .claude/extensions/nvim/context/... prefix to the real .claude/context/project/neovim/standards/ path, and confirmed via repo-wide grep that no deliverable file outside specs/** still carries the dead prefix."
     },
     {
       "project_number": 295,
