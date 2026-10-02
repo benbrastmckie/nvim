@@ -1,0 +1,19 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/290_verify_lua_cross_extension_override_precedence/reports/01_cross-extension-override-precedence.md",
+      "summary": "Root-caused gate 5's 3 false positives to verify.lua's per-extension-only hash comparison (verify_manifest_category/walk_category_leaves, called independently per loaded extension by manager.verify_all), with no cross-extension ownership resolution for manifest paths two active extensions both declare (core + lean both declare context/contracts). Reproduced live, confirmed deployed files byte-match lean's deliberate override, identified lean-wins-via-dependency-topological-load-order as the real deploy semantics (reused by manager.resync_all's inlined Kahn's algorithm), and recommended an owner-resolution fix in verify.lua/init.lua plus a simpler matches-any-declarer fallback. Also confirmed and scoped the secondary gate-16 misleading-hint finding (hard_contracts is not a migration target for routing_hard/routing_agents_hard per manifest-routing-schema.md; backlog shows outright removal is the real future, not a key rename)."
+    }
+  ],
+  "next_steps": "Run /plan 290 to design the gate-5 owner-resolution fix (verify.lua + init.lua) and the gate-16 hint-text correction",
+  "metadata": {
+    "session_id": "sess_1790925364_db063f_290",
+    "agent_type": "neovim-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "neovim-research-agent"],
+    "findings_count": 6
+  },
+  "dispatch_seq": 1
+}

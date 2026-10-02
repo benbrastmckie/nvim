@@ -6,7 +6,7 @@ next_project_number: 314
 
 ## Task Order
 
-*Updated 2026-10-01. Generated from state.json dependency graph.*
+*Updated 2026-10-02. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -39,7 +39,7 @@ next_project_number: 314
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
-290 [NOT STARTED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
+290 [RESEARCHED] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
@@ -1066,10 +1066,11 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 290. Verify lua cross extension override precedence
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: neovim
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [290_verify_lua_cross_extension_override_precedence/reports/01_cross-extension-override-precedence.md]
 
 **Description**: Teach verify-deploy gate 5 (verify.lua content-hash equality) about cross-extension override precedence. The gate reports three standing false positives: context/contracts/adversarial-verification.md, anti-analysis.md and reference-grounding.md are each flagged as "core: Content differs from source", but the deployed .claude/context/contracts/ copies match the lean extension's deliberate override and parity-copy sources byte-for-byte (verified by diff). The lean extension intentionally owns those three deployed paths -- two are documented as Lean4 Override, one as a Lean4 Parity Copy for lean-only deployments -- while verify.lua compares only against core's copy and has no notion of which extension legitimately won the path. Fix the comparison in agent-system/extensions/core/ so a deployed path resolves against its actual deploying owner and deliberate overrides verify clean, without weakening real divergence detection for single-owner paths. Note while in here: gate 16's warning text tells an extension to migrate routing_hard/routing_agents_hard to the hard_contracts manifest key, but context/guides/manifest-routing-schema.md states hard_contracts is unrelated to that pair -- it resolves injected contract files, not skill or agent names -- so the nudge's wording is misleading even though the gate itself is a deliberate interim warning awaiting two known follow-on tasks.
 
