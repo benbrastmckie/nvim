@@ -335,23 +335,28 @@ map before deleting anything.
 
 ---
 
-### Phase 5: Extract Sync, Expand, and Recover Modes [NOT STARTED]
+### Phase 5: Extract Sync, Expand, and Recover Modes [COMPLETED]
 
 **Goal**: Remove the remaining three mode bodies (12,687 B combined) and convert their Mode
 Detection entries into imperative pointers.
 
 **Tasks**:
-- [ ] Working bottom-up: Sync Mode, then Expand Mode, then Recover Mode. Re-locate each boundary
-      by heading text immediately before deleting.
-- [ ] Create `context/patterns/task-sync-mode.md`, `task-expand-mode.md`, `task-recover-mode.md`,
+- [x] Working bottom-up: Sync Mode, then Expand Mode, then Recover Mode. Re-locate each boundary
+      by heading text immediately before deleting. *(completed)*
+- [x] Create `context/patterns/task-sync-mode.md`, `task-expand-mode.md`, `task-recover-mode.md`,
       each H1 + imperative "complete and only specification ... MUST be followed exactly"
-      preamble + `---` + verbatim region.
-- [ ] Delete the three `## {Mode} Mode (--flag)` sections from `task.md`.
-- [ ] Rewrite the three Mode Detection bullets with the same `READ <deployed-path> now and follow
-      it exactly.` construction used in Phase 4.
-- [ ] Confirm the sixth Mode Detection bullet (`No flag → Create new task with description`) is
+      preamble + `---` + verbatim region. *(completed, all three diff-clean)*
+- [x] Delete the three `## {Mode} Mode (--flag)` sections from `task.md`. *(completed)*
+- [x] Rewrite the three Mode Detection bullets with the same `READ <deployed-path> now and follow
+      it exactly.` construction used in Phase 4. *(completed)*
+- [x] Confirm the sixth Mode Detection bullet (`No flag → Create new task with description`) is
       updated to say the mode is specified inline below, so the dispatch table reads uniformly.
-- [ ] Record byte deltas.
+      *(completed)*
+- [x] Record byte deltas. *(completed: task.md 28,021 B -> 14,098 B across all three extractions;
+      task-sync-mode.md 5,664 B / 133 lines; task-expand-mode.md 4,512 B / 96 lines;
+      task-recover-mode.md 4,873 B / 114 lines. Measured region bytes at extraction time —
+      sync 5,400 / expand 4,236 / recover 4,591 — matched Phase 1's reconciled baseline exactly,
+      not the stale research-report figures referenced in this phase's own Scope Hypothesis below)*
 
 **Timing**: 1.25 hours
 
