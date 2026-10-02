@@ -501,23 +501,32 @@ with no count or file-list claim beyond the two files named below.
 
 ---
 
-### Phase 6: Deploy the fixed source into the live `.claude/` tree [NOT STARTED]
+### Phase 6: Deploy the fixed source into the live `.claude/` tree [COMPLETED]
 
 **Goal**: Make the fix live. The source store is authoritative, but the running orchestrator
 executes `.claude/scripts/orchestrate-cycle-plan.sh`, which still carries the defect until a
 deploy runs.
 
 **Tasks**:
-- [ ] Confirm the working tree is committed and clean for this task's own files before deploying.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` (non-destructive force-resync; NOT `--wipe`).
-- [ ] Confirm the deployed `.claude/scripts/orchestrate-cycle-plan.sh` and
+- [x] Confirm the working tree is committed and clean for this task's own files before deploying.
+      *(completed: Phases 1-5 each committed per green sub-step; no uncommitted changes to this
+      task's own files at Phase 6 start)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` (non-destructive force-resync; NOT `--wipe`).
+      *(completed: ran in background due to runtime >120s; result
+      `[deploy-headless] RESULT=landed_verify_clean`, verify-deploy 33/33 checks passed, exit 0)*
+- [x] Confirm the deployed `.claude/scripts/orchestrate-cycle-plan.sh` and
       `.claude/scripts/tests/test-orchestrate-cycle-plan.sh` now contain the hoisted decision and
-      the post-compose assertion, by grepping for the new code text in both trees.
-- [ ] Run the deployed copy of the suite once
+      the post-compose assertion, by grepping for the new code text in both trees. *(completed:
+      both "Replay decision (hoisted" and "DELIVERABLE 2: post-compose Identity-vs-state" found
+      in the deployed orchestrate-cycle-plan.sh; "Four-leg seq agreement" found in the deployed
+      test file)*
+- [x] Run the deployed copy of the suite once
       (`bash .claude/scripts/tests/test-orchestrate-cycle-plan.sh`) and confirm exit 0 -- the
       deployed tree anchors its own `CORE_DIR`, so this is a genuinely independent run.
-- [ ] Confirm no unrelated `.claude/**` churn was committed: `.claude/` is gitignored and
-      regenerated, so the deploy should produce no staged changes for this task.
+      *(completed: exit 0, 335 passed, 0 failed)*
+- [x] Confirm no unrelated `.claude/**` churn was committed: `.claude/` is gitignored and
+      regenerated, so the deploy should produce no staged changes for this task. *(completed:
+      `git status --short -- .claude/` is empty; `git check-ignore .claude` confirms ignored)*
 
 **Timing**: 30 minutes
 
