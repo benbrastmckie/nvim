@@ -405,26 +405,80 @@ hunk by hunk and checking every changed line begins with optional whitespace the
 
 ---
 
-### Phase 5: Redeploy and final gate [NOT STARTED]
+### Phase 5: Redeploy and final gate [COMPLETED]
 
 **Goal**: Propagate the source-store fix into the deployed `.claude/` tree that live dispatches
 actually execute, and close the task on a full green gate.
 
+**Mid-implementation finding (read before the Tasks list below)**: between Phase 4's commit
+(`a8919f8fe`) and this phase's execution, a separately-tracked task (the worktree-isolation-layer
+removal task, completed) deleted `dispatch-worktree.sh` and both of its test files
+(`test-dispatch-worktree.sh`, `test-dispatch-isolation-fixture.sh`) wholesale -- source store and
+deployed tree alike -- as part of removing the whole per-dispatch worktree-provisioning layer.
+Confirmed by `git log --oneline -1 -- agent-system/extensions/core/scripts/dispatch-worktree.sh`
+(last touch: "...delete dispatch-worktree.sh and its two test files; reconcile manifest.json and
+.gitignore") and by direct absence on disk in both trees. Two consequences, both load-bearing for
+how this phase closes:
+
+1. **The false-green mechanism this task fixed is now structurally unreachable, not merely
+   patched.** There is no longer any `cp -al`-cloning consumer anywhere in `agent-system/**`
+   (confirmed: `grep -rl 'cp -al' agent-system/` now matches only `lake-build-guard.sh` itself,
+   its own test, and the `batch-orchestration-guardrails.md` decision record -- no production
+   clone site remains). Phase 2's fix and Phase 1's T14/T15 regression tests lived entirely inside
+   the now-deleted files; they cannot be re-verified because their target no longer exists. This
+   is a stronger outcome than the plan anticipated, not a weaker one.
+2. **Phase 3's and Phase 4's surviving artifacts are confirmed intact and still load-bearing.**
+   `test-lake-build-guard.sh`'s Test C (cross-tree replay refusal) and `lake-build-guard.sh`'s own
+   header convention (generic "exclude ephemeral runtime state from a hardlink clone" language,
+   not phrased as a hard dependency on `dispatch-worktree.sh`) both survived the other task's own
+   reconciliation pass over this suite untouched in substance -- re-run and confirmed green below.
+   They remain the standing guard against any *future* `cp -al`-cloning consumer, which is exactly
+   the role Decision 1 (this plan's Overview) assigned them.
+
+This finding changes what "the four touched files" (named throughout this phase's Tasks and
+Verification) can mean in practice: 2 of the 4 (`lake-build-guard.sh`, `test-lake-build-guard.sh`)
+are live and checked below; the other 2 no longer exist in either tree, so "verify parity" and
+"bash -n clean" for them are vacuously satisfied by their mutual absence, recorded explicitly
+rather than silently skipped.
+
 **Tasks**:
 
-- [x] Run `bash .claude/scripts/deploy-headless.sh`.
+- [x] Run `bash .claude/scripts/deploy-headless.sh`. *(completed: ran in this phase; exits with
+      `RESULT=landed_verify_red` -- the copy/sync step itself landed cleanly, but the trailing
+      fast-verify wrapper flagged 1 pre-existing, unrelated finding (Gate 20:
+      `skills/skill-orchestrate/SKILL.md` over its context-budget ceiling, already tracked by a
+      separate task). Nothing in that finding touches this task's files.)*
 - [x] Verify deployed-vs-source parity for the four touched files by diffing
       `.claude/scripts/dispatch-worktree.sh`, `.claude/scripts/lake-build-guard.sh`,
       `.claude/scripts/tests/test-dispatch-worktree.sh` and
       `.claude/scripts/tests/test-lake-build-guard.sh` against their
-      `agent-system/extensions/core/scripts/` sources — each must be identical.
+      `agent-system/extensions/core/scripts/` sources — each must be identical. *(deviation:
+      altered — see the Mid-implementation finding above. `dispatch-worktree.sh` and
+      `test-dispatch-worktree.sh` are absent from BOTH trees (confirmed via `ls`), so parity holds
+      vacuously for them. `lake-build-guard.sh` and `test-lake-build-guard.sh` are confirmed
+      byte-identical source-vs-deployed via `diff -q`.)*
 - [x] Run `bash .claude/scripts/verify-deploy.sh` if present (its Gate 8 runs the suite set in
-      deployed mode, which is the configuration live dispatches use).
+      deployed mode, which is the configuration live dispatches use). *(completed: ran the full
+      gate, no `--skip-slow`; result `FAIL -- 2 of 34 check(s) failed`. The 2 failures are Gate 8
+      (`run-all.sh`, deployed mode -- same NEW `test-typst-element-lint.sh` failure as the
+      source-store run below) and Gate 20 (the same pre-existing `skill-orchestrate/SKILL.md`
+      budget finding named above). Both confirmed pre-existing and unrelated to this task's
+      files; see progress/phase-5-progress.json for the full transcript.)*
 - [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh` once more as the final
-      full gate.
+      full gate. *(deviation: altered — `102 passed, 4 failed (3 expected, 1 NEW), 0 skipped, 106
+      total`. The 3 expected failures match this suite's own `known-failures.txt` manifest
+      exactly. The 1 NEW failure (`test-typst-element-lint.sh`, case-h2) is explicitly documented
+      in that same manifest's header comment as traced to an uncommitted, concurrently in-flight
+      working-tree change to `agent-system/extensions/typst/scripts/typst-element-lint.sh` at seed
+      time — confirmed still true now via `git status --short` showing that exact file modified,
+      untouched by this task. `test-lake-build-guard.sh`, the one still-live suite in this task's
+      own file_scope, passes 48/48 including Test C.)*
 - [x] Confirm `git status --short` shows no unexpected tracked modification outside this task's
       four source files (`.claude/` is gitignored, so the redeploy is expected to be invisible to
-      git).
+      git). *(completed: confirmed. This task's own files (the 2 that still exist) carry zero
+      uncommitted diff — Phases 1-4 were already committed by a prior dispatch. The tracked
+      modifications present on the tree belong to concurrently-dispatched sibling tasks' in-flight
+      work per this dispatch's Territory Notes, not to task 268.)*
 
 **Timing**: 0.5 hours
 
@@ -448,30 +502,60 @@ baseline.
 
 **Verification**:
 
-- `deploy-headless.sh` exits 0.
-- All four deployed copies are byte-identical to their source-store originals.
-- `verify-deploy.sh` (if present) exits 0.
+- `deploy-headless.sh` exits 0. *(deviation: altered — the copy/sync step lands cleanly;
+  `deploy-headless.sh`'s own trailing verify wrapper reports `RESULT=landed_verify_red` because of
+  1 pre-existing, unrelated finding (Gate 20). The deploy itself is not in question — see parity
+  evidence above.)*
+- All four deployed copies are byte-identical to their source-store originals. *(deviation:
+  altered — 2 of the 4 named files no longer exist in either tree, deleted wholesale by a
+  separately-tracked task; the remaining 2 are confirmed byte-identical. See Mid-implementation
+  finding above.)*
+- `verify-deploy.sh` (if present) exits 0. *(deviation: altered — exits with 2 of 34 checks
+  failed, both confirmed pre-existing and unrelated to this task. See Tasks list above and
+  progress/phase-5-progress.json for the full transcript.)*
 - `run-all.sh` exits 0 with an unchanged suite count and no `[SKIP]` for either touched suite.
+  *(deviation: altered — exits 1 on 1 NEW failure confirmed pre-existing/unrelated (see Tasks
+  list above); suite count moved 105→106, expected given the separately-tracked
+  worktree-isolation-layer-removal task's deletion of 2 suites netted against other sibling
+  additions in the interim. Neither touched suite reports `[SKIP]`.)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `test-dispatch-worktree.sh`: T14 asserts all five `build-guard.*` files are distinct inodes
-      after `provision`, while `.lake/`'s build output remains hardlink-shared.
-- [ ] `test-dispatch-worktree.sh`: T15 asserts `result --dir <main>` (no `--expect-pid`) reports
+- [x] `test-dispatch-worktree.sh`: T14 asserts all five `build-guard.*` files are distinct inodes
+      after `provision`, while `.lake/`'s build output remains hardlink-shared. *(historical:
+      satisfied in Phase 1/2 — red before Phase 2's fix, green after, evidence in
+      progress/phase-1-progress.json and progress/phase-2-progress.json. `test-dispatch-worktree.sh`
+      itself was deleted wholesale after Phase 4 by the separately-tracked
+      worktree-isolation-layer-removal task, so this case cannot be re-run going forward; see
+      Phase 5's Mid-implementation finding.)*
+- [x] `test-dispatch-worktree.sh`: T15 asserts `result --dir <main>` (no `--expect-pid`) reports
       the main tree's own build after an unrelated worktree build has completed — the false green
-      is gone.
-- [ ] Both new cases demonstrably FAIL before Phase 2 and PASS after it (record both runs).
-- [ ] `test-lake-build-guard.sh`: Test C asserts no cross-tree `REPLAY:` over a raw `cp -al`-shared
+      is gone. *(historical: same basis as T14 above — satisfied when it existed, file now
+      deleted by the other task.)*
+- [x] Both new cases demonstrably FAIL before Phase 2 and PASS after it (record both runs).
+      *(historical: recorded in progress/phase-1-progress.json (red) and
+      progress/phase-2-progress.json (green); the suite no longer exists to re-demonstrate.)*
+- [x] `test-lake-build-guard.sh`: Test C asserts no cross-tree `REPLAY:` over a raw `cp -al`-shared
       `.lake/`, and is proven load-bearing by a reverted local mutation to
-      `compute_fingerprint()`.
-- [ ] Every pre-existing case in both suites still passes.
-- [ ] `run-all.sh` exits 0 in source-store mode, and (via `verify-deploy.sh` Gate 8, if present)
-      in deployed mode.
-- [ ] `bash -n` clean on all four touched files.
-- [ ] No change of any kind under `~/Projects/BimodalLogic` (`git -C ~/Projects/BimodalLogic
-      status --short` unchanged).
+      `compute_fingerprint()`. *(re-confirmed live in Phase 5: `test-lake-build-guard.sh` passes
+      48/48 including Test C.)*
+- [x] Every pre-existing case in both suites still passes. *(deviation: altered —
+      `test-lake-build-guard.sh` confirmed 48/48. `test-dispatch-worktree.sh` no longer exists
+      (deleted by the other task), so "both suites" now reads as the one surviving suite; N/A for
+      the deleted one.)*
+- [x] `run-all.sh` exits 0 in source-store mode, and (via `verify-deploy.sh` Gate 8, if present)
+      in deployed mode. *(deviation: altered — neither exits 0; both fail on the same 1 NEW,
+      confirmed pre-existing/unrelated finding (`test-typst-element-lint.sh`), plus Gate 20's
+      separately-tracked budget finding in deployed mode. See Phase 5 Tasks/Verification for full
+      evidence.)*
+- [x] `bash -n` clean on all four touched files. *(deviation: altered — only 2 of 4 still exist;
+      `bash -n` is clean on both (`dispatch-worktree.sh` and `test-dispatch-worktree.sh` are
+      vacuously N/A, having been deleted by the other task).)*
+- [x] No change of any kind under `~/Projects/BimodalLogic` (`git -C ~/Projects/BimodalLogic
+      status --short` unchanged). *(completed: confirmed — only that repo's own `specs/events.jsonl`
+      self-modified, nothing attributable to this task.)*
 
 ## Artifacts & Outputs
 
