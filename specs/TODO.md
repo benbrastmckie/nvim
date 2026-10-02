@@ -11,7 +11,7 @@ next_project_number: 322
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,317 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,185,250,251,273,275,281,298,302,303,307,308,318,319 | 22,127,184,265,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,274,282,304,313 | 165,250,251,263,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 165,282,300 | orchestrator |
@@ -42,7 +42,6 @@ next_project_number: 322
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-317 [IMPLEMENTING] — Make the post-deploy reconcile promotion append to...
 
 ### Extensions
 
@@ -339,7 +338,7 @@ The consequence is a BATCHING rule, not a dependency: the admission gate matches
 ---
 
 ### 317. Make the post-deploy reconcile promotion append to completed_tasks and commit its own completion transition
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 316
