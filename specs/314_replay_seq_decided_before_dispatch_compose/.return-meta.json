@@ -1,39 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790947016_5ff368_314",
-  "dispatch_seq": 1,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md",
-      "summary": "Confirms all cited line anchors in orchestrate-cycle-plan.sh/orchestrate-build-dispatch.sh still hold, settles the exact hoist boundary and branch shape for the mint, pins the DELIVERABLE 2 assertion's insertion point and parse method, confirms the Group 19 test-stub gap, and argues the required correction to Group 19 case 1's durable-counter assertion (necessary but insufficient, needs a companion in-memory-counter assertion)."
+      "type": "plan",
+      "path": "specs/314_replay_seq_decided_before_dispatch_compose/plans/01_replay-seq-hoist-mechanics.md",
+      "summary": "6-phase, 5-hour plan: RED-first Group 19 extension, hoist the replay seq decision above the mint, post-compose Identity consistency assertion, green gates, argued correction, deploy."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In orchestrate-cycle-plan.sh, mt_json.dispatch_seq_counter is a single GLOBAL scalar shared across all tasks dispatched in one /orchestrate run (mt_get/mt_set with no --arg t), while its durable persistence in each task's own .orchestrator-loop-guard file's dispatch_seq_counter field is per-task. Any fix touching seq minting/replay must account for this split scope or risk reasoning about the wrong counter.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-cycle-plan", "dispatch_seq_counter", "multi-state", "loop-guard", "global-vs-per-task"]
-    },
-    {
-      "content": "cycle_plan_dispatch_hash() in orchestrate-cycle-plan.sh deliberately strips '^- dispatch_seq: [0-9]+$' and '^- dispatch_start_ts: [0-9]+$' lines before hashing a composed dispatch file (for the identical-dispatch convergence guard). Any new consistency check that needs to read a dispatch file's actual dispatch_seq value must grep the Identity block directly and must never reuse this hash helper, which is seq-blind by design.",
-      "category": "PATTERN",
-      "source_artifact": "specs/314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["dispatch-seq", "identical-dispatch-guard", "hash-strip", "orchestrate-build-dispatch"]
-    },
-    {
-      "content": "A test assertion that checks only a durable/persisted-file value can remain green across both a buggy and a fixed implementation if the actual defect lives in an ephemeral/in-memory value that never gets flushed either way (e.g. orchestrate-cycle-plan.sh's replay branch never calls --flush-seq in either the buggy or fixed version). Such an assertion is not wrong, but is insufficient on its own and needs a companion assertion on the in-memory state to actually discriminate pre-fix from post-fix behavior.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["test-design", "regression-test", "vacuous-assertion", "durable-vs-ephemeral-state"]
-    }
-  ],
-  "next_steps": "Run /plan 314 to create implementation plan"
+  "next_steps": "Run /implement 314 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 5,
+  "dependency_waves": [[1], [2], [3], [4], [5], [6]],
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1790947016_5ff368_314",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 6
 }

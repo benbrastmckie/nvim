@@ -59,7 +59,7 @@ next_project_number: 316
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-294 [RESEARCHED] — Fix CLAUDE.md standards pointer paths to the nonexistent...
+294 [PLANNING] — Fix CLAUDE.md standards pointer paths to the nonexistent...
 295 [NOT STARTED] — Add desc field to 44 keymap.set calls missing documentation
 296 [NOT STARTED] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
@@ -73,7 +73,7 @@ next_project_number: 316
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-277 [RESEARCHED] — Make an unresolvable pathspec a hard error in...
+277 [PLANNING] — Make an unresolvable pathspec a hard error in...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 279 [PLANNED] — Reconcile state-schema.json with the live fields the...
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
@@ -82,18 +82,18 @@ next_project_number: 316
       └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
-309 [RESEARCHED] — Replace directory pathspecs with explicit file lists at the...
+309 [PLANNING] — Replace directory pathspecs with explicit file lists at the...
   └─ 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
-314 [RESEARCHED] — Decide the unconsumed-dispatch replay seq before the dispatch...
-315 [RESEARCHED] — Stop the cycle postflight reporting a status it did not...
+314 [PLANNED] — Decide the unconsumed-dispatch replay seq before the dispatch...
+315 [PLANNING] — Stop the cycle postflight reporting a status it did not...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
 
 ### 315. Stop the cycle postflight reporting a status it did not persist, and attribute a seq mismatch by direction
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -183,11 +183,12 @@ Six-to-eight live tasks contending on this single file is itself a signal worth 
 
 ### 314. Decide the unconsumed-dispatch replay seq before the dispatch file is composed, and assert file/state agreement
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md]
+- **Plan**: [314_replay_seq_decided_before_dispatch_compose/plans/01_replay-seq-hoist-mechanics.md]
 
 **Description**: Make the unconsumed-dispatch replay decide its dispatch_seq BEFORE the seq is minted and before the dispatch file is composed, so exactly one seq is in play across the dispatch file, multi-state, the handoff and `.return-meta.json`. Today the replay branch retroactively rewrites the seq roughly 140 lines AFTER the file was already composed with the newly minted value, which defeats every downstream seq check and silently loses the status transition.
 
@@ -440,7 +441,7 @@ A task-creation attempt that duplicates, subsumes or is subsumed by an open task
 
 ### 309. Replace directory pathspecs with explicit file lists at the three task-commit sites
 - **Effort**: small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -1248,7 +1249,7 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 294. Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
@@ -1864,7 +1865,7 @@ description.
 ---
 
 ### 277. Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
