@@ -44,7 +44,7 @@ next_project_number: 322
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-317 [RESEARCHING] — Make the post-deploy reconcile promotion append to...
+317 [RESEARCHED] — Make the post-deploy reconcile promotion append to...
 
 ### Extensions
 
@@ -347,10 +347,11 @@ The consequence is a BATCHING rule, not a dependency: the admission gate matches
 ---
 
 ### 317. Make the post-deploy reconcile promotion append to completed_tasks and commit its own completion transition
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 316
+- **Research**: [317_post_deploy_reconcile_completed_tasks_ledger/reports/01_post-deploy-reconcile-ledger.md]
 
 **Description**: Make the post-deploy reconcile promotion append to the batch's `completed_tasks` ledger, so the consolidated batch output reports every task it actually completed. Today a task promoted by that path completes correctly in `specs/state.json` but is invisible to the batch's own reporting, and no commit is issued for its completion transition.
 

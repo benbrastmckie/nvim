@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790968925_5ff73e_317",
+  "dispatch_seq": 21,
+  "findings_count": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/317_post_deploy_reconcile_completed_tasks_ledger/reports/01_post-deploy-reconcile-ledger.md",
+      "summary": "Confirms the post-deploy reconcile promotion write site in orchestrate-cycle-plan.sh:1132-1148, recommends option (a) (append to .completed_tasks at the promotion site) over option (b), recommends the promotion issue its own scoped git-commit-scoped.sh commit (state.json + TODO.md only) rather than having the engine refuse to stop on all_terminal, and documents the Group 29 test-harness extension needed for a RED-then-GREEN regression case."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 317 to create implementation plan"
+}
