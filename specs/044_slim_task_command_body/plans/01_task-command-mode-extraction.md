@@ -188,21 +188,23 @@ A mismatch on any of them invalidates the line ranges every later phase uses.
 
 ---
 
-### Phase 2: Reconcile Action Verb Categories into Step 3.2 (merge-and-drop) [NOT STARTED]
+### Phase 2: Reconcile Action Verb Categories into Step 3.2 (merge-and-drop) [COMPLETED]
 
 **Goal**: Make step 3.2's inline keyword bullets carry the full union of keywords, then delete
 the now-redundant standalone `Action Verb Categories` table — so the Phase 3 extraction relocates
 no decision-time input.
 
 **Tasks**:
-- [ ] Re-derive both keyword lists directly from the live file: step 3.2's four bullet lines and
-      the `**Action Verb Categories**:` block. Do not trust the counts below.
-- [ ] Compute the union per category and rewrite 3.2's bullets to carry it. Expected union:
+- [x] Re-derive both keyword lists directly from the live file: step 3.2's four bullet lines and
+      the `**Action Verb Categories**:` block. Do not trust the counts below. *(completed: live
+      union matched the plan's expected union exactly, 19 keywords / 4 categories)*
+- [x] Compute the union per category and rewrite 3.2's bullets to carry it. Expected union:
       Fix = bug, error, issue, problem, failure, crash, regression; Update = documentation, docs,
       readme, comments, config, settings; Add = test, tests, spec, feature, support, capability;
-      Implement = default for unrecognized patterns.
-- [ ] Delete the `**Action Verb Categories**:` block from Create Task Mode.
-- [ ] Do **not** relocate any part of it into the Phase 3 file.
+      Implement = default for unrecognized patterns. *(completed)*
+- [x] Delete the `**Action Verb Categories**:` block from Create Task Mode. *(completed)*
+- [x] Do **not** relocate any part of it into the Phase 3 file. *(completed: confirmed, nothing
+      relocated)*
 
 **Timing**: 0.5 hours
 

@@ -83,9 +83,9 @@ When $ARGUMENTS contains a description (no flags).
    **3.2 Verb Inference** (if description lacks action verb):
    - Detect missing verb: descriptions starting with nouns like "bug", "error", "issue", "problem"
    - Infer appropriate verb by keyword:
-     - "bug", "error", "issue", "problem", "failure" -> Prepend "Fix"
-     - "documentation", "docs", "readme", "comments" -> Prepend "Update"
-     - "test", "tests", "spec" -> Prepend "Add"
+     - "bug", "error", "issue", "problem", "failure", "crash", "regression" -> Prepend "Fix"
+     - "documentation", "docs", "readme", "comments", "config", "settings" -> Prepend "Update"
+     - "test", "tests", "spec", "feature", "support", "capability" -> Prepend "Add"
      - Otherwise -> Prepend "Implement" (safe default)
    - Example: `bug in modal evaluator` -> `Fix bug in modal evaluator`
 
@@ -121,12 +121,6 @@ When $ARGUMENTS contains a description (no flags).
    - Input with version: `Update to python v3.12` -> Preserve version identifier
    - Input with issue ref: `Fix #123 memory leak` -> Preserve issue reference
    - CamelCase preserved: `prove_CoherentConstruction_complete` -> `Prove CoherentConstruction complete`
-
-   **Action Verb Categories**:
-   - **Fix**: bug, error, issue, problem, failure, crash, regression
-   - **Update**: documentation, docs, readme, comments, config, settings
-   - **Add**: test, tests, spec, feature, support, capability
-   - **Implement**: (default for unrecognized patterns)
 
 4. **Detect task_type** by calling the shared detection library. The resolution ladder (strong
    anchors, extension `keyword_overrides`, project default, weak-signal scoring, alias
