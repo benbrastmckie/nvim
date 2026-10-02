@@ -21,22 +21,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/317_post_deploy_reconcile_completed_tasks_ledger/summaries/01_reconcile-ledger-and-commit-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["orchestrator", "completed_tasks", "post-deploy-reconcile", "scoped-commit", "batch-ledger"]
+      "suggested_keywords": [
+        "orchestrator",
+        "completed_tasks",
+        "post-deploy-reconcile",
+        "scoped-commit",
+        "batch-ledger"
+      ]
     },
     {
       "content": "For a shell test harness arm that needs a real git repository to assert commit behavior (HEAD advanced, no residue), scope the git repo strictly to that one arm: git init plus an initial fixture commit immediately before the arm, rm -rf \"$WORKDIR/.git\" immediately after. This lets a single shared sandbox host both git-requiring and non-git arms without cross-group fallout, and keeps the git-repo lifetime minimal and auditable.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/317_post_deploy_reconcile_completed_tasks_ledger/summaries/01_reconcile-ledger-and-commit-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["test-harness", "git-fixture", "arm-scoped", "regression-test", "bash-testing"]
+      "suggested_keywords": [
+        "test-harness",
+        "git-fixture",
+        "arm-scoped",
+        "regression-test",
+        "bash-testing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790968925_5ff73e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
