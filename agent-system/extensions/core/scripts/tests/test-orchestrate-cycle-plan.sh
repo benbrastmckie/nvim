@@ -2704,8 +2704,19 @@ if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "2" ]; then
 else
   fail "Group 19 case 1: expected cycle_count unchanged at 2; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
 fi
+# Argued correction, as implemented (ACCEPTANCE #7): this assertion is TRUE both BEFORE and
+# AFTER the replay-hoist fix -- `--flush-seq` really is skipped on a replay in both versions, so
+# the durable guard file's own counter was never where the leak lived. On its own, this
+# assertion gave FALSE ASSURANCE that the replay path was handled correctly: a reviewer reading
+# only this check would conclude the counter bookkeeping was sound, when in fact the EPHEMERAL
+# in-memory `mt_json.dispatch_seq_counter` was silently bumped by an unconditional mint-then-
+# discard every time (before the hoist) -- a value this assertion never reads, and which feeds
+# both the composed dispatch file's own seq-derived filename and the NEXT invocation's durable
+# re-seed (see `--seed`'s running-max logic near the top of `orchestrate-cycle-plan.sh`). This
+# assertion is KEPT (it is still a true, necessary fact), not weakened or deleted; the new
+# ephemeral-counter assertion a few lines below closes the sufficiency gap it always had.
 if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
-  pass "Group 19 case 1: the durable guard file's dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)"
+  pass "Group 19 case 1: the durable guard file's dispatch_seq_counter is unchanged by a replay (no extra --flush-seq) -- necessary but, on its own, NOT sufficient: see the ephemeral-counter assertion below for the leak this one cannot see"
 else
   fail "Group 19 case 1: expected durable dispatch_seq_counter unchanged at 3 after a replay; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
 fi

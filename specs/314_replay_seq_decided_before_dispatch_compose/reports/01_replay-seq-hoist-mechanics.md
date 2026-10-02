@@ -305,3 +305,56 @@ Not applicable — this is a pure codebase mechanics task with no external API/l
 - Files read: `orchestrate-cycle-plan.sh` (targeted ranges: 1160-1240, 1690-1720, 1975-2010,
   2500-2700, 2740-2833), `orchestrate-build-dispatch.sh` (380-410),
   `scripts/tests/test-orchestrate-cycle-plan.sh` (2400-2480, 2528-2605, 3190-3300).
+
+## Argued correction, as implemented
+
+Recorded at Phase 5, after implementation, per ACCEPTANCE #7 and the D1/D2 rulings this report
+settled at plan time. This section states the FINAL wording as it actually landed in
+`scripts/tests/test-orchestrate-cycle-plan.sh`'s Group 19 case 1, so the report and the test
+comment agree.
+
+**D1 rulings, confirmed as implemented.** Option (b)-minimal landed exactly as settled: Leg 1
+(composed dispatch file's Identity `dispatch_seq`) and Leg 2 (`mt_json.dispatch_seq[1901]`) are
+direct assertions; Leg 3 fabricates `.return-meta.json` with its `dispatch_seq` read FROM the
+composed file (not the state file) and invokes the real, unmodified
+`orchestrate-recover-outcome.sh`; Leg 4 replicates `orchestrate-cycle-postflight.sh`'s own
+handoff-seq equality predicate inline over a fabricated handoff seq likewise read from the
+composed file. All four legs now sit together in Group 19 case 1, with an explicit comment
+explaining why the group reads the composed file at all (every prior assertion in it read only
+state files, which is exactly why a file-vs-state disagreement shipped green).
+
+**D2 ruling, confirmed as implemented.** The comment beside Leg 3 records that Legs 3/4 stand in
+for a literal `state.json` transition because `update-task-status.sh` is stubbed to a bare
+`exit 0` in this suite, and that `recovered=true` is the mechanical precondition
+`orchestrate-cycle-postflight.sh` gates its own transition attempt on (`have_outcome=false`
+otherwise attempts none).
+
+**The flagged durable-counter assertion, argued as a correction rather than silently
+relaxed.** The pre-existing assertion ("the durable guard file's dispatch_seq_counter is
+unchanged by a replay (no extra `--flush-seq`)") is KEPT, not deleted or weakened — it remains
+TRUE both before and after the fix, because `--flush-seq` really is skipped on a replay in both
+versions. Its comment was revised to state explicitly that this truth is NECESSARY BUT NOT
+SUFFICIENT: on its own it gave false assurance that the replay path's seq bookkeeping was sound,
+when the actual leak (DELIVERABLE 1b) lived in the EPHEMERAL in-memory
+`mt_json.dispatch_seq_counter` — bumped by this task's root-cause defect's unconditional
+mint-then-discard, and read by neither this nor any prior Group 19 assertion. The new
+ephemeral-counter assertion added in Phase 1 (`mt_json.dispatch_seq_counter` stays at 3, not 4,
+after a replay) closes that sufficiency gap.
+
+**One correction to this report's own Finding 3, discovered during Phase 2 implementation (not
+a D1/D2 ruling, but recorded here for completeness).** This report's Finding 3 identified the
+counter leak as living in the ephemeral counter, not the durable file — correct, and confirmed
+by the implementation. What this report did NOT anticipate is that the plan's own literal
+instruction to "move [the replay predicate] verbatim; do not restructure the predicate" was
+insufficient: hoisting the decision ahead of Fix 2's identical-dispatch halt check (an ordering
+change the hoist unavoidably makes) exposed a genuine collision between the replay-reuse
+mechanism and Fix 2's own within-run streak guard, verified with a standalone repro harness
+against Group 28. The implemented predicate adds one necessary guard condition — a durable
+replay is honored only when `mt_json.last_dispatch_hash[$t]` is empty, i.e. this session has not
+already dispatched this task this run — restoring the in-session/cross-invocation boundary the
+code's own pre-existing header comments already drew in intent. See the plan's Phase 2 deviation
+note and `scripts/orchestrate-cycle-plan.sh`'s own comment at the hoisted decision block for the
+full reasoning. A second, narrower discovery in Phase 3 (the test suite's pre-existing
+`/fake/...` stub convention being incompatible with DELIVERABLE 2's file-content read, and two
+further test-assertion corrections it required in Group 18 and the budget group) is recorded in
+the plan's Phase 3 deviation note rather than duplicated here.

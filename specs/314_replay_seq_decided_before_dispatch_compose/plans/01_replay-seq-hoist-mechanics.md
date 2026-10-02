@@ -442,34 +442,39 @@ regressed, and both touched files are strict-mode and shellcheck clean (ACCEPTAN
 
 ---
 
-### Phase 5: Record the argued correction [NOT STARTED]
+### Phase 5: Record the argued correction [COMPLETED]
 
 **Goal**: Satisfy ACCEPTANCE #7 -- a reviewer can see why the prior Group 19 framing encoded the
 defect without reconstructing this analysis.
 
 **Tasks**:
-- [ ] Revise the comment accompanying Group 19 case 1's existing durable-counter assertion to
+- [x] Revise the comment accompanying Group 19 case 1's existing durable-counter assertion to
       record the necessary-but-insufficient argument: the assertion is TRUE both before and after
       the fix (because `--flush-seq` really is skipped on a replay in both versions), so on its
       own it gave false assurance that the replay path was handled correctly; the actual leak
       lived in the ephemeral in-memory `mt_json.dispatch_seq_counter`, which this assertion never
       read, and which feeds both the composed dispatch file's seq-derived filename and the next
       invocation's re-seed. KEEP the assertion; the new ephemeral-counter assertion added in
-      Phase 1 closes the sufficiency gap.
-- [ ] Add a comment above the new four-leg assertions stating why Group 19 inspects the composed
+      Phase 1 closes the sufficiency gap. *(completed)*
+- [x] Add a comment above the new four-leg assertions stating why Group 19 inspects the composed
       dispatch file at all: every prior assertion in the group read only state files, which is
-      exactly why a file-vs-state disagreement shipped green.
-- [ ] Add the D2 reasoning (Legs 3/4 stand in for the `state.json` transition because
+      exactly why a file-vs-state disagreement shipped green. *(completed: this comment was
+      already authored at Phase 1 time, immediately above the Leg 1/2 assertions; verified
+      present and correct rather than re-added)*
+- [x] Add the D2 reasoning (Legs 3/4 stand in for the `state.json` transition because
       `update-task-status.sh` is stubbed here, and recovery succeeding is the precondition the
-      transition is gated on) as a comment next to Leg 3.
-- [ ] Cite durable anchors only in these comments -- filenames, function names, section headings.
+      transition is gated on) as a comment next to Leg 3. *(completed: likewise already present
+      from Phase 1, in the same comment block and again immediately above the Leg 3 code;
+      verified present and correct)*
+- [x] Cite durable anchors only in these comments -- filenames, function names, section headings.
       No task-number references: this file is outside `specs/**` and
       `rules/no-task-references-in-deliverables.md` applies, as the suite's own header NOTE
-      already observes.
-- [ ] Append a short "Argued correction, as implemented" note to
+      already observes. *(completed: verified via `bash .claude/scripts/check-task-references.sh
+      agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` -> 0 occurrences)*
+- [x] Append a short "Argued correction, as implemented" note to
       `specs/314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md`
       recording the final wording and the D1/D2 rulings, so the report and the test comment agree.
-      Task-number references are permitted there.
+      Task-number references are permitted there. *(completed)*
 
 **Timing**: 30 minutes
 
