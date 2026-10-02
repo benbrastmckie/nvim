@@ -26,6 +26,11 @@
           "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/plans/01_explicit-file-list-pathspecs.md",
           "type": "plan",
           "summary": "5-phase plan: new directory-pathspec regression lint + fixture test (Phase 1), then three parallel site-fix phases (2-4), then close-out with lint-green verification, docs cross-reference, deploy, and follow-up recording (Phase 5)."
+        },
+        {
+          "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/summaries/01_explicit-file-list-pathspecs-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: 19 violations fixed across 11 files, new lint + fixture test, deviations from the plan's 17/9 scope hypothesis, and the externally-attributed gate 20 finding."
         }
       ],
       "next_artifact_number": 2,
@@ -43,7 +48,8 @@
         "agent-system/extensions/present/commands/grant.md",
         "agent-system/extensions/present/commands/slides.md",
         "agent-system/extensions/present/commands/timeline.md"
-      ]
+      ],
+      "completion_summary": "Fixed all 19 real bare shared-directory pathspec occurrences across 11 files (core, epidemiology, present, memory extensions) -- 2 more than the plan's named 17/9, found by the new lint's own full-tree run. Added lint-directory-pathspec-boundary.sh and its 14-case fixture test, registered in manifest.json, cross-referenced from git-staging-scope.md, and deployed. Full source-store lint scan exits 0; sibling lint-scoped-commit-boundary.sh unregressed."
     },
     {
       "project_number": 311,
