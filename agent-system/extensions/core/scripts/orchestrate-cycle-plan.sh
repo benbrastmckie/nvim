@@ -2537,11 +2537,77 @@ for t in "${probed_dispatch_post_h1[@]}"; do
     continue
   fi
 
-  # (i) dispatch_seq mint + dispatch_start_ts — one atomic multi-state write.
-  task_dispatch_seq=$(mt_get '(.dispatch_seq_counter // 0) + 1')
-  task_dispatch_start_ts=$(date -u +%s)
-  mt_set --arg t "$t" --argjson ts "$task_dispatch_start_ts" --argjson seq "$task_dispatch_seq" \
-    '.dispatch_start_ts[$t] = $ts | .dispatch_seq[$t] = $seq | .dispatch_seq_counter = $seq'
+  # ── Replay decision (hoisted above the mint and above orchestrate-build-dispatch.sh) ──────────
+  # Decide BEFORE minting whether this task's durable pending_dispatch_seed describes an
+  # unconsumed, still-live prior dispatch for this exact row (same phase, same forced flag, and
+  # its recorded dispatch_file still exists on disk -- proof no postflight ever consumed it:
+  # postflight clears pending_dispatch as its own first act on any outcome). This decision used
+  # to be made ~140 lines below, AFTER both the mint (which always ran unconditionally) and the
+  # orchestrate-build-dispatch.sh call that composes the dispatch file from the just-minted seq --
+  # so the file could be (and, on a genuine replay, always was) composed with a seq that the
+  # replay branch then retroactively discarded in favor of the OLDER, reused one, leaving the
+  # file and mt_json.dispatch_seq[$t] permanently disagreeing. Deciding here instead means the
+  # seq used to compose the file below IS the seq this branch commits to: exactly one seq is ever
+  # in play for the row. This block performs no mutation, no logging, and no
+  # orchestrate-loop-guard-init.sh call -- it only decides. The branch that still needs
+  # $dispatch_file (the REPLAY log line, the budget charge, --flush-seq, the prior_* pre-image
+  # capture, --record-pending) stays at its original position further below, now simply branching
+  # on the already-computed `_pd_replay`.
+  #
+  # Discovered while hoisting (RED-first full-suite run, not anticipated by the plan's own Scope
+  # Hypothesis/Risks): the durable match predicate alone (phase/forced/file-exists) is ALSO
+  # satisfiable by an ordinary WITHIN-RUN repeat of the identical dispatch for the same session --
+  # exactly the scenario Fix 2's identical-dispatch streak/halt guard further below exists to
+  # catch. Pre-hoist, this never collided because Fix 2 (which always ran against a freshly
+  # minted seq's own file) got first refusal and could `continue` before the old, later-positioned
+  # replay check was ever reached. Hoisting the hierarchy decision to run first removes that
+  # accidental ordering shield: without the extra condition below, a same-session second dispatch
+  # of identical content would be misclassified as a cross-process crash-recovery replay, reuse
+  # the FIRST cycle's own seq, and recompose ON TOP OF that first cycle's own still-meaningful
+  # dispatch file -- which Fix 2's streak halt would then delete out from under it. The two
+  # mechanisms are supposed to divide the world along the in-session/cross-invocation line the
+  # header comments already draw (see "Item (b), durable CROSS-invocation half" below): a durable
+  # replay is meant to catch a NEW session discovering a stale pending dispatch left by a
+  # predecessor that never got to run Fix 2 against it at all. `last_dispatch_hash[$t]` (set by
+  # Fix 2, keyed by THIS session's own ephemeral multi-state) already encodes exactly "has this
+  # session already dispatched this task during this run" with no new field needed -- a durable
+  # replay is honored only when it is still empty, i.e. this is this session's first look at the
+  # task this run, consistent with the crash-recovery scenario the mechanism exists for.
+  _pd_forced_this_cycle="${forced_this_cycle[$t]:-false}"
+  _pd_replay=false
+  _pd_seq=""
+  if [ -n "${pending_dispatch_seed[$t]:-}" ] && [ -z "$(mt_get --arg t "$t" '.last_dispatch_hash[$t] // ""')" ]; then
+    _pd_phase=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.phase // ""')
+    _pd_forced=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.forced // false')
+    _pd_dispatch_file=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.dispatch_file // ""')
+    if [ "$_pd_phase" = "$g" ] && [ "$_pd_forced" = "$_pd_forced_this_cycle" ] && \
+       [ -n "$_pd_dispatch_file" ] && [ -f "$_pd_dispatch_file" ]; then
+      _pd_replay=true
+      _pd_seq=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.seq')
+    fi
+  fi
+
+  # (i) dispatch_seq mint + dispatch_start_ts — one atomic multi-state write, now branch-
+  # conditional on the replay decision just made. A replay reuses the already-recorded seq and
+  # mints no new global value at all: it never calls `mt_get '(.dispatch_seq_counter // 0) + 1'`
+  # and never writes `.dispatch_seq_counter`, so there is nothing minted-but-discarded to leak
+  # (DELIVERABLE 1b resolves by construction, not by patching). A non-replay dispatch mints a
+  # genuinely new value exactly as before. NOTE the global-vs-per-task split this invariant rests
+  # on: `mt_json.dispatch_seq_counter` is ONE scalar shared by every task in this run, while each
+  # task's own `.orchestrator-loop-guard` file carries its OWN counter -- "the durable and
+  # in-memory counters agree by construction after a replay" is a per-task claim about that pair,
+  # not about one global value equaling one per-task value.
+  if [ "$_pd_replay" = "true" ]; then
+    task_dispatch_seq="$_pd_seq"
+    task_dispatch_start_ts=$(date -u +%s)
+    mt_set --arg t "$t" --argjson ts "$task_dispatch_start_ts" --argjson seq "$task_dispatch_seq" \
+      '.dispatch_start_ts[$t] = $ts | .dispatch_seq[$t] = $seq'
+  else
+    task_dispatch_seq=$(mt_get '(.dispatch_seq_counter // 0) + 1')
+    task_dispatch_start_ts=$(date -u +%s)
+    mt_set --arg t "$t" --argjson ts "$task_dispatch_start_ts" --argjson seq "$task_dispatch_seq" \
+      '.dispatch_start_ts[$t] = $ts | .dispatch_seq[$t] = $seq | .dispatch_seq_counter = $seq'
+  fi
 
   # (f, continued) pop the forced phase now that it is actually being dispatched this cycle.
   if [ "${forced_this_cycle[$t]:-false}" = "true" ]; then
@@ -2758,29 +2824,13 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # Item (b), durable CROSS-invocation half (the in-session half is the plan_cache replay near
   # the top of this script, which already short-circuits the trivial "re-run this exact
   # composition with nothing new" case before this point is ever reached again within one
-  # session). Before charging: does pending_dispatch_seed[$t] -- seeded above from the durable
-  # guard file, i.e. potentially written by a DIFFERENT, now-defunct session -- describe THIS
-  # exact row (same phase, same forced flag) AND does its recorded dispatch_file still exist on
-  # disk (proof no postflight ever consumed it -- postflight clears pending_dispatch as its own
-  # first act on any outcome)? If so, this is a replay of an already-charged-but-never-consumed
-  # dispatch: reuse the recorded seq (so a postflight dispatch_seq check against that prior,
-  # still-live attempt's own artifacts keeps matching), skip the increment, skip the --flush.
-  # Otherwise charge as today and record the new pending_dispatch.
-  _pd_forced_this_cycle="${forced_this_cycle[$t]:-false}"
-  _pd_replay=false
-  if [ -n "${pending_dispatch_seed[$t]:-}" ]; then
-    _pd_phase=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.phase // ""')
-    _pd_forced=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.forced // false')
-    _pd_dispatch_file=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.dispatch_file // ""')
-    if [ "$_pd_phase" = "$g" ] && [ "$_pd_forced" = "$_pd_forced_this_cycle" ] && \
-       [ -n "$_pd_dispatch_file" ] && [ -f "$_pd_dispatch_file" ]; then
-      _pd_replay=true
-    fi
-  fi
+  # session). The replay-vs-charge DECISION itself (`_pd_replay`, and `_pd_seq` when it is true)
+  # was already made above, before the mint and before orchestrate-build-dispatch.sh composed
+  # $dispatch_file -- deliberately hoisted there so the seq used to compose the file is the one
+  # this branch commits to (see that block's own comment for why). This branch now only owns the
+  # side effects that genuinely need $dispatch_file: the REPLAY log line, the budget charge,
+  # --flush-seq, the prior_* pre-image capture, and --record-pending.
   if [ "$_pd_replay" = "true" ]; then
-    _pd_seq=$(printf '%s' "${pending_dispatch_seed[$t]}" | jq -r '.seq')
-    mt_set --arg t "$t" --argjson seq "$_pd_seq" '.dispatch_seq[$t] = $seq'
-    task_dispatch_seq="$_pd_seq"
     task_new_cycle_count=$(mt_get --arg t "$t" '(.cycle_counts[$t] // 0)')
     echo "[orchestrate] UNCONSUMED DISPATCH REPLAY: task #$t's $g dispatch (seq=$_pd_seq) was already charged by a prior invocation and never consumed (its recorded dispatch_file still exists on disk) -- reusing that charge instead of charging again." >&2
   else

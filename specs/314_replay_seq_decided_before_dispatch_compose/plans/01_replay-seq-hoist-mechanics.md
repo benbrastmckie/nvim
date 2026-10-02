@@ -215,42 +215,57 @@ than duplicating the copy.
 
 ---
 
-### Phase 2: Hoist the replay decision above the mint; make the mint branch-conditional [NOT STARTED]
+### Phase 2: Hoist the replay decision above the mint; make the mint branch-conditional [COMPLETED]
 
 **Goal**: Decide the replayed seq before it is minted, so `orchestrate-build-dispatch.sh`
 composes the dispatch file with the one and only seq for the row (DELIVERABLE 1), and leave the
 counter consistent by construction (DELIVERABLE 1b).
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` `:2500-2560` and
+- [x] Re-read `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` `:2500-2560` and
       `:2755-2800` immediately before editing. Locate the anchors by grepping for the code text,
-      not by line number.
-- [ ] Move the decision computation -- `_pd_forced_this_cycle`, `_pd_replay`, `_pd_phase`,
+      not by line number. *(completed)*
+- [x] Move the decision computation -- `_pd_forced_this_cycle`, `_pd_replay`, `_pd_phase`,
       `_pd_forced`, `_pd_dispatch_file`, and the `_pd_replay=true` predicate -- from its current
       position to immediately after the lock-acquire block closes and before the section (i)
-      comment. Move it verbatim; do not restructure the predicate.
-- [ ] Also hoist the `_pd_seq` read (`jq -r '.seq'`) into that block, guarded by
-      `_pd_replay=true`, so the seq is available to the mint branch.
-- [ ] Rewrite section (i) as a two-way branch:
+      comment. Move it verbatim; do not restructure the predicate. *(deviation: altered -- an
+      extra guard condition was added: `_pd_replay` is now also gated on
+      `mt_json.last_dispatch_hash[$t]` being empty, i.e. this session has not already dispatched
+      this task this run. Discovered via the plan's own RED-first/full-suite methodology: hoisting
+      verbatim regressed Group 28 (identical-dispatch halt) by letting a same-session repeat of
+      identical content be misclassified as a cross-process replay, which then recomposed ON TOP
+      OF the prior cycle's own dispatch file at the same seq-derived path, which Fix 2's halt then
+      deleted. Pre-hoist this never collided because Fix 2 always ran first (against a freshly
+      minted seq) and could `continue` before the old, later-positioned replay check was ever
+      reached -- an accidental ordering shield the hoist removes. The added condition restores the
+      intended in-session/cross-invocation boundary the header comments already draw, using data
+      Fix 2 already maintains (no new field). See the code comment at the decision block and the
+      report's "Argued correction, as implemented" note for the full reasoning. Full suite:
+      335 passed, 0 failed after this correction; 1 failed (Group 28) without it.)*
+- [x] Also hoist the `_pd_seq` read (`jq -r '.seq'`) into that block, guarded by
+      `_pd_replay=true`, so the seq is available to the mint branch. *(completed)*
+- [x] Rewrite section (i) as a two-way branch:
       - replay: `task_dispatch_seq="$_pd_seq"`; `task_dispatch_start_ts=$(date -u +%s)`; one
         `mt_set` writing `.dispatch_start_ts[$t]` and `.dispatch_seq[$t]` ONLY -- explicitly never
         `.dispatch_seq_counter`, and never calling `mt_get '(.dispatch_seq_counter // 0) + 1'`.
-      - non-replay: today's three-field mint, byte-for-byte unchanged.
-- [ ] Update the section (i) comment to state the invariant plainly: on a replay no global seq is
+      - non-replay: today's three-field mint, byte-for-byte unchanged. *(completed)*
+- [x] Update the section (i) comment to state the invariant plainly: on a replay no global seq is
       consumed, so the durable `.orchestrator-loop-guard` counter and the in-memory
       `mt_json.dispatch_seq_counter` agree by construction and `--flush-seq` is correctly skipped.
       Note the global-vs-per-task split (`mt_json.dispatch_seq_counter` is one global scalar;
       `.orchestrator-loop-guard`'s is per-task) that the report flagged as undocumented.
-- [ ] At the original location, delete the now-duplicated decision computation and the
+      *(completed)*
+- [x] At the original location, delete the now-duplicated decision computation and the
       `mt_set .dispatch_seq[$t]` / `task_dispatch_seq="$_pd_seq"` rewrite. Keep the branch itself:
       it still owns `task_new_cycle_count`, the REPLAY log line, `--flush-seq`, the `prior_*`
       pre-image capture and `--record-pending`, all of which need `$dispatch_file`. It now simply
-      branches on the already-computed `_pd_replay`.
-- [ ] Amend the comment block above that branch so it no longer implies the decision is made
+      branches on the already-computed `_pd_replay`. *(completed)*
+- [x] Amend the comment block above that branch so it no longer implies the decision is made
       there, and so it records that the decision was hoisted specifically because the dispatch
-      file is composed between the two points.
-- [ ] Verify by diff review that the hoisted block performs no mutation, no logging, and no
-      `orchestrate-loop-guard-init.sh` call.
+      file is composed between the two points. *(completed)*
+- [x] Verify by diff review that the hoisted block performs no mutation, no logging, and no
+      `orchestrate-loop-guard-init.sh` call. *(completed: the block reads mt_json/pending_dispatch_seed
+      and $g only; the one `mt_get` call is a pure read)*
 
 **Timing**: 1 hour
 
