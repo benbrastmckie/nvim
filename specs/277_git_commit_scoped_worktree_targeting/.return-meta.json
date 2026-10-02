@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/277_git_commit_scoped_worktree_targeting/plans/01_pathspec-drop-hard-error.md",
-      "summary": "4-phase plan implementing corrected option (c): a dropped-pathspec ledger plus a new V6 refusal gate (exit 4) in git-commit-scoped.sh, with constraint-pinning tests landed before the script change and the caller-escalation scope decision recorded explicitly."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "In this agent-system, every call site of git-commit-scoped.sh wraps it as `cmd || echo \"WARN: ...(non-blocking)\"`. Because bash's `A || B` yields B's exit status (echo's 0), ANY nonzero exit from the script -- 1, 2, 3, or a newly added code -- collapses to success for the caller's own control flow. Consequence: making a script-level failure louder by introducing a new exit code is necessary but NOT sufficient to change caller behavior; at least one caller must branch on $? explicitly. Generalizable rule when hardening any shared helper script's failure posture: audit the caller idiom before assuming a new exit code will be observed. The `|| echo` idiom is an exit-code sink, not an error handler.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/277_git_commit_scoped_worktree_targeting/plans/01_pathspec-drop-hard-error.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["exit-code", "bash", "error-propagation", "git-commit-scoped", "caller-audit", "non-blocking"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1790947016_5ff368_277",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 3,
-    "dependency_waves": [[1], [2], [3], [4]]
-  },
-  "next_steps": "Run /implement 277 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1790947016_5ff368",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 4
+  }
 }

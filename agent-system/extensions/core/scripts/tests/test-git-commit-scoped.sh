@@ -355,6 +355,51 @@ else
   fail "T10: expected one commit carrying both rename halves and clean status; got rc=$rc_t10 before=$before_t10 after=$after_t10 show='$show_t10' status='$status_t10' output=$out_t10"
 fi
 
+# =====================================================================
+# T11 (research case A): EVERY positive pathspec unmatched -- the existing V3 post-filter
+# refusal (git-commit-scoped.sh:318-326, added by commit 94256557d), exercised here for the
+# first time. Pinned as a regression guard: this must survive the V6 ledger/gate addition
+# (Phase 2) completely unchanged, since V3 already covers the all-dropped case and V6's
+# predicate must not overlap or replace it.
+# =====================================================================
+
+repo_t11="$(build_repo covered)"
+before_t11=$(git -C "$repo_t11" rev-list --count HEAD)
+out_t11="$(run_commit "$repo_t11" --message "T11 probe commit" --session "sess_t11" -- "specs/998_absent_task/" "specs/998_absent_task/report.md" 2>&1)"
+rc_t11=$?
+after_t11=$(git -C "$repo_t11" rev-list --count HEAD 2>/dev/null || echo "$before_t11")
+
+if [ "$rc_t11" -eq 2 ] && [ "$after_t11" -eq "$before_t11" ] \
+  && echo "$out_t11" | grep -q "ERROR:.*zero positive pathspec entries remain"; then
+  pass "T11: all-dropped pathspec list still hits the existing V3 refusal -- exit 2, no commit created (git log unchanged), unaffected by the V6 addition"
+else
+  fail "T11: expected rc=2, no new commit, V3 ERROR naming zero positive entries remaining; got rc=$rc_t11 before=$before_t11 after=$after_t11 output=$out_t11"
+fi
+
+# =====================================================================
+# T13 (research case C): a legitimate partial drop -- one pathspec names an artifact this
+# caller's phase did not (yet) produce, but a survivor pathspec DOES carry a real diff. This is
+# the HARD CONSTRAINT's partial-drop half and must keep succeeding exactly as before, both
+# before and after the V6 gate lands in Phase 2 (T12, added in Phase 3, pins the gap case this
+# differs from: a partial drop whose survivors carry NO diff).
+# =====================================================================
+
+repo_t13="$(build_repo covered)"
+echo "line2" >> "$repo_t13/specs/999_probe/file.txt"
+before_t13=$(git -C "$repo_t13" rev-list --count HEAD)
+out_t13="$(run_commit "$repo_t13" --message "T13 probe commit" --session "sess_t13" -- "specs/999_probe/file.txt" "specs/999_probe/plans/01_absent.md" 2>&1)"
+rc_t13=$?
+after_t13=$(git -C "$repo_t13" rev-list --count HEAD 2>/dev/null || echo "$before_t13")
+show_t13="$(git -C "$repo_t13" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_t13" -eq 0 ] && [ "$after_t13" -eq $((before_t13 + 1)) ] \
+  && echo "$show_t13" | grep -qF "specs/999_probe/file.txt" \
+  && echo "$out_t13" | grep -q "^WARN:.*01_absent\.md"; then
+  pass "T13: legitimate partial drop with a surviving diff still commits -- exit 0, HEAD +1, WARN names the dropped path (HARD CONSTRAINT partial-drop half)"
+else
+  fail "T13: expected rc=0, HEAD count $before_t13 -> $((before_t13 + 1)), file.txt in HEAD, WARN naming 01_absent.md; got rc=$rc_t13 before=$before_t13 after=$after_t13 show='$show_t13' output=$out_t13"
+fi
+
 # task-ref-ok:begin category 6-adjacent: every "task 40x"/"#40x"/"--task 40x" literal in the V1-V8
 # block below is synthetic fixture data exercising git-commit-scoped.sh's OWN --task input (an
 # arbitrary integer identifying the committing task for the contended-path claim check) -- never

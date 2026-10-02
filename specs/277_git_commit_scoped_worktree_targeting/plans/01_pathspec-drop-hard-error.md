@@ -1,7 +1,7 @@
 # Implementation Plan: Task #277
 
 - **Task**: 277 - Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None (the Move 2 isolation-forwarding edge was dropped together with part (a))
 - **Research Inputs**: specs/277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md
@@ -140,7 +140,7 @@ was produced) so a reader loses no information.
 Phases within the same wave can execute in parallel. This plan is fully sequential: each phase's
 verification is the precondition for the next phase's meaningfulness.
 
-### Phase 1: Pin the Hard Constraint Before Touching the Script [NOT STARTED]
+### Phase 1: Pin the Hard Constraint Before Touching the Script [COMPLETED]
 
 **Goal**: Land two regression cases in `test-git-commit-scoped.sh` that pass against the
 **unchanged** script, pinning both halves of the dispatch's HARD CONSTRAINT so any Phase 2
@@ -148,29 +148,30 @@ regression is unambiguous. These are the dispatch's test items (iii) and the res
 and C.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` immediately
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` immediately
       before editing (concurrency note), confirming the T-series still ends at T10 and the
-      `build_repo` / `add_ephemeral` / `run_commit` / `pass` / `fail` harness is as described.
-- [ ] Add **T11** (research case A — existing V3 behavior, previously untested): a `covered`
+      `build_repo` / `add_ephemeral` / `run_commit` / `pass` / `fail` harness is as described. *(completed)*
+- [x] Add **T11** (research case A — existing V3 behavior, previously untested): a `covered`
       scratch repo where **every** positive pathspec is unmatched (e.g.
       `specs/998_absent_task/` plus `specs/998_absent_task/report.md`). Assert `rc == 2`, HEAD
       unchanged (`rev-list --count` identical before/after), and stderr matching the V3
       `zero positive pathspec entries remain` ERROR. This is a regression guard for behavior that
-      already exists and must survive Phase 2 untouched.
-- [ ] Add **T13** (research case C — the legitimate partial drop that must keep succeeding): a
+      already exists and must survive Phase 2 untouched. *(completed)*
+- [x] Add **T13** (research case C — the legitimate partial drop that must keep succeeding): a
       `covered` scratch repo where one pathspec is unmatched (a not-yet-produced artifact file,
       e.g. `specs/999_probe/plans/01_absent.md`) but a survivor **does** have a real diff
       (append a line to `specs/999_probe/file.txt`). Assert `rc == 0`, HEAD advanced by exactly 1,
       `git show --name-only HEAD` contains `specs/999_probe/file.txt`, and a `WARN:` names the
       dropped path. Verified via `git log`/`git show`, never exit code alone, per the suite's own
-      stated bar.
-- [ ] Number the new cases T11 and T13 (leaving T12 for Phase 3's new-posture case, so the
+      stated bar. *(completed)*
+- [x] Number the new cases T11 and T13 (leaving T12 for Phase 3's new-posture case, so the
       three new cases read in the research's A/B/C order), following the existing
-      `# =====` header-comment idiom and `pass`/`fail` message style verbatim.
-- [ ] Run the suite: `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`.
+      `# =====` header-comment idiom and `pass`/`fail` message style verbatim. *(completed)*
+- [x] Run the suite: `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`.
       T11 and T13 must **pass against the unchanged script**. If either fails, stop — the
       premise of Phase 2's constraint is wrong and the plan needs revision before proceeding.
-- [ ] Commit this phase's single file with an explicit file pathspec (never a directory or glob).
+      *(completed: 25 passed, 0 failed, including T11 and T13)*
+- [x] Commit this phase's single file with an explicit file pathspec (never a directory or glob). *(completed)*
 
 **Timing**: 0.75 hours
 
