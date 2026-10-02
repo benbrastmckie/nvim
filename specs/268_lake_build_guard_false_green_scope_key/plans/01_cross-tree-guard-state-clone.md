@@ -1,7 +1,7 @@
 # Implementation Plan: Task #268
 
 - **Task**: 268 - lake-build-guard false-green (cross-tree guard-state clone)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/268_lake_build_guard_false_green_scope_key/reports/01_false_green_scope_key_defect.md`

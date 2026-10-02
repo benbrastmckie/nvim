@@ -11,7 +11,7 @@ next_project_number: 322
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,295,296,297,299,300,306,311,316,320,321 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,270,272,279,280,284,285,295,296,297,299,300,306,311,316,320,321 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308,317,318,319 | 22,44,127,184,241,265,272,279,280,285,297,300,306,316 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,282,284,285,300,302 | orchestrator |
@@ -34,7 +34,6 @@ next_project_number: 322
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
   └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
-268 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
@@ -45,10 +44,10 @@ next_project_number: 322
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-316 [NOT STARTED] — Trim skill-orchestrate/SKILL.md back under its gate-20...
+316 [RESEARCHING] — Trim skill-orchestrate/SKILL.md back under its gate-20...
   └─ 317 [NOT STARTED] — Make the post-deploy reconcile promotion append to...
   └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into... (see above)
-320 [NOT STARTED] — Run the orphaned .return-meta.json validator in the...
+320 [RESEARCHING] — Run the orphaned .return-meta.json validator in the...
 
 ### Extensions
 
@@ -74,7 +73,7 @@ next_project_number: 322
 
 ### Lean Extension
 
-321 [NOT STARTED] — Probe Lean language-server reachability at preflight and...
+321 [RESEARCHING] — Probe Lean language-server reachability at preflight and...
 
 ### Orchestrator
 
@@ -98,7 +97,7 @@ next_project_number: 322
 
 ### 321. Probe Lean language-server reachability at preflight and report the evidence tier into the dispatch file
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -166,7 +165,7 @@ A `lean4` dispatch launched against a Lean project with no running language serv
 
 ### 320. Run the orphaned .return-meta.json validator in the lifecycle, and give it the partial_progress checks it lacks
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -403,7 +402,7 @@ NOTE: `scripts/orchestrate-cycle-plan.sh` and `skills/skill-orchestrate/SKILL.md
 ---
 
 ### 316. Trim skill-orchestrate/SKILL.md back under its gate-20 per-file context ceiling without losing contract content
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2780,12 +2779,13 @@ than a jq guard, and are recorded on their own task.
 ---
 
 ### 268. Lake build guard false green scope key
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: general
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [268_lake_build_guard_false_green_scope_key/reports/01_false_green_scope_key_defect.md]
 - **Plan**: [268_lake_build_guard_false_green_scope_key/plans/01_cross-tree-guard-state-clone.md]
+- **Summary**: [268_lake_build_guard_false_green_scope_key/summaries/01_cross-tree-guard-state-clone-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/lake-build-guard.sh (never .claude/**).
 

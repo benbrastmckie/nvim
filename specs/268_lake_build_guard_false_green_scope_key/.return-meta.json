@@ -25,21 +25,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/summaries/01_cross-tree-guard-state-clone-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["hardlink-clone", "cp -al", "worktree", "false-green", "build-guard", "inode-sharing"]
+      "suggested_keywords": [
+        "hardlink-clone",
+        "cp -al",
+        "worktree",
+        "false-green",
+        "build-guard",
+        "inode-sharing"
+      ]
     },
     {
       "content": "When resuming an /orchestrate implement dispatch for a plan whose earlier phases were already committed, do not trust inherited phase-heading markers or pre-checked task-list checkboxes at face value -- re-verify that each phase's named target files still exist and still pass. A separately-tracked, concurrently-running or since-completed sibling task can delete or substantially alter a prior phase's target file between dispatches (observed: a worktree-isolation-layer-removal task deleted a file mid-way through another task's 5-phase plan touching that same file). When this happens, document the finding explicitly in the current phase rather than silently re-running stale verification criteria or silently marking them satisfied.",
       "category": "WORKFLOW",
       "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/summaries/01_cross-tree-guard-state-clone-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["phase-closure", "resume-dispatch", "stale-marker", "sibling-task", "re-verify"]
+      "suggested_keywords": [
+        "phase-closure",
+        "resume-dispatch",
+        "stale-marker",
+        "sibling-task",
+        "re-verify"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790957600_e00acf",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }
