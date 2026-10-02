@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Register RETURN_META_SCHEMA_VIOLATION as a Signal A instance",
+  "started_at": "2026-10-02T17:25:00Z",
+  "last_updated": "2026-10-02T17:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add RETURN_META_SCHEMA_VIOLATION to system-defect-record.sh's enum, usage text, invalid-class error message, cardinality wording", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/system-defect-record.sh"]},
+    {"id": 2, "description": "Add Signal A table row, named rationale paragraph, Detection-point registry row in system-defect-discrimination.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

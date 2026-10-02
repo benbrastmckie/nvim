@@ -95,6 +95,7 @@ decision, not silently done by a detection site):
 | `DEPLOY_ORPHAN_DRIFT` — a file or index entry present in the deployed tree with no corresponding source-store owner, surviving indefinitely because the deploy/merge routine is purely additive with no stale-entry pruning step | **not currently computed anywhere** |
 | `AMBIENT_BINDING_MISMATCH` — a downstream guard keyed to an ambient/global shell variable that only some callers populate, so the guard's condition silently evaluates false instead of erroring, and the guarded behavior is skipped without any signal | **not currently computed anywhere** |
 | `RECOVERY_DECLINED` — a dispatch wrote no handoff, but `orchestrate-recover-outcome.sh`'s `.return-meta.json` recovery declined for a reason that means a terminal marker was written and read, not that nothing was produced: `STATUS_IN_PROGRESS` (a terminal write never happened — the interrupted-fan-out shape) or `STATUS_NOT_SUCCESS` (an out-of-vocabulary terminal status value, e.g. `"completed"`). Distinguished from `HANDOFF_STALE_OR_ABSENT`, which stays handoff-shaped and covers the case where recovery declines because nothing usable exists at all (`META_MISSING`, `META_STALE`, `META_DISPATCH_SEQ_MISMATCH`, or the genuinely stale-mtime handoff) | `orchestrate-cycle-postflight.sh`'s WORK (d) absent-handoff branch, discriminated on `recover_json`'s `.reason` field — see registry below |
+| `RETURN_META_SCHEMA_VIOLATION` — a `.return-meta.json` field that violates its documented type or conditional-presence rule — concretely, a `partial_progress` that is not an object, or that is present under a status other than `in_progress`/`partial` | `orchestrate-cycle-postflight.sh`'s return-meta schema probe, detecting site `cycle-postflight-return-meta-schema` — see registry below |
 
 Not every instance above yet has a working detector — see the `ARTIFACTS_MISSING_ON_SUCCESS` row:
 it defines what counts as a violation of this kind, not what currently fires everywhere it could.
@@ -197,6 +198,24 @@ reworded or reinterpreted to cover this shape; this paragraph is where this docu
 it. The predecessor absent-handoff site (`META_MISSING`) keeps `HANDOFF_STALE_OR_ABSENT`
 unchanged — see the registry row below for the discriminating detail.
 
+A sixteenth instance, `RETURN_META_SCHEMA_VIOLATION`, was added deliberately, to name a
+producer-side schema gap that caused observed harm. A research agent wrote a bare STRING
+`partial_progress` (`"Research complete; report written; metadata finalized"`) alongside
+`"status": "researched"` into its `.return-meta.json` — two violations of
+[return-metadata-file.md](../formats/return-metadata-file.md)'s `partial_progress` contract at
+once: the field must be an OBJECT with `stage`/`details` when present, and must be absent
+unless `status` is `in_progress` or `partial`. Nothing validated what the agent wrote.
+`scripts/orchestrate-recover-outcome.sh` then read `.partial_progress.phases_completed`
+unguarded; indexing a string is a fatal `jq` type error, so recovery aborted, the dispatch was
+charged off-schema, and a complete, validated research report was discarded. The consumer side
+was hardened separately (source-store commit `27b6281fa`: `orchestrate-recover-outcome.sh` now
+consults that location only when it is an object); this instance names the producer-side half —
+the field never having been validated at write time in the first place. None of the fifteen
+pre-existing instances was reworded or reinterpreted to cover this shape; this paragraph is
+where this document first names it. Attribution uses `--dispatched-agent` (the agent that wrote
+the offending `.return-meta.json`), never `skill-orchestrate/SKILL.md` — the violation is in the
+dispatched agent's own output, not in orchestrator plumbing.
+
 ### Signal B — attribution
 
 Detection alone is not enough: the violation must resolve to a **named** file under
@@ -264,6 +283,14 @@ beside the existing banner** — the diagnosis is already in hand.
 | Stray-handoff sweep | `scripts/orchestrate-cycle-postflight.sh` (`--defect-class HANDOFF_MISLOCATED` site) | `HANDOFF_MISLOCATED` — a writer produced the handoff outside its task directory (moved to `.stray-handoff-{ts}.json` for inspection, never actioned further) | `HANDOFF_MISLOCATED` |
 | Completion-claim gate, Case 3/3 refuse | `scripts/skill-base.sh:729` | `META_MISSING_AFTER_NARRATION`-shaped: phase accounting absent/malformed AND no corroborating plan-marker signal — already logs the phrase `handoff-writer defect suspected` verbatim | `META_MISSING_AFTER_NARRATION` |
 | Recovery-declined sub-branch, detecting site `cycle-postflight-recovery-declined` | `scripts/orchestrate-cycle-postflight.sh` (WORK (d) absent-handoff branch, discriminated on `recover_json`'s `.reason`) | a `.return-meta.json` exists, was read, and recovery declined because the reported status could not be accepted as terminal (`STATUS_IN_PROGRESS`, `STATUS_NOT_SUCCESS`, `META_DISPATCH_SEQ_MISMATCH`) — attributed to the dispatched agent's own file via `--dispatched-agent`, never to `skill-orchestrate/SKILL.md`. The sibling `META_MISSING` sub-case (nothing usable produced at all) stays on the pre-existing `HANDOFF_STALE_OR_ABSENT` row above, unchanged | `RECOVERY_DECLINED` |
+| Return-meta schema probe, detecting site `cycle-postflight-return-meta-schema` | `scripts/orchestrate-cycle-postflight.sh` (warn-only probe, gated on `validate-return-meta.sh`'s `partial_progress`-specific `[FAIL]` output, never on its aggregate exit code) | a `.return-meta.json`'s `partial_progress` field violates its documented type or conditional-presence rule — attributed to the dispatched agent's own file via `--dispatched-agent` | `RETURN_META_SCHEMA_VIOLATION` |
+
+**Return-meta schema probe row, class fit**: classified here by analogy to Class (a) — loud via a
+`WARN:`-prefixed stderr notice at the point of detection, with the defect record as the
+unactioned tail until a future `/meta` habit reads it — but no existing class exactly fits "a
+detector wired to the recorder at the same time it is created," since every other Class (a) row
+names a pre-existing banner that only later gained a recorder call. Formalizing a fourth class for
+that shape waits for a second such instance rather than being invented informally here.
 
 **Stale-handoff gate row, "Location" vs. `attributed_path`**: the "File:line" column above names
 WHERE the check lives in code (`orchestrate-cycle-postflight.sh`, always — both the mtime arm and

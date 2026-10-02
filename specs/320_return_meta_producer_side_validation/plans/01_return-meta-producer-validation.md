@@ -188,37 +188,37 @@ an existing-case regression means the insertion was not additive.
 
 ---
 
-### Phase 2: Register `RETURN_META_SCHEMA_VIOLATION` as a Signal A instance [NOT STARTED]
+### Phase 2: Register `RETURN_META_SCHEMA_VIOLATION` as a Signal A instance [COMPLETED]
 
 **Goal**: the new defect class exists in the recorder's closed enum and in the discrimination
 document that owns the vocabulary, so Phase 4's recorder call cannot exit 1 on an unknown class.
 
 **Tasks**:
-- [ ] Add `RETURN_META_SCHEMA_VIOLATION` to `system-defect-record.sh`'s `case "$defect_class"`
+- [x] Add `RETURN_META_SCHEMA_VIOLATION` to `system-defect-record.sh`'s `case "$defect_class"` *(completed)*
       enum (the line-continued alternation block), to the `--defect-class CLASS   One of: ...`
       header/usage listing, and to the invalid-class error message.
-- [ ] Update every "fifteen"/"fifteen-value" wording in `system-defect-record.sh` to sixteen
+- [x] Update every "fifteen"/"fifteen-value" wording in `system-defect-record.sh` to sixteen *(completed)*
       (header comment, the enum's own `# --- Validate ... closed, fifteen-value enum ---`
       comment, and the error string).
-- [ ] Add a Signal A table row in `context/patterns/system-defect-discrimination.md` following
+- [x] Add a Signal A table row in `context/patterns/system-defect-discrimination.md` following *(completed)*
       the existing row style: class name, a one-clause definition (a `.return-meta.json` field
       that violates its documented type or conditional-presence rule — concretely, a
       `partial_progress` that is not an object, or that is present under a status other than
       `in_progress`/`partial`), and the computing site
       (`orchestrate-cycle-postflight.sh`'s return-meta schema probe, detecting site
       `cycle-postflight-return-meta-schema`).
-- [ ] Add a named paragraph recording the explicit-decision rationale, following the shape used
+- [x] Add a named paragraph recording the explicit-decision rationale, following the shape used *(completed)*
       for `RECOVERY_DECLINED`/`AMBIENT_BINDING_MISMATCH`, per the document's own contract that
       "extending the Signal A vocabulary is an explicit decision, not a silent act". State the
       motivating harm (an unguarded read-site type error discarded a complete, validated research
       report) and the attribution choice (`--dispatched-agent`, never
       `skill-orchestrate/SKILL.md`).
-- [ ] Add the Detection-point registry row. Classify by analogy to **Class (a)** (loud-but-
+- [x] Add the Detection-point registry row. Classify by analogy to **Class (a)** (loud-but- *(completed)*
       unactioned: loud via stderr, with the defect record as the unactioned tail until a future
       `/meta` habit reads it). Note in one clause that no existing class exactly fits "a detector
       wired to the recorder at creation time", and that formalizing a fourth class waits for a
       second such instance rather than being invented informally here.
-- [ ] Update the paragraph near the `RECOVERY_DECLINED` "A fifteenth instance" sentence only if
+- [x] Update the paragraph near the `RECOVERY_DECLINED` "A fifteenth instance" sentence only if *(completed: no change needed -- the ordinal phrasing names order, not a stale cardinality claim)*
       its wording would otherwise read as a stale count claim; do not rewrite its substance.
 
 **Timing**: 0.75 hours
