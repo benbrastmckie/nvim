@@ -383,9 +383,17 @@ postflight_json=$(bash .claude/scripts/orchestrate-cycle-postflight.sh "$t" \
   --plan-path "$plan_path_for_task" --cycle-count "${cycle_count:-0}" \
   --transport-error "${task_transport_error:-false}" --force-invoked "$force")
 dispatch_status=$(echo "$postflight_json" | jq -r '.status')
+persisted_status=$(echo "$postflight_json" | jq -r '.persisted_status // "unknown"')
 verdict=$(echo "$postflight_json" | jq -r '.verdict')
 halt=$(echo "$postflight_json" | jq -r '.halt')
 ```
+
+`.status` (`dispatch_status`) is the dispatched agent's own self-report, used only for the
+diagnostic echo — every loop-control decision keys off `$verdict`/`$halt`/`$infra_exempt_cycle`,
+never `$dispatch_status`. `.persisted_status` is `state.json`'s actual current status for this
+task, read fresh at postflight's emit time; the two legitimately differ by design (e.g. an
+empty-blocker `partial` that performs no transition). See `SKILL.md`'s "Move 3: Postflight"
+section for the full contract text this mirrors.
 
 Three narrow, grep-only exceptions to "the lead never reads artifact content" are sanctioned
 elsewhere in the loop (adversarial-verification grep, next-phase selection grep, and the phase-marker

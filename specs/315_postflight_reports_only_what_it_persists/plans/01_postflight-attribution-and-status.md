@@ -449,29 +449,36 @@ provably differs from `.status`, and the `"unknown"` fallback.
 
 ---
 
-### Phase 6: Update Move 3 and its mirrored copy [NOT STARTED]
+### Phase 6: Update Move 3 and its mirrored copy [COMPLETED]
 
 **Goal**: Both copies of the postflight-JSON reader capture the new field, and the contract text
 states plainly which meaning `.status` carries.
 
 **Tasks**:
 
-- [ ] Re-read `skills/skill-orchestrate/SKILL.md:170-200` before editing (task 309 is concurrently
-      scoped to other SKILL.md files, not this one — re-read anyway).
-- [ ] In `SKILL.md`'s Move 3 destructuring (`:191-195`), add
+- [x] Re-read `skills/skill-orchestrate/SKILL.md:170-200` before editing (task 309 is concurrently
+      scoped to other SKILL.md files, not this one — re-read anyway). *(completed)*
+- [x] In `SKILL.md`'s Move 3 destructuring (`:191-195`), add
       `persisted_status=$(echo "$postflight_json" | jq -r '.persisted_status // "unknown"')`.
-- [ ] Update the diagnostic echo at `:196` to show both:
+      *(completed)*
+- [x] Update the diagnostic echo at `:196` to show both:
       `dispatch result: $dispatch_status (verdict=$verdict, persisted=$persisted_status)`.
-- [ ] Add two or three sentences of contract text immediately around that block stating: `.status`
+      *(completed)*
+- [x] Add two or three sentences of contract text immediately around that block stating: `.status`
       is the **agent's self-report** and is used here for the diagnostic line only — all loop control
       keys off `$verdict`/`$halt`/`$infra_exempt_cycle`, never `$dispatch_status`; `.persisted_status`
       is what `state.json` actually says after this postflight; the two differing is documented,
-      intentional behaviour, not a defect.
-- [ ] Apply the same destructuring and echo change to the **mirrored** snippet at
+      intentional behaviour, not a defect. *(completed)*
+- [x] Apply the same destructuring and echo change to the **mirrored** snippet at
       `docs/architecture/orchestrate-state-machine.md:380-387`, so the doc's copy does not go stale.
-- [ ] Confirm no other `postflight_json` consumer needs updating: `test-orchestrate-recover-message-findings.sh:291-292`
-      reads only `.report_missing`/`.verdict`. Record this check in the commit body.
-- [ ] Commit this green sub-step.
+      *(completed)*
+- [x] Confirm no other `postflight_json` consumer needs updating: `test-orchestrate-recover-message-findings.sh:291-292`
+      reads only `.report_missing`/`.verdict`. Record this check in the commit body. *(completed:
+      confirmed via `grep -rn "postflight_json" --include=*.md --include=*.sh agent-system/` —
+      the only consumers are SKILL.md, the architecture doc's mirror, and
+      test-orchestrate-recover-message-findings.sh, which reads only `.report_missing`/`.verdict`
+      and needs no change. That suite still passes in full: 23/23.)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 45 minutes
 
