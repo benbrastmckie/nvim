@@ -469,45 +469,54 @@ asserting a current-version literal).
 
 ---
 
-### Phase 4: Cross-session hazard on self-modifying admit verdicts [NOT STARTED]
+### Phase 4: Cross-session hazard on self-modifying admit verdicts [COMPLETED]
 
 **Goal**: Close the absorbed ex-task-190 defect additively — a solo (or phase-exempt, or
 designated) self-modifying candidate's admit verdict names a live foreign session's overlapping
 scope, without ever changing the admit decision.
 
 **Tasks**:
-- [ ] Run `session_contention($c_scope; $c; $own_sid; $all; $sess_list)` inside the
+- [x] Run `session_contention($c_scope; $c; $own_sid; $all; $sess_list)` inside the
       `$sm_flag == true` arm and attach `cross_session_hazard` when it returns non-null, on ALL
       THREE self-mod admit branches: phase-exempt, tie-break-winner, and solo/`$inv_count <= 1`.
       All five arguments are already in scope at that point (`$c_scope` is bound before the
-      `$sm_flag` test; the other four are invocation-level) — no new plumbing.
-- [ ] Nested keys, mirroring the existing `session_active` defer payload so the two are diffable:
+      `$sm_flag` test; the other four are invocation-level) — no new plumbing. *(completed: bound
+      once as `$cross_session_hazard_frag` right after `$sm_flag`, reused via `+` on both the
+      phase-exempt and the tie-break-winner/solo admit shapes — 2 code sites covering the 3
+      conceptual cases, since the latter two share one identical admit shape)*
+- [x] Nested keys, mirroring the existing `session_active` defer payload so the two are diffable:
       `session_id`, `colliding_task_number`, `overlapping_path`, `session_liveness_reason`, and
       `reason` (machine-templated, naming the concurrent-write hazard and the remedy).
-- [ ] Do NOT attach it to the `self_modifying` **defer** branch — that verdict already carries its
+      *(completed)*
+- [x] Do NOT attach it to the `self_modifying` **defer** branch — that verdict already carries its
       own reason and remedy, and adding a second hazard there would suggest the defer is caused by
-      the session overlap when it is not.
-- [ ] Do NOT change any decision. Assert this as an explicit fixture case: the same two-session
-      fixture must still yield `decision: "admit"`.
-- [ ] Document the field in the header verdict-schema list and in
+      the session overlap when it is not. *(completed — verified: the `elif ($inv_count > 1 ...)`
+      defer branch does not merge `$cross_session_hazard_frag`)*
+- [x] Do NOT change any decision. Assert this as an explicit fixture case: the same two-session
+      fixture must still yield `decision: "admit"`. *(completed)*
+- [x] Document the field in the header verdict-schema list and in
       `docs/architecture/batch-admit-schema.md`'s Field Definitions, including its presence rule
       and the branches on which it is structurally absent. Extend the header's Precedence (D4)
       block to record that the self-mod short-circuit now carries the session-registry result
       **advisorily** even though it still bypasses the `session_active` *defer* pass — the precise
-      gap ex-task-190 identified, and the precise reason the fix is additive rather than a
-      precedence change.
-- [ ] Record as a documented residual, in the same header note: the state.json collision scan is
+      gap the absorbed cross-session-blindness probe identified, and the precise reason the fix is
+      additive rather than a precedence change. *(completed)*
+- [x] Record as a documented residual, in the same header note: the state.json collision scan is
       deliberately NOT run inside the self-mod branch (only `session_contention` is), because the
       in_batch half of that scan depends on the admitted-set fold accumulator and running it out
       of order would produce an order-sensitive advisory. The session registry alone satisfies the
-      acceptance criterion this fix answers.
-- [ ] Flip fixture case **SOLO-SELF-MOD-CROSS-SESSION** to positive: `decision == "admit"`,
+      acceptance criterion this fix answers. *(completed)*
+- [x] Flip fixture case **SOLO-SELF-MOD-CROSS-SESSION** to positive: `decision == "admit"`,
       `self_modifying == true`, `cross_session_hazard.session_id` equals the foreign session's id,
       `cross_session_hazard.overlapping_path` is the overlapping path, and no `defer_reason`.
-- [ ] Add a negative case: two live sessions whose covered scopes do **not** overlap -> no
-      `cross_session_hazard` field at all (absent, not null).
-- [ ] Add a degradation case: `--session-id` omitted -> the existing loud stderr line fires and no
-      `cross_session_hazard` can appear (D6 behavior unchanged).
+      *(completed: already written against this exact target shape in Phase 1 per that phase's
+      own deviation note — no further text change needed, only the implementation above)*
+- [x] Add a negative case: two live sessions whose covered scopes do **not** overlap -> no
+      `cross_session_hazard` field at all (absent, not null). *(completed:
+      SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP)*
+- [x] Add a degradation case: `--session-id` omitted -> the existing loud stderr line fires and no
+      `cross_session_hazard` can appear (D6 behavior unchanged). *(completed:
+      SOLO-SELF-MOD-SESSION-ID-OMITTED)*
 
 **Timing**: 1.5 hours
 
@@ -537,6 +546,15 @@ name rather than renaming the library function's output.
 - `scripts/lib/file-scope-overlap.sh` is unmodified (`git status --short` shows it absent from the
   change set).
 - `shellcheck agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` clean.
+
+**Phase Completion Note**: `test-orchestrate-batch-admit.sh` 11 passed, 0 failed — FAILED count
+reaches zero for the first time in this plan, exactly as required. `test-conflict-predicate.sh`
+33/33 and `test-four-tier-conflict.sh` 13/13, both unaffected.
+`git status --short agent-system/extensions/core/scripts/lib/file-scope-overlap.sh` confirmed
+empty (unmodified). `shellcheck` clean on both touched `.sh` files (identical to each file's
+pre-task baseline). One mid-phase bug, same class as Phases 2-3: two possessive apostrophes in
+new jq-embedded comments (`candidate's`, `session's`) each independently broke the enclosing
+single-quoted jq program; both reworded to avoid the apostrophe.
 
 ---
 

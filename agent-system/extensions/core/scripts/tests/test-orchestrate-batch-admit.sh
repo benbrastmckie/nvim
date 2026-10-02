@@ -374,6 +374,83 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
     jq --argjson ncand "$NUM_SCS_CAND" --argjson nforeign "$NUM_SCS_FOREIGN_TASK" \
       '.active_projects |= map(select(.project_number != $ncand and .project_number != $nforeign))' \
       "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+    # ===========================================================================
+    # Negative case: two live sessions whose covered scopes do NOT overlap -> no
+    # cross_session_hazard field at all (absent, not null).
+    # ===========================================================================
+    NUM_SCS_NEG_CAND=322
+    NUM_SCS_NEG_FOREIGN_TASK=323
+    scs_neg_json=$(jq \
+      --argjson ncand "$NUM_SCS_NEG_CAND" --argjson nforeign "$NUM_SCS_NEG_FOREIGN_TASK" \
+      --arg cp "$crit_path_scs" \
+      '.active_projects += [
+        {"project_number": $ncand, "project_name": "scs_neg_candidate", "status": "not_started", "task_type": "meta", "file_scope": [$cp], "dependencies": []},
+        {"project_number": $nforeign, "project_name": "scs_neg_foreign_disjoint", "status": "not_started", "task_type": "general", "file_scope": ["scope/unrelated-to-scs-neg"], "dependencies": []}
+      ]' "$STATE_FILE")
+    echo "$scs_neg_json" > "$STATE_FILE"
+
+    NEG_OWN_SID="sess_scsnegowntest_0001"
+    NEG_FOREIGN_SID="sess_scsnegforeigntest_0002"
+    "$TMPROOT/.claude/scripts/task-lock.sh" session-register "$NEG_OWN_SID" "/orchestrate $NUM_SCS_NEG_CAND" "$NUM_SCS_NEG_CAND" --pid $$ >/dev/null 2>&1 || true
+    "$TMPROOT/.claude/scripts/task-lock.sh" session-register "$NEG_FOREIGN_SID" "/orchestrate $NUM_SCS_NEG_FOREIGN_TASK" "$NUM_SCS_NEG_FOREIGN_TASK" --pid $$ >/dev/null 2>&1 || true
+
+    out_scs_neg=$("$BA" --invocation-count 1 --session-id "$NEG_OWN_SID" "$NUM_SCS_NEG_CAND" 2>/dev/null)
+    v_scs_neg=$(echo "$out_scs_neg" | jq -c "select(.task_number == $NUM_SCS_NEG_CAND)")
+
+    scs_neg_ok=true
+    [ "$(echo "$v_scs_neg" | jq -r '.decision')" = "admit" ] || { scs_neg_ok=false; info "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: did not admit: $v_scs_neg"; }
+    [ "$(echo "$v_scs_neg" | jq -r 'has("cross_session_hazard")')" = "false" ] || { scs_neg_ok=false; info "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: unexpectedly carries cross_session_hazard with no overlapping foreign session: $v_scs_neg"; }
+    if [ "$scs_neg_ok" = true ]; then
+      pass "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: no cross_session_hazard when the foreign session's covered scope does not overlap"
+    else
+      fail "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: negative-case assertion failed (see INFO lines above)"
+    fi
+
+    rm -f "$TMPROOT/specs/.sessions/${NEG_OWN_SID}.json" "$TMPROOT/specs/.sessions/${NEG_FOREIGN_SID}.json" 2>/dev/null || true
+    jq --argjson ncand "$NUM_SCS_NEG_CAND" --argjson nforeign "$NUM_SCS_NEG_FOREIGN_TASK" \
+      '.active_projects |= map(select(.project_number != $ncand and .project_number != $nforeign))' \
+      "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+    # ===========================================================================
+    # Degradation case: --session-id omitted -> the existing D6 loud stderr line fires and no
+    # cross_session_hazard can appear (D6 behavior unchanged by this phase).
+    # ===========================================================================
+    NUM_SCS_DEG_CAND=324
+    NUM_SCS_DEG_FOREIGN_TASK=325
+    scs_deg_json=$(jq \
+      --argjson ncand "$NUM_SCS_DEG_CAND" --argjson nforeign "$NUM_SCS_DEG_FOREIGN_TASK" \
+      --arg cp "$crit_path_scs" \
+      '.active_projects += [
+        {"project_number": $ncand, "project_name": "scs_deg_candidate", "status": "not_started", "task_type": "meta", "file_scope": [$cp], "dependencies": []},
+        {"project_number": $nforeign, "project_name": "scs_deg_foreign_covered", "status": "not_started", "task_type": "meta", "file_scope": [$cp], "dependencies": []}
+      ]' "$STATE_FILE")
+    echo "$scs_deg_json" > "$STATE_FILE"
+
+    DEG_FOREIGN_SID="sess_scsdegforeigntest_0003"
+    "$TMPROOT/.claude/scripts/task-lock.sh" session-register "$DEG_FOREIGN_SID" "/orchestrate $NUM_SCS_DEG_FOREIGN_TASK" "$NUM_SCS_DEG_FOREIGN_TASK" --pid $$ >/dev/null 2>&1 || true
+
+    scs_deg_stderr=$("$BA" --invocation-count 1 "$NUM_SCS_DEG_CAND" 2>&1 1>/dev/null)
+    out_scs_deg=$("$BA" --invocation-count 1 "$NUM_SCS_DEG_CAND" 2>/dev/null)
+    v_scs_deg=$(echo "$out_scs_deg" | jq -c "select(.task_number == $NUM_SCS_DEG_CAND)")
+
+    scs_deg_ok=true
+    [ "$(echo "$v_scs_deg" | jq -r '.decision')" = "admit" ] || { scs_deg_ok=false; info "SOLO-SELF-MOD-SESSION-ID-OMITTED: did not admit: $v_scs_deg"; }
+    [ "$(echo "$v_scs_deg" | jq -r 'has("cross_session_hazard")')" = "false" ] || { scs_deg_ok=false; info "SOLO-SELF-MOD-SESSION-ID-OMITTED: unexpectedly carries cross_session_hazard with --session-id omitted: $v_scs_deg"; }
+    case "$scs_deg_stderr" in
+      *"--session-id not supplied"*) ;;
+      *) scs_deg_ok=false; info "SOLO-SELF-MOD-SESSION-ID-OMITTED: D6 loud stderr line did not fire: $scs_deg_stderr" ;;
+    esac
+    if [ "$scs_deg_ok" = true ]; then
+      pass "SOLO-SELF-MOD-SESSION-ID-OMITTED: --session-id omitted still fires the D6 degradation line and carries no cross_session_hazard"
+    else
+      fail "SOLO-SELF-MOD-SESSION-ID-OMITTED: degradation-case assertion failed (see INFO lines above)"
+    fi
+
+    rm -f "$TMPROOT/specs/.sessions/${DEG_FOREIGN_SID}.json" 2>/dev/null || true
+    jq --argjson ncand "$NUM_SCS_DEG_CAND" --argjson nforeign "$NUM_SCS_DEG_FOREIGN_TASK" \
+      '.active_projects |= map(select(.project_number != $ncand and .project_number != $nforeign))' \
+      "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
   else
     info "SOLO-SELF-MOD-CROSS-SESSION: SKIPPED -- orchestrator-critical-paths.json present but empty scope_roots/critical_paths"
   fi

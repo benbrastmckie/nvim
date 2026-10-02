@@ -180,6 +180,14 @@ missing information):
 {"$schema":"orchestrate-batch-admit-v6","task_number":"{N}","decision":"defer","self_modifying":false,"defer_reason":"absent_file_scope","designated_absent_candidate":"{M}","reason":"candidate #{N} has an absent file_scope (missing_key); deferred this wave/cycle in favor of designated absent-scope candidate #{M} (lowest task number among the absent-scope candidates in this cycle) -- this is a one-cycle ORDERING CONSTRAINT, not an exclusion: candidate #{N} resolves in a later cycle, in sequence, once #{M} clears; the real remedy is to declare a file_scope, which clears this defer immediately","absent_scope_advisory":{"scope_state":"missing_key","codispatch_count":8,"reason":"file_scope is missing_key for candidate #{N}; declare a file_scope, or run plan-file-scope-harvest.sh / backfill-file-scope.sh once a plan exists"}}
 ```
 
+**Self-modifying admit with cross-session hazard** (additive, no-bump sibling to the v6 bump — a
+live registered foreign session's own precomputed `file_scope` overlaps this self-modifying
+candidate's, surfaced on the admit verdict without changing the decision):
+
+```json
+{"$schema":"orchestrate-batch-admit-v6","task_number":"{N}","decision":"admit","self_modifying":true,"cross_session_hazard":{"session_id":"sess_1736700000_a1b2c3","colliding_task_number":"{M}","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","session_liveness_reason":"pid-alive","reason":"live registered session sess_1736700000_a1b2c3 (liveness: pid-alive) covers non-terminal task #{M} whose registered file_scope overlaps this self-modifying candidate at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; concurrent orchestrator-critical edits are possible -- coordinate with that session before dispatching"}}
+```
+
 ## Field Definitions
 
 | Field | Type | Presence | Meaning |
@@ -202,6 +210,7 @@ missing information):
 | `idle_overlap_advisory` | object | present on any post-scan verdict (`admit`, `session_active` defer, or `file_scope_collision` defer) when a suppressed idle cross-batch overlap exists; absent otherwise, and absent on all pre-scan branches (the three early-exit admits and both `self_modifying` branches) (NEW in v5) | Nested object surfacing a `cross_batch` overlap the collision scan found against a task carrying NO execution evidence (status not in `{researching, planning, implementing}`) and therefore did not block on. Nested keys: `colliding_task_number` (int), `colliding_task_status` (string, verbatim from `specs/state.json`), `overlapping_path` (string, first overlapping path), `collision_scope` (string, always `"cross_batch"` — `idle_overlap_advisory` is derived only from the `cross_batch`-scoped entries surviving the comparison scan; an `in_batch` overlap either IS the blocking `$hit` or is excluded from the scan entirely per the admitted-set-only narrowing below, and is never separately classified as idle), and `reason` (string, machine-templated, names the `dependencies[]`-edge remedy). First-match, ascending `project_number` — same determinism convention as the collision scan itself. |
 | `absent_scope_advisory` | object | present on EVERY verdict the absent-scope branch produces (the admit branch for a `cross_batch` comparison, the phase-exempt admit, or the `absent_file_scope` defer itself), i.e. whenever the candidate's own `file_scope` is absent (missing key, literal `null`, or empty array); absent on every other branch (NEW additively in v5 — the field itself introduced no version bump when it landed, since it added no new verdict shape a pre-v5 consumer would mis-bucket; documented here for the first time in the v6 bump below) | Carried regardless of `decision` — purely informational, never affecting the collision/self-modification checks. Nested keys: `scope_state` (string, one of `"missing_key"` \| `"null_value"` \| `"empty_array"` — reuses `validate-state.sh` Check 10's own vocabulary verbatim), `codispatch_count` (int, this invocation's `--invocation-count` value), and `reason` (string, machine-templated, names the remedy: declare a `file_scope`, or run `plan-file-scope-harvest.sh` / `backfill-file-scope.sh` once a plan exists). See "Admission Posture for an Absent `file_scope`" below for the full blocking-vs-advisory ruling this field is one half of. |
 | `designated_absent_candidate` | int | `defer_reason == "absent_file_scope"` only (NEW in v6) | The lowest task number among this cycle's absent-scope candidates — the peer that admits this cycle in this candidate's place. Deliberately no `colliding_task_number`/`colliding_task_status`/`overlapping_path`/`collision_scope`/`corroborated_by` on this defer — there is no colliding task and no overlapping path, only missing information, so this value is its own field rather than overloading `file_scope_collision`'s shape with fields that would all be present-but-empty. |
+| `cross_session_hazard` | object | present on a self-modifying ADMIT verdict (any of the three admit shapes: phase-exempt, tie-break-winner, or solo) when a live registered foreign session's own precomputed `file_scope` overlaps the candidate's; absent on every other branch, including the `self_modifying` DEFER branch (additive, no-bump sibling to the v6 bump) | Closes the absorbed cross-session-blindness gap where a solo self-modifying candidate's verdict previously carried no cross-session collision result at all. NEVER changes `decision`. Nested keys, mirroring the existing `session_active` defer payload so the two are diffable: `session_id` (string), `colliding_task_number` (int, the lowest non-excluded task number the contending session covers, per D4), `overlapping_path` (string, first overlapping path), `session_liveness_reason` (string), and `reason` (string, machine-templated). |
 
 ## Precedence: Self-Modification, Then Collision, Then Session-Registry
 
@@ -256,6 +265,22 @@ CONSTRUCTION: no verdict ever carries both `defer_reason == "absent_file_scope"`
 `self_modifying == true`, and a candidate reaching the `absent_file_scope` branch never also runs
 the collision scan or the session-registry pass this cycle — the absent-scope branch's own
 `if`/`elif`/`else` fully resolves the verdict without falling through to either.
+
+**NEW additively (self-mod short-circuit now carries the session-registry result ADVISORILY)**:
+the self-modification short-circuit still bypasses the `session_active` DEFER pass entirely — that
+precedence is UNCHANGED — but a self-modifying ADMIT verdict (any of the three admit shapes:
+phase-exempt, tie-break-winner, or solo) now additionally runs `session_contention()` and, on a
+hit, attaches `cross_session_hazard` (see the Field Definitions table). This is the precise gap
+the absorbed cross-session-blindness probe identified: a self-modifying candidate's verdict
+previously carried no cross-session collision result at all, solo or otherwise, because the
+short-circuit skipped the session pass unconditionally. The fix is additive rather than a
+precedence change — `session_active` as a *defer* reason still never fires for a self-modifying
+candidate, only an advisory probe does, and only on the admit shapes. **Documented residual**: the
+state.json collision scan (`file_scope_collision`) is deliberately NOT run inside the self-mod
+branch — only `session_contention()` is — because the `in_batch` half of that scan depends on the
+admitted-set fold accumulator, and running it out of order from inside the self-mod branch would
+produce an order-sensitive, unreliable advisory; the session registry alone satisfies this fix's
+acceptance criterion.
 
 ## Deferral-Direction Rule and Caller Guidance
 
@@ -765,7 +790,20 @@ Every in-repo consumer's status as of v6:
 | `scripts/orchestrate-predispatch-review.sh` (the report composer — Classes A-G as of v5) | Extended: gains a new Class (re-presenting `absent_file_scope` defers) and two admitted-side selectors (for `absent_scope_advisory` and `cross_session_hazard`), modelled on the existing Class C-admitted/D-admitted convention. Confirmed already-safe pre-extension: its `select()`-based filters simply did not match the unrecognized `absent_file_scope` value, so it was inert rather than mis-bucketing |
 
 **Declared residual for v6**: the report composer's (`orchestrate-predispatch-review.sh`)
-extension, and an additive sibling `cross_session_hazard` field on self-modifying admit verdicts,
-are each recorded as separate, later changes with their own declared file scope in the
-originating plan — not residuals of this entry, but not yet landed as of this Version History
-paragraph's own authoring. See this entry's eventual successor paragraph, added when each lands.
+extension is recorded as a separate, later change with its own declared file scope in the
+originating plan — not a residual of this entry, but not yet landed as of this Version History
+paragraph's own authoring.
+
+**Additive, no-bump sibling change (landed in the same convergence as the v6 bump above, but NOT
+itself a version bump)**: a `cross_session_hazard` field is added to a self-modifying candidate's
+`admit` verdict (on all three self-mod admit branches: phase-exempt, tie-break-winner, and solo)
+when a live foreign session's covered scope overlaps the candidate — closing the absorbed
+cross-session-blindness gap where a solo self-modifying candidate's verdict previously carried no
+cross-session collision result at all. This never changes any decision (a self-modifying
+candidate that would have admitted still admits) and introduces no new verdict shape a consumer
+has not seen the general pattern of before (`idle_overlap_advisory` and `absent_scope_advisory`
+are the same "additional-advisory-object-on-an-existing-shape" pattern) — so, per this document's
+own established non-bump criterion, it does NOT bump `$schema` even though it lands in the same
+overall convergence as the v6 bump above. Every in-repo consumer's status: unaffected by this
+field alone (no consumer branches on its presence to remain correct); the report composer's
+planned admitted-side selector for it is tracked under the same declared residual above.

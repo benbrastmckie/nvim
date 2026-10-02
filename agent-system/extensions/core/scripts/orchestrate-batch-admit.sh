@@ -217,6 +217,24 @@
 #                                     machine-templated, names the remedy: declare a file_scope, or
 #                                     run plan-file-scope-harvest.sh / backfill-file-scope.sh once a
 #                                     plan exists).
+#   cross_session_hazard       object Present on a self-modifying ADMIT verdict (NEW, additive,
+#                                     no-bump sibling to the absent-scope ruling) when a live
+#                                     registered foreign session's own precomputed file_scope
+#                                     overlaps this candidate's. Absent on every other branch,
+#                                     including the self_modifying DEFER branch (deliberately —
+#                                     that verdict already carries its own reason and remedy;
+#                                     adding this field there would wrongly suggest the defer is
+#                                     caused by the session overlap rather than the tie-breaker).
+#                                     NEVER changes decision — purely additive, closing the
+#                                     absorbed cross-session-blindness gap where a solo
+#                                     self-modifying candidate's verdict carried no cross-session
+#                                     collision result at all. Nested keys, mirroring the existing
+#                                     session_active defer payload so the two are diffable:
+#                                     session_id (string), colliding_task_number (int, the lowest
+#                                     non-excluded task number the contending session covers, per
+#                                     D4), overlapping_path (string, first overlapping path),
+#                                     session_liveness_reason (string, one of session_liveness()'s
+#                                     six reasons), and reason (string, machine-templated).
 #
 # Admission Posture for an ABSENT file_scope (ruling, measured 2026-09-29; this is a decision
 # record, not a defect description — read alongside the defer_reason field above): an undeclared
@@ -289,6 +307,25 @@
 # the collision scan or the session-registry pass this cycle (the absent-scope branch's own
 # `if`/`elif`/`else` fully resolves the verdict without falling through to any of them). Stated
 # explicitly here rather than left to be inferred from branch order alone.
+#
+# NEW additively (self-mod short-circuit now carries session-registry result ADVISORILY): the
+# self-modification short-circuit above still bypasses the `session_active` DEFER pass entirely
+# — that precedence is UNCHANGED — but a self-modifying ADMIT verdict (any of the three admit
+# shapes: phase-exempt, tie-break-winner, or solo) now additionally runs `session_contention()`
+# and, on a hit, attaches `cross_session_hazard` (see the field list above). This is the PRECISE
+# gap the absorbed cross-session-blindness probe identified: a self-modifying candidate's verdict
+# previously carried no cross-session collision result at ALL, solo or otherwise, because the
+# short-circuit skipped the session pass unconditionally. The fix is additive rather than a
+# precedence change — the `session_active` *defer* pass still never runs for a self-modifying
+# candidate, only an ADVISORY probe does, and only on the admit shapes.
+#
+# Documented residual: the state.json collision scan (`file_scope_collision`) is deliberately NOT
+# run inside the self-mod branch — only `session_contention()` is. The `in_batch` half of that
+# scan depends on the admitted-set fold accumulator (see "Admitted-set-only in_batch narrowing"
+# below), and running it out of order from inside the self-mod branch would produce an
+# order-sensitive, unreliable advisory. The session registry alone satisfies the acceptance
+# criterion this fix answers (naming a live cross-session hazard), so no state.json-collision
+# probe was added here.
 #
 # Held-lock scan rejection (recorded, not the file's pre-existing D5 above — this convergence's
 # OWN separate decision not to add a fourth contention input): `orchestrate-batch-admit.sh` does
@@ -757,6 +794,35 @@ if verdicts=$(jq -n -c \
       ($entry.file_scope) as $c_scope |
       (if $is_degraded then null else self_mod_match($c_scope; $crit) end) as $sm_hit |
       (if $is_degraded then null else ($sm_hit != null) end) as $sm_flag |
+      # Cross-session hazard (NEW, additive, no-bump sibling to the absent-scope ruling above):
+      # closes the absorbed cross-session-blindness gap where the verdict of a self-modifying
+      # candidate carried no cross-session collision result at all, even when the covered scope
+      # of a live foreign session overlapped it. All five session_contention() arguments are
+      # already in lexical scope here ($c_scope bound above; $c, $own_sid, $all, $sess_list are
+      # invocation-level). Computed once, reused by BOTH self-mod ADMIT branches below (the
+      # phase-exempt admit and the tie-break-winner/solo admit) -- deliberately NEVER attached to
+      # the self_modifying DEFER branch immediately below, which already carries its own reason
+      # and remedy; adding a second hazard there would wrongly suggest the defer is CAUSED by the
+      # session overlap when it is not. Never changes any decision -- purely additive.
+      (session_contention($c_scope; $c; $own_sid; $all; $sess_list)) as $cross_sess_hit |
+      (
+        if $cross_sess_hit == null then {} else
+          {
+            cross_session_hazard: {
+              session_id: $cross_sess_hit.session_id,
+              colliding_task_number: $cross_sess_hit.covered_task_number,
+              overlapping_path: $cross_sess_hit.overlapping_path,
+              session_liveness_reason: $cross_sess_hit.liveness_reason,
+              reason: ("live registered session " + $cross_sess_hit.session_id + " (liveness: " +
+                       $cross_sess_hit.liveness_reason + ") covers non-terminal task #" +
+                       ($cross_sess_hit.covered_task_number|tostring) +
+                       " whose registered file_scope overlaps this self-modifying candidate at " +
+                       $cross_sess_hit.overlapping_path +
+                       "; concurrent orchestrator-critical edits are possible -- coordinate with that session before dispatching")
+            }
+          }
+        end
+      ) as $cross_session_hazard_frag |
       if ($sm_flag == true) then
         if ($phase_group == "research" or $phase_group == "plan") then
           # Phase-aware gate (D-phase, NEW): a research or plan dispatch touches only the own
@@ -770,7 +836,7 @@ if verdicts=$(jq -n -c \
             task_number: $c,
             decision: "admit",
             self_modifying: true
-          }
+          } + $cross_session_hazard_frag
         elif ($inv_count > 1 and $c != $designated_sm_candidate) then
           {
             "$schema": "orchestrate-batch-admit-v6",
@@ -788,7 +854,7 @@ if verdicts=$(jq -n -c \
             task_number: $c,
             decision: "admit",
             self_modifying: true
-          }
+          } + $cross_session_hazard_frag
         end
       else
         (

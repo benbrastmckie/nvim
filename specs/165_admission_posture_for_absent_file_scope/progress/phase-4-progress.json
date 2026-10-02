@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Cross-session hazard on self-modifying admit verdicts",
+  "started_at": "2026-10-03T00:40:00Z",
+  "last_updated": "2026-10-03T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "attach cross_session_hazard on 3 self-mod admit branches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 2, "description": "header + doc field documentation, Precedence D4 note, residual note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh", "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 3, "description": "flip SOLO-SELF-MOD-CROSS-SESSION; add negative + degradation cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "jq-embedded comments with possessive apostrophes (candidate's, session's)", "result": "failed", "reason": "Same class of bug as Phases 2-3. Fixed by rewording."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
