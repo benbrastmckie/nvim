@@ -43,8 +43,8 @@ next_project_number: 325
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
-323 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
-324 [RESEARCHED] — DEFECT. verify-deploy.sh gate 13 (whole-tree orphan...
+323 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
+324 [PLANNING] — DEFECT. verify-deploy.sh gate 13 (whole-tree orphan...
 
 ### Extensions
 
@@ -83,7 +83,7 @@ next_project_number: 325
 ## Tasks
 
 ### 324. Whitelist scheduled tasks lock in orphan detection
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: neovim
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -114,11 +114,12 @@ Filed by the 2026-10-02 review: specs/reviews/review-2026-10-02.md
 ---
 
 ### 323. Declare migrate state legacy fields in core manifest
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [323_declare_migrate_state_legacy_fields_in_core_manifest/reports/01_declare-script-in-manifest.md]
+- **Plan**: [323_declare_migrate_state_legacy_fields_in_core_manifest/plans/01_declare-script-in-manifest.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact), per rules/source-store-deploy-boundary.md.
 

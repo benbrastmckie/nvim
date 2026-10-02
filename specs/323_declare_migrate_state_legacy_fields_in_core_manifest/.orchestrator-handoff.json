@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 323,
+  "phase": "plan",
+  "session_id": "sess_1790978139_b07459_323",
+  "dispatch_seq": 3,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/plans/01_declare-script-in-manifest.md",
+      "summary": "3-phase plan to declare the script in core manifest.json, refresh core README.md script count, and verify gate 3 green."
+    }
+  ],
+  "next_steps": "Run /implement 323 to execute the plan"
+}

@@ -1041,23 +1041,28 @@
     {
       "project_number": 323,
       "project_name": "declare_migrate_state_legacy_fields_in_core_manifest",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact), per rules/source-store-deploy-boundary.md.\n\nDEFECT. scripts/migrate-state-legacy-fields.sh exists and is executable on disk at agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh (9,914 B) but is declared nowhere in core/manifest.json provides.scripts. check-extension-docs.sh reports, verified independently 2026-10-02:\n\n  [core]\n    FAIL: script file on disk NOT in provides.scripts: scripts/migrate-state-legacy-fields.sh\n    WARN: README.md older than manifest.json (possible drift)\n\nThis is half of the current verify-deploy.sh --skip-slow regression from FAIL 1 of 33 to FAIL 2 of 33 (gate 3, doc lint). The other half is the gate 13 orphan false positive filed separately.\n\nPROVENANCE. The script shipped with task 279 phase 5 (commit 8fdfff0bf, \"ship consumer-runnable migrate-state-legacy-fields.sh\"); its manifest declaration was never added. Task 279 is completed and archived, so nothing else will return to this.\n\nWHY IT MATTERS BEYOND THE RED GATE. A live deployed script that is invisible to the manifest is a script no gate can verify, no consumer deploy will carry, and no reader will find from the manifest -- the same declared-vs-deployed parity defect class the content-hash gate exists to catch.\n\nWHAT TO CHANGE.\n1. Add scripts/migrate-state-legacy-fields.sh to provides.scripts in agent-system/extensions/core/manifest.json.\n2. Confirm agent-system/extensions/core/README.md names the script in its inventory and refresh if not -- this also addresses the adjacent README-older-than-manifest WARN.\n3. Re-run check-extension-docs.sh and confirm [core] returns OK, then confirm verify-deploy.sh gate 3 is green.\n\nCROSS-REFERENCE. Task 250 records this same failure in its own description as explicitly out of its scope (\"neither in this task.s scope -- Re-check whether both are still live before Phase 1 treats them as noise\"). This task is that re-check, resolved. 250 need not treat it as noise once this lands.\n\nFiled by the 2026-10-02 review: specs/reviews/review-2026-10-02.md",
       "file_scope": [
-        "agent-system/extensions/core/manifest.json",
-        "agent-system/extensions/core/README.md"
+        "agent-system/extensions/core/README.md",
+        "agent-system/extensions/core/manifest.json"
       ],
       "created": "2026-10-02T21:41:16Z",
-      "last_updated": "2026-10-02T21:59:44Z",
+      "last_updated": "2026-10-02T22:03:01Z",
       "session_id": "sess_1790978139_b07459",
       "artifacts": [
         {
           "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/reports/01_declare-script-in-manifest.md",
           "type": "report",
           "summary": "Confirms the manifest/README defect exactly as filed, traces the check-extension-docs.sh and verify-deploy.sh gate 3 mechanics, and recommends a two-line fix: add migrate-state-legacy-fields.sh to provides.scripts in agent-system/extensions/core/manifest.json and refresh the stale script count in core/README.md."
+        },
+        {
+          "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/plans/01_declare-script-in-manifest.md",
+          "type": "plan",
+          "summary": "3-phase plan to declare the script in core manifest.json, refresh core README.md script count, and verify gate 3 green."
         }
       ],
       "next_artifact_number": 2
@@ -1065,7 +1070,7 @@
     {
       "project_number": 324,
       "project_name": "whitelist_scheduled_tasks_lock_in_orphan_detection",
-      "status": "researched",
+      "status": "planning",
       "task_type": "neovim",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -1075,8 +1080,8 @@
         "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md"
       ],
       "created": "2026-10-02T21:41:34Z",
-      "last_updated": "2026-10-02T21:59:50Z",
-      "session_id": "sess_1790978139_b07459",
+      "last_updated": "2026-10-02T22:00:07Z",
+      "session_id": "sess_1790978139_b07459_324",
       "artifacts": [
         {
           "path": "specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/reports/01_whitelist-scheduled-tasks-lock.md",
