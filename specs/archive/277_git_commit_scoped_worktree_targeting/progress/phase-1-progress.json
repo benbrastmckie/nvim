@@ -1,0 +1,46 @@
+{
+  "phase": 1,
+  "phase_name": "Pin the Hard Constraint Before Touching the Script",
+  "started_at": "2026-10-02T13:39:21Z",
+  "last_updated": "2026-10-02T13:39:59Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read test-git-commit-scoped.sh, confirm T-series ends at T10 and harness functions present",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add T11 (research case A, all-dropped pathspecs, exit 2, V3 refusal)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add T13 (research case C, legitimate partial drop with surviving diff, exit 0)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Run suite; T11 and T13 pass against unchanged script",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Commit phase 1",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

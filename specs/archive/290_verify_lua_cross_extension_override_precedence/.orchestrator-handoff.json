@@ -1,0 +1,34 @@
+{
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "Implemented owner-gated cross-extension content-hash comparison (verify.lua + init.lua) so gate 5 of verify-deploy.sh resolves each deployed path against its real deploy-order owner; all 6 plan phases completed, committed, and verified green (gate 5 zero findings, gate 16 corrected, new 9-assertion regression harness passing).",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/290_verify_lua_cross_extension_override_precedence/summaries/01_cross-extension-override-precedence-summary.md",
+      "summary": "Implementation summary including the before/after gate-5 record and full verification evidence"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/shared/extensions/verify.lua",
+      "summary": "M.build_ownership_map; owner-gated hash comparison with informational overridden report"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/shared/extensions/init.lua",
+      "summary": "manager.compute_deploy_order extracted from resync_all; ownership map built once in verify_all"
+    },
+    {
+      "type": "test",
+      "path": "agent-system/extensions/core/scripts/tests/test-deploy-verify-overlap.sh",
+      "summary": "New hermetic regression harness, 9 assertions, registered in manifest.json"
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "No further implementation action required; all plan phases closed and verified."
+}

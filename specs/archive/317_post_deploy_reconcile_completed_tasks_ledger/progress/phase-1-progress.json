@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Add the RED regression arm to Group 29",
+  "started_at": "2026-10-02T00:00:00Z",
+  "last_updated": "2026-10-02T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Copy real git-commit-scoped.sh into Group 29 sandbox", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Add Arm F with git-repo setup, promotion run, and three new ledger/commit/residue assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Demonstrate RED against unfixed source and confirm no regressions elsewhere", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "RED confirmed: 337 passed, 3 failed (all Arm F's new assertions: .completed_tasks empty, HEAD unchanged, TODO.md residue). Baseline Arm F assertions (promoted line, status completed) pass, confirming fixture validity. Full suite run (not just Group 29) shows no cross-group fallout from the arm-scoped git repo."
+}

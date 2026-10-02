@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Add the partial_progress check to the validator",
+  "started_at": "2026-10-02T17:06:00Z",
+  "last_updated": "2026-10-02T17:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append Check 6 block (type-when-present + conditional-presence) after Check 5, before Summary", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-return-meta.sh"]},
+    {"id": 2, "description": "Extend --help Validation rules block with two new lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-return-meta.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

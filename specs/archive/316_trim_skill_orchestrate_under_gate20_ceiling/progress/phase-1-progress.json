@@ -1,0 +1,40 @@
+{
+  "phase": 1,
+  "phase_name": "Invert `.status`/`.persisted_status` Canonicality",
+  "started_at": "2026-10-02T00:00:00Z",
+  "last_updated": "2026-10-02T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read both target files, record baseline wc -c",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Expand .status/.persisted_status paragraph in orchestrate-state-machine.md to canonical, inverted cross-reference",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Replace SKILL.md Move 3 paragraph with drafted pointer",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Confirm cited heading exists; sweep for other referrers; measure wc -c delta",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

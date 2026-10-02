@@ -1,0 +1,19 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/277_git_commit_scoped_worktree_targeting/summaries/01_pathspec-drop-hard-error-summary.md",
+      "summary": "Added a dropped-pathspec ledger and a new V6 refusal gate (exit 4) to git-commit-scoped.sh so a partial pathspec drop whose survivors carry no diff is no longer indistinguishable from a benign no-op; pinned with T11/T12/T13 and documented in git-staging-scope.md."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790947016_5ff368",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
+}

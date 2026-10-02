@@ -1,0 +1,18 @@
+{
+  "status": "implemented",
+  "task_number": 279,
+  "phase": "implement",
+  "session_id": "sess_1790968925_5ff73e",
+  "dispatch_seq": 22,
+  "phases_completed": 7,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/279_state_schema_rejects_live_orchestration_fields/summaries/01_widen-state-schema-fields-summary.md",
+      "summary": "All 7 phases completed: five fields widened into state-schema.json/validate-state.sh, three top-level fields retired with a consumer-runnable migration script, Checks 3/4 moved to advisory-first, the postflight blockers reader/comment contradiction fixed, a schema-to-validator drift test added, and the ruling documented in state-management-schema.md."
+    }
+  ],
+  "blockers": [],
+  "next_steps": "Task complete. The deployed .claude/ validator will reflect these changes after the next deploy (loader's own action, not part of this task). parent_task remains for task 271 to model against the shape this task leaves definitions.projectEntry in."
+}

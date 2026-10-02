@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "phase": "implement",
+  "summary": "Hoisted the unconsumed-dispatch replay decision above the dispatch_seq mint and the orchestrate-build-dispatch.sh compose call, added a post-compose Identity-vs-state consistency assertion, and extended Group 19 of test-orchestrate-cycle-plan.sh with a four-leg seq-agreement check that reads the composed dispatch file directly. All 6 plan phases completed; full suite 335 passed, 0 failed; deployed and verified independently.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/314_replay_seq_decided_before_dispatch_compose/summaries/01_replay-seq-hoist-mechanics-summary.md",
+      "summary": "Implementation summary for the replay-seq-decided-before-dispatch-compose fix: hoist, post-compose assertion, Group 19 extension, deploy."
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": []
+}

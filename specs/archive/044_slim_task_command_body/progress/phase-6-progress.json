@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Cross-Reference Micro-Fixes and Editor-Guard Note",
+  "started_at": "2026-10-02T20:38:00Z",
+  "last_updated": "2026-10-02T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Qualify Create Task jq pattern references in task-expand-mode.md and task-review-mode.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-expand-mode.md", "agent-system/extensions/core/context/patterns/task-review-mode.md"]},
+    {"id": 2, "description": "Add editor-guard note under Create Task Mode heading", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md"]},
+    {"id": 3, "description": "Confirm no other bare cross-mode reference survives", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-review-mode.md", "agent-system/extensions/core/context/patterns/task-recover-mode.md", "agent-system/extensions/core/commands/task.md"], "note": "Found and fixed 3 stale positional 'Sync Mode above/below' references not explicitly named in the plan's own task wording: task-review-mode.md, task-recover-mode.md, and task.md's own Create Task Mode step 6."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification": {
+    "no_bare_create_task_jq_pattern_refs": true,
+    "all_fence_counts_even": true,
+    "deviation_from_verbatim_diff_invariant": "intentional per plan Phase 6 note"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 27,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/317_post_deploy_reconcile_completed_tasks_ledger/summaries/01_reconcile-ledger-and-commit-summary.md",
+      "summary": "4-phase implementation: RED regression arm (Group 29 Arm F) demonstrated first, then the .completed_tasks ledger append and the promotion's own scoped commit landed at the post-deploy reconcile site, then the invariant comment plus a 10-suite gate run, all GREEN."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed orchestrate-cycle-plan.sh's post-deploy reconcile promotion to append the promoted task to the batch's .completed_tasks ledger and to issue its own scoped git commit for the state.json/TODO.md transition, closing both the under-reported ### Succeeded table and the uncommitted-completion-transition defects. Backed by a new Group 29 Arm F regression test demonstrated RED against unfixed source before the fix landed; full test suite and a 10-suite gate run are GREEN."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a batch-level accumulator field (e.g. .completed_tasks on an orchestrator multi-state file) is written correctly at the ordinary postflight site but a self-heal/reconcile code path also mutates the same underlying state, grep every other site that performs an equivalent state transition and confirm each one also updates the accumulator and commits its own write. A promotion that bypasses the normal postflight entirely is easy to miss precisely because it 'looks done' (the primary state file is correct) while a secondary ledger and the git history silently diverge from it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/317_post_deploy_reconcile_completed_tasks_ledger/summaries/01_reconcile-ledger-and-commit-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "orchestrator",
+        "completed_tasks",
+        "post-deploy-reconcile",
+        "scoped-commit",
+        "batch-ledger"
+      ]
+    },
+    {
+      "content": "For a shell test harness arm that needs a real git repository to assert commit behavior (HEAD advanced, no residue), scope the git repo strictly to that one arm: git init plus an initial fixture commit immediately before the arm, rm -rf \"$WORKDIR/.git\" immediately after. This lets a single shared sandbox host both git-requiring and non-git arms without cross-group fallout, and keeps the git-repo lifetime minimal and auditable.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/317_post_deploy_reconcile_completed_tasks_ledger/summaries/01_reconcile-ledger-and-commit-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "test-harness",
+        "git-fixture",
+        "arm-scoped",
+        "regression-test",
+        "bash-testing"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790968925_5ff73e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

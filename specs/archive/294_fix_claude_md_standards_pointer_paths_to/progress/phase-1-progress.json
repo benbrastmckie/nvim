@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Correct the four standards pointer prefixes in root CLAUDE.md",
+  "started_at": "2026-10-02T00:00:00Z",
+  "last_updated": "2026-10-02T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read CLAUDE.md and re-confirm the live occurrence set/line numbers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace the dead prefix with the correct prefix on each occurrence", "status": "done", "files_touched": ["CLAUDE.md"]},
+    {"id": 3, "description": "Confirm dead prefix count is 0 and all four corrected paths exist", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Review git diff for exactly 4 changed lines and commit CLAUDE.md", "status": "done", "files_touched": ["CLAUDE.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

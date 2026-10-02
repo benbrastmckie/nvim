@@ -1,0 +1,52 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/320_return_meta_producer_side_validation/summaries/01_return-meta-producer-validation-summary.md",
+      "summary": "Implementation summary: partial_progress schema checks added to validate-return-meta.sh, a new RETURN_META_SCHEMA_VIOLATION Signal A instance, and a warn-only postflight probe giving the previously-orphaned validator its first executing lifecycle call site."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added partial_progress type/conditional-presence checks to validate-return-meta.sh and wired a warn-only probe into orchestrate-cycle-postflight.sh, giving the previously-orphaned validator its first executing lifecycle call site; a bare-string partial_progress now warns and records RETURN_META_SCHEMA_VIOLATION instead of silently corrupting a downstream consumer's jq read."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-return-meta.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh",
+    "agent-system/extensions/core/scripts/system-defect-record.sh",
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "specs/320_return_meta_producer_side_validation/summaries/01_return-meta-producer-validation-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When wiring a warn-only lifecycle probe around a pre-existing STRICT validator (one whose own exit-code contract must stay unchanged), gate the probe on the validator's SPECIFIC output lines for the one check that motivated the wiring (e.g. grep -E '[FAIL].*<field>'), never on the validator's aggregate exit code. An aggregate-exit trigger silently re-activates every OTHER check the validator implements, including checks that were deliberately deferred elsewhere for known false-positive reasons against agents with intentional non-canonical vocabularies. Prove the filter is load-bearing with two falsifiability experiments before committing: (1) temporarily remove the new detection block and confirm only the new positive-case assertions go red; (2) temporarily switch the gate to the aggregate exit code and confirm the noise-guard negative case goes red. Revert both experiments immediately; never commit them.",
+      "category": "PATTERN",
+      "source_artifact": "specs/320_return_meta_producer_side_validation/summaries/01_return-meta-producer-validation-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "warn-only-probe",
+        "output-gated-filter",
+        "aggregate-exit-code-trap",
+        "falsifiability-check",
+        "validator-call-site",
+        "noise-guard"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790957600_e00acf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
+}

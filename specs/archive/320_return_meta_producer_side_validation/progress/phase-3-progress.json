@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Regression fixtures in the validator test suite",
+  "started_at": "2026-10-02T17:45:00Z",
+  "last_updated": "2026-10-02T17:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add assert_output_contains helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh"]},
+    {"id": 2, "description": "Add four new partial_progress cases (regression, well-formed, missing-details, absent)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Temporarily removed Check 6 block to confirm new cases fail (falsifiability check)", "result": "confirmed", "reason": "5 assertions failed exactly as expected, all pre-existing cases stayed green; reverted immediately, not committed"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

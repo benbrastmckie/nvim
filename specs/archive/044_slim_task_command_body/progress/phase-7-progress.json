@@ -1,0 +1,20 @@
+{
+  "phase": 7,
+  "phase_name": "Register New Context Files in index-entries.json (MANDATORY)",
+  "started_at": "2026-10-02T20:48:00Z",
+  "last_updated": "2026-10-02T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add six entries to index-entries.json", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "Run generate-context-line-counts.sh --write", "status": "done", "files_touched": [], "note": "0 changed beyond my 6 additions -- manually computed line_counts were exact"},
+    {"id": 3, "description": "Run generate-context-line-counts.sh --check", "status": "done", "files_touched": [], "note": "1 finding at check time: reference/state-management-schema.md declared 590 actual 594, a task-279-file_scope file mid-edit by that sibling seconds after my --write; not this task's regression"},
+    {"id": 4, "description": "Confirm manifest.json needs no edit", "status": "done", "files_touched": [], "note": "confirmed, .provides.context already lists patterns wholesale"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "concurrency_handling": {
+    "description": "This is a live shared working tree with 3 sibling tasks (265, 279, 241) actively committing during this dispatch. agent-system/extensions/core/index-entries.json had pre-existing uncommitted sibling line_count fixes (unrelated entries) at the start of this phase, and MORE accumulated during this phase's execution (siblings running their own --write concurrently).",
+    "isolation_method": "Rather than running `git add` on the dirty working-tree file (which would have swept sibling line_count fixes into this task's commit), the commit was constructed from HEAD content plus exactly this task's 6 new entries via a temporary file-swap: (1) backed up the full dirty working-tree file, (2) wrote a clean HEAD+6-entries version to disk, (3) ran git-commit-scoped.sh against that clean content, (4) restored the backed-up dirty content afterward so sibling in-flight work remains present and uncommitted in the working tree for their own commit.",
+    "commit": "abe3e15db"
+  }
+}

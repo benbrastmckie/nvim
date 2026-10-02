@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Pin the dispatch-file injection in the dispatch builder's test suite",
+  "started_at": "2026-10-02T19:00:00Z",
+  "last_updated": "2026-10-02T19:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read fixture harness, follow existing case style", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Case 1: no lakefile -> block absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Case 2: lakefile + stub probe -> block present verbatim, before Wait Discipline", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "Case 3: task_type=formal -> block still emitted (motivating-incident regression guard)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "Case 4: failing stub probe -> no block, no build failure", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "Non-vacuity check: reverting Phase 3's emission guard flips Case 2/3 to FAIL, Case 1/4 unaffected", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

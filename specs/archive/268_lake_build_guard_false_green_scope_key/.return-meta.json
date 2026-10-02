@@ -1,0 +1,63 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/268_lake_build_guard_false_green_scope_key/summaries/01_cross-tree-guard-state-clone-summary.md",
+      "summary": "All 5 plan phases closed. The cp -al cross-tree guard-state false green was fixed and pinned by regression tests in Phases 1-4; a separately-tracked sibling task then deleted dispatch-worktree.sh and its tests entirely, making the fixed mechanism structurally unreachable rather than merely patched. Phase 5 redeployed, ran the full gate set, and documented two confirmed pre-existing, unrelated failures (a typst lint test and the skill-orchestrate context-budget gate) rather than treating them as blockers."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the cross-tree lake-build-guard.* state clobbering at its root (excluded the five guard state files from dispatch-worktree.sh's .lake/ hardlink clone) and pinned it with red-then-green regression tests; a later, separately-tracked task then deleted dispatch-worktree.sh entirely, making the specific false-green mechanism structurally unreachable, while the surviving Test C and header convention in lake-build-guard.sh remain as a standing guard against any future cp -al-cloning consumer."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/dispatch-worktree.sh",
+    "agent-system/extensions/core/scripts/lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-dispatch-worktree.sh",
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
+    "specs/268_lake_build_guard_false_green_scope_key/plans/01_cross-tree-guard-state-clone.md",
+    "specs/268_lake_build_guard_false_green_scope_key/summaries/01_cross-tree-guard-state-clone-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A cp -al hardlink clone (e.g. dispatch-worktree.sh's .lake/ clone) shares the SAME INODE for every pre-existing file, not just disk blocks. Any ephemeral per-invocation runtime state file (lock/result/log/capture files) already present in a cloned directory becomes one file under two paths: a truncate-in-place writer in one tree silently clobbers the other tree's record, and a shared lock file serializes work across trees that should be isolated. Fix at the clone site by excluding the named ephemeral state files explicitly (never a wildcard), not by changing the state-file's own write logic. Record the hazard generically in the guard's own header (not phrased as a hard dependency on the specific cloning script) so it survives that script's removal.",
+      "category": "PATTERN",
+      "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/summaries/01_cross-tree-guard-state-clone-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "hardlink-clone",
+        "cp -al",
+        "worktree",
+        "false-green",
+        "build-guard",
+        "inode-sharing"
+      ]
+    },
+    {
+      "content": "When resuming an /orchestrate implement dispatch for a plan whose earlier phases were already committed, do not trust inherited phase-heading markers or pre-checked task-list checkboxes at face value -- re-verify that each phase's named target files still exist and still pass. A separately-tracked, concurrently-running or since-completed sibling task can delete or substantially alter a prior phase's target file between dispatches (observed: a worktree-isolation-layer-removal task deleted a file mid-way through another task's 5-phase plan touching that same file). When this happens, document the finding explicitly in the current phase rather than silently re-running stale verification criteria or silently marking them satisfied.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/268_lake_build_guard_false_green_scope_key/summaries/01_cross-tree-guard-state-clone-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "phase-closure",
+        "resume-dispatch",
+        "stale-marker",
+        "sibling-task",
+        "re-verify"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790957600_e00acf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 24,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/241_reconcile_mcp_registration_surfaces/summaries/01_reconcile-mcp-surfaces-summary.md",
+      "summary": "All 7 plan phases completed: emptied two redundant playwright enumerations, deleted five dead manifest mcp_servers fields, corrected the ownership doc's five stale passages, corrected the nix README registration passage, and repointed a sixth doc (scope addition). Gate failures observed in Phase 7 are entirely attributable to concurrently-dispatched sibling tasks' in-flight edits, not this task's files."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Reconciled four MCP registration/permission surfaces in the agent-system source store: emptied the redundant playwright enumerations in web/present settings-fragment.json, deleted five dead manifest.json mcp_servers fields (including nix's trap-name mcp-nixos), corrected mcp-server-ownership.md's five stale passages, corrected nix/README.md's registration passage, and repointed playwright-mcp-guide.md's grant-location claims as a scope addition."
+  },
+  "modified_files": [
+    "agent-system/extensions/web/settings-fragment.json",
+    "agent-system/extensions/present/settings-fragment.json",
+    "agent-system/extensions/filetypes/manifest.json",
+    "agent-system/extensions/founder/manifest.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/memory/manifest.json",
+    "agent-system/extensions/nix/manifest.json",
+    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+    "agent-system/extensions/nix/README.md",
+    "agent-system/extensions/web/context/project/web/tools/playwright-mcp-guide.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's Phase 7/final gate step requires deploy-headless.sh / verify-deploy.sh / check-extension-docs.sh to pass cleanly in a multi-task /orchestrate cycle with declared concurrent siblings, a non-zero exit or FAIL summary is not automatically this task's regression. Always cross-reference every individual finding's file path against the dispatch's own territory.concurrent_siblings file_scope lists before treating it as a defect to fix. A finding naming a sibling's declared file is reported in the summary/deviations, never fixed -- fixing it would edit outside this task's own file_scope and could stomp a sibling's in-flight, uncommitted work.",
+      "category": "PATTERN",
+      "source_artifact": "specs/241_reconcile_mcp_registration_surfaces/summaries/01_reconcile-mcp-surfaces-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy-headless",
+        "verify-deploy",
+        "check-extension-docs",
+        "concurrent-siblings",
+        "territory",
+        "gate-attribution"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790968925_5ff73e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "phase": 2,
+  "phase_name": "Collapse the Two `MUST NOT` Section Bodies to Pointers",
+  "started_at": "2026-10-02T00:15:00Z",
+  "last_updated": "2026-10-02T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read SKILL.md, record post-Phase-1 wc -c baseline",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Replace MUST NOT (Postflight Boundary) body with pointer",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Replace MUST NOT (Context Flatness Constraint) body with tightened pointer",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Confirm pointer target headings exist; measure final wc -c and margin",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

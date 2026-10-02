@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Record the hazard class in both script headers",
+  "started_at": "2026-09-30T18:15:00Z",
+  "last_updated": "2026-09-30T19:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend dispatch-worktree.sh's header with a HARDLINK-CLONE HAZARD note and correct the provision doc comment; extend lake-build-guard.sh's FAMILY CONVENTIONS and RECORDED DEAD ENDS with the no-hardlink-sharing convention and the --git-common-dir dead end",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/dispatch-worktree.sh",
+        "agent-system/extensions/core/scripts/lake-build-guard.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

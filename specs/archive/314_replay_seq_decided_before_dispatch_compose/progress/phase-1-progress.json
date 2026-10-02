@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "RED-first -- extend Group 19 case 1 to inspect the composed dispatch file",
+  "started_at": "2026-10-02T13:37:18Z",
+  "last_updated": "2026-10-02T13:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test file around Group 19 case 1", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace build-dispatch stub with --seq-parsing real-Identity-block writer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Add Leg 1/Leg 2 equality assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add Leg 3 (.return-meta.json + orchestrate-recover-outcome.sh)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Add Leg 4 (handoff seq equality)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Add ephemeral dispatch_seq_counter assertion (==3, not 4)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Add orchestrate-recover-outcome.sh + return-meta-status-vocabulary.sh collaborator copy/require", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Run suite, capture RED failures verbatim, commit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "jq '.recovered // \"unknown\"'", "result": "failed", "reason": "jq's // operator treats JSON false as falsy too, so recovered=false rendered as 'unknown' instead of 'false'; switched to 'if has(\"recovered\") then (.recovered|tostring) else \"unknown\" end'"}
+  ],
+  "handoff_count": 0,
+  "notes": "RED run captured at progress/phase1-red-evidence.log: exit 1, 330 passed, 5 failed, all 5 new FAILs attributable to the seq-decided-after-compose defect (Leg 1, Leg1-vs-Leg2, Leg 3 recovered=false/META_DISPATCH_SEQ_MISMATCH, Leg 4, ephemeral counter=4 not 3). No pre-existing assertion changed verdict. shellcheck binary at the nix-store path is broken (stale GC'd path); verified a working shellcheck is reachable via 'nix-shell -p shellcheck --run shellcheck' for Phase 4."
+}

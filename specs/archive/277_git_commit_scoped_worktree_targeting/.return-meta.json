@@ -1,0 +1,53 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/277_git_commit_scoped_worktree_targeting/summaries/01_pathspec-drop-hard-error-summary.md",
+      "summary": "Added a dropped-pathspec ledger and a new V6 refusal gate (exit 4) to git-commit-scoped.sh so a partial pathspec drop whose survivors carry no diff is no longer indistinguishable from a benign no-op; pinned with T11/T12/T13 and documented in git-staging-scope.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the residual false-success path in git-commit-scoped.sh: added a dropped-pathspec ledger to the V2 classification loop and a new V6 refusal gate (exit code 4, loud ERROR naming every dropped path) that fires only when a pathspec was dropped AND no commit was produced, leaving every all-resolve caller byte-identical. Pinned with three new regression cases (T11/T12/T13) and documented the full exit-code/gate contract plus the recorded caller-escalation residual in git-staging-scope.md."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "specs/277_git_commit_scoped_worktree_targeting/plans/01_pathspec-drop-hard-error.md",
+    "specs/277_git_commit_scoped_worktree_targeting/progress/phase-1-progress.json",
+    "specs/277_git_commit_scoped_worktree_targeting/progress/phase-2-progress.json",
+    "specs/277_git_commit_scoped_worktree_targeting/progress/phase-3-progress.json",
+    "specs/277_git_commit_scoped_worktree_targeting/progress/phase-4-progress.json",
+    "specs/277_git_commit_scoped_worktree_targeting/summaries/01_pathspec-drop-hard-error-summary.md",
+    "specs/277_git_commit_scoped_worktree_targeting/.return-meta.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To manually reproduce behavior of a script gated by deploy-root-guard.sh (which refuses to run outside a deployed .claude/scripts/ or .opencode/scripts/ tree) in a throwaway mktemp -d scratch repo: copy the target script PLUS its runtime dependencies (deploy-root-guard.sh, task-lock.sh, lib/common.sh, and any lib/*.sh it sources) into <scratch>/.claude/scripts/[lib/], then invoke the copy at that path (not the source-store original). This makes PROJECT_ROOT resolve to the scratch repo and the deploy-root-guard '*/.claude' case match, so the manual repro exercises the real guarded code path rather than being refused outright or mocked.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/277_git_commit_scoped_worktree_targeting/summaries/01_pathspec-drop-hard-error-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "scratch-repo",
+        "mktemp",
+        "manual-repro",
+        "PROJECT_ROOT"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790947016_5ff368",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "phase": 1,
+  "phase_name": "Extract the deploy-order helper from resync_all",
+  "started_at": "2026-10-02T07:34:50Z",
+  "last_updated": "2026-10-02T07:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract the deploy-order helper from resync_all -- file changes", "status": "completed", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

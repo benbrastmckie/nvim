@@ -1,0 +1,370 @@
+[INFO] Group 1: eligibility (status-not-gated; failed-predecessor blocks)
+[PASS] eligibility: SUT exits 0
+[PASS] eligibility: candidate #103 in 'researching' status dispatches to research (status never gates)
+[PASS] eligibility: candidate #102 with an abandoned predecessor is blocked
+[PASS] eligibility: blocked candidate #102 is absent from dispatch and deferred
+[INFO] Group 2: per-candidate forced phases (canonical ordering)
+[PASS] forced-phases: canonical order wins over typed order (research dispatched first, not implement)
+[PASS] forced-phases: dispatch row's force field is true for a task whose phase was popped off force_phases_remaining this cycle
+[PASS] forced-phases: without --force-phases, classification stays ordinary status-derived (researched -> plan)
+[PASS] forced-phases: dispatch row's force field is false for an ordinary status-derived dispatch
+[INFO] Group 3: verdict relay (self-modifying tie-breaker; forbidden-literal negative assertion)
+[PASS] verdict-relay: designated (lowest-numbered) self-modifying candidate dispatches, the other defers
+[PASS] verdict-relay: deferred reason names the ORDERING CONSTRAINT text verbatim
+[INFO] verdict-relay: candidate #301 was the admitted (not deferred) side this run; byte-identity checked via #302 instead
+[PASS] verdict-relay: relayed reason is byte-identical to the admission script's own .reason (#302)
+[PASS] verdict-relay: forbidden literals absent from orchestrate-cycle-plan.sh
+[INFO] Group 4/5: lock refusal removes a candidate from the batch; bare-vs-suffixed session_id invariant
+[PASS] live: SUT exits 0
+[PASS] lock-refusal: locked candidate #403 is absent from dispatch, present in deferred, absent from blocked
+[PASS] lock-refusal: sibling (unlocked) candidates still dispatch this cycle
+[PASS] session-id invariant: plan dispatch uses the SUFFIXED session id for orchestrate-build-dispatch.sh
+[PASS] session-id invariant: implement dispatch uses the BARE session id for orchestrate-build-dispatch.sh
+[PASS] session-id invariant: skill_preflight_update receives the SUFFIXED session id for plan
+[PASS] session-id invariant: skill_preflight_update receives the BARE session id for implement
+[PASS] session-id invariant: dispatch_seq minted for both dispatched candidates in one mt_state_file
+[INFO] Group 4/5 (continued): per-candidate forced-phase stop-after-last-named (LIVE)
+[PASS] stop-after-last-named: cycle 1 forces the named phase (research) despite status implementing
+[PASS] stop-after-last-named: cycle 1's dispatch row carries force=true (live path, not just --dry-run)
+[PASS] stop-after-last-named: cycle 2 dispatches nothing once the forced queue this run seeded is exhausted (stop, not fall-through)
+[PASS] stop-after-last-named: cycle 2 emits exactly one blocked[] row carrying the forced-round-complete reason
+[PASS] stop-after-last-named: status unchanged across the exclusion cycle (implementing)
+[PASS] stop-after-last-named: cycle_counts unchanged across the exclusion cycle (1)
+[INFO] Group 6: dry-run mutates nothing
+[PASS] dry-run: specs/ tree (state.json, mt_state_file, .lock/) is byte-identical before and after
+[PASS] dry-run: no candidate directory created
+[INFO] Group 7: dependency resolution spans the archive (archived predecessor is not 'in flight')
+[PASS] archive-deps: SUT exits 0
+[PASS] archive-deps: candidate #710 dispatches -- an archived COMPLETED predecessor is satisfied, not in-flight
+[PASS] archive-deps: candidate #711 is blocked -- an archived ABANDONED predecessor still blocks
+[PASS] archive-deps: candidate #712's dangling edge is reported in blocked[] and names the number
+[PASS] archive-deps: candidate #713 dispatches -- an orphan_archived predecessor is terminal, not in-flight
+[PASS] archive-deps: candidate #710 is accounted for in exactly one bucket (never silently dropped)
+[PASS] archive-deps: candidate #711 is accounted for in exactly one bucket (never silently dropped)
+[PASS] archive-deps: candidate #712 is accounted for in exactly one bucket (never silently dropped)
+[PASS] archive-deps: candidate #713 is accounted for in exactly one bucket (never silently dropped)
+[INFO] Group 8: per-RUN cycle budget
+[PASS] budget: a fresh session dispatches normally despite the durable guard's cycle_count=5 (never seeded from it)
+[PASS] budget: in-session cycle_counts[801] is 1 after one dispatch this run (not 6)
+[PASS] budget: the durable guard's own cycle_count is left untouched (inert historical data, never flushed by this engine any more)
+[PASS] budget: base mode (max_cycles=5) blocks a candidate already at cycle_counts=5 THIS run
+[PASS] budget: hard mode (max_cycles=13) dispatches the SAME candidate at cycle_counts=5 THIS run
+[PASS] budget: a batch-of-one whose only task is budget-exhausted THIS run stops with reason=max_cycles
+[PASS] budget: exhausted batch-of-one dispatches nothing
+[PASS] budget: the stop message names re-invoking /orchestrate, not the withdrawn --continue-budget flag
+[PASS] budget: --continue-budget is withdrawn -- rejected as an unrecognized flag (exit 2)
+[PASS] budget: mixed batch blocks only the exhausted sibling (#804), never the whole batch
+[PASS] budget: mixed batch's fresh sibling (#805) still dispatches this cycle; no whole-batch stop
+[PASS] budget: six forced runs in a row (separate sessions) on one task are never refused for budget
+[PASS] budget: dispatch_seq_counter is durable and strictly increases across two separate runs on the same task (1 -> 2)
+[INFO] Group 9: H1 hard-mode per-phase dispatch
+[PASS] H1: a non-conforming heading blocks the candidate, never dispatches it
+[PASS] H1: blocked reason names the true-next-phase-UNKNOWN text
+[PASS] H1: a marker/handoff mismatch blocks the candidate, never dispatches it
+[PASS] H1: blocked reason names MARKER/HANDOFF MISMATCH
+[PASS] H1: the disputed phase heading is downgraded to [PARTIAL] in place
+[PASS] H1: a well-formed open heading dispatches (not blocked)
+[PASS] H1: orchestrate-build-dispatch.sh receives --phase-number 2 (the selected open phase)
+[PASS] H1: orchestrate-build-dispatch.sh receives --territory for the hard-mode implement row
+[PASS] H1: no open heading (not inconclusive) falls through to ordinary dispatch
+[PASS] H1: fallthrough dispatch carries no --phase-number (ordinary status-derived dispatch)
+[PASS] H1: --dry-run reports the SAME blocked verdict as the live path
+[PASS] H1: --dry-run performs NO disputed-heading downgrade (mutates nothing)
+[INFO] Group 10: aux_dispatch[] emission
+[PASS] aux: blocker-research aux_pending produces exactly one row (agent=fork, orchestrator_mode=false)
+[PASS] aux: blocker-research dispatch file exists and carries no memory/literature block
+[PASS] aux: blocker-research clears aux_pending and increments blocker_escalation_count to 1
+[PASS] aux: MAX_BLOCKER_ESCALATIONS cap suppresses a third blocker-research row
+[PASS] aux: a capped-out aux_pending entry is still cleared (never re-evaluated next cycle)
+[PASS] aux: drift-inspection aux_pending (base mode) produces one row, agent=fork
+[PASS] aux: MAX_DRIFT_INSPECTIONS cap suppresses a second drift-inspection row
+[PASS] aux: mutual exclusion -- a drift-inspection aux_pending under --hard emits no row
+[PASS] aux: mutual exclusion -- a divergence-audit aux_pending in base mode emits no row
+[PASS] aux: divergence-audit under --hard dispatches with the task's stored research_agents[t], never re-resolved
+[PASS] aux: a completed .blocker-research.json chains to a plan-revision row (agent=reviser-agent, model=opus from frontmatter)
+[PASS] aux: .blocker-research.json is consumed (removed) once chained into a plan-revision row
+[PASS] aux: drift_pct <= 0.30 emits no row and logs 'Drift check passed'
+[PASS] aux: .drift-inspection.json is consumed (removed) even when drift_pct is below threshold
+[PASS] aux: --dry-run renders the SAME aux row (dispatch_file/model null)
+[PASS] aux: --dry-run mutates nothing (chain marker file left in place)
+[PASS] aux: fixture confirms the all-terminal short-circuit actually fires this cycle (failed_tasks pre-seeded)
+[PASS] aux: REGRESSION -- an aux_dispatch[] row is still built even though this cycle stops for all_terminal
+[INFO] Group 11: inter-cycle redeploy checkpoint (three-branch contract + durable ledger skip rules)
+[PASS] checkpoint (a): deploy-headless.sh exit 1 defers the batch (deferred_deploy_checkpoint contains the task)
+[PASS] checkpoint (a): no baseline notice recorded (branch (a) never consults the baseline)
+[PASS] checkpoint (a): verify-deploy.sh called exactly once (pre-snapshot only; post-snapshot never taken)
+[PASS] checkpoint (b): a NEW finding on exit 3 still defers the batch
+[PASS] checkpoint (b): no baseline notice recorded (a genuinely new failure is not a tolerated pre-existing one)
+[PASS] checkpoint (c): a pre-existing-only finding set on exit 3 does NOT defer the batch
+[PASS] checkpoint (c): a verify_deploy_baseline_notices entry was recorded
+[PASS] checkpoint (c): deployed_critical_paths records the matched critical path
+[PASS] checkpoint (d): a flaky (non-reproducing) new finding does NOT defer the batch
+[PASS] checkpoint (d): notice records the finding as flaky (filtered:true, flaky_count>=1)
+[PASS] checkpoint (d): deployed_critical_paths still recorded when proceeding on a flaky finding
+[PASS] checkpoint (e): a confirmed but unrelated new finding does NOT defer the batch
+[PASS] checkpoint (e): notice records the finding as unrelated (filtered:true, unrelated_count>=1)
+[PASS] checkpoint (f): a confirmed, attributable new finding still defers the batch
+[PASS] checkpoint (g): defer stderr names the specific blocking finding
+[PASS] checkpoint (g): defer_ledger[].detail names the specific blocking finding
+[PASS] checkpoint (h): an identifier-free confirmed finding still defers (fail-safe attribution)
+[PASS] checkpoint (i): a gate-8 finding present in BOTH pre and post is not treated as new
+[PASS] checkpoint (i): takes the ORIGINAL branch (c) (filtered:false), not the new filtered sub-branch
+[PASS] checkpoint (i): verify-deploy.sh called exactly twice (no confirmation call when new_findings is empty)
+[PASS] checkpoint (j): branch (c) (no new findings) makes exactly two verify-deploy.sh calls
+[PASS] checkpoint (k): still defers despite deploy-headless.sh's own fast verify passing
+[PASS] checkpoint (k): stderr carries the explicit depth-disagreement note
+[PASS] checkpoint (k): defer_ledger[].depth_disagreement records the depth disagreement
+[PASS] checkpoint (l): skip_hash never invokes deploy-headless.sh
+[PASS] checkpoint (l): the batch is not deferred on a hash skip
+[PASS] checkpoint (l): redeploy_skip_notices records decision=skip_hash
+[PASS] checkpoint (l): deployed_critical_paths is left unchanged (empty) on a skip
+[PASS] checkpoint (m): skip_attributed never invokes deploy-headless.sh
+[PASS] checkpoint (m): redeploy_skip_notices records decision=skip_attributed
+[PASS] checkpoint (m): the skip notice attributes the skip to project #9101
+[PASS] checkpoint (n): outside the recency window, the full pipeline runs (deploy-headless.sh called)
+[PASS] checkpoint (n): a clean redeploy does not defer the batch
+[PASS] checkpoint (n): the ledger is rewritten with the new aggregate and outcome clean
+[PASS] checkpoint (o): a foreign changed critical path (not covered by cycle_modified_files) is not skipped
+[PASS] checkpoint (p): a deploy_pending batch task forces run despite an otherwise-matching hash
+[PASS] checkpoint (q): a branch (b) defer writes a negative 'blocking' ledger record
+[PASS] checkpoint (q): a following run with unchanged content does NOT skip on a non-eligible (blocking) ledger record
+[PASS] checkpoint (q): the ledger converges back to 'clean' once a clean deploy lands
+[PASS] checkpoint (r): self-modifying-task acceptance -- total deploy count stays 1 across 3 invocations (the attributed skip closes the observed failure mode)
+[PASS] checkpoint (r): counterfactual -- a hash-only rule (DEPLOY_LEDGER_RECENT_SEC=-1, recency window unsatisfiable) redeploys on every one of the 3 invocations, proving the attributed rule (not the hash rule) is what closes the failure mode
+[PASS] checkpoint (s): the widened predicate reaches the deploy body when matched_count==0 but deploy_pending_any=true (a non-allowlisted agent-system/extensions/** path)
+[PASS] checkpoint (s): the announcement names its own reason (deploy_pending marker naming the candidate), not a misleading 'touched 0 orchestrator-critical path(s)' line
+[PASS] checkpoint (s): no misleading 'touched 0 orchestrator-critical path(s)' line
+[PASS] checkpoint (s): cycle_modified_files is still reset to [] after the widened-path run (unconditional reset preserved)
+[PASS] checkpoint (s): the widened path still routes through deploy_ledger_decide (durable ledger written with verify_outcome=clean), not a bypass
+[PASS] checkpoint (t): SUT exits 0 despite the mid-run self-rewrite (deploy-landed branch)
+[PASS] checkpoint (t): stdout is valid, non-empty JSON after the mid-run self-rewrite
+[PASS] checkpoint (t): a real, non-empty dispatch row for the live candidate survives the mid-run self-rewrite
+[PASS] checkpoint (t): stderr carries none of the incident's crash signatures
+[PASS] checkpoint (t): deploy-headless.sh was called exactly once
+[PASS] checkpoint (u): SUT exits 0 despite the mid-run self-rewrite (deploy-failure branch)
+[PASS] checkpoint (u): stdout is valid, non-empty JSON after the mid-run self-rewrite
+[PASS] checkpoint (u): stderr carries none of the incident's crash signatures
+[PASS] checkpoint (u): both the terminal fixture task and the live candidate are deferred (deploy-failure defer not weakened by the rewrite)
+[PASS] checkpoint (u): defer_ledger[].detail is intact (names the deploy-headless.sh exit code)
+[PASS] checkpoint (u): deploy-headless.sh was called exactly once
+[INFO] Group 12: --compare forwarding (implement-phase only, never research/plan)
+[PASS] Group 12: SUT exits 0
+[PASS] Group 12: --compare forwarded into build_args for the implement-phase candidate
+[PASS] Group 12: --compare NOT forwarded into build_args for the plan-phase candidate
+[PASS] Group 12: --compare --hard together both reach the implement dispatch (composition, not competition)
+[INFO] Group 13: degraded-classifier fallback table (orchestrate-triage-classify.sh exit != 0)
+[PASS] Group 13: SUT exits 0 despite the degraded classifier
+[PASS] Group 13: degraded-classifier WARNING logged
+[PASS] Group 13: fallback table routes not_started -> research (research-first default, no --fast, matching the live classifier)
+[PASS] Group 13: fallback table keeps researching -> research (load-bearing for the needs_research return path)
+[PASS] Group 13 (--fast): SUT exits 0 despite the degraded classifier
+[PASS] Group 13 (--fast): fallback table routes not_started -> plan, matching the live classifier's --effort fast row
+[PASS] Group 13 (--fast): fallback table keeps researching -> research even under --fast (planner-requested research never skipped)
+[INFO] Group 14: research_questions --focus wiring at the research-dispatch build call
+[PASS] Group 14: SUT exits 0
+[PASS] Group 14: research_questions joined and forwarded as --focus for the needs_research-originated task
+[PASS] Group 14: no research_questions -> no --focus flag passed (byte-for-byte no-op)
+[INFO] Group 15: stdout stays pure JSON when collaborators write to stderr
+[PASS] Group 15: SUT exits 0 with chatty collaborators
+[PASS] Group 15: stdout parses as JSON despite collaborator stderr on all four call sites
+[PASS] Group 15: dispatch_file parsed correctly from the stub payload (not corrupted by stderr)
+[PASS] Group 15: all three collaborator diagnostics forwarded to stderr (nothing swallowed)
+[INFO] Group 16: entry-point fd-3 redirect keeps plan JSON pure against an uncaptured, chatty collaborator
+[PASS] Group 16: SUT exits 0 despite the chatty, uncaptured collaborator
+[PASS] Group 16: stdout parses as a single JSON object
+[PASS] Group 16: stdout is exactly one line (no prose preamble)
+[PASS] Group 16: .dispatch[0] intact and correctly parsed
+[PASS] Group 16: the chatty collaborator's prose landed on stderr, not the data channel
+[INFO] Group 17: --session is optional under --dry-run, still required in live mode
+[PASS] Group 17: --dry-run with no --session exits 0
+[PASS] Group 17: --dry-run with no --session still prints parseable plan JSON on stdout
+[PASS] Group 17: live mode with no --session still exits 2
+[PASS] Group 17: live mode's no-session error message is preserved
+[INFO] Group 18: in-session plan cache replay charges nothing; post-invalidation recompute charges normally
+[PASS] Group 18: run 1 genuinely composes and dispatches
+[PASS] Group 18: run 1's composition wrote plan_cache keyed at the resulting dispatch_seq_counter
+[PASS] Group 18: run 2 (nothing consumed since run 1) replays byte-identical stdout
+[PASS] Group 18: run 2 logs the PLAN CACHE REPLAY notice on stderr
+[PASS] Group 18: run 2 leaves cycle_counts[1801] unchanged (no cycle charged for the replay)
+[PASS] Group 18: the durable loop-guard file's dispatch_seq_counter is unchanged by the replay (no extra --flush-seq)
+[PASS] Group 18: the durable loop-guard file's cycle_count is never written by this engine any more (per-run budget contract)
+[PASS] Group 18: run 3 (post-invalidation) exits 0
+[PASS] Group 18: run 3 does not replay (cache was invalidated)
+[PASS] Group 18: run 3 charges exactly one additional cycle after cache invalidation
+[PASS] Group 18: the no-dispatch fixture composition dispatches nothing (precondition for the next check)
+[PASS] Group 18: a no-dispatch composition writes no plan_cache
+[INFO] Group 19: durable pending_dispatch ledger -- matched+file-present replays, else charges
+[PASS] Group 19 case 1: SUT exits 0
+[PASS] Group 19 case 1: logs the UNCONSUMED DISPATCH REPLAY notice
+[PASS] Group 19 case 1: the durable guard file's cycle_count is unchanged (never written by this engine any more)
+[PASS] Group 19 case 1: the durable guard file's dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)
+[PASS] Group 19 case 1: in-memory cycle_counts[1901] starts at 0 THIS run (per-run budget contract; NOT seeded from the durable cycle_count=2)
+[PASS] Group 19 case 1: the recorded seq (3) is reused for dispatch_seq[1901], not a freshly minted one
+[FAIL] Group 19 case 1: Leg 1 -- expected composed dispatch file Identity dispatch_seq=3; got '4' from /tmp/tmp.CypQrllaZm/specs/1901_g19_pending/.dispatch/4.md
+[FAIL] Group 19 case 1: Leg 1 (4) and Leg 2 (3) disagree -- exactly the defect this task fixes
+[FAIL] Group 19 case 1: Leg 3 -- expected recovered=true and reason != META_DISPATCH_SEQ_MISMATCH; got recovered=false reason=META_DISPATCH_SEQ_MISMATCH
+[FAIL] Group 19 case 1: Leg 4 -- handoff dispatch_seq (4) does not match mt_json.dispatch_seq[1901] (3); postflight would discard a valid handoff as HANDOFF_STALE_OR_ABSENT
+[FAIL] Group 19 case 1: expected ephemeral mt_json.dispatch_seq_counter=3 after a replay; got '4'
+[PASS] Group 19 case 2: a phase mismatch does not replay
+[PASS] Group 19 case 2: in-session cycle_counts[1901] charges normally (0 -> 1) on a phase mismatch
+[PASS] Group 19 case 2: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge
+[PASS] Group 19 case 2: the durable guard's cycle_count stays untouched (never written by this engine any more)
+[PASS] Group 19 case 3: a missing dispatch_file does not replay
+[PASS] Group 19 case 3: in-session cycle_counts[1901] charges normally (0 -> 1) when the dispatch_file is missing
+[PASS] Group 19 case 3: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge
+[PASS] Group 19 case 4: no pending_dispatch charges normally in-session (0 -> 1)
+[PASS] Group 19 case 4: the durable guard's cycle_count stays untouched (never written by this engine any more)
+[PASS] Group 19 case 4: a fresh pending_dispatch is recorded (seq=4, phase=plan) for a future invocation
+[PASS] Group 19 case 4: the durable guard's dispatch_seq_counter durably advances (3 -> 4)
+[INFO] Group 20: live classifier forwarding (not_started research-first default, --fast escape hatch)
+[PASS] Group 20: SUT exits 0 (no --fast)
+[PASS] Group 20: live classifier routes not_started -> research with no --fast (research-first default)
+[PASS] Group 20: live classifier keeps researched -> plan with no --fast (never re-researches)
+[PASS] Group 20 (--fast): SUT exits 0
+[PASS] Group 20 (--fast): live classifier routes not_started -> plan (the pre-research-first escape hatch), proving --fast actually reaches --effort
+[PASS] Group 20 (--fast): live classifier keeps researched -> plan under --fast too (never re-researches)
+[INFO] Group 21: forced phase on terminal and archived tasks (Cases A-E)
+[PASS] Case A: SUT exits 0
+[PASS] Case A: active-terminal candidate #2101 dispatches with phase=research, force=true
+[PASS] Case A: does NOT stop with all_terminal (the forced-phase exemption keeps all_done false)
+[PASS] Case B: SUT exits 0 (LIVE)
+[PASS] Case B: archived-terminal candidate #2102's dispatch_file lands under specs/archive/ (got: /tmp/tmp.CypQrllaZm/specs/archive/2102_g21b_archived_completed/.dispatch/1.md)
+[PASS] Case B: the dispatch file was actually written to disk
+[PASS] Case B: archive/state.json status is untouched (still completed; the archive read is read-only)
+[PASS] Case C: unforced terminal candidate #2103 stops with all_terminal (Non-Goal regression guard)
+[PASS] Case C: zero dispatch rows for the unforced terminal candidate
+[PASS] Case D: LIVE forced round exits 0
+[PASS] Case D: state.json status is 'completed' both before and after the LIVE forced round (no regression)
+[PASS] Case D: the preflight clamp actually fired (named [monotonic-max] notice present on stderr)
+[PASS] Case D: candidate #2105 still dispatches despite the clamp skipping the status write
+[PASS] Case E: --force-phases implement on a completed task WITH a plan dispatches with phase=implement, force=true
+[INFO] Group 22: --focus threading into the live dispatch file's User focus: block
+[PASS] Group 22 Case A: SUT exits 0
+[PASS] Group 22 Case A: dispatch file carries a User focus: block with the --focus text
+[PASS] Group 22 Case A: the composed .dispatch[].focus row field matches
+[PASS] Group 22 Case B: dispatch file carries BOTH labelled segments; neither replaced the other
+[PASS] Group 22 Case C: no --focus -> bare research_questions line, no label (byte-for-byte unchanged)
+[PASS] Group 22 Case C: neither label string appears anywhere in the dispatch file
+[PASS] Group 22 Case D: a focus value with spaces and an embedded double quote survives intact
+[PASS] Group 22 Case E: --dry-run emits a non-empty .dispatch[].focus carrying the --focus text
+[INFO] Group 23: artifact-based admission for forced plan and implement
+[PASS] Group 23 Case A: --implement on a RESEARCHED task WITH a plan dispatches implement
+[PASS] Group 23 Case B: --implement with no plan yields exactly one blocked[] row with the named reason
+[PASS] Group 23 Case B: no dispatch row for candidate #2302
+[PASS] Group 23 Case B: no .dispatch/ directory or file was created
+[PASS] Group 23 Case B: no task lock was taken
+[PASS] Group 23 Case B: status unchanged (no status write) -- before='researched' after='researched'
+[PASS] Group 23 Case C: --plan with an existing plan resolves reviser-agent
+[PASS] Group 23 Case C: dispatch file carries existing_plan_path and revision_reason
+[PASS] Group 23 Case D: --plan with no plan resolves planner-agent
+[PASS] Group 23 Case E: terminal (completed) task with a plan still resolves reviser-agent when forced
+[PASS] Group 23 Case E: terminal (abandoned) task with no plan still resolves planner-agent when forced
+[INFO] Group 24: pending_dispatch pre-image capture (prior_* fields) and replay non-overwrite
+[PASS] Group 24 case 1: LIVE forced plan round exits 0
+[PASS] Group 24 case 1: pending_dispatch.prior_status captures the pre-dispatch status ('researched')
+[PASS] Group 24 case 1: pending_dispatch.prior_last_updated captures the pre-dispatch last_updated
+[PASS] Group 24 case 1: pending_dispatch.prior_session_id captures the pre-dispatch session_id
+[PASS] Group 24 case 1: pending_dispatch.prior_dispatch_seq_counter captures the pre-charge durable counter (7)
+[PASS] Group 24 case 1: the durable dispatch_seq_counter itself advances normally (7 -> 8) alongside the pre-image
+[PASS] Group 24 case 1: state.json status actually changed away from the captured pre-image ('planning')
+[PASS] Group 24 case 2: a same-phase, file-present re-dispatch replays instead of re-charging
+[PASS] Group 24 case 2: the replay leaves the ENTIRE pending_dispatch record (pre-image included) byte-for-byte untouched
+[PASS] Group 24 case 2: the durable dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)
+[INFO] Group 25: base-mode sibling territory (mixed granularity, single-task regression, hard-mode merge)
+[PASS] Group 25 (Cases A-C): SUT exits 0
+[PASS] Group 25 (Cases A-C): all four siblings dispatch this cycle
+[PASS] Case A: #2501 receives --territory
+[PASS] Case A: #2501's territory names sibling #2502 as undeclared (scope_declared=false)
+[PASS] Case A: #2501's concurrency_note cites context/contracts/territory.md
+[PASS] Case B: #2502's territory names sibling #2501 with its exact file and granularity=file
+[PASS] Case C: #2501's territory names sibling #2503 as coarse/directory
+[PASS] Case C: #2501's territory renders #2504's empty-array file_scope identically to absent (undeclared)
+[PASS] Case D: a single-task cycle never receives --territory (no siblings scheduled)
+[PASS] Case E: #2601 still receives --phase-number 2 (H1 unaffected by the sibling merge)
+[PASS] Case E: #2601's --territory carries BOTH the H1 owned_files literal AND concurrent_siblings
+[PASS] Case E: #2601's concurrent_siblings names sibling #2602
+[INFO] Group 26: a partial+blockers task (status already written by postflight) is excluded from redispatch; an empty-blockers partial still dispatches
+[PASS] Group 26: candidate #2701 (partial+blockers) lands in blocked[] -- visible, never a silent skip
+[PASS] Group 26: candidate #2701's blocked[] reason names the unresolved-blocker/needs-human cause
+[PASS] Group 26: candidate #2701 is absent from dispatch[] and deferred[] -- not routed back to implement
+[PASS] Group 26 (negative): candidate #2702 (partial, no blockers) still dispatches to implement
+[PASS] Group 26 (negative): candidate #2702 is absent from blocked[]
+[INFO] Group 27: identical-dispatch content hashing and streak accounting (log-only)
+[PASS] Group 27 Case A: cycle_plan_dispatch_hash() found in SUT source
+[PASS] Group 27 Case A: identical digest for two files differing only in dispatch_seq/dispatch_start_ts
+[PASS] Group 27 Case A: different digest when a non-varying line (Description) differs
+[PASS] Group 27 Case B: cycle_plan_dispatch_hash returns 2 (degrade, not crash) when sha256sum is unavailable
+[PASS] Group 27 Case C: cycle 1 dispatches candidate #2703 normally
+[PASS] Group 27 Case C: streak recorded as 1 after the first dispatch
+[PASS] Group 27 Case C: no IDENTICAL DISPATCH notice on a first-ever dispatch (streak=1)
+[PASS] Group 27 Case D: a genuinely different dispatch still dispatches normally
+[PASS] Group 27 Case D: streak stays at 1 when the dispatch content genuinely differs from the previous cycle
+[PASS] Group 27 Case D: no IDENTICAL DISPATCH notice on a streak of 1
+[PASS] Group 27 Case E: --dry-run still dispatches normally
+[PASS] Group 27 Case E: --dry-run never persists a multi-state file (no accounting side effect)
+[INFO] Group 28: identical-dispatch halt, inline back-out, and the halted-set exclusion
+[PASS] Group 28: cycle 1 dispatches candidate #2801 normally
+[PASS] Group 28: cycle 1's preflight write actually changed status to 'researching'
+[PASS] Group 28: cycle 2 (identical content) issues ZERO dispatch rows -- halted, not re-dispatched
+[PASS] Group 28: cycle 2 reports candidate #2801 in blocked[] -- visible, never a silent skip
+[PASS] Group 28: the blocked[] reason names the guard and the streak
+[PASS] Group 28: the named IDENTICAL DISPATCH HALT notice fires on stderr
+[PASS] Group 28: state.json status/last_updated/session_id restored to cycle 1's exact post-write pre-image
+[PASS] Group 28: the halted cycle's .dispatch/2.md file was removed
+[PASS] Group 28: cycle 1's own .dispatch/1.md file is untouched by cycle 2's back-out
+[PASS] Group 28: the task lock was released by the halt back-out
+[PASS] Group 28: the durable dispatch_seq_counter did not advance past the halted cycle (1 -> 1)
+[PASS] Group 28: the per-task cycle budget was not charged for the halted cycle (1 -> 1)
+[PASS] Group 28: cycle 3 (a later cycle) still excludes candidate #2801 via blocked[], dispatching nothing
+[PASS] Group 28: a non-repeating two-candidate composition dispatches both, with zero blocked[] rows
+[INFO] Group 29: deploy_pending vs identical-dispatch guard composition (reproduction + regression)
+[PASS] Arm A: the post-deploy reconcile line fires and reports 'promoted'
+[PASS] Arm A: candidate #9201's state.json status becomes 'completed' within this single run
+[PASS] Arm A: zero implement dispatch rows are emitted for candidate #9201
+[PASS] Arm A: deploy_pending is cleared from .return-meta.json after the promotion
+[PASS] Arm B: cycle 1 dispatches the non-deploy-pending candidate normally
+[PASS] Arm B: cycle 2 (identical content, no deploy_pending marker) is halted -- guard fully live
+[PASS] Arm B: the IDENTICAL DISPATCH HALT notice fires on stderr
+[PASS] Arm C: cycle 1 dispatches both candidates normally
+[PASS] Arm C: cycle 2 still dispatches the deploy-pending candidate #9203 -- not halted by the freeze
+[PASS] Arm C: candidate #9203's identical_dispatch_streak is unchanged by the second identical cycle (frozen at 1)
+[PASS] Arm C: the distinct streak-freeze stderr notice fires for candidate #9203
+[PASS] Arm C: the sibling WITHOUT a deploy_pending marker (candidate #9204) still halts normally
+[PASS] Arm D: once deploy_pending is absent (the post-clearing state), a genuine identical-dispatch repeat halts normally
+[PASS] Arm E: no post-deploy reconcile line fires when the deploy itself did not land
+[PASS] Arm E: candidate #9206's status is left unchanged (still implementing) when the deploy did not land
+[INFO] Group 31: contended-path manifest producer (build_contended_manifest)
+[PASS] Case A: both candidates admit together (glob-vs-concrete is invisible to admission's Overlap predicate)
+[PASS] Case A: manifest file written for the glob-vs-concrete cycle
+[PASS] Case A: the glob entry (docs/glob/*.md) lists both tasks, granularity=glob
+[PASS] Case A: the concrete file it matches also lists both tasks, granularity=file
+[PASS] Case A: exactly two contended rows (the glob entry and the file entry), each exactly once
+[PASS] Case B: both candidates admit together (glob-as-coarse-scope is also invisible to admission)
+[PASS] Case B: the glob entry (lib/config/*) lists both tasks, granularity=glob
+[PASS] Case B: the concrete file it covers also lists both tasks, granularity=file
+[PASS] Case B: exactly two contended rows (the glob entry and the file entry), each exactly once
+[PASS] Case C: disjoint file_scope entries produce no manifest file at all
+[PASS] Case D: a single-task cycle writes no manifest file
+[PASS] Case E: SUT exits 0 with the former build-heavy candidate and its sibling in the same cycle
+[PASS] Case E: both candidates admit together (glob blind spot, same mechanism as Case A)
+[PASS] Case E: the lean4 candidate's own concrete file_scope entry names BOTH tasks -- no longer excluded
+[PASS] Case E: the sibling's glob entry also names both tasks
+[PASS] Case F: --dry-run exits 0 for the would-contend fixture
+[PASS] Case F: --dry-run writes no manifest file even though the same fixture would contend live
+[PASS] Case G: _paths_contend() found in SUT source
+[PASS] Case G: a directory entry contends with a file beneath it (rc=0)
+[PASS] Case G: an unrelated directory does not contend with a disjoint file (rc=1)
+[INFO] Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heavy implement tasks per cycle)
+[PASS] Case (i): two build-heavy implement candidates in one cycle -> 1 dispatch + 1 deferred
+[PASS] Case (i): deferred row carries the new rule's own named reason
+[PASS] Case (i): deferred reason is NOT the file_scope_collision string (confirms the new rule fired, not the pre-existing check)
+[PASS] Case (ii): one build-heavy + one ordinary implement candidate -> both dispatch, unchanged
+[PASS] Case (iii): two build-heavy candidates in different phases -> both dispatch (implement-phase scoping)
+[PASS] Case (iv): both --dry-run and live dispatch exactly 1 of the 2 build-heavy candidates
+[PASS] Case (iv): --dry-run and live report byte-for-byte identical deferred reasons
+[INFO] Group 33: held tasks -> blocked[] row naming the hold, never dispatched
+[PASS] Group 33: held candidate #3301 is excluded from dispatch and lands in blocked[]
+[PASS] Group 33: the blocked[] reason names the hold's own hold_reason text
+[PASS] Group 33b: --force-phases implement admits held candidate #3301 for exactly this dispatch
+
+Results: 330 passed, 5 failed

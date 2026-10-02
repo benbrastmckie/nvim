@@ -1,0 +1,18 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "summary": "All six plan phases completed: added partial_progress schema checks to validate-return-meta.sh, registered RETURN_META_SCHEMA_VIOLATION as a Signal A instance, added regression fixtures, wired a warn-only probe into orchestrate-cycle-postflight.sh, added end-to-end acceptance tests, and deployed with the full gate set green.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/320_return_meta_producer_side_validation/summaries/01_return-meta-producer-validation-summary.md",
+      "summary": "Implementation summary for the return-meta producer-side validation task."
+    }
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": null
+}

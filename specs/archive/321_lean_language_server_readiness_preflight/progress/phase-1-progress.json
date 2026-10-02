@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Add reachability detection and a --dispatch-block output mode to the probe",
+  "started_at": "2026-10-02T17:12:48Z",
+  "last_updated": "2026-10-02T17:12:48Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read lean-mcp-preflight-check.sh in full before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add probe_reachability() function with ps snapshot, self-match guard, /proc/<pid>/environ cross-check", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]},
+    {"id": 3, "description": "Define three-value result contract (reachable/not_reachable/unknown)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]},
+    {"id": 4, "description": "Add --dispatch-block flag parsing composing with 5 ignored positionals", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]},
+    {"id": 5, "description": "Emit <lean-readiness-context> block in --dispatch-block mode with project root, registration, tier, interpretation rule, necessary-not-sufficient note, degraded-mode-proceed statement", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]},
+    {"id": 6, "description": "Order reachability probe after registration confirmed present", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]},
+    {"id": 7, "description": "Leave no-flag path byte-for-byte unchanged", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]},
+    {"id": 8, "description": "Update header documentation (flag, reachability semantics, /proc caveat, self-match guard, cost line)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "fake-server fixture via `cp $(command -v sleep) renamed-binary`", "result": "failed", "reason": "coreutils multicall binary dispatches on argv[0]/basename; renamed copy errors 'unknown program' at exec time rather than at cp time, so the background process exits immediately and never appears in ps. Switched to a small bash script with a sleep body instead."}
+  ],
+  "handoff_count": 0
+}
