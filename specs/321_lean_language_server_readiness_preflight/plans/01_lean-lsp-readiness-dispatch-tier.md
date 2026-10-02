@@ -1,7 +1,7 @@
 # Implementation Plan: Lean language server readiness preflight
 
 - **Task**: 321 - Lean language server readiness preflight
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None blocking. Cross-references open task 268 (build-cache half) — no shared file scope.
 - **Research Inputs**: specs/321_lean_language_server_readiness_preflight/reports/01_lean-lsp-readiness-probe.md
@@ -123,29 +123,29 @@ own hunks as an explicit file list, and never run `git-snapshot.sh` in its rever
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add reachability detection and a `--dispatch-block` output mode to the probe [NOT STARTED]
+### Phase 1: Add reachability detection and a `--dispatch-block` output mode to the probe [COMPLETED]
 
 **Goal**: `lean-mcp-preflight-check.sh` can determine whether a `lean-lsp-mcp` server is actually
 running for *this* project, and can emit a complete, ready-to-inject dispatch-file block — while
 its existing no-flag behavior stays byte-identical.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh` in
+- [x] Re-read `agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh` in
       full immediately before editing (88 lines; sibling tasks do not claim it, but the re-read is
-      the territory contract).
-- [ ] Add a `probe_reachability()` function: one atomic `ps -eo pid,ppid,comm,args --no-headers`
+      the territory contract). *(completed)*
+- [x] Add a `probe_reachability()` function: one atomic `ps -eo pid,ppid,comm,args --no-headers`
       snapshot; select rows whose `args` contains the literal `lean-lsp-mcp`; drop the row whose
       PID equals `$$` or whose PID equals `$PPID` (the self-match guard, modeled on
       `lake-build-guard.sh`'s `is_self_row` idiom); for each surviving candidate read
       `/proc/<pid>/environ` (NUL-delimited) for `LEAN_PROJECT_PATH` and compare it, after
-      normalization, against the resolved project root.
-- [ ] Define the three-value result contract: `reachable` (an exact `LEAN_PROJECT_PATH` match),
+      normalization, against the resolved project root. *(completed)*
+- [x] Define the three-value result contract: `reachable` (an exact `LEAN_PROJECT_PATH` match),
       `not_reachable` (the snapshot succeeded and no candidate matched), `unknown` (`/proc` absent,
       `ps` failed, or every candidate's `environ` was unreadable). Never promote `unknown` or an
-      argv-only match to `reachable`.
-- [ ] Add flag parsing for `--dispatch-block`. Keep the five ignored positional lifecycle-hook
-      args accepted exactly as today, so the flag composes with the existing signature.
-- [ ] In `--dispatch-block` mode: print nothing and exit 0 when the lakefile pre-check fails (not a
+      argv-only match to `reachable`. *(completed)*
+- [x] Add flag parsing for `--dispatch-block`. Keep the five ignored positional lifecycle-hook
+      args accepted exactly as today, so the flag composes with the existing signature. *(completed)*
+- [x] In `--dispatch-block` mode: print nothing and exit 0 when the lakefile pre-check fails (not a
       Lean project). Otherwise print a complete
       `<lean-readiness-context>` … `</lean-readiness-context>` block on stdout stating: the
       resolved project root; the registration result (reusing the existing verifier invocation, not
@@ -153,13 +153,15 @@ its existing no-flag behavior stays byte-identical.
       three-state interpretation rule, naming `consulted` as the only state in which an empty
       result is proof of absence; the explicit statement that a live process is necessary but not
       sufficient for reachability; and that Lean work without lean-lsp is an accepted degraded mode
-      the agent should proceed in, announcing its evidence tier, not abort over.
-- [ ] Order the work so the reachability check runs only *after* registration is confirmed present,
-      keeping the non-Lean (~6ms) and not-yet-registered (~20ms) exits unchanged.
-- [ ] Leave the no-flag path's output and exit behavior untouched, byte for byte.
-- [ ] Update the script's header block: the new flag, the new reachability semantics, the
+      the agent should proceed in, announcing its evidence tier, not abort over. *(completed)*
+- [x] Order the work so the reachability check runs only *after* registration is confirmed present,
+      keeping the non-Lean (~6ms) and not-yet-registered (~20ms) exits unchanged. *(completed)*
+- [x] Leave the no-flag path's output and exit behavior untouched, byte for byte. *(completed:
+      verified via the full pre-existing 17-case fixture suite, all passing unchanged)*
+- [x] Update the script's header block: the new flag, the new reachability semantics, the
       Linux-only `/proc` caveat and its `unknown` degrade, the self-match guard rationale, and a
       re-measured cost line for the new path. Keep the existing detection-lockstep note intact.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/321_lean_language_server_readiness_preflight/plans/01_lean-lsp-readiness-dispatch-tier.md",
-      "summary": "7-phase plan extending lean-mcp-preflight-check.sh with server reachability detection and a --dispatch-block mode, injecting a task_type-agnostic <lean-readiness-context> block into every dispatch file, plus test coverage on both sides and two context-doc gaps."
-    }
-  ],
-  "next_steps": "Run /implement 321 to execute the plan",
-  "phase_count": 7,
-  "estimated_hours": 7,
-  "dependency_waves": [[1, 6], [2, 3, 5], [4], [7]],
-  "memory_candidates": [
-    {
-      "content": "In this agent system, a per-extension manifest `hooks.preflight` registration is resolved by `skill_run_extension_hook` -> `skill_get_extension_dir($task_type)`, i.e. the SINGLE extension that declares that exact task_type. A hook registered by extension A therefore never fires for a task whose task_type is declared by extension B, even when the project materially belongs to A's domain (observed: a `formal`-typed task in a Lean 4 project never reaches any lean-owned preflight hook). Separately, `/orchestrate` routes agents directly via command-route-agent.sh and never executes the domain SKILL.md bodies at all, so an inline Stage 2 call inside a domain skill is only reached by a direct /research|/plan|/implement invocation. The task-type-agnostic alternative, when a probe must fire for a project CLASS rather than a task_type: call it unconditionally from `orchestrate-build-dispatch.sh` (which every dispatch passes through, with CWD at the target repo root) and let the probe self-gate on directory detection, following the `deploy_freshness_context` / `memory_context` / `lit_context` precedent of a conditionally-computed, tagged block emitted only when non-empty so an inactive build stays byte-identical.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/321_lean_language_server_readiness_preflight/plans/01_lean-lsp-readiness-dispatch-tier.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["hooks.preflight", "task_type routing", "orchestrate-build-dispatch", "dispatch context block", "extension hook resolution", "directory detection gate"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790957600_e00acf_321",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1790957600_e00acf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 1,
+    "phases_total": 7
   },
-  "dispatch_seq": 17
+  "dispatch_seq": 20
 }
