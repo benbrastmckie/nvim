@@ -316,7 +316,7 @@ sibling's in-flight edit rather than this change.
 
 ---
 
-### Phase 4: Document the Exit-Code Contract and the Recorded Residual [NOT STARTED]
+### Phase 4: Document the Exit-Code Contract and the Recorded Residual [COMPLETED]
 
 **Goal**: Act on the research's Context Extension Recommendation: the exit-code contract currently
 lives **only** in the script's own header, so a reader consulting the standards doc learns nothing
@@ -324,23 +324,23 @@ about V2/V3/V5/V6 or their codes. Add the table there, and record the caller-esc
 so a future task inherits the finding.
 
 **Tasks**:
-- [ ] Re-read
+- [x] Re-read
       `agent-system/extensions/core/context/standards/git-staging-scope.md`'s "Commit-Level Path
       Scoping and Cross-Process Serialization" section immediately before editing, confirming it
-      still narrates the two original defects without the current gate numbering or exit codes.
-- [ ] Add a short exit-code table (`0`-`4`) to that section, mirroring the script header's
-      wording, plus one line per safety gate (V2, V3, V5, V6) naming what each refuses.
-- [ ] Add a short, explicitly-labeled residual note: every current caller uses
+      still narrates the two original defects without the current gate numbering or exit codes. *(completed)*
+- [x] Add a short exit-code table (`0`-`4`) to that section, mirroring the script header's
+      wording, plus one line per safety gate (V2, V3, V5, V6) naming what each refuses. *(completed)*
+- [x] Add a short, explicitly-labeled residual note: every current caller uses
       `cmd || echo "WARN: ...(non-blocking)"`, so any nonzero exit — including `4` — collapses to
       success for the caller's own control flow; a caller that wants to escalate on `4` must
       branch on `$?` rather than rely on `||`. State that this is a known, deliberate boundary of
-      the script-level fix, not an undiscovered gap.
-- [ ] Cite durable anchors only — the gate labels, the exit codes, the script filename. No
-      task-number references (this file is outside `specs/**`).
-- [ ] Confirm the file is not in any concurrent sibling's declared `file_scope` (it is not, per
+      the script-level fix, not an undiscovered gap. *(completed)*
+- [x] Cite durable anchors only — the gate labels, the exit codes, the script filename. No
+      task-number references (this file is outside `specs/**`). *(completed)*
+- [x] Confirm the file is not in any concurrent sibling's declared `file_scope` (it is not, per
       this dispatch's territory block) and that it has no foreign uncommitted modification; if it
-      does, stop and report rather than proceeding.
-- [ ] Commit this phase's single file with an explicit file pathspec.
+      does, stop and report rather than proceeding. *(completed: confirmed clean, not in either sibling's declared file_scope)*
+- [x] Commit this phase's single file with an explicit file pathspec. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -364,23 +364,23 @@ so a future task inherits the finding.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` exits 0 with
-      zero failures and thirteen T-cases plus the V-series passing.
-- [ ] T11 pins the existing V3 all-dropped refusal (`exit 2`, no commit) — unchanged by this task.
-- [ ] T12 pins the new V6 posture: partial drop + empty resulting commit no longer reports
-      success (`exit 4`, no commit, dropped path named).
-- [ ] T13 pins the HARD CONSTRAINT's partial-drop half: a legitimate dropped artifact path plus a
-      survivor with a real diff still commits exactly as before (`exit 0`, HEAD +1).
-- [ ] The zero-drop no-diff path still exits `1` with today's exact `NOTE:` wording (scratch-repo
-      check in Phase 2; the hard constraint's all-resolve half).
-- [ ] T8/T9/T10 still pass, proving the ledger did not leak into the V2 case-2 already-staged-
-      deletion branch.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh`
-      exits 0.
-- [ ] `bash -n` clean on the modified script.
-- [ ] No write landed anywhere under `.claude/**`; every edit target is under
-      `agent-system/extensions/core/**`.
-- [ ] No task-number reference was introduced in any file outside `specs/**`.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` exits 0 with
+      zero failures and thirteen T-cases plus the V-series passing. *(completed: 26 passed, 0 failed)*
+- [x] T11 pins the existing V3 all-dropped refusal (`exit 2`, no commit) — unchanged by this task. *(completed)*
+- [x] T12 pins the new V6 posture: partial drop + empty resulting commit no longer reports
+      success (`exit 4`, no commit, dropped path named). *(completed)*
+- [x] T13 pins the HARD CONSTRAINT's partial-drop half: a legitimate dropped artifact path plus a
+      survivor with a real diff still commits exactly as before (`exit 0`, HEAD +1). *(completed)*
+- [x] The zero-drop no-diff path still exits `1` with today's exact `NOTE:` wording (scratch-repo
+      check in Phase 2; the hard constraint's all-resolve half). *(completed: verified in mktemp -d scratch repo)*
+- [x] T8/T9/T10 still pass, proving the ledger did not leak into the V2 case-2 already-staged-
+      deletion branch. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh`
+      exits 0. *(completed: 8 passed, 0 failed)*
+- [x] `bash -n` clean on the modified script. *(completed)*
+- [x] No write landed anywhere under `.claude/**`; every edit target is under
+      `agent-system/extensions/core/**`. *(completed: verified via git log --name-only)*
+- [x] No task-number reference was introduced in any file outside `specs/**`. *(completed: verified via grep)*
 
 ## Artifacts & Outputs
 

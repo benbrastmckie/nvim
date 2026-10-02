@@ -294,6 +294,52 @@ left for each caller to rediscover:
   positive pathspec and drops unmatched entries with a loud warning rather than aborting the
   entire commit.
 
+### Exit-Code Contract and Safety Gates
+
+`git-commit-scoped.sh`'s own header documents its full exit-code table and safety-gate labels
+(V2, V3, V5, V6); this subsection mirrors that table here so a reader of this document is not
+left to open the script for it.
+
+| Exit code | Meaning |
+|-----------|---------|
+| `0` | Commit created. |
+| `1` | "Nothing to commit" (identical to a bare `git commit`'s own exit code), or the `git commit` itself failed after the bounded `index.lock` retry. Non-blocking — matches every call site's existing `|| echo "NOTE: Nothing to commit..."` fallback. |
+| `2` | Usage error, or the V3 degenerate-pathspec refusal (an exclude-only list, or every positive pathspec dropped by V2 — refused before any `git add`/`git commit`), or `git add` itself failed for one or more staged paths. |
+| `3` | Contended-path refusal (V5, `--task` only): a positive pathspec entry is listed as contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused before any `git add`; nothing staged. Never emitted when `--task` is omitted. |
+| `4` | The V6 refusal below: one or more positive pathspecs were dropped as genuinely unmatched AND the commit attempt produced no commit. |
+
+Gate labels, in the same voice as the script header:
+
+- **V2** — an unmatched path in the commit pathspec aborts the whole commit in bare git; this
+  script classifies each positive pathspec into matched / already-staged-deletion / genuinely
+  unmatched, dropping only the third case with a loud warning.
+- **V3** — an exclude-only pathspec list (or a positive list that fully degenerates to one after
+  V2 filtering) commits WIDER than a bare commit, not narrower; refused outright before any
+  `git add`/`git commit`.
+- **V5** — explicit-path staging alone does not protect against CONCURRENT same-file dispatch;
+  `--task` opts a caller into a per-path first-claim lease against the cycle-scoped contention
+  manifest.
+- **V6** — a PARTIAL pathspec drop (some, not all, positive entries hit V2's genuinely-unmatched
+  case) is indistinguishable from the ordinary, benign "nothing changed" no-op once the survivors
+  themselves carry no diff: both land on exit `1`, differing only in a stderr `WARN:` line that no
+  current caller inspects. (V3 above already refuses the OTHER half of this gap — every positive
+  pathspec dropped; V6 covers what V3 does not.) When at least one pathspec was dropped AND the
+  commit attempt produced no commit, this script now exits `4` with a loud `ERROR:` naming every
+  dropped path instead of falling through to the generic `NOTE:`. The predicate deliberately does
+  NOT try to distinguish "nothing to commit" from "git commit genuinely failed" by parsing commit
+  output — both sub-cases are already nonzero and already swallowed identically by every current
+  caller, so splitting them buys nothing and adds a dependency on git's own wording.
+
+**Recorded caller-escalation residual**: every current call site wraps the invocation as
+`cmd || echo "WARN: ...(non-blocking)"`. Because bash's `A || B` yields `B`'s exit status
+regardless of `A`'s own code, ANY nonzero exit from the script — `1`, `2`, `3`, or the new `4` —
+already collapses to success for the caller's own control flow. Landing the V6 gate therefore
+makes a script-level failure louder and more diagnosable (a named `ERROR:` and a distinct exit
+code, in place of an indistinguishable generic `NOTE:`) but does not, by itself, change what any
+caller does next. A caller that wants to halt or branch on exit `4` must replace its `|| echo`
+idiom with an explicit `$?` check — a separate, deliberately out-of-scope change from this fix;
+see the script's own header for the same note.
+
 ## Required Review Flow
 
 Before any commit in the pipeline, prefer to surface what is about to be committed:
