@@ -1,7 +1,7 @@
 # Implementation Plan: Task #44
 
 - **Task**: 44 - slim_task_command_body
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.0 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/044_slim_task_command_body/reports/01_command-body-extraction-approach.md`
@@ -139,28 +139,33 @@ would invite unsafe concurrent edits to one file.
 
 ---
 
-### Phase 1: Baseline Measurement and Validated Heading Map [NOT STARTED]
+### Phase 1: Baseline Measurement and Validated Heading Map [COMPLETED]
 
 **Goal**: Record the authoritative before-state and produce the fence-validated mode boundary map
 every later phase depends on, so no phase derives boundaries from a naive grep.
 
 **Tasks**:
-- [ ] Record `wc -c` and `wc -l` for `agent-system/extensions/core/commands/task.md` into a
-      scratch measurement ledger (this is the "before" row of the final table).
-- [ ] Produce the mode boundary map using only these seven anchor headings, each located by exact
+- [x] Record `wc -c` and `wc -l` for `agent-system/extensions/core/commands/task.md` into a
+      scratch measurement ledger (this is the "before" row of the final table). *(completed:
+      42,843 B / 1,005 lines)*
+- [x] Produce the mode boundary map using only these seven anchor headings, each located by exact
       text: `## Create Task Mode (Default)`, `## Recover Mode (--recover)`,
       `## Expand Mode (--expand)`, `## Sync Mode (--sync)`, `## Review Mode (--review)`,
-      `## Abandon Mode (--abandon)`, `## Constraints`.
-- [ ] For each anchor, confirm the matched line is **not** inside a ``` fence (compute fence
+      `## Abandon Mode (--abandon)`, `## Constraints`. *(completed: lines 38/278/384/472/597/928/991)*
+- [x] For each anchor, confirm the matched line is **not** inside a ``` fence (compute fence
       parity from line 1 to the match). Explicitly confirm the known decoy at line ~689
-      (`## Task Review: #{N} - {slug}`, inside the fence opened at ~688) is excluded.
-- [ ] Measure each region's bytes with `sed -n 'START,ENDp' | wc -c` and confirm against the
+      (`## Task Review: #{N} - {slug}`, inside the fence opened at ~688) is excluded. *(completed:
+      decoy now at line 711 inside fence 710-732, confirmed via 15-marker odd-parity count; the
+      7 real anchors are fence-parity-even at every match)*
+- [x] Measure each region's bytes with `sed -n 'START,ENDp' | wc -c` and confirm against the
       research report's table (recover 4,409 / expand 3,196 / sync 5,082 / review 10,085 /
       abandon 3,111). Any divergence means the file changed since research — stop and reconcile
-      before proceeding.
-- [ ] Capture baseline health so pre-existing failures are not misattributed later:
+      before proceeding. *(completed: divergence found and reconciled — see Decision Log below)*
+- [x] Capture baseline health so pre-existing failures are not misattributed later:
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and the
       Rule R portion of `check-extension-docs.sh`. Record whether each is clean at baseline.
+      *(completed: both DIRTY, 5 findings total, all attributable to concurrent sibling tasks
+      265/279 per their declared file_scope — see Decision Log below)*
 
 **Timing**: 0.5 hours
 

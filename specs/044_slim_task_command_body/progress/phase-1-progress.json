@@ -1,0 +1,47 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline Measurement and Validated Heading Map",
+  "started_at": "2026-10-02T19:24:17Z",
+  "last_updated": "2026-10-02T19:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record wc -c and wc -l for task.md (before row)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Produce mode boundary map via 7 anchor headings, fence-validated", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm each anchor not inside a fence; confirm known decoy excluded", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Measure each region's bytes and confirm against research report table", "status": "done", "files_touched": [], "note": "Divergence found and reconciled: file grew since research (task 292 commits added Component 0 wiring to Create Task Mode and Expand Mode). Measured now: recover 4591 (was 4409), expand 4236 (was 3196), sync 5400 (was 5082), review 10429 (was 10085), abandon 3111 (exact match). Heading-text anchoring is robust to this drift; proceeding with measured values as authoritative for the final table."},
+    {"id": 5, "description": "Capture baseline health (generate-context-line-counts.sh --check, check-extension-docs.sh Rule R)", "status": "done", "files_touched": [], "note": "Baseline is DIRTY, attributable to concurrent sibling tasks 265/279 per their declared file_scope: (1) generate-context-line-counts.sh --check: 1 mismatch schemas/state-schema.json declared 440 actual 460 (task 279 territory). (2) check-extension-docs.sh core FAIL: 4 findings -- script drift scripts/tests/test-run-all-parallel.sh (task 265), script drift scripts/validate-state.sh (task 279), Rule R mismatch schemas/state-schema.json (task 279), Rule R mismatch standards/shell-script-testing.md (task 265). This baseline set is the floor against which Phase 7/8 gate reruns must show no NEW findings."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "baseline": {
+    "task_md_bytes": 42843,
+    "task_md_lines": 1005,
+    "anchors": {
+      "mode_detection_line": 28,
+      "create_task_mode_line": 38,
+      "recover_mode_line": 278,
+      "expand_mode_line": 384,
+      "sync_mode_line": 472,
+      "review_mode_line": 597,
+      "abandon_mode_line": 928,
+      "constraints_line": 991
+    },
+    "fence_interior_decoy_line": 711,
+    "region_bytes": {
+      "create_task_mode_38_277": 13067,
+      "recover_mode_278_383": 4591,
+      "expand_mode_384_471": 4236,
+      "sync_mode_472_596": 5400,
+      "review_mode_597_927": 10429,
+      "abandon_mode_928_990": 3111,
+      "constraints_991_1005": 618
+    },
+    "baseline_gate_findings": [
+      "generate-context-line-counts.sh --check: schemas/state-schema.json declared 440 actual 460 (task 279 territory)",
+      "check-extension-docs.sh core FAIL: script drift scripts/tests/test-run-all-parallel.sh (task 265 territory)",
+      "check-extension-docs.sh core FAIL: script drift scripts/validate-state.sh (task 279 territory)",
+      "check-extension-docs.sh core FAIL: Rule R mismatch schemas/state-schema.json (task 279 territory)",
+      "check-extension-docs.sh core FAIL: Rule R mismatch standards/shell-script-testing.md (task 265 territory)"
+    ]
+  }
+}

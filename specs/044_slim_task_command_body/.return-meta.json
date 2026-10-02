@@ -1,27 +1,8 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "task_number": 44,
-  "session_id": "sess_1787016315_a436d0_44",
-  "agent_type": "planner-agent",
-  "delegation_path": ["orchestrator", "plan", "planner-agent"],
-  "phase_count": 8,
-  "estimated_hours": 6.0,
-  "dependency_waves": 8,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md",
-      "summary": "8-phase plan extracting task.md's five non-default modes plus the Create Task worked-examples sub-region into six context/patterns files with imperative READ pointers, targeting ~66-69% body reduction; includes explicit merge-and-drop resolution of the Action Verb Categories keyword discrepancy, a mandated index-entries.json line_count phase, and a full-tier mode-executability audit."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When extracting sections out of a markdown command/context file by heading boundary, a bare `grep -n '^## '` is unsafe: fenced code blocks and fenced output templates frequently contain lines that look like headings. In agent-system/extensions/core/commands/task.md, Review Mode's own fenced output template contains a '## Task Review: #{N}' line plus three '###' lines, so naive boundary detection truncates the mode at that decoy and silently drops ~209 lines. The safe procedure is: (1) derive a closed anchor set of the real headings by exact text rather than by pattern, (2) validate each candidate match is not inside a fence by computing ``` parity from line 1 to the match, and (3) perform multi-region extractions bottom-up (highest line number first) so untouched regions keep their line numbers, re-locating each boundary by heading text immediately before deletion. Pair this with a per-region verbatim diff check (capture region to a temp file before deleting, assert the destination file's post-preamble body is byte-identical) and a byte-ledger reconciliation, so content loss surfaces as an unexplained residual rather than passing silently.",
-      "category": "PATTERN",
-      "source_artifact": "specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["markdown-extraction", "heading-boundary", "fenced-code-trap", "verbatim-diff", "bottom-up-edit", "content-loss"]
-    }
-  ],
-  "next_steps": "Run /implement 44 to execute the plan"
+  "session_id": "sess_1790968925_5ff73e",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "dispatch_seq": 23
 }
