@@ -1,17 +1,18 @@
 {
-  "status": "planned",
-  "task_number": 241,
-  "session_id": "sess_1790721762_ff3d8e_241",
-  "dispatch_seq": 19,
-  "phases_completed": 0,
-  "phases_total": 7,
+  "status": "implemented",
+  "dispatch_seq": 24,
+  "phase": "implement",
+  "summary": "All 7 plan phases completed: emptied two redundant playwright enumerations, deleted five dead manifest mcp_servers fields, corrected the ownership doc's five stale passages, corrected the nix README registration passage, and repointed a sixth doc (scope addition). Phase 7 gate failures (deploy-headless.sh, verify-deploy.sh, check-extension-docs.sh) are entirely attributable to concurrently-dispatched sibling tasks' in-flight edits (tasks 44 and 39), not this task's ten files.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/241_reconcile_mcp_registration_surfaces/plans/01_reconcile-mcp-surfaces.md",
-      "summary": "7-phase plan for the four MCP registration-surface items, with a hard precondition gate on item 1 and a flagged one-file scope addition."
+      "type": "summary",
+      "path": "specs/241_reconcile_mcp_registration_surfaces/summaries/01_reconcile-mcp-surfaces-summary.md",
+      "summary": "Implementation summary for the four-item MCP registration-surface reconciliation."
     }
   ],
-  "next_steps": "Run /implement 241 to execute the plan",
-  "notes": "Item 1's hard precondition (9 user-scope playwright grants in ~/.claude/settings.json) holds at plan time and is re-gated in Phase 1. Plan adds one file beyond the dispatch's declared nine (web/context/project/web/tools/playwright-mcp-guide.md) as isolated Phase 6, because item 1 falsifies that doc's grant-location claim; the phase is droppable. doc-lint baseline at plan time: exactly one FAIL (core, reap-session-runtime-files.sh deploy drift) owned by a concurrent sibling task, not by this task."
+  "phases_completed": 7,
+  "phases_total": 7,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null
 }

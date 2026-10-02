@@ -552,32 +552,56 @@ silently.
 
 ---
 
-### Phase 7: Deploy and run the full gate set [NOT STARTED]
+### Phase 7: Deploy and run the full gate set [COMPLETED]
 
 **Goal**: Confirm every edited file is well-formed, every removal is complete, every out-of-scope
 guard held, and a headless deploy plus doc-lint land with no failure attributable to this work.
 
 **Tasks**:
-- [ ] `jq empty` on all seven edited JSON files (two fragments, five manifests)
-- [ ] Confirm zero `mcp__playwright__*` entries remain in the web and present fragments and that no
-      wildcard was introduced in their place, anywhere in the source store
-- [ ] Confirm zero `mcp_servers` fields remain in any `agent-system/extensions/*/manifest.json`
-- [ ] Confirm `agent-system/extensions/memory/settings-fragment.json` still hashes to Phase 1's
-      recorded value (byte-identical, `mcpServers` block intact)
-- [ ] Confirm the ownership doc's known-gap (d) still reads as open
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` (default, non-destructive) and confirm it lands
-      green
-- [ ] After deploy, confirm `jq '.permissions.allow | type' .claude/settings.local.json` is still
-      `"array"`
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and compare its summary against Phase 1's
+- [x] `jq empty` on all seven edited JSON files (two fragments, five manifests) *(completed: all
+      seven pass)*
+- [x] Confirm zero `mcp__playwright__*` entries remain in the web and present fragments and that no
+      wildcard was introduced in their place, anywhere in the source store *(completed: zero in
+      both fragments; no wildcard introduced anywhere — the two remaining `mcp__playwright__*`
+      mentions in the source store are pre-existing, unrelated to the fragments:
+      `web-research-agent.md`'s `disallowedTools` and `playwright-mcp-guide.md`'s prose)*
+- [x] Confirm zero `mcp_servers` fields remain in any `agent-system/extensions/*/manifest.json`
+      *(completed)*
+- [x] Confirm `agent-system/extensions/memory/settings-fragment.json` still hashes to Phase 1's
+      recorded value (byte-identical, `mcpServers` block intact) *(completed: hash unchanged)*
+- [x] Confirm the ownership doc's known-gap (d) still reads as open *(completed: still reads
+      "still-open gap, not yet resolved either way")*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` (default, non-destructive) and confirm it lands
+      green *(deviation: altered — deploy landed (`RESULT=landed_verify_red`) but its own
+      fast-gate verification reported 2/33 checks failed; both findings
+      (`context/patterns/task-abandon-mode.md`, `commands/task.md` content drift) name files in a
+      concurrently-dispatched sibling task's declared file scope, not this plan's ten files.
+      Re-confirmed with a direct `check-extension-docs.sh` run and a standalone `verify-deploy.sh`
+      run: the full finding set is exactly those two files plus
+      `literature/scripts/literature-ingest-online.sh` (a second sibling's declared scope). None
+      names a file this plan touched. Reported per the risk-mitigation table and the Phase 1
+      concurrency note, not fixed)*
+- [x] After deploy, confirm `jq '.permissions.allow | type' .claude/settings.local.json` is still
+      `"array"` *(completed: confirmed `"array"`)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and compare its summary against Phase 1's
       baseline. Required: `core`, `nix`, `web`, `present` are all PASS, and any remaining FAIL is
       one recorded in the Phase 1 baseline for a file outside this plan's ten. A NEW failure naming
       one of this plan's ten files must be fixed here; a failure naming a sibling's file is
-      reported, never fixed
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and record the result
-- [ ] `git status --short` and `git diff --staged` before the final commit: exactly the ten (or
+      reported, never fixed *(deviation: altered — `nix`, `web`, `present` are PASS as required;
+      `core` (plus `literature` and `project-wide`) show FAIL, but every finding names a
+      concurrently-dispatched sibling's declared file scope (task-abandon-mode.md,
+      task-description-transformation-examples.md, commands/task.md,
+      literature-ingest-online.sh) — none is in this plan's ten files, and none was in Phase 1's
+      baseline either since the baseline was zero-FAIL at that point. Reported per the Phase
+      1/7 concurrency-attribution rule, not fixed)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and record the result *(completed: FAIL -- 2 of 33
+      checks failed, both attributable to the same sibling-owned files noted above)*
+- [x] `git status --short` and `git diff --staged` before the final commit: exactly the ten (or
       nine, if Phase 6 was skipped) files this plan names, and nothing else. Stage an explicit file
-      list — never a directory or glob pathspec
+      list — never a directory or glob pathspec *(completed: this plan's ten files are already
+      committed phase-by-phase in Phases 2-6; `git status --short` shows only sibling-owned
+      in-flight files plus this plan's own plan/progress/summary/.return-meta.json artifacts
+      remaining, which this phase's own commit stages explicitly)*
 
 **Timing**: 0.5 hours
 
@@ -609,21 +633,36 @@ be left alone and reported) or an unintended edit by this task (to be reverted).
 
 ## Testing & Validation
 
-- [ ] Item 1 hard precondition re-verified at implementation time; the observed count recorded, and
-      the skip branch taken if it is not 9
-- [ ] `jq empty` passes on all seven edited JSON files
-- [ ] Zero `mcp__playwright__*` entries and zero `mcp__playwright__*` wildcard anywhere in the
-      source store
-- [ ] Zero `mcp_servers` fields in any `agent-system/extensions/*/manifest.json`
-- [ ] `memory/settings-fragment.json` byte-identical to its pre-change state
-- [ ] Ownership doc known-gap (d) still open; no passage asserts a follow-up that was performed
-- [ ] `nix/README.md` records `nixos` user-scope registration; the six upstream-name occurrences
-      untouched; no `mcpServers` reference remains
-- [ ] `nix/context/project/nix/tools/mcp-nixos-integration.md` unmodified
-- [ ] `deploy-headless.sh` and `verify-deploy.sh` both exit 0
-- [ ] doc-lint: `core`, `nix`, `web`, `present` PASS, with no new failure from this plan's files
-- [ ] No deployed `.claude/**` file and no `~/.dotfiles` file hand-edited
-- [ ] No task-number reference introduced into any file outside `specs/**`
+- [x] Item 1 hard precondition re-verified at implementation time; the observed count recorded, and
+      the skip branch taken if it is not 9 *(completed: count was 9, precondition held, Phase 2 ran)*
+- [x] `jq empty` passes on all seven edited JSON files *(completed)*
+- [x] Zero `mcp__playwright__*` entries and zero `mcp__playwright__*` wildcard anywhere in the
+      source store *(deviation: altered — zero in both emptied fragments and zero introduced as a
+      permission-grant wildcard anywhere; two pre-existing, unrelated literal occurrences remain
+      in the source store — `web-research-agent.md`'s `disallowedTools: mcp__playwright__*`
+      (a denial, not a grant) and `playwright-mcp-guide.md`'s descriptive prose label — neither is
+      a `permissions.allow` wildcard and neither was introduced by this task)*
+- [x] Zero `mcp_servers` fields in any `agent-system/extensions/*/manifest.json` *(completed)*
+- [x] `memory/settings-fragment.json` byte-identical to its pre-change state *(completed: hash
+      matches)*
+- [x] Ownership doc known-gap (d) still open; no passage asserts a follow-up that was performed
+      *(completed)*
+- [x] `nix/README.md` records `nixos` user-scope registration; the six upstream-name occurrences
+      untouched; no `mcpServers` reference remains *(completed)*
+- [x] `nix/context/project/nix/tools/mcp-nixos-integration.md` unmodified *(completed: `git status`
+      clean)*
+- [x] `deploy-headless.sh` and `verify-deploy.sh` both exit 0 *(deviation: altered — both landed
+      non-zero (`deploy-headless.sh`: RESULT=landed_verify_red; `verify-deploy.sh`: FAIL, 2-3 of 33
+      checks), with every finding naming a concurrently-dispatched sibling task's declared file
+      scope, none of this plan's ten files. See Phase 7's task annotations for the full
+      attribution)*
+- [x] doc-lint: `core`, `nix`, `web`, `present` PASS, with no new failure from this plan's files
+      *(deviation: altered — `nix`, `web`, `present` PASS; `core` shows FAIL, but solely from a
+      sibling task's in-flight edits (`task.md`, `task-abandon-mode.md`), not from any of this
+      plan's files)*
+- [x] No deployed `.claude/**` file and no `~/.dotfiles` file hand-edited *(completed: every edit
+      targeted `agent-system/extensions/**`)*
+- [x] No task-number reference introduced into any file outside `specs/**` *(completed)*
 
 ## Artifacts & Outputs
 
