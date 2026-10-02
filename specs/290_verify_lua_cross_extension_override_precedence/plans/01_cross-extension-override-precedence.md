@@ -236,27 +236,27 @@ Phase 6 acceptance count must be derived from the real set, not from the assumed
 
 ---
 
-### Phase 3: Wire ownership resolution into `manager.verify` / `manager.verify_all` [NOT STARTED]
+### Phase 3: Wire ownership resolution into `manager.verify` / `manager.verify_all` [COMPLETED]
 
 **Goal**: Give the verification entry points a shared, deploy-ordered view of every active
 extension so the ownership map is built once and consumed by every per-extension verification.
 
 **Tasks**:
-- [ ] In `init.lua`, add a small internal helper that assembles the ordered
+- [x] In `init.lua`, add a small internal helper that assembles the ordered
       `{name, source_dir, manifest}` array for the active set — `manager.list_loaded(project_dir)`
       -> `manager.compute_deploy_order` (Phase 1) -> `manifest_mod.get_extension` per name —
       mirroring `manager.find_orphans`'s existing assembly pattern rather than inventing a new
       shape.
-- [ ] Have `manager.verify_all` build that array and the ownership map
+- [x] Have `manager.verify_all` build that array and the ownership map
       (`verify_mod.build_ownership_map`) **once**, then pass the map into each per-extension
       verification.
-- [ ] Extend `manager.verify(extension_name, project_dir, opts)` with an optional third argument
+- [x] Extend `manager.verify(extension_name, project_dir, opts)` with an optional third argument
       carrying the prebuilt ownership map; when absent, `manager.verify` assembles the active set
       and builds the map itself, so a standalone single-extension verify is correct on its own.
       The existing two-argument call form must keep working.
-- [ ] Pass the map through to `verify_mod.verify_extension` via its new optional `opts` argument
+- [x] Pass the map through to `verify_mod.verify_extension` via its new optional `opts` argument
       (Phase 2), alongside the existing `config`/`protected_paths` arguments.
-- [ ] Update `manager.verify` / `manager.verify_all` doc comments to state that content-hash
+- [x] Update `manager.verify` / `manager.verify_all` doc comments to state that content-hash
       equality is resolved against each path's deploy-order owner, and that a non-owner's
       declaration of an overlapping path is reported as `overridden`, not as an error.
 

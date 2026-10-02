@@ -1083,11 +1083,41 @@ function M.create(config)
     }
   end
 
-  --- Verify a loaded extension
+  --- Assemble the deploy-ordered `{name, source_dir, manifest}` array for the currently-active
+  --- extension set in `project_dir` -- `manager.list_loaded` -> `manager.compute_deploy_order`
+  --- (Phase 1) -> `manifest_mod.get_extension` per name, mirroring `manager.find_orphans`'s
+  --- existing assembly pattern rather than inventing a new shape. Shared by `manager.verify` and
+  --- `manager.verify_all` below so cross-extension path ownership (`verify_mod.build_ownership_map`)
+  --- is always resolved against the same deploy-order view `resync_all` itself deploys with.
+  --- @param project_dir string
+  --- @return table extensions Array of { name, source_dir, manifest }, in deploy order
+  local function assemble_ordered_extensions(project_dir)
+    local loaded = manager.list_loaded(project_dir)
+    local order = manager.compute_deploy_order(loaded)
+    local extensions = {}
+    for _, name in ipairs(order) do
+      local extension = manifest_mod.get_extension(name, config)
+      if extension then
+        table.insert(extensions, {
+          name = extension.name,
+          source_dir = extension.path,
+          manifest = extension.manifest,
+        })
+      end
+    end
+    return extensions
+  end
+
+  --- Verify a loaded extension. Content-hash equality is resolved against each deployed path's
+  --- deploy-order owner (see `verify_mod.build_ownership_map`): a non-owner's declaration of an
+  --- overlapping path is reported as `overridden` on the relevant category, never as an error.
   --- @param extension_name string Extension name
   --- @param project_dir string|nil Project directory
+  --- @param ownership_map table|nil Prebuilt ownership map from `manager.verify_all`; when
+  ---   omitted, this call assembles the active set and builds its own map, so a standalone
+  ---   single-extension verify is correct on its own.
   --- @return table verification Verification report
-  function manager.verify(extension_name, project_dir)
+  function manager.verify(extension_name, project_dir, ownership_map)
     project_dir = project_dir or vim.fn.getcwd()
     local target_dir = project_dir .. "/" .. config.base_dir
 
@@ -1101,20 +1131,38 @@ function M.create(config)
       }
     end
 
+    if not ownership_map then
+      local extensions = assemble_ordered_extensions(project_dir)
+      ownership_map = verify_mod.build_ownership_map(extensions, target_dir, { agents_subdir = config.agents_subdir })
+    end
+
     local protected_paths = loader_mod.load_syncprotect(project_dir, config.base_dir)
-    return verify_mod.verify_extension(extension_name, extension.path, target_dir, config, protected_paths)
+    return verify_mod.verify_extension(
+      extension_name, extension.path, target_dir, config, protected_paths,
+      { ownership = ownership_map }
+    )
   end
 
-  --- Verify all loaded extensions
+  --- Verify all loaded extensions. Builds the deploy-ordered active set and the cross-extension
+  --- ownership map ONCE (not once per extension), then passes the same map into every
+  --- per-extension `manager.verify` call -- see `verify_mod.build_ownership_map`'s own doc
+  --- comment for the ownership-resolution contract this implements.
   --- @param project_dir string|nil Project directory
   --- @return table results Array of verification reports
   function manager.verify_all(project_dir)
     project_dir = project_dir or vim.fn.getcwd()
+    local target_dir = project_dir .. "/" .. config.base_dir
+    local extensions = assemble_ordered_extensions(project_dir)
+    local ownership_map = verify_mod.build_ownership_map(extensions, target_dir, { agents_subdir = config.agents_subdir })
+
+    -- Iterate `list_loaded` directly (not `extensions`, which silently drops any loaded name
+    -- `manifest_mod.get_extension` could not resolve): every previously-loaded extension still
+    -- gets its own report -- including the pre-existing "Extension not found" failure shape for
+    -- an unresolvable one -- exactly as before this phase, only now sharing one prebuilt map.
     local loaded = manager.list_loaded(project_dir)
     local results = {}
-
     for _, ext_name in ipairs(loaded) do
-      local verification = manager.verify(ext_name, project_dir)
+      local verification = manager.verify(ext_name, project_dir, ownership_map)
       table.insert(results, verification)
     end
 
