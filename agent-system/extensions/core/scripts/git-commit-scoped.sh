@@ -60,6 +60,11 @@
 #   3 - contended-path refusal (V5, --task only): a positive pathspec entry is listed as
 #       contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused
 #       before any git add; nothing staged. Never emitted when --task is omitted.
+#   4 - the V6 refusal below: one or more positive pathspecs were dropped as genuinely unmatched
+#       (V2 case 3) AND the commit attempt produced no commit (exit code 1, "nothing to
+#       commit"). Non-blocking under every current caller's `cmd || echo "WARN: ...(non-
+#       blocking)"` idiom (bash's `A || B` yields B's exit status regardless of A's own code),
+#       so this is observability, not an enforcement change — see V6 below.
 #
 # Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
 #   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
@@ -86,6 +91,20 @@
 #        the working-tree/build isolation posture decision record's mode-1b finding). --task
 #        opts a caller into the fix: a per-path first-claim lease consulted against the
 #        cycle-scoped contention manifest before any git add is attempted.
+#   V6 - a PARTIAL pathspec drop (some, not all, positive entries hit V2 case 3) is indistinguishable
+#        from the ordinary, benign "nothing changed" no-op once the survivors themselves carry no
+#        diff: both shapes land on `git commit`'s own exit 1 ("nothing to commit"), and the one
+#        difference -- a WARN line on stderr -- is not inspected by any current caller. (V3 above
+#        already refuses the OTHER half of this gap, where EVERY positive pathspec drops; V6
+#        covers what V3 does not.) This script refuses to report that ambiguous outcome as plain
+#        "nothing to commit": when at least one pathspec was dropped as genuinely unmatched AND
+#        the commit attempt produced no commit, it exits `4` with a loud ERROR naming every
+#        dropped path, instead of falling through to the generic NOTE. The predicate deliberately
+#        does NOT try to distinguish "nothing to commit" from "git commit genuinely failed" by
+#        parsing commit output -- both sub-cases are already nonzero and already swallowed
+#        identically by every current caller, so splitting them buys nothing and adds a
+#        dependency on git's own wording. See context/standards/git-staging-scope.md for the
+#        recorded caller-escalation residual: no caller branches on this exit code today.
 
 set -euo pipefail
 
@@ -282,6 +301,9 @@ fi
 # one shared `pathspecs` array as before.
 filtered_pathspecs=()
 add_pathspecs=()
+# dropped_pathspecs (V6): every pathspec dropped by case 3 below -- never case 1 or case 2 --
+# so the V6 gate after the commit attempt can tell a genuine drop apart from a routine no-op.
+dropped_pathspecs=()
 for p in "${pathspecs[@]}"; do
   case "$p" in
     :\(exclude\)*)
@@ -308,8 +330,10 @@ for p in "${pathspecs[@]}"; do
         filtered_pathspecs+=("$p")
       else
         # Case 3 — genuinely unmatched: neither on disk, nor tracked, nor in HEAD. Drop with the
-        # existing WARN message, unchanged behavior.
+        # existing WARN message, unchanged behavior. Also recorded in dropped_pathspecs (V6) --
+        # this is the ONLY branch that appends to it; case 1 and case 2 above must never touch it.
         echo "WARN: git-commit-scoped.sh dropping unmatched pathspec '${p}' (no such file/directory on disk and not tracked by git); this path will NOT be part of the commit." >&2
+        dropped_pathspecs+=("$p")
       fi
       ;;
   esac
@@ -443,6 +467,16 @@ if [ "$commit_exit" -ne 0 ] && echo "$commit_output" | grep -qi 'index\.lock'; t
 fi
 
 echo "$commit_output"
+
+# --- V6 safety gate: refuse to report an ambiguous "nothing to commit" when a pathspec was
+# genuinely dropped. Fires ONLY when a drop occurred AND the commit attempt produced no commit --
+# an all-resolve caller (dropped_pathspecs empty) always falls through to the unchanged NOTE/exit
+# below, which is the dispatch's HARD CONSTRAINT. The array expansion is guarded behind the
+# ${#dropped_pathspecs[@]} test so `set -u` never sees an unguarded empty-array expansion. ---
+if [ "$commit_exit" -ne 0 ] && [ "${#dropped_pathspecs[@]}" -gt 0 ]; then
+  echo "ERROR: git-commit-scoped.sh refuses to report success as plain \"nothing to commit\" -- one or more pathspecs were dropped as unmatched AND the commit attempt produced no commit (Verified Finding V6). Dropped path(s): ${dropped_pathspecs[*]}" >&2
+  exit 4
+fi
 
 if [ "$commit_exit" -ne 0 ]; then
   echo "NOTE: Nothing to commit or git commit failed (non-blocking)" >&2

@@ -196,23 +196,23 @@ numbering has moved, continue from the actual highest T-number rather than forci
 
 ---
 
-### Phase 2: Add the Dropped-Pathspec Ledger and the V6 Refusal Gate [NOT STARTED]
+### Phase 2: Add the Dropped-Pathspec Ledger and the V6 Refusal Gate [COMPLETED]
 
 **Goal**: Implement corrected option (c) in `git-commit-scoped.sh`: record every genuinely-dropped
 pathspec, and refuse with a new exit code `4` and a loud `ERROR:` when a drop occurred and no
 commit was produced. Leave every all-resolve path byte-identical.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
       editing (concurrency note), locating the V2 classification loop by its `Case 3 — genuinely
-      unmatched` comment and the commit attempt by its `commit_exit` assignments.
-- [ ] Declare `dropped_pathspecs=()` alongside the existing `filtered_pathspecs=()` /
-      `add_pathspecs=()` declarations.
-- [ ] In the V2 loop's **case-3 branch only** (the `else` carrying the existing
+      unmatched` comment and the commit attempt by its `commit_exit` assignments. *(completed)*
+- [x] Declare `dropped_pathspecs=()` alongside the existing `filtered_pathspecs=()` /
+      `add_pathspecs=()` declarations. *(completed)*
+- [x] In the V2 loop's **case-3 branch only** (the `else` carrying the existing
       `WARN: ... dropping unmatched pathspec` message), append `$p` to `dropped_pathspecs`.
       Do **not** touch the case-1 or case-2 branches — a one-line misplacement into case 2 breaks
-      the already-staged-deletion path the V2 three-way split exists to protect.
-- [ ] Add the V6 gate immediately after the existing
+      the already-staged-deletion path the V2 three-way split exists to protect. *(completed)*
+- [x] Add the V6 gate immediately after the existing
       `if [ "$commit_exit" -ne 0 ]; then echo "NOTE: Nothing to commit..."` block, before the
       final `exit "$commit_exit"`:
       - Fire only when `[ "$commit_exit" -ne 0 ] && [ "${#dropped_pathspecs[@]}" -gt 0 ]`.
@@ -221,26 +221,26 @@ commit was produced. Leave every all-resolve path byte-identical.
         commit) and naming **every** dropped path.
       - `exit 4`.
       - Guard the array expansion behind the `${#dropped_pathspecs[@]}` test so `set -u` never
-        sees an unguarded empty-array expansion.
-- [ ] When `${#dropped_pathspecs[@]}` is zero, fall through to the existing `exit "$commit_exit"`
+        sees an unguarded empty-array expansion. *(completed)*
+- [x] When `${#dropped_pathspecs[@]}` is zero, fall through to the existing `exit "$commit_exit"`
       with today's exact `NOTE: Nothing to commit or git commit failed (non-blocking)` wording —
-      the hard constraint, unchanged.
-- [ ] Add `4` to the script header's **Exit codes** table, describing the V6 condition and noting
-      that it is nonzero-but-non-blocking under every current caller's `|| echo WARN` idiom.
-- [ ] Add a `V6` entry to the header's **Safety gates** block, in the same voice as V2/V3/V5,
+      the hard constraint, unchanged. *(completed)*
+- [x] Add `4` to the script header's **Exit codes** table, describing the V6 condition and noting
+      that it is nonzero-but-non-blocking under every current caller's `|| echo WARN` idiom. *(completed)*
+- [x] Add a `V6` entry to the header's **Safety gates** block, in the same voice as V2/V3/V5,
       stating the posture, why the drop-count-alone framing is insufficient (V3 already covers the
-      all-dropped case), and why the predicate deliberately does not parse `commit_output`.
-- [ ] Cite durable anchors only in all new comments — the gate label `V6`, exit code `4`,
-      filenames. No task-number references (this file is outside `specs/**`).
-- [ ] Run `bash -n` on the script, then
+      all-dropped case), and why the predicate deliberately does not parse `commit_output`. *(completed)*
+- [x] Cite durable anchors only in all new comments — the gate label `V6`, exit code `4`,
+      filenames. No task-number references (this file is outside `specs/**`). *(completed)*
+- [x] Run `bash -n` on the script, then
       `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`: T1-T10,
-      T11, T13 and V1-V8 must all still pass.
-- [ ] Reproduce the gap case manually in a scratch repo (mirroring the research's method: a
+      T11, T13 and V1-V8 must all still pass. *(completed: 25 passed, 0 failed)*
+- [x] Reproduce the gap case manually in a scratch repo (mirroring the research's method: a
       `mktemp -d` repo with the script plus `deploy-root-guard.sh`, `task-lock.sh`,
       `lib/common.sh` copied into `.claude/scripts/`): one dropped pathspec, survivors with no
       diff. Confirm exit `4` and the `ERROR:` naming the dropped path. Confirm the zero-drop
-      no-diff case still exits `1` with today's `NOTE:` wording.
-- [ ] Commit this phase's single file with an explicit file pathspec.
+      no-diff case still exits `1` with today's `NOTE:` wording. *(completed: verified in a mktemp -d scratch repo)*
+- [x] Commit this phase's single file with an explicit file pathspec. *(completed)*
 
 **Timing**: 1 hour
 
