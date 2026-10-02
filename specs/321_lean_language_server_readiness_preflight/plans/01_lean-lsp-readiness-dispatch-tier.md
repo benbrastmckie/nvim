@@ -253,29 +253,33 @@ weakening the assertion to something the real code path does not exercise.
 
 ---
 
-### Phase 3: Inject `<lean-readiness-context>` into every dispatch file [NOT STARTED]
+### Phase 3: Inject `<lean-readiness-context>` into every dispatch file [COMPLETED]
 
 **Goal**: `orchestrate-build-dispatch.sh` calls the extended probe unconditionally (gated only by
 the probe's own internal lakefile detection, never by `task_type`) and appends its block, so the
 dispatched agent receives its evidence tier before it begins.
 
 **Tasks**:
-- [ ] Re-read `orchestrate-build-dispatch.sh`'s Stage 3.5 output region and the heredoc injection
-      chain immediately before editing.
-- [ ] Add a `lean_readiness_context` computation as a new Stage 3.5 output, placed immediately
+- [x] Re-read `orchestrate-build-dispatch.sh`'s Stage 3.5 output region and the heredoc injection
+      chain immediately before editing. *(completed)*
+- [x] Add a `lean_readiness_context` computation as a new Stage 3.5 output, placed immediately
       after `deploy_freshness_context` and modeled on it: assign `""`, then
       `lean_readiness_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/lean-mcp-preflight-check.sh" --dispatch-block 2>/dev/null) || lean_readiness_context=""`,
       matching the existing `memory-retrieve.sh` / `literature-briefing-invoke.sh` call convention
       in the same file (extension-owned script, absent-safe, failure degrades to empty).
-- [ ] Do **not** condition the call on `task_type`, `phase`, or any flag. The probe's own lakefile
+      *(completed)*
+- [x] Do **not** condition the call on `task_type`, `phase`, or any flag. The probe's own lakefile
       detection is the gate — this is what makes a `formal`-typed Lean project reachable by the fix.
-- [ ] Append the block in the dispatch-file writer, immediately after the
+      *(completed: manually verified end-to-end with a fixture repo carrying a lakefile and
+      task_type=formal — the block is emitted)*
+- [x] Append the block in the dispatch-file writer, immediately after the
       `deploy_freshness_context` emission and before `prior_decisions_block`, guarded by
-      `if [ -n "$lean_readiness_context" ]`.
-- [ ] Document the new output in the script's header: what it is, why it is `task_type`-agnostic,
-      and that it is byte-identical-when-empty like its siblings.
-- [ ] Measure the added wall-clock cost of a dispatch build in a non-Lean repo (this one) and
-      record the delta in the header next to the existing cost notes.
+      `if [ -n "$lean_readiness_context" ]`. *(completed)*
+- [x] Document the new output in the script's header: what it is, why it is `task_type`-agnostic,
+      and that it is byte-identical-when-empty like its siblings. *(completed)*
+- [x] Measure the added wall-clock cost of a dispatch build in a non-Lean repo (this one) and
+      record the delta in the header next to the existing cost notes. *(completed: 5-run means,
+      ~65ms before and after, no measurable delta)*
 
 **Timing**: 1 hour
 

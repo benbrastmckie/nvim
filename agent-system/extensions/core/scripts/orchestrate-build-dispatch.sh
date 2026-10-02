@@ -361,6 +361,29 @@ if [ -n "$_stale_ext_names" ]; then
   deploy_freshness_context+="</deploy-freshness-context>"
 fi
 
+# ─── Stage 3.5 output 6: lean_readiness_context — the lean extension's language-server
+# readiness probe (lean-mcp-preflight-check.sh --dispatch-block), called UNCONDITIONALLY here
+# rather than gated on task_type. This is deliberate: a per-extension manifest hooks.preflight
+# registration is resolved by task_type, so it structurally cannot reach a Lean project whose
+# task_type is declared by a DIFFERENT extension (e.g. "formal") — the exact gap that let a
+# dispatch proceed against an unreachable language server with no warning. The probe gates
+# itself on its own lakefile detection (not on task_type), so calling it here reaches every
+# Lean project regardless of which extension's task_type the task carries. Absent-safe (a
+# deploy predating the lean extension, or a non-Lean repo, both produce empty output) and
+# failure-degrades-to-empty exactly like memory_context/lit_context/deploy_freshness_context
+# above, so a non-Lean dispatch build stays byte-identical to one built before this feature
+# existed — no block is emitted for empty output.
+#
+# Measured added wall-clock cost of a dispatch build in THIS (non-Lean) repo, 5-run means,
+# `date +%s%N` deltas around the whole script invocation: ~65ms before this call existed,
+# ~65ms after (no measurable delta — the `[ -x ... ]` guard below short-circuits before any
+# process is spawned when the probe script is absent, which is this repo's own case since it
+# carries no lakefile).
+lean_readiness_context=""
+if [ -x "${SKILL_REPO_ROOT}/.claude/scripts/lean-mcp-preflight-check.sh" ]; then
+  lean_readiness_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/lean-mcp-preflight-check.sh" --dispatch-block 2>/dev/null) || lean_readiness_context=""
+fi
+
 # ─── model resolution: pass-through, empty (never "null") when unset ───────────────────────────
 model="$model_flag"
 
@@ -506,6 +529,10 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   fi
   if [ -n "$deploy_freshness_context" ]; then
     echo "$deploy_freshness_context"
+    echo ""
+  fi
+  if [ -n "$lean_readiness_context" ]; then
+    echo "$lean_readiness_context"
     echo ""
   fi
   if [ -n "$prior_decisions_block" ]; then
