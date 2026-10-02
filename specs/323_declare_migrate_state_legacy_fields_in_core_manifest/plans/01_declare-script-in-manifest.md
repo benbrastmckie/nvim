@@ -149,27 +149,30 @@ adding a duplicate.
 
 ---
 
-### Phase 2: Refresh the stale script count in core README.md [NOT STARTED]
+### Phase 2: Refresh the stale script count in core README.md [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/README.md` reports a script count consistent with
 `provides.scripts`, and its mtime is newer than `manifest.json`'s, clearing the drift WARN.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/README.md` immediately before editing.
-- [ ] Recompute the authoritative count:
+- [x] Re-read `agent-system/extensions/core/README.md` immediately before editing. *(completed)*
+- [x] Recompute the authoritative count:
       `jq '.provides.scripts | length' agent-system/extensions/core/manifest.json`
-      (expected 200 after Phase 1).
-- [ ] Update the Overview table row `| Scripts | 27 | ... |` to the recomputed count, using the
+      (expected 200 after Phase 1). *(completed: 200)*
+- [x] Update the Overview table row `| Scripts | 27 | ... |` to the recomputed count, using the
       approximate style already present in neighboring rows (`15+ dirs`, `23+ files`) if an exact
-      number would invite the same drift.
-- [ ] Update the matching Architecture-tree comment `├── scripts/   # 27 utility scripts` (around
-      line 109) to the same figure so the two do not disagree.
-- [ ] Optionally add `migrate-state-legacy-fields.sh` to the tree's representative sample list; if
+      number would invite the same drift. *(completed: used exact figure 200, matching
+      neighboring exact-count rows like Hooks | 11)*
+- [x] Update the matching Architecture-tree comment `├── scripts/   # 27 utility scripts` (around
+      line 109) to the same figure so the two do not disagree. *(completed)*
+- [x] Optionally add `migrate-state-legacy-fields.sh` to the tree's representative sample list; if
       skipped, note in the implementation summary that no sibling migration script is named there
-      either, so the omission is intentional rather than an oversight.
-- [ ] Confirm the README edit is saved after the Phase 1 manifest edit:
-      `stat -c %Y` on both files, README newer.
-- [ ] Commit this phase's single file (explicit path).
+      either, so the omission is intentional rather than an oversight. *(deviation: skipped — no
+      sibling migration script, including migrate-directory-padding.sh, is named individually in
+      the representative sample list; adding only this one would be inconsistent)*
+- [x] Confirm the README edit is saved after the Phase 1 manifest edit:
+      `stat -c %Y` on both files, README newer. *(completed: README 1790978709 > manifest 1790978634)*
+- [x] Commit this phase's single file (explicit path). *(completed)*
 
 **Timing**: 0.25 hours
 

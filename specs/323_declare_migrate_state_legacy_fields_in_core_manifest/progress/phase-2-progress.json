@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Refresh the stale script count in core README.md",
+  "started_at": "2026-10-02T00:10:00Z",
+  "last_updated": "2026-10-02T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read README.md, recompute authoritative count", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Update Overview table row and Architecture-tree comment to 200", "status": "done", "files_touched": ["agent-system/extensions/core/README.md"]},
+    {"id": 3, "description": "Confirm README mtime newer than manifest mtime, commit", "status": "done", "files_touched": ["agent-system/extensions/core/README.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.4",
+      "description": "Optionally add migrate-state-legacy-fields.sh to the Architecture tree's representative sample list",
+      "type": "skipped",
+      "reason": "No sibling migration script, including migrate-directory-padding.sh, is named individually in the representative sample list; adding only this one would be inconsistent with the file's representative-sample design (explicit Non-Goal in the plan).",
+      "annotation": "*(deviation: skipped — no sibling migration script is named individually in the representative sample list)*"
+    }
+  ],
+  "handoff_count": 0
+}

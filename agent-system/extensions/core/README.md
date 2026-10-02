@@ -10,7 +10,7 @@ Foundational system payload providing the base agent infrastructure for Claude C
 | Agents | 8 | Research, implementation, planning, review, meta, revision, spawn |
 | Skills | 16 | Orchestration, team mode, utilities, and domain routing |
 | Rules | 6 | Auto-applied rules for state, git, artifacts, workflows, errors |
-| Scripts | 27 | Validation, memory, extension management, hooks, linting |
+| Scripts | 200 | Validation, memory, extension management, hooks, linting |
 | Hooks | 11 | Session logging, notifications, validation, memory nudging |
 | Context | 15+ dirs | Architecture, patterns, guides, schemas, workflows, reference |
 | Docs | 23+ files | Standards documentation, architecture guides, templates |
@@ -106,7 +106,7 @@ core/
 │   ├── state-management.md
 │   └── workflows.md
 │
-├── scripts/                   # 27 utility scripts
+├── scripts/                   # 200 utility scripts
 │   ├── check-extension-docs.sh, export-to-markdown.sh
 │   ├── install-extension.sh, uninstall-extension.sh
 │   ├── memory-retrieve.sh, validate-*.sh
