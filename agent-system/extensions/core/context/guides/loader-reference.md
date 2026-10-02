@@ -140,14 +140,14 @@ The extension loading system consists of 8 Lua source files:
 
 | File | Description |
 |------|-------------|
-| `init.lua` | Public API. Provides `M.create(config)` returning a manager with `load()`, `unload()`, `reload()`, `resync_all()`, `wipe()`, `regenerate()`, `get_status()`, `list_available()`, `list_loaded()`, `get_details()`, `verify()`, `verify_all()`. Orchestrates all other modules. |
+| `init.lua` | Public API. Provides `M.create(config)` returning a manager with `load()`, `unload()`, `reload()`, `resync_all()`, `compute_deploy_order()`, `wipe()`, `regenerate()`, `get_status()`, `list_available()`, `list_loaded()`, `get_details()`, `verify()`, `verify_all()`. Orchestrates all other modules. |
 | `loader.lua` | File copy engine. `M.copy_category()` (descriptor-driven, covers all 13 category keys), `M.check_conflicts()`, `M.remove_installed_files()`, `M.load_syncprotect()`. Handles permission preservation, merge-copy, install-once, and symlink-guard semantics per `CATEGORY_DESCRIPTORS`. |
 | `merge.lua` | Merge strategies. `generate_claudemd()`, `generate_opencode_json()`, `append_index_entries()`, `remove_index_entries_tracked()`, `remove_orphaned_index_entries()`, `merge_settings()`, `unmerge_settings()`, `inject_section()`, `remove_section()`. |
 | `state.lua` | State tracking via `extensions.json`. `read()`, `write()`, `mark_loaded()`, `mark_unloaded()`, `is_loaded()`, `needs_update()`, `get_installed_files()`, `get_installed_dirs()`, `get_merged_sections()`, `get_data_skeleton_files()`, `list_loaded()`, `get_extension_info()`. |
 | `manifest.lua` | Extension discovery and manifest validation. `get_extension()`, `list_extensions()`. Validates required fields (`name`, `version`, `description`) and known `provides` categories. |
 | `config.lua` | Configuration presets. `M.create(opts)` for custom config, `M.claude()` preset for `.claude/` target, `M.opencode()` preset for `.opencode/` target. |
 | `picker.lua` | Telescope picker UI. Provides the extension browser launched from the extension picker. Reads manager API from `init.lua` to show status, details, and trigger load/unload. |
-| `verify.lua` | Post-load integrity checks. `verify_extension()` confirms all manifested files were actually copied to target, index entries exist in `index.json`, settings entries were merged, AND (declared-vs-deployed parity plus content-hash equality across every `provides.*` category, driven by `loader.CATEGORY_DESCRIPTORS`) that no deployed file's content has drifted from its source. `notify_results()` reports failures to the user. |
+| `verify.lua` | Post-load integrity checks. `verify_extension()` confirms all manifested files were actually copied to target, index entries exist in `index.json`, settings entries were merged, AND (declared-vs-deployed parity plus content-hash equality across every `provides.*` category, driven by `loader.CATEGORY_DESCRIPTORS`) that no deployed file's content has drifted from its source. Content-hash equality is **ownership-resolved**: `build_ownership_map()` determines, per deployed leaf, which active extension actually owns it (see "Cross-extension path ownership" below), and the hash comparison runs only for the owner -- a non-owner's declaration of the same path is reported as `overridden`, never as an error. `notify_results()` reports failures to the user. |
 
 ---
 
@@ -176,11 +176,46 @@ All operations run inside a `pcall` block. On failure, `remove_installed_files()
 all copied files and directories before the error is returned to the caller.
 
 `manager.resync_all(opts)` force-resyncs (`opts.force = true`) every currently-active extension
-in Kahn's-algorithm dependency order, reusing the same `manager.load` path above rather than a
-separate loop. `manager.wipe(opts)` performs the full destructive sequence (snapshot
-`settings.json`/`settings.local.json`/`.syncprotect`-listed paths -> `rm -rf target_dir` ->
-`manager.regenerate`, which restores the snapshot as the merge base BEFORE re-running the load
+in Kahn's-algorithm dependency order -- computed by `manager.compute_deploy_order(loaded)`, which
+`resync_all` calls rather than inlining the sort itself -- reusing the same `manager.load` path
+above rather than a separate loop. `manager.wipe(opts)` performs the full destructive sequence
+(snapshot `settings.json`/`settings.local.json`/`.syncprotect`-listed paths -> `rm -rf target_dir`
+-> `manager.regenerate`, which restores the snapshot as the merge base BEFORE re-running the load
 loop above for every surviving active extension, then clears the snapshot staging directory).
+
+---
+
+## Cross-extension path ownership
+
+Two active extensions may declare the same deployed path (e.g. both ship a file under
+`provides.context`'s `contracts/` directory). `loader.copy_file` overwrites unconditionally, so
+the extension that is LATER in `manager.compute_deploy_order`'s dependency-topological order is
+the one whose copy actually survives on disk -- deploy order IS the cross-extension precedence
+rule, with no separate `owner`/`precedence` manifest field.
+
+Verification resolves ownership the same way: `verify.lua`'s `M.build_ownership_map(extensions,
+target_dir, opts)` takes the already-deploy-ordered active set and, for every category
+`loader.CATEGORY_DESCRIPTORS` covers, lets a later extension's leaf declaration overwrite an
+earlier one's in the resulting `{rel_path -> {owner, source_path}}` map -- mirroring
+`copy_file`'s own last-write-wins semantics exactly. Ownership is resolved strictly per leaf
+`rel_path`, never per manifest directory entry: if extension A ships a file under a directory
+that extension B also declares but does not itself ship, that file stays A-owned even though the
+directory entry is declared by both.
+
+`verify_manifest_category`'s hash comparison then runs ONLY for the resolved owner. A non-owner's
+declaration of an overlapping path is reported in that category's `overridden` list (informational,
+never an error, never affecting `passed`/`status`) instead of being hash-compared against a
+source it does not actually own. `manager.verify_all` builds the ownership map once and shares it
+across every per-extension `manager.verify` call; `manager.verify` also accepts a prebuilt map as
+an optional third argument and otherwise builds its own, so a standalone single-extension verify
+stays correct on its own. Omitting the map entirely (or a leaf with no recorded owner) preserves
+the pre-ownership-resolution behavior exactly: every declared leaf is compared against its own
+declarer's source.
+
+**Rejected alternative**: a "matches-any-declarer" fallback (treat a hash match against ANY
+declaring extension's source as clean, without resolving a single owner) was considered and
+rejected, because a coincidental hash match against an unrelated extension's file would mask real
+content drift -- the opposite of what this check exists to catch.
 
 ---
 

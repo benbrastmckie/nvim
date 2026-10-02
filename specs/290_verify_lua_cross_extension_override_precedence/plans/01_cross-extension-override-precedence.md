@@ -396,14 +396,14 @@ is not, export it in Phase 2's file rather than widening this harness to a full 
 
 ---
 
-### Phase 6: Document, deploy, and verify the full gate sweep [NOT STARTED]
+### Phase 6: Document, deploy, and verify the full gate sweep [COMPLETED]
 
 **Goal**: Record the precedence contract where the loader documentation already lives, regenerate
 the deploy tree so the source-store edits land, and confirm the whole gate set is green with the
 three false positives gone and no new findings.
 
 **Tasks**:
-- [ ] Extend `agent-system/extensions/core/context/guides/loader-reference.md`: update the
+- [x] Extend `agent-system/extensions/core/context/guides/loader-reference.md`: update the
       `verify.lua` and `init.lua` rows to mention ownership-resolved content-hash equality and
       `compute_deploy_order`, and add a short "Cross-extension path ownership" subsection stating
       the rule (two active extensions may declare the same deployed path; the later one in
@@ -411,17 +411,17 @@ three false positives gone and no new findings.
       owner the same way and reports a non-owner's declaration as `overridden`, not an error).
       Keep it to the existing document's style; do not create a new context file (which would
       also require `provides.context` and `index-entries.json` registration).
-- [ ] Record the rejected alternative in one sentence: the matches-any-declarer fallback was
+- [x] Record the rejected alternative in one sentence: the matches-any-declarer fallback was
       considered and rejected because a coincidental hash match against an unrelated extension's
       file would mask real drift.
-- [ ] Edit the source store only; do not hand-edit `.claude/context/guides/loader-reference.md`.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` (default, non-destructive) so the Phase 4 and
+- [x] Edit the source store only; do not hand-edit `.claude/context/guides/loader-reference.md`.
+- [x] Run `bash .claude/scripts/deploy-headless.sh` (default, non-destructive) so the Phase 4 and
       Phase 6 source-store edits land in `.claude/`. Confirm the
       `[deploy-headless] RESULT=landed_verify_clean` marker.
-- [ ] Run the full `bash .claude/scripts/verify-deploy.sh` sweep and confirm gate 5 reports zero
+- [x] Run the full `bash .claude/scripts/verify-deploy.sh` sweep and confirm gate 5 reports zero
       findings, gate 16 emits only the corrected warning text, and no gate regressed relative to
       the pre-change baseline captured at the start of this phase.
-- [ ] Capture a short before/after record (the three original `VERIFY_FINDING` lines; the
+- [x] Capture a short before/after record (the three original `VERIFY_FINDING` lines; the
       post-change zero-finding `VERIFY_DONE count=7`) for the implementation summary.
 
 **Timing**: 1 hour
@@ -445,23 +445,23 @@ three false positives gone and no new findings.
 
 ## Testing & Validation
 
-- [ ] Gate 5 (`manager.verify_all`) reports zero findings on a cleanly deployed tree; the three
+- [x] Gate 5 (`manager.verify_all`) reports zero findings on a cleanly deployed tree; the three
       `context/contracts/*.md` false positives are gone.
-- [ ] `build_ownership_map` resolves `lean` as owner of the three overlapping contract leaves and
+- [x] `build_ownership_map` resolves `lean` as owner of the three overlapping contract leaves and
       `core` as owner of core-only `contracts/` leaves (per-leaf granularity).
-- [ ] A staled deployed file on an overlapping path produces exactly one `hash_mismatch`,
+- [x] A staled deployed file on an overlapping path produces exactly one `hash_mismatch`,
       attributed to the resolved owner, not duplicated across declarers.
-- [ ] A staled deployed file on a single-owner path still produces exactly one `hash_mismatch`
+- [x] A staled deployed file on a single-owner path still produces exactly one `hash_mismatch`
       with zero `overridden` entries (no regression in real divergence detection).
-- [ ] Omitting the ownership map reproduces today's exact behavior (backward-compatible optional
+- [x] Omitting the ownership map reproduces today's exact behavior (backward-compatible optional
       argument).
-- [ ] `manager.compute_deploy_order` returns every active extension exactly once with `core` and
+- [x] `manager.compute_deploy_order` returns every active extension exactly once with `core` and
       `literature` before `lean`; `deploy-headless.sh` still deploys successfully.
-- [ ] Gate 16 still warns (never fails) per declaring manifest, with corrected text, and still
+- [x] Gate 16 still warns (never fails) per declaring manifest, with corrected text, and still
       passes when no manifest declares either key.
-- [ ] `bash -n` clean on the edited shell script; headless `require` of both edited Lua modules
+- [x] `bash -n` clean on the edited shell script; headless `require` of both edited Lua modules
       loads without error.
-- [ ] `test-deploy-verify-overlap.sh` exits 0; `run-all.sh` no worse than baseline.
+- [x] `test-deploy-verify-overlap.sh` exits 0; `run-all.sh` no worse than baseline.
 
 ## Artifacts & Outputs
 

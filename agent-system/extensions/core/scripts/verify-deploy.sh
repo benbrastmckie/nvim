@@ -856,9 +856,9 @@ say ""
 fi
 # ── 16. hard_contracts migration warning (non-blocking) ───────────────────────
 # routing_hard/routing_agents_hard are slated for outright removal once the two dependent
-# follow-on tasks land -- NOT a migration to the hard_contracts manifest key, which is unrelated:
-# hard_contracts resolves the list of behavioral-contract files injected into a --hard dispatch's
-# prompt, never a skill or agent name (see context/guides/manifest-routing-schema.md). This gate
+# follow-on tasks land -- NOT a migration to hard_contracts, which is an unrelated manifest key:
+# it resolves the list of behavioral-contract files injected into a --hard dispatch's prompt,
+# never a skill or agent name (see context/guides/manifest-routing-schema.md). This gate
 # WARNS, never fails: both blocks remain genuinely consulted by command-route-skill.sh (for
 # /research, /plan, /implement) and by command-route-agent.sh until those two follow-on tasks
 # land, so declaring them today is not yet an error -- only a removal-is-coming nudge for
