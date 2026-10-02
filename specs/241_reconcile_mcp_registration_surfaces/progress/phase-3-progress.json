@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Item 2 -- delete the five dead manifest mcp_servers fields",
+  "started_at": "2026-10-02T00:15:00Z",
+  "last_updated": "2026-10-02T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete mcp_servers from filetypes/manifest.json", "status": "done", "files_touched": ["agent-system/extensions/filetypes/manifest.json"], "note": "minimal diff, only removed block"},
+    {"id": 2, "description": "Delete mcp_servers from founder/manifest.json", "status": "done", "files_touched": ["agent-system/extensions/founder/manifest.json"], "note": "minimal diff, only removed block"},
+    {"id": 3, "description": "Delete mcp_servers from lean/manifest.json", "status": "done", "files_touched": ["agent-system/extensions/lean/manifest.json"], "note": "minimal diff; provides.hooks (lean-lsp-register-project.sh) untouched"},
+    {"id": 4, "description": "Delete mcp_servers from memory/manifest.json", "status": "done", "files_touched": ["agent-system/extensions/memory/manifest.json"], "note": "minimal diff; settings-fragment.json (different file/mechanism) untouched, hash verified unchanged"},
+    {"id": 5, "description": "Delete mcp_servers from nix/manifest.json (trap name mcp-nixos)", "status": "done", "files_touched": ["agent-system/extensions/nix/manifest.json"], "note": "minimal diff; settings-fragment.json still carries mcp__nixos__nix and mcp__nixos__nix_versions"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

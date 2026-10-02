@@ -62,17 +62,5 @@
       "source": "settings-fragment.json",
       "target": ".claude/settings.local.json"
     }
-  },
-  "mcp_servers": {
-    "obsidian-memory": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@anthropic-ai/obsidian-claude-code-mcp@latest"
-      ],
-      "env": {
-        "OBSIDIAN_WS_PORT": "22360"
-      }
-    }
   }
 }

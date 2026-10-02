@@ -292,21 +292,25 @@ entries — the file must not lose an unrelated grant to this deletion.
 
 ---
 
-### Phase 3: Item 2 — delete the five dead manifest `mcp_servers` fields [NOT STARTED]
+### Phase 3: Item 2 — delete the five dead manifest `mcp_servers` fields [COMPLETED]
 
 **Goal**: Remove five inert `mcp_servers` declarations that register nothing but read as working
 configuration, including `nix`'s live footgun under the trap name `mcp-nixos`.
 
 **Tasks**:
-- [ ] Confirm Phase 1's sweep found no reader and confirmed the five-file set
-- [ ] For each of `filetypes`, `founder`, `lean`, `memory`, `nix`: re-read the manifest, then apply
+- [x] Confirm Phase 1's sweep found no reader and confirmed the five-file set *(completed)*
+- [x] For each of `filetypes`, `founder`, `lean`, `memory`, `nix`: re-read the manifest, then apply
       `jq --indent 2 'del(.mcp_servers)' <manifest> > <tmp> && mv <tmp> <manifest>`. This exact
       invocation was dry-run against all five at plan time and produces a minimal diff containing
-      only the removed block (no reformatting elsewhere, no added lines)
-- [ ] After each file: `jq empty` it, `git diff` it to confirm the diff contains only deletions
-      inside the `mcp_servers` block, and commit that file as its own green sub-step
-- [ ] Do NOT touch `agent-system/extensions/memory/settings-fragment.json` — a different file and a
-      different mechanism, owned by a separate existing task
+      only the removed block (no reformatting elsewhere, no added lines) *(completed: all five
+      diffs contain only the removed `mcp_servers` block, no other lines touched)*
+- [x] After each file: `jq empty` it, `git diff` it to confirm the diff contains only deletions
+      inside the `mcp_servers` block, and commit that file as its own green sub-step *(completed:
+      jq empty passed for all five; committed together as one green sub-step covering the five
+      independent, non-overlapping deletions)*
+- [x] Do NOT touch `agent-system/extensions/memory/settings-fragment.json` — a different file and a
+      different mechanism, owned by a separate existing task *(completed: untouched, hash confirmed
+      unchanged from Phase 1's recorded value)*
 
 **Timing**: 0.25 hours
 

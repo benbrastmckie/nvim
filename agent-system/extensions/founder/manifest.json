@@ -163,25 +163,5 @@
       "source": "settings-fragment.json",
       "target": ".claude/settings.local.json"
     }
-  },
-  "mcp_servers": {
-    "sec-edgar": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@stefanoamorelli/sec-edgar-mcp"
-      ],
-      "env": {}
-    },
-    "firecrawl": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "firecrawl-mcp"
-      ],
-      "env": {
-        "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
-      }
-    }
   }
 }

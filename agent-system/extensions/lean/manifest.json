@@ -139,13 +139,5 @@
       "source": "opencode-agents.json",
       "target": "opencode.json"
     }
-  },
-  "mcp_servers": {
-    "lean-lsp": {
-      "command": "uvx",
-      "args": [
-        "lean-lsp-mcp"
-      ]
-    }
   }
 }

@@ -105,23 +105,5 @@
       "source": "settings-fragment.json",
       "target": ".claude/settings.local.json"
     }
-  },
-  "mcp_servers": {
-    "superdoc": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@superdoc-dev/mcp"
-      ],
-      "env": {}
-    },
-    "openpyxl": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@jonemo/openpyxl-mcp"
-      ],
-      "env": {}
-    }
   }
 }

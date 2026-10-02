@@ -66,14 +66,6 @@
       "target": "opencode.json"
     }
   },
-  "mcp_servers": {
-    "mcp-nixos": {
-      "command": "uvx",
-      "args": [
-        "mcp-nixos"
-      ]
-    }
-  },
   "hooks": {
     "preflight": "scripts/nix-preflight.sh",
     "context_injection": "scripts/nix-context.sh"
