@@ -377,6 +377,28 @@ else
 fi
 
 # =====================================================================
+# T12 (research case B): pins the V6 posture this task adds -- the gap T11 (all-dropped, V3) and
+# T13 (partial drop with a surviving diff) do NOT cover. One positive pathspec is unmatched, but
+# the SURVIVING pathspec is tracked, present, and unmodified, so `git commit` finds nothing to
+# commit (exit 1, pre-V6 behavior). The V6 gate refuses to report that as the plain, ambiguous
+# "nothing to commit" NOTE: it exits 4 with a loud ERROR naming the dropped path instead.
+# =====================================================================
+
+repo_t12="$(build_repo covered)"
+before_t12=$(git -C "$repo_t12" rev-list --count HEAD)
+out_t12="$(run_commit "$repo_t12" --message "T12 probe commit" --session "sess_t12" -- "specs/999_probe/file.txt" "specs/999_probe/plans/01_absent.md" 2>&1)"
+rc_t12=$?
+after_t12=$(git -C "$repo_t12" rev-list --count HEAD 2>/dev/null || echo "$before_t12")
+
+if [ "$rc_t12" -eq 4 ] && [ "$after_t12" -eq "$before_t12" ] \
+  && echo "$out_t12" | grep -q "ERROR:.*01_absent\.md" \
+  && ! echo "$out_t12" | grep -q "^NOTE: Nothing to commit"; then
+  pass "T12: V6 posture pinned -- partial drop with no surviving diff refuses as exit 4 (no commit, git log unchanged), ERROR names the dropped path, generic NOTE is not the only diagnostic"
+else
+  fail "T12: expected rc=4, no new commit, ERROR naming 01_absent.md, no bare NOTE-only output; got rc=$rc_t12 before=$before_t12 after=$after_t12 output=$out_t12"
+fi
+
+# =====================================================================
 # T13 (research case C): a legitimate partial drop -- one pathspec names an artifact this
 # caller's phase did not (yet) produce, but a survivor pathspec DOES carry a real diff. This is
 # the HARD CONSTRAINT's partial-drop half and must keep succeeding exactly as before, both

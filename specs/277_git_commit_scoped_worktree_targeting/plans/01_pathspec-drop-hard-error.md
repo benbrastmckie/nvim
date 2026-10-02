@@ -270,28 +270,28 @@ labels rather than on these line numbers, which may have shifted.
 
 ---
 
-### Phase 3: Pin the V6 Posture and Re-Verify the Boundary Lint [NOT STARTED]
+### Phase 3: Pin the V6 Posture and Re-Verify the Boundary Lint [COMPLETED]
 
 **Goal**: Add the dedicated assertion for the newly-implemented posture (the dispatch's test items
 (i) and (ii), the research's case B) and confirm the adjacent boundary lint is still green.
 
 **Tasks**:
-- [ ] Re-read the test file immediately before editing.
-- [ ] Add **T12** (research case B — the gap this task closes): a `covered` scratch repo where one
+- [x] Re-read the test file immediately before editing. *(completed)*
+- [x] Add **T12** (research case B — the gap this task closes): a `covered` scratch repo where one
       positive pathspec is unmatched (e.g. `specs/999_probe/plans/01_absent.md`) and the
       survivors are tracked, present, and **unmodified** (so `git commit` finds nothing). Assert
       `rc == 4`, HEAD unchanged (`rev-list --count` identical before/after, the "no commit
       created" half), the `ERROR:` line naming the dropped path, and that the generic
       `NOTE: Nothing to commit` wording is *not* the only diagnostic emitted. Verify the
-      no-commit claim via `git log`, not exit code alone.
-- [ ] Extend T12's header comment to name the posture it pins, so a future reader sees the V6
-      contract stated in the test as well as in the script.
-- [ ] Run the full suite; all of T1-T13 and V1-V8 must pass.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh`
+      no-commit claim via `git log`, not exit code alone. *(completed)*
+- [x] Extend T12's header comment to name the posture it pins, so a future reader sees the V6
+      contract stated in the test as well as in the script. *(completed)*
+- [x] Run the full suite; all of T1-T13 and V1-V8 must pass. *(completed: 26 passed, 0 failed)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh`
       (the dispatch explicitly calls out verifying this). Expected green: no code path in this
       change alters the `-- <pathspec>` invocation shape the lint checks for. If it fails,
-      investigate before closing the phase — do not rationalize it as unrelated.
-- [ ] Commit this phase's single file with an explicit file pathspec.
+      investigate before closing the phase — do not rationalize it as unrelated. *(completed: 8 passed, 0 failed)*
+- [x] Commit this phase's single file with an explicit file pathspec. *(completed)*
 
 **Timing**: 0.75 hours
 
