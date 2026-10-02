@@ -227,6 +227,82 @@ it works around) can only be exercised by a real `zot add --pdf` call, or by a f
 `zot` executable placed first on `PATH` that reproduces the real CLI's exit code and stderr text
 for the `add --pdf` (no `--doi`) case.
 
+## 7. `item-add-json`: closing the JSON-body capability gap, and the create-then-attach decomposition
+
+Section 1 established that `zot add` has no path for passing a fully-formed metadata body at
+all — its complete option set is `--doi`, `--url`, `--from-file`, `--pdf`, `--dry-run`,
+`--idempotency-key`, `--no-resolve` (reconfirmed live via `zot add --help` at implementation
+time). When a discovery record already carries a resolved identifier (a DOI, or an arXiv ID),
+relying on `zot add --pdf`'s own best-effort PDF-text DOI extraction throws away metadata the
+bridge already has. `zotero-write.sh item-add-json` closes this gap by POSTing the Zotero Web
+API's items endpoint directly — the ONE exception to `zotero-write.sh`'s otherwise pure
+`zot`-wrapper (Category A) posture (see `zotero-write.sh`'s own header comment for the full
+rationale and the wrapper-contract vocabulary this falls under).
+
+**Envelope-normalization exception**: the Web API's native batch-create response shape is
+`{successful, success, failed}` (keyed by positional index), not the `{"ok":…,"data":{"key":…}}`
+shape every other operation's caller already expects (via `extract_envelope_field`). `item-add-json`
+normalizes the native response into that same shape on success —
+`{"ok":true,"data":{"key":"<KEY>","raw":<original response>}}` — so `extract_envelope_field
+'.data.key'` keeps working unchanged for this operation too. Extending the envelope-confirmation
+discipline from Section 2 above: the **normalized shell** (`.ok`/`.data.key`/`.data.raw`) is
+CONFIRMED-BY-CONSTRUCTION — `zotero-write.sh` builds it itself, so there is no field-name
+ambiguity on that side. What remains UNCONFIRMED is the Web API's own native response shape under
+a real authorized call (field names inside `.data.raw`, and whether `.successful`/`.failed` key
+on string indices or something else in practice) — that confirmation is gated behind a live,
+operator-authorized end-to-end write test against the production library, exercised or
+explicitly declined (see the implementation summary for this gate's outcome).
+
+**Create-then-attach decomposition and its partial-success surface**: unlike the atomic
+`item-add --pdf` call (one `zot` invocation does create+attach together), the resolved path is
+necessarily two separate calls — `item-add-json` (create, no attachment) then `attach-file`
+(attach). This reintroduces the partial-success surface item-add avoided: the item can be created
+successfully while the attach fails (or is skipped — see the quota policy below). The bridge
+surfaces this honestly via an `ATTACHMENT_STATE` global (`attached` | `failed` | `skipped-quota`)
+and a distinct directive token, `ONLINE_INGEST_INGESTED_NO_ATTACHMENT` (exit 0) — the item exists
+and corpus ingest still proceeds from the local staging PDF, but the caller is told the Zotero
+side has no attachment, never silently conflated with the full-success
+`ONLINE_INGEST_INGESTED` token.
+
+**`resolution_path` / `attachment_state` vocabulary** (written onto every ingested `index.json`
+and `literature-index.json` entry, never absent):
+- `resolution_path`: `translation-server` (resolved via `/search`) | `zot-crossref` (no
+  resolution, but a real DOI let `zot add --doi` do its own Crossref lookup on the fallback path)
+  | `zot-bare` (no resolution and no DOI) | `existing-item` (attach-to-existing path; metadata
+  already lived in the Zotero item).
+- `attachment_state`: `attached` | `failed` | `skipped-quota`.
+
+**Quota-aware auto-attach policy**: an attach attempt is gated by `ZOTERO_AUTO_ATTACH`
+(`always` | `under-quota` default | `never`) against a reactive cache in
+`specs/zotero-index.json`'s `quota_state` key (`{used_mb, limit_mb, checked_at, source}`). A
+preflight quota check is structurally impossible — no Web API endpoint exposes current usage,
+only a 413 response body ever reveals it (the confirmed shape: `"File would exceed quota (2745.6
+> 300)"`) — so the cache is necessarily reactive (seeded by a real 413) and/or operator-configured
+(`ZOTERO_ASSUMED_QUOTA_MB`, always logged as "assumed, not API-verified"). A cached state older
+than 24h is treated as unknown, permitting one real attempt. Under `under-quota`, a fresh
+over-quota cache skips the attach entirely — never reaching Zotero's create-child-record-then-
+upload two-step — which is precisely what prevents a new orphan (see Section 2's finding on
+orphaned attachment records). On a real quota-attributable failure, the bridge calls
+`zotero-write.sh orphan-clean` best-effort and non-blocking (see Section 8 below).
+
+## 8. `orphan-clean`: best-effort cleanup of file-less attachment records
+
+`zotero-write.sh orphan-clean` wraps `zot orphans clean --yes` — dead-only orphans (no file
+anywhere) by default. It deliberately does **not** expose `--include-recoverable`: discarding the
+server-side copy too is an operator action taken manually with `zot` directly, never silently via
+this choke-point. Like `item-add`/`item-add-json`, it takes no existing item `KEY` — it operates
+library-wide.
+
+**Local-sync-lag caveat (same as Section 2's orphaned-record finding)**: `zot orphans list/clean`
+read the **local SQLite database only**, never the Web API's live state. An orphan created via a
+Web-API write (the exact kind this bridge's quota-rejected attaches produce) is invisible to
+`orphan-clean` until a Zotero desktop client syncs it down. A record that was never synced to the
+server at all returns `not_found` from the Web API — `zot`'s own guidance is to remove those from
+the Zotero desktop instead. Both of the two known orphaned attachment records from Section 2's
+live test (`5J2WMXDD`, `CB99228V`) are expected to no-op under `orphan-clean` until that sync
+happens; this is a documented limitation, not a bridge defect, and the bridge logs it rather than
+reporting a false success when the cleanup call changes nothing.
+
 ## Reference implementation
 
 `literature-ingest-online.sh` — see its header comment block for the full STABLE CONTRACT (input

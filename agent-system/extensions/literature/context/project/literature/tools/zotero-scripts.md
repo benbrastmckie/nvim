@@ -9,7 +9,7 @@ per-script live/inactive record — this inventory is not itself a deployment cl
 |--------|---------|
 | `zotero-search.sh` | Search the CSL-JSON export by keyword (used by `/literature` Mode A) |
 | `zotero-read.sh` | Read item metadata and PDFs via the `zot` CLI |
-| `zotero-write.sh` | Write/attach files to Zotero items; create new items with a PDF attachment (`item-add`, wrapping `zot add --pdf`) |
+| `zotero-write.sh` | Write/attach files to Zotero items; create new items with a PDF attachment (`item-add`, wrapping `zot add --pdf`), create a new item from a fully-formed JSON body (`item-add-json`, the one operation that POSTs the Web API directly instead of wrapping `zot`), and clean dead orphaned attachment records (`orphan-clean`, wrapping `zot orphans clean --yes`) |
 | `zotero-setup.sh` | Setup wizard: detect the data dir, validate, configure |
 | `zotero-chunk.sh` | Extract PDF text and chunk it into sections |
 | `zotero-attach-chunks.sh` | Upload chunks as Zotero child attachments |
@@ -51,6 +51,17 @@ former one-`python3`-process-per-title loop.
 See `agent-system/extensions/literature/scripts/tests/test-title-sim-dedup.sh` for the
 regression suite locking in the threshold, the WARNING text, the tie-break order, the
 2-argv/batch contracts, and the fail-open paths.
+
+## The `zot` CLI's `delete`/`orphans`/`trash` family
+
+`zot` ships a wider library-maintenance surface than this extension's own context files
+previously documented: `delete`, `orphans clean`/`orphans list`, `trash list`/`trash restore`,
+and `duplicates --by doi|title|both`. `zotero-write.sh orphan-clean` wraps `orphans clean` (see
+above); the rest are operator-run via `zot` directly, not through this choke-point. In
+particular, `zot duplicates --by doi|title|both` is a whole-library, operator-facing dedup sweep
+— explicitly distinct from this bridge's own pre-write `check_duplicate_title()` /
+`check_live_doi_duplicate()` checks, and subject to the same local-SQLite sync-lag caveat as
+`orphans list/clean` (see `patterns/zotero-item-creation.md` Section 2).
 
 ## Related
 

@@ -471,29 +471,29 @@ criterion.
 
 ---
 
-### Phase 7: pattern, inventory, and README documentation [NOT STARTED]
+### Phase 7: pattern, inventory, and README documentation [COMPLETED]
 
 **Goal**: Bring the extension's how-it-works docs in line with the two new write operations and the
 new surfacing fields.
 
 **Tasks**:
 
-- [ ] `patterns/zotero-item-creation.md`: add a section for `item-add-json` covering the capability
+- [x] `patterns/zotero-item-creation.md`: add a section for `item-add-json` covering the capability
       gap it closes, the envelope-normalization exception, the create-then-attach decomposition and
       its partial-success surface, and the `resolution_path`/`attachment_state` vocabulary. Extend
       the existing envelope-field-confirmation discipline (section 2) to the new operation, marking
       the normalized envelope CONFIRMED-BY-CONSTRUCTION and the live Web-API response shape
-      UNCONFIRMED until Phase 9's gated test runs or is declined.
-- [ ] `patterns/zotero-item-creation.md`: add a short subsection on `orphan-clean`, including the
+      UNCONFIRMED until Phase 9's gated test runs or is declined. *(completed)*
+- [x] `patterns/zotero-item-creation.md`: add a short subsection on `orphan-clean`, including the
       dead-only default, the deliberate absence of `--include-recoverable`, and the local-sync-lag
-      caveat that limits when it can act.
-- [ ] `tools/zotero-scripts.md`: update the `zotero-write.sh` row to name `item-add-json` and
+      caveat that limits when it can act. *(completed)*
+- [x] `tools/zotero-scripts.md`: update the `zotero-write.sh` row to name `item-add-json` and
       `orphan-clean`; note `zot`'s `delete`/`orphans`/`trash` family, absent from every context file
-      today.
-- [ ] `README.md`: update the `zotero-write.sh` row in "Available Scripts" to match, and confirm the
+      today. *(completed)*
+- [x] `README.md`: update the `zotero-write.sh` row in "Available Scripts" to match, and confirm the
       Deployment Status section still reads correctly (deployment itself is an operator step; do not
-      hand-copy anything into `.claude/`).
-- [ ] Keep every task-number reference out of these files — cite filenames and section headings.
+      hand-copy anything into `.claude/`). *(completed)*
+- [x] Keep every task-number reference out of these files — cite filenames and section headings. *(completed)*
 
 **Timing**: 1 hour
 

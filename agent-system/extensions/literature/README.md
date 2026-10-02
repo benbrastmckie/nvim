@@ -149,7 +149,7 @@ Scripts are in `.claude/extensions/literature/scripts/zotero-*.sh`.
 |--------|---------|----------|
 | `zotero-search.sh` | Search CSL-JSON export by keyword (used by Mode A) | Yes |
 | `zotero-read.sh` | Read item metadata and PDFs via `zot` CLI | No — inactive, see below |
-| `zotero-write.sh` | Write/attach files to Zotero items; create new items with PDF attachment (`item-add`) | No — inactive, see below |
+| `zotero-write.sh` | Write/attach files to Zotero items; create new items with PDF attachment (`item-add`) or from a fully-formed JSON body (`item-add-json`); clean dead orphaned attachment records (`orphan-clean`) | No — inactive, see below |
 | `zotero-setup.sh` | Setup wizard: detect data dir, validate, configure | No — inactive, see below |
 | `zotero-chunk.sh` | Extract PDF text and chunk into sections | No — inactive, see below |
 | `zotero-attach-chunks.sh` | Upload chunks as Zotero child attachments | No — inactive, see below |
@@ -170,9 +170,9 @@ in particular:
 - `zotero-read.sh`, `zotero-write.sh`, `zotero-setup.sh` — `zot` v0.10.0 and a
   `library+files+write` API key are both available; these are deployed and confirmed
   byte-identical to their source copies. `zotero-write.sh` is the single write choke-point,
-  called from `literature-ingest-online.sh`'s `item-add`/`attach-file` calls (see
-  `context/project/literature/patterns/zotero-item-creation.md` for the live-confirmed envelope
-  evidence).
+  called from `literature-ingest-online.sh`'s `item-add`/`item-add-json`/`attach-file`/
+  `orphan-clean` calls (see `context/project/literature/patterns/zotero-item-creation.md` for the
+  live-confirmed envelope evidence).
 - `cite-extract.sh`, `skill-cite/`, `cite.md` — the `/cite` trio.
 - `zotero-search.sh` — already load-bearing via a source-path fallback in
   `skill-literature/SKILL.md`; deployed for consistency with the other live scripts.
