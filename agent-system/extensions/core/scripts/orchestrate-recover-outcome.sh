@@ -87,6 +87,8 @@
 #   artifact_summary    string  .artifacts[0].summary, or "".
 #   phases_completed    int     .metadata.phases_completed // .partial_progress.phases_completed // 0
 #   phases_total        int     .metadata.phases_total // .partial_progress.phases_total // 0
+#   (the `.partial_progress.*` reads are guarded: that key is only consulted when it is an object,
+#   so a bare-string `partial_progress` degrades to the default instead of aborting recovery)
 #   meta_mtime          int     the file's mtime (0 if missing/unstattable).
 #   window_start        int     the window_start_ts actually used (post fail-closed default).
 #   completion_summary string  .completion_data.completion_summary // "", regardless of branch.
@@ -238,8 +240,12 @@ if [ -n "$expected_dispatch_seq" ]; then
 fi
 
 status=$(echo "$meta_json" | jq -r '.status // "unknown"')
-phases_completed=$(echo "$meta_json" | jq -r '.metadata.phases_completed // .partial_progress.phases_completed // 0')
-phases_total=$(echo "$meta_json" | jq -r '.metadata.phases_total // .partial_progress.phases_total // 0')
+# `partial_progress` is specified as an OBJECT (return-metadata-file.md), but an agent may emit a
+# bare string there. Indexing a string raises a fatal jq error, which previously aborted the whole
+# recovery (exit 5) and charged the task as off-schema, discarding a perfectly good report. Read
+# that location only when it is actually an object; otherwise fall through to the default.
+phases_completed=$(echo "$meta_json" | jq -r '.metadata.phases_completed // (if (.partial_progress|type) == "object" then .partial_progress.phases_completed else null end) // 0')
+phases_total=$(echo "$meta_json" | jq -r '.metadata.phases_total // (if (.partial_progress|type) == "object" then .partial_progress.phases_total else null end) // 0')
 
 # ─── Deliberately RAW, never normalized (do not "fix" this) ────────────────────────────────
 # This block reads .artifacts[0].{path,type,summary} directly off the raw on-disk JSON, with NO
