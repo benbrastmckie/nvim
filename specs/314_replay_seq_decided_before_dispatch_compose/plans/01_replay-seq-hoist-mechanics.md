@@ -296,29 +296,70 @@ lies between the lock acquire and the current decision site.
 
 ---
 
-### Phase 3: Post-compose Identity-vs-state consistency assertion [NOT STARTED]
+### Phase 3: Post-compose Identity-vs-state consistency assertion [COMPLETED]
 
 **Goal**: Make the whole defect class non-silent independently of whether the hoist is perfect --
 a composed dispatch file disagreeing with state defers the row loudly instead of dispatching
 (DELIVERABLE 2, ACCEPTANCE #5).
 
 **Tasks**:
-- [ ] Insert the assertion immediately after `dispatch_model_json` is assigned (just past the
+- [x] Insert the assertion immediately after `dispatch_model_json` is assigned (just past the
       `dispatch_file=` / `dispatch_model=` read-back) and BEFORE the Fix 2 identical-dispatch hash
-      block begins.
-- [ ] Parse the Identity value directly off the file:
+      block begins. *(completed)*
+- [x] Parse the Identity value directly off the file:
       `grep -m1 '^- dispatch_seq: ' "$dispatch_file"` piped through `sed 's/^- dispatch_seq: //'`
       (or equivalent). Never route this through `cycle_plan_dispatch_hash` -- its strip regex
       deliberately removes the `dispatch_seq`/`dispatch_start_ts` lines before hashing, which
-      would make the check vacuous by construction.
-- [ ] Compare against the in-memory `$task_dispatch_seq`. On disagreement, push an
+      would make the check vacuous by construction. *(completed: guarded with `|| _idc_identity_seq=""`
+      since under `set -e`/`pipefail` a no-match grep would otherwise abort the whole script --
+      discovered via the full-suite RED run, see deviation note below)*
+- [x] Compare against the in-memory `$task_dispatch_seq`. On disagreement, push an
       `out_deferred_rows` entry with an explicit reason naming both values, then `continue` --
       matching the existing idiom used three lines above for the `build_exit -ne 0` case.
-- [ ] Handle a missing or unparseable Identity line as a disagreement (defer loudly), not as a
-      pass. An unreadable file is exactly the situation this backstop exists for.
-- [ ] Add a comment recording that this check must not disturb the identical-dispatch hash and
-      why it cannot be implemented on top of the hash helper.
-- [ ] Confirm the deferred-row reason string is distinct enough to be greppable in a test.
+      *(completed)*
+- [x] Handle a missing or unparseable Identity line as a disagreement (defer loudly), not as a
+      pass. An unreadable file is exactly the situation this backstop exists for. *(completed)*
+- [x] Add a comment recording that this check must not disturb the identical-dispatch hash and
+      why it cannot be implemented on top of the hash helper. *(completed)*
+- [x] Confirm the deferred-row reason string is distinct enough to be greppable in a test.
+      *(completed: "disagrees with this cycle's decided dispatch_seq" is unique in the file;
+      verified via a manual perturbation run -- see Verification below)*
+
+**Deviation (discovered via full-suite RED/GREEN runs, not anticipated by the plan's Files-to-
+modify list, which named only `orchestrate-cycle-plan.sh`)**: adding a production check that
+reads the COMPOSED dispatch file's own content exposed that MOST of this suite's pre-existing
+`orchestrate-build-dispatch.sh` stubs (8 of the 9 definitions, everywhere except Group 19's own
+Phase 1 stub) return a notional `/fake/<n>-<phase>.md` path that is never actually written to
+disk -- harmless for every feature before this one (nothing previously read the file's content
+back except `cycle_plan_dispatch_hash`, which degrades gracefully on a missing file), but fatal
+to DELIVERABLE 2's "missing Identity line is a loud disagreement, never a pass" contract. Fixing
+this required (a) upgrading all 8 stubs, in
+`agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh`, to parse `--seq` and
+write a real, writable file (`$WORKDIR/fake-dispatch/<n>-<phase>.md`) with a byte-compatible
+`## Identity` / `- dispatch_seq:` line -- the same convention Group 19's own Phase 1 stub already
+established -- and (b) updating the 5 pre-existing assertions in Groups 15/16/18 that checked the
+old literal `/fake/<n>-plan.md` string. This in turn surfaced two further, genuinely separate
+discoveries, each argued and fixed in place rather than weakening any assertion:
+1. Group 18 (in-session plan_cache) dispatches the SAME candidate/phase twice across genuinely
+   separate charges (run 1, and run 3 after cache invalidation) with nothing else to vary, so a
+   now-realistic stub made the two compositions hash byte-identical and trip Fix 2's UNRELATED
+   identical-dispatch streak guard -- a false collision between two mechanisms the plan's own
+   Non-Goals keep independent. Fixed by embedding a per-call nonce (PID + nanosecond timestamp)
+   in a line Fix 2's hash normalizer does not strip, matching how real territory/focus/timestamps
+   vary call to call in production.
+2. The G8 budget group's own "dispatch_seq_counter must durably increase across two separate
+   runs on the same task" case dispatched the SAME task twice via two different sessions with
+   run 1's dispatch file never consumed in between -- which, correctly, is now recognized as an
+   UNCONSUMED DISPATCH REPLAY (this task's own fix) and legitimately reuses the seq rather than
+   minting a new one. That is not the kind of repeat this invariant forbids (reusing a seq for a
+   genuinely NEW, separately-charged dispatch); it is the single pending dispatch being
+   recomposed in place. Fixed by removing run 1's recorded dispatch file before run 2 (the same
+   proof-of-non-consumption idiom Group 19 case 3 and Group 24 already use), simulating a
+   predecessor's postflight having actually consumed it -- the realistic scenario this invariant
+   protects.
+Full suite: 335 passed, 0 failed after all three fixes; 2 failed (budget seq-no-repeat, Group 18
+cycle_counts) immediately after the stub upgrade alone, 53 failed (mass `<missing>` Identity
+disagreements) before the stub upgrade.
 
 **Timing**: 45 minutes
 

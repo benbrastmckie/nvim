@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Post-compose Identity-vs-state consistency assertion",
+  "started_at": "2026-10-02T14:21:00Z",
+  "last_updated": "2026-10-02T15:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert DELIVERABLE 2 assertion at the correct insertion point", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Parse Identity value off the file, independent of cycle_plan_dispatch_hash", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Compare against task_dispatch_seq; defer with explicit reason on disagreement", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Treat missing/unparseable Identity line as a disagreement", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Upgrade all 8 remaining fake-path test stubs to write real Identity-bearing files (discovered necessity)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Update 5 literal /fake/N-plan.md assertions in Groups 15/16/18", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Fix Group 18 false identical-dispatch collision (per-call nonce)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Fix G8 budget seq-no-repeat false replay (consume run1's file before run2)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 9, "description": "Manual deliberate-perturbation verification of the defer path, then revert", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "bare `_idc_identity_seq=$(grep -m1 ... | sed ...)` with no error guard", "result": "failed", "reason": "under set -euo pipefail, a no-match grep (exit 1) propagates through the pipe (pipefail) and aborts the whole script (exit 2) for every fixture whose stub returns a non-existent /fake/... path -- 53 failures, mostly 'SUT exited 2'. Fixed with `|| _idc_identity_seq=\"\"`."},
+    {"approach": "leave the other 8 test stubs returning non-existent /fake/... paths unchanged", "result": "failed", "reason": "DELIVERABLE 2 explicitly treats a missing/unparseable Identity line as a loud disagreement, never a pass -- so every one of those fixtures' dispatches now gets deferred instead of dispatched, breaking ~20 pre-existing assertions across many unrelated groups. Fixed by upgrading all 8 to write real files, mirroring Group 19's own Phase 1 stub."},
+    {"approach": "upgrade stubs to write real files with uniform minimal content", "result": "failed", "reason": "Group 18 dispatches the identical candidate/phase twice (run1, run3) with nothing else to vary, so the now-realistic content hashed byte-identical across both and tripped Fix 2's unrelated identical-dispatch halt, suppressing the charge Group 18's own assertion expected. Fixed with a per-call nonce line outside the hash normalizer's strip set."},
+    {"approach": "leave G8's seq-no-repeat test's two runs with run1's dispatch file never consumed", "result": "failed", "reason": "run2 is now correctly recognized as an UNCONSUMED DISPATCH REPLAY (this task's fix) and legitimately reuses run1's seq, which the pre-existing assertion mis-reads as 'did not durably increase'. Fixed by removing run1's recorded dispatch file before run2 to simulate real consumption."}
+  ],
+  "handoff_count": 0,
+  "notes": "Full suite green: 335 passed, 0 failed. shellcheck -S warning on orchestrate-cycle-plan.sh: only the 2 pre-existing, unrelated warnings at lines 1673/1792. Manually verified the DELIVERABLE 2 defer path fires with a readable WARNING and a deferred row when the Identity seq is deliberately wrong (temporary perturbation of Group 19's stub, reverted immediately -- diff confirmed byte-identical to the pre-perturbation file)."
+}

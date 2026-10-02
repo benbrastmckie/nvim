@@ -2716,6 +2716,26 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   dispatch_model=$(echo "$dispatch_json" | jq -r '.model')
   [ -z "$dispatch_model" ] && dispatch_model_json="null" || dispatch_model_json="\"$dispatch_model\""
 
+  # ── DELIVERABLE 2: post-compose Identity-vs-state consistency assertion ────────────────────────
+  # The backstop that makes the whole seq-decided-after-compose defect class non-silent
+  # independently of whether the replay hoist above is perfect: if the dispatch file this cycle
+  # just composed ever disagrees with the seq this cycle itself decided (mint or replay), defer
+  # the row LOUDLY with an explicit reason rather than dispatching a file the postflight's own
+  # seq check will later disagree with. Parses the Identity value directly OFF THE FILE rather
+  # than through cycle_plan_dispatch_hash()'s normalizer -- that normalizer deliberately STRIPS
+  # the `dispatch_seq`/`dispatch_start_ts` lines before hashing (see its own comment), so routing
+  # this check through it would make the check vacuous by construction; this check and that hash
+  # guard are deliberately independent and this check must never disturb the hash. A missing or
+  # unparseable Identity line is treated as a disagreement (defer loudly), never as a pass --
+  # an unreadable file is exactly the situation this backstop exists for.
+  _idc_identity_seq=$(grep -m1 '^- dispatch_seq: ' "$dispatch_file" 2>/dev/null | sed 's/^- dispatch_seq: //') || _idc_identity_seq=""
+  if [ -z "$_idc_identity_seq" ] || [ "$_idc_identity_seq" != "$task_dispatch_seq" ]; then
+    echo "[orchestrate] WARNING: task #$t's composed dispatch file Identity dispatch_seq ('${_idc_identity_seq:-<missing>}') disagrees with this cycle's own decided dispatch_seq ($task_dispatch_seq) -- deferring rather than dispatching a file the postflight's own seq check would later disagree with. dispatch_file=$dispatch_file" >&2
+    out_deferred_rows+=("$(jq -n -c --argjson t "$t" --arg identity_seq "${_idc_identity_seq:-}" --argjson state_seq "$task_dispatch_seq" \
+      '{task: $t, reason: ("composed dispatch file Identity dispatch_seq (" + (if $identity_seq == "" then "<missing>" else $identity_seq end) + ") disagrees with this cycle'\''s decided dispatch_seq (" + ($state_seq|tostring) + "); deferring to a later cycle")}')")
+    continue
+  fi
+
   # ── Fix 2: identical-dispatch content hashing and per-task streak accounting ───────────────────
   # Runs immediately after dispatch_file is resolved and BEFORE any budget-charge side effect
   # below, so a halt (streak >= 2, just below) can back out cleanly without having charged

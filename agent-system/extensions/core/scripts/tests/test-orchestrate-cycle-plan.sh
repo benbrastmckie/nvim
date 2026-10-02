@@ -255,11 +255,25 @@ info "Group 4/5: lock refusal removes a candidate from the batch; bare-vs-suffix
 
 ARGV_LOG="$WORKDIR/build-dispatch-argv.log"
 : > "$ARGV_LOG"
+# Writes a REAL file with a byte-compatible `## Identity` / `- dispatch_seq:` line (not just a
+# notional "/fake/..." path) so the production post-compose Identity-vs-state consistency check
+# (DELIVERABLE 2) has something real to read -- same convention as Group 19's own stub.
 cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$ARGV_LOG"
-proj_num="\$1"; phase="\$2"
-jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 
@@ -701,6 +715,17 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_seq_run1.json"
 run_sut --session g8_seq_run1 -- 807
 g8_durable_seq_after_run1=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/807_g8_seq_no_repeat/.orchestrator-loop-guard" 2>/dev/null)
 bash "$WORKDIR/.claude/scripts/task-lock.sh" release 807 g8_seq_run1 >/dev/null 2>&1 || true
+
+# Simulate the realistic scenario this invariant actually protects: run1's dispatch was
+# CONSUMED (a postflight ran; a real postflight's own first act is clearing pending_dispatch) --
+# not simply never looked at again. Removing the recorded dispatch_file is the same
+# proof-of-non-consumption idiom Group 19 case 3 and Group 24 already use. Without this, run2
+# would correctly be recognized as an UNCONSUMED DISPATCH REPLAY of run1's own still-pending
+# charge (this task's own fix) and legitimately reuse its seq rather than mint a new one -- that
+# is NOT a "repeat" of the kind this invariant forbids (reusing a seq for a genuinely NEW,
+# separately-charged dispatch); it is the single pending dispatch being recomposed in place.
+g8_run1_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
+rm -f "$g8_run1_dispatch_file"
 
 run_sut --session g8_seq_run2 -- 807
 g8_durable_seq_after_run2=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/807_g8_seq_no_repeat/.orchestrator-loop-guard" 2>/dev/null)
@@ -1960,11 +1985,23 @@ info "Group 12: --compare forwarding (implement-phase only, never research/plan)
 
 G12_ARGV_LOG="$WORKDIR/g12-build-dispatch-argv.log"
 : > "$G12_ARGV_LOG"
+# Real Identity-bearing file (see Group 4/5's stub comment for why).
 cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$G12_ARGV_LOG"
-proj_num="\$1"; phase="\$2"
-jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 
@@ -2128,11 +2165,23 @@ info "Group 14: research_questions --focus wiring at the research-dispatch build
 
 G14_ARGV_LOG="$WORKDIR/g14-build-dispatch-argv.log"
 : > "$G14_ARGV_LOG"
+# Real Identity-bearing file (see Group 4/5's stub comment for why).
 cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$G14_ARGV_LOG"
-proj_num="\$1"; phase="\$2"
-jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 
@@ -2186,11 +2235,24 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Group 15: stdout stays pure JSON when collaborators write to stderr"
 
-cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<'EOF'
+# Real Identity-bearing file (see Group 4/5's stub comment for why). Switched from a quoted to
+# an unquoted heredoc so $WORKDIR expands into a real, writable path at write time.
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
 echo "[orchestrate-build-dispatch] [lit:auto] simulated resolver rationale (fixture)" >&2
-proj_num="$1"; phase="$2"
-jq -n -c --arg f "/fake/${proj_num}-${phase}.md" '{dispatch_file: $f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 
@@ -2243,10 +2305,10 @@ else
 fi
 
 g15_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
-if [ "$g15_dispatch_file" = "/fake/1501-plan.md" ]; then
+if [ "$g15_dispatch_file" = "$WORKDIR/fake-dispatch/1501-plan.md" ]; then
   pass "Group 15: dispatch_file parsed correctly from the stub payload (not corrupted by stderr)"
 else
-  fail "Group 15: expected /fake/1501-plan.md, got '$g15_dispatch_file'"
+  fail "Group 15: expected $WORKDIR/fake-dispatch/1501-plan.md, got '$g15_dispatch_file'"
 fi
 
 g15_missing=""
@@ -2272,10 +2334,23 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Group 16: entry-point fd-3 redirect keeps plan JSON pure against an uncaptured, chatty collaborator"
 
-cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<'EOF'
+# Real Identity-bearing file (see Group 4/5's stub comment for why). Unquoted heredoc so
+# $WORKDIR expands into a real, writable path at write time.
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
-proj_num="$1"; phase="$2"
-jq -n -c --arg f "/fake/${proj_num}-${phase}.md" '{dispatch_file: $f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 
@@ -2343,10 +2418,10 @@ else
 fi
 
 g16_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
-if [ "$g16_dispatch_file" = "/fake/1601-plan.md" ]; then
+if [ "$g16_dispatch_file" = "$WORKDIR/fake-dispatch/1601-plan.md" ]; then
   pass "Group 16: .dispatch[0] intact and correctly parsed"
 else
-  fail "Group 16: expected /fake/1601-plan.md, got '$g16_dispatch_file'"
+  fail "Group 16: expected $WORKDIR/fake-dispatch/1601-plan.md, got '$g16_dispatch_file'"
 fi
 
 if echo "$LAST_STDERR" | grep -qF "OK: candidate #1601 state.json already at 'plan'"; then
@@ -2407,10 +2482,31 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Group 18: in-session plan cache replay charges nothing; post-invalidation recompute charges normally"
 
-cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<'EOF'
+# Real Identity-bearing file (see Group 4/5's stub comment for why). Unquoted heredoc so
+# $WORKDIR expands into a real, writable path at write time. Also embeds a per-call nonce
+# (PID + nanosecond timestamp) OUTSIDE the two lines cycle_plan_dispatch_hash's normalizer
+# strips -- this group's own run 1 and run 3 are both GENUINE, independently-charged
+# compositions for the identical candidate/phase with nothing else to vary (unlike real
+# production, where territory/focus/model naturally differ call to call), so without this the
+# post-D2-realistic stub would make them hash byte-identical and trip Fix 2's unrelated
+# identical-dispatch streak guard -- a false collision this group's own scope (in-session
+# plan_cache, confirmed unaffected by this task) must not be entangled with.
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
-proj_num="$1"; phase="$2"
-jq -n -c --arg f "/fake/${proj_num}-${phase}.md" '{dispatch_file: $f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+nonce="\$\$-\$(date +%s%N)"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; echo "- call_nonce: \${nonce}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
@@ -2434,7 +2530,7 @@ run_sut --session g18_sess -- 1801
 g18_run1_stdout="$LAST_STDOUT"
 g18_run1_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
 
-if [ "$LAST_EXIT" -eq 0 ] && [ "$g18_run1_dispatch_file" = "/fake/1801-plan.md" ]; then
+if [ "$LAST_EXIT" -eq 0 ] && [ "$g18_run1_dispatch_file" = "$WORKDIR/fake-dispatch/1801-plan.md" ]; then
   pass "Group 18: run 1 genuinely composes and dispatches"
 else
   fail "Group 18: run 1 did not compose/dispatch as expected: $LAST_STDOUT"
@@ -3413,11 +3509,23 @@ info "Group 25: base-mode sibling territory (mixed granularity, single-task regr
 
 G25_ARGV_LOG="$WORKDIR/g25-build-dispatch-argv.log"
 : > "$G25_ARGV_LOG"
+# Real Identity-bearing file (see Group 4/5's stub comment for why).
 cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$G25_ARGV_LOG"
-proj_num="\$1"; phase="\$2"
-jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
@@ -4199,11 +4307,23 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 SHARED_BUILD_ARGV_LOG="$WORKDIR/shared-build-dispatch-argv.log"
 : > "$SHARED_BUILD_ARGV_LOG"
+# Real Identity-bearing file (see Group 4/5's stub comment for why).
 cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$SHARED_BUILD_ARGV_LOG"
-proj_num="\$1"; phase="\$2"
-jq -n -c --arg f "/fake/\${proj_num}-\${phase}.md" '{dispatch_file: \$f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 
