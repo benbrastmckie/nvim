@@ -455,22 +455,50 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
     echo "${notice_prefix} WARN: handoff has no dispatch_seq field — writer predates or omits the dispatch_seq contract; degrading to mtime-only discrimination." >&2
   elif [ -n "$expected_dispatch_seq" ] && [ "$handoff_dispatch_seq" != "$expected_dispatch_seq" ]; then
     handoff_stale=true
-    echo "${notice_prefix} ERROR: DISPATCH_SEQ MISMATCH — handoff carries dispatch_seq=$handoff_dispatch_seq, this cycle minted dispatch_seq=${expected_dispatch_seq}. This handoff was NOT written by the current dispatch (a still-live predecessor's late write, or a stale copy) — treating as missing." >&2
+    # Direction matters for attribution. "older" (handoff_dispatch_seq < expected_dispatch_seq)
+    # is a still-live predecessor's late write or a stale copy — genuine staleness, and the
+    # existing skill-orchestrate/SKILL.md attribution is correct because that skill only READS
+    # the already-minted value back out (orchestrate-cycle-plan.sh:138-adjacent). "newer"
+    # (handoff_dispatch_seq > expected_dispatch_seq) can only mean this dispatch was composed
+    # with a seq this cycle's own mint never produced: a composition/minting-side authoring
+    # fault at the sole minting site, orchestrate-cycle-plan.sh — not a stale predecessor
+    # artifact, so it is attributed there instead. Guard both operands against non-numeric
+    # input (the `case ... in ''|*[!0-9]*)` idiom already used for partial_blocker_count near
+    # :949); default to "older" on any non-numeric input — never error, never misattribute.
+    seq_direction="older"
+    case "$handoff_dispatch_seq" in ''|*[!0-9]*) ;; *)
+      case "$expected_dispatch_seq" in ''|*[!0-9]*) ;; *)
+        [ "$handoff_dispatch_seq" -gt "$expected_dispatch_seq" ] && seq_direction="newer" ;;
+      esac ;;
+    esac
+    if [ "$seq_direction" = "newer" ]; then
+      # Branch-local only — :366's shared $attributed_path is never mutated, so the mtime arm
+      # above is untouched.
+      mismatch_attributed_path="agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      mismatch_site="${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch-newer"
+      mismatch_detail="handoff dispatch_seq=$handoff_dispatch_seq is NEWER than this cycle's minted dispatch_seq=${expected_dispatch_seq} — this dispatch was composed with a seq this cycle's own mint never produced: a composition/minting-side authoring fault, not a stale predecessor artifact"
+      echo "${notice_prefix} ERROR: DISPATCH_SEQ MISMATCH (newer) — handoff carries dispatch_seq=$handoff_dispatch_seq, this cycle minted dispatch_seq=${expected_dispatch_seq}. The handoff is NEWER than what this cycle minted — a composition/minting-side authoring fault at orchestrate-cycle-plan.sh, not a stale predecessor write. Treating as missing." >&2
+    else
+      mismatch_attributed_path="$attributed_path"
+      mismatch_site="${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch"
+      mismatch_detail="handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${expected_dispatch_seq}"
+      echo "${notice_prefix} ERROR: DISPATCH_SEQ MISMATCH (older) — handoff carries dispatch_seq=$handoff_dispatch_seq, this cycle minted dispatch_seq=${expected_dispatch_seq}. This handoff was NOT written by the current dispatch (a still-live predecessor's late write, or a stale copy) — treating as missing." >&2
+    fi
     if is_live; then
       record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
         --defect-class HANDOFF_STALE_OR_ABSENT \
-        --detecting-site "${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch" \
+        --detecting-site "$mismatch_site" \
         --task "$task_number" --session "$session_id" \
-        --message "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${expected_dispatch_seq}" \
-        --attributed-path "$attributed_path" \
+        --message "$mismatch_detail" \
+        --attributed-path "$mismatch_attributed_path" \
         2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
       skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
-        "HANDOFF_STALE_OR_ABSENT" "$attributed_path" \
-        "${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch" \
-        "handoff dispatch_seq=$handoff_dispatch_seq does not match this cycle's minted dispatch_seq=${expected_dispatch_seq}" \
+        "HANDOFF_STALE_OR_ABSENT" "$mismatch_attributed_path" \
+        "$mismatch_site" \
+        "$mismatch_detail" \
         "$record_result"
     else
-      echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (dispatch_seq mismatch) — no write performed." >&2
+      echo "${notice_prefix} [dry-run] would record HANDOFF_STALE_OR_ABSENT (dispatch_seq mismatch, direction=$seq_direction, attributed_path=$mismatch_attributed_path) — no write performed." >&2
     fi
   elif [ -n "$expected_dispatch_seq" ]; then
     echo "${notice_prefix} dispatch_seq match ($handoff_dispatch_seq) — handoff confirmed as this dispatch's own report." >&2

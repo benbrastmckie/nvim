@@ -1,7 +1,7 @@
 # Implementation Plan: Task #315
 
 - **Task**: 315 - Stop `orchestrate-cycle-postflight.sh` reporting an outcome it did not persist, and make its `HANDOFF_STALE_OR_ABSENT` attribution depend on the DIRECTION of a dispatch_seq mismatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None (deliberately — see Non-Concurrency Constraints below; eight live tasks share this file but none shares a region)
 - **Research Inputs**: `specs/315_postflight_reports_only_what_it_persists/reports/01_postflight-attribution-and-status.md`
@@ -155,7 +155,7 @@ Phases 2, 3 and 7 touch no file Phase 4 touches, so they are genuinely parallel 
 
 ---
 
-### Phase 1: Direction-aware attribution in the dispatch_seq-mismatch arm [NOT STARTED]
+### Phase 1: Direction-aware attribution in the dispatch_seq-mismatch arm [COMPLETED]
 
 **Goal**: The mismatch arm distinguishes handoff-newer-than-minted (a composition/minting-side
 authoring fault, attributed to `orchestrate-cycle-plan.sh`) from handoff-older-than-minted (genuine
@@ -163,9 +163,9 @@ staleness, attribution unchanged), in the error notice, the recorded row, and th
 
 **Tasks**:
 
-- [ ] Re-read `scripts/orchestrate-cycle-postflight.sh:452-478` immediately before editing (sibling
-      tasks share this file).
-- [ ] Inside the `elif [ -n "$expected_dispatch_seq" ] && [ "$handoff_dispatch_seq" != "$expected_dispatch_seq" ]`
+- [x] Re-read `scripts/orchestrate-cycle-postflight.sh:452-478` immediately before editing (sibling
+      tasks share this file). *(completed)*
+- [x] Inside the `elif [ -n "$expected_dispatch_seq" ] && [ "$handoff_dispatch_seq" != "$expected_dispatch_seq" ]`
       arm (currently `:456`), compute a branch-local direction. Guard both operands with the
       `case "$v" in ''|*[!0-9]*)` idiom before any numeric test; default to the older/indeterminate
       path on any non-numeric input:
@@ -178,8 +178,9 @@ staleness, attribution unchanged), in the error notice, the recorded row, and th
         esac ;;
       esac
       ```
+      *(completed)*
 
-- [ ] Introduce **branch-local** `mismatch_attributed_path`, `mismatch_site` and `mismatch_detail`
+- [x] Introduce **branch-local** `mismatch_attributed_path`, `mismatch_site` and `mismatch_detail`
       variables. For `older`, set them to exactly today's values
       (`$attributed_path`, `${detecting_site_prefix}:cycle-postflight-dispatch-seq-mismatch`, and the
       current detail string) so the older path is byte-for-byte unchanged. For `newer`, set:
@@ -188,23 +189,23 @@ staleness, attribution unchanged), in the error notice, the recorded row, and th
       detail string naming the direction and the reasoning (e.g. "handoff dispatch_seq=N is NEWER
       than this cycle's minted dispatch_seq=M — this dispatch was composed with a seq this cycle's
       own mint never produced: a composition/minting-side authoring fault, not a stale predecessor
-      artifact").
-- [ ] **Do not touch `:366`'s `attributed_path`** — the mtime arm must keep using it unchanged.
-- [ ] Replace the hardcoded arguments in both the `system-defect-record.sh` call and the
-      `skill_orchestrate_append_detected_defect` call with the three branch-local variables.
-- [ ] Rewrite the `ERROR: DISPATCH_SEQ MISMATCH` stderr line so it names the direction explicitly
+      artifact"). *(completed)*
+- [x] **Do not touch `:366`'s `attributed_path`** — the mtime arm must keep using it unchanged. *(completed: verified unchanged)*
+- [x] Replace the hardcoded arguments in both the `system-defect-record.sh` call and the
+      `skill_orchestrate_append_detected_defect` call with the three branch-local variables. *(completed)*
+- [x] Rewrite the `ERROR: DISPATCH_SEQ MISMATCH` stderr line so it names the direction explicitly
       and, for the newer direction, says the mismatch is attributed to the minting/composition site
       rather than framing it as a stale predecessor write. Keep the literal substring
-      `DISPATCH_SEQ MISMATCH` — four existing assertions and the new case grep for it.
-- [ ] Enrich the dry-run branch's `[dry-run] would record HANDOFF_STALE_OR_ABSENT (dispatch_seq
+      `DISPATCH_SEQ MISMATCH` — four existing assertions and the new case grep for it. *(completed: substring preserved in both branches)*
+- [x] Enrich the dry-run branch's `[dry-run] would record HANDOFF_STALE_OR_ABSENT (dispatch_seq
       mismatch)` line to also name the direction and `attributed_path=${mismatch_attributed_path}`,
       mirroring the live helper's own stderr echo (`skill-base.sh:1499`). This is what makes the
-      dry-run test case able to assert attribution at all.
-- [ ] Add a short comment above the direction block recording **why** the directions differ in
+      dry-run test case able to assert attribution at all. *(completed)*
+- [x] Add a short comment above the direction block recording **why** the directions differ in
       attribution (the minting site is `orchestrate-cycle-plan.sh`; `skill-orchestrate/SKILL.md`
-      only reads the already-minted value).
-- [ ] Run `shellcheck` on the file per `context/standards/shell-strict-mode.md`; resolve any new finding.
-- [ ] Commit this green sub-step.
+      only reads the already-minted value). *(completed)*
+- [x] Run `shellcheck` on the file per `context/standards/shell-strict-mode.md`; resolve any new finding. *(completed: zero new findings — all remaining notices pre-exist this edit)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 1 hour
 
