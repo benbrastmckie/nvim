@@ -1,51 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790957600_e00acf_321",
-  "dispatch_seq": 14,
-  "task_number": 321,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/321_lean_language_server_readiness_preflight/reports/01_lean-lsp-readiness-probe.md",
-      "summary": "Reachability probe design (ps+/proc, ~35ms, no spawn) and a routing-architecture finding: /orchestrate bypasses the 4 lean skills' Stage 2 entirely, and the manifest hooks.preflight mechanism is task_type-keyed so it cannot reach a lean-owned hook for the formal-typed incident that motivated this task; fix must be an unconditional, directory-gated call from orchestrate-build-dispatch.sh. .olean staleness excluded from scope (belongs with task 268 / Lake's own build cache, not a sub-100ms preflight)."
+      "type": "plan",
+      "path": "specs/321_lean_language_server_readiness_preflight/plans/01_lean-lsp-readiness-dispatch-tier.md",
+      "summary": "7-phase plan extending lean-mcp-preflight-check.sh with server reachability detection and a --dispatch-block mode, injecting a task_type-agnostic <lean-readiness-context> block into every dispatch file, plus test coverage on both sides and two context-doc gaps."
     }
   ],
-  "proposed_file_scope": [
-    "agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh",
-    "agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh",
-    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
-    "agent-system/extensions/lean/skills/skill-lean-research/SKILL.md",
-    "agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md",
-    "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
-    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
-    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md"
-  ],
+  "next_steps": "Run /implement 321 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 7,
+  "dependency_waves": [[1, 6], [2, 3, 5], [4], [7]],
   "memory_candidates": [
     {
-      "content": "In this agent system, /orchestrate resolves agents directly via command-route-agent.sh/orchestrate-build-dispatch.sh and never executes the body of the per-domain SKILL.md files (e.g. skill-lean-research). Any inline Stage 2/3 logic hand-written in those SKILL.md files (status updates aside, which are reimplemented via skill_preflight_update) is dead code on the /orchestrate path and only fires on a direct /research|/plan|/implement invocation. A fix intended to affect /orchestrate dispatches must land in orchestrate-build-dispatch.sh or orchestrate-cycle-plan.sh, not in a skill body.",
-      "category": "PATTERN",
-      "source_artifact": "specs/321_lean_language_server_readiness_preflight/reports/01_lean-lsp-readiness-probe.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["orchestrate", "skill-dead-code", "command-route-agent", "dispatch-path", "lean"]
-    },
-    {
-      "content": "skill_run_extension_hook (skill-base.sh) resolves a manifest hooks.* entry by task_type -> single owning extension (skill_get_extension_dir). A hook declared on extension A never fires for a dispatch whose task_type is owned by extension B, even if B's project happens to depend on A's domain (e.g. a 'formal' task_type proving theorems in Lean never reaches a hook declared in the 'lean' extension's manifest, since 'formal' depends only on 'core'). Any cross-domain preflight signal that must fire regardless of task_type needs an unconditional, directory/content-detection-gated call from a script every dispatch passes through (e.g. orchestrate-build-dispatch.sh), not a manifest hooks.preflight registration.",
+      "content": "In this agent system, a per-extension manifest `hooks.preflight` registration is resolved by `skill_run_extension_hook` -> `skill_get_extension_dir($task_type)`, i.e. the SINGLE extension that declares that exact task_type. A hook registered by extension A therefore never fires for a task whose task_type is declared by extension B, even when the project materially belongs to A's domain (observed: a `formal`-typed task in a Lean 4 project never reaches any lean-owned preflight hook). Separately, `/orchestrate` routes agents directly via command-route-agent.sh and never executes the domain SKILL.md bodies at all, so an inline Stage 2 call inside a domain skill is only reached by a direct /research|/plan|/implement invocation. The task-type-agnostic alternative, when a probe must fire for a project CLASS rather than a task_type: call it unconditionally from `orchestrate-build-dispatch.sh` (which every dispatch passes through, with CWD at the target repo root) and let the probe self-gate on directory detection, following the `deploy_freshness_context` / `memory_context` / `lit_context` precedent of a conditionally-computed, tagged block emitted only when non-empty so an inactive build stays byte-identical.",
       "category": "INSIGHT",
-      "source_artifact": "specs/321_lean_language_server_readiness_preflight/reports/01_lean-lsp-readiness-probe.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["manifest-hooks", "task_type-routing", "extension-boundary", "skill_run_extension_hook"]
-    },
-    {
-      "content": "Cheap, no-spawn MCP server reachability probe technique: uvx does not exec-replace itself, so a spawned 'uvx <pkg>' server always shows as two ps rows (a 'uv' launcher and the real interpreter/script child), making comm-based matching useless (multiple uv-launched MCP servers share comm=uv) -- match on an args substring naming the package instead. Once a candidate PID is found, /proc/<pid>/environ and /proc/<pid>/cwd give an exact (not heuristic) cross-check against an expected per-project path (e.g. LEAN_PROJECT_PATH). Measured cost on this machine: ~35ms for one ps snapshot plus the /proc reads -- Linux-only (no /proc on macOS; degrade to an explicit 'unknown' tier there, never silently 'reachable').",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/321_lean_language_server_readiness_preflight/reports/01_lean-lsp-readiness-probe.md",
+      "source_artifact": "specs/321_lean_language_server_readiness_preflight/plans/01_lean-lsp-readiness-dispatch-tier.md",
       "confidence": 0.85,
-      "suggested_keywords": ["mcp-reachability", "uvx", "proc-environ", "process-probe", "lean-lsp"]
+      "suggested_keywords": ["hooks.preflight", "task_type routing", "orchestrate-build-dispatch", "dispatch context block", "extension hook resolution", "directory detection gate"]
     }
   ],
-  "next_steps": "Run /plan 321 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1790957600_e00acf_321",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 17
 }

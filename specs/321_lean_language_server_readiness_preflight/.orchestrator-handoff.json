@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 17,
+  "summary": "Wrote a 7-phase implementation plan extending lean-mcp-preflight-check.sh with language-server reachability detection plus a --dispatch-block mode, and injecting a task_type-agnostic <lean-readiness-context> block into every dispatch file via orchestrate-build-dispatch.sh. .olean staleness and lake-build-guard.sh are explicitly out of scope per research Finding 7.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/321_lean_language_server_readiness_preflight/plans/01_lean-lsp-readiness-dispatch-tier.md",
+      "summary": "7 phases, 7 hours, 4 dependency waves; strict-mode plan validator green."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": []
+}

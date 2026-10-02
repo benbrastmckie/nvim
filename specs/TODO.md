@@ -73,7 +73,7 @@ next_project_number: 322
 
 ### Lean Extension
 
-321 [PLANNING] — Probe Lean language-server reachability at preflight and...
+321 [PLANNED] — Probe Lean language-server reachability at preflight and...
 
 ### Orchestrator
 
@@ -97,11 +97,12 @@ next_project_number: 322
 
 ### 321. Probe Lean language-server reachability at preflight and report the evidence tier into the dispatch file
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
 - **Research**: [321_lean_language_server_readiness_preflight/reports/01_lean-lsp-readiness-probe.md]
+- **Plan**: [321_lean_language_server_readiness_preflight/plans/01_lean-lsp-readiness-dispatch-tier.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 
