@@ -273,30 +273,36 @@ lazily-read pattern file, with an imperative pointer at the point of need.
 
 ---
 
-### Phase 4: Extract Abandon Mode and Review Mode [NOT STARTED]
+### Phase 4: Extract Abandon Mode and Review Mode [COMPLETED]
 
 **Goal**: Remove the two lowest-in-file mode bodies (13,196 B combined) and convert their Mode
 Detection entries into imperative pointers, leaving the command body coherent at every commit.
 
 **Tasks**:
-- [ ] Working **bottom-up**: Abandon Mode first, then Review Mode. Re-locate each boundary by
+- [x] Working **bottom-up**: Abandon Mode first, then Review Mode. Re-locate each boundary by
       heading text immediately before deleting, using Phase 1's fence-validated anchor set.
-- [ ] For Abandon Mode: capture region to temp file; create
+      *(completed)*
+- [x] For Abandon Mode: capture region to temp file; create
       `context/patterns/task-abandon-mode.md` (H1 + imperative preamble + `---` + verbatim
-      region); delete the `## Abandon Mode (--abandon)` section from `task.md`.
-- [ ] For Review Mode: same, into `context/patterns/task-review-mode.md`. Review Mode carries its
+      region); delete the `## Abandon Mode (--abandon)` section from `task.md`. *(completed:
+      3,111 B, byte-identical to Phase 1's measured value)*
+- [x] For Review Mode: same, into `context/patterns/task-review-mode.md`. Review Mode carries its
       own `### Review Mode Constraints` and `### Standards Reference (--review mode)`
       subsections — both travel with it verbatim; do not treat the Standards Reference table as a
       separate extraction. Take special care with the fenced output templates (fences at ~688-710,
       ~723-731, ~740-756, ~759-764): the region must be captured whole, not truncated at the
-      fence-interior `## Task Review` heading.
-- [ ] Each new file's opening line must state it is the **complete and only** specification for
+      fence-interior `## Task Review` heading. *(completed: region re-measured at 10,429 B per
+      Phase 1's reconciled baseline, line range 576-906 after Abandon's prior removal; both
+      subsections present verbatim; all fenced templates intact, fence count even)*
+- [x] Each new file's opening line must state it is the **complete and only** specification for
       that mode and MUST be followed exactly — mirroring `orchestrate-batch-results-template.md`'s
-      framing, not softened.
-- [ ] Rewrite the corresponding Mode Detection bullets:
+      framing, not softened. *(completed)*
+- [x] Rewrite the corresponding Mode Detection bullets:
       `` - `--abandon RANGES` → Archive tasks. READ `.claude/context/patterns/task-abandon-mode.md` now and follow it exactly. ``
-      and the `--review N` equivalent.
-- [ ] Record byte deltas.
+      and the `--review N` equivalent. *(completed)*
+- [x] Record byte deltas. *(completed: task.md 41,396 B -> 28,021 B total across both
+      extractions; task-abandon-mode.md 3,393 B / 69 lines; task-review-mode.md 10,808 B /
+      340 lines)*
 
 **Timing**: 1.25 hours
 
