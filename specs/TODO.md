@@ -1,5 +1,5 @@
 ---
-next_project_number: 319
+next_project_number: 322
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 319
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,295,296,297,299,300,306,311,316 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,298,302,307,308,317,318 | 22,44,127,184,241,265,272,279,280,297,300,306,316 | core-agent-system, extensions, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,295,296,297,299,300,306,311,316,320,321 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281,298,302,307,308,317,318,319 | 22,44,127,184,241,265,272,279,280,285,297,300,306,316 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,282,284,285,300,302 | orchestrator |
 
@@ -47,6 +47,7 @@ next_project_number: 319
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 316 [NOT STARTED] — Trim skill-orchestrate/SKILL.md back under its gate-20...
   └─ 317 [NOT STARTED] — Make the post-deploy reconcile promotion append to...
+320 [NOT STARTED] — Run the orphaned .return-meta.json validator in the...
 
 ### Extensions
 
@@ -70,6 +71,10 @@ next_project_number: 319
 165 [PLANNED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
+### Lean Extension
+
+321 [NOT STARTED] — Probe Lean language-server reachability at preflight and...
+
 ### Orchestrator
 
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
@@ -86,8 +91,212 @@ next_project_number: 319
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
+319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 
 ## Tasks
+
+### 321. Probe Lean language-server reachability at preflight and report the evidence tier into the dispatch file
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
+
+## Goal
+
+A `lean4` / `formal` dispatch must know its EVIDENCE TIER before it starts: is the Lean language server actually reachable, or is the agent about to substitute a grep sweep for LSP-backed lookup without anyone noticing? The probe is cheap; the current gap is that nothing runs it and nothing reports it into the dispatch.
+
+## Motivating harm (observed live, two silent degradations in one run)
+
+During a five-task `/orchestrate 704,705,707,708,710 --lit --fable` run in `~/Projects/BimodalLogic` on 2026-10-02:
+
+**(1) Language server unreachable, silently.** `lean_local_search` returned `index: unavailable` -- no language server running. One research dispatch's evidence of record therefore silently became a grep sweep instead of LSP-backed lookup. The report said so, but nothing gated on it and nothing warned the orchestrator. Note that `index: unavailable` is precisely the value the lean-lsp tool contract defines as "no language server is running", as distinct from `warming` (index still loading) and `consulted` (the only value for which an empty result is proof of absence). An agent that treats an `unavailable` empty result as proof of absence draws a false conclusion.
+
+**(2) Stale `.olean` cache, silently.** 24 of 638 `FormalSystem` `.olean` artifacts were older than their sources, so current sources were being elaborated against an older revision of their dependencies. This went undetected until a human probe -- AFTER all five research dispatches had already run against it.
+
+## Why (2) matters beyond a failed build
+
+A probe evaluated a LANDED `Stable.TailStable` theorem as FALSE against the stale cache. **That is a false refutation.** In a programme whose last three rounds each turned on a machine-checked refutation, a false refutation could plausibly have been written up as a real result.
+
+The visible symptom was a spurious 16-error failure in `PlusSlicedCertificate/Window.lean` (`Invalid field 'decoded'` / `decoded_neg` / `decoded_fwd`) that read as a code defect at HEAD but was not one -- the source tree was correct throughout. Neither a plain `lake build` nor touching the source repaired it: the recorded trace matched, so lake skipped recompilation. The fix was deleting the stale `.olean` / `.trace` / `.ilean` / ir `.c` artifacts to force re-elaboration; the full rebuild then went green at 2806 jobs, zero errors, zero sorries.
+
+### Cheapest diagnostic tell -- worth recording as a durable artifact of this task
+
+`PlusGraphPath.lab` and `.st` resolved while `.decoded` did not, even though `lab` and `st` are defined AS `(P.decoded t).1` and `(P.decoded t).2`. A file cannot compile `lab` without `decoded`, so the olean and the source provably came from different revisions. That asymmetry distinguishes "cache is inconsistent" from "code is broken" in one cheap check, and is the kind of thing that is obvious once seen and expensive to rediscover.
+
+A durable record of the incident already exists in `~/Projects/BimodalLogic/specs/errors.json` as `err_20261002080500`.
+
+## Reconciliation against the source store (verified 2026-10-02) -- the gap is real and narrower than it looks
+
+`agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh` ALREADY EXISTS and is already wired into Stage 2 (Preflight Status Update) of all four lean skills (`skill-lean-research`, `skill-lean-research-hard`, `skill-lean-implementation`, `skill-lean-implementation-hard`), plus `hooks/lean-lsp-register-project.sh`. It is WARN-only by explicit contract, always exits 0, and has a measured cost of roughly 6-25ms. So the mechanism, the call sites, the warn-never-block posture and the cost budget are all already in place. Three specific things are missing:
+
+1. **It checks REGISTRATION, not REACHABILITY.** Its entire job is per-project `.projects[<path>].mcpServers."lean-lsp"` registration drift, delegated to `verify-lean-mcp.sh`'s nine checks. Its own header is explicit that "No repository walk, no network call, **no MCP server spawn on any path**". A correctly registered project with no server actually running passes silently -- which is exactly the observed symptom. **Registration present is not the same as server reachable, and only the latter determines the evidence tier.**
+
+2. **It has no `.olean` staleness check.** Greps for `olean` in the script return nothing.
+
+3. **Its finding goes to stderr, not into the dispatch file.** The agent that needs to know its evidence tier never receives it as context.
+
+## Scope to settle and implement
+
+Extend the existing preflight probe (do not add a competing one -- the call sites, the WARN-never-BLOCK contract and the cost budget are already established and should be reused):
+
+1. **Language-server reachability.** Determine whether the server is actually reachable, not merely registered. Research must rule on the cheapest reliable probe that respects the existing no-server-spawn and sub-100ms posture, and must state honestly if reachability cannot be established without relaxing one of those -- in which case the trade-off is the deliverable, not a silent compromise.
+2. **Report the result INTO the dispatch file**, so the agent knows its evidence tier before it starts, and so a `lean_local_search` result of `index: unavailable` is interpreted correctly rather than as proof of absence.
+3. Keep WARN-only. Lean work without lean-lsp is an accepted degraded mode (compiled probes remain available); the point is that the degradation must be ANNOUNCED, not prevented.
+
+## Cross-reference: open task 268 (the build half)
+
+Open task 268 [implementing] covers `scripts/lake-build-guard.sh` replaying a stale result across a differently-scoped build -- a false green -- and its working theory names `--no-share`, i.e. lake's shared content-addressed store. That is plausibly the SAME ROOT CAUSE FAMILY as degradation (2) above: the trace observed here carried hashed artifact names such as `99a50264ca773f03.olean`.
+
+Accordingly, and per explicit instruction:
+
+- **This task is scoped to the language-server-readiness half**, which has ZERO coverage in either backlog.
+- `scripts/lake-build-guard.sh` and its test are deliberately NOT in this task's `file_scope`; they are task 268's declared scope, and no fourth task duplicating 268 should be created.
+- **Task 268 should receive this run's reproduction as evidence**: the stale-cache reproduction above (24 of 638 oleans older than source; trace-match causing lake to skip recompilation; `.olean`/`.trace`/`.ilean`/ir-`.c` deletion as the only effective repair; clean 2806-job rebuild afterwards; `err_20261002080500`) is a concrete, independently observed instance of 268's reported defect and strengthens its `--no-share` theory.
+- If the `.olean`-staleness PROBE (as opposed to the build guard's false-green replay) turns out to belong in this preflight rather than in 268, research should say so and add the path via `proposed_file_scope` at that point rather than claiming a contended file up front.
+
+## Acceptance
+
+A `lean4` dispatch launched against a Lean project with no running language server receives, in its dispatch file and before it begins, an explicit statement that LSP-backed lookup is unavailable and that its evidence tier is degraded -- and still proceeds.
+
+---
+
+### 320. Run the orphaned .return-meta.json validator in the lifecycle, and give it the partial_progress checks it lacks
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/scripts/validate-return-meta.sh` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
+
+## Goal
+
+A `.return-meta.json` file that violates its own documented schema must be reported against the agent that wrote it, at the time it is written, instead of silently destroying a dispatch downstream. Warn, never fail.
+
+## Motivating harm (observed live, not hypothetical)
+
+During a five-task `/orchestrate 704,705,707,708,710 --lit --fable` run in `~/Projects/BimodalLogic` on 2026-10-02, a research agent wrote:
+
+    "partial_progress": "Research complete; report written; metadata finalized"
+
+-- a bare STRING -- into `.return-meta.json`, alongside `"status": "researched"`.
+
+Per `context/formats/return-metadata-file.md`, `partial_progress` is specified as an OBJECT (required `stage`, `details`) and is to be present ONLY when status is `in_progress` or `partial`. That is two violations in one field. **Nothing validated what the agent wrote.**
+
+## The consequence was not cosmetic
+
+`scripts/orchestrate-recover-outcome.sh` read `.partial_progress.phases_completed` unguarded. Indexing a string is a fatal `jq` error, so recovery aborted with exit 5. The caller then took the "handoff absent, handoff expected" arm, recorded a `HANDOFF_STALE_OR_ABSENT` system defect, charged the dispatch off-schema, and left the task's status EMPTY -- discarding a complete, validated research report.
+
+Four sibling dispatches with the same agent type recovered normally, which is why this initially read as task-specific rather than as a schema gap. It is a schema gap.
+
+## Already fixed -- do NOT redo
+
+The CONSUMER was hardened in source-store commit `27b6281fa`: `scripts/orchestrate-recover-outcome.sh` now consults that location only when it is an object. This task is the PRODUCER side, which remains unguarded.
+
+## Reconciliation against the source store (verified 2026-10-02) -- this narrows the task sharply
+
+The original framing of this task asked whether to extend `validate-artifact.sh` or add a sibling validator. **Neither is needed: the sibling already exists**, and the real gaps are narrower and more specific than the framing assumed.
+
+1. **`scripts/validate-return-meta.sh` already exists** (322 lines). Its own header describes it as "the missing sibling of `validate-handoff.sh`", it is STRICT by contract, it has a `--fix` mode, a test suite (`scripts/tests/test-validate-return-meta.sh`), a manifest entry, and an entry in `docs/reference/utility-scripts-inventory.md`. It already implements Check 1 (JSON parsability), Check 2 (status vocabulary, via `scripts/lib/return-meta-status-vocabulary.sh`), and Check 3 (artifacts present / is an array / non-empty for terminal statuses / bare-string element rejection).
+
+2. **GAP 1: it has ZERO coverage of `partial_progress`.** `grep -n partial_progress validate-return-meta.sh` returns nothing. Neither the type rule (must be an object) nor the conditional-presence rule (only when status is `in_progress` or `partial`) is checked. The exact field that destroyed the dispatch is the one field the validator does not look at.
+
+3. **GAP 2: the validator has ZERO EXECUTING CALL SITES.** Every occurrence of `validate-return-meta.sh` across `agent-system/` is a comment, a documentation reference, a test, a manifest listing, or -- in `scripts/skill-base.sh:569` -- a mention inside a WARNING MESSAGE STRING advising a human to run it by hand. A repo-wide search for an actual invocation (`bash .../validate-return-meta.sh`, `exec`, command substitution) returns nothing. It is an orphaned utility script.
+
+Gap 2 is the root cause of the observed harm and the more important of the two: a validator that exists, is tested, is documented and is never run is indistinguishable from no validator at all.
+
+## Scope to settle and implement
+
+1. **Add the `partial_progress` checks to `validate-return-meta.sh`** as a new check in the existing Check 1/2/3 sequence: it must be a JSON object with required `stage` and `details` when present, and it must be ABSENT unless status is `in_progress` or `partial`. The `"partial_progress": "Research complete; ..."` string above is the regression fixture.
+
+2. **Give the validator a lifecycle call site** so it actually runs at postflight against the file the dispatch just wrote. **Warn, not fail** -- note that this is a posture change at the call site, since the script's own exit-code contract is strict (exit 1 on invalid); the caller must downgrade, the script must not be softened for every other consumer.
+
+3. Note for the implementer: report artifacts already get a validator pass via `scripts/validate-artifact.sh`, so the precedent for a postflight validation step exists; the asymmetry was simply that return-meta was never wired into one.
+
+## Cross-reference: open task 270
+
+Open task 270 is "Re-runnable null-safety audit of jq mutation sites across core scripts". This incident is a **read-site TYPE error**, not a mutation-site null error -- a different failure class in a different direction, so it is not covered by 270 as scoped.
+
+The consumer-hardening half of this concern is already landed (commit `27b6281fa` above), so there is no live consumer half to split. **If a future audit wants the read-site type-error class systematically, widening 270 is the cleaner home for it than splitting it off here** -- this task should say so explicitly in its deliverable rather than leaving the relationship implicit.
+
+## file_scope note
+
+The postflight call site path is deliberately NOT declared. `scripts/orchestrate-cycle-postflight.sh` is the likely integration point but is already in the declared `file_scope` of eight open tasks (184, 263, 273, 279, 284, 285, 304, 315); declaring it here would add eight serializing edges for a single call line. Add the chosen call-site path via the research phase's `proposed_file_scope` mechanism once the integration point is ruled on.
+
+## Acceptance
+
+A `.return-meta.json` carrying `"status": "researched"` together with a bare-string `partial_progress` is reported as a warning attributed to the writing agent at postflight, and the dispatch still completes and still persists its status -- the opposite of the observed outcome.
+
+---
+
+### 319. Surface cross-task claim invalidation when a research dispatch refutes a filed premise
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 285
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
+
+## Goal
+
+When a research dispatch machine-checks a refutation, or closes a question by supersession, the OTHER open tasks whose filed premises that result falsifies must be surfaced for human triage. Today nothing does this, so a refutation's blast radius is found only if a human happens to read the report and hand-check sibling task descriptions.
+
+## Motivating harm (observed live, not hypothetical)
+
+During a five-task `/orchestrate 704,705,707,708,710 --lit --fable` run in `~/Projects/BimodalLogic` on 2026-10-02, a research dispatch machine-checked a refutation: the time-sliced certificate class is incomplete for full L-plus, and already for the CTL-like fragment. The probe is `specs/710_sliced_class_incompleteness_characterization/probes/NoFiniteWidthModel.lean` -- sorry-free, axioms `propext` / `Classical.choice` / `Quot.sound`.
+
+That single result falsified filed claims in FIVE other tasks in the same repository (706, 707, 708, 709, 712). **Nothing in the system surfaced any of them.** They were found only because a human-directed pass read the report and hand-checked sibling task descriptions.
+
+## Concrete cost of the gap
+
+- Task 709's headline was "establish the finite model property for the CTL-like fragment against the sliced class" -- it targeted exactly the fragment that falls, with a recorded estimate of 60-100 hours of formalization. Without the manual pass it would have been dispatched to prove a theorem already machine-checked false.
+- Task 707 was a context note whose entire stated purpose is "so the fact is never rediscovered a third time". It was about to enshrine a design rule (`Z x Fin n` with finite fibres) that the same refutation had just shown necessary but NOT sufficient. A task written to stop rediscovery was itself about to record the next stale assumption.
+
+The downstream cost is therefore not a wasted hour; it is an entire dispatched programme aimed at a false target, and a durable context note recording a premise already known to be wrong.
+
+## Reconciliation against the open backlog (verified in the source store, 2026-10-02)
+
+- No existing script, context file, or postflight stage in `agent-system/extensions/core/` performs any refutation or supersession sweep. Greps for `refut` / `supersed` / `invalidat` across `scripts/` and `context/` return only unrelated matches (session reaping, predispatch review, census methodology). This gap has **zero** coverage in the backlog.
+- There is **no structured field** for a refuted premise anywhere in the state schema. In the BimodalLogic repo the refutations of this run were recorded as free text inside `description` (29 occurrences of `refut`), which a mechanical sweep cannot key on reliably. Deciding the trigger surface is therefore part of this task, not a given.
+- `decisions_made` exists in the orchestrator handoff schema (`docs/architecture/handoff-schema.md`) and is explicitly "informational/historical (settled questions a downstream agent should not re-investigate)" -- the closest existing surface, and a live candidate trigger. Its writer, however, is the subject of open task 285, which is why 285 is declared as a dependency here: if the ruling picks the decision-record route, 285 must land first.
+
+## Scope to settle and implement
+
+A **postflight surfacing step**. When a research artifact records a refutation or a closed-by-supersession decision, sweep the OTHER open task descriptions for the refuted claim and emit an advisory list for human triage.
+
+Declaration names are the strongest key; the probe above is the worked example (a sweep keyed on `NoFiniteWidthModel`, or on the refuted declaration names it establishes, would have hit 706/707/708/709/712).
+
+Research must RULE on, not assume:
+
+1. **What triggers detection.** Three candidates, none yet chosen: (a) an explicit metadata field the research agent sets on `.return-meta.json`; (b) a convention in the report artifact body; (c) a `decisions_made` / `.decisions.json` decision-record line (see the task 285 dependency above).
+2. **Where the sweep output lands.** It must reach a human, and it must survive the dispatch that produced it.
+3. **Whether it blocks or is purely advisory.** Recommendation: **advisory**.
+
+### Honest difficulty, to be stated in the deliverable rather than papered over
+
+Detecting "this claim is the same claim" in general is hard. The tractable version keys on **declaration names and explicit supersession markers**, not on natural-language equivalence. The task must say so and record its false-negative posture explicitly, rather than over-promising a semantic claim-matcher it cannot deliver.
+
+## Non-goals (hard constraints)
+
+- **SURFACING ONLY.** It must never auto-edit a task description.
+- It must never change a task's status. Both of those were human calls in the observed incident and must stay human calls.
+- Do not attempt natural-language claim equivalence. See the difficulty note above.
+
+## file_scope note
+
+The trigger-surface path is deliberately NOT declared yet -- declaring one of `context/formats/return-metadata-file.md`, `rules/artifact-formats.md`, or the `.decisions.json` writer would prejudge design question 1 above. Add the chosen one via the research phase's `proposed_file_scope` mechanism once research rules (the same deliberate omission open task 312 uses).
+
+The postflight call site is also NOT declared. `scripts/orchestrate-cycle-postflight.sh` is the obvious integration point but is already in the declared `file_scope` of eight open tasks (184, 263, 273, 279, 284, 285, 304, 315); declaring it here would add eight serializing edges for a file this task touches by one call line. Add it at wiring time.
+
+## Acceptance
+
+Replaying the observed incident -- the `NoFiniteWidthModel` refutation against the task descriptions of 706, 707, 708, 709 and 712 as they stood before the manual pass -- yields an advisory list naming all five, with no task description or status mutated by the sweep.
+
+---
 
 ### 318. Wire lint-directory-pathspec-boundary.sh into verify-deploy.sh as a numbered gate
 - **Status**: [NOT STARTED]
