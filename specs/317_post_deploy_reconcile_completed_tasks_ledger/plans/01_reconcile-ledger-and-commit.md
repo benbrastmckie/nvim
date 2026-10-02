@@ -312,36 +312,53 @@ and must be widened to name that path explicitly (never by substituting a direct
 
 ---
 
-### Phase 4: Document the invariant and run the final gate [NOT STARTED]
+### Phase 4: Document the invariant and run the final gate [COMPLETED]
 
 **Goal**: The promotion block's header comment states the ledger-and-commit obligation and its
 dependence on the serialized placement, and the complete gate set confirms the change is safe to
 land across every affected suite.
 
 **Tasks**:
-- [ ] Extend the existing post-deploy-reconcile header comment (currently
+- [x] Extend the existing post-deploy-reconcile header comment (currently
       `orchestrate-cycle-plan.sh:1111-1131`) in place — no new standalone context file, per the
       research's Context Extension Recommendation — with one paragraph stating: (a) a promotion MUST
       append to `.completed_tasks`, because Move 4 derives both the `### Succeeded` table and the
       `.dispatch/` cleanup set from it; (b) a promotion MUST commit its own `state.json`/`TODO.md`,
       because the all-terminal check can exit this same invocation with no intervening postflight;
       (c) the commit rides this block's existing "no dispatch in flight" placement invariant, so a
-      future mover of this code must preserve it or re-derive a replacement.
-- [ ] Add a short inline comment at the commit call cross-referencing the block header's
-      CONCURRENCY POSTURE note.
-- [ ] Verify the comment edit stays inside comment boundaries (no hunk crosses out of a `#` region).
-- [ ] Run the repo-wide gate set for this change class: `test-orchestrate-cycle-plan.sh`,
+      future mover of this code must preserve it or re-derive a replacement. *(completed)*
+- [x] Add a short inline comment at the commit call cross-referencing the block header's
+      CONCURRENCY POSTURE note. *(completed)*
+- [x] Verify the comment edit stays inside comment boundaries (no hunk crosses out of a `#` region).
+      *(completed: every added `+` line in the phase's diff is either a `#`-prefixed comment or
+      blank)*
+- [x] Run the repo-wide gate set for this change class: `test-orchestrate-cycle-plan.sh`,
       `test-orchestrate-cycle-postflight.sh`, and any suite covering `reconcile-task-status.sh` or
       `git-commit-scoped.sh` — enumerate them with
       `ls agent-system/extensions/core/scripts/tests/ | grep -iE 'reconcile|commit-scoped|postflight|cycle'`
-      and run each, rather than assuming the two named ones are exhaustive.
-- [ ] Confirm the source-store boundary held: `git status --short` shows changes ONLY under
-      `agent-system/extensions/core/` (plus `specs/`), never under `.claude/**`.
-- [ ] Deploy the source store so the deployed `.claude/scripts/orchestrate-cycle-plan.sh` matches
+      and run each, rather than assuming the two named ones are exhaustive. *(completed: 10 suites
+      enumerated — test-git-commit-scoped.sh, test-lint-lifecycle-status-var.sh,
+      test-lint-postflight-boundary.sh, test-orchestrate-cycle-plan.sh,
+      test-orchestrate-cycle-postflight.sh, test-postflight-deploy-gate.sh,
+      test-postflight-marker-schema.sh, test-reconcile-handoff-status.sh,
+      test-skill-base-lifecycle.sh, test-subagent-postflight-marker.sh — all 10 GREEN, zero FAIL)*
+- [x] Confirm the source-store boundary held: `git status --short` shows changes ONLY under
+      `agent-system/extensions/core/` (plus `specs/`), never under `.claude/**`. *(completed: this
+      task's own uncommitted delta was exactly one file,
+      `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`; other `.claude/**`-adjacent
+      entries in the working tree at this point belong to concurrently-dispatched sibling tasks,
+      not this dispatch)*
+- [x] Deploy the source store so the deployed `.claude/scripts/orchestrate-cycle-plan.sh` matches
       source — this is what the completion-deploy gate requires before the task can reach
       `completed`. The orchestrate engine's own inter-cycle redeploy checkpoint normally performs
       this; if running outside that flow, run the repo's headless deploy explicitly and confirm the
-      deployed copy carries both new behaviors.
+      deployed copy carries both new behaviors. *(completed: `deploy-headless.sh` run; the deployed
+      `.claude/scripts/orchestrate-cycle-plan.sh` is now byte-identical to source and contains both
+      the `.completed_tasks` append and the `git-commit-scoped.sh` call. `verify-deploy.sh` itself
+      reports 2 of 33 checks failing, but both are pre-existing and unrelated to this task: a
+      doc-lint gap from task 279's already-committed `migrate-state-legacy-fields.sh` (not yet
+      added to core's `manifest.json` `provides.scripts`), and a sandbox orphan tmp file
+      (`tmp/noop-bash-count-...`). Neither names any file this task touched.)*
 
 **Timing**: 1 hour
 
@@ -370,21 +387,33 @@ declaring the gate complete, and run every suite it names.
 
 ## Testing & Validation
 
-- [ ] The new Group 29 arm demonstrated RED against unfixed source, with the failing output captured
-      (non-vacuous assertion requirement from the dispatch's "Close By").
-- [ ] `.completed_tasks` on the multi-state file contains the reconcile-promoted task number.
-- [ ] A commit lands for the promotion (HEAD advances) with a message naming the reconcile origin.
-- [ ] `git status --porcelain -- specs/state.json specs/TODO.md` is empty after the promotion — no
-      uncommitted completion transition left behind.
-- [ ] The append fires for `-> completed` promotions only, never for `refused`, `no-op`,
-      `-> researched`, or `-> planned`.
-- [ ] A commit failure is non-blocking: the loop continues for remaining tasks and emits a
-      `REDEPLOY CHECKPOINT WARNING`.
-- [ ] The SUT's stdout remains exactly one parseable JSON object.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` — zero FAIL.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` — zero FAIL.
-- [ ] Groups 31-33b unaffected by the arm's temporary git repository.
-- [ ] All edits under `agent-system/extensions/core/`; nothing hand-authored under `.claude/**`.
+- [x] The new Group 29 arm demonstrated RED against unfixed source, with the failing output captured
+      (non-vacuous assertion requirement from the dispatch's "Close By"). *(completed)*
+- [x] `.completed_tasks` on the multi-state file contains the reconcile-promoted task number.
+      *(completed)*
+- [x] A commit lands for the promotion (HEAD advances) with a message naming the reconcile origin.
+      *(completed: `task <N>: complete implementation (post-deploy reconcile)`)*
+- [x] `git status --porcelain -- specs/state.json specs/TODO.md` is empty after the promotion — no
+      uncommitted completion transition left behind. *(completed)*
+- [x] The append fires for `-> completed` promotions only, never for `refused`, `no-op`,
+      `-> researched`, or `-> planned`. *(completed: gated on the already-exclusive `_pdr_outcome
+      = "promoted"` condition — verified by code inspection, no separate test arm needed since the
+      gating condition is shared with the pre-existing, already-tested outcome classification)*
+- [x] A commit failure is non-blocking: the loop continues for remaining tasks and emits a
+      `REDEPLOY CHECKPOINT WARNING`. *(completed: `|| echo ... WARNING ... >&2` falls through to
+      `fi`/`done`, no `exit`/`return` in the failure path — verified by code inspection, mirroring
+      every other non-blocking commit-failure site in this file)*
+- [x] The SUT's stdout remains exactly one parseable JSON object. *(completed: confirmed via a
+      temporary debug probe in the regression arm)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` — zero FAIL.
+      *(completed: 340 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` — zero FAIL.
+      *(completed: 153 passed, 0 failed)*
+- [x] Groups 31-33b unaffected by the arm's temporary git repository. *(completed: full-suite run
+      confirms Group 33b's cases pass unchanged after Arm F's `rm -rf "$WORKDIR/.git"` teardown)*
+- [x] All edits under `agent-system/extensions/core/`; nothing hand-authored under `.claude/**`.
+      *(completed: `.claude/**` was touched only by `deploy-headless.sh`'s own regeneration, never
+      hand-edited)*
 
 ## Artifacts & Outputs
 

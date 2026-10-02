@@ -1129,6 +1129,27 @@ fi
 # deploy gate itself refusing again, or the phase-accounting backstop) is NON-FATAL here: warn,
 # record, and move on to the next task -- a failed self-heal attempt must never take down the
 # rest of the batch loop.
+#
+# Ledger-and-commit obligation (every `promoted` outcome below MUST do both):
+#   (a) Append the task number to `.completed_tasks`. skill-orchestrate/SKILL.md's Move 4 derives
+#       BOTH the `### Succeeded` table AND the `.dispatch/` cleanup set from this one array -- a
+#       promotion that skips the append completes correctly in `specs/state.json` but is
+#       invisible to the batch's own reporting and cleanup.
+#   (b) Commit its own `specs/state.json` + `specs/TODO.md` transition via
+#       `git-commit-scoped.sh`. This loop runs strictly before Move 2 issues this cycle's own
+#       dispatch batch, and the all-terminal check further down can `emit_and_exit` this SAME
+#       invocation with no intervening dispatch -- so there is no guaranteed later postflight to
+#       commit this transition. Skipping the commit here risks the durable git record
+#       contradicting `specs/state.json` (the record reads "orchestration paused" from a prior
+#       cycle while the state says `completed`).
+#   A future promotion branch added to this loop (a new `_pdr_outcome` value, or a second
+#   `-> completed` pattern) MUST perform both (a) and (b), not just the state mutation.
+#
+# This commit's own concurrency safety rides the SAME "no dispatch in flight" placement
+# invariant the CONCURRENCY POSTURE comment above (this file's redeploy-checkpoint trigger
+# predicate) already establishes for this whole checkpoint window -- a future mover of this loop
+# out of that window must preserve the invariant or re-derive an equivalent one before this
+# commit call can stay safe.
 if [ "$dry_run" != "true" ] && [ "$post_deploy_reconcile_json" != "[]" ]; then
   for _pdr_t in $(echo "$post_deploy_reconcile_json" | jq -r '.[]' 2>/dev/null || true); do
     [ -n "$_pdr_t" ] || continue
@@ -1155,12 +1176,15 @@ if [ "$dry_run" != "true" ] && [ "$post_deploy_reconcile_json" != "[]" ]; then
       # for `refused`/`no-op`, nor for the `-> researched`/`-> planned` promotions the `grep -q
       # "promoted .* -> completed"` check above already excludes.
       mt_set --argjson t "$_pdr_t" '.completed_tasks = ((.completed_tasks // []) + [$t] | unique)'
-      # This promotion's own scoped commit. This is the LAST point this cycle can commit the
-      # transition: the all-terminal check further down can emit_and_exit this SAME invocation
-      # with no intervening dispatch and therefore no intervening postflight to commit it for us.
-      # Without this, `specs/state.json` reads `completed` while the durable git record still
-      # says "orchestration paused" from whichever cycle's postflight ran last -- a committed
-      # record that CONTRADICTS the state it is supposed to reflect.
+      # This promotion's own scoped commit -- obligation (b) from this block's header comment
+      # above. Safe here only because of this loop's "no dispatch in flight" placement, the same
+      # invariant the CONCURRENCY POSTURE comment (above, this file's redeploy-checkpoint trigger
+      # predicate) establishes for the whole checkpoint window. This is the LAST point this cycle
+      # can commit the transition: the all-terminal check further down can emit_and_exit this
+      # SAME invocation with no intervening dispatch and therefore no intervening postflight to
+      # commit it for us. Without this, `specs/state.json` reads `completed` while the durable
+      # git record still says "orchestration paused" from whichever cycle's postflight ran last
+      # -- a committed record that CONTRADICTS the state it is supposed to reflect.
       #
       # Explicit two-entry pathspec only (never a directory/glob pathspec, per
       # context/standards/git-staging-scope.md): reconcile-task-status.sh's own link_artifact

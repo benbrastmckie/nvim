@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "task_number": 317,
-  "session_id": "sess_1790968925_5ff73e_317",
-  "phases_completed": 0,
-  "phases_total": 4,
+  "status": "implemented",
+  "dispatch_seq": 27,
+  "summary": "Post-deploy reconcile promotion now appends the promoted task to the batch's .completed_tasks ledger and issues its own scoped commit for the state.json/TODO.md transition; a new Group 29 Arm F regression test demonstrated RED against unfixed source before the fix, now GREEN across the full suite plus a 10-suite gate run.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/317_post_deploy_reconcile_completed_tasks_ledger/plans/01_reconcile-ledger-and-commit.md",
-      "summary": "4-phase plan for the post-deploy reconcile ledger append and scoped commit, test-first."
+      "type": "summary",
+      "path": "specs/317_post_deploy_reconcile_completed_tasks_ledger/summaries/01_reconcile-ledger-and-commit-summary.md",
+      "summary": "4-phase implementation: RED regression arm, ledger append, scoped commit, invariant comment plus full gate run."
     }
   ],
-  "dispatch_seq": 26
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": []
 }
