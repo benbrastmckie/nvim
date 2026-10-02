@@ -427,36 +427,36 @@ experiments; commit neither.
 
 ---
 
-### Phase 6: Inventory note, deploy, and the full gate set [NOT STARTED]
+### Phase 6: Inventory note, deploy, and the full gate set [COMPLETED]
 
 **Goal**: the docs stop describing the validator as a hand-run-only utility, the deploy tree
 carries the new runtime behavior, and the whole gate set is green.
 
 **Tasks**:
-- [ ] Update the `validate-return-meta.sh` entry in
+- [x] Update the `validate-return-meta.sh` entry in *(completed)*
       `docs/reference/utility-scripts-inventory.md` with a clause noting it now also runs
       automatically, warn-only, at orchestrate cycle postflight for the dispatch's own
       `.return-meta.json`, in addition to remaining hand-runnable.
-- [ ] Record the inclusion-criterion tension in that same entry in one clause: the inventory's
+- [x] Record the inclusion-criterion tension in that same entry in one clause: the inventory's *(completed)*
       stated scope is scripts "not invoked as part of the normal
       research/plan/implement/postflight lifecycle", which this script now partly is. **Decision:
       keep the entry** — it remains a standalone hand-run utility with a `--fix` mode that no
       lifecycle call site exercises, and annotating is the minimal, lowest-risk edit; removing it
       would lose the only reference documentation for the `--fix` mode. State the decision, not
       just the fact.
-- [ ] **No task-number citations in any file outside `specs/**`.** The task-270 relationship is
+- [x] **No task-number citations in any file outside `specs/**`.** The task-270 relationship is *(completed: verified via check-task-references.sh, 0 occurrences)*
       recorded in this plan and belongs in the implementation summary — never in the inventory,
       the discrimination doc, or any script comment, where
       `rules/no-task-references-in-deliverables.md` forbids it and a blocking write-time hook
       enforces it.
-- [ ] Deploy the source-store changes: `bash .claude/scripts/deploy-headless.sh`. The postflight
+- [x] Deploy the source-store changes: `bash .claude/scripts/deploy-headless.sh`. The postflight *(completed; see Rollback/Contingency note on the one unrelated sibling-caused verify-deploy finding)*
       probe invokes `${SCRIPT_DIR}/validate-return-meta.sh` and
       `${SCRIPT_DIR}/system-defect-record.sh` from the deployed `.claude/scripts/` tree, so
       without this step the new behavior is inert at runtime.
-- [ ] Confirm the deployed copies carry the changes (`grep partial_progress
+- [x] Confirm the deployed copies carry the changes (`grep partial_progress *(completed)*
       .claude/scripts/validate-return-meta.sh`; `grep RETURN_META_SCHEMA_VIOLATION
       .claude/scripts/system-defect-record.sh .claude/scripts/orchestrate-cycle-postflight.sh`).
-- [ ] Run the full gate set and record the results in the implementation summary.
+- [x] Run the full gate set and record the results in the implementation summary. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -488,21 +488,24 @@ above) rather than treating the enumerated three as exhaustive.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh` — all cases
-      pass, including the four new `partial_progress` cases.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` —
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh` — all cases
+      pass, including the four new `partial_progress` cases. *(completed: 21/21 passing)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` —
       all cases pass, including the two positive and two negative probe cases and the unchanged
-      `--dry-run` mutates-nothing invariant.
-- [ ] `shellcheck` and `bash -n` clean on all three edited shell scripts.
-- [ ] **Acceptance criterion, verified end to end**: a `.return-meta.json` with
+      `--dry-run` mutates-nothing invariant. *(completed: 153/153 passing)*
+- [x] `shellcheck` and `bash -n` clean on all three edited shell scripts. *(completed: zero new
+      findings vs. each script's pre-existing baseline)*
+- [x] **Acceptance criterion, verified end to end**: a `.return-meta.json` with
       `"status": "researched"` and a bare-string `partial_progress` produces a stderr warning
       attributed to the writing agent plus a `RETURN_META_SCHEMA_VIOLATION` record, and the
-      dispatch completes and persists its status.
-- [ ] **Noise guard, verified end to end**: a dispatch whose `.return-meta.json` carries an
+      dispatch completes and persists its status. *(completed: Case 950)*
+- [x] **Noise guard, verified end to end**: a dispatch whose `.return-meta.json` carries an
       intentional non-canonical status and no `partial_progress` produces no probe output.
-- [ ] `bash .claude/scripts/check-task-references.sh` — no task-number citation outside
-      `specs/**`.
-- [ ] Deployed `.claude/` copies carry all three script changes.
+      *(completed: Case 952)*
+- [x] `bash .claude/scripts/check-task-references.sh` — no task-number citation outside
+      `specs/**`. *(completed: 0 occurrences)*
+- [x] Deployed `.claude/` copies carry all three script changes. *(completed: verified byte-identical
+      via diff against the source store)*
 
 ## Artifacts & Outputs
 
