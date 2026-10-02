@@ -2,7 +2,7 @@
 
 - **Task**: 320 - Run the orphaned .return-meta.json validator in the lifecycle, and give it the
   partial_progress checks it lacks
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/320_return_meta_producer_side_validation/reports/01_producer_side_validation.md
@@ -130,32 +130,32 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add the `partial_progress` check to the validator [NOT STARTED]
+### Phase 1: Add the `partial_progress` check to the validator [COMPLETED]
 
 **Goal**: `validate-return-meta.sh` enforces `partial_progress`'s type and conditional-presence
 rules, failing (exit 1) on the motivating fixture.
 
 **Tasks**:
-- [ ] Append a new `# ─── Check 6: partial_progress type and conditional presence ───` block
+- [x] Append a new `# ─── Check 6: partial_progress type and conditional presence ───` block *(completed)*
       immediately after the existing Check 5 (`metadata` required sub-fields) and before the
       `# ─── Summary ───` block. Do not renumber Checks 1-5.
-- [ ] Rule 1 (type-when-present): if `.partial_progress` is present and non-null, it must be a
+- [x] Rule 1 (type-when-present): if `.partial_progress` is present and non-null, it must be a *(completed)*
       JSON object (`jq -r '.partial_progress | type'`). If it is an object, `.stage` and
       `.details` must both be present and non-empty strings — mirror Check 4's
       object-field-presence idiom for `artifacts[idx]`. Each violation is a `log_fail`.
-- [ ] Rule 2 (conditional presence): if `.partial_progress` is present and non-null, the file's
+- [x] Rule 2 (conditional presence): if `.partial_progress` is present and non-null, the file's *(completed)*
       `status` must be `in_progress` or `partial`. Any other status value makes the field's mere
       presence a `log_fail`, naming both the offending status and the required repair.
-- [ ] Emit a single `log_pass` when the field is absent-and-not-required, or
+- [x] Emit a single `log_pass` when the field is absent-and-not-required, or *(completed)*
       present-and-well-formed-under-a-permitted-status, matching every sibling check's
       pass-logging convention. The pass message may name the field; the caller in Phase 4
       discriminates on the `[FAIL]` marker, not on the word alone.
-- [ ] Use `log_fail` (never `log_warn`) for both rules: the validator's exit-code contract stays
+- [x] Use `log_fail` (never `log_warn`) for both rules: the validator's exit-code contract stays *(completed)*
       STRICT per the dispatch's explicit instruction. The warn-only downgrade lives at the call
       site only.
-- [ ] Extend the `--help` "Validation rules:" block with two lines describing the new rules,
+- [x] Extend the `--help` "Validation rules:" block with two lines describing the new rules, *(completed)*
       matching the existing bullet style.
-- [ ] `--fix` is NOT extended. A bare-string `partial_progress` has no unambiguous object-shaped
+- [x] `--fix` is NOT extended. A bare-string `partial_progress` has no unambiguous object-shaped *(completed: deliberately excluded per plan)*
       repair (its `stage`/`details` split cannot be inferred from free prose), unlike the
       bare-string artifacts case. Add a one-line comment in the new block recording this
       deliberate exclusion so a future reader does not read it as an oversight.

@@ -114,6 +114,9 @@ while [[ $# -gt 0 ]]; do
       echo "    non-empty for researched/planned/implemented."
       echo "  - metadata.session_id, metadata.agent_type, metadata.delegation_depth, and"
       echo "    metadata.delegation_path must be present."
+      echo "  - partial_progress, when present and non-null, must be a JSON object with"
+      echo "    non-empty stage and details."
+      echo "  - partial_progress must be absent unless status is in_progress or partial."
       echo ""
       echo "--fix: opt-in only, never implicit. Promotes bare-string artifacts elements to the"
       echo "  object shape via the shared inference library, writes atomically (temp file plus"
@@ -299,6 +302,50 @@ for field in session_id agent_type delegation_depth delegation_path; do
     log_pass "Required field present: metadata.${field}"
   fi
 done
+
+# ─── Check 6: partial_progress type and conditional presence ───────────────────────────────────
+# Per context/formats/return-metadata-file.md, partial_progress is an OBJECT (required `stage`,
+# `details`) present ONLY when status is in_progress or partial. The motivating regression: a
+# bare STRING partial_progress alongside status="researched" crashed a downstream unguarded jq
+# read (scripts/orchestrate-recover-outcome.sh) -- two violations in one field (wrong type, and
+# present under a disallowed status). Both rules below use log_fail (never log_warn): the
+# validator's own exit-code contract stays STRICT here; only the postflight CALL SITE downgrades
+# this to a warning (see orchestrate-cycle-postflight.sh's warn-only probe).
+#
+# --fix is deliberately NOT extended to repair this field: a bare-string partial_progress has no
+# unambiguous object-shaped repair (its stage/details split cannot be inferred from free prose),
+# unlike the bare-string artifacts case above, which has a mechanical path-segment inference.
+partial_progress_present=$(jq -r 'has("partial_progress") and (.partial_progress != null)' "$META_FILE")
+if [[ "$partial_progress_present" == "true" ]]; then
+  pp_type=$(jq -r '.partial_progress | type' "$META_FILE")
+  pp_ok=true
+  if [[ "$pp_type" != "object" ]]; then
+    log_fail "partial_progress is a $pp_type, not an object (required shape: {\"stage\": \"...\", \"details\": \"...\"})"
+    pp_ok=false
+  else
+    pp_stage=$(jq -r '.partial_progress.stage // ""' "$META_FILE")
+    pp_details=$(jq -r '.partial_progress.details // ""' "$META_FILE")
+    if [[ -z "$pp_stage" ]]; then
+      log_fail "partial_progress.stage is missing or empty"
+      pp_ok=false
+    fi
+    if [[ -z "$pp_details" ]]; then
+      log_fail "partial_progress.details is missing or empty"
+      pp_ok=false
+    fi
+  fi
+
+  if [[ "$status" != "in_progress" ]] && [[ "$status" != "partial" ]]; then
+    log_fail "partial_progress is present but status='$status' -- it must be absent unless status is in_progress or partial (repair: remove partial_progress, or correct status to in_progress/partial)"
+    pp_ok=false
+  fi
+
+  if [[ "$pp_ok" == "true" ]]; then
+    log_pass "partial_progress is a well-formed object under a permitted status ('$status')"
+  fi
+else
+  log_pass "partial_progress is absent (not required for status='$status')"
+fi
 
 # ─── Summary ─────────────────────────────────────────────────────────────────────────────────────
 echo ""

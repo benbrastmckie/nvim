@@ -1,56 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/320_return_meta_producer_side_validation/plans/01_return-meta-producer-validation.md",
-      "summary": "Six-phase, 4.25-hour plan closing both producer-side gaps: partial_progress validation and the validator's missing lifecycle call site."
-    }
-  ],
-  "next_steps": "Run /implement 320 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 4.25,
-  "dependency_waves": [
-    [
-      1,
-      2
-    ],
-    [
-      3,
-      4
-    ],
-    [
-      5
-    ],
-    [
-      6
-    ]
-  ],
-  "memory_candidates": [
-    {
-      "content": "A validator that exists, is tested, is documented, and is never invoked is indistinguishable from no validator at all. When auditing whether a check is live, grep for EXECUTING call sites (bash/exec/command substitution) rather than mere occurrences of the script name -- comments, docs, manifests, tests, and warning-message strings all match an occurrence grep while proving nothing about runtime coverage. The corollary for wiring an orphaned validator in: gate the new call site on the SPECIFIC check output the task needs, never on the validator aggregate exit code, because an aggregate-exit trigger silently activates every other check the validator implements -- which may include checks deliberately deferred for known false-positive reasons.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/320_return_meta_producer_side_validation/plans/01_return-meta-producer-validation.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "orphaned-validator",
-        "call-site-audit",
-        "occurrence-vs-invocation",
-        "exit-code-gating",
-        "postflight-validation",
-        "false-positive-noise"
-      ]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790957600_e00acf_320",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ]
+    "session_id": "sess_1790957600_e00acf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 16
+  "dispatch_seq": 19
 }
