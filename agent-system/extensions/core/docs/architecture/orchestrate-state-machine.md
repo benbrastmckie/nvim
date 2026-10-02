@@ -398,12 +398,16 @@ verdict=$(echo "$postflight_json" | jq -r '.verdict')
 halt=$(echo "$postflight_json" | jq -r '.halt')
 ```
 
-`.status` (`dispatch_status`) is the dispatched agent's own self-report, used only for the
-diagnostic echo — every loop-control decision keys off `$verdict`/`$halt`/`$infra_exempt_cycle`,
-never `$dispatch_status`. `.persisted_status` is `state.json`'s actual current status for this
-task, read fresh at postflight's emit time; the two legitimately differ by design (e.g. an
-empty-blocker `partial` that performs no transition). See `SKILL.md`'s "Move 3: Postflight"
-section for the full contract text this mirrors.
+**`.status` vs. `.persisted_status`** — the postflight JSON carries both, and they mean
+different things. `.status` (`dispatch_status` above) is the dispatched agent's own
+**self-report**, verbatim from its handoff or a recovered `.return-meta.json`; it is used ONLY
+for `SKILL.md`'s Move 3 diagnostic echo — every loop-control decision there keys off
+`$verdict`/`$halt`/`$infra_exempt_cycle`, never `$dispatch_status`. `.persisted_status`
+(`persisted_status` above) is what `specs/state.json` actually says for this task after this
+postflight ran, read fresh at emit time. The two legitimately differ by design — e.g. an
+empty-blocker `partial` performs no transition, so `status=partial` while `persisted_status`
+stays whatever it already was — and that divergence is documented behavior, not a defect. This
+is the full contract text; `SKILL.md`'s Move 3 section carries only a short pointer back here.
 
 Three narrow, grep-only exceptions to "the lead never reads artifact content" are sanctioned
 elsewhere in the loop (adversarial-verification grep, next-phase selection grep, and the phase-marker

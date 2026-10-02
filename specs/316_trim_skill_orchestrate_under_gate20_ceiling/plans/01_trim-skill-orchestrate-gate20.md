@@ -1,7 +1,7 @@
 # Implementation Plan: Task #316
 
 - **Task**: 316 - Trim `skills/skill-orchestrate/SKILL.md` back under its verify-deploy gate 20 per-file context ceiling
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/316_trim_skill_orchestrate_under_gate20_ceiling/reports/01_trim_skill_orchestrate_gate20.md
@@ -98,7 +98,7 @@ Phases within the same wave can execute in parallel. All three phases here are s
 sequential: Phases 1 and 2 both edit the same file and the byte accounting is cumulative, and
 Phase 3 can only judge the gate once both trims have landed.
 
-### Phase 1: Invert `.status`/`.persisted_status` Canonicality [NOT STARTED]
+### Phase 1: Invert `.status`/`.persisted_status` Canonicality [COMPLETED]
 
 **Goal**: Move the full `.status` vs `.persisted_status` contract text into
 `docs/architecture/orchestrate-state-machine.md`'s "Context Flatness Guarantee" section as the
@@ -106,25 +106,31 @@ canonical home, and leave SKILL.md's Move 3 section a short pointer — removing
 SKILL.md while strengthening, not weakening, the contract.
 
 **Tasks**:
-- [ ] Re-read both target files immediately before editing (Territory contract: a sibling may
+- [x] Re-read both target files immediately before editing (Territory contract: a sibling may
       have changed them); record SKILL.md's starting `wc -c` as the baseline for this phase
-- [ ] In `docs/architecture/orchestrate-state-machine.md`, replace the condensed
+      *(completed: baseline 20930 B, no sibling modification observed)*
+- [x] In `docs/architecture/orchestrate-state-machine.md`, replace the condensed
       `.status` (`dispatch_status`) paragraph that currently closes with "See `SKILL.md`'s
       \"Move 3: Postflight\" section for the full contract text this mirrors." with the report's
       recommended full canonical paragraph — carrying the self-report framing, the
       `$verdict`/`$halt`/`$infra_exempt_cycle` loop-control distinction, the empty-blocker
       `partial` example, the "documented behavior, not a defect" closer, and the inverted closing
       sentence stating that this is the full text and SKILL.md carries only a pointer back
-- [ ] In `skills/skill-orchestrate/SKILL.md`, replace the 9-line
+      *(completed)*
+- [x] In `skills/skill-orchestrate/SKILL.md`, replace the 9-line
       `**`.status` vs. `.persisted_status`**` paragraph in Move 3 with the report's drafted
       392 B pointer version, citing
       `docs/architecture/orchestrate-state-machine.md`'s "Context Flatness Guarantee" section
-- [ ] Confirm the cited heading exists verbatim in the target doc
-- [ ] Re-run `grep -rn "full contract text this mirrors"` and a `persisted_status` sweep across
+      *(completed)*
+- [x] Confirm the cited heading exists verbatim in the target doc *(completed: `## Context
+      Flatness Guarantee` found at line 380)*
+- [x] Re-run `grep -rn "full contract text this mirrors"` and a `persisted_status` sweep across
       `docs/`, `context/`, `scripts/`, `skills/` to confirm no other file still defers to
-      SKILL.md as canonical for this paragraph
-- [ ] Measure `wc -c` on SKILL.md and record the actual delta against the 428 B hypothesis
-- [ ] Commit this green sub-step with scoped staging (these two files only, explicit paths)
+      SKILL.md as canonical for this paragraph *(completed: zero remaining hits)*
+- [x] Measure `wc -c` on SKILL.md and record the actual delta against the 428 B hypothesis
+      *(completed: 20930 B -> 20502 B, actual delta 428 B, exactly matching hypothesis)*
+- [x] Commit this green sub-step with scoped staging (these two files only, explicit paths)
+      *(completed)*
 
 **Timing**: 0.5 hours
 

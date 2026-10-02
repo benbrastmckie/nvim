@@ -234,15 +234,11 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
 done
 ```
 
-**`.status` vs. `.persisted_status`** — the postflight JSON carries both, and they mean different
-things: `.status` (`dispatch_status` above) is the dispatched agent's own **self-report**,
-verbatim from its handoff or a recovered `.return-meta.json`. It is used here ONLY for the
-diagnostic echo line above — every loop-control decision in this Move keys off
-`$verdict`/`$halt`/`$infra_exempt_cycle`, never `$dispatch_status`. `.persisted_status`
-(`persisted_status` above) is what `specs/state.json` actually says for this task after this
-postflight ran, read fresh at emit time. The two legitimately differ by design — e.g. an
-empty-blocker `partial` performs no transition, so `status=partial` while `persisted_status`
-stays whatever it already was — and that divergence is documented behavior, not a defect.
+**`.status` vs. `.persisted_status`**: `.status` above is the dispatched agent's own
+self-report (diagnostic only — never used for loop-control); `.persisted_status` is
+`state.json`'s actual post-postflight status. They legitimately diverge by design (e.g. an
+empty-blocker `partial`). Full contract: `docs/architecture/orchestrate-state-machine.md`'s
+"Context Flatness Guarantee" section.
 
 `MAX_CYCLES_MT` increments once per wave regardless of outcome; a task can be infra-deferred at
 most `MAX_INFRA_FAILURES` times before landing in `failed_tasks`. Per-task commits (inside the
