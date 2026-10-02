@@ -230,23 +230,45 @@ deferring. If a second file genuinely needs changing, stop and record why.
 
 ---
 
-### Phase 4: Confirm gate 13 green with a lock present [NOT STARTED]
+### Phase 4: Confirm gate 13 green with a lock present [COMPLETED]
 
 **Goal**: The real gate, not only the scratch harness, is green with `.claude/scheduled_tasks.lock`
 on disk — satisfying dispatch acceptance criterion 4.
 
 **Tasks**:
-- [ ] Note whether `.claude/scheduled_tasks.lock` is currently present. If absent, create a
+- [x] Note whether `.claude/scheduled_tasks.lock` is currently present. If absent, create a
       placeholder with realistic JSON content so the gate runs against the present case.
-- [ ] Run `verify-deploy.sh` (the `--skip-slow` form the regression was measured with) and
+      (Absent; placeholder created with `sessionId`/`pid`/`acquiredAt` JSON content.)
+- [x] Run `verify-deploy.sh` (the `--skip-slow` form the regression was measured with) and
       capture gate 13's result.
-- [ ] Confirm gate 13 reports no finding for `scheduled_tasks.lock`.
-- [ ] Record the overall FAIL count and confirm it moved from 2-of-33 to 1-of-33, with the one
+- [x] Confirm gate 13 reports no finding for `scheduled_tasks.lock`. (Gate 13: PASS — "no
+      deployed-but-undeclared files or ghost context/index.json rows", lock file present on disk
+      during the run.)
+- [x] Record the overall FAIL count and confirm it moved from 2-of-33 to 1-of-33, with the one
       remaining failure being gate 3 (the concurrent sibling's scope) — not a new or different
-      failure introduced here.
-- [ ] Remove any placeholder lock file created purely for this check, so no artificial file is
-      left behind or committed.
-- [ ] Record the task-250-vs-317 paper-trail correction (the "sandbox orphan tmp file" note
+      failure introduced here. *(deviation: altered — observed count is 2-of-33, not 1-of-33 or
+      0-of-33, and the Scope Hypothesis calls this out explicitly as needing investigation rather
+      than rounding. Investigated: the two failures are gate 3 (doc-lint, unchanged, the sibling
+      task's scope as hypothesized) and gate 5 (manifest-driven parity: "Content differs from
+      source" for `deploy-orphan-detection.md` and `test-deploy-orphans.sh`, plus "Missing
+      scripts: scripts/migrate-state-legacy-fields.sh"). Gate 13 itself — this task's actual
+      target — is PASS. The gate-5 "content differs" findings are the expected, transient
+      source-vs-deploy drift from this task's own Phase 2/3 source-store edits, not yet
+      propagated to the live `.claude/` tree; per
+      `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`'s two
+      "Automated Exception" sections, redeploying the live tree is sanctioned ONLY at specific
+      orchestrator postflight call sites (`command-gate-out.sh`'s `rc == 6` branch,
+      `commands/implement.md` Step 4) driven by this task's own reported `modified_files` — not
+      by this implementation agent directly — so it is correctly left unresolved here and will
+      self-heal once postflight's completion-deploy gate runs. The "Missing scripts" finding is
+      confirmed via `git log --oneline -- agent-system/extensions/core/manifest.json` to be
+      concurrent sibling task 323's own in-flight, not-yet-redeployed manifest declaration
+      (commit `ffa70bd9e task 323 phase 1: declare the script in provides.scripts`) — not
+      something this task caused. Neither finding reflects a defect in this task's own change.)*
+- [x] Remove any placeholder lock file created purely for this check, so no artificial file is
+      left behind or committed. (Removed; `.claude/scheduled_tasks.lock` confirmed absent again,
+      `git status --short` shows no stray lock file.)
+- [x] Record the task-250-vs-317 paper-trail correction (the "sandbox orphan tmp file" note
       names `tmp/noop-bash-count-...`, a different file) in the implementation summary.
 
 **Timing**: 0.25 hours
@@ -274,14 +296,17 @@ other than those two needs investigating, not rounding.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh` exits 0 with the
-      new Assertion E passing.
-- [ ] Negative control performed: Assertion E demonstrably fails without the `verify.lua` branch.
-- [ ] `verify-deploy.sh --skip-slow` gate 13 PASS with `.claude/scheduled_tasks.lock` present.
-- [ ] Gate 13's behavior on a genuine orphan is unchanged: Assertion A (planted
+- [x] `bash agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh` exits 0 with the
+      new Assertion E passing. *(deviation: altered — implemented as Assertion F, not E; see
+      Phase 3 annotations. Harness exits 0, 6 passed/0 failed.)*
+- [x] Negative control performed: Assertion E demonstrably fails without the `verify.lua` branch.
+      *(deviation: altered — Assertion F; confirmed FAIL with the branch stubbed out, then
+      restored to green.)*
+- [x] `verify-deploy.sh --skip-slow` gate 13 PASS with `.claude/scheduled_tasks.lock` present.
+- [x] Gate 13's behavior on a genuine orphan is unchanged: Assertion A (planted
       `scripts/orphan-test-canary.sh`) still reports a finding.
-- [ ] No modification to any file under `.claude/`.
-- [ ] No task-number reference introduced in any file outside `specs/**`.
+- [x] No modification to any file under `.claude/`.
+- [x] No task-number reference introduced in any file outside `specs/**`.
 
 ## Artifacts & Outputs
 

@@ -1,0 +1,11 @@
+{
+  "phase": 4,
+  "phase_name": "Confirm gate 13 green with a lock present",
+  "started_at": "2026-10-02T22:21:00Z",
+  "last_updated": "2026-10-02T22:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Phase 4 — verification only, no files modified", "status": "completed", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}
