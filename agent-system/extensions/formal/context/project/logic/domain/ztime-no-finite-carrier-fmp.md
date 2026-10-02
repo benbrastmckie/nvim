@@ -349,7 +349,7 @@ Both theorem numbers were verified against the GKWZ source PDF **[verified-pdf]*
 
 The distinction that matters is **product fmp versus abstract fmp**: K4 × S5 loses the former
 (5.32), keeps the latter (5.27), and its decidability bound (5.28) comes from the latter. That
-retreat is **unavailable here**: `FormalSystem.PlusLanguage.PlusValidZTime` quantifies over
+retreat is **unavailable here**: `PlusValidZTime` quantifies over
 regular ℤ-frames only, and the refuted property (sections 2 and 6) is the fmp relative to that
 very class. What survives is GKWZ's other route — the finitely presented infinite carrier of
 sections 5 and 8.
