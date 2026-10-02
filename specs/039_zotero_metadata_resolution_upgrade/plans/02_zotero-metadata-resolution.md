@@ -1,7 +1,7 @@
 # Implementation Plan: Zotero metadata resolution upgrade and Zotero 10 swap plan
 
 - **Task**: 39 - Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: 38 (write-back path activation, completed)
 - **Research Inputs**: `specs/039_zotero_metadata_resolution_upgrade/reports/01_zotero-tooling-landscape.md`, `specs/039_zotero_metadata_resolution_upgrade/reports/02_zotero-metadata-resolution-design.md`
@@ -141,37 +141,37 @@ within each file the phases are strictly sequential.
 
 ---
 
-### Phase 1: `zotero-write.sh` gains `item-add-json` [NOT STARTED]
+### Phase 1: `zotero-write.sh` gains `item-add-json` [COMPLETED]
 
 **Goal**: Give the single write choke-point a way to create a Zotero item from a fully-formed JSON
 item body, which `zot add` cannot do at all.
 
 **Tasks**:
 
-- [ ] Re-run `zot add --help` and confirm no JSON-body option exists (see Scope Hypothesis).
-- [ ] Add `item-add-json` to the KEY-exemption list alongside `item-add` and `-h/--help` (the block
+- [x] Re-run `zot add --help` and confirm no JSON-body option exists (see Scope Hypothesis). *(completed)*
+- [x] Add `item-add-json` to the KEY-exemption list alongside `item-add` and `-h/--help` (the block
       that currently reads `[[ "$OPERATION" != "item-add" ]]`), since this operation creates a key
-      rather than consuming one.
-- [ ] Add `--record-json <json>` to the argument-parsing loop; when omitted, read the body from
-      stdin. Reject an empty body with exit 1.
-- [ ] Implement a library-ID resolution ladder: `$ZOT_LIBRARY_ID` -> parse `Library ID:` from
-      `zot config show` -> exit 2 with a message naming both sources. Do not hard-code an ID.
-- [ ] Normalize the body: accept either a bare item object or a translation-server array and take
+      rather than consuming one. *(completed)*
+- [x] Add `--record-json <json>` to the argument-parsing loop; when omitted, read the body from
+      stdin. Reject an empty body with exit 1. *(completed)*
+- [x] Implement a library-ID resolution ladder: `$ZOT_LIBRARY_ID` -> parse `Library ID:` from
+      `zot config show` -> exit 2 with a message naming both sources. Do not hard-code an ID. *(completed)*
+- [x] Normalize the body: accept either a bare item object or a translation-server array and take
       element 0; strip `attachments`, `notes`, `key`, and `version` via `jq del(...)`; wrap in a
-      single-element array (the Web API's items endpoint takes an array).
-- [ ] POST to `https://api.zotero.org/users/<libraryID>/items` with headers `Zotero-API-Version: 3`,
+      single-element array (the Web API's items endpoint takes an array). *(completed)*
+- [x] POST to `https://api.zotero.org/users/<libraryID>/items` with headers `Zotero-API-Version: 3`,
       `Zotero-API-Key: $ZOTERO_API_KEY`, `Content-Type: application/json`, and — when
       `--idempotency-key` was supplied — `Zotero-Write-Token` set to a 32-char hex value derived
-      from the supplied key (hash it; do not pass a non-conforming key through).
-- [ ] Normalize the response: on a 2xx whose `.successful` is non-empty, emit
+      from the supplied key (hash it; do not pass a non-conforming key through). *(completed)*
+- [x] Normalize the response: on a 2xx whose `.successful` is non-empty, emit
       `{"ok":true,"data":{"key":"<KEY>","raw":<original response>}}` on stdout so existing callers'
       `.data.key` probe keeps working; on a non-2xx, or a 2xx with a non-empty `.failed`, emit
-      `{"ok":false,"error":{…}}` carrying the API's own message verbatim and exit 1.
-- [ ] `--dry-run` prints the planned request line and the normalized body to stdout with the API key
+      `{"ok":false,"error":{…}}` carrying the API's own message verbatim and exit 1. *(completed)*
+- [x] `--dry-run` prints the planned request line and the normalized body to stdout with the API key
       redacted and performs **no** network call (unlike the `zot`-delegating operations, which hand
-      `--dry-run` to `zot`; note the difference in the header).
-- [ ] Update the script header comment block and `show_usage()` with the new operation, its options,
-      the envelope-normalization exception, and the unchanged 0/1/2 exit-code table.
+      `--dry-run` to `zot`; note the difference in the header). *(completed)*
+- [x] Update the script header comment block and `show_usage()` with the new operation, its options,
+      the envelope-normalization exception, and the unchanged 0/1/2 exit-code table. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,29 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/039_zotero_metadata_resolution_upgrade/plans/02_zotero-metadata-resolution.md",
-      "summary": "9-phase implementation plan covering all four work items: new zotero-write.sh item-add-json and orphan-clean operations, translation-server metadata resolution with graceful degradation, explicit quota-aware auto-attach policy with a reactive 413-parsed cache, resolution-path surfacing in the corpus index, the zotero-mcp defer decision, the plan-only Zotero 10 backend-swap plan, and three gated live-verification proposals with stated decline paths."
-    }
-  ],
-  "next_steps": "Run /implement 39 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1786480706_506b3d_39",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 9,
-    "estimated_hours": 10,
-    "dependency_waves": [[1, 3], [2, 4], [5], [6], [7, 8], [9]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a shell wrapper script is declared a 'single write choke-point' whose contract is stdout passthrough from an underlying CLI, adding a capability the underlying CLI lacks forces a choice: break the passthrough contract, or normalize the new backend's response into the same envelope shape the CLI emits. Normalizing is the cheaper option when downstream callers already probe fixed field paths (e.g. `.data.key`) -- the new operation emits a synthetic `{ok, data:{key, raw}}` envelope carrying the raw backend response under `raw`, so every existing caller keeps working unchanged and the exception is one documented line in the wrapper header rather than a change rippling through consumers. Verified instance: zotero-write.sh's item-add-json must POST the Zotero Web API directly because `zot add` accepts only --doi/--url/--from-file/--pdf and has no JSON-body input.",
-      "category": "PATTERN",
-      "source_artifact": "specs/039_zotero_metadata_resolution_upgrade/plans/02_zotero-metadata-resolution.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["choke-point", "wrapper-contract", "envelope-normalization", "zotero-write", "passthrough"]
-    }
-  ]
+    "session_id": "sess_1790968925_5ff73e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
