@@ -192,36 +192,39 @@ verifier.
 
 ---
 
-### Phase 2: Extend the probe's test suite with reachability-tier fixtures [NOT STARTED]
+### Phase 2: Extend the probe's test suite with reachability-tier fixtures [COMPLETED]
 
 **Goal**: the three reachability outcomes and the no-flag byte-identity guarantee are pinned by
 fixtures, with a mutation check proving the new matching logic is actually exercised.
 
 **Tasks**:
-- [ ] Re-read `test-lean-mcp-preflight-check.sh`'s harness helpers (`make_lean_project`,
+- [x] Re-read `test-lean-mcp-preflight-check.sh`'s harness helpers (`make_lean_project`,
       `deploy_real_verifier`, `write_project_claude_json`, `run_wrapper`) and extend the file's
-      header fixture inventory with the new letters rather than rewriting it.
-- [ ] Add a fake-server fixture helper: a wrapper script whose own filename contains the literal
+      header fixture inventory with the new letters rather than rewriting it. *(completed)*
+- [x] Add a fake-server fixture helper: a wrapper script whose own filename contains the literal
       substring `lean-lsp-mcp`, launched in the background with `LEAN_PROJECT_PATH` exported to the
       fixture repo's path and a long `sleep`, with its PID captured for cleanup in the existing
-      `trap EXIT`. No real `uvx` or `lean-lsp-mcp` package dependency.
-- [ ] Fixture J — `reachable`: registered project plus a running fake server whose
-      `LEAN_PROJECT_PATH` matches. Assert the block reports `reachable`, exit 0.
-- [ ] Fixture K — `not_reachable`: registered project, no fake server running. Assert the block
+      `trap EXIT`. No real `uvx` or `lean-lsp-mcp` package dependency. *(completed: discovered and
+      fixed two related bugs along the way, recorded in the Phase 2 progress file's approaches_tried: a command-substitution capture that hung on a backgrounded 300s sleep, and a lost array append from subshell scoping)*
+- [x] Fixture J — `reachable`: registered project plus a running fake server whose
+      `LEAN_PROJECT_PATH` matches. Assert the block reports `reachable`, exit 0. *(completed)*
+- [x] Fixture K — `not_reachable`: registered project, no fake server running. Assert the block
       reports `not_reachable`, exit 0, and that the block text contains the
-      `unavailable`/`warming`/`consulted` interpretation sentence.
-- [ ] Fixture L — wrong-project server: registered project plus a running fake server whose
+      `unavailable`/`warming`/`consulted` interpretation sentence. *(completed)*
+- [x] Fixture L — wrong-project server: registered project plus a running fake server whose
       `LEAN_PROJECT_PATH` points at a *different* fixture repo. Assert `not_reachable`, not
       `reachable` — the anti-vacuous guard proving the `environ` cross-check is load-bearing rather
-      than the argv match alone deciding the tier.
-- [ ] Fixture M — `--dispatch-block` outside a Lean project: byte-empty output, exit 0.
-- [ ] Fixture N — no-flag regression: assert the no-flag invocation's output on an existing drift
-      fixture is unchanged, so the new flag provably did not alter the default path.
-- [ ] Mutation 3 (following the file's existing recorded-mutation discipline): a mutated copy of
+      than the argv match alone deciding the tier. *(completed)*
+- [x] Fixture M — `--dispatch-block` outside a Lean project: byte-empty output, exit 0.
+      *(completed)*
+- [x] Fixture N — no-flag regression: assert the no-flag invocation's output on an existing drift
+      fixture is unchanged, so the new flag provably did not alter the default path. *(completed)*
+- [x] Mutation 3 (following the file's existing recorded-mutation discipline): a mutated copy of
       the probe whose `environ` cross-check is deleted (argv match alone decides the tier) must make
       fixture L report `reachable` where it previously reported `not_reachable`, while fixtures J
       and K stay unaffected — the targeted control. Record this in the header alongside Mutations 1
-      and 2.
+      and 2. *(completed: required an isolated `ps` stub to keep the K control deterministic --
+      recorded in the Phase 2 progress file's approaches_tried)*
 
 **Timing**: 1.5 hours
 

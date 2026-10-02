@@ -23,16 +23,28 @@
 #   (H) the inverted Check 9: a surviving top-level global entry is drift EVEN when this
 #       project's own project-scoped entry is otherwise perfectly correct;
 #   (I) a Lean project with NO project-scoped entry at all (the common, day-one-of-a-worktree
-#       case) gets the exit-1 "not registered for this project" branch.
+#       case) gets the exit-1 "not registered for this project" branch;
+#   (J) `--dispatch-block` mode reports reachability tier `reachable` when a registered
+#       project has a live fake lean-lsp-mcp process whose own LEAN_PROJECT_PATH matches;
+#   (K) `--dispatch-block` mode reports `not_reachable` (plus the unavailable/warming/consulted
+#       interpretation sentence) when a registered project has no server running at all;
+#   (L) `--dispatch-block` mode reports `not_reachable`, NOT `reachable`, when a live fake
+#       server's LEAN_PROJECT_PATH names a DIFFERENT project -- the anti-vacuous guard proving
+#       the /proc/<pid>/environ cross-check is load-bearing, not the argv match alone;
+#   (M) `--dispatch-block` mode outside a Lean project is byte-empty, exit 0;
+#   (N) the no-flag invocation's output on an existing fixture is unchanged after adding
+#       `--dispatch-block` -- the new flag did not alter the default path.
 #
 # Every fixture points HOME at a per-fixture mktemp -d directory holding a synthetic
 # .claude.json -- verify-lean-mcp.sh reads "$HOME/.claude.json" with no other override, so this
 # needs no change to the verifier and never reads or asserts against the real ~/.claude.json.
 # Each fixture repo carries its own .claude/scripts/verify-lean-mcp.sh (fixtures A, B, D, F, G,
-# H, I: a copy of the real lean-extension verifier; fixture E: a stub) to reproduce the deployed
-# shape the wrapper expects.
+# H, I, J, K, L: a copy of the real lean-extension verifier; fixture E: a stub) to reproduce the
+# deployed shape the wrapper expects. Fixtures J and L additionally launch a background fake
+# server process (start_fake_lean_lsp_server) whose own script filename contains the literal
+# substring `lean-lsp-mcp`, captured in FAKE_SERVER_PIDS and killed by the file's trap EXIT.
 #
-# Falsifiability / mutation check (recorded, not merely claimed): TWO independent mutations,
+# Falsifiability / mutation check (recorded, not merely claimed): THREE independent mutations,
 # each targeting a DIFFERENT specific check the new per-project fixtures depend on:
 #
 #   MUTATION 1 (wrapper-level, pre-existing): a mutated copy of lean-mcp-preflight-check.sh that
@@ -49,6 +61,15 @@
 #   not some other, coincidentally-overlapping failure path. Fixture F (two correctly-registered
 #   projects, neither with a global entry) is asserted UNAFFECTED by this same mutation, since it
 #   never reaches Check 9's fail branch either way -- the targeted control.
+#
+#   MUTATION 3 (wrapper-level, new): a mutated copy of lean-mcp-preflight-check.sh with
+#   probe_reachability()'s `/proc/<pid>/environ` cross-check deleted -- an argv match on
+#   `lean-lsp-mcp` alone now decides the tier. Run via the UNMUTATED wrapper's --dispatch-block
+#   mode against fixture L's config (wrong-project live server). Pre-mutation fixture L reports
+#   `not_reachable`; post-mutation it is asserted to report `reachable` -- proving fixture L
+#   actually exercises the environ cross-check, not some other check. Fixtures J (matching
+#   server, already `reachable`) and K (no server, no candidate row to promote) are asserted
+#   UNAFFECTED -- the targeted controls.
 #
 # Fixtures F and G's "should PASS" assertions are inherently non-vacuous by construction rather
 # than by an artificial mutation: they assert that DIFFERENT project paths resolve to DIFFERING
@@ -103,7 +124,8 @@ if [ -z "$VERIFIER_SRC" ]; then
 fi
 
 WORKDIR="$(mktemp -d)"
-trap 'rm -rf "$WORKDIR"' EXIT
+FAKE_SERVER_PIDS=()
+trap 'for _p in "${FAKE_SERVER_PIDS[@]}"; do kill "$_p" >/dev/null 2>&1 || true; done; rm -rf "$WORKDIR"' EXIT
 
 # make_lean_project DIR -- a git-inited Lean project directory (lakefile.lean marker).
 make_lean_project() {
@@ -185,6 +207,80 @@ run_wrapper() {
 run_verifier_direct() {
   local verifier="$1" repo="$2" home="$3" outfile="$4"
   (cd "$repo" && HOME="$home" bash "$verifier") > "$outfile" 2>&1
+  RUN_RC=$?
+}
+
+# run_wrapper_dispatch_block TOOL REPO HOME OUTFILE -- same as run_wrapper but invokes the
+# wrapper with --dispatch-block, for the reachability-tier fixtures (J-N).
+run_wrapper_dispatch_block() {
+  local tool="$1" repo="$2" home="$3" outfile="$4"
+  (cd "$repo" && HOME="$home" bash "$tool" --dispatch-block) > "$outfile" 2>&1
+  RUN_RC=$?
+}
+
+# start_fake_lean_lsp_server PROJECT_PATH -- launches a background process, under a script
+# filename that literally contains the substring `lean-lsp-mcp` (so probe_reachability's argv
+# match fires), with LEAN_PROJECT_PATH exported to PROJECT_PATH and a long sleep so it outlives
+# the test run. No real `uvx` or `lean-lsp-mcp` package dependency. Its PID is appended to
+# FAKE_SERVER_PIDS (for the file's trap EXIT cleanup) and also left in FAKE_LAST_PID for the
+# caller to read. Deliberately NOT invoked via command substitution ($(...)) by its callers: a
+# function called that way runs in a subshell, so its FAKE_SERVER_PIDS append would be lost the
+# moment the subshell exits -- the same `$()`-discards-subshell-assignments trap run_wrapper's
+# own comment already documents for RUN_RC, here for an array append instead of an exit code.
+# Readers call this directly (no $(...)) and then read FAKE_LAST_PID.
+FAKE_LAST_PID=""
+start_fake_lean_lsp_server() {
+  local project_path="$1"
+  local script="$WORKDIR/lean-lsp-mcp-fake-$RANDOM.sh"
+  cat > "$script" <<'FAKE_EOF'
+#!/usr/bin/env bash
+sleep 300
+FAKE_EOF
+  chmod +x "$script"
+  # stdout/stderr are explicitly redirected to /dev/null: a background child that inherited a
+  # caller's captured stdout would otherwise keep that pipe open for its full 300s sleep.
+  LEAN_PROJECT_PATH="$project_path" "$script" > /dev/null 2>&1 &
+  local pid=$!
+  FAKE_SERVER_PIDS+=("$pid")
+  FAKE_LAST_PID="$pid"
+}
+
+# make_isolated_ps_stub -- creates (once per run) a $WORKDIR/stubbin/ps wrapper that forwards to
+# the real `ps` but filters its output to EXCLUDE any `lean-lsp-mcp`-matching row whose args do
+# not reference $WORKDIR. Needed by Mutation 3: deleting the environ cross-check makes the
+# mutated probe treat ANY matching row as reachable, which would otherwise pick up an ambient,
+# unrelated lean-lsp-mcp process already running on the host machine (e.g. this very test
+# session's own lean-lsp MCP server) and produce a false mutation-control failure unrelated to
+# the fixtures themselves.
+make_isolated_ps_stub() {
+  local stubdir="$WORKDIR/stubbin"
+  if [ -d "$stubdir" ]; then
+    return
+  fi
+  mkdir -p "$stubdir"
+  local real_ps
+  real_ps="$(command -v ps)"
+  # The filter pattern is passed via an environment variable (ENVIRON lookup in awk), never as
+  # a literal substring in awk's own invocation argv -- otherwise the awk FILTER process's own
+  # row in a subsequent ps snapshot would itself match the pattern it is filtering for, and its
+  # short-lived /proc/<pid>/environ would usually be unreadable by the time the probe gets to
+  # it, corrupting the result to `unknown` instead of the intended `not_reachable`.
+  cat > "$stubdir/ps" <<STUB_EOF
+#!/usr/bin/env bash
+export LEAN_LSP_MCP_STUB_PATTERN="lean-lsp-mcp"
+"$real_ps" "\$@" | awk -v keep="$WORKDIR" '\$0 !~ ENVIRON["LEAN_LSP_MCP_STUB_PATTERN"] || index(\$0, keep) > 0'
+STUB_EOF
+  chmod +x "$stubdir/ps"
+}
+
+# run_wrapper_dispatch_block_isolated TOOL REPO HOME OUTFILE -- same as
+# run_wrapper_dispatch_block, but with the isolated ps stub's directory prepended to PATH, so a
+# mutated probe's loosened argv-only match cannot see ambient, unrelated host processes outside
+# this test's own WORKDIR.
+run_wrapper_dispatch_block_isolated() {
+  local tool="$1" repo="$2" home="$3" outfile="$4"
+  make_isolated_ps_stub
+  (cd "$repo" && HOME="$home" PATH="$WORKDIR/stubbin:$PATH" bash "$tool" --dispatch-block) > "$outfile" 2>&1
   RUN_RC=$?
 }
 
@@ -459,6 +555,118 @@ $OUT_I"
 fi
 
 # =====================================================================
+# Fixture J -- --dispatch-block reachability, `reachable` tier: a correctly registered project
+# PLUS a running fake server whose own LEAN_PROJECT_PATH matches this project's root.
+# =====================================================================
+REPO_J="$WORKDIR/fixture_j/repo"
+HOME_J="$WORKDIR/fixture_j/home"
+make_lean_project "$REPO_J"
+deploy_real_verifier "$REPO_J"
+write_project_claude_json "$HOME_J" "$REPO_J" "uvx" "$CANON_ARGS" "$REPO_J"
+start_fake_lean_lsp_server "$REPO_J"
+FAKE_PID_J="$FAKE_LAST_PID"
+
+OUTFILE_J="$WORKDIR/out_j.txt"
+run_wrapper_dispatch_block "$TOOL_SRC" "$REPO_J" "$HOME_J" "$OUTFILE_J"
+RC_J="$RUN_RC"
+OUT_J="$(cat "$OUTFILE_J")"
+
+if [ "$RC_J" -eq 0 ] && echo "$OUT_J" | grep -q "<lean-readiness-context>" && echo "$OUT_J" | grep -q "reachability: reachable"; then
+  pass "Fixture J (--dispatch-block, matching live server): wrapper exit 0, block reports reachable"
+else
+  fail "Fixture J: expected exit 0 and a block reporting 'reachable'; got rc=$RC_J output:
+$OUT_J"
+fi
+
+# =====================================================================
+# Fixture K -- --dispatch-block reachability, `not_reachable` tier: a correctly registered
+# project with NO server running at all.
+# =====================================================================
+REPO_K="$WORKDIR/fixture_k/repo"
+HOME_K="$WORKDIR/fixture_k/home"
+make_lean_project "$REPO_K"
+deploy_real_verifier "$REPO_K"
+write_project_claude_json "$HOME_K" "$REPO_K" "uvx" "$CANON_ARGS" "$REPO_K"
+
+OUTFILE_K="$WORKDIR/out_k.txt"
+run_wrapper_dispatch_block "$TOOL_SRC" "$REPO_K" "$HOME_K" "$OUTFILE_K"
+RC_K="$RUN_RC"
+OUT_K="$(cat "$OUTFILE_K")"
+
+if [ "$RC_K" -eq 0 ] && echo "$OUT_K" | grep -q "reachability: not_reachable" && echo "$OUT_K" | grep -q "unavailable" && echo "$OUT_K" | grep -q "warming" && echo "$OUT_K" | grep -q "consulted"; then
+  pass "Fixture K (--dispatch-block, no server running): wrapper exit 0, block reports not_reachable and carries the unavailable/warming/consulted interpretation sentence"
+else
+  fail "Fixture K: expected exit 0, 'not_reachable', and the interpretation sentence; got rc=$RC_K output:
+$OUT_K"
+fi
+
+# =====================================================================
+# Fixture L -- --dispatch-block reachability, anti-vacuous guard: a correctly registered
+# project PLUS a running fake server whose LEAN_PROJECT_PATH points at a DIFFERENT fixture
+# repo. Must report not_reachable, not reachable -- proving the /proc environ cross-check is
+# load-bearing rather than the argv match alone deciding the tier (see Mutation 3 below for the
+# targeted falsification of this specific guard).
+# =====================================================================
+REPO_L="$WORKDIR/fixture_l/repo"
+OTHER_L="$WORKDIR/fixture_l/other"
+HOME_L="$WORKDIR/fixture_l/home"
+make_lean_project "$REPO_L"
+make_lean_project "$OTHER_L"
+deploy_real_verifier "$REPO_L"
+write_project_claude_json "$HOME_L" "$REPO_L" "uvx" "$CANON_ARGS" "$REPO_L"
+start_fake_lean_lsp_server "$OTHER_L"
+FAKE_PID_L="$FAKE_LAST_PID"
+
+OUTFILE_L="$WORKDIR/out_l.txt"
+run_wrapper_dispatch_block "$TOOL_SRC" "$REPO_L" "$HOME_L" "$OUTFILE_L"
+RC_L="$RUN_RC"
+OUT_L="$(cat "$OUTFILE_L")"
+
+if [ "$RC_L" -eq 0 ] && echo "$OUT_L" | grep -q "reachability: not_reachable"; then
+  pass "Fixture L (--dispatch-block, wrong-project live server): wrapper exit 0, block reports not_reachable (not reachable) -- environ cross-check is load-bearing"
+else
+  fail "Fixture L: expected exit 0 and not_reachable; got rc=$RC_L output:
+$OUT_L"
+fi
+
+# =====================================================================
+# Fixture M -- --dispatch-block outside a Lean project: byte-empty output, exit 0.
+# =====================================================================
+REPO_M="$WORKDIR/fixture_m/repo"
+HOME_M="$WORKDIR/fixture_m/home"
+mkdir -p "$REPO_M"
+(cd "$REPO_M" && git init -q >/dev/null 2>&1)
+mkdir -p "$HOME_M"
+
+OUTFILE_M="$WORKDIR/out_m.txt"
+run_wrapper_dispatch_block "$TOOL_SRC" "$REPO_M" "$HOME_M" "$OUTFILE_M"
+RC_M="$RUN_RC"
+OUT_M="$(cat "$OUTFILE_M")"
+
+if [ "$RC_M" -eq 0 ] && [ -z "$OUT_M" ]; then
+  pass "Fixture M (--dispatch-block outside a Lean project): wrapper exit 0, byte-empty output"
+else
+  fail "Fixture M: expected exit 0 and empty output; got rc=$RC_M output:
+$OUT_M"
+fi
+
+# =====================================================================
+# Fixture N -- no-flag regression: the no-flag invocation's output on an existing drift
+# fixture (A) is unchanged by the --dispatch-block addition -- proving the new flag did not
+# alter the default path.
+# =====================================================================
+OUTFILE_N="$WORKDIR/out_n.txt"
+run_wrapper "$TOOL_SRC" "$REPO_A" "$HOME_A" "$OUTFILE_N"
+RC_N="$RUN_RC"
+OUT_N="$(cat "$OUTFILE_N")"
+
+if [ "$RC_N" -eq "$RC_A" ] && [ "$OUT_N" = "$OUT_A" ]; then
+  pass "Fixture N (no-flag regression): re-running fixture A's no-flag invocation is byte-identical to the original run"
+else
+  fail "Fixture N: expected rc=$RC_A output='$OUT_A'; got rc=$RC_N output='$OUT_N'"
+fi
+
+# =====================================================================
 # Mutation check 1 (wrapper-level, pre-existing, extended to the new fixtures): a mutated copy
 # of the wrapper that unconditionally exits 0 immediately after invoking the verifier --
 # bypassing all message synthesis -- must produce EMPTY output on fixtures A, D, E, H, and I
@@ -568,6 +776,79 @@ $(cat "$OUTFILE_H_MUT")"
   else
     fail "Mutation 2 control: expected exit 0 (unaffected); got rc=$RC_F1_MUT output:
 $(cat "$OUTFILE_F1_MUT")"
+  fi
+fi
+
+# =====================================================================
+# Mutation check 3 (wrapper-level, new): a mutated copy of lean-mcp-preflight-check.sh with
+# probe_reachability()'s `/proc/<pid>/environ` cross-check deleted -- an argv match on
+# `lean-lsp-mcp` alone now decides the tier, unconditionally reporting `reachable` for any
+# surviving candidate row regardless of its LEAN_PROJECT_PATH. Run against fixture L's config
+# (wrong-project live server): pre-mutation the block reports `not_reachable`; post-mutation it
+# must report `reachable` -- proving fixture L actually depends on the environ cross-check, not
+# some other, coincidentally-overlapping check. Fixtures J (matching server) and K (no server)
+# are the controls: J must still report `reachable` (it already matched before the mutation, so
+# removing the cross-check cannot change its outcome) and K must still report `not_reachable`
+# (no candidate row exists there at all, mutated or not, so there is nothing for the loosened
+# check to promote).
+# =====================================================================
+MUTATED_REACH_TOOL="$WORKDIR/mutated-lean-mcp-preflight-check-reach.sh"
+awk '
+  /if \[ -n "\$env_path" \] && \[ "\$env_path" = "\$project_root" \]; then/ {
+    print "        echo \"reachable\""
+    print "        return"
+    skipping = 1
+    next
+  }
+  skipping && /^        fi$/ { skipping = 0; next }
+  skipping { next }
+  { print }
+' "$TOOL_SRC" > "$MUTATED_REACH_TOOL"
+chmod +x "$MUTATED_REACH_TOOL"
+
+if grep -qF 'if [ -n "$env_path" ] && [ "$env_path" = "$project_root" ]; then' "$MUTATED_REACH_TOOL"; then
+  fail "Mutation 3 setup: awk delete did not find/remove the expected environ cross-check in $TOOL_SRC -- mutation check did not run"
+else
+  # Isolated ps stub (see make_isolated_ps_stub above): the mutated probe's loosened argv-only
+  # match would otherwise also pick up any ambient, unrelated lean-lsp-mcp process already
+  # running on the host machine, independent of these fixtures.
+  #
+  # Order matters here: fixtures J and L's own fake servers are both still alive at this point
+  # (started earlier, killed only at file exit). Check L and J FIRST while both are alive, then
+  # kill them before checking K -- otherwise K's "no candidate row at all" precondition is false
+  # (J's or L's still-running server would itself be a candidate the mutated, environ-check-free
+  # probe promotes to `reachable`, regardless of whose project it actually belongs to).
+  run_wrapper_dispatch_block_isolated "$MUTATED_REACH_TOOL" "$REPO_L" "$HOME_L" "$WORKDIR/mut_out_l.txt"
+  MUT_OUT_L="$(cat "$WORKDIR/mut_out_l.txt")"
+  run_wrapper_dispatch_block_isolated "$MUTATED_REACH_TOOL" "$REPO_J" "$HOME_J" "$WORKDIR/mut_out_j.txt"
+  MUT_OUT_J="$(cat "$WORKDIR/mut_out_j.txt")"
+
+  kill "$FAKE_PID_J" "$FAKE_PID_L" >/dev/null 2>&1 || true
+  # Give the kill a moment to land before the next ps snapshot.
+  for _i in 1 2 3 4 5; do
+    if ! kill -0 "$FAKE_PID_J" >/dev/null 2>&1 && ! kill -0 "$FAKE_PID_L" >/dev/null 2>&1; then
+      break
+    fi
+    sleep 0.1
+  done
+
+  run_wrapper_dispatch_block_isolated "$MUTATED_REACH_TOOL" "$REPO_K" "$HOME_K" "$WORKDIR/mut_out_k.txt"
+  MUT_OUT_K="$(cat "$WORKDIR/mut_out_k.txt")"
+
+  if echo "$MUT_OUT_L" | grep -q "reachability: reachable"; then
+    pass "Mutation 3: with the environ cross-check deleted, fixture L's wrong-project server now reports 'reachable' (was 'not_reachable' pre-mutation) -- fixture L is discriminative for the environ cross-check specifically"
+  else
+    fail "Mutation 3: expected fixture L to flip to 'reachable' with the cross-check deleted; got:
+$MUT_OUT_L"
+  fi
+
+  if echo "$MUT_OUT_J" | grep -q "reachability: reachable" && echo "$MUT_OUT_K" | grep -q "reachability: not_reachable"; then
+    pass "Mutation 3 control: fixtures J and K are unaffected by the mutation (J stays reachable, K stays not_reachable) -- confirms the mutation is targeted, not overly broad"
+  else
+    fail "Mutation 3 control: expected J=reachable, K=not_reachable (unaffected); got J:
+$MUT_OUT_J
+K:
+$MUT_OUT_K"
   fi
 fi
 
