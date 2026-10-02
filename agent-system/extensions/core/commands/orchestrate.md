@@ -306,7 +306,16 @@ as the batch section, for visual consistency:
 
 | Task | Defect Class | Attributed Source Path | Detecting Site | Detail |
 |------|--------------|-------------------------|------------------|--------|
-| #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh | orchestrate-cycle-postflight.sh:stale-handoff-gate | handoff mtime predates this dispatch window |
+| #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/skills/skill-orchestrate/SKILL.md | skill-orchestrate/SKILL.md:cycle-postflight-stale-handoff | handoff mtime predates this dispatch window |
+| #{N} | HANDOFF_STALE_OR_ABSENT | agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh | skill-orchestrate/SKILL.md:cycle-postflight-dispatch-seq-mismatch-newer | handoff dispatch_seq is newer than this cycle's minted value |
+
+The two rows above are different directions of the SAME mismatch check, not two different
+checks: the first is a handoff genuinely older than this dispatch's own minted identity (a
+still-live predecessor's late write), attributed to `skill-orchestrate/SKILL.md` because that
+skill only reads the already-minted value back out. The second is a handoff NEWER than what
+this cycle minted — composed with a seq this cycle's own mint never produced — attributed
+instead to `orchestrate-cycle-plan.sh`, the sole minting site, because this direction is a
+composition/minting-side authoring fault, not a stale predecessor artifact.
 
 Operator remedy: fix the named source-store path under `agent-system/extensions/**`; the durable
 record is already in `specs/events.jsonl`. No task status was mutated because of these rows.

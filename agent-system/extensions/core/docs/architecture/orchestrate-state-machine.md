@@ -320,6 +320,16 @@ complete, a spurious `HANDOFF_STALE_OR_ABSENT` row in `detected_defects` attribu
 None of this is a bug in the staleness gate; it is the gate correctly refusing to trust a handoff
 that predates the window a fresh dispatch just opened.
 
+This exoneration covers the handoff-**older**-than-minted direction this scenario describes (the
+existing handoff's `dispatch_seq` predates the freshly re-opened dispatch's own minted value) — a
+still-live predecessor's artifact, not a composition fault, which is exactly why the attribution
+above is `skills/skill-orchestrate/SKILL.md`. A handoff **newer** than the cycle's minted value is
+a different case: it is attributed instead to
+`agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` (the minting/composition site),
+because that direction means the dispatch was composed with a seq this cycle's own mint never
+produced — a composition/minting-side authoring fault, not a stale predecessor write the gate is
+correctly refusing to trust.
+
 The correct replay path is `reconcile-task-status.sh <task_number> <session_id>` — the same
 script named in the paragraph immediately above, used here in its OTHER role: reading the task's
 already-complete artifacts directly and reconciling `state.json` to match them, without opening a

@@ -504,38 +504,42 @@ states plainly which meaning `.status` carries.
 
 ---
 
-### Phase 7: Reconcile the three-way documented attribution [NOT STARTED]
+### Phase 7: Reconcile the three-way documented attribution [COMPLETED]
 
 **Goal**: The operator-facing table and the architecture doc agree with the code, and the "not a bug"
 exoneration covers only the direction it actually describes.
 
 **Tasks**:
 
-- [ ] `commands/orchestrate.md:309` — correct the existing example row's **Attributed Source Path** to
+- [x] `commands/orchestrate.md:309` — correct the existing example row's **Attributed Source Path** to
       `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and its **Detecting Site** to
       `skill-orchestrate/SKILL.md:cycle-postflight-stale-handoff`, matching what the mtime arm's code
       actually records. (The row's Detail text, "handoff mtime predates this dispatch window," is a
       verbatim match for the mtime arm's message, so this row is about that arm — only its two
-      wrong columns change.)
-- [ ] `commands/orchestrate.md` — add a **second** example row for the newer direction:
+      wrong columns change.) *(completed)*
+- [x] `commands/orchestrate.md` — add a **second** example row for the newer direction:
       `HANDOFF_STALE_OR_ABSENT` / `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` /
       `skill-orchestrate/SKILL.md:cycle-postflight-dispatch-seq-mismatch-newer` / "handoff dispatch_seq
       is newer than this cycle's minted value", so the table shows the discrimination rather than
-      only being corrected for the old case.
-- [ ] `docs/architecture/orchestrate-state-machine.md:318-322` — **append** a narrowing clause after
+      only being corrected for the old case. *(completed, plus a short explanatory paragraph
+      distinguishing the two rows as directions of the same check)*
+- [x] `docs/architecture/orchestrate-state-machine.md:318-322` — **append** a narrowing clause after
       the existing "None of this is a bug in the staleness gate..." sentence: the exoneration covers
       the handoff-**older**-than-minted direction this scenario describes; a handoff **newer** than the
       cycle's minted value is a different case, now attributed to
       `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` (the minting/composition site),
       where the gate is refusing an artifact newer than the state it is compared against. Do not
       rewrite the preceding scenario narrative — it is accurate for the direction it covers.
-- [ ] `context/patterns/system-defect-discrimination.md:263` — add a one-line note to the
+      *(completed: appended, preceding narrative left untouched)*
+- [x] `context/patterns/system-defect-discrimination.md:263` — add a one-line note to the
       stale-handoff registry row distinguishing its "Location" column (where the check lives in code)
       from `attributed_path` (who is blamed), and naming the new direction split. This is the fourth,
       adjacent inconsistency the research found; it is in scope here because leaving it is what
       re-creates the confusion this phase exists to remove. If it turns out to be owned by another
       live task's fenced region, skip it and say so explicitly rather than editing around them.
-- [ ] Commit this green sub-step.
+      *(completed: not owned by any other live task's fenced region — added a short clarifying
+      paragraph after the registry table)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 45 minutes
 

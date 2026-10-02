@@ -265,6 +265,18 @@ beside the existing banner** — the diagnosis is already in hand.
 | Completion-claim gate, Case 3/3 refuse | `scripts/skill-base.sh:729` | `META_MISSING_AFTER_NARRATION`-shaped: phase accounting absent/malformed AND no corroborating plan-marker signal — already logs the phrase `handoff-writer defect suspected` verbatim | `META_MISSING_AFTER_NARRATION` |
 | Recovery-declined sub-branch, detecting site `cycle-postflight-recovery-declined` | `scripts/orchestrate-cycle-postflight.sh` (WORK (d) absent-handoff branch, discriminated on `recover_json`'s `.reason`) | a `.return-meta.json` exists, was read, and recovery declined because the reported status could not be accepted as terminal (`STATUS_IN_PROGRESS`, `STATUS_NOT_SUCCESS`, `META_DISPATCH_SEQ_MISMATCH`) — attributed to the dispatched agent's own file via `--dispatched-agent`, never to `skill-orchestrate/SKILL.md`. The sibling `META_MISSING` sub-case (nothing usable produced at all) stays on the pre-existing `HANDOFF_STALE_OR_ABSENT` row above, unchanged | `RECOVERY_DECLINED` |
 
+**Stale-handoff gate row, "Location" vs. `attributed_path`**: the "File:line" column above names
+WHERE the check lives in code (`orchestrate-cycle-postflight.sh`, always — both the mtime arm and
+the `dispatch_seq`-mismatch arm live in that one script). That is a different axis from
+`attributed_path`, the field the recorded defect row and this script's stderr notice carry, which
+names WHO is blamed for the fault — and, for the `dispatch_seq`-mismatch arm specifically, that
+blame now splits by direction: handoff-older-than-minted still attributes to
+`skills/skill-orchestrate/SKILL.md` (it only reads the already-minted value back out); handoff-
+newer-than-minted attributes instead to `scripts/orchestrate-cycle-plan.sh` (the sole minting
+site), since that direction is a composition/minting-side authoring fault. The mtime arm has no
+direction concept and keeps its existing `skills/skill-orchestrate/SKILL.md` attribution
+unconditionally.
+
 ### Class (b) — computed but discarded
 
 `ARTIFACTS_SHAPE_MISMATCH` is the sole current instance (defect class: `ARTIFACTS_SHAPE_MISMATCH`):
