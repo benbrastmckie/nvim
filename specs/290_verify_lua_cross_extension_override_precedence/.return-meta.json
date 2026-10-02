@@ -1,22 +1,15 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/290_verify_lua_cross_extension_override_precedence/plans/01_cross-extension-override-precedence.md",
-      "summary": "6-phase plan making verify.lua gate 5's content-hash comparison resolve each deployed path against its deploy-order owning extension, plus the gate 16 warning-text correction and a regression harness."
-    }
-  ],
-  "next_steps": "Run /implement 290 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 6,
-  "dependency_waves": [[1, 2, 4], [3], [5], [6]],
-  "memory_candidates": [],
-  "metadata": {
-    "session_id": "sess_1790925364_db063f_290",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  "status": "in_progress",
+  "started_at": "2026-10-02T07:34:50Z",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Agent started, parsing delegation context for task 290 implement phase"
   },
-  "dispatch_seq": 2
+  "metadata": {
+    "session_id": "sess_1790925364_db063f",
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"]
+  }
 }

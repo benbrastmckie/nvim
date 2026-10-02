@@ -1,7 +1,7 @@
 # Implementation Plan: Verify gate 5 cross-extension override precedence
 
 - **Task**: 290 - Verify Lua cross-extension override precedence
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/290_verify_lua_cross_extension_override_precedence/reports/01_cross-extension-override-precedence.md
@@ -120,27 +120,27 @@ set, so no roadmap consultation was performed and no roadmap phases are included
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Extract the deploy-order helper from `resync_all` [NOT STARTED]
+### Phase 1: Extract the deploy-order helper from `resync_all` [COMPLETED]
 
 **Goal**: Make the dependency-topological ordering that decides deploy-time path ownership
 callable from outside `manager.resync_all`, without writing a second copy of it.
 
 **Tasks**:
-- [ ] In `init.lua`, extract the dependency-graph build plus Kahn's-algorithm block currently
+- [x] In `init.lua`, extract the dependency-graph build plus Kahn's-algorithm block currently
       inlined in `manager.resync_all` (the "Build a dependency graph restricted to the
       currently-loaded set" through "Topological sort (Kahn's algorithm)" region) into a new
       function `manager.compute_deploy_order(loaded)` returning the ordered name array
       (roots/dependencies first, dependents last).
-- [ ] Keep the function pure with respect to deploy state: it reads only the passed `loaded` array
+- [x] Keep the function pure with respect to deploy state: it reads only the passed `loaded` array
       and each name's `manifest.dependencies` via `manifest_mod.get_extension(name, config)`,
       restricting edges to the loaded set exactly as today.
-- [ ] Rewrite `manager.resync_all` to call `manager.compute_deploy_order(loaded)` for its
+- [x] Rewrite `manager.resync_all` to call `manager.compute_deploy_order(loaded)` for its
       `resync_order`, deleting the inlined copy. No change to `resync_all`'s signature, return
       shape, `force = true` semantics, or its non-destructive in-place reload behavior.
-- [ ] Update `resync_all`'s doc comment to state that the ordering now lives in
+- [x] Update `resync_all`'s doc comment to state that the ordering now lives in
       `compute_deploy_order` and that deploy order is also the cross-extension path-ownership
       order (one sentence, pointing at the new consumer).
-- [ ] Add a doc comment on `compute_deploy_order` naming both consumers (`resync_all`, and
+- [x] Add a doc comment on `compute_deploy_order` naming both consumers (`resync_all`, and
       gate-5 ownership resolution) and the "later in this order wins an overlapping path" rule.
 
 **Timing**: 0.75 hours

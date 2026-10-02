@@ -884,33 +884,22 @@ function M.create(config)
     return true, nil
   end
 
-  --- Non-destructive force-resync of every currently active extension, in dependency order.
+  --- Dependency-topological order over a loaded-extension set (Kahn's algorithm): the returned
+  --- array has roots first (e.g. core, which nothing else depends on being loaded before) and
+  --- dependents last. This is the single ordering implementation shared by `manager.resync_all`
+  --- below (its original and, until this extraction, only caller) and by gate-5 cross-extension
+  --- path-ownership resolution (`verify.lua`'s `M.build_ownership_map`, consumed via
+  --- `manager.verify_all`): when two active extensions declare the same deployed path, the
+  --- extension LATER in this same order is the one `loader.copy_file`'s unconditional overwrite
+  --- actually leaves on disk, so it is also the correct hash-comparison owner for that path.
   ---
-  --- This is the single `manager`-level bulk-resync entry point shared by the picker's
-  --- "Reload All" and (via `deploy-headless.sh`'s default invocation) headless callers. It
-  --- promotes the topological ordering (Kahn's algorithm) formerly duplicated in the picker's
-  --- "Reload All" handler (`picker/init.lua`) rather than writing a third ordering
-  --- implementation -- the same shape `manager.regenerate`'s load loop also needs, and which it
-  --- gets for free by building on this function (see `manager.regenerate`).
-  ---
-  --- Never unloads: each extension is re-loaded in place via `manager.load(..., {force = true})`,
-  --- so there is no destructive intermediate "everything unloaded" state -- unlike the former
-  --- picker-local unload-all/load-all reimplementation this function replaces.
-  --- @param opts table|nil Options: { project_dir = string|nil }
-  --- @return table result { succeeded = {name, ...}, failed = {{name=, error=}, ...}, total = N }
-  function manager.resync_all(opts)
-    opts = opts or {}
-    local project_dir = opts.project_dir or vim.fn.getcwd()
-
-    local loaded = manager.list_loaded(project_dir)
-    local result = { succeeded = {}, failed = {}, total = #loaded }
-
-    if #loaded == 0 then
-      return result
-    end
-
-    -- Build a dependency graph restricted to the currently-loaded set (a dependency outside it
-    -- is already satisfied and does not participate in the ordering).
+  --- Pure with respect to deploy state: reads only the passed `loaded` array and each name's
+  --- `manifest.dependencies` (via `manifest_mod.get_extension(name, config)`), with edges
+  --- restricted to the loaded set exactly as `resync_all` always did -- a dependency outside the
+  --- loaded set is already satisfied and does not participate in the ordering.
+  --- @param loaded table Array of currently-loaded extension names
+  --- @return table order Array of extension names, dependency-topologically ordered
+  function manager.compute_deploy_order(loaded)
     local loaded_set = {}
     for _, name in ipairs(loaded) do
       loaded_set[name] = true
@@ -929,8 +918,6 @@ function M.create(config)
       deps_of[name] = deps
     end
 
-    -- Topological sort (Kahn's algorithm): resync_order has roots first (e.g. core, which
-    -- nothing else depends on being loaded before), leaves last.
     local in_degree = {}
     for _, name in ipairs(loaded) do
       in_degree[name] = 0
@@ -940,7 +927,7 @@ function M.create(config)
         in_degree[name] = in_degree[name] + 1
       end
     end
-    local resync_order = {}
+    local order = {}
     local queue = {}
     for _, name in ipairs(loaded) do
       if in_degree[name] == 0 then
@@ -949,7 +936,7 @@ function M.create(config)
     end
     while #queue > 0 do
       local name = table.remove(queue, 1)
-      table.insert(resync_order, name)
+      table.insert(order, name)
       for _, other in ipairs(loaded) do
         for _, dep in ipairs(deps_of[other]) do
           if dep == name then
@@ -961,6 +948,37 @@ function M.create(config)
         end
       end
     end
+
+    return order
+  end
+
+  --- Non-destructive force-resync of every currently active extension, in dependency order.
+  ---
+  --- This is the single `manager`-level bulk-resync entry point shared by the picker's
+  --- "Reload All" and (via `deploy-headless.sh`'s default invocation) headless callers. The
+  --- dependency-topological ordering (Kahn's algorithm) formerly duplicated in the picker's
+  --- "Reload All" handler (`picker/init.lua`) now lives in `manager.compute_deploy_order` above
+  --- -- this is its first caller, with no behavior change -- rather than writing a third ordering
+  --- implementation. That ordering is also the cross-extension path-ownership order gate-5
+  --- verification resolves against (see `compute_deploy_order`'s own doc comment).
+  ---
+  --- Never unloads: each extension is re-loaded in place via `manager.load(..., {force = true})`,
+  --- so there is no destructive intermediate "everything unloaded" state -- unlike the former
+  --- picker-local unload-all/load-all reimplementation this function replaces.
+  --- @param opts table|nil Options: { project_dir = string|nil }
+  --- @return table result { succeeded = {name, ...}, failed = {{name=, error=}, ...}, total = N }
+  function manager.resync_all(opts)
+    opts = opts or {}
+    local project_dir = opts.project_dir or vim.fn.getcwd()
+
+    local loaded = manager.list_loaded(project_dir)
+    local result = { succeeded = {}, failed = {}, total = #loaded }
+
+    if #loaded == 0 then
+      return result
+    end
+
+    local resync_order = manager.compute_deploy_order(loaded)
 
     for _, name in ipairs(resync_order) do
       local ok, err = manager.load(name, { confirm = false, project_dir = project_dir, force = true })
