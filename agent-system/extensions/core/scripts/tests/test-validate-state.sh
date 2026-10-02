@@ -196,6 +196,12 @@ fi
 
 # =====================================================================
 # Defect fixture 1: stray undocumented field (top-level)
+#
+# NOTE: Checks 3/4 moved from hard-FAIL to an advisory-first WARN-by-default posture (see
+# validate-state.sh's own PROMOTION CRITERION comment above Check 3). This fixture's expectation
+# was updated accordingly: default mode now reports a named WARN with exit 0, and a companion
+# --strict case proves the field is still detectable/escalatable, preserving this fixture's
+# original detection intent without re-asserting the now-superseded hard-FAIL behavior.
 # =====================================================================
 cat > "$WORKDIR/stray-field.json" <<'JSON'
 {
@@ -211,16 +217,25 @@ cat > "$WORKDIR/stray-field.json" <<'JSON'
       "dependencies": []
     }
   ],
-  "totally_undocumented_field": "should trigger a FAIL"
+  "totally_undocumented_field": "should trigger a WARN (advisory-first, not FAIL)"
 }
 JSON
 
 out=$(bash "$VALIDATOR" "$WORKDIR/stray-field.json" 2>&1)
 rc=$?
-if [[ "$rc" -ne 0 ]] && grep -q "Unknown top-level field: totally_undocumented_field" <<< "$out"; then
-  pass "defect fixture: stray top-level field -> nonzero exit with named error"
+if [[ "$rc" -eq 0 ]] && grep -q "\[WARN\].*Unknown top-level field: totally_undocumented_field" <<< "$out"; then
+  pass "defect fixture: stray top-level field -> advisory WARN with named field, exit 0 (default mode)"
 else
-  fail "defect fixture: stray top-level field did not produce the expected nonzero exit + named error (rc=$rc)"
+  fail "defect fixture: stray top-level field did not produce the expected WARN + exit 0 (rc=$rc)"
+  info "$out"
+fi
+
+out=$(bash "$VALIDATOR" --strict "$WORKDIR/stray-field.json" 2>&1)
+rc=$?
+if [[ "$rc" -ne 0 ]] && grep -q "Unknown top-level field: totally_undocumented_field" <<< "$out"; then
+  pass "defect fixture: stray top-level field -> nonzero exit with named error under --strict"
+else
+  fail "defect fixture: stray top-level field did not produce the expected nonzero exit + named error under --strict (rc=$rc)"
   info "$out"
 fi
 
@@ -877,6 +892,229 @@ JSON
   else
     info "SKIPPING --fix non-manufacture fixture: no deployed state-write.sh at $REPO_ROOT/.claude/scripts/state-write.sh"
     info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
+  fi
+fi
+
+# =====================================================================
+# Widened-field ruling fixtures (Checks 3/4 advisory-first posture) + schema/validator drift test
+# =====================================================================
+# Source-store-first resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR
+# above): these fixtures exercise the widened fields and the advisory-first posture without
+# depending on a prior deploy step. A candidate is trusted only after grepping for both
+# "resume_phase" (confirms the schema-widening-mirroring KNOWN_ENTRY_FIELDS entry landed) and
+# "model it there and in KNOWN_TOP_LEVEL_FIELDS" (confirms Check 3's advisory WARN message
+# landed), so a stale deployed copy that has neither cannot produce a false green.
+WIDEN_VALIDATOR_CANDIDATES=(
+  "$SCRIPT_DIR/../validate-state.sh"
+  "$REPO_ROOT/.claude/scripts/validate-state.sh"
+)
+WIDEN_VALIDATOR=""
+for candidate in "${WIDEN_VALIDATOR_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]] && grep -q "resume_phase" "$candidate" 2>/dev/null \
+      && grep -q "model it there and in KNOWN_TOP_LEVEL_FIELDS" "$candidate" 2>/dev/null; then
+    WIDEN_VALIDATOR="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$WIDEN_VALIDATOR" ]]; then
+  info "SKIPPING widened-field fixtures: no candidate validator (source-store or deployed)"
+  info "contains both the resume_phase known-field name and the Check 3 advisory WARN message."
+  info "Candidates checked:"
+  for candidate in "${WIDEN_VALIDATOR_CANDIDATES[@]}"; do
+    info "  $candidate"
+  done
+else
+  info "Widened-field fixtures running against: $WIDEN_VALIDATOR (confirmed to contain the widened fields and the advisory posture)"
+
+  # --- Positive fixture: all five widened fields with realistic values -> exit 0, no Check 3/4
+  # finding of any severity ---
+  cat > "$WORKDIR/widen-positive-fixture.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_goal": "Close the residual repository-hygiene backlog",
+  "active_projects": [
+    {
+      "project_number": 1,
+      "project_name": "widened",
+      "status": "blocked",
+      "task_type": "general",
+      "title": "Widened fixture",
+      "created": "2026-01-01T00:00:00Z",
+      "last_updated": "2026-01-01T00:00:00Z",
+      "blockers": ["waiting on a Hugging Face write token"],
+      "previous_status": "implementing",
+      "resume_phase": 1,
+      "researched": "2026-06-09T06:07:43Z"
+    }
+  ]
+}
+JSON
+  out=$(bash "$WIDEN_VALIDATOR" "$WORKDIR/widen-positive-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && ! grep -q "Unknown top-level field" <<< "$out" \
+      && ! grep -q "Unknown entry field" <<< "$out"; then
+    pass "widened-field positive fixture: active_goal, blockers (array), previous_status, resume_phase, researched all accepted, exit 0, no Check 3/4 finding"
+  else
+    fail "widened-field positive fixture: expected exit 0 with no Check 3/4 finding (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Legacy scalar-string blockers tolerated in default mode (transitional tolerance) ---
+  cat > "$WORKDIR/widen-scalar-blockers-fixture.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {
+      "project_number": 1,
+      "project_name": "legacy-blockers",
+      "status": "blocked",
+      "task_type": "general",
+      "title": "Legacy scalar blockers",
+      "created": "2026-01-01T00:00:00Z",
+      "last_updated": "2026-01-01T00:00:00Z",
+      "blockers": "a plain legacy string, not yet migrated to an array"
+    }
+  ]
+}
+JSON
+  out=$(bash "$WIDEN_VALIDATOR" "$WORKDIR/widen-scalar-blockers-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && ! grep -q "Unknown entry field: blockers" <<< "$out"; then
+    pass "legacy scalar-string blockers fixture: accepted in default mode (transitional tolerance), exit 0"
+  else
+    fail "legacy scalar-string blockers fixture: expected exit 0 with no unknown-field finding for blockers (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- research_questions on an entry -> no Check 4 finding (regression guard for the
+  # pre-existing schema/validator drift this phase closed) ---
+  cat > "$WORKDIR/widen-research-questions-fixture.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {
+      "project_number": 1,
+      "project_name": "needs-research",
+      "status": "researching",
+      "task_type": "general",
+      "title": "Research questions fixture",
+      "created": "2026-01-01T00:00:00Z",
+      "last_updated": "2026-01-01T00:00:00Z",
+      "research_questions": ["what is x?", "what is y?"]
+    }
+  ]
+}
+JSON
+  out=$(bash "$WIDEN_VALIDATOR" "$WORKDIR/widen-research-questions-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && ! grep -q "Unknown entry field: research_questions" <<< "$out"; then
+    pass "research_questions fixture: no Check 4 finding (regression guard for the pre-existing schema/validator drift)"
+  else
+    fail "research_questions fixture: expected exit 0 with no unknown-field finding for research_questions (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Negative fixture: the three retired top-level fields still produce an unknown-field WARN
+  # (not silence, not FAIL) -- guards against re-admitting them as "known" ---
+  cat > "$WORKDIR/widen-retired-fixture.json" <<'JSON'
+{
+  "next_project_number": 1,
+  "artifacts": [{"path": "specs/000_example/plans/implementation-001.md", "type": "plan"}],
+  "metadata": {"generated_at": "2026-08-24T21:34:14.522352", "total_tasks": 44},
+  "last_updated": "2026-09-29T05:45:37Z",
+  "active_projects": []
+}
+JSON
+  out=$(bash "$WIDEN_VALIDATOR" "$WORKDIR/widen-retired-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "\[WARN\].*Unknown top-level field: artifacts" <<< "$out" \
+      && grep -q "\[WARN\].*Unknown top-level field: metadata" <<< "$out" \
+      && grep -q "\[WARN\].*Unknown top-level field: last_updated" <<< "$out" \
+      && ! grep -q "\[FAIL\].*Unknown top-level field" <<< "$out"; then
+    pass "retired top-level fields fixture: artifacts/metadata/last_updated each produce a WARN (not FAIL, not silence), exit 0"
+  else
+    fail "retired top-level fields fixture: expected exit 0 with a WARN (not FAIL) for each retired field (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- --strict promotes the retired-fields WARN to exit-blocking ---
+  out=$(bash "$WIDEN_VALIDATOR" --strict "$WORKDIR/widen-retired-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 1 ]] && grep -q "STATE VALIDATION FAILED (--strict:" <<< "$out"; then
+    pass "retired top-level fields fixture under --strict: the WARN is promoted to exit-blocking"
+  else
+    fail "retired top-level fields fixture under --strict: expected exit 1 (rc=$rc)"
+    info "$out"
+  fi
+fi
+
+# =====================================================================
+# Schema-to-validator drift test: state-schema.json's property key sets must be byte-equal (as
+# sorted sets, both directions) to validate-state.sh's KNOWN_TOP_LEVEL_FIELDS/KNOWN_ENTRY_FIELDS.
+# Modelled on test-status-vocabulary.sh's library/schema anti-drift assertion -- the in-repo
+# precedent for exactly this pattern, applied here to a different hand-maintained pair.
+# =====================================================================
+SCHEMA_CANDIDATES=(
+  "$REPO_ROOT/.claude/context/schemas/state-schema.json"
+  "$SCRIPT_DIR/../../context/schemas/state-schema.json"
+)
+SCHEMA=""
+for candidate in "${SCHEMA_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    SCHEMA="$candidate"
+    break
+  fi
+done
+
+if [[ -z "$SCHEMA" ]]; then
+  info "SKIPPING schema-to-validator drift test: state-schema.json not found at any of:"
+  for candidate in "${SCHEMA_CANDIDATES[@]}"; do
+    info "  $candidate"
+  done
+elif [[ -z "$WIDEN_VALIDATOR" ]]; then
+  info "SKIPPING schema-to-validator drift test: no validator candidate confirmed to contain the widened fields (see above)."
+elif ! command -v jq >/dev/null 2>&1; then
+  info "SKIPPING schema-to-validator drift test: jq not available."
+else
+  # Extract KNOWN_TOP_LEVEL_FIELDS / KNOWN_ENTRY_FIELDS array bodies from the validator by
+  # sourcing it in a subshell with its own main-body logic disabled -- not attempted here, since
+  # the arrays are declared before any early-exit path; instead, extract them textually via awk,
+  # matching the array literal's own `NAME=(\n ... \n)` shape.
+  top_schema_sorted=$(jq -r '.properties | keys[]' "$SCHEMA" | sort)
+  entry_schema_sorted=$(jq -r '.definitions.projectEntry.properties | keys[]' "$SCHEMA" | sort)
+
+  top_validator_sorted=$(awk '/^KNOWN_TOP_LEVEL_FIELDS=\(/,/^\)/' "$WIDEN_VALIDATOR" | grep -v '(' | grep -v ')' | tr -s ' \t\n' '\n' | sed '/^$/d' | sort)
+  entry_validator_sorted=$(awk '/^KNOWN_ENTRY_FIELDS=\(/,/^\)/' "$WIDEN_VALIDATOR" | grep -v '(' | grep -v ')' | tr -s ' \t\n' '\n' | sed '/^$/d' | sort)
+
+  if [[ "$top_schema_sorted" == "$top_validator_sorted" ]]; then
+    pass "drift test: state-schema.json top-level properties == validate-state.sh KNOWN_TOP_LEVEL_FIELDS (sorted sets)"
+  else
+    fail "drift test: top-level DRIFT detected between state-schema.json and KNOWN_TOP_LEVEL_FIELDS"
+    info "schema (sorted):"
+    info "$top_schema_sorted"
+    info "validator (sorted):"
+    info "$top_validator_sorted"
+    info "in schema but not validator:"
+    info "$(comm -23 <(echo "$top_schema_sorted") <(echo "$top_validator_sorted"))"
+    info "in validator but not schema:"
+    info "$(comm -13 <(echo "$top_schema_sorted") <(echo "$top_validator_sorted"))"
+  fi
+
+  if [[ "$entry_schema_sorted" == "$entry_validator_sorted" ]]; then
+    pass "drift test: state-schema.json definitions.projectEntry.properties == validate-state.sh KNOWN_ENTRY_FIELDS (sorted sets)"
+  else
+    fail "drift test: entry-field DRIFT detected between state-schema.json and KNOWN_ENTRY_FIELDS"
+    info "schema (sorted):"
+    info "$entry_schema_sorted"
+    info "validator (sorted):"
+    info "$entry_validator_sorted"
+    info "in schema but not validator:"
+    info "$(comm -23 <(echo "$entry_schema_sorted") <(echo "$entry_validator_sorted"))"
+    info "in validator but not schema:"
+    info "$(comm -13 <(echo "$entry_schema_sorted") <(echo "$entry_validator_sorted"))"
   fi
 fi
 

@@ -263,7 +263,7 @@ grepping every invocation of `validate-state.sh` across `agent-system/extensions
 
 ---
 
-### Phase 3: Validator test coverage pinning the ruling, plus a schema-to-validator drift test [NOT STARTED]
+### Phase 3: Validator test coverage pinning the ruling, plus a schema-to-validator drift test [COMPLETED]
 
 **Goal**: A future schema edit cannot silently re-reject a modelled field, and cannot re-introduce
 the `research_questions`-class drift, because the test suite asserts both the ruling and the
@@ -271,29 +271,41 @@ schema/validator pair's agreement.
 
 **Tasks**:
 
-- [ ] Re-read `test-validate-state.sh` (task 269 also owns this file this cycle).
-- [ ] Add a positive fixture carrying all five widened fields with realistic values — `active_goal`
+- [x] Re-read `test-validate-state.sh` (task 269 also owns this file this cycle). *(completed)*
+- [x] Add a positive fixture carrying all five widened fields with realistic values — `active_goal`
       a goal string, `blockers` an array of strings, `previous_status` a valid `taskStatus` enum
       value written the way `/spawn` writes it, `resume_phase` an integer, `researched` an ISO8601
-      timestamp — asserting exit 0 with no Check 3/Check 4 finding of any severity.
-- [ ] Add a fixture carrying a legacy **scalar-string** `blockers` value, asserting it is accepted
+      timestamp — asserting exit 0 with no Check 3/Check 4 finding of any severity. *(completed)*
+- [x] Add a fixture carrying a legacy **scalar-string** `blockers` value, asserting it is accepted
       in default mode (transitional tolerance) — this is the test that makes the tolerance visible
-      and gives its eventual removal a named signal.
-- [ ] Add a fixture carrying `research_questions` on an entry, asserting no Check 4 finding
-      (regression guard for the Phase 1 drift fix).
-- [ ] Add a negative fixture asserting the three retired top-level fields (`artifacts`, `metadata`,
+      and gives its eventual removal a named signal. *(completed)*
+- [x] Add a fixture carrying `research_questions` on an entry, asserting no Check 4 finding
+      (regression guard for the Phase 1 drift fix). *(completed)*
+- [x] Add a negative fixture asserting the three retired top-level fields (`artifacts`, `metadata`,
       top-level `last_updated`) still produce an **unknown-field WARN** (not silence, and not FAIL)
-      — the guard against re-admitting them as "known".
-- [ ] Add the **drift test**: enumerate `state-schema.json`'s top-level `properties` keys and
+      — the guard against re-admitting them as "known". *(completed; also added a --strict
+      companion proving the WARN promotes to exit-blocking)*
+- [x] Add the **drift test**: enumerate `state-schema.json`'s top-level `properties` keys and
       `definitions.projectEntry.properties` keys with `jq`, extract `KNOWN_TOP_LEVEL_FIELDS` and
       `KNOWN_ENTRY_FIELDS` from `validate-state.sh`, and assert set equality in both directions,
       reporting each offending name. Model it on `test-status-vocabulary.sh`'s existing drift
       assertion for the status enum, which is the in-repo precedent for exactly this pattern.
-- [ ] Follow the suite's existing source-store-first validator-resolution precedent (grep the
+      *(completed)*
+- [x] Follow the suite's existing source-store-first validator-resolution precedent (grep the
       candidate for the new check identifiers before trusting it) so a stale deployed copy cannot
-      produce a false green.
-- [ ] Run the full suite; confirm all pre-existing cases still pass.
-- [ ] Commit.
+      produce a false green. *(completed — WIDEN_VALIDATOR greps for "resume_phase" and the Check 3
+      advisory WARN message text)*
+- [x] Run the full suite; confirm all pre-existing cases still pass. *(completed — 35 passed, 0
+      failed; one PRE-EXISTING fixture, "stray top-level field -> nonzero exit", asserted Check 3's
+      now-superseded hard-FAIL behavior from before Phase 2's posture change landed. Updated it to
+      assert the new default-mode WARN + exit 0, with a new companion case asserting the original
+      nonzero-exit expectation still holds under `--strict`, preserving the fixture's original
+      detection intent)*
+- [x] Sanity-checked the drift test by temporarily removing `blockers` from `KNOWN_ENTRY_FIELDS`:
+      the test correctly FAILed and named `blockers` as the offending field; restored afterward and
+      the suite returned to 35/35 passing. *(completed; this step was implicit in the Verification
+      section below, called out here for traceability)*
+- [x] Commit. *(completed)*
 
 **Timing**: 1.5 hours
 
