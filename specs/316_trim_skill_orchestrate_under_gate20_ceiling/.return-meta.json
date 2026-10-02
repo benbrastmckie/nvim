@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1790957600_e00acf_316",
-  "dispatch_seq": 12,
-  "findings_count": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/reports/01_trim_skill_orchestrate_gate20.md",
-      "summary": "Decides option (a) relocate-and-trim for the gate 20 ceiling breach on skill-orchestrate/SKILL.md; identifies 3 mechanically-found duplicate-prose relocations (status/persisted_status paragraph, Postflight Boundary section body, Context Flatness Constraint tightening) totaling 1075 B of verified savings against the 930 B needed, with exact before/after text."
+      "type": "plan",
+      "path": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/plans/01_trim-skill-orchestrate-gate20.md",
+      "summary": "3-phase relocate-and-trim plan bringing skill-orchestrate/SKILL.md from 20930 B under its 20000 B gate-20 ceiling via two canonicality inversions and one wording tightening, then full gate close-out."
     }
   ],
+  "next_steps": "Run /implement 316 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1790957600_e00acf_316",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1.5,
+    "dependency_waves": 3
+  },
   "memory_candidates": [
     {
-      "content": "verify-deploy.sh gate 20's per-file ceiling sub-check reads only the SOURCE STORE copy of a file via `wc -c` (agent-system/extensions/core/...), never the deployed .claude/ mirror -- so a gate-20 per-file-ceiling fix only needs to land in the source store to go green, even though the normal deploy/sync workflow should still be run afterward to keep the mirror in sync.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/reports/01_trim_skill_orchestrate_gate20.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "gate20", "orchestrator-context-budget", "source-store", "ceiling"]
-    },
-    {
-      "content": "lint-postflight-boundary.sh's has_postflight_boundary_section() check only greps for the exact heading text `^## MUST NOT (Postflight Boundary)` in a SKILL.md -- it does not check the body underneath. Any skill carrying that heading can safely shrink the body to a pointer (e.g. into docs/architecture/handoff-schema.md's own fuller 'Postflight Boundary' section) without tripping the lint, as long as the heading text is preserved verbatim.",
+      "content": "When an eager-loaded file (a SKILL.md, a command .md) breaches its per-file context-budget ceiling and the over-budget prose is already mirrored in an on-demand architecture doc that currently defers back to it as canonical, the fix is a canonicality INVERSION rather than a deletion: expand the doc's copy to carry the full contract text, flip its closing cross-reference, and leave the eager-loaded file a short pointer. This preserves every contract statement while moving bytes out of eager context, which is exactly what the per-file ceiling exists to force. Two structural cues make a site mechanically identifiable rather than taste-based: (1) the doc's paragraph closes with a 'see <skill> for the full contract text this mirrors' deference sentence, and (2) grep confirms only those two sites claim canonicality. Verify the arithmetic by drafting the replacement text and measuring with wc -c before committing to the approach -- a single relocation often buys back less than the breach requires, and a file under chronic budget pressure (trimmed once, re-breached by the next contract addition) needs several sites plus deliberate margin, not just the one the defect report flagged.",
       "category": "PATTERN",
-      "source_artifact": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/reports/01_trim_skill_orchestrate_gate20.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-postflight-boundary", "SKILL.md", "heading-only-check", "postflight-boundary"]
+      "source_artifact": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/plans/01_trim-skill-orchestrate-gate20.md",
+      "confidence": 0.78,
+      "suggested_keywords": ["context-budget", "canonicality-inversion", "eager-load", "per-file-ceiling", "duplicate-prose", "verify-deploy"]
     }
   ],
-  "next_steps": "Run /plan 316 to create implementation plan"
+  "dispatch_seq": 15
 }

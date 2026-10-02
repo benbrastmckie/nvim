@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 15,
+  "summary": "Created a 3-phase relocate-and-trim plan (option (a), per research) bringing agent-system/extensions/core/skills/skill-orchestrate/SKILL.md from 20930 B under its 20000 B gate-20 ceiling via two canonicality inversions plus one wording tightening (1075 B total, 145 B margin), with no contract content deleted.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/plans/01_trim-skill-orchestrate-gate20.md",
+      "summary": "3-phase plan: invert .status/.persisted_status canonicality into orchestrate-state-machine.md, collapse the two MUST NOT section bodies to pointers, then full gate close-out and deploy mirror sync."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 3,
+  "blockers": []
+}
