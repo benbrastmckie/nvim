@@ -174,23 +174,30 @@ stay in step.
 
 ---
 
-### Phase 3: Add the planted-lock regression assertion [NOT STARTED]
+### Phase 3: Add the planted-lock regression assertion [COMPLETED]
 
 **Goal**: A durable test proves gate 13's classifier excludes a `scheduled_tasks.lock` that is
 actually present.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh`, specifically
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh`, specifically
       the planting block (~lines 130-170) and the assertion block (~lines 180-208).
-- [ ] In the planting block, alongside scenario B, plant
+- [x] In the planting block, alongside scenario B, plant
       `$TARGET/.claude/scheduled_tasks.lock` with placeholder JSON content shaped like the real
-      lock (`sessionId`, `pid`, `acquiredAt`), labelled as a new scenario E.
-- [ ] In the assertion block, add Assertion E mirroring Assertion B's shape: fail if
+      lock (`sessionId`, `pid`, `acquiredAt`), labelled as a new scenario E. *(deviation: altered
+      — re-reading the file surfaced that letter E is already used by the pre-existing
+      no-false-positive baseline assertion (`Assertion E: unmodified scratch regenerate
+      baseline`, lines ~110-128), which the plan's line-number estimate did not account for.
+      Used letter F for the new scenario/assertion instead of E to avoid colliding with an
+      existing label; recorded this in the header comment so the mismatch is self-documenting.)*
+- [x] In the assertion block, add Assertion E mirroring Assertion B's shape: fail if
       `ORPHAN_FINDING orphan file: scheduled_tasks.lock` appears in `$planted_output`, pass
-      otherwise.
-- [ ] Update the harness's header comment and any "Assertions A/B/C/D" literal strings to cover
-      E, so the progress messages do not understate what ran.
-- [ ] Run the harness and confirm all assertions pass, including the new one.
+      otherwise. *(deviation: altered — implemented as Assertion F, same shape as Assertion B,
+      for the reason above.)*
+- [x] Update the harness's header comment and any "Assertions A/B/C/D" literal strings to cover
+      E, so the progress messages do not understate what ran. *(deviation: altered — updated to
+      cover F, not E, consistent with the letter-collision correction above.)*
+- [x] Run the harness and confirm all assertions pass, including the new one.
 
 **Timing**: 0.5 hours
 

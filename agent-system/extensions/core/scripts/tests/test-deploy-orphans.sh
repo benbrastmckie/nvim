@@ -2,8 +2,9 @@
 # test-deploy-orphans.sh - Scratch-tree regression harness for whole-tree orphan detection
 # (verify.lua's M.find_orphans, exposed via init.lua's manager.find_orphans and verify-deploy.sh
 # gate 13). Proves the gate fires on a planted orphan and a planted ghost index row, and stays
-# silent on each documented exclusion class -- see
-# context/patterns/deploy-orphan-detection.md for the exclusion contract this harness exercises.
+# silent on each documented exclusion class (including a planted scheduled_tasks.lock runtime
+# lock file) -- see context/patterns/deploy-orphan-detection.md for the exclusion contract this
+# harness exercises.
 #
 # Structural model: test-deploy-propagation.sh (pass()/fail()/info() helpers, PASSED/FAILED
 # integer counters, a trap-based scratch WORKDIR, real deploy-headless.sh subprocess, exit
@@ -129,8 +130,9 @@ else
 fi
 
 # =====================================================================
-# Plant the four scenarios covering Assertions A/B/C/D, then run find_orphans ONCE more so all
-# four are checked against a single consistent snapshot.
+# Plant the five scenarios covering Assertions A/B/C/D/F, then run find_orphans ONCE more so all
+# five are checked against a single consistent snapshot. (Letter E is already used above for the
+# no-false-positive baseline assertion, so the new scheduled_tasks.lock scenario is labelled F.)
 # =====================================================================
 
 # A: a file under a declared category directory (scripts/) but absent from every manifest.
@@ -145,6 +147,12 @@ EOF
 # B: a runtime-artifact-shaped path (tmp/workflow-active-*) -- must NOT be reported.
 mkdir -p "$TARGET/.claude/tmp"
 echo "planted runtime artifact" > "$TARGET/.claude/tmp/workflow-active-test-canary"
+
+# F: a scheduled_tasks.lock runtime artifact at the .claude/ root -- must NOT be reported.
+# Shaped like the real lock written by the scheduled-task mechanism at execution time
+# (sessionId/pid/acquiredAt), never by the copy engine.
+echo '{"sessionId": "test-canary-session", "pid": 1, "acquiredAt": "1970-01-01T00:00:00Z"}' \
+  > "$TARGET/.claude/scheduled_tasks.lock"
 
 # C: context/index.json itself is already present from the real deploy (a merged/generated
 # artifact) -- no additional planting needed, only the negative assertion below.
@@ -173,9 +181,9 @@ info "Re-running find_orphans against the planted scratch tree"
 planted_output="$(run_find_orphans)"
 
 if echo "$planted_output" | grep -q 'ORPHAN_ERROR'; then
-  fail "Assertions A/B/C/D: find_orphans could not run: $(echo "$planted_output" | grep 'ORPHAN_ERROR' | head -1)"
+  fail "Assertions A/B/C/D/F: find_orphans could not run: $(echo "$planted_output" | grep 'ORPHAN_ERROR' | head -1)"
 elif ! echo "$planted_output" | grep -q 'ORPHAN_DONE'; then
-  fail "Assertions A/B/C/D: find_orphans produced no result"
+  fail "Assertions A/B/C/D/F: find_orphans produced no result"
 else
   # Assertion A: the planted orphan file IS reported.
   if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: $CANARY_ORPHAN_REL"; then
@@ -203,6 +211,13 @@ else
     pass "Assertion D: planted ghost index row '$GHOST_PATH' reported"
   else
     fail "Assertion D: planted ghost index row '$GHOST_PATH' NOT reported (expected ghost-index finding)"
+  fi
+
+  # Assertion F: the scheduled_tasks.lock runtime artifact is NOT reported.
+  if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: scheduled_tasks.lock"; then
+    fail "Assertion F: runtime artifact 'scheduled_tasks.lock' WAS reported (should be excluded)"
+  else
+    pass "Assertion F: runtime artifact 'scheduled_tasks.lock' correctly excluded"
   fi
 fi
 

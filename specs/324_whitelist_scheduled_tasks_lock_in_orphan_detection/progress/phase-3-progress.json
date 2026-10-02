@@ -1,0 +1,11 @@
+{
+  "phase": 3,
+  "phase_name": "Add the planted-lock regression assertion",
+  "started_at": "2026-10-02T22:13:00Z",
+  "last_updated": "2026-10-02T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Phase 3 — add scenario F plant plus Assertion F", "status": "completed", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}
