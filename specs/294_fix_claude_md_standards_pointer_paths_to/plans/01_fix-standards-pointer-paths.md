@@ -152,7 +152,7 @@ than assuming the planned line numbers.
 
 ---
 
-### Phase 2: Repo-wide confirming grep and close-out [IN PROGRESS]
+### Phase 2: Repo-wide confirming grep and close-out [COMPLETED]
 
 **Goal**: Establish that no deliverable file outside `specs/**` still carries the dead prefix, so
 the task can close without a known residual occurrence.
