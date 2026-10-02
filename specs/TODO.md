@@ -44,10 +44,10 @@ next_project_number: 322
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-316 [PLANNED] — Trim skill-orchestrate/SKILL.md back under its gate-20...
+316 [IMPLEMENTING] — Trim skill-orchestrate/SKILL.md back under its gate-20...
   └─ 317 [NOT STARTED] — Make the post-deploy reconcile promotion append to...
   └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into... (see above)
-320 [PLANNED] — Run the orphaned .return-meta.json validator in the...
+320 [IMPLEMENTING] — Run the orphaned .return-meta.json validator in the...
 
 ### Extensions
 
@@ -73,7 +73,7 @@ next_project_number: 322
 
 ### Lean Extension
 
-321 [PLANNED] — Probe Lean language-server reachability at preflight and...
+321 [IMPLEMENTING] — Probe Lean language-server reachability at preflight and...
 
 ### Orchestrator
 
@@ -97,7 +97,7 @@ next_project_number: 322
 
 ### 321. Probe Lean language-server reachability at preflight and report the evidence tier into the dispatch file
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -167,7 +167,7 @@ A `lean4` dispatch launched against a Lean project with no running language serv
 
 ### 320. Run the orphaned .return-meta.json validator in the lifecycle, and give it the partial_progress checks it lacks
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -406,7 +406,7 @@ NOTE: `scripts/orchestrate-cycle-plan.sh` and `skills/skill-orchestrate/SKILL.md
 ---
 
 ### 316. Trim skill-orchestrate/SKILL.md back under its gate-20 per-file context ceiling without losing contract content
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

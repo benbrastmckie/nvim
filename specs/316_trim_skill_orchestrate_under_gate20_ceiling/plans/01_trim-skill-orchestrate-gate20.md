@@ -225,14 +225,15 @@ else's problem).
 
 ---
 
-### Phase 3: Gate Close-Out and Deploy Mirror Sync [NOT STARTED]
+### Phase 3: Gate Close-Out and Deploy Mirror Sync [IN PROGRESS]
 
 **Goal**: Confirm gate 20 PASSES with the trimmed file, the context-budget test still passes, no
 contract statement was lost, and the deployed `.claude/` mirror matches the source store.
 
 **Tasks**:
-- [ ] Run `ORCHESTRATOR_BUDGET_GATE_MODE=hard bash .claude/scripts/verify-deploy.sh --only-gate 20`
+- [x] Run `ORCHESTRATOR_BUDGET_GATE_MODE=hard bash .claude/scripts/verify-deploy.sh --only-gate 20`
       and confirm `skills/skill-orchestrate/SKILL.md` reports `within ceiling`
+      *(completed: `[PASS] skills/skill-orchestrate/SKILL.md (19855 B) within ceiling (20000 B)`)*
 - [ ] Run the full `bash .claude/scripts/verify-deploy.sh` and confirm no gate regressed —
       distinguishing any pre-existing unrelated failure from one this task introduced, and
       recording that distinction explicitly
