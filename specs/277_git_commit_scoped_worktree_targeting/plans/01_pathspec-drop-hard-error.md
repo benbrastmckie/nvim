@@ -1,7 +1,7 @@
 # Implementation Plan: Task #277
 
 - **Task**: 277 - Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None (the Move 2 isolation-forwarding edge was dropped together with part (a))
 - **Research Inputs**: specs/277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md

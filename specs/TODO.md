@@ -11,10 +11,10 @@ next_project_number: 316
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,294,295,296,297,299,300,306,309,311,315 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,294,295,296,297,299,300,306,309,311,315 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
-| 4 | 274,304,312 | 165,263,273,275,277,282,284,285,300 | orchestrator |
+| 4 | 274,304,312 | 165,263,273,275,282,284,285,300 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -73,13 +73,11 @@ next_project_number: 316
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-277 [IMPLEMENTING] — Make an unresolvable pathspec a hard error in...
-  └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 279 [PLANNED] — Reconcile state-schema.json with the live fields the...
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
-      └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
+      └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 309 [PLANNED] — Replace directory pathspecs with explicit file lists at the...
@@ -1868,12 +1866,13 @@ description.
 ---
 
 ### 277. Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md]
 - **Plan**: [277_git_commit_scoped_worktree_targeting/plans/01_pathspec-drop-hard-error.md]
+- **Summary**: [277_git_commit_scoped_worktree_targeting/summaries/01_pathspec-drop-hard-error-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**, a disposable deploy tree).
 
