@@ -1,0 +1,24 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 6-phase, ~6h implementation plan: make verify.lua gate 5's content-hash comparison resolve each deployed path against its actual deploy-order owning extension (reusing resync_all's Kahn ordering, extracted as manager.compute_deploy_order), report suppressed non-owner declarations as informational 'overridden' rather than errors, correct gate 16's misleading hard_contracts migration hint, and lock all three behaviors in with a new scratch-tree regression harness.",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "sorry_inventory": [],
+  "continuation_path": null,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/290_verify_lua_cross_extension_override_precedence/plans/01_cross-extension-override-precedence.md",
+      "summary": "6-phase plan for owner-resolved gate-5 content-hash comparison, gate 16 hint correction, and a cross-extension overlap regression harness."
+    }
+  ],
+  "next_steps": "Run /implement 290 to execute the plan",
+  "dispatch_seq": 2,
+  "metadata": {
+    "session_id": "sess_1790925364_db063f_290",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}
