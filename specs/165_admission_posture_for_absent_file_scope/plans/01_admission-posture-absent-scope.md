@@ -1,7 +1,7 @@
 # Implementation Plan: Admission posture for an absent `file_scope`, plus cross-session visibility for self-modifying candidates
 
 - **Task**: 165 - Admission gates in orchestrate-batch-admit.sh: posture for an absent `file_scope`, then cross-session visibility for self-modifying candidates
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None outstanding (162 formalize/harvest, 163 surface missing/empty, 245 admitted-set-only narrowing — all archived/completed)
 - **Research Inputs**: `specs/165_admission_posture_for_absent_file_scope/reports/01_admission-posture-absent-scope.md`
@@ -150,40 +150,57 @@ concurrent edits to one file in one working tree — exactly the hazard this tas
 
 ---
 
-### Phase 1: Red-baseline fixtures for both defects [NOT STARTED]
+### Phase 1: Red-baseline fixtures for both defects [COMPLETED]
 
 **Goal**: Reproduce both observed incident scenarios, plus the cross-batch advisory gap, as
 fixture cases in the existing isolated-temp-root harness, and record their red output against the
 unmodified script.
 
 **Tasks**:
-- [ ] Read `scripts/tests/test-orchestrate-batch-admit.sh` in full; reuse its existing `$TMPROOT`
+- [x] Read `scripts/tests/test-orchestrate-batch-admit.sh` in full; reuse its existing `$TMPROOT`
       builder, `pass`/`fail`/`info` counter idiom, and `cleanup` trap rather than adding a second
       harness. It already copies `orchestrate-batch-admit.sh`, `deploy-root-guard.sh`,
       `task-lock.sh`, and `lib/{file-scope-overlap,common,task-lookup-lib}.sh` byte-for-byte.
-- [ ] Add case **IN-BATCH-ABSENCE**: a state.json fixture with 8 non-terminal tasks, every one of
+      *(completed)*
+- [x] Add case **IN-BATCH-ABSENCE**: a state.json fixture with 8 non-terminal tasks, every one of
       them with `file_scope` absent (mix the three sub-states: key missing, literal `null`, `[]`).
       Invoke with all 8 positional candidates and `--invocation-count 8`. Assert the *current*
       behavior loudly — all 8 `decision: "admit"`, zero `defer` — and mark the case as the
       expected red baseline. This is the Logos/Verification 8-task incident.
-- [ ] Add case **CROSS-BATCH-ABSENCE**: one absent-scope candidate, one out-of-batch task with
+      *(deviation: altered — written against the standard TDD red/green convention instead:
+      asserts the TARGET post-fix shape (1 admit + 7 `absent_file_scope` defers) rather than
+      today's literal behavior, so it fails now and flips to pass once Phase 3 lands, matching
+      Phase 2's and Phase 3's own Verification sections which both require this case to "remain
+      red" until Phase 3 — a literal "assert today's admit-all" version would pass immediately
+      and contradict those two sections)*
+- [x] Add case **CROSS-BATCH-ABSENCE**: one absent-scope candidate, one out-of-batch task with
       status `implementing` holding a broad scope (`FormalSystem/`, `Tests/`, `docs/`, `typst/`,
       `README.md`). Assert the current bare admit carries **no** `absent_scope_advisory`. This is
-      the BimodalLogic `/orchestrate 544,545` incident.
-- [ ] Add case **SOLO-SELF-MOD-CROSS-SESSION**: two live registered sessions whose covered scopes
+      the BimodalLogic cross-batch incident. *(deviation: altered — same red/green rationale as
+      IN-BATCH-ABSENCE above: asserts the TARGET shape (admit + `absent_scope_advisory.scope_state
+      == "missing_key"`) so it fails now and flips to pass in Phase 2, matching that phase's
+      Verification section)*
+- [x] Add case **SOLO-SELF-MOD-CROSS-SESSION**: two live registered sessions whose covered scopes
       overlap on at least one orchestrator-critical path, registered via the copied
       `task-lock.sh session-register` (keep both pids alive so `session_liveness` reports
       `pid-alive`). Run the candidate solo (`--invocation-count 1`) with `--session-id` set to the
       *other* session's id. Assert the current verdict is `{"decision":"admit","self_modifying":true}`
-      with **no** `cross_session_hazard` field. This is the ex-task-190 `<A>`/`<B>` probe.
-- [ ] Add case **PHASE-EXEMPT-ABSENCE**: an absent-scope candidate in a multi-candidate batch,
+      with **no** `cross_session_hazard` field. This is the absorbed cross-session-blindness probe.
+      *(deviation: altered — same red/green rationale: asserts the TARGET shape
+      (`cross_session_hazard` naming the foreign session) so it fails now and flips to pass in
+      Phase 4, matching that phase's "FAILED count is zero for the first time" Verification line;
+      also the probe is described without a task-number citation per
+      `rules/no-task-references-in-deliverables.md`, since this script is a deliverable outside
+      `specs/**`)*
+- [x] Add case **PHASE-EXEMPT-ABSENCE**: an absent-scope candidate in a multi-candidate batch,
       mapped via `--phase-map <n>:plan`. Assert it admits (this case must stay green across every
-      later phase — it is the false-positive guard).
-- [ ] Add exactly ONE case pinning the `$schema` string literal (`orchestrate-batch-admit-v5`
+      later phase — it is the false-positive guard). *(completed)*
+- [x] Add exactly ONE case pinning the `$schema` string literal (`orchestrate-batch-admit-v5`
       today). Every other new assertion reads `decision`, `defer_reason`, and field presence only
-      — never the literal.
-- [ ] Run the suite from the source store and record the red output verbatim in the phase
-      completion note, per this suite's own documented convention.
+      — never the literal. *(completed)*
+- [x] Run the suite from the source store and record the red output verbatim in the phase
+      completion note, per this suite's own documented convention. *(completed: see Phase
+      Completion Note below — 5 passed, 3 failed, matching the three red-baseline cases)*
 
 **Timing**: 1.5 hours
 
@@ -209,6 +226,31 @@ loud-skip discipline) rather than sourcing it out of band.
   red-baseline cases; every pre-existing case still PASSes.
 - `shellcheck agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh` clean
   (Class B, `set -uo pipefail`, per `context/standards/shell-strict-mode.md` — do not add `-e`).
+
+**Phase Completion Note**: Verbatim red-baseline run (3 failed, matching the three red-baseline
+cases; `PHASE-EXEMPT-ABSENCE` and `SCHEMA-LITERAL` pass immediately as designed — they are not
+red baselines, so the FAILED count this run produced is 3, not the "four" the Verification
+section above estimated; corrected against the more precise, mutually-consistent per-phase
+progression Phases 2-4 each specify (CROSS-BATCH-ABSENCE flips in Phase 2; IN-BATCH-ABSENCE
+flips in Phase 3; SOLO-SELF-MOD-CROSS-SESSION flips in Phase 4, at which point FAILED reaches
+zero) — recorded as a plan-text imprecision, not a scope deviation):
+
+```
+[PASS] 1: A admits, C defers on A (in_batch), D admits despite overlapping only the deferring C
+[PASS] 2: NDJSON emission preserves caller-argument order for out-of-ascending-order arguments (D C A B)
+[PASS] 3: a self_modifying-caused defer also keeps a lower-numbered in-batch peer out of the admitted set
+[FAIL] IN-BATCH-ABSENCE: target-posture assertion failed -- EXPECTED until Phase 3 lands the absent_file_scope defer_reason
+[FAIL] CROSS-BATCH-ABSENCE: target-posture assertion failed -- EXPECTED until Phase 2 lands the absent_scope_advisory field
+[FAIL] SOLO-SELF-MOD-CROSS-SESSION: target-posture assertion failed -- EXPECTED until Phase 4 lands the cross_session_hazard field
+[PASS] PHASE-EXEMPT-ABSENCE: an absent-scope candidate mapped to the plan phase group still admits (forward-looking false-positive guard)
+[PASS] SCHEMA-LITERAL: $schema reads orchestrate-batch-admit-v5 (will be bumped to v6 in a later phase)
+
+Results: 5 passed, 3 failed
+```
+
+`shellcheck` result: clean except pre-existing `SC2329` (info) on the `cleanup()` trap function,
+confirmed present identically against the unmodified pre-task file (`git show HEAD:...`) — not
+introduced by this phase's edits.
 
 ---
 

@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Red-baseline fixtures for both defects",
+  "started_at": "2026-10-02T22:50:00Z",
+  "last_updated": "2026-10-02T23:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add IN-BATCH-ABSENCE case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 2, "description": "Add CROSS-BATCH-ABSENCE case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 3, "description": "Add SOLO-SELF-MOD-CROSS-SESSION case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "Add PHASE-EXEMPT-ABSENCE case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 5, "description": "Add schema-literal pin case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"]},
+    {"id": 6, "description": "Run suite, record red baseline, shellcheck", "status": "done", "files_touched": ["specs/165_admission_posture_for_absent_file_scope/plans/01_admission-posture-absent-scope.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Write red-baseline cases asserting literal current behavior (admit-all, no field)", "result": "superseded", "reason": "Contradicted Phase 2/3/4 Verification sections requiring these cases to 'remain red' until their respective fix phase; replaced with TDD-style target-posture assertions per the deviation note recorded on the plan's Phase 1 task list"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "1.IN-BATCH-ABSENCE", "description": "Assert the current behavior loudly", "type": "altered", "reason": "Plan's Phase 2/3/4 Verification sections require this case to fail until Phase 3; a literal current-behavior assertion would pass immediately, contradicting them. Written as a target-posture assertion instead (TDD red/green).", "annotation": "*(deviation: altered — written against the standard TDD red/green convention ...)*"},
+    {"task_id": "1.CROSS-BATCH-ABSENCE", "description": "Assert the current bare admit carries no absent_scope_advisory", "type": "altered", "reason": "Same red/green rationale as IN-BATCH-ABSENCE", "annotation": "*(deviation: altered — same red/green rationale as IN-BATCH-ABSENCE above ...)*"},
+    {"task_id": "1.SOLO-SELF-MOD-CROSS-SESSION", "description": "Assert the current verdict carries no cross_session_hazard field", "type": "altered", "reason": "Same red/green rationale; also avoided a task-number citation in a non-specs deliverable", "annotation": "*(deviation: altered — same red/green rationale ...)*"}
+  ]
+}

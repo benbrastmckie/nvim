@@ -1,10 +1,20 @@
 #!/usr/bin/env bash
-# test-orchestrate-batch-admit.sh - Regression suite reproducing the observed A/C/D chain: a
-# candidate deferring in_batch against a lower-numbered peer that is itself deferring this cycle,
-# even though the deferring peer never actually dispatches and therefore poses no concurrent-write
-# hazard. orchestrate-batch-admit.sh's in_batch collision predicate must narrow to "defer only
-# against a peer that is ITSELF admitted this cycle" (computed via a greedy ascending-
-# project_number walk), not "any lower-numbered peer that merely appears in the argument list".
+# test-orchestrate-batch-admit.sh - Regression suite covering TWO defects:
+#
+#   (1) The original A/C/D chain: a candidate deferring in_batch against a lower-numbered peer
+#       that is itself deferring this cycle, even though the deferring peer never actually
+#       dispatches and therefore poses no concurrent-write hazard. orchestrate-batch-admit.sh's
+#       in_batch collision predicate must narrow to "defer only against a peer that is ITSELF
+#       admitted this cycle" (computed via a greedy ascending-project_number walk), not "any
+#       lower-numbered peer that merely appears in the argument list". Cases 1-3 below.
+#
+#   (2) Admission posture for an ABSENT file_scope, plus cross-session visibility for a solo
+#       self-modifying candidate (the split ruling recorded in this script's own header): an
+#       absent/null/empty file_scope is currently indistinguishable from a scope that provably
+#       collides with nothing, and a solo self-modifying candidate's verdict carries no
+#       cross-session collision result at all even when a live foreign session's covered scope
+#       overlaps it. Cases IN-BATCH-ABSENCE, CROSS-BATCH-ABSENCE, SOLO-SELF-MOD-CROSS-SESSION,
+#       PHASE-EXEMPT-ABSENCE, and the $schema-literal pin below.
 #
 # Never touches the real specs/ tree. Builds a throwaway root satisfying deploy-root-guard.sh's
 # ".claude/scripts/ or .opencode/scripts/, two levels under root" check by copying the real
@@ -201,6 +211,222 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
   fi
 else
   info "3: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
+fi
+
+# =============================================================================
+# Fixture case: IN-BATCH-ABSENCE -- 8 non-terminal co-dispatched candidates, every one with an
+# absent file_scope (missing key, literal null, or empty array -- all three sub-states mixed).
+# Reproduces the observed 8-task in-batch incident: orchestrate-batch-admit.sh currently admits
+# all 8 with zero defers, because the absent-scope early-exit branch short-circuits before the
+# collision scan (or any new absent-scope-aware defer) ever runs.
+# =============================================================================
+NUM_IA1=301
+NUM_IA2=302
+NUM_IA3=303
+NUM_IA4=304
+NUM_IA5=305
+NUM_IA6=306
+NUM_IA7=307
+NUM_IA8=308
+
+ia_json=$(jq \
+  --argjson n1 "$NUM_IA1" --argjson n2 "$NUM_IA2" --argjson n3 "$NUM_IA3" --argjson n4 "$NUM_IA4" \
+  --argjson n5 "$NUM_IA5" --argjson n6 "$NUM_IA6" --argjson n7 "$NUM_IA7" --argjson n8 "$NUM_IA8" \
+  '.active_projects += [
+    {"project_number": $n1, "project_name": "ia_missing_1", "status": "not_started", "task_type": "general", "dependencies": []},
+    {"project_number": $n2, "project_name": "ia_null_1", "status": "not_started", "task_type": "general", "file_scope": null, "dependencies": []},
+    {"project_number": $n3, "project_name": "ia_empty_1", "status": "not_started", "task_type": "general", "file_scope": [], "dependencies": []},
+    {"project_number": $n4, "project_name": "ia_missing_2", "status": "not_started", "task_type": "general", "dependencies": []},
+    {"project_number": $n5, "project_name": "ia_null_2", "status": "not_started", "task_type": "general", "file_scope": null, "dependencies": []},
+    {"project_number": $n6, "project_name": "ia_empty_2", "status": "not_started", "task_type": "general", "file_scope": [], "dependencies": []},
+    {"project_number": $n7, "project_name": "ia_missing_3", "status": "not_started", "task_type": "general", "dependencies": []},
+    {"project_number": $n8, "project_name": "ia_null_3", "status": "not_started", "task_type": "general", "file_scope": null, "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$ia_json" > "$STATE_FILE"
+
+# TDD red/green convention (see this suite's header): this assertion checks the TARGET
+# post-fix posture from the start -- exactly one admit (the lowest-numbered candidate) and seven
+# `absent_file_scope` defers, each naming the admitted candidate as `designated_absent_candidate`
+# and carrying none of the file_scope_collision-only fields. It is EXPECTED TO FAIL against
+# today's unmodified script (which currently admits all 8, zero defers -- the
+# Logos/Verification 8-task incident) and is expected to start PASSING once Phase 3 lands the
+# designated-absent-candidate tie-breaker and the new defer_reason. Not yet flipped by any later
+# phase -- this IS the final-form assertion.
+out_ia=$("$BA" --invocation-count 8 "$NUM_IA1" "$NUM_IA2" "$NUM_IA3" "$NUM_IA4" "$NUM_IA5" "$NUM_IA6" "$NUM_IA7" "$NUM_IA8" 2>/dev/null)
+ia_admit_count=$(echo "$out_ia" | jq -r '.decision' | grep -c '^admit$' || true)
+ia_defer_count=$(echo "$out_ia" | jq -r '.decision' | grep -c '^defer$' || true)
+ia_admit_task=$(echo "$out_ia" | jq -r 'select(.decision == "admit") | .task_number')
+ia_wrong_reason=$(echo "$out_ia" | jq -r 'select(.decision == "defer") | select(.defer_reason != "absent_file_scope") | .task_number' | grep -c . || true)
+ia_stray_collision_fields=$(echo "$out_ia" | jq -r 'select(.decision == "defer") | select(has("colliding_task_number") or has("overlapping_path") or has("collision_scope") or has("corroborated_by")) | .task_number' | grep -c . || true)
+ia_designated_mismatch=$(echo "$out_ia" | jq -r --argjson expect "$NUM_IA1" 'select(.decision == "defer") | select((.designated_absent_candidate // -1) != $expect) | .task_number' | grep -c . || true)
+
+ia_ok=true
+[ "$ia_admit_count" = "1" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: expected 1 admit, got $ia_admit_count (out: $out_ia)"; }
+[ "$ia_defer_count" = "7" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: expected 7 defers, got $ia_defer_count (out: $out_ia)"; }
+[ "$ia_admit_task" = "$NUM_IA1" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: expected the lowest-numbered candidate ($NUM_IA1) to admit, got '$ia_admit_task' (out: $out_ia)"; }
+[ "$ia_wrong_reason" = "0" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: $ia_wrong_reason defer(s) lacked defer_reason == absent_file_scope (out: $out_ia)"; }
+[ "$ia_stray_collision_fields" = "0" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: $ia_stray_collision_fields defer(s) carried a file_scope_collision-only field (out: $out_ia)"; }
+[ "$ia_designated_mismatch" = "0" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: $ia_designated_mismatch defer(s) named the wrong designated_absent_candidate (expected $NUM_IA1) (out: $out_ia)"; }
+if [ "$ia_ok" = true ]; then
+  pass "IN-BATCH-ABSENCE: lowest-numbered absent-scope candidate admits, the other 7 defer with absent_file_scope (the Logos/Verification 8-task incident)"
+else
+  fail "IN-BATCH-ABSENCE: target-posture assertion failed -- EXPECTED until Phase 3 lands the absent_file_scope defer_reason (see INFO lines above)"
+fi
+
+jq --argjson n1 "$NUM_IA1" --argjson n2 "$NUM_IA2" --argjson n3 "$NUM_IA3" --argjson n4 "$NUM_IA4" \
+   --argjson n5 "$NUM_IA5" --argjson n6 "$NUM_IA6" --argjson n7 "$NUM_IA7" --argjson n8 "$NUM_IA8" \
+  '.active_projects |= map(select(
+      .project_number != $n1 and .project_number != $n2 and .project_number != $n3 and
+      .project_number != $n4 and .project_number != $n5 and .project_number != $n6 and
+      .project_number != $n7 and .project_number != $n8
+    ))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
+# Fixture case: CROSS-BATCH-ABSENCE -- one absent-scope candidate, one OUT-OF-BATCH task
+# (status "implementing", broad declared scope) that is NOT a positional argument. Reproduces
+# the cross-session incident: the current bare admit carries no advisory naming the suppressed
+# overlap because the absent-scope early-exit branch never reaches the collision scan at all.
+# =============================================================================
+NUM_CBA=309
+NUM_CBA_OTHER=310
+
+cba_json=$(jq \
+  --argjson nc "$NUM_CBA" --argjson no "$NUM_CBA_OTHER" \
+  '.active_projects += [
+    {"project_number": $nc, "project_name": "cba_candidate", "status": "not_started", "task_type": "general", "dependencies": []},
+    {"project_number": $no, "project_name": "cba_other_broad_scope", "status": "implementing", "task_type": "general", "file_scope": ["FormalSystem/", "Tests/", "docs/", "typst/", "README.md"], "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$cba_json" > "$STATE_FILE"
+
+# TDD red/green convention: checks the TARGET post-fix posture (decision stays "admit" -- this
+# is the deliberate advisory-only ruling, never blocking -- but the verdict must additionally
+# carry absent_scope_advisory naming the missing_key sub-state and no defer_reason). EXPECTED TO
+# FAIL against today's unmodified script (the field does not exist yet) and expected to start
+# PASSING once Phase 2 lands the advisory field.
+out_cba=$("$BA" --invocation-count 1 "$NUM_CBA" 2>/dev/null)
+v_cba=$(echo "$out_cba" | jq -c "select(.task_number == $NUM_CBA)")
+
+cba_ok=true
+[ "$(echo "$v_cba" | jq -r '.decision')" = "admit" ] || { cba_ok=false; info "CROSS-BATCH-ABSENCE: candidate did not admit: $v_cba"; }
+[ "$(echo "$v_cba" | jq -r '.absent_scope_advisory.scope_state // "MISSING"')" = "missing_key" ] || { cba_ok=false; info "CROSS-BATCH-ABSENCE: absent_scope_advisory.scope_state was not \"missing_key\": $v_cba"; }
+[ "$(echo "$v_cba" | jq -r 'has("defer_reason")')" = "false" ] || { cba_ok=false; info "CROSS-BATCH-ABSENCE: unexpectedly carries defer_reason (this ruling never blocks cross-batch absence): $v_cba"; }
+if [ "$cba_ok" = true ]; then
+  pass "CROSS-BATCH-ABSENCE: absent-scope candidate admits (deliberate advisory-only ruling) carrying absent_scope_advisory naming the missing_key sub-state (the BimodalLogic cross-batch incident)"
+else
+  fail "CROSS-BATCH-ABSENCE: target-posture assertion failed -- EXPECTED until Phase 2 lands the absent_scope_advisory field (see INFO lines above)"
+fi
+
+jq --argjson nc "$NUM_CBA" --argjson no "$NUM_CBA_OTHER" \
+  '.active_projects |= map(select(.project_number != $nc and .project_number != $no))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
+# Fixture case: SOLO-SELF-MOD-CROSS-SESSION -- a solo self-modifying candidate whose verdict
+# today carries NO cross-session collision result even when a live foreign session's covered
+# scope overlaps it (the absorbed cross-session-blindness probe: two live registered sessions
+# whose covered scopes overlap, each pinned to this test script's OWN pid via --pid $$ so
+# session_liveness reports "pid-alive" for the full duration of this suite). Guarded exactly like
+# Case 3 above: skipped gracefully if orchestrator-critical-paths.json is absent or empty in this
+# fixture tree.
+# =============================================================================
+if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ]; then
+  crit_path_scs=$(jq -r '(.scope_roots[0] // "") as $r | (.critical_paths[0].path // "") as $p | if $r != "" and $p != "" then ($r + "/" + $p) else "" end' "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" 2>/dev/null)
+  if [ -n "$crit_path_scs" ]; then
+    NUM_SCS_CAND=320
+    NUM_SCS_FOREIGN_TASK=321
+
+    scs_json=$(jq \
+      --argjson ncand "$NUM_SCS_CAND" --argjson nforeign "$NUM_SCS_FOREIGN_TASK" \
+      --arg cp "$crit_path_scs" \
+      '.active_projects += [
+        {"project_number": $ncand, "project_name": "scs_candidate", "status": "not_started", "task_type": "meta", "file_scope": [$cp], "dependencies": []},
+        {"project_number": $nforeign, "project_name": "scs_foreign_covered", "status": "not_started", "task_type": "meta", "file_scope": [$cp], "dependencies": []}
+      ]' "$STATE_FILE")
+    echo "$scs_json" > "$STATE_FILE"
+
+    OWN_SID="sess_scsowntest_000001"
+    FOREIGN_SID="sess_scsforeigntest_000002"
+    "$TMPROOT/.claude/scripts/task-lock.sh" session-register "$OWN_SID" "/orchestrate $NUM_SCS_CAND" "$NUM_SCS_CAND" --pid $$ >/dev/null 2>&1 || true
+    "$TMPROOT/.claude/scripts/task-lock.sh" session-register "$FOREIGN_SID" "/orchestrate $NUM_SCS_FOREIGN_TASK" "$NUM_SCS_FOREIGN_TASK" --pid $$ >/dev/null 2>&1 || true
+
+    # TDD red/green convention: checks the TARGET post-fix posture (decision stays "admit",
+    # self_modifying stays true -- this fix never changes the decision -- but the verdict must
+    # additionally carry cross_session_hazard naming the foreign session and the overlapping
+    # path). EXPECTED TO FAIL against today's unmodified script (the field does not exist yet)
+    # and expected to start PASSING once Phase 4 lands it.
+    out_scs=$("$BA" --invocation-count 1 --session-id "$OWN_SID" "$NUM_SCS_CAND" 2>/dev/null)
+    v_scs=$(echo "$out_scs" | jq -c "select(.task_number == $NUM_SCS_CAND)")
+
+    scs_ok=true
+    [ "$(echo "$v_scs" | jq -r '.decision')" = "admit" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: did not admit: $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r '.self_modifying')" = "true" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: self_modifying was not true: $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r '.cross_session_hazard.session_id // "MISSING"')" = "$FOREIGN_SID" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: cross_session_hazard.session_id did not name the foreign session ($FOREIGN_SID): $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r '.cross_session_hazard.overlapping_path // "MISSING"')" = "$crit_path_scs" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: cross_session_hazard.overlapping_path did not name $crit_path_scs: $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r 'has("defer_reason")')" = "false" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: unexpectedly carries defer_reason (a solo self-modifying candidate must never defer): $v_scs"; }
+    if [ "$scs_ok" = true ]; then
+      pass "SOLO-SELF-MOD-CROSS-SESSION: solo self-modifying candidate admits carrying cross_session_hazard naming the foreign session's overlapping covered scope (the cross-session-blindness probe)"
+    else
+      fail "SOLO-SELF-MOD-CROSS-SESSION: target-posture assertion failed -- EXPECTED until Phase 4 lands the cross_session_hazard field (see INFO lines above)"
+    fi
+
+    rm -f "$TMPROOT/specs/.sessions/${OWN_SID}.json" "$TMPROOT/specs/.sessions/${FOREIGN_SID}.json" 2>/dev/null || true
+    jq --argjson ncand "$NUM_SCS_CAND" --argjson nforeign "$NUM_SCS_FOREIGN_TASK" \
+      '.active_projects |= map(select(.project_number != $ncand and .project_number != $nforeign))' \
+      "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+  else
+    info "SOLO-SELF-MOD-CROSS-SESSION: SKIPPED -- orchestrator-critical-paths.json present but empty scope_roots/critical_paths"
+  fi
+else
+  info "SOLO-SELF-MOD-CROSS-SESSION: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
+fi
+
+# =============================================================================
+# Fixture case: PHASE-EXEMPT-ABSENCE -- an absent-scope candidate co-dispatched with a second,
+# ordinary candidate under a --phase-map mapping it to "plan". This case is NOT a red baseline:
+# the current script's absent-scope early-exit branch admits unconditionally regardless of
+# --phase-map or --invocation-count, so it is already green today. It MUST stay green across
+# every later phase in this plan -- the false-positive guard that a research/plan dispatch should
+# never be blocked merely because its IMPLEMENTATION footprint happens to be absent/declared.
+# =============================================================================
+NUM_PEA=330
+NUM_PEA2=331
+
+pea_json=$(jq \
+  --argjson np "$NUM_PEA" --argjson np2 "$NUM_PEA2" \
+  '.active_projects += [
+    {"project_number": $np, "project_name": "pea_candidate", "status": "not_started", "task_type": "general", "dependencies": []},
+    {"project_number": $np2, "project_name": "pea_sibling", "status": "not_started", "task_type": "general", "file_scope": ["scope/pea2"], "dependencies": []}
+  ]' "$STATE_FILE")
+echo "$pea_json" > "$STATE_FILE"
+
+out_pea=$("$BA" --invocation-count 2 --phase-map "${NUM_PEA}:plan" "$NUM_PEA" "$NUM_PEA2" 2>/dev/null)
+v_pea=$(echo "$out_pea" | jq -c "select(.task_number == $NUM_PEA)")
+
+pea_ok=true
+[ "$(echo "$v_pea" | jq -r '.decision')" = "admit" ] || { pea_ok=false; info "PHASE-EXEMPT-ABSENCE: candidate did not admit: $v_pea"; }
+if [ "$pea_ok" = true ]; then
+  pass "PHASE-EXEMPT-ABSENCE: an absent-scope candidate mapped to the plan phase group still admits (forward-looking false-positive guard)"
+else
+  fail "PHASE-EXEMPT-ABSENCE: false-positive guard failed (see INFO lines above)"
+fi
+
+jq --argjson np "$NUM_PEA" --argjson np2 "$NUM_PEA2" \
+  '.active_projects |= map(select(.project_number != $np and .project_number != $np2))' \
+  "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
+
+# =============================================================================
+# Fixture case: schema-literal pin -- exactly ONE assertion in this suite reads the raw $schema
+# string value. Every other new assertion added by this phase reads decision/defer_reason/field
+# presence only, per this suite's own documented convention (see the header's two-defect list).
+# =============================================================================
+out_schema=$("$BA" --invocation-count 1 "$NUM_A" 2>/dev/null)
+schema_ok=true
+[ "$(echo "$out_schema" | jq -r '."$schema"')" = "orchestrate-batch-admit-v5" ] || { schema_ok=false; info "SCHEMA-LITERAL: schema was not v5: $out_schema"; }
+if [ "$schema_ok" = true ]; then
+  pass "SCHEMA-LITERAL: \$schema reads orchestrate-batch-admit-v5 (will be bumped to v6 in a later phase)"
+else
+  fail "SCHEMA-LITERAL: schema-literal pin failed (see INFO lines above)"
 fi
 
 # =============================================================================

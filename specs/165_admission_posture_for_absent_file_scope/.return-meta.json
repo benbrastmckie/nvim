@@ -1,30 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/165_admission_posture_for_absent_file_scope/plans/01_admission-posture-absent-scope.md",
-      "summary": "6-phase plan implementing the split absent-file_scope admission ruling (cross-batch advisory with a written promotion criterion, in-batch blocking via a new absent_file_scope defer_reason at schema v6) plus an additive cross_session_hazard field closing the self-modifying solo-admit blindness."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When adding a new value to a discriminator enum that downstream shell consumers branch on, audit every consumer for a CLOSED `case`/`if` with no default arm. In agent-system/extensions/core, orchestrate-batch-admit.sh's `defer_reason` is consumed by orchestrate-cycle-plan.sh via `case \"$dr\" in` with arms for only the three known values and NO `*)` arm: an unrecognized value leaves the task excluded from dispatch (decision stays \"defer\") but writes no defer_ledger entry and emits no warning -- silent exclusion, worse than mis-bucketing. By contrast a `select()`-based jq consumer (orchestrate-predispatch-review.sh's classes) is inert but safe against an unknown value. The general rule: `select()`-style positive-match consumers degrade to invisible-but-harmless; closed switch consumers degrade to invisible-and-harmful. Add the loud default arm in the same change set that introduces the new enum value, and record which consumer class each site belongs to.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/165_admission_posture_for_absent_file_scope/plans/01_admission-posture-absent-scope.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["discriminator", "defer_reason", "closed-case-default-arm", "silent-exclusion", "consumer-audit", "schema-version-bump"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1790721762_ff3d8e_165",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 9,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
-  },
-  "next_steps": "Run /implement 165 to execute the plan",
-  "dispatch_seq": 10
+    "session_id": "sess_1790980905_de0803",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }
