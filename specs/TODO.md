@@ -11,7 +11,7 @@ next_project_number: 314
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,290,294,295,296,297,299,300,306,309,311 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,294,295,296,297,299,300,306,309,311 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,277,282,284,285,300 | orchestrator |
@@ -39,7 +39,6 @@ next_project_number: 314
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
-290 [IMPLEMENTING] — Teach verify-deploy gate 5 (verify.lua content-hash equality)...
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
@@ -1066,7 +1065,7 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 290. Verify lua cross extension override precedence
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: neovim
 - **Topic**: core-agent-system
 - **Dependencies**: None

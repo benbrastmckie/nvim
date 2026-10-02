@@ -1,7 +1,7 @@
 # Implementation Plan: Verify gate 5 cross-extension override precedence
 
 - **Task**: 290 - Verify Lua cross-extension override precedence
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/290_verify_lua_cross_extension_override_precedence/reports/01_cross-extension-override-precedence.md

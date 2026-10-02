@@ -31,7 +31,5 @@
     "phases_completed": 6,
     "phases_total": 6
   },
-  "next_steps": "Task implementation complete; all 6 plan phases closed with verification evidence. No further action required beyond normal postflight/PR-readiness handling.",
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  "next_steps": "Task implementation complete; all 6 plan phases closed with verification evidence. No further action required beyond normal postflight/PR-readiness handling."
 }
