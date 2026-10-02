@@ -276,11 +276,17 @@
           "path": "specs/279_state_schema_rejects_live_orchestration_fields/plans/01_widen-state-schema-fields.md",
           "type": "plan",
           "summary": "7-phase plan applying the 5-widen/3-retire state-schema ruling, advisory-first Checks 3/4, the postflight blockers reader/comment fix, a consumer-runnable migration script, and a schema-to-validator drift test."
+        },
+        {
+          "path": "specs/279_state_schema_rejects_live_orchestration_fields/summaries/01_widen-state-schema-fields-summary.md",
+          "type": "summary",
+          "summary": "All 7 phases completed: five fields widened into state-schema.json/validate-state.sh, three top-level fields retired with a consumer-runnable migration script, Checks 3/4 moved to advisory-first, the postflight blockers reader/comment contradiction fixed, a schema-to-validator drift test added, and the ruling documented in state-management-schema.md."
         }
       ],
       "last_updated": "2026-10-02T19:22:40Z",
       "session_id": "sess_1790968925_5ff73e",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Reconciled state-schema.json with eight live orchestration fields observed in a consumer repo: widened five fields (active_goal, blockers, previous_status, resume_phase, researched), retired three (artifacts, metadata, top-level last_updated) with a consumer-runnable migration script, moved validate-state.sh Checks 3/4 to an advisory-first posture, fixed the postflight blockers reader/comment contradiction, and closed a pre-existing research_questions schema/validator drift with a new pinning test. All nine original consumer-repo validate-state.sh failures are now explained and resolved (eight in-scope, one owned by task 271)."
     },
     {
       "project_number": 277,

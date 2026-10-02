@@ -30,22 +30,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/279_state_schema_rejects_live_orchestration_fields/summaries/01_widen-state-schema-fields-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["state-schema", "validate-state", "markdown-embedded-writer", "grep-scope", "false-negative"]
+      "suggested_keywords": [
+        "state-schema",
+        "validate-state",
+        "markdown-embedded-writer",
+        "grep-scope",
+        "false-negative"
+      ]
     },
     {
       "content": "For a hand-maintained schema/validator pair with no drift test (e.g. state-schema.json's property keys vs validate-state.sh's KNOWN_TOP_LEVEL_FIELDS/KNOWN_ENTRY_FIELDS arrays), the safe migration pattern when moving a hard-FAIL check to advisory-first is: (1) widen the schema and validator array together in one commit, (2) separately change the check's severity from log_fail to log_warn with a written PROMOTION CRITERION naming the concrete bar to re-promote, (3) add a schema-to-validator drift test modelled on test-status-vocabulary.sh's existing enum drift assertion, sanity-checked by temporarily removing one known-field name and confirming the test fails and names it. This sequencing let the ruling be ADDITIVE and testable at each step rather than a single large unverifiable edit.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/279_state_schema_rejects_live_orchestration_fields/summaries/01_widen-state-schema-fields-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["drift-test", "advisory-first", "promotion-criterion", "schema-validator-sync", "migration-sequencing"]
+      "suggested_keywords": [
+        "drift-test",
+        "advisory-first",
+        "promotion-criterion",
+        "schema-validator-sync",
+        "migration-sequencing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790968925_5ff73e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
