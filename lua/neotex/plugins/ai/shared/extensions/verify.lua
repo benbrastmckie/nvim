@@ -873,6 +873,11 @@ local function is_runtime_artifact(rel)
   if rel == "RESUME.md" then
     return true
   end
+  -- session-acquired lock written by the scheduled-task mechanism at execution time
+  -- (contents: sessionId, pid, acquiredAt) -- never by the copy engine.
+  if rel == "scheduled_tasks.lock" then
+    return true
+  end
   if rel:match("__pycache__/") or rel:match("%.pyc$") then
     return true
   end

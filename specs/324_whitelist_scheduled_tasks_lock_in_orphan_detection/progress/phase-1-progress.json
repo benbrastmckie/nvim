@@ -1,0 +1,11 @@
+{
+  "phase": 1,
+  "phase_name": "Add the scheduled_tasks.lock exclusion branch",
+  "started_at": "2026-10-02T22:03:51Z",
+  "last_updated": "2026-10-02T22:06:00Z",
+  "objectives": [
+    {"id": 1, "description": "Phase 1 — add is_runtime_artifact branch", "status": "completed", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/verify.lua"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

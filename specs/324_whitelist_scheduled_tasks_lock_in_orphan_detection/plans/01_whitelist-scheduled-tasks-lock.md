@@ -1,7 +1,7 @@
 # Implementation Plan: Task #324
 
 - **Task**: 324 - Whitelist scheduled_tasks.lock in orphan detection
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (task 323 is a concurrent sibling; disjoint file scope)
 - **Research Inputs**: specs/324_whitelist_scheduled_tasks_lock_in_orphan_detection/reports/01_whitelist-scheduled-tasks-lock.md
@@ -90,21 +90,21 @@ consulted and is not modified by this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add the scheduled_tasks.lock exclusion branch [NOT STARTED]
+### Phase 1: Add the scheduled_tasks.lock exclusion branch [COMPLETED]
 
 **Goal**: `is_runtime_artifact()` returns true for `scheduled_tasks.lock`.
 
 **Tasks**:
-- [ ] Re-read `lua/neotex/plugins/ai/shared/extensions/verify.lua` around the
+- [x] Re-read `lua/neotex/plugins/ai/shared/extensions/verify.lua` around the
       `is_runtime_artifact()` definition (currently ~lines 869-884) to confirm current content
       before editing — a sibling task is live on this tree.
-- [ ] Insert a branch immediately after the existing `rel == "RESUME.md"` branch:
+- [x] Insert a branch immediately after the existing `rel == "RESUME.md"` branch:
       `if rel == "scheduled_tasks.lock" then return true end`.
-- [ ] Add a one-line comment above it in the style of the existing literature-venv comment,
+- [x] Add a one-line comment above it in the style of the existing literature-venv comment,
       stating the file is a session-acquired lock (sessionId/pid/acquiredAt) written by the
       scheduled-task mechanism at execution time, never by the copy engine. Do **not** mention a
       task number — this file is outside `specs/**`.
-- [ ] Confirm the exact-match form (not a glob) is what landed.
+- [x] Confirm the exact-match form (not a glob) is what landed.
 
 **Timing**: 0.5 hours
 
