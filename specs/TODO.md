@@ -1,5 +1,5 @@
 ---
-next_project_number: 316
+next_project_number: 319
 ---
 
 # TODO
@@ -11,10 +11,10 @@ next_project_number: 316
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,295,296,297,299,300,306,311 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306 | core-agent-system, extensions, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,295,296,297,299,300,306,311,316 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281,298,302,307,308,317,318 | 22,44,127,184,241,265,272,279,280,297,300,306,316 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
-| 4 | 274,304,312 | 165,263,273,275,282,284,285,300 | orchestrator |
+| 4 | 274,304,312 | 165,263,273,275,282,284,285,300,302 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -33,6 +33,7 @@ next_project_number: 316
 265 [PLANNED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+  └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
 268 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
@@ -44,6 +45,8 @@ next_project_number: 316
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
+316 [NOT STARTED] — Trim skill-orchestrate/SKILL.md back under its gate-20...
+  └─ 317 [NOT STARTED] — Make the post-deploy reconcile promotion append to...
 
 ### Extensions
 
@@ -80,10 +83,158 @@ next_project_number: 316
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
-302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
+302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
+  └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 318. Wire lint-directory-pathspec-boundary.sh into verify-deploy.sh as a numbered gate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 265
+
+**Description**: Wire the directory-pathspec boundary lint into `verify-deploy.sh` as a numbered gate, so the rule it enforces cannot silently regress. The lint and its fixture test already exist and pass; only the gate wiring is missing, and it was deliberately deferred because the wiring target is an orchestrator-critical path.
+
+== CURRENT STATE (verified) ==
+
+`scripts/lint/lint-directory-pathspec-boundary.sh` exists, is registered in `agent-system/extensions/core/manifest.json`, is cross-referenced from `context/standards/git-staging-scope.md`, has a 14-case fixture test at `scripts/tests/test-lint-directory-pathspec-boundary.sh` (auto-discovered by `scripts/tests/run-all.sh`'s `test-*.sh` glob, so it needs no registration), and reports 0 violations across the whole source store.
+
+What it lacks is a `verify-deploy.sh` gate. Its sibling `lint-scoped-commit-boundary.sh` IS wired, as gate 17. So the asymmetry is the defect: the newer rule is enforced only when someone runs the lint by hand, while the older sibling rule is enforced on every deploy.
+
+== WHY IT WAS DEFERRED, AND WHAT THAT MEANS FOR THIS TASK ==
+
+`scripts/verify-deploy.sh` is entry 12 on `context/reference/orchestrator-critical-paths.json` ("deploy verification gate"). The task that built the lint declared a scope note forbidding itself from touching any critical path, so it shipped the lint and recorded the wiring as a follow-up rather than widening its own scope. That was the correct call. This task exists to do the wiring under proper admission.
+
+== THE WORK ==
+
+Add the lint as a gate in `scripts/verify-deploy.sh`, following gate 17's existing shape for its sibling lint (same invocation convention, same `--verbose` handling, same PASS/FAIL line format, same placement relative to the other lint gates). Research must read gate 17 and match it rather than inventing a new gate idiom.
+
+Rule on and record:
+
+- **Gate number and placement.** The lint numbering is not arbitrary -- gates are referenced by number in operator-facing output and in docs. Determine whether this becomes a new trailing gate or is inserted next to gate 17 (its sibling), and what that does to every subsequent gate's number and to any doc that cites a gate by number. An insertion that silently renumbers gates 18-20 would invalidate existing references, including the gate-20 citations in the orchestrator context-budget work. Prefer a placement that does not renumber, or fix every citation.
+- **Blocking vs. advisory tier.** Gate 17 is blocking. Confirm whether this lint should be too. It currently reports 0 violations, so wiring it as blocking is safe TODAY -- but verify that claim at implement time rather than trusting this sentence, since the source store changes underneath.
+
+== HARD CONSTRAINT ==
+
+Do not weaken the lint to make the gate green. If wiring reveals violations, the correct response is to fix the violating sites or to justify an allowlist entry in the lint's own allowlist layer -- never to broaden the classifier so the finding disappears.
+
+== CLOSE BY ==
+
+Run `bash .claude/scripts/verify-deploy.sh` and confirm the new gate appears, passes, and that the total gate count in the `[verify-deploy] PASS -- N check(s)` line increments correspondingly. Confirm `scripts/tests/test-lint-directory-pathspec-boundary.sh` still passes and that no other gate regressed.
+
+All edits land under `agent-system/extensions/core/` per `.claude/rules/source-store-deploy-boundary.md`, never under `.claude/**`.
+
+NOTE: `scripts/verify-deploy.sh` IS an orchestrator-critical path, so this task trips the self-modification admission gate by design. It also shares `verify-deploy.sh` with the Gate-8-parallelism task, hence the dependency edge -- do not run the two concurrently.
+
+---
+
+### 317. Make the post-deploy reconcile promotion append to completed_tasks and commit its own completion transition
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 316
+
+**Description**: Make the post-deploy reconcile promotion append to the batch's `completed_tasks` ledger, so the consolidated batch output reports every task it actually completed. Today a task promoted by that path completes correctly in `specs/state.json` but is invisible to the batch's own reporting, and no commit is issued for its completion transition.
+
+== OBSERVED, NOT HYPOTHESIZED (live run) ==
+
+A 5-task `/orchestrate` batch (session `sess_1790947016_5ff368`, tasks 314/315/277/309/294) ended with all five at `status: completed` in `specs/state.json`. But the batch's own multi-state file reported:
+
+    completed_tasks: [277, 294, 314]
+
+Tasks 309 and 315 were missing. They reached `completed` via the cycle-4 post-deploy reconcile, which logged:
+
+    [orchestrate] REDEPLOY CHECKPOINT: post-deploy reconcile for task #315 -- promoted
+    [orchestrate] REDEPLOY CHECKPOINT: post-deploy reconcile for task #309 -- promoted
+
+and recorded `post_deploy_reconcile_notices: [{cycle:4, task:315, outcome:"promoted", exit_code:0}, {cycle:4, task:309, outcome:"promoted", exit_code:0}]`. So the promotion IS recorded in its own notice array -- it is simply never reflected into `completed_tasks`.
+
+== THE TWO CONSEQUENCES (both verified in that run) ==
+
+1. **Under-reported batch output.** `skill-orchestrate/SKILL.md`'s Move 4 builds the `### Succeeded` table and the `.dispatch/` cleanup set from `completed_tasks`. A batch that completed 5 tasks would report 3. The lead only produced a correct 5-row table because it cross-checked `specs/state.json` by hand and noticed the discrepancy -- the engine's own ledger would have silently understated the result.
+
+2. **An uncommitted completion transition.** The promotion writes `specs/state.json` and `specs/TODO.md`, but because the promoting cycle produced no `dispatch[]` rows (it stopped on `all_terminal`), no per-task postflight ran to commit them. The last commits for those two tasks read "orchestration paused (cycle 4)", which actively misstates the outcome; the real `completed` status sat uncommitted in the working tree until committed by hand afterwards.
+
+Consequence 2 is the more serious of the two: it means the durable git record of a successful batch can contradict `specs/state.json`.
+
+== WHERE TO LOOK (located, but confirm before fixing) ==
+
+The promotion happens inside the inter-cycle redeploy checkpoint's post-deploy reconcile, in `scripts/orchestrate-cycle-plan.sh` -- the same script that emits `post_deploy_reconcile_notices`. Research must confirm the exact write site and rule on whether the right fix is:
+
+(a) append to `completed_tasks` at the promotion site, so the existing Move 4 reporting and cleanup pick it up with no consumer change; or
+(b) have Move 4 derive its `### Succeeded` set from the authoritative per-task statuses rather than from the `completed_tasks` accumulator, making the accumulator advisory.
+
+(b) is architecturally cleaner and would make the whole class of ledger/truth divergence impossible, but it is a wider change to the reporting contract. (a) is narrow. Decide with reasons; do not do both.
+
+For consequence 2, additionally rule on whether the promotion must issue its own scoped commit (via `scripts/git-commit-scoped.sh`, explicit file list, per the directory-pathspec rule in `context/standards/git-staging-scope.md`), or whether the engine must instead refuse to stop on `all_terminal` while an uncommitted promotion is outstanding. A promotion that writes state but cannot commit it is the defect; either remedy must close it, not just report it.
+
+== RELATED, DO NOT CONFLATE ==
+
+This is NOT the same defect as a postflight reporting a status it did not persist (the `.status` vs `.persisted_status` distinction, already fixed). That fix made a SINGLE postflight's self-report honest. This task is about the BATCH-level ledger disagreeing with `specs/state.json` after a promotion that bypassed postflight entirely. Read the `persisted_status` contract in `skills/skill-orchestrate/SKILL.md`'s Move 3 before starting, so the fix composes with it rather than duplicating it.
+
+== CLOSE BY ==
+
+Add a regression case to `scripts/tests/test-orchestrate-cycle-plan.sh` that drives a post-deploy reconcile promotion and asserts (i) the promoted task appears in `completed_tasks`, and (ii) no uncommitted completion transition is left behind. Demonstrate the assertion RED against unfixed source before fixing, so it is known to be non-vacuous.
+
+All edits land under `agent-system/extensions/core/` per `.claude/rules/source-store-deploy-boundary.md`, never under `.claude/**`.
+
+NOTE: `scripts/orchestrate-cycle-plan.sh` and `skills/skill-orchestrate/SKILL.md` are BOTH orchestrator-critical paths, so this task trips the self-modification admission gate by design. It also overlaps SKILL.md with the gate-20 trim task, hence the dependency edge -- do not run the two concurrently.
+
+---
+
+### 316. Trim skill-orchestrate/SKILL.md back under its gate-20 per-file context ceiling without losing contract content
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Trim `skills/skill-orchestrate/SKILL.md` back under its verify-deploy gate 20 per-file context ceiling, WITHOUT discarding any contract content. The gate is RED right now, which makes every subsequent `verify-deploy.sh` run fail and every `/orchestrate` inter-cycle redeploy checkpoint report a standing failure.
+
+== THE DEFECT (measured, not inferred) ==
+
+`verify-deploy.sh` gate 20 ("Orchestrator context budget lock", `ORCHESTRATOR_BUDGET_GATE_MODE=hard`):
+
+    [FAIL] skills/skill-orchestrate/SKILL.md (20930 B) exceeds its configured ceiling (20000 B)
+
+Verified directly: the file is 20930 B in BOTH the source store (`agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`) and the deployed tree (`.claude/skills/skill-orchestrate/SKILL.md`), so this is not deploy staleness. 930 B must go.
+
+The aggregate budget is NOT the binding constraint and must not be confused with it: eager-load total is 65599 B against a 65950 B baseline (under), and `commands/orchestrate.md` is 19891 B against its 21000 B ceiling (under). Only the per-file ceiling on SKILL.md is breached.
+
+== ATTRIBUTION (verified by git log, not guessed) ==
+
+The last commit touching the file is `f9cac3ae6` "thread persisted_status through Move 3 and its mirrored doc copy", which added 12 lines / ~940 B: two shell lines in the Move 3 destructuring block plus a ~10-line `**.status` vs. `.persisted_status`**` contract paragraph. The commit immediately before it is `8b7d5020d` "trim SKILL.md under its ceiling" -- i.e. the file was deliberately trimmed to just under 20000 B and the next substantive addition pushed it back over. This file is under chronic budget pressure; a fix that only buys back 930 B will be re-breached by the next contract addition.
+
+== HARD CONSTRAINT: DO NOT DELETE THE CONTRACT CONTENT ==
+
+The `.status` vs `.persisted_status` paragraph is a deliberate deliverable: it is the contract that stops a reader mistaking an agent's self-report for proof of a persisted state transition. Deleting or weakening it would undo the work that introduced it. The research/plan MUST treat that content as load-bearing and relocate rather than remove it.
+
+== THE OBVIOUS STARTING POINT, AND WHY IT IS NOT SUFFICIENT ALONE ==
+
+`docs/architecture/orchestrate-state-machine.md:395-406` already carries a condensed mirror of the same contract -- but it currently defers to SKILL.md as canonical ("See `SKILL.md`'s \"Move 3: Postflight\" section for the full contract text this mirrors"). The natural move is to invert that reference: make the architecture doc canonical, and leave a short pointer in SKILL.md, following the repo's own stated idiom that SKILL.md uses lazy context loading via backticked path references resolved on demand.
+
+VERIFY THIS ARITHMETIC BEFORE RELYING ON IT: replacing a ~940 B block with a ~250 B pointer buys back only ~690 B, leaving the file at roughly 20240 B -- still over the 20000 B ceiling. So the dedup alone does NOT green the gate. Additional savings must come from elsewhere in the file, or the posture must change. Do not plan on the dedup alone and discover this at implement time.
+
+== THE DESIGN QUESTION RESEARCH MUST RULE ON ==
+
+Decide and record the reasoning for ONE of:
+
+(a) Relocate-and-trim: invert the architecture-doc reference as above AND find the remaining ~250-400 B by converting other already-duplicated prose in SKILL.md into pointers. Identify those candidates mechanically (prose in SKILL.md that is restated in `docs/architecture/orchestrate-state-machine.md`, `docs/architecture/handoff-schema.md`, `docs/architecture/orchestrate-cycle-postflight.md`, or `context/standards/postflight-tool-restrictions.md`), not by taste. This preserves the ceiling as a real lock.
+
+(b) Re-derive the ceiling: argue that 20000 B is no longer the right number for this file given the aggregate is comfortably under baseline, raise it deliberately, and record why that is not simply moving the goalposts. If this is chosen it MUST state what now prevents unbounded growth, since the per-file ceiling was the only thing doing that job.
+
+(a) is the presumptive answer because the ceiling exists precisely to force contract prose out of eager-loaded context and into on-demand docs. (b) requires a positive argument, not just convenience.
+
+== CLOSE BY ==
+
+Re-run `bash .claude/scripts/verify-deploy.sh` and confirm gate 20 PASSES with the trimmed file deployed, and confirm no contract statement was lost -- every sentence removed from SKILL.md must be locatable, in equivalent force, at the path SKILL.md now points to. Also confirm `scripts/tests/test-verify-deploy-context-budget.sh` still passes.
+
+All edits land under `agent-system/extensions/core/` per `.claude/rules/source-store-deploy-boundary.md`, never under `.claude/**`.
+
+NOTE: `skills/skill-orchestrate/SKILL.md` IS an orchestrator-critical path, so this task trips the self-modification admission gate by design. Run it alone, or with `--allow-self-modifying`.
+
+---
 
 ### 315. Stop the cycle postflight reporting a status it did not persist, and attribute a seq mismatch by direction
 - **Effort**: 3-6 hours
@@ -553,12 +704,12 @@ RESPONSIBILITY SPLIT, implemented by the two dependent tasks: /todo prunes; /rev
 
 ---
 
-### 304. Stop one out-of-repository pathspec entry from aborting staging for every valid path while the task still reports success
+### 304. Stop one out-of-repository pathspec entry from aborting staging for every valid path, and stop the callers sinking the script's nonzero exits, while the task still reports success
 - **Effort**: 1-3 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 184, Task 263, Task 273, Task 277, Task 279, Task 284, Task 285
+- **Dependencies**: Task 184, Task 263, Task 273, Task 277, Task 279, Task 284, Task 285, Task 302
 
 **Description**: Make an out-of-repository path in a commit pathspec list non-fatal for the rest of the list, so one bad entry cannot abort staging for every valid path while the task still reports success. A narrow fix with a mechanically located cause; research rules on WHERE the fix belongs and on one genuinely open design question, it does not re-litigate whether the defect is real.
 
@@ -687,6 +838,24 @@ Six live tasks contending on `scripts/orchestrate-cycle-postflight.sh` is itself
 7. The silent-filtering-vs-loud-refusal decision is stated in the report, and the chosen behavior is shown to beat the status quo on BOTH axes (valid work committed AND the violation reported). If only one axis is achieved, the report says which was traded and why.
 8. `bash scripts/tests/test-git-commit-scoped.sh` passes in full, and `scripts/verify-deploy.sh` passes.
 
+== ADDED SCOPE: THE EXIT-CODE SINK AT EVERY CALLER (now a live, landed concern) ==
+
+The hard-error refusal this task's sibling work introduced has LANDED: `git-commit-scoped.sh` now has a V6 gate that exits **4** when at least one pathspec was dropped AND the resulting commit would be empty, printing a loud `ERROR:` naming every dropped path. Verified in the source store, with regression cases T11/T12/T13 and a documented exit-code table (0-4) plus V2/V3/V5/V6 gate labels in `context/standards/git-staging-scope.md`.
+
+That work deliberately did NOT change any caller, and recorded the reason as an explicit residual. This task inherits it, because the residual is precisely this task's own failure mode:
+
+**Every caller wraps the script as `cmd || echo "WARN: ...(non-blocking)"`, which collapses ANY nonzero exit to 0 for the caller's control flow.** So a new exit code in the script alone is NECESSARY BUT NOT SUFFICIENT: V6 can fire, print its loud error, and the caller will still proceed and let the task transition to `completed`. That is the same "the task still reports success" shape named in this task's own title, reached by a second route.
+
+Rule on, and record with reasons:
+
+- **Which callers must branch on the exit code, and on which codes.** The live script callers are `scripts/orchestrate-cycle-postflight.sh` and `scripts/orchestrate-unwind-dispatch.sh` (`scripts/orchestrator-postflight.sh` is confirmed orphaned with no live callers -- confirm that still holds before either fixing or skipping it). Beyond those, roughly 50 documented bash snippets across core and extension skills/agents share the canonical call shape, so a blanket "every caller branches" ruling has a real cost that must be weighed rather than assumed.
+- **Whether exit 4 and exit 2 deserve the same treatment.** Exit 2 (usage error / V3 degenerate-pathspec refusal / `git add` failed) is also currently sunk by `|| echo WARN`, and the `git add` failure is the exact mechanism in this task's OBSERVED DAMAGE section. Decide whether the fix is per-code or a single "any nonzero except 1 is fatal" rule. Exit 1 must remain non-fatal: it is the legitimate "nothing to commit" case and is indistinguishable from a benign no-op by design.
+- **Where the branch belongs.** A `$?`-specific branch at ~50 call sites is a different change from a single branch inside the two live script callers plus a documented convention for the snippets. Prefer the narrow mechanical fix plus an enforcement lint over editing 50 prose snippets by hand, unless research shows the snippets are themselves executed rather than copied.
+
+HARD CONSTRAINT: do not make a commit failure fatal in a way that can strand an orchestration mid-batch. The non-blocking posture exists so one task's commit problem does not abort its siblings. The fix must make the failure VISIBLE and ATTRIBUTABLE -- surfaced into the task's own outcome and status rather than swallowed -- not simply convert a silent success into a hard abort. If a task's commit genuinely failed, the honest outcome is a `[PARTIAL]` with a named blocker, never `[COMPLETED]`.
+
+Read `context/standards/git-staging-scope.md`'s exit-code table before planning; it is the current contract and this task must extend it, not contradict it.
+
 ---
 
 ### 303. Make validate-state.sh resolve its omitted-argument state-file default against the repository being validated, not the current working directory
@@ -761,91 +930,54 @@ The `research_questions` / `KNOWN_ENTRY_FIELDS` schema-validator drift. Task 279
 
 ---
 
-### 302. Replace the bare `-- specs/` directory pathspec at commit-staging sites and pass `--task` to engage the contended-path lease
+### 302. Pass --task at commit-staging sites to engage the contended-path lease, and rule on the task-scoped pathspec carve-out
 - **Effort**: 3-6 hours
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 44, Task 292, Task 300, Task 309
 
-**Description**: Replace the bare `-- specs/` DIRECTORY pathspec at every commit-staging site that uses it, and pass `--task` at those sites so `git-commit-scoped.sh`'s contended-path lease is actually consulted. This is a narrow, verified fix with a known mechanism — research confirms the per-site ruling, it does not re-litigate whether the defect is real.
+**Description**: Pass `--task` at every commit-staging site so `git-commit-scoped.sh`'s contended-path lease is actually consulted, and rule on whether the sanctioned task-scoped directory pathspec carve-out should be narrowed. This task was originally two halves; HALF 1 IS NOW DONE and must not be re-done.
 
-== THE DEFECT (two halves) ==
+== SCOPE CORRECTION: HALF 1 IS COMPLETE (verify before planning anything) ==
 
-**Half 1 — the directory pathspec over-stages.** `git-commit-scoped.sh`'s own header states that `<pathspec>...` is taken "exactly as would be passed to `git add`/`git commit --`"; the script performs no narrowing of a directory pathspec. A call ending `-- specs/` therefore stages EVERY dirty file under `specs/`, including files authored by concurrently-dispatched agents. This is precisely the harm `rules/git-workflow.md` already prohibits (lines 88-91): a "directory or glob `git add` pathspec (e.g. `git add -- some/dir/`)" is "the identical over-staging harm as `git add -A`/`git add .` in a narrower disguise", while "the sanctioned explicit multi-file list (e.g. `git add -- a.lean b.lean`) is unaffected and remains permitted". The convention contradicts an explicit, already-written rule in the same system. NOTE: the rule text is CORRECT and needs no change — this task fixes the call sites that violate it, not the rule.
+The original task had two halves. Half 1 -- replacing the bare `-- specs/` DIRECTORY pathspec at commit-staging sites with explicit file lists -- has been implemented and landed. Verified directly in the source store:
 
-**Half 2 — the guard was never consulted.** `git-commit-scoped.sh` already implements the mechanism that would have prevented the damage: `--task <task_number>` (header line 17; opt-in, empty-value-skips-flag, fails open unconditionally) consults the cycle-scoped contended-path manifest (`specs/.contention-manifest/*.json`) for each POSITIVE pathspec entry, claims each listed path via a first-claim lease (`specs/.contention-claims/<path>`), and REFUSES before any `git add` (exit 3) when another live task holds a path. `skill-meta/SKILL.md:287` passes `--honest-index-rows` but OMITS `--task`, so the lease never ran. The mechanism did not fail — it was never consulted. This is the same systemic shape the worktree-isolation removal verdict already records about an absent `file_scope` ("The guard did not fail; it was never consulted"), making this a third instance. That is the argument for auditing commit sites for the missing `--task`, not merely fixing the pathspec.
+- `grep -rn -E -- '--[[:space:]]+specs/([[:space:]]|$|\\)' agent-system/extensions/` now returns only the deliberate negative-case fixtures inside `scripts/tests/test-lint-directory-pathspec-boundary.sh`. Every real staging site is fixed.
+- The fix covered 19 sites across 11 files (2 more than the 17/9 originally measured here; `context/standards/git-safety.md` and `memory/skills/skill-learn/SKILL.md` were found by the new lint's own full-tree run).
+- `commands/todo.md`'s 7 sites -- flagged in the original description as "the genuinely interesting case" because an archival sweep touches a set not enumerable in advance -- were resolved with a `stage_paths` bash-array accumulator, which is the "enumerate from the archival manifest the command already computes" ruling the original description anticipated. That ruling is made and implemented; do not reopen it.
+- A new lint, `scripts/lint/lint-directory-pathspec-boundary.sh`, now mechanically forbids regression, with a 14-case fixture test. (Wiring it as a `verify-deploy.sh` gate is a separate task.)
 
-== MEASURED SCOPE (verified; an earlier count of 41 files conflated two distinct pathspec forms) ==
+DO NOT re-audit the pathspec shape of those sites, and do not re-litigate the per-site rulings. If research finds a bare directory staging pathspec that the lint does not catch, that is a lint defect to report, not this task's work.
 
-`grep -rln -- "-- specs/" agent-system/extensions/` returns 41 files, but most are the ALREADY-COMPLIANT explicit-file-list form (`-- specs/state.json specs/TODO.md`). Narrowing to the actual bare-directory form (`grep -rn -E -- '--[[:space:]]+specs/([[:space:]]|$|\\)'`) returns 14 files, which split cleanly:
+== WHAT REMAINS: HALF 2 -- THE LEASE WAS NEVER CONSULTED ==
 
-**(a) Defective commit-STAGING sites — 9 files, 17 occurrences. These are the work:**
-- core/commands/todo.md:993, 999, 1002, 1005, 1008, 1011, 1014  (7 occurrences)
-- core/commands/task.md:259, 893
-- core/agents/meta-builder-agent.md:1496
-- core/skills/skill-meta/SKILL.md:287
-- core/skills/skill-git-workflow/SKILL.md:216
-- epidemiology/commands/epi.md:325
-- present/commands/grant.md:223, 476
-- present/commands/slides.md:323
-- present/commands/timeline.md:227
+`git-commit-scoped.sh` already implements the mechanism that prevents cross-session commit bleed: `--task <task_number>` (opt-in, empty-value-skips-flag, fails open unconditionally) consults the cycle-scoped contended-path manifest (`specs/.contention-manifest/*.json`) for each POSITIVE pathspec entry, claims each listed path via a first-claim lease (`specs/.contention-claims/<path>`), and REFUSES before any `git add` (exit 3) when another live task holds a path.
 
-**(b) Legitimate READ-ONLY query sites — 5 files. Explicitly OUT OF SCOPE; do not touch:**
-`git ls-files -- specs/` / `git status --porcelain -- specs/` stage nothing. These are core/scripts/init-specs.sh:174, core/scripts/tests/test-init-specs.sh:243,245, core/scripts/tests/test-verify-deploy-context-budget.sh:274, core/scripts/tests/test-orchestrate-context-growth.sh:312, core/docs/architecture/orchestrate-state-machine.md:940.
+Verified current state: `--task` is passed only by the SCRIPTS (`orchestrate-cycle-postflight.sh`, `orchestrator-postflight.sh`, `git-commit-scoped.sh`'s own tests) and by `memory/skills/skill-learn/SKILL.md`. It is passed by NONE of the recipe sites -- `skills/skill-git-workflow/SKILL.md`, `commands/task.md`, `commands/todo.md`, `agents/meta-builder-agent.md`, `skills/skill-meta/SKILL.md`, `epidemiology/commands/epi.md`, `present/commands/grant.md`, `present/commands/slides.md`, `present/commands/timeline.md`.
 
-**Corrections to earlier reporting, verified:** `skill-orchestrate/SKILL.md` and `skill-fix-it/SKILL.md` were previously named as defective instances. They are NOT. skill-fix-it passes `-- specs/TODO.md specs/state.json` (compliant); skill-orchestrate's only `-- specs/` occurrence is the read-only residue check at SKILL.md:272. Likewise `cslib/commands/pr.md`, `founder/commands/project.md` and `context/standards/git-safety.md` all use explicit file lists and are compliant.
+So the mechanism did not fail; it was never consulted. This is the same systemic shape the worktree-isolation removal verdict already records about an absent `file_scope` ("The guard did not fail; it was never consulted"). That is the argument for auditing commit sites for the missing `--task`, and it survives Half 1's completion intact -- narrowing the pathspec reduced the blast radius of a collision but did nothing to make the lease run.
 
-== THE RULING PER SITE IS THE WORK ==
+Rule per site, do not blanket-add: a recipe that commits only its own task's artifacts may have nothing contended to claim, in which case `--task` is harmless but inert, and the honest ruling may be "add it for uniformity" or "document why it is unnecessary here". Decide with reasons.
 
-A blanket mechanical replacement is WRONG. Rule on each of the 9 staging sites individually:
-- `commands/todo.md`'s 7 sites are the genuinely interesting case: a `/todo` archival sweep moves task directories into `specs/archive/`, so it may legitimately touch a large, not-enumerable-in-advance set under `specs/`. The ruling there may be "enumerate from the archival manifest the command already computes" rather than "list two files", or may be a justified whole-directory exception WITH `--task` engaged. Decide and record the reasoning.
-- The other sites (`task.md`, `meta-builder-agent.md`, `skill-meta/SKILL.md`, `skill-git-workflow/SKILL.md`, and the four extension command files) create or update a bounded, knowable set — typically `specs/state.json`, `specs/TODO.md`, and the one task directory just written. These convert to explicit lists.
-- Record every ruling in `context/standards/git-staging-scope.md`, the documented home of the per-operation commit-scope contract, so the next author does not re-derive it.
+== ALSO IN SCOPE: THE SANCTIONED TASK-SCOPED CARVE-OUT ==
 
-== THE `--task` AUDIT ==
+The new lint deliberately EXEMPTS a task-scoped directory token (one carrying a `${...}` interpolation or an `{N}`/`{NNN}` placeholder, e.g. `specs/{padded}_{slug}/`) while flagging a shared one (`specs/`). That carve-out is not arbitrary: `context/standards/git-staging-scope.md` explicitly sanctions `specs/{padded}_{slug}/ "${ephemeral_excludes[@]}"` as the canonical per-operation scope, and without the carve-out the lint would flag roughly 25 sanctioned sites and be un-greenable.
 
-Audit of all `git-commit-scoped.sh` call sites across `agent-system/extensions/` (~130 files): only `scripts/orchestrate-cycle-postflight.sh` and `scripts/orchestrator-postflight.sh` pass `--task` in production (plus the script's own test suite, and `memory/skills/skill-learn/SKILL.md` once). Every other site omits it. `--task` fails open unconditionally and is byte-identical to omitting it for any path not listed in a manifest, so adding it is low-risk. Scope the audit's REMEDIATION to this task's own file_scope; for sites outside it, REPORT the finding rather than editing, and recommend a follow-up.
+The open question, recorded as a follow-up when the lint shipped: should those ~25 task-scoped-directory sites be narrowed to explicit file lists too? Arguments to weigh, not assume:
 
-== OBSERVED DAMAGE (verified, today) ==
+- A task-scoped directory pathspec still over-stages WITHIN one task's own directory, which is exactly how a concurrent in-place plan revision or a sibling's artifact write could be swept in.
+- But it is confined to one task's own territory, so the cross-session bleed that motivated Half 1 does not apply, and `git-commit-scoped.sh` already injects `:(exclude)` entries for the canonical ephemeral-runtime-file candidate set for exactly these directories.
 
-Commit `4dfe7af61` in this repo swept four files belonging to two other live sessions under a foreign task message and `Session:` trailer: `specs/292_task_count_reasoning_in_task_creation/.blocker-research.json`, `specs/293_add_hold_task_status_marker/.return-meta.json`, `specs/293_add_hold_task_status_marker/plans/01_hold-task-status-marker.md`, `specs/299_detect_plan_revision_during_implement/.return-meta.json`. It also recorded two foreign state transitions (292 `partial` -> `implementing`, 293 `implementing` -> `completed`). The owning session `sess_1790826658_06dbd3` (holding 293 and 292) was live in the registry with `heartbeat_at` ~7 minutes before the commit, and with `acquired_at: null`.
+Produce a ruling with reasons. "Leave the carve-out as-is, and record why" is a legitimate and possibly correct outcome -- but it must be argued from the exclude-injection behavior, not asserted.
 
-**No history rewrite.** No data was lost and no reference was left dangling; the cost is provenance smear in history. The repo has live writers. Do NOT propose or perform a history rewrite as part of this task.
+== CLOSE BY ==
 
-== BOUNDARY WITH TASK 277 ==
+Demonstrate that a `--task`-engaged recipe site actually refuses on a contended path (exit 3) rather than merely accepting the flag, so the wiring is proven live and not just present in the text.
 
-277 ("Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop", `not_started`) is adjacent but distinct: 277 concerns an UNMATCHED pathspec being silently dropped; this task concerns a DIRECTORY pathspec over-staging. 277's file_scope is exactly `scripts/git-commit-scoped.sh` and `scripts/tests/test-git-commit-scoped.sh`.
+All edits land under `agent-system/extensions/` per `.claude/rules/source-store-deploy-boundary.md`, never under `.claude/**`.
 
-This task's file_scope DELIBERATELY EXCLUDES both of those files, so the two do not collide and no serializing dependency edge is forced. If this task's research concludes that `git-commit-scoped.sh` should ADDITIONALLY refuse a bare directory pathspec outright (a V6-style gate alongside the existing V3 exclude-only refusal), that is a FINDING TO HAND TO 277 — write it into this task's report as a recommendation for 277 and do not widen this task's footprint to implement it.
-
-== DECLARED FILE_SCOPE OVERLAPS (not hidden; serializing edges declared) ==
-
-- `core/agents/meta-builder-agent.md` is also declared by 292 [implementing] and 300 [not_started]
-- `core/commands/task.md` is also declared by 292 [implementing] and 44 [planned]
-- `core/skills/skill-meta/SKILL.md` is also declared by 300 [not_started]
-- `core/commands/todo.md`'s other declarers (288, 51, 293) are all COMPLETED — no edge needed
-- `core/context/standards/git-staging-scope.md` and the four extension command files are unclaimed
-
-Hence `dependencies: [44, 292, 300]`. These files are the defect sites themselves; dropping them from file_scope to dodge the edges is not an option.
-
-== ACCEPTANCE ==
-
-1. `grep -rn -E -- '--[[:space:]]+specs/([[:space:]]|$|\\)' agent-system/extensions/` returns ONLY the 5 read-only query files from (b), plus any site whose whole-directory form this task explicitly ruled justified and documented.
-2. Every ruling recorded in `context/standards/git-staging-scope.md` with its reasoning.
-3. `scripts/lint/lint-scoped-commit-boundary.sh` still passes. Assess whether it can be extended to catch a bare directory pathspec mechanically (it already carries 8 references to the commit script) and RECORD that assessment as a recommendation — do NOT edit it here: `scripts/` is wholesale-declared by 270 [not_started], and this task's file_scope is deliberately all-`.md` so no `scripts/` edge is forced.
-4. `--task` added at each site in file_scope that commits a task-scoped path; sites outside file_scope reported, not edited.
-
-
-## NARROWED AT CREATION-TIME RECONCILIATION
-
-Three paths were REMOVED from this task's file_scope because task 309 now owns them exclusively: `skills/skill-git-workflow/SKILL.md` (line 216, the generic "Task Commit" recipe), `agents/meta-builder-agent.md` (line 1496, Stage 6), `skills/skill-meta/SKILL.md` (line 287, postflight commit block). Do NOT re-add them -- that would recreate the duplication this narrowing resolves, and would make both tasks edit the same three files without either knowing.
-
-WHY THE SPLIT, rather than abandoning 309 into this task: this task is blocked behind #44 [PLANNED] (which itself waits on #87/#149/#210), so it cannot run soon, while the three sites 309 owns are the live cross-session commit-bleed route that makes concurrent batching unsafe right now. 309 is unblocked and runs first.
-
-THIS TASK NOW DEPENDS ON 309, and its remaining scope is the SIX further defective staging sites plus the shared contract: `commands/todo.md` (7 sites), `commands/task.md` (2 sites), `extensions/epidemiology/commands/epi.md`, `extensions/present/commands/grant.md`, `extensions/present/commands/slides.md`, `extensions/present/commands/timeline.md`, and the per-site ruling record in `context/standards/git-staging-scope.md` -- together with the missing-`--task` audit (engaging the contended-path lease), which 309 does not cover at all and which remains this task's distinctive contribution.
-
-TWO ITEMS 309 ADDS that this task's acceptance criteria declined: (i) verifying whether `git-commit-scoped.sh`'s V5 per-path contention-claim check matches a DIRECTORY pathspec entry or slips past it; (ii) a regression check that no commit recipe in the source store passes a bare directory pathspec (this task's criterion 3 explicitly declines to edit `lint-scoped-commit-boundary.sh`, only recommending an assessment). Consume 309's findings on both rather than re-deriving them.
+SCOPE NOTE: none of the recipe files in `file_scope` is an orchestrator-critical path, so this task does NOT trip the self-modification admission gate -- keep it that way; do not widen `file_scope` to include `git-commit-scoped.sh` or any critical path. If the ruling requires a change to `git-commit-scoped.sh` itself, record it as a follow-up instead.
 
 ---
 
