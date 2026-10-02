@@ -1,7 +1,7 @@
 # Implementation Plan: Task #314
 
 - **Task**: 314 - Make the unconsumed-dispatch replay decide its dispatch_seq BEFORE the seq is minted and before the dispatch file is composed
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (deliberately; non-concurrency constraints only -- see Risks)
 - **Research Inputs**: specs/314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md

@@ -11,7 +11,7 @@ next_project_number: 316
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,294,295,296,297,299,300,306,309,311,314,315 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,277,279,280,284,285,294,295,296,297,299,300,306,309,311,315 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,277,282,284,285,300 | orchestrator |
@@ -59,7 +59,7 @@ next_project_number: 316
 ### Neovim
 
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
-294 [PLANNED] — Fix CLAUDE.md standards pointer paths to the nonexistent...
+294 [IMPLEMENTING] — Fix CLAUDE.md standards pointer paths to the nonexistent...
 295 [NOT STARTED] — Add desc field to 44 keymap.set calls missing documentation
 296 [NOT STARTED] — Repo hygiene: remove stale init.lua.backup, regenerate...
 
@@ -73,7 +73,7 @@ next_project_number: 316
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-277 [PLANNED] — Make an unresolvable pathspec a hard error in...
+277 [IMPLEMENTING] — Make an unresolvable pathspec a hard error in...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
 279 [PLANNED] — Reconcile state-schema.json with the live fields the...
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
@@ -85,7 +85,6 @@ next_project_number: 316
 309 [PLANNED] — Replace directory pathspecs with explicit file lists at the...
   └─ 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
-314 [PLANNED] — Decide the unconsumed-dispatch replay seq before the dispatch...
 315 [PLANNED] — Stop the cycle postflight reporting a status it did not...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
@@ -184,12 +183,13 @@ Six-to-eight live tasks contending on this single file is itself a signal worth 
 
 ### 314. Decide the unconsumed-dispatch replay seq before the dispatch file is composed, and assert file/state agreement
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md]
 - **Plan**: [314_replay_seq_decided_before_dispatch_compose/plans/01_replay-seq-hoist-mechanics.md]
+- **Summary**: [314_replay_seq_decided_before_dispatch_compose/summaries/01_replay-seq-hoist-mechanics-summary.md]
 
 **Description**: Make the unconsumed-dispatch replay decide its dispatch_seq BEFORE the seq is minted and before the dispatch file is composed, so exactly one seq is in play across the dispatch file, multi-state, the handoff and `.return-meta.json`. Today the replay branch retroactively rewrites the seq roughly 140 lines AFTER the file was already composed with the newly minted value, which defeats every downstream seq check and silently loses the status transition.
 
@@ -1251,7 +1251,7 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 294. Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
@@ -1868,7 +1868,7 @@ description.
 ---
 
 ### 277. Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None

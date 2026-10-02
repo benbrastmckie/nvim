@@ -191,7 +191,7 @@
     {
       "project_number": 277,
       "project_name": "git_commit_scoped_worktree_targeting",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Make an unresolvable pathspec a hard error in git-commit-scoped.sh instead of a silent WARN-and-drop",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/git-commit-scoped.sh (never .claude/**, a disposable deploy tree).\n\nNARROWED. This task originally had two parts: (a) let the caller target a dispatch worktree, and (b) make an unresolvable pathspec a hard error. Part (a) was DROPPED when per-dispatch worktree isolation was removed -- see specs/decisions/worktree-isolation-removal-verdict.md, whose task disposition table records this narrowing. There is no worktree to target, so there is nothing to retarget. What remains is part (b), which is a genuine defect in its own right and is NOT worktree-specific: it is the mechanism that converts any wrong-path invocation, present or future, into a false success.\n\nTHE DEFECT. git-commit-scoped.sh is the single sanctioned, mutex-serialized, path-scoped commit path used by every skill postflight. When a pathspec resolves to nothing, the script WARNs and DROPS it: \"git-commit-scoped.sh dropping unmatched pathspec '...' (no such file/directory on disk and not tracked by git); this path will NOT be part of the commit.\" A dropped pathspec is not an error and does not affect the exit status. If every pathspec drops, nothing stages, the script reaches \"NOTE: Nothing to commit or git commit failed (non-blocking)\" and returns SUCCESS. A caller sees a zero exit and no failure, and the work is simply not committed.\n\nWHY THIS STILL MATTERS WITH THE WORKTREE PATH GONE. The observed instance was a wrong-tree invocation, but the drop-and-continue posture is cause-agnostic: a typo'd path, a renamed artifact directory, a path built from an unset variable that expands to empty, or a future refactor that changes where artifacts land all degrade the same silent way. The historical evidence remains readable: during a multi-task orchestration in the BimodalLogic repository a dispatched agent hit this and fell back to a plain git commit with an explicit file list, producing a commit that LACKS its Co-Authored-By and Claude-Session trailers because the fallback path does not carry them. That missing-trailer commit is the durable fingerprint. Treat that repository as read-only evidence: land nothing there.\n\nTHE DECISION PLANNING MUST SETTLE -- THIS IS THE WHOLE DIFFICULTY, NOT A DETAIL. Existing main-tree callers may be relying, knowingly or not, on drop-and-continue for pathspecs that legitimately do not exist yet: a postflight passing specs/ plus an artifact path that its phase did not produce is the canonical shape. Making the drop unconditionally fatal would break those callers. AUDIT EVERY CALL SITE FIRST, then choose between:\n  (a) distinguish \"pathspec matched nothing but its parent directory exists\" (tolerable -- an artifact a phase legitimately did not write) from \"pathspec is outside the repository or its parent does not exist\" (a hard error, because no legitimate caller can produce it);\n  (b) require callers to mark optional pathspecs explicitly, so an unmarked drop becomes fatal and the tolerated case is declared rather than inferred;\n  (c) make it fatal only when EVERY pathspec dropped, since the false-success failure mode requires a wholly empty stage.\nRank these on how small and auditable the refusal surface is, and pin whichever is chosen as an explicit assertion so it cannot regress.\n\nHARD CONSTRAINT. This script is the sanctioned commit path for every ordinary skill postflight. The fix MUST NOT change its behavior for a caller whose pathspecs all resolve.\n\nTESTS. agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh already exists. Add cases for: (i) the chosen posture, pinned as an explicit assertion; (ii) a wholly-empty stage caused by every pathspec dropping no longer returning success; (iii) an existing legitimate partial-drop caller continuing to succeed, whichever option is chosen. Note that test-lint-scoped-commit-boundary.sh also constrains this script's boundary -- check it still passes.\n\nFILE FOOTPRINT / COORDINATION NOTES: git-commit-scoped.sh appears in no other active task's declared file_scope. The consent-gated-push work concerns the adjacent push path and mentions this script in prose only; no edge declared. The dependency edge on the Move 2 isolation-forwarding contract task was dropped together with part (a) -- it existed only because worktree targeting had to wait for that contract.",
@@ -214,7 +214,7 @@
           "summary": "4-phase plan implementing corrected option (c): a dropped-pathspec ledger plus a new V6 refusal gate (exit 4) in git-commit-scoped.sh, with constraint-pinning tests landed before the script change and the caller-escalation scope decision recorded explicitly."
         }
       ],
-      "last_updated": "2026-10-02T13:36:03Z",
+      "last_updated": "2026-10-02T13:36:37Z",
       "session_id": "sess_1790947016_5ff368",
       "next_artifact_number": 2
     },
@@ -984,7 +984,7 @@
     {
       "project_number": 294,
       "project_name": "fix_claude_md_standards_pointer_paths_to",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "neovim",
       "priority": "high",
@@ -994,7 +994,7 @@
       "file_scope": [
         "CLAUDE.md"
       ],
-      "last_updated": "2026-10-02T13:36:17Z",
+      "last_updated": "2026-10-02T13:36:42Z",
       "session_id": "sess_1790947016_5ff368",
       "artifacts": [
         {
@@ -1290,7 +1290,7 @@
     {
       "project_number": 314,
       "project_name": "replay_seq_decided_before_dispatch_compose",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "priority": "high",
@@ -1316,11 +1316,17 @@
           "path": "specs/314_replay_seq_decided_before_dispatch_compose/plans/01_replay-seq-hoist-mechanics.md",
           "type": "plan",
           "summary": "6-phase, 5-hour plan: RED-first Group 19 extension, hoist the replay seq decision above the mint, post-compose Identity consistency assertion, green gates, argued correction, deploy."
+        },
+        {
+          "path": "specs/314_replay_seq_decided_before_dispatch_compose/summaries/01_replay-seq-hoist-mechanics-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the replay-seq-decided-before-dispatch-compose fix: hoist, post-compose assertion, Group 19 extension, deploy."
         }
       ],
-      "last_updated": "2026-10-02T13:35:49Z",
+      "last_updated": "2026-10-02T14:37:34Z",
       "session_id": "sess_1790947016_5ff368",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Hoisted the unconsumed-dispatch replay decision above the dispatch_seq mint and orchestrate-build-dispatch.sh compose call so exactly one seq is ever in play per row, added a post-compose Identity-vs-state consistency assertion as a loud backstop, and extended Group 19 of test-orchestrate-cycle-plan.sh with a four-leg seq-agreement check that reads the composed dispatch file directly -- closing the data-loss path where a correct, completed plan dispatch left state.json stuck at planning with plan_path null."
     },
     {
       "project_number": 315,
