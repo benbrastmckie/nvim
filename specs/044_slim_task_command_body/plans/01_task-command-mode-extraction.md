@@ -387,23 +387,31 @@ measured map before deleting.
 
 ---
 
-### Phase 6: Cross-Reference Micro-Fixes and Editor-Guard Note [NOT STARTED]
+### Phase 6: Cross-Reference Micro-Fixes and Editor-Guard Note [COMPLETED]
 
 **Goal**: Make the two now-relocated `Create Task jq pattern` references self-explanatory to a
 reader who opened only the extracted file, and record the implicit dependency that keeps them
 resolvable.
 
 **Tasks**:
-- [ ] In `task-expand-mode.md` (from the former line ~428) and `task-review-mode.md` (from the
+- [x] In `task-expand-mode.md` (from the former line ~428) and `task-review-mode.md` (from the
       former line ~809), change the bare phrase `the Create Task jq pattern` to a fully qualified
       form naming both the file and the section, e.g. "the Create Task Mode jq pattern in
-      `.claude/commands/task.md`'s Create Task Mode section".
-- [ ] Add a short editor-guard note immediately under `## Create Task Mode (Default)` in
+      `.claude/commands/task.md`'s Create Task Mode section". *(completed)*
+- [x] Add a short editor-guard note immediately under `## Create Task Mode (Default)` in
       `task.md` recording that this mode is deliberately kept inline, and that the extracted
       Expand/Review mode files reference its jq pattern by name — so pointer-izing it later
-      requires repointing those references first.
-- [ ] Confirm no other bare cross-mode reference survives: grep the five mode files for mentions
-      of other modes by name and qualify any that are ambiguous when read standalone.
+      requires repointing those references first. *(completed)*
+- [x] Confirm no other bare cross-mode reference survives: grep the five mode files for mentions
+      of other modes by name and qualify any that are ambiguous when read standalone. *(completed:
+      found and fixed two additional stale positional references not named in this task's own
+      wording — `task-review-mode.md` said "Sync Mode above" and `task-recover-mode.md` said
+      "Sync Mode below", both leftover from when all modes shared one file; qualified both to
+      `Sync Mode (context/patterns/task-sync-mode.md)`. Also found and fixed one in `task.md`
+      itself: Create Task Mode step 6 said "Sync Mode below", stale for the same reason since
+      Sync Mode no longer follows it in the same document; qualified to the deployed path. All
+      other `above`/`below` occurrences in the five files and in `task.md` are self-contained
+      within the same section and remain accurate.)*
 
 **Timing**: 0.5 hours
 

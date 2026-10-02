@@ -43,6 +43,11 @@ Check $ARGUMENTS for flags:
 
 ## Create Task Mode (Default)
 
+**Editor guard**: this mode is deliberately kept inline — it is the default, highest-frequency
+invocation shape, and pointer-izing it would penalize the common case. `task-expand-mode.md` and
+`task-review-mode.md` (both extracted to `context/patterns/`) reference its jq pattern by name;
+extracting this mode later requires repointing those two references first.
+
 When $ARGUMENTS contains a description (no flags).
 
 **Directory Naming**: When artifacts are created, directories use 3-digit zero-padded task numbers (e.g., `015_task_name`). The padding is applied by artifact-writing agents using `printf "%03d" $task_num`. TODO.md and state.json use unpadded task numbers for readability.
@@ -157,7 +162,8 @@ When $ARGUMENTS contains a description (no flags).
 
 6. **Update state.json** (via `state-write.sh`). Create Task mode has no `session_id` of its
    own (no `command-gate-in.sh` call — the task does not exist yet), so generate one once,
-   following the same self-generating fallback used by Sync Mode below:
+   following the same self-generating fallback used by Sync Mode
+   (`.claude/context/patterns/task-sync-mode.md`):
    ```bash
    source .claude/scripts/lib/common.sh
    session_id="$(common_session_id)"

@@ -27,7 +27,7 @@ fi
 
 # Review Mode does not source command-gate-in.sh, so it has no session_id of its own --
 # generate one once for the whole review run, following the same self-generating fallback
-# used by Sync Mode above.
+# used by Sync Mode (context/patterns/task-sync-mode.md).
 source .claude/scripts/lib/common.sh
 session_id="$(common_session_id)"
 
@@ -245,7 +245,8 @@ AskUserQuestion:
 
 ### Step 8: Create Selected Follow-up Tasks
 
-For each selected task, use the Create Task jq pattern:
+For each selected task, use the Create Task Mode jq pattern in `.claude/commands/task.md`'s
+Create Task Mode section:
 
 ```bash
 # Get next task number

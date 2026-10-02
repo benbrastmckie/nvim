@@ -60,7 +60,8 @@ Parse task number and optional prompt:
    - If user selects an existing topic → `parent_topic="$selected"`
    - If user selects "New topic..." → free-text follow-up, capture as `parent_topic`
 
-3. **Create subtasks** using the Create Task jq pattern for each, inheriting parent topic. The
+3. **Create subtasks** using the Create Task Mode jq pattern in `.claude/commands/task.md`'s
+   Create Task Mode section for each, inheriting parent topic. The
    subtask count is a consequence of Step 2's divide-reason test, not an independently chosen
    number: create one subtask per part that Step 2 justified splitting out. In practice this is
    usually 2-5 subtasks, but that range is an expected outcome, not a target — a task for which

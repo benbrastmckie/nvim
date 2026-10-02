@@ -16,7 +16,8 @@ Parse task ranges after --recover (e.g., "343-345", "337, 343"):
 
 Recover Mode does not source `command-gate-in.sh` either (the task is being restored, not
 looked up in `active_projects`), so it has no `session_id` of its own — generate one once for
-the whole recover run, following the same self-generating fallback used by Sync Mode below:
+the whole recover run, following the same self-generating fallback used by Sync Mode
+(`context/patterns/task-sync-mode.md`):
 ```bash
 source .claude/scripts/lib/common.sh
 session_id="$(common_session_id)"
