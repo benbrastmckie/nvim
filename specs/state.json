@@ -1023,12 +1023,12 @@
   ],
   "completed_projects": [],
   "repository_health": {
-    "last_assessed": "2026-10-02T21:12:32Z",
+    "last_assessed": "2026-10-02T21:13:37Z",
     "todo_count": 44,
     "fixme_count": 2,
     "build_errors": 0,
     "status": "healthy",
-    "phantom_paths": 109
+    "phantom_paths": 0
   },
   "memory_health": {
     "last_distilled": "2026-09-18T22:55:46Z",
