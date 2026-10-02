@@ -515,13 +515,13 @@ new surfacing fields.
 
 ---
 
-### Phase 8: decisions of record in `zotero-integration.md` [NOT STARTED]
+### Phase 8: decisions of record in `zotero-integration.md` [COMPLETED]
 
 **Goal**: Record the two decisions the task asks for as durable, reasoned entries in the domain doc.
 
 **Tasks**:
 
-- [ ] Add a "Zotero MCP: adoption decision" section recording **defer**, with the reasons: the
+- [x] Add a "Zotero MCP: adoption decision" section recording **defer**, with the reasons: the
       candidate's write value-add duplicates this extension's own discovery/ingest cascade and would
       bypass its dedup guard and index patching; its unique value (semantic search) is read-side
       only; the one owned write surface is not yet hardened; Zotero 10's native local writes may
@@ -529,8 +529,8 @@ new surfacing fields.
       and not registered), state the two reversal triggers (Zotero 10 stabilizes and the swap plan
       executes; or a genuine read-side semantic-search need arises), and state that registration and
       grants would land in the user's `~/.dotfiles` Claude configuration under the
-      grant-at-registration-scope principle — never hand-edited here.
-- [ ] Add a "Backend Swap Plan (Zotero 10)" section naming `zotero-write.sh` as the sole
+      grant-at-registration-scope principle — never hand-edited here. *(completed)*
+- [x] Add a "Backend Swap Plan (Zotero 10)" section naming `zotero-write.sh` as the sole
       choke-point. Specify what changes **internally**: a backend-selection step after the existing
       `zot`-installed and API-key checks, detecting `localhost:23119/api/` reachability plus a
       consent-obtained local API key, routing the write operations through local-API calls when
@@ -538,19 +538,19 @@ new surfacing fields.
       count against the storage quota. Specify what stays **constant for callers**: operation names,
       argument shapes, the 0/1/2 exit-code table, `--dry-run`/`--idempotency-key` semantics, and the
       stdout-envelope contract (including `item-add-json`'s normalization, which the local-API path
-      must also produce).
-- [ ] Record the explicit rejection of `/connector/saveItems` as a write contract, with reasons:
+      must also produce). *(completed)*
+- [x] Record the explicit rejection of `/connector/saveItems` as a write contract, with reasons:
       undocumented internal protocol, writes into whatever collection is selected in the UI (a
-      caller-uncontrollable side channel), and historical drift between versions.
-- [ ] State plainly that the swap is **not implemented** — Zotero 10 is beta, and the local-API
+      caller-uncontrollable side channel), and historical drift between versions. *(completed)*
+- [x] State plainly that the swap is **not implemented** — Zotero 10 is beta, and the local-API
       response field names are unconfirmed, which is why the defensive multi-candidate envelope
-      lookup extends naturally rather than being rewritten.
-- [ ] Add the explicit auto-attach policy statement (`ZOTERO_AUTO_ATTACH` values, the reactive
+      lookup extends naturally rather than being rewritten. *(completed)*
+- [x] Add the explicit auto-attach policy statement (`ZOTERO_AUTO_ATTACH` values, the reactive
       cache, the operator override, the 24h staleness bound) and note that the quota gate becomes
-      inert — not removed — once a local-API backend is active.
-- [ ] Add a one-line mention of `zot duplicates --by doi|title|both` in the "Related" area as an
+      inert — not removed — once a local-API backend is active. *(completed)*
+- [x] Add a one-line mention of `zot duplicates --by doi|title|both` in the "Related" area as an
       operator-facing whole-library dedup sweep, explicitly distinct from the ingest bridge's own
-      pre-write check, with the same local-SQLite sync-lag caveat.
+      pre-write check, with the same local-SQLite sync-lag caveat. *(completed)*
 
 **Timing**: 1 hour
 

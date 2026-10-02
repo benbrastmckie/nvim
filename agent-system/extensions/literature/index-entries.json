@@ -308,8 +308,8 @@
         "setup",
         "export"
       ],
-      "summary": "Zotero integration overview: the CSL-JSON export search path vs the zot CLI direct path, the Better BibTeX keep-updated export setup, and which consumers depend on each",
-      "line_count": 41,
+      "summary": "Zotero integration overview: the CSL-JSON export search path vs the zot CLI direct path, the Better BibTeX keep-updated export setup, which consumers depend on each, the zotero-mcp adoption defer decision, and the Zotero 10 backend-swap plan",
+      "line_count": 153,
       "load_when": {
         "agents": [
           "literature-agent",
