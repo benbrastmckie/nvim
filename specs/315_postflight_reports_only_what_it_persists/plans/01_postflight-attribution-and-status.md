@@ -1,7 +1,7 @@
 # Implementation Plan: Task #315
 
 - **Task**: 315 - Stop `orchestrate-cycle-postflight.sh` reporting an outcome it did not persist, and make its `HANDOFF_STALE_OR_ABSENT` attribution depend on the DIRECTION of a dispatch_seq mismatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None (deliberately — see Non-Concurrency Constraints below; eight live tasks share this file but none shares a region)
 - **Research Inputs**: `specs/315_postflight_reports_only_what_it_persists/reports/01_postflight-attribution-and-status.md`
