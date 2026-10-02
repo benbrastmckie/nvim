@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 15,
-  "summary": "Created a 3-phase relocate-and-trim plan (option (a), per research) bringing agent-system/extensions/core/skills/skill-orchestrate/SKILL.md from 20930 B under its 20000 B gate-20 ceiling via two canonicality inversions plus one wording tightening (1075 B total, 145 B margin), with no contract content deleted.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 19,
+  "summary": "Trimmed agent-system/extensions/core/skills/skill-orchestrate/SKILL.md from 20930 B to 19855 B across 3 phases (invert .status/.persisted_status canonicality into orchestrate-state-machine.md, collapse two MUST NOT section bodies to pointers, gate close-out). verify-deploy.sh gate 20 PASSES (19855 B within the 20000 B ceiling); test-verify-deploy-context-budget.sh passes (15/15); lint-postflight-boundary.sh passes. Full verify-deploy.sh shows 33/34 checks pass -- the one failure (Gate 8, shell test suite) traces to 4 pre-existing/unrelated suite failures (3 self-reported EXPECTED by run-all.sh, 1 caused by an already-dirty typst-element-lint.sh modification present before this dispatch began), none touching either edited file. No contract content was lost: every removed SKILL.md sentence is relocated in equivalent or greater force, audited in the summary.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/summaries/01_trim-skill-orchestrate-gate20-summary.md",
+      "summary": "Implementation summary: 3-phase trim of SKILL.md under gate 20, with no-content-lost audit table and full verification log."
+    },
     {
       "type": "plan",
       "path": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/plans/01_trim-skill-orchestrate-gate20.md",
-      "summary": "3-phase plan: invert .status/.persisted_status canonicality into orchestrate-state-machine.md, collapse the two MUST NOT section bodies to pointers, then full gate close-out and deploy mirror sync."
+      "summary": "3-phase plan, all phases now [COMPLETED] with task checkboxes annotated."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 3,
   "phases_total": 3,
   "blockers": []
 }

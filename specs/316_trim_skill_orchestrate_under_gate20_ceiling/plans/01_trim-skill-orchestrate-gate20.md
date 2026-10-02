@@ -225,7 +225,7 @@ else's problem).
 
 ---
 
-### Phase 3: Gate Close-Out and Deploy Mirror Sync [IN PROGRESS]
+### Phase 3: Gate Close-Out and Deploy Mirror Sync [COMPLETED]
 
 **Goal**: Confirm gate 20 PASSES with the trimmed file, the context-budget test still passes, no
 contract statement was lost, and the deployed `.claude/` mirror matches the source store.
@@ -234,19 +234,45 @@ contract statement was lost, and the deployed `.claude/` mirror matches the sour
 - [x] Run `ORCHESTRATOR_BUDGET_GATE_MODE=hard bash .claude/scripts/verify-deploy.sh --only-gate 20`
       and confirm `skills/skill-orchestrate/SKILL.md` reports `within ceiling`
       *(completed: `[PASS] skills/skill-orchestrate/SKILL.md (19855 B) within ceiling (20000 B)`)*
-- [ ] Run the full `bash .claude/scripts/verify-deploy.sh` and confirm no gate regressed —
+- [x] Run the full `bash .claude/scripts/verify-deploy.sh` and confirm no gate regressed —
       distinguishing any pre-existing unrelated failure from one this task introduced, and
-      recording that distinction explicitly
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
-      and confirm it passes
-- [ ] Sync the deployed mirror of both edited files via the normal deploy workflow; confirm
+      recording that distinction explicitly *(completed: 33 of 34 checks pass; Gate 8 (shell
+      test suite) shows 4 failing suites — `test-gate-out-repair-reporting.sh`,
+      `test-lint-json-channel-discipline.sh`, and `test-run-all-parallel.sh` are self-reported
+      `(EXPECTED)` by `run-all.sh`'s own summary line; `test-typst-element-lint.sh` is reported
+      `(NEW)` but its failure traces to a pre-existing, already-uncommitted modification to
+      `agent-system/extensions/typst/scripts/typst-element-lint.sh` present in the working tree
+      before this dispatch began — `git status --porcelain` confirms it is the only non-task-316
+      dirty file in that area and neither of this task's two edited files
+      (`skill-orchestrate/SKILL.md`, `orchestrate-state-machine.md`) appear in Gate 8's failure
+      set. No gate this task could plausibly affect regressed.)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`
+      and confirm it passes *(completed: 15 passed, 0 failed)*
+- [x] Sync the deployed mirror of both edited files via the normal deploy workflow; confirm
       `wc -c` agrees between `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` and
-      `.claude/skills/skill-orchestrate/SKILL.md`
-- [ ] Produce the no-content-lost audit: for every sentence removed from SKILL.md across Phases 1
+      `.claude/skills/skill-orchestrate/SKILL.md` *(completed: both copies already in sync —
+      SKILL.md 19855 B / 19855 B; `orchestrate-state-machine.md` 82409 B / 82409 B, confirmed
+      byte-identical via `diff`. No sync action was required; Phases 1-2's own commits already
+      landed with matching mirrors.)*
+- [x] Produce the no-content-lost audit: for every sentence removed from SKILL.md across Phases 1
       and 2, name the file and section where it now lives, in equivalent or greater force
-- [ ] Re-run `ORCHESTRATOR_BUDGET_GATE_MODE=hard ... --only-gate 20` once more after the mirror
-      sync, to confirm the sync did not perturb the measured file
-- [ ] Commit the close-out with scoped staging
+      *(completed — see audit below)*
+- [x] Re-run `ORCHESTRATOR_BUDGET_GATE_MODE=hard ... --only-gate 20` once more after the mirror
+      sync, to confirm the sync did not perturb the measured file *(completed: PASS,
+      SKILL.md 19855 B within the 20000 B ceiling, unchanged)*
+- [x] Commit the close-out with scoped staging *(completed)*
+
+**No-Content-Lost Audit**:
+
+| Removed from SKILL.md (Phase) | Relocated to | Verified present |
+|---|---|---|
+| `.status` vs `.persisted_status` full contract (self-report framing, loop-control `$verdict`/`$halt`/`$infra_exempt_cycle` distinction, empty-blocker `partial` example, "documented behavior, not a defect") — Phase 1 | `docs/architecture/orchestrate-state-machine.md`'s `## Context Flatness Guarantee` section | Yes — expanded paragraph carries every clause verbatim or in equivalent force, plus the inverted closing sentence naming SKILL.md's pointer |
+| `## MUST NOT (Postflight Boundary)` body: 5 prohibited operations (edit source, run build/test, use MCP/WebSearch/domain tools, analyze/grep source, write reports/plans/summaries) and the D4 verbatim-recovery exception — Phase 2 | `docs/architecture/handoff-schema.md`'s `## Postflight Boundary` section | Yes — all 5 numbered operations and the named D4 exception (verbatim-write + `orchestrate-recover-message-findings.sh`) are present, in greater detail than the original |
+| `## MUST NOT (Context Flatness Constraint)` body: artifact-read prohibition (`reports/*.md`, `plans/*.md`, `summaries/*.md`, `handoffs/*.md`), `orchestrate-cycle-postflight.sh` attribution, 871 B/cycle/task figure — Phase 2 | `docs/architecture/orchestrate-cycle-postflight.md` and `orchestrate-state-machine.md`'s `## Context Flatness Guarantee` (already-existing targets, unmodified by this task) | Yes — tightened SKILL.md wording retains the prohibition list, the script attribution, and the 871 B figure inline; full accounting unchanged at its existing home |
+
+Heading survival checked separately: `## MUST NOT (Postflight Boundary)` remains byte-identical
+(confirmed via `lint-postflight-boundary.sh` full-corpus pass, both standalone and inside the
+full `verify-deploy.sh` run).
 
 **Timing**: 0.5 hours
 
@@ -273,16 +299,21 @@ contract statement was lost, and the deployed `.claude/` mirror matches the sour
 
 ## Testing & Validation
 
-- [ ] `ORCHESTRATOR_BUDGET_GATE_MODE=hard bash .claude/scripts/verify-deploy.sh --only-gate 20` —
-      gate 20 PASSES, SKILL.md within its 20000 B ceiling
-- [ ] `bash .claude/scripts/verify-deploy.sh` — no gate regressed
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` — passes
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh` — passes
-      (heading preserved)
-- [ ] Every sentence removed from SKILL.md is locatable, in equivalent force, at the path
-      SKILL.md now points to
-- [ ] Every pointer added to SKILL.md cites a heading that exists verbatim in its target file
-- [ ] No edit landed under `.claude/**` by hand; only the deploy workflow wrote there
+- [x] `ORCHESTRATOR_BUDGET_GATE_MODE=hard bash .claude/scripts/verify-deploy.sh --only-gate 20` —
+      gate 20 PASSES, SKILL.md within its 20000 B ceiling *(completed: PASS, 19855 B)*
+- [x] `bash .claude/scripts/verify-deploy.sh` — no gate regressed *(completed: 33/34 pass; the
+      one failing gate's 4 failing suites are pre-existing/unrelated — see Phase 3 audit)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` — passes
+      *(completed: 15 passed, 0 failed)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh` — passes
+      (heading preserved) *(completed: 0 violations, full corpus)*
+- [x] Every sentence removed from SKILL.md is locatable, in equivalent force, at the path
+      SKILL.md now points to *(completed: see Phase 3 no-content-lost audit table)*
+- [x] Every pointer added to SKILL.md cites a heading that exists verbatim in its target file
+      *(completed: `## Context Flatness Guarantee`, `## Postflight Boundary` both confirmed)*
+- [x] No edit landed under `.claude/**` by hand; only the deploy workflow wrote there
+      *(completed: all edits under `agent-system/extensions/core/`; `.claude/` mirror already
+      matched byte-for-byte, no hand-edit made there)*
 
 ## Artifacts & Outputs
 
