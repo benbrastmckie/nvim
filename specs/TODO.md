@@ -11,8 +11,8 @@ next_project_number: 316
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,295,296,297,299,300,306,309,311,315 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306,309 | core-agent-system, extensions, orchestrator |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,268,270,272,279,280,284,285,295,296,297,299,300,306,311 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,185,250,251,271,275,281,298,302,307,308 | 22,44,127,184,241,265,272,279,280,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,282,284,285,300 | orchestrator |
 
@@ -79,17 +79,15 @@ next_project_number: 316
       └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
-309 [IMPLEMENTING] — Replace directory pathspecs with explicit file lists at the...
-  └─ 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
-315 [IMPLEMENTING] — Stop the cycle postflight reporting a status it did not...
+302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
 
 ### 315. Stop the cycle postflight reporting a status it did not persist, and attribute a seq mismatch by direction
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -440,7 +438,7 @@ A task-creation attempt that duplicates, subsumes or is subsumed by an open task
 
 ### 309. Replace directory pathspecs with explicit file lists at the three task-commit sites
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None

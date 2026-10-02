@@ -1,7 +1,7 @@
 # Implementation Plan: Replace directory pathspecs with explicit file lists
 
 - **Task**: 309 - Replace directory pathspecs with explicit file lists at the three task-commit sites
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md
