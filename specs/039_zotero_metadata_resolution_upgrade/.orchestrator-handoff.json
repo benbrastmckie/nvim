@@ -1,16 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Created a 9-phase implementation plan covering all four work items. Core finding driving the shape: translation-server integration needs a NEW zotero-write.sh operation (item-add-json) because zot add has no JSON-body option (reconfirmed live at plan time), so Work Item 1 is capability work, not wiring. Phases 1-2 add item-add-json and an orphan-clean wrapper around zot orphans clean; phases 3-6 add the translation-server resolution helper, rework the resolvable branch to create-then-attach, add an explicit quota-aware auto-attach policy with a reactive 413-parsed cache, and surface resolution_path/attachment_state in the corpus index; phases 7-8 write the docs including the zotero-mcp defer decision and the plan-only Zotero 10 backend-swap plan; phase 9 runs static gates and puts three genuinely gated actions (cross-repo translation-server enable/test, a live production write, orphan cleanup) to the operator with stated decline paths. All edits target agent-system/extensions/literature/**; nothing touches .claude/** or ~/.dotfiles.",
+  "status": "implemented",
+  "dispatch_seq": 25,
+  "phase": "implement",
+  "summary": "Completed all 9 implementation phases. zotero-write.sh gained item-add-json (POSTs the Zotero Web API directly, the one exception to its pure zot-wrapper posture, with envelope normalization to the existing {ok,data:{key}} shape) and orphan-clean (thin wrapper around zot orphans clean --yes). literature-ingest-online.sh gained a translation-server resolution helper (POST /search, 5s-timeout graceful degradation, /web deliberately unwired), a create-then-attach decomposition on the resolvable path with the atomic item-add --pdf fallback kept unchanged, a new ONLINE_INGEST_INGESTED_NO_ATTACHMENT directive token for the partial-success surface, an explicit quota-aware auto-attach policy (ZOTERO_AUTO_ATTACH, a reactive specs/zotero-index.json quota_state cache, operator override, 24h staleness), and resolution_path/attachment_state provenance surfaced onto every corpus-index entry. Docs updated: zotero-item-creation.md (item-add-json + orphan-clean sections), zotero-integration.md (zotero-mcp defer decision with reversal triggers, Zotero 10 backend-swap plan naming zotero-write.sh as the sole choke-point and rejecting /connector/saveItems, the auto-attach policy statement), zotero-scripts.md, README.md. All three Phase 9 live-verification gates (translation-server cross-repo enable/test, a live production write, real orphan-clean) were declined with their decline-path records in place -- no interactive operator is present in this autonomous /orchestrate dispatch to grant the explicit authorization each gate requires. Every edit landed under agent-system/extensions/literature/**; .claude/** and ~/.dotfiles untouched throughout.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/039_zotero_metadata_resolution_upgrade/plans/02_zotero-metadata-resolution.md",
-      "summary": "9-phase plan: item-add-json and orphan-clean write operations, translation-server metadata resolution with graceful degradation, quota-aware auto-attach policy, resolution-path surfacing, MCP defer decision, plan-only Zotero 10 swap plan, and three gated live-verification proposals with decline paths."
+      "summary": "9-phase plan, all phases marked [COMPLETED] with per-task annotations and a verified Testing & Validation checklist."
+    },
+    {
+      "type": "summary",
+      "path": "specs/039_zotero_metadata_resolution_upgrade/summaries/02_zotero-metadata-resolution-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, verification evidence, impacts, and follow-ups (redeploy + the three declined gates)."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 9,
   "phases_total": 9,
   "blockers": [],
-  "next_action_hint": "Run /implement 39. Wave 1 is phases 1 and 3 (disjoint files: zotero-write.sh and literature-ingest-online.sh); effort is ~10 hours, above the task description's superseded 3-6 hour estimate."
+  "next_action_hint": "Task is implementation-complete. Remaining items are operator-only follow-ups, not blockers: (1) redeploy the literature extension to sync .claude/scripts/literature-ingest-online.sh with these source changes (zotero-write.sh's deployed copy already matches), (2) optionally exercise the three declined Phase 9 gates (translation-server cross-repo enable/test, a live production item-add-json write, a real orphan-clean run) when an operator is available to authorize them."
 }
