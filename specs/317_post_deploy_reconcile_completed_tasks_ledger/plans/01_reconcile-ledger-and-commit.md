@@ -249,33 +249,38 @@ beyond the pre-existing `//= []` default and any pre-existing reads.
 
 ---
 
-### Phase 3: Issue the promotion's own scoped commit [NOT STARTED]
+### Phase 3: Issue the promotion's own scoped commit [COMPLETED]
 
 **Goal**: The promotion commits its own `state.json`/`TODO.md` transition before the all-terminal
 check can exit, turning Phase 1's assertions (ii) and (iii) GREEN — closing the defect where the
 durable git record contradicts `state.json`.
 
 **Tasks**:
-- [ ] In the same promotion loop, immediately after the `.completed_tasks` append (same iteration,
+- [x] In the same promotion loop, immediately after the `.completed_tasks` append (same iteration,
       inside the `_pdr_outcome = "promoted"` path), call `git-commit-scoped.sh` mirroring
       `orchestrate-cycle-postflight.sh:1392`'s call shape minus the task-directory entry:
       `--message "task ${_pdr_t}: complete implementation (post-deploy reconcile)"`,
       `--session "$session_id"`, `--task "$_pdr_t"`, then `--` followed by an EXPLICIT two-entry
-      pathspec: `"$STATE_FILE"` and `"$(dirname "$STATE_FILE")/TODO.md"`.
-- [ ] Use an explicit file list, never a directory or glob pathspec, per
-      `.claude/context/standards/git-staging-scope.md`'s directory-pathspec rule.
-- [ ] Make a non-zero exit NON-BLOCKING: `|| echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: ..."
+      pathspec: `"$STATE_FILE"` and `"$(dirname "$STATE_FILE")/TODO.md"`. *(completed)*
+- [x] Use an explicit file list, never a directory or glob pathspec, per
+      `.claude/context/standards/git-staging-scope.md`'s directory-pathspec rule. *(completed)*
+- [x] Make a non-zero exit NON-BLOCKING: `|| echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: ..."
       >&2`, naming the task and that the `completed` status is on disk but left uncommitted for a
       later commit to pick up. Continue the loop for remaining tasks. This matches this file's own
       existing `REDEPLOY CHECKPOINT WARNING` idiom (lines 922, 928, 984) and postflight's
-      non-blocking commit-failure posture.
-- [ ] Route `git-commit-scoped.sh`'s stdout away from this script's own stdout contract. Confirm how
+      non-blocking commit-failure posture. *(completed)*
+- [x] Route `git-commit-scoped.sh`'s stdout away from this script's own stdout contract. Confirm how
       this script's stdout is structured before choosing: if the entry point already has a
       `exec 3>&1 1>&2`-style diagnostic redirect in force at this point (as postflight does, which
       is why its own call site needs no `>&2`), no per-call redirect is needed; otherwise add an
       explicit `>&2`. Verify by checking the SUT's stdout is still exactly one parseable JSON object
-      in the regression arm.
-- [ ] Re-run Phase 1's arm: assertions (ii) HEAD advanced and (iii) no residue both GREEN.
+      in the regression arm. *(completed: `exec 3>&1 1>&2` already in force at line 266, well
+      before the promotion loop — no per-call redirect added. Confirmed via a temporary debug
+      probe in the regression arm: SUT stdout is exactly one parseable JSON object,
+      `{"cycle":0,"dispatch":[],...,"stop":{"reason":"all_terminal",...}}`, and the commit
+      subject reads exactly `task 9207: complete implementation (post-deploy reconcile)`)*
+- [x] Re-run Phase 1's arm: assertions (ii) HEAD advanced and (iii) no residue both GREEN.
+      *(completed: 340 passed, 0 failed — all five Arm F assertions GREEN)*
 
 **Timing**: 1 hour
 

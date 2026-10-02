@@ -1155,6 +1155,32 @@ if [ "$dry_run" != "true" ] && [ "$post_deploy_reconcile_json" != "[]" ]; then
       # for `refused`/`no-op`, nor for the `-> researched`/`-> planned` promotions the `grep -q
       # "promoted .* -> completed"` check above already excludes.
       mt_set --argjson t "$_pdr_t" '.completed_tasks = ((.completed_tasks // []) + [$t] | unique)'
+      # This promotion's own scoped commit. This is the LAST point this cycle can commit the
+      # transition: the all-terminal check further down can emit_and_exit this SAME invocation
+      # with no intervening dispatch and therefore no intervening postflight to commit it for us.
+      # Without this, `specs/state.json` reads `completed` while the durable git record still
+      # says "orchestration paused" from whichever cycle's postflight ran last -- a committed
+      # record that CONTRADICTS the state it is supposed to reflect.
+      #
+      # Explicit two-entry pathspec only (never a directory/glob pathspec, per
+      # context/standards/git-staging-scope.md): reconcile-task-status.sh's own link_artifact
+      # writes ONLY $STATE_FILE and regenerates TODO.md via generate-todo.sh -- the task
+      # directory's own deliverable was already committed by the earlier "orchestration paused"
+      # commit, so it has nothing left to stage here.
+      #
+      # No per-call-site `>&2`: git-commit-scoped.sh prints its own commit summary to stdout,
+      # but the entry-point `exec 3>&1 1>&2` redirect (near the top of this script) already
+      # routes fd 1 to the diagnostic stream structurally, same as every other call site in this
+      # file. A non-zero exit is NON-BLOCKING, matching this block's own existing REDEPLOY
+      # CHECKPOINT WARNING idiom and every other commit-failure path in this codebase: the
+      # `completed` status is already on disk (reconcile-task-status.sh's write above already
+      # landed it), simply left uncommitted for a later cycle's own commit to pick up.
+      bash "$SCRIPT_DIR/git-commit-scoped.sh" \
+        --message "task ${_pdr_t}: complete implementation (post-deploy reconcile)" \
+        --session "$session_id" \
+        --task "$_pdr_t" \
+        -- "$STATE_FILE" "$(dirname "$STATE_FILE")/TODO.md" \
+        || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: commit failed for task #${_pdr_t}'s post-deploy reconcile promotion (non-blocking) -- the 'completed' status is on disk but left uncommitted for a later commit to pick up." >&2
     fi
   done
   mt_save
