@@ -3427,6 +3427,149 @@
         "commands": []
       },
       "on_demand": true
+    },
+    {
+      "path": "patterns/task-recover-mode.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Complete specification for /task's Recover Mode (--recover): restoring archived tasks to active_projects",
+      "line_count": 115,
+      "keywords": [
+        "patterns",
+        "task",
+        "recover",
+        "archive",
+        "restore"
+      ],
+      "topics": [
+        "task-management"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/task"
+        ]
+      }
+    },
+    {
+      "path": "patterns/task-expand-mode.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Complete specification for /task's Expand Mode (--expand): dividing a task into subtasks",
+      "line_count": 97,
+      "keywords": [
+        "patterns",
+        "task",
+        "expand",
+        "subtasks",
+        "divide"
+      ],
+      "topics": [
+        "task-management"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/task"
+        ]
+      }
+    },
+    {
+      "path": "patterns/task-sync-mode.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Complete specification for /task's Sync Mode (--sync): reconciling TODO.md with state.json",
+      "line_count": 133,
+      "keywords": [
+        "patterns",
+        "task",
+        "sync",
+        "reconcile",
+        "state"
+      ],
+      "topics": [
+        "task-management"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/task"
+        ]
+      }
+    },
+    {
+      "path": "patterns/task-review-mode.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Complete specification for /task's Review Mode (--review): assessing task completion and creating follow-up tasks",
+      "line_count": 341,
+      "keywords": [
+        "patterns",
+        "task",
+        "review",
+        "follow-up",
+        "completion"
+      ],
+      "topics": [
+        "task-management"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/task"
+        ]
+      }
+    },
+    {
+      "path": "patterns/task-abandon-mode.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Complete specification for /task's Abandon Mode (--abandon): archiving tasks",
+      "line_count": 71,
+      "keywords": [
+        "patterns",
+        "task",
+        "abandon",
+        "archive"
+      ],
+      "topics": [
+        "task-management"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/task"
+        ]
+      }
+    },
+    {
+      "path": "patterns/task-description-transformation-examples.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Worked examples and edge cases for /task's Create Task Mode description-improvement algorithm (steps 3.1-3.3)",
+      "line_count": 30,
+      "keywords": [
+        "patterns",
+        "task",
+        "description",
+        "transformation",
+        "examples"
+      ],
+      "topics": [
+        "task-management"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/task"
+        ]
+      }
     }
   ]
 }
