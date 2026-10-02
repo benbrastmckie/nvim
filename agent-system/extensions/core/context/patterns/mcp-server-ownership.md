@@ -153,13 +153,16 @@ wildcard in USER-scope `~/.claude/settings.json`. This is not a scope mismatch: 
 grant in `~/.claude/settings.json` applies to every session on the machine regardless of which
 scope actually registered the server that session resolves to, so the same single wildcard grant
 covers lean-lsp correctly whether it was previously a single global entry or is now a per-project
-local one. `playwright` is the live counter-example —
-registered in user scope, but its 9-tool safe-tier enumeration (see the "Carve-out" subsection
-below) appears only inside the `web` and `present` extensions' `settings-fragment.json` files,
-with zero `mcp__playwright__*` entries in `~/.claude/settings.json` itself. Every project without
-`web` or `present` loaded prompts (or DENIES headlessly) on every playwright call. Fixing this
-asymmetry is a separate follow-up, not performed here — it is recorded, not corrected, by this
-document.
+local one. `playwright` is a second worked example, now corrected to match the rule it once
+violated: registered in user scope, with its 9-tool safe-tier enumeration (see the "Carve-out"
+subsection below) granted directly in `~/.claude/settings.json` — written by the same
+home-manager activation block, in a separate configuration repository, that registers the server
+— and with zero playwright entries left in any extension's `settings-fragment.json`. Every
+project reaches the grant regardless of which extensions happen to be loaded, because the grant
+now lives at the same scope as the registration, exactly as this section prescribes. The
+asymmetry this passage once recorded (grant confined to the `web` and `present` extensions'
+`settings-fragment.json` files, with zero entries in `~/.claude/settings.json` itself) has been
+corrected, not merely noted.
 
 ### Workspace trust (a real friction cost, not a blocker)
 
@@ -249,11 +252,12 @@ server adds requires a matching edit to the enumeration, and a missed edit reint
 for that one tool with no error to signal the gap. A wildcard cannot drift: it grants whatever the
 server exposes, today or after an upgrade, with one line to maintain.
 
-The lean-lsp server is the worked example of enumeration drift: its permission grant was
-duplicated three ways — a wildcard in core's `root-files/settings.json`, a 21-entry enumeration in
-lean's own `settings-fragment.json`, and a dead `mcpServers` registration block also in lean's
-fragment — none of which needed to coexist. The correct end state is one wildcard in lean's own
-fragment and nothing in core.
+The lean-lsp server is the worked example of enumeration drift, now corrected: its permission
+grant was once duplicated three ways — a wildcard in core's `root-files/settings.json`, a 21-entry
+enumeration in lean's own `settings-fragment.json`, and a dead `mcpServers` registration block
+also in lean's fragment — none of which needed to coexist. That end state has been reached: one
+`mcp__lean-lsp__*` wildcard lives in lean's own fragment, core's `root-files/settings.json` carries
+no lean entries, and the dead `mcpServers` block is gone.
 
 ### Carve-out: safe/unsafe tool splits require enumeration
 
@@ -263,20 +267,22 @@ tier and an unsafe/always-prompt tier, a wildcard cannot express that split — 
 everything, collapsing the two tiers into one. Enumeration is **required** here, not merely
 tolerated.
 
-The worked example is `agent-system/extensions/web/settings-fragment.json`, which enumerates
-exactly the 9 safe `mcp__playwright__browser_*` tools (navigate, snapshot, take_screenshot,
-console_messages, network_requests, click, type, find, wait_for) and deliberately omits
-`browser_evaluate`, `browser_file_upload`, and `browser_run_code_unsafe` from every allow list.
-Those three tools must keep prompting: `browser_evaluate` and `browser_run_code_unsafe` run
-arbitrary code, and `browser_file_upload` reads arbitrary local files onto a page. Collapsing the
-enumeration into a `mcp__playwright__*` wildcard — the same simplification legitimately applied to
-`lean-lsp` above — would silently re-grant all three and reopen an arbitrary-execution and
-file-upload hole.
+The worked example is user-scope `~/.claude/settings.json`, which enumerates exactly the 9 safe
+`mcp__playwright__browser_*` tools (navigate, snapshot, take_screenshot, console_messages,
+network_requests, click, type, find, wait_for) and deliberately omits `browser_evaluate`,
+`browser_file_upload`, and `browser_run_code_unsafe` from every allow list. Those three tools must
+keep prompting: `browser_evaluate` and `browser_run_code_unsafe` run arbitrary code, and
+`browser_file_upload` reads arbitrary local files onto a page. Collapsing the enumeration into a
+`mcp__playwright__*` wildcard — the same simplification legitimately applied to `lean-lsp` above —
+would silently re-grant all three and reopen an arbitrary-execution and file-upload hole.
 
 **Accepted cost, stated honestly**: this enumeration inherits exactly the drift weakness the
 "Wildcard over enumeration" section above describes — a newly added safe Playwright tool will
 prompt until this list is updated to include it. That is the deliberate price of keeping the
-unsafe tier prompting; it is not an oversight to "fix" by wildcarding.
+unsafe tier prompting; it is not an oversight to "fix" by wildcarding. Keeping the enumeration in
+exactly one place (user scope) rather than three is what this document's own correction
+(see "Grant permissions at the same scope where the server is registered" above) was for: a single
+list to update instead of several copies that could silently diverge.
 
 ---
 
@@ -394,9 +400,9 @@ registration decision under the hybrid model above (pick a scope, register there
 same scope), not a revival of the deleted block.
 
 **Migration (distinct from retirement, one extension).** `nix`'s dead block — which declared the
-server under the trap name `mcp-nixos` — is likewise deleted. Registration is *moving*, not being
-retired: a home-manager activation block in a separate NixOS configuration repository will
-register the server under the name `nixos`. This is verified against the live server: running
+server under the trap name `mcp-nixos` — is likewise deleted. Registration *moved*, rather than
+being retired: a home-manager activation block in a separate NixOS configuration repository
+registers the server under the name `nixos`. This is verified against the live server: running
 `uvx mcp-nixos` exposes exactly two tools, `nix` and `nix_versions`, matching the two
 `mcp__nixos__nix` / `mcp__nixos__nix_versions` grants this repo retains in
 `agent-system/extensions/nix/settings-fragment.json`. **Do not** delete those two grants, and
@@ -408,11 +414,11 @@ that assumes the `nixos` name.
 `settings-fragment.json` and is untouched by the retirement/migration above — it is a genuine,
 still-open gap, not yet resolved either way.
 
-**Second dead surface (follow-up, not touched here).** Five extensions — `filetypes`, `founder`,
-`lean`, `memory`, and `nix` — additionally carry the identical dead declaration in their
-`manifest.json` `mcp_servers` field. This is an independent second surface: a `manifest.json`
-`mcp_servers` field is equally inert (see "Not registration" above), and correcting it in these
-five manifests is a recorded follow-up, not performed by this document's own edits.
+**Second dead surface (corrected).** Five extensions — `filetypes`, `founder`, `lean`, `memory`,
+and `nix` — additionally carried the identical dead declaration in their `manifest.json`
+`mcp_servers` field. This was an independent second surface: a `manifest.json` `mcp_servers`
+field is equally inert (see "Not registration" above). The field has been deleted from all five
+manifests; nothing reads it to write `~/.claude.json`, so the deletion changes no behavior.
 
 ---
 

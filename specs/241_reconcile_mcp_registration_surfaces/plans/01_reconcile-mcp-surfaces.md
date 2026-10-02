@@ -343,16 +343,16 @@ lost a member, reconcile before deleting rather than proceeding on the stated fi
 
 ---
 
-### Phase 4: Item 3 — correct the ownership doc's stale passages [NOT STARTED]
+### Phase 4: Item 3 — correct the ownership doc's stale passages [COMPLETED]
 
 **Goal**: Bring `core/context/patterns/mcp-server-ownership.md` into agreement with the state
 Phases 2 and 3 just created, keeping every still-instructive worked example rather than deleting
 it, and keeping known-gap (d) open.
 
 **Tasks**:
-- [ ] Re-read the whole file (it is a shared core file; a sibling could have touched it, though
-      none declares it in scope)
-- [ ] **Passage (a)**, under `### Grant permissions at the same scope where the server is
+- [x] Re-read the whole file (it is a shared core file; a sibling could have touched it, though
+      none declares it in scope) *(completed: full 431-line file re-read; no sibling edits present)*
+- [x] **Passage (a)**, under `### Grant permissions at the same scope where the server is
       registered`: rewrite the playwright sentences so playwright reads as a worked example of
       *correct* user-scope grant placement — its 9-tool safe-tier enumeration lives in user-scope
       `~/.claude/settings.json`, written by a home-manager activation block in a separate
@@ -362,13 +362,15 @@ it, and keeping known-gap (d) open.
       prompts, or DENIES headlessly). Delete the "Fixing this asymmetry is a separate follow-up,
       not performed here — it is recorded, not corrected, by this document" sentence. **If Phase 2
       was skipped on the precondition branch, leave this passage exactly as it is** and say so
-      explicitly in the summary
-- [ ] **Passage (c)**, under `### Wildcard over enumeration`: rewrite the lean-lsp triple-duplication
+      explicitly in the summary *(completed: Phase 2 was NOT skipped (precondition held), so passage
+      (a) was rewritten to describe the corrected end state, keeping the asymmetry reasoning and the
+      "Carve-out" cross-reference intact)*
+- [x] **Passage (c)**, under `### Wildcard over enumeration`: rewrite the lean-lsp triple-duplication
       paragraph from a pending defect into a completed worked example — the grant was duplicated
       three ways; the end state (one `mcp__lean-lsp__*` wildcard in lean's own fragment, nothing in
       core, no dead `mcpServers` block) has been reached. Keep the drift reasoning that makes the
-      example instructive
-- [ ] **Passage (e)** — consequential, under `### Carve-out: safe/unsafe tool splits require
+      example instructive *(completed)*
+- [x] **Passage (e)** — consequential, under `### Carve-out: safe/unsafe tool splits require
       enumeration` (see "Two consequential staleness sites" above): repoint the worked example from
       `agent-system/extensions/web/settings-fragment.json` to the user-scope
       `~/.claude/settings.json` location, and repoint the closing "the enumeration in
@@ -377,21 +379,31 @@ it, and keeping known-gap (d) open.
       enumerated and `browser_evaluate`, `browser_file_upload`, `browser_run_code_unsafe` are
       deliberately omitted because they run arbitrary code or read arbitrary local files, and
       collapsing to a wildcard would silently re-grant all three. Keep the "Accepted cost, stated
-      honestly" drift paragraph. **Skip this bullet if Phase 2 was skipped**
-- [ ] **Passage (b)**, the `## Known gaps` "Second dead surface (follow-up, not touched here)"
+      honestly" drift paragraph. **Skip this bullet if Phase 2 was skipped** *(completed: Phase 2
+      was not skipped, so this bullet was performed — worked example and closing sentence both
+      repointed to user-scope `~/.claude/settings.json`)*
+- [x] **Passage (b)**, the `## Known gaps` "Second dead surface (follow-up, not touched here)"
       paragraph: rewrite to record the five-manifest `mcp_servers` deletion as performed. Keep the
       explanation of *why* the field was inert (a `manifest.json` `mcp_servers` field registers
       nothing — see "Not registration"), since that is what stops a future author re-adding one
-- [ ] **Passage (d)**, the `## Known gaps` "Remaining gap" paragraph about `memory`
+      *(completed: heading changed to "Second dead surface (corrected)"; the inertness explanation
+      and cross-reference are kept)*
+- [x] **Passage (d)**, the `## Known gaps` "Remaining gap" paragraph about `memory`
       (`obsidian-memory`): leave OPEN. Do not mark it resolved, do not soften it, do not move it
-- [ ] Migration-paragraph tense (see "Two consequential staleness sites" above): in the `## Known
+      *(completed: left byte-identical, still reads "still-open gap, not yet resolved either way")*
+- [x] Migration-paragraph tense (see "Two consequential staleness sites" above): in the `## Known
       gaps` "Migration (distinct from retirement, one extension)" paragraph, change the single
       forward-looking registration claim ("a home-manager activation block in a separate NixOS
       configuration repository **will** register the server under the name `nixos`") to the present
       tense, since it is live. Change nothing else in that paragraph or in the Retirement paragraph
-- [ ] Re-read the edited file end to end and confirm no passage still asserts a pending follow-up
+      *(completed: "will register" -> "registers"; "is likewise deleted. Registration is *moving*"
+      -> "Registration *moved*"; nothing else in the paragraph or the Retirement paragraph changed)*
+- [x] Re-read the edited file end to end and confirm no passage still asserts a pending follow-up
       that Phases 2/3 performed, and that no section cross-reference was broken (the "see the
-      'Carve-out' subsection below" pointer in passage (a) must still resolve)
+      'Carve-out' subsection below" pointer in passage (a) must still resolve) *(completed: full
+      re-read performed; the "Carve-out" cross-reference in passage (a) still resolves to the
+      unchanged section heading; no remaining pending-follow-up phrasing found for Phases 2/3's
+      work)*
 
 **Timing**: 0.75 hours
 
