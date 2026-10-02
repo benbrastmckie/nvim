@@ -30,21 +30,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/321_lean_language_server_readiness_preflight/progress/phase-2-progress.json",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "command substitution", "subshell", "background process", "trap EXIT", "test harness", "stdout pipe hang"]
+      "suggested_keywords": [
+        "bash",
+        "command substitution",
+        "subshell",
+        "background process",
+        "trap EXIT",
+        "test harness",
+        "stdout pipe hang"
+      ]
     },
     {
       "content": "When a shell test mutates process-table-visible state (e.g. matching a live process by an argv substring via `ps`) to prove a safety check is load-bearing, the test is NOT hermetic by default: a genuinely running, unrelated host process (e.g. this very coding session's own long-lived MCP server subprocess) can satisfy the SAME loosened match once the safety check is deliberately deleted (a mutation test), producing a false mutation-control failure unrelated to the fixture under test. Fix: install a PATH-shadowing stub for the matched command (e.g. `ps`) that filters its real output down to rows under the test's own scratch WORKDIR, and pass any filter pattern that itself contains the matched substring via an environment variable (ENVIRON lookup in awk) rather than a literal argv string -- otherwise the filter process's OWN invocation self-matches the very pattern it is filtering for.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/321_lean_language_server_readiness_preflight/progress/phase-2-progress.json",
       "confidence": 0.75,
-      "suggested_keywords": ["ps", "mutation testing", "test isolation", "hermetic tests", "awk ENVIRON", "process matching"]
+      "suggested_keywords": [
+        "ps",
+        "mutation testing",
+        "test isolation",
+        "hermetic tests",
+        "awk ENVIRON",
+        "process matching"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790957600_e00acf",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }

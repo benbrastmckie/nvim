@@ -1,7 +1,7 @@
 # Implementation Plan: Lean language server readiness preflight
 
 - **Task**: 321 - Lean language server readiness preflight
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None blocking. Cross-references open task 268 (build-cache half) — no shared file scope.
 - **Research Inputs**: specs/321_lean_language_server_readiness_preflight/reports/01_lean-lsp-readiness-probe.md

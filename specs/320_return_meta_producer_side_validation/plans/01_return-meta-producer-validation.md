@@ -2,7 +2,7 @@
 
 - **Task**: 320 - Run the orphaned .return-meta.json validator in the lifecycle, and give it the
   partial_progress checks it lacks
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/320_return_meta_producer_side_validation/reports/01_producer_side_validation.md

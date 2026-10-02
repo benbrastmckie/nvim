@@ -11,7 +11,7 @@ next_project_number: 322
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,39,44,89,127,165,184,217,241,263,265,270,272,279,280,284,285,295,296,297,299,300,306,311,316,320,321 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,39,44,89,127,165,184,217,241,263,265,270,272,279,280,284,285,295,296,297,299,300,306,311,316 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,185,250,251,271,275,281,298,302,307,308,317,318,319 | 22,44,127,184,241,265,272,279,280,285,297,300,306,316 | core-agent-system, extensions, orchestrator |
 | 3 | 170,273,282,303,313 | 184,250,251,271,281,308 | core-agent-system, orchestrator |
 | 4 | 274,304,312 | 165,263,273,275,282,284,285,300,302 | orchestrator |
@@ -47,7 +47,6 @@ next_project_number: 322
 316 [IMPLEMENTING] — Trim skill-orchestrate/SKILL.md back under its gate-20...
   └─ 317 [NOT STARTED] — Make the post-deploy reconcile promotion append to...
   └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into... (see above)
-320 [IMPLEMENTING] — Run the orphaned .return-meta.json validator in the...
 
 ### Extensions
 
@@ -71,10 +70,6 @@ next_project_number: 322
 165 [PLANNED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
-### Lean Extension
-
-321 [IMPLEMENTING] — Probe Lean language-server reachability at preflight and...
-
 ### Orchestrator
 
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
@@ -97,12 +92,13 @@ next_project_number: 322
 
 ### 321. Probe Lean language-server reachability at preflight and report the evidence tier into the dispatch file
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
 - **Research**: [321_lean_language_server_readiness_preflight/reports/01_lean-lsp-readiness-probe.md]
 - **Plan**: [321_lean_language_server_readiness_preflight/plans/01_lean-lsp-readiness-dispatch-tier.md]
+- **Summary**: [321_lean_language_server_readiness_preflight/summaries/01_lean-lsp-readiness-dispatch-tier-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 
@@ -167,12 +163,13 @@ A `lean4` dispatch launched against a Lean project with no running language serv
 
 ### 320. Run the orphaned .return-meta.json validator in the lifecycle, and give it the partial_progress checks it lacks
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [320_return_meta_producer_side_validation/reports/01_producer_side_validation.md]
 - **Plan**: [320_return_meta_producer_side_validation/plans/01_return-meta-producer-validation.md]
+- **Summary**: [320_return_meta_producer_side_validation/summaries/01_return-meta-producer-validation-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/scripts/validate-return-meta.sh` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 

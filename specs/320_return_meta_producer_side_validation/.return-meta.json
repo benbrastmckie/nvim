@@ -27,14 +27,25 @@
       "category": "PATTERN",
       "source_artifact": "specs/320_return_meta_producer_side_validation/summaries/01_return-meta-producer-validation-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["warn-only-probe", "output-gated-filter", "aggregate-exit-code-trap", "falsifiability-check", "validator-call-site", "noise-guard"]
+      "suggested_keywords": [
+        "warn-only-probe",
+        "output-gated-filter",
+        "aggregate-exit-code-trap",
+        "falsifiability-check",
+        "validator-call-site",
+        "noise-guard"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790957600_e00acf",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }
