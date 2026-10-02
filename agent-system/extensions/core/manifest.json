@@ -192,6 +192,7 @@
       "tests/test-deploy-ledger-lib.sh",
       "tests/test-consumer-freshness.sh",
       "tests/test-deploy-orphans.sh",
+      "tests/test-deploy-verify-overlap.sh",
       "tests/test-postflight-deploy-gate.sh",
       "tests/test-deploy-propagation.sh",
       "tests/test-deploy-verify-wiring.sh",

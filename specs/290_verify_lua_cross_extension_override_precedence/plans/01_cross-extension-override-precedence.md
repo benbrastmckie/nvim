@@ -329,40 +329,40 @@ alone unless it repeats the same false claim.
 
 ---
 
-### Phase 5: Regression harness for cross-extension ownership [NOT STARTED]
+### Phase 5: Regression harness for cross-extension ownership [COMPLETED]
 
 **Goal**: Lock in all three behaviors — overlapping path clean, genuine drift still fires,
 single-owner unchanged — so a future refactor cannot silently reintroduce either failure mode.
 
 **Tasks**:
-- [ ] Add `agent-system/extensions/core/scripts/tests/test-deploy-verify-overlap.sh`, modeled
+- [x] Add `agent-system/extensions/core/scripts/tests/test-deploy-verify-overlap.sh`, modeled
       structurally on the existing `test-deploy-orphans.sh` harness (`pass`/`fail`/`info`
       helpers, PASSED/FAILED counters, trap-based scratch `WORKDIR`, headless-nvim subprocess
       against the Lua module under test, exit convention 0 pass / 1 assertion failure / 2
       environment error with a loud skip message).
-- [ ] Drive the assertions through the exported Lua entry points
+- [x] Drive the assertions through the exported Lua entry points
       (`verify_mod.build_ownership_map`, `verify_mod.verify_manifest_category`) with synthetic
       extension source trees and synthetic manifests planted in the scratch tree, rather than
       requiring a two-extension real deploy — `verify_manifest_category` is already exposed "for
       the scratch-tree regression harness / direct inspection", and this keeps the harness
       hermetic and fast.
-- [ ] Assertion A (overlap clean): two synthetic extensions, B depending on A, both declaring the
+- [x] Assertion A (overlap clean): two synthetic extensions, B depending on A, both declaring the
       same `provides.context` directory with **different** content; the deployed file matches B's
       copy. Assert zero `hash_mismatch` for both A and B, and exactly one `overridden` entry
       naming B when verifying A.
-- [ ] Assertion B (genuine drift still fires): same setup, deployed file matching **neither**
+- [x] Assertion B (genuine drift still fires): same setup, deployed file matching **neither**
       declarer. Assert exactly one `hash_mismatch`, reported for the owner B, and not duplicated
       under A.
-- [ ] Assertion C (single-owner unchanged): a path declared by A only — assert a matching deploy
+- [x] Assertion C (single-owner unchanged): a path declared by A only — assert a matching deploy
       reports zero findings and a staled deploy (appended line) reports exactly one
       `hash_mismatch`, with zero `overridden` entries in both cases.
-- [ ] Assertion D (per-leaf granularity): a file A ships under the shared directory that B does
+- [x] Assertion D (per-leaf granularity): a file A ships under the shared directory that B does
       not ship stays A-owned — assert A hash-compares it (staling it fires) and it never appears
       in `overridden`.
-- [ ] Register the new suite in `agent-system/extensions/core/manifest.json`'s `provides.scripts`
+- [x] Register the new suite in `agent-system/extensions/core/manifest.json`'s `provides.scripts`
       as `tests/test-deploy-verify-overlap.sh` so it is deployed (run-all.sh discovers it by glob,
       but deployment requires the manifest entry).
-- [ ] Optionally add an advisory `basename,wall_ms` row to
+- [x] Optionally add an advisory `basename,wall_ms` row to
       `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt`; skip it if the measured
       wall time is unremarkable, since the file is advisory-only.
 
