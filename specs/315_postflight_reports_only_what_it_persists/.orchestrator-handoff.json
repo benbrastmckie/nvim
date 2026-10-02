@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "summary": "Wrote an 8-phase implementation plan covering both honesty defects in orchestrate-cycle-postflight.sh: direction-aware HANDOFF_STALE_OR_ABSENT attribution (newer-than-minted attributed to orchestrate-cycle-plan.sh) and an additive persisted_status field in the emitted JSON, plus test coverage for the uncovered direction and reconciliation of the three-way documented attribution inconsistency.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/315_postflight_reports_only_what_it_persists/plans/01_postflight-attribution-and-status.md",
+      "summary": "8 phases, 4 dependency waves, ~6 hours; adopts research decisions D1-D4 and corrects one unworkable research recommendation about dry-run defect-row assertions."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 8,
+  "blockers": [],
+  "continuation_path": null,
+  "dispatch_seq": 7
+}
