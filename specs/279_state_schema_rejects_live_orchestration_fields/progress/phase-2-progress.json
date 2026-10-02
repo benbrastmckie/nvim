@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Move Checks 3 and 4 to an advisory-first posture",
+  "started_at": "2026-10-02T19:50:00Z",
+  "last_updated": "2026-10-02T20:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read validate-state.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Change Check 3/4 log_fail to log_warn with actionable messages", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 3, "description": "Add PROMOTION CRITERION comment blocks", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "Update header comment block (--strict paragraph, per-check summary)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 5, "description": "Verify no caller passes --strict; shellcheck; fixture verification", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

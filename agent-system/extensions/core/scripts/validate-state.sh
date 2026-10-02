@@ -28,9 +28,12 @@
 # --strict: opt-in only, never implicit (default behavior for every existing caller is
 #   unchanged). Copies validate-artifact.sh's --strict semantics exactly: every WARN-level
 #   finding joins FAIL-level findings in the exit-blocking total, so a WARN alone now causes
-#   exit 1. D5: this makes Checks 8, 9, 10, AND 11 exit-blocking under --strict, not just the two
-#   new checks this task adds -- Check 8 and Check 9 were already WARN-only before this task and
-#   gain no special exemption. Documented here as a deliberate consequence, not hidden: today, no
+#   exit 1. D5: this makes Checks 3, 4, 8, 9, 10, AND 11 exit-blocking under --strict, not just
+#   the two new checks introduced alongside D5 originally -- Check 8 and Check 9 were already
+#   WARN-only before that task and gained no special exemption, and Checks 3 and 4 moved from
+#   hard-FAIL to this same advisory-first posture afterward (unknown top-level/entry field --
+#   see each check's own PROMOTION CRITERION below for the bar that moves them back to FAIL).
+#   Documented here as a deliberate consequence, not hidden: today, no
 #   caller enumerated below passes --strict, so no existing invocation's behavior changes. Live
 #   caller enumeration (grep -rn 'validate-state.sh' agent-system/extensions, confirmed at
 #   implementation time): commands/task.md (base mode, greps `file_scope` lines out of the
@@ -63,8 +66,8 @@
 #   hard error, exit 2 -- never a silent fallback to the default.
 #
 # Exit codes:
-#   0 - valid (no FAIL-level finding; Checks 8, 9, 10 and 11 below are WARN-only and never fail
-#       the run in DEFAULT mode)
+#   0 - valid (no FAIL-level finding; Checks 3, 4, 8, 9, 10 and 11 below are WARN-only and never
+#       fail the run in DEFAULT mode)
 #   1 - invalid (at least one FAIL-level finding), OR --fix given unparseable JSON, OR (under
 #       --strict only) at least one WARN-level finding with zero FAIL-level findings
 #   2 - environment error (file not found, jq unavailable, a required shared library could not be
@@ -75,8 +78,20 @@
 # Base-mode checks (always run):
 #   - JSON is parsable
 #   - required top-level fields present: next_project_number, active_projects
-#   - no unknown top-level fields (mirrors the schema's additionalProperties: false)
-#   - no unknown active_projects[] entry fields (same)
+#   - Check 3 (WARN-only): no unknown top-level fields (mirrors the schema's
+#     additionalProperties: false). Advisory-first, not hard-FAIL: the WARN message names the
+#     field and the two remediations (model it in state-schema.json and mirror it into
+#     KNOWN_TOP_LEVEL_FIELDS below, or run scripts/migrate-state-legacy-fields.sh if it is one of
+#     the ruled-retired legacy fields). PROMOTION CRITERION (advisory-first, per
+#     plan-format.md's "Enforcement level" subsection -- the same in-repo precedent Check 10 cites):
+#     promote back to FAIL once (i) scripts/migrate-state-legacy-fields.sh has been run in every
+#     consumer repo the maintainer runs this script in, and (ii) two consecutive schema additions
+#     have landed with their KNOWN_TOP_LEVEL_FIELDS/KNOWN_ENTRY_FIELDS counterpart in the same
+#     commit -- i.e. once the drift test in scripts/tests/test-validate-state.sh has demonstrably
+#     held the schema/validator pair in sync twice. Until both hold, an unknown top-level field
+#     stays advisory. --strict (see above) makes it exit-blocking today for an opt-in caller.
+#   - Check 4 (WARN-only): no unknown active_projects[] entry fields (same mechanism, same
+#     PROMOTION CRITERION as Check 3, scoped to definitions.projectEntry instead of the top level).
 #   - every active_projects[].status value is a member of the closed 13-value enum
 #     (scripts/lib/status-vocabulary.sh)
 #   - every active_projects[].project_number is a number
@@ -449,12 +464,20 @@ unknown_top=$(jq -r 'keys[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; d
   done
   [[ "$known" -eq 0 ]] && printf '%s\n' "$k"
 done)
+# PROMOTION CRITERION (advisory-first, per plan-format.md's "Enforcement level" subsection --
+# the same in-repo precedent Check 10 cites): promote this check back to FAIL once (i)
+# scripts/migrate-state-legacy-fields.sh has been run in every consumer repo the maintainer runs
+# this script in, and (ii) two consecutive schema additions have landed with their
+# KNOWN_TOP_LEVEL_FIELDS counterpart in the same commit -- i.e. once the drift test in
+# scripts/tests/test-validate-state.sh has demonstrably held the schema/validator pair in sync
+# twice. Until both hold, an unknown top-level field is advisory, not blocking. --strict promotes
+# it to exit-blocking today for an opt-in caller.
 if [[ -z "$unknown_top" ]]; then
   log_pass "No unknown top-level fields (matches state-schema.json's additionalProperties: false)"
 else
   while IFS= read -r k; do
     [[ -z "$k" ]] && continue
-    log_fail "Unknown top-level field: $k (not in state-schema.json)"
+    log_warn "Unknown top-level field: $k (not in state-schema.json -- model it there and in KNOWN_TOP_LEVEL_FIELDS above, or run scripts/migrate-state-legacy-fields.sh if it is a known-retired legacy field)"
   done <<< "$unknown_top"
 fi
 
@@ -477,13 +500,15 @@ unknown_entry=$(jq -r '.active_projects[] | keys[]' "$STATE_FILE" 2>/dev/null | 
   done
   [[ "$known" -eq 0 ]] && printf '%s\n' "$k"
 done)
+# PROMOTION CRITERION: identical to Check 3's (see above), scoped to
+# definitions.projectEntry/KNOWN_ENTRY_FIELDS instead of the top level.
 if [[ -z "$unknown_entry" ]]; then
   log_pass "No unknown active_projects[] entry fields"
 else
   while IFS= read -r k; do
     [[ -z "$k" ]] && continue
     bad_entries=$(jq -r --arg f "$k" '[.active_projects[] | select(has($f)) | .project_number] | join(",")' "$STATE_FILE")
-    log_fail "Unknown entry field: $k (on project_number(s): $bad_entries)"
+    log_warn "Unknown entry field: $k (on project_number(s): $bad_entries -- model it in state-schema.json's definitions.projectEntry and in KNOWN_ENTRY_FIELDS above, or run scripts/migrate-state-legacy-fields.sh if applicable)"
   done <<< "$unknown_entry"
 fi
 

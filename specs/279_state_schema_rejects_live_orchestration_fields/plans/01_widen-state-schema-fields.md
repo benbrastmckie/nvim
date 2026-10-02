@@ -205,7 +205,7 @@ If the baseline counts differ (task 271 landed first), re-derive rather than ass
 
 ---
 
-### Phase 2: Move Checks 3 and 4 to an advisory-first posture [NOT STARTED]
+### Phase 2: Move Checks 3 and 4 to an advisory-first posture [COMPLETED]
 
 **Goal**: An unknown top-level or entry field WARNs by default and FAILs only under `--strict`, so
 schema drift produces actionable advisory signal instead of an instant unexplained RED gate — with a
@@ -213,24 +213,27 @@ concrete promotion criterion recorded, not an open-ended loosening.
 
 **Tasks**:
 
-- [ ] Re-read `validate-state.sh` (Phase 1 and possibly task 269 have both touched it).
-- [ ] Change Check 3's unknown-field loop from `log_fail` to `log_warn`, and Check 4's likewise.
-- [ ] Extend each WARN message so it names the actionable next step (model the field in
+- [x] Re-read `validate-state.sh` (Phase 1 and possibly task 269 have both touched it). *(completed)*
+- [x] Change Check 3's unknown-field loop from `log_fail` to `log_warn`, and Check 4's likewise.
+      *(completed)*
+- [x] Extend each WARN message so it names the actionable next step (model the field in
       `state-schema.json` and mirror it into the matching known-field array, or run the migration
-      shipped in Phase 5), rather than only reporting the field name.
-- [ ] Add a PROMOTION CRITERION comment block to each check in the exact style of Check 10's
+      shipped in Phase 5), rather than only reporting the field name. *(completed)*
+- [x] Add a PROMOTION CRITERION comment block to each check in the exact style of Check 10's
       existing block, recording the concrete bar: **promote Checks 3 and 4 back to FAIL once (i) the
       Phase 5 migration has been run in every consumer repo the maintainer runs `validate-state.sh`
       in, and (ii) two consecutive schema additions have landed with their validator known-field
       counterpart in the same commit** — i.e. once the drift test from Phase 3 has demonstrably held
-      the pair in sync twice. Until both hold, unknown fields stay advisory.
-- [ ] Update `validate-state.sh`'s header comment block (the `--strict` paragraph around lines
-      28-39 and the per-check summary around lines 95-120) so Checks 3 and 4 are listed among the
-      WARN-level checks `--strict` promotes, alongside 8-11.
-- [ ] Verify no existing caller passes `--strict` (the header enumerates them:
-      `orchestrate` preflight, `verify-deploy.sh` gate 10, the test suite) so no caller's behaviour
-      changes silently; record that re-check in the commit message.
-- [ ] Commit.
+      the pair in sync twice. Until both hold, unknown fields stay advisory. *(completed)*
+- [x] Update `validate-state.sh`'s header comment block (the `--strict` paragraph and the per-check
+      summary) so Checks 3 and 4 are listed among the WARN-level checks `--strict` promotes,
+      alongside 8-11. *(completed; exact line numbers had shifted from the plan's 28-39/95-120
+      estimate, re-located by content as instructed)*
+- [x] Verify no existing caller passes `--strict` so no caller's behaviour changes silently; record
+      that re-check in the commit message. *(completed — grep -rn 'validate-state.sh'
+      agent-system/extensions/core | grep -- --strict returns nothing outside the script's own
+      header comment)*
+- [x] Commit. *(completed)*
 
 **Timing**: 1 hour
 
