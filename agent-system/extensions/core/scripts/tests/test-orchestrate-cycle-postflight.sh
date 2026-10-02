@@ -328,6 +328,14 @@ if [ "$defect_count" = "0" ]; then
 else
   fail "acceptance (4a): expected 0 detected_defects, got $defect_count"
 fi
+# This is an ordinary (non-ask_user) path, so it exercises the `else` jq -n emit block's own
+# copy of persisted_status -- the ask_user block is covered separately by Acceptance (5) above.
+persisted_status_val=$(jqf '.persisted_status')
+if [ -n "$persisted_status_val" ] && [ "$persisted_status_val" != "null" ]; then
+  pass "acceptance (4a): persisted_status present and non-empty on an ordinary (non-ask_user) path ($persisted_status_val)"
+else
+  fail "acceptance (4a): expected a non-empty persisted_status on the else emit block, got: $persisted_status_val"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (4), direction B: a genuine seq-mismatched late write still records
@@ -459,6 +467,43 @@ if [ "$(jqf '.status')" = "partial" ]; then
   pass "acceptance (5): status left exactly as the agent reported it (partial)"
 else
   fail "acceptance (5): expected status=partial (unchanged), got: $(jqf '.status')"
+fi
+# This is the fixture where status and persisted_status provably DIVERGE -- the whole point of
+# the field: this cycle's empty-blocker/ask_user outcome performs no state.json transition by
+# design, so persisted_status stays "implementing" (state.json's pre-existing, unchanged value)
+# while status echoes the agent's self-reported "partial". Two different values, both now
+# legible to a consumer.
+if [ "$(jqf '.persisted_status')" = "implementing" ]; then
+  pass "acceptance (5): persisted_status reports state.json's actual unchanged status (implementing), diverging from status=partial"
+else
+  fail "acceptance (5): expected persisted_status=implementing, got: $(jqf '.persisted_status')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Acceptance (5b): persisted_status falls back to "unknown" (never an empty string) when the
+# task's row is absent from state.json's active_projects -- the named fallback Phase 4 commits to.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Acceptance (5b): persisted_status falls back to \"unknown\" when the task row is absent from state.json"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/709_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 1, "project_name": "unrelated", "task_type": "general", "status": "implementing", "description": "a different task, not 709", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/709_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/709_candidate --session sess_709 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/709_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 709
+
+persisted_status_val=$(jqf '.persisted_status')
+if [ "$persisted_status_val" = "unknown" ]; then
+  pass "acceptance (5b): persisted_status falls back to \"unknown\" for an absent task row"
+else
+  fail "acceptance (5b): expected persisted_status=unknown for an absent task row, got: $persisted_status_val"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1191,6 +1236,14 @@ if [ "$(jqf '.verdict')" = "ok" ]; then
   pass "invariant: --dry-run still emits the identical decision output (verdict=ok)"
 else
   fail "invariant: --dry-run's decision output diverged, got verdict=$(jqf '.verdict')"
+fi
+# persisted_status is a read, never a mutation, so it is correct under --dry-run too: it reports
+# state.json's unchanged pre-existing status ("implementing", per this fixture's write_state
+# above), not a value --dry-run would have transitioned to had it actually run live.
+if [ "$(jqf '.persisted_status')" = "implementing" ]; then
+  pass "invariant: --dry-run's persisted_status reports the unchanged pre-existing status (implementing)"
+else
+  fail "invariant: expected --dry-run persisted_status=implementing (unchanged), got: $(jqf '.persisted_status')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

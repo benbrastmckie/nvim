@@ -404,25 +404,31 @@ untouched.
 
 ---
 
-### Phase 5: Test the discrimination itself [NOT STARTED]
+### Phase 5: Test the discrimination itself [COMPLETED]
 
 **Goal**: `persisted_status` is asserted, not merely present — including the one fixture where it
 provably differs from `.status`, and the `"unknown"` fallback.
 
 **Tasks**:
 
-- [ ] In `test-orchestrate-cycle-postflight.sh`'s Acceptance (5) block (task `706_candidate`,
+- [x] In `test-orchestrate-cycle-postflight.sh`'s Acceptance (5) block (task `706_candidate`,
       `state.json.status == "implementing"`, `.return-meta.json.status == "partial"`), **add** an
       assertion that `.persisted_status == "implementing"` while leaving the existing
       `.status == "partial"` assertion exactly as it is. This single fixture is the whole point of
-      the field: two different values, both now legible.
-- [ ] Add an assertion on an ordinary (non-`ask_user`) path that `persisted_status` is present and
-      non-empty, so the `else` emit block's copy of the field is covered too.
-- [ ] Add a case where the task row is absent from `state.json` (or the project number does not
-      match) and assert `persisted_status == "unknown"` rather than an empty string.
-- [ ] Add a `--dry-run` assertion that `persisted_status` reports the unchanged pre-existing status —
-      the behaviour the Phase 4 comment claims.
-- [ ] Run the full suite; commit this green sub-step.
+      the field: two different values, both now legible. *(completed)*
+- [x] Add an assertion on an ordinary (non-`ask_user`) path that `persisted_status` is present and
+      non-empty, so the `else` emit block's copy of the field is covered too. *(completed: added
+      to Acceptance (4a), task 704_candidate, verdict=ok)*
+- [x] Add a case where the task row is absent from `state.json` (or the project number does not
+      match) and assert `persisted_status == "unknown"` rather than an empty string. *(completed:
+      new Acceptance (5b), task 709_candidate)*
+- [x] Add a `--dry-run` assertion that `persisted_status` reports the unchanged pre-existing status —
+      the behaviour the Phase 4 comment claims. *(completed: added to the existing
+      "Invariant: --dry-run leaves git status, state.json, and the loop guard unchanged" block,
+      task 708_candidate)*
+- [x] Run the full suite; commit this green sub-step. *(completed: 142 passed, 0 failed; shellcheck
+      clean; Acceptance (5)'s pre-existing `.status == "partial"` assertion confirmed textually
+      unchanged via `git diff` context lines)*
 
 **Timing**: 45 minutes
 
