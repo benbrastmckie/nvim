@@ -126,7 +126,7 @@ serialization above is within this task; the cross-task discipline is in Risks.
 
 ---
 
-### Phase 1: Apply the ruling to the schema and the validator's known-field arrays [IN PROGRESS]
+### Phase 1: Apply the ruling to the schema and the validator's known-field arrays [COMPLETED]
 
 **Goal**: The five WIDEN fields are modelled in `state-schema.json` and accepted by
 `validate-state.sh`, the three RETIRE fields remain unmodelled deliberately, and the pre-existing
