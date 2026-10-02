@@ -1,0 +1,11 @@
+{
+  "phase": 2,
+  "phase_name": "Register the exclusion in the companion doc",
+  "started_at": "2026-10-02T22:08:00Z",
+  "last_updated": "2026-10-02T22:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Phase 2 — extend exclusion-classes table row", "status": "completed", "files_touched": ["agent-system/extensions/core/context/patterns/deploy-orphan-detection.md"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

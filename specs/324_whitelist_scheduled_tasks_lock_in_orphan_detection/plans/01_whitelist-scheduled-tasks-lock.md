@@ -127,24 +127,29 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Register the exclusion in the companion doc [NOT STARTED]
+### Phase 2: Register the exclusion in the companion doc [COMPLETED]
 
 **Goal**: The exclusion-classes table documents the new whitelist entry, so whitelist and doc
 stay in step.
 
 **Tasks**:
-- [ ] Re-read the **Runtime artifact** row (currently ~line 65) of
+- [x] Re-read the **Runtime artifact** row (currently ~line 65) of
       `agent-system/extensions/core/context/patterns/deploy-orphan-detection.md`.
-- [ ] Add `scheduled_tasks.lock` to that row's Examples cell.
-- [ ] Extend the row's explanation with a clause parallel to the existing
+- [x] Add `scheduled_tasks.lock` to that row's Examples cell.
+- [x] Extend the row's explanation with a clause parallel to the existing
       `tmp/workflow-active-*` clause, e.g. "`scheduled_tasks.lock` is a session-acquired lock
       file written by the scheduled-task mechanism (sessionId/pid/acquiredAt), never by the copy
       engine."
-- [ ] If the row's trailing claim "All of these are `.gitignore`d at the project root" would
+- [x] If the row's trailing claim "All of these are `.gitignore`d at the project root" would
       become inaccurate for the new entry (research observed `scheduled_tasks.lock` is **not**
       currently gitignored at the project root), adjust that sentence so it does not assert
-      something false — do not silently inherit the claim.
-- [ ] Verify the deployed copy `.claude/context/patterns/deploy-orphan-detection.md` was NOT
+      something false — do not silently inherit the claim. *(deviation: altered — re-verified
+      directly with `git check-ignore -v .claude/scheduled_tasks.lock`, which shows the file IS
+      caught by the blanket `/.claude/` gitignore rule, contradicting the research report's
+      aside. The trailing claim remains accurate, so rather than changing its truth value I
+      added a parenthetical clarifying the mechanism, satisfying "do not silently inherit"
+      without asserting a falsehood.)*
+- [x] Verify the deployed copy `.claude/context/patterns/deploy-orphan-detection.md` was NOT
       modified.
 
 **Timing**: 0.25 hours
