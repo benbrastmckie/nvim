@@ -290,28 +290,31 @@ silently widening the change.
 
 ---
 
-### Phase 3: Live attribution-row coverage in the postflight suite [NOT STARTED]
+### Phase 3: Live attribution-row coverage in the postflight suite [COMPLETED]
 
 **Goal**: The actual recorded `detected_defects` row — not just a notice string — is asserted for
 both directions, in the suite that runs live and already inspects the loop-guard file.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/tests/test-orchestrate-cycle-postflight.sh:332-360` (Acceptance 4b) before
-      editing.
-- [ ] Extend Acceptance (4b) — handoff seq 1 vs minted 3, i.e. the **older** direction — to also
+- [x] Re-read `scripts/tests/test-orchestrate-cycle-postflight.sh:332-360` (Acceptance 4b) before
+      editing. *(completed)*
+- [x] Extend Acceptance (4b) — handoff seq 1 vs minted 3, i.e. the **older** direction — to also
       assert `.detected_defects[-1].attributed_source_path ==
       "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"` and that
-      `.detected_defects[-1].detecting_site` does **not** end in `-newer`.
-- [ ] Add Acceptance (4c), a copy of 4b's fixture with the seq direction flipped (handoff
+      `.detected_defects[-1].detecting_site` does **not** end in `-newer`. *(completed)*
+- [x] Add Acceptance (4c), a copy of 4b's fixture with the seq direction flipped (handoff
       `dispatch_seq: 5` against `--dispatch-seq 3`, task `707_candidate`), asserting: a defect is
       recorded; `attributed_source_path ==
       "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"`; `detecting_site` ends in
       `:cycle-postflight-dispatch-seq-mismatch-newer`; and `defect_class` is still
-      `HANDOFF_STALE_OR_ABSENT` (D2 — no vocabulary churn).
-- [ ] Add a one-line comment in 4c naming this as the live, row-level counterpart to
-      `test-handoff-dispatch-identity.sh`'s dry-run case 5.
-- [ ] Run the full suite; commit this green sub-step.
+      `HANDOFF_STALE_OR_ABSENT` (D2 — no vocabulary churn). *(completed)*
+- [x] Add a one-line comment in 4c naming this as the live, row-level counterpart to
+      `test-handoff-dispatch-identity.sh`'s dry-run case 5. *(completed)*
+- [x] Run the full suite; commit this green sub-step. *(completed: 138 passed, 0 failed; 4c's new
+      assertions verified non-vacuous via a scratch copy at /tmp/prefix-check3 with SUT_SRC
+      pointed at the pre-fix script — 3 of 4c's assertions FAIL pre-fix, as expected. Scratch dir
+      removed afterward.)*
 
 **Timing**: 1 hour
 

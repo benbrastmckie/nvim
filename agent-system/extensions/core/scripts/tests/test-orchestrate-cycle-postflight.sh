@@ -357,6 +357,69 @@ if [ "$defect_count" -ge 1 ] 2>/dev/null; then
 else
   fail "acceptance (4b): expected >=1 detected_defects for a present seq-mismatched handoff, got $defect_count"
 fi
+# handoff dispatch_seq=1 vs minted --dispatch-seq=3: the OLDER direction (1 < 3) -- a
+# still-live predecessor's late write. Attribution stays unchanged at skill-orchestrate/SKILL.md,
+# and the detecting_site must NOT carry the "-newer" suffix. This is the live, row-level
+# counterpart to test-handoff-dispatch-identity.sh's dry-run case 2.
+attributed_path=$(jq -r '.detected_defects[-1].attributed_source_path' "$WORKDIR/specs/705_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$attributed_path" = "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" ]; then
+  pass "acceptance (4b): older-direction mismatch attributed to skill-orchestrate/SKILL.md"
+else
+  fail "acceptance (4b): expected attributed_source_path=skill-orchestrate/SKILL.md, got $attributed_path"
+fi
+detecting_site=$(jq -r '.detected_defects[-1].detecting_site' "$WORKDIR/specs/705_candidate/.orchestrator-loop-guard" 2>/dev/null)
+case "$detecting_site" in
+  *-newer) fail "acceptance (4b): older-direction detecting_site must not end in -newer, got $detecting_site" ;;
+  *) pass "acceptance (4b): older-direction detecting_site does not carry the -newer suffix ($detecting_site)" ;;
+esac
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Acceptance (4c): the NEWER direction's recorded row -- the live counterpart to
+# test-handoff-dispatch-identity.sh's dry-run case 5. Same fixture shape as (4b) with the seq
+# direction flipped: handoff dispatch_seq=5 against minted --dispatch-seq=3 (5 > 3).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Acceptance (4c): a newer-than-minted handoff dispatch_seq records a defect attributed to the minting script"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/707_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 707, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #707", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 3, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/707_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "planned", "dispatch_seq": 5}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/707_candidate --session sess_707 --phase plan --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/707_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 3 --dispatch-start-ts "$window_start" 707
+
+defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$defect_count" -ge 1 ] 2>/dev/null; then
+  pass "acceptance (4c): a present newer-than-minted handoff still records a defect"
+else
+  fail "acceptance (4c): expected >=1 detected_defects for a present newer-than-minted handoff, got $defect_count"
+fi
+attributed_path=$(jq -r '.detected_defects[-1].attributed_source_path' "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$attributed_path" = "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh" ]; then
+  pass "acceptance (4c): newer-direction mismatch attributed to orchestrate-cycle-plan.sh (the minting site)"
+else
+  fail "acceptance (4c): expected attributed_source_path=orchestrate-cycle-plan.sh, got $attributed_path"
+fi
+detecting_site=$(jq -r '.detected_defects[-1].detecting_site' "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" 2>/dev/null)
+case "$detecting_site" in
+  *:cycle-postflight-dispatch-seq-mismatch-newer) pass "acceptance (4c): detecting_site ends in the -newer suffix ($detecting_site)" ;;
+  *) fail "acceptance (4c): expected detecting_site ending in :cycle-postflight-dispatch-seq-mismatch-newer, got $detecting_site" ;;
+esac
+defect_class=$(jq -r '.detected_defects[-1].defect_class' "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$defect_class" = "HANDOFF_STALE_OR_ABSENT" ]; then
+  pass "acceptance (4c): defect_class is still HANDOFF_STALE_OR_ABSENT (no vocabulary churn, D2)"
+else
+  fail "acceptance (4c): expected defect_class=HANDOFF_STALE_OR_ABSENT, got $defect_class"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (5): a user_decision payload is relayed intact with status unchanged
