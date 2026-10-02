@@ -566,28 +566,39 @@ exoneration covers only the direction it actually describes.
 
 ---
 
-### Phase 8: Final gate [NOT STARTED]
+### Phase 8: Final gate [COMPLETED]
 
 **Goal**: Every acceptance criterion is demonstrated green together, on one tree, with no
 sibling-task contamination in the commit.
 
 **Tasks**:
 
-- [ ] `bash scripts/tests/test-handoff-dispatch-identity.sh` — all five cases pass.
-- [ ] `bash scripts/tests/test-orchestrate-cycle-postflight.sh` — passes in full, including the
+- [x] `bash scripts/tests/test-handoff-dispatch-identity.sh` — all five cases pass. *(completed:
+      13 passed, 0 failed)*
+- [x] `bash scripts/tests/test-orchestrate-cycle-postflight.sh` — passes in full, including the
       unmodified Acceptance (5) `.status == "partial"` assertion (criterion 6's proof) and the new
-      4b/4c attribution rows.
-- [ ] `bash scripts/tests/test-orchestrate-recover-message-findings.sh` — passes (the one other
-      suite that reads the emitted JSON).
-- [ ] `shellcheck` clean on `scripts/orchestrate-cycle-postflight.sh` and both edited test scripts,
-      per `context/standards/shell-strict-mode.md`.
-- [ ] Walk acceptance criteria 1–8 from the dispatch one by one and record, per criterion, the exact
+      4b/4c attribution rows. *(completed: 142 passed, 0 failed)*
+- [x] `bash scripts/tests/test-orchestrate-recover-message-findings.sh` — passes (the one other
+      suite that reads the emitted JSON). *(completed: 23 passed, 0 failed)*
+- [x] `shellcheck` clean on `scripts/orchestrate-cycle-postflight.sh` and both edited test scripts,
+      per `context/standards/shell-strict-mode.md`. *(completed: zero new findings on all three —
+      every remaining notice pre-exists this task's edits)*
+- [x] Walk acceptance criteria 1–8 from the dispatch one by one and record, per criterion, the exact
       command or diff hunk that demonstrates it. Any criterion that cannot be demonstrated is
-      reported as an explicit exclusion with evidence, never quietly dropped.
-- [ ] `git status --short` and `git diff --staged` review: confirm only this task's files are staged,
+      reported as an explicit exclusion with evidence, never quietly dropped. *(completed — see the
+      per-criterion mapping in the implementation summary)*
+- [x] `git status --short` and `git diff --staged` review: confirm only this task's files are staged,
       nothing under `.claude/**`, and no sibling's in-flight modification was picked up. Stage an
-      explicit file list — never a directory or glob pathspec.
-- [ ] Commit the implementation completion.
+      explicit file list — never a directory or glob pathspec. *(completed: `specs/state.json`,
+      `specs/TODO.md`, `specs/events.jsonl`, `.claude-extensions.json`,
+      `.memory/memory-index.json`, three `index-entries.json` files,
+      `agent-system/extensions/typst/scripts/typst-element-lint.sh`,
+      `agent-system/extensions/core/commands/task.md`, and a stray
+      `specs/309_.../progress/phase-3-progress.json` are all concurrent sibling task 309's
+      in-flight work or shared orchestrator bookkeeping — none is in this task's file_scope, so
+      none is staged here. Only this task's own `specs/315_.../` artifacts and the seven edited
+      source-store files are committed.)*
+- [x] Commit the implementation completion. *(completed)*
 
 **Timing**: 45 minutes
 
