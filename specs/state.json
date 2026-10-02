@@ -5,7 +5,7 @@
     {
       "project_number": 309,
       "project_name": "replace_directory_pathspecs_with_explicit_file_lists",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Replace directory pathspecs with explicit file lists at the three task-commit sites",
       "description": "Three commit recipes in the source store still pass a bare `-- specs/` directory pathspec to git-commit-scoped.sh: skills/skill-git-workflow/SKILL.md line 216 (the generic \"Task Commit\" recipe, the most-copied of the three), agents/meta-builder-agent.md line 1496 (Stage 6), and skills/skill-meta/SKILL.md line 287 (postflight commit block). Under two concurrent /orchestrate batches, session A's commit sweeps session B's in-progress specs/ artifacts into A's commit -- the mode-1b bleed observed live during this task's own evidence gathering. These three recipes also contradict .claude/rules/git-workflow.md's Git Safety section, which already forbids a directory `git add` pathspec outright, so this is a source-store drift fix, not a policy change. Remedy: replace each bare directory pathspec with an explicit per-file list. Research must VERIFY (not assume) whether git-commit-scoped.sh's V5 per-path contention-claim check (specs/.contention-claims/) matches a DIRECTORY pathspec entry or slips past it -- the expectation is that it slips past, meaning the primitive cannot compensate for a wide call site, but this must be confirmed by reading the implementation. Close by adding a regression check that no commit recipe in the source store passes a bare directory pathspec. All edits land under agent-system/extensions/core/ per .claude/rules/source-store-deploy-boundary.md, never under .claude/**. Evidence base: specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. Goal context: make concurrent /orchestrate batches (different sessions, different agents, non-conflicting file scope and dependencies) trustworthy. SCOPE NOTE: none of these three files is an orchestrator-critical path, so this task does NOT trip the self-modification admission gate -- keep it that way; do not widen file_scope to include any critical path.",
@@ -14,10 +14,16 @@
       "effort": "small",
       "dependencies": [],
       "created": "2026-10-01T17:34:50Z",
-      "last_updated": "2026-10-02T13:17:46Z",
-      "session_id": "sess_1790947016_5ff368_309",
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "last_updated": "2026-10-02T13:27:58Z",
+      "session_id": "sess_1790947016_5ff368",
+      "artifacts": [
+        {
+          "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md",
+          "type": "report",
+          "summary": "Confirms by direct code reading that git-commit-scoped.sh's V5 contention check, guard-destructive-git.sh's hook, and the script's own V2 classification all fail to catch a bare directory pathspec; finds 17 occurrences of the `-- specs/` anti-pattern across 3 extensions (not the 3 named in the dispatch), and confirms widening fix scope would not trip the self-modification admission gate."
+        }
+      ],
+      "next_artifact_number": 2,
       "file_scope": [
         "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md",
         "agent-system/extensions/core/agents/meta-builder-agent.md",

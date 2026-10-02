@@ -1,69 +1,33 @@
 {
-  "status": "tasks_created",
-  "summary": "Created exactly 3 not_started meta tasks in the orchestrator topic, per a complete pre-approved specification (no interview). 309 (small) fixes the three bare `-- specs/` commit recipes; 310 (medium) wires --session-id into the pre-dispatch review and settles session-registry reaping; 311 (medium) replaces static BUILD_HEAVY_TASK_TYPES with a measured co-scheduling signal and records the isolation-posture findings. All three have empty dependencies[] and mutually disjoint file_scope, as specified.",
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790947016_5ff368_309",
+  "dispatch_seq": 4,
+  "task_number": 309,
+  "findings_count": 4,
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Three not_started meta tasks added (309, 310, 311); next_project_number advanced to 312"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Tasks 309, 310, 311 added to TODO.md; Task Order and Dependency Waves regenerated"
-    },
-    {
-      "type": "task_dir",
-      "path": "/home/benjamin/.config/nvim/specs/309_replace_directory_pathspecs_with_explicit_file_lists/",
-      "summary": "Task 309 directory (no dependencies, wave 1; not self-modifying)"
-    },
-    {
-      "type": "task_dir",
-      "path": "/home/benjamin/.config/nvim/specs/310_make_session_registry_trustworthy_contention_signal/",
-      "summary": "Task 310 directory (no dependencies, wave 1; self-modifying)"
-    },
-    {
-      "type": "task_dir",
-      "path": "/home/benjamin/.config/nvim/specs/311_measured_co_scheduling_signal_and_isolation_posture/",
-      "summary": "Task 311 directory (no dependencies, wave 1; self-modifying)"
+      "type": "report",
+      "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md",
+      "summary": "Confirms by direct code reading that git-commit-scoped.sh's V5 contention check, guard-destructive-git.sh's hook, and the script's own V2 classification all fail to catch a bare directory pathspec; finds 17 occurrences of the `-- specs/` anti-pattern across 3 extensions (not the 3 named in the dispatch), and confirms widening fix scope would not trip the self-modification admission gate."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1790875972_4b7da0",
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 3,
-    "task_numbers": [309, 310, 311],
-    "topic": "orchestrator",
-    "task_type": "meta",
-    "commit": "meta: create 3 tasks for concurrent-batch trustworthiness (orchestrator)",
-    "goal": "Make concurrent /orchestrate batches (different sessions, different agents, non-conflicting file scope and dependencies) trustworthy.",
-    "evidence_base": [
-      "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
-      "specs/decisions/worktree-isolation-removal-reaffirmation.md"
-    ],
-    "component_0_decision": "Task count, boundaries and scoping were supplied complete and pre-approved by the user; no interview, consolidation pass, or re-scoping was performed. The three-way division is along the file boundary: the three file_scope arrays are mutually disjoint (verified mechanically -- no path appears in more than one), which is why no serializing dependencies[] edge was auto-added by the file-footprint overlap pass. The build-weight change and the isolation-posture record were folded into a single task (311) because batch-orchestration-guardrails.md carries both in adjacent sections and the build-weight change must edit it anyway.",
-    "self_modification_expectation": "310 and 311 both declare orchestrator-critical paths (commands/orchestrate.md, scripts/task-lock.sh, scripts/orchestrate-cycle-plan.sh) and are expected to be deferred by the admission gate and re-invoked, NOT passed --allow-self-modifying. 309 declares no critical path and should not trip the gate; its file_scope must not be widened to include one.",
-    "deliberate_non_dependencies": [
-      "No edge was added between 309, 310 and 311: their file_scope arrays are disjoint by construction and the specification explicitly forbade such an edge.",
-      "310 deliberately omits context/patterns/batch-orchestration-guardrails.md from file_scope (it changes a wiring order and a maintenance policy, not the admission contract), which is the sole reason it stays disjoint from 311. If 310's research concludes the contract itself needs amending, that path should be added to 310's file_scope at that point and the resulting serializing edge against 311 accepted."
-    ],
-    "explicit_non_goals_honored": [
-      "No task created for restoring per-dispatch git worktree isolation (verdict re-opened, re-argued and CONFIRMED in specs/decisions/worktree-isolation-removal-reaffirmation.md).",
-      "No task created for the layer-1/2/3 admission scan-scope residual (intentional non-goal per batch-orchestration-guardrails.md).",
-      "No task created for a Lake/Mathlib shared-cache feasibility spike (named as a possible future spike, not requested)."
-    ],
-    "overlap_finding_requires_user_decision": {
-      "severity": "material",
-      "finding": "Pre-existing task 302 [not_started] ('Replace the bare `-- specs/` directory pathspec at commit-staging sites and pass `--task` to engage the contended-path lease') already covers task 309's entire remit as a strict superset. All three of 309's file_scope paths (skills/skill-git-workflow/SKILL.md, agents/meta-builder-agent.md, skills/skill-meta/SKILL.md) are already declared in 302's 10-path file_scope, and 302 names the same three line numbers (216, 1496, 287) plus six further defective staging sites (commands/todo.md x7, commands/task.md x2, and four extension command files), the missing-`--task` audit, and the per-site ruling record in context/standards/git-staging-scope.md.",
-      "not_acted_on_because": "The specification was pre-approved and explicitly forbade merging, re-scoping, or adding a fourth task, and no external dependency edge was authorized. 309 was therefore created exactly as specified and 302 was not edited.",
-      "novel_content_in_309_not_in_302": "309 adds two items 302 does not state: (a) verify whether git-commit-scoped.sh's V5 per-path contention-claim check matches a DIRECTORY pathspec entry or slips past it, and (b) add a regression check that no commit recipe in the source store passes a bare directory pathspec. 302's acceptance criterion 3 declines to edit scripts/lint/lint-scoped-commit-boundary.sh and only recommends assessing mechanical detection.",
-      "recommended_user_decision": "Either abandon 309 and fold its two novel items into 302, or narrow 302's file_scope to exclude 309's three paths. Running both as written means two not_started tasks editing the same three files, which the file_scope_collision admission gate will serialize without either task knowing it duplicates the other."
+  "memory_candidates": [
+    {
+      "content": "git-commit-scoped.sh's V5 contended-path check (specs/.contention-manifest/) matches pathspec entries by EXACT STRING EQUALITY (`.path == $p`) against the caller's own literal pathspec token. A directory-shaped token (e.g. `specs/`) can never equal a specific file path, so it silently slips past V5 regardless of manifest contents -- and separately, the manifest is populated only from task file_scope declarations, which essentially never include specs/ artifact paths, so V5 is structurally orthogonal to specs/-artifact cross-task bleed. guard-destructive-git.sh's directory/glob pathspec hook also misses this class: its detector only fires on the literal substring 'git add' in the Bash tool command text, never on a wrapper script invocation like `bash .../git-commit-scoped.sh ... -- specs/`.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git-commit-scoped.sh", "V5", "contention-manifest", "directory-pathspec", "guard-destructive-git.sh"]
+    },
+    {
+      "content": "When a task description cites a specific count of 'N occurrences' of a code anti-pattern as the basis for a small-effort fix, re-verify the count with a full-tree grep before accepting the scope as given -- in task 309, 'three commit recipes pass a bare -- specs/ pathspec' undercounted the actual source-store footprint (17 occurrences across 3 extensions) by more than 5x. Cross-check against context/reference/orchestrator-critical-paths.json before recommending a scope widening, to confirm it would not trip the self-modification admission gate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["scope-verification", "grep-inventory", "self-modification-admission-gate", "task-description-accuracy"]
     }
-  },
-  "next_steps": "Resolve the 302/309 duplication first (see overlap_finding_requires_user_decision). All three new tasks are wave-1 candidates with no dependencies: run /research 309 (or /orchestrate 309-311) once the 302 question is settled. 310 and 311 will be deferred by the self-modification admission gate on first dispatch and need re-invocation."
+  ],
+  "next_steps": "Run /plan 309 to create implementation plan"
 }
