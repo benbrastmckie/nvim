@@ -1,7 +1,7 @@
 # Implementation Plan: Replace directory pathspecs with explicit file lists
 
 - **Task**: 309 - Replace directory pathspecs with explicit file lists at the three task-commit sites
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/309_replace_directory_pathspecs_with_explicit_file_lists/reports/01_directory-pathspec-v5-gap.md
@@ -112,24 +112,34 @@ Phases within the same wave can execute in parallel. Phases 2, 3, and 4 touch di
 (core recipe trio / core command files / non-core extension command files) and are safe to run
 concurrently.
 
-### Phase 1: Create the directory-pathspec regression lint [NOT STARTED]
+### Phase 1: Create the directory-pathspec regression lint [COMPLETED]
 
 **Goal**: A standalone lint exists that mechanically identifies every bare shared-directory
 pathspec passed to `git-commit-scoped.sh`, with its detection boundary fixture-tested in both
 polarities, so Phases 2-4 have an objective completeness oracle rather than a hand-maintained list.
 
 **Tasks**:
-- [ ] Re-confirm the violation inventory mechanically and record the exact count as the baseline
+- [x] Re-confirm the violation inventory mechanically and record the exact count as the baseline
       for this phase's verification:
       `grep -rn -- '^[[:space:]]*--[[:space:]]specs/$' agent-system/extensions/` (expect 11) and
       `grep -rn -- '-- specs/$' agent-system/extensions/core/commands/todo.md` (expect 7 total in
-      that file, 1 multi-line + 6 single-line).
-- [ ] Write `agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh`,
+      that file, 1 multi-line + 6 single-line). *(completed: both greps confirmed exactly as
+      expected -- 11 and 7. DISCREPANCY FOUND beyond this baseline: the lint's own full-tree run
+      (once written) additionally found 2 real violations this grep pattern does not match
+      because the token differs from bare `specs/`: `context/standards/git-safety.md:365`
+      (`specs/archive/`) and `memory/skills/skill-learn/SKILL.md:1060` (`.memory/`). True count
+      is 19 violations across 11 files, not 17 across 9. A third raw hit
+      (`docs/examples/research-flow-example.md:239`, token `specs/427_document.../reports/`) is
+      a lint false positive, not a real violation -- it is a worked example with a concrete,
+      already-substituted task number, just written with a literal `...` ellipsis instead of a
+      `{N}`-style placeholder. Fixed by broadening the lint's task-scoped classifier to also
+      recognize a literal `/[0-9]+_` directory-segment prefix, per Phases 2-5 below.)*
+- [x] Write `agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh`,
       mirroring `lint-scoped-commit-boundary.sh`'s structure: same `resolve_project_root` walk-up,
       same default scan root (`$PROJECT_ROOT/agent-system/extensions`), same
       `--verbose`/`--quiet`/`[path...]` flags, same exit codes (0 clean / 1 violations / 2 script
       error), same `.md`+`.sh` file discovery.
-- [ ] Implement the two-layer detection model:
+- [x] Implement the two-layer detection model:
       **Layer 1 (candidate window)** — a line is a candidate when it carries a trailing
       `-- <pathspec>` AND lies within a `git-commit-scoped.sh` invocation. Handle both the
       single-line form and the backslash-continued multi-line form by maintaining a small
@@ -141,21 +151,21 @@ polarities, so Phases 2-4 have an objective completeness oracle rather than a ha
       contains a `${...}` interpolation or a `{N}`/`{NNN}`-style placeholder;
       `EXEMPT: explicit file path` otherwise. A `:(exclude)...` token is never a positive
       pathspec and is skipped.
-- [ ] Add a file-level allowlist (Layer 3, mirroring the sibling lint's `EXCLUDED_FILES`) holding
+- [x] Add a file-level allowlist (Layer 3, mirroring the sibling lint's `EXCLUDED_FILES`) holding
       only self-reference entries: the lint itself and its fixture test. Every entry carries its
       reason inline. **No entry may stand in for an unfixed violation** — that is what makes
       Phase 5's green run meaningful.
-- [ ] Document in the script header, plainly: the KNOWN LIMITATION (regex/line-oriented, cannot
+- [x] Document in the script header, plainly: the KNOWN LIMITATION (regex/line-oriented, cannot
       follow a variable-indirected pathspec or an invocation assembled beyond the lookback
       window), and the deliberate task-scoped-directory carve-out with its
       `git-staging-scope.md` justification.
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh`,
+- [x] Write `agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh`,
       mirroring `test-lint-scoped-commit-boundary.sh`'s both-polarity fixture model: dirty
       fixtures (bare `-- specs/` multi-line, bare `-- specs/` single-line, a bare `-- .claude/`)
       must be flagged; clean fixtures (`-- specs/TODO.md specs/state.json`,
       `-- "specs/${padded}_${slug}/" specs/TODO.md`, `-- "${task_dir}/" specs/state.json`, a
       `git add`-free prose mention) must not be. Assert exit codes, not just output text.
-- [ ] Register both new scripts in `agent-system/extensions/core/manifest.json`'s `provides`
+- [x] Register both new scripts in `agent-system/extensions/core/manifest.json`'s `provides`
       arrays, alongside the existing `lint/lint-scoped-commit-boundary.sh` (line ~133) and
       `tests/test-lint-scoped-commit-boundary.sh` (line ~211) entries.
 

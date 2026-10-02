@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Create the directory-pathspec regression lint",
+  "started_at": "2026-10-02T00:00:00Z",
+  "last_updated": "2026-10-02T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm violation inventory mechanically", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write lint-directory-pathspec-boundary.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh"]},
+    {"id": 3, "description": "Implement two-layer detection model", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh"]},
+    {"id": 4, "description": "Add file-level allowlist (Layer 3)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh"]},
+    {"id": 5, "description": "Document KNOWN LIMITATION and carve-out in header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh"]},
+    {"id": 6, "description": "Write test-lint-directory-pathspec-boundary.sh fixture test", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh"]},
+    {"id": 7, "description": "Register both new scripts in manifest.json provides arrays", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Classify task-scoped directory via ${...} or {N}-style placeholder only", "result": "insufficient", "reason": "missed a worked example with a concrete already-substituted task number (specs/427_document.../reports/); broadened to also match literal /[0-9]+_ directory-segment prefix"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Scope Hypothesis asserted exactly 17 violations across 9 files",
+      "type": "altered",
+      "reason": "Live full-tree lint run found 19 real violations across 11 files (2 additional genuine violations beyond the plan's named inventory: context/standards/git-safety.md:365 bare specs/archive/, and memory/skills/skill-learn/SKILL.md:1060 bare .memory/), plus 1 false-positive raw hit fixed by broadening the lint's own classifier rather than editing the example doc.",
+      "annotation": "*(deviation: altered -- true count is 19/11, not 17/9; see Task 1.1's completion note)*"
+    }
+  ]
+}

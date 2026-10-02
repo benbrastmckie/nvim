@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/plans/01_explicit-file-list-pathspecs.md",
-      "summary": "5-phase plan replacing all 17 bare `-- specs/` pathspec occurrences across 9 recipe files in 3 extensions with explicit file lists, plus a new standalone directory-pathspec regression lint and its both-polarity fixture test."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 15,
   "metadata": {
-    "session_id": "sess_1790947016_5ff368_309",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4.5,
-    "dependency_waves": [[1], [2, 3, 4], [5]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a task's scope note forbids touching any orchestrator-critical path (context/reference/orchestrator-critical-paths.json), adding a NEW lint script is admissible but WIRING it as a gate is not: scripts/verify-deploy.sh is itself critical-path entry 12. The lint ships, registers in the extension manifest's provides arrays, and is auto-discovered by scripts/tests/run-all.sh (which globs scripts/tests/test-*.sh with no registration step) -- but it is inert until a later, gate-admitting task adds the verify-deploy.sh gate. Plan for this split up front and record the gate wiring as an explicit follow-up with its reason, rather than discovering the constraint mid-implementation and either violating the scope note or silently shipping an unenforced lint.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/309_replace_directory_pathspecs_with_explicit_file_lists/plans/01_explicit-file-list-pathspecs.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrator-critical-paths", "verify-deploy", "lint-gate-wiring", "scope-note", "manifest-provides", "run-all-discovery"]
-    }
-  ],
-  "dispatch_seq": 9
+    "session_id": "sess_1790947016_5ff368",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
