@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Ship the consumer-runnable legacy-field migration",
+  "started_at": "2026-10-02T20:20:00Z",
+  "last_updated": "2026-10-02T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create migrate-state-legacy-fields.sh modelled on migrate-directory-padding.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh"]},
+    {"id": 2, "description": "Implement retire step (artifacts/metadata/last_updated) with full-value stdout record", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh"]},
+    {"id": 3, "description": "Implement normalize step (blockers string->array)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh"]},
+    {"id": 4, "description": "Write exclusively through deployed state-write.sh; refuse archive/outside-repo targets; idempotent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh"]},
+    {"id": 5, "description": "Smoke-test against scratchpad copy of real consumer state.json; chmod +x; shellcheck", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

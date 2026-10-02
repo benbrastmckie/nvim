@@ -386,7 +386,7 @@ number, since four sibling tasks may have shifted them.
 
 ---
 
-### Phase 5: Ship the consumer-runnable legacy-field migration [NOT STARTED]
+### Phase 5: Ship the consumer-runnable legacy-field migration [COMPLETED]
 
 **Goal**: A consumer repo owner can run one idempotent script against their own `specs/state.json`
 that retires the three dead top-level fields and normalizes `blockers` to arrays, printing every
@@ -395,29 +395,38 @@ artifacts.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh`, modelled
+- [x] Create `agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh`, modelled
       structurally on the existing `migrate-directory-padding.sh` (same `--dry-run` flag, `set
       -euo pipefail`, colour helpers, argument loop) so it reads as a sibling of the migration
-      precedent already in the tree.
-- [ ] Flags: `--dry-run` (preview, default off), `--state-file PATH` (default `specs/state.json`),
-      `--help`.
-- [ ] Step 1 — retire: if present, print each of top-level `artifacts`, `metadata`, `last_updated`
+      precedent already in the tree. *(completed)*
+- [x] Flags: `--dry-run` (preview, default off), `--state-file PATH` (default `specs/state.json`),
+      `--help`. *(completed)*
+- [x] Step 1 — retire: if present, print each of top-level `artifacts`, `metadata`, `last_updated`
       with its **full current value** to stdout under an explicit "recording dropped value before
-      removal" heading, then delete the key.
-- [ ] Step 2 — normalize: for every `active_projects[]` entry whose `blockers` is a string, print
+      removal" heading, then delete the key. *(completed)*
+- [x] Step 2 — normalize: for every `active_projects[]` entry whose `blockers` is a string, print
       the before/after and wrap it in a single-element array. Leave already-array values untouched.
-- [ ] Write exclusively through the deployed `scripts/state-write.sh`, matching the discipline
+      *(completed)*
+- [x] Write exclusively through the deployed `scripts/state-write.sh`, matching the discipline
       `validate-state.sh --fix` already follows; never write `state.json` with a raw
-      `jq > tmp && mv`.
-- [ ] Make it idempotent: a second run reports "nothing to migrate" and exits 0 without writing.
-- [ ] Refuse to touch `specs/archive/state.json` (explicitly out of this schema's scope per the
+      `jq > tmp && mv`. *(completed — same candidate-resolution discipline copied verbatim)*
+- [x] Make it idempotent: a second run reports "nothing to migrate" and exits 0 without writing.
+      *(completed and verified against both a synthetic fixture and the real consumer snapshot)*
+- [x] Refuse to touch `specs/archive/state.json` (explicitly out of this schema's scope per the
       schema's own header note) and refuse any path outside the repo it is invoked in; fail loudly
-      rather than silently skipping.
-- [ ] Print a closing summary naming what was preserved and where (the dropped values are in this
-      run's own stdout; advise capturing it).
-- [ ] Smoke-test against a **copy** of the consumer repo's `specs/state.json` placed in the
-      scratchpad directory — never against `~/Projects/BimodalLogic` itself.
-- [ ] `chmod +x`; commit.
+      rather than silently skipping. *(completed and verified — both refusals tested directly,
+      exit 2 with a named reason in each case)*
+- [x] Print a closing summary naming what was preserved and where (the dropped values are in this
+      run's own stdout; advise capturing it). *(completed)*
+- [x] Smoke-test against a **copy** of the consumer repo's `specs/state.json` placed in the
+      scratchpad directory — never against `~/Projects/BimodalLogic` itself. *(completed — a
+      synthetic fixture first, then the real BimodalLogic snapshot copied into a scratchpad
+      fake-deployed-tree fixture; dry-run matched the real run exactly: 3 top-level fields
+      dropped, 3 blockers entries normalized (298, 257, 428), 481's existing array untouched;
+      post-migration validate-state.sh showed zero findings for the eight in-scope fields, only
+      `parent_task` (owned elsewhere) remaining; confirmed via `git status` that
+      `~/Projects/BimodalLogic` itself was never written to by this script)*
+- [x] `chmod +x`; commit. *(completed)*
 
 **Timing**: 1.5 hours
 
