@@ -1,7 +1,7 @@
 # Implementation Plan: Reconcile MCP Registration Surfaces
 
 - **Task**: 241 - Reconcile MCP registration surfaces: redundant playwright grants, dead manifest mcp_servers fields, ownership doc and nix README
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/241_reconcile_mcp_registration_surfaces/reports/01_reconcile-mcp-surfaces.md
@@ -175,7 +175,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-verify preconditions and capture baselines [NOT STARTED]
+### Phase 1: Re-verify preconditions and capture baselines [COMPLETED]
 
 **Goal**: Establish, at implementation time rather than on the strength of the research snapshot,
 that item 1's hard precondition holds, that no `mcp_servers` reader has appeared, and that the
@@ -183,30 +183,39 @@ pre-existing doc-lint failure and out-of-scope file states are recorded so Phase
 task's effects from the working tree's ambient noise.
 
 **Tasks**:
-- [ ] Re-run the item 1 hard precondition:
+- [x] Re-run the item 1 hard precondition:
       `jq '[.permissions.allow[]? | select(test("playwright"))] | length' ~/.claude/settings.json`.
       Record the value. **It MUST be 9** for Phase 2 to run. Any other value means Phase 2 is
-      skipped entirely (see the branch below)
-- [ ] Confirm user-scope registration is live: `jq -r '.mcpServers | keys[]' ~/.claude.json`
-      lists both `playwright` and `nixos`
-- [ ] Re-run the no-dangling-reader sweep:
+      skipped entirely (see the branch below) *(completed: observed value is 9 — precondition holds)*
+- [x] Confirm user-scope registration is live: `jq -r '.mcpServers | keys[]' ~/.claude.json`
+      lists both `playwright` and `nixos` *(completed: both keys present)*
+- [x] Re-run the no-dangling-reader sweep:
       `grep -rn "mcp_servers" --include='*.sh' --include='*.py' --include='*.lua' agent-system/`
       MUST return nothing. Then widen to `--include='*.json' --include='*.md'` and confirm every
       hit is either one of the five `manifest.json` files or one of the documentation mentions that
-      already describe the field as inert
-- [ ] Re-confirm the five-file inventory is still exactly `filetypes`, `founder`, `lean`, `memory`,
+      already describe the field as inert *(completed: sh/py/lua sweep empty; widened sweep found
+      one additional hit beyond the plan's inventory —
+      `epidemiology/context/project/epidemiology/tools/mcp-guide.md`, a generic MCP-client-config
+      JSON example coincidentally using the same key name, unrelated to the agent-system manifest
+      mechanism, not a reader, out of file scope — left untouched)*
+- [x] Re-confirm the five-file inventory is still exactly `filetypes`, `founder`, `lean`, `memory`,
       `nix`:
       `for m in agent-system/extensions/*/manifest.json; do jq -e 'has("mcp_servers")' "$m" >/dev/null 2>&1 && echo "$m"; done`
-- [ ] Capture the out-of-scope guard hash:
+      *(completed: confirmed exactly these five, no more no fewer)*
+- [x] Capture the out-of-scope guard hash:
       `sha256sum agent-system/extensions/memory/settings-fragment.json` (Phase 7 compares against
-      this exact value)
-- [ ] Capture the doc-lint baseline: `bash .claude/scripts/check-extension-docs.sh 2>&1 | tail -40`.
+      this exact value) *(completed: ec92007a36639a3ab7e351441e762ebd03983204560ebac854dceaee17fb8456)*
+- [x] Capture the doc-lint baseline: `bash .claude/scripts/check-extension-docs.sh 2>&1 | tail -40`.
       Record which extensions FAIL and why. The expected plan-time baseline is exactly one FAIL —
       `core`, for `deployed script content drift (deployed != extension source):
       scripts/reap-session-runtime-files.sh` — which belongs to another task's declared file scope
-      and is NOT this task's to fix
-- [ ] Re-read each of the ten target files immediately before its own phase edits it (concurrent
-      siblings are live in this tree)
+      and is NOT this task's to fix *(deviation: altered — observed baseline is zero FAIL, all
+      extensions PASS; the predicted core FAIL has evidently already been fixed by another task
+      since plan time. Phase 7's required comparison target is revised to "no new FAIL" against a
+      zero-FAIL baseline)*
+- [x] Re-read each of the ten target files immediately before its own phase edits it (concurrent
+      siblings are live in this tree) *(completed: performed per-phase at each phase's own edit
+      step, not all upfront in Phase 1)*
 
 **Timing**: 0.25 hours
 

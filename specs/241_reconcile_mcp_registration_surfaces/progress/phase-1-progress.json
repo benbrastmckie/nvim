@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Re-verify preconditions and capture baselines",
+  "started_at": "2026-10-02T00:00:00Z",
+  "last_updated": "2026-10-02T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run item 1 hard precondition (playwright grant count)", "status": "done", "files_touched": [], "note": "jq count = 9, precondition HOLDS"},
+    {"id": 2, "description": "Confirm user-scope registration live (playwright, nixos)", "status": "done", "files_touched": [], "note": "~/.claude.json .mcpServers keys = [nixos, playwright]"},
+    {"id": 3, "description": "Re-run no-dangling-reader sweep", "status": "done", "files_touched": [], "note": "sh/py/lua: no matches. json/md widened sweep found one unexpected hit: agent-system/extensions/epidemiology/context/project/epidemiology/tools/mcp-guide.md (generic MCP client config JSON example using the key name 'mcp_servers' coincidentally -- unrelated to the agent-system manifest.json mechanism, not a reader, out of file scope, left untouched)"},
+    {"id": 4, "description": "Re-confirm five-file manifest.json mcp_servers inventory", "status": "done", "files_touched": [], "note": "Confirmed exactly: filetypes, founder, lean, memory, nix"},
+    {"id": 5, "description": "Capture memory/settings-fragment.json out-of-scope guard hash", "status": "done", "files_touched": [], "note": "sha256: ec92007a36639a3ab7e351441e762ebd03983204560ebac854dceaee17fb8456"},
+    {"id": 6, "description": "Capture doc-lint baseline", "status": "done", "files_touched": [], "note": "check-extension-docs.sh: ALL extensions PASS (0 FAIL), differs from plan's predicted one-FAIL (core/reap-session-runtime-files.sh) baseline -- that drift has evidently been fixed since plan time (git log shows task 51 touched the reaper). Recorded as: baseline is zero FAIL."},
+    {"id": 7, "description": "Re-read each of ten target files immediately before its own phase edits", "status": "done", "files_touched": [], "note": "performed per-phase, not all upfront"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/241_reconcile_mcp_registration_surfaces/plans/01_reconcile-mcp-surfaces.md",
-      "summary": "7-phase plan reconciling four MCP registration/permission surfaces in the agent-system source store (redundant playwright enumerations, five dead manifest mcp_servers fields, ownership doc, nix README), plus two consequential doc-staleness sites item 1 creates."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 24,
   "metadata": {
-    "session_id": "sess_1790721762_ff3d8e_241",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 2.75,
-    "dependency_waves": [[1], [2, 3], [4, 5, 6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "check-extension-docs.sh (the 'doc-lint' gate) sets EXT_DIR to $REPO_ROOT/agent-system/extensions -- the SOURCE STORE -- not the deployed .claude/extensions/ tree, despite its own header comment and startup banner both claiming it 'iterates .claude/extensions/*/'. Consequence: doc-lint covers EVERY source extension including ones not loaded in the current repo (web, present, filetypes, founder are lintable in a repo whose .claude/extensions/ holds only core, email, lean, literature, memory, nix). Two corollaries for plan/verification design: (1) a doc-lint gate over an unloaded extension does NOT require a deploy first; (2) the 'WARN: README.md older than manifest.json' and 'routing target not deployed' lines are info-level only -- they do not set EXTENSION_STATUS or increment FAILURES, so they never affect the exit code. Verify a gate script's actual root variable before assuming its banner text.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/241_reconcile_mcp_registration_surfaces/plans/01_reconcile-mcp-surfaces.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["check-extension-docs", "doc-lint", "EXT_DIR", "source-store", "deploy-boundary", "gate-severity"]
-    }
-  ],
-  "next_steps": "Run /implement 241 to execute the plan",
-  "dispatch_seq": 19
+    "session_id": "sess_1790968925_5ff73e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
