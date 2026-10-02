@@ -256,7 +256,7 @@ When $ARGUMENTS contains a description (no flags).
      --message "task {N}: create {title}" \
      --session "${session_id}" \
      --honest-index-rows {N} \
-     -- specs/
+     -- specs/TODO.md specs/state.json
    ```
 
 8. **Output**:
@@ -890,7 +890,7 @@ bash .claude/scripts/git-commit-scoped.sh \
   --message "task {parent_N}: review - created {N} follow-up tasks" \
   --session "${session_id}" \
   --honest-index-rows {parent_N} \
-  -- specs/
+  -- specs/TODO.md specs/state.json
 ```
 
 **If no tasks created**:

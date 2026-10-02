@@ -357,12 +357,16 @@ interacts with the fix-forward discipline.
 <stage id="7" name="CreateFinalCommit">
   <action>Create final commit</action>
   <process>
-    1. Create final commit via the scoped-commit script:
+    1. Create final commit via the scoped-commit script. Never a bare `specs/archive/`
+       directory pathspec here (it would stage any OTHER concurrent session's uncommitted
+       `specs/archive/` writes too) -- name `specs/archive/state.json` explicitly, the same file
+       already named at stage 5's safety commit above, plus each project directory Stage 6
+       actually moved into `specs/archive/`:
        ```bash
        bash .claude/scripts/git-commit-scoped.sh \
          --message "todo: archive {N} completed/abandoned tasks" \
          --session "${session_id}" \
-         -- specs/TODO.md specs/state.json specs/archive/
+         -- specs/TODO.md specs/state.json specs/archive/state.json {moved_directory_paths}
        ```
     2. If commit fails:
        - Log error (non-critical, changes already made)

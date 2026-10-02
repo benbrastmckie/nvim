@@ -349,7 +349,8 @@ Replace memory content while preserving structure:
 4. Move current content to ## History section with date marker
 5. Replace main content with new segment content
 6. Preserve ## Connections section
-7. Write updated memory
+7. Write updated memory, then append its path to `touched_memory_paths` for the Git Commit
+   stage's pathspec
 ```
 
 Template for UPDATE:
@@ -388,7 +389,8 @@ Append new dated section without modifying existing content:
 3. Add dated extension section
 4. Update frontmatter: modified = today
 5. Optionally update tags if new topics introduced
-6. Write updated memory
+6. Write updated memory, then append its path to `touched_memory_paths` for the Git Commit
+   stage's pathspec
 ```
 
 Template for EXTEND:
@@ -450,7 +452,8 @@ Generate new memory from segment:
 2. Apply memory template with all fields
 3. Infer and apply topic
 4. Add to index (both category and topic sections)
-5. Write new memory file
+5. Write new memory file at `.memory/10-Memories/${filename}`, then append that path to
+   `touched_memory_paths` for the Git Commit stage's pathspec
 ```
 
 Template for CREATE:
@@ -1051,13 +1054,18 @@ MCP search unavailable. Using grep-based fallback.
 
 ## Git Commit (Postflight)
 
-After successful memory operations:
+After successful memory operations, stage the three indexes (always regenerated in full from
+filesystem state, per Index Regeneration Pattern and JSON Index Maintenance above) plus every
+individual memory file this run touched (`touched_memory_paths`, accumulated by each
+UPDATE/EXTEND/CREATE operation above) — never a bare `.memory/` directory pathspec, which would
+stage any OTHER concurrent session's uncommitted memory writes too:
 
 ```bash
 bash .claude/scripts/git-commit-scoped.sh \
   --message "memory: add/update ${memories_affected} memories" \
   --session "${session_id}" \
-  -- .memory/
+  -- .memory/10-Memories/README.md .memory/20-Indices/index.md .memory/memory-index.json \
+     "${touched_memory_paths[@]}"
 ```
 
 ---

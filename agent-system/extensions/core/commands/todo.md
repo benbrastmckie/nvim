@@ -556,6 +556,15 @@ If no misplaced directories were found, skip this step and proceed.
 
 ### 5. Archive Tasks
 
+Initialize the Step 6 commit's explicit pathspec accumulator. This archival operation's real
+write set is inherently dynamic (which directories move, whether the roadmap gets annotated,
+whether a vault rotation fires), so Step 6 stages exactly this array rather than a bare `specs/`
+directory pathspec -- a bare directory token would sweep any OTHER concurrent session's
+in-progress, uncommitted `specs/` writes into this commit too:
+```bash
+stage_paths=(specs/TODO.md specs/state.json)
+```
+
 **A. Update archive/state.json**
 
 Ensure archive directory exists:
@@ -585,6 +594,12 @@ bash .claude/scripts/state-write.sh \
   --session-id "$session_id" \
   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --argjson tasks "$archivable_tasks_json"
+```
+
+Add `specs/archive/state.json` to the Step 6 commit's pathspec accumulator (touched above,
+whether by the bootstrap or by this update):
+```bash
+stage_paths+=(specs/archive/state.json)
 ```
 
 **B. Update state.json**
@@ -647,6 +662,7 @@ if [ -n "$src" ] && [ -d "$src" ]; then
   mv "$src" "$dst"
   echo "Moved: $(basename "$src") -> archive/${padded_num}_${project_name}/"
   # Track this move for output reporting
+  stage_paths+=("$dst")
 else
   echo "Note: No directory for task ${project_number} (skipped)"
   # Track this skip for output reporting
@@ -667,6 +683,7 @@ for orphan_dir in "${orphaned_in_specs[@]}"; do
   dir_name=$(basename "$orphan_dir")
   mv "$orphan_dir" "specs/archive/${dir_name}"
   echo "Moved orphan: ${dir_name} -> archive/"
+  stage_paths+=("specs/archive/${dir_name}")
 done
 ```
 
@@ -732,6 +749,7 @@ for dir in "${misplaced_in_specs[@]}"; do
   mv "$dir" "$dst"
   echo "Moved misplaced: ${dir_name} -> archive/"
   ((misplaced_moved++))
+  stage_paths+=("$dst")
 done
 ```
 
@@ -806,6 +824,14 @@ Edit old_string: "- [ ] {item_text}"
 ```
 Track `roadmap_abandoned_annotated` as the count of these edits applied.
 
+If either annotation count is nonzero, `specs/ROADMAP.md` was written this run -- add it to the
+Step 6 commit's pathspec accumulator:
+```bash
+if [ "${roadmap_completed_annotated:-0}" -gt 0 ] || [ "${roadmap_abandoned_annotated:-0}" -gt 0 ]; then
+  stage_paths+=(specs/ROADMAP.md)
+fi
+```
+
 **4. Track changes for output reporting**:
 - `roadmap_completed_annotated` - from the script's `annotation_summary.annotations_made`
 - `roadmap_abandoned_annotated` - from `/todo`'s own abandoned-path count (step 3 above)
@@ -878,6 +904,12 @@ mkdir -p "$vault_path"
 mv "specs/archive" "${vault_path}/archive"
 # A file rename, not a state write -- correctly outside state-write.sh's remit.
 mv "${vault_path}/archive/state.json" "${vault_path}/state.json"
+
+# Stage the rename's exact old and new paths together so `git add` records it as a rename
+# rather than leaving the old tree's removal unstaged. This is NOT a bare shared-directory
+# pathspec: both tokens name the two exact paths this one `mv` just touched, not an open-ended
+# directory sweep.
+stage_paths+=(specs/archive "${vault_path}/")
 ```
 
 **Step 5.7.5: Create vault meta.json**:
@@ -912,7 +944,10 @@ For each task with project_number > 1000:
 1. Update state.json project_number (subtract 1000)
 2. Update artifact paths (4-digit dir -> 3-digit dir)
 3. Update dependencies arrays
-4. Rename task directories
+4. Rename task directories -- for each rename, add both the old and new directory paths to the
+   Step 6 commit's pathspec accumulator (`stage_paths+=("$old_dir" "$new_dir")`), mirroring
+   Step 5.7.4's rename-pair staging above, so the directory move is recorded rather than left as
+   an unstaged deletion.
 5. Update TODO.md entries
 
 **Step 5.7.8: Reset state**:
@@ -982,7 +1017,10 @@ runs ahead of Step 6's commit in the same invocation, not inside it.
 
 Stage and commit together via `.claude/scripts/git-commit-scoped.sh`, the single sanctioned
 implementation of path-scoped, mutex-serialized committing (never a bare `git add` plus a bare
-`git commit`). This archival operation legitimately spans many tasks' rows in one commit, so
+`git commit`, and never a bare shared-directory pathspec either — `stage_paths`, accumulated
+through Step 5's own sub-steps above, names exactly the files and directories this run touched,
+so a concurrent session's OTHER in-progress, uncommitted `specs/` writes are never swept into
+this commit). This archival operation legitimately spans many tasks' rows in one commit, so
 `--honest-index-rows` (which flags OTHER tasks' rows unexpectedly swept into a single task-scoped
 commit) does not apply here:
 
@@ -990,28 +1028,29 @@ commit) does not apply here:
 bash .claude/scripts/git-commit-scoped.sh \
   --message "todo: archive {N} completed tasks" \
   --session "${session_id}" \
-  -- specs/
+  -- "${stage_paths[@]}"
 ```
 
-Include roadmap, orphan, and misplaced counts in message as applicable:
+Include roadmap, orphan, and misplaced counts in message as applicable (same `stage_paths`
+accumulated above; only the `--message` text varies across these variants):
 ```bash
 # If roadmap items updated, orphans tracked, and misplaced moved:
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items, track {M} orphans, move {P} misplaced" --session "${session_id}" -- specs/
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items, track {M} orphans, move {P} misplaced" --session "${session_id}" -- "${stage_paths[@]}"
 
 # If roadmap items updated only:
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items" --session "${session_id}" -- specs/
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items" --session "${session_id}" -- "${stage_paths[@]}"
 
 # If roadmap items updated and orphans tracked:
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items, track {M} orphaned directories" --session "${session_id}" -- specs/
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items, track {M} orphaned directories" --session "${session_id}" -- "${stage_paths[@]}"
 
 # If orphans tracked and misplaced moved (no roadmap):
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, track {M} orphans, move {P} misplaced directories" --session "${session_id}" -- specs/
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, track {M} orphans, move {P} misplaced directories" --session "${session_id}" -- "${stage_paths[@]}"
 
 # If only orphans tracked (no roadmap):
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and track {M} orphaned directories" --session "${session_id}" -- specs/
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and track {M} orphaned directories" --session "${session_id}" -- "${stage_paths[@]}"
 
 # If only misplaced moved (no roadmap):
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and move {P} misplaced directories" --session "${session_id}" -- specs/
+bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and move {P} misplaced directories" --session "${session_id}" -- "${stage_paths[@]}"
 ```
 
 Where `{R}` = roadmap_completed_annotated + roadmap_abandoned_annotated (total roadmap items updated).

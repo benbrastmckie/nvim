@@ -257,18 +257,18 @@ scripts it invokes and the files those write — do not carry the list over from
 
 ---
 
-### Phase 3: Fix the remaining core command sites [NOT STARTED]
+### Phase 3: Fix the remaining core command sites [COMPLETED]
 
 **Goal**: `commands/task.md` and `commands/todo.md` — the remaining 9 core occurrences — stage
 explicit file lists, including `todo.md`'s six message-variant example lines.
 
 **Tasks**:
-- [ ] Re-read both files immediately before editing.
-- [ ] `commands/task.md:259` (Step 7, task creation) and `commands/task.md:893` (review/spawn
+- [x] Re-read both files immediately before editing.
+- [x] `commands/task.md:259` (Step 7, task creation) and `commands/task.md:893` (review/spawn
       follow-up-task commit) — replace `-- specs/` with `-- specs/TODO.md specs/state.json`,
       matching `skill-fix-it/SKILL.md:629`'s already-correct in-repo model. Both sites already
       pass `--honest-index-rows`; leave it.
-- [ ] `commands/todo.md:993` (Step 6 archival commit) — replace `-- specs/` with the archival
+- [x] `commands/todo.md:993` (Step 6 archival commit) — replace `-- specs/` with the archival
       operation's actual write set, enumerated: `specs/TODO.md specs/state.json
       specs/CHANGE_LOG.md specs/archive/` plus the specific archived task directories the step
       moved. Keep the existing comment at lines 983-985 explaining why `--honest-index-rows` does
@@ -276,10 +276,18 @@ explicit file lists, including `todo.md`'s six message-variant example lines.
       *committed* rows" (true, and why the flag is skipped) from "sweeps in another session's
       *uncommitted* in-flight writes" (the mode-1b hazard the explicit list closes) — the two
       claims are different, and only the explicit list separates them.
-- [ ] `commands/todo.md:999,1002,1005,1008,1011,1014` — the six single-line message-variant
+      *(deviation: altered — the real write set is inherently dynamic (which directories move,
+      whether the roadmap or vault rotation fire), so implemented as a `stage_paths` bash-array
+      accumulator built through Step 5's own sub-steps, referenced as `"${stage_paths[@]}"` at
+      Step 6, rather than a static enumerated list. `specs/CHANGE_LOG.md` does not apply —
+      `commands/todo.md` never writes that file (it belongs to the separate OpenCode-oriented
+      `skill-todo/SKILL.md`, not this Claude Code command); `specs/ROADMAP.md` is the real
+      conditionally-written file (Step 5.5), added to the accumulator instead. Comment at
+      lines 983-985 extended with the committed-vs-uncommitted distinction as planned.)*
+- [x] `commands/todo.md:999,1002,1005,1008,1011,1014` — the six single-line message-variant
       examples. Apply the identical pathspec replacement to each. These are examples, not a second
       code path, so they must not drift from line 993's list.
-- [ ] Confirm all 7 `todo.md` occurrences carry the same pathspec list, so a reader copying any
+- [x] Confirm all 7 `todo.md` occurrences carry the same pathspec list, so a reader copying any
       variant gets the same scope.
 
 **Timing**: 1 hour
