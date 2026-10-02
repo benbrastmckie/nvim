@@ -387,23 +387,35 @@ the Fix 2 hash block with no intervening statement that must run first. Confirm 
 
 ---
 
-### Phase 4: Green the extended suite, the full suite, and shellcheck [NOT STARTED]
+### Phase 4: Green the extended suite, the full suite, and shellcheck [COMPLETED]
 
 **Goal**: Demonstrate the full ACCEPTANCE set holds -- the extended Group 19 passes, nothing else
 regressed, and both touched files are strict-mode and shellcheck clean (ACCEPTANCE #6, #8).
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` in
-      full and confirm zero FAILs and exit 0.
-- [ ] Diff the pass count against the Phase 1 red run to confirm the previously-failing
-      assertions are the ones that flipped, and that no assertion disappeared.
-- [ ] Run `shellcheck` on both touched files and resolve every new finding per
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` in
+      full and confirm zero FAILs and exit 0. *(completed: exit 0, 335 passed, 0 failed)*
+- [x] Diff the pass count against the Phase 1 red run to confirm the previously-failing
+      assertions are the ones that flipped, and that no assertion disappeared. *(completed:
+      Phase 1 RED = 330 passed + 5 failed = 335 total; final GREEN = 335 passed + 0 failed = 335
+      total -- exact match, nothing disappeared)*
+- [x] Run `shellcheck` on both touched files and resolve every new finding per
       `context/standards/shell-strict-mode.md`. Pre-existing findings unrelated to this diff are
-      out of scope -- note them rather than fixing them.
-- [ ] Run any sibling orchestrate test suites that exercise `orchestrate-cycle-plan.sh`
+      out of scope -- note them rather than fixing them. *(completed: zero new findings on
+      either file. orchestrate-cycle-plan.sh carries only 2 pre-existing SC2154 warnings at
+      lines 1673/1792 (unrelated, confirmed present before this task's first commit via
+      `git show 231f022f5:...`); test-orchestrate-cycle-plan.sh carries 2 pre-existing
+      SC2319/SC2034 warnings at lines 3935/3937 in Group 28, also confirmed pre-existing)*
+- [x] Run any sibling orchestrate test suites that exercise `orchestrate-cycle-plan.sh`
       (`test-handoff-reader-parity.sh` and any `test-orchestrate-*` suite that loads it) to catch
-      cross-suite regressions.
-- [ ] Record the before/after pass counts in the task's scratch notes for the summary.
+      cross-suite regressions. *(completed: test-handoff-reader-parity.sh,
+      test-orchestrate-unwind-dispatch.sh, test-force-phases.sh,
+      test-orchestrate-context-growth.sh, test-routing-resolution.sh, and
+      test-mint-dispatch-seq.sh all pass -- 0 failed in every one)*
+- [x] Record the before/after pass counts in the task's scratch notes for the summary.
+      *(completed: Phase 1 RED 330/5 -> Phase 2 fix 334/1 -> Phase 2 correction 335/0 ->
+      Phase 3 stub realism gap 282/53 -> Phase 3 fixes 309/26 -> 333/2 -> final 335/0, recorded
+      in progress/phase-{1,2,3,4}-progress.json)*
 
 **Timing**: 45 minutes
 
