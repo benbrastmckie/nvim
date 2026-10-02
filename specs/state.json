@@ -631,11 +631,17 @@
           "path": "specs/044_slim_task_command_body/plans/01_task-command-mode-extraction.md",
           "type": "plan",
           "summary": "8-phase mode-extraction plan; Action Verb Categories resolved as merge-and-drop with its own reconciliation phase."
+        },
+        {
+          "path": "specs/044_slim_task_command_body/summaries/01_task-command-mode-extraction-summary.md",
+          "type": "summary",
+          "summary": "8-phase extraction of /task's five non-default modes plus the Create Task Mode worked-examples sub-region into six context/patterns files, reducing commands/task.md by 66.14%."
         }
       ],
       "created": "2026-08-11T16:14:06Z",
       "last_updated": "2026-10-02T19:22:44Z",
-      "session_id": "sess_1790968925_5ff73e"
+      "session_id": "sess_1790968925_5ff73e",
+      "completion_summary": "Extracted /task's five non-default modes (Recover, Expand, Sync, Review, Abandon) and the Create Task Mode worked-examples/edge-cases region into six new context/patterns files with imperative READ pointers, reducing commands/task.md from 42,843 B to 14,508 B (66.14%). All six new files registered in index-entries.json; byte ledger reconciles with zero unexplained residual; zero behavior change verified via per-mode executability audit."
     },
     {
       "project_number": 89,

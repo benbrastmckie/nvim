@@ -27,29 +27,52 @@
       "category": "PATTERN",
       "source_artifact": "specs/044_slim_task_command_body/summaries/01_task-command-mode-extraction-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-commit-isolation", "concurrent-siblings", "index-entries.json", "shared-file-staging", "scoped-commit"]
+      "suggested_keywords": [
+        "git-commit-isolation",
+        "concurrent-siblings",
+        "index-entries.json",
+        "shared-file-staging",
+        "scoped-commit"
+      ]
     },
     {
       "content": "When splitting one markdown file into several (command-body slimming / mode extraction), grep for positional cross-references ('above', 'below', 'this section', 'the following') that assumed single-file adjacency BEFORE assuming a bare grep for the other section's NAME catches every broken reference. A reference like 'following the same fallback used by Sync Mode below' survives a 'grep for other mode names' sweep (it does name the mode) but becomes false once Sync Mode is relocated to its own file and is no longer literally 'below'. Fix by replacing the positional word with an explicit pointer to the now-separate file (e.g. 'Sync Mode (context/patterns/task-sync-mode.md)'), not just by confirming the mode name itself still appears.",
       "category": "PATTERN",
       "source_artifact": "specs/044_slim_task_command_body/summaries/01_task-command-mode-extraction-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["markdown-extraction", "positional-reference", "cross-reference-drift", "above-below", "file-splitting"]
+      "suggested_keywords": [
+        "markdown-extraction",
+        "positional-reference",
+        "cross-reference-drift",
+        "above-below",
+        "file-splitting"
+      ]
     },
     {
       "content": "For a verbatim markdown section-relocation task, a byte-ledger reconciliation (bytes removed from the source file must equal bytes relocated to new files minus/plus the measured pointer-text delta, with the residual computed exactly rather than estimated) is a strong, cheap proof that nothing was lost or duplicated during extraction. Measuring each piece (old bullet bytes vs new pointer bytes, old region bytes via a captured temp file) and summing to confirm a 0 B residual catches content loss that a mere 'file still parses' check would miss.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/044_slim_task_command_body/summaries/01_task-command-mode-extraction-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["byte-ledger", "verbatim-extraction", "content-loss-detection", "reconciliation"]
+      "suggested_keywords": [
+        "byte-ledger",
+        "verbatim-extraction",
+        "content-loss-detection",
+        "reconciliation"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790968925_5ff73e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
