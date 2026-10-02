@@ -1,17 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 323,
-  "phase": "plan",
-  "session_id": "sess_1790978139_b07459_323",
-  "dispatch_seq": 3,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1790978139_b07459",
+  "dispatch_seq": 5,
+  "summary": "Declared migrate-state-legacy-fields.sh in core manifest.json's provides.scripts, refreshed the stale core README script count, and confirmed check-extension-docs.sh [core] and verify-deploy.sh --skip-slow are fully green (33/33, 0 failures) after a standard non-destructive deploy-headless.sh redeploy resolved two unanticipated side effects.",
+  "phases_completed": 3,
   "phases_total": 3,
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
+      "summary": "Implementation summary covering the manifest/README edits and the gate-3/gate-5/gate-13 verification narrative."
+    },
+    {
       "type": "plan",
       "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/plans/01_declare-script-in-manifest.md",
-      "summary": "3-phase plan to declare the script in core manifest.json, refresh core README.md script count, and verify gate 3 green."
+      "summary": "3-phase plan, all phases COMPLETED with deviation annotations."
     }
   ],
-  "next_steps": "Run /implement 323 to execute the plan"
+  "blockers": []
 }

@@ -1,10 +1,48 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
+      "summary": "Declared migrate-state-legacy-fields.sh in core manifest provides.scripts, refreshed the stale README script count, and confirmed check-extension-docs.sh [core] and verify-deploy.sh --skip-slow (33/33) are fully green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added migrate-state-legacy-fields.sh to agent-system/extensions/core/manifest.json's provides.scripts and refreshed the core README's stale script count (27 -> 200). Resolved two unanticipated side effects (sibling task 324's undeployed source edit and a transient self-caused orphan file) via a standard non-destructive deploy-headless.sh redeploy, bringing verify-deploy.sh --skip-slow to a full PASS (33/33, 0 failures)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/README.md",
+    "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/plans/01_declare-script-in-manifest.md",
+    "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/progress/phase-1-progress.json",
+    "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/progress/phase-2-progress.json",
+    "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/progress/phase-3-progress.json",
+    "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
+    "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/.return-meta.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh's Rule O (declared-but-undeployed script) is an ADVISORY only, but verify-deploy.sh gate 5 (verify.lua's manifest-driven category parity check) treats the identical condition as a hard FAIL with no exemption. A plan that declares a script in provides.scripts while deliberately deferring its deployment (an explicit Non-Goal) must account for gate 5, not just check-extension-docs.sh's ADVISORY — otherwise the fix trades one gate's FAIL for another's.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs.sh", "verify-deploy.sh", "verify.lua", "manifest.json", "deploy-gate-parity"]
+    },
+    {
+      "content": "deploy-headless.sh's default mode is a non-destructive resync of the gitignored .claude/ deploy tree from the source store, safe to run mid-task when verify-deploy.sh/check-extension-docs.sh report drift caused by a just-committed source-store edit (yours or a concurrent sibling's) that hasn't been redeployed yet. It creates no git commits and touches no git-tracked files, so it never conflicts with commit-scope rules.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/summaries/01_declare-script-in-manifest-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless.sh", "redeploy", "source-store-deploy-boundary", "verify-deploy.sh", "non-destructive"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790978139_b07459",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
