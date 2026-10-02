@@ -104,6 +104,20 @@ assert_exit() {
   fi
 }
 
+# ─── assert_output_contains <name> <substring> ─────────────────────────────────────────────────
+# Reads the "$WORKDIR/${name}.out" file assert_exit already wrote for a prior case named <name>,
+# asserting <substring> appears somewhere in the captured combined stdout+stderr. Must be called
+# after the assert_exit case of the same <name> so the .out file already exists.
+assert_output_contains() {
+  local name="$1" substring="$2"
+  local out_file="$WORKDIR/${name}.out"
+  if grep -qF "$substring" "$out_file" 2>/dev/null; then
+    pass "$name: output contains '$substring'"
+  else
+    fail "$name: output does NOT contain '$substring' -- see $out_file"
+  fi
+}
+
 # =====================================================================
 # Case 1: well-formed file -> exit 0
 # =====================================================================
@@ -257,6 +271,55 @@ if [[ "$before_content" == "$after_content" ]]; then
 else
   fail "no-implicit-fix: file was modified by a validation run that did not pass --fix"
 fi
+
+# =====================================================================
+# Case 12: the motivating regression -- a bare-string partial_progress alongside status
+# "researched" FAILS, with BOTH violation messages firing (type violation + conditional-presence
+# violation), since the dispatch calls this out as "two violations in one field".
+# =====================================================================
+assert_exit "partial-progress-bare-string-regression" 1 "{
+  \"status\": \"researched\",
+  \"partial_progress\": \"Research complete; report written; metadata finalized\",
+  \"artifacts\": [
+    {\"type\": \"report\", \"path\": \"${EXISTING_PATH}\", \"summary\": \"A report artifact.\"}
+  ],
+  \"metadata\": {\"session_id\": \"sess_1\", \"agent_type\": \"test-agent\", \"delegation_depth\": 1, \"delegation_path\": [\"a\", \"b\"]}
+}"
+assert_output_contains "partial-progress-bare-string-regression" "partial_progress is a string, not an object"
+assert_output_contains "partial-progress-bare-string-regression" "partial_progress is present but status='researched'"
+
+# =====================================================================
+# Case 13: a well-formed object under a permitted status ("partial") PASSES
+# =====================================================================
+assert_exit "partial-progress-well-formed" 0 '{
+  "status": "partial",
+  "partial_progress": {"stage": "implementing phase 2", "details": "blocked on missing dependency"},
+  "artifacts": [],
+  "metadata": {"session_id": "sess_1", "agent_type": "test-agent", "delegation_depth": 1, "delegation_path": ["a", "b"]}
+}'
+
+# =====================================================================
+# Case 14: an object missing "details" under a permitted status ("in_progress") FAILS, naming
+# the missing sub-field.
+# =====================================================================
+assert_exit "partial-progress-missing-details" 1 '{
+  "status": "in_progress",
+  "partial_progress": {"stage": "researching"},
+  "artifacts": [],
+  "metadata": {"session_id": "sess_1", "agent_type": "test-agent", "delegation_depth": 1, "delegation_path": ["a", "b"]}
+}'
+assert_output_contains "partial-progress-missing-details" "partial_progress.details is missing or empty"
+
+# =====================================================================
+# Case 15: partial_progress entirely absent stays green for an ordinary success status
+# =====================================================================
+assert_exit "partial-progress-absent" 0 "{
+  \"status\": \"implemented\",
+  \"artifacts\": [
+    {\"type\": \"plan\", \"path\": \"${EXISTING_PATH}\", \"summary\": \"A plan artifact.\"}
+  ],
+  \"metadata\": {\"session_id\": \"sess_1\", \"agent_type\": \"test-agent\", \"delegation_depth\": 1, \"delegation_path\": [\"a\", \"b\"]}
+}"
 
 # =====================================================================
 # Summary

@@ -251,28 +251,28 @@ guarantee.
 
 ---
 
-### Phase 3: Regression fixtures in the validator test suite [NOT STARTED]
+### Phase 3: Regression fixtures in the validator test suite [COMPLETED]
 
 **Goal**: the motivating bare-string fixture and the boundary cases around it are permanent unit
 tests.
 
 **Tasks**:
-- [ ] Add an output-assertion helper alongside the existing `assert_exit` (the suite currently
+- [x] Add an output-assertion helper alongside the existing `assert_exit` (the suite currently *(completed)*
       asserts exit codes only and leaves the captured output in `$WORKDIR/${name}.out`) — e.g.
       `assert_output_contains <name> <substring>`, reading the `.out` file `assert_exit` already
       wrote. Keep it minimal and in the suite's existing `pass`/`fail` idiom.
-- [ ] Case: the motivating regression — `"status": "researched"` with
+- [x] Case: the motivating regression — `"status": "researched"` with *(completed)*
       `"partial_progress": "Research complete; report written; metadata finalized"` plus
       otherwise-valid `artifacts`/`metadata` — asserts exit 1 **and** that both failure messages
       fire (the type violation and the conditional-presence violation), since the dispatch calls
       this out as "two violations in one field".
-- [ ] Case: `"status": "partial"` with a well-formed object
+- [x] Case: `"status": "partial"` with a well-formed object *(completed)*
       `{"stage": "...", "details": "..."}` — asserts exit 0.
-- [ ] Case: `"status": "in_progress"` with an object missing `details` — asserts exit 1 and the
+- [x] Case: `"status": "in_progress"` with an object missing `details` — asserts exit 1 and the *(completed)*
       missing-sub-field message.
-- [ ] Case: `"status": "implemented"` with `partial_progress` entirely absent — asserts exit 0
+- [x] Case: `"status": "implemented"` with `partial_progress` entirely absent — asserts exit 0 *(completed)*
       (the ordinary path stays green).
-- [ ] Reuse the suite's existing `EXISTING_PATH` fixture and `FIXTURE_REPO` isolation contract;
+- [x] Reuse the suite's existing `EXISTING_PATH` fixture and `FIXTURE_REPO` isolation contract; *(completed)*
       never point a fixture at a real numbered `specs/` task directory.
 
 **Timing**: 0.5 hours
