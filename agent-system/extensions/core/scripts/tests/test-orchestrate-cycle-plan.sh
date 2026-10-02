@@ -53,9 +53,10 @@ require_file "$SUT_SRC"
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh \
          orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh \
+         orchestrate-recover-outcome.sh \
          lib/common.sh lib/file-scope-overlap.sh lib/continuation-pointer-lib.sh \
          lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh lib/deploy-baseline-lib.sh \
-         lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh; do
+         lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh lib/return-meta-status-vocabulary.sh; do
   require_file "$CORE_DIR/$f"
 done
 require_file "$CORE_DIR/../context/reference/orchestrator-critical-paths.json"
@@ -72,12 +73,12 @@ trap cleanup EXIT
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage-classify.sh \
          task-lock.sh orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh \
-         deploy-root-guard.sh command-route-agent.sh skill-base.sh; do
+         deploy-root-guard.sh command-route-agent.sh skill-base.sh orchestrate-recover-outcome.sh; do
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
          phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh deploy-ledger-lib.sh \
-         runtime-file-patterns.sh; do
+         runtime-file-patterns.sh return-meta-status-vocabulary.sh; do
   cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
 done
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -2536,10 +2537,33 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 info "Group 19: durable pending_dispatch ledger -- matched+file-present replays, else charges"
 
-cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<'EOF'
+# The stub writes a REAL dispatch file at a real .dispatch/ path, with a byte-compatible
+# `## Identity` / `- dispatch_seq: N` line (matching orchestrate-build-dispatch.sh's own Identity
+# writer), by parsing its own `--seq` argument out of argv the same way the real script receives
+# it from build_args. This lets Group 19 case 1 inspect the composed file's Identity block
+# directly, instead of only ever reading state files -- the gap that let the seq-decided-after-
+# compose defect ship green (see the comment above the four-leg assertions below).
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
 #!/usr/bin/env bash
-proj_num="$1"; phase="$2"
-jq -n -c --arg f "/fake/${proj_num}-${phase}.md" '{dispatch_file: $f, model: ""}'
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/specs/\${proj_num}_g19_pending/.dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${seq}.md"
+{
+  echo "## Identity"
+  echo ""
+  echo "- task_number: \${proj_num}"
+  echo "- phase: \${phase}"
+  echo "- dispatch_seq: \${seq}"
+} > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
 EOF
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
 cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
@@ -2567,6 +2591,7 @@ cat > "$g19_guard_file" <<EOF
 {"dispatch_seq_counter": 3, "cycle_count": 2, "pending_dispatch": {"seq": 3, "phase": "plan", "forced": false, "dispatch_file": "${g19_real_dispatch_file}", "recorded_at": "2026-01-01T00:00:00Z"}}
 EOF
 run_sut --session g19_sess_case1 -- 1901
+g19_case1_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
 
 if [ "$LAST_EXIT" -eq 0 ]; then
   pass "Group 19 case 1: SUT exits 0"
@@ -2598,6 +2623,84 @@ if [ "$(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)"
   pass "Group 19 case 1: the recorded seq (3) is reused for dispatch_seq[1901], not a freshly minted one"
 else
   fail "Group 19 case 1: expected dispatch_seq[1901]=3 (reused); got: $(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)"
+fi
+
+# ─── Four-leg seq agreement (the composed dispatch file is read here, not only state files) ────
+# Every Group 19 assertion above (and every assertion in this group before this task) reads only
+# the durable guard file and the in-session multi-state file -- NEVER the composed dispatch file
+# itself. That is precisely why a file-vs-state disagreement (the seq minted and burned into the
+# dispatch file's own Identity block AFTER the replay branch had already decided to reuse a
+# different, older seq in state) shipped green: nothing in this suite ever looked at the file.
+# The four legs below are the ones a real downstream consumer actually checks: the dispatch
+# file's own Identity block (Leg 1), state's dispatch_seq[$t] (Leg 2, already asserted above;
+# repeated here as an explicit cross-check against Leg 1 so the two cannot drift silently), the
+# handoff seq predicate orchestrate-cycle-postflight.sh applies before consuming a handoff (Leg
+# 4), and orchestrate-recover-outcome.sh's own dispatch_seq check against a fabricated
+# .return-meta.json (Leg 3). Legs 3/4 stand in for a literal state.json transition (D2 in the
+# plan): update-task-status.sh is stubbed to a bare `exit 0` in this suite, so no transition can
+# be observed directly here -- but postflight attempts no transition at all when recovery is
+# declined (have_outcome=false), so Leg 3's recovered=true IS the mechanical precondition the
+# observed incident actually failed on.
+g19_case1_identity_seq=$(grep -m1 '^- dispatch_seq: ' "$g19_case1_dispatch_file" 2>/dev/null | sed 's/^- dispatch_seq: //')
+if [ "$g19_case1_identity_seq" = "3" ]; then
+  pass "Group 19 case 1: Leg 1 -- composed dispatch file's Identity dispatch_seq is 3 (the replayed seq, not a freshly minted one)"
+else
+  fail "Group 19 case 1: Leg 1 -- expected composed dispatch file Identity dispatch_seq=3; got '$g19_case1_identity_seq' from $g19_case1_dispatch_file"
+fi
+g19_case1_state_seq=$(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)
+if [ -n "$g19_case1_identity_seq" ] && [ "$g19_case1_identity_seq" = "$g19_case1_state_seq" ]; then
+  pass "Group 19 case 1: Leg 1 and Leg 2 agree ($g19_case1_identity_seq) -- the composed file and mt_json.dispatch_seq[1901] cannot drift silently"
+else
+  fail "Group 19 case 1: Leg 1 ($g19_case1_identity_seq) and Leg 2 ($g19_case1_state_seq) disagree -- exactly the defect this task fixes"
+fi
+
+# Leg 3: fabricate a .return-meta.json whose dispatch_seq is read FROM the composed dispatch
+# file (never from the state file -- that is what makes this non-vacuous), then invoke the REAL,
+# unmodified orchestrate-recover-outcome.sh with the expected seq taken from
+# mt_json.dispatch_seq[1901] (exactly what orchestrate-cycle-postflight.sh itself passes), and
+# assert the real script recovers it.
+g19_case1_meta="$WORKDIR/specs/1901_g19_pending/.return-meta.json"
+jq -n -c --arg seq "$g19_case1_identity_seq" '{status: "planned", dispatch_seq: ($seq | tonumber)}' \
+  > "$g19_case1_meta" 2>/dev/null
+g19_case1_recover=$(bash "$WORKDIR/.claude/scripts/orchestrate-recover-outcome.sh" \
+  "$WORKDIR/specs/1901_g19_pending" "$(date -u +%s)" "$g19_case1_state_seq" 2>/dev/null)
+g19_case1_recovered=$(echo "$g19_case1_recover" | jq -r 'if has("recovered") then (.recovered | tostring) else "unknown" end' 2>/dev/null)
+g19_case1_recover_reason=$(echo "$g19_case1_recover" | jq -r '.reason // "unknown"' 2>/dev/null)
+if [ "$g19_case1_recovered" = "true" ] && [ "$g19_case1_recover_reason" != "META_DISPATCH_SEQ_MISMATCH" ]; then
+  pass "Group 19 case 1: Leg 3 -- orchestrate-recover-outcome.sh recovers the fabricated .return-meta.json (recovered=true, reason=$g19_case1_recover_reason)"
+else
+  fail "Group 19 case 1: Leg 3 -- expected recovered=true and reason != META_DISPATCH_SEQ_MISMATCH; got recovered=$g19_case1_recovered reason=$g19_case1_recover_reason"
+fi
+rm -f "$g19_case1_meta"
+
+# Leg 4: replicate orchestrate-cycle-postflight.sh's own handoff dispatch_seq equality predicate
+# (handoff_dispatch_seq != expected_dispatch_seq -> treated as HANDOFF_STALE_OR_ABSENT, discarding
+# an otherwise-valid handoff) inline, over a fabricated handoff seq likewise read from the
+# composed file -- exactly what the observed incident's planner-agent did (it echoed the new seq
+# from the dispatch file).
+g19_case1_handoff_seq="$g19_case1_identity_seq"
+if [ -n "$g19_case1_handoff_seq" ] && [ "$g19_case1_handoff_seq" = "$g19_case1_state_seq" ]; then
+  pass "Group 19 case 1: Leg 4 -- handoff dispatch_seq ($g19_case1_handoff_seq) matches mt_json.dispatch_seq[1901] ($g19_case1_state_seq); postflight would CONSUME this handoff rather than discard it"
+else
+  fail "Group 19 case 1: Leg 4 -- handoff dispatch_seq ($g19_case1_handoff_seq) does not match mt_json.dispatch_seq[1901] ($g19_case1_state_seq); postflight would discard a valid handoff as HANDOFF_STALE_OR_ABSENT"
+fi
+
+# Ephemeral-counter assertion (DELIVERABLE 1b). The durable guard file's dispatch_seq_counter
+# (asserted unchanged above) was NEVER the leak -- it really is left alone by a replay both
+# before and after this task's fix, because --flush-seq is only ever called on the non-replay
+# branch. The actual leak lives in the EPHEMERAL in-memory mt_json.dispatch_seq_counter: today it
+# is bumped by the unconditional mint before the replay check ever runs, and the replay branch
+# never reverts it -- so it is left at 4 (mint-then-discard) instead of 3 (the replayed seq),
+# even though no new seq was genuinely consumed. This value feeds both this composed dispatch
+# file's own seq-derived filename and the next invocation's own re-seed, so a leaked 4 here is
+# exactly the mechanism that could let a LATER run re-mint and collide with a seq already used as
+# a dispatch filename. See the revised comment on the durable-counter assertion above (and the
+# plan's Decisions section) for why that older assertion alone gave false assurance.
+g19_case1_ephemeral_dsc=$(jq -r '.dispatch_seq_counter // "absent"' "$g19_mt_state_1" 2>/dev/null)
+if [ "$g19_case1_ephemeral_dsc" = "3" ]; then
+  pass "Group 19 case 1: ephemeral mt_json.dispatch_seq_counter stays at 3 (the replayed seq) after a replay, not bumped to 4 by a mint-then-discard"
+else
+  fail "Group 19 case 1: expected ephemeral mt_json.dispatch_seq_counter=3 after a replay; got '$g19_case1_ephemeral_dsc'"
 fi
 
 # Case 2: phase mismatch (pending_dispatch recorded for "research", candidate actually dispatches

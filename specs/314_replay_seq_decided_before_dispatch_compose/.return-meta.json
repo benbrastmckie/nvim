@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/314_replay_seq_decided_before_dispatch_compose/plans/01_replay-seq-hoist-mechanics.md",
-      "summary": "6-phase, 5-hour plan: RED-first Group 19 extension, hoist the replay seq decision above the mint, post-compose Identity consistency assertion, green gates, argued correction, deploy."
-    }
-  ],
-  "next_steps": "Run /implement 314 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 5,
-  "dependency_waves": [[1], [2], [3], [4], [5], [6]],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1790947016_5ff368_314",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 6
+    "session_id": "sess_1790947016_5ff368",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #314
 
 - **Task**: 314 - Make the unconsumed-dispatch replay decide its dispatch_seq BEFORE the seq is minted and before the dispatch file is composed
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None (deliberately; non-concurrency constraints only -- see Risks)
 - **Research Inputs**: specs/314_replay_seq_decided_before_dispatch_compose/reports/01_replay-seq-hoist-mechanics.md
@@ -149,43 +149,43 @@ the behaviour it probes.
 
 ---
 
-### Phase 1: RED-first -- extend Group 19 case 1 to inspect the composed dispatch file [NOT STARTED]
+### Phase 1: RED-first -- extend Group 19 case 1 to inspect the composed dispatch file [COMPLETED]
 
 **Goal**: Make the four-legged seq agreement observable in Group 19 case 1, and demonstrate the
 extended coverage FAILS against current, unfixed source -- the evidence ACCEPTANCE #6 requires.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` around
-      Group 19 (`:2528` onward) immediately before editing, per the cycle's concurrency note.
-- [ ] Replace Group 19's two-line `orchestrate-build-dispatch.sh` stub (`:2538-2541`) with one
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` around
+      Group 19 (`:2528` onward) immediately before editing, per the cycle's concurrency note. *(completed)*
+- [x] Replace Group 19's two-line `orchestrate-build-dispatch.sh` stub (`:2538-2541`) with one
       that (a) parses its own `--seq N` argument out of argv the way the real script receives it
       from `build_args`, (b) writes a real file at a real path under
       `$WORKDIR/specs/1901_g19_pending/.dispatch/${seq}.md` containing a `## Identity` section
       with a `- dispatch_seq: ${seq}` line byte-compatible with `orchestrate-build-dispatch.sh:400`,
       and (c) emits `{dispatch_file: <that real path>, model: ""}`. Keep the stub minimal -- it
-      must not reimplement any other part of the real script.
-- [ ] Add Leg 1 assertion: the composed dispatch file's `- dispatch_seq:` Identity line equals
-      the replayed seq (3 in the case-1 fixture).
-- [ ] Add Leg 2 assertion already present in spirit at `:2583` -- keep it, and assert Leg 1 and
-      Leg 2 are equal to each other explicitly, so neither can drift silently.
-- [ ] Add Leg 3: fabricate `$WORKDIR/specs/1901_g19_pending/.return-meta.json` with
+      must not reimplement any other part of the real script. *(completed)*
+- [x] Add Leg 1 assertion: the composed dispatch file's `- dispatch_seq:` Identity line equals
+      the replayed seq (3 in the case-1 fixture). *(completed)*
+- [x] Add Leg 2 assertion already present in spirit at `:2583` -- keep it, and assert Leg 1 and
+      Leg 2 are equal to each other explicitly, so neither can drift silently. *(completed)*
+- [x] Add Leg 3: fabricate `$WORKDIR/specs/1901_g19_pending/.return-meta.json` with
       `dispatch_seq` read FROM the composed dispatch file's Identity line (not from the state
       file -- that is what makes the assertion non-vacuous), then run the real
       `orchestrate-recover-outcome.sh <task_dir> <window_start_ts> "$(jq -r --arg t 1901 '.dispatch_seq[$t]' "$g19_mt_state_1")"`
-      and assert `recovered=true` and reason not `META_DISPATCH_SEQ_MISMATCH`.
-- [ ] Add Leg 4: fabricate a handoff JSON whose `dispatch_seq` is likewise read from the composed
+      and assert `recovered=true` and reason not `META_DISPATCH_SEQ_MISMATCH`. *(completed)*
+- [x] Add Leg 4: fabricate a handoff JSON whose `dispatch_seq` is likewise read from the composed
       file, and assert equality against `mt_json.dispatch_seq[1901]` -- the same predicate
-      `orchestrate-cycle-postflight.sh` applies when it decides whether to consume a handoff.
-- [ ] Add the ephemeral-counter assertion: `jq -r '.dispatch_seq_counter' "$g19_mt_state_1"`
-      equals 3 (NOT 4) after a replay.
-- [ ] Copy `orchestrate-recover-outcome.sh` into the fixture's synthetic `.claude/scripts/` tree
+      `orchestrate-cycle-postflight.sh` applies when it decides whether to consume a handoff. *(completed)*
+- [x] Add the ephemeral-counter assertion: `jq -r '.dispatch_seq_counter' "$g19_mt_state_1"`
+      equals 3 (NOT 4) after a replay. *(completed)*
+- [x] Copy `orchestrate-recover-outcome.sh` into the fixture's synthetic `.claude/scripts/` tree
       if the suite's existing collaborator-copy loop does not already cover it, and add it to the
       `require_file` list so a missing collaborator is an environment error (exit 2), never a
-      silent skip.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` and
+      silent skip. *(completed: also copied the transitive return-meta-status-vocabulary.sh lib dependency)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` and
       capture the failing output verbatim into the task's scratch notes. Confirm the failures are
-      genuine FAILs (assertion mismatch), not exit-2 environment errors or skipped cases.
-- [ ] Commit the red test with its captured failure evidence referenced in the commit body.
+      genuine FAILs (assertion mismatch), not exit-2 environment errors or skipped cases. *(completed: exit 1, 330 passed, 5 failed; see progress/phase1-red-evidence.log)*
+- [x] Commit the red test with its captured failure evidence referenced in the commit body. *(completed)*
 
 **Timing**: 1.5 hours
 
