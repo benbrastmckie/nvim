@@ -216,6 +216,51 @@ local function walk_category_leaves(category, manifest, source_dir, target_dir, 
   return leaves
 end
 
+--- Resolve, for every deployed leaf declared by two or more of the given active extensions, which
+--- one actually owns it at deploy time -- i.e. which declarer's copy is the one really on disk
+--- after `loader.copy_file`'s unconditional overwrite. `extensions` MUST already be in deploy
+--- order (the same dependency-topological order `manager.compute_deploy_order` produces); this
+--- function contains no ordering logic of its own and simply lets a later entry's declaration of
+--- a `rel_path` overwrite an earlier one's, mirroring `copy_file`'s own last-write-wins semantics
+--- exactly.
+---
+--- Resolution is strictly per leaf `rel_path`, never per manifest directory entry: a file core
+--- ships under `contracts/` that lean does not ship stays core-owned even though the `contracts`
+--- directory entry itself is declared by both manifests (lean's declaration simply never
+--- produces that particular leaf).
+---
+--- A leaf whose `source_path` is not actually readable is never recorded, so a
+--- declared-but-absent source can never claim ownership away from an extension that really ships
+--- the file.
+---
+--- Covers the same category set the hash check covers -- every `loader.CATEGORY_DESCRIPTORS`
+--- entry with a `list_key`, excluding `data` (project-root target, out of scope for this
+--- deploy-tree walk) -- driven off that single source of truth exactly as `walk_category_leaves`
+--- and `M.find_orphans` already are, so a future category is covered by construction.
+--- @param extensions table Array of { name, source_dir, manifest } in DEPLOY ORDER (earliest
+---   first, i.e. `manager.compute_deploy_order`'s return value)
+--- @param target_dir string Target base directory (.claude or .opencode)
+--- @param opts table|nil { agents_subdir } -- agents' target subdir varies by config (OpenCode)
+--- @return table map { [rel_path] = { owner = extension_name, source_path = string } }
+function M.build_ownership_map(extensions, target_dir, opts)
+  opts = opts or {}
+  local map = {}
+  for _, ext in ipairs(extensions) do
+    if ext.manifest then
+      for category, descriptor in pairs(loader_mod.CATEGORY_DESCRIPTORS) do
+        if descriptor.list_key and category ~= "data" then
+          for _, leaf in ipairs(walk_category_leaves(category, ext.manifest, ext.source_dir, target_dir, opts)) do
+            if vim.fn.filereadable(leaf.source_path) == 1 then
+              map[leaf.rel_path] = { owner = ext.name, source_path = leaf.source_path }
+            end
+          end
+        end
+      end
+    end
+  end
+  return map
+end
+
 --- Verify one manifest-declared category for declared-vs-deployed parity (presence) plus
 --- content-hash equality, driven entirely by `walk_category_leaves` above.
 ---
@@ -226,18 +271,31 @@ end
 ---   - `.syncprotect`-listed paths are exempt from BOTH presence and hash checks: a protected
 ---     path is deliberately never overwritten by the copy engine, so a stale or customized
 ---     deployed copy is expected there too.
+---   - Cross-extension non-owner: when `opts.ownership` resolves a leaf's owner to an extension
+---     OTHER than `opts.extension_name`, the hash comparison is skipped (that leaf's deployed
+---     content is correctly compared against the owner's copy when the owner itself is verified,
+---     not against this non-owner's). The suppressed declaration is reported in
+---     `result.overridden`, never silently dropped and never treated as an error. Omitting
+---     `opts.ownership`, or a leaf with no recorded owner, preserves today's exact behavior --
+---     the owner is always compared, with "owner" defaulting to "whoever declares it" when no
+---     ownership map is supplied.
+---
+--- `file_hash` itself is not modified by this: ownership resolution only changes which source
+--- file's hash the comparison reads from; `file_hash`'s line-joined hashing semantics (see its
+--- own doc comment) remain the sole hashing contract.
 --- @param category string
 --- @param manifest table
 --- @param source_dir string
 --- @param target_dir string
 --- @param protected_paths table|nil Set of protected relative paths {[path] = true}
---- @param opts table|nil { agents_subdir }
+--- @param opts table|nil { agents_subdir, ownership = map|nil, extension_name = string|nil }
 --- @return table result { checked, missing = {rel_path,...}, hash_mismatch = {rel_path,...},
----   protected = {rel_path,...} }
+---   protected = {rel_path,...}, overridden = {{rel_path=, owner=},...} }
 local function verify_manifest_category(category, manifest, source_dir, target_dir, protected_paths, opts)
   protected_paths = protected_paths or {}
+  opts = opts or {}
   local descriptor = loader_mod.CATEGORY_DESCRIPTORS[category]
-  local result = { checked = 0, missing = {}, hash_mismatch = {}, protected = {} }
+  local result = { checked = 0, missing = {}, hash_mismatch = {}, protected = {}, overridden = {} }
 
   for _, leaf in ipairs(walk_category_leaves(category, manifest, source_dir, target_dir, opts)) do
     result.checked = result.checked + 1
@@ -246,13 +304,22 @@ local function verify_manifest_category(category, manifest, source_dir, target_d
     elseif not file_exists(leaf.target_path) then
       table.insert(result.missing, leaf.rel_path)
     else
-      local install_once_exempt = descriptor and descriptor.install_once
-        and descriptor.install_once[leaf.entry_name]
-      if not install_once_exempt then
-        local source_hash = file_hash(leaf.source_path)
-        local target_hash = file_hash(leaf.target_path)
-        if source_hash and target_hash and source_hash ~= target_hash then
-          table.insert(result.hash_mismatch, leaf.rel_path)
+      -- Owner-gating site: ownership resolution changes only WHICH source the hash comparison
+      -- below reads from (this extension's own vs. skipped entirely in favor of the owner's own
+      -- verification pass) -- it never touches `file_hash` itself, whose line-joined semantics
+      -- remain the sole hashing contract (see `file_hash`'s own doc comment).
+      local owned_by = opts.ownership and opts.ownership[leaf.rel_path]
+      if owned_by and opts.extension_name and owned_by.owner ~= opts.extension_name then
+        table.insert(result.overridden, { rel_path = leaf.rel_path, owner = owned_by.owner })
+      else
+        local install_once_exempt = descriptor and descriptor.install_once
+          and descriptor.install_once[leaf.entry_name]
+        if not install_once_exempt then
+          local source_hash = file_hash(leaf.source_path)
+          local target_hash = file_hash(leaf.target_path)
+          if source_hash and target_hash and source_hash ~= target_hash then
+            table.insert(result.hash_mismatch, leaf.rel_path)
+          end
         end
       end
     end
@@ -560,9 +627,14 @@ end
 --- @param target_dir string Target base directory (.claude or .opencode)
 --- @param config table Extension system configuration
 --- @param protected_paths table|nil Set of protected relative paths {[path] = true}; defaults to {}
+--- @param opts table|nil { ownership = map|nil } -- a deploy-order-resolved cross-extension
+---   ownership map (see `M.build_ownership_map`); omitting it (or passing `{}`) preserves
+---   today's exact behavior -- every declared leaf is compared against ITS OWN source,
+---   `overridden` stays empty, and no category's `passed`/`status` is affected by ownership.
 --- @return table verification Verification report
-function M.verify_extension(extension_name, extension_dir, target_dir, config, protected_paths)
+function M.verify_extension(extension_name, extension_dir, target_dir, config, protected_paths, opts)
   protected_paths = protected_paths or {}
+  opts = opts or {}
   local manifest_path = extension_dir .. "/manifest.json"
   local manifest = read_json(manifest_path)
 
@@ -706,7 +778,7 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
   for _, category in ipairs(hash_only_categories) do
     local cat_result = verify_manifest_category(
       category, manifest, extension_dir, target_dir, protected_paths,
-      { agents_subdir = config.agents_subdir }
+      { agents_subdir = config.agents_subdir, ownership = opts.ownership, extension_name = extension_name }
     )
     if #cat_result.hash_mismatch > 0 then
       verification[category].passed = false
@@ -714,6 +786,9 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
       for _, rel in ipairs(cat_result.hash_mismatch) do
         table.insert(verification.errors, "Content differs from source: " .. rel)
       end
+    end
+    if #cat_result.overridden > 0 then
+      verification[category].overridden = cat_result.overridden
     end
   end
 
@@ -723,7 +798,10 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
   -- is covered by construction.
   local uncovered_categories = { "commands", "scripts", "hooks", "docs", "templates", "systemd", "root_files" }
   for _, category in ipairs(uncovered_categories) do
-    local cat_result = verify_manifest_category(category, manifest, extension_dir, target_dir, protected_paths, {})
+    local cat_result = verify_manifest_category(
+      category, manifest, extension_dir, target_dir, protected_paths,
+      { ownership = opts.ownership, extension_name = extension_name }
+    )
     verification[category] = { passed = true, checked = cat_result.checked }
     if #cat_result.missing > 0 then
       verification[category].passed = false
@@ -750,6 +828,9 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
           break
         end
       end
+    end
+    if #cat_result.overridden > 0 then
+      verification[category].overridden = cat_result.overridden
     end
   end
 

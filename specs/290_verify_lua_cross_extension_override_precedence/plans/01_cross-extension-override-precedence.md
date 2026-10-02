@@ -170,39 +170,39 @@ rather than leaving a divergent copy.
 
 ---
 
-### Phase 2: Owner-gated hash comparison in `verify.lua` [NOT STARTED]
+### Phase 2: Owner-gated hash comparison in `verify.lua` [COMPLETED]
 
 **Goal**: Teach the content-hash comparison which active extension actually owns each deployed
 leaf, and compare only against that owner's source — reporting, never silently dropping, every
 suppressed non-owner declaration.
 
 **Tasks**:
-- [ ] Add `M.build_ownership_map(extensions, target_dir, opts)` to `verify.lua`, where
+- [x] Add `M.build_ownership_map(extensions, target_dir, opts)` to `verify.lua`, where
       `extensions` is an **already-ordered** array of `{name, source_dir, manifest}` in deploy
       order (Phase 1's order; verify.lua contains no ordering logic of its own). For each
       extension in order, for each hash-checked category, walk `walk_category_leaves` and record
       `map[leaf.rel_path] = {owner = name, source_path = leaf.source_path}` — last writer in the
       iteration wins, exactly mirroring `copy_file`'s overwrite semantics.
-- [ ] Resolve ownership strictly **per leaf `rel_path`**, never per manifest directory entry: a
+- [x] Resolve ownership strictly **per leaf `rel_path`**, never per manifest directory entry: a
       file core ships under `contracts/` that lean does not ship stays core-owned even though the
       `contracts` directory entry itself is declared by both.
-- [ ] Only record a leaf whose `source_path` is actually readable, so a declared-but-absent source
+- [x] Only record a leaf whose `source_path` is actually readable, so a declared-but-absent source
       never claims ownership away from an extension that really ships the file.
-- [ ] Cover the same category set the hash check covers (`hash_only_categories` plus
+- [x] Cover the same category set the hash check covers (`hash_only_categories` plus
       `uncovered_categories`), driven off `loader.CATEGORY_DESCRIPTORS` as `walk_category_leaves`
       already is, so a future category is included by construction.
-- [ ] Extend `verify_manifest_category` with an `opts.ownership` map and `opts.extension_name`.
+- [x] Extend `verify_manifest_category` with an `opts.ownership` map and `opts.extension_name`.
       When a leaf's resolved owner is a *different* extension, skip the hash comparison and append
       `{rel_path = ..., owner = ...}` to a new `result.overridden` list. Leave the presence
       (`missing`) check, the `.syncprotect` exemption, and the `install_once` exemption entirely
       unchanged, and leave behavior identical when `opts.ownership` is absent or the leaf has no
       recorded owner.
-- [ ] In `M.verify_extension`, accept the ownership map as an optional field on a new trailing
+- [x] In `M.verify_extension`, accept the ownership map as an optional field on a new trailing
       `opts` argument (omitting it must preserve today's exact behavior), thread it into both the
       `hash_only_categories` and `uncovered_categories` `verify_manifest_category` call sites, and
       surface `verification[category].overridden` when non-empty — **never** appending to
       `verification.errors` and never changing `verification.status` on account of it.
-- [ ] Do not modify `file_hash`. Add a short comment at the owner-gating site stating that the
+- [x] Do not modify `file_hash`. Add a short comment at the owner-gating site stating that the
       comparison's *input source* is what ownership resolution changes, and that `file_hash`'s
       line-joined semantics remain the sole hashing contract.
 
