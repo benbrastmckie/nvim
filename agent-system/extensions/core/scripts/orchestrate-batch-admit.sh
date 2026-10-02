@@ -190,6 +190,70 @@
 #                                     dependencies[] edge if ordering between the two tasks
 #                                     matters). See docs/architecture/batch-admit-schema.md for the
 #                                     full field table and an example verdict.
+#   absent_scope_advisory      object Present on EVERY verdict the absent-scope early-exit branch
+#                                     produces (NEW), i.e. whenever a candidate's own file_scope
+#                                     is absent (missing key, literal null, or empty array).
+#                                     Carried regardless of decision — this field is purely
+#                                     informational; see "Admission Posture for an ABSENT
+#                                     file_scope" below for the full blocking-vs-advisory ruling
+#                                     by scope kind. Absent on every other branch (unknown task,
+#                                     terminal status, self-modifying, non-empty file_scope).
+#                                     Nested keys: scope_state (string, one of "missing_key" |
+#                                     "null_value" | "empty_array" — reuses
+#                                     validate-state.sh Check 10's own vocabulary verbatim, never a
+#                                     fourth spelling), codispatch_count (int, this invocation's
+#                                     --invocation-count value), and reason (string,
+#                                     machine-templated, names the remedy: declare a file_scope, or
+#                                     run plan-file-scope-harvest.sh / backfill-file-scope.sh once a
+#                                     plan exists).
+#
+# Admission Posture for an ABSENT file_scope (ruling, measured 2026-09-29; this is a decision
+# record, not a defect description — read alongside the defer_reason field above): an undeclared
+# file_scope is NOT treated identically in every comparison direction. The posture is SPLIT by
+# scope kind, decided by measurement rather than preference:
+#
+#   - cross_batch (the comparison task is NOT one of this invocation's candidate arguments):
+#     ADVISORY ONLY, via the additive absent_scope_advisory field above — NEVER blocks admission
+#     on absence alone. THE TRADEOFF (stated explicitly, per this codebase's own advisory-first
+#     precedent — see plan-format.md's Verification Tier rollout): treating absence as a defer
+#     reason closes the silent-passage hole this check exists to close, but risks blocking
+#     legitimate work on legacy tasks that predate any file_scope discipline. The softer posture
+#     is chosen here because that risk is NOT yet mitigated at the coverage level this script's
+#     other blocking checks require (computable-from-on-disk-state AND low false-positive cost —
+#     see "Why This Check Is Evidence-Gated..." below): a live coverage measurement
+#     (`validate-state.sh --strict` Check 10's own missing_key/null_value finding count against
+#     non-terminal, plan-bearing tasks, re-derivable with that same command) found the backfill
+#     mitigation this ruling was gated behind has NOT landed uniformly across the repositories
+#     this system deploys into, measured 2026-09-29: this repository 27/28 (96%), a second
+#     deployment repository 32/33 (97%), but the THIRD deployment repository where the
+#     motivating harm was observed live only 18/43 (42%) covered, with 24 of the 25 gaps being
+#     plan-less tasks that backfill-file-scope.sh correctly, by design, leaves absent. Tightening
+#     cross-batch absence to blocking today would silently stall legitimate legacy work in
+#     exactly the repository the motivating harm came from.
+#
+#     PROMOTION CRITERION (recorded now; NOT performed by this version — mirrors
+#     plan-format.md's Verification Tier rollout wording, "this task does NOT perform the
+#     promotion"): promote cross-batch absence from absent_scope_advisory to a blocking
+#     defer_reason (the same "absent_file_scope" value the in_batch case below already uses) once
+#     `bash .claude/scripts/validate-state.sh --strict` reports ZERO Check 10
+#     missing_key/null_value findings across every repository this system deploys into.
+#     Re-derive that coverage measurement before ever flipping this ruling — do not promote on
+#     elapsed time or on a single repository's local coverage alone.
+#
+#   - in_batch (the comparison task IS one of this invocation's candidate arguments): BLOCKING,
+#     via the "absent_file_scope" defer_reason (see the defer_reason field above and the
+#     Deferral-Direction Rule below for its full payload and override semantics). In-batch
+#     absence is EXEMPT from the coverage reasoning above entirely: it only ever concerns
+#     candidates being CO-DISPATCHED THIS CYCLE, so legacy-backlog coverage elsewhere in
+#     specs/state.json is irrelevant to it. The cost/benefit is also inverted from the
+#     cross-batch case: the cost of wrongly serializing an in-batch absent-scope candidate is one
+#     extra cycle (identical in shape to this script's existing self_modifying tie-breaker cost),
+#     while the cost of wrongly admitting all of them was, measured live, concurrent edits to a
+#     shared orchestrator-critical gate script plus concurrent certificate-regenerating gate runs
+#     across eight co-dispatched candidates with zero collision-guard coverage — the guard was
+#     never consulted, not merely wrong, because an absent scope gave it nothing to compare. See
+#     context/patterns/batch-orchestration-guardrails.md's absent-scope posture subsection for
+#     the full incident narrative behind both halves of this ruling.
 #
 # Precedence (D4): self-modification runs FIRST and SHORT-CIRCUITS the rest — a self-modifying
 # candidate never runs the collision scan or the session pass, regardless of whether it is
@@ -568,8 +632,24 @@ if verdicts=$(jq -n -c \
       {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
        self_modifying: (if $is_degraded then null else (self_mod_match($entry.file_scope; $crit) != null) end)}
     elif (($entry.file_scope // []) | length) == 0 then
+      # Admission Posture for an ABSENT file_scope (see the header ruling above): this branch is
+      # reached for a cross_batch-only comparison today; the in_batch blocking case is handled by
+      # the designated-absent-candidate branch added in a later version of this script (see the
+      # defer_reason field above). scope_state distinguishes the three sub-states BEFORE the
+      # `// []` coalesce above erases the difference between them -- same vocabulary
+      # validate-state.sh Check 10 and orchestrate-predispatch-review.sh Class F already use.
+      (if (($entry | has("file_scope")) | not) then "missing_key"
+       elif ($entry.file_scope == null) then "null_value"
+       else "empty_array"
+       end) as $scope_state |
       {"$schema": "orchestrate-batch-admit-v5", task_number: $c, decision: "admit",
-       self_modifying: (if $is_degraded then null else false end)}
+       self_modifying: (if $is_degraded then null else false end),
+       absent_scope_advisory: {
+         scope_state: $scope_state,
+         codispatch_count: $inv_count,
+         reason: ("file_scope is " + $scope_state + " for candidate #" + ($c|tostring) +
+                  "; declare a file_scope, or run plan-file-scope-harvest.sh / backfill-file-scope.sh once a plan exists")
+       }}
     else
       ($entry.dependencies // []) as $c_deps |
       ($entry.file_scope) as $c_scope |

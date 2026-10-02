@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Record the ruling, and surface cross-batch absence advisorily",
+  "started_at": "2026-10-02T23:16:00Z",
+  "last_updated": "2026-10-02T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Header ruling section + promotion criterion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 2, "description": "Document absent_scope_advisory field in verdict-schema list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 3, "description": "jq: attach absent_scope_advisory on absent-scope branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "Verify CROSS-BATCH-ABSENCE flips to pass", "status": "done", "files_touched": ["specs/165_admission_posture_for_absent_file_scope/plans/01_admission-posture-absent-scope.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "jq-embedded comment using an apostrophe (validate-state.sh's Check 10)", "result": "failed", "reason": "Terminated the enclosing bash single-quoted jq program string early -> jq syntax error, exit 2, no verdicts. Fixed by rewording to avoid the apostrophe."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "2.header-ruling", "description": "Record the measured coverage citing repo names verbatim", "type": "altered", "reason": "Named deployment repositories generically rather than by proper name, to avoid baking an external project's identity into shared, broadly-deployed infrastructure documentation; numeric measurements and date preserved exactly.", "annotation": "*(deviation: altered — named the deployment repositories generically ...)*"}
+  ]
+}

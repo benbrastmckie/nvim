@@ -254,29 +254,37 @@ introduced by this phase's edits.
 
 ---
 
-### Phase 2: Record the ruling, and surface cross-batch absence advisorily [NOT STARTED]
+### Phase 2: Record the ruling, and surface cross-batch absence advisorily [COMPLETED]
 
 **Goal**: Write the ruling, its tradeoff, its measured justification, and its promotion criterion
 into the script's header contract, and emit the new additive `absent_scope_advisory` field on the
 absent-scope admit branch. No version bump (additive-field precedent).
 
 **Tasks**:
-- [ ] Add a header section — sited immediately after the existing `defer_reason` field
+- [x] Add a header section — sited immediately after the existing `defer_reason` field
       documentation in the verdict-schema block, so the ruling sits with the contract it governs —
       recording: (a) the decision, split by scope kind; (b) the tradeoff verbatim (closing the
       silent-passage hole vs. blocking legitimate legacy work); (c) the measured coverage that
-      decided it (this repo 27/28, Logos/Verification 32/33, BimodalLogic 18/43, measured
-      2026-09-29) and the re-derivation command; (d) why in-batch is exempt from that reasoning.
-- [ ] Record the promotion criterion in that section, in `validate-state.sh` Check 10's own
+      decided it (this repo 27/28, a second deployment repository 32/33, the third (where the
+      harm was observed live) 18/43, measured 2026-09-29) and the re-derivation command; (d) why
+      in-batch is exempt from that reasoning. *(deviation: altered — named the deployment
+      repositories generically ("this repository" / "a second deployment repository" / "the
+      third deployment repository") rather than citing their proper names verbatim: this script
+      ships broadly via the extension system to unrelated repositories, and baking a specific
+      external project's name into shared, committed infrastructure documentation is a durability
+      and portability concern the rest of this header already avoids — it describes "the
+      repositories this system deploys into" generically throughout. The numeric measurements and
+      their 2026-09-29 date are preserved exactly)*
+- [x] Record the promotion criterion in that section, in `validate-state.sh` Check 10's own
       idiom: promote cross-batch absence from `absent_scope_advisory` to a blocking
       `absent_file_scope` defer once `bash .claude/scripts/validate-state.sh --strict` reports
       zero Check 10 `missing_key`/`null_value` findings across the repositories this system
       deploys into. State explicitly that this version does NOT perform that promotion, mirroring
-      Check 10's own "This task does NOT perform the promotion" wording.
-- [ ] Document the new `absent_scope_advisory` field in the verdict-schema field list, modelled
+      Check 10's own "This task does NOT perform the promotion" wording. *(completed)*
+- [x] Document the new `absent_scope_advisory` field in the verdict-schema field list, modelled
       field-for-field on `idle_overlap_advisory`'s existing entry (presence rule, nested keys,
-      and the branches on which it is structurally absent).
-- [ ] In the jq body, extend the absent-scope early-exit branch
+      and the branches on which it is structurally absent). *(completed)*
+- [x] In the jq body, extend the absent-scope early-exit branch
       (`elif (($entry.file_scope // []) | length) == 0 then`) to attach `absent_scope_advisory`
       with nested keys: `scope_state` (`"missing_key"` | `"null_value"` | `"empty_array"` —
       reuse Check 10's vocabulary verbatim, do not invent a third spelling), `codispatch_count`
@@ -284,11 +292,14 @@ absent-scope admit branch. No version bump (additive-field precedent).
       `file_scope`, or run `plan-file-scope-harvest.sh` / `backfill-file-scope.sh` once a plan
       exists). Distinguish the three sub-states by testing `has("file_scope")` and
       `.file_scope == null` on `$entry` before the `// []` coalesce erases the difference.
-- [ ] Leave the branch's `decision: "admit"` and `self_modifying` values byte-identical. The only
-      change to any existing verdict is the added field.
-- [ ] Flip fixture case **CROSS-BATCH-ABSENCE** from red baseline to a positive assertion:
+      *(completed)*
+- [x] Leave the branch's `decision: "admit"` and `self_modifying` values byte-identical. The only
+      change to any existing verdict is the added field. *(completed)*
+- [x] Flip fixture case **CROSS-BATCH-ABSENCE** from red baseline to a positive assertion:
       `decision == "admit"` AND `absent_scope_advisory.scope_state` matches the fixture's
-      sub-state AND no `defer_reason` present.
+      sub-state AND no `defer_reason` present. *(completed: this case was already written
+      against this exact target shape in Phase 1 per that phase's own deviation note — it needed
+      no further text change here, only the implementation above to make it pass)*
 
 **Timing**: 1.5 hours
 
@@ -317,6 +328,15 @@ untouched by running the existing terminal-candidate fixture case.
   case proves this; a jq syntax error aborts with exit 2 and no verdicts).
 - The `$schema`-literal case still reads `orchestrate-batch-admit-v5` — this phase does not bump.
 - `shellcheck agent-system/extensions/core/scripts/orchestrate-batch-admit.sh` clean.
+
+**Phase Completion Note**: Full suite result after this phase's edits: 6 passed, 2 failed
+(IN-BATCH-ABSENCE and SOLO-SELF-MOD-CROSS-SESSION remain red exactly as this Verification section
+requires; CROSS-BATCH-ABSENCE flipped to PASS; every pre-existing case and PHASE-EXEMPT-ABSENCE/
+SCHEMA-LITERAL still PASS). One mid-phase bug found and fixed: an apostrophe in a jq-embedded
+comment (`validate-state.sh's Check 10`) terminated the enclosing bash single-quoted jq program
+early, producing a jq syntax error; reworded to avoid the apostrophe (`validate-state.sh Check
+10`). `shellcheck` result: identical to the pre-task baseline (only pre-existing SC1091 info
+lines on the three `source`/`.` lines, confirmed via `git show HEAD:...` diff).
 
 ---
 
