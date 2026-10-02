@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 277,
+  "session_id": "sess_1790947016_5ff368_277",
+  "dispatch_seq": 3,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md",
+      "summary": "Audits every git-commit-scoped.sh call site, empirically reproduces current behavior in scratch repos, finds the task's literal premise (all-drop -> exit 0) is already fixed by an existing V3 post-filter gate, identifies the real residual gap (partial drop + empty resulting commit, indistinguishable from benign no-op), and recommends a corrected option (c) over (a)/(b)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "git-commit-scoped.sh already refuses (exit 2) when 100% of positive pathspecs drop as unmatched (V3 post-filter gate, added in task 226 phase 2, commit 94256557d). The remaining false-success gap is narrower: a PARTIAL drop (one or more pathspecs unmatched) combined with the surviving matched pathspecs having zero actual working-tree diff produces the same exit 1 'nothing to commit' as the fully benign all-zero-drop case -- these two are indistinguishable at the exit-code level today. Any future fix must key off (drop_count > 0 AND commit produced nothing), not literally '100% dropped', since the literal framing is already handled.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git-commit-scoped", "pathspec", "silent-failure", "exit-code", "false-success"]
+    },
+    {
+      "content": "Every caller of git-commit-scoped.sh in this codebase uses the idiom `bash .../git-commit-scoped.sh ... || echo \"WARN: ...(non-blocking)\"`. Because `A || B` evaluates to B's exit status in bash, ANY nonzero exit from the script (1, 2, 3, or a future new code) collapses to exit 0 for the calling script's own control flow. A louder/more distinguishing exit code added inside the script is necessary but NOT sufficient to prevent a repeat incident -- at least one caller must be changed to branch on $? explicitly and escalate, or the fix is correct-but-inert in practice.",
+      "category": "PATTERN",
+      "source_artifact": "specs/277_git_commit_scoped_worktree_targeting/reports/01_pathspec-drop-hard-error.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash-idiom", "non-blocking-warning", "exit-code-swallowing", "git-commit-scoped"]
+    }
+  ],
+  "next_steps": "Run /plan 277 to create implementation plan"
+}
