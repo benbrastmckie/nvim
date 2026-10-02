@@ -26,13 +26,23 @@
 # job).
 #
 # Detection strategy (black-box, since the script's compact JSON does not expose the internal
-# `handoff_stale` variable by name): no `.return-meta.json` fixture exists in any of these four
+# `handoff_stale` variable by name): no `.return-meta.json` fixture exists in any of these five
 # cases, so a REJECTED handoff has no recovery source at all and must fall through to
 # verdict=failed with no trustworthy status; an ACCEPTED handoff is consumed directly and its
 # fixture `status: "implemented"` is echoed straight through. Accept vs. reject is therefore
 # unambiguous from the output JSON's `status` field alone, corroborated by the same stderr
 # substrings the original sentinel-extraction suite asserted on (STALE HANDOFF / DISPATCH_SEQ
 # MISMATCH / WARN: handoff has no dispatch_seq field / dispatch_seq match).
+#
+# Attribution dimension (case 2 and case 5): a dispatch_seq mismatch is now direction-aware --
+# handoff-OLDER-than-minted (case 2) attributes to skill-orchestrate/SKILL.md unchanged;
+# handoff-NEWER-than-minted (case 5) attributes to orchestrate-cycle-plan.sh, the sole minting
+# site. Since every case here runs `--dry-run` and both of the SUT's defect-recording calls are
+# inside `if is_live;`, no `detected_defects` row is ever written in this suite -- the
+# attribution assertion below is necessarily stderr-based (the enriched dry-run "would record"
+# line, which the SUT echoes unconditionally). The live, row-level counterpart to this
+# stderr-based check is test-orchestrate-cycle-postflight.sh's Acceptance (4b)/(4c), which runs
+# without --dry-run and inspects the actual recorded row.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error.
 
@@ -155,9 +165,15 @@ EOF
 }
 
 # run_case NAME CANDIDATE_NUM HANDOFF_SEQ MINTED_SEQ MTIME_OFFSET EXPECT_ACCEPTED EXPECT_STDERR_GREP
+#          [EXPECT_ATTRIBUTION]
+# EXPECT_ATTRIBUTION (optional 8th param): when non-empty, asserts $LAST_STDERR contains that
+# literal attributed-path substring. Stderr-based, not row-based -- see the "Attribution
+# dimension" header comment above for why: every case here runs --dry-run, under which the SUT
+# never reaches either of its live defect-recording calls, so no `detected_defects` row exists
+# to assert against in this suite.
 run_case() {
   local name="$1" num="$2" handoff_seq="$3" minted_seq="$4" mtime_offset="$5" \
-        expect_accepted="$6" expect_grep="${7:-}"
+        expect_accepted="$6" expect_grep="${7:-}" expect_attribution="${8:-}"
   setup_sandbox
   make_case_dir "$num" "$handoff_seq" "$mtime_offset"
   local window_start
@@ -189,6 +205,13 @@ run_case() {
       fail "${name}: stderr does not match expected pattern '${expect_grep}': $LAST_STDERR"
     fi
   fi
+  if [ -n "$expect_attribution" ]; then
+    if echo "$LAST_STDERR" | grep -qF "$expect_attribution"; then
+      pass "${name}: stderr attributes to ${expect_attribution}"
+    else
+      fail "${name}: stderr does not attribute to '${expect_attribution}': $LAST_STDERR"
+    fi
+  fi
 }
 
 # =====================================================================
@@ -202,9 +225,12 @@ run_case "case1-match" 801 5 5 0 "true" 'dispatch_seq match'
 # predecessor's late write), mtime inside the successor's dispatch window -- reproducing the
 # observed 6-second-overlap failure shape. mtime alone would ACCEPT this (mtime_offset=0, i.e.
 # written "just now", well inside the window); only the dispatch_seq comparison rejects it.
-# Expected: REJECTED, stderr names DISPATCH_SEQ MISMATCH.
+# Expected: REJECTED, stderr names DISPATCH_SEQ MISMATCH. handoff_seq(4) < minted_seq(5) --
+# the OLDER direction -- so attribution stays unchanged at skill-orchestrate/SKILL.md (that
+# skill only reads the already-minted value back out; it never mints).
 # =====================================================================
-run_case "case2-mismatch-inside-window" 802 4 5 0 "false" 'DISPATCH_SEQ MISMATCH'
+run_case "case2-mismatch-inside-window" 802 4 5 0 "false" 'DISPATCH_SEQ MISMATCH' \
+  'agent-system/extensions/core/skills/skill-orchestrate/SKILL.md'
 
 # =====================================================================
 # Case 3: old mtime (git-restoration hazard) -- handoff predates the dispatch window by a wide
@@ -220,11 +246,29 @@ run_case "case3-old-mtime" 803 5 5 3600 "false" 'STALE HANDOFF'
 run_case "case4-absent" 804 "" 5 0 "true" 'WARN: handoff has no dispatch_seq field'
 
 # =====================================================================
+# Case 5 (THE NEWER DIRECTION, previously uncovered): dispatch_seq is NEWER than this cycle's
+# minted value -- handoff_seq(6) > minted_seq(5). This can only mean the dispatch was composed
+# with a seq this cycle's own mint never produced: a composition/minting-side authoring fault at
+# orchestrate-cycle-plan.sh (the sole minting site), not a stale predecessor artifact. Same
+# rejection shape as case 2 (DISPATCH_SEQ MISMATCH, REJECTED), but attribution flips to
+# orchestrate-cycle-plan.sh instead of skill-orchestrate/SKILL.md.
+# =====================================================================
+run_case "case5-newer-than-minted" 805 6 5 0 "false" 'DISPATCH_SEQ MISMATCH' \
+  'agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh'
+if echo "$LAST_STDERR" | grep -qF 'skills/skill-orchestrate/SKILL.md'; then
+  fail "case5-newer-than-minted: stderr must NOT attribute to skill-orchestrate/SKILL.md (newer direction): $LAST_STDERR"
+else
+  pass "case5-newer-than-minted: stderr does not attribute to skill-orchestrate/SKILL.md"
+fi
+
+# =====================================================================
 # Negative-control note (not automated): temporarily reverting the dispatch_seq gate in
 # orchestrate-cycle-postflight.sh (commenting out the `elif [ -n "$expected_dispatch_seq" ] &&
-# [ "$handoff_dispatch_seq" != ... ]` branch) makes Case 2 fail, since only that branch's
-# mismatch check distinguishes it from Case 1. Verified manually during authoring; not
-# re-verified on every run (would require mutating the source file mid-suite).
+# [ "$handoff_dispatch_seq" != ... ]` branch) makes Cases 2 and 5 fail, since only that branch's
+# mismatch check distinguishes either from Case 1. Verified manually during authoring; not
+# re-verified on every run (would require mutating the source file mid-suite). Case 5's
+# attribution assertion specifically was verified to FAIL against the pre-fix script (the branch
+# that introduced the direction split) -- see this phase's commit body for the exact command.
 # =====================================================================
 
 echo ""

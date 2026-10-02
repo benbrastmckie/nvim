@@ -228,7 +228,7 @@ staleness, attribution unchanged), in the error notice, the recorded row, and th
 
 ---
 
-### Phase 2: New dispatch-identity case for the newer direction [NOT STARTED]
+### Phase 2: New dispatch-identity case for the newer direction [COMPLETED]
 
 **Goal**: `test-handoff-dispatch-identity.sh` covers handoff-newer-than-minted and asserts the
 attribution the new discrimination produces, non-vacuously (failing against the pre-fix script),
@@ -236,28 +236,32 @@ while proving case 2's older-direction attribution did not change.
 
 **Tasks**:
 
-- [ ] Extend `run_case` with an optional 8th parameter `EXPECT_ATTRIBUTION`: when non-empty, grep
+- [x] Extend `run_case` with an optional 8th parameter `EXPECT_ATTRIBUTION`: when non-empty, grep
       `$LAST_STDERR` for that literal path and pass/fail a named assertion. Document in a comment
       **why** the assertion is stderr-based here and not row-based: every case in this suite runs
       `--dry-run`, and both defect-recording calls in the SUT are inside `if is_live;` — no row is
-      written. Point at the live row-level coverage added in Phase 3.
-- [ ] Add case 5, mirroring case 2's shape with only the seq direction flipped:
+      written. Point at the live row-level coverage added in Phase 3. *(completed)*
+- [x] Add case 5, mirroring case 2's shape with only the seq direction flipped:
       `run_case "case5-newer-than-minted" 805 6 5 0 "false" 'DISPATCH_SEQ MISMATCH' \
       'agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh'`, with a case-header comment
-      explaining the direction's meaning and why it is attributed to the minting script.
-- [ ] Add the non-regression attribution argument to case 2:
-      `'agent-system/extensions/core/skills/skill-orchestrate/SKILL.md'`.
-- [ ] Add a second assertion to case 5 that the stderr does **not** name
+      explaining the direction's meaning and why it is attributed to the minting script. *(completed)*
+- [x] Add the non-regression attribution argument to case 2:
+      `'agent-system/extensions/core/skills/skill-orchestrate/SKILL.md'`. *(completed)*
+- [x] Add a second assertion to case 5 that the stderr does **not** name
       `skills/skill-orchestrate/SKILL.md` as the attributed path, so a notice that named both paths
-      could not satisfy the test.
-- [ ] Update the suite's header "Detection strategy" paragraph: it currently says "these four
-      cases" — make it five and name the attribution dimension.
-- [ ] Update the trailing negative-control note to mention the direction branch.
-- [ ] Prove non-vacuity: run the new case against the pre-fix script (`git stash` the Phase 1 hunk,
+      could not satisfy the test. *(completed)*
+- [x] Update the suite's header "Detection strategy" paragraph: it currently says "these four
+      cases" — make it five and name the attribution dimension. *(completed)*
+- [x] Update the trailing negative-control note to mention the direction branch. *(completed)*
+- [x] Prove non-vacuity: run the new case against the pre-fix script (`git stash` the Phase 1 hunk,
       or run the suite with `SUT_SRC` pointed at `git show HEAD~1:...` copied to a temp path) and
       record in the commit body that case 5's attribution assertion **fails** pre-fix. Do not leave
-      the tree stashed.
-- [ ] Run the full suite; commit this green sub-step.
+      the tree stashed. *(completed: ran via a scratch copy at /tmp/prefix-check with SUT_SRC
+      pointed at `git show HEAD~1:...orchestrate-cycle-postflight.sh`; case 5's and case 2's new
+      attribution assertions both FAIL against the pre-fix script (2 failed, 11 passed), while
+      their pre-existing accept/reject + stderr-grep assertions still pass — confirming
+      non-vacuity. Scratch dir removed afterward; no tree left stashed.)*
+- [x] Run the full suite; commit this green sub-step. *(completed: 13 passed, 0 failed)*
 
 **Timing**: 1 hour
 
