@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Six-phase plan: add partial_progress Check 6 to validate-return-meta.sh, register RETURN_META_SCHEMA_VIOLATION, wire a warn-only partial_progress-output-gated probe into orchestrate-cycle-postflight.sh, with unit + end-to-end regression and noise-guard tests, then deploy.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/320_return_meta_producer_side_validation/plans/01_return-meta-producer-validation.md",
+      "summary": "Six-phase, 4.25-hour plan closing both producer-side gaps: partial_progress validation and the validator's missing lifecycle call site."
+    }
+  ],
+  "session_id": "sess_1790957600_e00acf_320",
+  "task_number": 320,
+  "dispatch_seq": 16
+}

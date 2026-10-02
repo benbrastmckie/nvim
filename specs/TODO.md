@@ -47,7 +47,7 @@ next_project_number: 322
 316 [PLANNED] — Trim skill-orchestrate/SKILL.md back under its gate-20...
   └─ 317 [NOT STARTED] — Make the post-deploy reconcile promotion append to...
   └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into... (see above)
-320 [PLANNING] — Run the orphaned .return-meta.json validator in the...
+320 [PLANNED] — Run the orphaned .return-meta.json validator in the...
 
 ### Extensions
 
@@ -166,11 +166,12 @@ A `lean4` dispatch launched against a Lean project with no running language serv
 
 ### 320. Run the orphaned .return-meta.json validator in the lifecycle, and give it the partial_progress checks it lacks
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [320_return_meta_producer_side_validation/reports/01_producer_side_validation.md]
+- **Plan**: [320_return_meta_producer_side_validation/plans/01_return-meta-producer-validation.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/scripts/validate-return-meta.sh` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 

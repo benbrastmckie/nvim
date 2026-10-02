@@ -1,43 +1,56 @@
 {
-  "status": "researched",
-  "dispatch_seq": 13,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/320_return_meta_producer_side_validation/reports/01_producer_side_validation.md",
-      "summary": "Confirms validate-return-meta.sh has zero partial_progress coverage and zero executing call sites; pins the integration point to orchestrate-cycle-postflight.sh (orchestrator-postflight.sh is orphaned); surfaces a critical noise hazard (status-vocabulary false positives for non-canonical-vocabulary agents) not named in the dispatch and specifies the partial_progress-output-gated call-site design that avoids it; proposes a new RETURN_META_SCHEMA_VIOLATION Signal A defect class."
+      "type": "plan",
+      "path": "specs/320_return_meta_producer_side_validation/plans/01_return-meta-producer-validation.md",
+      "summary": "Six-phase, 4.25-hour plan closing both producer-side gaps: partial_progress validation and the validator's missing lifecycle call site."
     }
   ],
-  "next_steps": "Run /plan 320 to create implementation plan",
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/validate-return-meta.sh",
-    "agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh",
-    "agent-system/extensions/core/scripts/system-defect-record.sh",
-    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+  "next_steps": "Run /implement 320 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 4.25,
+  "dependency_waves": [
+    [
+      1,
+      2
+    ],
+    [
+      3,
+      4
+    ],
+    [
+      5
+    ],
+    [
+      6
+    ]
   ],
   "memory_candidates": [
     {
-      "content": "orchestrator-postflight.sh is an orphaned script with no live callers (confirmed by its own header, skill-git-workflow/SKILL.md's 'Relationship to orchestrator-postflight.sh' section, and skill-base.sh:909's comment). The only live per-task postflight body for both /orchestrate engines is scripts/orchestrate-cycle-postflight.sh, invoked from skill-orchestrate/SKILL.md. When a task asks 'where should a new postflight check be wired', orchestrator-postflight.sh is never the answer despite its name and Stage-numbered header comments suggesting otherwise.",
+      "content": "A validator that exists, is tested, is documented, and is never invoked is indistinguishable from no validator at all. When auditing whether a check is live, grep for EXECUTING call sites (bash/exec/command substitution) rather than mere occurrences of the script name -- comments, docs, manifests, tests, and warning-message strings all match an occurrence grep while proving nothing about runtime coverage. The corollary for wiring an orphaned validator in: gate the new call site on the SPECIFIC check output the task needs, never on the validator aggregate exit code, because an aggregate-exit trigger silently activates every other check the validator implements -- which may include checks deliberately deferred for known false-positive reasons.",
       "category": "INSIGHT",
-      "source_artifact": "specs/320_return_meta_producer_side_validation/reports/01_producer_side_validation.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["orchestrate-cycle-postflight", "orchestrator-postflight", "orphaned script", "postflight call site", "live callers"]
-    },
-    {
-      "content": "lint-agent-contracts.sh:619-635 records a deliberately-deferred blocker: wiring validate-return-meta.sh's strict status-vocabulary check (Check 2) into any live chokepoint would break registered agents with intentional non-canonical success vocabularies (legal-analysis-agent's 'consulted', slidev-assembly-agent's 'assembled', every filetypes/* vocabulary) until orchestrate-recover-outcome.sh's 3-value success-acceptance set is widened (a separate, blocked item). Any new call site for validate-return-meta.sh's full exit code -- even a warn-only one -- risks resurrecting this as false-positive noise against correctly-behaving agents; gate on the specific check's output instead of the aggregate exit code when only one check's violation is the target.",
-      "category": "PATTERN",
-      "source_artifact": "specs/320_return_meta_producer_side_validation/reports/01_producer_side_validation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["validate-return-meta", "status vocabulary", "non-canonical status", "false positive", "defect noise", "signal A"]
+      "source_artifact": "specs/320_return_meta_producer_side_validation/plans/01_return-meta-producer-validation.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "orphaned-validator",
+        "call-site-audit",
+        "occurrence-vs-invocation",
+        "exit-code-gating",
+        "postflight-validation",
+        "false-positive-noise"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790957600_e00acf_320",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 7
-  }
+    "delegation_path": [
+      "orchestrator",
+      "plan",
+      "planner-agent"
+    ]
+  },
+  "dispatch_seq": 16
 }
