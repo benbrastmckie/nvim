@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/plans/01_declare-script-in-manifest.md",
-      "summary": "3-phase plan: declare migrate-state-legacy-fields.sh in core manifest provides.scripts, refresh the stale script count in core README.md, then confirm check-extension-docs.sh [core] is clean and verify-deploy.sh gate 3 is green."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 5,
   "metadata": {
-    "session_id": "sess_1790978139_b07459_323",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 0.75,
-    "dependency_waves": [[1], [2], [3]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /implement 323 to execute the plan",
-  "dispatch_seq": 3
+    "session_id": "sess_1790978139_b07459",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

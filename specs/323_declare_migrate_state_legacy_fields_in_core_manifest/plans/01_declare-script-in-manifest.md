@@ -1,7 +1,7 @@
 # Implementation Plan: Declare migrate-state-legacy-fields.sh in core manifest
 
 - **Task**: 323 - Declare migrate-state-legacy-fields.sh in core manifest
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/323_declare_migrate_state_legacy_fields_in_core_manifest/reports/01_declare-script-in-manifest.md
@@ -102,24 +102,24 @@ Phase 2 must be saved after Phase 1 for the mtime WARN to clear, and Phase 3 ver
 
 ---
 
-### Phase 1: Declare the script in provides.scripts [NOT STARTED]
+### Phase 1: Declare the script in provides.scripts [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/manifest.json` declares
 `scripts/migrate-state-legacy-fields.sh`, clearing `check-extension-docs.sh`'s Rule Q FAIL for
 `[core]`.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/manifest.json` immediately before editing (sibling
-      task active this cycle).
-- [ ] Confirm the script is still on disk, executable, and git-tracked:
-      `git ls-files agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh`.
-- [ ] Confirm `"migrate-state-legacy-fields.sh"` is still absent from `provides.scripts` and
-      locate the current index of `"migrate-directory-padding.sh"`.
-- [ ] Insert the string `"migrate-state-legacy-fields.sh"` into `provides.scripts` immediately
-      after `"migrate-directory-padding.sh"`, matching the surrounding indentation exactly.
-- [ ] Validate JSON: `jq empty agent-system/extensions/core/manifest.json`.
-- [ ] Confirm membership: `jq -e '.provides.scripts | index("migrate-state-legacy-fields.sh")'`.
-- [ ] Commit this phase's single file (explicit path, no directory or glob `git add`).
+- [x] Re-read `agent-system/extensions/core/manifest.json` immediately before editing (sibling
+      task active this cycle). *(completed)*
+- [x] Confirm the script is still on disk, executable, and git-tracked:
+      `git ls-files agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh`. *(completed)*
+- [x] Confirm `"migrate-state-legacy-fields.sh"` is still absent from `provides.scripts` and
+      locate the current index of `"migrate-directory-padding.sh"`. *(completed: index 65, 199 entries)*
+- [x] Insert the string `"migrate-state-legacy-fields.sh"` into `provides.scripts` immediately
+      after `"migrate-directory-padding.sh"`, matching the surrounding indentation exactly. *(completed)*
+- [x] Validate JSON: `jq empty agent-system/extensions/core/manifest.json`. *(completed)*
+- [x] Confirm membership: `jq -e '.provides.scripts | index("migrate-state-legacy-fields.sh")'`. *(completed: index 66, length 200)*
+- [x] Commit this phase's single file (explicit path, no directory or glob `git add`). *(completed)*
 
 **Timing**: 0.25 hours
 

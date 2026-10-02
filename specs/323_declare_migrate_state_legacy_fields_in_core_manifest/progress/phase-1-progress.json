@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Declare the script in provides.scripts",
+  "started_at": "2026-10-02T00:00:00Z",
+  "last_updated": "2026-10-02T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read manifest.json, confirm script on disk/tracked/absent from provides.scripts", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert migrate-state-legacy-fields.sh into provides.scripts after migrate-directory-padding.sh", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Validate JSON and membership, commit", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

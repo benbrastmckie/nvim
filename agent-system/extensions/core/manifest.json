@@ -140,6 +140,7 @@
       "memory-harvest.sh",
       "memory-retrieve.sh",
       "migrate-directory-padding.sh",
+      "migrate-state-legacy-fields.sh",
       "orchestrate-batch-admit.sh",
       "orchestrate-build-aux-dispatch.sh",
       "orchestrate-build-dispatch.sh",
