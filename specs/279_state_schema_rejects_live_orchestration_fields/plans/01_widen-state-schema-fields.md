@@ -473,7 +473,7 @@ re-derived.
 
 ---
 
-### Phase 6: Document the ruling, the retired values, and the posture divergence [NOT STARTED]
+### Phase 6: Document the ruling, the retired values, and the posture divergence [COMPLETED]
 
 **Goal**: `state-management-schema.md` carries every widened field with its writer and reader named,
 every retired field with its last known value, and an explicit note that the JSON Schema keeps
@@ -481,36 +481,43 @@ every retired field with its last known value, and an explicit note that the JSO
 
 **Tasks**:
 
-- [ ] Add the one new top-level field to the **Top-Level Fields** table: `active_goal`, with
+- [x] Add the one new top-level field to the **Top-Level Fields** table: `active_goal`, with
       `commands/review.md`'s goal-selection step named as writer, in the existing
-      "Documented-optional, confirmed live" annotation style.
-- [ ] Add the four new entry fields to the **Project Entry Fields** table: `blockers` (array of
+      "Documented-optional, confirmed live" annotation style. *(deviation: altered — already
+      present in the table, settled by hand 2026-09-30 alongside `deployment_versions`; verified in
+      place, no edit needed)*
+- [x] Add the four new entry fields to the **Project Entry Fields** table: `blockers` (array of
       strings; free-text annotation, no canonical script writer, read by
       `orchestrate-cycle-postflight.sh`'s blocked-verdict branch), `previous_status` (status enum;
       written by `/spawn`, read by `orchestrate-triage-classify.sh`'s discharge routing — marked
       load-bearing), `resume_phase` (integer; legacy, secondary to `continuation_context`),
       `researched` (ISO8601 timestamp, explicitly not a boolean and not the `status` enum value; no
-      current writer or reader, retained because `last_updated` overwrites).
-- [ ] Add a new **Retired Top-Level Fields** subsection recording, for each of `artifacts`,
+      current writer or reader, retained because `last_updated` overwrites). *(completed)*
+- [x] Add a new **Retired Top-Level Fields** subsection recording, for each of `artifacts`,
       `metadata` and top-level `last_updated`: why it was retired (no agent-system writer, no
       reader, pre-schema generator-era bookkeeping), its **last known value** as quoted data, and
       the migration script's name as the tool that removes it. This subsection is the durable
       written record the hard constraint requires. Use no task-number references; if the quoted
       legacy `artifacts` path trips the write-time task-reference gate, apply the documented
-      `task-ref-ok` marker with a reason.
-- [ ] Add an **Unknown-field enforcement posture** note stating that the schema retains
+      `task-ref-ok` marker with a reason. *(completed; the write-time gate did not block the
+      directory-name substring itself, but a `task-ref-ok` marker was applied defensively anyway
+      since the row's own prose separately mentions "a reused task number")*
+- [x] Add an **Unknown-field enforcement posture** note stating that the schema retains
       `additionalProperties: false` at both levels because draft-07 has no warn severity, and that
       the advisory/strict split is implemented in `validate-state.sh` Checks 3/4 — so the schema and
       the validator disagreeing on *severity* is deliberate, while disagreeing on the *field set* is
-      a defect the new drift test catches.
-- [ ] Add a one-line provenance note beside the stale `state-write.sh` snippets that mint
+      a defect the new drift test catches. *(completed)*
+- [x] Add a one-line provenance note beside the stale `state-write.sh` snippets that mint
       `resume_phase` and `researched` in `context/patterns/inline-status-update.md` and
       `context/patterns/jq-escaping-workarounds.md`, stating that no currently-live skill executes
       them (`skill-status-sync`'s `postflight_update` sets only `status` and `last_updated`), so a
-      future reader does not treat the snippets as the live write path.
-- [ ] Mark `context/processes/implementation-workflow.md` as superseded at its head — it is
+      future reader does not treat the snippets as the live write path. *(completed — three notes
+      added: inline-status-update.md's `researched` site and `resume_phase` site, and
+      jq-escaping-workarounds.md's Research Postflight template)*
+- [x] Mark `context/processes/implementation-workflow.md` as superseded at its head — it is
       referenced by nothing in the source store and its `resume_phase` postflight pattern is not what
-      the live continuation mechanism does.
+      the live continuation mechanism does. *(completed; re-verified the zero-live-reference claim
+      via grep before marking)*
 - [ ] Commit.
 
 **Timing**: 1.25 hours

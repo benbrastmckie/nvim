@@ -3,6 +3,16 @@
 **Created**: 2025-12-29  
 **Purpose**: Detailed implementation workflow for project tasks
 
+**SUPERSEDED**: this document is referenced by nothing in the live context-loading chain
+(`index-entries.json`'s own listing is a searchable index, not a reference) and its
+"Implementation Postflight (Partial)" `resume_phase` pattern is not what the current
+implementation agent's resume mechanism does. The live partial-resume path is the
+handoff-file-based `continuation_context` mechanism (`agents/general-implementation-agent.md`),
+not the `resume_phase` write pattern documented below. Kept for historical reference only; do not
+treat its patterns as the current live write path. See
+`context/reference/state-management-schema.md`'s "Retired Top-Level Fields" subsection and the
+`resume_phase` row in its Project Entry Fields table for the current ruling.
+
 ---
 
 ## Overview

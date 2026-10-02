@@ -79,6 +79,13 @@ Then update TODO.md: `[PLANNED]` → `[IMPLEMENTING]`
 
 Update task to "researched" after successful research:
 
+**Provenance note**: `researched` is modelled in `state-schema.json` as an informational-only
+ISO8601 timestamp (preserved for no-information-loss reasons -- see
+`context/reference/state-management-schema.md`'s Project Entry Fields table), but no currently-live
+skill sets it. `skill-status-sync/SKILL.md`'s actual `postflight_update` operation sets only
+`status` and `last_updated`, omitting `researched`. Treat this snippet as documented-but-superseded,
+not as the current write path.
+
 ```bash
 # Step 1: Update status and timestamps
 bash .claude/scripts/state-write.sh \
@@ -174,6 +181,14 @@ bash .claude/scripts/state-write.sh \
   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
   --arg phase "$completed_phase"
 ```
+
+**Provenance note**: `resume_phase` is modelled in `state-schema.json` (legacy/secondary field,
+preserved for no-information-loss reasons -- see `context/reference/state-management-schema.md`'s
+Project Entry Fields table), but no currently-live skill executes this exact snippet.
+`skill-status-sync/SKILL.md`'s actual `postflight_update` operation sets only `status` and
+`last_updated`; the live partial-resume path is the handoff-file-based `continuation_context`
+mechanism (`agents/general-implementation-agent.md`), not `resume_phase`. Treat this snippet as
+documented-but-superseded, not as the current write path.
 
 TODO.md stays as `[IMPLEMENTING]`.
 

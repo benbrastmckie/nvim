@@ -76,6 +76,42 @@ authoritative source this table glosses).
 | `deployment_versions` | object | No | Documented-optional, confirmed live. Semantic-version deployment record written by `skill-tag` (the `/tag` command): `last_deployed`, `last_deployed_at`, and a `deployment_history` array of `{version, deployed_at, commit_sha}` capped at ten most-recent-first entries. Modelled because the agent system writes it itself -- until it was added here, `additionalProperties: false` rejected a field one of its own skills produces, so every repo that had run `/tag` failed the unknown-top-level-field check |
 | `active_goal` | string | No | Documented-optional. Free-prose statement of the repository's current overall aim, for human orientation. No script writes or reads it; it is authored by a repo owner or by whichever task owns the repository's framing. Modelled rather than retired so a repo holding a real goal string does not fail validation for it; omitting it is equally valid |
 
+### Retired Top-Level Fields
+
+These three top-level fields are **deliberately NOT modelled** in `state-schema.json` and are
+**deliberately NOT in** `validate-state.sh`'s `KNOWN_TOP_LEVEL_FIELDS`. All three are
+pre-agent-system, generator-era bookkeeping: no script, command, or skill anywhere in
+`agent-system/` writes or reads any of them. A consumer repo carrying one of them from before the
+agent system's schema existed gets an advisory WARN (not a hard FAIL -- see "Unknown-field
+enforcement posture" below) and can retire it permanently by running
+`scripts/migrate-state-legacy-fields.sh`, which prints each value before deleting it.
+
+This is the written, no-information-loss record the retirement ruling requires: each field's last
+known value, observed in a real consumer repo at the time of the ruling, is recorded here
+verbatim so the information survives independently of any task artifact or migration run's own
+stdout.
+
+| Field | Type | Last known value (consumer repo, observed at ruling time) | Why retired |
+|-------|------|-------------------------------------------------------------|-------------|
+| `artifacts` | array | `[{"path": "specs/636_fix_sorries_temporalproofstrategies_examples/plans/implementation-001.md", "type": "plan", "summary": "2-phase plan: attempt proof completion first, remove incomplete exercises as fallback"}]` <!-- task-ref-ok quoted legacy consumer-repo data value, not a task citation; the directory name is orphaned residue from a reused task number, already absent from that repo's working tree --> | Orphaned residue from an earlier, since-recycled task number (a vault/renumbering collision); the target path no longer exists in the consumer repo's working tree or git history. No agent-system writer or reader for a top-level `.artifacts` (every `.artifacts[0].path` hit elsewhere operates on `.return-meta.json` or a per-entry `active_projects[]` object, never the top level) |
+| `metadata` | object | `{"generated_at": "2026-08-24T21:34:14.522352", "total_tasks": 44, "last_sync": "2026-08-24T21:34:14Z"}` | Stale, manually-reconciled legacy bookkeeping; the consumer repo's own review artifacts already flagged these exact values as wrong (`total_tasks` undercounted, `last_sync` many weeks stale). A sibling field in the same family (`task_counts`) was already hand-retired by that repo's maintainer before this ruling. No agent-system writer or reader |
+| `last_updated` (top-level) | string (ISO8601) | `"2026-09-29T05:45:37Z"` | Same legacy-generator family as `metadata`; moves irregularly with no single canonical script or command owning it. Not to be confused with, and not a reason to touch, the well-modelled, load-bearing **entry-level** `last_updated` field above, which is unaffected |
+
+### Unknown-field enforcement posture
+
+`state-schema.json` keeps `additionalProperties: false` at both the top level and on
+`definitions.projectEntry` -- this is unchanged and deliberate; JSON Schema draft-07 has no native
+"warn" severity, so a schema-level posture split is not expressible in the schema file itself.
+The advisory/strict split instead lives entirely in `scripts/validate-state.sh`: Checks 3
+(unknown top-level field) and 4 (unknown entry field) are WARN-by-default, joining Checks 8-11 in
+that posture, with `--strict` promoting every WARN to exit-blocking for an opt-in caller. A schema
+and its validator **disagreeing on severity** is therefore deliberate and documented, not a defect
+-- but the two **disagreeing on the field set** (a field the schema models that the validator's
+hand-copied `KNOWN_TOP_LEVEL_FIELDS`/`KNOWN_ENTRY_FIELDS` arrays omit, or vice versa) remains a
+real defect, caught by the schema-to-validator drift test in
+`scripts/tests/test-validate-state.sh`. See each check's own PROMOTION CRITERION comment block in
+`validate-state.sh` for the concrete bar that moves Checks 3/4 back to hard-FAIL.
+
 ### Project Entry Fields
 
 | Field | Type | Required | Description |
@@ -99,6 +135,10 @@ authoritative source this table glosses).
 | `prior_status` | string | No | Documented-optional; present only while status is `hold`. The status the task returns to when the hold lifts -- the field that makes a hold reversible. See [Hold Fields](#hold-fields) |
 | `artifacts` | array | No | Array of artifact objects |
 | `next_artifact_number` | number | No | Next artifact sequence number (default: 1). Zero occurrences in the current active snapshot -- same lifecycle-timing sparsity as `effort`, 308 occurrences in `specs/archive/state.json` |
+| `blockers` | array of strings | No | Documented-optional. Free-text, human/session-authored annotation naming what is blocking the task. No canonical script writer -- composed ad hoc by whoever marks the task `blocked`/`partial` -- but read by `scripts/orchestrate-cycle-postflight.sh`'s blocked-verdict branch to surface the blocker-research aux signal. Canonical shape is array of strings; a legacy scalar-string value is tolerated by that reader through the migration window (`scripts/migrate-state-legacy-fields.sh` normalizes it) |
+| `previous_status` | string (`taskStatus` enum) | No | Documented-optional, **load-bearing, not bookkeeping**. Written by `/spawn`'s preflight status update (`skills/skill-spawn/SKILL.md`) before it overwrites `status` to `blocked`, recording the status the task was in beforehand. Read by `scripts/orchestrate-triage-classify.sh`'s blocked-task discharge routing: a discharged candidate with no recorded `previous_status` cannot determine its discharge phase and falls back to `needs_human` |
+| `resume_phase` | integer | No | Documented-optional, **legacy/secondary**. Predates and is not consumed by the live `continuation_context`-based resume mechanism (see `agents/general-implementation-agent.md`); no current writer or reader in the agent system. Retained rather than retired because a live value on a blocked task is exactly the kind of resume-point information whose loss would be invisible until someone tries to resume. Reconciling this field with `continuation_context` is a separate, out-of-scope concern |
+| `researched` | string (ISO8601 timestamp) | No | Documented-optional, **informational-only**. A phase-completion TIMESTAMP -- not a boolean, and not to be confused with the unrelated `status: "researched"` enum value. No current writer (the template that minted it predates `skill-status-sync`'s actual `postflight_update` operation, which sets only `status` and `last_updated`) and no current reader. Retained because entry-level `last_updated` is overwritten by every subsequent status change, so this is the only remaining record of when research completed for a task that has since moved on |
 
 ### task_type Field
 

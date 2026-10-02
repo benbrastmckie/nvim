@@ -111,6 +111,14 @@ bash .claude/scripts/state-write.sh \
 
 ### Research Postflight
 
+**Provenance note**: this template's `researched` field is modelled in `state-schema.json` as an
+informational-only ISO8601 timestamp (see `context/reference/state-management-schema.md`'s
+Project Entry Fields table), but no currently-live skill sets it today.
+`skill-status-sync/SKILL.md`'s actual `postflight_update` operation sets only `status` and
+`last_updated`. This template -- and the other `researched: $ts` occurrences above illustrating
+the jq-escaping idiom -- are retained as documentation of a prior write pattern, not as the
+current live write path.
+
 ```bash
 # Step 1: Update status
 bash .claude/scripts/state-write.sh \

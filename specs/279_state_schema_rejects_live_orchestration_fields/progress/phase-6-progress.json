@@ -1,0 +1,18 @@
+{
+  "phase": 6,
+  "phase_name": "Document the ruling, the retired values, and the posture divergence",
+  "started_at": "2026-10-02T21:30:00Z",
+  "last_updated": "2026-10-02T21:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Verify active_goal row already present in Top-Level Fields table", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add four widened entry fields to Project Entry Fields table", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]},
+    {"id": 3, "description": "Add Retired Top-Level Fields subsection with last-known-values", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]},
+    {"id": 4, "description": "Add Unknown-field enforcement posture note", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]},
+    {"id": 5, "description": "Add provenance notes to inline-status-update.md and jq-escaping-workarounds.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/inline-status-update.md", "agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md"]},
+    {"id": 6, "description": "Mark implementation-workflow.md superseded", "status": "done", "files_touched": ["agent-system/extensions/core/context/processes/implementation-workflow.md"]},
+    {"id": 7, "description": "Run task-reference lint", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
