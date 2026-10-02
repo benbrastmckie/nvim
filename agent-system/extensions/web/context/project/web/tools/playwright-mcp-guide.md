@@ -47,9 +47,9 @@ There is no `browser_verify_text_visible` tool. Map that intent onto real tools 
 
 ## Permission Tiers -- Unprompted vs. Prompting
 
-Of the 24 tools, only 9 are allowlisted in
-`agent-system/extensions/web/settings-fragment.json` and therefore run without an interactive
-permission prompt today:
+Of the 24 tools, only 9 are allowlisted, in user-scope `~/.claude/settings.json` (written by a
+home-manager activation block in a separate configuration repository), and therefore run without
+an interactive permission prompt today:
 
 `browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_console_messages`,
 `browser_network_requests`, `browser_click`, `browser_type`, `browser_find`, `browser_wait_for`.
@@ -64,7 +64,8 @@ will interrupt an autonomous run with a permission prompt.
 **Never write a plan step or a verification instruction that depends on `browser_evaluate`,
 `browser_file_upload`, or `browser_run_code_unsafe`.** These three are deliberately excluded from
 the always-allow list because they run arbitrary code or read arbitrary local files -- the
-enumeration in `settings-fragment.json` is intentional, not an oversight to "fix" by widening it.
+enumeration in user-scope `~/.claude/settings.json` is intentional, not an oversight to "fix" by
+widening it.
 Depending on one of them reintroduces the autonomous-run stall the permission split exists to
 prevent. Prefer the 9 unprompted tools for anything a plan can be satisfied with; treat every
 other tool (prompting but not one of the three escape hatches) as usable only when a human is

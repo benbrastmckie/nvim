@@ -500,7 +500,7 @@ outside the rewritten passage MUST equal the before-count outside it, occurrence
 
 ---
 
-### Phase 6: Repoint the playwright permission-tier doc (scope addition) [NOT STARTED]
+### Phase 6: Repoint the playwright permission-tier doc (scope addition) [COMPLETED]
 
 **Goal**: Stop `web/context/project/web/tools/playwright-mcp-guide.md` from naming an emptied file
 as the authoritative location of the 9-tool safe-tier allowlist. **This is the one-file scope
@@ -509,19 +509,22 @@ starting, and skip this phase (reporting the file as a known remaining stale sur
 nine-file reading is preferred.
 
 **Tasks**:
-- [ ] Skip this phase entirely if Phase 2 was skipped on the precondition branch — with the
+- [x] Skip this phase entirely if Phase 2 was skipped on the precondition branch — with the
       enumeration still in `web/settings-fragment.json`, this document is correct as written
-- [ ] Re-read the `## Permission Tiers -- Unprompted vs. Prompting` section
-- [ ] Repoint the opening sentence: the 9 allowlisted tools are granted in user-scope
+      *(not applicable: Phase 2 was not skipped, so this phase proceeds)*
+- [x] Re-read the `## Permission Tiers -- Unprompted vs. Prompting` section *(completed)*
+- [x] Repoint the opening sentence: the 9 allowlisted tools are granted in user-scope
       `~/.claude/settings.json` (written by a home-manager activation block in a separate
       configuration repository), not in `agent-system/extensions/web/settings-fragment.json`
-- [ ] Repoint the closing sentence's "the enumeration in `settings-fragment.json` is intentional,
-      not an oversight to 'fix' by widening it" to the same user-scope location
-- [ ] Change nothing else: the 9-tool list, the 15-tool prompting list, the three escape hatches,
+      *(completed)*
+- [x] Repoint the closing sentence's "the enumeration in `settings-fragment.json` is intentional,
+      not an oversight to 'fix' by widening it" to the same user-scope location *(completed)*
+- [x] Change nothing else: the 9-tool list, the 15-tool prompting list, the three escape hatches,
       the "Never write a plan step or a verification instruction that depends on ..." prohibition,
-      and the 24-tool total all stay exactly as they are
-- [ ] Cross-check the corrected wording against Phase 4's passage (e) so the two documents name the
-      same location in the same terms
+      and the 24-tool total all stay exactly as they are *(completed: `git diff` confirms the change
+      is confined to the two repointed sentences)*
+- [x] Cross-check the corrected wording against Phase 4's passage (e) so the two documents name the
+      same location in the same terms *(completed: both name user-scope `~/.claude/settings.json`)*
 
 **Timing**: 0.25 hours
 
