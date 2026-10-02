@@ -86,17 +86,18 @@ next_project_number: 316
   └─ 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 314 [RESEARCHED] — Decide the unconsumed-dispatch replay seq before the dispatch...
-315 [RESEARCHING] — Stop the cycle postflight reporting a status it did not...
+315 [RESEARCHED] — Stop the cycle postflight reporting a status it did not...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
 
 ### 315. Stop the cycle postflight reporting a status it did not persist, and attribute a seq mismatch by direction
 - **Effort**: 3-6 hours
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [315_postflight_reports_only_what_it_persists/reports/01_postflight-attribution-and-status.md]
 
 **Description**: Stop `orchestrate-cycle-postflight.sh` reporting an outcome it did not persist, and make its `HANDOFF_STALE_OR_ABSENT` attribution depend on the DIRECTION of a dispatch_seq mismatch. Two independent honesty defects in one file, both surfaced by the same live incident, neither owned by any existing task.
 

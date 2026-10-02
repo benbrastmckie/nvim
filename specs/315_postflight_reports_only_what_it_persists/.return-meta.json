@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790947016_5ff368_315",
+  "dispatch_seq": 2,
+  "findings_count": 9,
+  "next_steps": "Run /plan 315 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/315_postflight_reports_only_what_it_persists/reports/01_postflight-attribution-and-status.md",
+      "summary": "Confirms both honesty defects, traces exact line numbers for the dispatch_seq-mismatch direction split and the status/persisted-status discrimination, confirms orchestrate-cycle-plan.sh as the sole dispatch_seq minting site, and recommends: (1) direction-aware HANDOFF_STALE_OR_ABSENT attribution (older unchanged, newer -> orchestrate-cycle-plan.sh) plus a non-vacuous test-handoff-dispatch-identity.sh case 5 and 3-way doc reconciliation; (2) adding a new persisted_status sibling field rather than repurposing .status, evidenced by test-orchestrate-cycle-postflight.sh's existing Acceptance (5) which already locks in agent-self-reported .status semantics."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In orchestrate-cycle-postflight.sh, the emitted JSON's `.status` field is deliberately the agent's self-reported outcome (verbatim from handoff or recovered .return-meta.json), NOT necessarily what state.json now persists -- even on a successful-recovery path, a `partial` outcome with empty blockers[] performs no state.json transition at all, so `.status` can legitimately diverge from the persisted value by design. test-orchestrate-cycle-postflight.sh's Acceptance (5) fixture already asserts this (status=partial while state.json stays 'implementing'). Any future fix for 'postflight reports a status it didn't persist' should add a new sibling field (e.g. persisted_status) rather than swapping `.status`'s meaning, to avoid regressing this existing, intentional test.",
+      "category": "PATTERN",
+      "source_artifact": "specs/315_postflight_reports_only_what_it_persists/reports/01_postflight-attribution-and-status.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "dispatch_status", "persisted_status", "user_decision relay", "status honesty"]
+    },
+    {
+      "content": "dispatch_seq in the /orchestrate engines is minted exclusively by orchestrate-cycle-plan.sh (via mt_json.dispatch_seq_counter arithmetic) for BOTH the single-task and multi-task code paths today. skill-orchestrate/SKILL.md only ever READS the already-minted value back out of mt_state_file.dispatch_seq[$t]; it never mints. skill_orchestrate_mint_dispatch_seq (skill-base.sh) is defined but not called from any .sh file. This matters for defect attribution: any defect about a dispatch_seq value being wrong-at-the-source (as opposed to a stale read) should attribute to orchestrate-cycle-plan.sh, not to skill-orchestrate/SKILL.md.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/315_postflight_reports_only_what_it_persists/reports/01_postflight-attribution-and-status.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["dispatch_seq", "orchestrate-cycle-plan.sh", "minting", "defect attribution", "skill-orchestrate"]
+    }
+  ]
+}
