@@ -558,47 +558,61 @@ single-quoted jq program; both reworded to avoid the apostrophe.
 
 ---
 
-### Phase 5: Consumer updates — executing gate and predispatch review [NOT STARTED]
+### Phase 5: Consumer updates — executing gate and predispatch review [COMPLETED]
 
 **Goal**: Make the new `defer_reason` and both new advisory fields visible to the two live
 consumers, and close the silent-exclusion gap in the executing gate's closed `case` block.
 
 **Tasks**:
-- [ ] **Territory precondition, before touching `orchestrate-cycle-plan.sh`**: re-read the file
+- [x] **Territory precondition, before touching `orchestrate-cycle-plan.sh`**: re-read the file
       immediately beforehand and run `git log --oneline -5 -- <that path>`. Two concurrent sibling
       tasks declare it in their `file_scope`. If a foreign commit or a foreign uncommitted
       modification is present, STOP and report it rather than proceeding — per
       `context/contracts/territory.md`'s Cross-Task Territory section and this dispatch's
-      concurrency note.
-- [ ] In `orchestrate-cycle-plan.sh`'s `case "$dr" in` block, add an `absent_file_scope)` arm
+      concurrency note. *(completed: confirmed clean — `git status --porcelain` empty, no foreign
+      commit since this session's own session-registry entry was the only one covering this path)*
+- [x] In `orchestrate-cycle-plan.sh`'s `case "$dr" in` block, add an `absent_file_scope)` arm
       appending a `defer_ledger` entry (`collision_scope: null`, `detail` from `admit_reason`),
-      matching the three existing arms' shape exactly.
-- [ ] Add a loud `*)` default arm to the same `case`: warn to stderr naming the unrecognized
+      matching the three existing arms' shape exactly. *(completed)*
+- [x] Add a loud `*)` default arm to the same `case`: warn to stderr naming the unrecognized
       `defer_reason` and still append a `defer_ledger` entry, so no future value can silently
       exclude a task with no record. Note inline that this closes a pre-existing gap, not one
-      introduced by the new value.
-- [ ] Add ledger capture for both new advisory fields, modelled on the existing
+      introduced by the new value. *(completed; added dedicated Group 34 regression case to
+      `test-orchestrate-cycle-plan.sh` with a stubbed admit script, since this consumer's own
+      test suite had no coverage for the default arm at all)*
+- [x] Add ledger capture for both new advisory fields, modelled on the existing
       `idle_overlap_ledger` block immediately above: an `absent_scope_ledger` entry when
       `absent_scope_advisory` is present, and a `cross_session_hazard_ledger` entry when
       `cross_session_hazard` is present. Confirm the target metadata document's array fields exist
       or add them alongside `idle_overlap_ledger`'s, following that field's own precedent.
-- [ ] Add no `--allow-absent-file-scope` bypass flag. The two existing bypasses
+      *(completed: added `absent_scope_ledger`/`cross_session_hazard_ledger`/
+      `unrecognized_defer_reason_ledger` to the mt_state_file `//=` initialization block and the
+      header's field-list enumeration)*
+- [x] Add no `--allow-absent-file-scope` bypass flag. The two existing bypasses
       (`--allow-self-modifying`, `--allow-scope-collision`) stay untouched; record inline why the
-      new reason gets none (Phase 3's override-semantics ruling).
-- [ ] In `orchestrate-predispatch-review.sh`, add a new class (next unused letter — confirm live;
+      new reason gets none (Phase 3's override-semantics ruling). *(completed — no new flag added;
+      the override-semantics rationale already lives in `orchestrate-batch-admit.sh`'s own header,
+      cross-referenced rather than duplicated)*
+- [x] In `orchestrate-predispatch-review.sh`, add a new class (next unused letter — confirm live;
       A/B/C/C-admitted/D/D-admitted/E/F/G are taken) re-presenting
       `decision == "defer" and defer_reason == "absent_file_scope"` verdicts, following the
       `select()`-based convention of Classes C/D/E and adding no new diagnosis of its own.
-- [ ] Add a companion admitted-side selector for `absent_scope_advisory` and one for
+      *(completed: Class H, next unused letter confirmed live)*
+- [x] Add a companion admitted-side selector for `absent_scope_advisory` and one for
       `cross_session_hazard`, modelled on the existing `Class C-admitted` / `Class D-admitted`
-      pattern, so an admitted hazard is rendered rather than inert.
-- [ ] Extend Class F's existing header comment to cross-reference the new verdict-carried
+      pattern, so an admitted hazard is rendered rather than inert. *(completed: Class H-admitted
+      for `absent_scope_advisory`; a new Class I for `cross_session_hazard` — this field has no
+      defer-side counterpart to pair with, since it only ever appears on an admit, so it is its
+      own lettered class rather than an "-admitted" suffix on a nonexistent base class)*
+- [x] Extend Class F's existing header comment to cross-reference the new verdict-carried
       advisory: Class F computes absence independently from state.json; `absent_scope_advisory`
       is the same fact carried on the verdict. Deliberate overlap, documented — the same posture
       Class F already takes toward Class B. Class F stays report-only and is NOT made
-      admission-relevant here.
-- [ ] Update this script's header class inventory and its `Read by` / consumer prose so the class
-      list matches the code.
+      admission-relevant here. *(completed)*
+- [x] Update this script's header class inventory and its `Read by` / consumer prose so the class
+      list matches the code. *(completed: "SEVEN classes" -> "NINE classes", Classes H/I added to
+      the Purpose enumeration, "Classes C/D" -> "Classes C/D/H" in the exclusion-authority
+      paragraph)*
 
 **Timing**: 1.5 hours
 
@@ -634,6 +648,35 @@ editing; if a third live branching consumer appears, add it to this phase rather
 - `shellcheck` clean on both files.
 - `bash agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh` still fully
   green (no regression from consumer edits).
+
+**Phase Completion Note**: all declared Verification items confirmed (manual `--dry-run` and
+live probes against throwaway fixtures; Classes H/H-admitted/I rendered correctly end-to-end;
+zero-findings negative confirmed for Class H; `shellcheck` clean on both files, identical to each
+file's own pre-task baseline except the expected +4 pre-existing-pattern SC2016 info lines in
+`orchestrate-cycle-plan.sh` — jq-embedded `$var` references inside single-quoted strings, the
+SAME accepted idiom already producing 62 such lines in that file before this phase).
+
+**Unplanned but necessary regression repair (beyond this phase's own declared Files to
+modify)**: running the full existing test corpus surfaced that Phase 3's new in-batch
+`absent_file_scope` blocking rule broke 12 pre-existing assertions across
+`agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` — every one of them a
+MULTI-candidate fixture where 2+ co-dispatched candidates shared an empty/absent `file_scope`
+for a reason having nothing to do with admission (lock refusal, session-id suffixing, `--compare`
+forwarding, sibling-territory rendering, streak-freeze, and the build-heavy co-scheduling rule's
+own dedicated group, which explicitly declared `file_scope: []` specifically so the OLD
+file_scope_collision check could never fire — a now-false assumption). Repaired by giving every
+affected fixture a distinct, disjoint, concrete `file_scope` (never empty), plus one structural
+split (Group 25's absent/empty-array territory-rendering cases, which genuinely needed 2+
+absent-scope siblings co-dispatched to test rendering variety — split into two 2-candidate
+cycles so no cycle ever co-dispatches more than one absent-scope candidate, preserving every
+original assertion). `test-orchestrate-cycle-plan.sh` went from 328 passed/12 failed to 344
+passed/0 failed (12 regressions fixed + 3 new cases: the live/dry-run negative pairing already
+existing cases exercise, plus the new Group 34 default-arm regression test). A full sweep of
+every other test suite that references `orchestrate-batch-admit.sh`/`orchestrate-cycle-plan.sh`/
+`orchestrate-predispatch-review.sh` (24 files) found no further regressions; one unrelated
+pre-existing failure (`test-lint-json-channel-discipline.sh`, a typst-extension lint finding)
+was confirmed present identically with this entire task's changes stashed, so it predates and is
+unrelated to this work.
 
 ---
 

@@ -50,7 +50,12 @@
 #   dispatch_start_ts, dispatch_seq_counter, dispatch_seq, deferred_self_modifying,
 #   deferred_deploy_checkpoint, deployed_critical_paths, consecutive_no_dispatch_cycles,
 #   verify_deploy_baseline_notices, defer_ledger, detected_defects, forward_progress_violated,
-#   idle_overlap_ledger, cycle_modified_files. PLUS TWO genuinely NEW fields this script introduces
+#   idle_overlap_ledger, absent_scope_ledger, cross_session_hazard_ledger,
+#   unrecognized_defer_reason_ledger (three additive ledger fields mirroring idle_overlap_ledger's
+#   own shape, added alongside the absent_file_scope defer_reason and the cross_session_hazard/
+#   absent_scope_advisory additive verdict fields -- see orchestrate-batch-admit.sh's header for
+#   the full admission-posture ruling these ledgers observe), cycle_modified_files. PLUS TWO
+#   genuinely NEW fields this script introduces
 #   (per-task force_phases consumption, a feature gap no prior stage closed):
 #   force_phases_remaining (map task_number(string) -> ordered array of not-yet-dispatched forced
 #   phases, canonical research/plan/implement order, popped as each forced phase is dispatched);
@@ -560,6 +565,9 @@ mt_json=$(jq -c \
   | .detected_defects //= []
   | .forward_progress_violated //= false
   | .idle_overlap_ledger //= []
+  | .absent_scope_ledger //= []
+  | .cross_session_hazard_ledger //= []
+  | .unrecognized_defer_reason_ledger //= []
   | .cycle_modified_files //= []
   | .force_phases_remaining //= {}
   | .forced_round_seeded //= {}
@@ -1819,6 +1827,21 @@ else
       mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --argjson a "$idle_adv" '{task:$t, colliding_task_number:$a.colliding_task_number, colliding_task_status:$a.colliding_task_status, overlapping_path:$a.overlapping_path, cycle:$c}')" '.idle_overlap_ledger += [$entry]'
     fi
 
+    # absent_scope_ledger / cross_session_hazard_ledger (NEW): the same "capture the advisory
+    # regardless of decision" convention idle_overlap_ledger above already uses, for the two
+    # additive advisory fields orchestrate-batch-admit.sh's absent-scope ruling and
+    # cross-session-hazard fix introduced. Neither ever excludes a task from dispatch; both are
+    # observation logs only.
+    absent_adv=$(echo "$row" | jq -c 'if (.absent_scope_advisory != null) then .absent_scope_advisory else null end')
+    if [ "$absent_adv" != "null" ]; then
+      mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --argjson a "$absent_adv" '{task:$t, scope_state:$a.scope_state, codispatch_count:$a.codispatch_count, cycle:$c}')" '.absent_scope_ledger += [$entry]'
+    fi
+
+    cross_sess_hazard=$(echo "$row" | jq -c 'if (.cross_session_hazard != null) then .cross_session_hazard else null end')
+    if [ "$cross_sess_hazard" != "null" ]; then
+      mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --argjson h "$cross_sess_hazard" '{task:$t, session_id:$h.session_id, colliding_task_number:$h.colliding_task_number, overlapping_path:$h.overlapping_path, cycle:$c}')" '.cross_session_hazard_ledger += [$entry]'
+    fi
+
     if [ "${admit_decision[$rt]}" = "defer" ]; then
       dr="${admit_defer_reason[$rt]}"
       bypass="false"
@@ -1847,6 +1870,19 @@ else
             ;;
           session_active)
             mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --arg d "${admit_reason[$rt]}" '{task:$t, defer_reason:"session_active", collision_scope:null, cycle:$c, detail:$d}')" '.defer_ledger += [$entry]'
+            ;;
+          absent_file_scope)
+            mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --arg d "${admit_reason[$rt]}" '{task:$t, defer_reason:"absent_file_scope", collision_scope:null, cycle:$c, detail:$d}')" '.defer_ledger += [$entry]'
+            ;;
+          *)
+            # Loud default arm (NEW): closes a PRE-EXISTING gap this convergence found, not one
+            # introduced by absent_file_scope above -- this case block had no default arm even
+            # before that value existed. Without this, an unrecognized defer_reason left the task
+            # excluded from dispatch (admit_decision stays "defer") with NO defer_ledger entry and
+            # NO warning -- silent exclusion, worse than mis-bucketing. Warn loudly AND still
+            # record a ledger entry, so a future unrecognized value is never invisible.
+            echo "[orchestrate] WARNING: orchestrate-cycle-plan.sh: task #$rt deferred with an UNRECOGNIZED defer_reason \"$dr\" from orchestrate-batch-admit.sh -- excluding it from dispatch this cycle but recording a defer_ledger entry so this is never silent. If this is a new defer_reason value, add a matching case arm here." >&2
+            mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --arg dr "$dr" --arg d "${admit_reason[$rt]}" '{task:$t, defer_reason:$dr, collision_scope:null, cycle:$c, detail:$d}')" '.unrecognized_defer_reason_ledger += [$entry]'
             ;;
         esac
       fi

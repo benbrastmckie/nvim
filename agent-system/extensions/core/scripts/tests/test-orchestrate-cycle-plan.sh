@@ -289,9 +289,9 @@ chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 401, "project_name": "g4_plan_candidate", "task_type": "general", "status": "researched", "description": "plan-phase live dispatch", "dependencies": [], "file_scope": []},
-    {"project_number": 402, "project_name": "g4_implement_candidate", "task_type": "general", "status": "implementing", "description": "implement-phase live dispatch", "dependencies": [], "file_scope": []},
-    {"project_number": 403, "project_name": "g4_locked_candidate", "task_type": "general", "status": "implementing", "description": "pre-locked by a foreign, fresh session", "dependencies": [], "file_scope": []}
+    {"project_number": 401, "project_name": "g4_plan_candidate", "task_type": "general", "status": "researched", "description": "plan-phase live dispatch", "dependencies": [], "file_scope": ["specs/g4-scope/401"]},
+    {"project_number": 402, "project_name": "g4_implement_candidate", "task_type": "general", "status": "implementing", "description": "implement-phase live dispatch", "dependencies": [], "file_scope": ["specs/g4-scope/402"]},
+    {"project_number": 403, "project_name": "g4_locked_candidate", "task_type": "general", "status": "implementing", "description": "pre-locked by a foreign, fresh session", "dependencies": [], "file_scope": ["specs/g4-scope/403"]}
   ]
 }
 EOF
@@ -2014,8 +2014,8 @@ chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 1201, "project_name": "g12_plan_candidate", "task_type": "general", "status": "researched", "description": "plan-phase candidate -- --compare must never reach this dispatch", "dependencies": [], "file_scope": []},
-    {"project_number": 1202, "project_name": "g12_implement_candidate", "task_type": "general", "status": "implementing", "description": "implement-phase candidate -- --compare must reach this dispatch", "dependencies": [], "file_scope": []}
+    {"project_number": 1201, "project_name": "g12_plan_candidate", "task_type": "general", "status": "researched", "description": "plan-phase candidate -- --compare must never reach this dispatch", "dependencies": [], "file_scope": ["specs/g12-scope/1201"]},
+    {"project_number": 1202, "project_name": "g12_implement_candidate", "task_type": "general", "status": "implementing", "description": "implement-phase candidate -- --compare must reach this dispatch", "dependencies": [], "file_scope": ["specs/g12-scope/1202"]}
   ]
 }
 EOF
@@ -3549,30 +3549,37 @@ chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
 # 2501 declares a narrow, single-file scope (the observed two-file proof-tactic sweep). 2502
 # OMITS the file_scope key entirely (the observed tree-wide rename that declared no scope at all).
 # 2503 declares a directory-granularity scope (the RECURRED four-task batch's coarse-declaration
-# shape) plus an explicitly empty array (2504), proving `[]` renders identically to absent.
+# shape). The fourth scope-shape (2504, an explicitly empty array, proving `[]` renders
+# identically to absent) is deliberately run in its OWN separate two-candidate cycle below (Case
+# C2), paired with 2501 alone rather than folded into this batch: orchestrate-batch-admit.sh's v6
+# admission posture now defers a NON-designated, non-exempt absent-scope candidate when 2+ such
+# candidates share one co-dispatched batch, and 2502 (undeclared) and 2504 (empty array) are BOTH
+# absent-scope -- co-dispatching all four together would make 2504 defer instead of dispatch,
+# which is an admission-posture fact this group is not testing and would silently narrow what
+# Case C below can observe. Splitting 2504 into its own pair (where it is the ONLY absent-scope
+# candidate, hence trivially this cycle's designated one) preserves every original assertion.
 write_state <<'EOF'
 {
   "active_projects": [
     {"project_number": 2501, "project_name": "g25_narrow", "task_type": "general", "status": "planned", "description": "narrow single-file scope", "dependencies": [], "file_scope": ["FormalSystem/Metalogic/Soundness.lean"]},
     {"project_number": 2502, "project_name": "g25_undeclared", "task_type": "general", "status": "planned", "description": "no file_scope key at all (tree-wide rename case)"},
-    {"project_number": 2503, "project_name": "g25_coarse", "task_type": "general", "status": "planned", "description": "directory-granularity scope", "dependencies": [], "file_scope": ["docs/"]},
-    {"project_number": 2504, "project_name": "g25_empty_array", "task_type": "general", "status": "planned", "description": "explicitly empty file_scope array", "dependencies": [], "file_scope": []}
+    {"project_number": 2503, "project_name": "g25_coarse", "task_type": "general", "status": "planned", "description": "directory-granularity scope", "dependencies": [], "file_scope": ["docs/"]}
   ]
 }
 EOF
 reset_lock_dirs
 : > "$G25_ARGV_LOG"
-run_sut --session g25_sess -- 2501 2502 2503 2504
+run_sut --session g25_sess -- 2501 2502 2503
 
 if [ "$LAST_EXIT" -eq 0 ]; then
   pass "Group 25 (Cases A-C): SUT exits 0"
 else
   fail "Group 25 (Cases A-C): SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
-if [ "$(jqf '.dispatch | length')" = "4" ]; then
-  pass "Group 25 (Cases A-C): all four siblings dispatch this cycle"
+if [ "$(jqf '.dispatch | length')" = "3" ]; then
+  pass "Group 25 (Cases A-C): all three siblings dispatch this cycle"
 else
-  fail "Group 25 (Cases A-C): expected 4 dispatch rows; got: $LAST_STDOUT"
+  fail "Group 25 (Cases A-C): expected 3 dispatch rows; got: $LAST_STDOUT"
 fi
 
 # Case A: #2501's own --territory names #2502 (undeclared) and shows the undeclared sentinel.
@@ -3605,8 +3612,7 @@ else
   fail "Case B: #2502's territory missing the file-granularity #2501 entry (argv: '$g25_2502_argv')"
 fi
 
-# Case C: #2501's territory also names #2503 as coarse/directory, and #2504 (empty array) as
-# undeclared -- identical rendering to #2502's absent-key case.
+# Case C: #2501's territory also names #2503 as coarse/directory.
 if echo "$g25_2501_argv" | grep -q '"task_number":2503' && \
    echo "$g25_2501_argv" | grep -q '"granularity":"directory"' && \
    echo "$g25_2501_argv" | grep -q '"scope_granularity":"coarse"'; then
@@ -3614,11 +3620,33 @@ if echo "$g25_2501_argv" | grep -q '"task_number":2503' && \
 else
   fail "Case C: #2501's territory missing the coarse #2503 entry (argv: '$g25_2501_argv')"
 fi
-if echo "$g25_2501_argv" | grep -q '"task_number":2504' && \
-   echo "$g25_2501_argv" | grep -q '"scope_granularity":"undeclared"'; then
-  pass "Case C: #2501's territory renders #2504's empty-array file_scope identically to absent (undeclared)"
+
+# Case C2: a SEPARATE two-candidate cycle (2501 + 2504 only -- see the comment above Cases A-C for
+# why 2504 is not folded into that batch) proving an explicitly empty file_scope array renders
+# identically to absent (undeclared), the same claim Case C used to make inline against 2504
+# inside the four-candidate batch.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 2501, "project_name": "g25_narrow", "task_type": "general", "status": "planned", "description": "narrow single-file scope", "dependencies": [], "file_scope": ["FormalSystem/Metalogic/Soundness.lean"]},
+    {"project_number": 2504, "project_name": "g25_empty_array", "task_type": "general", "status": "planned", "description": "explicitly empty file_scope array", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+: > "$G25_ARGV_LOG"
+run_sut --session g25_sess_c2 -- 2501 2504
+if [ "$(jqf '.dispatch | length')" = "2" ]; then
+  pass "Case C2: both candidates dispatch this cycle (2504 is the sole, hence designated, absent-scope candidate)"
 else
-  fail "Case C: #2501's territory did not render #2504 as undeclared (argv: '$g25_2501_argv')"
+  fail "Case C2: expected 2 dispatch rows; got: $LAST_STDOUT"
+fi
+g25_2501_c2_argv=$(grep '^2501 implement' "$G25_ARGV_LOG" || true)
+if echo "$g25_2501_c2_argv" | grep -q '"task_number":2504' && \
+   echo "$g25_2501_c2_argv" | grep -q '"scope_granularity":"undeclared"'; then
+  pass "Case C2: #2501's territory renders #2504's empty-array file_scope identically to absent (undeclared)"
+else
+  fail "Case C2: #2501's territory did not render #2504 as undeclared (argv: '$g25_2501_c2_argv')"
 fi
 
 # Case D (regression guard): a single-task cycle (same state.json, but only #2501 named on the
@@ -4160,8 +4188,14 @@ g29_seed_state_and_mt() {
   local projects="[]" tns="[]"
   while [ "$#" -ge 3 ]; do
     local n="$1" p="$2" s="$3"; shift 3
+    # Distinct, disjoint file_scope per seeded candidate (NOT an empty array) -- this helper can
+    # seed 2+ candidates into one batch (see Arm C below), and an empty/absent file_scope shared
+    # by 2+ non-exempt candidates in one cycle now triggers the absent_file_scope in-batch defer
+    # (orchestrate-batch-admit.sh's v6 admission posture). None of this group's assertions concern
+    # file_scope content, so a synthetic per-task path avoids that collision without changing what
+    # any Arm actually tests.
     projects=$(jq -n -c --argjson prev "$projects" --argjson n "$n" --arg p "$p" --arg s "$s" \
-      '$prev + [{project_number: $n, project_name: $p, task_type: "general", status: $s, description: "g29 fixture", dependencies: [], file_scope: []}]')
+      '$prev + [{project_number: $n, project_name: $p, task_type: "general", status: $s, description: "g29 fixture", dependencies: [], file_scope: [("specs/g29-synthetic-scope/" + ($n|tostring))]}]')
     tns=$(jq -n -c --argjson prev "$tns" --argjson n "$n" '$prev + [$n]')
   done
   jq -n --argjson ap "$projects" '{active_projects: $ap}' > "$STATE_FILE"
@@ -4674,10 +4708,12 @@ fi
 # Group 32: Mode 2 build-heavy co-scheduling admission -- never dispatch two build-heavy implement
 # tasks in the same cycle (the isolation-removal decision record under specs/decisions/, "Mode 2
 # Ruling"). Reuses the shared orchestrate-build-dispatch.sh/update-task-status.sh stubs staged
-# above Group 31, still live in $WORKDIR/.claude/scripts/. Every fixture below declares
-# "file_scope": [] so the PRE-EXISTING in-batch file_scope_collision check can never be what fires
-# here -- this group's own rule is, by construction, the only thing that can produce these
-# deferred rows.
+# above Group 31, still live in $WORKDIR/.claude/scripts/. Every fixture below declares a DISTINCT,
+# disjoint "file_scope" (never an empty array) so NEITHER the pre-existing in-batch
+# file_scope_collision check NOR the absent_file_scope in-batch defer (orchestrate-batch-admit.sh's
+# v6 admission posture -- an empty/absent file_scope shared by 2+ non-exempt co-dispatched
+# candidates now defers on its own) can be what fires here -- this group's own build-heavy rule is,
+# by construction, the only thing that can produce these deferred rows.
 # =====================================================================================================
 info "Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heavy implement tasks per cycle)"
 
@@ -4687,8 +4723,8 @@ info "Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heav
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 3201, "project_name": "g32_lean_implement", "task_type": "lean4", "status": "implementing", "description": "build-heavy candidate A", "dependencies": [], "file_scope": []},
-    {"project_number": 3202, "project_name": "g32_cslib_implement", "task_type": "cslib", "status": "implementing", "description": "build-heavy candidate B", "dependencies": [], "file_scope": []}
+    {"project_number": 3201, "project_name": "g32_lean_implement", "task_type": "lean4", "status": "implementing", "description": "build-heavy candidate A", "dependencies": [], "file_scope": ["specs/g32-scope/3201"]},
+    {"project_number": 3202, "project_name": "g32_cslib_implement", "task_type": "cslib", "status": "implementing", "description": "build-heavy candidate B", "dependencies": [], "file_scope": ["specs/g32-scope/3202"]}
   ]
 }
 EOF
@@ -4717,8 +4753,8 @@ fi
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 3203, "project_name": "g32_lean_implement_2", "task_type": "lean4", "status": "implementing", "description": "build-heavy candidate", "dependencies": [], "file_scope": []},
-    {"project_number": 3204, "project_name": "g32_general_implement", "task_type": "general", "status": "implementing", "description": "ordinary implement candidate", "dependencies": [], "file_scope": []}
+    {"project_number": 3203, "project_name": "g32_lean_implement_2", "task_type": "lean4", "status": "implementing", "description": "build-heavy candidate", "dependencies": [], "file_scope": ["specs/g32-scope/3203"]},
+    {"project_number": 3204, "project_name": "g32_general_implement", "task_type": "general", "status": "implementing", "description": "ordinary implement candidate", "dependencies": [], "file_scope": ["specs/g32-scope/3204"]}
   ]
 }
 EOF
@@ -4737,8 +4773,8 @@ fi
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 3205, "project_name": "g32_lean_implement_3", "task_type": "lean4", "status": "implementing", "description": "build-heavy implement-phase candidate", "dependencies": [], "file_scope": []},
-    {"project_number": 3206, "project_name": "g32_cslib_plan", "task_type": "cslib", "status": "researched", "description": "build-heavy plan-phase candidate", "dependencies": [], "file_scope": []}
+    {"project_number": 3205, "project_name": "g32_lean_implement_3", "task_type": "lean4", "status": "implementing", "description": "build-heavy implement-phase candidate", "dependencies": [], "file_scope": ["specs/g32-scope/3205"]},
+    {"project_number": 3206, "project_name": "g32_cslib_plan", "task_type": "cslib", "status": "researched", "description": "build-heavy plan-phase candidate", "dependencies": [], "file_scope": ["specs/g32-scope/3206"]}
   ]
 }
 EOF
@@ -4759,8 +4795,8 @@ fi
 write_state <<'EOF'
 {
   "active_projects": [
-    {"project_number": 3207, "project_name": "g32_lean_parity", "task_type": "lean4", "status": "implementing", "description": "parity candidate A", "dependencies": [], "file_scope": []},
-    {"project_number": 3208, "project_name": "g32_cslib_parity", "task_type": "cslib", "status": "implementing", "description": "parity candidate B", "dependencies": [], "file_scope": []}
+    {"project_number": 3207, "project_name": "g32_lean_parity", "task_type": "lean4", "status": "implementing", "description": "parity candidate A", "dependencies": [], "file_scope": ["specs/g32-scope/3207"]},
+    {"project_number": 3208, "project_name": "g32_cslib_parity", "task_type": "cslib", "status": "implementing", "description": "parity candidate B", "dependencies": [], "file_scope": ["specs/g32-scope/3208"]}
   ]
 }
 EOF
@@ -4827,6 +4863,72 @@ if [ "$(jqf '.dispatch | map(select(.task == 3301)) | length')" = "1" ] && \
   pass "Group 33b: --force-phases implement admits held candidate #3301 for exactly this dispatch"
 else
   fail "Group 33b: expected candidate #3301 to dispatch to implement under --force-phases, got: $LAST_STDOUT"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 34: unrecognized defer_reason -- the loud default-arm closing the pre-existing silent-
+# exclusion gap in the `case "$dr" in ... esac` block (no default arm at all, even before
+# absent_file_scope existed). orchestrate-batch-admit.sh is stubbed to emit a deliberately
+# fabricated, never-real defer_reason so this test does not depend on any live admission
+# predicate ever actually producing an unrecognized value.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 34: unrecognized defer_reason triggers the loud default arm, never silent exclusion"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "[admit] simulated admission diagnostic (fixture)" >&2
+for a in "$@"; do
+  case "$a" in
+    --*) prev="$a"; continue ;;
+    *) if [ "${prev:-}" = "--invocation-count" ] || [ "${prev:-}" = "--session-id" ] || [ "${prev:-}" = "--phase-map" ]; then prev=""; continue; fi
+       jq -n -c --argjson t "$a" '{task_number: $t, decision: "defer", self_modifying: false, defer_reason: "a_future_reason_this_script_has_never_seen", reason: "fixture: deliberately unrecognized defer_reason"}' ;;
+  esac
+done
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3401, "project_name": "g34_unrecognized", "task_type": "general", "status": "implementing", "description": "unrecognized defer_reason fixture", "dependencies": [], "file_scope": ["specs/g34-scope/3401"]}
+  ]
+}
+EOF
+reset_lock_dirs
+run_sut --session g34_sess --dry-run -- 3401
+
+if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.deferred | map(select(.task == 3401)) | length')" = "1" ]; then
+  pass "Group 34: candidate #3401 is excluded from dispatch this cycle (deferred, not dispatched)"
+else
+  fail "Group 34: expected candidate #3401 excluded via deferred[], got: $LAST_STDOUT"
+fi
+if [[ "$LAST_STDERR" == *"UNRECOGNIZED defer_reason"* ]]; then
+  pass "Group 34: the loud default-arm warning fires on stderr"
+else
+  fail "Group 34: expected the loud UNRECOGNIZED defer_reason warning on stderr, got: $LAST_STDERR"
+fi
+
+mt_g34="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g34_sess.json"
+if [ -f "$mt_g34" ]; then
+  g34_ledger_count=$(jq '[.unrecognized_defer_reason_ledger[]? | select(.task == 3401)] | length' "$mt_g34" 2>/dev/null)
+  if [ "$g34_ledger_count" = "1" ]; then
+    pass "Group 34: an unrecognized_defer_reason_ledger entry is recorded for candidate #3401 -- never silent"
+  else
+    fail "Group 34: expected exactly one unrecognized_defer_reason_ledger entry for #3401, got $g34_ledger_count"
+  fi
+else
+  # --dry-run never persists mt_state_file (same no-mutation contract Group 6 already
+  # establishes) -- the stderr warning and the deferred[] exclusion above are this mode's own
+  # loud signal, and the ledger write is asserted on the live path instead.
+  info "Group 34: mt_state_file not persisted under --dry-run (expected no-mutation contract); re-asserting live"
+  run_sut --session g34_live_sess -- 3401
+  mt_g34_live="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g34_live_sess.json"
+  g34_live_ledger_count=$(jq '[.unrecognized_defer_reason_ledger[]? | select(.task == 3401)] | length' "$mt_g34_live" 2>/dev/null)
+  if [ "$g34_live_ledger_count" = "1" ]; then
+    pass "Group 34 (live): an unrecognized_defer_reason_ledger entry is recorded for candidate #3401 -- never silent"
+  else
+    fail "Group 34 (live): expected exactly one unrecognized_defer_reason_ledger entry for #3401, got $g34_live_ledger_count"
+  fi
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

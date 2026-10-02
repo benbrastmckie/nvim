@@ -4,7 +4,7 @@
 #
 # Purpose: reads specs/state.json directly — the only place raw, unfiltered dependencies[] is
 # still visible before commands/orchestrate.md's compact STAGE 0 multi-task block discards
-# out-of-batch edges to build its intra-batch-only dependency graph — and reports SEVEN classes of
+# out-of-batch edges to build its intra-batch-only dependency graph — and reports NINE classes of
 # pre-dispatch defect, by task number and path, BEFORE that discard happens:
 #
 #   Class A (dependency edge classification): every RAW dependencies[] entry on every candidate,
@@ -58,13 +58,25 @@
 #     context/patterns/file-footprint-overlap.md's Non-Goals section — so this finding states
 #     that concrete consequence, never that the shape is invalid; a glob remains fully legitimate
 #     for the separate Containment predicate.
+#   Class H (absent-scope in-batch defer, NEW in the v6 admission-posture convergence): re-presents
+#     orchestrate-batch-admit.sh's defer_reason == "absent_file_scope" verdicts verbatim (naming
+#     the designated_absent_candidate peer that admits this cycle in the candidate's place).
+#     Class H-admitted re-presents absent_scope_advisory on any admitted absent-scope verdict (the
+#     advisory-only cross_batch ruling, or the designated/phase-exempt in_batch admit) —
+#     "H-admitted" rather than a plain "the field is present" note, matching Class C-admitted's/
+#     D-admitted's established never-print-an-untested-negative convention.
+#   Class I (cross-session hazard on a self-modifying admit, NEW in the same convergence):
+#     re-presents orchestrate-batch-admit.sh's additive cross_session_hazard field, carried only
+#     on a self-modifying ADMIT verdict. No "I-admitted" split exists — unlike absent_scope_advisory,
+#     this field never has a corresponding defer-side shape to split from; every carrier is, by
+#     construction, an admit.
 #
 # This is a REVIEW stage, not a fifth admission gate: it never excludes, never defers, and never
 # writes to state.json on its default (report-only) path. Exclusion/deferral authority for
-# Classes C/D stays exactly where it already is — the existing runtime wave-split check at
+# Classes C/D/H stays exactly where it already is — the existing runtime wave-split check at
 # dispatch time (orchestrate-batch-admit.sh, called directly by commands/orchestrate.md and by
 # skills/skill-orchestrate/SKILL.md Stage MT-3); this script never substitutes for it. Classes
-# C/D are re-presentations of that existing verdict — this script is a CONSUMER of, never a fork
+# C/D/H are re-presentations of that existing verdict — this script is a CONSUMER of, never a fork
 # of, the admission predicate (explicit task non-goal: neither the admission predicate's verdict
 # schema nor its collision algorithm is changed here).
 #
@@ -546,6 +558,38 @@ if [ "$admit_checked" = true ]; then
       | {class: "E", task_number: $v.task_number, session_id: $v.session_id,
          colliding_task_number: $v.colliding_task_number, overlapping_path: $v.overlapping_path,
          session_liveness_reason: $v.session_liveness_reason}
+    ),
+    ( # Class H (NEW, v6 admission-posture convergence -- next unused letter; F and G are
+      # already taken by the absent/empty-file_scope and glob-entry classes below): re-presents
+      # orchestrate-batch-admit.sh defer_reason == "absent_file_scope" verdicts verbatim; no new
+      # diagnosis beyond what the verdict itself already carries (the designated peer that admits
+      # this cycle in place of this candidate).
+      $verdicts[] as $v
+      | select($v.decision == "defer" and $v.defer_reason == "absent_file_scope")
+      | {class: "H", task_number: $v.task_number,
+         designated_absent_candidate: $v.designated_absent_candidate}
+    ),
+    ( # Class H-admitted: an admitted absent_scope_advisory is carried on ANY absent-scope
+      # verdict, not only a deferred one -- same "never print an untested negative" convention as
+      # Class C-admitted/D-admitted above. Fields relayed verbatim from the advisory.
+      $verdicts[] as $v
+      | select($v.decision == "admit" and ($v.absent_scope_advisory != null))
+      | {class: "H-admitted", task_number: $v.task_number,
+         scope_state: $v.absent_scope_advisory.scope_state,
+         codispatch_count: $v.absent_scope_advisory.codispatch_count}
+    ),
+    ( # Class I (NEW, v6 admission-posture convergence): cross_session_hazard carried on a
+      # self-modifying ADMIT verdict -- the hazard the absorbed cross-session-blindness fix
+      # closes. Never deferred (this fix never changes any decision), so there is no
+      # "Class I-admitted" split the way Class C/D/H have -- every carrier of this field is,
+      # by construction, an admit.
+      $verdicts[] as $v
+      | select($v.decision == "admit" and ($v.cross_session_hazard != null))
+      | {class: "I", task_number: $v.task_number,
+         session_id: $v.cross_session_hazard.session_id,
+         colliding_task_number: $v.cross_session_hazard.colliding_task_number,
+         overlapping_path: $v.cross_session_hazard.overlapping_path,
+         session_liveness_reason: $v.cross_session_hazard.session_liveness_reason}
     )
     ' 2>&1) || true
 fi
@@ -741,9 +785,82 @@ else
 fi
 echo ""
 
+echo "-- Class H: Absent-scope in-batch defer (NEW, v6 admission-posture convergence) --"
+if [ "$admit_checked" = false ]; then
+  echo "SKIPPED (degraded: $admit_degraded_reason)"
+else
+  class_h_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_h_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "H")
+      | "#\(.task_number): absent file_scope, deferred this wave/cycle in favor of designated absent-scope candidate #\(.designated_absent_candidate)"
+    ' 2>/dev/null) || true
+  fi
+  # Class H-admitted: the identical "never print an untested negative" fix as Class C/D, for the
+  # absent_scope_advisory an ADMIT verdict can carry (the advisory-only cross_batch ruling, or a
+  # designated/phase-exempt in_batch admit).
+  class_h_admitted_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_h_admitted_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "H-admitted")
+      | "#\(.task_number): file_scope is \(.scope_state) -- ADMITTED (codispatch_count \(.codispatch_count)), carrying absent_scope_advisory"
+    ' 2>/dev/null) || true
+  fi
+  if [ -z "$class_h_lines" ] && [ -z "$class_h_admitted_lines" ]; then
+    echo "0 findings (no candidate carries the absent-scope hazard, deferred or admitted)."
+  else
+    echo "Deferred (absent-scope in-batch):"
+    if [ -z "$class_h_lines" ]; then
+      h_admitted_count=$(printf '%s\n' "$class_h_admitted_lines" | grep -c . || true)
+      echo "  0 deferred for absent_file_scope (${h_admitted_count} admitted carrying absent_scope_advisory)."
+    else
+      printf '%s\n' "$class_h_lines" | sed 's/^/  /'
+    fi
+    echo ""
+    echo "Admitted (absent-scope advisory):"
+    if [ -z "$class_h_admitted_lines" ]; then
+      echo "  0 admitted carrying absent_scope_advisory."
+    else
+      printf '%s\n' "$class_h_admitted_lines" | sed 's/^/  /'
+    fi
+  fi
+fi
+echo ""
+
+echo "-- Class I: Cross-session hazard on a self-modifying admit (NEW, same convergence) --"
+if [ "$admit_checked" = false ]; then
+  echo "SKIPPED (degraded: $admit_degraded_reason)"
+elif [ "$session_id_explicit" = false ]; then
+  echo "SKIPPED (no --session-id supplied to this script; orchestrate-batch-admit.sh's session-registry input was itself skipped via its own D6 degradation)."
+else
+  class_i_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_i_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "I")
+      | "#\(.task_number): self-modifying ADMIT carries cross_session_hazard -- live registered session \(.session_id) (liveness: \(.session_liveness_reason)) covers task #\(.colliding_task_number) whose file_scope overlaps this candidate at \(.overlapping_path)"
+    ' 2>/dev/null) || true
+  fi
+  if [ -z "$class_i_lines" ]; then
+    # No "I-admitted" split (unlike Classes C/D/H): this field exists only on an admit verdict in
+    # the first place, so there is no deferred/admitted negative-conflation to guard against here.
+    echo "0 findings (no self-modifying admit carries a live cross-session hazard)."
+  else
+    printf '%s\n' "$class_i_lines"
+  fi
+fi
+echo ""
+
 # Class F derives its findings directly from state.json fields with no defer/admit filter of any
 # kind (same shape as Class B), so, like Class B, its negative needs no "0 findings" vs. "0
 # matched" distinction the way Classes C/D did.
+#
+# Cross-reference to Class H (NEW, v6 convergence): Class F computes absence independently from
+# state.json (an unconditional scan over $cands, no admission predicate involved);
+# absent_scope_advisory (Class H-admitted above) is the SAME underlying fact carried on the
+# verdict instead. Deliberate overlap, documented — the same posture Class F already takes
+# toward Class B above. Class F stays report-only and is NOT made admission-relevant by this
+# convergence; only orchestrate-batch-admit.sh's own absent-scope branch (Classes H/H-admitted)
+# is.
 echo "-- Class F: Missing / literal-null / empty-array file_scope on a batch candidate --"
 class_f_lines=""
 if [ -n "$ab_findings" ]; then
