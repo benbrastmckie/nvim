@@ -24,21 +24,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/summaries/01_trim-skill-orchestrate-gate20-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["context-budget", "SKILL.md", "canonicality-inversion", "verify-deploy", "gate-20"]
+      "suggested_keywords": [
+        "context-budget",
+        "SKILL.md",
+        "canonicality-inversion",
+        "verify-deploy",
+        "gate-20"
+      ]
     },
     {
       "content": "verify-deploy.sh's gate 20 (orchestrator context budget lock) reads only the source-store copy of a file (agent-system/extensions/<ext>/<rel_path>), never the deployed .claude/ mirror -- so a source-store-only edit is sufficient to green the gate, and mirror sync is a separate deploy-workflow concern rather than a gate dependency. Confirm with `diff`/`wc -c` on both copies rather than assuming staleness.",
       "category": "INSIGHT",
       "source_artifact": "specs/316_trim_skill_orchestrate_under_gate20_ceiling/summaries/01_trim-skill-orchestrate-gate20-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy", "gate-20", "source-store", "deploy-mirror", "context-budget"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate-20",
+        "source-store",
+        "deploy-mirror",
+        "context-budget"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790966280_d578f5",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   }
