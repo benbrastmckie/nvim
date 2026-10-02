@@ -31,13 +31,13 @@
 ## Documentation Policy
 [Used by: /document, /plan]
 
-See `.claude/extensions/nvim/context/project/neovim/standards/documentation-policy.md` for README requirements, structure template, and style guidelines.
+See `.claude/context/project/neovim/standards/documentation-policy.md` for README requirements, structure template, and style guidelines.
 
 ## Box Drawing
-See `.claude/extensions/nvim/context/project/neovim/standards/box-drawing-guide.md` for Unicode box-drawing character reference.
+See `.claude/context/project/neovim/standards/box-drawing-guide.md` for Unicode box-drawing character reference.
 
 ## Character Encoding and Emoji Policy
-See `.claude/extensions/nvim/context/project/neovim/standards/emoji-policy.md` for encoding guidelines and approved alternatives.
+See `.claude/context/project/neovim/standards/emoji-policy.md` for encoding guidelines and approved alternatives.
 
 ## Testing Protocols
 [Used by: /test, /test-all, /implement]
@@ -60,7 +60,7 @@ See `.claude/extensions/nvim/context/project/neovim/standards/emoji-policy.md` f
 - Mock external dependencies appropriately
 
 ### Lua Testing Assertion Patterns
-See `.claude/extensions/nvim/context/project/neovim/standards/lua-assertion-patterns.md` for correct `string:match()` assertion usage.
+See `.claude/context/project/neovim/standards/lua-assertion-patterns.md` for correct `string:match()` assertion usage.
 
 ## Standards Discovery
 [Used by: all commands]

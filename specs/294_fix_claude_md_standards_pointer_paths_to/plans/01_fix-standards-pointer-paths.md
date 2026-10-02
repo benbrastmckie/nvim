@@ -1,7 +1,7 @@
 # Implementation Plan: Task #294
 
 - **Task**: 294 - Fix CLAUDE.md standards pointer paths to the nonexistent extensions/nvim directory
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/294_fix_claude_md_standards_pointer_paths_to/reports/01_fix-standards-pointer-paths.md
@@ -101,23 +101,23 @@ proceeding.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Correct the four standards pointer prefixes in root CLAUDE.md [NOT STARTED]
+### Phase 1: Correct the four standards pointer prefixes in root CLAUDE.md [IN PROGRESS]
 
 **Goal**: All four `[Used by: ...]` standards pointers in root `CLAUDE.md` resolve to existing
 files, with no other content changed.
 
 **Tasks**:
-- [ ] Re-read `CLAUDE.md` immediately before editing (sibling-concurrency precaution) and re-run
+- [x] Re-read `CLAUDE.md` immediately before editing (sibling-concurrency precaution) and re-run
       `grep -n "extensions/nvim/context/project/neovim/standards" CLAUDE.md` to confirm the live
-      occurrence set and line numbers
-- [ ] Replace the substring `.claude/extensions/nvim/context/project/neovim/standards/` with
+      occurrence set and line numbers *(completed: confirmed 4 occurrences at lines 34, 37, 40, 63, matching the planned Scope Hypothesis)*
+- [x] Replace the substring `.claude/extensions/nvim/context/project/neovim/standards/` with
       `.claude/context/project/neovim/standards/` on each occurrence, leaving the filename segment
-      and surrounding sentence untouched
-- [ ] Confirm `grep -c "extensions/nvim/context/project/neovim/standards" CLAUDE.md` now returns 0
-- [ ] Confirm each of the four corrected paths exists on disk
-- [ ] Review `git diff -- CLAUDE.md` and confirm exactly 4 changed lines, each differing only by
-      the removed `extensions/nvim/` segment
-- [ ] Commit `CLAUDE.md` by explicit single-path staging
+      and surrounding sentence untouched *(completed)*
+- [x] Confirm `grep -c "extensions/nvim/context/project/neovim/standards" CLAUDE.md` now returns 0 *(completed)*
+- [x] Confirm each of the four corrected paths exists on disk *(completed: all four files present)*
+- [x] Review `git diff -- CLAUDE.md` and confirm exactly 4 changed lines, each differing only by
+      the removed `extensions/nvim/` segment *(completed: 4 insertions, 4 deletions, confirmed)*
+- [x] Commit `CLAUDE.md` by explicit single-path staging *(completed)*
 
 **Timing**: 0.15 hours
 
