@@ -20,7 +20,7 @@ next_project_number: 322
 
 ### Core Agent System
 
-44 [PLANNED] — Slim commands/task.md, the largest per-invocation context...
+44 [IMPLEMENTING] — Slim commands/task.md, the largest per-invocation context...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
@@ -30,7 +30,7 @@ next_project_number: 322
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 263 [PLANNED] — Consent-gated git push: grant semantics and enforcement mechanism
-265 [PLANNED] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
+265 [IMPLEMENTING] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
   └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
   └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
@@ -44,18 +44,18 @@ next_project_number: 322
   └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
-317 [NOT STARTED] — Make the post-deploy reconcile promotion append to...
+317 [RESEARCHING] — Make the post-deploy reconcile promotion append to...
 
 ### Extensions
 
-241 [PLANNED] — Reconcile MCP registration surfaces: redundant playwright...
+241 [IMPLEMENTING] — Reconcile MCP registration surfaces: redundant playwright...
   └─ 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 297 [NOT STARTED] — Scaffold the books extension: manifest, four-block routing,...
   └─ 298 [NOT STARTED] — Author the books extension context corpus under...
 
 ### Literature
 
-39 [PLANNED] — Upgrade Zotero metadata resolution and plan the Zotero 10...
+39 [IMPLEMENTING] — Upgrade Zotero metadata resolution and plan the Zotero 10...
 
 ### Neovim
 
@@ -73,7 +73,7 @@ next_project_number: 322
 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
   └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
-279 [PLANNED] — Reconcile state-schema.json with the live fields the...
+279 [IMPLEMENTING] — Reconcile state-schema.json with the live fields the...
   └─ 271 [NOT STARTED] — Finish the parenttask edge: declare it in the schema,...
     └─ 273 [NOT STARTED] — Three-channel orchestration conclusion stage with per-channel...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
@@ -347,7 +347,7 @@ The consequence is a BATCHING rule, not a dependency: the admission gate matches
 ---
 
 ### 317. Make the post-deploy reconcile promotion append to completed_tasks and commit its own completion transition
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 316
@@ -2042,7 +2042,7 @@ references in deliverables outside specs/**.
 ---
 
 ### 279. Reconcile state-schema.json with the live fields the orchestrator reads: rule per field (widen, migrate, or retire), and fix the blockers reader/comment contradiction
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -2824,7 +2824,7 @@ FILE FOOTPRINT NOTE: this task's file_scope is currently null, and mechanism (d)
 ---
 
 ### 265. Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh --jobs
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 266, Task 316
@@ -3653,7 +3653,7 @@ WHAT REMAINS: Phase 1 (the standing script-inventory probe, which must reuse tha
 ---
 
 ### 241. Reconcile MCP registration surfaces: redundant playwright grants, dead manifest mcp_servers fields, ownership doc and nix README
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -4219,7 +4219,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 
 ### 44. Slim commands/task.md, the largest per-invocation context contributor
 - **Effort**: 2-4 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 87, Task 149, Task 210
@@ -4232,7 +4232,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 
 ### 39. Upgrade Zotero metadata resolution and plan the Zotero 10 backend swap
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: literature
 - **Dependencies**: None
