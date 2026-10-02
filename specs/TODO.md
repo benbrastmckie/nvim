@@ -79,22 +79,23 @@ next_project_number: 316
       └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
     └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
-309 [PLANNED] — Replace directory pathspecs with explicit file lists at the...
+309 [IMPLEMENTING] — Replace directory pathspecs with explicit file lists at the...
   └─ 302 [NOT STARTED] — Replace the bare -- specs/ directory pathspec at...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
-315 [PLANNED] — Stop the cycle postflight reporting a status it did not...
+315 [IMPLEMENTING] — Stop the cycle postflight reporting a status it did not...
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
 
 ### 315. Stop the cycle postflight reporting a status it did not persist, and attribute a seq mismatch by direction
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [315_postflight_reports_only_what_it_persists/reports/01_postflight-attribution-and-status.md]
 - **Plan**: [315_postflight_reports_only_what_it_persists/plans/01_postflight-attribution-and-status.md]
+- **Summary**: [315_postflight_reports_only_what_it_persists/summaries/01_postflight-attribution-and-status-summary.md]
 
 **Description**: Stop `orchestrate-cycle-postflight.sh` reporting an outcome it did not persist, and make its `HANDOFF_STALE_OR_ABSENT` attribution depend on the DIRECTION of a dispatch_seq mismatch. Two independent honesty defects in one file, both surfaced by the same live incident, neither owned by any existing task.
 
@@ -439,7 +440,7 @@ A task-creation attempt that duplicates, subsumes or is subsumed by an open task
 
 ### 309. Replace directory pathspecs with explicit file lists at the three task-commit sites
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
