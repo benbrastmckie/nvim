@@ -363,40 +363,40 @@ the enumerated pair is a hypothesis, not a closed list.
 
 ---
 
-### Phase 5: explicit, quota-aware auto-attach policy [NOT STARTED]
+### Phase 5: explicit, quota-aware auto-attach policy [COMPLETED]
 
 **Goal**: Replace "discover the ceiling by 413" with an explicit policy plus a reactive cache, so no
 silent quota-exhaustion failure mode remains and no further orphaned attachment records are created.
 
 **Tasks**:
 
-- [ ] Add an explicit policy knob `ZOTERO_AUTO_ATTACH` with values `always` | `under-quota` | `never`
-      (default `under-quota`). Log the effective policy once per run.
-- [ ] Implement `read_quota_state()` / `record_quota_state()` against
+- [x] Add an explicit policy knob `ZOTERO_AUTO_ATTACH` with values `always` | `under-quota` | `never`
+      (default `under-quota`). Log the effective policy once per run. *(completed)*
+- [x] Implement `read_quota_state()` / `record_quota_state()` against
       `<repo>/specs/zotero-index.json` under a new top-level `quota_state` key
       (`{used_mb, limit_mb, checked_at, source}` where `source` is `413-observed` or
       `operator-configured`). Create the file with `{}` if absent and **merge** — never overwrite an
-      existing `zot_data_dir` key. Mirror `upsert_subindex()`'s create-if-absent idiom.
-- [ ] Pre-attach gate: under policy `under-quota`, if a non-stale cached state says
+      existing `zot_data_dir` key. Mirror `upsert_subindex()`'s create-if-absent idiom. *(completed)*
+- [x] Pre-attach gate: under policy `under-quota`, if a non-stale cached state says
       `used_mb >= limit_mb`, skip the attach attempt entirely, set
       `ATTACHMENT_STATE=skipped-quota`, and surface it honestly (stderr line plus the
       `ONLINE_INGEST_INGESTED_NO_ATTACHMENT` token). A skipped attempt never reaches Zotero's
-      create-child-record-then-upload two-step, which is precisely what prevents a new orphan.
-- [ ] Reactive capture: when an attach **is** attempted and fails, parse the error body's
+      create-child-record-then-upload two-step, which is precisely what prevents a new orphan. *(completed)*
+- [x] Reactive capture: when an attach **is** attempted and fails, parse the error body's
       `.error.message` for the `<used> > <limit>` MB pair (confirmed shape: `File would exceed quota
       (2745.6 > 300)`) and persist it with `source: 413-observed`. If the message does not match,
-      record nothing and log that the failure was not quota-attributable — never guess.
-- [ ] Operator override: `ZOTERO_ASSUMED_QUOTA_MB` (or a `quota_limit_mb` field alongside
+      record nothing and log that the failure was not quota-attributable — never guess. *(completed)*
+- [x] Operator override: `ZOTERO_ASSUMED_QUOTA_MB` (or a `quota_limit_mb` field alongside
       `quota_state`) sets `source: operator-configured`. Every log line consulting it must say
-      "assumed, not API-verified" so it is never confused with an observed value.
-- [ ] Staleness: cached state older than 24h is treated as unknown, permitting exactly one real
-      attempt which re-caches on failure. Make the window a named constant.
-- [ ] After a real quota failure, call `zotero-write.sh orphan-clean` best-effort and non-blocking:
+      "assumed, not API-verified" so it is never confused with an observed value. *(completed)*
+- [x] Staleness: cached state older than 24h is treated as unknown, permitting exactly one real
+      attempt which re-caches on failure. Make the window a named constant. *(completed)*
+- [x] After a real quota failure, call `zotero-write.sh orphan-clean` best-effort and non-blocking:
       log its outcome, log that it may legitimately be a no-op because the just-created orphan has
-      not synced to local SQLite yet, and never let its failure change the run's directive token.
-- [ ] Document in the header that a preflight quota check is structurally impossible (no Web API
+      not synced to local SQLite yet, and never let its failure change the run's directive token. *(completed)*
+- [x] Document in the header that a preflight quota check is structurally impossible (no Web API
       endpoint exists), so the gate is reactive and/or operator-configured by necessity, not by
-      preference.
+      preference. *(completed)*
 
 **Timing**: 1.5 hours
 

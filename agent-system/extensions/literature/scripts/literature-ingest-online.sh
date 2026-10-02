@@ -139,10 +139,25 @@
 #   dry-run-detected ONLINE_INGEST_DUPLICATE_DETECTED, etc).
 #
 # ENVIRONMENT:
-#   LITERATURE_DIR    Global library root (default: ~/Projects/Literature), same convention as
-#                      literature-ingest.sh/literature-discover.sh.
-#   USER_EMAIL         Contact email for Unpaywall lookups (default: benbrastmckie@gmail.com),
-#                      same convention as literature-discover.sh's tier3_search().
+#   LITERATURE_DIR          Global library root (default: ~/Projects/Literature), same convention
+#                            as literature-ingest.sh/literature-discover.sh.
+#   USER_EMAIL               Contact email for Unpaywall lookups (default:
+#                            benbrastmckie@gmail.com), same convention as
+#                            literature-discover.sh's tier3_search().
+#   TRANSLATION_SERVER_URL   zotero/translation-server base URL (default: http://localhost:1969);
+#                            empty string disables resolution entirely. See
+#                            resolve_via_translation_server() below.
+#   ZOTERO_AUTO_ATTACH       Auto-attach policy: always | under-quota (default) | never. See the
+#                            quota-aware auto-attach policy section below.
+#   ZOTERO_ASSUMED_QUOTA_MB  Operator-asserted quota ceiling (assumed, never API-verified) --
+#                            forces quota_state.source=operator-configured.
+#
+# STORAGE QUOTA: a preflight check is STRUCTURALLY IMPOSSIBLE -- the Zotero Web API exposes no
+# usage endpoint; only a 413 response body on a real upload ever reveals it. The auto-attach gate
+# below is therefore necessarily REACTIVE (seeded by a real 413, cached in
+# specs/zotero-index.json's quota_state key) and/or OPERATOR-CONFIGURED
+# (ZOTERO_ASSUMED_QUOTA_MB), by necessity, not by preference. See the quota-aware auto-attach
+# policy section (evaluate_quota_state(), should_attempt_attach()) below for the full mechanism.
 #
 # NON-GOALS (do not modify): literature-ingest.sh, literature-convert.sh, literature-chunk.sh,
 # literature-build-index.sh are all invoked unmodified. This script owns ONLY: classification,
@@ -757,6 +772,153 @@ str_or_null_json() {
   fi
 }
 
+# ---------------------------------------------------------------------------
+# Quota-aware auto-attach policy. A Web API attachment upload counts against the zotero.org
+# storage quota; a quota-rejected upload still leaves an orphaned, file-less attachment record
+# behind (see zotero-item-creation.md Sec 2). This section replaces "discover the ceiling by 413"
+# with an explicit, policy-driven gate plus a reactive cache -- A PREFLIGHT QUOTA CHECK IS
+# STRUCTURALLY IMPOSSIBLE (no Web API endpoint exposes current usage; only a 413 response body
+# ever reveals it), so the gate is necessarily REACTIVE (seeded by a real 413) and/or
+# OPERATOR-CONFIGURED (ZOTERO_ASSUMED_QUOTA_MB), by necessity, not by preference.
+#
+# ZOTERO_AUTO_ATTACH (default "under-quota"):
+#   always       Always attempt the attach, even against a known-over-quota cached state (logs a
+#                warning that the policy overrides it).
+#   under-quota  Attempt the attach unless a FRESH cached state says used_mb >= limit_mb, in which
+#                case skip it entirely -- a skipped attempt never reaches Zotero's
+#                create-child-record-then-upload two-step, which is precisely what prevents a new
+#                orphan.
+#   never        Never attempt the attach, independent of any cached quota state.
+#
+# Cache: specs/zotero-index.json's top-level `quota_state` key:
+#   {used_mb, limit_mb, checked_at, source}  -- source is "413-observed" or "operator-configured".
+# Created with {} if absent and MERGED (never overwrites an existing zot_data_dir key), mirroring
+# upsert_subindex()'s create-if-absent idiom. Staleness: a cached state older than
+# QUOTA_STALENESS_WINDOW_SECONDS (24h) is treated as unknown, permitting exactly one real attempt,
+# which re-caches on failure -- self-correcting if the operator frees space without updating the
+# cache.
+# ---------------------------------------------------------------------------
+QUOTA_STALENESS_WINDOW_SECONDS=86400
+ZOTERO_AUTO_ATTACH="${ZOTERO_AUTO_ATTACH:-under-quota}"
+ZOTERO_INDEX_JSON="$GIT_ROOT/specs/zotero-index.json"
+
+# Helper: read the cached quota_state object, or {} if absent/missing/malformed. Never fails the
+# caller -- any read problem is treated as "no cached state" (unknown), never a hard error.
+read_quota_state() {
+  if [ ! -f "$ZOTERO_INDEX_JSON" ]; then
+    echo '{}'
+    return 0
+  fi
+  jq -c '.quota_state // {}' "$ZOTERO_INDEX_JSON" 2>/dev/null || echo '{}'
+}
+
+# Helper: merge a quota_state object into specs/zotero-index.json, creating the file with {} if
+# absent. Preserves every other top-level key (zot_data_dir in particular) -- never overwrites.
+record_quota_state() {
+  local used_mb="$1" limit_mb="$2" source="$3"
+  local checked_at
+  checked_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  if [ ! -f "$ZOTERO_INDEX_JSON" ]; then
+    echo '{}' > "$ZOTERO_INDEX_JSON"
+  fi
+  local tmp
+  tmp="$(mktemp)"
+  jq --argjson used "$used_mb" --argjson limit "$limit_mb" --arg source "$source" --arg checked_at "$checked_at" \
+     '.quota_state = {used_mb: $used, limit_mb: $limit, checked_at: $checked_at, source: $source}' \
+     "$ZOTERO_INDEX_JSON" > "$tmp" && mv "$tmp" "$ZOTERO_INDEX_JSON"
+  log "Recorded quota_state in $ZOTERO_INDEX_JSON: used_mb=$used_mb limit_mb=$limit_mb source=$source"
+}
+
+# Helper: classify the cached quota_state as fresh/stale and over/under quota. ZOTERO_ASSUMED_QUOTA_MB
+# (operator override) always supplies limit_mb and forces source=operator-configured when set --
+# every log line consulting it says "assumed, not API-verified" so it is never confused with an
+# observed value. Sets three globals: QUOTA_OVER, QUOTA_STATE_FRESH, QUOTA_STATE_SOURCE.
+evaluate_quota_state() {
+  QUOTA_OVER=false
+  QUOTA_STATE_FRESH=false
+  QUOTA_STATE_SOURCE=""
+
+  local state used_mb limit_mb checked_at source now checked_epoch age
+  state="$(read_quota_state)"
+  used_mb="$(echo "$state" | jq -r '.used_mb // empty')"
+  limit_mb="$(echo "$state" | jq -r '.limit_mb // empty')"
+  checked_at="$(echo "$state" | jq -r '.checked_at // empty')"
+  source="$(echo "$state" | jq -r '.source // empty')"
+
+  if [ -n "${ZOTERO_ASSUMED_QUOTA_MB:-}" ]; then
+    limit_mb="$ZOTERO_ASSUMED_QUOTA_MB"
+    source="operator-configured"
+    log "ZOTERO_ASSUMED_QUOTA_MB=$ZOTERO_ASSUMED_QUOTA_MB in effect (assumed, not API-verified)"
+  fi
+
+  if [ -z "$used_mb" ] || [ -z "$limit_mb" ]; then
+    QUOTA_STATE_SOURCE="$source"
+    return 0
+  fi
+
+  if [ "$source" != "operator-configured" ]; then
+    now="$(date -u +%s)"
+    checked_epoch="$(date -u -d "$checked_at" +%s 2>/dev/null || echo 0)"
+    age=$(( now - checked_epoch ))
+    if [ "$age" -gt "$QUOTA_STALENESS_WINDOW_SECONDS" ]; then
+      log "Cached quota_state is stale (age ${age}s > ${QUOTA_STALENESS_WINDOW_SECONDS}s); treating as unknown, permitting one real attempt."
+      QUOTA_STATE_SOURCE="$source"
+      return 0
+    fi
+  fi
+
+  QUOTA_STATE_FRESH=true
+  QUOTA_STATE_SOURCE="$source"
+  if awk -v u="$used_mb" -v l="$limit_mb" 'BEGIN{exit !(u>=l)}'; then
+    QUOTA_OVER=true
+  fi
+}
+
+# Helper: decide whether to attempt the attach, given ZOTERO_AUTO_ATTACH and the (possibly
+# stale/absent) cached quota_state. Logs the effective policy. Returns 0 to attempt the attach, 1
+# to skip it (caller sets ATTACHMENT_STATE=skipped-quota on a 1 return).
+should_attempt_attach() {
+  log "Effective auto-attach policy: ZOTERO_AUTO_ATTACH=$ZOTERO_AUTO_ATTACH"
+  case "$ZOTERO_AUTO_ATTACH" in
+    never)
+      log "Attach skipped by policy (ZOTERO_AUTO_ATTACH=never), independent of quota state."
+      return 1
+      ;;
+    always)
+      evaluate_quota_state
+      if [ "$QUOTA_OVER" = "true" ]; then
+        log "WARNING: ZOTERO_AUTO_ATTACH=always overrides a known-over-quota cached state (source=$QUOTA_STATE_SOURCE); attempting the attach anyway."
+      fi
+      return 0
+      ;;
+    *)
+      evaluate_quota_state
+      if [ "$QUOTA_STATE_FRESH" = "true" ] && [ "$QUOTA_OVER" = "true" ]; then
+        log "Attach skipped: cached quota_state (source=$QUOTA_STATE_SOURCE) reports used_mb >= limit_mb under policy=under-quota. Skipping before any create-child-record-then-upload call, so no new orphan is created."
+        return 1
+      fi
+      return 0
+      ;;
+  esac
+}
+
+# Helper: parse a zotero-write.sh attach-file failure envelope's `.error.message` for the
+# "(<used> > <limit>)" MB pair (confirmed shape: "File would exceed quota (2745.6 > 300)"). If the
+# message does not match, nothing is recorded and the failure is logged as not
+# quota-attributable -- never guessed. Returns 0 (recorded) or 1 (not quota-attributable).
+try_record_quota_from_failure() {
+  local envelope="$1"
+  local message
+  message="$(echo "$envelope" | jq -r '.error.message // empty' 2>/dev/null || true)"
+  [ -n "$message" ] || message="$envelope"
+  if [[ "$message" =~ \(([0-9.]+)\ \>\ ([0-9.]+)\) ]]; then
+    record_quota_state "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "413-observed"
+    return 0
+  fi
+  log "Attach failure message did not match the known quota-exceeded shape; not quota-attributable, nothing recorded. Message: $message"
+  return 1
+}
+
 YEAR_JSON="$(year_to_json "$YEAR_RAW")"
 DOI_JSON="$(str_or_null_json "$DOI_RAW")"
 ARXIV_JSON="$(str_or_null_json "$ARXIV_ID_RAW")"
@@ -864,24 +1026,33 @@ if [ "$CLASSIFICATION" = "resolvable" ]; then
         "zotero-write.sh item-add-json reported success but no item key was found in its envelope for doc_id=$DOC_ID"
     fi
 
-    ATTACH_EXIT=0
-    ATTACH_STDOUT="$("$SCRIPT_DIR/zotero-write.sh" attach-file "$ZOTERO_ITEM_KEY" "$STAGING_PATH" \
-      --idempotency-key "${IDEM_KEY:-online-ingest-attach-$SANITIZED_DOC_ID}" \
-      2>/tmp/ingest-online-attach-stderr.$$)" || ATTACH_EXIT=$?
-    ATTACH_STDERR="$(cat /tmp/ingest-online-attach-stderr.$$ 2>/dev/null || true)"
-    rm -f /tmp/ingest-online-attach-stderr.$$
+    if should_attempt_attach; then
+      ATTACH_EXIT=0
+      ATTACH_STDOUT="$("$SCRIPT_DIR/zotero-write.sh" attach-file "$ZOTERO_ITEM_KEY" "$STAGING_PATH" \
+        --idempotency-key "${IDEM_KEY:-online-ingest-attach-$SANITIZED_DOC_ID}" \
+        2>/tmp/ingest-online-attach-stderr.$$)" || ATTACH_EXIT=$?
+      ATTACH_STDERR="$(cat /tmp/ingest-online-attach-stderr.$$ 2>/dev/null || true)"
+      rm -f /tmp/ingest-online-attach-stderr.$$
 
-    if [ "$ATTACH_EXIT" -ne 0 ]; then
-      log "WARNING: zotero-write.sh attach-file failed for doc_id=$DOC_ID, key=$ZOTERO_ITEM_KEY (exit $ATTACH_EXIT): $ATTACH_STDERR -- the item was already created successfully, so this is surfaced as ONLINE_INGEST_INGESTED_NO_ATTACHMENT rather than a total failure. The staged PDF is kept (not removed) for the corpus-ingest delegation below."
-      ATTACHMENT_STATE="failed"
-      RESOLVED_PDF_PATH="$STAGING_PATH"
-    else
-      log "Attached PDF to newly created Zotero item $ZOTERO_ITEM_KEY for doc_id=$DOC_ID"
-      ATTACHMENT_STATE="attached"
-      RESOLVED_PDF_PATH="$(resolve_storage_path_from_envelope "$ATTACH_STDOUT")" || {
-        log "WARNING: could not resolve Zotero-managed storage path from the attach-file envelope; falling back to the staging download path ($STAGING_PATH). Flagged as a follow-up, not a silent success."
+      if [ "$ATTACH_EXIT" -ne 0 ]; then
+        log "WARNING: zotero-write.sh attach-file failed for doc_id=$DOC_ID, key=$ZOTERO_ITEM_KEY (exit $ATTACH_EXIT): $ATTACH_STDERR -- the item was already created successfully, so this is surfaced as ONLINE_INGEST_INGESTED_NO_ATTACHMENT rather than a total failure. The staged PDF is kept (not removed) for the corpus-ingest delegation below."
+        ATTACHMENT_STATE="failed"
         RESOLVED_PDF_PATH="$STAGING_PATH"
-      }
+        if try_record_quota_from_failure "$ATTACH_STDOUT"; then
+          ORPHAN_CLEAN_OUT="$("$SCRIPT_DIR/zotero-write.sh" orphan-clean 2>&1)" || true
+          log "Best-effort orphan-clean after a quota-attributable attach failure (may legitimately be a no-op -- the just-created orphan has not synced to local SQLite yet; never affects this run's directive token): $ORPHAN_CLEAN_OUT"
+        fi
+      else
+        log "Attached PDF to newly created Zotero item $ZOTERO_ITEM_KEY for doc_id=$DOC_ID"
+        ATTACHMENT_STATE="attached"
+        RESOLVED_PDF_PATH="$(resolve_storage_path_from_envelope "$ATTACH_STDOUT")" || {
+          log "WARNING: could not resolve Zotero-managed storage path from the attach-file envelope; falling back to the staging download path ($STAGING_PATH). Flagged as a follow-up, not a silent success."
+          RESOLVED_PDF_PATH="$STAGING_PATH"
+        }
+      fi
+    else
+      ATTACHMENT_STATE="skipped-quota"
+      RESOLVED_PDF_PATH="$STAGING_PATH"
     fi
   else
     # Not resolved (service down/disabled/no identifier): today's atomic item-add --pdf [--doi]
