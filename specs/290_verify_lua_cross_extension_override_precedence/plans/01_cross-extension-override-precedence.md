@@ -281,24 +281,24 @@ extension so the ownership map is built once and consumed by every per-extension
 
 ---
 
-### Phase 4: Correct gate 16's warning hint text [NOT STARTED]
+### Phase 4: Correct gate 16's warning hint text [COMPLETED]
 
 **Goal**: Replace gate 16's factually impossible `hard_contracts` migration instruction with
 wording that matches the schema's own statement and the backlog's actual plan, changing no gate
 behavior.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/verify-deploy.sh`'s gate 16, rewrite the `warn`
+- [x] In `agent-system/extensions/core/scripts/verify-deploy.sh`'s gate 16, rewrite the `warn`
       call's second (hint) argument so it no longer instructs migration to `hard_contracts`.
       State instead that both blocks are slated for outright removal once the dependent hard-mode
       work lands, and that `hard_contracts` is unrelated (it resolves injected contract files,
       not skill or agent names), pointing at `context/guides/manifest-routing-schema.md`.
-- [ ] Correct the gate's own header comment ("migrate to the flat `hard_contracts` manifest key")
+- [x] Correct the gate's own header comment ("migrate to the flat `hard_contracts` manifest key")
       the same way, so the comment and the emitted hint agree.
-- [ ] Leave untouched: the gate's selection guard, `CURRENT_GATE`, the `warn`-not-`fail` posture,
+- [x] Leave untouched: the gate's selection guard, `CURRENT_GATE`, the `warn`-not-`fail` posture,
       the `gate16_hits == 0` -> `pass` branch, the `jq` predicate, and the `unset` cleanup. No
       pass/warn/fail semantics change.
-- [ ] Edit the source store only (`agent-system/extensions/core/scripts/verify-deploy.sh`); do not
+- [x] Edit the source store only (`agent-system/extensions/core/scripts/verify-deploy.sh`); do not
       hand-edit `.claude/scripts/verify-deploy.sh`, which is a regenerated deploy artifact.
 
 **Timing**: 0.3 hours

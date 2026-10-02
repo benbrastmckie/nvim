@@ -855,11 +855,14 @@ say ""
 
 fi
 # ── 16. hard_contracts migration warning (non-blocking) ───────────────────────
-# routing_hard/routing_agents_hard are being replaced -- migrate to the flat hard_contracts
-# manifest key (see manifest-routing-schema.md). This gate WARNS, never fails: both blocks
-# remain genuinely consulted by command-route-skill.sh (for /research, /plan, /implement) and by
-# command-route-agent.sh until the two dependent follow-on tasks land, so declaring them today is
-# not yet an error -- only a migration nudge for new/updated extensions.
+# routing_hard/routing_agents_hard are slated for outright removal once the two dependent
+# follow-on tasks land -- NOT a migration to the hard_contracts manifest key, which is unrelated:
+# hard_contracts resolves the list of behavioral-contract files injected into a --hard dispatch's
+# prompt, never a skill or agent name (see context/guides/manifest-routing-schema.md). This gate
+# WARNS, never fails: both blocks remain genuinely consulted by command-route-skill.sh (for
+# /research, /plan, /implement) and by command-route-agent.sh until those two follow-on tasks
+# land, so declaring them today is not yet an error -- only a removal-is-coming nudge for
+# new/updated extensions.
 if gate_selected 16; then
 say "16. hard_contracts migration warning (routing_hard/routing_agents_hard)"
 CURRENT_GATE="gate16"
@@ -871,7 +874,7 @@ for gate16_manifest in "$CLAUDE_DIR"/extensions/*/manifest.json; do
   if [ "$gate16_declares" = "true" ]; then
     gate16_hits=$((gate16_hits + 1))
     warn "${gate16_ext:-$gate16_manifest} still declares routing_hard/routing_agents_hard" \
-         "being replaced -- migrate to the hard_contracts manifest key (see context/guides/manifest-routing-schema.md)"
+         "slated for outright removal once the dependent hard-mode work lands -- NOT a migration to hard_contracts, which is unrelated (it resolves injected contract files, not skill or agent names; see context/guides/manifest-routing-schema.md)"
   fi
 done
 if [ "$gate16_hits" -eq 0 ]; then
