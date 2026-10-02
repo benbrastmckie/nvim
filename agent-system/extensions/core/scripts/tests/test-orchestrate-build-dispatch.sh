@@ -848,6 +848,112 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 15: <lean-readiness-context> injection -- absent without a lakefile (byte-identity),
+# present (verbatim, before ## Wait Discipline) when a lakefile exists and the probe emits a
+# block, present for a NON-lean4 task_type ("formal" -- the regression guard for the actual
+# motivating incident this feature exists to fix), and absent (with no build failure) when the
+# probe exits non-zero. A STUB probe is used throughout (never the real lean-extension probe),
+# so this suite stays independent of lean-mcp-preflight-check.sh's own reachability/registration
+# logic, which test-lean-mcp-preflight-check.sh already covers.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 15: <lean-readiness-context> injection (absent/present/non-lean4-task_type/failing-probe)"
+
+LEAN_STUB_MARKER="STUB_LEAN_READINESS_MARKER_G15"
+
+# install_lean_stub_probe BLOCK_OR_EMPTY EXIT_CODE -- deploys a stub lean-mcp-preflight-check.sh
+# at the fixture's .claude/scripts/. On `--dispatch-block`, prints BLOCK_OR_EMPTY (verbatim, or
+# nothing when empty) and exits EXIT_CODE. Signature-compatible with the real probe (accepts and
+# ignores the 5 positional lifecycle-hook args alongside the flag).
+install_lean_stub_probe() {
+  local block="$1" exit_code="$2"
+  mkdir -p "$FIXTURE/.claude/scripts"
+  {
+    echo '#!/usr/bin/env bash'
+    echo 'for _a in "$@"; do'
+    echo '  if [ "$_a" = "--dispatch-block" ]; then'
+    if [ -n "$block" ]; then
+      echo "    cat <<'STUB_BLOCK_EOF'"
+      printf '%s\n' "$block"
+      echo 'STUB_BLOCK_EOF'
+    fi
+    echo "    exit $exit_code"
+    echo '  fi'
+    echo 'done'
+    echo "exit $exit_code"
+  } > "$FIXTURE/.claude/scripts/lean-mcp-preflight-check.sh"
+  chmod +x "$FIXTURE/.claude/scripts/lean-mcp-preflight-check.sh"
+}
+
+LEAN_STUB_BLOCK="<lean-readiness-context>
+${LEAN_STUB_MARKER}
+</lean-readiness-context>"
+
+# Case 1 (absent): no lakefile at the fixture root at all -- the probe's own lakefile gate
+# (and, with no stub installed yet, its own absence) both independently guarantee no block.
+# This is the byte-identity guarantee: a non-Lean dispatch build is unaffected.
+run_sut implement --seq 15
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content" "<lean-readiness-context>" "Case 1 (no lakefile): <lean-readiness-context> block absent"
+else
+  fail "Group 15 Case 1: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case 2 (present): a lakefile exists and the stub probe emits a known block on --dispatch-block.
+# Asserts the block is present VERBATIM and positioned before "## Wait Discipline".
+touch "$FIXTURE/lakefile.lean"
+install_lean_stub_probe "$LEAN_STUB_BLOCK" 0
+run_sut implement --seq 15
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "$LEAN_STUB_BLOCK" "Case 2 (lakefile + stub probe): block present verbatim"
+  readiness_line=$(grep -n "<lean-readiness-context>" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)
+  wait_line=$(grep -n "^## Wait Discipline" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)
+  if [ -n "$readiness_line" ] && [ -n "$wait_line" ] && [ "$readiness_line" -lt "$wait_line" ]; then
+    pass "Case 2: <lean-readiness-context> ($readiness_line) precedes ## Wait Discipline ($wait_line)"
+  else
+    fail "Case 2: expected <lean-readiness-context> before ## Wait Discipline; got readiness_line=$readiness_line wait_line=$wait_line"
+  fi
+else
+  fail "Group 15 Case 2: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case 3 (non-lean4 task_type, "formal"): the SAME lakefile + stub probe from Case 2, but the
+# fixture task's task_type is temporarily switched to "formal" -- the exact motivating incident
+# (a hooks.preflight registration keyed on task_type cannot reach this; the unconditional call
+# from orchestrate-build-dispatch.sh, gated only by the probe's own lakefile detection, can).
+cp "$FIXTURE/specs/state.json" "$WORKDIR/g15-state-backup.json"
+tmp_state=$(mktemp)
+jq '.active_projects[0].task_type = "formal"' "$FIXTURE/specs/state.json" > "$tmp_state"
+mv "$tmp_state" "$FIXTURE/specs/state.json"
+run_sut implement --seq 15
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content" "$LEAN_STUB_BLOCK" "Case 3 (task_type=formal): block present -- regression guard for the motivating incident"
+else
+  fail "Group 15 Case 3: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+cp "$WORKDIR/g15-state-backup.json" "$FIXTURE/specs/state.json"
+
+# Case 4 (failing probe): the stub now exits non-zero and prints nothing. Must produce no block
+# AND no dispatch-build failure (exit 0, dispatch file still written) -- the WARN-never-BLOCK
+# contract holding even when the probe itself is broken.
+install_lean_stub_probe "" 1
+run_sut implement --seq 15
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content" "<lean-readiness-context>" "Case 4 (failing probe, exit 1): block absent"
+  pass "Case 4 (failing probe, exit 1): dispatch build still exits 0 (WARN-never-BLOCK contract holds even for a broken probe)"
+else
+  fail "Group 15 Case 4: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR) -- a failing probe must never break the dispatch build"
+fi
+
+# Restore the original fixture state (no lakefile, no probe script, original task_type) for any
+# suite appended after this one.
+rm -f "$FIXTURE/lakefile.lean" "$FIXTURE/.claude/scripts/lean-mcp-preflight-check.sh"
+rm -f "$WORKDIR/g15-state-backup.json"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

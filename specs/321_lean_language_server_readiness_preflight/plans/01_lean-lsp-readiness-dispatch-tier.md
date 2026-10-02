@@ -310,23 +310,24 @@ registered (e.g. a block inventory or an ordering list); if one exists, extend i
 
 ---
 
-### Phase 4: Pin the dispatch-file injection in the dispatch builder's test suite [NOT STARTED]
+### Phase 4: Pin the dispatch-file injection in the dispatch builder's test suite [COMPLETED]
 
 **Goal**: both the block-present and the byte-identical-when-absent cases are regression-tested.
 
 **Tasks**:
-- [ ] Re-read `test-orchestrate-build-dispatch.sh`'s fixture harness and follow its existing case
-      style rather than introducing a new one.
-- [ ] Add a case asserting that a dispatch built in a fixture repo with **no** lakefile contains no
-      `<lean-readiness-context>` block — the byte-identity guarantee.
-- [ ] Add a case asserting that a dispatch built in a fixture repo **with** a lakefile and a
+- [x] Re-read `test-orchestrate-build-dispatch.sh`'s fixture harness and follow its existing case
+      style rather than introducing a new one. *(completed: modeled on Group 12's
+      install/assert/restore shape)*
+- [x] Add a case asserting that a dispatch built in a fixture repo with **no** lakefile contains no
+      `<lean-readiness-context>` block — the byte-identity guarantee. *(completed: Case 1)*
+- [x] Add a case asserting that a dispatch built in a fixture repo **with** a lakefile and a
       deployed stub `lean-mcp-preflight-check.sh` (emitting a known block on `--dispatch-block`)
       contains that block verbatim, positioned before `## Wait Discipline`. A stub keeps this test
-      independent of the probe's own logic, which Phase 2 already covers.
-- [ ] Add a case asserting the block is emitted for a `task_type` other than `lean4` (use `formal`)
-      — the regression guard for the actual motivating incident.
-- [ ] Add a case asserting that a stub probe exiting non-zero or printing nothing produces no block
-      and no dispatch-build failure.
+      independent of the probe's own logic, which Phase 2 already covers. *(completed: Case 2)*
+- [x] Add a case asserting the block is emitted for a `task_type` other than `lean4` (use `formal`)
+      — the regression guard for the actual motivating incident. *(completed: Case 3)*
+- [x] Add a case asserting that a stub probe exiting non-zero or printing nothing produces no block
+      and no dispatch-build failure. *(completed: Case 4, exit-non-zero variant)*
 
 **Timing**: 1 hour
 
