@@ -11,10 +11,10 @@ next_project_number: 325
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,165,184,217,263,265,270,271,272,280,284,285,295,296,297,299,300,306,311,322 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,185,250,251,273,275,281,298,302,303,307,308,318,319 | 22,127,184,265,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
-| 3 | 170,274,282,304,313 | 165,250,251,263,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
-| 4 | 312 | 165,282,300 | orchestrator |
+| 1 | 22,89,127,165,184,217,270,271,272,280,284,285,295,296,297,299,300,306,311,322 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,185,251,265,273,275,281,298,302,303,307,308,319 | 22,127,165,184,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
+| 3 | 250,263,274,282,313,318 | 165,265,273,275,281,308 | core-agent-system, orchestrator |
+| 4 | 170,304,312 | 165,250,251,263,273,282,284,285,300,302 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -27,11 +27,6 @@ next_project_number: 325
 184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-263 [PLANNED] — Consent-gated git push: grant semantics and enforcement mechanism
-265 [IMPLEMENTING] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
-  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
-    └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
-  └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
@@ -43,6 +38,13 @@ next_project_number: 325
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
+250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
+  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+263 [PLANNED] — Consent-gated git push: grant semantics and enforcement mechanism
+265 [IMPLEMENTING] — Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh...
+  └─ 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh... (see above)
+  └─ 263 [PLANNED] — Consent-gated git push: grant semantics and enforcement mechanism (see above)
+  └─ 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
 
 ### Extensions
 
@@ -2245,7 +2247,7 @@ than a jq guard, and are recorded on their own task.
 - **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 266, Task 316
+- **Dependencies**: Task 165, Task 266, Task 316
 - **Research**: [265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md]
 - **Plan**: [265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md]
 
@@ -2407,7 +2409,7 @@ PHASES: (A) Gate 8 --jobs (choose a conservative default plus an env override; d
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 139
+- **Dependencies**: Task 139, Task 265
 - **Research**: [263_consent_gated_git_push/reports/01_consent-gated-push-design.md]
 - **Plan**: [263_consent_gated_git_push/plans/01_consent-gated-push-enforcement.md]
 

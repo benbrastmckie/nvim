@@ -56,9 +56,12 @@ All three are `planned` with plans in hand; each needs only its implement phase.
 | **165** | Admission posture for an absent `file_scope`; cross-session visibility for self-modifying candidates | 6-phase plan, fully sequential. Also closes a found defect: `orchestrate-cycle-plan.sh`'s `defer_reason` `case` has no default arm, so a new reason drops a task from dispatch with no ledger entry. **Gates 274, 312** |
 | **265** | Gate 8 via `run-all.sh --jobs`; `deploy-headless.sh --skip-verify` with a distinct exit 4 | 8-phase plan, currently `implementing` at phase 1. **`--skip-verify` is the urgent half** — the fix for the deploy that overruns 30 min. **Gates 250, 318** |
 
-Implement-phase serialization: **165 → 265 → 263** (self-modifying, lowest first). Sequencing
-advice, not a dependency edge — none declares the others, and `file_scope` overlap already handles
-admission.
+Implement-phase serialization: **165 → 265 → 263**, now pinned by serialization-only
+`dependencies` edges (265 declares 165; 263 declares 265), so the order holds regardless of the
+argument order typed above. The edges are ordering devices, not semantic ones — neither task
+consumes the other's output; rebase on whatever lands. Without them all three are self-modifying
+candidates and the engine admits one per cycle by **lowest task number**, which would give
+165 → 263 → 265 and push the urgent `--skip-verify` half behind a 13-phase task.
 
 ## Call B — cost, clutter, corpus probe (6)
 
