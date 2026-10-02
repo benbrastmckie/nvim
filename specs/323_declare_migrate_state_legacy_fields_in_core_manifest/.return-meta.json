@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1790978139_b07459_323",
+  "task_number": 323,
+  "dispatch_seq": 1,
+  "findings_count": 8,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/reports/01_declare-script-in-manifest.md",
+      "summary": "Confirms the manifest/README defect exactly as filed, traces the check-extension-docs.sh and verify-deploy.sh gate 3 mechanics, and recommends a two-line fix: add migrate-state-legacy-fields.sh to provides.scripts in agent-system/extensions/core/manifest.json and refresh the stale script count in core/README.md."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 323 to create implementation plan"
+}

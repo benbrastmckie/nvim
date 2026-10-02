@@ -1041,7 +1041,7 @@
     {
       "project_number": 323,
       "project_name": "declare_migrate_state_legacy_fields_in_core_manifest",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -1050,12 +1050,22 @@
         "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/README.md"
       ],
-      "created": "2026-10-02T21:41:16Z"
+      "created": "2026-10-02T21:41:16Z",
+      "last_updated": "2026-10-02T21:59:44Z",
+      "session_id": "sess_1790978139_b07459",
+      "artifacts": [
+        {
+          "path": "specs/323_declare_migrate_state_legacy_fields_in_core_manifest/reports/01_declare-script-in-manifest.md",
+          "type": "report",
+          "summary": "Confirms the manifest/README defect exactly as filed, traces the check-extension-docs.sh and verify-deploy.sh gate 3 mechanics, and recommends a two-line fix: add migrate-state-legacy-fields.sh to provides.scripts in agent-system/extensions/core/manifest.json and refresh the stale script count in core/README.md."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 324,
       "project_name": "whitelist_scheduled_tasks_lock_in_orphan_detection",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "neovim",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -1064,7 +1074,9 @@
         "lua/neotex/plugins/ai/shared/extensions/verify.lua",
         "agent-system/extensions/core/context/patterns/deploy-orphan-detection.md"
       ],
-      "created": "2026-10-02T21:41:34Z"
+      "created": "2026-10-02T21:41:34Z",
+      "last_updated": "2026-10-02T21:56:00Z",
+      "session_id": "sess_1790978139_b07459_324"
     }
   ],
   "completed_projects": [],
