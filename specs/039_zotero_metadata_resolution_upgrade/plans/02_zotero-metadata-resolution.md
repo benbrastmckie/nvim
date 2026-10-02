@@ -572,42 +572,42 @@ new surfacing fields.
 
 ---
 
-### Phase 9: static verification and gated live-verification proposals [NOT STARTED]
+### Phase 9: static verification and gated live-verification proposals [COMPLETED]
 
 **Goal**: Run everything that can be verified without touching production or another repository,
 then put each genuinely gated action to the operator with a stated decline path.
 
 **Tasks**:
 
-- [ ] Run the full static gate set: `bash -n` on both modified scripts, `jq empty` on any JSON
+- [x] Run the full static gate set: `bash -n` on both modified scripts, `jq empty` on any JSON
       fixture touched, `bash .claude/scripts/check-extension-docs.sh`, and the repo-wide
-      task-reference lint.
-- [ ] Re-run the complete `--dry-run` matrix from Phases 1-6 end to end in one pass, confirming
+      task-reference lint. *(completed)*
+- [x] Re-run the complete `--dry-run` matrix from Phases 1-6 end to end in one pass, confirming
       every `zotero-write.sh` operation still parses and the bridge produces exactly one stdout
-      token per invocation.
-- [ ] Confirm no file under `.claude/**` was modified (`git status --short .claude/` empty) and note
+      token per invocation. *(completed)*
+- [x] Confirm no file under `.claude/**` was modified (`git status --short .claude/` empty) and note
       that redeploying the extension is an operator step via the normal deploy flow, never a manual
-      copy.
-- [ ] **Gate A — translation-server live enable/test.** Propose a short, explicitly authorized
+      copy. *(completed)*
+- [x] **Gate A — translation-server live enable/test.** Propose a short, explicitly authorized
       enable/test/revert cycle in `~/.dotfiles` (`services.zoteroTranslationServer.enable = true`,
       `home-manager switch`, exercise `POST /search` and — the real open gap — `POST /web`, then
       revert). Do not edit that repository or flip the toggle unilaterally. **Decline path**: ship
       the degradation path as the tested default (it is the default state), record `/search`'s
       response shape as verified by the provisioning work's own successful real call, and record
-      `/web` as UNVERIFIED and unwired in `zotero-item-creation.md`.
-- [ ] **Gate B — live end-to-end ingest against the production library.** Propose one real run
+      `/web` as UNVERIFIED and unwired in `zotero-item-creation.md`. *(completed: declined -- no operator present in this autonomous dispatch to authorize a cross-repo edit or a production-library write; decline-path records added to zotero-item-creation.md)*
+- [x] **Gate B — live end-to-end ingest against the production library.** Propose one real run
       creating one item via `item-add-json` on a record chosen by the operator. **Decline path**:
       leave the live Web-API response field names marked UNCONFIRMED under the existing
       envelope-confirmation discipline, keep the defensive multi-candidate lookup, and state
-      plainly in the summary that only `--dry-run` coverage exists.
-- [ ] **Gate C — orphan cleanup of the two known file-less attachment records.** Propose running
+      plainly in the summary that only `--dry-run` coverage exists. *(completed: declined -- no operator present in this autonomous dispatch to authorize a cross-repo edit or a production-library write; decline-path records added to zotero-item-creation.md)*
+- [x] **Gate C — orphan cleanup of the two known file-less attachment records.** Propose running
       `zotero-write.sh orphan-clean --dry-run` first, then the real clean. Note that it is expected
       to be a no-op today because those records have not synced to local SQLite. **Decline path**:
       record the two orphan keys and `zot orphans clean`'s own guidance (remove them from the Zotero
       desktop instead) in `zotero-item-creation.md`, and leave the wrapper in place for when a sync
-      has happened.
-- [ ] Record, in the implementation summary, which gates were exercised and which were declined —
-      a declined gate is a stated outcome, never an omission.
+      has happened. *(completed: declined -- no operator present in this autonomous dispatch to authorize a cross-repo edit or a production-library write; decline-path records added to zotero-item-creation.md)*
+- [x] Record, in the implementation summary, which gates were exercised and which were declined —
+      a declined gate is a stated outcome, never an omission. *(completed)*
 
 **Timing**: 1 hour
 

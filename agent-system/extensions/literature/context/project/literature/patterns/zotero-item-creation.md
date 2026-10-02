@@ -272,6 +272,15 @@ and `literature-index.json` entry, never absent):
   already lived in the Zotero item).
 - `attachment_state`: `attached` | `failed` | `skipped-quota`.
 
+**translation-server endpoint verification status**: `POST /search` (the only endpoint this
+bridge calls) was already live-smoke-tested with a real DOI during the cross-repo provisioning
+work that stood up the service — its response shape is treated as VERIFIED on that basis.
+`POST /web` has **never been exercised by anyone** and has no caller path from this bridge today
+(the discovery record carries a `pdf_url`, which is a PDF, not a landing page, and no
+landing-URL field at all — confirmed by re-reading `literature-discover.sh`'s `tier3_search()`
+record construction). `/web` is recorded here as UNVERIFIED and deliberately unwired, not an
+oversight.
+
 **Quota-aware auto-attach policy**: an attach attempt is gated by `ZOTERO_AUTO_ATTACH`
 (`always` | `under-quota` default | `never`) against a reactive cache in
 `specs/zotero-index.json`'s `quota_state` key (`{used_mb, limit_mb, checked_at, source}`). A
