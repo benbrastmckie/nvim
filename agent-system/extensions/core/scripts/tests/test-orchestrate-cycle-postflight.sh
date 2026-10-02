@@ -41,12 +41,12 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-         errors-append.sh events-append.sh; do
+         errors-append.sh events-append.sh validate-return-meta.sh; do
   require_file "$CORE_DIR/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
          phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
-         return-meta-status-vocabulary.sh; do
+         return-meta-status-vocabulary.sh return-meta-artifacts-lib.sh; do
   require_file "$CORE_DIR/lib/$f"
 done
 
@@ -66,16 +66,18 @@ setup_sandbox() {
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-           errors-append.sh events-append.sh; do
+           errors-append.sh events-append.sh validate-return-meta.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
   # return-meta-status-vocabulary.sh is a HARD dependency of orchestrate-recover-outcome.sh
   # (source-or-exit-2): omitting it here does not fail loudly -- recover-outcome silently
   # exits 2, its caller treats that as recovered=false, and fixtures fall through into an
   # unrelated branch, recording spurious defects. See plans/01_recovery-decline-attribution.md.
+  # return-meta-artifacts-lib.sh is the equivalent hard dependency of validate-return-meta.sh
+  # (the new return-meta schema probe's own collaborator), added for the same reason.
   for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
            phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
-           return-meta-status-vocabulary.sh runtime-file-patterns.sh; do
+           return-meta-status-vocabulary.sh runtime-file-patterns.sh return-meta-artifacts-lib.sh; do
     cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
   done
   cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -2083,6 +2085,180 @@ else
 fi
 ( cd "$WORKDIR" && bash .claude/scripts/task-lock.sh claim-release "$p9_summary" 999 >/dev/null 2>&1 )
 # task-ref-ok:end
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 950: WORK (l) positive -- a researched outcome with a bare-string partial_progress WARNs
+# on stderr naming the dispatched agent, still completes (verdict=ok, status->researched), and
+# records RETURN_META_SCHEMA_VIOLATION attributed to the dispatched agent -- the exact opposite
+# of the observed harm this task's dispatch names (a discarded, validated research report).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 950: return-meta schema probe WARNs and records on a bare-string partial_progress, dispatch still completes"
+setup_sandbox
+stub_agent_file general-research-agent
+mkdir -p "$WORKDIR/specs/950_candidate/reports"
+echo "real findings" > "$WORKDIR/specs/950_candidate/reports/01_x-report.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 950, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #950 -- return-meta schema probe positive case", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/950_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/950_candidate/.return-meta.json" <<'EOF'
+{"status":"researched","dispatch_seq":1,"partial_progress":"Research complete; report written; metadata finalized","artifacts":[{"type":"report","path":"specs/950_candidate/reports/01_x-report.md","summary":"real findings"}],"metadata":{}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/950_candidate --session sess_950 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/950_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 950
+
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "case 950: dispatch still completes (verdict=ok) despite the schema violation"
+else
+  fail "case 950: expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+new_status_950=$(jq -r --argjson n 950 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
+if [ "$new_status_950" = "researched" ]; then
+  pass "case 950: task status is still persisted (advanced to researched)"
+else
+  fail "case 950: expected status=researched, got: $new_status_950"
+fi
+if echo "$LAST_STDERR" | grep -q "WARN:" && echo "$LAST_STDERR" | grep -q "general-research-agent" && echo "$LAST_STDERR" | grep -q "partial_progress"; then
+  pass "case 950: a WARN notice naming the dispatched agent and partial_progress appears on stderr"
+else
+  fail "case 950: expected a WARN notice naming the agent and partial_progress, got: $LAST_STDERR"
+fi
+case_950_defect_count=$(jq '.detected_defects | map(select(.defect_class == "RETURN_META_SCHEMA_VIOLATION")) | length' \
+  "$WORKDIR/specs/950_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$case_950_defect_count" = "1" ]; then
+  pass "case 950: exactly one RETURN_META_SCHEMA_VIOLATION defect row recorded"
+else
+  fail "case 950: expected exactly 1 RETURN_META_SCHEMA_VIOLATION defect, got $case_950_defect_count"
+fi
+if jq -e '.detected_defects[] | select(.defect_class == "RETURN_META_SCHEMA_VIOLATION") | .attributed_source_path == "agent-system/extensions/core/agents/general-research-agent.md"' \
+     "$WORKDIR/specs/950_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "case 950: RETURN_META_SCHEMA_VIOLATION attributed to the dispatched agent's own file"
+else
+  fail "case 950: RETURN_META_SCHEMA_VIOLATION attribution did not resolve to the dispatched agent's file"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 951: the --dry-run variant of Case 950 -- asserts the [dry-run] would record line and
+# performs no recorder call / no detected_defects write (the recorder path cannot run live from
+# the source store under deploy-root-guard, so the --dry-run line is this suite's way of
+# exercising the recorder-adjacent branch without needing the recorder to run, matching the
+# sibling fixtures' idiom for recorder-adjacent assertions elsewhere in this file).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 951: --dry-run variant asserts the [dry-run] would record line, no recorder call"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/951_candidate/reports"
+echo "real findings" > "$WORKDIR/specs/951_candidate/reports/01_x-report.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 951, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #951 -- return-meta schema probe dry-run variant", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/951_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/951_candidate/.return-meta.json" <<'EOF'
+{"status":"researched","dispatch_seq":1,"partial_progress":"Research complete; report written; metadata finalized","artifacts":[{"type":"report","path":"specs/951_candidate/reports/01_x-report.md","summary":"real findings"}],"metadata":{}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/951_candidate --session sess_951 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/951_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" --dry-run 951
+
+if echo "$LAST_STDERR" | grep -q '\[dry-run\] would record RETURN_META_SCHEMA_VIOLATION'; then
+  pass "case 951: --dry-run prints the would-record line for RETURN_META_SCHEMA_VIOLATION"
+else
+  fail "case 951: expected the [dry-run] would record RETURN_META_SCHEMA_VIOLATION line, got: $LAST_STDERR"
+fi
+case_951_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/951_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$case_951_defect_count" = "0" ]; then
+  pass "case 951: --dry-run performs no detected_defects write"
+else
+  fail "case 951: expected 0 detected_defects under --dry-run, got $case_951_defect_count"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 952: the noise guard -- a non-canonical but intentional status value (e.g. an
+# extension-local success vocabulary) with NO partial_progress field produces NO WARN notice and
+# NO RETURN_META_SCHEMA_VIOLATION record/dry-run line. This is the test that would catch a future
+# regression where the probe is switched to branch on the validator's aggregate exit code instead
+# of its partial_progress-specific output (which would re-fire on every status-vocabulary
+# [FAIL], exactly the deferred blocker this task's dispatch names).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 952: noise guard -- a non-canonical status with no partial_progress produces no probe output"
+setup_sandbox
+stub_agent_file general-research-agent
+mkdir -p "$WORKDIR/specs/952_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 952, "project_name": "candidate", "task_type": "general", "status": "researching", "description": "candidate #952 -- noise guard fixture (non-canonical status, no partial_progress)", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/952_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/952_candidate/.return-meta.json" <<'EOF'
+{"status":"consulted","dispatch_seq":1,"artifacts":[],"metadata":{"session_id":"sess_1","agent_type":"general-research-agent","delegation_depth":1,"delegation_path":["a","b"]}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/952_candidate --session sess_952 --phase research --task-type general \
+  --agent general-research-agent --loop-guard-file specs/952_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 952
+
+if echo "$LAST_STDERR" | grep -q "RETURN_META_SCHEMA_VIOLATION"; then
+  fail "case 952: unexpected RETURN_META_SCHEMA_VIOLATION mention on stderr for a status-only violation, got: $LAST_STDERR"
+else
+  pass "case 952: no RETURN_META_SCHEMA_VIOLATION mention on stderr -- the probe does not fire on the validator's aggregate exit code"
+fi
+case_952_defect_count=$(jq '.detected_defects | map(select(.defect_class == "RETURN_META_SCHEMA_VIOLATION")) | length' \
+  "$WORKDIR/specs/952_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$case_952_defect_count" = "0" ]; then
+  pass "case 952: zero RETURN_META_SCHEMA_VIOLATION defects recorded -- the noise-regression guard holds"
+else
+  fail "case 952: expected 0 RETURN_META_SCHEMA_VIOLATION defects, got $case_952_defect_count"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 953: a fully well-formed .return-meta.json (no partial_progress field, everything else
+# valid) produces no probe output at all.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 953: a fully well-formed .return-meta.json produces no probe output at all"
+setup_sandbox
+stub_agent_file general-implementation-agent
+mkdir -p "$WORKDIR/specs/953_candidate/summaries"
+echo x > "$WORKDIR/specs/953_candidate/summaries/01_x-summary.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 953, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #953 -- fully well-formed return-meta, no probe output", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/953_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/953_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/953_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"session_id":"sess_1","agent_type":"general-implementation-agent","delegation_depth":1,"delegation_path":["a","b"],"phases_completed":1,"phases_total":1}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/953_candidate --session sess_953 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/953_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 953
+
+if echo "$LAST_STDERR" | grep -q "RETURN_META_SCHEMA_VIOLATION" || echo "$LAST_STDERR" | grep -qi "partial_progress"; then
+  fail "case 953: unexpected return-meta schema probe output for a fully well-formed file, got: $LAST_STDERR"
+else
+  pass "case 953: a fully well-formed .return-meta.json produces no probe output at all"
+fi
+case_953_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/953_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$case_953_defect_count" = "0" ]; then
+  pass "case 953: zero defects of any kind recorded for a clean success"
+else
+  fail "case 953: expected 0 detected_defects, got $case_953_defect_count"
+fi
 
 echo ""
 echo "==================================================================="

@@ -378,29 +378,29 @@ tasks declare this file).
 
 ---
 
-### Phase 5: End-to-end acceptance test for the probe [NOT STARTED]
+### Phase 5: End-to-end acceptance test for the probe [COMPLETED]
 
 **Goal**: the dispatch's Acceptance criterion is a test, not a claim — including the negative
 case that protects against the aggregate-exit-code regression.
 
 **Tasks**:
-- [ ] Add a `run_sut` case mirroring an existing research-phase fixture, whose
+- [x] Add a `run_sut` case mirroring an existing research-phase fixture, whose *(completed)*
       `.return-meta.json` carries `"status": "researched"` plus the bare-string
       `"partial_progress"`. Assert: the `WARN:` notice appears on stderr naming the agent; the
       dispatch still completes; the task's status is still persisted (the exact opposite of the
       observed harm).
-- [ ] Add a `--dry-run` variant of that case asserting the
+- [x] Add a `--dry-run` variant of that case asserting the *(completed)*
       `[dry-run] would record RETURN_META_SCHEMA_VIOLATION` line, which exercises the recorder
       path without needing the recorder to run (`system-defect-record.sh` refuses to run from
       the source store under deploy-root-guard). Follow whichever idiom sibling cases in the same
       suite already use for recorder-adjacent assertions.
-- [ ] **Negative case (the noise guard)**: a `.return-meta.json` with a non-canonical but
+- [x] **Negative case (the noise guard)**: a `.return-meta.json` with a non-canonical but *(completed)*
       intentional status value and NO `partial_progress` field asserts that **no** `WARN:` notice
       and **no** `RETURN_META_SCHEMA_VIOLATION` record/dry-run line is produced by the new probe.
       This is the test that would catch a future refactor regressing the probe onto the
       validator's aggregate exit code.
-- [ ] Negative case: a fully well-formed `.return-meta.json` produces no probe output at all.
-- [ ] Reuse the suite's existing fixture-numbering convention and scratch-repo isolation; pick an
+- [x] Negative case: a fully well-formed `.return-meta.json` produces no probe output at all. *(completed)*
+- [x] Reuse the suite's existing fixture-numbering convention and scratch-repo isolation; pick an *(completed: used candidates 950-953)*
       unused candidate number.
 
 **Timing**: 0.75 hours
