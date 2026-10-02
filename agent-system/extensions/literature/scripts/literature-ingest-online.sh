@@ -159,6 +159,15 @@
 # (ZOTERO_ASSUMED_QUOTA_MB), by necessity, not by preference. See the quota-aware auto-attach
 # policy section (evaluate_quota_state(), should_attempt_attach()) below for the full mechanism.
 #
+# CORPUS INDEX PROVENANCE FIELDS: patch_global_index() and upsert_subindex() write two fields
+# onto each ingested index.json / literature-index.json entry, always non-empty, never absent:
+#   resolution_path    translation-server (resolved via /search) | zot-crossref (no resolution,
+#                       but a real DOI let `zot add --doi` do its own Crossref lookup) | zot-bare
+#                       (no resolution and no DOI) | existing-item (attach-to-existing path;
+#                       metadata already lived in the Zotero item, so no resolution was attempted)
+#   attachment_state    attached | failed | skipped-quota -- see the quota-aware auto-attach
+#                       policy section above for skipped-quota's meaning.
+#
 # NON-GOALS (do not modify): literature-ingest.sh, literature-convert.sh, literature-chunk.sh,
 # literature-build-index.sh are all invoked unmodified. This script owns ONLY: classification,
 # download+verification, the new zotero-write.sh item-add/attach-file calls, storage
@@ -629,10 +638,18 @@ resolve_storage_path_from_envelope() {
 # Helper: post-ingest global index.json metadata patch. Scoped as new logic in THIS script
 # only (literature-ingest.sh's core loop is never modified). Idempotent: re-running for the
 # same doc_id updates the entry in place, never duplicates.
+#
+# resolution_path / attachment_state: provenance fields letting a future reader tell which
+# records got translation-server-quality metadata and which fell back, and whether the PDF is
+# actually attached in Zotero. Vocabularies: resolution_path is one of translation-server |
+# zot-crossref | zot-bare | existing-item (see resolve_via_translation_server()); attachment_state
+# is one of attached | failed | skipped-quota (see should_attempt_attach()). Both callers (the
+# resolvable and existing_no_pdf branches) always pass a non-empty value -- neither field is ever
+# absent or empty.
 # ---------------------------------------------------------------------------
 patch_global_index() {
   local doc_id="$1" title="$2" authors_json="$3" year_json="$4" doi_json="$5" \
-        arxiv_json="$6" zkey_json="$7" zpath_json="$8"
+        arxiv_json="$6" zkey_json="$7" zpath_json="$8" resolution_path="$9" attachment_state="${10}"
   local idx="$LITERATURE_DIR/index.json"
   if [ ! -f "$idx" ]; then
     log "WARNING: global index.json not found at $idx; cannot patch metadata for $doc_id"
@@ -644,20 +661,24 @@ patch_global_index() {
      --argjson authors "$authors_json" --argjson year "$year_json" \
      --argjson doi "$doi_json" --argjson arxiv_id "$arxiv_json" \
      --argjson zotero_key "$zkey_json" --argjson zotero_path "$zpath_json" \
+     --arg resolution_path "$resolution_path" --arg attachment_state "$attachment_state" \
      '.entries |= map(if .doc_id == $doc_id then
         . + {title: $title, authors: $authors, year: $year, doi: $doi,
-             arxiv_id: $arxiv_id, zotero_key: $zotero_key, zotero_path: $zotero_path}
+             arxiv_id: $arxiv_id, zotero_key: $zotero_key, zotero_path: $zotero_path,
+             resolution_path: $resolution_path, attachment_state: $attachment_state}
       else . end)' "$idx" > "$tmp" && mv "$tmp" "$idx"
-  log "Patched global index.json entry for doc_id=$doc_id with real metadata"
+  log "Patched global index.json entry for doc_id=$doc_id with real metadata (resolution_path=$resolution_path, attachment_state=$attachment_state)"
 }
 
 # ---------------------------------------------------------------------------
 # Helper: upsert an entry into the per-repo sub-index (specs/literature-index.json), mirroring
 # the jq-upsert sketch already in commands/literature.md step_2.5. Idempotent (remove-then-
-# append), so a repeat run updates in place rather than duplicating rows.
+# append), so a repeat run updates in place rather than duplicating rows. Carries the same
+# resolution_path provenance value as patch_global_index() so the per-repo sub-index does not
+# silently lose it.
 # ---------------------------------------------------------------------------
 upsert_subindex() {
-  local doc_id="$1"
+  local doc_id="$1" resolution_path="${2:-}"
   local sub_idx="$GIT_ROOT/specs/literature-index.json"
   if [ ! -f "$sub_idx" ]; then
     echo '{"entries": []}' > "$sub_idx"
@@ -666,11 +687,11 @@ upsert_subindex() {
   added="$(date -u +%Y-%m-%d)"
   local tmp
   tmp="$(mktemp)"
-  jq --arg doc_id "$doc_id" --arg added "$added" \
+  jq --arg doc_id "$doc_id" --arg added "$added" --arg resolution_path "$resolution_path" \
      '.entries |= ([.[]? | select(.doc_id != $doc_id)] +
-        [{doc_id: $doc_id, relevance: "discovered via online-ingest bridge", added: $added, source: "discover"}])' \
+        [{doc_id: $doc_id, relevance: "discovered via online-ingest bridge", added: $added, source: "discover", resolution_path: $resolution_path}])' \
      "$sub_idx" > "$tmp" && mv "$tmp" "$sub_idx"
-  log "Registered doc_id=$doc_id in $sub_idx (source: discover)"
+  log "Registered doc_id=$doc_id in $sub_idx (source: discover, resolution_path=$resolution_path)"
 }
 
 # ---------------------------------------------------------------------------
@@ -1113,8 +1134,8 @@ $(pipeline_failed_diagnostic_hint "$DOC_ID" "$RESOLVED_PDF_PATH")"
   ZKEY_JSON="$(str_or_null_json "$ZOTERO_ITEM_KEY")"
   ZPATH_JSON="$(str_or_null_json "$RESOLVED_PDF_PATH")"
   patch_global_index "$INGESTED_REAL_DOC_ID" "$TITLE" "$AUTHORS_JSON" "$YEAR_JSON" \
-    "$DOI_JSON" "$ARXIV_JSON" "$ZKEY_JSON" "$ZPATH_JSON" || true
-  upsert_subindex "$INGESTED_REAL_DOC_ID"
+    "$DOI_JSON" "$ARXIV_JSON" "$ZKEY_JSON" "$ZPATH_JSON" "$RESOLUTION_PATH" "$ATTACHMENT_STATE" || true
+  upsert_subindex "$INGESTED_REAL_DOC_ID" "$RESOLUTION_PATH"
 
   if [ "$ATTACHMENT_STATE" = "attached" ]; then
     echo "ONLINE_INGEST_INGESTED"
@@ -1218,6 +1239,10 @@ if [ "$CLASSIFICATION" = "existing_no_pdf" ]; then
     }
   fi
 
+  # Both sub-branches above reach this point with a real attachment (either pre-existing, per
+  # the corrective edge case, or just-attached) -- ATTACHMENT_STATE is always "attached" here.
+  ATTACHMENT_STATE="attached"
+
   log "Using PDF path for ingest delegation: $RESOLVED_PDF_PATH"
 
   if ! run_ingest_pipeline "$RESOLVED_PDF_PATH"; then
@@ -1231,8 +1256,8 @@ $(pipeline_failed_diagnostic_hint "$DOC_ID" "$RESOLVED_PDF_PATH")"
   ZKEY_JSON="$(str_or_null_json "$ZOTERO_ITEM_KEY")"
   ZPATH_JSON="$(str_or_null_json "$RESOLVED_PDF_PATH")"
   patch_global_index "$INGESTED_REAL_DOC_ID" "$TITLE" "$AUTHORS_JSON" "$YEAR_JSON" \
-    "$DOI_JSON" "$ARXIV_JSON" "$ZKEY_JSON" "$ZPATH_JSON" || true
-  upsert_subindex "$INGESTED_REAL_DOC_ID"
+    "$DOI_JSON" "$ARXIV_JSON" "$ZKEY_JSON" "$ZPATH_JSON" "$RESOLUTION_PATH" "$ATTACHMENT_STATE" || true
+  upsert_subindex "$INGESTED_REAL_DOC_ID" "$RESOLUTION_PATH"
 
   echo "ONLINE_INGEST_ATTACHED"
   exit 0

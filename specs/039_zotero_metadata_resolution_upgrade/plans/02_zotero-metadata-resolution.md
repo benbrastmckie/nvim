@@ -433,7 +433,7 @@ logic; if the file exists with other keys, the merge must preserve all of them.
 
 ---
 
-### Phase 6: resolution-path surfacing in the corpus index [NOT STARTED]
+### Phase 6: resolution-path surfacing in the corpus index [COMPLETED]
 
 **Goal**: Make it possible for a future reader of the corpus index to tell which records got
 translation-server-quality metadata and which fell back — the "honest surfacing" acceptance
@@ -441,13 +441,13 @@ criterion.
 
 **Tasks**:
 
-- [ ] Extend `patch_global_index()` with `resolution_path` and `attachment_state` parameters and
-      write both onto the `index.json` entry alongside the existing `zotero_key`/`zotero_path`.
-- [ ] Pass `RESOLUTION_PATH` and `ATTACHMENT_STATE` from both the resolvable and the
-      `existing_no_pdf` branches so neither field is ever absent or empty.
-- [ ] Extend `upsert_subindex()`'s per-entry record with the same `resolution_path` value so the
-      per-repo sub-index does not silently lose the provenance the global index now carries.
-- [ ] Document both fields — value vocabulary and meaning — in the script's header block.
+- [x] Extend `patch_global_index()` with `resolution_path` and `attachment_state` parameters and
+      write both onto the `index.json` entry alongside the existing `zotero_key`/`zotero_path`. *(completed)*
+- [x] Pass `RESOLUTION_PATH` and `ATTACHMENT_STATE` from both the resolvable and the
+      `existing_no_pdf` branches so neither field is ever absent or empty. *(completed)*
+- [x] Extend `upsert_subindex()`'s per-entry record with the same `resolution_path` value so the
+      per-repo sub-index does not silently lose the provenance the global index now carries. *(completed)*
+- [x] Document both fields — value vocabulary and meaning — in the script's header block. *(completed)*
 
 **Timing**: 0.75 hours
 
