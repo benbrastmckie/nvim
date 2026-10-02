@@ -58,6 +58,14 @@
 #       on their own triggers, mutually exclusive with the churn signal by hard_mode. Informational
 #       only: none of this changes `verdict`, `halt`, or `infra_exempt_cycle`. The NEXT cycle's
 #       orchestrate-cycle-plan.sh turns a recorded aux_pending entry into an `aux_dispatch[]` row.
+#   (l) Return-meta schema probe (warn-only): runs validate-return-meta.sh once against this
+#       dispatch's own .return-meta.json, right after notice_prefix/attributed_path are set and
+#       before (a.0), filtering its output to partial_progress-specific [FAIL] lines only — NEVER
+#       gating on the validator's aggregate exit code (which would re-fire the status-vocabulary
+#       check for every agent with an intentional non-canonical success vocabulary). Warns on
+#       stderr and records RETURN_META_SCHEMA_VIOLATION, attributed to the dispatched agent via
+#       --dispatched-agent, without touching dispatch_status/recovered/have_outcome or any
+#       status-write/commit path.
 #
 # MUST NOT (Context Flatness Constraint and gate-integrity invariants):
 #   - Read report, plan, summary, or handoff PROSE. Only named-field jq reads and count-only
@@ -375,6 +383,55 @@ handoff_file="${TASK_DIR}/.orchestrator-handoff.json"
 notice_prefix="[orchestrate]"
 attributed_path="agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
 detecting_site_prefix="skill-orchestrate/SKILL.md"
+
+# ─── WORK (l): return-meta schema probe (warn-only, partial_progress-output-gated) ─────────────
+# Runs once, early, unconditionally — not duplicated inside the handoff-present/handoff-absent
+# branches below. Silent when this dispatch wrote nothing at all (a separate case handled
+# elsewhere in this script). Uses a probe-local variable name (rm_meta_file) rather than
+# meta_file, which is computed later in the absent-handoff branch — this does not disturb that
+# hoisting.
+#
+# CRITICAL: filters to partial_progress-specific [FAIL] lines only. NEVER branches on the
+# validator's aggregate exit code: that would re-fire Check 2 (status vocabulary) for every
+# agent with an intentional non-canonical success vocabulary (legal-analysis-agent's
+# "consulted", slidev-assembly-agent's "assembled", every filetypes/* vocabulary),
+# resurrecting the deliberately-deferred blocker recorded at lint-agent-contracts.sh's Deferred
+# Follow-Up items 1/2 and manufacturing continuous false-positive noise against agents behaving
+# exactly as designed.
+rm_meta_file="${TASK_DIR}/.return-meta.json"
+if [ -f "$rm_meta_file" ]; then
+  rm_validate_output=$(bash "${SCRIPT_DIR}/validate-return-meta.sh" "$rm_meta_file" 2>&1 || true)
+  rm_partial_progress_fails=$(echo "$rm_validate_output" | grep -E '\[FAIL\].*partial_progress' || true)
+  if [ -n "$rm_partial_progress_fails" ]; then
+    echo "${notice_prefix} WARN: .return-meta.json for agent '${agent_name}' violates the partial_progress schema — ${rm_partial_progress_fails} — the dispatch still completes; this is advisory only." >&2
+    if is_live; then
+      rm_schema_record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+        --defect-class RETURN_META_SCHEMA_VIOLATION \
+        --detecting-site "${detecting_site_prefix}:cycle-postflight-return-meta-schema" \
+        --task "$task_number" --session "$session_id" \
+        --message "$rm_partial_progress_fails" \
+        --dispatched-agent "$agent_name" \
+        2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+      # Local agent-name -> agent-file resolver, mirroring the RECOVERY_DECLINED block's own
+      # nullglob verbatim, falling back to $attributed_path (skill-orchestrate/SKILL.md) when
+      # unresolved.
+      rm_schema_agent_path="$attributed_path"
+      shopt -s nullglob
+      _rm_schema_agent_matches=("$PROJECT_ROOT"/agent-system/extensions/*/agents/"${agent_name}.md")
+      shopt -u nullglob
+      if [ "${#_rm_schema_agent_matches[@]}" -gt 0 ] && [ -f "${_rm_schema_agent_matches[0]}" ]; then
+        rm_schema_agent_path="${_rm_schema_agent_matches[0]#"$PROJECT_ROOT"/}"
+      fi
+      skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+        "RETURN_META_SCHEMA_VIOLATION" "$rm_schema_agent_path" \
+        "${detecting_site_prefix}:cycle-postflight-return-meta-schema" \
+        "$rm_partial_progress_fails" \
+        "$rm_schema_record_result"
+    else
+      echo "${notice_prefix} [dry-run] would record RETURN_META_SCHEMA_VIOLATION (partial_progress schema violation) — no write performed." >&2
+    fi
+  fi
+fi
 
 # Item (b), durable cross-invocation ledger: clear pending_dispatch unconditionally, on ANY
 # postflight outcome (success, failure, defer, off-schema — all count), for BOTH engines

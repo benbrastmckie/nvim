@@ -298,54 +298,54 @@ amount with zero failures.
 
 ---
 
-### Phase 4: Wire the warn-only, output-gated probe into postflight [NOT STARTED]
+### Phase 4: Wire the warn-only, output-gated probe into postflight [COMPLETED]
 
 **Goal**: the validator runs once per dispatch at postflight, warns on `partial_progress`
 violations attributed to the writing agent, and changes no dispatch outcome.
 
 **Tasks**:
-- [ ] **Re-read `orchestrate-cycle-postflight.sh` immediately before editing.** It is in the
+- [x] **Re-read `orchestrate-cycle-postflight.sh` immediately before editing.** It is in the *(completed)*
       declared `file_scope` of eight open tasks and two siblings dispatch this same cycle on this
       shared tree.
-- [ ] Insert the probe block right after `notice_prefix`/`attributed_path`/`detecting_site_prefix`
+- [x] Insert the probe block right after `notice_prefix`/`attributed_path`/`detecting_site_prefix` *(completed)*
       are set and before the WORK (a.0) stray-handoff sweep, so it runs once, early, and
       unconditionally — not duplicated inside the handoff-present and handoff-absent branches.
       `agent_name` is already in scope from argument parsing well before this point.
-- [ ] Guard on `[ -f "${TASK_DIR}/.return-meta.json" ]` first. A dispatch that wrote nothing at
+- [x] Guard on `[ -f "${TASK_DIR}/.return-meta.json" ]` first. A dispatch that wrote nothing at *(completed)*
       all is a separate case already handled elsewhere in this script; this probe must be silent
       for it.
-- [ ] Capture combined output non-fatally:
+- [x] Capture combined output non-fatally: *(completed)*
       `rm_validate_output=$(bash "${SCRIPT_DIR}/validate-return-meta.sh" "$rm_meta_file" 2>&1 || true)`.
       The `|| true` is mandatory under `set -e`: the validator exits 1 on any failure, including
       the status-vocabulary failures this probe must ignore.
-- [ ] **Filter to `partial_progress` failures only** — match lines carrying both a `[FAIL]`
+- [x] **Filter to `partial_progress` failures only** — match lines carrying both a `[FAIL]` *(completed)*
       marker and the literal `partial_progress` (e.g. `grep -E '\[FAIL\].*partial_progress'`).
       Never branch on the validator's exit code. Add an inline comment stating *why*: an
       aggregate-exit-code trigger would re-fire Check 2 for agents with intentional
       non-canonical success vocabularies, resurrecting the deferred blocker recorded at
       `lint-agent-contracts.sh`'s Deferred Follow-Up items 1/2.
-- [ ] On a non-empty filtered set, log one `WARN:`-prefixed `$notice_prefix` notice to stderr
+- [x] On a non-empty filtered set, log one `WARN:`-prefixed `$notice_prefix` notice to stderr *(completed)*
       naming the writing agent and the offending detail, and stating explicitly that the dispatch
       still completes — matching the wording convention of every sibling advisory block.
-- [ ] When `is_live`: call `system-defect-record.sh` with
+- [x] When `is_live`: call `system-defect-record.sh` with *(completed)*
       `--defect-class RETURN_META_SCHEMA_VIOLATION`,
       `--detecting-site "${detecting_site_prefix}:cycle-postflight-return-meta-schema"`,
       `--task "$task_number" --session "$session_id"`, the filtered detail as `--message`, and
       `--dispatched-agent "$agent_name"`. Invoke non-fatally
       (`2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2`), copying the
       RECOVERY_DECLINED block's invocation verbatim.
-- [ ] Append the matching `detected_defects[]` row via
+- [x] Append the matching `detected_defects[]` row via *(completed)*
       `skill_orchestrate_append_detected_defect`, resolving the attributed path with the same
       local `"$PROJECT_ROOT"/agent-system/extensions/*/agents/"${agent_name}.md"` nullglob the
       RECOVERY_DECLINED block uses, falling back to `$attributed_path` when unresolved.
-- [ ] When not `is_live`: log the `[dry-run] would record RETURN_META_SCHEMA_VIOLATION ... — no
+- [x] When not `is_live`: log the `[dry-run] would record RETURN_META_SCHEMA_VIOLATION ... — no *(completed)*
       write performed.` line, matching every sibling block's dry-run contract.
-- [ ] Use a probe-local variable name (e.g. `rm_meta_file`) rather than reusing `meta_file`,
+- [x] Use a probe-local variable name (e.g. `rm_meta_file`) rather than reusing `meta_file`, *(completed)*
       which is computed later in the absent-handoff branch — do not disturb that hoisting.
-- [ ] Touch nothing else: `dispatch_status`, `recovered`, `have_outcome`, and every
+- [x] Touch nothing else: `dispatch_status`, `recovered`, `have_outcome`, and every *(completed)*
       status-write/commit path stay untouched, so the Acceptance criterion holds by construction
       rather than by special-casing.
-- [ ] Extend the script's header comment block with a one-line description of the new probe,
+- [x] Extend the script's header comment block with a one-line description of the new probe, *(completed)*
       matching how the existing probes are listed there.
 
 **Timing**: 1.0 hours
