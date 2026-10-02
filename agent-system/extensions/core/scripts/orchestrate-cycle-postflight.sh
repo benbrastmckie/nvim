@@ -103,8 +103,18 @@
 #     [--hard] [--dry-run]
 #
 # Output: one compact JSON line on stdout:
-#   {task, phase, status, phases_completed, phases_total, verdict, user_decision?, halt,
-#    infra_exempt_cycle, aux_signal, report_missing, note}
+#   {task, phase, status, persisted_status, phases_completed, phases_total, verdict,
+#    user_decision?, halt, infra_exempt_cycle, aux_signal, report_missing, note}
+#   `status` = the dispatch's own self-reported outcome, verbatim from the handoff or a recovered
+#     .return-meta.json. Diagnostic and user_decision-relay use only — NEVER proof that a status
+#     transition actually occurred, and may legitimately differ from `persisted_status` by design
+#     (e.g. an empty-blocker "partial" that performs no transition, or a declined dispatch_seq-
+#     mismatch recovery where have_outcome stayed false and this field only echoes the untrusted
+#     diagnostic value).
+#   `persisted_status` = state.json's actual current status for this task, read fresh at emit
+#     time, independent of whether this cycle performed a transition. This is the field a
+#     consumer should read when it needs the persisted truth rather than the agent's self-report.
+#     Falls back to "unknown" (never an empty string) if the task row is absent or unreadable.
 #   verdict ∈ ok|defer|blocked|failed|ask_user|needs_research
 #   halt: true only when dispatch_status was off-schema (garbage/unrecognized) — the ONE case
 #     that still means "stop the whole /orchestrate invocation" (mirrors the single-task engine's
@@ -702,7 +712,10 @@ else
       # lets the final output JSON's own `status` field echo what the agent actually reported
       # (e.g. "partial") instead of an uninformative empty string — most useful for WORK (e)'s
       # user_decision relay, where "leave status exactly as the agent left it" reads best as the
-      # agent's own reported status, not blank.
+      # agent's own reported status, not blank. A consumer that needs the PERSISTED truth
+      # instead of this self-report should read the emitted JSON's `persisted_status` field
+      # (added below, read fresh from state.json immediately before the emit) — `status` here
+      # can legitimately diverge from it, by design, on exactly this declined-recovery path.
       dispatch_status="$out_recovered_reported_status"
       echo "${notice_prefix} .return-meta.json reports status=${out_recovered_reported_status} (not recovered as a successful outcome)." >&2
     fi
@@ -1414,6 +1427,21 @@ if [ "$phase" = "research" ] && { [ "$have_outcome" != "true" ] || [ "$research_
   [ "$report_present" != "true" ] && report_missing=true
 fi
 
+# ─── persisted_status: state.json's actual current status, read fresh at emit time ─────────────
+# Deliberately UNCONDITIONAL and deliberately SEPARATE from the `fresh_status` read inside WORK
+# (j) above (:1363-1364): that read is multi-task-engine-only (`[ -z "$loop_guard_file" ]`) and
+# `is_live`-only, so it cannot populate this field for the single-task engine or for a --dry-run
+# invocation (research D4) — this is a second, independent read, not a refactor of that one; the
+# two serve different purposes (multi-state bookkeeping vs. this script's own output contract)
+# and both are left in place. A plain read, never a mutation, so it is correct under --dry-run
+# too: it reports the unchanged persisted value, which is the truth for a dry run (nothing was
+# written). Falls back to "unknown" — never an empty string a consumer cannot interpret — on any
+# read failure or when the task row is absent from state.json.
+persisted_status=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .status // ""' \
+  "$STATE_FILE" 2>/dev/null) || persisted_status=""
+[ -z "$persisted_status" ] && persisted_status="unknown"
+
 # ─── Final output ────────────────────────────────────────────────────────────────────────────────
 # `halt` and `infra_exempt_cycle` are caller-side loop-control signals a bare `verdict` string
 # cannot carry unambiguously: verdict="failed" is produced BOTH by a genuine in-vocabulary
@@ -1430,6 +1458,7 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson task "$task_number" \
     --arg phase "$phase" \
     --arg status "$dispatch_status" \
+    --arg persisted_status "$persisted_status" \
     --argjson phases_completed "$phases_completed" \
     --argjson phases_total "$phases_total" \
     --arg verdict "$verdict" \
@@ -1439,15 +1468,16 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson aux_signal "$aux_signal_json" \
     --argjson report_missing "$report_missing" \
     --arg note "" \
-    '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
-      phases_total: $phases_total, verdict: $verdict, user_decision: $user_decision,
-      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
-      report_missing: $report_missing, note: $note}' >&3
+    '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
+      phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
+      user_decision: $user_decision, halt: $halt, infra_exempt_cycle: $infra_exempt_cycle,
+      aux_signal: $aux_signal, report_missing: $report_missing, note: $note}' >&3
 else
   jq -n -c \
     --argjson task "$task_number" \
     --arg phase "$phase" \
     --arg status "$dispatch_status" \
+    --arg persisted_status "$persisted_status" \
     --argjson phases_completed "$phases_completed" \
     --argjson phases_total "$phases_total" \
     --arg verdict "$verdict" \
@@ -1456,9 +1486,9 @@ else
     --argjson aux_signal "$aux_signal_json" \
     --argjson report_missing "$report_missing" \
     --arg note "" \
-    '{task: $task, phase: $phase, status: $status, phases_completed: $phases_completed,
-      phases_total: $phases_total, verdict: $verdict, halt: $halt,
-      infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
+    '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
+      phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
+      halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
       report_missing: $report_missing, note: $note}' >&3
 fi
 

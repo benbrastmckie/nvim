@@ -335,7 +335,7 @@ both directions, in the suite that runs live and already inspects the loop-guard
 
 ---
 
-### Phase 4: Add `persisted_status` to the emitted JSON [NOT STARTED]
+### Phase 4: Add `persisted_status` to the emitted JSON [COMPLETED]
 
 **Goal**: The emitted JSON carries `state.json`'s actual current status for this task, read fresh at
 emit time, in every call shape (both engines, live and `--dry-run`), with `.status` semantics
@@ -343,8 +343,10 @@ untouched.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/orchestrate-cycle-postflight.sh:1386-1436` immediately before editing.
-- [ ] Immediately before the `if [ "$user_decision_json" != "null" ]` emit fork, add an
+- [x] Re-read `scripts/orchestrate-cycle-postflight.sh:1386-1436` immediately before editing.
+      *(completed: line numbers had shifted to ~1430-1476 after Phase 1's insertion; re-read at
+      the shifted location before editing)*
+- [x] Immediately before the `if [ "$user_decision_json" != "null" ]` emit fork, add an
       unconditional read:
 
       ```
@@ -358,23 +360,28 @@ untouched.
       (it reports the unchanged persisted value, which is the truth for a dry run); and it is
       deliberately **separate** from the multi-state `fresh_status` read near `:1322`, which is
       multi-task-engine-only and `is_live`-only and therefore cannot populate this field for the
-      single-task engine or a dry run (research D4).
-- [ ] **Leave the existing `fresh_status` read and its multi-state bookkeeping untouched.** Do not
-      refactor the two into one.
-- [ ] Add `--arg persisted_status "$persisted_status"` and `persisted_status: $persisted_status` to
+      single-task engine or a dry run (research D4). *(completed)*
+- [x] **Leave the existing `fresh_status` read and its multi-state bookkeeping untouched.** Do not
+      refactor the two into one. *(completed: verified unchanged)*
+- [x] Add `--arg persisted_status "$persisted_status"` and `persisted_status: $persisted_status` to
       **both** `jq -n` emit blocks (the `user_decision != "null"` block and the `else` block).
-- [ ] Update the output-schema docstring at `:106-107` to list `persisted_status`, and add two
+      *(completed)*
+- [x] Update the output-schema docstring at `:106-107` to list `persisted_status`, and add two
       explanatory lines in the same comment block beneath it:
       `status` = the dispatch's own self-reported outcome (verbatim from the handoff or a recovered
       `.return-meta.json`); diagnostic and `user_decision`-relay use only; **never proof that a
       transition occurred**, and may differ from `persisted_status` by design (e.g. an
       empty-blocker `partial`, or a declined recovery where `have_outcome` stayed false).
       `persisted_status` = `state.json`'s current status for this task, read fresh at emit.
-- [ ] Amend the comment at `:671-677` (the RECOVERY_DECLINED diagnostic-only note) to point at
+      *(completed)*
+- [x] Amend the comment at `:671-677` (the RECOVERY_DECLINED diagnostic-only note) to point at
       `persisted_status` as the field a consumer should read when it needs the persisted truth. Keep
       the existing wording otherwise — task 285 owns a neighbouring notice split; coordinate, do not
-      overwrite.
-- [ ] Run `shellcheck`; commit this green sub-step.
+      overwrite. *(completed)*
+- [x] Run `shellcheck`; commit this green sub-step. *(completed: zero new findings; manual
+      --dry-run invocation confirmed valid JSON emitting
+      `"status":"implemented","persisted_status":"implementing"`; full suite 138/138 green,
+      Acceptance (5)'s `.status == "partial"` assertion unmodified and still passing)*
 
 **Timing**: 1 hour
 
