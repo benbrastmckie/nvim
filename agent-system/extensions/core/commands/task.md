@@ -102,25 +102,9 @@ When $ARGUMENTS contains a description (no flags).
    - Technical identifiers: `lean4`, `v4.3.0`, `#123`
    - Already well-formed descriptions (start with verb, proper capitalization)
 
-   **Transformation Examples**:
-
-   | Input | Output | Transformation Applied |
-   |-------|--------|------------------------|
-   | `prove_sorries_in_coherentconstruction` | `Prove sorries in CoherentConstruction` | Slug expansion + CamelCase preserved |
-   | `bug in modal evaluator` | `Fix bug in modal evaluator` | Verb inference (Fix) + capitalize |
-   | `documentation for new API` | `Update documentation for new API` | Verb inference (Update) |
-   | `tests for validation module` | `Add tests for validation module` | Verb inference (Add) |
-   | `new caching layer` | `Implement new caching layer` | Verb inference (Implement default) |
-   | `Update TODO.md header metrics` | `Update TODO.md header metrics` | No change (already well-formed) |
-   | `Fix the race condition in handlers` | `Fix the race condition in handlers` | No change (starts with verb) |
-   | `implement_option_b_canonical_models` | `Implement option b canonical models` | Slug expansion |
-
-   **Edge Cases**:
-   - Input with quotes: `Add "hello world" test` -> No change to quoted content
-   - Input with file path: `Fix bug in src/config/lsp.lua` -> Preserve path exactly
-   - Input with version: `Update to python v3.12` -> Preserve version identifier
-   - Input with issue ref: `Fix #123 memory leak` -> Preserve issue reference
-   - CamelCase preserved: `prove_CoherentConstruction_complete` -> `Prove CoherentConstruction complete`
+   **Worked examples and edge cases**: READ
+   `.claude/context/patterns/task-description-transformation-examples.md` now before applying
+   steps 3.1-3.3 to a non-obvious input.
 
 4. **Detect task_type** by calling the shared detection library. The resolution ladder (strong
    anchors, extension `keyword_overrides`, project default, weak-signal scoring, alias

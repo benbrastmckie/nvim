@@ -233,24 +233,26 @@ union — not this number — governs, and the discrepancy is recorded in the su
 
 ---
 
-### Phase 3: Extract Create Task Mode Worked Examples and Edge Cases [NOT STARTED]
+### Phase 3: Extract Create Task Mode Worked Examples and Edge Cases [COMPLETED]
 
 **Goal**: Relocate the Transformation Examples table and Edge Cases bullets — pure reference
 material reinforcing an algorithm (3.1-3.3) that is fully specified without them — into a
 lazily-read pattern file, with an imperative pointer at the point of need.
 
 **Tasks**:
-- [ ] Capture the `**Transformation Examples**:` table and `**Edge Cases**:` bullet regions to a
-      temp file before deleting them.
-- [ ] Create `agent-system/extensions/core/context/patterns/task-description-transformation-examples.md`
+- [x] Capture the `**Transformation Examples**:` table and `**Edge Cases**:` bullet regions to a
+      temp file before deleting them. *(completed)*
+- [x] Create `agent-system/extensions/core/context/patterns/task-description-transformation-examples.md`
       following the precedent shape: `# Task Description Transformation Examples` H1, a preamble
       naming its owning command and call site and stating it is reference material for
       `/task`'s Create Task Mode steps 3.1-3.3, then `---`, then the captured region verbatim.
-- [ ] Replace the removed region in `task.md` with a single imperative pointer sited at the end
+      *(completed)*
+- [x] Replace the removed region in `task.md` with a single imperative pointer sited at the end
       of step 3.3, in the deployed path form, e.g.: "**Worked examples and edge cases**: READ
       `.claude/context/patterns/task-description-transformation-examples.md` now before applying
-      steps 3.1-3.3 to a non-obvious input."
-- [ ] Record the byte delta for the measurement ledger.
+      steps 3.1-3.3 to a non-obvious input." *(completed)*
+- [x] Record the byte delta for the measurement ledger. *(completed: task.md 42,843 B -> 41,396 B,
+      -1,447 B; new file 1,954 B / 28 lines)*
 
 **Timing**: 0.75 hours
 
