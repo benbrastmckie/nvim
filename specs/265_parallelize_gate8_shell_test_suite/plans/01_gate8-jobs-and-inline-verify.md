@@ -1,7 +1,7 @@
 # Implementation Plan: Task #265
 
 - **Task**: 265 - Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh --jobs (absorbing the deploy-headless.sh inline-verify redundancy)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None blocking. Task 266 (deploy-pending/identical-dispatch guard) is COMPLETED and archived; task 261 (run-all.sh `--jobs`) is COMPLETED WITH EXCLUSIONS and archived. Both prerequisites are discharged.
 - **Research Inputs**: specs/265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md
@@ -148,31 +148,39 @@ each editing phase's own verification re-runs the battery this plan is measuring
 
 ---
 
-### Phase 1: Fix `test-run-all-parallel.sh`'s nested-inheritance defect [NOT STARTED]
+### Phase 1: Fix `test-run-all-parallel.sh`'s nested-inheritance defect [COMPLETED]
 
 **Goal**: Make case3's "unguarded" baseline measurement genuinely unguarded, so the suite passes
 both standalone and when discovered nested by an outer `run-all.sh`, and correct the
 documentation that mis-attributes this failure to ambient load.
 
 **Tasks**:
-- [ ] Re-read `scripts/tests/test-run-all-parallel.sh` in full (sibling tasks share this tree).
-- [ ] Clear the inherited `RUN_ALL_NESTED` for every fixture invocation that is *not* the
+- [x] Re-read `scripts/tests/test-run-all-parallel.sh` in full (sibling tasks share this tree). *(completed)*
+- [x] Clear the inherited `RUN_ALL_NESTED` for every fixture invocation that is *not* the
       deliberately-nested comparison: the parallel measurement at line 142, and the case1/case2/
       `auto`/hint-file invocations (lines 84, 85, 96, 171, 198) which must also exercise the
       unnested code path. Prefer one documented `unset RUN_ALL_NESTED; export -n RUN_ALL_NESTED`
       (or equivalent) in the suite's setup block over an `env -u` prefix repeated at six call
       sites, and keep the explicit `RUN_ALL_NESTED=1` prefix on the case4 comparison at line 147.
-- [ ] Add a short comment recording *why* the isolation is needed (the parent `run-all.sh` exports
+      *(completed: single `unset RUN_ALL_NESTED` added to the setup block right after the
+      WORKDIR/trap lines, with a comment; the case4 `RUN_ALL_NESTED=1` prefix at line 147 untouched)*
+- [x] Add a short comment recording *why* the isolation is needed (the parent `run-all.sh` exports
       `RUN_ALL_NESTED=1` at `run-all.sh:142` into every suite it launches), so the next reader does
-      not delete it as redundant.
-- [ ] Leave the ratio-based assertion (`parallel_ms <= 75% of nested_ms`) and the case4 assertion
-      exactly as they are. Do not reintroduce absolute thresholds.
-- [ ] Update `context/standards/shell-script-testing.md`'s "Known pre-existing failures and
+      not delete it as redundant. *(completed)*
+- [x] Leave the ratio-based assertion (`parallel_ms <= 75% of nested_ms`) and the case4 assertion
+      exactly as they are. Do not reintroduce absolute thresholds. *(completed: untouched)*
+- [x] Update `context/standards/shell-script-testing.md`'s "Known pre-existing failures and
       flakes" section: remove `test-run-all-parallel.sh` from the load-sensitive failure list and
       add a note distinguishing "genuinely load-sensitive" from "was a nested-environment
       inheritance bug, now fixed", so a future similar failure is not re-attributed to load
       without checking. Leave the basename in `run-all.sh`'s `LOAD_SENSITIVE_BASENAMES` array —
       serial scheduling remains legitimate for its own measurement stability.
+      *(completed: altered — this doc no longer carries a prose failure list at all (migrated to
+      `scripts/tests/known-failures.txt` as sole source of truth, confirmed by re-reading the file);
+      added the genuinely-load-sensitive-vs-nested-inheritance-bug distinction to the `intermittent`
+      category definition in shell-script-testing.md instead, and updated the
+      `test-run-all-parallel.sh` row's reason text in known-failures.txt itself to record the fix
+      and the distinction, since that file is the actual list this task's premise referred to)*
 
 **Timing**: 0.75 hours
 

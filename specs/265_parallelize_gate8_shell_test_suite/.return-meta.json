@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md",
-      "summary": "8-phase plan: Gate 8 opt-in --jobs auto with VERIFY_DEPLOY_GATE8_JOBS override, a deterministic test-run-all-parallel.sh nested-inheritance fix, baseline/parallel measurement decision gate, and deploy-headless.sh --skip-verify with exit 4 / RESULT=landed_verify_skipped threaded by the two genuine callers."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 20,
   "metadata": {
-    "session_id": "sess_1790721762_ff3d8e_265",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 7,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6], [7], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When adding a new exit code to a shell script whose exit-code contract has many nominal consumers, first re-derive which files GENUINELY execute it (command position) versus merely MENTION it in remedy strings or comments -- in this repo a 16-file 'caller' list collapsed to 2 real invokers. Then check each real caller's branch predicate shape: a caller written as `if rc -eq 1 || rc -eq 2; then <not-landed> else <landed> fi` is already exit-code-partition-compatible, so a new code routes into the existing else branch with zero control-flow edits. That is a structural guarantee of 'no other caller changes', not a claim needing per-caller testing -- and it makes an opt-in flag plus a NEW distinct exit code strictly safer than reusing 0 (which misrepresents a suppressed check as a passed one) or an existing failure code.",
-      "category": "PATTERN",
-      "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["exit-code-contract", "shell-caller-enumeration", "opt-in-flag", "branch-predicate-partition", "deploy-headless"]
-    }
-  ],
-  "dispatch_seq": 12
+    "session_id": "sess_1790968925_5ff73e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

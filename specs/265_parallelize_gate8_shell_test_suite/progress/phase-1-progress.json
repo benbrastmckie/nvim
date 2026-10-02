@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Fix test-run-all-parallel.sh's nested-inheritance defect",
+  "started_at": "2026-10-02T00:00:00Z",
+  "last_updated": "2026-10-02T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-run-all-parallel.sh in full", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Isolate RUN_ALL_NESTED for unguarded measurements (lines 84,85,96,142,171,198)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh"]},
+    {"id": 3, "description": "Add explanatory comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh"]},
+    {"id": 4, "description": "Update known-failures documentation (shell-script-testing.md category prose + known-failures.txt row, since the doc no longer carries a prose list)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md", "agent-system/extensions/core/scripts/tests/known-failures.txt"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Update context/standards/shell-script-testing.md's Known pre-existing failures and flakes section: remove test-run-all-parallel.sh from the load-sensitive failure list",
+      "type": "altered",
+      "reason": "The plan was written against a premise that shell-script-testing.md carried an inline prose failure list. Re-reading the file at implementation time showed it had already been migrated to defer entirely to scripts/tests/known-failures.txt as the sole source of truth (explicitly to avoid prose/manifest drift), with no suite-specific list remaining in the doc itself. Carried out the intent (distinguish genuine load-sensitivity from the now-fixed deterministic nested-inheritance bug) by editing the doc's category-definition prose and known-failures.txt's actual test-run-all-parallel.sh row instead.",
+      "annotation": "*(deviation: altered — target file's structure had migrated since the plan/research was written; edited known-failures.txt and the category prose instead of a nonexistent list)*"
+    }
+  ]
+}

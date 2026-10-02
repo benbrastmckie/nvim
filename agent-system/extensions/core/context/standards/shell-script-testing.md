@@ -186,7 +186,14 @@ itself stays terse and data-shaped):
   spawn a follow-up task, do not weaken the suite's assertions to paper over it.
 - `intermittent` — a flake under heavy ambient host load or similar non-deterministic conditions,
   already evaluated and deliberately accepted rather than fixed (see the suite's own comment for
-  the specific rejected-alternatives account, if one exists).
+  the specific rejected-alternatives account, if one exists). Before accepting a new row under this
+  category, rule out a DETERMINISTIC cause masquerading as load-sensitivity — e.g.
+  `test-run-all-parallel.sh` was once attributed purely to ambient load, but part of its failure
+  was actually a nested-environment inheritance bug (an outer `run-all.sh`'s exported
+  `RUN_ALL_NESTED=1` leaking into this suite's own "unguarded" fixture measurements, forcing them
+  sequential too) that reproduced 100% of the time under `RUN_ALL_NESTED=1` regardless of host
+  load, and is now fixed. A failure that reproduces deterministically under a specific environment
+  condition is a `real-defect`, not `intermittent`, even if it was first observed on a loaded host.
 - `load-sensitive` — the runtime-scheduling category `run-all.sh`'s `LOAD_SENSITIVE_BASENAMES`
   array already covers (see the `--jobs` section above); a suite belongs in `known-failures.txt`
   under this category only if it is ALSO known-failing, which is a different condition from being

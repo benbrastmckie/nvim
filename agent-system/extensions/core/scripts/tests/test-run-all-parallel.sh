@@ -36,6 +36,21 @@ WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
+# This suite's own "unguarded" fixture invocations (cases 1, 2, 3, 5, 7) must genuinely exercise
+# run-all.sh's unnested code path, including when THIS suite is itself discovered and launched by
+# an outer run-all.sh (e.g. Gate 8 recursing into verify-deploy.sh, which can land back here).
+# That outer runner unconditionally exports RUN_ALL_NESTED=1 (run-all.sh's nested-invocation
+# guard) into every suite it launches, and an exported variable is inherited by every child
+# process this script spawns -- including the plain `bash "$FIXTURE_RUNNER" ...` calls below that
+# are deliberately NOT prefixed with RUN_ALL_NESTED=1. Left inherited, those calls silently run
+# forced-sequential too, so case3's "genuinely concurrent" ratio assertion fails deterministically
+# whenever this suite is nested, not just under ambient load. Clearing it once here (rather than
+# an `env -u RUN_ALL_NESTED` prefix repeated at every unguarded call site) restores a clean
+# unnested environment for this script and everything it spawns; the one deliberate exception is
+# case4's explicit `RUN_ALL_NESTED=1 bash "$FIXTURE_RUNNER" ...` prefix below, which sets the
+# variable only for that single command and is unaffected by this unset.
+unset RUN_ALL_NESTED
+
 EXT_ROOT="$WORKDIR/exts"
 TESTS_DIR="$EXT_ROOT/core/scripts/tests"
 mkdir -p "$TESTS_DIR"
