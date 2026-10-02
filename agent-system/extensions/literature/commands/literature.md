@@ -517,6 +517,13 @@ argument-hint: [N|"query"|~/path.pdf|~/dir/|--rebuild [--dry-run]|--validate|--i
             SOURCES.md row (not the status-based row) and is NOT separately added to the
             sub-index in step 5 (the script itself already registered it in
             `specs/literature-index.json`).
+          - **`ONLINE_INGEST_INGESTED_NO_ATTACHMENT`** (exit 0): create-item path, resolved
+            (translation-server) metadata branch only — the Zotero item was created but the
+            separate attach-file call did not succeed (e.g. quota-skipped or a real attach
+            failure). Treat identically to `ONLINE_INGEST_INGESTED` for the `[RESOLVED]`
+            SOURCES.md row and sub-index purposes (the item exists and corpus ingest already
+            succeeded), but surface `rationale` visibly so the missing PDF attachment is not a
+            silent gap — never conflate with a full-success row without noting the caveat.
           - **`ONLINE_INGEST_NO_PDF`** (exit 1): honest, no-side-effect stop (paywall, or no
             discoverable PDF for an in_zotero_no_pdf item). Surface `rationale` visibly, then
             fall through to steps 4/5 exactly as if the user had chosen "None" for this entry —

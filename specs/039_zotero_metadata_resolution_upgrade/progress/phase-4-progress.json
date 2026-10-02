@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "rework resolvable branch to consume resolved metadata",
+  "started_at": "2026-10-02T20:00:00Z",
+  "last_updated": "2026-10-02T20:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Grep-confirm ONLINE_INGEST_ token consumers outside the script", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Wire resolve_via_translation_server() into resolvable branch after dedup, before download; item-add-json path on success, fallback item-add --pdf on failure; ATTACHMENT_STATE + ONLINE_INGEST_INGESTED_NO_ATTACHMENT token; header + dry-run updates", "status": "done", "files_touched": ["agent-system/extensions/literature/scripts/literature-ingest-online.sh"]},
+    {"id": 3, "description": "Update commands/literature.md and zotero-item-creation.md token consumers", "status": "done", "files_touched": ["agent-system/extensions/literature/commands/literature.md"], "note": "zotero-item-creation.md has no per-token enumeration today (only one unrelated illustrative comment, confirmed via grep -c); nothing to sync there until Phase 7's fuller pattern rewrite, per the plan's own file-scope note for this phase."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

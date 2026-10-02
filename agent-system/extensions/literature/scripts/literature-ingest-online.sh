@@ -63,6 +63,17 @@
 #                                         path: Zotero item + PDF created and attached, corpus
 #                                         chunks produced, index.json patched, sub-index
 #                                         registered.
+#   ONLINE_INGEST_INGESTED_NO_ATTACHMENT Create-item path only, resolved (translation-server)
+#                                         metadata branch: the Zotero item was created via
+#                                         item-add-json but the separate attach-file call failed
+#                                         (e.g. quota-skipped or a real attach failure) --
+#                                         ATTACHMENT_STATE is "failed" or "skipped-quota". The
+#                                         item exists and corpus ingest still proceeds from the
+#                                         local staging PDF; this is a distinct, honest outcome,
+#                                         NEVER conflated with the full-success
+#                                         ONLINE_INGEST_INGESTED token. Exit code is the same 0
+#                                         bucket as a full success (the create+ingest succeeded;
+#                                         only the attachment step did not).
 #   ONLINE_INGEST_ATTACHED               Full success via the attach-to-existing
 #                                         (in_zotero_no_pdf) path: PDF attached to the existing
 #                                         Zotero item (or found already attached, in the
@@ -98,7 +109,9 @@
 # fail-open on timeout/failure/unparseable output, so it can never gate or delay ingestion.
 #
 # EXIT CODES:
-#   0   ONLINE_INGEST_INGESTED or ONLINE_INGEST_ATTACHED printed (full success)
+#   0   ONLINE_INGEST_INGESTED, ONLINE_INGEST_INGESTED_NO_ATTACHMENT, or ONLINE_INGEST_ATTACHED
+#       printed (item created/attached and corpus-ingested; NO_ATTACHMENT means the item exists
+#       but the separate attach-file call did not succeed -- see the token's own description)
 #   1   ONLINE_INGEST_NO_PDF printed (honest stop, no side effects)
 #   2   ONLINE_INGEST_DOWNLOAD_FAILED printed
 #   3   ONLINE_INGEST_ZOTERO_CREATE_FAILED printed
@@ -777,8 +790,15 @@ if [ "$DRY_RUN" = "true" ]; then
     log "[dry-run] Export freshness: $EXPORT_FRESHNESS_TOKEN (needs_reverification=$EXPORT_NEEDS_REVERIFICATION)"
     resolvable_predownload_checks
     log "[dry-run] DOI-normalized live-library dedup passed (or no DOI to check); would proceed"
+    resolve_via_translation_server || true
+    log "[dry-run] Resolution path: $RESOLUTION_PATH"
     log "[dry-run] Would download: $PDF_URL_RAW -> $STAGING_PATH"
-    log "[dry-run] Would run: $SCRIPT_DIR/zotero-write.sh item-add --pdf $STAGING_PATH ${DOI_RAW:+--doi $DOI_RAW} --idempotency-key ${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}"
+    if [ "$RESOLUTION_PATH" = "translation-server" ]; then
+      log "[dry-run] Would run: $SCRIPT_DIR/zotero-write.sh item-add-json --record-json <translation-server-resolved-body> --idempotency-key ${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}"
+      log "[dry-run] Would run: $SCRIPT_DIR/zotero-write.sh attach-file <created-item-key> $STAGING_PATH --idempotency-key ${IDEM_KEY:-online-ingest-attach-$SANITIZED_DOC_ID}"
+    else
+      log "[dry-run] Would run: $SCRIPT_DIR/zotero-write.sh item-add --pdf $STAGING_PATH ${DOI_RAW:+--doi $DOI_RAW} --idempotency-key ${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}"
+    fi
     log "[dry-run] Would run: $SCRIPT_DIR/literature-ingest.sh <resolved_storage_or_staging_path> --no-local"
     log "[dry-run] Would patch $LITERATURE_DIR/index.json and register $GIT_ROOT/specs/literature-index.json for doc_id=$DOC_ID"
     echo "ONLINE_INGEST_INGESTED"
@@ -804,52 +824,111 @@ if [ "$CLASSIFICATION" = "resolvable" ]; then
 
   check_duplicate_title "$TITLE"
 
+  resolve_via_translation_server || true
+  log "Resolution path for doc_id=$DOC_ID: $RESOLUTION_PATH"
+
   if ! download_and_verify "$PDF_URL_RAW" "$STAGING_PATH"; then
     directive_stop "ONLINE_INGEST_DOWNLOAD_FAILED" 2 \
       "download or %PDF magic-byte verification failed for doc_id=$DOC_ID, pdf_url=$PDF_URL_RAW; no Zotero write attempted."
   fi
   log "Downloaded and verified PDF for doc_id=$DOC_ID at $STAGING_PATH"
 
-  ZW_CMD=("$SCRIPT_DIR/zotero-write.sh" item-add --pdf "$STAGING_PATH")
-  if [ -n "$DOI_RAW" ]; then
-    ZW_CMD+=(--doi "$DOI_RAW")
-  elif [ -n "$ARXIV_ID_RAW" ]; then
-    # `zot add --pdf`'s _add_from_pdf hard-fails (exit 3, "No DOI found in PDF") when it cannot
-    # regex a DOI out of the PDF's own first two pages -- see zotero-item-creation.md Sec 1. For
-    # an arXiv-only record (no real doi, but an arxiv_id) we bypass that regex entirely by
-    # passing arXiv's own mechanical DataCite DOI as --doi. This is NOT a resolved,
-    # Crossref-registered published-venue DOI -- it is a fallback identifier that exists solely
-    # to satisfy zot's DOI requirement so the item gets created at all. Crossref will not
-    # resolve it, so the created item is metadata-bare on the Zotero side (accepted tradeoff,
-    # documented in zotero-item-creation.md Sec 1/6); the corpus-side index.json metadata is
-    # unaffected since DOI_JSON below still reflects the real (null) doi, never this synthesized
-    # one.
-    SYNTH_DOI="10.48550/arXiv.$ARXIV_ID_RAW"
-    log "doc_id=$DOC_ID has no real DOI but arxiv_id=$ARXIV_ID_RAW; using synthesized arXiv DOI $SYNTH_DOI as a --doi fallback to bypass zot add --pdf's PDF-text DOI regex (never treated as a resolved published-venue DOI)."
-    ZW_CMD+=(--doi "$SYNTH_DOI")
+  ATTACHMENT_STATE=""
+  ZOTERO_ITEM_KEY=""
+
+  if [ "$RESOLUTION_PATH" = "translation-server" ]; then
+    # Resolved path: create-then-attach decomposition (item-add-json has no attachment of its
+    # own). attach-file is a separate second call, subject to the Phase 5 quota gate wired in
+    # there -- this phase implements the decomposition and its honest partial-success surface.
+    ITEM_ADD_JSON_EXIT=0
+    ITEM_ADD_JSON_STDOUT="$("$SCRIPT_DIR/zotero-write.sh" item-add-json \
+      --record-json "$TRANSLATION_SERVER_RESOLVED" \
+      --idempotency-key "${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}" \
+      2>/tmp/ingest-online-item-add-json-stderr.$$)" || ITEM_ADD_JSON_EXIT=$?
+    ITEM_ADD_JSON_STDERR="$(cat /tmp/ingest-online-item-add-json-stderr.$$ 2>/dev/null || true)"
+    rm -f /tmp/ingest-online-item-add-json-stderr.$$
+
+    if [ "$ITEM_ADD_JSON_EXIT" -ne 0 ]; then
+      # Same staging leak as the atomic path below: the PDF was already downloaded and
+      # %PDF-verified; a failed create must not leak it.
+      rm -f "$STAGING_PATH"
+      directive_stop "ONLINE_INGEST_ZOTERO_CREATE_FAILED" 3 \
+        "zotero-write.sh item-add-json failed for doc_id=$DOC_ID (exit $ITEM_ADD_JSON_EXIT): $ITEM_ADD_JSON_STDERR"
+    fi
+    log "Created Zotero item for doc_id=$DOC_ID via item-add-json (translation-server-resolved metadata)"
+
+    ZOTERO_ITEM_KEY="$(extract_envelope_field "$ITEM_ADD_JSON_STDOUT" '.data.key')" || ZOTERO_ITEM_KEY=""
+    if [ -z "$ZOTERO_ITEM_KEY" ]; then
+      rm -f "$STAGING_PATH"
+      directive_stop "ONLINE_INGEST_ZOTERO_CREATE_FAILED" 3 \
+        "zotero-write.sh item-add-json reported success but no item key was found in its envelope for doc_id=$DOC_ID"
+    fi
+
+    ATTACH_EXIT=0
+    ATTACH_STDOUT="$("$SCRIPT_DIR/zotero-write.sh" attach-file "$ZOTERO_ITEM_KEY" "$STAGING_PATH" \
+      --idempotency-key "${IDEM_KEY:-online-ingest-attach-$SANITIZED_DOC_ID}" \
+      2>/tmp/ingest-online-attach-stderr.$$)" || ATTACH_EXIT=$?
+    ATTACH_STDERR="$(cat /tmp/ingest-online-attach-stderr.$$ 2>/dev/null || true)"
+    rm -f /tmp/ingest-online-attach-stderr.$$
+
+    if [ "$ATTACH_EXIT" -ne 0 ]; then
+      log "WARNING: zotero-write.sh attach-file failed for doc_id=$DOC_ID, key=$ZOTERO_ITEM_KEY (exit $ATTACH_EXIT): $ATTACH_STDERR -- the item was already created successfully, so this is surfaced as ONLINE_INGEST_INGESTED_NO_ATTACHMENT rather than a total failure. The staged PDF is kept (not removed) for the corpus-ingest delegation below."
+      ATTACHMENT_STATE="failed"
+      RESOLVED_PDF_PATH="$STAGING_PATH"
+    else
+      log "Attached PDF to newly created Zotero item $ZOTERO_ITEM_KEY for doc_id=$DOC_ID"
+      ATTACHMENT_STATE="attached"
+      RESOLVED_PDF_PATH="$(resolve_storage_path_from_envelope "$ATTACH_STDOUT")" || {
+        log "WARNING: could not resolve Zotero-managed storage path from the attach-file envelope; falling back to the staging download path ($STAGING_PATH). Flagged as a follow-up, not a silent success."
+        RESOLVED_PDF_PATH="$STAGING_PATH"
+      }
+    fi
+  else
+    # Not resolved (service down/disabled/no identifier): today's atomic item-add --pdf [--doi]
+    # call, UNCHANGED.
+    ZW_CMD=("$SCRIPT_DIR/zotero-write.sh" item-add --pdf "$STAGING_PATH")
+    if [ -n "$DOI_RAW" ]; then
+      ZW_CMD+=(--doi "$DOI_RAW")
+    elif [ -n "$ARXIV_ID_RAW" ]; then
+      # `zot add --pdf`'s _add_from_pdf hard-fails (exit 3, "No DOI found in PDF") when it cannot
+      # regex a DOI out of the PDF's own first two pages -- see zotero-item-creation.md Sec 1. For
+      # an arXiv-only record (no real doi, but an arxiv_id) we bypass that regex entirely by
+      # passing arXiv's own mechanical DataCite DOI as --doi. This is NOT a resolved,
+      # Crossref-registered published-venue DOI -- it is a fallback identifier that exists solely
+      # to satisfy zot's DOI requirement so the item gets created at all. Crossref will not
+      # resolve it, so the created item is metadata-bare on the Zotero side (accepted tradeoff,
+      # documented in zotero-item-creation.md Sec 1/6); the corpus-side index.json metadata is
+      # unaffected since DOI_JSON below still reflects the real (null) doi, never this synthesized
+      # one.
+      SYNTH_DOI="10.48550/arXiv.$ARXIV_ID_RAW"
+      log "doc_id=$DOC_ID has no real DOI but arxiv_id=$ARXIV_ID_RAW; using synthesized arXiv DOI $SYNTH_DOI as a --doi fallback to bypass zot add --pdf's PDF-text DOI regex (never treated as a resolved published-venue DOI)."
+      ZW_CMD+=(--doi "$SYNTH_DOI")
+    fi
+    ZW_CMD+=(--idempotency-key "${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}")
+
+    ITEM_ADD_EXIT=0
+    ITEM_ADD_STDOUT="$("${ZW_CMD[@]}" 2>/tmp/ingest-online-item-add-stderr.$$)" || ITEM_ADD_EXIT=$?
+    ITEM_ADD_STDERR="$(cat /tmp/ingest-online-item-add-stderr.$$ 2>/dev/null || true)"
+    rm -f /tmp/ingest-online-item-add-stderr.$$
+
+    if [ "$ITEM_ADD_EXIT" -ne 0 ]; then
+      # The PDF was already downloaded and %PDF-verified at $STAGING_PATH above; item-add failing
+      # after that point must not leak it -- remove it before stopping (download_and_verify()
+      # already handles its own two failure branches, so this is the only staging leak on this path).
+      rm -f "$STAGING_PATH"
+      directive_stop "ONLINE_INGEST_ZOTERO_CREATE_FAILED" 3 \
+        "zotero-write.sh item-add failed for doc_id=$DOC_ID (exit $ITEM_ADD_EXIT): $ITEM_ADD_STDERR"
+    fi
+    log "Created Zotero item for doc_id=$DOC_ID via item-add"
+
+    ZOTERO_ITEM_KEY="$(extract_envelope_field "$ITEM_ADD_STDOUT" '.data.key' '.data.item.key' '.data.itemKey')" || ZOTERO_ITEM_KEY=""
+    ATTACHMENT_STATE="attached"
+    RESOLVED_PDF_PATH="$(resolve_storage_path_from_envelope "$ITEM_ADD_STDOUT")" || {
+      log "WARNING: could not resolve Zotero-managed storage path from the item-add envelope; falling back to the staging download path ($STAGING_PATH) -- source_path/zotero_path will point at a less durable location. Flagged as a follow-up, not a silent success."
+      RESOLVED_PDF_PATH="$STAGING_PATH"
+    }
   fi
-  ZW_CMD+=(--idempotency-key "${IDEM_KEY:-online-ingest-$SANITIZED_DOC_ID}")
 
-  ITEM_ADD_EXIT=0
-  ITEM_ADD_STDOUT="$("${ZW_CMD[@]}" 2>/tmp/ingest-online-item-add-stderr.$$)" || ITEM_ADD_EXIT=$?
-  ITEM_ADD_STDERR="$(cat /tmp/ingest-online-item-add-stderr.$$ 2>/dev/null || true)"
-  rm -f /tmp/ingest-online-item-add-stderr.$$
-
-  if [ "$ITEM_ADD_EXIT" -ne 0 ]; then
-    # The PDF was already downloaded and %PDF-verified at $STAGING_PATH above; item-add failing
-    # after that point must not leak it -- remove it before stopping (download_and_verify()
-    # already handles its own two failure branches, so this is the only staging leak on this path).
-    rm -f "$STAGING_PATH"
-    directive_stop "ONLINE_INGEST_ZOTERO_CREATE_FAILED" 3 \
-      "zotero-write.sh item-add failed for doc_id=$DOC_ID (exit $ITEM_ADD_EXIT): $ITEM_ADD_STDERR"
-  fi
-  log "Created Zotero item for doc_id=$DOC_ID via item-add"
-
-  ZOTERO_ITEM_KEY="$(extract_envelope_field "$ITEM_ADD_STDOUT" '.data.key' '.data.item.key' '.data.itemKey')" || ZOTERO_ITEM_KEY=""
-  RESOLVED_PDF_PATH="$(resolve_storage_path_from_envelope "$ITEM_ADD_STDOUT")" || {
-    log "WARNING: could not resolve Zotero-managed storage path from the item-add envelope; falling back to the staging download path ($STAGING_PATH) -- source_path/zotero_path will point at a less durable location. Flagged as a follow-up, not a silent success."
-    RESOLVED_PDF_PATH="$STAGING_PATH"
-  }
   log "Using PDF path for ingest delegation: $RESOLVED_PDF_PATH"
 
   if ! run_ingest_pipeline "$RESOLVED_PDF_PATH"; then
@@ -866,7 +945,11 @@ $(pipeline_failed_diagnostic_hint "$DOC_ID" "$RESOLVED_PDF_PATH")"
     "$DOI_JSON" "$ARXIV_JSON" "$ZKEY_JSON" "$ZPATH_JSON" || true
   upsert_subindex "$INGESTED_REAL_DOC_ID"
 
-  echo "ONLINE_INGEST_INGESTED"
+  if [ "$ATTACHMENT_STATE" = "attached" ]; then
+    echo "ONLINE_INGEST_INGESTED"
+  else
+    echo "ONLINE_INGEST_INGESTED_NO_ATTACHMENT"
+  fi
   exit 0
 fi
 

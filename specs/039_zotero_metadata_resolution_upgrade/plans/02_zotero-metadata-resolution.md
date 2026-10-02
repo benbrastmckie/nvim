@@ -303,33 +303,33 @@ label it UNVERIFIED rather than leaving it unwired.
 
 ---
 
-### Phase 4: rework the resolvable branch to consume resolved metadata [NOT STARTED]
+### Phase 4: rework the resolvable branch to consume resolved metadata [COMPLETED]
 
 **Goal**: Make the create-item path actually use translation-server output, while leaving today's
 `--pdf`/`--doi` path intact as the fallback.
 
 **Tasks**:
 
-- [ ] Insert `resolve_via_translation_server()` into the resolvable branch **after**
+- [x] Insert `resolve_via_translation_server()` into the resolvable branch **after**
       `resolvable_predownload_checks` (dedup) and **before** `download_and_verify` — dedup stays
-      first because it is cheap and a confirmed duplicate must hard-stop before any network fetch.
-- [ ] When resolution succeeded: call `zotero-write.sh item-add-json` with the resolved body, then —
+      first because it is cheap and a confirmed duplicate must hard-stop before any network fetch. *(completed)*
+- [x] When resolution succeeded: call `zotero-write.sh item-add-json` with the resolved body, then —
       subject to the Phase 5 quota gate, which lands after this phase and is wired in there — call
-      `zotero-write.sh attach-file <key> <staged-pdf>` as a separate second call.
-- [ ] When resolution failed or was skipped: leave today's single atomic
-      `item-add --pdf [--doi]` call exactly as it is. This path must not change behavior at all.
-- [ ] Handle the new partial-success surface on the resolved path: item created but attach failed.
+      `zotero-write.sh attach-file <key> <staged-pdf>` as a separate second call. *(completed)*
+- [x] When resolution failed or was skipped: leave today's single atomic
+      `item-add --pdf [--doi]` call exactly as it is. This path must not change behavior at all. *(completed)*
+- [x] Handle the new partial-success surface on the resolved path: item created but attach failed.
       Reuse the existing honest-surfacing shape rather than inventing one — set an
       `ATTACHMENT_STATE` global (`attached` | `failed` | `skipped-quota`) and add a distinct
       directive token `ONLINE_INGEST_INGESTED_NO_ATTACHMENT` (exit 0) for a created-and-ingested
-      item with no attachment. Do not conflate it with `ONLINE_INGEST_INGESTED`.
-- [ ] Extend the STABLE CONTRACT header additively: document the new token and its exit code, change
-      no existing token's spelling, meaning, or exit code.
-- [ ] Grep-confirm and update every consumer of the token set (expected:
+      item with no attachment. Do not conflate it with `ONLINE_INGEST_INGESTED`. *(completed)*
+- [x] Extend the STABLE CONTRACT header additively: document the new token and its exit code, change
+      no existing token's spelling, meaning, or exit code. *(completed)*
+- [x] Grep-confirm and update every consumer of the token set (expected:
       `commands/literature.md` and `context/project/literature/patterns/zotero-item-creation.md`) in
-      this same phase, so the contract and its consumers never diverge.
-- [ ] Update the `--dry-run` preview lines to show which of the two create paths would be taken and
-      the resolved-metadata source.
+      this same phase, so the contract and its consumers never diverge. *(completed)*
+- [x] Update the `--dry-run` preview lines to show which of the two create paths would be taken and
+      the resolved-metadata source. *(completed)*
 
 **Timing**: 1.5 hours
 
