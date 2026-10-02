@@ -1,5 +1,5 @@
 ---
-next_project_number: 325
+next_project_number: 326
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 325
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,165,184,217,270,271,272,280,284,285,295,296,297,299,300,306,311,322 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,89,127,165,184,217,270,271,272,280,284,285,295,296,297,299,300,306,311,322,325 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,185,251,265,273,275,281,298,302,303,307,308,319 | 22,127,165,184,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 250,263,274,282,313,318 | 165,265,273,275,281,308 | core-agent-system, orchestrator |
 | 4 | 170,304,312 | 165,250,251,263,273,282,284,285,300,302 | core-agent-system, orchestrator |
@@ -38,6 +38,7 @@ next_project_number: 325
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
+325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 263 [PLANNED] — Consent-gated git push: grant semantics and enforcement mechanism
@@ -60,7 +61,7 @@ next_project_number: 325
 
 ### File Scope Lifecycle
 
-165 [PLANNED] — Admission gates in orchestrate-batch-admit.sh: posture for an...
+165 [IMPLEMENTING] — Admission gates in orchestrate-batch-admit.sh: posture for an...
 270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
 ### Orchestrator
@@ -81,6 +82,124 @@ next_project_number: 325
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 
 ## Tasks
+
+### 325. Stop git add's gitignore advisory exit code from aborting the whole commit when the named file is tracked and was in fact staged
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Stop git-commit-scoped.sh from aborting the whole commit when `git add` emits its gitignore advisory for a TRACKED file whose path matches an ignore rule: git exits 1 while correctly staging the file, and the script reads that false-negative exit as a hard failure. VERIFIED LIVE; hard blocker on every `/todo` archival run in repos where `specs/archive/` is gitignored.
+
+== THE DEFECT ==
+
+`agent-system/extensions/core/scripts/git-commit-scoped.sh`, the git-add guard at line ~396:
+
+    if has_positive_pathspec "${add_pathspecs[@]}"; then
+      if ! git add "${add_pathspecs[@]}"; then
+        echo "WARNING: git add failed for one or more staged paths (non-blocking); no commit was attempted." >&2
+        exit 2
+      fi
+    fi
+
+TRIGGER: a positive pathspec naming a file that is TRACKED but whose path matches a `.gitignore`
+rule via a parent-directory rule.
+
+Concrete live case, repo `/home/benjamin/Projects/BimodalLogic`: `specs/archive/state.json` is
+tracked, while `.gitignore:94` contains `specs/archive/`.
+
+GIT'S BEHAVIOR (git 2.54.0), verified:
+
+    $ git add specs/archive/state.json
+    The following paths are ignored by one of your .gitignore files:
+    specs/archive
+    hint: Use -f if you really want to add them.
+    $ echo $?
+    1
+    $ git status --short
+    M  specs/archive/state.json        <-- STAGED
+
+So git exits 1 WHILE CORRECTLY STAGING THE FILE. Verified after every invocation via
+`git status --short`. Reproduces identically whether the path is passed alone or batched with
+other paths. `git -c advice.addIgnoredFile=false add ...` suppresses nothing and still exits 1.
+
+CONSEQUENCE: the script reads the advisory exit 1 as a hard failure and `exit 2`s before
+`git commit` is ever reached. No commit is made at all. In BimodalLogic this blocks EVERY `/todo`
+archival run, because archival always writes `specs/archive/state.json`.
+
+OBSERVED LIVE: BimodalLogic `/todo` run on 2026-10-02. Worked around by staging manually and
+committing directly; landed as BimodalLogic commit f20c2868c.
+
+NOT DEPLOY STALENESS: the source-store copy
+(`agent-system/extensions/core/scripts/git-commit-scoped.sh`) is byte-identical to the deployed
+copy, and the guard at line ~396 is unchanged in the source.
+
+NO EXISTING COVERAGE: zero tasks, active or archived, match `ignored by one of your` or
+`addIgnoredFile`.
+
+== THREE FINDINGS THAT CONSTRAIN THE FIX ==
+
+--- 1. The script's existing `git check-ignore -q` guard pattern CANNOT catch this case ---
+
+The script already uses a conditional `git check-ignore -q` guard for its ephemeral `:(exclude)`
+injection (lines ~190-220), and the comments there already document this very git behavior:
+naming an already-gitignored path in an explicit `:(exclude)...` pathspec entry makes `git add`
+treat it as an EXPLICITLY-NAMED ignored path and refuse the WHOLE add. So the hazard was
+understood for exclude entries and never applied to positive entries.
+
+But reusing that same guard here DOES NOT WORK. Verified:
+
+    $ git check-ignore -q -- specs/archive/state.json
+    exit 1 ("not ignored")                      <-- check-ignore is INDEX-AWARE; file is tracked
+
+    $ git check-ignore -v --no-index -- specs/archive/state.json
+    exit 0
+    .gitignore:94:specs/archive/   specs/archive/state.json
+
+git is internally inconsistent here: `check-ignore` reports not-ignored for a tracked file, while
+`git add` complains about it anyway. Any fix using plain `check-ignore` will MISS this case.
+Either `--no-index` is required, or the fix belongs on the exit-code side.
+
+--- 2. Interaction with task 304 (out_of_repo_pathspec_aborts_whole_commit) ---
+
+SHARED: the same script, and the same all-or-nothing-batch blast mechanism. 304 targets the Case 1
+predicate at line ~292 (`[ -e "$p" ] || git ls-files --error-unmatch -- "$p"`), which admits a
+path `git add` will then reject. Same line of causation.
+
+DIFFERS: 304's trigger is an out-of-repo absolute path; this defect's trigger is a
+tracked-but-ignore-matched path. DIFFERENT FIX SITES -- 304: containment filter at the predicate;
+this one: the exit-code check at line ~396.
+
+THE LOAD-BEARING CONSTRAINT: in 304's case `git add` GENUINELY FAILS and stages NOTHING, whereas
+here it genuinely SUCCEEDS and the exit code is a false negative. A naive "tolerate git add's exit
+code" fix would therefore PAPER OVER 304's REAL FAILURE. The fix MUST distinguish
+advisory-emitted-but-staging-succeeded from genuine-failure-nothing-staged -- e.g. by verifying
+the intended paths actually landed in the index after the add, rather than trusting the exit code
+in either direction.
+
+RESEARCH MUST RULE ON: whether this and 304 are better fixed together at one hardened add step.
+Do NOT fold this into 304 pre-emptively -- 304's narrow, carefully-bounded scope should not be
+widened by default.
+
+--- 3. Interaction with task 322 (todo_move_vacated_source_never_staged) ---
+
+322 prescribes `stage_paths+=("$src" "$dst")` at three `/todo` directory-move sites. In a repo
+where `specs/archive/` is gitignored, `$dst` IS genuinely ignore-matched. Verified:
+
+    $ git check-ignore -q -- specs/archive/708_relay_sliced_certificate_contract_to_model_checker/
+    exit 0
+
+So IMPLEMENTING 322 AS WRITTEN would pass an ignored destination as a positive pathspec and draw
+the ignore refusal on every archival run. 322 therefore needs either a destination-ignored guard
+or to land together with / after this fix. 322's implementer must be warned of this.
+
+== ADJACENT, OUT OF SCOPE ==
+
+`hooks/guard-destructive-git.sh` blocks `git add --dry-run` with a directory pathspec, with no
+`--dry-run` exemption, making safe read-only inspection of a directory pathspec impossible. A
+distinct concern; noted only so it is not rediscovered. Do NOT widen this task to cover it.
+
+---
 
 ### 324. Whitelist scheduled tasks lock in orphan detection
 - **Status**: [COMPLETED]
@@ -2403,6 +2522,9 @@ The parallelism task this text calls PARTIAL is COMPLETED (2026-09-26): its Phas
 WHY THIS IS HIGH LEVERAGE (measured 2026-09-28): the Inter-Cycle Redeploy Checkpoint in orchestrate-cycle-plan.sh takes its pre/post (and confirm) findings snapshots at FULL depth -- never --skip-slow -- so Gate 8 (~9 min of an ~11 min run) is paid two to three times per checkpoint fire, on top of deploy-headless.sh's own inline --skip-slow pass (~1.5 min). Every self-modifying task in this repo fires that checkpoint. The checkpoint runs at the one boundary with no dispatch in flight, so ambient agent load there is minimal -- the condition under which --jobs 4 reproduced the sequential pass/fail set exactly.
 PHASES: (A) Gate 8 --jobs (choose a conservative default plus an env override; document; verify --skip-slow and nested-guard paths unchanged); (B) the absorbed inline-verify question in deploy-headless.sh (opt-in flag vs. --only-gate-narrowed inline verify; exit-code contract preserved for every other caller). Serialized behind the deploy-pending/identical-dispatch fix because both touch orchestrate-cycle-plan.sh's checkpoint.
 
+=== SERIALIZATION EDGE ADDED 2026-10-02 (dependencies: 165) ===
+Serialization-only, not semantic: this task does not consume any output of the admission-posture task. The edge exists solely to pin the roadmap Call A implement order 165 -> 265 -> 263, which the engine would otherwise resolve as 165 -> 263 -> 265 by its lowest-task-number self-modification tie-break. All three declare orchestrator-critical paths, so only one is admitted per cycle regardless; the edge chooses WHICH. Rebase on whatever the admission-posture task lands in orchestrate-cycle-plan.sh. This edge is unrelated to, and does not reopen, the option-(a)/(b) parallel-safety question recorded above -- that was settled by the path review and remains settled.
+
 ---
 
 ### 263. Consent-gated git push: grant semantics and enforcement mechanism
@@ -2766,6 +2888,9 @@ Three tasks (this one, the absorbed /please task, and the absorbed user_decision
   4. PR/MR creation and /merge stay user-only. Force-push and pushes to master are outside any grant unless the /please never-list explicitly admits a --force-with-lease form; decide and record.
   5. skills/skill-orchestrate/SKILL.md sits at 17 B under its 20,000 B ceiling (measured 2026-09-28). Any relay text added there must be offset byte-for-byte (mode-gate it or move it to a context file) -- verify-deploy Gate 20 will otherwise refuse the redeploy.
 PHASES: (A) grant token + /please hook + integrity + push guard + destructive-git grant check + tests; (B) /please command, never-list, rule exception, docs sweep (the absorbed consistency sweep); (C) dispatch relay + two-cycle test. Depends on the history-rewrite task (guard-destructive-git.sh, git-safety.md, git-workflow.md are shared; its predicate ordering must compose with the grant check).
+
+=== SERIALIZATION EDGE ADDED 2026-10-02 (dependencies: 265) ===
+Serialization-only, not semantic: this task does not consume any output of the Gate 8 / --skip-verify task. The edge pins the roadmap Call A implement order 165 -> 265 -> 263, placing this 13-phase task last so it cannot starve the two shorter ones of cycle budget, and letting the urgent --skip-verify half land first. Rebase on whatever that task lands in deploy-headless.sh and verify-deploy.sh; this task touches neither.
 
 ---
 
@@ -3474,7 +3599,7 @@ Contemporaneous context that plausibly supplied the load: the same run-all.sh in
 ---
 
 ### 165. Admission gates in orchestrate-batch-admit.sh: posture for an absent file_scope, then cross-session visibility for self-modifying candidates
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 162, Task 163, Task 245
