@@ -249,7 +249,7 @@ external contract.
 
 ---
 
-### Phase 3: translation-server resolution helper [NOT STARTED]
+### Phase 3: translation-server resolution helper [COMPLETED]
 
 **Goal**: Add a self-contained metadata-resolution helper to the ingest bridge that mirrors the
 existing `check_export_freshness()` idiom: one HTTP call, one classification, globals set, never
@@ -257,25 +257,25 @@ worse than a warning on failure.
 
 **Tasks**:
 
-- [ ] Add `resolve_via_translation_server()` to `literature-ingest-online.sh`, setting globals
-      `TRANSLATION_SERVER_RESOLVED` (compact JSON or empty) and `RESOLUTION_PATH`.
-- [ ] Endpoint and identifier selection: `DOI_RAW` present -> `POST /search` with the bare DOI;
-      else `ARXIV_ID_RAW` present -> `POST /search` with `arXiv:<id>`; else no call at all.
-- [ ] Do **not** call `POST /web` with `pdf_url`. `pdf_url` is a PDF, not a landing page, and the
+- [x] Add `resolve_via_translation_server()` to `literature-ingest-online.sh`, setting globals
+      `TRANSLATION_SERVER_RESOLVED` (compact JSON or empty) and `RESOLUTION_PATH`. *(completed)*
+- [x] Endpoint and identifier selection: `DOI_RAW` present -> `POST /search` with the bare DOI;
+      else `ARXIV_ID_RAW` present -> `POST /search` with `arXiv:<id>`; else no call at all. *(completed)*
+- [x] Do **not** call `POST /web` with `pdf_url`. `pdf_url` is a PDF, not a landing page, and the
       discovery record carries no landing-URL field. Record in a comment that `/web` has no caller
-      path today and has never been exercised by anyone.
-- [ ] Configuration: `TRANSLATION_SERVER_URL` (default `http://localhost:1969`); setting it to the
-      empty string disables the call entirely with a single logged notice.
-- [ ] Degradation: `curl -s --max-time 5 --fail`, capture stderr, and treat *any* non-zero exit or
+      path today and has never been exercised by anyone. *(completed)*
+- [x] Configuration: `TRANSLATION_SERVER_URL` (default `http://localhost:1969`); setting it to the
+      empty string disables the call entirely with a single logged notice. *(completed)*
+- [x] Degradation: `curl -s --max-time 5 --fail`, capture stderr, and treat *any* non-zero exit or
       any response failing `jq -e '.[0]'` as "not resolved" — log a WARNING naming the fallback and
       return 1. Never a hard stop. The 5s timeout (versus 30s for PDF downloads) is deliberate for a
-      local service; note it in the comment.
-- [ ] Define the `RESOLUTION_PATH` vocabulary in the helper's comment block and set it consistently:
+      local service; note it in the comment. *(completed)*
+- [x] Define the `RESOLUTION_PATH` vocabulary in the helper's comment block and set it consistently:
       `translation-server` (resolved), `zot-crossref` (no resolution, DOI present so `zot add --doi`
       does its own Crossref lookup), `zot-bare` (no resolution and no DOI — today's silent-worst
-      case), `existing-item` (attach-to-existing path; metadata already in the library).
-- [ ] Set `RESOLUTION_PATH=existing-item` on the `existing_no_pdf` branch so the field is always
-      populated, never absent.
+      case), `existing-item` (attach-to-existing path; metadata already in the library). *(completed)*
+- [x] Set `RESOLUTION_PATH=existing-item` on the `existing_no_pdf` branch so the field is always
+      populated, never absent. *(completed)*
 
 **Timing**: 1.25 hours
 

@@ -455,6 +455,84 @@ resolvable_predownload_checks() {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: resolve full Zotero JSON metadata via the zotero/translation-server (HTTP, default
+# port 1969; provisioning/enabling the service is an operator concern -- see
+# context/project/literature/domain/zotero-integration.md's backend-swap section -- this script
+# only calls it when already reachable). Mirrors check_export_freshness()'s idiom: one HTTP
+# call, one classification, globals set, never worse than a WARNING on failure.
+#
+# Endpoint/identifier selection: DOI_RAW present -> POST /search with the bare DOI; else
+# ARXIV_ID_RAW present -> POST /search with "arXiv:<id>"; else no call at all (no identifier to
+# resolve). Deliberately does NOT call POST /web with pdf_url -- pdf_url is a PDF, not a landing
+# page, and the discovery record carries no landing-URL field (confirmed by re-reading
+# literature-discover.sh's tier3_search() record construction: title/authors/year/doc_id/
+# status/tier/doi/arxiv_id/pdf_url only). /web therefore has no caller path today and has never
+# been exercised by anyone.
+#
+# RESOLUTION_PATH vocabulary (always set to exactly one of these four, never left empty):
+#   translation-server  /search resolved full Zotero JSON for the record.
+#   zot-crossref        no resolution (service down/disabled/unresolvable), but a real DOI is
+#                        present, so `zot add --doi` performs its own Crossref lookup.
+#   zot-bare            no resolution and no DOI -- today's silent-worst case (bare PDF-derived
+#                        item, or the arXiv-DataCite-DOI mitigation).
+#   existing-item        attach-to-existing path; metadata already lives in the Zotero item, so
+#                        no resolution is attempted at all (set by the existing_no_pdf branch,
+#                        not by this helper).
+#
+# Sets two globals:
+#   TRANSLATION_SERVER_RESOLVED   compact Zotero-JSON-array response body on success, else empty
+#   RESOLUTION_PATH                one of the four values above
+#
+# Configuration: TRANSLATION_SERVER_URL (default http://localhost:1969); setting it to the empty
+# string disables the call entirely with a single logged notice. Degradation: `curl -s --max-time
+# 5 --fail`, capturing stderr; any non-zero exit or a response failing `jq -e '.[0]'` is treated
+# as "not resolved" -- logs a WARNING naming the fallback and returns 1. Never a hard stop. The 5s
+# timeout (vs. 30s for PDF downloads) is deliberate for a local service.
+#
+# Returns 0 (resolved) or 1 (not resolved/disabled/no identifier) -- never anything else.
+# ---------------------------------------------------------------------------
+resolve_via_translation_server() {
+  TRANSLATION_SERVER_RESOLVED=""
+  RESOLUTION_PATH=""
+
+  local ts_url="${TRANSLATION_SERVER_URL-http://localhost:1969}"
+  if [ -z "$ts_url" ]; then
+    log "translation-server resolution disabled (TRANSLATION_SERVER_URL is set to the empty string)"
+    RESOLUTION_PATH="$([ -n "$DOI_RAW" ] && echo "zot-crossref" || echo "zot-bare")"
+    return 1
+  fi
+
+  local identifier=""
+  if [ -n "$DOI_RAW" ]; then
+    identifier="$DOI_RAW"
+  elif [ -n "$ARXIV_ID_RAW" ]; then
+    identifier="arXiv:$ARXIV_ID_RAW"
+  else
+    log "doc_id=$DOC_ID has no DOI or arxiv_id; translation-server /search cannot run (no identifier to resolve)"
+    RESOLUTION_PATH="zot-bare"
+    return 1
+  fi
+
+  local response rc=0
+  response="$(curl -s --max-time 5 --fail -X POST "$ts_url/search" \
+    -H 'Content-Type: text/plain' --data "$identifier" 2>/tmp/ingest-online-ts-stderr.$$)" || rc=$?
+  local stderr_out
+  stderr_out="$(cat /tmp/ingest-online-ts-stderr.$$ 2>/dev/null || true)"
+  rm -f /tmp/ingest-online-ts-stderr.$$
+
+  if [ "$rc" -ne 0 ] || [ -z "$response" ] || ! echo "$response" | jq -e '.[0]' >/dev/null 2>&1; then
+    RESOLUTION_PATH="$([ -n "$DOI_RAW" ] && echo "zot-crossref" || echo "zot-bare")"
+    log "WARNING: translation-server /search unreachable, failed, or returned an unresolvable response for doc_id=$DOC_ID (identifier=$identifier, curl exit $rc): $stderr_out -- falling back to $RESOLUTION_PATH"
+    return 1
+  fi
+
+  TRANSLATION_SERVER_RESOLVED="$(echo "$response" | jq -c '.')"
+  RESOLUTION_PATH="translation-server"
+  log "translation-server resolved metadata for doc_id=$DOC_ID via /search (identifier=$identifier)"
+  return 0
+}
+
+# ---------------------------------------------------------------------------
 # Helper: extract the first non-empty/non-null value across several plausible jq field paths
 # on a JSON envelope. `zot add --pdf`'s exact data.* field names are NOT independently
 # confirmed against a real call yet -- see
@@ -796,6 +874,11 @@ fi
 # Existing-no-pdf (in_zotero_no_pdf) path: resolve real key -> attach -> delegate -> patch
 # ===========================================================================
 if [ "$CLASSIFICATION" = "existing_no_pdf" ]; then
+  # Attach-to-existing path: metadata already lives in the resolved Zotero item, so no
+  # translation-server resolution is attempted -- RESOLUTION_PATH is always populated, never
+  # left absent, for the index-surfacing patch below.
+  RESOLUTION_PATH="existing-item"
+
   check_export_freshness
   if [ "$EXPORT_NEEDS_REVERIFICATION" = "true" ]; then
     log "Export freshness not confirmed ($EXPORT_FRESHNESS_TOKEN) for doc_id=$DOC_ID; flagging for visibility. This branch resolves the real Zotero item key live via zotero-resolve-pdf.sh below (never from the stale export), and already handles a stale-snapshot classification via its own non-empty resolved_path corrective edge case -- that existing behavior is unchanged by this gate."
