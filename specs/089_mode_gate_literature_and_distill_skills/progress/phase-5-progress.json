@@ -1,0 +1,69 @@
+{
+  "phase": 5,
+  "phase_name": "Distill Extractions Part B -- refine, compress, merge, purge; Shared-Reference Repoint; Measurement",
+  "started_at": "2026-10-03T01:50:00Z",
+  "last_updated": "2026-10-03T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract refine, compress, merge, purge bottom-up", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/memory/skills/skill-distill/SKILL.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-refine-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-compress-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-merge-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-purge-submode.md",
+       "agent-system/extensions/memory/index-entries.json"
+     ]},
+    {"id": 2, "description": "Verify Link-Scan/Retrieval-Exclusion/Tombstoned-Memories sharing between purge and gc", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Update Shared Sub-Mode Skeleton wording", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]},
+    {"id": 4, "description": "Confirm Sub-Mode Dispatch table all 12 resolve", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Fresh sweep for Sub-Mode/skill-distill references", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-run fence scan", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record final measurements", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "extraction_log": {
+    "refine": {"content_bytes_extracted": 6974, "dest_bytes": 7393, "dest_lines": 223},
+    "compress": {"content_bytes_extracted": 5996, "dest_bytes": 6421, "dest_lines": 199, "fence_interior_fakes_preserved": ["## Compress Candidates (Dry Run)", "## History", "### Pre-Compression ({today})", "## Connections"]},
+    "merge": {"content_bytes_extracted": 8077, "dest_bytes": 8487, "dest_lines": 257, "fence_interior_fakes_preserved": ["## Merged From {secondary.id}", "## Connections"]},
+    "purge": {"content_bytes_extracted": 6124, "dest_bytes": 6849, "dest_lines": 192}
+  },
+  "cross_reference_repoints": [
+    "refine, compress, merge, purge: 'Shared Sub-Mode Skeleton above' -> named skill-distill/SKILL.md in all four",
+    "merge: 'Purge Sub-Mode above' (tombstone field parity note) -> named distill-purge-submode.md",
+    "purge: 'Component 2 above' (Scoring Engine zero-retrieval-penalty note, inside a fenced pseudocode comment) -> named skill-distill/SKILL.md's Scoring Engine",
+    "SKILL.md GC Sub-Mode: 'Purge Sub-Mode above' -> named distill-purge-submode.md (GC itself stays inline, but Purge moved out from under it)",
+    "SKILL.md Shared Sub-Mode Skeleton: 'each sub-mode's own section below' and the non-mutating-exemption sentence reworded to distinguish inline (gc, auto, report) from extracted-file (the other nine) specifications"
+  ],
+  "sharing_verification": {
+    "question": "Are Link-Scan Procedure (506-559), Retrieval Exclusion (560-622), and Health Report -- Tombstoned Memories Section (623-647) shared between purge and gc, or purge-only?",
+    "answer": "SHARED. GC Sub-Mode's own text explicitly states its logical pairing with Purge 'with only its own tombstone-related Link-Scan/Retrieval-Exclusion/health-report infrastructure between them, no other sub-mode' -- confirmed by direct read, not inferred.",
+    "disposition": "All three left inline in skill-distill/SKILL.md (as planned); distill-purge-submode.md's framing paragraph names them explicitly as living there and NOT part of the extracted file."
+  },
+  "final_measurements": {
+    "skill_md_before_bytes": 93044,
+    "skill_md_after_bytes": 30289,
+    "skill_md_after_lines": 836,
+    "nine_file_extraction_total_measured_bytes": 64329,
+    "nine_file_extraction_total_plan_text_bytes": 65329,
+    "nine_file_extraction_discrepancy_note": "Matches Phase 1's finding exactly: the plan's own per-item byte figures sum to 64,329, not 65,329 (an arithmetic/copy error in the plan's prose, not a boundary error). Used the measured/re-summed value throughout.",
+    "mandatory_stop_total_before": 19,
+    "mandatory_stop_total_after": 19,
+    "grep_branch_gated_count": 0,
+    "generate_context_line_counts_check": "memory: 17 entries, 17 exact, 0 mismatch",
+    "lint_branch_gated_sections": "0 violations",
+    "fence_backtick_count_after": 62,
+    "all_12_submodes_resolve": true
+  },
+  "deviations": [
+    {
+      "task_id": "5.commit-granularity",
+      "description": "Commit each of the four extractions as its own sub-step",
+      "type": "altered",
+      "reason": "Matches the Phase 2/3/4 precedent: all four extractions plus the shared-skeleton wording update and cross-reference repoints completed before the single Phase 5 commit.",
+      "annotation": "*(deviation: altered -- see Phase 5 task checklist note)*"
+    }
+  ]
+}

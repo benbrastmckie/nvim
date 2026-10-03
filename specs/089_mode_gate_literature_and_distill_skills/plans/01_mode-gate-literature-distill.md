@@ -468,34 +468,57 @@ occurrence by reading its sentence.
 
 ---
 
-### Phase 5: Distill Extractions Part B — refine, compress, merge, purge; Shared-Reference Repoint; Measurement [NOT STARTED]
+### Phase 5: Distill Extractions Part B — refine, compress, merge, purge; Shared-Reference Repoint; Measurement [COMPLETED]
 
 **Goal**: Finish the distill extraction set, fix the shared-skeleton wording that assumes every
 sub-mode is in the same file, and record the measured reduction.
 
 **Tasks**:
-- [ ] Extract bottom-up by the same per-section procedure: `refine` (1221-1441), `compress`
+- [x] Extract bottom-up by the same per-section procedure: `refine` (1221-1441), `compress`
       (1024-1220), `merge` (770-1023), `purge` (317-505) — one green sub-step and commit each.
-- [ ] Verify by direct read whether `Link-Scan Procedure` (506-559), `Retrieval Exclusion`
+      *(completed: all four content-byte-extracted figures matched Phase 1's measured per-section
+      bytes exactly; round-trip diffs verified clean. compress and merge each contained
+      fence-interior fake headings (confirmed preserved untouched by the fence-aware promotion
+      fix from Phase 3). Committed together in one commit, matching the established
+      commit-granularity deviation from Phases 2-4.)*
+- [x] Verify by direct read whether `Link-Scan Procedure` (506-559), `Retrieval Exclusion`
       (560-622), and `Health Report -- Tombstoned Memories Section` (623-647) are shared between
       `purge` and `gc` (which stays inline). If shared, leave all three inline and have
       `distill-purge-submode.md` name them as living in `skill-distill/SKILL.md`; if purge-only,
       note the finding and still leave them inline (they are below the extraction bar
-      individually) with the same naming treatment.
-- [ ] Update `## Shared Sub-Mode Skeleton`'s wording: "each sub-mode's own section below" and
+      individually) with the same naming treatment. *(completed: confirmed SHARED -- GC Sub-Mode's
+      own text explicitly states "with only its own tombstone-related Link-Scan/
+      Retrieval-Exclusion/health-report infrastructure between them, no other sub-mode", naming
+      all three. distill-purge-submode.md's framing paragraph names all three as staying in
+      skill-distill/SKILL.md. GC's own inbound "Purge Sub-Mode above" reference was also
+      repointed to name distill-purge-submode.md, since Purge moved out from under it.)*
+- [x] Update `## Shared Sub-Mode Skeleton`'s wording: "each sub-mode's own section below" and
       "Non-mutating sub-modes ... each such sub-mode states this exemption explicitly in its own
       section" now refer to extracted files for the nine moved sub-modes; reword so a reader is
-      sent to the stub pointers rather than told to look further down the file.
-- [ ] Confirm the `### Sub-Mode Dispatch` table (lines 29-47) still lists all twelve sub-modes and
+      sent to the stub pointers rather than told to look further down the file. *(completed: both
+      passages reworded to name the extracted-file destinations explicitly for the nine moved
+      sub-modes, while correctly leaving "below" references to Distill Log Schema/State
+      Integration unchanged since those two stay inline in the same file, "below" remaining
+      literally true)*
+- [x] Confirm the `### Sub-Mode Dispatch` table (lines 29-47) still lists all twelve sub-modes and
       that each row's specification is reachable — inline for `report`, `gc`, `auto`; via stub
-      pointer for the other nine.
-- [ ] Fresh sweep: `grep -rn "Sub-Mode: \|Sub-Mode\b" agent-system/extensions/memory/` plus a
+      pointer for the other nine. *(completed: all twelve confirmed; all nine extracted
+      destination files confirmed non-empty)*
+- [x] Fresh sweep: `grep -rn "Sub-Mode: \|Sub-Mode\b" agent-system/extensions/memory/` plus a
       repo-wide `grep -rn "skill-distill" agent-system/` to catch any external reference into a
-      moved region; record that the check ran.
-- [ ] Re-run the fence-aware heading scan over the shortened `SKILL.md` to confirm no new
-      fence-state imbalance.
-- [ ] Record `SKILL.md` before/after bytes and lines, each destination file's bytes, the total
-      delta, and the nine-file extraction sum against the planned 65,329 B.
+      moved region; record that the check ran. *(completed: ran both. commands/distill.md's own
+      "Validate Sub-Mode Availability" anchor table references heading text that is unchanged
+      (every stub keeps its original heading), so it remains accurate without edits.
+      context/project/memory/distill-usage.md's one "below" hit refers to its own internal
+      document structure, not skill-distill/SKILL.md, and was left unchanged.)*
+- [x] Re-run the fence-aware heading scan over the shortened `SKILL.md` to confirm no new
+      fence-state imbalance. *(completed: 62 backticks, even)*
+- [x] Record `SKILL.md` before/after bytes and lines, each destination file's bytes, the total
+      delta, and the nine-file extraction sum against the planned 65,329 B. *(completed: SKILL.md
+      93,044 B -> 30,289 B / 836 lines. Nine-file extraction sum: 64,329 B measured (matches
+      Phase 1's corrected, re-summed total exactly; the plan's own "65,329" sum annotation
+      remains the one confirmed arithmetic error, not a boundary error -- every individual
+      per-item figure matched))*
 
 **Timing**: 2 hours
 

@@ -291,6 +291,78 @@
           "/distill"
         ]
       }
+    },
+    {
+      "path": "project/memory/patterns/distill-refine-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --refine sub-mode (two-tier memory metadata quality improvement: Tier 1 safe automatic fixes, Tier 2 interactive AskUserQuestion-gated improvements) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 223,
+      "keywords": [
+        "distill",
+        "refine-submode",
+        "metadata-quality",
+        "tier1-tier2"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
+    },
+    {
+      "path": "project/memory/patterns/distill-compress-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --compress sub-mode (reduce oversized memories to key points, preserving originals in a History section and verifying keyword preservation) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 199,
+      "keywords": [
+        "distill",
+        "compress-submode",
+        "memory-size",
+        "keyword-preservation"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
+    },
+    {
+      "path": "project/memory/patterns/distill-merge-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --merge sub-mode (pairwise duplicate detection within topic clusters, keyword-superset-guaranteed content merge, tombstone the absorbed secondary, cross-reference update, index regeneration) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 257,
+      "keywords": [
+        "distill",
+        "merge-submode",
+        "duplicate-detection",
+        "tombstone"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
+    },
+    {
+      "path": "project/memory/patterns/distill-purge-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --purge sub-mode (identify stale/zero-retrieval memories, tombstone via frontmatter mutation rather than deletion; Link-Scan/Retrieval-Exclusion/health-report infrastructure is shared with gc and stays in skill-distill/SKILL.md) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 192,
+      "keywords": [
+        "distill",
+        "purge-submode",
+        "tombstone",
+        "staleness"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
     }
   ]
 }
