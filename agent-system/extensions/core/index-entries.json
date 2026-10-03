@@ -3063,7 +3063,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 539,
+      "line_count": 541,
       "keywords": [
         "runtime-files",
         "cleanup",

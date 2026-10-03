@@ -1,0 +1,38 @@
+{
+  "phase": 4,
+  "phase_name": "Repoint the Authoring Surface at the Script",
+  "started_at": "2026-10-03T01:15:00Z",
+  "last_updated": "2026-10-03T01:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Repoint SKILL.md Move 4 at the script, within the byte-budget constraint",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]
+    },
+    {
+      "id": 2,
+      "description": "Amend handoff-schema.md's Writer paragraph only",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]
+    },
+    {
+      "id": 3,
+      "description": "Add the inventory bullet",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.files",
+      "description": "index-entries.json line_count repair for orchestrator-runtime-files.md",
+      "type": "altered",
+      "reason": "Discovered via check-extension-docs.sh during this phase's verification: Phase 1's edit grew orchestrator-runtime-files.md by 2 lines (539->541), leaving the registered line_count stale. Not named in the plan's Phase 4 file list; fixed because it is a mechanical, direct consequence of this task's own Phase 1 edit.",
+      "annotation": "*(deviation: altered — discovered and fixed a stale index-entries.json line_count caused by Phase 1's own edit)*"
+    }
+  ]
+}

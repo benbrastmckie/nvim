@@ -326,29 +326,36 @@ byte-identical.
 
 ---
 
-### Phase 4: Repoint the Authoring Surface at the Script [NOT STARTED]
+### Phase 4: Repoint the Authoring Surface at the Script [COMPLETED]
 
 **Goal**: the lead is instructed to call the script, never to hand-author the JSON; the schema
 section survives as reader reference; the script is discoverable in the utility inventory.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md`'s batched `AskUserQuestion` relay (Move 4, the sentence
+- [x] In `skills/skill-orchestrate/SKILL.md`'s batched `AskUserQuestion` relay (Move 4, the sentence
       at ~line 272), replace "Append each answer to that task's
       `specs/{padded}_{project}/.decisions.json` per `handoff-schema.md`'s 'Decisions File Schema'
       section" with an instruction to call
       `bash .claude/scripts/orchestrate-record-decision.sh --task N --session SID --cycle C
       --question "..." --answer "..."` once per answered question. State plainly that the lead never
-      hand-authors this file.
-- [ ] Keep the replacement **no longer than the text it replaces** — `skill-orchestrate/SKILL.md`
+      hand-authors this file. *(completed: replaced with "Per answer, call
+      `bash .claude/scripts/orchestrate-record-decision.sh` (see its usage for flags); never
+      hand-author this file. Clear `pending_ask_user` for that task." — shortened to fit the
+      byte-budget constraint below while pointing to the script's own usage block for the full
+      flag list rather than restating it)*
+- [x] Keep the replacement **no longer than the text it replaces** — `skill-orchestrate/SKILL.md`
       sits under a context-budget ceiling it was only recently brought back under. Prefer shorter.
-- [ ] In `docs/architecture/handoff-schema.md`'s "Decisions File Schema" section, amend the
+      *(completed: old sentence 179 bytes, new 166 bytes; file measured 19,921 B via `wc -c`,
+      79 B under the 20,000 B ceiling in context/config/orchestrator-context-budget.json)*
+- [x] In `docs/architecture/handoff-schema.md`'s "Decisions File Schema" section, amend the
       **Writer** paragraph only: the loop's branch move remains the writer, now mediated through
       `scripts/orchestrate-record-decision.sh` rather than hand-authored JSON. Leave the shape
       documentation, the example, and the field list unchanged — they remain the reader's reference.
-- [ ] Add one bullet to `docs/reference/utility-scripts-inventory.md` naming the script, its full
+      *(completed)*
+- [x] Add one bullet to `docs/reference/utility-scripts-inventory.md` naming the script, its full
       CLI shape, the append-only/lazy-create/lock semantics, and a short inclusion-criterion note
       modelled on the `validate-return-meta.sh` entry (it is lifecycle-adjacent, invoked from
-      SKILL.md Move 4, yet registered here per this task's explicit instruction).
+      SKILL.md Move 4, yet registered here per this task's explicit instruction). *(completed)*
 
 **Timing**: 1 hour
 
@@ -361,16 +368,32 @@ section survives as reader reference; the script is discoverable in the utility 
 - `agent-system/extensions/core/docs/architecture/handoff-schema.md` - Writer paragraph names the
   script; schema/shape text untouched
 - `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` - one new bullet
+- `agent-system/extensions/core/index-entries.json` - *(deviation: altered — discovered during
+  this phase's `check-extension-docs.sh` run, not named in the plan: Phase 1's 2-line growth of
+  `context/standards/orchestrator-runtime-files.md` left its registered `line_count` (539) stale
+  against the actual 541. Corrected via the documented source-store bypass
+  `REPO_ROOT=$(pwd) bash .../generate-context-line-counts.sh --check`, confirmed exact, then
+  hand-applied the single-field value it would have written (the script itself requires a
+  deployed tree it cannot reach from here))*
 
 **Verification**:
 - The replaced Move 4 text's byte length is less than or equal to the original's (measure, do not
-  estimate).
+  estimate). *(confirmed: 179 B -> 166 B)*
 - `bash scripts/tests/test-verify-deploy-context-budget.sh` passes (or the equivalent
   `verify-deploy.sh` context-budget gate), confirming SKILL.md is still under its ceiling.
+  *(confirmed via direct `wc -c`: 19,921 B / 20,000 B ceiling. The suite itself reports 14/15
+  passed both before and after this task's edits — the one pre-existing failure, "baseline
+  fixture is not clean", reproduces identically against HEAD before any edit in this task and is
+  unrelated to skill-orchestrate/SKILL.md; the SKILL.md-specific case2 passes in both runs)*
 - `grep -n 'decisions.json' skills/skill-orchestrate/SKILL.md` shows no remaining instruction to
   hand-author the file; the only surviving `.decisions.json` mentions are the dispatch-rendering
-  reference at ~line 64 and the new script call.
-- `bash .claude/scripts/check-extension-docs.sh` passes.
+  reference at ~line 64 and the new script call. *(confirmed: exactly one surviving literal
+  mention, at line 64; the new instruction uses "this file" rather than repeating the literal
+  filename)*
+- `bash .claude/scripts/check-extension-docs.sh` passes. *(the `core` extension reports FAILs,
+  all of them expected deploy-drift from this task's deliberate non-deployment — see the plan's
+  own Non-Goal "Not deploying" — plus two "never deployed" advisories for the two new scripts;
+  no FAIL is attributable to a defect in this phase's edits. Re-verified in Phase 7's gate sweep)*
 - `bash .claude/scripts/check-task-references.sh` reports no new occurrence (none of these files is
   under `specs/**`).
 

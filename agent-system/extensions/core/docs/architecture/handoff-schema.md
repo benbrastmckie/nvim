@@ -988,9 +988,10 @@ state for a task that has never surfaced a `user_decision`.
 - `timestamp` (string, required, ISO 8601 UTC) — when the answer was recorded.
 
 **Writer**: the loop's own branch move, after every other task's postflight has run for the
-cycle, batches every accumulated `ask_user` verdict into one `AskUserQuestion` call and appends
-one entry per answered question to this file (creating it if absent). This is additive —
-existing entries are never removed or rewritten by a later cycle's append.
+cycle, batches every accumulated `ask_user` verdict into one `AskUserQuestion` call and, for each
+answered question, calls `scripts/orchestrate-record-decision.sh` to append one entry to this
+file (creating it if absent) — never hand-authored JSON. This is additive — existing entries are
+never removed or rewritten by a later cycle's append.
 
 **Reader**: `orchestrate-build-dispatch.sh` (see its own header comment and the "## Prior
 Decisions" section it conditionally emits) reads this file when building the NEXT dispatch file

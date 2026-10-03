@@ -269,9 +269,8 @@ failed_count=$(jq -r '.failed_tasks // [] | length' "$mt_state_file")
 **Batched `AskUserQuestion` relay (after every task's Move 3 has run this cycle)**: if
 `mt_state_file`'s `pending_ask_user[]` is non-empty, call `AskUserQuestion` once per entry
 (question/options/recommended from `.decision`), batched together — never mid-cycle, never one
-call per task. Append each answer to that task's `specs/{padded}_{project}/.decisions.json` per
-`handoff-schema.md`'s "Decisions File Schema" section, and clear `pending_ask_user` for that
-task. A non-blocking decision proceeds on the agent's own recommendation instead of asking, and
+call per task. Per answer, call `bash .claude/scripts/orchestrate-record-decision.sh` (see its usage for
+flags); never hand-author this file. Clear `pending_ask_user` for that task. A non-blocking decision proceeds on the agent's own recommendation instead of asking, and
 is surfaced in the consolidated output. Unrelated to `detected_defects` (accumulate-and-render
 only, never prompted).
 
