@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Document the rc-observability addition",
+  "started_at": "2026-10-03T10:50:00Z",
+  "last_updated": "2026-10-03T11:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add hook-script path-resolution rule to Hook Schema section", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/creating-extensions.md"]},
+    {"id": 2, "description": "Add rc-observability subsection beneath the unchanged non-blocking sentence in Hook Execution Contract", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/creating-extensions.md"]},
+    {"id": 3, "description": "Correct Lifecycle Stage Mapping's verification row to the live gate-out call site", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/creating-extensions.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_evidence": {
+    "diff_review": "git diff shows one deletion (the old verification row naming skill_validate_artifact()) and 42 insertions, all prose/markdown; the 'Exit non-zero: warning logged (non-blocking, skill continues)' sentence is present verbatim and unmodified",
+    "task_reference_lint": "check-task-references.sh on the file: 0 occurrences, PASS",
+    "globals_cross_check": "grep SKILL_HOOK_LAST_ in both creating-extensions.md and skill-base.sh: all four names match exactly",
+    "verification_row_check": "grep skill_validate_artifact in the stage-mapping table returns nothing; the verification row now names command-gate-out.sh's live call site"
+  },
+  "deviations": []
+}

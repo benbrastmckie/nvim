@@ -458,36 +458,36 @@ additional task and must be recorded.
 
 ---
 
-### Phase 5: Document the rc-observability addition [NOT STARTED]
+### Phase 5: Document the rc-observability addition [COMPLETED]
 
 **Goal**: Bring `creating-extensions.md` into agreement with the repaired mechanism — as an
 addition to the Hook Execution Contract, never a rewrite of the documented non-blocking default.
 
 **Tasks**:
-- [ ] Re-read the Hook Schema / Hook Execution Contract / Lifecycle Stage Mapping sections of
+- [x] Re-read the Hook Schema / Hook Execution Contract / Lifecycle Stage Mapping sections of
       `agent-system/extensions/core/docs/guides/creating-extensions.md` immediately before
       editing.
-- [ ] Leave the existing "Exit non-zero: warning logged (non-blocking, skill continues)" sentence
+- [x] Leave the existing "Exit non-zero: warning logged (non-blocking, skill continues)" sentence
       **verbatim and in place**. Nothing about it is now false.
-- [ ] Add, directly beneath it, a short subsection documenting the observability channel: the
+- [x] Add, directly beneath it, a short subsection documenting the observability channel: the
       four `SKILL_HOOK_LAST_*` globals, what each holds, the unconditional-reset-at-entry
       guarantee, the `deviation` event emitted on a non-zero exit, and an explicit sentence
       stating that observability is **not** blocking and that no call site's disposition changed.
-- [ ] Document the hook-script **path resolution rule**, which the guide currently gets wrong by
+- [x] Document the hook-script **path resolution rule**, which the guide currently gets wrong by
       implication: a `hooks` value's basename is resolved against the deployed
       `.claude/scripts/` directory, so the script **must also be declared in
       `provides.scripts`** to be deployed at all, and a `scripts/`-prefixed value is accepted but
       only mirrors the source layout. This is the trap that made two shipped extensions'
       hooks dead.
-- [ ] Update the Lifecycle Stage Mapping table's `verification` row: its "Called From" becomes
+- [x] Update the Lifecycle Stage Mapping table's `verification` row: its "Called From" becomes
       the gate-out call site added in Phase 3, not `skill_validate_artifact()`.
-- [ ] Note that a declared hook whose script does not resolve now produces a loud NOTE rather
+- [x] Note that a declared hook whose script does not resolve now produces a loud NOTE rather
       than a silent skip, and that missing hook keys and an absent `.claude-extensions.json` are
       still silently skipped (unchanged).
-- [ ] Cite file paths and function names only — **no task-number references** anywhere in this
+- [x] Cite file paths and function names only — **no task-number references** anywhere in this
       file, per `rules/no-task-references-in-deliverables.md`. Refer to the skeleton-plan
       follow-up work by title if it needs mentioning at all (it should not).
-- [ ] Commit.
+- [x] Commit.
 
 **Timing**: 0.5 hours
 

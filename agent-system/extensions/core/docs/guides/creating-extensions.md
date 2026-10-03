@@ -686,6 +686,18 @@ Add a `hooks` object to your manifest:
 
 All hooks are optional. Missing keys (or `"hooks": {}`) are silently skipped.
 
+**Path resolution**: a hook's manifest value is resolved by **basename** against the deployed
+`.claude/scripts/` directory -- never against a nested path under the extension's own deployed
+directory. The deploy pipeline flattens `manifest.provides.scripts` into `.claude/scripts/`, so
+there is no `.claude/extensions/<name>/scripts/` subdirectory for any extension to resolve
+against. This means a hook's script **must also be declared in `provides.scripts`** to be
+deployed at all -- a hook value with no matching `provides.scripts` entry resolves to a path
+that is never written by the deploy. The conventional `scripts/your-domain-preflight.sh` value
+(mirroring the source layout) is accepted, and so is a bare filename with no prefix -- both
+resolve to the same deployed file by basename. This was the trap that left two shipped
+extensions' hooks dead: a syntactically valid `hooks` entry whose script simply never deployed to
+where the resolver looked for it.
+
 ### Hook Execution Contract
 
 Hook scripts receive 5 positional arguments:
@@ -702,6 +714,35 @@ Hook scripts receive 5 positional arguments:
 - Exit 0: success (hook output printed to stdout)
 - Exit non-zero: warning logged (non-blocking, skill continues)
 
+This non-blocking disposition is unchanged and does not depend on anything below -- every
+`skill_run_extension_hook` call site keeps "exit non-zero -> warning, skill continues" exactly as
+stated above, with no opt-in blocking mode.
+
+**Observability addition**: a hook's outcome is additionally exposed to the calling skill code
+(never to the hook script itself -- hook scripts still receive no environment variables) through
+four uppercase globals set by `skill_run_extension_hook`, all reset **unconditionally** at
+function entry so a caller never reads a value left over from a prior invocation:
+
+| Global | Holds |
+|--------|-------|
+| `SKILL_HOOK_LAST_RC` | The hook script's own exit code (only meaningful when STATUS is `ran`) |
+| `SKILL_HOOK_LAST_STATUS` | One of: `ran`, `skipped_no_extension`, `skipped_no_manifest`, `skipped_not_declared`, `skipped_not_executable` |
+| `SKILL_HOOK_LAST_NAME` | The stage name the invocation was asked to run |
+| `SKILL_HOOK_LAST_PATH` | The resolved script path, empty until a hook path is resolved |
+
+A non-zero hook exit additionally appends one `deviation`-category row to the unified event
+store (`specs/events.jsonl`), the same way other lifecycle stages already record their outcome.
+**This channel is observability only and never blocking**: `skill_run_extension_hook`'s literal
+last statement is always `return 0`, regardless of the hook's own exit code or of anything read
+from these globals -- returning the hook's own rc instead would abort a caller running under
+`set -e` mid-lifecycle, silently flipping the non-blocking contract stated above as a side
+effect. No existing call site inspects these globals, and none is required to.
+
+A declared hook whose resolved script is missing or not executable is **not** silently skipped
+the way a missing hook key or an absent `.claude-extensions.json` is (both of those stay silent,
+unchanged) -- it emits a one-line NOTE on stderr naming the stage, the declaring manifest, and
+the resolved path, then proceeds exactly as before (non-blocking, `return 0`).
+
 Scripts MUST be executable (`chmod +x`).
 
 ### Lifecycle Stage Mapping
@@ -710,7 +751,7 @@ Scripts MUST be executable (`chmod +x`).
 |------|-------------|------|
 | `preflight` | `skill_preflight_update()` | After status is set to "in_progress" |
 | `context_injection` | `skill_context_injection()` | Before agent delegation |
-| `verification` | `skill_validate_artifact()` | After agent returns, artifact validated |
+| `verification` | `command-gate-out.sh`, immediately after its `skill_validate_task_artifacts` call | After agent returns, artifacts validated, on every task's gate-out |
 | `postflight` | `skill_postflight_update()` | After status is set to completed |
 
 ### Example: Preflight Validation Hook
