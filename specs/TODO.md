@@ -21,7 +21,7 @@ next_project_number: 326
 ### Core Agent System
 
 89 [PLANNED] — Apply the mode-gated section convention to the two remaining...
-127 [PLANNING] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
+127 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 184 [PLANNING] — Surface skeleton-plan follow-ups at completion under the...
@@ -3694,11 +3694,12 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 127. Collapse routing ladder to routing agents
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 121, Task 124, Task 125
 - **Research**: [127_collapse_routing_ladder_to_routing_agents/reports/01_routing-ladder-collapse.md]
+- **Plan**: [127_collapse_routing_ladder_to_routing_agents/plans/01_routing-ladder-collapse.md]
 
 **Description**: === REVISED 2026-09-01 (backlog streamline: absorbs the present-routing residue) ===
 ADDITIONAL WORK ITEMS, absorbed from the abandoned present-extension routing task: (5) while rewriting the manifests, resolve present/manifest.json's colon-suffixed compound values -- its routing.implement block ("present:grant" -> "skill-grant:assemble" style) disappears with the collapse, mooting the skill-name half of the original defect, but audit routing_agents for any analogous colon-suffixed AGENT value encoding workflow_type into a name no consumer splits, and settle the encoding (drop the suffix and carry workflow_type another way, or make the resolver split and expose it as a sub-mode variable). (6) extend lint-routing-wiring.sh so any routing_agents value naming a nonexistent agent file fails verify-deploy -- the original defect (a manifest naming a nonexistent dispatch target, shipped silently) must be impossible to reintroduce under the collapsed model.

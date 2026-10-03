@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "summary": "7-phase implementation plan for the routing-ladder collapse. Ordering is driven by one planning-time discovery: check-extension-docs.sh's check_routing_block() hard-fails when the routing block is absent and is verify-deploy gate 3, so validator re-scope (Phase 2) must precede the manifest edits (Phase 3). Phase 1 migrates /epi off command-route-skill.sh, the one live caller, before Phase 4 deletes the script. Work items 5 and 6 resolve as audit-and-record (zero colon-suffixed routing_agents values; nonexistent-agent guard already implemented as lint Check B + gate 7).",
+  "phase": "plan",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/127_collapse_routing_ladder_to_routing_agents/plans/01_routing-ladder-collapse.md",
+      "summary": "7-phase plan collapsing routing/routing_hard out of 17+2 extension manifests, retiring command-route-skill.sh, and re-scoping validators and docs to routing_agents."
+    }
+  ],
+  "next_action_hint": "Run /implement 127 to execute the plan"
+}
