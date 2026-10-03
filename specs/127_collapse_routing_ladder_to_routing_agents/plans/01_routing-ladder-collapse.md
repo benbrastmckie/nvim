@@ -158,38 +158,46 @@ resolver, with identical resulting `skill_name`.
 
 ---
 
-### Phase 2: Re-scope the routing validators to `routing_agents` [NOT STARTED]
+### Phase 2: Re-scope the routing validators to `routing_agents` [COMPLETED]
 
 **Goal**: Every routing validator derives its coverage from `routing_agents`/`routing_agents_hard`
 alone, and passes identically whether or not a `routing` block is present. This phase is the
 prerequisite that makes Phase 3 safe.
 
 **Tasks**:
-- [ ] `lint-routing-wiring.sh` — replace Check A with a **research-anchored internal completeness
+- [x] `lint-routing-wiring.sh` — replace Check A with a **research-anchored internal completeness
       check on `routing_agents`**: for each manifest, every task_type key present under
       `routing_agents.research` MUST also be present under `routing_agents.plan` and
       `routing_agents.implement` (FAIL on absence). Keys present in `plan`/`implement` but not in
       `research`, and extension-specific ops (e.g. `present`'s `critique`), are REPORTed, never
-      failed
-- [ ] `lint-routing-wiring.sh` — re-scope Check C to `routing_agents_hard`'s own internal
+      failed *(completed)*
+- [x] `lint-routing-wiring.sh` — re-scope Check C to `routing_agents_hard`'s own internal
       completeness: every task_type declared under any `routing_agents_hard.{op}` MUST have a
       same-op `routing_agents.{op}` counterpart (a hard-mode entry for a task_type standard mode
       cannot route is the gap this now catches). Do NOT require `plan` parity in
       `routing_agents_hard` — `cslib` and `lean` legitimately declare `research` + `implement`
-      only
-- [ ] `lint-routing-wiring.sh` — update the script header comment block and `--help` text so the
-      documented A/B/C/D contract matches the new predicates
-- [ ] `check-extension-docs.sh` — re-scope `check_routing_block()` (around line 458-479): require
+      only *(completed)*
+- [x] `lint-routing-wiring.sh` — update the script header comment block and `--help` text so the
+      documented A/B/C/D contract matches the new predicates *(completed)*
+- [x] `check-extension-docs.sh` — re-scope `check_routing_block()` (around line 458-479): require
       a `routing_agents` block when the manifest declares a non-empty `provides.skills` **or**
       non-empty `provides.agents`, instead of requiring `routing`. Update the failure message
-- [ ] `check-extension-docs.sh` — re-point Rule B/C's `routing_targets`/`hard_targets` jq readers
+      *(completed)*
+- [x] `check-extension-docs.sh` — re-point Rule B/C's `routing_targets`/`hard_targets` jq readers
       (around lines 907 and 931) from `.routing`/`.routing_hard` to
       `.routing_agents`/`.routing_agents_hard`, validating against `provides.agents` + deployed
       agent files, preserving the existing three-way severity shape (not-resolvable = FAIL;
       resolvable but undeployed with extension installed = FAIL; undeployed with extension not
       installed = WARN). Update the long rationale comment block above it (around lines 838-850),
       which currently explains the severity choice in terms of `command-route-skill.sh`
-- [ ] Run both validators against the **current** (pre-removal) manifest state and confirm green
+      *(completed: also fixed a bug found during verification — provides.agents entries carry a
+      `.md` suffix that provides.skills entries don't, so target_resolvable() now appends `.md`
+      when comparing)*
+- [x] Run both validators against the **current** (pre-removal) manifest state and confirm green
+      *(completed: lint-routing-wiring.sh --verbose exits 0; check-extension-docs.sh's only 3
+      remaining FAILs are pre-existing sibling-territory drift in claude-refresh.sh and
+      literature's index-entries.json/SKILL.md -- task 217 and task 89's declared file_scope
+      respectively -- not routing-related)*
 
 **Timing**: 1.5 hours
 

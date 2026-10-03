@@ -467,14 +467,16 @@ check_routing_block() {
     return 0
   fi
 
-  # If manifest declares non-empty provides.skills, verify routing block exists
-  local skill_count
+  # If manifest declares non-empty provides.skills or provides.agents, verify a routing_agents
+  # block exists.
+  local skill_count agent_count
   skill_count=$(jq -r '.provides.skills | length' "$manifest" 2>/dev/null)
-  if [[ "$skill_count" -gt 0 ]]; then
-    local has_routing
-    has_routing=$(jq -r 'has("routing")' "$manifest" 2>/dev/null)
-    if [[ "$has_routing" == "false" ]]; then
-      fail "manifest declares $skill_count skill(s) but has no routing block"
+  agent_count=$(jq -r '.provides.agents | length' "$manifest" 2>/dev/null)
+  if [[ "$skill_count" -gt 0 || "$agent_count" -gt 0 ]]; then
+    local has_routing_agents
+    has_routing_agents=$(jq -r 'has("routing_agents")' "$manifest" 2>/dev/null)
+    if [[ "$has_routing_agents" == "false" ]]; then
+      fail "manifest declares $skill_count skill(s)/$agent_count agent(s) but has no routing_agents block"
     fi
   fi
 }
@@ -835,20 +837,22 @@ check_claudemd_size_budget() {
 #
 # Policy rationale (restored after a later sync reverted it from the stale extension-source
 # copy; this restores it in both copies):
-#   Both routing and routing_hard share the same deployment-dimension severity rule:
+#   Both routing_agents and routing_agents_hard share the same deployment-dimension severity
+#   rule:
 #     - FAIL if the extension is installed but the target is not deployed
 #     - WARN (info) if the extension is not installed (expected undeployed state)
-#   routing_hard adds ONE stricter requirement beyond the deployment dimension:
-#     1. Source-grounding: the target must exist in some extension's SOURCE provides.skills
-#   This rule deliberately downgraded the uninstalled-extension case for routing_hard from
-#   FAIL to WARN: command-route-skill.sh does not implement routing_hard dispatch at all (it
-#   takes 3 positional args and never reads .routing_hard), so the "unconditional dispatch"
-#   rationale that previously justified FAIL here is false -- an uninstalled extension with a
-#   source-grounded but undeployed routing_hard target is the expected state, not a live
-#   correctness bug. A later sync from the stale extension-source copy reverted this
-#   downgrade; the policy above restores it in both copies.
-#   Rule B (resolvability): any routing or routing_hard target that does not exist in any
-#   extension's provides.skills AND is not deployed is a FAIL (manifest typo/stale entry).
+#   routing_agents_hard adds ONE stricter requirement beyond the deployment dimension:
+#     1. Source-grounding: the target must exist in some extension's SOURCE provides.agents
+#   This rule deliberately downgrades the uninstalled-extension case for routing_agents_hard
+#   from FAIL to WARN: an uninstalled extension with a source-grounded but undeployed
+#   routing_agents_hard target is the expected state, not a live correctness bug. A later sync
+#   from the stale extension-source copy reverted this downgrade in the past; the policy above
+#   restores it in both copies.
+#   Rule B (resolvability): any routing_agents or routing_agents_hard target that does not
+#   exist in any extension's provides.agents AND is not deployed is a FAIL (manifest
+#   typo/stale entry, or a nonexistent agent declared silently -- the original defect this
+#   collapse is required to keep impossible to reintroduce). This duplicates, independently,
+#   the same class of check as lint-routing-wiring.sh's Check B.
 check_routing_consistency() {
   local ext_path="$1"
   local manifest="$ext_path/manifest.json"
@@ -882,19 +886,21 @@ check_routing_consistency() {
     done
   fi
 
-  # Helper: check if a skill target is resolvable (in any extension's provides.skills
-  # OR deployed under .claude/skills/)
+  # Helper: check if an agent target is resolvable (in any extension's provides.agents
+  # OR deployed under .claude/agents/). routing_agents/routing_agents_hard values name the
+  # agent WITHOUT a .md suffix; provides.agents entries carry the .md filename, so the
+  # comparison appends it.
   target_resolvable() {
     local target="$1"
-    # Check deployed first (fast path for cross-extension core skills)
-    if [[ -d "$REPO_ROOT/.claude/skills/$target" || -L "$REPO_ROOT/.claude/skills/$target" ]]; then
+    # Check deployed first (fast path for cross-extension core agents)
+    if [[ -f "$REPO_ROOT/.claude/agents/$target.md" ]]; then
       return 0
     fi
-    # Check all extension manifests for provides.skills
+    # Check all extension manifests for provides.agents
     local m
     for m in "$EXT_DIR"/*/manifest.json; do
       [[ -f "$m" ]] || continue
-      if jq -e --arg s "$target" '.provides.skills[]? | select(. == $s)' \
+      if jq -e --arg a "$target.md" '.provides.agents[]? | select(. == $a)' \
           "$m" > /dev/null 2>&1; then
         return 0
       fi
@@ -902,50 +908,43 @@ check_routing_consistency() {
     return 1
   }
 
-  # --- routing targets ---
+  # --- routing_agents targets ---
   local routing_targets
-  routing_targets=$(jq -r '.routing // {} | to_entries[] | .value | to_entries[] | .value' \
+  routing_targets=$(jq -r '.routing_agents // {} | to_entries[] | .value | to_entries[] | .value' \
     "$manifest" 2>/dev/null)
-  local t base_t
+  local t
   for t in $routing_targets; do
-    # Routing values may use colon notation (e.g., skill-grant:assemble) where the part
-    # before the colon is the actual skill name and the colon suffix is a sub-operation mode.
-    # Strip the suffix for skill-resolution purposes.
-    base_t="${t%%:*}"
-    if [[ ! -d "$REPO_ROOT/.claude/skills/$base_t" && ! -L "$REPO_ROOT/.claude/skills/$base_t" ]]; then
-      # Rule B: target not resolvable to any provides.skills and not deployed
-      if ! target_resolvable "$base_t"; then
-        fail "routing target not resolvable (not in any provides.skills, not deployed): $t"
+    if [[ ! -f "$REPO_ROOT/.claude/agents/$t.md" ]]; then
+      # Rule B: target not resolvable to any provides.agents and not deployed
+      if ! target_resolvable "$t"; then
+        fail "routing_agents target not resolvable (not in any provides.agents, not deployed): $t"
       elif [[ $installed -eq 1 ]]; then
-        # Rule C (routing, installed): deployed dimension violation
-        fail "routing target not deployed (extension is installed): $t"
+        # Rule C (routing_agents, installed): deployed dimension violation
+        fail "routing_agents target not deployed (extension is installed): $t"
       else
-        # Rule C (routing, uninstalled): warn only
-        info "WARN: routing target not deployed (extension not installed): $t"
+        # Rule C (routing_agents, uninstalled): warn only
+        info "WARN: routing_agents target not deployed (extension not installed): $t"
       fi
     fi
   done
 
-  # --- routing_hard targets ---
+  # --- routing_agents_hard targets ---
   local hard_targets
-  hard_targets=$(jq -r '.routing_hard // {} | to_entries[] | .value | to_entries[] | .value' \
+  hard_targets=$(jq -r '.routing_agents_hard // {} | to_entries[] | .value | to_entries[] | .value' \
     "$manifest" 2>/dev/null)
   for t in $hard_targets; do
-    # Strip colon sub-operation suffix for skill-resolution (same as routing above)
-    base_t="${t%%:*}"
-    if [[ ! -d "$REPO_ROOT/.claude/skills/$base_t" && ! -L "$REPO_ROOT/.claude/skills/$base_t" ]]; then
-      # Rule B: target not resolvable to any provides.skills and not deployed
-      if ! target_resolvable "$base_t"; then
-        fail "routing_hard target not resolvable (not in any provides.skills, not deployed): $t"
+    if [[ ! -f "$REPO_ROOT/.claude/agents/$t.md" ]]; then
+      # Rule B: target not resolvable to any provides.agents and not deployed
+      if ! target_resolvable "$t"; then
+        fail "routing_agents_hard target not resolvable (not in any provides.agents, not deployed): $t"
       elif [[ $installed -eq 1 ]]; then
-        # Rule C (routing_hard, installed): deployment violation
-        fail "routing_hard target not deployed (extension is installed): $t"
+        # Rule C (routing_agents_hard, installed): deployment violation
+        fail "routing_agents_hard target not deployed (extension is installed): $t"
       else
-        # Rule C (routing_hard, uninstalled): warn only. command-route-skill.sh does not
-        # implement routing_hard dispatch at all, so an uninstalled extension with a
-        # source-grounded but undeployed routing_hard target is expected, not a live bug
-        # (restored here after the same stale-source-copy regression noted above).
-        info "WARN: routing_hard target declared but not deployed (extension not installed): $t"
+        # Rule C (routing_agents_hard, uninstalled): warn only. An uninstalled extension with
+        # a source-grounded but undeployed routing_agents_hard target is expected, not a live
+        # bug (restored here after the same stale-source-copy regression noted above).
+        info "WARN: routing_agents_hard target declared but not deployed (extension not installed): $t"
       fi
     fi
   done

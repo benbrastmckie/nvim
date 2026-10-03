@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Re-scope the routing validators to routing_agents",
+  "started_at": "2026-10-03T04:46:00Z",
+  "last_updated": "2026-10-03T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "lint-routing-wiring.sh: replace Check A with research-anchored internal completeness check on routing_agents", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]},
+    {"id": 2, "description": "lint-routing-wiring.sh: re-scope Check C to routing_agents_hard internal completeness", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]},
+    {"id": 3, "description": "lint-routing-wiring.sh: update header comment block and --help text", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]},
+    {"id": 4, "description": "check-extension-docs.sh: re-scope check_routing_block() to routing_agents/provides.agents", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 5, "description": "check-extension-docs.sh: re-point Rule B/C routing_targets/hard_targets readers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 6, "description": "Run both validators against current manifest state and confirm green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "target_resolvable() compared provides.agents entries without .md suffix", "result": "failed", "reason": "provides.agents entries carry the .md filename (unlike provides.skills, which has no suffix); caused false-positive FAILs for cslib/formal/etc agent targets. Fixed by appending .md to the comparison value."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -2,13 +2,21 @@
 # lint-routing-wiring.sh - Routing wiring validation for extension manifests
 #
 # Validates, across every manifest under agent-system/extensions/*/manifest.json:
-#   A. Every key in `.routing.{op}` has a counterpart key in `.routing_agents.{op}` on the same
-#      manifest. A missing counterpart is a FAIL, not a silent fallback -- this is the class of
-#      defect that let sed-derived agent names silently resolve to non-existent files.
+#   A. Research-anchored completeness: every task_type key present under
+#      `.routing_agents.research` has a counterpart key under `.routing_agents.plan` and
+#      `.routing_agents.implement` on the same manifest. A missing counterpart is a FAIL, not a
+#      silent fallback -- this is the class of defect that let sed-derived agent names silently
+#      resolve to non-existent files. Keys present in `plan`/`implement` but absent from
+#      `research` (including an extension-specific op's own keys, e.g. `present`'s bare `slides`
+#      key) are REPORTed, never failed.
 #   B. Every value in `.routing_agents` / `.routing_agents_hard` names an agent file that exists
 #      somewhere under agent-system/extensions/*/agents/ in the source store. A declaration
 #      pointing at a non-existent agent is a FAIL.
-#   C. Every key in `.routing_hard.{op}` has a counterpart key in `.routing_agents_hard.{op}`.
+#   C. `routing_agents_hard` internal completeness: every task_type declared under any
+#      `.routing_agents_hard.{op}` has a same-op counterpart key under `.routing_agents.{op}` (a
+#      hard-mode entry for a task_type standard mode cannot route is the gap this catches). Plan
+#      parity is NOT required in `routing_agents_hard` -- `cslib` and `lean` legitimately declare
+#      `research` + `implement` only.
 #   D. (Report, never fail) Every `(op, task_type)` pair whose declared routing_agents value is a
 #      `general-*` agent, so deliberate general-routing stays visible and auditable rather than
 #      indistinguishable from an accidental gap.
@@ -53,9 +61,9 @@ while [[ $# -gt 0 ]]; do
       echo "Routing wiring validation for extension manifests."
       echo ""
       echo "Checks:"
-      echo "  A. Every routing.{op} key has a routing_agents.{op} counterpart"
+      echo "  A. Every routing_agents.research task_type has routing_agents.plan/.implement counterparts"
       echo "  B. Every routing_agents/routing_agents_hard value names an agent file that exists"
-      echo "  C. Every routing_hard.{op} key has a routing_agents_hard.{op} counterpart"
+      echo "  C. Every routing_agents_hard.{op} task_type has a routing_agents.{op} counterpart"
       echo "  D. (Report only) general-* agent declarations, for visibility"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
@@ -114,11 +122,10 @@ rel_path() {
   echo "${f#"$REPO_ROOT"/}"
 }
 
-# ── Check A + C: every routing.{op}/routing_hard.{op} key has a routing_agents(_hard) counterpart ──
-check_a_and_c() {
+# ── Check A: routing_agents.research task_types have routing_agents.plan/.implement counterparts ──
+check_a() {
   echo ""
-  echo "--- Check A: routing.{op} keys have routing_agents.{op} counterparts ---"
-  echo "--- Check C: routing_hard.{op} keys have routing_agents_hard.{op} counterparts ---"
+  echo "--- Check A: routing_agents.research task_types have routing_agents.plan/.implement counterparts ---"
 
   local any_manifest=false
   while IFS= read -r manifest; do
@@ -128,36 +135,71 @@ check_a_and_c() {
     rel="$(rel_path "$manifest")"
     log_info "Checking $rel"
 
-    # Check A
-    while IFS=$'\t' read -r op tt; do
-      [[ -z "$op" ]] && continue
-      local has_counterpart
-      has_counterpart=$(jq -r --arg op "$op" --arg tt "$tt" \
-        '((.routing_agents // {})[$op] // {}) | has($tt)' "$manifest" 2>/dev/null)
-      if [[ "$has_counterpart" == "true" ]]; then
-        log_pass "$rel: routing.$op.$tt has a routing_agents counterpart"
+    # Research-anchored: every task_type key under routing_agents.research must have a
+    # same-key counterpart under routing_agents.plan and routing_agents.implement.
+    while IFS= read -r tt; do
+      [[ -z "$tt" ]] && continue
+      local has_plan has_impl
+      has_plan=$(jq -r --arg tt "$tt" \
+        '((.routing_agents.plan // {}) | has($tt))' "$manifest" 2>/dev/null)
+      has_impl=$(jq -r --arg tt "$tt" \
+        '((.routing_agents.implement // {}) | has($tt))' "$manifest" 2>/dev/null)
+      if [[ "$has_plan" == "true" ]]; then
+        log_pass "$rel: routing_agents.research.$tt has a routing_agents.plan counterpart"
       else
-        log_fail "$rel: routing.$op.$tt has NO routing_agents counterpart"
+        log_fail "$rel: routing_agents.research.$tt has NO routing_agents.plan counterpart"
       fi
-    done < <(jq -r '(.routing // {}) | to_entries[] | .key as $op | (.value | keys[]) as $tt | "\($op)\t\($tt)"' "$manifest" 2>/dev/null)
+      if [[ "$has_impl" == "true" ]]; then
+        log_pass "$rel: routing_agents.research.$tt has a routing_agents.implement counterpart"
+      else
+        log_fail "$rel: routing_agents.research.$tt has NO routing_agents.implement counterpart"
+      fi
+    done < <(jq -r '(.routing_agents.research // {}) | keys[]' "$manifest" 2>/dev/null)
 
-    # Check C
+    # Keys present in plan/implement but absent from research are REPORTed, never failed -- this
+    # is the one-directional half of the rule (e.g. present.plan's extra bare "slides" key).
     while IFS=$'\t' read -r op tt; do
       [[ -z "$op" ]] && continue
-      local has_counterpart
-      has_counterpart=$(jq -r --arg op "$op" --arg tt "$tt" \
-        '((.routing_agents_hard // {})[$op] // {}) | has($tt)' "$manifest" 2>/dev/null)
-      if [[ "$has_counterpart" == "true" ]]; then
-        log_pass "$rel: routing_hard.$op.$tt has a routing_agents_hard counterpart"
-      else
-        log_fail "$rel: routing_hard.$op.$tt has NO routing_agents_hard counterpart"
+      local in_research
+      in_research=$(jq -r --arg tt "$tt" \
+        '((.routing_agents.research // {}) | has($tt))' "$manifest" 2>/dev/null)
+      if [[ "$in_research" != "true" ]]; then
+        log_report "$rel: routing_agents.$op.$tt has no routing_agents.research counterpart (extra, not failed)"
       fi
-    done < <(jq -r '(.routing_hard // {}) | to_entries[] | .key as $op | (.value | keys[]) as $tt | "\($op)\t\($tt)"' "$manifest" 2>/dev/null)
+    done < <(jq -r '
+      ["plan","implement"][] as $op
+      | (.routing_agents[$op] // {}) | keys[] as $tt
+      | "\($op)\t\($tt)"
+    ' "$manifest" 2>/dev/null)
   done < <(find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort)
 
   if [[ "$any_manifest" == false ]]; then
-    log_fail "Check A/C: no manifests found under $EXT_ROOT"
+    log_fail "Check A: no manifests found under $EXT_ROOT"
   fi
+}
+
+# ── Check C: routing_agents_hard.{op}.{tt} has a same-op routing_agents.{op}.{tt} counterpart ──
+check_c() {
+  echo ""
+  echo "--- Check C: routing_agents_hard.{op} task_types have routing_agents.{op} counterparts ---"
+
+  while IFS= read -r manifest; do
+    [[ -z "$manifest" ]] && continue
+    local rel
+    rel="$(rel_path "$manifest")"
+
+    while IFS=$'\t' read -r op tt; do
+      [[ -z "$op" ]] && continue
+      local has_counterpart
+      has_counterpart=$(jq -r --arg op "$op" --arg tt "$tt" \
+        '((.routing_agents[$op] // {}) | has($tt))' "$manifest" 2>/dev/null)
+      if [[ "$has_counterpart" == "true" ]]; then
+        log_pass "$rel: routing_agents_hard.$op.$tt has a routing_agents.$op counterpart"
+      else
+        log_fail "$rel: routing_agents_hard.$op.$tt has NO routing_agents.$op counterpart"
+      fi
+    done < <(jq -r '(.routing_agents_hard // {}) | to_entries[] | .key as $op | (.value | keys[]) as $tt | "\($op)\t\($tt)"' "$manifest" 2>/dev/null)
+  done < <(find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort)
 }
 
 # ── Check B: every routing_agents/routing_agents_hard value names an agent that exists ─────────
@@ -222,8 +264,9 @@ main() {
   echo "Repo root:  $REPO_ROOT"
   echo "Ext root:   $EXT_ROOT"
 
-  check_a_and_c
+  check_a
   check_b
+  check_c
   check_d
 
   echo ""
