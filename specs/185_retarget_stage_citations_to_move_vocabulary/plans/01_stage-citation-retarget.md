@@ -278,21 +278,25 @@ implementation summary how many turned out `LIVE` vs. `UNRELATED`, since the sur
 
 ---
 
-### Phase 4: Retarget the three batch/cycle schema and template docs [NOT STARTED]
+### Phase 4: Retarget the three batch/cycle schema and template docs [COMPLETED]
 
 **Goal**: Retarget the remaining dispatch-named documentation sites that describe batch admission,
 cycle postflight, and consolidated results rendering.
 
 **Tasks**:
-- [ ] `docs/architecture/batch-admit-schema.md`: retarget MT-3 admission-predicate citations to
+- [x] `docs/architecture/batch-admit-schema.md`: retarget MT-3 admission-predicate citations to
       Move 1 (`orchestrate-cycle-plan.sh`'s admission pass) and MT-4 step 4.5 citations to
-      Move 2.
-- [ ] `docs/architecture/orchestrate-cycle-postflight.md`: retarget Stage 5/7/8 and MT-5
+      Move 2. *(completed: all 12 hits were MT-3 step 4.5/step 3, all retargeted to Move 1)*
+- [x] `docs/architecture/orchestrate-cycle-postflight.md`: retarget Stage 5/7/8 and MT-5
       citations to Move 3 / Move 4 per the mapping table; this file documents the script Move 3
-      calls, so prefer naming the script plus the Move.
-- [ ] `context/patterns/orchestrate-batch-results-template.md`: retarget MT-5 rendering citations
-      to Move 3, and the `pending_ask_user` relay specifically to Move 4.
-- [ ] Re-read each diff.
+      calls, so prefer naming the script plus the Move. *(completed: 5 LIVE retargeted to Move 3,
+      6 HISTORICAL left untouched — this doc narrates the pre-merger single-task/multi-task split
+      explicitly in past tense)*
+- [x] `context/patterns/orchestrate-batch-results-template.md`: retarget MT-5 rendering citations
+      to Move 3, and the `pending_ask_user` relay specifically to Move 4. *(completed: all 5 hits
+      were general rendering citations, retargeted to Move 3 per the mapping table; no
+      `pending_ask_user`-specific citation appeared in this file's hit set)*
+- [x] Re-read each diff. *(completed)*
 
 **Timing**: 1 hour
 

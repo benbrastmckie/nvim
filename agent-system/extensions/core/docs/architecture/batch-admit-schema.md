@@ -9,7 +9,7 @@ follow the same history for the opposite reason — why they deliberately did NO
 **File location**: n/a — this is a stdout stream contract, not a file. The script emits NDJSON
 directly; nothing is written to disk.
 **Written by**: `.claude/scripts/orchestrate-batch-admit.sh`
-**Read by**: `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (per-cycle eligibility gate — the sole
+**Read by**: `skills/skill-orchestrate/SKILL.md` Move 1 (the admission predicate — the sole
 EXECUTING admission gate on the MT dispatch path, covering both effort modes now that the
 formerly-separate hard-mode engine's own transcribed copy of this contract has been deleted along
 with that file — see "Version History" below),
@@ -290,8 +290,8 @@ acceptance criterion.
   the same way an `in_batch` `file_scope_collision` defer already does — not excluded from the
   whole invocation. If the co-dispatch count is exactly one, the SAME hazardous candidate is
   instead `admit`ted with `self_modifying: true` still present (solo is still the desired outcome
-  for orchestrator-critical work). The consumer (`skills/skill-orchestrate/SKILL.md` Stage MT-3
-  step 4.5, covering both effort modes) may bypass acting on this verdict when
+  for orchestrator-critical work). The consumer (`skills/skill-orchestrate/SKILL.md` Move 1 (the admission predicate),
+  covering both effort modes) may bypass acting on this verdict when
   `--allow-self-modifying` is active for the invocation — see "Why This Check Is Blocking, Not
   Advisory" below for the override's exact boundary.
 - **`defer_reason == "file_scope_collision"`, `collision_scope == "in_batch"`** (NARROWED, still
@@ -306,7 +306,7 @@ acceptance criterion.
   collision.
 
   **Second consumer (recorded, not a schema change)**: `collision_scope == "in_batch"` now has a
-  SECOND consumer beyond `skill-orchestrate/SKILL.md` Stage MT-3 step 4.5's multi-cycle
+  SECOND consumer beyond `skill-orchestrate/SKILL.md` Move 1 (the admission predicate)'s multi-cycle
   re-sequencing loop — `commands/research.md`'s, `commands/plan.md`'s, and
   `commands/implement.md`'s Step 2.5/Step 3.5 plain-multi-task two-pass structure (see
   `context/patterns/task-lock.md`'s "Four-Tier Conflict Response" section, Tier 1, and
@@ -377,7 +377,7 @@ below.
 
 ## Why `--invocation-count` Exists
 
-The sole live caller (`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, the sole EXECUTING gate) dispatches in
+The sole live caller (`skills/skill-orchestrate/SKILL.md` Move 1 (the admission predicate), the sole EXECUTING gate) dispatches in
 wave/cycle-sized SUBSETS of the invocation's full candidate set — `wave_tasks` and
 `eligible_tasks` respectively. As of v3, `--invocation-count` is evaluated against that SAME
 subset — this cycle's actual co-dispatch count, not the whole invocation's full candidate count.
@@ -400,7 +400,7 @@ unrecognized flag fall through those callers' argument scans into positional val
 with exit 2. A `--codispatch-count` alias was considered and rejected as extra surface on
 orchestrator-critical machinery for a naming-clarity improvement only.
 
-**Convergence requirement on the SKILL.md caller — CHANGED IN v3**: under v2, because Stage MT-3
+**Convergence requirement on the SKILL.md caller — CHANGED IN v3**: under v2, because Move 1
 re-evaluates `eligible_tasks` every cycle, a `self_modifying` defer verdict had to be recorded in
 an invocation-scoped EXCLUSION set (`deferred_self_modifying` in `mt_state_file`) that was
 excluded from `eligible_tasks` on every subsequent cycle, or the same candidate would re-qualify
@@ -409,7 +409,7 @@ mechanism is different: `deferred_self_modifying` is now an APPEND-ONLY OBSERVAT
 exclusion set, and the defer clears on its own once the co-dispatched sibling that caused it
 leaves `eligible_tasks` by terminating or failing (a task no longer leaves `eligible_tasks`
 merely by transitioning to an in-flight status — `researching`/`planning` — now that eligibility
-is no longer status-gated; see `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 3) — the loop's
+is no longer status-gated; see `skills/skill-orchestrate/SKILL.md` Move 1 (the eligibility gate)) — the loop's
 existing per-cycle re-evaluation of `eligible_tasks` from current state already guarantees this,
 the same convergence `file_scope_collision` already relies on. **Second, independent, per-cycle
 exit condition, added by the designated-candidate tie-breaker and depending on no status
@@ -471,7 +471,7 @@ Deferral, Not Existence of the Check" section for the batch-size argument this i
 this script always computes and emits the honest `self_modifying`/`defer_reason` verdict
 regardless of the flag, and `--allow-self-modifying` is NEVER passed to
 `orchestrate-batch-admit.sh`. The override is a CONSUMER decision, made at
-`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 (covering both effort modes), to not ACT
+`skills/skill-orchestrate/SKILL.md` Move 1 (the admission predicate), covering both effort modes, to not ACT
 on an emitted `self_modifying` defer verdict — dispatching the
 candidate this cycle anyway, with a loud bypass notice logged regardless of whether the gate
 would otherwise have fired. It is never a change to this script's own output schema or blocking
@@ -597,7 +597,7 @@ branch would be misread as an ordinary in-batch collision (a "retry next wave" o
 than the invocation-scoped exclusion it actually is — and since the self-modifying candidate's
 own eligibility does not change on its own, that misread produces a non-converging retry loop,
 never a merely incorrect one-off classification. All in-repo consumers (`skills/skill-orchestrate/SKILL.md`
-Stage MT-3 step 4.5 and `scripts/orchestrate-dry-run-report.sh` Step 4) were updated to the v2 discriminator in the same
+Move 1 (the admission predicate) and `scripts/orchestrate-dry-run-report.sh` Step 4) were updated to the v2 discriminator in the same
 change that introduced it — there is no transitional period where v1 and v2 consumers coexist
 against a v2 script.
 
@@ -618,7 +618,7 @@ Every in-repo consumer's status as of v3:
 
 | Consumer | Status |
 |---|---|
-| `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 | Updated — the sole EXECUTING gate |
+| `skills/skill-orchestrate/SKILL.md` Move 1 (the admission predicate) | Updated — the sole EXECUTING gate |
 | The former standalone hard-mode orchestrator's own `## Multi-Task Mode` transcription (file since deleted; the contract now lives solely in `skill-orchestrate/SKILL.md` above) | Updated at the time — explicit transcription added, closing a prior zero-reference gap |
 | `scripts/orchestrate-dry-run-report.sh` Step 4 | Verified v3-compatible, NOT edited (outside this change's declared file scope) — pins no `$schema` string literal and already branches on `defer_reason` |
 | `scripts/orchestrate-predispatch-review.sh` Classes C and D | Verified v3-compatible, NOT edited (outside this change's declared file scope) — pins no `$schema` string literal and already branches on `defer_reason` |
@@ -657,8 +657,8 @@ Every in-repo consumer's status as of v4:
 
 | Consumer | Status |
 |---|---|
-| `skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5 | Updated — the sole EXECUTING gate; gained `--session-id "$session_id"` AND a new explicit `session_active` defer_reason branch (append to `defer_ledger`, distinct warning) — without the latter, this consumer would have shared `orchestrate-dry-run-report.sh`'s mis-bucketing defect on the one path that actually ACTS on verdicts, not just reports them |
-| The former standalone hard-mode orchestrator's own `## Multi-Task Mode` transcription (file since deleted; see the v3 row above) | Updated at the time — per this file's own explicit CO-MAINTENANCE requirement with the base skill's Stage MT-3 step 4.5, gained the same `--session-id "$session_id"` forwarding and `session_active` defer_reason branch |
+| `skills/skill-orchestrate/SKILL.md` Move 1 (the admission predicate) | Updated — the sole EXECUTING gate; gained `--session-id "$session_id"` AND a new explicit `session_active` defer_reason branch (append to `defer_ledger`, distinct warning) — without the latter, this consumer would have shared `orchestrate-dry-run-report.sh`'s mis-bucketing defect on the one path that actually ACTS on verdicts, not just reports them |
+| The former standalone hard-mode orchestrator's own `## Multi-Task Mode` transcription (file since deleted; see the v3 row above) | Updated at the time — per this file's own explicit CO-MAINTENANCE requirement with the base skill's Move 1 (the admission predicate), gained the same `--session-id "$session_id"` forwarding and `session_active` defer_reason branch |
 | `scripts/orchestrate-dry-run-report.sh` Step 4 | Fixed (this convergence found a REAL bug, not a clean pass): the pre-v4 code checked `self_modifying` explicitly, then fell through UNCONDITIONALLY into `file_scope_collision` field reads — a `session_active` verdict would have been mis-bucketed as an in-batch wave-deferral Note instead of the Excluded entry it actually is. Added an explicit `session_active` branch, `--session-id` passthrough (forwarded to both its own `orchestrate-batch-admit.sh` call and its `orchestrate-predispatch-review.sh` subprocess call), and `corroborated_by` rendering |
 | `scripts/orchestrate-predispatch-review.sh` Classes C and D | Extended, not merely re-verified: pinned no `$schema` literal and was already safe (its `select()`-based Class C/D filters simply do not match an unrecognized `defer_reason`, so a `session_active` verdict was inert rather than mis-bucketed). Gained a new Class E section re-presenting `session_active` verdicts, `corroborated_by` rendering on Class D, and an optional `--session-id` passthrough (forwarded only when the CALLER explicitly supplies it — this script's own pre-existing `--session-id` flag has an unrelated auto-generated-fallback purpose for `--repair`'s mutex attribution, and that fallback is deliberately never forwarded) |
 | `scripts/orchestrate-triage-classify.sh` | Confirmed OUT OF SCOPE: re-checked during this convergence and confirmed it never subprocess-calls `orchestrate-batch-admit.sh` — it only names the script in a comment and has its own independent `orchestrate-triage-v1` schema |
@@ -708,7 +708,7 @@ more accurate, not less.
 
 **Consumers updated by this bump — none**: no `defer_reason`-branching consumer
 (`scripts/orchestrate-dry-run-report.sh`, `scripts/orchestrate-predispatch-review.sh`,
-`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, covering both effort modes) is updated by
+`skills/skill-orchestrate/SKILL.md` Move 1 (the admission predicate), covering both effort modes) is updated by
 this change — that consumer-side work is a separate, later
 change with its own declared file scope. **Declared residual for v5**: every listed consumer above
 still reads `idle_overlap_advisory` as an unrecognized field it silently ignores (never an error),

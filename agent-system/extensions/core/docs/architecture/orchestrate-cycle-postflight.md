@@ -10,8 +10,8 @@
 ## Overview
 
 `orchestrate-cycle-postflight.sh` performs everything the `/orchestrate` lead does after a single
-dispatched agent returns, for BOTH engines (single-task `skill-orchestrate/SKILL.md` Stage 5 and
-multi-task Stage MT-4's per-task postflight). It is the third and last of the per-cycle scripts,
+dispatched agent returns, for the now-unified `skill-orchestrate/SKILL.md` Move 3 per-task
+postflight (formerly separate single-task Stage 5 and multi-task Stage MT-4 call sites). It is the third and last of the per-cycle scripts,
 alongside `orchestrate-build-dispatch.sh` (pre-dispatch) and `orchestrate-cycle-plan.sh`
 (dispatch-plan composition). Before this script existed, single-task Stage 5 and multi-task
 Stage MT-4 each carried an independently-maintained copy of this logic; the two bodies had
@@ -19,7 +19,7 @@ already drifted (Stage 5 had a staleness gate and a `dispatch_seq` identity gate
 neither) before this script closed the gap by construction — both engines now call the ONE
 implementation, so they are structurally incapable of disagreeing on gate semantics again.
 
-Both `skill-orchestrate/SKILL.md`'s Stage 5 and Stage MT-4 call this script and consume its
+`skill-orchestrate/SKILL.md`'s Move 3 calls this script and consumes its
 compact JSON output; neither carries its own copy of the logic below any more. See the script's
 own header comment for the authoritative, line-numbered WORK (a)–(k) list; this document is the
 narrative account of WHY each piece exists and how the two callers apply what the script does
@@ -46,7 +46,7 @@ staleness gate, the `dispatch_seq` identity gate, `.return-meta.json` recovery
 `user_decision` relay, status transition with the completion-claim gate, artifact link + round
 advance, the `modified_files`-vs-`file_scope` excursion advisory, and the per-task scoped commit.
 
-The callers (single-task Stage 5, multi-task Stage MT-4) keep ONLY what the script does not and
+The caller (Move 3) keeps ONLY what the script does not and
 must not own:
 
 - **The loop-control decision** (`EXIT (partial)` / `cycle_count` increment) — a script boundary
@@ -228,8 +228,8 @@ Multi-task's `orchestrate-cycle-plan.sh` tracks each task's own `force_phases_re
 and pops the next forced phase off it at the moment that task's dispatch row is built — the ONLY
 point in the pipeline where "was this task's phase forced this cycle" is still observable, since
 the queue is already popped by the time postflight runs. `orchestrate-cycle-plan.sh`'s dispatch
-rows therefore carry a `force` boolean field (Phase 7 addition), threaded by Stage MT-4's postflight
-call as `--force-invoked`, mirroring single-task Stage 5's own `force_invoked` (A2) semantics for
+rows therefore carry a `force` boolean field (Phase 7 addition), threaded by Move 3's postflight
+call as `--force-invoked` (the same `force_invoked` (A2) semantics applied historically under the former separate single-task engine) for
 the monotonic-max status clamp and the forced-dispatch artifact-round advance.
 
 ## What Remains Orphaned

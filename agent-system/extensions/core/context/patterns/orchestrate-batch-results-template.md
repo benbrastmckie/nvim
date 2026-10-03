@@ -1,11 +1,11 @@
 # Orchestrate Batch Results Template
 
 This file holds the `## Batch Orchestrate Results` consolidated-output template that
-`skill-orchestrate/SKILL.md` Stage MT-5 emits after the multi-task lifecycle-cycling loop exits.
+`skill-orchestrate/SKILL.md` Move 3 emits after the lifecycle-cycling loop exits.
 It was extracted verbatim from `commands/orchestrate.md`'s former inline fence, before batch-output
-ownership moved to Stage MT-5. The template MUST be followed exactly — every interleaved "rendered
+ownership moved to Move 3. The template MUST be followed exactly — every interleaved "rendered
 only when X" / "populated from Y" gating rule on each of its ten `###`-level subsections is part
-of the contract, not commentary. Read this file at the Stage MT-5 call site before emitting the
+of the contract, not commentary. Read this file at the Move 3 call site before emitting the
 consolidated output.
 
 ```markdown
@@ -63,7 +63,7 @@ Re-run sequence (dependency order; printed, not executed):
 ### Admitted (idle overlap advisory)
 
 (Renders whenever `idle_overlap_ledger` is non-empty — populated from that per-cycle accumulator,
-one row per admitted task carrying `idle_overlap_advisory`, per Stage MT-5 step 1/4's reporting
+one row per admitted task carrying `idle_overlap_advisory`, per Move 3's reporting
 instruction in `skill-orchestrate/SKILL.md`. These tasks were ADMITTED, not deferred — this
 section is placed on the admitted side, near the `### Deferred (...)` cluster below, because the
 overlap it surfaces is the same idle cross-batch mechanism those sections cover for the deferring
@@ -80,8 +80,8 @@ matters; otherwise no action is required.
 ### Deferred (self-modifying)
 
 (Renders on every batch, not only zero-dispatch ones — populated from
-`tasks_deferred_self_modifying_json`, each task's FINAL status at loop exit, per Stage MT-5 step
-4's reporting instruction in `skill-orchestrate/SKILL.md`.)
+`tasks_deferred_self_modifying_json`, each task's FINAL status at loop exit, per Move 3's
+reporting instruction in `skill-orchestrate/SKILL.md`.)
 
 | Task | Final Status | Note |
 |------|--------------|------|
