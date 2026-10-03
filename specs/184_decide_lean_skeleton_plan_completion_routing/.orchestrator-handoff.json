@@ -1,5 +1,8 @@
 {
   "status": "planned",
+  "summary": "Created a 5-phase implementation plan for report-only skeleton-plan follow-up surfacing at completion under the batch engine (no pr_ready porting, no auto-task-creation).",
+  "phases_completed": 0,
+  "phases_total": 5,
   "artifacts": [
     {
       "type": "plan",
@@ -7,16 +10,5 @@
       "summary": "5-phase plan adding report-only skeleton-follow-up surfacing (stderr, completion_summary, append-only skeleton_follow_ups) to orchestrate-cycle-postflight.sh, with a new skill-base.sh propagate helper, a regression fixture, and three doc updates."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 184 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1791000710_cc4f86_184",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4.5,
-    "dependency_waves": [[1], [2], [3, 4], [5]]
-  },
   "dispatch_seq": 10
 }
