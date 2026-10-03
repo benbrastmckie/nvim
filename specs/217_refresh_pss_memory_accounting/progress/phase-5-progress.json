@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "CPU-delta and cost-gate tests",
+  "started_at": "2026-10-02T01:50:00Z",
+  "last_updated": "2026-10-02T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "read_proc_stat_fields() unit cases (normal, comm-gotcha, malformed, missing)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 2, "description": "CPU-delta state-machine cases (first sighting, unchanged/increased cputime, pruning)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 3, "description": "PID-reuse case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 4, "description": "State-file tolerance + atomic-write cleanliness cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 5, "description": "Floor-gate both-sides full-script cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 6, "description": "Fix assertion (g) fixtures for new eligibility gate; mutation-check list update", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 7, "description": "Header comment update", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "shellcheck": "clean, baseline warnings plus two new SC2034 of the same already-accepted PROC_ROOT-pattern class",
+    "suite": "143 passed / 0 failed (up from 122/3 at end of Phase 4 -- assertion (g) now fixed)",
+    "non_vacuousness": "mutated first-sighting branch to always-idle: 6 state-machine cases failed as expected (restored, suite back to 143/0); comm-gotcha case includes a built-in non-vacuousness check proving naive awk '{print $22}' would misparse the fixture"
+  }
+}

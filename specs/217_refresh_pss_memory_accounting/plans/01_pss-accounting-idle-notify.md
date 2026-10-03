@@ -405,31 +405,37 @@ further reference must be resolved in this phase rather than left dangling.
 
 ---
 
-### Phase 5: CPU-delta and cost-gate tests [NOT STARTED]
+### Phase 5: CPU-delta and cost-gate tests [COMPLETED]
 
 **Goal**: Cover the idle state machine, the `comm`-gotcha-robust `/proc/PID/stat` parse, state-file
 tolerance, PID reuse, and the floor gate on both sides of its threshold.
 
 **Tasks**:
-- [ ] New assertion block for `read_proc_stat_fields()`: a normal fixture row; a row whose fake
+- [x] New assertion block for `read_proc_stat_fields()`: a normal fixture row; a row whose fake
       `comm` deliberately contains a space AND a parenthesis (e.g. `(lean (worker) x)`) asserting
       `starttime`/`utime`/`stime` are still correct; a malformed row returning empty, not partial.
-- [ ] State-machine cases over a fixture `LEAN_TREE_STATE_DIR` plus fixture `PROC_ROOT`: first
+      *(completed, plus a non-vacuousness check proving a naive `awk '{print $22}'` split would
+      actually misparse the comm-gotcha fixture)*
+- [x] State-machine cases over a fixture `LEAN_TREE_STATE_DIR` plus fixture `PROC_ROOT`: first
       sighting is NOT idle; unchanged `cputime` across two runs accrues `idle_for`; increased
-      `cputime` resets `last_active` to now; an entry for a vanished tree is pruned.
-- [ ] PID-reuse case: same root pid, different `starttime` -> treated as a new tree with zero
-      `idle_for`, never inheriting the old entry's history.
-- [ ] State-file tolerance cases: missing file, empty file, and syntactically invalid JSON each
+      `cputime` resets `last_active` to now; an entry for a vanished tree is pruned. *(completed)*
+- [x] PID-reuse case: same root pid, different `starttime` -> treated as a new tree with zero
+      `idle_for`, never inheriting the old entry's history. *(completed)*
+- [x] State-file tolerance cases: missing file, empty file, and syntactically invalid JSON each
       treated as first sighting (never idle), each emitting the audible log line; atomic-write
-      case asserting no stray `tmp` file remains in the state dir after a write.
-- [ ] Floor-gate cases on both sides: idle past threshold with reclaimable just BELOW
+      case asserting no stray `tmp` file remains in the state dir after a write. *(completed)*
+- [x] Floor-gate cases on both sides: idle past threshold with reclaimable just BELOW
       `LEAN_LSP_MEM_FLOOR_MB` renders `idle, cheap, kept` and is not terminated under `--force`;
       the same tree just ABOVE the floor renders eligible. Drive both through full-script runs with
-      an overridden low `LEAN_LSP_MEM_FLOOR_MB` so fixtures stay small.
-- [ ] Update assertion (g)'s fixtures for the new eligibility gate (the ordering guarantee must
+      an overridden low `LEAN_LSP_MEM_FLOOR_MB` so fixtures stay small. *(completed)*
+- [x] Update assertion (g)'s fixtures for the new eligibility gate (the ordering guarantee must
       still be asserted on a now-eligible fixture tree), and replace `lean_row_is_idle` with the
-      new function names in the mutation-check list.
-- [ ] Update the suite header comment.
+      new function names in the mutation-check list. *(completed: assertion (g) now carries
+      /proc/PID/stat fixtures plus a pre-seeded lean-trees.json making its tree eligible;
+      mutation-check list drops lean_row_is_idle and adds read_proc_stat_fields/
+      read_lean_tree_state/write_lean_tree_state/update_lean_tree_cpu_state, bounds updated to
+      31/32)*
+- [x] Update the suite header comment. *(completed)*
 
 **Timing**: 1.5 hours
 

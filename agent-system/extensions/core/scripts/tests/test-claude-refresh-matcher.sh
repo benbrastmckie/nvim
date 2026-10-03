@@ -8,7 +8,11 @@
 # via smaps_rollup Pss_Anon/SwapPss, Pss_File reported separately as uncounted shared cache, and
 # an approximate-labeled fallback when smaps_rollup is absent or incomplete), Lean LSP,
 # zombie-reporting, and MCP fan-out passes, and assertion (k) for the orphaned build-waiter
-# poll-loop pass: detection (Family A/B
+# poll-loop pass. Assertion (g2) covers the CPU-delta idle state machine that replaced the Lean
+# pass's old pcpu/etimes gate: the comm-gotcha-robust /proc/PID/stat parse, the idle state machine
+# (first sighting, unchanged/increased cputime, pruning), PID reuse, state-file tolerance
+# (missing/empty/corrupt), atomic-write cleanliness, and the memory-floor cost gate on both sides
+# of its threshold. Detection (Family A/B
 # classification, idle+age gating, the PID-reuse ceiling backstop), the widened self-exclusion
 # (pid, ppid, pgid, and the full ancestor chain of $$, all from one frozen snapshot), the
 # fail-closed path when the $$ row is absent, the age-threshold-only gate (reaps without
@@ -867,6 +871,24 @@ for lean_pid in "$LEAN_TREE_ROOT" "$LEAN_TREE_SERVER" "$LEAN_TREE_WORKER1" "$LEA
   printf 'Name:\tlean\nVmSwap:\t   1024 kB\n' > "$LEAN_FAKE_PROC_DIR/$lean_pid/status"
 done
 
+# Fixture /proc/<pid>/stat files (Phase 4's CPU-delta gate requires these for every member) plus a
+# pre-seeded lean-trees.json showing a long-unchanged cputime, so this tree is already ELIGIBLE on
+# a single --dry-run invocation (same technique as the "Lean PSS (e)" fixture above). Each member
+# gets a fixed 150-tick (100 utime + 50 stime) contribution; summed across all five members = 750.
+LEAN_TREE_ROOT_STARTTIME=999000
+for lean_pid in "$LEAN_TREE_ROOT" "$LEAN_TREE_SERVER" "$LEAN_TREE_WORKER1" "$LEAN_TREE_WORKER2" "$LEAN_TREE_WORKER3"; do
+  printf '%s (lean) S 1 %s %s 0 -1 4194304 100 0 0 0 100 50 0 0 20 0 1 0 %s 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' \
+    "$lean_pid" "$lean_pid" "$lean_pid" "$LEAN_TREE_ROOT_STARTTIME" > "$LEAN_FAKE_PROC_DIR/$lean_pid/stat"
+done
+LEAN_FAKE_STATE_DIR="$WORKDIR/state-lean-g"
+mkdir -p "$LEAN_FAKE_STATE_DIR"
+LEAN_G_PAST=$(( $(date +%s) - 36000 ))
+printf '{"%s:%s": {"cputime_ticks": 750, "last_active": %s, "last_seen": %s}}' \
+  "$LEAN_TREE_ROOT" "$LEAN_TREE_ROOT_STARTTIME" "$LEAN_G_PAST" "$LEAN_G_PAST" > "$LEAN_FAKE_STATE_DIR/lean-trees.json"
+# LEAN_LSP_MEM_FLOOR_MB overridden to 1 (1024 KB) so this fixture's rss+VmSwap fallback total
+# clears the floor comfortably and deterministically, matching the Lean PSS (e) fixture's pattern
+# -- the point of this assertion is the ORDERING guarantee, not the floor arithmetic itself.
+
 # Fake kill: logs "<signal> <pid>" for every SIGTERM(-15)/SIGKILL(-9) to $KILL_LOG_FILE; a
 # `kill -0` liveness probe always reports "alive" (exit 0) for these synthetic PIDs, which drives
 # every one of them through terminate_pid()'s SIGTERM->sleep->SIGKILL "forced" branch
@@ -895,7 +917,7 @@ chmod +x "$LEAN_FAKE_KILL_DIR/kill"
 export KILL_LOG_FILE
 
 # --- Dry-run-clean assertion: lists all 5 synthetic PIDs + total, terminates nothing ---
-LEAN_DRY_RUN_OUT="$(PATH="$LEAN_FAKE_BIN_DIR:$LEAN_FAKE_KILL_DIR:$PATH" PROC_ROOT="$LEAN_FAKE_PROC_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+LEAN_DRY_RUN_OUT="$(PATH="$LEAN_FAKE_BIN_DIR:$LEAN_FAKE_KILL_DIR:$PATH" PROC_ROOT="$LEAN_FAKE_PROC_DIR" LEAN_TREE_STATE_DIR="$LEAN_FAKE_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
 LEAN_DRY_RUN_OK=true
 for lean_pid in "$LEAN_TREE_ROOT" "$LEAN_TREE_SERVER" "$LEAN_TREE_WORKER1" "$LEAN_TREE_WORKER2" "$LEAN_TREE_WORKER3"; do
@@ -903,7 +925,7 @@ for lean_pid in "$LEAN_TREE_ROOT" "$LEAN_TREE_SERVER" "$LEAN_TREE_WORKER1" "$LEA
     LEAN_DRY_RUN_OK=false
   fi
 done
-if $LEAN_DRY_RUN_OK && echo "$LEAN_DRY_RUN_OUT" | grep -q "Found 1 idle Lean LSP process tree"; then
+if $LEAN_DRY_RUN_OK && echo "$LEAN_DRY_RUN_OUT" | grep -q "Found 1 Lean LSP process tree"; then
   pass "Lean tree (g): --dry-run lists all five synthetic PIDs and the tree count"
 else
   fail "Lean tree (g): --dry-run did not list all five synthetic PIDs / tree count"
@@ -946,10 +968,12 @@ LEAN_FORCE_OUT="$(bash -c '
   export PATH="$1:$2:$PATH"
   export PROC_ROOT="$3"
   export LEAN_LSP_IDLE_THRESHOLD_MIN="$4"
+  export LEAN_TREE_STATE_DIR="$5"
+  export LEAN_LSP_MEM_FLOOR_MB="$6"
   # shellcheck disable=SC1090
-  source "$5"
+  source "$7"
   main --force
-' _ "$LEAN_FAKE_BIN_DIR" "$LEAN_FAKE_KILL_DIR" "$LEAN_FAKE_PROC_DIR" 1 "$WORKDIR/$SCRIPT_UNDER_TEST" 2>&1)"
+' _ "$LEAN_FAKE_BIN_DIR" "$LEAN_FAKE_KILL_DIR" "$LEAN_FAKE_PROC_DIR" 1 "$LEAN_FAKE_STATE_DIR" 1 "$WORKDIR/$SCRIPT_UNDER_TEST" 2>&1)"
 
 if [ -s "$KILL_LOG_FILE" ]; then
   # Find the LAST line number at which each pid appears (a pid may appear twice: SIGTERM then
@@ -975,6 +999,281 @@ else
 fi
 
 unset PROC_ROOT KILL_LOG_FILE
+
+# =====================================================================
+# Assertion (g2): CPU-delta idle state machine and memory-floor cost gate
+# =====================================================================
+# Covers read_proc_stat_fields()'s comm-gotcha-robust parsing, the idle state machine (first
+# sighting, unchanged/increased cputime, pruning), PID reuse, state-file tolerance (missing/empty/
+# corrupt), atomic-write cleanliness, and the floor gate on both sides of its threshold via
+# full-script runs -- all isolated from assertion (g)'s own fixture (own pids/dirs throughout).
+
+# --- read_proc_stat_fields(): normal row, comm-with-space-and-parenthesis gotcha, malformed row ---
+STAT_FAKE_PROC_DIR="$WORKDIR/fakeproc-stat"
+mkdir -p "$STAT_FAKE_PROC_DIR/74001" "$STAT_FAKE_PROC_DIR/74002" "$STAT_FAKE_PROC_DIR/74003"
+
+printf '74001 (lean) S 1 74001 74001 0 -1 4194304 100 0 0 0 500 300 0 0 20 0 1 0 999999 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' > "$STAT_FAKE_PROC_DIR/74001/stat"
+PROC_ROOT="$STAT_FAKE_PROC_DIR"
+STAT_NORMAL="$(read_proc_stat_fields 74001)"
+if [ "$STAT_NORMAL" = "999999|500|300" ]; then
+  pass "read_proc_stat_fields: normal fixture row returns 'starttime|utime|stime' = '999999|500|300'"
+else
+  fail "read_proc_stat_fields: normal fixture row returned '$STAT_NORMAL', expected '999999|500|300'"
+fi
+
+# comm deliberately contains a space AND a parenthesis -- per `man proc`, comm can contain any
+# character including spaces or parens. A naive split on the FIRST ')' would desynchronize every
+# field after it; this parser locates the LAST ')' instead.
+printf '74002 (lean (worker) x) S 1 74002 74002 0 -1 4194304 100 0 0 0 1234 567 0 0 20 0 1 0 555555 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' > "$STAT_FAKE_PROC_DIR/74002/stat"
+STAT_GOTCHA="$(read_proc_stat_fields 74002)"
+if [ "$STAT_GOTCHA" = "555555|1234|567" ]; then
+  pass "read_proc_stat_fields: comm containing a space and a parenthesis still parses correctly from the LAST ')'"
+else
+  fail "read_proc_stat_fields: comm-gotcha fixture returned '$STAT_GOTCHA', expected '555555|1234|567'"
+fi
+
+# Non-vacuousness for the comm-gotcha case: a naive `awk '{print $22}'` whitespace split would
+# misparse this row (the embedded parenthesis shifts the whitespace field count), so prove this
+# test can actually fail against that naive approach, not only against the correct parser.
+NAIVE_FIELD22="$(awk '{print $22}' "$STAT_FAKE_PROC_DIR/74002/stat")"
+if [ "$NAIVE_FIELD22" != "555555" ]; then
+  pass "read_proc_stat_fields: non-vacuousness -- a naive whitespace-split \$22 ('$NAIVE_FIELD22') does NOT equal the correct starttime, confirming the comm-gotcha fixture would catch a regression to naive splitting"
+else
+  fail "read_proc_stat_fields: non-vacuousness check inconclusive -- naive \$22 happened to equal the correct starttime"
+fi
+
+# Malformed row: too few remainder fields -- must return empty, never a partial/guessed result.
+printf '74003 (x) S\n' > "$STAT_FAKE_PROC_DIR/74003/stat"
+STAT_MALFORMED="$(read_proc_stat_fields 74003)"
+if [ -z "$STAT_MALFORMED" ]; then
+  pass "read_proc_stat_fields: malformed row (too few fields) returns empty, not a partial result"
+else
+  fail "read_proc_stat_fields: malformed row returned '$STAT_MALFORMED', expected empty"
+fi
+
+# Unreadable/missing path.
+STAT_MISSING="$(read_proc_stat_fields 74099)"
+if [ -z "$STAT_MISSING" ]; then
+  pass "read_proc_stat_fields: nonexistent PID path returns empty, not an error"
+else
+  fail "read_proc_stat_fields: missing-file fixture returned '$STAT_MISSING', expected empty"
+fi
+unset PROC_ROOT
+
+# --- CPU-delta state-machine cases over a fixture LEAN_TREE_STATE_DIR ---
+STATE_MACHINE_DIR="$WORKDIR/state-machine"
+mkdir -p "$STATE_MACHINE_DIR"
+LEAN_TREE_STATE_DIR="$STATE_MACHINE_DIR"
+LEAN_TREE_STATE_FILE="$LEAN_TREE_STATE_DIR/lean-trees.json"
+
+# First sighting: no prior state -- must NOT be idle (idle_min = 0).
+CPU_STATE_KEYS=("75001:111111")
+CPU_STATE_CPUTICKS=(1000)
+update_lean_tree_cpu_state
+if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
+  pass "update_lean_tree_cpu_state: first sighting is NOT idle (idle_min = 0)"
+else
+  fail "update_lean_tree_cpu_state: first sighting returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+fi
+
+# Unchanged cputime, but with last_active backdated directly in the state file (simulating real
+# elapsed time without sleeping in the test) -- idle_for must accrue.
+BACKDATE_PAST=$(( $(date +%s) - 1800 ))
+printf '{"75001:111111": {"cputime_ticks": 1000, "last_active": %s, "last_seen": %s}}' "$BACKDATE_PAST" "$BACKDATE_PAST" > "$LEAN_TREE_STATE_FILE"
+CPU_STATE_KEYS=("75001:111111")
+CPU_STATE_CPUTICKS=(1000)
+update_lean_tree_cpu_state
+if [ "${CPU_STATE_IDLE_MIN[0]}" = "30" ]; then
+  pass "update_lean_tree_cpu_state: unchanged cputime accrues idle_for from the backdated last_active (30 min)"
+else
+  fail "update_lean_tree_cpu_state: unchanged-cputime case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 30"
+fi
+
+# Increased cputime resets last_active to now (idle_min back to 0), even though the prior
+# last_active was far in the past.
+CPU_STATE_KEYS=("75001:111111")
+CPU_STATE_CPUTICKS=(1500)
+update_lean_tree_cpu_state
+if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
+  pass "update_lean_tree_cpu_state: increased cputime resets idle_for to 0"
+else
+  fail "update_lean_tree_cpu_state: increased-cputime case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+fi
+
+# Non-vacuousness: if a first sighting were wrongly treated as idle, the very first case above
+# would have reported a nonzero idle_min instead of 0 -- already proven FALSE by construction
+# (first sighting always sets last_active=now), so the mutation check here flips the state-machine
+# logic directly: a mutant that always treats a key as first-sighting (ignoring prior state)
+# would make the "unchanged cputime accrues idle_for" case above read 0 instead of 30 -- confirm
+# that mutant shape actually produces 0 by re-running against the backdated fixture with a
+# deliberately WRONG prior key (simulating "no match found").
+CPU_STATE_KEYS=("75001:999999999")  # different starttime -- guaranteed no prior-state match
+CPU_STATE_CPUTICKS=(1000)
+update_lean_tree_cpu_state
+if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
+  pass "update_lean_tree_cpu_state: non-vacuousness -- a key with no matching prior state reads idle_min=0 (confirms the 'unchanged cputime accrues idle_for' case above is genuinely exercising the match, not a vacuous always-idle default)"
+else
+  fail "update_lean_tree_cpu_state: non-vacuousness check returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+fi
+
+# --- PID-reuse case: same root pid, different starttime -> treated as a brand-new tree ---
+printf '{"76001:111111": {"cputime_ticks": 2000, "last_active": %s, "last_seen": %s}}' "$BACKDATE_PAST" "$BACKDATE_PAST" > "$LEAN_TREE_STATE_FILE"
+CPU_STATE_KEYS=("76001:222222")  # same pid 76001, DIFFERENT starttime
+CPU_STATE_CPUTICKS=(50)
+update_lean_tree_cpu_state
+if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
+  pass "update_lean_tree_cpu_state: PID reuse (same pid, different starttime) is a brand-new tree, never inheriting the old entry's idle history"
+else
+  fail "update_lean_tree_cpu_state: PID-reuse case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0 (should not inherit old-key history)"
+fi
+
+# --- Pruning: a tree absent from the current run's CPU_STATE_KEYS is removed from the state file ---
+printf '{"77001:1": {"cputime_ticks": 10, "last_active": %s, "last_seen": %s}, "77002:1": {"cputime_ticks": 10, "last_active": %s, "last_seen": %s}}' \
+  "$BACKDATE_PAST" "$BACKDATE_PAST" "$BACKDATE_PAST" "$BACKDATE_PAST" > "$LEAN_TREE_STATE_FILE"
+CPU_STATE_KEYS=("77001:1")  # 77002:1 is no longer present this run
+CPU_STATE_CPUTICKS=(10)
+update_lean_tree_cpu_state
+PRUNE_CHECK="$(jq -r 'has("77002:1")' "$LEAN_TREE_STATE_FILE" 2>/dev/null)"
+if [ "$PRUNE_CHECK" = "false" ] && jq -e 'has("77001:1")' "$LEAN_TREE_STATE_FILE" >/dev/null 2>&1; then
+  pass "update_lean_tree_cpu_state: a tree absent from this run's keys is pruned from the state file, while a present key is kept"
+else
+  fail "update_lean_tree_cpu_state: pruning did not behave as expected"
+  info "state file was: $(cat "$LEAN_TREE_STATE_FILE")"
+fi
+
+# --- State-file tolerance: missing, empty, and syntactically invalid JSON are all first sighting ---
+rm -f "$LEAN_TREE_STATE_FILE"
+CPU_STATE_KEYS=("78001:1")
+CPU_STATE_CPUTICKS=(5)
+update_lean_tree_cpu_state
+if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
+  pass "update_lean_tree_cpu_state: missing state file treated as first sighting (never idle)"
+else
+  fail "update_lean_tree_cpu_state: missing-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+fi
+
+: > "$LEAN_TREE_STATE_FILE"
+CPU_STATE_KEYS=("78001:1")
+CPU_STATE_CPUTICKS=(5)
+update_lean_tree_cpu_state
+if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
+  pass "update_lean_tree_cpu_state: empty state file treated as first sighting (never idle)"
+else
+  fail "update_lean_tree_cpu_state: empty-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+fi
+
+printf 'not valid json {' > "$LEAN_TREE_STATE_FILE"
+CPU_STATE_KEYS=("78001:1")
+CPU_STATE_CPUTICKS=(5)
+CORRUPT_STDERR="$(update_lean_tree_cpu_state 2>&1 1>/dev/null)"
+if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ] && echo "$CORRUPT_STDERR" | grep -qi "failed JSON validation"; then
+  pass "update_lean_tree_cpu_state: syntactically invalid JSON treated as first sighting (never idle), with an audible warning logged"
+else
+  fail "update_lean_tree_cpu_state: corrupt-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}' / stderr='$CORRUPT_STDERR', expected idle_min=0 and a warning"
+fi
+
+# --- Atomic-write cleanliness: no stray tmp file remains in the state dir after a write ---
+STRAY_TMP_COUNT="$(find "$STATE_MACHINE_DIR" -maxdepth 1 -name '.lean-trees.json.*' | wc -l | tr -d ' ')"
+if [ "$STRAY_TMP_COUNT" = "0" ]; then
+  pass "write_lean_tree_state: no stray mktemp tmp file remains in the state dir after writes"
+else
+  fail "write_lean_tree_state: found $STRAY_TMP_COUNT stray tmp file(s) in the state dir"
+  info "dir listing: $(ls -la "$STATE_MACHINE_DIR")"
+fi
+unset LEAN_TREE_STATE_DIR LEAN_TREE_STATE_FILE
+
+# --- Floor-gate cases on BOTH sides of the threshold, via full-script runs with an overridden
+# low LEAN_LSP_MEM_FLOOR_MB so fixtures stay small. Own dedicated fixture (own pids/dirs). ---
+FLOOR_ROOT=79001
+FLOOR_BIN_DIR="$WORKDIR/fakebin-floor"
+mkdir -p "$FLOOR_BIN_DIR"
+cat > "$FLOOR_BIN_DIR/ps" <<'FAKE_PS_FLOOR_EOF'
+#!/usr/bin/env bash
+has_p_flag=false
+has_c_flag=false
+field_spec=""
+prev=""
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  if [ "$a" = "-C" ]; then has_c_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
+done
+if $has_p_flag; then
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+case "$field_spec" in
+  *pgid*)
+    exit 0
+    ;;
+esac
+cur_uid="$(id -u)"
+CG="0::/user.slice/user-1000.slice/session.scope"
+if $has_c_flag; then
+  printf '%s 1 %s 20000 1000 0.0 %s lake ".../bin/lake serve"\n' "__ROOT__" "$cur_uid" "$CG"
+  exit 0
+fi
+exit 0
+FAKE_PS_FLOOR_EOF
+sed -i "s/__ROOT__/$FLOOR_ROOT/g" "$FLOOR_BIN_DIR/ps"
+chmod +x "$FLOOR_BIN_DIR/ps"
+
+FLOOR_PROC_DIR="$WORKDIR/fakeproc-floor"
+mkdir -p "$FLOOR_PROC_DIR/$FLOOR_ROOT"
+printf '%s (lake) S 1 %s %s 0 -1 4194304 100 0 0 0 100 50 0 0 20 0 1 0 55555 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' "$FLOOR_ROOT" "$FLOOR_ROOT" "$FLOOR_ROOT" > "$FLOOR_PROC_DIR/$FLOOR_ROOT/stat"
+FLOOR_STATE_DIR="$WORKDIR/state-floor"
+mkdir -p "$FLOOR_STATE_DIR"
+FLOOR_PAST=$(( $(date +%s) - 36000 ))
+printf '{"%s:55555": {"cputime_ticks": 150, "last_active": %s, "last_seen": %s}}' "$FLOOR_ROOT" "$FLOOR_PAST" "$FLOOR_PAST" > "$FLOOR_STATE_DIR/lean-trees.json"
+
+# Side 1: reclaimable just BELOW a 1 MB (1024 KB) floor -- idle past threshold, but "idle, cheap,
+# kept", and must NOT be terminated even under --force.
+printf 'Pss_Anon:\t     1000 kB\nSwapPss:\t        0 kB\nPss_File:\t        0 kB\n' > "$FLOOR_PROC_DIR/$FLOOR_ROOT/smaps_rollup"
+FLOOR_BELOW_OUT="$(PATH="$FLOOR_BIN_DIR:$PATH" PROC_ROOT="$FLOOR_PROC_DIR" LEAN_TREE_STATE_DIR="$FLOOR_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+if echo "$FLOOR_BELOW_OUT" | grep -q "idle, cheap, kept" && echo "$FLOOR_BELOW_OUT" | grep -q "0 eligible"; then
+  pass "Floor gate: reclaimable (1000 KB) just below a 1024 KB floor renders 'idle, cheap, kept', 0 eligible"
+else
+  fail "Floor gate: below-floor case did not render as 'idle, cheap, kept' / 0 eligible"
+  info "output was: $FLOOR_BELOW_OUT"
+fi
+
+FLOOR_BELOW_KILL_LOG="$WORKDIR/floor-below-kill.log"
+: > "$FLOOR_BELOW_KILL_LOG"
+FLOOR_BELOW_FORCE_OUT="$(bash -c '
+  enable -n kill
+  export PATH="$1:$PATH"
+  export PROC_ROOT="$2"
+  export LEAN_TREE_STATE_DIR="$3"
+  export LEAN_LSP_IDLE_THRESHOLD_MIN="$4"
+  export LEAN_LSP_MEM_FLOOR_MB="$5"
+  export KILL_LOG_FILE="$6"
+  kill() { echo "FAKE_KILL $*" >> "$KILL_LOG_FILE"; }
+  # shellcheck disable=SC1090
+  source "$7"
+  main --force
+' _ "$FLOOR_BIN_DIR" "$FLOOR_PROC_DIR" "$FLOOR_STATE_DIR" 1 1 "$FLOOR_BELOW_KILL_LOG" "$WORKDIR/$SCRIPT_UNDER_TEST" 2>&1)"
+if [ ! -s "$FLOOR_BELOW_KILL_LOG" ]; then
+  pass "Floor gate: below-floor tree is NEVER terminated, even under --force"
+else
+  fail "Floor gate: below-floor tree was terminated under --force (VIOLATION)"
+  info "kill log: $(cat "$FLOOR_BELOW_KILL_LOG")"
+  info "output was: $FLOOR_BELOW_FORCE_OUT"
+fi
+
+# Side 2: the SAME tree, reclaimable just ABOVE the 1024 KB floor -- now eligible.
+printf 'Pss_Anon:\t     1100 kB\nSwapPss:\t        0 kB\nPss_File:\t        0 kB\n' > "$FLOOR_PROC_DIR/$FLOOR_ROOT/smaps_rollup"
+FLOOR_ABOVE_OUT="$(PATH="$FLOOR_BIN_DIR:$PATH" PROC_ROOT="$FLOOR_PROC_DIR" LEAN_TREE_STATE_DIR="$FLOOR_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+if echo "$FLOOR_ABOVE_OUT" | grep -q -- "-- eligible:" && echo "$FLOOR_ABOVE_OUT" | grep -q "1 eligible"; then
+  pass "Floor gate: reclaimable (1100 KB) just above a 1024 KB floor renders eligible, 1 eligible tree"
+else
+  fail "Floor gate: above-floor case did not render as eligible"
+  info "output was: $FLOOR_ABOVE_OUT"
+fi
+
+unset PROC_ROOT
 
 # =====================================================================
 # Assertion (h): zombie-state discrimination (unit) and full pass output shape (end-to-end)
@@ -1771,10 +2070,18 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
   # same pinned pre-fix commit is the identical non-vacuousness proof for assertion (k) above.
   #
   # Further extended for PSS-based reclaimable accounting: get_pss_reclaimable_kb is a brand-NEW
-  # function this change adds (bringing the function-name list to twenty-eight), so its absence
-  # from the same pinned pre-fix commit is the identical non-vacuousness proof for assertion (e)'s
-  # new cases above.
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb get_pss_reclaimable_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot lean_row_is_idle detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass; do
+  # function this change adds, so its absence from the same pinned pre-fix commit is the identical
+  # non-vacuousness proof for assertion (e)'s new cases above.
+  #
+  # Further extended for the CPU-delta idle state machine: read_proc_stat_fields,
+  # read_lean_tree_state, write_lean_tree_state, and update_lean_tree_cpu_state are all brand-NEW
+  # functions this change adds (bringing the function-name list to thirty-one), so their absence
+  # from the same pinned pre-fix commit is the identical non-vacuousness proof for this assertion
+  # block's new cases. `lean_row_is_idle` is REMOVED from this list -- the function itself was
+  # deleted from the live script (replaced entirely by the CPU-delta gate), so asserting its
+  # absence from the pre-fix baseline would no longer be evidence of anything this suite still
+  # exercises.
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb get_pss_reclaimable_kb read_proc_stat_fields read_lean_tree_state write_lean_tree_state update_lean_tree_cpu_state is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -1783,11 +2090,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 28 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 29 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the twenty-eight predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 31 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 32 ]; then
+    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the thirty-one predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 29 markers absent"
+    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 32 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2
