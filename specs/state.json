@@ -1515,7 +1515,7 @@
     {
       "project_number": 329,
       "project_name": "per_task_issue_log_contract_writer_and_threading",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Per-task issue log: contract, writer and dispatch threading",
       "topic": "core-agent-system",
@@ -1527,8 +1527,14 @@
       "priority": "high",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-03T18:53:53Z",
-      "artifacts": [],
+      "last_updated": "2026-10-03T23:33:09Z",
+      "artifacts": [
+        {
+          "path": "specs/329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md",
+          "type": "report",
+          "summary": "Writer-script precedent analysis (events-append.sh/system-defect-record.sh/orchestrate-record-decision.sh), re-measured orchestrate-build-dispatch.sh threading point and orchestrate-cycle-postflight.sh/orchestrate-cycle-plan.sh call sites, and recommended MIRROR/LEAVE/RETIRE verdicts for the six existing issue surfaces including corroborated-dead reflection field."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/issue-record.sh",
         "agent-system/extensions/core/scripts/tests/test-issue-record.sh",
@@ -1538,7 +1544,9 @@
         "agent-system/extensions/core/context/contracts/wrap-up.md",
         "agent-system/extensions/core/context/contracts/phase-closure.md",
         "agent-system/extensions/core/context/formats/return-metadata-file.md"
-      ]
+      ],
+      "session_id": "sess_1791065283_d98d41",
+      "next_artifact_number": 2
     },
     {
       "project_number": 330,

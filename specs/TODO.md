@@ -38,7 +38,7 @@ next_project_number: 335
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
-329 [NOT STARTED] — Per-task issue log: contract, writer and dispatch threading
+329 [RESEARCHED] — Per-task issue log: contract, writer and dispatch threading
 
 ### Extensions
 
@@ -608,10 +608,11 @@ rather than in parallel with it.
 
 ### 329. Per-task issue log: contract, writer and dispatch threading
 - **Effort**: 4-8 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 326, Task 285
+- **Research**: [329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` in
 every repo is a gitignored, disposable deploy artifact regenerated from the source store; a file
