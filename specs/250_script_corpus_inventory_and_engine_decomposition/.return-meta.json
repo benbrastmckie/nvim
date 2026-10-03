@@ -1,13 +1,62 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 15,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md",
+      "summary": "All 6 phases completed: a standing script-inventory.sh probe was built and registered, then orchestrate-cycle-plan.sh was decomposed into 3 scripts/lib/ extractions (territory-contention, task-classification, and a declared-fallback leaf of the redeploy checkpoint), reducing it 3026->2597 lines (14.2%). Byte-identical --dry-run diff, full test suite, and acceptance sweep all pass."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built and registered scripts/script-inventory.sh (a standing, mechanical corpus-inventory probe with manifest-registration checks, duplicate-block detection, and ranked ordering), then used its evidence to decompose orchestrate-cycle-plan.sh into three scripts/lib/ extractions (territory-contention-lib.sh, task-classification-lib.sh, redeploy-checkpoint-lib.sh), reducing it from 3026 to 2597 lines (14.2%) with a byte-identical --dry-run diff and the full 344-case test suite passing throughout."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/scripts/script-inventory.sh",
+    "agent-system/extensions/core/scripts/tests/test-script-inventory.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/lib/territory-contention-lib.sh",
+    "agent-system/extensions/core/scripts/lib/task-classification-lib.sh",
+    "agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/plans/01_inventory-probe-and-decomposition.md",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/probe-baseline.json",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/dry-run-baseline/human-table-and-json.txt",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/dry-run-baseline/invocation.txt",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/progress/phase-1-progress.json",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/progress/phase-2-progress.json",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/progress/phase-3-progress.json",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/progress/phase-4-progress.json",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/progress/phase-5-progress.json",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/progress/phase-6-progress.json",
+    "specs/250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Bash scopes `local` DYNAMICALLY (by call stack), not lexically (by textual nesting). A function defined in a separately `source`d file still sees -- and can both READ and WRITE -- a caller's `local` variables (including associative arrays declared via `local -A`) when invoked from within that caller's own execution. This was verified directly with three minimal fixtures (scalar local, associative-array local, and a write-back case) before relying on it. Practical consequence for shell-script decomposition: when extracting a nested function (or a block of sequential code) out of a large function's body into a `scripts/lib/*.sh` file that is `source`d EARLY (before the large function is ever called), a VERBATIM, byte-for-byte relocation is both simpler and strictly SAFER than converting every variable the moved code touches into an explicit parameter -- the parameter-conversion is not merely unnecessary, it is itself a source of risk (e.g. serializing a bash associative array to JSON and back introduces a new failure mode that didn't exist before). Before moving code this way, confirm the target region has no genuinely problematic shadowing by grepping it for `local`/`declare` (without `-g`) and nested function definitions -- most 'closed-over locals' identified by line-delta heuristics turn out to be either true function-locals (handled fine by this scoping) or, surprisingly often, already-plain-globals (bare assignments with no local/declare at all, or top-level script-scope assignments before the enclosing function is even defined).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "dynamic-scoping", "local", "shell-refactor", "lib-extraction", "source"]
+    },
+    {
+      "content": "When decomposing a large shell script that is one of a small, explicitly-enumerated set of 'genuine callers' a safety lint enforces (e.g. a hard-coded two-file list, each required to wrap its entire body in one function invoked as that file's own last physical statement -- a 'SELF-OVERWRITE HAZARD' pattern protecting against a script that can regenerate its own on-disk copy mid-execution, such as a deploy/redeploy call), check whether the code segment you intend to move contains the hazardous call itself BEFORE extracting it into a separately-sourced lib file. Moving the hazardous call out breaks the lint's caller census (a sourced lib has no 'file's own last statement' shape to verify), even though the move may be behaviorally safe by other criteria (byte-identical dry-run output, full test suite green) -- the lint's hard-coded caller list is itself part of the contract, and 'never weaken a test to make a refactor pass' means fixing this by leaving the hazardous call inline (extracting a sibling leaf region that does NOT contain it) rather than patching the lint's enumeration.",
+      "category": "PATTERN",
+      "source_artifact": "specs/250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["self-overwrite-hazard", "deploy-headless", "lint", "shell-refactor", "test-preservation"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791000710_cc4f86",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 6,
-  "summary": "Wrote a 6-phase plan: build, test and register a standing script-inventory probe (Phases 1-3), then three bounded behaviour-preserving lib/ extractions from orchestrate-cycle-plan.sh against a pre-captured --dry-run baseline (Phases 4-6). Corrected the research report's function-size figures, which were wrong by up to 31x.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 15,
+  "summary": "All 6 plan phases completed. Built and registered scripts/script-inventory.sh (standing corpus probe with manifest-registration checks, duplicate-block detection, ranked ordering), then decomposed orchestrate-cycle-plan.sh into 3 scripts/lib/ extractions, reducing it 3026->2597 lines (14.2%). Phase 6 invoked the plan's own declared fallback (leaf-only extraction) after a full-region attempt broke test-lint-deploy-caller-wrap.sh's two-genuine-caller invariant for deploy-headless.sh; reverted rather than weakening that lint. Byte-identical --dry-run diff, full 344-case test suite, and the complete acceptance sweep all pass. 4 expected check-extension-docs.sh content-drift findings and a 2-of-33 verify-deploy.sh gate count remain, both solely from this task's own not-yet-deployed source-store edits (self-resolving at the orchestrator's next redeploy checkpoint).",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, verification results, impacts, and follow-ups across all 6 phases."
+    },
     {
       "type": "plan",
       "path": "specs/250_script_corpus_inventory_and_engine_decomposition/plans/01_inventory-probe-and-decomposition.md",
-      "summary": "6 phases, 11 hours, strictly serial waves; probe first, then three lib/ extractions totalling ~885 lines (~29% of orchestrate-cycle-plan.sh)."
+      "summary": "All 6 phases marked [COMPLETED], with per-task deviation annotations recorded inline."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": []
 }
