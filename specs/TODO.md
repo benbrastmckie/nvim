@@ -20,7 +20,7 @@ next_project_number: 328
 
 ### Core Agent System
 
-184 [PLANNED] — Surface skeleton-plan follow-ups at completion under the...
+184 [IMPLEMENTING] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 250 [PLANNED] — Script-corpus inventory probe, then cut tests/run-all.sh...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
@@ -3719,7 +3719,7 @@ file_scope now names the five known sites; research MUST add the remaining files
 ---
 
 ### 184. Surface skeleton-plan follow-ups at completion under the batch engine (ruled: port the sorry_inventory follow-up report, not pr_ready routing)
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 242, Task 243, Task 258, Task 259, Task 266

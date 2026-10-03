@@ -1055,6 +1055,46 @@ skill_propagate_memory_candidates() {
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Stage 7a-skel: Propagate skeleton follow-ups to state.json
+# Usage: skill_propagate_skeleton_follow_ups "$task_number" "$follow_ups_json" ["$session_id"]
+#
+# Reads the enriched, strategic-only `sorry_inventory` entries orchestrate-cycle-postflight.sh's
+# `implemented)` case derives from a skeleton=true final implement handoff, and appends them to
+# the task's state.json entry using append-only semantics -- merged with any existing follow-ups
+# from a prior skeleton completion, never overwritten. This is a distinct function from
+# `skill_propagate_memory_candidates` above and `skill_propagate_completion_summary` below:
+# all three propagate different `.return-meta.json`/handoff fields and are kept separate rather
+# than folded together, so widening one call site never accidentally starts writing a field it
+# was never meant to touch.
+#
+# Report-only: this function creates no tasks. The entries it records are surfaced to the human,
+# who files follow-ups with /task; see context/reference/state-management-schema.md's
+# "Skeleton Follow-Ups Field" subsection for the full lifecycle (Producer/Consumer/Semantics).
+#
+# Follows `skill_propagate_memory_candidates`'s established conventions: writes are routed
+# through "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" (SKILL_REPO_ROOT-qualified, not a
+# bare relative path, so this keeps working when invoked from a fixture repo via SKILL_REPO_ROOT
+# override), and session_id (3rd arg, optional) is self-generated via `common_session_id` when
+# omitted.
+skill_propagate_skeleton_follow_ups() {
+  local task_number="$1"
+  local follow_ups_json="$2"
+  local session_id="${3:-}"
+  if [ -z "$session_id" ]; then
+    session_id="$(common_session_id)"
+  fi
+  if [ -n "$follow_ups_json" ] && [ "$follow_ups_json" != "[]" ]; then
+    "${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $num)).skeleton_follow_ups =
+        ((.active_projects[] | select(.project_number == $num)).skeleton_follow_ups // []) + $new_follow_ups' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" \
+      --argjson new_follow_ups "$follow_ups_json" \
+      || echo "WARNING: state-write.sh failed to write skeleton_follow_ups (non-blocking)" >&2
+  fi
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Stage 7b: Propagate completion_summary + roadmap_items to state.json
 # Usage: skill_propagate_completion_summary "$task_number" "$completion_summary" "$roadmap_items" "$task_type" ["$session_id"]
 #

@@ -1,7 +1,7 @@
 # Implementation Plan: Surface skeleton-plan follow-ups at completion under the batch engine
 
 - **Task**: 184 - Surface skeleton-plan follow-ups at completion under the batch engine (ruled: port the sorry_inventory follow-up report, not pr_ready routing)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: 242, 243 (both complete/archived — same postflight script/test and handoff-schema.md respectively; no live conflict)
 - **Research Inputs**: specs/184_decide_lean_skeleton_plan_completion_routing/reports/01_skeleton-follow-up-routing.md
@@ -109,29 +109,29 @@ No `roadmap_path` was provided for this dispatch; ROADMAP.md was not consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add `skill_propagate_skeleton_follow_ups` to skill-base.sh [NOT STARTED]
+### Phase 1: Add `skill_propagate_skeleton_follow_ups` to skill-base.sh [COMPLETED]
 
 **Goal**: A mutex-guarded, append-only writer for the new `skeleton_follow_ups` field exists in
 the same place every other propagate helper lives.
 
 **Tasks**:
-- [ ] Re-read `skill_propagate_memory_candidates` (the "Stage 7a" block) immediately before
+- [x] Re-read `skill_propagate_memory_candidates` (the "Stage 7a" block) immediately before
       editing, and add the new function directly after it.
-- [ ] Signature: `skill_propagate_skeleton_follow_ups <task_number> <follow_ups_json> [session_id]`,
+- [x] Signature: `skill_propagate_skeleton_follow_ups <task_number> <follow_ups_json> [session_id]`,
       with `session_id` self-generated via `common_session_id` when omitted (mirroring
       `skill_propagate_memory_candidates`'s 3rd-arg handling).
-- [ ] Guard: write only when `follow_ups_json` is non-empty and not the literal `[]`.
-- [ ] Write through `"${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh"` with the append filter
+- [x] Guard: write only when `follow_ups_json` is non-empty and not the literal `[]`.
+- [x] Write through `"${SKILL_REPO_ROOT}/.claude/scripts/state-write.sh"` with the append filter
       `(.active_projects[] | select(.project_number == $num)).skeleton_follow_ups =
       ((.active_projects[] | select(.project_number == $num)).skeleton_follow_ups // []) + $new_follow_ups`,
       passing `--argjson num` and `--argjson new_follow_ups`; never a hand-rolled
       `jq ... > tmp && mv` sequence.
-- [ ] On failure, emit the same non-blocking `WARNING: state-write.sh failed to write
+- [x] On failure, emit the same non-blocking `WARNING: state-write.sh failed to write
       skeleton_follow_ups (non-blocking)` shape and return success.
-- [ ] Header comment states: append-only semantics, why this is a separate function from
+- [x] Header comment states: append-only semantics, why this is a separate function from
       `skill_propagate_memory_candidates` and `skill_propagate_completion_summary` (different
       fields, never folded together), and that it is report-only — it creates no tasks.
-- [ ] `bash -n` the file.
+- [x] `bash -n` the file.
 
 **Timing**: 0.5 hours
 
