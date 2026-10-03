@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791065283_d98d41_334",
-  "dispatch_seq": 2,
-  "findings_count": 3,
-  "next_steps": "Run /plan 334 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md",
-      "summary": "Confirms both named lint defects (artifacts/status shape in books-implementation-hard-agent.md; hand-rolled task lookup in both books hard skills), identifies the exact copy-source fix for each from a passing sibling file, traces both to task 297's scaffold commits, and roots the broader completion-gate-passed-anyway question in task 297 Phase 8's Verification-Tier-full phase never actually invoking verify-deploy.sh (and task 326 reproducing the same gap on a second touch of the same files)."
+      "type": "plan",
+      "path": "specs/334_fix_books_scaffold_contract_defects/plans/01_books-scaffold-contract-defects.md",
+      "summary": "5-phase plan fixing the books hard agent's artifacts/status template, both hard skills' hand-rolled task lookups, and the full-tier ambiguity behind the general defect."
     }
   ],
+  "next_steps": "Run /implement 334 to execute the plan",
   "memory_candidates": [
     {
-      "content": "lint-agent-contracts.sh Check F (object-shaped artifacts template) and Check E (terminal status presence) can both fail on the SAME file for the SAME reason: a Stage 7 that only references the artifacts/status shape in prose (e.g. \"same artifacts shape as the base agent\") rather than carrying a literal fenced `\"status\"`/`\"artifacts\"` JSON block. Fixing by copying the passing sibling's exact fenced block resolves both checks in one edit, since the template itself carries both a `\"status\": \"implemented\"` line and the object-shaped `artifacts` array.",
-      "category": "PATTERN",
-      "source_artifact": "specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-agent-contracts", "Check F", "Check E", "artifacts-template", "terminal-status"]
-    },
-    {
-      "content": "A plan phase declaring `**Verification Tier**: full` is not mechanically tied to an actual verify-deploy.sh invocation anywhere in the authoring or execution path -- it is a documentation convention only. Two real plans (task 297's scaffold Phase 8, and the entirety of task 326) declared/implied full-tier completion while never naming verify-deploy.sh in their own task list, each substituting a self-chosen validator subset instead; nothing in validate-artifact.sh or any lint catches the mismatch between a declared `full` tier and the actual commands a phase's checklist runs. plan-format.md's own text defines `full` as \"the complete gate set for the repository\" but never names the concrete command (`bash .claude/scripts/verify-deploy.sh`) that satisfies it -- every other located full-tier precedent (tasks 165, 127, 184, 265, 250) independently converged on naming it explicitly.",
+      "content": "A declared `**Verification Tier**: full` in a plan is documentation only -- nothing mechanically ties it to an actual `verify-deploy.sh` invocation. validate-artifact.sh checks the field's PRESENCE (and only in --strict), never whether a full-tier phase's own task list reaches a full-gate command. Consequence observed twice independently in this repo: a plan declares `full`, its phase checklist names three hand-picked validators instead, the completion postflight passes, and standing lint failures in the task's own new files survive into the tree. When authoring or reviewing a `full`-tier phase, require the phase's verification criteria to name `bash .claude/scripts/verify-deploy.sh` (source store: agent-system/extensions/core/scripts/verify-deploy.sh) or the complete set of gates it aggregates -- a self-chosen validator subset satisfies the letter of the prose but not the tier.",
       "category": "INSIGHT",
-      "source_artifact": "specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["verification-tier", "full-tier", "verify-deploy.sh", "plan-format", "completion-gate"]
+      "source_artifact": "specs/334_fix_books_scaffold_contract_defects/plans/01_books-scaffold-contract-defects.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verification-tier", "verify-deploy", "plan-format", "completion-gate", "lint", "postflight"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1791065283_d98d41_334",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 1.75,
+    "dependency_waves": [[1, 2, 3, 4], [5]]
+  },
+  "dispatch_seq": 4
 }
