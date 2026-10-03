@@ -203,8 +203,10 @@ EXCLUDED_FILES=(
 
     # Runs inside $LITERATURE_DIR, a separate content-only git repo with no agent-system deployed
     # in it -- .claude/scripts/git-commit-scoped.sh does not exist there to invoke. The pathspec
-    # set is already correctly targeted (not a whole-tree add).
-    "agent-system/extensions/literature/skills/skill-literature/SKILL.md"
+    # set is already correctly targeted (not a whole-tree add). Relocated from
+    # skill-literature/SKILL.md's own "Mode: Import Pipeline" section to this extracted file per
+    # context/patterns/mode-gated-section-loading.md; the allowlist entry moves with the content.
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-import-pipeline-mode.md"
 
     # Generic NixOS system-administration guidance for the user's own flake-managed config repo --
     # not a task-scoped dispatch-pipeline commit, and the target repo may not even have the agent

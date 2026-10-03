@@ -1,0 +1,66 @@
+{
+  "phase": 6,
+  "phase_name": "Deploy, Full Gate Set, Acceptance Verification and Measured-Reduction Report",
+  "started_at": "2026-10-03T02:25:00Z",
+  "last_updated": "2026-10-03T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm 16 destination files + context/index.json rows", "status": "done", "files_touched": []},
+    {"id": 3, "description": "verify-deploy.sh full (no --skip-slow)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh"]},
+    {"id": 4, "description": "validate-context-index.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Acceptance walk (9 literature modes + 12 distill sub-modes)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Measured-reduction report", "status": "done",
+     "files_touched": ["specs/089_mode_gate_literature_and_distill_skills/summaries/01_mode-gate-literature-distill-summary.md"]},
+    {"id": 7, "description": "Record corrected distill premise in summary", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Final commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {
+      "approach": "Run deploy-headless.sh and verify-deploy.sh as-is after Phase 5",
+      "result": "found_regression",
+      "reason": "Gate 17 (scoped-commit boundary lint) newly failed: literature-import-pipeline-mode.md:147's documented raw git-commit (runs inside the separate $LITERATURE_DIR content repo, which has no git-commit-scoped.sh) was flagged because the lint's file-level allowlist was keyed on the OLD path (skill-literature/SKILL.md), which no longer covers the moved content. Fixed by moving the allowlist entry to the new path in lint-scoped-commit-boundary.sh; re-deploy confirmed Gate 17 green."
+    }
+  ],
+  "handoff_count": 0,
+  "deploy_verification": {
+    "destination_files_deployed": 16,
+    "context_index_rows": 16,
+    "validate_context_index": "0 errors, 0 warnings, 286 entries",
+    "gate19_branch_gated": "PASS",
+    "gate13_orphan_detection": "PASS",
+    "gate17_scoped_commit_boundary": "PASS (after in-task fix)",
+    "fast_gate_failures": {
+      "count": 3,
+      "all_attributable_to": "task 217 concurrent in-flight uncommitted work on agent-system/extensions/core/scripts/claude-refresh.sh and its test file",
+      "evidence": "git status shows ' M agent-system/extensions/core/scripts/claude-refresh.sh' uncommitted; git log shows task 217 commits landing interleaved with this task's own commits; deploy-headless.sh itself warned 'another session's deploy appears in progress' via specs/.deploy-lock contention"
+    },
+    "full_test_suite": {
+      "passed": 103,
+      "failed": 5,
+      "failures": [
+        "test-claude-refresh-matcher.sh (task 217 in-flight, NEW per runner)",
+        "test-gate-out-repair-reporting.sh (runner-flagged EXPECTED)",
+        "test-lint-json-channel-discipline.sh (runner-flagged EXPECTED)",
+        "test-verify-deploy-context-budget.sh (runner-flagged EXPECTED)",
+        "test-typst-element-lint.sh (NEW per runner, but traces to a typst script already dirty/uncommitted at this session's start, confirmed via the conversation's initial git status snapshot -- predates this task)"
+      ],
+      "literature_or_distill_test_failures": 0
+    }
+  },
+  "acceptance_walk": {
+    "literature_modes_resolved": ["status", "scan", "convert", "validate", "index", "search", "ingest", "rebuild", "search-driven-import"],
+    "distill_submodes_resolved": ["report", "purge", "merge", "compress", "refine", "gc", "auto", "revise", "meta", "review", "learn", "dream"],
+    "all_resolved": true
+  },
+  "deviations": [
+    {
+      "task_id": "6.scoped-commit-fix",
+      "description": "Final commit with an explicit file list, scoped to the plan's own listed files",
+      "type": "altered",
+      "reason": "A regression surfaced by the post-deploy gate run required fixing agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh, a file not named in the plan's Phase 6 file list. Fixed in-task since it is a direct, mechanical consequence of this task's own content move and is outside both concurrent siblings' declared territory.",
+      "annotation": "*(deviation: altered -- see Phase 6 task checklist note)*"
+    }
+  ]
+}

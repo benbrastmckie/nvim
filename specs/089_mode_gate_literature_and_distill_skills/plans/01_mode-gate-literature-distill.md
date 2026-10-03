@@ -552,38 +552,54 @@ purge-only. The sharing claim is explicitly a hypothesis to confirm by reading `
 
 ---
 
-### Phase 6: Deploy, Full Gate Set, Acceptance Verification and Measured-Reduction Report [NOT STARTED]
+### Phase 6: Deploy, Full Gate Set, Acceptance Verification and Measured-Reduction Report [COMPLETED]
 
 **Goal**: Deploy the source store, pass the full gate set, verify every mode and sub-mode end to
 end, and produce the measured-reduction report the acceptance criteria require.
 
 **Tasks**:
-- [ ] `bash .claude/scripts/deploy-headless.sh` (default non-destructive resync). Treat exit 3
+- [x] `bash .claude/scripts/deploy-headless.sh` (default non-destructive resync). Treat exit 3
       (deploy landed, fast gates failed) and exit 4 (verification suppressed) as failures to
-      resolve, not as success.
-- [ ] Confirm all sixteen destination files appear under `.claude/context/project/literature/patterns/`
+      resolve, not as success. *(deviation: altered -- first run surfaced a genuine regression
+      this task introduced (see below), fixed, then redeployed clean apart from findings
+      confirmed to belong to a concurrently-dispatched sibling task)*
+- [x] Confirm all sixteen destination files appear under `.claude/context/project/literature/patterns/`
       and `.claude/context/project/memory/patterns/`, and that
-      `.claude/context/index.json` carries all sixteen rows.
-- [ ] `bash .claude/scripts/verify-deploy.sh` (full, not `--skip-slow`); require Gate 19
+      `.claude/context/index.json` carries all sixteen rows. *(completed: all 16 confirmed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` (full, not `--skip-slow`); require Gate 19
       (`lint-branch-gated-sections.sh --verbose`) to pass and no orphan/ghost-row finding.
-- [ ] `bash .claude/scripts/validate-context-index.sh` — all sixteen paths resolve, line counts
-      accurate, domain values valid.
-- [ ] Acceptance walk, recorded per entry: each of the nine literature modes (status, scan,
+      *(completed: Gate 19 passes; orphan/ghost-row check passes. 3 of 34 checks fail, all three
+      traced via `git status`/`git log`/`specs/.deploy-lock` to task 217's concurrently-running,
+      in-flight, uncommitted `claude-refresh.sh` work -- not this task's regression. Full
+      `run-all.sh` (no `--skip-slow`): 103 passed, 5 failed -- 3 runner-flagged `(EXPECTED)`, 1
+      task 217's own test, 1 traced to a pre-existing uncommitted typst file dirty before this
+      session started. Every literature/distill-scoped test passed.)*
+- [x] `bash .claude/scripts/validate-context-index.sh` — all sixteen paths resolve, line counts
+      accurate, domain values valid. *(completed: 0 errors, 0 warnings across 286 entries)*
+- [x] Acceptance walk, recorded per entry: each of the nine literature modes (status, scan,
       convert, validate, index, search, ingest, rebuild, plus the search-driven import flow) and
       each of the twelve distill sub-modes (report, purge, merge, compress, refine, gc, auto,
       revise, meta, review, learn, dream) reaches a non-empty specification; for a pointer, the
       deployed target path exists, is non-empty, and opens with its complete-and-only-
-      specification framing line.
-- [ ] Measured-reduction report: before/after bytes and lines for both `SKILL.md` files; each
+      specification framing line. *(completed: all 21 confirmed against the deployed `.claude/`
+      tree)*
+- [x] Measured-reduction report: before/after bytes and lines for both `SKILL.md` files; each
       destination file's bytes; per-command per-invocation loaded-byte totals
       (`commands/<cmd>.md` + `SKILL.md` + the one selected mode/sub-mode file) before and after;
       the ~4 B/token conversion for each; and an explicit reconciliation note stating that the
       task's 46.2k and 42.4k figures are whole-invocation token baselines including ambient
       context (rules, memory/literature injection) that this task does not change, so the
-      honest claim is the byte-exact delta on the surfaces actually edited.
-- [ ] Record the corrected distill premise in the implementation summary so the 43,254 B figure
-      is not carried forward by a future reader.
-- [ ] Final commit (`task 89: complete implementation`) with an explicit file list.
+      honest claim is the byte-exact delta on the surfaces actually edited. *(completed: full
+      report in the implementation summary's "Measured-Reduction Report" section)*
+- [x] Record the corrected distill premise in the implementation summary so the 43,254 B figure
+      is not carried forward by a future reader. *(completed)*
+- [x] Final commit (`task 89: complete implementation`) with an explicit file list.
+      *(deviation: altered -- an additional, unplanned fix landed in this phase:
+      `agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh`'s path-keyed
+      allowlist entry for Import Pipeline's documented raw-git-commit exception had to move with
+      the content to `literature-import-pipeline-mode.md`, or Gate 17 would regress. This file is
+      outside both sibling tasks' declared territory and squarely a consequence of this task's
+      own file move, so it was fixed here rather than deferred.)*
 
 **Timing**: 1.5 hours
 
