@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791000710_cc4f86_184",
+  "dispatch_seq": 5,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/184_decide_lean_skeleton_plan_completion_routing/reports/01_skeleton-follow-up-routing.md",
+      "summary": "Confirms the already-ruled disposition (skeleton plans terminate via the ordinary completion-claim gate, no pr_ready porting needed); picks the skeleton_follow_ups field name/shape (sorry_inventory entries filtered to strategic:true, plus recorded_cycle/session_id), the postflight hook point (implemented) case, reusing the in-scope $handoff variable), and the completion-summary augmentation mechanism; flags skill-base.sh and state-management-schema.md as needed file_scope additions for the plan phase."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 184 to create implementation plan"
+}
