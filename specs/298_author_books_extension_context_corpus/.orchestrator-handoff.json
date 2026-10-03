@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 3,
-  "summary": "Authored a nine-phase plan for the books-extension domain context corpus: sixteen documents plus a rewritten navigation README under agent-system/extensions/books/context/project/books/, with seventeen index-entries.json registrations at deliberate Tier 2 / Tier 4 tiering. Plan passes validate-artifact.sh --strict with zero warnings.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 5,
+  "summary": "Authored the books domain context corpus: sixteen documents plus a rewritten navigation README under agent-system/extensions/books/context/project/books/ (3,483 lines over 17 files), with seventeen index-entries.json registrations at Tier 2 (README) / Tier 4 + on_demand (the sixteen). All nine plan phases COMPLETED, every plan checklist item checked. Gates: books PASS on check-extension-docs.sh, validate-context-budgets.sh 0 violations / 0 dead entries / Tier 2:1 Tier 4:16, generate-context-line-counts.sh --check PASS, check-task-references.sh PASS. Every figure re-measured against the consuming repository on 2026-10-03; all eleven staleness-ledger entries corrected (notably: 175 book_layer lines not 0 of 36; Books.Meta 771 lines not 413; book.typ 462 not 183). OBSERVATION REPORTED, not acted on: a concurrent foreign writer modified ten non-specs files in the read-only consuming repository mid-dispatch, removing proprietary licence header lines; one cited figure was invalidated and corrected. See the summary's Observation section.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/298_author_books_extension_context_corpus/plans/01_books-context-corpus.md",
-      "summary": "Nine phases in three waves (1 | 2-8 parallel | 9), 12 hours estimated, written against the research report's measured ground truth rather than the dispatch description's stale figures."
+      "type": "summary",
+      "path": "specs/298_author_books_extension_context_corpus/summaries/01_books-context-corpus-summary.md",
+      "summary": "Implementation summary: what changed, five decisions, nine plan deviations, the concurrent-writer observation, full verification evidence, and six follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 9,
   "phases_total": 9,
   "blockers": []
 }

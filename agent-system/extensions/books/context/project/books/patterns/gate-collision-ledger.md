@@ -129,10 +129,10 @@ the lakefile and none checked by anything until the gate ran:
 | `recheck-comparator.sh` | 4 | two room patterns, one landrun grant, one `RECHECK_EXTRA_RWX` |
 | `layer-rules.sh` | 2 | admit the provider to both allow-lists |
 
-The discovery path for **all six** was a failing gate. A dedicated checklist
-(`patterns/local-path-require-obligations.md`) is a **named follow-up and is not content here** --
-this ledger records the cost and the shape, and the checklist, when it lands, carries the
-procedure. The structural alternative the seed report prefers: make the rooms stage every
+The discovery path for **all six** was a failing gate. A dedicated checklist for this -- proposed
+for this corpus under the name "local-path-require-obligations" -- is a **named follow-up and is
+not content here, and no such document exists yet**: this ledger records the cost and the shape,
+and the checklist, when it lands, carries the procedure. The structural alternative the seed report prefers: make the rooms stage every
 local-path `require` automatically by **reading the component's lakefiles** rather than
 hand-written path regexes plus grant lists, since each such require needs exactly three derivable
 things (staged sources, a resolvable relative path, a read-write grant in both landrun layers).

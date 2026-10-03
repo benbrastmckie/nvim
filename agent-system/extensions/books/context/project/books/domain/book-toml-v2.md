@@ -22,7 +22,7 @@ enumerates them with types. Transcribed:
 | 5 | `book.status` | string | yes | one of the three status words |
 | 6 | `book.license` | string | yes | licence identifier (this repository: `UNLICENSED`) |
 | 7 | `book.maintainers` | array of string | yes | `"Name <email>"` entries |
-| 8-13 | `trust.G0_checker` … `trust.G5_binding` | string | no | one of the four verdict words; omitted means `not_applicable` |
+| 8-13 | `trust.G0_checker` through `trust.G5_binding` | string | no | one of the four verdict words; omitted means `not_applicable` |
 | 14 | `provenance.rust_crate` | string | bridged books only | with the next two, the **one** `[provenance]` field |
 | 15 | `provenance.rust_paths` | array of string | bridged books only | idem |
 | 16 | `provenance.extractor` | string | bridged books only | **a pointer to a pin file, never a copied revision** |

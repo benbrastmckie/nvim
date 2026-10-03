@@ -48,5 +48,5 @@ never a `docs/` subdirectory. See `rules/books.md` for the full non-negotiable s
 
 ### Context Pointers
 
-- `context/project/books/README.md` — navigation stub (domain corpus is a separate, dependent
-  task; a missing file beyond this stub is expected until it lands)
+- `context/project/books/README.md` — the navigation index of the landed domain corpus
+  (sixteen documents under `domain/`, `patterns/`, `standards/`, `tools/`), reachable on demand

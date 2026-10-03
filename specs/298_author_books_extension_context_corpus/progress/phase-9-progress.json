@@ -1,0 +1,23 @@
+{
+  "phase": 9,
+  "phase_name": "Registration, reconciliation and the mechanical gates",
+  "started_at": "2026-10-03T03:10:00Z",
+  "last_updated": "2026-10-03T03:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace the stub with seventeen index entries at D3 tiering", "status": "done", "files_touched": ["agent-system/extensions/books/index-entries.json"]},
+    {"id": 2, "description": "Fill line_count mechanically and verify with --check", "status": "done", "files_touched": ["agent-system/extensions/books/index-entries.json"]},
+    {"id": 3, "description": "Verify tiering by derivation via validate-context-budgets.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run check-extension-docs.sh and check-task-references.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Reconcile the README against what landed; verify cross-references", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/gate-collision-ledger.md", "agent-system/extensions/books/context/project/books/domain/book-toml-v2.md", "agent-system/extensions/books/context/project/books/tools/typst-template-contract.md"]},
+    {"id": 6, "description": "Optional bounded edit: three stale sentences in EXTENSION.md and README.md", "status": "done", "files_touched": ["agent-system/extensions/books/EXTENSION.md", "agent-system/extensions/books/README.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "9.a", "description": "gate invocations run from the deployed .claude/scripts/ copy", "type": "altered", "reason": "The source-store copies of validate-context-budgets.sh, check-extension-docs.sh and check-task-references.sh refuse to run from agent-system/extensions/core/scripts/ with an explicit error (bogus repo root). The plan's invocations as written cannot execute; the deployed copies were used and no gate was skipped.", "annotation": "*(deviation: altered -- deployed copy; the source-store copy refuses to run)*"},
+    {"task_id": "9.b", "description": "check-extension-docs.sh exits 1 overall on seven core FAILs", "type": "altered", "reason": "books PASSES. The seven core FAILs are deployed-script content drift on orchestrate-build-dispatch.sh, orchestrate-cycle-plan.sh, parse-command-args.sh and their tests (the declared sibling task's file_scope) plus validate-state.sh/test-validate-state.sh (already dirty before this dispatch). None is attributable to this task, which touched no core file. No deploy was run, per the plan's Non-Goals.", "annotation": "*(completed: books PASS; the seven core FAILs are a sibling's deployed-script drift, not this task's)*"},
+    {"task_id": "9.c", "description": "unresolvable follow-up pointer reworded", "type": "altered", "reason": "patterns/gate-collision-ledger.md cited patterns/local-path-require-obligations.md as a backticked corpus path while that document does not exist (it is a recorded follow-up, not in scope). Reworded to name it as a proposed filename and state explicitly that no such document exists, so the cross-reference check is clean and no reader follows a dead pointer.", "annotation": "*(deviation: altered -- follow-up named as a proposed filename, not a pointer)*"},
+    {"task_id": "9.d", "description": "typst/lib/phrases.toml byte figure made provenance-explicit", "type": "altered", "reason": "A concurrent foreign writer modified that file mid-dispatch (see the summary's Observation section), moving it from 8564 to 8478 bytes. The document now gives both figures with their provenance and instructs re-measurement rather than quotation.", "annotation": "*(deviation: altered -- both byte figures given with provenance after a mid-dispatch foreign write)*"}
+  ],
+  "handoff_count": 0
+}

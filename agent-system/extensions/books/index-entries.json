@@ -2,7 +2,7 @@
   "entries": [
     {
       "path": "project/books/README.md",
-      "line_count": 19,
+      "line_count": 84,
       "load_when": {
         "agents": [
           "books-research-agent",
@@ -16,12 +16,417 @@
       },
       "domain": "project",
       "subdomain": "books",
-      "summary": "Navigation stub for the books domain corpus; the full corpus is authored by a separate, dependent task",
+      "topics": [
+        "navigation",
+        "books-convention",
+        "corpus-index"
+      ],
+      "summary": "Navigation index for the books domain corpus: a sixteen-row table with a read-this-when per document, three reading orders by task, and the corpus's own conventions.",
       "keywords": [
         "books",
         "book.toml",
         "book_layer",
-        "book-convention"
+        "book-convention",
+        "navigation"
+      ]
+    },
+    {
+      "path": "project/books/domain/known-gap-register.md",
+      "line_count": 275,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "known-gaps",
+        "validated-by-markers",
+        "staleness"
+      ],
+      "summary": "Dated projection of the eighteen Validated-by markers, thirteen named gaps with measurements, and the consuming repository's live in-flight register. Read first; other documents defer here.",
+      "keywords": [
+        "known-gap",
+        "Validated by",
+        "lint-validated-by.sh",
+        "staleness",
+        "register",
+        "measured"
+      ]
+    },
+    {
+      "path": "project/books/domain/layer-vocabulary-and-matrix.md",
+      "line_count": 230,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "layers",
+        "import-matrix",
+        "execution-construct-gate"
+      ],
+      "summary": "The twelve book_layer values with live counts, the may-import matrix row by row, direct-versus-computed enforcement, restricted layers, the fail-closed execution gate, and the five provider defences.",
+      "keywords": [
+        "book_layer",
+        "mayImport",
+        "baseLayer",
+        "Books.Meta",
+        "restricted layer",
+        "terminal layer"
+      ]
+    },
+    {
+      "path": "project/books/domain/book-toml-v2.md",
+      "line_count": 187,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "book.toml",
+        "manifest-schema",
+        "judgments"
+      ],
+      "summary": "book.toml v2: fifteen fields across seventeen keys, the status and verdict word lists, measured authoring practice over 27 real manifests, and the computed-never-authored list.",
+      "keywords": [
+        "book.toml",
+        "schema 2",
+        "books-tool validate",
+        "stale-certified",
+        "provenance",
+        "trust"
+      ]
+    },
+    {
+      "path": "project/books/domain/certificate-ledger-and-records.md",
+      "line_count": 275,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "book.cert.json",
+        "export-ledger",
+        "records"
+      ],
+      "summary": "The certificate's twenty top-level keys and sixteen-key ledger rows, byte-stability, the docs block, the refusal set, and book.record.json versus book.read.json as two different artifacts.",
+      "keywords": [
+        "book.cert.json",
+        "export_ledger",
+        "reserved_passes",
+        "book.record.json",
+        "book.read.json",
+        "foreign_nonexports"
+      ]
+    },
+    {
+      "path": "project/books/domain/identity-and-versioning.md",
+      "line_count": 237,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "merkle-digests",
+        "identity",
+        "versioning"
+      ],
+      "summary": "The digest formulas verbatim, three identities, chaining through interface_identity, the dag-v2 sharing measurement, the version bump table, and identity's five exclusions.",
+      "keywords": [
+        "interface_identity",
+        "proof_identity",
+        "dag-v2",
+        "statement_key",
+        "cone_key",
+        "version bump"
+      ]
+    },
+    {
+      "path": "project/books/domain/status-and-trust-vocabularies.md",
+      "line_count": 163,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "status",
+        "trust-verdicts",
+        "ground-classes"
+      ],
+      "summary": "The three status words and four trust verdicts with what each licenses and forbids, the six ground classes, the derived stale word, what certified does not attest, and what has no checker.",
+      "keywords": [
+        "draft",
+        "certified",
+        "deprecated",
+        "not_applicable",
+        "G0_checker",
+        "G5_binding"
+      ]
+    },
+    {
+      "path": "project/books/domain/gate-tiers.md",
+      "line_count": 194,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "verification-tiers",
+        "gates",
+        "vacuous-pass"
+      ],
+      "summary": "Each tier's checks, non-checks and cheapest catcher; the two-disjoint-chains correction; no intermediate tier between lake build and the full gate; and the vacuous-pass reporting rule.",
+      "keywords": [
+        "lake build",
+        "layer-lint.sh",
+        "certify.sh",
+        "full-gate.sh",
+        "recheck",
+        "vacuous pass"
+      ]
+    },
+    {
+      "path": "project/books/patterns/authoring-workflow.md",
+      "line_count": 213,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "authoring-checklist",
+        "build-audit",
+        "workflow"
+      ],
+      "summary": "The AUTHOR, BUILD/TEST, CERTIFY, DOCUMENT checklist end to end, with the measured reference scale, the mandatory layer-lint step, and the measured-not-inherited recording rule.",
+      "keywords": [
+        "checklist",
+        "book_export",
+        "book_axioms",
+        "axiom audit",
+        "Mathlib-freedom",
+        "book_ledger"
+      ]
+    },
+    {
+      "path": "project/books/patterns/warning-driven-convergence.md",
+      "line_count": 174,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "convergence",
+        "book_requires",
+        "compiler-oracle"
+      ],
+      "summary": "Driving book_requires off the compiler's warning stream: the grep-sed loop that produced 179 lines with zero guesses, why the warning is the oracle, and when a predicate is not one.",
+      "keywords": [
+        "book_requires",
+        "book-requires-undeclared",
+        "book-requires-superfluous",
+        "axiom-outside-book-axioms",
+        "convergence"
+      ]
+    },
+    {
+      "path": "project/books/patterns/gate-collision-ledger.md",
+      "line_count": 198,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "gate-collisions",
+        "integration-cost",
+        "measured-once"
+      ],
+      "summary": "Six measured collisions between the books convention and a component's pre-existing gate, each with symptom, root cause, fix and cheapest catcher, plus the 75-of-127-minute cost.",
+      "keywords": [
+        "collision",
+        "book_policy",
+        "layer-rules.sh",
+        "Comparator",
+        "local-path require",
+        "measured once"
+      ]
+    },
+    {
+      "path": "project/books/standards/metadata-split.md",
+      "line_count": 180,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "metadata-split",
+        "fact-commands",
+        "book_policy"
+      ],
+      "summary": "Facts in Lean, judgments in TOML, everything else computed: the exact command syntax, the warn-not-refuse rule, the mutual-exclusion guard, and the book_policy subject-placement rule.",
+      "keywords": [
+        "book_export",
+        "book_assume",
+        "book_policy",
+        "book_requires",
+        "book_ledger",
+        "mutual exclusion"
+      ]
+    },
+    {
+      "path": "project/books/standards/forgery-probe-discipline.md",
+      "line_count": 171,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "forgery-probes",
+        "gate-predicates",
+        "test-discipline"
+      ],
+      "summary": "Every gate predicate gets a forgery probe; one shipped without is a reviewable defect. The twenty landed fixtures, the refusal-plus-admit pairing, and three predicates with no probe.",
+      "keywords": [
+        "forgery probe",
+        "ForgeBook",
+        "TrustScopeAdmit",
+        "PolicyVacuous",
+        "GATE-RESIDUAL",
+        "probe pair"
+      ]
+    },
+    {
+      "path": "project/books/standards/reconciliation-contract.md",
+      "line_count": 231,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "reconciliation",
+        "docs-stage",
+        "approval-records"
+      ],
+      "summary": "The eight-clause reconciliation contract, triggered by certification and not by save or commit; agents write prose and people write records; the split docs stage and its unknown halves.",
+      "keywords": [
+        "reconciliation",
+        "documenter pack",
+        "approve-guarantees.sh",
+        "docs-stage.sh",
+        "book.record.json",
+        "blocking policy"
+      ]
+    },
+    {
+      "path": "project/books/tools/tooling-inventory.md",
+      "line_count": 213,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "tooling",
+        "lakefiles",
+        "repo-machinery"
+      ],
+      "summary": "What each piece of the books tooling directory reads and writes, why BookCert sits in the provider package, the explicit-globs rule, and the repo-side machinery not to duplicate.",
+      "keywords": [
+        "books-tool",
+        "BookCert",
+        "Certify.lean",
+        "globs",
+        "check-spdx.sh",
+        "typst-manual-sync-check.sh"
+      ]
+    },
+    {
+      "path": "project/books/tools/typst-template-contract.md",
+      "line_count": 244,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "typst-template",
+        "three-tier-docs",
+        "label-mechanics"
+      ],
+      "summary": "The three-tier Typst template: tiers and modes, the certificate as sole data input and the resolution rule forcing it, label mechanics, pins on 0.14.2, and the tier-one content bar.",
+      "keywords": [
+        "book.typ",
+        "tier=overview",
+        "mode=embedded",
+        "tagged-metadata",
+        "typst query",
+        "thmbox"
+      ]
+    },
+    {
+      "path": "project/books/tools/certify-guide.md",
+      "line_count": 214,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "certifier-operation",
+        "misreporting",
+        "reader-mechanics"
+      ],
+      "summary": "Operating the certifier economically: component-root scoping, --check first, --no-build economics, the full flag set, both ways the output misreports, and the reader's mandatory setup.",
+      "keywords": [
+        "certify.sh",
+        "--check",
+        "--no-build",
+        "earlyoom",
+        "loadExts",
+        "OLeanLevel.private"
       ]
     }
   ]

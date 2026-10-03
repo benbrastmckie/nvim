@@ -30,7 +30,7 @@ books/
 ├── commands/                   # /book, /certify
 ├── rules/                      # books.md -- the non-negotiables
 ├── scripts/                    # books-certify.sh (the one declared passthrough script) + tests
-└── context/project/books/      # navigation stub (domain corpus is a separate, dependent task)
+└── context/project/books/      # the domain corpus: README.md index + sixteen documents
 ```
 
 ## Commands
@@ -99,4 +99,5 @@ re-checking the live tree.
 
 - `docs/book-convention.md` and `books/schema/book-toml-v2.md` (consuming-repository design
   record; normative)
-- `context/project/books/README.md` (navigation stub into the domain corpus)
+- `context/project/books/README.md` (the domain corpus's navigation index; start at
+  `domain/known-gap-register.md`)

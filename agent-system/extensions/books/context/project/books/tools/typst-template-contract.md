@@ -86,8 +86,10 @@ book its own data is for each book's document to load it and pass it in.
 
 `typst/lib/phrases.toml` is **the one other file the library reads**, and it is read
 **root-absolutely** (`toml("/typst/lib/phrases.toml")`, `book.typ:55`) precisely because the
-relative rule would otherwise resolve it against the including document. Measured 2026-10-03:
-8,564 bytes.
+relative rule would otherwise resolve it against the including document. Its size is a moving
+figure and should be re-measured rather than quoted: `8,564` bytes per the design record, and
+`8,478` bytes measured on an uncommitted working tree on 2026-10-03. Treat it as "roughly 8.5 KB
+of phrase table", and re-measure if a pack-size calculation depends on it.
 
 The library imports **no preview package**: only `typst/manual/template.typ` does, in exactly two
 lines (thmbox, fletcher), and the tier functions reuse that template's existing pieces

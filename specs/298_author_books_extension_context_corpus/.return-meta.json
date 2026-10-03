@@ -1,13 +1,91 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/298_author_books_extension_context_corpus/summaries/01_books-context-corpus-summary.md",
+      "summary": "Sixteen books-domain context documents plus a rewritten navigation README (3,483 lines over 17 files), seventeen index entries at Tier 2 / Tier 4, every gate green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Authored the sixteen-document books domain context corpus plus a rewritten navigation README under agent-system/extensions/books/context/project/books/ (3,483 lines over 17 files), and registered all seventeen in index-entries.json at deliberate Tier 2 / Tier 4 tiering. Every figure re-measured against the consuming repository on 2026-10-03 rather than inherited; all eleven staleness-ledger entries corrected. All mechanical gates green (books PASS, 0 budget violations, 0 dead entries, 0 task references)."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/context/project/books/domain/known-gap-register.md",
+    "agent-system/extensions/books/context/project/books/README.md",
+    "agent-system/extensions/books/context/project/books/domain/layer-vocabulary-and-matrix.md",
+    "agent-system/extensions/books/context/project/books/standards/metadata-split.md",
+    "agent-system/extensions/books/context/project/books/domain/book-toml-v2.md",
+    "agent-system/extensions/books/context/project/books/domain/certificate-ledger-and-records.md",
+    "agent-system/extensions/books/context/project/books/domain/identity-and-versioning.md",
+    "agent-system/extensions/books/context/project/books/domain/status-and-trust-vocabularies.md",
+    "agent-system/extensions/books/context/project/books/domain/gate-tiers.md",
+    "agent-system/extensions/books/context/project/books/patterns/gate-collision-ledger.md",
+    "agent-system/extensions/books/context/project/books/patterns/warning-driven-convergence.md",
+    "agent-system/extensions/books/context/project/books/standards/forgery-probe-discipline.md",
+    "agent-system/extensions/books/context/project/books/tools/certify-guide.md",
+    "agent-system/extensions/books/context/project/books/patterns/authoring-workflow.md",
+    "agent-system/extensions/books/context/project/books/tools/tooling-inventory.md",
+    "agent-system/extensions/books/context/project/books/tools/typst-template-contract.md",
+    "agent-system/extensions/books/context/project/books/standards/reconciliation-contract.md",
+    "agent-system/extensions/books/index-entries.json",
+    "agent-system/extensions/books/EXTENSION.md",
+    "agent-system/extensions/books/README.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan names a gate script by its agent-system SOURCE-STORE path (agent-system/extensions/core/scripts/<name>.sh), the invocation may be unrunnable: validate-context-budgets.sh, check-extension-docs.sh and check-task-references.sh all hard-refuse to run from the source store with an explicit error ('must run from a deployed scripts/ tree ... where ../.. resolves to a bogus repo root') and direct the caller to the deployed .claude/scripts/ copy. generate-context-line-counts.sh does NOT have this guard and runs fine from either path, so the failure is per-script rather than uniform -- a plan author cannot infer it from one working example. Run the deployed copy, pass the source-store index as --index, and record the substitution as a deviation rather than reporting the gate as skipped.",
+      "category": "CONFIG",
+      "source_artifact": "specs/298_author_books_extension_context_corpus/summaries/01_books-context-corpus-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "source-store",
+        "deployed-scripts",
+        "validate-context-budgets",
+        "check-extension-docs",
+        "repo-root-guard",
+        "gate-invocation"
+      ]
+    },
+    {
+      "content": "check-task-references.sh scans git-TRACKED files via `git ls-files`, so an untracked new file is silently skipped and a violation in it goes unreported. When a dispatch authors new files and must prove the lint reaches them, either stage/commit them first or verify coverage directly (`git ls-files <dir> | wc -l` against the file count on disk). A belt-and-braces direct grep using the canonical TASK_PATTERN from scripts/lib/task-reference-patterns.sh is cheap and makes the claim independent of git state. The same staging-first dependency applies to any lint built on `git ls-files` rather than on a filesystem walk.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/298_author_books_extension_context_corpus/summaries/01_books-context-corpus-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "check-task-references",
+        "git ls-files",
+        "untracked-files",
+        "lint-coverage",
+        "staging-first"
+      ]
+    },
+    {
+      "content": "A multi-file context corpus must be tiered deliberately at registration, and the budget gate will NOT catch getting it wrong for a new extension. validate-context-budgets.sh derives tier from load_when shape (always -> 1, agents non-empty -> 2, commands/task_types non-empty -> 3, all-empty -> 4) and checks per-agent token totals only against a CAPS table of ten NAMED agents. A new extension's agents are absent from CAPS, so registering N 150-250-line documents at Tier 2 fires no cap at all. The working pattern: the README index stays Tier 2 as the single eager discovery entry point, each document goes Tier 4 with load_when hooks empty AND on_demand:true (the explicit-intent marker that exempts it from the Dead Entry Check, which is keyed on on_demand precisely because tier is derived). Verify by reading back the derived tier distribution, never by trusting a green gate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/298_author_books_extension_context_corpus/summaries/01_books-context-corpus-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "context-tiering",
+        "on_demand",
+        "derived-tier",
+        "index-entries",
+        "CAPS",
+        "dead-entry-check"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791054566_849cf8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 9,
     "phases_total": 9
   }
 }
