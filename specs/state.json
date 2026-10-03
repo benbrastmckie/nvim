@@ -1362,6 +1362,11 @@
           "path": "specs/327_repair_extension_lifecycle_hook_mechanism/plans/01_lifecycle-hook-mechanism-repair.md",
           "type": "plan",
           "summary": "7 phases, 5 source-store files, 5.5h estimate; waves [[1],[2],[3],[4,5,6],[7]]."
+        },
+        {
+          "path": "specs/327_repair_extension_lifecycle_hook_mechanism/summaries/01_lifecycle-hook-mechanism-repair-summary.md",
+          "type": "summary",
+          "summary": "Full 7-phase implementation summary, including the finding-by-finding full-gate-set attribution."
         }
       ],
       "file_scope": [
@@ -1373,7 +1378,8 @@
       ],
       "last_updated": "2026-10-03T15:43:46Z",
       "session_id": "sess_1791040973_97d778",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Repaired the extension lifecycle hook mechanism in the source store (agent-system/extensions/core/): fixed the object-schema resolver and flat-deploy hook-path resolution so a declared hook actually fires (proven live against the real nix/neovim extensions), added an observable-but-never-blocking SKILL_HOOK_LAST_* rc channel, gave the verification stage a live call site in command-gate-out.sh, added 10 mutation-checked regression cases to test-skill-base-lifecycle.sh, documented the change in creating-extensions.md, and closed the check-extension-docs.sh validator blind spot with a new Rule W that would have caught the original defect."
     }
   ],
   "completed_projects": [],

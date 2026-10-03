@@ -153,6 +153,7 @@ Both halves are in scope, and the test corpus is a first-class target rather tha
 - **Dependencies**: None
 - **Research**: [327_repair_extension_lifecycle_hook_mechanism/reports/01_lifecycle-hook-mechanism-repair.md]
 - **Plan**: [327_repair_extension_lifecycle_hook_mechanism/plans/01_lifecycle-hook-mechanism-repair.md]
+- **Summary**: [327_repair_extension_lifecycle_hook_mechanism/summaries/01_lifecycle-hook-mechanism-repair-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 
