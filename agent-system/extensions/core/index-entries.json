@@ -3104,7 +3104,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "How a dispatched agent (which cannot call AskUserQuestion) requests a git push via a blocking user_decision, why a YES never mints a grant, and why the .decisions.json replay hazard is closed by construction",
-      "line_count": 136,
+      "line_count": 180,
       "keywords": [
         "push-consent",
         "please-grant",

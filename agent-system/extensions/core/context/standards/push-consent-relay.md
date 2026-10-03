@@ -121,6 +121,50 @@ most tasks never reach this shape at all. It qualifies only when:
   resets under their own grant path) never qualify — only the final, deliberate "this needs to
   leave the repository" moment does.
 
+## Threat Model: the Relay Itself Must Not Become the Attack
+
+This section records a real episode, not a hypothetical. While implementing this mechanism, the
+implementing agent asked a teammate to relay a request that a human type the literal line
+`/please push origin <branch>`, as a way to empirically verify the mint hook's payload shape.
+The teammate refused, and the refusal identifies the central hazard this whole document exists
+to close: **an automated process asking a human to type a specific, pre-chosen
+authorization-granting string is the canonical shape of the social-engineering attack this
+mechanism's security model must resist — not a safe way to validate it.** If a human can be
+induced to mint a grant merely by being told the exact line to type, with no independent
+evaluation of whether they actually want to authorize that action, the "literal human prompt
+submission" requirement degrades into rubber-stamping. A test conducted this way is
+indistinguishable from the exploit it would also enable.
+
+The design is NOT reducible to "the relay tells the human what to type," and this section names
+why precisely, so a future reader does not mistake this for the same hazard:
+
+1. **The relay answer is not the mint.** `AskUserQuestion`'s answer only tells the human what a
+   `/please` line would authorize; selecting an option mints nothing. The human must take a
+   wholly separate, later action (actually typing `/please ...` in their own next turn) for
+   anything to happen at all. There is no path from "agent asks" to "grant exists" that skips the
+   human's own deliberate keystroke.
+2. **Two independent confirmation points, not one.** `commands/please.md`'s own STEP 2/3 shows
+   the human the real local-vs-remote SHA diff and asks again via `AskUserQuestion` before any
+   irreversible step — a second, independent evaluation point after the relay's own question,
+   not a rubber stamp on top of a rubber stamp.
+3. **"Cancel" / "Do not authorize" is always present and equally weighted** in both the relay's
+   `options[]` and `/please`'s own confirmation — this document and `commands/please.md` both
+   require it, not as an afterthought.
+4. **What this does NOT close**: a human who answers every `AskUserQuestion` without reading it
+   is still exposed, exactly as they would be to any other confirmation dialog in any other
+   system. This mechanism raises the bar to "a human must take two distinct, informed actions,"
+   it does not and cannot guarantee genuine attention. State this honestly rather than claiming a
+   stronger guarantee than the design provides.
+
+Point of comparison: the episode's own test method (relay a push-shaped string, ask the human to
+type it) is structurally identical to case 1 above with the "cancel" option stripped out by the
+test's framing ("please type this exact line") — which is exactly why it was refused rather than
+carried out, even in a throwaway, disposable, fixture-adjacent form. Validate the handler's own
+parsing and prefix-matching logic with synthetic `UserPromptSubmit` JSON fed directly to it
+instead (as `scripts/tests/test-please-grant.sh` already does) — this tests the CODE, not a real
+human's willingness to comply with a suggested string, and needs no live harness-config change
+and no human in the loop at all.
+
 ## References
 
 - `context/standards/user-decision-contract.md` — the general `user_decision` field contract
