@@ -27,15 +27,28 @@
       "category": "INSIGHT",
       "source_artifact": "specs/334_fix_books_scaffold_contract_defects/summaries/01_books-scaffold-contract-defects-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy", "deploy-drift", "concurrent-dispatch", "territory", "reasoned-exclusions", "source-store"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "deploy-drift",
+        "concurrent-dispatch",
+        "territory",
+        "reasoned-exclusions",
+        "source-store"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791065283_d98d41",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -29,9 +29,15 @@
           "path": "specs/334_fix_books_scaffold_contract_defects/plans/01_books-scaffold-contract-defects.md",
           "type": "plan",
           "summary": "5-phase plan fixing the books hard agent's artifacts/status template, both hard skills' hand-rolled task lookups, and the full-tier ambiguity behind the general defect."
+        },
+        {
+          "path": "specs/334_fix_books_scaffold_contract_defects/summaries/01_books-scaffold-contract-defects-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the books scaffold contract defect fixes."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed both standing books-extension scaffold lint failures (object-shaped artifacts/status template in the hard implementation agent; hand-rolled task lookups in both hard SKILL.md files) and named verify-deploy.sh as the concrete command satisfying plan-format.md's full verification tier, closing the ambiguity behind the general defect."
     },
     {
       "project_number": 328,

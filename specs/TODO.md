@@ -83,6 +83,7 @@ next_project_number: 335
 - **Dependencies**: None
 - **Research**: [334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md]
 - **Plan**: [334_fix_books_scaffold_contract_defects/plans/01_books-scaffold-contract-defects.md]
+- **Summary**: [334_fix_books_scaffold_contract_defects/summaries/01_books-scaffold-contract-defects-summary.md]
 
 **Description**: Fix two books-extension scaffold contract defects that each fail a verify-deploy gate.
 
