@@ -647,6 +647,35 @@ changed as a result: `deploy-baseline-lib.sh`, this checkpoint's three
 `deploy_findings_snapshot` call sites, `deploy-ledger-lib.sh`, and `command-gate-out.sh` all
 remain exactly as documented elsewhere in this section.
 
+**Why a separate, later task made `verify-deploy.sh`'s Gate 8 itself faster instead of extending
+this rejection.** The rejection above and `--skip-verify` below both concern WHO RUNS Gate 8 and
+WHETHER a result is reused or suppressed; a separate question is how long any one Gate 8 run
+costs on its own. A later task made Gate 8 (the `scripts/tests/run-all.sh` call site inside
+`verify-deploy.sh`) itself request `run-all.sh`'s own opt-in `--jobs` parallelism (default
+`auto`, override `VERIFY_DEPLOY_GATE8_JOBS`) — see
+`context/standards/shell-script-testing.md`'s "Suite runtime" section for the mechanism and
+measured numbers. This sidesteps the exact invariance premise the rejection above found FALSE:
+making each Gate 8 run faster requires no claim that two separate runs (pre- and post-redeploy,
+or source-store vs. deployed) would produce the same answer — it changes nothing about WHAT Gate
+8 checks or HOW MANY times it is invoked, only how long each invocation takes. That is why this
+different mechanism survives where single-capture sharing did not.
+
+**`--only-gate`-narrowed inline verify vs. outright `--skip-verify` suppression — weighed, and
+suppression won on this path.** A narrower alternative to `--skip-verify` was considered: keep
+`deploy-headless.sh`'s inline verify running, but narrow it with `verify-deploy.sh --only-gate`
+to just the gate(s) this checkpoint's own pre/post pair does NOT already cover. On the two actual
+`deploy-headless.sh` caller paths (this checkpoint, `command-gate-out.sh`), that narrowed set is
+EMPTY: both callers' own pre/post pairs already run the full `--skip-slow` gate set (every gate
+except Gate 8), which is exactly what the inline verify also checks — there is no gate left for a
+narrowed inline pass to usefully re-check that the caller's own pair does not already cover. A
+narrowed pass would therefore still pay real cost (an extra `verify-deploy.sh` process, even with
+fewer gates selected) for zero additional information on these two paths — strictly worse than
+outright suppression, which pays nothing for the same zero additional information. `--only-gate`
+remains the right tool where a caller's OWN coverage is a genuine strict subset of
+`deploy-headless.sh`'s inline check (its original, documented use is cheap single-gate test
+fixtures, not this checkpoint); it was not the right tool here specifically because, on these two
+paths, there is no coverage gap for it to narrow down to.
+
 **Superseded by a LATER task's wall-clock fix — this pair now runs `--skip-slow`, accepting a
 narrower version of the exact gap named above**: a subsequent task (the harness-roster/baseline/
 wall-clock fix; see `agent-system/extensions/core/scripts/tests/run-all.sh`'s own header for the
@@ -678,12 +707,25 @@ later pass does not rediscover them:
   via the ledger's existing `skip_hash`/`skip_attributed` decisions. The mechanism buys nothing
   where it is safe and is unsafe where it would matter.
 - **Suppressing `deploy-headless.sh`'s own internal `--skip-slow` verify** when this checkpoint is
-  about to run a full-depth verify of its own anyway — decided OUT, not implemented. That script
-  is outside this checkpoint's own file scope, and its exit 3 is derived from precisely that
-  inline run and consumed by several other callers (`scripts/command-gate-out.sh`,
-  `scripts/check-deploy-freshness.sh`, `scripts/orchestrate-batch-admit.sh`, the postflight
-  completion-deploy gate, and others) whose contracts were not audited here. Recorded as a
-  genuine, scoped follow-up for a future task, not folded into this one.
+  about to run a full-depth verify of its own anyway — decided OUT at the time, not implemented
+  then, because `deploy-headless.sh` was outside that checkpoint task's own file scope and its
+  exit 3 is consumed by several other callers whose contracts had not yet been audited. **This
+  follow-up has since LANDED** (the scoped follow-up this paragraph called for): with the
+  "full-depth" premise above already corrected to `--skip-slow`-matched depth (see the superseding
+  paragraph below), and with the caller-contract audit actually done
+  (`scripts/tests/test-lint-deploy-caller-wrap.sh` mechanically re-derives, every run, that exactly
+  two files genuinely invoke `deploy-headless.sh`: `scripts/command-gate-out.sh` and this
+  checkpoint in `scripts/orchestrate-cycle-plan.sh` — no third caller exists to leave unaudited),
+  `deploy-headless.sh` gained an opt-in `--skip-verify` flag, a distinct exit code `4`, and
+  `RESULT=landed_verify_skipped` (never read as equivalent to a passed verify). Both of these two
+  genuine callers now pass it, since each already takes its own independent `--skip-slow`
+  findings-snapshot pair and never reads `deploy-headless.sh`'s own exit code for its real
+  clean/red signal. See `context/patterns/regeneration-is-manual-only.md`'s "`--skip-verify`: an
+  opt-in suppression for callers with their own baseline" subsection for the full contract,
+  rollback (an operational `--skip-verify` removal, no code change needed), and the measured
+  saving (this checkpoint's own `deploy-headless.sh` call: ~2m17s to ~8s on a heavily-loaded
+  measuring host — materially more than the ~50-70s estimate the inline pass's own isolated cost
+  carried under quieter load).
 
 **Failure contract**: the two gates are asymmetric and are evaluated in three branches.
 

@@ -681,32 +681,56 @@ rather than rounded up.
 
 ---
 
-### Phase 8: Documentation and durable rationale record [NOT STARTED]
+### Phase 8: Documentation and durable rationale record [COMPLETED]
 
 **Goal**: Record the decisions, the measured numbers, and the rejected alternatives where a future
 reader will find them, so neither the snapshot-sharing design nor a narrowed-inline-verify design
 is re-proposed from scratch.
 
 **Tasks**:
-- [ ] `context/patterns/regeneration-is-manual-only.md`, `### deploy-headless.sh's Inline
+- [x] `context/patterns/regeneration-is-manual-only.md`, `### deploy-headless.sh's Inline
       Verification and Exit Code 3` subsection: document the `--skip-verify` path, exit 4, and
       `RESULT=landed_verify_skipped`, including the "a suppressed verify is not a passed verify"
       statement and the two-caller opt-in scope. Extend the `RESULT=` vocabulary list there with
-      the new token.
-- [ ] `context/standards/shell-script-testing.md`, "Suite runtime" section: note that
+      the new token. *(completed: new "`--skip-verify`: an opt-in suppression for callers with
+      their own baseline" paragraph added; `RESULT=landed_verify_skipped` bullet added to the
+      vocabulary list; exit-code-contract paragraph cross-references the new paragraph)*
+- [x] `context/standards/shell-script-testing.md`, "Suite runtime" section: note that
       `verify-deploy.sh`'s Gate 8 is now one of the callers that opts into `--jobs`, name
       `VERIFY_DEPLOY_GATE8_JOBS` and its default, and record the measured before/after Gate 8 wall
-      times from Phase 4 beside task 261's recorded battery numbers.
-- [ ] `context/patterns/batch-orchestration-guardrails.md`: add the rationale this task exists to
+      times from Phase 4 beside task 261's recorded battery numbers. *(completed WITH A WORDING
+      CORRECTION: "task 261's recorded battery numbers" cannot be cited by task number in a
+      deliverable file outside specs/** (no-task-references-in-deliverables.md) -- the hook
+      blocked the first attempt. Added the 211.9s/219.3s/211.9s vs 507.9s (58%) battery numbers
+      directly into the existing `--jobs` bullet instead of citing them by task number, then
+      referenced that bullet descriptively ("the run-all.sh --jobs flakiness-gate measurement
+      recorded a few bullets above") from the new Gate 8 bullet -- same comparative content, a
+      durable in-file anchor instead of an ephemeral task number)*
+- [x] `context/patterns/batch-orchestration-guardrails.md`: add the rationale this task exists to
       preserve — making each Gate 8 run faster needs no invariance premise, which is precisely why
       it sidesteps the reason the snapshot-sharing design was rejected (41 of 73 suites prefer the
       deployed copy of their subject) — plus the explicit `--only-gate`-narrowed-inline-verify vs.
-      outright-suppression comparison and why suppression won on this path.
-- [ ] `docs/architecture/orchestrate-state-machine.md`: one or two lines noting that the
+      outright-suppression comparison and why suppression won on this path. *(completed: two new
+      paragraphs added after the single-capture rejection -- "Why a separate, later task made
+      verify-deploy.sh's Gate 8 itself faster instead of extending this rejection" and
+      "`--only-gate`-narrowed inline verify vs. outright `--skip-verify` suppression"; ALSO closed
+      out the pre-existing "decided OUT, not implemented... a genuine, scoped follow-up for a
+      future task" paragraph -- this task IS that follow-up, now landed, with the caller-contract
+      audit it deferred actually done via test-lint-deploy-caller-wrap.sh's own mechanical
+      re-derivation)*
+- [x] `docs/architecture/orchestrate-state-machine.md`: one or two lines noting that the
       Inter-Cycle Redeploy Checkpoint passes `--skip-verify` and that exit 4 is a landed outcome
       (the file documents no exit codes today, so this is an addition, not a correction).
-- [ ] Follow the documentation policy and encoding/emoji standards; use durable anchors
+      *(completed: added to the `deferred_deploy_checkpoint`/`defer_ledger` field-contract
+      paragraphs; ALSO corrected the pre-existing `depth_disagreement` description's stale
+      "full-depth comparison" wording and noted it is now effectively dead in real operation on
+      this path, consistent with the code comment added in Phase 6)*
+- [x] Follow the documentation policy and encoding/emoji standards; use durable anchors
       (filenames, section headings) in any deliverable text outside `specs/**`, never task numbers.
+      *(completed: `grep -n "task [0-9]"` across all four edited files returns nothing after the
+      wording correction above; `bash check-extension-docs.sh` -- the deployed copy, via a
+      redeploy -- reports no failures, and a full `verify-deploy.sh` run (no `--skip-slow`) is
+      planned as this phase's own closing verification)*
 
 **Timing**: 0.75 hours
 

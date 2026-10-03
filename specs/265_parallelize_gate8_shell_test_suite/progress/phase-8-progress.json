@@ -1,0 +1,26 @@
+{
+  "phase": 8,
+  "phase_name": "Documentation and durable rationale record",
+  "started_at": "2026-10-03T02:40:00Z",
+  "last_updated": "2026-10-03T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "regeneration-is-manual-only.md: --skip-verify/exit4/landed_verify_skipped", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md"]},
+    {"id": 2, "description": "shell-script-testing.md: Gate 8 --jobs opt-in, measured numbers", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 3, "description": "batch-orchestration-guardrails.md: rationale + --only-gate comparison + close out deferred follow-up", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 4, "description": "orchestrate-state-machine.md: checkpoint passes --skip-verify, exit 4 landed outcome", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 5, "description": "Documentation policy / no task-number references compliance", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Cite task 261's recorded battery numbers directly by task number in shell-script-testing.md", "result": "failed", "reason": "Blocked by hooks/validate-no-task-references.sh -- deliverable files outside specs/** must not cite task numbers. Fixed by inlining the numbers (211.9s/219.3s/211.9s vs 507.9s) into the existing --jobs bullet and referencing it descriptively instead."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_record": {
+    "diff_stat": "4 files changed, 99 insertions(+), 12 deletions(-) across the four doc files -- all prose, no code",
+    "task_reference_scan": "grep -n 'task [0-9]' across all four edited files returns nothing (after the wording correction)",
+    "deploy_redeployed": "bash deploy-headless.sh (no flag) -> RESULT=landed_verify_clean, 33 checks 0 failures -- confirms doc-lint (gate3/4) and manifest parity (gate5) are clean post-edit",
+    "check_extension_docs": "ran via the deployed copy (the source-store copy refuses to run standalone, by design) -- no failures",
+    "final_full_run_all": "bash run-all.sh --quiet (sequential default, no --jobs) -> [run-all] 103 passed, 3 failed (2 expected, 1 NEW), 0 skipped, 106 total. FAIL set: test-gate-out-repair-reporting.sh (EXPECTED), test-lint-json-channel-discipline.sh (EXPECTED), test-typst-element-lint.sh (NEW, due to the still-live concurrent sibling edit to typst-element-lint.sh -- same confound recorded in Phase 2/4). This set is IDENTICAL to Phase 4's auto-run FAIL set (missing test-four-tier-conflict.sh relative to the two earlier sequential baseline runs) -- further corroboration that four-tier-conflict's variance is pure ambient-load noise unrelated to --jobs, since THIS run used the sequential default (no --jobs passed at all) and still did not reproduce it."
+  }
+}

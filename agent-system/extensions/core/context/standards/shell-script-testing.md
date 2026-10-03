@@ -126,9 +126,10 @@ needs no new schema or new `provides` sub-array.
   longest-first scheduling from the advisory `tests/suite-cost-hints.txt` file (regenerate it from
   a `--timings` run; a missing, stale, or partial hints file never skips, duplicates, or
   reorders-away a suite). **Default stays `1`** (today's sequential behavior) — a 3-run
-  flakiness gate found two load-sensitive suites did not reliably benefit from parallelism under
-  heavy ambient host load, so the flip to a parallel default was declined; `--jobs` remains a
-  correct, verified opt-in. A nested-invocation guard (`RUN_ALL_NESTED=1`) forces `--jobs 1`
+  flakiness gate (211.9s / 219.3s / 211.9s at `--jobs 4` vs. 507.9s at `--jobs 1`, a 58% battery
+  reduction on a dedicated, quiet host) found two load-sensitive suites did not reliably benefit
+  from parallelism under heavy ambient host load, so the flip to a parallel default was declined;
+  `--jobs` remains a correct, verified opt-in. A nested-invocation guard (`RUN_ALL_NESTED=1`) forces `--jobs 1`
   whenever `run-all.sh` runs inside another `run-all.sh` invocation (e.g. `verify-deploy.sh`
   gate 8 calling a suite that itself shells out to `verify-deploy.sh`), so job counts never
   multiply. A fixed `LOAD_SENSITIVE_BASENAMES` set (below) always runs serially, outside the
@@ -149,6 +150,22 @@ needs no new schema or new `provides` sub-array.
   merely copies files; it does not change suite source). See
   `context/patterns/batch-orchestration-guardrails.md`'s "Inter-Cycle Redeploy Checkpoint"
   subsection for the accepted trade-off this decision carries.
+- `verify-deploy.sh`'s own Gate 8 (the `run-all.sh` call site, distinct from `run-all.sh`'s own
+  `--jobs` flag above) now requests `run-all.sh`'s opt-in parallelism itself: `--jobs
+  "$VERIFY_DEPLOY_GATE8_JOBS"`, defaulting to `auto` (`VERIFY_DEPLOY_GATE8_JOBS` unset), with `1`
+  as the documented override for a `nproc=1`, memory-pressured, or heavily-loaded host --
+  operational, no code change needed. `run-all.sh`'s own nested-invocation guard
+  (`RUN_ALL_NESTED`) is unaffected and still forces sequential execution when Gate 8 is itself
+  reached from inside another `run-all.sh` suite. Measured on a heavily-loaded host (several
+  concurrent agent sessions active): a full `verify-deploy.sh` run (no `--skip-slow`) went from
+  14m1.5s sequential to 6m47.4s under `--jobs auto` (51.6% reduction), with an identical `[FAIL]`
+  set across the two runs except for one suite already on `run-all.sh`'s own
+  `LOAD_SENSITIVE_BASENAMES` list (which always runs serially before the pool regardless of
+  `--jobs`, so this change cannot be its cause) -- `VERIFY_DEPLOY_GATE8_JOBS=1` reproduced the
+  sequential baseline's `[FAIL]` set exactly on a separate rerun. This full-`verify-deploy.sh`
+  percentage is somewhat lower than the dedicated, quieter-host `run-all.sh`-only flakiness-gate
+  measurement cited above (507.9s to ~212s, 58%), consistent with the ~2-3 fixed minutes of the
+  other 19 gates diluting the parallel fraction, plus this measurement's heavier ambient load.
 
 ### End-of-run failure roster and the known-failures baseline
 

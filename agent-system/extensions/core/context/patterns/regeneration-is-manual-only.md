@@ -226,7 +226,8 @@ directly to the caller.
 refused) -- when the deploy itself landed but the inline verification run reported one or more
 failures. Exit 3 means the tree WAS modified, unlike 1 and 2. `--dry-run` never reaches
 verification at all: it returns 0 at its own earlier branch, before the trailing block that calls
-`verify-deploy.sh` runs.
+`verify-deploy.sh` runs. A fourth exit code, `4`, was added later -- see "`--skip-verify`: an
+opt-in suppression for callers with their own baseline" below.
 
 **The fast/full gate split.** The inline call passes `--skip-slow`, a `verify-deploy.sh` flag
 that skips gate 8 (the shell test suite runner, `tests/run-all.sh`) only -- every other gate still
@@ -234,6 +235,30 @@ runs. Gate 8 alone was measured at 117.9s of the script's ~2.8min total run, so 
 drops the inline cost to roughly 50-70s. The full gate set, including gate 8, remains available on
 demand by running `verify-deploy.sh` with no flag -- `deploy-headless.sh`'s exit-3 failure message
 names that exact command.
+
+**`--skip-verify`: an opt-in suppression for callers with their own baseline.** The two genuine
+`deploy-headless.sh` callers (`scripts/command-gate-out.sh`, `scripts/orchestrate-cycle-plan.sh`'s
+Inter-Cycle Redeploy Checkpoint) each already take their own independent pre/post
+`verify-deploy.sh --skip-slow` findings snapshot pair around their `deploy-headless.sh` call (see
+`context/patterns/batch-orchestration-guardrails.md`'s "### The Inter-Cycle Redeploy Checkpoint"
+subsection) and derive their real clean/red signal from THAT comparison, never from
+`deploy-headless.sh`'s own exit code. On that path, the inline `--skip-slow` verify pass this
+subsection documents above is wholly redundant: both sides check the identical gate set. Passing
+`--skip-verify` suppresses the inline pass entirely; it is opt-in (only those two call sites pass
+it) so every other caller's behavior, including exit 3, is untouched. A suppressed verify is NOT
+a passed verify: the suppressed path exits `4` with `RESULT=landed_verify_skipped` (added to the
+vocabulary below), never `0`. `--skip-verify --dry-run` still returns 0 at the same earlier
+branch as any other `--dry-run` invocation -- the suppression guard is never reached. Measured
+saving: removing this one inline pass cut `deploy-headless.sh`'s own wall time from ~2m17s to
+~8s on the measuring host (ambient-load-dependent; see this change's own implementation summary
+for the full before/after pair and host facts) -- materially larger than the ~50-70s estimate
+this subsection's "fast/full gate split" paragraph above gives for the pass in isolation, under
+quieter load. This was recorded as a deliberate, scoped follow-up by an earlier wall-clock-fix
+task rather than attempted inline with it (see
+`context/patterns/batch-orchestration-guardrails.md`'s "Superseded by a LATER task's wall-clock
+fix" paragraph) -- this is that follow-up, landed once the two-caller contract audit it deferred
+was actually done (`scripts/tests/test-lint-deploy-caller-wrap.sh` reconfirms, mechanically, that
+exactly these two files genuinely invoke `deploy-headless.sh`).
 
 **The Stage MT-3 step 7 collision -- DONE.** `skill-orchestrate/SKILL.md`'s deploy-failure branch
 was written as "Non-zero exit (1 or 2) -> defer unconditionally ... with NO baseline consultation
@@ -288,6 +313,9 @@ without parsing prose or re-deriving it from the exit code alone:
   `context/patterns/batch-orchestration-guardrails.md`'s "### The Inter-Cycle Redeploy Checkpoint"
   baseline comparison (and `command-gate-out.sh`'s identical rc==6 handler) exist to make, one
   layer up.
+- `RESULT=landed_verify_skipped` — exit 4: the deploy landed but inline verification was
+  SUPPRESSED by `--skip-verify` (see above). NOT a passed verify -- never read this as
+  equivalent to `landed_verify_clean`. Reachable only when `--skip-verify` is passed.
 
 Separately, `[deploy-headless] CONSUMERS_STALE=<n>` reports the count of stale/cannot-verify rows
 from the consumer-freshness check above — the third confound (deploy did not land / deploy
