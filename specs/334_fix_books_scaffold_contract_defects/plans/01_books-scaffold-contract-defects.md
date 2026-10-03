@@ -261,7 +261,7 @@ with the lint reporting zero violations once both phases have landed.
 
 ---
 
-### Phase 4: General defect -- name the concrete command that satisfies the `full` verification tier [NOT STARTED]
+### Phase 4: General defect -- name the concrete command that satisfies the `full` verification tier [COMPLETED]
 
 **Goal**: `plan-format.md`'s `## Verification Tiers` section states the concrete command that
 satisfies the `full` tier's "the complete gate set for the repository", so a `full` declaration can
@@ -270,29 +270,30 @@ research identified behind a completion postflight clearing output that carried 
 failures.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/plan-format.md`, specifically the
+- [x] Re-read `agent-system/extensions/core/context/formats/plan-format.md`, specifically the
       `## Verification Tiers` table's `full` row (currently line ~269) and the
-      `### Enforcement level` subsection (currently lines ~308-315).
-- [ ] Amend the `full` row's "In-phase verification" cell to name the command alongside the
+      `### Enforcement level` subsection (currently lines ~308-315). *(completed)*
+- [x] Amend the `full` row's "In-phase verification" cell to name the command alongside the
       existing prose: `bash .claude/scripts/verify-deploy.sh` (source-store path:
       `agent-system/extensions/core/scripts/verify-deploy.sh`). Do not alter the row's other three
-      cells, and do not touch any other tier row.
-- [ ] Add one short paragraph immediately after the table (or appended to the existing
+      cells, and do not touch any other tier row. *(completed)*
+- [x] Add one short paragraph immediately after the table (or appended to the existing
       **Non-negotiable invariant** paragraph) stating that a phase declaring `full` names that
       command, or the complete set of gates it aggregates, in its own verification criteria -- a
       `full` declaration whose task list reaches only a hand-picked subset of validators does not
-      satisfy the tier.
-- [ ] Extend the `### Enforcement level` subsection with one sentence recording the *content*
+      satisfy the tier. *(completed: appended after the Non-negotiable invariant paragraph)*
+- [x] Extend the `### Enforcement level` subsection with one sentence recording the *content*
       check as a named, not-yet-built companion to the existing presence check: today
       `validate-artifact.sh` checks only that `**Verification Tier**:` is present (and only in
       `--strict`), never whether a declared `full` phase's own task list reaches a full-gate
       invocation. Write it as a recorded future item in the same register the existing
-      "**Promotion criterion**" sentence already uses.
-- [ ] Do not rename or rephrase any heading: `## Verification Tiers`, `### Commit modes`,
+      "**Promotion criterion**" sentence already uses. *(completed)*
+- [x] Do not rename or rephrase any heading: `## Verification Tiers`, `### Commit modes`,
       `### Counts-are-hypotheses obligation`, `### Enforcement level`, and the frozen
-      `Files to modify` string all stay byte-identical.
-- [ ] Do not reference any task number: this file is outside `specs/**`. Cite durable anchors
-      (file names, section headings) only.
+      `Files to modify` string all stay byte-identical. *(completed: verified via heading-line
+      diff, text unchanged, only line numbers shifted)*
+- [x] Do not reference any task number: this file is outside `specs/**`. Cite durable anchors
+      (file names, section headings) only. *(completed)*
 
 **Timing**: 0.4 hours
 

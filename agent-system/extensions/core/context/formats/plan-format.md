@@ -266,7 +266,7 @@ final gate remains responsible for catching.
 | `prose` | Edits confined to comments, docstrings, markdown/prose, and other non-code text with zero compile or elaboration surface | Diff read-through confirming every changed hunk lies inside a comment/string/prose region | An edit that crosses out of the comment or string boundary; a doc-comment that is actually load-bearing (doctest, attribute, annotation, pragma) and does compile; broken cross-references or links |
 | `local` | Edits confined to one module/file with no change to any externally visible signature | Build or lint of that single module only | Dynamic, untyped, or reflective call sites; behavior changes visible to other modules through unchanged signatures; downstream test failures; anything requiring the full test suite |
 | `interface` | Changes a symbol's name, type, arity, or argument order where call sites span multiple files | Build of the changed module plus its enumerated direct dependents | Transitive breakage beyond the enumerated one-hop dependent set; semantic (non-type-level) downstream behavior change; the full test suite; import-graph and init-level checks |
-| `full` | Edits that can change runtime, proof, or elaboration behavior anywhere: shared tactics, core types, global config | The complete gate set for the repository | Nothing is deferred past this tier. This is the ceiling |
+| `full` | Edits that can change runtime, proof, or elaboration behavior anywhere: shared tactics, core types, global config | The complete gate set for the repository: `bash .claude/scripts/verify-deploy.sh` (source-store path: `agent-system/extensions/core/scripts/verify-deploy.sh`) | Nothing is deferred past this tier. This is the ceiling |
 
 **Tie-break rule**: When uncertain, apply the strictest applicable tier (full > interface > local > prose).
 
@@ -275,6 +275,11 @@ verification runs *during* a phase. The full gate set still runs before a phase 
 a task completes, unchanged. `full` is textually identical in strictness to today's existing
 requirement; tiers `prose`, `local`, and `interface` are added *below* it and redefine nothing
 about it. A tiering scheme that weakens the final gate is wrong, not a trade-off.
+
+A phase declaring `full` names `bash .claude/scripts/verify-deploy.sh` — or the complete set of
+gates it aggregates — in its own verification criteria. A `full` declaration whose task list
+reaches only a hand-picked subset of validators does not satisfy the tier, however plausible the
+subset looks in isolation.
 
 ### Commit modes
 
@@ -312,7 +317,10 @@ Per-phase tier enforcement in `scripts/validate-artifact.sh` is **advisory-first
 plans authored before this vocabulary existed continues to pass. `--strict` mode enforces it
 today. **Promotion criterion**: promote the warning to an error once no non-terminal plan under
 `specs/` lacks the field. This is recorded here for a future task to execute; it is not done by
-the task that introduced this vocabulary.
+the task that introduced this vocabulary. A separate, not-yet-built companion check is recorded
+here for the same future execution: today's enforcement checks only the field's *presence*,
+never whether a phase declaring `full` actually reaches a full-gate invocation in its own task
+list — a plan-file content lint over that gap is a named future item, not yet built.
 
 ## Planned Strategic Sorries (format, hard-mode skeleton plans only)
 
