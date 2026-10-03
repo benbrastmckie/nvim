@@ -107,12 +107,12 @@ built it, is abandoned before Move 2 ever calls it — e.g. the operator asks to
 the plan, or this process is about to be killed): `scripts/orchestrate-unwind-dispatch.sh
 <task_number> --session SID [--dry-run] [--commit]` is the sanctioned hand-recovery path, never
 called automatically from this loop — see `docs/architecture/orchestrate-state-machine.md`'s
-"Unwinding an Unconsumed Dispatch" subsection for what it reverses, the refusal gate, and the
-by-hand-only rationale. If the unwind was run because the underlying work was already complete
+"Unwinding an Unconsumed Dispatch" subsection for what it reverses, the refusal gate, the
+by-hand-only rationale, and what to run afterwards. If the unwind was run because the underlying work was already complete
 (a `summaries/*.md` exists), follow it with `reconcile-task-status.sh <task_number> <session_id>`
 — NOT a direct re-run of `orchestrate-cycle-postflight.sh` or `/orchestrate`, which opens a fresh
 dispatch window the existing handoff predates and trips the (working-as-designed) handoff-
-identity staleness gate; see that same subsection's "What to run afterwards" paragraph.
+identity staleness gate.
 
 **MUST NOT**: never re-invoke `orchestrate-cycle-plan.sh` LIVE just to inspect state — a live
 call mutates (task lock, `dispatch_seq`, preflight status, a real dispatch file). `--dry-run`
@@ -318,4 +318,3 @@ the `detected_defects` constraint above (Move 4) applies here too.
 | Plan revision (drift) | `"reviser-agent"` | Triggered when `drift_pct > DRIFT_REVISION_THRESHOLD` |
 
 Default agents: `general-research-agent`, `planner-agent`, `general-implementation-agent`.
-Extension agents resolved by `command-route-agent.sh`.
