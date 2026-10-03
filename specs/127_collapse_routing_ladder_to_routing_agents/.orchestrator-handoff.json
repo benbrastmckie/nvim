@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "summary": "7-phase implementation plan for the routing-ladder collapse. Ordering is driven by one planning-time discovery: check-extension-docs.sh's check_routing_block() hard-fails when the routing block is absent and is verify-deploy gate 3, so validator re-scope (Phase 2) must precede the manifest edits (Phase 3). Phase 1 migrates /epi off command-route-skill.sh, the one live caller, before Phase 4 deletes the script. Work items 5 and 6 resolve as audit-and-record (zero colon-suffixed routing_agents values; nonexistent-agent guard already implemented as lint Check B + gate 7).",
-  "phase": "plan",
-  "dispatch_seq": 8,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "summary": "All 7 implementation phases completed and committed. routing/routing_hard removed from 17+2 extension manifests; command-route-skill.sh and its callerless library helper retired; lint-routing-wiring.sh and check-extension-docs.sh re-scoped to routing_agents/routing_agents_hard; manifest-routing-schema.md, hard-mode-routing.md, the CLAUDE.md merge source, and command-authoring guidance rewritten to the collapsed model, including 7 additional stale-reference files discovered by repo-wide grep sweeps beyond the plan's named scope. Full verification green: lint-routing-wiring.sh (260/260), test-routing-resolution.sh (13/13), validate-context-index.sh (0 errors), check-task-references.sh (0 occurrences), verify-deploy.sh gates 3/7/16 behaving exactly as designed. One remaining verify-deploy FAIL (skill-refresh.md/refresh.md content drift) confirmed as task 217's declared sibling territory, not attributable to this task.",
+  "phase": "implement",
+  "phases_completed": 7,
   "phases_total": 7,
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
+      "summary": "Full implementation summary for the routing-ladder collapse across all 7 phases."
+    },
+    {
       "type": "plan",
       "path": "specs/127_collapse_routing_ladder_to_routing_agents/plans/01_routing-ladder-collapse.md",
-      "summary": "7-phase plan collapsing routing/routing_hard out of 17+2 extension manifests, retiring command-route-skill.sh, and re-scoping validators and docs to routing_agents."
+      "summary": "7-phase plan, all phases marked [COMPLETED] with inline verification evidence."
     }
   ],
-  "next_action_hint": "Run /implement 127 to execute the plan"
+  "next_action_hint": "Task complete. No further action needed beyond postflight status transition to [COMPLETED]."
 }

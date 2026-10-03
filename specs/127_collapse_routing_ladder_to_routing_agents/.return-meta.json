@@ -1,13 +1,89 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
+      "summary": "All 7 phases completed: routing/routing_hard removed from 17+2 manifests, command-route-skill.sh retired, and every validator/document re-scoped or rewritten to the collapsed routing_agents-only model."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Collapsed the routing ladder to routing_agents-only across all 19 extension manifests: removed routing/routing_hard from 17+2 manifests, retired command-route-skill.sh and its callerless library helper, re-scoped lint-routing-wiring.sh and check-extension-docs.sh to validate routing_agents/routing_agents_hard, and rewrote manifest-routing-schema.md, hard-mode-routing.md, the CLAUDE.md merge source, and command-authoring guidance (plus 7 additional files discovered by repo-wide grep sweeps) to describe the collapsed two-block model."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/guides/extension-development.md",
+    "agent-system/extensions/core/context/guides/hard-mode-routing.md",
+    "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
+    "agent-system/extensions/core/context/standards/shell-strict-mode.md",
+    "agent-system/extensions/core/docs/examples/research-flow-example.md",
+    "agent-system/extensions/core/docs/guides/adding-domains.md",
+    "agent-system/extensions/core/docs/guides/copy-claude-directory.md",
+    "agent-system/extensions/core/docs/guides/creating-commands.md",
+    "agent-system/extensions/core/docs/templates/command-template.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/scripts/command-route-agent.sh",
+    "agent-system/extensions/core/scripts/command-route-skill.sh",
+    "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh",
+    "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/cslib/manifest.json",
+    "agent-system/extensions/cslib/README.md",
+    "agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md",
+    "agent-system/extensions/cslib/skills/skill-cslib-research-hard/SKILL.md",
+    "agent-system/extensions/email/manifest.json",
+    "agent-system/extensions/epidemiology/commands/epi.md",
+    "agent-system/extensions/epidemiology/manifest.json",
+    "agent-system/extensions/filetypes/manifest.json",
+    "agent-system/extensions/formal/manifest.json",
+    "agent-system/extensions/founder/manifest.json",
+    "agent-system/extensions/latex/manifest.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md",
+    "agent-system/extensions/memory/manifest.json",
+    "agent-system/extensions/nix/manifest.json",
+    "agent-system/extensions/nvim/manifest.json",
+    "agent-system/extensions/present/manifest.json",
+    "agent-system/extensions/python/manifest.json",
+    "agent-system/extensions/rust/manifest.json",
+    "agent-system/extensions/typst/manifest.json",
+    "agent-system/extensions/web/manifest.json",
+    "agent-system/extensions/z3/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When removing a manifest/config key that multiple validators read, check for validators that FAIL on the key's ABSENCE, not just ones that read its contents -- and also check validators that reference the retired key's name only in COMMENTS (header docs, Rule-letter indexes) as these are easy to miss and leave stale documentation. In the agent-system routing collapse, check-extension-docs.sh's check_routing_block() hard-failed any non-exempt extension declaring provides.skills without a routing block (verify-deploy gate 3), and after deletion, 4 cslib/lean hard SKILL.md files that referenced the deleted script's name in their own provenance prose triggered a SEPARATE check (undeclared-script-reference) that was not anticipated during planning. The resulting rule: before deleting a config key or script, grep the WHOLE repo for its literal name (not just .sh files or executable callers) and triage every hit, because prose documentation referencing a soon-deleted name can itself trip a validator.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["manifest", "config-key-removal", "validator-ordering", "verify-deploy", "cross-reference-check", "grep-before-delete"]
+    },
+    {
+      "content": "jq's pretty-printer unconditionally expands every array onto multiple lines, even when the original file hand-compacted a short array onto one line (e.g. [\"a\", \"b\", \"c\"]). A uniform `jq 'del(.key)' file > tmp && mv` loop across many JSON files will silently reformat any file that had such a compacted array, producing an unwanted diff beyond the intended deletion. Before applying a bulk jq-based edit across many files, spot-check each file's diff for unrelated reformatting (not just the intended key removal), and hand-rewrite via Write (preserving exact original formatting) any file where jq's default pretty-printer would mangle unrelated content.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["jq", "json-formatting", "bulk-edit", "pretty-printer", "diff-hygiene"]
+    },
+    {
+      "content": "Plan verification bullets for a multi-phase documentation-cleanup task can tighten across phases: an intermediate phase may explicitly allow 'historical mentions' of a retired name to remain (since later phases still own some of the cleanup), while a later/final phase's own verification bullet may require TRUE ZERO occurrences with no such exception. When a plan's wording shifts from 'only intentional historical mentions' to 'returns zero occurrences repo-wide', treat the stricter wording as authoritative and go back to reword even the canonical documentation's own historical-explanation prose to avoid the literal retired name (e.g. 'the former skill-level resolver' instead of naming the deleted script).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["plan-verification", "grep-zero-occurrences", "documentation-cleanup", "phase-sequencing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791000710_cc4f86",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 7,
     "phases_total": 7
   }
 }
