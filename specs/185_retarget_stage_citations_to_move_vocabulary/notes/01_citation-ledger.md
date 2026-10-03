@@ -141,3 +141,19 @@ Stage 5, not skill-orchestrate's) -- no action needed.
   file_scope, and not a fabricated sub-anchor (ordinary English "a step [that happens] within
   Move 3", not "Move 3 step N"). Noted so the acceptance grep's one repo-wide hit is not
   mistaken for a defect introduced by this sweep.
+
+## Full gate run outcome (verify-deploy.sh, Gate 8 included)
+
+deploy-headless.sh: PASS, 33/33 checks, RESULT=landed_verify_clean.
+
+verify-deploy.sh (full, including Gate 8): FAIL, 2 of 34 checks failed — both confirmed
+unrelated to this task:
+1. Orphan detection: `tmp/noop-bash-count-<this-session's-own-scratchpad-uuid>` inside the
+   deployed `.claude/tmp/` tree, untracked in every branch, never created by any edit this task
+   made -- an environmental artifact of this orchestrator session's own tooling.
+2. Shell test suite (`run-all.sh --jobs 4`, run to completion in the foreground, exit 0):
+   105 passed, 3 failed (2 pre-marked EXPECTED by the runner, 1 NEW), 1 skipped, 109 total. The
+   1 NEW failure (`test-typst-element-lint.sh` case-h2) is caused by an uncommitted,
+   in-progress modification to `typst-element-lint.sh` belonging to a different, concurrently
+   in-flight task (task 179's lineage) already sitting dirty in the shared working tree before
+   this task's first commit -- not touched by any of this task's 17 markdown-only edits.

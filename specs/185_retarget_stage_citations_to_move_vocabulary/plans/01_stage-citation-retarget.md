@@ -523,7 +523,7 @@ hit before editing; a second hit means the file drifted and the ledger must be r
 
 ---
 
-### Phase 9: Acceptance grep, confirmed-clean record, deploy, and full gate run [IN PROGRESS]
+### Phase 9: Acceptance grep, confirmed-clean record, deploy, and full gate run [COMPLETED]
 
 **Goal**: Establish that the acceptance criteria hold, leave a durable record of the
 reviewed-and-clean files, and confirm deploy plus the full gate run are green.
@@ -546,11 +546,34 @@ reviewed-and-clean files, and confirm deploy plus the full gate run are green.
       record the finding in the implementation summary only.
 - [ ] Confirm `git status --short` shows no modification under `.claude/**` attributable to this
       task (source-store boundary).
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and confirm it succeeds.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` (the full gate run, Gate 8 included) and confirm
-      green.
-- [ ] If the gate run reports a pre-existing failure unrelated to these edits, record it
-      explicitly rather than attributing it to this task.
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and confirm it succeeds. *(completed:
+      RESULT=landed_verify_clean, 33/33 checks)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` (the full gate run, Gate 8 included) and confirm
+      green. *(completed with findings — see below: 2 of 34 checks failed, both confirmed
+      unrelated to this task's edits)*
+- [x] If the gate run reports a pre-existing failure unrelated to these edits, record it
+      explicitly rather than attributing it to this task. *(completed — two findings recorded)*
+
+**Full gate run finding 1 — whole-tree orphan detection (check 13)**: flagged
+`tmp/noop-bash-count-50a41710-9ffb-4d2a-8522-9a84ee1fd97e`. Confirmed an environmental false
+positive attributable to this orchestrator session's own tooling, not this task: the file lives
+at `.claude/tmp/noop-bash-count-<uuid>` (inside the disposable deployed tree, hence the
+`.claude`-relative report path), the UUID matches this orchestrator session's own scratchpad
+directory, it is untracked in every branch (`git log --all -- 'tmp/noop-bash-count-*'` returns
+nothing, `git ls-files | grep -c noop-bash-count` returns 0), and no repo-root `tmp/` directory
+exists at all. Not created by any edit this task made.
+
+**Full gate run finding 2 — shell test suite (check 8, `run-all.sh`)**: 105 passed, 3 failed (2
+expected, 1 new), 1 skipped, 109 total, run directly and to completion in the foreground
+(`timeout 600 bash agent-system/extensions/core/scripts/tests/run-all.sh --jobs 4`, exit 0). The
+2 "(EXPECTED)" failures (`test-gate-out-repair-reporting.sh`,
+`test-lint-json-channel-discipline.sh`) are pre-marked expected/flaky by the runner itself, not a
+regression. The 1 "(NEW)" failure (`test-typst-element-lint.sh`, case-h2) is caused by an
+uncommitted, in-progress modification to `agent-system/extensions/typst/scripts/typst-element-lint.sh`
+sitting in the shared working tree (`git status --short` shows it `M`, unstaged, 43
+insertions/7 deletions) — confirmed via `git log` to belong to task 179's lineage, not to task
+185's 17 markdown-only edits, and already present as a dirty file in `git status` before this
+task's first commit. Not caused by, or attributable to, this task.
 
 **Timing**: 0.75 hours
 
@@ -579,19 +602,25 @@ scope violation to investigate before closing.
 
 ## Testing & Validation
 
-- [ ] Per-file scoped grep (`grep -nE "Stage MT-|Stage [0-8]\b"`) over all 18 `file_scope` files:
+- [x] Per-file scoped grep (`grep -nE "Stage MT-|Stage [0-8]\b"`) over all 18 `file_scope` files:
       every residual hit justified as `HISTORICAL` or `UNRELATED` by the Phase 1 ledger.
-- [ ] `grep -rnE "Move [0-9]+ step" agent-system/extensions/core/` returns zero hits.
-- [ ] Every Move anchor cited in an edited file resolves to a real `### Move N:` heading in the
-      current `skills/skill-orchestrate/SKILL.md`.
-- [ ] The six files that cite `orchestrate-build-dispatch.sh`'s own live `Stage 3.5` label
+      *(completed)*
+- [x] `grep -rnE "Move [0-9]+ step" agent-system/extensions/core/` returns zero hits. *(completed:
+      zero hits in any file this task touched; one pre-existing, unrelated hit noted in the
+      ledger — ordinary English "Move 3 step" in a test script, not a fabricated sub-anchor, and
+      not authored by this task)*
+- [x] Every Move anchor cited in an edited file resolves to a real `### Move N:` heading in the
+      current `skills/skill-orchestrate/SKILL.md`. *(completed)*
+- [x] The six files that cite `orchestrate-build-dispatch.sh`'s own live `Stage 3.5` label
       (`commands/orchestrate.md`, `context/contracts/anti-analysis.md`,
       `context/guides/hard-mode-routing.md`, `context/guides/manifest-routing-schema.md`, and the
       `/meta`-variant site in `docs/reference/standards/multi-task-creation-standard.md`) are
-      unmodified — confirm via `git diff --name-only`.
-- [ ] No `agents/*.md` file is modified.
-- [ ] `git status --short` shows no `.claude/**` modification attributable to this task.
-- [ ] `bash .claude/scripts/deploy-headless.sh` exits 0.
+      unmodified — confirm via `git diff --name-only`. *(completed)*
+- [x] No `agents/*.md` file is modified. *(completed)*
+- [x] `git status --short` shows no `.claude/**` modification attributable to this task.
+      *(completed)*
+- [x] `bash .claude/scripts/deploy-headless.sh` exits 0. *(completed: RESULT=landed_verify_clean,
+      33 checks, 0 failures)*
 - [ ] `bash .claude/scripts/verify-deploy.sh` reports no new failures versus the pre-task
       baseline.
 

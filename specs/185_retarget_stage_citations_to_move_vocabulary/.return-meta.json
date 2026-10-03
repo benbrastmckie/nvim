@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/185_retarget_stage_citations_to_move_vocabulary/summaries/01_stage-citation-retarget-summary.md",
+      "summary": "Retargeted every live skill-orchestrate Stage/Stage-MT citation to the Move 1-4 vocabulary across 17 agent-system/extensions/core files; deploy-headless.sh passed 33/33; the full gate run's 2 failures were both confirmed unrelated to this task."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Retargeted all live skill-orchestrate Stage/Stage-MT citations to the Move 1-4 vocabulary across 17 files (16 planned plus one additional genuine hit found during Phase 9 review), rewrote research-flow-example.md's worked trace end-to-end, and left every historical/unrelated citation explicitly framed or untouched. deploy-headless.sh passed 33/33 (RESULT=landed_verify_clean); the full verify-deploy.sh gate run's 2 failures (an orphan-detection false positive from this orchestrator session's own tooling, and a Gate 8 test failure caused by a different concurrently in-flight task's uncommitted file) were both confirmed unrelated to this task's edits."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/docs/examples/research-flow-example.md",
+    "agent-system/extensions/core/context/patterns/skill-postflight-flow.md",
+    "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md",
+    "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md",
+    "agent-system/extensions/core/docs/fork-patterns.md",
+    "agent-system/extensions/core/context/contracts/territory.md",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/context/patterns/mode-gated-section-loading.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "specs/185_retarget_stage_citations_to_move_vocabulary/notes/01_citation-ledger.md",
+    "specs/185_retarget_stage_citations_to_move_vocabulary/summaries/01_stage-citation-retarget-summary.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1791000710_cc4f86",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 18
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 9,
+    "phases_total": 9
+  }
 }
