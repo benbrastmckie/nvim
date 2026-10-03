@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 17,
+  "summary": "Wrote a 9-phase plan retargeting skill-orchestrate Stage/Stage-MT citations to the Move 1-4 vocabulary across 18 source-store files, gated by a Phase 1 per-hit classification ledger that discriminates live citations from historical ones and from four unrelated 'Stage N' vocabularies.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/185_retarget_stage_citations_to_move_vocabulary/plans/01_stage-citation-retarget.md",
+      "summary": "9 phases, 7.5h, 3 dependency waves; includes the confirmed Stage -> Move mapping table as the single authority for every editing phase."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 9,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Dispatch implement for task 185; Phase 1 (classification ledger) must complete before any editing phase runs."
+}

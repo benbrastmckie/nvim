@@ -230,12 +230,12 @@
     {
       "project_number": 185,
       "project_name": "retarget_stage_citations_to_move_vocabulary",
-      "status": "researched",
+      "status": "planned",
       "task_type": "markdown",
       "description": "Retarget the remaining historical \"Stage N\" and \"Stage MT-N\" citations to the four-move loop vocabulary.\n\nCONTEXT. skill-orchestrate/SKILL.md was rewritten from a two-engine, Stage-numbered state machine (single-task Stages 0-8; multi-task Stages MT-1 through MT-5) into a single four-move loop whose sections are named Move 1 through Move 4. Roughly 120 citations of the old vocabulary remain across 9 context/ and docs/ files. They now point at section names that no longer exist in the file they cite.\n\nKNOWN SITES (from the rewrite's own survey; re-verify by grep rather than trusting this list):\n  context/patterns/batch-orchestration-guardrails.md  -- 34 occurrences, the largest single concentration\n  docs/architecture/handoff-schema.md\n  docs/architecture/orchestrate-cycle-postflight.md\n  docs/architecture/batch-admit-schema.md\n  context/patterns/orchestrate-batch-results-template.md\n  plus four further context/ and docs/ files\n\nWHY IT WAS DEFERRED. The rewrite judged a ~120-citation mechanical sweep disproportionate to its core scope and recorded it as a follow-up rather than attempting it inline.\n\nSCOPE AND CARE. This is a mechanical retarget, not a rewrite of the surrounding prose. Two hazards to respect: (1) some citations are historical-by-intent -- they describe what a now-deleted engine did, in a decision record or incident narrative, and must keep naming the old stage rather than being rewritten to a Move that never had that behavior; distinguish \"cites a live section\" from \"narrates history\" before editing. (2) Edit the source store under agent-system/extensions/** and never the deployed .claude/ tree (see rules/source-store-deploy-boundary.md).\n\nACCEPTANCE: every citation that refers to a LIVE section names the correct Move; every historical citation is either left intact or explicitly marked as historical; a grep for \"Stage MT-\" and for single-task \"Stage [0-8]\" returns only intentional historical references; deploy and the full gate run stay green.\n\n=== PATH REVIEW 2026-09-28: scope and ordering ===\nfile_scope now names the five known sites; research MUST add the remaining files (a grep for 'Stage MT-' and single-task 'Stage [0-8]' matched 72 files under core/context, docs, skills and commands on 2026-09-28, most of them historical-by-intent) to file_scope before the implement dispatch. Ordered behind the three engine tasks that are actively editing batch-orchestration-guardrails.md and handoff-schema.md, so the mechanical sweep runs over settled text.",
       "topic": "core-agent-system",
       "created": "2026-09-08T06:28:44Z",
-      "last_updated": "2026-10-03T08:00:07Z",
+      "last_updated": "2026-10-03T08:10:35Z",
       "dependencies": [
         266,
         199,
@@ -259,7 +259,8 @@
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/docs/examples/research-flow-example.md",
         "agent-system/extensions/core/docs/fork-patterns.md",
-        "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"
+        "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md",
+        "specs/185_retarget_stage_citations_to_move_vocabulary/notes/01_citation-ledger.md"
       ],
       "session_id": "sess_1791000710_cc4f86",
       "artifacts": [
@@ -267,6 +268,11 @@
           "path": "specs/185_retarget_stage_citations_to_move_vocabulary/reports/01_stage-citation-survey.md",
           "type": "report",
           "summary": "Verified file_scope (18 files, 5 dispatch-named + 13 confirmed here) for retargeting Stage/Stage-MT citations to Move 1-4, a taxonomy of 4 other unrelated 'Stage N' vocabularies that must NOT be touched, and the confirmed Stage->Move mapping table."
+        },
+        {
+          "path": "specs/185_retarget_stage_citations_to_move_vocabulary/plans/01_stage-citation-retarget.md",
+          "type": "plan",
+          "summary": "9 phases, 7.5h, 3 dependency waves; includes the confirmed Stage -> Move mapping table as the single authority for every editing phase."
         }
       ],
       "next_artifact_number": 2

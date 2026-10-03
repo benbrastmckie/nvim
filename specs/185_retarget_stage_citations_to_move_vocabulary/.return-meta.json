@@ -1,54 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 16,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/185_retarget_stage_citations_to_move_vocabulary/reports/01_stage-citation-survey.md",
-      "summary": "Verified file_scope (18 files, 5 dispatch-named + 13 confirmed here) for retargeting Stage/Stage-MT citations to Move 1-4, a taxonomy of 4 other unrelated 'Stage N' vocabularies that must NOT be touched, and the confirmed Stage->Move mapping table."
+      "type": "plan",
+      "path": "specs/185_retarget_stage_citations_to_move_vocabulary/plans/01_stage-citation-retarget.md",
+      "summary": "9-phase mechanical retarget of skill-orchestrate Stage/Stage-MT citations to Move 1-4 vocabulary across 18 source-store files, with a per-hit classification ledger gate and a scoped acceptance grep."
     }
   ],
-  "next_steps": "Run /plan 185 to create the implementation plan using the verified file_scope and Stage->Move mapping in the report.",
-  "metadata": {
-    "session_id": "sess_1791000710_cc4f86_185",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
+  "next_steps": "Run /implement 185 to execute the plan",
+  "phase_count": 9,
+  "estimated_hours": 7.5,
+  "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8], [9]],
   "memory_candidates": [
     {
-      "content": "This codebase has at least 5 independently-numbered 'Stage N' conventions that collide lexically: (1) skill-orchestrate's old deleted single-task Stage 0-8 / multi-task Stage MT-1..5; (2) the generic agent-template execution-flow Stage 0-8 used by every agents/*.md file; (3) the generic skill-body/shared-preflight-postflight-flow Stage 1-9 used by direct-execution skills; (4) /meta's own interview-stage numbering; (5) individual scripts' own retained internal stage labels (e.g. orchestrate-build-dispatch.sh's still-valid internal 'Stage 3.5'). A grep for 'Stage N' across this codebase will always surface dozens of correct, unrelated hits from categories 2-5 — never blind-replace without reading context and confirming which convention a hit belongs to.",
-      "category": "PATTERN",
-      "source_artifact": "specs/185_retarget_stage_citations_to_move_vocabulary/reports/01_stage-citation-survey.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["stage-numbering", "skill-orchestrate", "false-positive-grep", "agent-template", "citation-retarget"]
-    },
-    {
-      "content": "When a SKILL.md section rewrite flattens a stepped structure (e.g. 'Stage MT-3 step 7') into a single coarser call (e.g. 'Move 1' wrapping one script invocation), the old sub-step granularity typically survives only inside the implementing script, not as a new prose anchor. Retargeting citations must rename the section anchor while keeping the descriptive parenthetical naming the mechanism/script, rather than inventing a fictitious new sub-step number at the new grain.",
+      "content": "In this repo's agent-system documentation tree, the word 'Stage N' belongs to five independent, lexically colliding numbering vocabularies: (1) skill-orchestrate's own engine stages (now replaced by Move 1-4), (2) the generic agent-execution-flow convention in context/templates/agent-template.md and every agents/*.md derived from it, (3) the generic skill-body preflight/postflight flow (context/patterns/skill-preflight-flow.md et al.), (4) /meta's interview stages, and (5) individual scripts' retained internal labels (e.g. orchestrate-build-dispatch.sh's live 'Stage 3.5 (Dispatch Prep)', orchestrate-stage5-gates.sh). A naive grep for 'Stage MT-|Stage [0-8]' over core/{context,docs,skills,commands,agents} matches ~77 files but only ~18 cite skill-orchestrate. Any sweep that renames section anchors in this tree must classify every hit against these five vocabularies line-by-line; a whole-file find-replace corrupts four live, correct conventions. The reliable discriminator for vocabulary (1) is co-occurrence with the literal strings 'skill-orchestrate', 'orchestrate-cycle-plan.sh', 'orchestrate-cycle-postflight.sh', or 'orchestrate-build-dispatch.sh'.",
       "category": "INSIGHT",
-      "source_artifact": "specs/185_retarget_stage_citations_to_move_vocabulary/reports/01_stage-citation-survey.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["citation-retarget", "section-rewrite", "granularity-collapse", "skill-orchestrate"]
+      "source_artifact": "specs/185_retarget_stage_citations_to_move_vocabulary/plans/01_stage-citation-retarget.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["stage-numbering", "citation-sweep", "skill-orchestrate", "move-loop", "grep-classification", "documentation-retarget"]
     }
   ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
-    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
-    "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
-    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
-    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
-    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
-    "agent-system/extensions/core/docs/examples/research-flow-example.md",
-    "agent-system/extensions/core/context/patterns/skill-postflight-flow.md",
-    "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
-    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
-    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
-    "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md",
-    "agent-system/extensions/core/docs/fork-patterns.md",
-    "agent-system/extensions/core/context/contracts/territory.md",
-    "agent-system/extensions/core/context/contracts/wrap-up.md",
-    "agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md",
-    "agent-system/extensions/core/context/patterns/mode-gated-section-loading.md",
-    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md"
-  ]
+  "metadata": {
+    "session_id": "sess_1791000710_cc4f86_185",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 17
 }
