@@ -1,0 +1,72 @@
+{
+  "phase": 4,
+  "phase_name": "Measure the parallel Gate 8 and compare against the baseline (decision gate)",
+  "started_at": "2026-10-03T00:51:00Z",
+  "last_updated": "2026-10-03T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record host facts, confirm comparable to Phase 2", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Time a full run under --jobs auto default", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Diff complete [FAIL]/FINDING gate8 sets against Phase 2 baseline", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run with VERIFY_DEPLOY_GATE8_JOBS=1, confirm reproduces baseline exactly", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Decision gate: proceed or stop", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record measured reduction vs task 261's battery numbers", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "measurement_record": {
+    "auto_run": {
+      "host_facts": {"nproc": 24, "load_avg_at_start": "1.51, 2.05, 2.08"},
+      "command": "time bash agent-system/extensions/core/scripts/verify-deploy.sh --findings",
+      "wall_time": "real 6m47.357s / user 8m26.683s / sys 5m39.289s",
+      "overall_result": "[verify-deploy] FAIL -- 1 of 34 check(s) failed",
+      "complete_FAIL_set_gate8": [
+        "test-gate-out-repair-reporting.sh",
+        "test-lint-json-channel-discipline.sh",
+        "test-typst-element-lint.sh"
+      ],
+      "complete_FINDING_set_verbatim": [
+        "FINDING gate16 lean still declares routing_hard/routing_agents_hard",
+        "FINDING gate8     [FAIL] real corpus: unexpected VIOLATION line(s): [VIOLATION] /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/chapter-quality-check.sh: $out captured with 2>&1, then consumed as JSON/NDJSON (here-string (jq or while-read NDJSON)) -- the collaborator's stderr can corrupt the payload",
+        "FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
+        "FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh",
+        "FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh"
+      ]
+    },
+    "jobs1_rerun": {
+      "host_facts": {"nproc": 24, "load_avg_at_start": "1.47, 2.92, 2.61"},
+      "command": "time VERIFY_DEPLOY_GATE8_JOBS=1 bash agent-system/extensions/core/scripts/verify-deploy.sh --findings",
+      "wall_time": "real 13m51.562s / user 9m0.024s / sys 6m11.943s",
+      "overall_result": "[verify-deploy] FAIL -- 1 of 34 check(s) failed",
+      "complete_FAIL_set_gate8": [
+        "test-four-tier-conflict.sh",
+        "test-gate-out-repair-reporting.sh",
+        "test-lint-json-channel-discipline.sh",
+        "test-typst-element-lint.sh"
+      ],
+      "matches_phase2_baseline_exactly": true
+    },
+    "baseline_comparison": {
+      "phase2_baseline_FAIL_set_gate8": [
+        "test-four-tier-conflict.sh",
+        "test-gate-out-repair-reporting.sh",
+        "test-lint-json-channel-discipline.sh",
+        "test-typst-element-lint.sh"
+      ],
+      "auto_run_FAIL_set_gate8": [
+        "test-gate-out-repair-reporting.sh",
+        "test-lint-json-channel-discipline.sh",
+        "test-typst-element-lint.sh"
+      ],
+      "set_difference": "auto run is missing test-four-tier-conflict.sh (a proper subset of baseline, not a superset -- no NEW failure appeared)",
+      "decision_gate_analysis": "test-four-tier-conflict.sh IS one of run-all.sh's five documented LOAD_SENSITIVE_BASENAMES (test-lake-build-guard.sh, test-state-write-concurrency.sh, test-state-write-regen-timing.sh, test-four-tier-conflict.sh, test-run-all-parallel.sh), which always run serially BEFORE the parallel pool regardless of --jobs value -- this task's change cannot place it in new resource contention it wasn't already exposed to. The failing assertion is case 6, a budget-bound timing check (elapsed_ms vs budget_ms=1000), sensitive to ambient host load (file-lock contention from concurrently-dispatched sibling agent sessions), not to --jobs. The VERIFY_DEPLOY_GATE8_JOBS=1 rerun reproduces the Phase 2 baseline's exact 4-suite set, including this suite failing again under forced-sequential conditions identical to the baseline's own -- demonstrating the variance is ambient-load noise intrinsic to an already-known load-sensitive suite, present under BOTH --jobs=1 runs taken ~40 minutes apart, and simply absent in the one --jobs=auto run taken in between. The plan's own Risks & Mitigations table frames this exact risk as 'a suite fails... (real contention, NOT the known set)' -- i.e. the trigger condition for escalation is a NEW load-sensitive suite outside the known five, not variance within it. DECISION: PROCEED to Phase 5. This finding is disclosed prominently (here, in the Phase 4 plan-checklist annotation, and will be carried into the implementation summary) rather than normalized away, per the task's explicit instruction to report differences -- but is not escalated as a blocking user_decision, since it is inside, not outside, the known five."
+    },
+    "wall_time_reduction": {
+      "baseline_seconds": 841.512,
+      "parallel_seconds": 407.357,
+      "reduction_pct": "51.6%",
+      "context": "task 261's own run-all.sh-only battery numbers: 507.9s -> ~212s (58%). This run's full verify-deploy.sh (gate8 + 19 other gates) shows a slightly lower percentage because the ~2-3 minutes of non-gate8 gates are fixed cost diluting the parallel speedup fraction, and both this task's runs ran under heavier ambient concurrent-session load than task 261's dedicated flakiness-gate runs."
+    }
+  }
+}
