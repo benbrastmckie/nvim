@@ -1,0 +1,48 @@
+{
+  "phase": 2,
+  "phase_name": "Implement issue-record.sh, the Single Writer",
+  "started_at": "2026-10-04T00:10:00Z",
+  "last_updated": "2026-10-04T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write scripts/issue-record.sh modeled on events-append.sh, system-defect-record.sh, and orchestrate-record-decision.sh: argument parsing, task-dir/task-N resolution, closed-set validation, lenient class validation, jq -c -n line construction, flock append",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/issue-record.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Register issue-record.sh in manifest.json's scripts array so deploy-headless.sh installs it (plan did not name this file but it is required for the script to reach .claude/scripts/)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Smoke-test the script against a scratch task directory: normal append, unknown-class warn-and-append, empty --what-happened refusal, --task N resolution success and refusal",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "shellcheck issue-record.sh -- matches the identical SC1091-info-only baseline already accepted for system-defect-record.sh and orchestrate-record-decision.sh",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Register scripts/issue-record.sh in manifest.json's scripts array",
+      "type": "altered",
+      "reason": "Not named in the plan's Phase 2 file list, but deploy-headless.sh only installs scripts explicitly whitelisted in manifest.json's provides.scripts array -- confirmed by testing (issue-log.md deployed via Phase 1's index-entries.json registration, but issue-record.sh did not appear in .claude/scripts/ after a deploy run until this registration was added). Without it the writer would never reach the deployed tree any later phase's call sites depend on.",
+      "annotation": "*(deviation: altered -- added manifest.json registration, not named in the plan's file list, required for deploy to install the script)*"
+    }
+  ]
+}

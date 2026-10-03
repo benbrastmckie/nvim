@@ -222,50 +222,50 @@ a class was dropped or invented.
 
 ---
 
-### Phase 2: Implement `issue-record.sh`, the Single Writer [NOT STARTED]
+### Phase 2: Implement `issue-record.sh`, the Single Writer [COMPLETED]
 
 **Goal**: One script appends exactly one validated JSON line per call to
 `${TASK_DIR}/issues.jsonl`, lazily creating the file, guarded by `flock` on
 `${TASK_DIR}/.issues.lock`, never refusing an unknown `class`, and never fataling its caller.
 
 **Tasks**:
-- [ ] Read `scripts/events-append.sh` in full (189 lines), `scripts/system-defect-record.sh` in
+- [x] Read `scripts/events-append.sh` in full (189 lines), `scripts/system-defect-record.sh` in
       full (357 lines), and `scripts/orchestrate-record-decision.sh` in full (192 lines) before
-      writing a line. Follow their conventions; do not invent new ones.
-- [ ] Write the header comment block in the established house style: single-responsibility
+      writing a line. Follow their conventions; do not invent new ones. *(completed)*
+- [x] Write the header comment block in the established house style: single-responsibility
       statement, usage block, exit codes, stdout/stderr contract, and an explicit pointer to
-      `context/formats/issue-log.md` for the full field contract.
-- [ ] Call out in the header, explicitly, that the `class` enum is deliberately OPEN
+      `context/formats/issue-log.md` for the full field contract. *(completed)*
+- [x] Call out in the header, explicitly, that the `class` enum is deliberately OPEN
       (accept-with-warning) and that this is an intentional divergence from
       `system-defect-record.sh`'s closed-enum-refuses-loudly posture — so a future reader does not
-      close it by analogy.
-- [ ] Class A strict mode per `context/standards/shell-strict-mode.md`: `set -euo pipefail` (no
-      counter idiom in this script).
-- [ ] Argument parsing in `system-defect-record.sh`'s style: `--task-dir PATH` (preferred) or
+      close it by analogy. *(completed)*
+- [x] Class A strict mode per `context/standards/shell-strict-mode.md`: `set -euo pipefail` (no
+      counter idiom in this script). *(completed)*
+- [x] Argument parsing in `system-defect-record.sh`'s style: `--task-dir PATH` (preferred) or
       `--task N` (alternative), `--kind`, `--class`, `--severity`, `--phase`, `--dispatch-seq`,
       `--what-happened`, `--evidence-path`, `--cost-value`, `--cost-unit`, `--resolution`,
-      `--suggested-channel`, `--tags-json`, `--session`.
-- [ ] Resolve the task directory: use `--task-dir` verbatim when absolute, resolve it against
+      `--suggested-channel`, `--tags-json`, `--session`. *(completed)*
+- [x] Resolve the task directory: use `--task-dir` verbatim when absolute, resolve it against
       `$PROJECT_ROOT` when relative, and when only `--task N` was given, source
       `scripts/lib/task-lookup-lib.sh` and resolve via `task_lookup_entry` / `task_lookup_dir`.
       Mirror `orchestrate-record-decision.sh`'s resolution discipline, including its documented
       note that task-directory resolution is NOT done via `task-lock.sh` (a different, unrelated
-      mutex).
-- [ ] Validate before any write: `kind` against the closed set `issue|win`; `what_happened`
+      mutex). *(completed)*
+- [x] Validate before any write: `kind` against the closed set `issue|win`; `what_happened`
       required and non-empty; `phase`, `resolution`, `suggested_channel` against their closed sets
       when present; `--tags-json` parses as a JSON object when present. Refuse (nonzero exit,
-      nothing written) on any of these.
-- [ ] Validate `class` leniently: warn to stderr and proceed when it is outside the 15-class seed
+      nothing written) on any of these. *(completed)*
+- [x] Validate `class` leniently: warn to stderr and proceed when it is outside the 15-class seed
       enum. Keep the seed list in one array in the script with a comment pointing at the format
-      doc as the authoritative copy.
-- [ ] Build exactly one line with `jq -c -n` — never string concatenation — including a generated
-      entry id and an ISO8601 timestamp, following `events-append.sh`'s construction shape.
-- [ ] Append under `flock`: `( flock -x 200; printf '%s\n' "$line" >> "$ISSUES_FILE" ) 200> "$LOCK_FILE"`
+      doc as the authoritative copy. *(completed)*
+- [x] Build exactly one line with `jq -c -n` — never string concatenation — including a generated
+      entry id and an ISO8601 timestamp, following `events-append.sh`'s construction shape. *(completed)*
+- [x] Append under `flock`: `( flock -x 200; printf '%s\n' "$line" >> "$ISSUES_FILE" ) 200> "$LOCK_FILE"`
       with `ISSUES_FILE="$TASK_DIR/issues.jsonl"` and `LOCK_FILE="$TASK_DIR/.issues.lock"`,
-      creating `issues.jsonl` lazily on first use.
-- [ ] Emit the appended entry's id on stdout and diagnostics on stderr, matching
-      `events-append.sh`'s output contract.
-- [ ] Run `shellcheck` on the new script and resolve every finding.
+      creating `issues.jsonl` lazily on first use. *(completed)*
+- [x] Emit the appended entry's id on stdout and diagnostics on stderr, matching
+      `events-append.sh`'s output contract. *(completed)*
+- [x] Run `shellcheck` on the new script and resolve every finding. *(completed)*
 
 **Timing**: 1.5 hours
 

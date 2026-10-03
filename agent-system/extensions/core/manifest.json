@@ -106,6 +106,7 @@
       "install-extension.sh",
       "install-systemd-timer.sh",
       "issue-grouping.sh",
+      "issue-record.sh",
       "lake-build-guard.sh",
       "lib/common.sh",
       "lib/continuation-pointer-lib.sh",
