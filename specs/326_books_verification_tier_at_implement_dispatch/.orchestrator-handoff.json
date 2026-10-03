@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 4,
+  "summary": "Wrote a six-phase implementation plan for the advisory-only --gate verification tier: core flag plumbing mirroring --compare (16 re-measured edit sites across 3 scripts), docs plus a new `### gate (optional)` metadata section, a books-gate.sh resolve-and-run wrapper classifying five lint outcomes with first-class vacuous-pass detection, its fixture suite with forgery probes, books agent/skill binding on the lean Stage 6c template, and core test coverage for the one-added-line byte-identity and implement-only scoping. Two dependency waves, ~7.5 hours.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/326_books_verification_tier_at_implement_dispatch/plans/01_gate-flag-verification-tier.md",
+      "summary": "Six-phase plan adding an advisory-only --gate verification tier at implement dispatch."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}

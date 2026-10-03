@@ -47,7 +47,7 @@ next_project_number: 334
 298 [PLANNED] — Author the books extension context corpus under...
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
     └─ 333 [NOT STARTED] — The /books command with --review and --revise
-326 [PLANNING] — Add a books verification tier at implement dispatch: the...
+326 [PLANNED] — Add a books verification tier at implement dispatch: the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record (see above)
@@ -936,11 +936,12 @@ the skeleton-plan follow-up work by its title only.
 
 ### 326. Add a books verification tier at implement dispatch: the --gate flag mirroring --compare (the lifecycle hook route is rejected with evidence)
 - **Effort**: 3-6 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 297
 - **Research**: [326_books_verification_tier_at_implement_dispatch/reports/01_gate-flag-verification-tier.md]
+- **Plan**: [326_books_verification_tier_at_implement_dispatch/plans/01_gate-flag-verification-tier.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` and `agent-system/extensions/books/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 
