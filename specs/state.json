@@ -308,7 +308,7 @@
     {
       "project_number": 89,
       "project_name": "mode_gate_literature_and_distill_skills",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -317,17 +317,35 @@
       ],
       "description": "Apply the mode-gated section convention to the two remaining large instances, after the pilot proves it.\n\nskill-literature/SKILL.md, 84,265 B total, 64.5% fenced bash. Seven mutually exclusive mode sections of which exactly ONE fires per invocation: Mode: Rebuild 20,170 | Mode: Convert 17,534 | Mode: Search 10,043 | Mode: Validate 5,989 | Mode: Import Pipeline 5,785 | Mode: Index 5,234 | Mode: Ingest 1,917 = ~65,772 B, 78% of the file. Cleanly '## Mode:'-delimited, so the split is mechanical. Estimated ~14,000 tokens per /literature invocation, taking it from ~46.2k toward ~32k.\n\nskill-distill/SKILL.md, 93,044 B total, only 1.9% bash -- essentially pure prose. `## Auto Distill Complete` is 43,254 B, 46% of the file, and is an OUTPUT TEMPLATE used by --auto alone. It belongs in context/formats/, not in a skill body loaded on every /distill invocation. Estimated ~10,800 tokens per non---auto /distill, taking it from ~42.4k toward ~32k.\n\nCombined estimated saving ~24,800 tokens across the two commands' invocations.\n\nBoth carry the same fence-interior heading hazard as the orchestrate application -- '## Mode:' and '## Auto' strings can appear inside fenced examples. Split bottom-up and verify each extracted section round-trips.\n\nACCEPTANCE: each mode section loads only when its mode is selected; all seven literature modes and both distill paths verified working; measured reductions reported against the 46.2k and 42.4k baselines.",
       "file_scope": [
+        ".../patterns/distill-refine-submode.md",
+        ".../patterns/literature-index-mode.md",
+        ".../patterns/literature-rebuild-mode.md",
+        ".claude/**",
+        "agent-system/extensions/literature/context/project/literature/patterns/literature-import-pipeline-mode.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/literature-rebuild-mode.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/literature-search-mode.md",
+        "agent-system/extensions/literature/index-entries.json",
         "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
-        "agent-system/extensions/memory/skills/skill-distill/SKILL.md"
+        "agent-system/extensions/memory/context/project/memory/patterns/distill-dream-submode.md",
+        "agent-system/extensions/memory/index-entries.json",
+        "agent-system/extensions/memory/skills/skill-distill/SKILL.md",
+        "specs/089_mode_gate_literature_and_distill_skills/**",
+        "specs/089_mode_gate_literature_and_distill_skills/summaries/01_*-summary.md",
+        "specs/state.json"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-10-03T04:22:59Z",
-      "session_id": "sess_1791000710_cc4f86_89",
+      "last_updated": "2026-10-03T04:32:40Z",
+      "session_id": "sess_1791000710_cc4f86",
       "artifacts": [
         {
           "path": "specs/089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md",
           "type": "report",
           "summary": "Verifies the mode-gated section-loading convention against the live skill-literature and skill-distill files: corrected current byte measurements (literature grew to 100,460 B from an 84,265 B stale baseline; distill unchanged at 93,044 B), confirmed fence-interior heading hazard with exact false-positive line numbers, located all eight extraction boundaries, found three cross-references needing repointing, and flagged a Path Selection Rule conflict between the task description and the formalized convention for the distill extraction's destination."
+        },
+        {
+          "path": "specs/089_mode_gate_literature_and_distill_skills/plans/01_mode-gate-literature-distill.md",
+          "type": "plan",
+          "summary": "6 phases, 4 dependency waves, 16 extractions, measured-reduction and acceptance-walk gating in the final phase."
         }
       ],
       "next_artifact_number": 2

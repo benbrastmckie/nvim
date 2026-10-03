@@ -1,0 +1,26 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 7,
+  "summary": "Wrote a 6-phase, 9.75-hour plan applying the mode-gated section-loading convention to skill-literature (7 mode sections, 84,308 B) and skill-distill (9 sub-mode sections, 65,329 B). The task's named distill target does not exist as a section -- '## Auto Distill Complete' is fence-interior -- so the distill scope was re-derived from the real dispatch structure and the deviation recorded as a non-blocking user_decision.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/089_mode_gate_literature_and_distill_skills/plans/01_mode-gate-literature-distill.md",
+      "summary": "6 phases, 4 dependency waves, 16 extractions, measured-reduction and acceptance-walk gating in the final phase."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "user_decision": {
+    "question": "Task 89's distill target (a 43,254 B '## Auto Distill Complete' output-template section) does not exist -- that string is inside a fenced output example, and the 43,254 B figure is the fence-interior-heading artifact itself (it sweeps up five unrelated sub-mode specs). The real '### Sub-Mode: auto' is only 3,358 B. How should the distill half of this task be scoped to still hit the ~42.4k -> ~32k token goal?",
+    "options": [
+      "Extract all nine above-bar '### Sub-Mode:' sections (purge, merge, compress, refine, revise, meta, review, learn, dream) = 65,329 B removed -- wider than described, but the only scope that reaches the stated token target",
+      "Extract only the three sections over the 8,000 B lint threshold (revise, meta, merge) = 29,300 B removed -- closest to the described single-extraction size, falls short of the ~32k target",
+      "Drop the distill half and re-scope task 89 to skill-literature only, filing distill as a new task against corrected measurements"
+    ],
+    "recommended": "Extract all nine above-bar '### Sub-Mode:' sections (purge, merge, compress, refine, revise, meta, review, learn, dream) = 65,329 B removed -- wider than described, but the only scope that reaches the stated token target",
+    "blocking": false
+  }
+}
