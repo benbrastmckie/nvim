@@ -312,6 +312,10 @@ if ! . "${SCRIPT_DIR}/lib/territory-contention-lib.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/territory-contention-lib.sh." >&2
   exit 2
 fi
+if ! . "${SCRIPT_DIR}/lib/task-classification-lib.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/task-classification-lib.sh." >&2
+  exit 2
+fi
 
 MAX_INFRA_FAILURES=3
 # Decision 2 (Phase 5) — aux_dispatch[] escalation caps, ported verbatim from single-task Stage
@@ -1555,46 +1559,14 @@ else
   mt_save
 fi
 
-is_terminal_status() {
-  # "hold" is deliberately EXCLUDED from this set, not an oversight: a hold is a human-initiated
-  # pause, not an archival-eligible terminus. Widening this to include "hold" would let /todo
-  # archive a held task's directory, and would let a held dependency wrongly satisfy a
-  # dependent task's completion-discharge check in section (c) below (which routes a `blocked`
-  # candidate through only when every dependency's status is exactly "completed"). A held task
-  # is excluded from dispatch via its own dedicated bucketing arm (the `hold)` case below), not
-  # via this predicate.
-  case "$(echo "${1:-}" | tr '[:upper:]' '[:lower:]')" in
-    completed|abandoned|expanded) return 0 ;;
-    *) return 1 ;;
-  esac
-}
+# is_terminal_status(): extracted to scripts/lib/task-classification-lib.sh (sourced above).
 
 deferred_deploy_checkpoint_json=$(mt_get_json '.deferred_deploy_checkpoint')
 failed_tasks_json=$(mt_get_json '.failed_tasks')
 identical_dispatch_halted_json=$(mt_get_json '.identical_dispatch_halted')
-in_json_array() {
-  # $1 = needle (int), $2 = json array
-  jq -e --argjson n "$1" '. as $arr | ($arr | index($n)) != null' >/dev/null 2>&1 <<<"$2"
-}
+# in_json_array(): extracted to scripts/lib/task-classification-lib.sh (sourced above).
 
-# task_has_forced_phase <t> — Decision (a): the exemption predicate that lets a terminal task
-# with a pending forced phase reach eligible_tasks, without reordering section (f)'s seeding and
-# consumption. Returns 0 (has a pending forced phase) when EITHER the CLI supplied
-# --force-phases this invocation (canonical_force_phases_json, computed well above, before
-# is_terminal_status is even defined) OR this task already carries a non-empty
-# force_phases_remaining[] queue seeded on a prior cycle. Returns 1 otherwise. Only an
-# explicitly forced phase may exempt a terminal task from the two guarded `continue`s below —
-# ordinary (unforced) dispatch must never reach a terminal task, which is exactly why this
-# predicate, not a broader terminal-status change, is the fix.
-task_has_forced_phase() {
-  local t="$1"
-  if [ "$(echo "$canonical_force_phases_json" | jq 'length')" -gt 0 ]; then
-    return 0
-  fi
-  local remaining
-  remaining=$(mt_get_json --arg t "$t" '.force_phases_remaining[$t] // []')
-  [ "$(echo "$remaining" | jq 'length')" -gt 0 ]
-}
+# task_has_forced_phase(): extracted to scripts/lib/task-classification-lib.sh (sourced above).
 
 # ── (b) All-terminal check ───────────────────────────────────────────────────────────────────────
 # Contract: only an explicitly forced phase may admit a terminal task past this check. An
@@ -1920,38 +1892,10 @@ else
 fi
 mt_save
 
-# ── Build-heavy task_type family (single array, single reader) -- this array is the membership
-# list for the build-heavy co-scheduling admission rule added inside the bucketing loop below
-# (the Mode 2 ruling in the isolation-removal decision record under specs/decisions/: never
-# dispatch two build-heavy implement tasks in the same cycle). A future extension that needs this
-# behavior adds
-# its task_type to this ONE array; nothing else changes.
-#
-# MUST STAY HOISTED HERE, above the bucketing loop below -- do not move this block back down to
-# its historical position near the lock-probe/row-builder call sites. Every line from
-# "orchestrate_cycle_plan_main() {" through EOF is the body of ONE function, invoked only on the
-# script's last line; a function definition nested inside that body is registered only when
-# execution actually reaches the `nested_fn() { ... }` statement. A call site earlier in the body
-# than this definition would hit "command not found" (exit 127), which an `if nested_fn ...;
-# then` guard silently swallows as a false branch under `set -euo pipefail` -- the predicate
-# would compile, shellcheck clean, and simply never fire. Keeping the definition above its call
-# site (the bucketing loop immediately below) is what makes it callable at all.
-#
-# Selected: phase == "implement" AND the task's own task_type is in the lean4/cslib family (the
-# two REAL task_type string values that family covers -- "lean4" and "cslib" are each extensions'
-# own `task_type` manifest field; "lean4" additionally appears as a cslib `keyword_overrides`
-# alias for auto-detecting task_type at /task creation time, which is a DIFFERENT mechanism this
-# predicate does not touch or depend on). Every other phase (research/plan) and every other
-# task_type is unaffected by this array's one consumer.
-BUILD_HEAVY_TASK_TYPES=("lean4" "cslib")
-task_is_build_heavy_implement() {
-  local phase="$1" ttype="$2" candidate
-  [ "$phase" = "implement" ] || return 1
-  for candidate in "${BUILD_HEAVY_TASK_TYPES[@]}"; do
-    [ "$ttype" = "$candidate" ] && return 0
-  done
-  return 1
-}
+# ── Build-heavy task_type family and task_is_build_heavy_implement(): extracted to
+# scripts/lib/task-classification-lib.sh (sourced above), alongside is_terminal_status,
+# in_json_array, and task_has_forced_phase -- see that file's own header for the extraction
+# method and the now-moot hoisting history.
 
 # ── Bucket eligible_tasks into dispatch-candidates / deferred / blocked / skip ───────────────────
 declare -a dispatch_candidates=()

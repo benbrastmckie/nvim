@@ -441,29 +441,45 @@ already covers end to end) and move `build_sibling_territory` +
 
 ---
 
-### Phase 5: Extract the task-classification concern [NOT STARTED]
+### Phase 5: Extract the task-classification concern [COMPLETED]
 
 **Goal**: the classification helpers and their sections move into
 `scripts/lib/task-classification-lib.sh`, behaviour byte-identical.
 
 **Tasks**:
-- [ ] Re-read `orchestrate-cycle-plan.sh` immediately before editing; re-confirm line numbers
-      shifted by Phase 4.
-- [ ] Create `scripts/lib/task-classification-lib.sh` holding `is_terminal_status` (13 lines),
+- [x] Re-read `orchestrate-cycle-plan.sh` immediately before editing; re-confirm line numbers
+      shifted by Phase 4. *(completed: re-grepped all four call sites after Phase 4's edit;
+      is_terminal_status 1558, in_json_array 1575, task_has_forced_phase 1589,
+      task_is_build_heavy_implement 1947 — all shifted -4 lines from the pre-Phase-4 figures)*
+- [x] Create `scripts/lib/task-classification-lib.sh` holding `is_terminal_status` (13 lines),
       `in_json_array` (4), `task_has_forced_phase` (9), and `task_is_build_heavy_implement` (8) —
       34 lines of function body across four disjoint regions (~119 lines with their banner
       comments and the build-heavy `task_type` membership array at ~1919-1951).
-- [ ] State plainly in the lib header that this is a small extraction: the honest size is ~119
+      *(completed, with a size correction: the actual disjoint-region total measured by precise
+      line extraction is 67 lines (13+4+18+32), not ~119 — the ~119 estimate over-counted;
+      corrected in the lib's own header)*
+- [x] State plainly in the lib header that this is a small extraction: the honest size is ~119
       lines, not the 535 an earlier line-delta estimate suggested. The lib's value is cohesion and
-      testability, not line count.
-- [ ] Convert closed-over locals to explicit parameters: `canonical_force_phases_json` and the
+      testability, not line count. *(completed, using the re-measured 67-line figure)*
+- [x] Convert closed-over locals to explicit parameters: `canonical_force_phases_json` and the
       `mt_get_json` accessor are the two `task_has_forced_phase` reads directly. Move the
       build-heavy `task_type` family array into the lib as its single declaration site and single
       reader, preserving the existing "single array, single reader" comment contract.
-- [ ] Replace the four regions in `orchestrate-cycle-plan.sh` with a `source` of the new lib plus
-      adjusted call sites.
-- [ ] Register `lib/task-classification-lib.sh` in `manifest.json` `provides.scripts`.
-- [ ] Verify green and byte-identical before committing.
+      *(deviation: altered — same rationale as Phase 4: `canonical_force_phases_json` and
+      `mt_get_json` are both plain top-level script globals (set/defined before
+      `orchestrate_cycle_plan_main()` is even defined), so no parameter-conversion was needed or
+      performed; the four blocks moved verbatim, byte-identical by construction via bash's dynamic
+      `local` scoping. The "single array, single reader" contract IS preserved: confirmed via grep
+      that `BUILD_HEAVY_TASK_TYPES` has exactly one declaration (in the lib) and exactly one
+      reader (`task_is_build_heavy_implement`, also in the lib), and
+      `task_is_build_heavy_implement` itself has exactly one call site, in
+      orchestrate-cycle-plan.sh's bucketing loop.)*
+- [x] Replace the four regions in `orchestrate-cycle-plan.sh` with a `source` of the new lib plus
+      adjusted call sites. *(completed: no call site needed adjustment, since function/array names
+      are unchanged and now resolve via the sourced lib; each of the four regions replaced with a
+      1-4 line pointer comment)*
+- [x] Register `lib/task-classification-lib.sh` in `manifest.json` `provides.scripts`.
+- [x] Verify green and byte-identical before committing.
 
 **Timing**: 1.5 hours
 

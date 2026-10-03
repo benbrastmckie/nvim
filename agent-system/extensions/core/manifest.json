@@ -120,6 +120,7 @@
       "lib/return-meta-artifacts-lib.sh",
       "lib/return-meta-status-vocabulary.sh",
       "lib/runtime-file-patterns.sh",
+      "lib/task-classification-lib.sh",
       "lib/task-lookup-lib.sh",
       "lib/task-reference-patterns.sh",
       "lib/task-type-detect.sh",

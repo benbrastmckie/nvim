@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Extract the task-classification concern",
+  "started_at": "2026-10-03T08:00:00Z",
+  "last_updated": "2026-10-03T08:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-cycle-plan.sh, re-confirm shifted line numbers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create scripts/lib/task-classification-lib.sh (verbatim move, 4 disjoint blocks)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/task-classification-lib.sh"]},
+    {"id": 3, "description": "Replace 4 regions in orchestrate-cycle-plan.sh with source + pointer comments", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Register lib/task-classification-lib.sh in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Verify green and byte-identical before committing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-force-phases.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Convert canonical_force_phases_json/mt_get_json closed-over references into explicit parameters per the plan's literal instruction", "result": "failed", "reason": "Both are plain top-level script globals (assigned/defined before orchestrate_cycle_plan_main() is even defined), not function-locals -- confirmed by grep for their assignment/definition line numbers (509-520 and 625 respectively, both well before main() starts at 762). No parameter conversion was needed; reused the same verbatim-move-plus-dynamic-scoping strategy validated in Phase 4."}
+  ],
+  "handoff_count": 0,
+  "notes": [
+    "wc -l: orchestrate-cycle-plan.sh 2749 -> 2693 (56 fewer lines); task-classification-lib.sh is 103 lines (67 lines of relocated code/comments + a ~36-line extraction-method header). Combined with Phase 4: 3026 -> 2693, 333 fewer lines (11.0% reduction) across both extractions so far.",
+    "Honest size correction (same spirit as Phase 4's territory-lib correction): the plan's own research-integration section pre-corrected the historical 535-line estimate down to '~119 lines including banner regions' -- precise line-range extraction measured the four disjoint regions (with their own banner comments) at 67 lines total (13+4+18+32), not 119. Recorded in the lib's own header.",
+    "check-extension-docs.sh: same 4 expected content-drift FAILs as Phase 4 (now also covering the further-modified orchestrate-cycle-plan.sh and the 3 test files), plus a new ADVISORY (never deployed) for task-classification-lib.sh. No new Rule Q/E drift.",
+    "run-all.sh --jobs auto: 103 passed, 5 failed (3 expected, 2 NEW: tests/test-lake-build-guard.sh and the already-documented foreign tests/test-typst-element-lint.sh), 1 skipped, 109 total. test-lake-build-guard.sh was re-run in ISOLATION and passed 48/48 cleanly (exit 0) -- this is the EXACT known ambient-concurrency flake the dispatch's own evidence addendum names (test-lake-build-guard.sh failing inside a full run-all.sh pass under concurrent load, then passing cleanly in isolation immediately afterwards), already documented as the shell-test-isolation task's problem domain, not caused by this task's Phase 5 edit."
+  ]
+}

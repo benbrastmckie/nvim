@@ -41,6 +41,7 @@ REQUIRED_LIB_SCRIPTS=(
   common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh
   phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh status-vocabulary.sh
   deploy-ledger-lib.sh runtime-file-patterns.sh territory-contention-lib.sh
+  task-classification-lib.sh
 )
 
 missing=()
