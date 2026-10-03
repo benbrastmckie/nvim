@@ -230,7 +230,7 @@
     },
     {
       "path": "project/lean4/tools/mcp-tools-guide.md",
-      "line_count": 180,
+      "line_count": 198,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -513,7 +513,7 @@
     },
     {
       "path": "project/lean4/README.md",
-      "line_count": 28,
+      "line_count": 29,
       "load_when": {
         "agents": [
           "lean-research-agent",

@@ -298,7 +298,7 @@
           "web"
         ]
       },
-      "line_count": 80,
+      "line_count": 81,
       "domain": "project",
       "subdomain": "web",
       "summary": "Playwright MCP tool reference, permission tiers (unprompted vs. prompting), and when to drive a browser"

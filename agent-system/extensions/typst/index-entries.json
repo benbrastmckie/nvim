@@ -203,7 +203,7 @@
     },
     {
       "path": "project/typst/standards/notation-conventions.md",
-      "line_count": 156,
+      "line_count": 169,
       "load_when": {
         "agents": [
           "typst-implementation-agent"

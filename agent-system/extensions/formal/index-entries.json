@@ -4,7 +4,7 @@
       "path": "project/logic/README.md",
       "summary": "Logic context index and terminology conventions",
       "category": "index",
-      "line_count": 61,
+      "line_count": 62,
       "load_when": {
         "agents": [
           "logic-research-agent",
