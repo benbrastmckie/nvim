@@ -20,8 +20,8 @@ next_project_number: 328
 
 ### Core Agent System
 
-185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-250 [PLANNED] — Script-corpus inventory probe, then cut tests/run-all.sh...
+185 [RESEARCHING] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
+250 [IMPLEMENTING] — Script-corpus inventory probe, then cut tests/run-all.sh...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -3370,12 +3370,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 250. Script-corpus inventory probe, then cut tests/run-all.sh runtime and decompose orchestrate-cycle-plan.sh
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 199, Task 245, Task 249, Task 259, Task 265, Task 266
 - **Research**: [250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md]
 - **Plan**: [250_script_corpus_inventory_and_engine_decomposition/plans/01_inventory-probe-and-decomposition.md]
+- **Summary**: [250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -3689,7 +3690,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 185. Retarget stage citations to move vocabulary
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: markdown
 - **Topic**: core-agent-system
 - **Dependencies**: Task 266, Task 199, Task 184
