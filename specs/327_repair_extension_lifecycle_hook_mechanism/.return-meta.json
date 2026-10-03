@@ -1,7 +1,54 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-  "session_id": "sess_1791040973_97d778",
-  "dispatch_seq": 6
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/327_repair_extension_lifecycle_hook_mechanism/summaries/01_lifecycle-hook-mechanism-repair-summary.md",
+      "summary": "All 7 plan phases complete: resolver/hook-path fix, rc observability channel, live verification call site, 10 mutation-checked regression cases, doc update, and a new check-extension-docs.sh validator rule (Rule W). Full gate set run with every failing check individually attributed (2 expected source/deploy drift on this task's own files, 4 pre-existing/unrelated)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Repaired the extension lifecycle hook mechanism in the source store (agent-system/extensions/core/): fixed the object-schema resolver and flat-deploy hook-path resolution so a declared hook actually fires (proven live against the real nix/neovim extensions), added an observable-but-never-blocking SKILL_HOOK_LAST_* rc channel, gave the verification stage a live call site in command-gate-out.sh, added 10 mutation-checked regression cases to test-skill-base-lifecycle.sh, documented the change in creating-extensions.md, and closed the check-extension-docs.sh validator blind spot with a new Rule W that would have caught the original defect."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/command-gate-out.sh",
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "specs/327_repair_extension_lifecycle_hook_mechanism/plans/01_lifecycle-hook-mechanism-repair.md",
+    "specs/327_repair_extension_lifecycle_hook_mechanism/summaries/01_lifecycle-hook-mechanism-repair-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's source-store/deploy split, a lifecycle hook mechanism's resolver and path-resolution must be re-measured empirically, not assumed from the manifest schema's apparent shape: `.claude-extensions.json`'s real schema is {extensions: {<name>: {status, ...}}, version} (object keyed by name, no per-entry task_type), and task_type lives only in each extension's OWN deployed manifest.json -- a two-step join, not a single jq query. Separately, the deploy pipeline FLATTENS manifest.provides.scripts into .claude/scripts/, so a hook path must be resolved by basename against that flat location, never against a nested .claude/extensions/<name>/scripts/ path (which the deploy never creates). Both defects had to be fixed together: fixing only the resolver still left hook_path pointing at a nonexistent nested path, silently no-oped by an `[ -x ]` test. A silent no-op on a resolver/path miss is the exact failure mode that hides this class of defect for a long time; replacing it with a loud one-line NOTE (and a corresponding lint rule) is cheap insurance.",
+      "category": "PATTERN",
+      "source_artifact": "specs/327_repair_extension_lifecycle_hook_mechanism/summaries/01_lifecycle-hook-mechanism-repair-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension-lifecycle-hooks", "claude-extensions-json-schema", "flat-deploy-resolution", "silent-skip-antipattern", "skill-base-sh"]
+    },
+    {
+      "content": "When adding a caller-observable outcome channel (globals set by a function but read only by a DIFFERENT sourced script, not within the defining file itself) to an existing shellcheck-clean bash library, expect SC2034 (\"appears unused\") on every such global, because shellcheck analyzes one file at a time and cannot see the cross-file read. A single function-level `# shellcheck disable=SC2034` comment (placed immediately above the function definition, with a one-line rationale citing the cross-file read and any same-pattern precedent in the file) suppresses it for the whole function body in one place, rather than four+ per-line disables.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/327_repair_extension_lifecycle_hook_mechanism/summaries/01_lifecycle-hook-mechanism-repair-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["shellcheck", "SC2034", "cross-file-globals", "bash-library-observability"]
+    },
+    {
+      "content": "A shell-level `timeout N ... | tail -M` wrapper around a long-running verification command raced the Bash tool's own (longer) per-call timeout budget and produced a false-stalled appearance: the wrapper's SIGTERM fired at N seconds regardless of how much headroom the tool call itself had, and a `tail -M` snapshot taken via a separate background wait-loop could race the writer and capture the log mid-write, truncating output before the underlying process had actually finished (confirmed after the fact via a direct `cat` of the full log and `ps aux` showing the process already exited 0). The fix was to drop the shell-level `timeout`/`tail` wrapper entirely and pass the Bash tool's own `timeout` parameter (e.g. 480000ms) directly on the single foreground call -- for a command whose total runtime is known to exceed the tool's 120s default but fits comfortably under its ~10-minute ceiling, prefer one bounded foreground call over backgrounding-plus-polling.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/327_repair_extension_lifecycle_hook_mechanism/progress/phase-7-progress.json",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash-tool-timeout", "foreground-vs-background", "verify-deploy-sh", "run-all-sh", "false-stall"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791040973_97d778",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }

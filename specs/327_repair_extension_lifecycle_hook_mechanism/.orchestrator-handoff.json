@@ -1,16 +1,23 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 4,
-  "summary": "Created a 7-phase implementation plan repairing all four extension-lifecycle-hook defects: object-schema resolver join, flat-deploy hook path resolution, an observable-but-never-blocking rc channel via SKILL_HOOK_LAST_* globals, and a live verification call site in command-gate-out.sh, plus nine regression cases, a creating-extensions.md addition, and a new all-extensions hooks-path lint rule.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 6,
+  "summary": "All 7 plan phases complete: repaired the object-schema resolver and flat-deploy hook-path resolution (proven live against the real nix/neovim extensions), added an observable-but-never-blocking rc channel, gave the verification stage a live call site in command-gate-out.sh, added 10 mutation-checked regression cases, documented the change, and closed the check-extension-docs.sh validator blind spot with a new Rule W.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/327_repair_extension_lifecycle_hook_mechanism/summaries/01_lifecycle-hook-mechanism-repair-summary.md",
+      "summary": "Full 7-phase implementation summary, including the finding-by-finding full-gate-set attribution."
+    },
     {
       "type": "plan",
       "path": "specs/327_repair_extension_lifecycle_hook_mechanism/plans/01_lifecycle-hook-mechanism-repair.md",
-      "summary": "7 phases, 5 source-store files, 5.5h estimate; waves [[1],[2],[3],[4,5,6],[7]]."
+      "summary": "All 7 phases marked [COMPLETED]; Testing & Validation checklist annotated with completion/deviation notes."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 7,
   "phases_total": 7,
-  "blockers": []
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null
 }

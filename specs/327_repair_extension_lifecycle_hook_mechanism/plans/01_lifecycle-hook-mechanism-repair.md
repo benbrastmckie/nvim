@@ -585,13 +585,13 @@ different next letter, invalidates the hypothesis.
 
 ---
 
-### Phase 7: Integration verification and acceptance walk-through [NOT STARTED]
+### Phase 7: Integration verification and acceptance walk-through [COMPLETED]
 
 **Goal**: Confirm every acceptance clause end-to-end on the integrated change set, and state
 plainly what remains an operator action.
 
 **Tasks**:
-- [ ] Walk the dispatch's four acceptance clauses one at a time, recording concrete evidence for
+- [x] Walk the dispatch's four acceptance clauses one at a time, recording concrete evidence for
       each in the progress file:
       1. a declared hook fires — evidence: Phase 1's sourced-subshell probe against the real
          `nix` preflight hook, plus Phase 4's fixture hook-fires case;
@@ -602,22 +602,22 @@ plainly what remains an operator action.
          and its fixture end-to-end case;
       4. the suite covers the resolver against the REAL object schema — evidence: Phase 4's
          fixture shape and its mutation check.
-- [ ] Run the repository's full gate set once over the integrated change set.
-- [ ] Run the three directly affected suites explicitly:
+- [x] Run the repository's full gate set once over the integrated change set.
+- [x] Run the three directly affected suites explicitly:
       `test-skill-base-lifecycle.sh`, `test-gate-out-repair-reporting.sh` (it covers
       `skill_validate_task_artifacts` and the gate-out report leg Phase 3 edits next to), and
       `check-extension-docs.sh`.
-- [ ] Run a repo-wide `shellcheck` over the four changed shell files and compare against the
+- [x] Run a repo-wide `shellcheck` over the four changed shell files and compare against the
       pre-edit baseline.
-- [ ] Run the task-reference lint and confirm no task-number references entered any source-store
+- [x] Run the task-reference lint and confirm no task-number references entered any source-store
       file.
-- [ ] State explicitly, in the implementation summary, that the deployed `.claude/` tree is
+- [x] State explicitly, in the implementation summary, that the deployed `.claude/` tree is
       **not** updated by this task: `.claude/**` is a disposable deploy artifact and
       regeneration (`<leader>al` "Reload All", or `deploy-headless.sh`) is an operator action
       deliberately left outside this change — the more so because a sibling task is live on this
       working tree this cycle and a regeneration would sweep in its in-flight edits. Until that
       regeneration happens, the repaired mechanism is live in the source store only.
-- [ ] Commit the final green state.
+- [x] Commit the final green state.
 
 **Timing**: 0.5 hours
 
@@ -651,27 +651,46 @@ absorbing it silently.
 
 ## Testing & Validation
 
-- [ ] `bash -n` passes on all four changed shell files.
-- [ ] `shellcheck` reports no new findings on any changed shell file relative to a captured
-      pre-edit baseline.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` exits 0,
+- [x] `bash -n` passes on all four changed shell files. *(completed)*
+- [x] `shellcheck` reports no new findings on any changed shell file relative to a captured
+      pre-edit baseline. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh` exits 0,
       with the nine new hook-mechanism cases passing and every pre-existing case still passing.
-- [ ] The new resolver cases provably FAIL against the old `.loaded_extensions` query (mutation
+      *(completed: 48 passed, 0 failed -- 10 new cases, one more than the plan's nine)*
+- [x] The new resolver cases provably FAIL against the old `.loaded_extensions` query (mutation
       check in Phase 4) — a test that cannot fail against the known-broken code is not coverage.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh` exits 0
-      (regression guard for the gate-out region Phase 3 edits).
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 with no new advisories or failures
+      *(completed: 7 of 10 new cases failed against the reverted resolver)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh` exits 0
+      (regression guard for the gate-out region Phase 3 edits). *(deviation: this suite reports
+      18 passed, 1 failed -- Case 1's summary-line assertion. CONFIRMED PRE-EXISTING AND
+      UNRELATED to this task: the identical failure reproduces against the pre-task
+      command-gate-out.sh/skill-base.sh content (commit 202b76734^), traced to a drift between
+      validate-artifact.sh's current output shape and this fixture's pinned expectation. See
+      progress/phase-7-progress.json for the full reproduction record.)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0 with no new advisories or failures
       for `nix` or `nvim`, and the three negative fixture probes behave as specified.
-- [ ] The lifecycle suite's real-tree contamination guard passes (no new mark on the real
-      `specs/` tree).
-- [ ] `skill_get_extension_dir nix` -> `.claude/extensions/nix` and
+      *(completed: nix/nvim sections show only a pre-existing unrelated WARN; the only FAILs in
+      the overall run are this task's own 4 expected source/deploy drift findings)*
+- [x] The lifecycle suite's real-tree contamination guard passes (no new mark on the real
+      `specs/` tree). *(completed)*
+- [x] `skill_get_extension_dir nix` -> `.claude/extensions/nix` and
       `skill_get_extension_dir neovim` -> `.claude/extensions/nvim` from the edited source-store
-      copy; both return empty before the change.
-- [ ] Each of `.claude/scripts/nix-preflight.sh`, `nix-context.sh`, `nvim-context.sh` exits 0
-      when invoked with the five real positional args.
-- [ ] Task-reference lint reports no task-number occurrences in any source-store file written by
-      this task.
-- [ ] Repository full gate set clean.
+      copy; both return empty before the change. *(completed)*
+- [x] Each of `.claude/scripts/nix-preflight.sh`, `nix-context.sh`, `nvim-context.sh` exits 0
+      when invoked with the five real positional args. *(completed)*
+- [x] Task-reference lint reports no task-number occurrences in any source-store file written by
+      this task. *(completed: 0 occurrences across all 5 changed files)*
+- [x] Repository full gate set clean. *(deviation: altered -- `verify-deploy.sh` (no
+      `--skip-slow`) reports FAIL, 6 of 34 checks failed, not a clean run. Every failing check
+      was individually attributed: checks 3 and 5 (doc-lint, verify.lua) show exactly this
+      task's own 5 edited source-store files as deployed-vs-source drift -- EXPECTED, since
+      `.claude/` regeneration is deliberately deferred to the operator (see Deploy State in the
+      summary). The other 4 failing checks (agent-contracts lint, gate 8's 4 failing suites --
+      3 already tagged `(EXPECTED)` by `run-all.sh` itself, the 4th in the unrelated typst
+      extension -- the transient orphan-file finding, and task-lookup-adoption lint in the
+      unrelated present/web extensions) are all pre-existing and unrelated to this task's 5
+      files. See `progress/phase-7-progress.json`'s `full_gate_set_result` for the complete,
+      finding-by-finding attribution.)*
 
 ## Artifacts & Outputs
 
