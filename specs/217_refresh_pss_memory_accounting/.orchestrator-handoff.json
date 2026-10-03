@@ -1,16 +1,16 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 9,
-  "summary": "Wrote a 9-phase, 14.5-hour implementation plan for cost-aware idle Lean tree reclamation in /refresh: PSS-based reclaimable accounting, CPU-delta idleness with an atomic state file, a 1 GB memory-floor cost gate, a re-verifying --lean-tree termination mode, and the notify-before-kill prompt path with snooze/dedupe. Plan passes validate-artifact.sh --strict.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 13,
+  "summary": "Completed all 9 plan phases: PSS-based reclaimable accounting with shared-page de-duplication, a CPU-delta idle state machine replacing the broken pcpu/etimes gate, a 1 GB memory-floor cost gate, a re-verifying --lean-tree targeted-termination mode, and a notify-before-kill desktop prompt path with snooze/dedupe/graceful-degrade. Fixed a real implementation bug found by the new tests (state-merge dropping prompted/snooze_until on every detection pass) and a real downstream SKILL.md defect (stale confirmation-trigger string). Test suite grew from 112 to 163 passing assertions. Redeployed via deploy-headless.sh (RESULT=landed_verify_clean) and verified byte-identical to source.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/217_refresh_pss_memory_accounting/plans/01_pss-accounting-idle-notify.md",
-      "summary": "9-phase plan across the task's six declared files, sequenced in the strict dependency chain the research identified (accounting -> idleness/cost gate -> prompt path), with per-phase verification tiers, scope hypotheses, and a final gate covering shellcheck, the full matcher suite, redeploy, and the manual end-to-end notification check."
+      "type": "summary",
+      "path": "specs/217_refresh_pss_memory_accounting/summaries/01_pss-accounting-idle-notify-summary.md",
+      "summary": "Full implementation summary covering all 9 phases, decisions, deviations, verification evidence, impacts, and the one follow-up (manual end-to-end human-click check not reachable in this dispatch environment)."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 9,
   "phases_total": 9,
   "blockers": []
 }

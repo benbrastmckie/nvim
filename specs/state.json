@@ -182,7 +182,7 @@
       "project_name": "refresh_pss_memory_accounting",
       "title": "Cost-aware idle Lean tree reclamation in /refresh: PSS accounting, CPU-delta idleness, notify-before-kill",
       "task_type": "meta",
-      "status": "implementing",
+      "status": "completed",
       "topic": "core-agent-system",
       "dependencies": [
         174
@@ -210,7 +210,7 @@
         }
       ],
       "created": "2026-09-15T17:00:35Z",
-      "last_updated": "2026-10-03T04:33:47Z",
+      "last_updated": "2026-10-03T05:43:49Z",
       "priority": "medium",
       "session_id": "sess_1791000710_cc4f86",
       "next_artifact_number": 2

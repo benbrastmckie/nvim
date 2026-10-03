@@ -1,7 +1,7 @@
 # Implementation Plan: Task #217
 
 - **Task**: 217 - Cost-aware idle Lean tree reclamation in /refresh: PSS accounting, CPU-delta idleness, notify-before-kill
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 14.5 hours
 - **Dependencies**: None blocking (former dependency 174 is archived/completed)
 - **Research Inputs**: specs/217_refresh_pss_memory_accounting/reports/01_pss-accounting-idle-notify.md

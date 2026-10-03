@@ -1,10 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/217_refresh_pss_memory_accounting/summaries/01_pss-accounting-idle-notify-summary.md",
+      "summary": "All 9 phases completed: PSS-based reclaimable accounting with shared-page de-duplication, CPU-delta idle state machine replacing the broken pcpu/etimes gate, a 1 GB memory-floor cost gate, a re-verifying --lean-tree targeted-termination mode, and a notify-before-kill desktop prompt path with snooze/dedupe/graceful-degrade. Test suite grew from 112 to 163 passing assertions, zero failures. Redeployed and verified byte-identical."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented PSS-based reclaimable memory accounting (fixing shared-page double-counting), a CPU-delta idle state machine, a memory-floor cost gate, a re-verifying --lean-tree targeted-termination mode, and a notify-before-kill desktop notification prompt path with snooze/dedupe/graceful-degrade for claude-refresh.sh's Lean LSP process-tree pass. Full 9-phase plan completed; test suite grew from 112 to 163 passing assertions; redeployed and verified byte-identical to source."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/claude-refresh.sh",
+    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+    "agent-system/extensions/core/commands/refresh.md",
+    "agent-system/extensions/core/skills/skill-refresh/SKILL.md",
+    "agent-system/extensions/core/systemd/claude-refresh.service",
+    "agent-system/extensions/core/systemd/claude-refresh.timer"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A per-key JSON state object that two independently-written features share (e.g. a CPU-delta idle tracker writing cputime_ticks/last_active, and a notify-dedupe feature writing prompted/snooze_until on the SAME key) must be updated via a merge (jq's `+`, prior-object-first so new fields win) rather than a wholesale '.[$k] = {new fields only}' replacement. The replacement form silently drops any field the other feature owns every time the first feature's own update runs, defeating the second feature's state entirely without any visible error -- caught only by an end-to-end dedupe test, never by either feature's own isolated unit tests.",
+      "category": "PATTERN",
+      "source_artifact": "specs/217_refresh_pss_memory_accounting/summaries/01_pss-accounting-idle-notify-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["jq-merge", "shared-state-object", "silent-field-drop", "dedupe-bug", "per-key-state"]
+    },
+    {
+      "content": "A bash test suite that sources a script under set -uo pipefail, where that script's own top-level code runs `set -euo pipefail`, inherits -e and stricter -u behavior into the suite's own shell from the moment of sourcing onward. A bare `VAR=$(cmd)` assignment (not wrapped in `if`/`||`/inside a conditional) whose cmd deliberately returns nonzero -- common when testing a refusal/error path -- then silently aborts the ENTIRE test suite with no error text, skipping every subsequent assertion. Fix: capture via `if VAR=$(cmd); then rc=0; else rc=$?; fi` (already documented in this repo's scripts/state-write.sh) for any assignment whose command may legitimately return nonzero.",
+      "category": "PATTERN",
+      "source_artifact": "specs/217_refresh_pss_memory_accounting/summaries/01_pss-accounting-idle-notify-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["set-e-inherited-via-source", "bash-test-harness", "bare-assignment-abort", "if-else-rc-idiom", "silent-suite-abort"]
+    },
+    {
+      "content": "A test fixture that makes a background/notification-launching code path become 'eligible' or 'triggered' during a test run must stub every real external dependency that path would invoke (notify-send, systemd-run, dbus-send, etc.) even if the fixture predates that code path's existence -- a sandbox that genuinely has the real binaries installed will launch real desktop notifications or real detached systemd units during automated test runs otherwise, some of which can block indefinitely (e.g. notify-send --wait -t 0 never auto-expires). Build a reusable 'neutral stub' helper early and wire it into every fixture that could become eligible, not just the fixtures written specifically to test the new path.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/217_refresh_pss_memory_accounting/summaries/01_pss-accounting-idle-notify-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["test-hermeticity", "real-binary-leakage", "notify-send-stub", "systemd-run-stub", "pre-existing-fixture-regression"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791000710_cc4f86",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 13
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 9,
+    "phases_total": 9
+  }
 }
