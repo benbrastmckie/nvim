@@ -117,6 +117,7 @@
       "lib/phase-heading-patterns.sh",
       "lib/plan-status-line.sh",
       "lib/push-grant-lib.sh",
+      "lib/redeploy-checkpoint-lib.sh",
       "lib/return-meta-artifacts-lib.sh",
       "lib/return-meta-status-vocabulary.sh",
       "lib/runtime-file-patterns.sh",

@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Extract the inter-cycle redeploy checkpoint; close the acceptance sweep",
+  "started_at": "2026-10-03T08:50:00Z",
+  "last_updated": "2026-10-03T09:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-cycle-plan.sh, re-confirm region boundaries", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Enumerate closed-over locals (found: zero)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Create scripts/lib/redeploy-checkpoint-lib.sh (declared fallback: leaf-only)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh"]},
+    {"id": 4, "description": "Replace leaf region in orchestrate-cycle-plan.sh with source + call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Register lib/redeploy-checkpoint-lib.sh in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 6, "description": "Record final wc -l and measured reduction ratio", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run the complete acceptance sweep", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-force-phases.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Move the WHOLE 479-line inter-cycle redeploy checkpoint region (including the inline deploy-headless.sh call) into scripts/lib/redeploy-checkpoint-lib.sh, sourced early and called from orchestrate_cycle_plan_main()", "result": "failed", "reason": "Passed the byte-identical --dry-run diff, test-orchestrate-cycle-plan.sh (344/344), and run-all.sh, but FAILED test-lint-deploy-caller-wrap.sh: that lint hard-codes exactly two genuine deploy-headless.sh callers (orchestrate-cycle-plan.sh, command-gate-out.sh), each required to wrap its entire body in one function invoked as the file's own last physical statement (the SELF-OVERWRITE HAZARD pattern). A sourced lib file has no 'file's own last statement' for the lint to recognize, so it correctly flagged a third, differently-shaped genuine caller. Per this task's 'never weaken a test to make a refactor pass' rule, reverted rather than special-casing the lint. Replaced with the plan's own declared fallback: extracted only the 106-line 'Post-deploy reconcile pass' leaf sub-region (confirmed via grep to contain zero deploy-headless references), leaving the deploy-headless.sh call itself inline in orchestrate-cycle-plan.sh, still protected by its existing wrap."}
+  ],
+  "handoff_count": 0,
+  "notes": [
+    "Zero local/declare statements found anywhere in the 479-line candidate region (confirmed by direct grep over the exact extracted line range) -- there was no closed-over-local set requiring the plan's 'convert to explicit parameters' treatment at all; every variable the region touches is a plain top-level script global or a bare (implicitly global) assignment, reachable identically via bash's dynamic scoping whether the code is inline or in a sourced function.",
+    "Final sizes: orchestrate-cycle-plan.sh 3026 -> 2597 (429 fewer lines, 14.2% reduction) -- short of the plan's ~29% target because the fallback moved only the 106-line leaf, not the full 479-line region. The deferred ~373-line '(k, part 2)' checkpoint half (including the deploy-headless.sh call) remains inline, recorded as a follow-up in the implementation summary. Combined across Phases 4-6: 591 new lines now live in lib/ (territory-contention-lib.sh 330, task-classification-lib.sh 103, redeploy-checkpoint-lib.sh 158).",
+    "Full acceptance sweep results: test-orchestrate-cycle-plan.sh 344/344; test-lint-deploy-caller-wrap.sh 7/7 (after the fallback correction); run-all.sh --jobs auto 104 passed, 4 failed (3 EXPECTED, 1 foreign out-of-scope typst, same as every prior phase) 1 skipped, 109 total; check-extension-docs.sh 4 FAIL (deployed-content-drift, same EXPECTED/self-resolving class documented since Phase 4) + 5 ADVISORY (never-deployed, the 3 new libs + 2 Phase-1-3 files); verify-deploy.sh --skip-slow 2 of 33 failed (gate 3 doc-lint and gate 5 manifest-driven verification, both propagating the SAME check-extension-docs.sh content-drift/never-deployed findings just listed -- not a second, independent defect). script-inventory.sh --check runs clean (exit 0); its ranking still places orchestrate-cycle-plan.sh (now 2597 lines) at rank 1.",
+    "verify-deploy.sh's 2-of-33 figure is explained entirely by this task's own not-yet-deployed source-store edits (expected, self-resolving at the orchestrator's next Stage MT-3 redeploy checkpoint -- this agent is not a sanctioned deploy-headless.sh caller). The two PRE-EXISTING issues the dispatch recorded on 2026-10-02 (migrate-state-legacy-fields.sh doc-lint gap, sandbox orphan tmp file) are CONFIRMED RESOLVED/ABSENT from every check-extension-docs.sh and verify-deploy.sh run across Phases 3-6 -- neither reappeared."
+  ]
+}

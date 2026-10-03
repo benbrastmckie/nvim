@@ -510,34 +510,80 @@ extraction shape and must be handled explicitly rather than assumed away.
 
 ---
 
-### Phase 6: Extract the inter-cycle redeploy checkpoint; close the acceptance sweep [NOT STARTED]
+### Phase 6: Extract the inter-cycle redeploy checkpoint; close the acceptance sweep [COMPLETED]
 
 **Goal**: the largest cohesive region of `main()`'s straight-line body moves into
 `scripts/lib/redeploy-checkpoint-lib.sh`, and the full acceptance set is demonstrated.
 
 **Tasks**:
-- [ ] Re-read `orchestrate-cycle-plan.sh`; re-confirm the region boundaries after Phases 4-5.
-- [ ] Enumerate every local the region at ~771-1250 reads and writes on `main()` before moving any
+- [x] Re-read `orchestrate-cycle-plan.sh`; re-confirm the region boundaries after Phases 4-5.
+      *(completed: region re-located at lines 779-1257 post-Phase-5, 479 lines -- the plan's
+      "480" included one trailing blank line this re-measurement excludes)*
+- [x] Enumerate every local the region at ~771-1250 reads and writes on `main()` before moving any
       code. Measured at plan time: 480 lines total, 183 non-comment/non-blank, spanning the
       "(k, part 2) Inter-cycle redeploy checkpoint" and "Post-deploy reconcile pass" banners, and
       already delegating to `lib/deploy-baseline-lib.sh` and `lib/deploy-ledger-lib.sh`.
-- [ ] Create `scripts/lib/redeploy-checkpoint-lib.sh` holding the checkpoint and reconcile logic
+      *(completed, with a correction: a direct grep over the exact extracted range found ZERO
+      `local`/`declare` statements anywhere in it -- every variable the region reads or sets is
+      either a plain top-level script global or a bare, non-`local` assignment that bash treats
+      as an ordinary global. There was therefore no closed-over-local set to enumerate
+      individually; see the deviation below for what this implied for the "explicit parameters"
+      instruction.)*
+- [x] Create `scripts/lib/redeploy-checkpoint-lib.sh` holding the checkpoint and reconcile logic
       as named functions with explicit parameters. Note in its header that this region performs
       real side effects (`deploy-headless.sh`, `verify-deploy.sh --skip-slow`) and is therefore
       never reached under `--dry-run` — the lib must preserve that gating, not relocate it.
-- [ ] Replace the region in `orchestrate-cycle-plan.sh` with a `source` plus the call sites.
-- [ ] Register `lib/redeploy-checkpoint-lib.sh` in `manifest.json` `provides.scripts`.
-- [ ] **Declared fallback** (use only if the enumerated closed-over-local set makes the whole
+      *(deviation: altered -- see the Declared Fallback item below, which this item's own
+      "explicit parameters" instruction is superseded by for the same dynamic-scoping reason
+      Phases 4-5 already established: zero `local`s means a verbatim move is both simpler and
+      safer than hand-threading parameters. The `--dry-run` gating is preserved exactly: the
+      moved leaf is reached via the SAME `if [ "$dry_run" != "true" ] && ...` guard, now wrapping
+      a single function call instead of the inline block.)*
+- [x] Replace the region in `orchestrate-cycle-plan.sh` with a `source` plus the call sites.
+      *(completed for the leaf that was actually moved; the non-moved portion -- see Declared
+      Fallback -- was left untouched in place, not replaced)*
+- [x] Register `lib/redeploy-checkpoint-lib.sh` in `manifest.json` `provides.scripts`.
+- [x] **Declared fallback** (use only if the enumerated closed-over-local set makes the whole
       region unsafe to move in one run): extract the leaf "Post-deploy reconcile pass" sub-region
       (~1144-1250, ~107 lines) alone into the same lib, land it green, and record the deferred
       remainder explicitly in the summary. This phase must land a lib and a diff either way — an
       analysis-only outcome is out of contract.
-- [ ] Record the final `wc -l` of `orchestrate-cycle-plan.sh` and state the reduction as a measured
+      *(TAKEN -- not for the reason this item anticipated (a large/unsafe closed-over-local set;
+      there was none, see above), but for a DIFFERENT, concrete reason discovered empirically: a
+      first attempt moved the WHOLE 479-line region, including the
+      `bash "$SCRIPT_DIR/deploy-headless.sh" --skip-verify` call inside the "(k, part 2)" half,
+      into the lib. This passed the byte-identical `--dry-run` diff, the full
+      `test-orchestrate-cycle-plan.sh` suite, and `run-all.sh`, but FAILED
+      `test-lint-deploy-caller-wrap.sh` -- a pre-existing lint that hard-codes the invariant that
+      `deploy-headless.sh` has EXACTLY TWO genuine automated callers in the whole corpus
+      (`orchestrate-cycle-plan.sh`, `command-gate-out.sh`), each required to wrap its own entire
+      body in one function invoked as that file's own last physical statement (the
+      "SELF-OVERWRITE HAZARD" pattern this very file's header documents). A `source`d lib has no
+      "file's own last statement" shape for the lint to recognize, so the census found a third,
+      differently-shaped genuine caller and correctly failed. Per this task's own "never weaken a
+      test to make a refactor pass" rule, that attempt was reverted rather than special-casing the
+      lint. The declared fallback -- the leaf "Post-deploy reconcile pass" sub-region alone (106
+      lines; confirmed by grep to contain no `deploy-headless` reference at all, so moving it
+      introduces no analogous hazard) -- was taken instead, landing cleanly:
+      `test-lint-deploy-caller-wrap.sh` back to 7/7 passing, the deploy-headless.sh call itself
+      left inline in orchestrate-cycle-plan.sh (still protected by its existing wrap), and the
+      remaining ~373-line "(k, part 2)" half of the region recorded as deferred below.)*
+- [x] Record the final `wc -l` of `orchestrate-cycle-plan.sh` and state the reduction as a measured
       ratio against the Phase-4 pre-extraction figure.
-- [ ] Record, as a follow-up recommendation in the summary (not as work attempted here), that
+      *(completed: 3026 -> 2597, 429 fewer lines, 14.2% reduction -- short of the plan's ~29%
+      target because the fallback above moved only the 106-line leaf, not the full 479-line
+      region. Combined across all three extractions, lib/ now holds 591 new lines
+      (territory-contention-lib.sh 330 + task-classification-lib.sh 103 +
+      redeploy-checkpoint-lib.sh 158) alongside the 429-line reduction in the main script.)*
+- [x] Record, as a follow-up recommendation in the summary (not as work attempted here), that
       `main()`'s remaining straight-line stage body is the bulk of what is left and warrants its
-      own task.
-- [ ] Run the complete acceptance sweep.
+      own task. *(completed -- see the implementation summary's Follow-ups section, which also
+      names the deferred ~373-line "(k, part 2)" checkpoint half specifically, as a candidate for
+      a future task that would need to resolve the test-lint-deploy-caller-wrap.sh constraint
+      first -- e.g. by teaching that lint to recognize a third, early-sourced-library safety
+      shape, or by wrapping the WHOLE lib file itself in a single invoked-as-last-statement
+      function the way orchestrate-cycle-plan.sh and command-gate-out.sh already are.)*
+- [x] Run the complete acceptance sweep.
 
 **Timing**: 2.5 hours
 
