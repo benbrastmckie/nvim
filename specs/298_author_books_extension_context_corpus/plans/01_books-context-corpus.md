@@ -503,13 +503,13 @@ rather than re-deriving them; re-run `layer-lint.sh` to date its own two figures
 
 ---
 
-### Phase 6: Convergence, forgery probes, and operating the certifier [NOT STARTED]
+### Phase 6: Convergence, forgery probes, and operating the certifier [COMPLETED]
 
 **Goal**: Three operational documents: the warning-driven convergence loop, the forgery-probe
 discipline, and how to run the certifier economically without being misled by its output.
 
 **Tasks**:
-- [ ] Write `patterns/warning-driven-convergence.md` per Finding 5 item 13: the loop shape
+- [x] Write `patterns/warning-driven-convergence.md` per Finding 5 item 13: the loop shape
       verbatim (the `grep -oP`/`sed` pipeline that generated **179 `book_requires` lines with zero
       guesses** and converged to zero on the next run); why the warning stream is the correct
       oracle (every `book-requires-undeclared` warning names the exact missing export, so the
@@ -520,19 +520,19 @@ discipline, and how to run the certifier economically without being misled by it
       declare. Record that framed_channel now carries 193 such lines (the 179 are the loop's
       output, not the current count) and that a `--emit-requires` certifier mode would remove the
       loop entirely and is named but unbuilt.
-- [ ] Write `standards/forgery-probe-discipline.md` per Finding 5 item 15: the rule - every gate
+- [x] Write `standards/forgery-probe-discipline.md` per Finding 5 item 15: the rule - every gate
       predicate gets a forgery probe, and a gate predicate shipped **without** one is a REVIEWABLE
       DEFECT, not a gap to be noted. Ground it in the collision-1 instance: a deliberately
       violated `book_policy` probe certified clean at zero refusals, and nothing in the
       certificate, the log or `DEPENDS.md` distinguished "checked and held" from "checked
       nothing"; it was caught only because the plan carried an explicit verification line.
-- [ ] Generalize from the **landed** probe family rather than the dispatch's FORGE-A..D framing,
+- [x] Generalize from the **landed** probe family rather than the dispatch's FORGE-A..D framing,
       which is narrower than what is on disk: enumerate the probe fixtures actually present under
       `books/tests/manifest/` (research measured twenty) and state the pattern each pair
       instantiates - a refusal probe AND a complementary admit probe, so a probe that silently
       never runs is itself detectable. Cross-reference `standards/metadata-split.md`'s
       subject-placement rule.
-- [ ] Write `tools/certify-guide.md` per Finding 5 item 16: component-root scoping is mandatory (a
+- [x] Write `tools/certify-guide.md` per Finding 5 item 16: component-root scoping is mandatory (a
       repository-root run discovers 22 books and fails the pre-launch check on a Typst fixture
       whose book module is under no package root, and on a stale module - and nothing documents
       this); run `--check` FIRST (it surfaced every book module's freshness, the reader budget and
@@ -543,7 +543,7 @@ discipline, and how to run the certifier economically without being misled by it
       set from `agent-system/extensions/books/commands/certify.md` (`--no-build`, `--no-shake`,
       `--no-write`, `--only NAME`, `--check`, `--prev`, and the acceptance-suite-only
       `--graph-from` that the extension's wrapper refuses).
-- [ ] Record the misreporting precisely, both forms: the closing line
+- [x] Record the misreporting precisely, both forms: the closing line
       `[ok] N book(s) certified, dependencies first: <names>` prints every DISCOVERED book
       regardless of how many certified, so it warrants that the driver completed and nothing more
       - cross-check `book.cert.json` files on disk; and the worse one, that `certify.sh` carries no
@@ -551,7 +551,7 @@ discipline, and how to run the certifier economically without being misled by it
       `FramedChannelAeneas.Book.Crc8` at ~16-18 GiB RSS, twice) logs a bare
       `!! book 'X' was REFUSED` with no `[REFUSE]` detail lines, visually indistinguishable from a
       genuine refusal.
-- [ ] Record the reader mechanics in the same document: a reader script run under `lake env lean`
+- [x] Record the reader mechanics in the same document: a reader script run under `lake env lean`
       inside the certified package's workspace works at the `.private` olean level, where
       `loadExts := true` after `enableInitializersExecution` is MANDATORY and SILENT when omitted;
       `CERTIFY_INTERPRETED=1` selects the interpreted certifier instead of the compiled `certify`

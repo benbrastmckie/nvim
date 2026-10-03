@@ -1,0 +1,18 @@
+{
+  "phase": 6,
+  "phase_name": "Convergence, forgery probes, and operating the certifier",
+  "started_at": "2026-10-03T01:45:00Z",
+  "last_updated": "2026-10-03T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write patterns/warning-driven-convergence.md", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/warning-driven-convergence.md"]},
+    {"id": 2, "description": "Write standards/forgery-probe-discipline.md from the landed twenty-fixture probe family", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/forgery-probe-discipline.md"]},
+    {"id": 3, "description": "Write tools/certify-guide.md with both misreports and the reader mechanics", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/tools/certify-guide.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "6.x", "description": "certify flag set is wider than commands/certify.md's Options table", "type": "altered", "reason": "The plan takes the flag set from agent-system/extensions/books/commands/certify.md. Measured 2026-10-03: the driver additionally carries --no-docs-stage, which that Options table does not list (grep count 0). The document records the driver's help block as the authority on flags and states the discrepancy.", "annotation": "*(deviation: altered -- driver carries --no-docs-stage, absent from the extension command's Options table)*"},
+    {"task_id": "6.y", "description": "probe fixtures recorded with their expected outcomes, not only counted", "type": "altered", "reason": "The plan asks to enumerate the probe fixtures present (research measured twenty; re-measured twenty on 2026-10-03). Each fixture's expected outcome was read from its own header comment and tabulated, so the refusal/admit pairing is evidenced per row rather than asserted.", "annotation": "*(deviation: altered -- twenty fixtures tabulated with expected outcomes read from each header)*"}
+  ],
+  "handoff_count": 0
+}
