@@ -21,8 +21,20 @@ which it does within a day or two, because the structure is still hand-derived. 
 Call F sits first because its tail was escalated behind the in-flight books work; the letter is
 kept because 306 and 313 reference these lanes by name.
 
-**The deploy gates are green.** `verify-deploy.sh --skip-slow` returns **PASS — 33 checks, 0
-failures**. Both reds that previously stood here are closed. Treat any new failure as real.
+**The deploy gates are RED.** `verify-deploy.sh --skip-slow` returns **FAIL — 3 of 33 checks**,
+re-measured after the books redeploy. All three sit in the books extension, and provenance is
+established by blame, not guessed:
+
+| Gate | Finding | Origin |
+|---|---|---|
+| Agent contracts lint | `books-implementation-hard-agent.md` lacks an object-shaped `artifacts` array | the books scaffold (`task 297 phase 2`); the gate-binding commit added 45 lines there but left the `artifacts` block untouched |
+| Task-lookup adoption lint | hand-rolled full-record lookups in both `skill-books-*-hard/SKILL.md` | the books scaffold (`task 297 phase 3`) |
+| Orchestrator context budget | `skills/skill-orchestrate/SKILL.md` is 20028 B against a 20000 B hard ceiling | the `--gate` threading — **28 bytes over**, the one failure this lane actually introduced |
+
+The first two are scaffold defects that the scaffold's own completion did not catch, and need a
+task. The third needs a ruling: trim the file or raise the ceiling deliberately. Do not widen the
+ceiling reflexively -- a budget gate that gets raised whenever it fires stops being a gate, and
+this file is what the context-budget lane exists to protect.
 
 ---
 
@@ -244,9 +256,11 @@ Two independent pairs, independent of every agent-system lane.
   reason. `--fail-on-new` makes that a gate; `--jobs 4` is opt-in and reproduces the serial
   pass/fail set except under heavy contention. Gate 8 is 117.9 s of a ~2.8 min full run — the
   dominant cost, and 328's target.
-- `bash .claude/scripts/verify-deploy.sh --skip-slow` — **currently PASS, 33 checks, 0 failures.**
-  Measure it *before* your work as well as after, and compare. A self-modifying task is not
-  finished until `.claude/` is resynced.
+- `bash .claude/scripts/verify-deploy.sh --skip-slow` — **currently FAIL, 3 of 33** (see Goal for
+  the per-gate table and origins). Measure it *before* your work as well as after, and compare; do
+  not read the three standing reds as permission to ignore a fourth. A self-modifying task is not
+  finished until `.claude/` is resynced -- and a resync whose verify is red is reported, not
+  silently accepted.
 - After any call that ran in a consumer: `check-consumer-freshness.sh` here, `deploy-headless.sh`
   **there** if STALE. **All 8 consumers are STALE right now**, several cores 225 behind.
 
