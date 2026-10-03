@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Inventory probe core — enumeration, size, callers, test pairing",
+  "started_at": "2026-10-03T06:10:52Z",
+  "last_updated": "2026-10-03T06:17:00Z",
+  "objectives": [
+    {"id": 1, "description": "Adopt header/usage/--root/--check conventions from assess-repo-health.sh and measure-eager-context.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 2, "description": "Implement enumeration of non-test .sh files under agent-system/extensions/**", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 3, "description": "Report path/lines/bytes per script", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 4, "description": "Report inbound_callers / inbound_caller_paths per script", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 5, "description": "Report has_test / test_paths per script", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 6, "description": "Write test-script-inventory.sh covering enumeration/size/callers/has_test/degenerate-root/usage-error/no-side-effects", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-script-inventory.sh"]},
+    {"id": 7, "description": "Run new suite to green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Pass per-script caller/test-path arrays to jq via --args/$ARGS.positional", "result": "failed", "reason": "jq's --args requires the filter to be the single positional program argument; interleaving two differently-sized positional lists in one invocation doesn't work. Replaced with a to_json_array() helper that pipes newline-joined values through `jq -R -s -c`."},
+    {"approach": "Pass the full assembled scripts array to the final jq -n call via --argjson on the command line", "result": "failed", "reason": "exceeds exec argv size limit (\"Argument list too long\") at ~193 real scripts with caller-path arrays. Replaced with writing to a mktemp scratch file (outside $ROOT) and reading via --slurpfile."}
+  ],
+  "handoff_count": 0
+}

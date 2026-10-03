@@ -1,29 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/250_script_corpus_inventory_and_engine_decomposition/plans/01_inventory-probe-and-decomposition.md",
-      "summary": "6-phase plan: build and register a standing script-inventory probe (Phases 1-3), then three bounded behaviour-preserving lib/ extractions from orchestrate-cycle-plan.sh (Phases 4-6)."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 15,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1791000710_cc4f86_250",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 11,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "Sizing bash functions by the line-delta between consecutive top-level `name() {` definitions is unreliable, not merely imprecise. In agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh the proxy over-reported individual functions by up to 31x (build_contended_manifest: 657 claimed vs 100 actual; task_has_forced_phase: 358 vs 9), because the file is one 2,264-line monolithic function (orchestrate_cycle_plan_main, 74.8% of the file) containing 13 helper functions defined at COLUMN 0 inside its body. Column-0 `}` therefore does not delimit a top-level function, and the lines between two definitions are the enclosing function's straight-line body, not the earlier function's extent. Correct method: track brace depth across the file and pair each opening definition with the close at its own depth. The structural consequence matters for refactoring, not just measurement: helpers are nested precisely because they close over the enclosing function's locals, so extracting one into scripts/lib/ requires converting every implicit closure into an explicit parameter (and serializing bash associative arrays as JSON) rather than moving text.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/250_script_corpus_inventory_and_engine_decomposition/plans/01_inventory-probe-and-decomposition.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["bash", "function-size", "brace-depth", "nested-functions", "shell-refactor", "measurement-proxy"]
-    }
-  ],
-  "dispatch_seq": 6
+    "session_id": "sess_1791000710_cc4f86",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #250
 
 - **Task**: 250 - Script-corpus inventory probe, then decompose orchestrate-cycle-plan.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: 199, 245, 249, 259, 265, 266 (all COMPLETED — re-verified in the research report); 272 is NOT a declared dependency but overlaps `orchestrate-cycle-plan.sh` and carries a pre-edit status re-check in Phase 4
 - **Research Inputs**: specs/250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md
@@ -148,40 +148,40 @@ extraction must be green before the next begins (the dispatch's "green after eac
 
 ---
 
-### Phase 1: Inventory probe core — enumeration, size, callers, test pairing [NOT STARTED]
+### Phase 1: Inventory probe core — enumeration, size, callers, test pairing [COMPLETED]
 
 **Goal**: `scripts/script-inventory.sh` exists, emits one JSON document on stdout, takes no
 side effects, and reports the four mechanically cheapest per-script facts. Its test suite covers
 them against a fixture root.
 
 **Tasks**:
-- [ ] Read `scripts/assess-repo-health.sh` (lines 1-100) and `scripts/measure-eager-context.sh`
+- [x] Read `scripts/assess-repo-health.sh` (lines 1-100) and `scripts/measure-eager-context.sh`
       headers and adopt their convention verbatim: extensive header comment documenting
       enumeration, existence filter, and degenerate cases; `--root PATH` override; `--check`
       mode; `usage()` implemented as a `sed`-extract of the header block; `set -uo pipefail`;
       exit codes 0 / 1 (usage) / 2 (missing tool).
-- [ ] Implement enumeration: non-test `.sh` files under `<root>/agent-system/extensions/**`,
+- [x] Implement enumeration: non-test `.sh` files under `<root>/agent-system/extensions/**`,
       excluding `/tests/` directories and flat `test-*.sh` basenames. Sort deterministically.
       Document the degenerate zero-candidate case (emit an empty `scripts` array and a `null`
       summary, never a crash).
-- [ ] Per script, report `path`, `lines`, `bytes`.
-- [ ] Per script, report `inbound_callers` (integer) and `inbound_caller_paths` (sorted array):
+- [x] Per script, report `path`, `lines`, `bytes`.
+- [x] Per script, report `inbound_callers` (integer) and `inbound_caller_paths` (sorted array):
       a grep pass for the script's basename across skills, agents, commands, manifests, hooks,
       docs, and other scripts under `<root>`, with the probed file itself excluded. Document in
       the header that this is a textual-reference count and therefore an over-count (comments,
       heredocs, and fixture literals are indistinguishable from code to grep) — the lesson the
       dispatch's METHOD WARNING demands the probe honor. Zero callers is reported as a finding
       flag, not merely a zero.
-- [ ] Per script, report `has_test` (boolean) and `test_paths`: pairing by basename convention
+- [x] Per script, report `has_test` (boolean) and `test_paths`: pairing by basename convention
       against `scripts/tests/test-<basename>` and flat `scripts/test-<basename>`.
-- [ ] Add `--root` default resolution matching `assess-repo-health.sh` (git toplevel, then
+- [x] Add `--root` default resolution matching `assess-repo-health.sh` (git toplevel, then
       script-relative fallback) and assert in the header that fixtures must pass `--root`.
-- [ ] Write `scripts/tests/test-script-inventory.sh` covering: enumeration excludes test files;
+- [x] Write `scripts/tests/test-script-inventory.sh` covering: enumeration excludes test files;
       line/byte counts correct for a fixture; caller counting excludes self and finds a
       cross-file reference; `has_test` true/false both demonstrated; zero-candidate degenerate
       root; `--root` missing-argument usage error exits 1; no file is written anywhere under the
       fixture root across a run (assert via a before/after `find`-based manifest).
-- [ ] Run the new suite directly (`bash scripts/tests/test-script-inventory.sh`) to green.
+- [x] Run the new suite directly (`bash scripts/tests/test-script-inventory.sh`) to green.
 
 **Timing**: 2 hours
 
