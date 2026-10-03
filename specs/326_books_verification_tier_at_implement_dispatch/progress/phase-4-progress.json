@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "The test-books-gate.sh fixture suite",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write tests/test-books-gate.sh following test-books-certify.sh harness conventions; all 11 planned cases plus derivation and private-import cases", "status": "done",
+     "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-gate.sh"],
+     "note": "44 assertions, 0 failed. Cases: lint_unavailable; pass_vacuous (0 of 2, never collapsed to pass); pass (2 of 2); rule_set_error (library exit 1 on source, wrapper shell survives = subshell proof); usage_error (absent named root, exit 0); wrapper's own unknown-argument error (exit 2, distinct); planted public import -> exactly 1 violation with the offending path; public meta import form; specs/-pathed negative; .lake/-pathed negative; provider_absent; planted [[require]] reported; private import counted as context not violation; derived package roots with a components/* lacking lean/ excluded; advisory exit-0 invariant over 7 fixture roots."},
+    {"id": 2, "description": "Forgery probe per predicate", "status": "done", "files_touched": [],
+     "note": "Seven probes (A-G), one per predicate: vacuity, exit-1 stderr classification, specs/ pruning, .lake/ pruning, provider-require count, lint_unavailable, provider_absent. Each demonstrably produces a DIFFERENT result when its predicate's input is forged, printed in the suite output (e.g. probeA got 'pass' where the real case expects 'pass_vacuous'; probeC got 'violations' where the real case expects 'pass')."},
+    {"id": 3, "description": "Declare tests/test-books-gate.sh in manifest provides.scripts by full relative path", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"],
+     "note": "provides.scripts now holds four entries. test-books-certify.sh regression check: 9 passed, 0 failed."}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

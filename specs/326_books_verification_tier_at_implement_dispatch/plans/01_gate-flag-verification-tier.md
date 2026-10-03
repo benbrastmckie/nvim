@@ -254,7 +254,7 @@ Confirm by `grep -n 'compare'` on each of the three files before editing.
 
 ---
 
-### Phase 3: The `books-gate.sh` wrapper [IN PROGRESS]
+### Phase 3: The `books-gate.sh` wrapper [COMPLETED]
 
 **Goal**: one extension-local script that resolves and runs the layer lint plus the import-closure
 check, classifies five lint outcomes, detects vacuity, emits one JSON object, and always exits 0.
@@ -313,38 +313,38 @@ sibling books task may have landed changes.
 
 ---
 
-### Phase 4: The `test-books-gate.sh` fixture suite [NOT STARTED]
+### Phase 4: The `test-books-gate.sh` fixture suite [COMPLETED]
 
 **Goal**: every classification branch and every pruning rule is pinned by a fixture, with a
 forgery probe per predicate.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/books/scripts/tests/test-books-gate.sh`, following
+- [x] Write `agent-system/extensions/books/scripts/tests/test-books-gate.sh`, following
       `test-books-certify.sh`'s harness conventions (so `run-all.sh`'s glob discovery picks it up
       and Gate 8 runs it).
-- [ ] Case: lint script absent in the fixture root -> `lint_unavailable`, wrapper exit 0.
-- [ ] Case: a fixture root no rule's file-half can reach -> `pass_vacuous` with
+- [x] Case: lint script absent in the fixture root -> `lint_unavailable`, wrapper exit 0.
+- [x] Case: a fixture root no rule's file-half can reach -> `pass_vacuous` with
       `rules_matched: 0`, never `pass`.
-- [ ] Case: a fixture root every rule reaches and no violation planted -> `pass` with
+- [x] Case: a fixture root every rule reaches and no violation planted -> `pass` with
       `rules_matched == rules_total`.
-- [ ] Case: a fixture rule library that `exit 1`s on source -> `rule_set_error`, wrapper still
+- [x] Case: a fixture rule library that `exit 1`s on source -> `rule_set_error`, wrapper still
       exits 0 (and the wrapper's own shell survives, proving the subshell).
-- [ ] Case: lint invoked with an absent named root -> `usage_error`, wrapper exit 0.
-- [ ] Case: a planted public import of the provider -> exactly one closure violation, with the
+- [x] Case: lint invoked with an absent named root -> `usage_error`, wrapper exit 0.
+- [x] Case: a planted public import of the provider -> exactly one closure violation, with the
       offending path reported.
-- [ ] Negative case: the same planted public import under a `specs/`-prefixed path -> **not** a
+- [x] Negative case: the same planted public import under a `specs/`-prefixed path -> **not** a
       violation.
-- [ ] Negative case: the same planted public import under a `.lake/`-prefixed path -> **not** a
+- [x] Negative case: the same planted public import under a `.lake/`-prefixed path -> **not** a
       violation.
-- [ ] Case: provider package absent from the fixture -> `provider_absent`.
-- [ ] Case: a `require` line planted in the provider lakefile -> reported in
+- [x] Case: provider package absent from the fixture -> `provider_absent`.
+- [x] Case: a `require` line planted in the provider lakefile -> reported in
       `provider_require_lines`.
-- [ ] **Forgery probe per predicate**: for each predicate above, assert that the suite would
+- [x] **Forgery probe per predicate**: for each predicate above, assert that the suite would
       actually fail if the predicate's check were removed or stubbed to a constant — a reviewable
       obligation here, following the forgery-probe discipline in the books context corpus
       (`context/project/books/standards/forgery-probe-discipline.md`) and the FORGE-cases in the
       consuming repository's own manifest suite that generalize it.
-- [ ] Declare `tests/test-books-gate.sh` in `books/manifest.json` `provides.scripts` by full
+- [x] Declare `tests/test-books-gate.sh` in `books/manifest.json` `provides.scripts` by full
       relative path (Rule Q matches on full relative path, not basename), in the same commit.
 
 **Timing**: 1.5 hours
