@@ -144,28 +144,28 @@ those sit in different waves.
 
 ---
 
-### Phase 1: Core flag plumbing [IN PROGRESS]
+### Phase 1: Core flag plumbing [COMPLETED]
 
 **Goal**: `--gate` is parsed, declared, forwarded only for implement dispatches, and emitted into
 the dispatch file as exactly one added line.
 
 **Tasks**:
-- [ ] `parse-command-args.sh`: add a `GATE_FLAG` paragraph to the header doc-comment block
+- [x] `parse-command-args.sh`: add a `GATE_FLAG` paragraph to the header doc-comment block
       (alongside the `COMPARE_FLAG` paragraph), the `GATE_FLAG="false"` initializer, the
       `--gate` detector arm, the `sed 's/--gate//g'` entry in the `FOCUS_PROMPT` strip chain, and
       `GATE_FLAG` in the `export` list. Five edits, the fourth and fifth of which the task
-      description omits.
-- [ ] `orchestrate-cycle-plan.sh`: add the parallel header contract paragraph, `[--gate]` to the
+      description omits. *(completed)*
+- [x] `orchestrate-cycle-plan.sh`: add the parallel header contract paragraph, `[--gate]` to the
       usage heredoc, the `gate_flag="false"` declaration, the `--gate) gate_flag="true"; shift ;;`
       parse arm, and the implement-scoped forwarding line
       `[ "$gate_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--gate)` immediately
-      adjacent to the `--compare` one.
-- [ ] `orchestrate-build-dispatch.sh`: add `[--gate]` to the usage comment and the usage heredoc,
+      adjacent to the `--compare` one. *(completed)*
+- [x] `orchestrate-build-dispatch.sh`: add `[--gate]` to the usage comment and the usage heredoc,
       the parallel contract comment block (stating advisory-only and the conditional-emission
       byte-identity rationale), the `gate_flag="false"` declaration, the `--gate)` parse arm, and
-      the conditional `echo "- gate_flag: true"` emission in the Identity section.
-- [ ] Confirm `build_args` is still composed at exactly one site, so no second forwarding path
-      exists to keep in sync.
+      the conditional `echo "- gate_flag: true"` emission in the Identity section. *(completed)*
+- [x] Confirm `build_args` is still composed at exactly one site, so no second forwarding path
+      exists to keep in sync. *(completed: one site, orchestrate-cycle-plan.sh:2339)*
 
 **Timing**: 1 hour
 
@@ -204,25 +204,25 @@ to skip silently.
 
 ---
 
-### Phase 2: Core documentation and the metadata contract [NOT STARTED]
+### Phase 2: Core documentation and the metadata contract [COMPLETED]
 
 **Goal**: `--gate` is documented wherever `--compare` is documented, and the advisory `gate`
 metadata block has a schema a reader can follow without the design record.
 
 **Tasks**:
-- [ ] `commands/orchestrate.md`: add a `--gate` Options row immediately after the `--compare` row,
+- [x] `commands/orchestrate.md`: add a `--gate` Options row immediately after the `--compare` row,
       stating advisory-only, never blocking, never failing a dispatch, never downgrading status,
       composability, and that it never reaches research/plan dispatches. Add `--gate` to the
-      `--hard` row's composable list.
-- [ ] `skills/skill-orchestrate/SKILL.md`: add `gate_flag` to the Setup field list and the
+      `--hard` row's composable list. *(completed)*
+- [x] `skills/skill-orchestrate/SKILL.md`: add `gate_flag` to the Setup field list and the
       parallel `$( [ "${gate_flag:-false}" = "true" ] && echo --gate )` line to Move 1's dispatch
-      invocation.
-- [ ] `context/formats/return-metadata-file.md`: add a `### gate (optional)` section modelled on
+      invocation. *(completed)*
+- [x] `context/formats/return-metadata-file.md`: add a `### gate (optional)` section modelled on
       `### comparator (optional)`, with an explicit "Include if ... `gate_flag == true`; omitted
       entirely otherwise" clause, the JSON shape from the research report's Phase 3 sketch, and
       the advisory MUST-NOTs restated in the schema itself.
-- [ ] Deliberately do NOT add `--gate` to `docs/architecture/orchestrate-state-machine.md` or to
-      the `argument-hint`; `--compare` is in neither, and mirroring exactly is the contract.
+- [x] Deliberately do NOT add `--gate` to `docs/architecture/orchestrate-state-machine.md` or to
+      the `argument-hint`; `--compare` is in neither, and mirroring exactly is the contract. *(completed)*
 
 **Timing**: 45 minutes
 

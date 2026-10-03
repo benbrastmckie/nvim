@@ -312,6 +312,76 @@ does not alter the pre-existing `verification` block's keys (`verification_passe
   **Include if** line above.
 - This section documents a lean-only block. It does not alter the `verification` block's keys.
 
+### gate (optional)
+
+**Type**: object
+**Include if**: the dispatch carried `gate_flag == true` (i.e. `--gate` was passed to
+`/orchestrate`, which forwards it to implement-phase dispatches only). Omitted entirely
+otherwise — a run where `--gate` was not passed records no `gate` block at all, and there is no
+`"ran": false` "not requested" record; `"ran": false` is reserved for a request that reached the
+agent and stopped before the wrapper was invoked.
+
+Carries the result of the advisory intermediate verification tier run by
+`books-implementation-agent.md` / `books-implementation-hard-agent.md`'s Final Verification
+Stage via `books-gate.sh --json`: the cheap regex layer lint plus the `Books.Meta` import-closure
+check. The tier sits between `lake build` (which invokes neither) and the fail-closed full gate.
+This block does not alter the pre-existing `verification` block's keys
+(`verification_passed`, `sorry_count`, `vacuous_count`, `axiom_count`, `build_passed`).
+
+| Field | Type | Required | Description |
+|-------|------|----------|--------------|
+| `ran` | boolean | Yes | Whether the wrapper was actually invoked. `false` means the agent stopped before invocation. |
+| `layer_lint` | object | Yes | The layer-lint leg (fields below). |
+| `books_meta_closure` | object | Yes | The import-closure leg (fields below). |
+| `runtime_seconds` | number | Yes | Wall-clock elapsed seconds for the wrapper invocation (0 when `ran` is `false`). |
+
+**`layer_lint` fields**:
+
+| Field | Type | Required | Description |
+|-------|------|----------|--------------|
+| `status` | string | Yes | One of the six values in the vocabulary table below. |
+| `package_roots` | array of strings | Yes | The package roots actually linted, derived (never hardcoded) and recorded so a reader knows what was and was not covered. |
+| `modules` | number | No | Module count reported by the lint, when it reported one. |
+| `imports` | number | No | Import count reported by the lint, when it reported one. |
+| `rules_matched` | number | Yes | How many of the real rule set's rules had a file-half matching at least one discovered `.lean` path. |
+| `rules_total` | number | Yes | How many rules the real rule set contains. |
+| `violations` | array of strings | Yes | The reported violation lines (empty when there are none). |
+| `violation_count` | number | Yes | Length of `violations`. |
+| `detail` | string | No | Human-readable detail for a non-`pass` status. |
+
+**`layer_lint` status vocabulary** (closed):
+
+| Status | Meaning |
+|--------|---------|
+| `pass` | The lint ran, matched at least one rule, and reported no violations. |
+| `pass_vacuous` | The lint ran and reported no violations, but `rules_matched` is 0 — **nothing was actually checked**. Never collapse this into `pass`: a vacuous pass is the failure mode this tier exists to expose. |
+| `violations` | The lint reported one or more violations. |
+| `lint_unavailable` | The lint script is not present in the resolved repository root. |
+| `rule_set_error` | The rule-set library failed while being sourced (it can `exit 1` during sourcing), so no rule set was available. Distinct from `violations`, which shares the same exit code. |
+| `usage_error` | The lint rejected its arguments (for example a named package root that does not exist). |
+
+**`books_meta_closure` fields**:
+
+| Field | Type | Required | Description |
+|-------|------|----------|--------------|
+| `status` | string | Yes | `pass`, `violations`, or `provider_absent`. |
+| `public_import_violations` | array of strings | Yes | Live `.lean` paths carrying a public import of the provider module (empty when there are none). |
+| `public_import_violation_count` | number | Yes | Length of `public_import_violations`. |
+| `private_import_sites` | number | Yes | Count of files carrying the sanctioned private import form — context, never a violation. |
+| `provider_require_lines` | number | Yes | Count of `require` lines in the provider package's lakefile; the invariant is 0. |
+
+**Notes**:
+- The gate is **advisory only**: a `gate` block, whatever any of its statuses, MUST NOT cause
+  `verification_passed` to be set `false`, MUST NOT downgrade `status` to `partial`, MUST NOT
+  fail a dispatch, and MUST NOT block completion. This is a binding constraint restated here so
+  a reader of this schema alone, without the design record, still gets it.
+- The flag ADDS a cheap intermediate tier. It does not weaken, shortcut or quieten any existing
+  gate, every one of which remains fail-closed by design.
+- `lint_unavailable` and `provider_absent` are ordinary, expected outcomes in any repository
+  without the books tooling. They are recorded, not escalated.
+- The wrapper always exits 0 in its advisory role, so an exit code carries no verdict; every
+  finding travels in this block's fields.
+
 ### memory_candidates (optional)
 
 **Type**: array of objects (0-3 items)

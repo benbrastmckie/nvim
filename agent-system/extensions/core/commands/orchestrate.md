@@ -44,12 +44,13 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 |------|-------------|---------|
 | `--lit` | Literature mode: pass lit_flag=true to skill for paper/spec-based tasks | false |
 | `--compare` | Advisory-only, lean-implementation-scoped: pass compare_flag=true so the implement-phase dispatch runs the Comparator gate against the snapshot Challenge and the implemented Solution. Never blocks completion or downgrades status. Composable with `--hard` and the model flags; meaningless for research/plan dispatches, so it never reaches them | false |
+| `--gate` | Advisory-only intermediate verification tier: pass gate_flag=true so the implement-phase dispatch runs the cheap regex layer lint plus the `Books.Meta` import-closure check between `lake build` and the ten-minute fail-closed full gate. ADVISORY ONLY — it never blocks a dispatch, never fails one, and never downgrades status; it adds a tier rather than relaxing an existing one. Composable with `--hard`, `--lit`, `--compare` and the model flags; meaningless for research/plan dispatches, so it never reaches them | false |
 | `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing. The report also shows any `$2+` focus text this invocation received (a `focus=` column per row), so it can be checked before a live run | false |
 | `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate; deliberate human intent, never a general-purpose weakening | false |
 | `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the CROSS-BATCH `file_scope_collision` gate only (never `in_batch`); deliberate human intent | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--fast` | Low-effort mode: lighter reasoning, AND skips the default research-first phase for a `not_started` task (planner can still route back via `needs_research`); `--research` still forces research even under `--fast`. See `docs/architecture/orchestrate-state-machine.md`'s "The `needs_research` Fork" | false |
-| `--hard` | High-effort mode: injects hard-mode contracts (churn/three-strikes/burnout counters); ~3-5x cost; composable with `--lit`, `--compare`, model flags, and the phase-forcing flags | false |
+| `--hard` | High-effort mode: injects hard-mode contracts (churn/three-strikes/burnout counters); ~3-5x cost; composable with `--lit`, `--compare`, `--gate`, model flags, and the phase-forcing flags | false |
 | `--haiku` | Use Haiku model (fastest, lowest cost). Applies to research/plan/implement dispatches only — diagnostic dispatches retain their frontmatter model | false |
 | `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
 | `--opus` | Use Opus model (highest quality, same as agent default) | false |

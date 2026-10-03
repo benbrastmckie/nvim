@@ -29,7 +29,8 @@ separate single-task code path. Full state table, transition diagram, design rat
 **Setup (once per invocation, before the loop begins)** — from delegation context:
 `task_numbers`, `dependency_graph`, `session_id`, `lit_flag` (Move 1's `--lit` passthrough runs
 `context/patterns/lit-stage4a-flow.md`'s resolver directives inside `orchestrate-build-dispatch.sh`
-for every per-task dispatch), `compare_flag`,
+for every per-task dispatch), `compare_flag`, `gate_flag` (advisory-only intermediate
+verification tier; forwarded unchanged and never acted on by this skill),
 `allow_self_modifying`, `allow_scope_collision`, `clean_flag`, `effort_flag`, `model_flag`,
 `hard_mode` (`"true"` iff `effort_flag = "hard"`), `force_phases`,
 `focus_prompt` (free-form `$2+` text after the task number(s) on the `/orchestrate` command line
@@ -80,6 +81,7 @@ plan_json=$(bash .claude/scripts/orchestrate-cycle-plan.sh \
   $( [ "${clean_flag:-false}" = "true" ] && echo --clean ) \
   $( [ "${lit_flag:-false}" = "true" ] && echo --lit ) \
   $( [ "${compare_flag:-false}" = "true" ] && echo --compare ) \
+  $( [ "${gate_flag:-false}" = "true" ] && echo --gate ) \
   $( [ "${hard_mode:-false}" = "true" ] && echo --hard ) \
   $( [ "${effort_flag:-}" = "fast" ] && echo --fast ) \
   $( [ "${allow_self_modifying:-false}" = "true" ] && echo --allow-self-modifying ) \

@@ -1,0 +1,43 @@
+{
+  "phase": 2,
+  "phase_name": "Core documentation and the metadata contract",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T19:45:30Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "commands/orchestrate.md: --gate Options row + --hard composability",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/orchestrate.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "skill-orchestrate/SKILL.md: gate_flag in Setup list and Move 1 forwarding",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "return-metadata-file.md: new ### gate (optional) section",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/return-metadata-file.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Verify: no lint script name, field names consistent, state-machine/argument-hint deliberately untouched",
+      "status": "done",
+      "files_touched": [],
+      "note": "No new bare <name>.sh token added to either Rule-E-scanned doc (commands/orchestrate.md, skills/skill-orchestrate/SKILL.md). Field names: gate_flag (dispatch/delegation), gate (metadata block) -- matches Phase 1 emission. docs/architecture/orchestrate-state-machine.md and argument-hint deliberately untouched (--compare is in neither)."
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
