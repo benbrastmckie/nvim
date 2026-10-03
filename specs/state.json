@@ -108,12 +108,12 @@
     {
       "project_number": 250,
       "project_name": "script_corpus_inventory_and_engine_decomposition",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Script-corpus inventory probe, then cut tests/run-all.sh runtime and decompose orchestrate-cycle-plan.sh",
       "created": "2026-09-22T19:00:20Z",
-      "last_updated": "2026-10-03T04:22:11Z",
+      "last_updated": "2026-10-03T04:32:34Z",
       "dependencies": [
         199,
         245,
@@ -124,6 +124,8 @@
       ],
       "file_scope": [
         "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh",
         "agent-system/extensions/core/scripts/lib/task-classification-lib.sh",
         "agent-system/extensions/core/scripts/lib/territory-contention-lib.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
@@ -137,6 +139,11 @@
           "path": "specs/250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md",
           "type": "report",
           "summary": "Re-measures the stale 2026-09-22 corpus/file-size figures, confirms all 6 dependencies and the two prior verify-deploy findings are resolved, flags a new task-272 file_scope overlap risk, identifies the 784-line territory/contention and 535-line task-classification extraction candidates in orchestrate-cycle-plan.sh, and locates existing conventions (manifest-registration check, probe script shape) Phase 1 must reuse."
+        },
+        {
+          "path": "specs/250_script_corpus_inventory_and_engine_decomposition/plans/01_inventory-probe-and-decomposition.md",
+          "type": "plan",
+          "summary": "6 phases, 11 hours, strictly serial waves; probe first, then three lib/ extractions totalling ~885 lines (~29% of orchestrate-cycle-plan.sh)."
         }
       ],
       "next_artifact_number": 2
@@ -170,7 +177,7 @@
       "project_name": "refresh_pss_memory_accounting",
       "title": "Cost-aware idle Lean tree reclamation in /refresh: PSS accounting, CPU-delta idleness, notify-before-kill",
       "task_type": "meta",
-      "status": "researched",
+      "status": "planning",
       "topic": "core-agent-system",
       "dependencies": [
         174
@@ -193,9 +200,9 @@
         }
       ],
       "created": "2026-09-15T17:00:35Z",
-      "last_updated": "2026-10-03T04:22:30Z",
+      "last_updated": "2026-10-03T04:23:06Z",
       "priority": "medium",
-      "session_id": "sess_1791000710_cc4f86",
+      "session_id": "sess_1791000710_cc4f86_217",
       "next_artifact_number": 2
     },
     {
@@ -223,12 +230,12 @@
     {
       "project_number": 184,
       "project_name": "decide_lean_skeleton_plan_completion_routing",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "=== RULED 2026-09-22 (eighth-pass phase 0) ===\nDisposition: option (a), narrowed to what was actually lost. The single-task engine's skeleton-exhaustion branch did three things: (1) routed the task to completion via the pr_ready target, (2) propagated a completion summary, (3) derived and reported follow-up tasks from sorry_inventory[].follow_up_task. Under the batch engine (1) is moot: pr_ready is a type=pr-only terminus, and every other task completes through orchestrate-cycle-postflight.sh's completion-claim gate, which a skeleton plan with all phases complete already reaches (orchestrate-cycle-plan.sh's 'no OPEN heading' fallthrough, ~line 2003, and the porting note at ~line 1921). (2) is owned by postflight generally. Only (3) is lost: a skeleton plan completes with its sorry_inventory silently dropped, so the strategic sorries never become tasks.\n\nSCOPE (now concrete; no further decision phase). In orchestrate-cycle-postflight.sh, when the final implement handoff carries skeleton=true and a non-empty sorry_inventory[]: (i) print the follow_up_task entries in the cycle's stderr report and include them in the task's completion summary section; (ii) record them on the state.json entry in an append-only field (research picks the field -- a skeleton_follow_ups array or reuse of the memory_candidates shape -- and state-management-schema.md documents it); (iii) do NOT auto-create tasks: the report is the handoff and the user files them with /task. Document in status-markers.md and handoff-schema.md how a skeleton plan terminates now (through the completion-claim gate, follow-ups reported). Regression test in scripts/tests/test-orchestrate-cycle-postflight.sh with a skeleton=true fixture whose sorry_inventory has two entries. Options (b) and (c) of the original text are closed by this ruling. ORDERING: after 242 (same postflight script and test) and 243 (handoff-schema.md), recorded as dependency edges. The original decision text follows for the record.\n\nDecide the disposition of the Lean/formal skeleton-plan completion routing lost with the single-task engine.\n\nCONTEXT. The deleted single-task /orchestrate engine carried a skeleton-exhaustion completion branch: when no incomplete phase heading remained AND the last handoff declared skeleton=true, it derived a follow-up task list from the handoff's sorry_inventory[].follow_up_task entries, routed the task to completion via update-task-status.sh postflight with the pr_ready target and --allow-pr-ready, and reported the pending follow-ups. The surviving batch engine has no equivalent branch.\n\nWHY THIS ONE NEEDS A DECISION AND HAS NOT HAD ONE. The rewrite recorded TWO capability losses. The loop-guard staleness detector got an explicit recommended follow-up. This one was recorded as a permanent loss with NO follow-up named at all -- it is the only deviation in that summary left without a next step. Lean and formal work is live in this repository, so silent acceptance should be a deliberate choice rather than an oversight.\n\nSCOPE. Determine whether strategic-sorry skeleton plans can still reach a correct terminal status under the batch engine, and if not, what should happen. Evaluate at least: (a) port the skeleton-exhaustion branch into orchestrate-cycle-plan.sh or orchestrate-cycle-postflight.sh; (b) require skeleton plans to close through a different, already-supported path; (c) accept the loss explicitly and document how a skeleton plan is expected to terminate now. Do not pre-commit to an option.\n\nEVIDENCE. The assertions covering this mechanism (.skeleton / last_skeleton and .sorry_inventory / follow_up_tasks) were removed from scripts/tests/test-handoff-reader-parity.sh. Recorded under \"Plan Deviations\" in specs/088_mode_gate_skill_orchestrate_multi_task_section/summaries/01_four-move-loop-rewrite-summary.md. Related policy: the strategic-sorry skeleton allowance in context/contracts/recovery.md.\n\nACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a working path to terminal status for skeleton plans with test coverage, or documentation naming the expected terminus.",
       "topic": "core-agent-system",
       "created": "2026-09-08T06:28:44Z",
-      "last_updated": "2026-10-03T04:22:36Z",
+      "last_updated": "2026-10-03T04:23:09Z",
       "title": "Surface skeleton-plan follow-ups at completion under the batch engine (ruled: port the sorry_inventory follow-up report, not pr_ready routing)",
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
@@ -243,7 +250,7 @@
         259,
         266
       ],
-      "session_id": "sess_1791000710_cc4f86",
+      "session_id": "sess_1791000710_cc4f86_184",
       "artifacts": [
         {
           "path": "specs/184_decide_lean_skeleton_plan_completion_routing/reports/01_skeleton-follow-up-routing.md",
@@ -301,7 +308,7 @@
     {
       "project_number": 89,
       "project_name": "mode_gate_literature_and_distill_skills",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "medium",
@@ -314,8 +321,8 @@
         "agent-system/extensions/memory/skills/skill-distill/SKILL.md"
       ],
       "created": "2026-08-24T18:42:08Z",
-      "last_updated": "2026-10-03T04:22:17Z",
-      "session_id": "sess_1791000710_cc4f86",
+      "last_updated": "2026-10-03T04:22:59Z",
+      "session_id": "sess_1791000710_cc4f86_89",
       "artifacts": [
         {
           "path": "specs/089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md",
@@ -328,12 +335,12 @@
     {
       "project_number": 127,
       "project_name": "collapse_routing_ladder_to_routing_agents",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "description": "=== REVISED 2026-09-01 (backlog streamline: absorbs the present-routing residue) ===\nADDITIONAL WORK ITEMS, absorbed from the abandoned present-extension routing task: (5) while rewriting the manifests, resolve present/manifest.json's colon-suffixed compound values -- its routing.implement block (\"present:grant\" -> \"skill-grant:assemble\" style) disappears with the collapse, mooting the skill-name half of the original defect, but audit routing_agents for any analogous colon-suffixed AGENT value encoding workflow_type into a name no consumer splits, and settle the encoding (drop the suffix and carry workflow_type another way, or make the resolver split and expose it as a sub-mode variable). (6) extend lint-routing-wiring.sh so any routing_agents value naming a nonexistent agent file fails verify-deploy -- the original defect (a manifest naming a nonexistent dispatch target, shipped silently) must be impossible to reintroduce under the collapsed model.\n=== ORIGINAL DESCRIPTION FOLLOWS ===\nCollapse the routing ladder to routing_agents-only across all 19 extension manifests; retire command-route-skill.sh.\n\nCONTEXT. Every extension manifest may declare up to four routing blocks today (routing, routing_hard, routing_agents, routing_agents_hard), resolved by the shared five-step ladder in scripts/lib/manifest-routing-lib.sh. Once /research, /plan, /implement are deleted (no skill layer left to route to) and the hard-mode collapse lands (no separate hard-routing table needed -- hard mode becomes a dispatch-prep injection, not a different resolved agent file), only routing_agents remains meaningful.\n\nWORK. (1) Remove the routing and routing_hard blocks from every extension manifest that declares them, retaining only routing_agents (plus any extension-specific op like present's critique). (2) Retire command-route-skill.sh -- confirm no remaining caller (only the now-deleted /research, /plan, /implement, /revise-adjacent paths called it; /revise itself does not use this resolver and is unaffected). (3) Update context/guides/manifest-routing-schema.md to document the collapsed two-block model (down from four), including the completeness-lint contract re-scoped to check only routing_agents completeness against itself. (4) Re-scope lint-routing-wiring.sh's Checks A/C accordingly.\n\nDEPENDS ON both the command deletions (routing/skill-dispatch has no remaining caller) and the hard-mode file deletions (routing_hard/routing_agents_hard has no remaining caller) having already landed.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/*/manifest.json (all 19), agent-system/extensions/core/scripts/command-route-skill.sh, agent-system/extensions/core/context/guides/manifest-routing-schema.md, agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh (never .claude/**).\nDELIVERABLE RULE: no task-number references in any deliverable outside specs/**.\n\nREFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-design.md (A3).\n",
       "created": "2026-08-31T18:11:43Z",
-      "last_updated": "2026-10-03T04:22:24Z",
+      "last_updated": "2026-10-03T04:23:02Z",
       "dependencies": [
         121,
         124,
@@ -356,7 +363,7 @@
           "summary": "Inventories all 20 manifests' routing blocks, confirms dependency preconditions landed, and corrects the task's own premise: /epi is a live surviving caller of command-route-skill.sh that must be migrated before retirement."
         }
       ],
-      "session_id": "sess_1791000710_cc4f86",
+      "session_id": "sess_1791000710_cc4f86_127",
       "next_artifact_number": 2
     },
     {
