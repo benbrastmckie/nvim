@@ -148,17 +148,28 @@ to nothing. The `POLICY-ADMIT` fixture (`books/tests/manifest/run.sh:447-458`) r
 `book_policy` whose subject is not a member "elaborates green and is not even warned about" --
 and records it as a **BOUNDARY, not a defence**.
 
-The vacuous-policy refusal now lands certifier-side (`BookCert.Writer.checkPolicies`,
-`books/lean/BookCert/Writer.lean:194-230`, with its own probe fixture
-`books/tests/manifest/fixtures/probes/PolicyVacuous.lean`). This is the grounding instance for
-`standards/forgery-probe-discipline.md`: a gate predicate shipped without a forgery probe is a
-reviewable defect, and this is what one costs when it ships without one. Also recorded as B7 in
+**The refusal has since landed, and that changes what the certificate warrants -- but not the
+authoring rule.** `BookCert.Writer.checkPolicies` (`books/lean/BookCert/Writer.lean:194-230`) now
+resolves the subject against the certifying book's own member rows and raises a `policy-vacuous`
+refusal on an empty resolution, with its own probe fixture
+`books/tests/manifest/fixtures/probes/PolicyVacuous.lean`. `books/schema/book-cert-v2.md`'s
+`policies[]` table consequently states the invariant: `checked_modules` is **NON-EMPTY in every
+written certificate**, and `outcome` deliberately stays a **two**-word vocabulary
+(`holds` / `violated`) with no third word for "checked nothing", **because** the refusal makes a
+vacuous row unreachable in a written certificate. So a consumer reading `holds` now knows the
+assertion was checked against at least one module.
+
+What that does **not** change: a misplaced row is now a refusal rather than a false green, so the
+cost moved from a silent trust defect to a failed certification -- but the fix is still to move the
+row to the right book. This is the grounding instance for
+`standards/forgery-probe-discipline.md`: the predicate existed before its probe did, and the probe
+is what turned a shipped false green into a refusal. Also recorded as B7 in
 `domain/known-gap-register.md`.
 
 **Authoring rule, operationally**: for each `book_policy` row, name the module or layer it
-constrains, find which book's members include it, and put the row in **that** book's module. Then
-verify the certificate's `policies[]` rows carry **non-empty** `checked_modules` -- an empty array
-is the signature of a row that checked nothing.
+constrains, find which book's members include it, and put the row in **that** book's module. If a
+certification refuses with `policy-vacuous`, the row is on the wrong book -- do not reword the
+pattern.
 
 ## Related
 

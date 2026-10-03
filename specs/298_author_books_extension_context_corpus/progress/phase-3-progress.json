@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "The authored manifest and the computed certificate",
+  "started_at": "2026-10-03T00:35:00Z",
+  "last_updated": "2026-10-03T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write domain/book-toml-v2.md", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/domain/book-toml-v2.md"]},
+    {"id": 2, "description": "Write domain/certificate-ledger-and-records.md, keeping book.record.json and book.read.json distinct", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/domain/certificate-ledger-and-records.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "3.x", "description": "certificate-ledger-and-records.md line band", "type": "altered", "reason": "Landed at 275 lines against a 150-250 band with an allowance to ~250. The overrun is justified rather than absorbed: the plan asks this one document to carry six enumerations (twenty top-level keys, the sixteen-field ledger row, modules[]/depends[]/policies[], the docs block, the toolchain field, the refusal set) plus the two-side-record comparison. Trimmed twice (292 -> 282 -> 275) by compressing prose, with no enumeration dropped; cutting further would mean paraphrasing an enumeration, which Standing Rule 8 forbids.", "annotation": "*(deviation: altered -- 275 lines, justified overrun; six mandated enumerations in one document)*"},
+    {"task_id": "3.y", "description": "export_ledger row field count", "type": "altered", "reason": "The plan's Scope Hypothesis cites a 'seventeen-field export_ledger row shape' from research. Measured 2026-10-03 on interface/books/result/book.cert.json: sixteen keys. Written as measured.", "annotation": "*(deviation: altered -- ledger row measured at sixteen keys, not seventeen)*"},
+    {"task_id": "3.z", "description": "stale-certified refusal anchor", "type": "altered", "reason": "The plan cites books/certifier/Certify.lean:808-835. Measured 2026-10-03: the stale-certified refusals are at :978-1003 (missing-source at :971). Cited as measured.", "annotation": "*(deviation: altered -- stale-certified anchor re-measured to :978-1003)*"}
+  ],
+  "handoff_count": 0
+}

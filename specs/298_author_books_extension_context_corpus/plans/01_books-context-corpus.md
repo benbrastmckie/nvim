@@ -320,13 +320,13 @@ Appendix and by reading `Books.Meta` at the cited lines before transcribing.
 
 ---
 
-### Phase 3: The authored manifest and the computed certificate [NOT STARTED]
+### Phase 3: The authored manifest and the computed certificate [COMPLETED]
 
 **Goal**: What a person authors in `book.toml`, and what the certifier computes into
 `book.cert.json` - with the two different records kept distinct.
 
 **Tasks**:
-- [ ] Write `domain/book-toml-v2.md` per Finding 5 item 2: `schema = 2`; the
+- [x] Write `domain/book-toml-v2.md` per Finding 5 item 2: `schema = 2`; the
       `[book]`/`[trust]`/`[provenance]`/`[docs]` tables; the seventeen keys, confirmed against a
       real certificate's `judgments.fields`; the fields-versus-keys distinction with the design
       record's "twelve fields" headline named as a historical name the schema document corrects;
@@ -334,13 +334,13 @@ Appendix and by reading `Books.Meta` at the cited lines before transcribing.
       validated, trusted, not_applicable}; `stale` DERIVED and never authored; the
       computed-never-authored list (`[layers]`, `[exports]`, `[[depends]]`, `[external]`,
       `[axioms]`, the summary - which is the book module's docstring - and packages).
-- [ ] Add, from the real manifests: an absent `[trust]` table means all six ground classes
+- [x] Add, from the real manifests: an absent `[trust]` table means all six ground classes
       `not_applicable` and is the honest record for a draft book; all 27 real manifests declare
       `status = "draft"`; first certification is `draft` because the certifier refuses `certified`
       with no `--prev` to bump against, refusal reason `stale-certified`
       (`books/certifier/Certify.lean:808-835`); `"<absent>"` is the literal recorded value for an
       unauthored key; the enforced word lists live at `books/tool/Books/Manifest.lean:33-38`.
-- [ ] Write `domain/certificate-ledger-and-records.md` per Finding 5 item 3: the certificate sits
+- [x] Write `domain/certificate-ledger-and-records.md` per Finding 5 item 3 *(deviation: altered -- landed at 275 lines, justified overrun; six mandated enumerations)*: the certificate sits
       **directly** in the book directory and never in a `certificate/` subdirectory, because the
       framed_channel export tooling treats every `certificate` directory as a discovery root; it
       is THE ONLY INPUT of every non-Lean tool (Decisions 8, 9, 11); the full top-level key list
@@ -348,14 +348,14 @@ Appendix and by reading `Books.Meta` at the cited lines before transcribing.
       Finding 2 (`interface/books/result/book.cert.json`); `passes` versus the four named
       `reserved_passes`; the `docs` block with its four `context_pack_bytes` keys and
       `counts{missing,orphaned,reconciled,stale}`.
-- [ ] In the same document, keep separate the **two records the dispatch description conflates**:
+- [x] In the same document, keep separate the **two records the dispatch description conflates**:
       `book.record.json` (reconciliation - guarantee text hash bound to its export's ledger
       digest, with who signed and when; non-digested by construction; **zero real instances**, the
       only two in the tree being a certify fixture and the Typst probe) and `book.read.json` (the
       read test - six keys `book`/`by`/`date`/`reader`/`marks{does_what,assumes_what,could_go_wrong}`,
       sole writer `books/tool/record-read-test.sh`, five real instances, one of which records
       `"by": "agent"`).
-- [ ] Defer gap claims to `domain/known-gap-register.md`.
+- [x] Defer gap claims to `domain/known-gap-register.md`.
 
 **Timing**: 1.5 hours
 
