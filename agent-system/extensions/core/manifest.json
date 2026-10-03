@@ -154,6 +154,7 @@
       "orchestrate-cycle-postflight.sh",
       "orchestrate-predispatch-review.sh",
       "orchestrate-loop-guard-init.sh",
+      "orchestrate-record-decision.sh",
       "orchestrate-recover-message-findings.sh",
       "orchestrate-recover-outcome.sh",
       "orchestrate-stage5-gates.sh",

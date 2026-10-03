@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Add orchestrate-record-decision.sh",
+  "started_at": "2026-10-03T00:15:00Z",
+  "last_updated": "2026-10-03T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write orchestrate-record-decision.sh with full CLI, validation, flock-guarded append mechanics modelled on errors-append.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Register the script in manifest.json's provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

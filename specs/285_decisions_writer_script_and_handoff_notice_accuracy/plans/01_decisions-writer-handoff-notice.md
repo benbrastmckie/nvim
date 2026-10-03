@@ -208,42 +208,46 @@ correct and precedent-matching choice.
 
 ---
 
-### Phase 2: Add `orchestrate-record-decision.sh` [NOT STARTED]
+### Phase 2: Add `orchestrate-record-decision.sh` [COMPLETED]
 
 **Goal**: one sanctioned writer appends exactly one schema-valid entry to
 `specs/{NNN}_{slug}/.decisions.json`, creating the file when absent, additively, under a lock, with
 the pre-existing file left byte-identical on any failure.
 
 **Tasks**:
-- [ ] Write `scripts/orchestrate-record-decision.sh` with CLI
+- [x] Write `scripts/orchestrate-record-decision.sh` with CLI
       `--task N --session SID --cycle C --question TEXT --answer TEXT` (plus `-h|--help`).
-- [ ] Header comment in the `system-defect-record.sh` house style: purpose, usage block, per-argument
+      *(completed)*
+- [x] Header comment in the `system-defect-record.sh` house style: purpose, usage block, per-argument
       documentation, the "NOT RUNNABLE FROM THE SOURCE STORE" note, the exit-code table, and the
-      non-fatal-call convention for call sites.
-- [ ] `set -euo pipefail` (Class A per `shell-strict-mode.md`'s default-for-new-scripts rule).
-- [ ] Manual `while`-loop argument parsing; unknown argument is a loud failure, never a silent skip.
-- [ ] Validate before any work: all five arguments non-empty; `--task` matches `^[0-9]+$`;
+      non-fatal-call convention for call sites. *(completed)*
+- [x] `set -euo pipefail` (Class A per `shell-strict-mode.md`'s default-for-new-scripts rule).
+      *(completed)*
+- [x] Manual `while`-loop argument parsing; unknown argument is a loud failure, never a silent skip.
+      *(completed)*
+- [x] Validate before any work: all five arguments non-empty; `--task` matches `^[0-9]+$`;
       `--cycle` matches `^[0-9]+$`; `--session` matches the `sess_` convention loosely enough not
-      to reject a valid id.
-- [ ] `SCRIPT_DIR` resolution, `source "${SCRIPT_DIR}/lib/common.sh"`,
+      to reject a valid id. *(completed)*
+- [x] `SCRIPT_DIR` resolution, `source "${SCRIPT_DIR}/lib/common.sh"`,
       `PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"`, then
       `. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1` — in that order, matching
-      `system-defect-record.sh:195-198`.
-- [ ] Resolve the task directory by sourcing `scripts/lib/task-lookup-lib.sh` and calling
+      `system-defect-record.sh:195-198`. *(completed)*
+- [x] Resolve the task directory by sourcing `scripts/lib/task-lookup-lib.sh` and calling
       `task_lookup_entry` then `task_lookup_dir`; fail loudly (nonzero, nothing written) when the
-      task number resolves to no entry.
-- [ ] Build the entry with `jq -c -n` and four fields: `question` (string), `answer` (string),
+      task number resolves to no entry. *(completed)*
+- [x] Build the entry with `jq -c -n` and four fields: `question` (string), `answer` (string),
       `cycle` (**number**, via `--argjson`), `timestamp` (`common_timestamp_iso`). Never string
-      concatenation.
-- [ ] Append under `flock -x 200` against `${task_dir}/.decisions.lock`, holding the lock across the
+      concatenation. *(completed)*
+- [x] Append under `flock -x 200` against `${task_dir}/.decisions.lock`, holding the lock across the
       whole read -> merge -> validate -> `mv` sequence, mirroring `errors-append.sh:262-291`:
       lazy-create the data file with `[]`; refuse when the existing document fails
       `jq -e 'type == "array"'` on the **root**; merge via `jq --argjson rec ... '. += [$rec]'` into
       a `$$`-suffixed temp file sibling to the data file; validate the merged document with
       `jq -e '(type == "array") and (length >= 1)'`; `mv` only then; `rm -f` the temp and exit
-      nonzero on any failure.
-- [ ] Register `orchestrate-record-decision.sh` in `manifest.json`'s `provides.scripts`, in the
-      existing `orchestrate-*` alphabetical neighbourhood.
+      nonzero on any failure. *(completed; validated with 10-way concurrent-append smoke test, no
+      loss)*
+- [x] Register `orchestrate-record-decision.sh` in `manifest.json`'s `provides.scripts`, in the
+      existing `orchestrate-*` alphabetical neighbourhood. *(completed)*
 
 **Timing**: 2 hours
 
