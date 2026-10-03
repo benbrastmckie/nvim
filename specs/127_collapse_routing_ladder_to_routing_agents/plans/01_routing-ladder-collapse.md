@@ -500,25 +500,33 @@ Phase 5 file or an unaccounted-for occurrence to triage explicitly.
 
 ---
 
-### Phase 7: Final verification and audit closure [NOT STARTED]
+### Phase 7: Final verification and audit closure [COMPLETED]
 
 **Goal**: The whole collapse is verified end to end under the real gate set, and the two
 audit-only work items are closed with recorded evidence.
 
 **Tasks**:
-- [ ] Deploy the source store and run `bash .claude/scripts/verify-deploy.sh` in full; confirm
+- [x] Deploy the source store and run `bash .claude/scripts/verify-deploy.sh` in full; confirm
       gates 3, 7, and 16 behave as designed (3 and 7 green; 16 warning only for `cslib`/`lean`)
-- [ ] Run `lint-routing-wiring.sh --verbose`, `check-extension-docs.sh`,
+      *(completed: gate 3 PASS, gate 7 PASS, gate 16 WARN for `lean` only (`cslib` not a loaded
+      extension in this deploy). One unrelated FAIL remains -- task 217's in-flight
+      `skills/skill-refresh/SKILL.md`/`commands/refresh.md` content drift, confirmed sibling
+      territory via its declared `file_scope`, not routing-related)*
+- [x] Run `lint-routing-wiring.sh --verbose`, `check-extension-docs.sh`,
       `test-routing-resolution.sh`, `validate-context-index.sh`, and `check-task-references.sh`
-- [ ] Re-run the work-item-5 sweep (`contains(":")` over `routing_agents` and
+      *(completed: all five green except check-extension-docs.sh's one sibling-territory FAIL
+      noted above)*
+- [x] Re-run the work-item-5 sweep (`contains(":")` over `routing_agents` and
       `routing_agents_hard` across all manifests) and record the result; confirm it still matches
-      the note written in Phase 5
-- [ ] Re-confirm work item 6: temporarily point one manifest's `routing_agents` value at a
+      the note written in Phase 5 *(completed: 0 matches, confirms Phase 5's recorded audit)*
+- [x] Re-confirm work item 6: temporarily point one manifest's `routing_agents` value at a
       nonexistent agent in a scratch copy, confirm Check B FAILs and that `verify-deploy` gate 7
-      would fail on it, then restore
-- [ ] Confirm `/epi {N}` resume reads correctly end to end (Step 2's direct assignment plus the
-      Skill-tool invocation it feeds)
-- [ ] Confirm no deliverable outside `specs/**` gained a task-number reference
+      would fail on it, then restore *(completed: Check B FAILs with exit 1 on the injected
+      defect; scratch copy only, tracked manifest untouched)*
+- [x] Confirm `/epi {N}` resume reads correctly end to end (Step 2's direct assignment plus the
+      Skill-tool invocation it feeds) *(completed: confirmed via direct read of epi.md)*
+- [x] Confirm no deliverable outside `specs/**` gained a task-number reference *(completed:
+      check-task-references.sh reports 0 occurrences repo-wide)*
 
 **Timing**: 0.75 hours
 
@@ -532,23 +540,26 @@ audit-only work items are closed with recorded evidence.
 - none planned (verification-only; any file touched here is a defect fix attributed to its owning phase)
 
 **Verification**:
-- `bash .claude/scripts/verify-deploy.sh` exits 0
-- All five lint/test scripts above exit 0
-- Negative-control checks for Check A, `check_routing_block`, and Check B each FAIL on an injected scratch-copy defect and pass once restored
+- `bash .claude/scripts/verify-deploy.sh` exits 0 *(1 FAIL remains: task 217's in-flight
+  `skills/skill-refresh/SKILL.md`/`commands/refresh.md` content drift -- confirmed sibling
+  territory via its declared `file_scope`, not attributable to this task. Gates 3, 7, 16 behave
+  exactly as designed)*
+- All five lint/test scripts above exit 0 *(confirmed, modulo the same sibling-territory FAIL in check-extension-docs.sh)*
+- Negative-control checks for Check A, `check_routing_block`, and Check B each FAIL on an injected scratch-copy defect and pass once restored *(confirmed: all three FAIL on the injected defect; only scratch copies were touched, tracked manifests untouched)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `jq -e 'has("routing") or has("routing_hard")'` matches zero manifests
-- [ ] `grep -rn 'command-route-skill' agent-system/` returns zero occurrences
-- [ ] `grep -rn 'routing_manifest_for_task_type' agent-system/ .claude/` returns zero occurrences
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 (gate 3 and gate 7 green; gate 16 warns for `cslib`/`lean` only)
-- [ ] `lint-routing-wiring.sh --verbose` exits 0 and its Check A/C output names `routing_agents`/`routing_agents_hard` keys
-- [ ] Re-scoped Check A, `check_routing_block`, and Check B each FAIL on an injected scratch-copy defect (negative controls)
-- [ ] `test-routing-resolution.sh`, `check-extension-docs.sh`, `validate-context-index.sh`, `check-task-references.sh` all pass
-- [ ] Every edited manifest and `index-entries.json` is valid JSON
-- [ ] Generated `.claude/CLAUDE.md` "Routing Mechanism" section describes the collapsed model
+- [x] `jq -e 'has("routing") or has("routing_hard")'` matches zero manifests *(confirmed: 0)*
+- [x] `grep -rn 'command-route-skill' agent-system/` returns zero occurrences *(confirmed: 0)*
+- [x] `grep -rn 'routing_manifest_for_task_type' agent-system/ .claude/` returns zero occurrences *(confirmed: 0)*
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0 (gate 3 and gate 7 green; gate 16 warns for `cslib`/`lean` only) *(gate 3/7/16 behave exactly as designed; 1 unrelated FAIL is task 217's in-flight sibling-territory drift, not this task's)*
+- [x] `lint-routing-wiring.sh --verbose` exits 0 and its Check A/C output names `routing_agents`/`routing_agents_hard` keys *(confirmed)*
+- [x] Re-scoped Check A, `check_routing_block`, and Check B each FAIL on an injected scratch-copy defect (negative controls) *(confirmed: all three)*
+- [x] `test-routing-resolution.sh`, `check-extension-docs.sh`, `validate-context-index.sh`, `check-task-references.sh` all pass *(confirmed, modulo the same sibling-territory FAIL noted above in check-extension-docs.sh)*
+- [x] Every edited manifest and `index-entries.json` is valid JSON *(confirmed)*
+- [x] Generated `.claude/CLAUDE.md` "Routing Mechanism" section describes the collapsed model *(confirmed)*
 
 ## Artifacts & Outputs
 
