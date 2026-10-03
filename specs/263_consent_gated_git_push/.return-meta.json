@@ -1,39 +1,98 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 23,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/263_consent_gated_git_push/plans/01_consent-gated-push-enforcement.md",
-      "summary": "13-phase plan for net-new git-push enforcement plus a single-use, HMAC-signed, target-bound consent grant minted only by a literal human prompt: grant library, /please mint hook, push guard + sanctioned wrapper, destructive-guard grant check, dual-template registration, five test suites, the /please command and rule narrowing, and the orchestrator relay leg."
+      "type": "summary",
+      "path": "specs/263_consent_gated_git_push/summaries/01_consent-gated-push-enforcement-summary.md",
+      "summary": "Full implementation summary: what changed across all 13 phases, 8 design decisions, plan deviations, verification evidence (including the live-fire transcript and test-suite triage), consistency-sweep results, and named residual risks."
     }
   ],
-  "user_decision": {
-    "question": "Consent-gated push: may a plain (non-force) push of the default branch be authorized by a /please grant, or should every push to the default branch stay categorically excluded as the research report recommended?",
-    "options": [
-      "Admit plain non-force default-branch pushes under a valid grant; keep every force form on the default branch, bare --force anywhere, and all bulk/deletion refspecs categorically excluded (planner's recommendation - git-workflow.md's pre-existing Never Run is specifically force-to-master, and this repo's own working branch IS master, so a blanket exclusion would make the mechanism unusable here)",
-      "Exclude every push to the default branch from any grant, per the research report's stricter recommendation; a push from this repository would then always require a non-default branch"
-    ],
-    "recommended": "Admit plain non-force default-branch pushes under a valid grant; keep every force form on the default branch, bare --force anywhere, and all bulk/deletion refspecs categorically excluded (planner's recommendation - git-workflow.md's pre-existing Never Run is specifically force-to-master, and this repo's own working branch IS master, so a blanket exclusion would make the mechanism unusable here)",
-    "blocking": false
+  "completion_data": {
+    "completion_summary": "Implemented consent-gated git push enforcement across all 13 plan phases: a net-new PreToolUse push guard and tamper guard (hooks/guard-git-push.sh), a UserPromptSubmit mint hook (hooks/please-grant.sh) minting single-use HMAC-signed grants only from a literal human prompt, the sanctioned wrapper (scripts/git-push-granted.sh), and the identical grant check added to guard-destructive-git.sh for five destructive action classes. Also delivered: the /please command and never-list, a rule-narrowing and consistency sweep (which caught and fixed a real tag-vs-branch push-classification bug in the guard), the orchestrator relay contract (push-consent-relay.md) with its own documented threat-model section, and five test suites (two new, three additive-only to existing suites, zero existing cases altered). Live-fire confirmed from the deployed byte copies against a disposable fixture repo (never the real repo's own remote). Full repository test suite (105/108 passed, the other 3 confirmed pre-existing and unrelated), check-extension-docs.sh (21/21 extensions), and verify-deploy.sh (33/33 checks, including the eager-context Gate 20 budget) all green after fixing two self-discovered regressions: an eager-rule byte-budget overage (trimmed to pointer form) and a single-source session-id lint violation in push-grant-lib.sh."
   },
-  "metadata": {
-    "session_id": "sess_1790721762_ff3d8e_263",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 13,
-    "estimated_hours": 17.5,
-    "dependency_waves": [[1, 2], [3, 4, 5], [6, 7, 8], [9], [10], [11], [12], [13]]
-  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/merge.md",
+    "agent-system/extensions/core/commands/please.md",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/standards/git-safety.md",
+    "agent-system/extensions/core/context/standards/push-consent-relay.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/context/standards/user-decision-contract.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/hooks/guard-git-push.sh",
+    "agent-system/extensions/core/hooks/please-grant.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/root-files/settings.json",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/rules/pr-prohibition.md",
+    "agent-system/extensions/core/scripts/git-push-granted.sh",
+    "agent-system/extensions/core/scripts/lib/push-grant-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-please-grant.sh",
+    "agent-system/extensions/core/skills/skill-tag/SKILL.md"
+  ],
   "memory_candidates": [
     {
-      "content": "Install-once vs. merge-fragment settings registration is a live, recurring trap in this agent-system source store: agent-system/extensions/core/root-files/settings.json is INSTALL-ONCE (the root_files copier skips it whenever the target exists), so a hook registered only there can never reach an already-initialized consumer repo; merge-sources/settings-hooks.json is the add-only merge fragment that does reach existing repos. Any new PreToolUse/UserPromptSubmit hook must be registered in BOTH, each as its own dedicated single-command matcher object (object-level dedup keeps re-merges idempotent; appending into an existing shared '*' matcher's hooks array does not). guard-destructive-git.sh is itself a live instance of the gap - its Bash matcher exists only in root-files/settings.json. check-extension-docs.sh Rule P's check_settings_merge_source_coverage() detects this class but suppresses it (condition 3) whenever the hook is already live in the current repo's deployed tree, so the gap stays invisible in the repo that authored it.",
+      "content": "A file-deletion-only 'single-use' token (e.g. a consent/authorization grant file) is NOT tamper-independent: if the exact bytes are ever restored to disk by any means other than the guarded tool-call path (a stray backup, a race, a restore), the restored file re-verifies perfectly and re-authorizes. Discovered while testing a push-consent grant mechanism's single-use property directly (not via a side-channel like 'did the referenced commit SHA change'). Fix: maintain a separate, append-only ledger of consumed token hashes (e.g. the token's own HMAC/signature value) and refuse any match whose hash is already in the ledger, independent of the token file's current existence. Apply this whenever designing any single-use, file-backed authorization token.",
       "category": "PATTERN",
-      "source_artifact": "specs/263_consent_gated_git_push/plans/01_consent-gated-push-enforcement.md",
+      "source_artifact": "specs/263_consent_gated_git_push/summaries/01_consent-gated-push-enforcement-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "single-use-token",
+        "consumed-ledger",
+        "tamper-resistance",
+        "grant-replay",
+        "hmac"
+      ]
+    },
+    {
+      "content": "When a shell script/hook sources deploy-root-guard.sh (refusing to run outside a deployed .claude/ or .opencode/ tree) or calls events-append.sh (same constraint, transitively), a fixture-driven test suite must give the fixture its OWN nested deployed-shaped tree (mkdir -p fixture/.claude/scripts/lib; copy the real script + lib/common.sh + deploy-root-guard.sh + events-append.sh into it) rather than invoking the real repo's deployed copy with a different cwd -- the script's own SCRIPT_DIR-based root resolution does not follow cwd. This is the established pattern in test-subagent-postflight-marker.sh and was reused across multiple test suites (test-guard-git-push.sh, test-please-grant.sh) to get real audit-trail writes and real wrapper-script execution under test, never touching the real repo's state.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/263_consent_gated_git_push/summaries/01_consent-gated-push-enforcement-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["settings-registration", "install-once", "merge-sources", "hook-registration", "check-extension-docs", "rule-p"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "fixture-testing",
+        "nested-claude-tree",
+        "events-append",
+        "hermetic-test"
+      ]
+    },
+    {
+      "content": "The context/config/orchestrator-context-budget.json eager-load Gate 20 budget (baseline_bytes) is a fixed historical ceiling that must be trimmed to, never silently bumped -- this repo's own established precedent (recorded in that file's own note history) is to relocate detail from eager-loaded rule files (rules/*.md with paths:'**/*' or similar broad globs) into non-eager context/standards/*.md files and compress the eager copy to a short pointer, re-measuring with 'REPO_ROOT=$(pwd) bash scripts/measure-eager-context.sh --check' until under baseline. Also: a lint that asserts 'single source of truth' for a code pattern (e.g. test-common-lib.sh's session-id generator check) may do a literal grep across *.sh files INCLUDING comments -- a comment merely describing or quoting the forbidden pattern can trip it, not just actual duplicate code.",
+      "category": "CONFIG",
+      "source_artifact": "specs/263_consent_gated_git_push/summaries/01_consent-gated-push-enforcement-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "eager-context-budget",
+        "gate-20",
+        "baseline-bytes",
+        "single-source-lint",
+        "trim-not-bump"
+      ]
     }
   ],
-  "next_steps": "Run /implement 263 to execute the plan",
-  "dispatch_seq": 9
+  "metadata": {
+    "session_id": "sess_1790980905_de0803",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 13,
+    "phases_total": 13
+  }
 }
