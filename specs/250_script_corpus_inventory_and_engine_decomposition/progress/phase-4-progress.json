@@ -1,0 +1,29 @@
+{
+  "phase": 4,
+  "phase_name": "Baseline capture, then extract the territory-contention concern",
+  "started_at": "2026-10-03T07:00:00Z",
+  "last_updated": "2026-10-03T07:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-check task 272 status (not_started)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-read orchestrate-cycle-plan.sh, confirm 3026 lines and function extents", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Capture --dry-run baseline (tasks 22,29,170) + md5sum state.json before/after", "status": "done", "files_touched": ["specs/250_script_corpus_inventory_and_engine_decomposition/dry-run-baseline/human-table-and-json.txt", "specs/250_script_corpus_inventory_and_engine_decomposition/dry-run-baseline/invocation.txt"]},
+    {"id": 4, "description": "Record pre-extraction wc -l (3026)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Enumerate closed-over locals", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Create scripts/lib/territory-contention-lib.sh (verbatim move)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/territory-contention-lib.sh"]},
+    {"id": 7, "description": "Replace extracted regions in orchestrate-cycle-plan.sh with source + pointer comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Register lib/territory-contention-lib.sh in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 9, "description": "Verify green and byte-identical before committing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-force-phases.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Convert every closed-over local (effective_group, session_id, new_cycle_count, CONTENDED_MANIFEST_DIR, PROJECT_ROOT) into an explicit function parameter, serializing effective_group as JSON, per the plan's literal instruction", "result": "failed", "reason": "Superseded by a safer alternative after direct experimentation. Verified with two minimal bash fixtures (a scalar `local` and a `local -A` associative array, each in a separate sourced file from the caller) that bash's `local` scoping is DYNAMIC (call-stack-based), not lexical (textual-nesting-based) -- a function defined in a sourced lib file still sees the caller's `local` variables when invoked from within that caller's own execution. A verbatim, byte-for-byte relocation is therefore both simpler AND strictly safer than a parameter-conversion rewrite (which itself risks introducing a subtle behavior change), and makes the required byte-identical --dry-run diff a structural guarantee rather than something to verify painstakingly."},
+    {"approach": "Build the fixture-root PROJECT_ROOT inside a fresh /tmp mktemp -d tree with real (copied) specs/ and agent-system/ subdirectories", "result": "failed", "reason": "orchestrate-cycle-plan.sh's collaborator scripts (orchestrate-triage-classify.sh, orchestrate-batch-admit.sh) independently resolve their own state-file path via PROJECT_ROOT, ignoring the --state-file argument I passed explicitly -- so a /tmp fixture with no real specs/ produced extra WARNING lines not present in the baseline. Fixed by symlinking the fixture's specs/ and agent-system/ subdirectories to the real repo's corresponding directories, so PROJECT_ROOT-relative lookups transparently resolve to the real data without ever touching the real .claude/ deployed tree."},
+    {"approach": "Run run-all.sh --jobs auto once after the extraction and treat its result as final", "result": "failed", "reason": "First run surfaced 2 NEW failures (test-force-phases.sh, test-orchestrate-unwind-dispatch.sh) beyond the 3 EXPECTED + 1 foreign-typst baseline from Phase 3. Both were genuine regressions in THIS task's own test fixtures (not ambient flakiness): each suite builds an isolated .claude/scripts/lib/ fixture tree via its own hardcoded file list or glob from the (stale, undeployed) .claude/ tree, and neither included the newly-created territory-contention-lib.sh. Fixed both suites' fixture-setup code to also copy/resolve territory-contention-lib.sh from the source store, then re-ran to confirm return to the Phase-3 baseline (3 expected + 1 foreign, 0 new)."}
+  ],
+  "handoff_count": 0,
+  "notes": [
+    "wc -l: orchestrate-cycle-plan.sh 3026 -> 2749 (277 fewer lines, ~9.2% reduction); territory-contention-lib.sh is 330 lines (287 lines of relocated code/comments + a new 43-line extraction-method header).",
+    "check-extension-docs.sh now reports 4 FAIL (deployed script content drift) for orchestrate-cycle-plan.sh and the three edited test files, plus 3 ADVISORY (never deployed) for the lib and the two Phase 1-3 new files. This is the same class of EXPECTED, self-resolving-at-next-redeploy condition documented in Phase 3's notes -- deploy-headless.sh's only sanctioned automated caller is skill-orchestrate's Stage MT-3 checkpoint, not this agent, so redeployment was correctly not attempted. Phase 4's own plan Verification list does not require check-extension-docs.sh cleanliness (only Phase 3 did); this is recorded for transparency, not as a Phase 4 blocker.",
+    "run-all.sh final state: 104 passed, 4 failed (3 expected, 1 NEW: tests/test-typst-element-lint.sh, a foreign out-of-scope pre-existing uncommitted modification -- see Phase 3's notes), 1 skipped, 109 total -- identical to the Phase 3 baseline, confirming Phase 4 introduced no new regressions."
+  ]
+}

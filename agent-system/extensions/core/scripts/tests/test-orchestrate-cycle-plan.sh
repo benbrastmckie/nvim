@@ -56,7 +56,8 @@ for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh 
          orchestrate-recover-outcome.sh git-commit-scoped.sh \
          lib/common.sh lib/file-scope-overlap.sh lib/continuation-pointer-lib.sh \
          lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh lib/deploy-baseline-lib.sh \
-         lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh lib/return-meta-status-vocabulary.sh; do
+         lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh lib/return-meta-status-vocabulary.sh \
+         lib/territory-contention-lib.sh; do
   require_file "$CORE_DIR/$f"
 done
 require_file "$CORE_DIR/../context/reference/orchestrator-critical-paths.json"
@@ -78,7 +79,7 @@ for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
          phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh deploy-ledger-lib.sh \
-         runtime-file-patterns.sh return-meta-status-vocabulary.sh; do
+         runtime-file-patterns.sh return-meta-status-vocabulary.sh territory-contention-lib.sh; do
   cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
 done
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -4682,12 +4683,15 @@ fi
 # Case G (unit-level, Group 27's extraction precedent): the directory-containment branch of
 # `_paths_contend` is correct on its own terms, even though admission's pre-existing in_batch
 # check means live traffic never reaches it through the integration path above (see this group's
-# header comment). Byte-extracts the real function from $SUT_SRC and invokes it directly.
-g31g_fn=$(sed -n '/^_paths_contend() {/,/^}/p' "$SUT_SRC")
+# header comment). Byte-extracts the real function from its own source -- scripts/lib/
+# territory-contention-lib.sh, not orchestrate-cycle-plan.sh itself -- since the territory/
+# contention helpers were extracted there (see that file's own header for why).
+g31g_src="$CORE_DIR/lib/territory-contention-lib.sh"
+g31g_fn=$(sed -n '/^_paths_contend() {/,/^}/p' "$g31g_src")
 if [ -n "$g31g_fn" ]; then
-  pass "Case G: _paths_contend() found in SUT source"
+  pass "Case G: _paths_contend() found in territory-contention-lib.sh"
 else
-  fail "Case G: could not extract _paths_contend() from $SUT_SRC"
+  fail "Case G: could not extract _paths_contend() from $g31g_src"
 fi
 g31g_rc=0
 bash -c "$g31g_fn"$'\n''_paths_contend "docs/notes/" "directory" "docs/notes/file.md" "file"' _ || g31g_rc=$?

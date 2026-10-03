@@ -373,6 +373,13 @@ esac
 
 cp "$CYCLE_PLAN" "$WORKDIR/.claude/scripts/orchestrate-cycle-plan.sh"
 chmod +x "$WORKDIR/.claude/scripts/orchestrate-cycle-plan.sh"
+# territory-contention-lib.sh: orchestrate-cycle-plan.sh now `source`s this lib (the script-corpus
+# decomposition task's Phase 4 extraction). It needs the SAME source-store-first inversion as
+# CYCLE_PLAN itself -- the line-106 deploy-tree lib/*.sh copy above predates this file's existence
+# and would otherwise silently leave the fixture without it, breaking every case below that
+# reaches orchestrate-cycle-plan.sh's sourced functions.
+TERRITORY_LIB="$(resolve_inverted "lib/territory-contention-lib.sh" "lib/territory-contention-lib.sh")" || exit 2
+cp "$TERRITORY_LIB" "$WORKDIR/.claude/scripts/lib/territory-contention-lib.sh"
 # Non-task-edited batch-engine collaborators: existing deploy-tree provenance, unchanged.
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh orchestrate-build-dispatch.sh \
          orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh command-route-agent.sh; do

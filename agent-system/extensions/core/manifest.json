@@ -123,6 +123,7 @@
       "lib/task-lookup-lib.sh",
       "lib/task-reference-patterns.sh",
       "lib/task-type-detect.sh",
+      "lib/territory-contention-lib.sh",
       "lib/status-vocabulary.sh",
       "lifecycle-notify.sh",
       "lint/lint-agent-contracts.sh",

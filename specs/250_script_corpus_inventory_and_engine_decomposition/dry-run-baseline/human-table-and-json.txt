@@ -1,0 +1,18 @@
+[route-agent] op=research task_type=meta effort= resolved=general-research-agent via=core-exact
+{"cycle":0,"dispatch":[{"task":22,"phase":"research","agent":"general-research-agent","model":null,"dispatch_file":null,"force":false,"focus":""}],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":null}
+=== /orchestrate --dry-run cycle plan ===
+
+-- Dispatch --
+#22  phase=research  agent=general-research-agent
+
+-- Aux Dispatch --
+0 aux-dispatched.
+
+-- Deferred --
+0 deferred.
+
+-- Blocked --
+0 blocked.
+
+-- Stop --
+(none — this cycle would proceed)

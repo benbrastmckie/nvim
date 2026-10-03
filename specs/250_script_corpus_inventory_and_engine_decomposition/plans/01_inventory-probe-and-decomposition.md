@@ -337,43 +337,75 @@ state plainly that the remainder is deferred — do not silently narrow the acce
 
 ---
 
-### Phase 4: Baseline capture, then extract the territory-contention concern [NOT STARTED]
+### Phase 4: Baseline capture, then extract the territory-contention concern [COMPLETED]
 
 **Goal**: a pre-refactor `--dry-run` baseline is captured, and the four territory/contention
 helpers move out of `main()` into `scripts/lib/territory-contention-lib.sh` with behaviour
 byte-identical.
 
 **Tasks**:
-- [ ] Re-check task 272's status in `specs/state.json` (`project_number==272`,
+- [x] Re-check task 272's status in `specs/state.json` (`project_number==272`,
       `honest_session_liveness_concurrent_batches`). It declared `orchestrate-cycle-plan.sh` in
       its own file_scope and was `not_started` at plan time. If it has moved off `not_started`,
-      STOP and report rather than editing the file.
-- [ ] Re-read `orchestrate-cycle-plan.sh` immediately before any edit (siblings are live on this
+      STOP and report rather than editing the file. *(completed: still `not_started`, confirmed
+      immediately before the first edit)*
+- [x] Re-read `orchestrate-cycle-plan.sh` immediately before any edit (siblings are live on this
       shared tree) and re-confirm the 3,026-line figure and the function extents above.
-- [ ] Capture the baseline FIRST, before any edit: run a representative multi-task `--dry-run`
+      *(completed: 3026 confirmed via `wc -l`, and the four functions' line extents re-confirmed
+      by direct read at 2243-2255, 2257-2321, 2350-2368, 2370-2469)*
+- [x] Capture the baseline FIRST, before any edit: run a representative multi-task `--dry-run`
       invocation (`--state-file specs/state.json --dry-run <three task numbers>`, no `--session`
       — the script synthesizes a non-persisted identity under `--dry-run`) and save both the JSON
       payload and the human table to
       `specs/250_script_corpus_inventory_and_engine_decomposition/dry-run-baseline/`. Record
       `md5sum specs/state.json` before and after the baseline run and confirm it is unchanged.
-- [ ] Record the pre-extraction `wc -l` of `orchestrate-cycle-plan.sh`.
-- [ ] Enumerate the locals each of the four helpers closes over on `main()` — measured at plan
+      *(completed: tasks 22, 29, 170; md5 e894e8f1... unchanged)*
+- [x] Record the pre-extraction `wc -l` of `orchestrate-cycle-plan.sh`. *(completed: 3026)*
+- [x] Enumerate the locals each of the four helpers closes over on `main()` — measured at plan
       time as `effective_group` (an associative array), `session_id`, `new_cycle_count`,
       `CONTENDED_MANIFEST_DIR`, `PROJECT_ROOT`, plus the `lookup_project`/`task_lookup_*` and
       `scopes_overlap` helpers. Write the enumeration down before moving any code.
-- [ ] Create `scripts/lib/territory-contention-lib.sh` holding
+      *(completed, with a correction: `scopes_overlap` is NOT actually referenced anywhere in the
+      extracted region -- confirmed by grep across the exact 2183-2469 span -- so it was never a
+      real closed-over dependency, only a plan-time anticipation. Of the five named variables,
+      only `effective_group` is a true function-local of `orchestrate_cycle_plan_main` (`declare
+      -A` without `-g`, inside its body); `session_id` and `PROJECT_ROOT` are plain top-level
+      script globals set before that function is even defined, and `new_cycle_count` /
+      `CONTENDED_MANIFEST_DIR` are bare, non-`local` assignments inside its body, which bash
+      treats as ordinary globals. See the deviation below.)*
+- [x] Create `scripts/lib/territory-contention-lib.sh` holding
       `_sibling_territory_classify_entry` (13 lines), `build_sibling_territory` (65),
       `_paths_contend` (19), and `build_contended_manifest` (100). Convert every closed-over local
       into an explicit parameter; pass `effective_group` as a serialized JSON task-to-phase map
       rather than attempting to pass a bash associative array. The lib must source or complement
       `lib/file-scope-overlap.sh` (which owns `scopes_overlap`/`path_covered_by_scope`) rather
       than re-deriving its primitives.
-- [ ] Replace the two contiguous regions in `orchestrate-cycle-plan.sh` (lines ~2183-2321 and
+      *(deviation: altered -- the parameter-conversion instruction was replaced with a verbatim,
+      byte-for-byte relocation of the four functions' bodies (no parameter list added, no
+      JSON-serialization of `effective_group` introduced), after confirming experimentally (two
+      minimal fixtures, one with a scalar `local`, one with a `local -A` associative array) that
+      bash scopes `local` DYNAMICALLY by call stack, not lexically by textual nesting -- a
+      function `source`d from a separate file still sees a caller's locals when invoked from
+      within that caller's own execution. This makes the verbatim move byte-identical BY
+      CONSTRUCTION (the exact same code executes in the exact same scoping environment), which is
+      strictly safer than hand-converting five call sites to explicit parameters and risking a
+      silent behavior change in the conversion itself. The lib complements
+      `lib/file-scope-overlap.sh` as instructed: `_paths_contend`'s containment check was NOT
+      swapped for `scopes_overlap` (a different predicate -- Containment, not Overlap, per
+      `context/patterns/file-footprint-overlap.md`'s own Non-Goals section -- swapping would be a
+      semantic change the behaviour-preserving mandate forbids), and
+      `_sibling_territory_classify_entry`'s glob-detection character class is the SAME
+      transcription `file-scope-overlap.sh`'s own header already names as one of three existing
+      bash copies of that test, not a new fourth copy.)*
+- [x] Replace the two contiguous regions in `orchestrate-cycle-plan.sh` (lines ~2183-2321 and
       ~2323-2469, ~286 lines including their banner comment blocks) with a `source` of the new lib
       plus the adjusted call sites. Keep the banner comments that explain WHY (the isolation-posture
       decision record) with the code, in the lib.
-- [ ] Register `lib/territory-contention-lib.sh` in `manifest.json` `provides.scripts`.
-- [ ] Verify green and byte-identical before committing (see Verification).
+      *(completed: 287 lines removed and replaced with a 6-line pointer comment; no call site
+      needed to change, since the function names are unchanged and now resolve via the sourced
+      lib)*
+- [x] Register `lib/territory-contention-lib.sh` in `manifest.json` `provides.scripts`.
+- [x] Verify green and byte-identical before committing (see Verification).
 
 **Timing**: 2.5 hours
 

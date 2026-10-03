@@ -1,0 +1,8 @@
+Representative multi-task --dry-run invocation used for all Phase 4-6 byte-identical diffs:
+
+  bash .claude/scripts/orchestrate-cycle-plan.sh --state-file specs/state.json --dry-run 22 29 170
+
+md5sum specs/state.json BEFORE: e894e8f19080abbef1ea4dd70dca5130
+md5sum specs/state.json AFTER:  e894e8f19080abbef1ea4dd70dca5130  (unchanged, confirmed)
+
+Captured output: human-table-and-json.txt (combined stdout+stderr, exit code 0)
