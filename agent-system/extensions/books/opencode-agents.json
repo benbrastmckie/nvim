@@ -1,0 +1,56 @@
+{
+  "agent": {
+    "books-research": {
+      "description": "Research lean-book authoring, certification and documentation tasks",
+      "mode": "subagent",
+      "prompt": "{file:.claude/agents/books-research-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true
+      }
+    },
+    "books-implementation": {
+      "description": "Implement lean-book authoring, certification and documentation changes",
+      "mode": "subagent",
+      "prompt": "{file:.claude/agents/books-implementation-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true
+      }
+    },
+    "books-research-hard": {
+      "description": "Research lean-book tasks with hard-mode behavioral contracts (H2/H3/H4)",
+      "mode": "subagent",
+      "prompt": "{file:.claude/agents/books-research-hard-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true
+      }
+    },
+    "books-implementation-hard": {
+      "description": "Implement lean-book changes with hard-mode behavioral contracts (H2/H7/H9)",
+      "mode": "subagent",
+      "prompt": "{file:.claude/agents/books-implementation-hard-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true
+      }
+    }
+  }
+}

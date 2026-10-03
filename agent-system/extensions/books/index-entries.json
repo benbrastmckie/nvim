@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "path": "project/books/README.md",
+      "line_count": 19,
+      "load_when": {
+        "agents": [
+          "books-research-agent",
+          "books-implementation-agent",
+          "books-research-hard-agent",
+          "books-implementation-hard-agent"
+        ],
+        "task_types": [
+          "books"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "books",
+      "summary": "Navigation stub for the books domain corpus; the full corpus is authored by a separate, dependent task",
+      "keywords": [
+        "books",
+        "book.toml",
+        "book_layer",
+        "book-convention"
+      ]
+    }
+  ]
+}

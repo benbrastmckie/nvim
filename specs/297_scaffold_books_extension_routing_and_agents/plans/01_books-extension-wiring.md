@@ -414,30 +414,30 @@ re-verification, not against the research report's snapshot.
 
 ---
 
-### Phase 7: EXTENSION.md, README.md, index entries, opencode registration [NOT STARTED]
+### Phase 7: EXTENSION.md, README.md, index entries, opencode registration [COMPLETED]
 
 **Goal**: The four registration and documentation files, all consistent with what the previous
 phases actually shipped.
 
 **Tasks**:
-- [ ] `EXTENSION.md`, **at most 60 lines** (lint-enforced): routing table, skill-to-agent mapping,
+- [x] `EXTENSION.md`, **at most 60 lines** (lint-enforced): routing table, skill-to-agent mapping,
       the two commands, a `### Scope` section stating that authoring or mathematically verifying
       the underlying Lean content is out of scope for `books` (it routes to `lean4`/`cslib`), and a
       short, explicit note that a `books` task whose description names a `.lean` file will be
       captured by the `lean4` strong anchor and must be created with an explicit
-      `--task-type books`. Plain backticked context pointers only.
-- [ ] `README.md`, written AFTER `manifest.json` so its mtime is newer: extension overview,
+      `--task-type books`. Plain backticked context pointers only. *(completed)*
+- [x] `README.md`, written AFTER `manifest.json` so its mtime is newer: extension overview,
       directory map, and an explicit mention of both `/book` and `/certify` (the lint flags a
-      manifest command absent from the README).
-- [ ] `index-entries.json` — a single entry for `project/books/README.md` with `line_count`
+      manifest command absent from the README). *(completed)*
+- [x] `index-entries.json` — a single entry for `project/books/README.md` with `line_count`
       computed by `wc -l` at authoring time. Required keys only (`path`, `domain: "project"`,
       `subdomain: "books"`, `summary`, `line_count`, plus `load_when` and `keywords`); the
       forbidden keys `description`, `tags` and `tier` must not appear. The dependent corpus task
-      adds the rest.
-- [ ] `opencode-agents.json` — four `agent` entries following `typst/opencode-agents.json`'s
+      adds the rest. *(completed)*
+- [x] `opencode-agents.json` — four `agent` entries following `typst/opencode-agents.json`'s
       shape, each `prompt` pointing at `{file:.claude/agents/books-*-agent.md}` and each tool set
-      matching the agent's actual needs.
-- [ ] Rule E compliance in `README.md` and `EXTENSION.md` as in Phase 2.
+      matching the agent's actual needs. *(completed)*
+- [x] Rule E compliance in `README.md` and `EXTENSION.md` as in Phase 2. *(completed)*
 
 **Timing**: 1.25 hours
 
