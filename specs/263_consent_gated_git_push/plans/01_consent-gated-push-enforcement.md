@@ -563,31 +563,31 @@ and 7 as executable assertions, in the fixture-driven style of `test-guard-destr
 
 ---
 
-### Phase 8: Tests — mint hook, forgery, and destructive-guard grant path [NOT STARTED]
+### Phase 8: Tests — mint hook, forgery, and destructive-guard grant path [COMPLETED]
 
 **Goal**: `scripts/tests/test-please-grant.sh` plus additive cases in
 `test-guard-destructive-git.sh`, covering the mint path's integrity and the Phase 5 grant check.
 
 **Tasks**:
-- [ ] `test-please-grant.sh`, same fixture style: `/please` grammar accepted forms each mint
+- [x] `test-please-grant.sh`, same fixture style: `/please` grammar accepted forms each mint
   exactly one grant with the right fields; ambiguous/partial requests mint NOTHING and print the
   grammar; a categorically-excluded request mints nothing; a non-`/please` prompt mints nothing;
   the hook always exits 0.
-- [ ] Forged-grant case: write a syntactically perfect grant file by hand (no valid HMAC) and
+- [x] Forged-grant case: write a syntactically perfect grant file by hand (no valid HMAC) and
   confirm the guard refuses it — the absorbed text's "forged grant file rejected" requirement,
   asserted rather than argued.
-- [ ] Mint-source cases: `/merge`, `/tag`, `/pr` each mint a grant bound to the fixture's current
+- [x] Mint-source cases: `/merge`, `/tag`, `/pr` each mint a grant bound to the fixture's current
   branch / `refs/tags/*`, `FORCE=0`, correct `MINT_SOURCE`.
-- [ ] At-most-one-live-grant case: two mints leave exactly one grant file.
-- [ ] Audit case: a mint appends exactly one `push_grant_issued` line whose `detail` carries
+- [x] At-most-one-live-grant case: two mints leave exactly one grant file.
+- [x] Audit case: a mint appends exactly one `push_grant_issued` line whose `detail` carries
   remote, ref, sha and force (item 6: the record reconstructs WHAT was authorized, not merely that
   someone said yes).
-- [ ] Additive cases in `test-guard-destructive-git.sh`, appended without modifying or weakening
+- [x] Additive cases in `test-guard-destructive-git.sh`, appended without modifying or weakening
   any existing case: destructive grant allows one matched action and is consumed; a second attempt
   is blocked; no-grant behaviour byte-identical to today; **a destructive grant does not exempt any
   over-staging form**; the history-rewrite predicate still fires with a grant present for a
   different action class.
-- [ ] Record in the implementation summary that no existing assertion was changed (none asserts the
+- [x] Record in the implementation summary that no existing assertion was changed (none asserts the
   old blanket prohibition — verified in research: matches for "push" in `scripts/tests/` are
   incidental), so nothing needed deliberate updating.
 

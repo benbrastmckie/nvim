@@ -550,6 +550,98 @@ assert_allowed_clean_with "concurrency allow: GUARD_ALLOW_HISTORY_REWRITE=1 over
   "GUARD_ALLOW_HISTORY_REWRITE=1 git commit --amend" add_live_lock 139
 
 # =====================================================================
+# ADDITIVE: grant-check cases (push-grant-lib.sh's destructive ACTION_CLASS support).
+# Every case above this point is byte-identical to before this addition -- these cases only
+# ADD coverage for the new grant check; none alters or removes an existing case.
+# =====================================================================
+PG_LIB="$SCRIPT_DIR/../lib/push-grant-lib.sh"
+GRANT_TEST_WORKDIR="$(mktemp -d)"
+export PUSH_GRANT_KEY_PATH="${GRANT_TEST_WORKDIR}/push-grant.key"
+export PUSH_GRANT_DIR="specs/.push-grant"
+
+# mint_destructive_grant_in <repo> <action_class>
+# Mints a grant bound to <repo>'s current HEAD/branch for a destructive action class, using the
+# fixed REMOTE=local sentinel guard-destructive-git.sh's own grant check consumes.
+mint_destructive_grant_in() {
+  local repo="$1" action="$2" ref sha
+  (
+    cd "$repo" || exit 1
+    # shellcheck source=../lib/push-grant-lib.sh
+    source "$PG_LIB"
+    pg_grant_revoke
+    ref="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || ref="HEAD"
+    [ -n "$ref" ] && [ "$ref" != "HEAD" ] || ref="HEAD"
+    sha="$(git rev-parse HEAD)"
+    pg_grant_mint "$action" "local" "$ref" "0" "$sha" "test grant" "please" >/dev/null 2>&1
+  )
+}
+
+grant_count_in() {
+  find "${1}/specs/.push-grant" -maxdepth 1 -name "grant-*.kv" -type f 2>/dev/null | wc -l | tr -d ' '
+}
+
+# --- A matching grant allows the one already-matched destructive action, and is consumed ---
+grant_repo="$(make_dirty_repo)"
+mint_destructive_grant_in "$grant_repo" reset_hard
+first_code="$(run_hook_in "$grant_repo" "git reset --hard")"
+remaining="$(grant_count_in "$grant_repo")"
+rm -rf "$grant_repo"
+if [ "$first_code" -eq 0 ] && [ "$remaining" -eq 0 ]; then
+  pass "grant: reset_hard grant allows 'git reset --hard' once and is consumed"
+else
+  fail "grant: expected exit=0 and grant consumed, got exit=$first_code remaining=$remaining"
+fi
+
+# --- A second attempt, with the grant already consumed, is blocked exactly as before ---
+grant_repo2="$(make_dirty_repo)"
+mint_destructive_grant_in "$grant_repo2" reset_hard
+run_hook_in "$grant_repo2" "git reset --hard" >/dev/null
+echo "more dirt" >> "$grant_repo2/tracked.txt"
+second_code="$(run_hook_in "$grant_repo2" "git reset --hard")"
+rm -rf "$grant_repo2"
+[ "$second_code" -eq 2 ] && pass "grant: second 'git reset --hard' with no remaining grant is blocked" \
+  || fail "grant: expected exit=2 on second attempt, got $second_code"
+
+# --- No-grant behaviour is byte-identical to before: a representative blocked case still
+#     blocks the same way with PUSH_GRANT_* exported but no grant file present ---
+noregress_repo="$(make_dirty_repo)"
+noregress_code="$(run_hook_in "$noregress_repo" "git reset --hard")"
+rm -rf "$noregress_repo"
+[ "$noregress_code" -eq 2 ] && pass "grant: no-grant behaviour unchanged (git reset --hard still blocks)" \
+  || fail "grant: no-grant case expected exit=2, got $noregress_code"
+
+# --- A destructive grant does NOT exempt over-staging (the asymmetry this phase must preserve) ---
+overstage_repo="$(make_dirty_repo)"
+mint_destructive_grant_in "$overstage_repo" reset_hard
+overstage_code="$(run_hook_in "$overstage_repo" "git add -A")"
+overstage_remaining="$(grant_count_in "$overstage_repo")"
+rm -rf "$overstage_repo"
+if [ "$overstage_code" -eq 2 ] && [ "$overstage_remaining" -eq 1 ]; then
+  pass "grant: 'git add -A' still blocked with a live reset_hard grant present (over-staging immunity)"
+else
+  fail "grant: expected over-staging still blocked (exit 2) and grant untouched, got exit=$overstage_code remaining=$overstage_remaining"
+fi
+
+# --- The history-rewrite predicate still fires with an unrelated grant live, for a DIFFERENT
+#     action class than the one the command matches ---
+hrw_repo="$(make_clean_repo)"
+echo "specs/" > "$hrw_repo/.gitignore"
+git -C "$hrw_repo" add .gitignore
+git -C "$hrw_repo" commit -q -m "ignore specs/ for concurrency fixtures"
+add_live_lock "$hrw_repo" 139
+mint_destructive_grant_in "$hrw_repo" reset_hard
+hrw_code="$(run_hook_in "$hrw_repo" "git commit --amend -m x")"
+hrw_remaining="$(grant_count_in "$hrw_repo")"
+rm -rf "$hrw_repo"
+if [ "$hrw_code" -eq 2 ] && [ "$hrw_remaining" -eq 1 ]; then
+  pass "grant: history-rewrite predicate still fires under a live writer with an unrelated reset_hard grant present"
+else
+  fail "grant: expected history-rewrite block (exit 2) with grant untouched, got exit=$hrw_code remaining=$hrw_remaining"
+fi
+
+rm -rf "$GRANT_TEST_WORKDIR"
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

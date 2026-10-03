@@ -1,0 +1,16 @@
+{
+  "phase": 8,
+  "phase_name": "Tests — mint hook, forgery, and destructive-guard grant path",
+  "started_at": "2026-10-03T05:35:00Z",
+  "last_updated": "2026-10-03T05:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/tests/test-please-grant.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-please-grant.sh"]},
+    {"id": 2, "description": "Additive grant-check cases in test-guard-destructive-git.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 3, "description": "Register the new test in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "test-please-grant.sh: 24/24 pass, including a regression guard for the Phase 1 agent-relay finding (a prompt wrapped in <agent-message from=...> never mints) and the forged-grant case (syntactically perfect file, HMAC zeroed, refused by guard-git-push.sh). test-guard-destructive-git.sh: 77/77 pass (72 original + 5 additive); git diff confirms 92 insertions, 0 deletions -- no existing case altered or removed. No existing assertion in either suite was changed -- confirmed by the fact that nothing in guard-destructive-git.sh's existing 72 cases needed a different expected exit code after the grant check was added in Phase 5."
+}
