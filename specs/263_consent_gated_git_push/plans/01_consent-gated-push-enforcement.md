@@ -806,23 +806,23 @@ and make explicit that a YES mints nothing and only tells the human the `/please
 
 ---
 
-### Phase 12: Relay tests, including the two-cycle no-inheritance test [NOT STARTED]
+### Phase 12: Relay tests, including the two-cycle no-inheritance test [COMPLETED]
 
 **Goal**: Prove the relay behaves as specified and that cycle N+1 inherits no standing permission.
 
 **Tasks**:
-- [ ] Add additive cases to `scripts/tests/test-orchestrate-cycle-postflight.sh`: a handoff/return-meta
+- [x] Add additive cases to `scripts/tests/test-orchestrate-cycle-postflight.sh`: a handoff/return-meta
   carrying a push-class `user_decision` with `blocking: true` sets `verdict="ask_user"`; postflight
   relays without resolving and writes no `.decisions.json` entry itself.
-- [ ] Add additive cases to `scripts/tests/test-orchestrate-build-dispatch.sh`: the two-cycle test.
+- [x] Add additive cases to `scripts/tests/test-orchestrate-build-dispatch.sh`: the two-cycle test.
   Cycle N records a `{question, answer}` pair about a push in `.decisions.json`; cycle N+1's
   dispatch file is built and asserted to contain NO live authorization — concretely, that no grant
   file exists after the cycle-N push, and that the `## Prior Decisions` text present in the cycle
   N+1 dispatch cannot satisfy `pg_grant_consume` (assert directly: run the guard against a `git
   push` in that state and require `exit 2`).
-- [ ] Add the NO-answer and run-ends-before-answer cases: no grant file exists, guard blocks, task
+- [x] Add the NO-answer and run-ends-before-answer cases: no grant file exists, guard blocks, task
   state clean (no status change, no partial artifact).
-- [ ] Assert `blocking: true` is what the relay path receives for this class; a `blocking: false`
+- [x] Assert `blocking: true` is what the relay path receives for this class; a `blocking: false`
   push-class decision is a contract violation the test names explicitly.
 
 **Timing**: 1.25 hours

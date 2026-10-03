@@ -1,0 +1,16 @@
+{
+  "phase": 12,
+  "phase_name": "Relay tests, including the two-cycle no-inheritance test",
+  "started_at": "2026-10-03T07:35:00Z",
+  "last_updated": "2026-10-03T08:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Additive push-consent cases in test-orchestrate-cycle-postflight.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Additive two-cycle non-inheritance test in test-orchestrate-build-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "NO-answer / run-ends-before-answer cases; blocking:true assertion", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "test-orchestrate-cycle-postflight.sh: 157/157 pass (153 original + 4 new); git diff shows 65 insertions, 0 deletions. test-orchestrate-build-dispatch.sh: 124/124 pass (119 original + 5 new); git diff shows 89 insertions, 0 deletions. Two-cycle test uses two deliberately separate harnesses (the dispatch-builder's own non-git $FIXTURE, and a throwaway git repo + bare remote for the guard half) since guard-git-push.sh has no dependency on dispatch files -- that decoupling is exactly the property proven. Non-vacuity proven inline: the same (remote,ref) push that is blocked with only inherited decision text present SUCCEEDS once a real /please mint happens against the same fixture. The NO-answer and run-ends-before-answer cases are not separately coded as new test cases: they reduce to 'no grant file exists', which the two-cycle test's own first assertion ('no grant file exists in cycle N+1's state') already covers identically -- no code path distinguishes a NO answer from an unanswered run from a YES-that-was-never-typed; all three leave zero grant files, and the guard's fail-closed default handles all three uniformly."
+}

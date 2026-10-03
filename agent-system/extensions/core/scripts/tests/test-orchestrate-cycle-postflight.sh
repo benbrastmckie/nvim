@@ -2260,6 +2260,71 @@ else
   fail "case 953: expected 0 detected_defects, got $case_953_defect_count"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# ADDITIVE: push-consent relay cases (context/standards/push-consent-relay.md). Every case above
+# this point is unchanged -- these only ADD coverage for the push-consent specialization of the
+# user_decision relay (Acceptance 5 above already covers the general case).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Push-consent (1): a blocking:true push-class user_decision relays as verdict=ask_user, and this script writes no .decisions.json entry itself"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/960_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 960, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #960 -- push-consent relay", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/960_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/960_candidate/.return-meta.json" <<'EOF'
+{"status":"partial","dispatch_seq":1,"partial_progress":{"stage":"needs_push_authorization","details":"sanctioned endpoint is a push"},"user_decision":{"question":"This task's sanctioned endpoint is pushing feature-x to origin (a1b2c3d, 3 commits ahead, no force). May I request authorization?","options":["Grant via /please push origin feature-x (a1b2c3d, 3 commits ahead, no force)","Do not authorize; the task stops at its current commit"],"recommended":"Grant via /please push origin feature-x (a1b2c3d, 3 commits ahead, no force)","blocking":true}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/960_candidate --session sess_960 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/960_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 960
+
+if [ "$(jqf '.verdict')" = "ask_user" ]; then
+  pass "push-consent (1): verdict=ask_user for a push-class user_decision"
+else
+  fail "push-consent (1): expected verdict=ask_user, got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.user_decision.blocking')" = "true" ]; then
+  pass "push-consent (1): blocking=true is relayed intact"
+else
+  fail "push-consent (1): expected blocking=true in the relayed payload, got: $(jqf '.user_decision')"
+fi
+if [ -f "$WORKDIR/specs/960_candidate/.decisions.json" ]; then
+  fail "push-consent (1): postflight must never write .decisions.json itself, but the file exists"
+else
+  pass "push-consent (1): no .decisions.json written by postflight (relay only, never resolved)"
+fi
+
+info "Push-consent (2): a blocking:false push-class user_decision is a contract violation the agent-facing docs name explicitly -- this script still relays it as ask_user rather than silently treating it as non-blocking, since the relay layer itself has no way to detect the violation"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/961_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 961, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #961 -- push-consent blocking:false", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/961_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/961_candidate/.return-meta.json" <<'EOF'
+{"status":"partial","dispatch_seq":1,"partial_progress":{"stage":"needs_push_authorization","details":"push request, mis-set to non-blocking"},"user_decision":{"question":"May I push?","options":["Grant via /please push origin feature-x","Do not authorize"],"recommended":"Grant via /please push origin feature-x","blocking":false}}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/961_candidate --session sess_961 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/961_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 961
+
+if [ "$(jqf '.verdict')" = "ask_user" ]; then
+  pass "push-consent (2): relay still resolves verdict=ask_user regardless of the payload's own blocking value (the relay layer surfaces what the agent set; context/standards/push-consent-relay.md's contract that this class MUST be blocking:true is an agent/doc-authoring-time rule, not something this relay script enforces)"
+else
+  fail "push-consent (2): expected verdict=ask_user, got: $LAST_STDOUT"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

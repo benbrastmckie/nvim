@@ -954,6 +954,95 @@ rm -f "$FIXTURE/lakefile.lean" "$FIXTURE/.claude/scripts/lean-mcp-preflight-chec
 rm -f "$WORKDIR/g15-state-backup.json"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 16: the two-cycle push-consent non-inheritance test (context/standards/
+# push-consent-relay.md's ".decisions.json Replay Hazard" section, proven executable). $FIXTURE
+# itself has no git repo of its own (it exists only to drive the dispatch-builder SUT -- see the
+# ISOLATION CONTRACT at the top of this file), so this group uses TWO deliberately separate
+# harnesses: $FIXTURE for the dispatch-text half (via run_sut, as every other group here), and a
+# throwaway git repo + bare remote for the guard half (hooks/guard-git-push.sh has no dependency
+# on dispatch files at all -- that decoupling is exactly the property under test).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 16: two-cycle push-consent non-inheritance"
+
+GUARD_HOOK="$SCRIPT_DIR/../../hooks/guard-git-push.sh"
+
+# Cycle N: record the push Q&A in .decisions.json, exactly as Move 4's batched relay would after
+# a push-class user_decision was answered YES (per push-consent-relay.md, the answer text is
+# informational -- "the user was told to run /please push ..." -- never an authorization).
+cat > "$DECISIONS_FILE" <<'EOF'
+[
+  {
+    "question": "This task's sanctioned endpoint is pushing feature-x to origin (a1b2c3d, 3 commits ahead, no force). May I request authorization?",
+    "answer": "Grant via /please push origin feature-x (a1b2c3d, 3 commits ahead, no force)",
+    "cycle": 1,
+    "timestamp": "2026-09-29T23:54:31Z"
+  }
+]
+EOF
+
+# Cycle N+1: build the next dispatch for the same task and confirm the push Q&A is rendered
+# verbatim into "## Prior Decisions" -- this IS the inheritance the hazard describes; the test
+# proves it is harmless, not that it doesn't happen.
+run_sut implement --clean --seq 16 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_g16="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_g16" "## Prior Decisions" "two-cycle: cycle N+1 dispatch renders Prior Decisions"
+  assert_contains "$content_g16" "Grant via /please push origin feature-x" "two-cycle: the exact /please line the human was told is rendered verbatim into cycle N+1's dispatch"
+else
+  fail "two-cycle: SUT did not exit 0 building cycle N+1's dispatch (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Now prove that inheriting this text grants nothing: a fresh git repo + bare remote, matching
+# the exact (remote, ref) the relayed text names, with NO grant file (cycle N's "push" never
+# actually happened -- the human never typed /please, which is the common and safe outcome this
+# hazard must not silently break). guard-git-push.sh must block, because it never reads
+# .decisions.json or any dispatch file at all -- it only ever consults specs/.push-grant/.
+G16_REPO="$WORKDIR/g16-repo"
+G16_BARE="$WORKDIR/g16-bare.git"
+rm -rf "$G16_REPO" "$G16_BARE"
+git init -q --bare "$G16_BARE"
+git init -q "$G16_REPO"
+git -C "$G16_REPO" config user.email "test@example.com"
+git -C "$G16_REPO" config user.name "Test Suite"
+git -C "$G16_REPO" config init.defaultBranch master
+echo "line one" > "$G16_REPO/tracked.txt"
+git -C "$G16_REPO" add tracked.txt
+git -C "$G16_REPO" commit -q -m "initial commit"
+git -C "$G16_REPO" remote add origin "$G16_BARE"
+git -C "$G16_REPO" checkout -q -b feature-x
+
+export PUSH_GRANT_KEY_PATH="$WORKDIR/g16-push-grant.key"
+export PUSH_GRANT_DIR="specs/.push-grant"
+
+if [ -d "${G16_REPO}/specs/.push-grant" ] && [ -n "$(find "${G16_REPO}/specs/.push-grant" -maxdepth 1 -name 'grant-*.kv' 2>/dev/null)" ]; then
+  fail "two-cycle: a grant file unexpectedly exists before any mint was performed"
+else
+  pass "two-cycle: no grant file exists in cycle N+1's state (cycle N's push never happened)"
+fi
+
+g16_code="$( ( cd "$G16_REPO" && jq -n --arg c "git push origin feature-x" '{tool_name:"Bash", tool_input:{command:$c}}' | bash "$GUARD_HOOK" ) >/dev/null 2>/dev/null; echo $? )"
+if [ "$g16_code" -eq 2 ]; then
+  pass "two-cycle: guard-git-push.sh blocks the exact push the inherited Prior Decisions text names -- the inherited text authorizes nothing"
+else
+  fail "two-cycle: expected exit 2 (blocked), got $g16_code -- the inherited decision text would otherwise be standing authorization, exactly the forbidden inference"
+fi
+
+# Sanity: the SAME (remote, ref) DOES succeed once a real /please mint happens, proving the
+# block above is the grant check (not some unrelated failure masking a vacuous pass).
+MINT_HOOK="$SCRIPT_DIR/../../hooks/please-grant.sh"
+( cd "$G16_REPO" && jq -n --arg p "/please push origin feature-x" '{prompt:$p}' | bash "$MINT_HOOK" ) >/dev/null 2>&1
+g16_code_minted="$( ( cd "$G16_REPO" && jq -n --arg c "git push origin feature-x" '{tool_name:"Bash", tool_input:{command:$c}}' | bash "$GUARD_HOOK" ) >/dev/null 2>/dev/null; echo $? )"
+if [ "$g16_code_minted" -eq 0 ]; then
+  pass "two-cycle: non-vacuity check -- the SAME push succeeds once a real /please mint happens"
+else
+  fail "two-cycle: non-vacuity check failed -- expected exit 0 after a real mint, got $g16_code_minted"
+fi
+
+unset PUSH_GRANT_KEY_PATH PUSH_GRANT_DIR
+rm -rf "$G16_REPO" "$G16_BARE" "$WORKDIR/g16-push-grant.key"
+rm -f "$DECISIONS_FILE"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
