@@ -1,0 +1,41 @@
+{
+  "phase": 3,
+  "phase_name": "Remove routing and routing_hard from every manifest",
+  "started_at": "2026-10-03T05:20:00Z",
+  "last_updated": "2026-10-03T05:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run block inventory sweep to confirm 17+2 target set", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Delete routing key from 17 manifests", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/manifest.json",
+      "agent-system/extensions/email/manifest.json",
+      "agent-system/extensions/epidemiology/manifest.json",
+      "agent-system/extensions/filetypes/manifest.json",
+      "agent-system/extensions/formal/manifest.json",
+      "agent-system/extensions/founder/manifest.json",
+      "agent-system/extensions/latex/manifest.json",
+      "agent-system/extensions/lean/manifest.json",
+      "agent-system/extensions/memory/manifest.json",
+      "agent-system/extensions/nix/manifest.json",
+      "agent-system/extensions/nvim/manifest.json",
+      "agent-system/extensions/present/manifest.json",
+      "agent-system/extensions/python/manifest.json",
+      "agent-system/extensions/rust/manifest.json",
+      "agent-system/extensions/typst/manifest.json",
+      "agent-system/extensions/web/manifest.json",
+      "agent-system/extensions/z3/manifest.json"
+    ]},
+    {"id": 3, "description": "Delete routing_hard key from cslib and lean", "status": "done", "files_touched": [
+      "agent-system/extensions/cslib/manifest.json",
+      "agent-system/extensions/lean/manifest.json"
+    ]},
+    {"id": 4, "description": "Confirm present's routing_agents.critique survives untouched", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm core/literature/slidev need no edit", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-validate every edited manifest parses as JSON, no sibling key reformatted", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Used `jq 'del(.routing, .routing_hard)' file > tmp && mv` for all 17 manifests uniformly", "result": "failed", "reason": "jq's pretty-printer unconditionally expands every array onto multiple lines; rust/manifest.json had a hand-compacted single-line keywords array (keyword_overrides.rust.keywords) that jq reformatted into a multi-line array, violating the 'routing/routing_hard hunks only' diff requirement. Fixed by reverting rust/manifest.json to its original content (via git show HEAD) and rewriting it with the Write tool, preserving the original single-line array exactly and removing only the routing block by hand. All other 16 manifests had no such inline-compacted arrays and jq's rewrite produced clean diffs."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

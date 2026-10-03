@@ -42,31 +42,6 @@
     "scripts": [],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "present": "skill-grant",
-      "present:grant": "skill-grant",
-      "present:budget": "skill-budget",
-      "present:timeline": "skill-timeline",
-      "present:funds": "skill-funds",
-      "present:slides": "skill-slides"
-    },
-    "plan": {
-      "present:slides": "skill-slide-planning",
-      "slides": "skill-slide-planning"
-    },
-    "implement": {
-      "present": "skill-grant",
-      "present:grant": "skill-grant:assemble",
-      "present:budget": "skill-budget",
-      "present:timeline": "skill-timeline",
-      "present:funds": "skill-funds",
-      "present:slides": "skill-slides:assemble"
-    },
-    "critique": {
-      "present:slides": "skill-slide-critic"
-    }
-  },
   "routing_agents": {
     "research": {
       "present": "grant-agent",

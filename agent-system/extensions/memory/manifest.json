@@ -29,14 +29,6 @@
     ],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "memory": "skill-learn"
-    },
-    "implement": {
-      "memory": "skill-learn"
-    }
-  },
   "routing_agents": {
     "research": {
       "memory": "general-research-agent"

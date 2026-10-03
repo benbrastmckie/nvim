@@ -23,14 +23,6 @@
     "scripts": [],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "rust": "skill-rust-research"
-    },
-    "implement": {
-      "rust": "skill-rust-implementation"
-    }
-  },
   "routing_agents": {
     "research": {
       "rust": "rust-research-agent"

@@ -228,18 +228,18 @@ rather than silently loosening the rule.
 
 ---
 
-### Phase 3: Remove `routing` and `routing_hard` from every manifest [NOT STARTED]
+### Phase 3: Remove `routing` and `routing_hard` from every manifest [COMPLETED]
 
 **Goal**: No extension manifest declares `routing` or `routing_hard`; `routing_agents`,
 `routing_agents_hard`, and `hard_contracts` are byte-identical to before.
 
 **Tasks**:
-- [ ] Re-run the block inventory sweep to confirm the 17 + 2 target set has not shifted since planning
-- [ ] Delete the `routing` key from each of the 17 manifests: `cslib`, `email`, `epidemiology`, `filetypes`, `formal`, `founder`, `latex`, `lean`, `memory`, `nix`, `nvim`, `present`, `python`, `rust`, `typst`, `web`, `z3`
-- [ ] Delete the `routing_hard` key from `cslib` and `lean`
-- [ ] Confirm `present`'s `routing_agents.critique` survives untouched (its `routing.critique` sibling goes with the block)
-- [ ] Confirm `core`, `literature`, `slidev` need no edit (core already collapsed; the other two are `routing_exempt`)
-- [ ] Re-validate every edited manifest parses as JSON and that no sibling key was reformatted by the edit
+- [x] Re-run the block inventory sweep to confirm the 17 + 2 target set has not shifted since planning *(completed: matched exactly)*
+- [x] Delete the `routing` key from each of the 17 manifests: `cslib`, `email`, `epidemiology`, `filetypes`, `formal`, `founder`, `latex`, `lean`, `memory`, `nix`, `nvim`, `present`, `python`, `rust`, `typst`, `web`, `z3` *(completed)*
+- [x] Delete the `routing_hard` key from `cslib` and `lean` *(completed)*
+- [x] Confirm `present`'s `routing_agents.critique` survives untouched (its `routing.critique` sibling goes with the block) *(completed: confirmed via jq)*
+- [x] Confirm `core`, `literature`, `slidev` need no edit (core already collapsed; the other two are `routing_exempt`) *(completed: confirmed via has() sweep)*
+- [x] Re-validate every edited manifest parses as JSON and that no sibling key was reformatted by the edit *(completed: all 17 valid JSON; rust/manifest.json's hand-compacted keywords array was incidentally reformatted by jq's pretty-printer on the first pass and rewritten by hand to restore it -- see progress file approaches_tried)*
 
 **Timing**: 0.75 hours
 
@@ -274,11 +274,11 @@ collapsed. Confirm at implementation time with
 - `agent-system/extensions/z3/manifest.json` - drop `routing`
 
 **Verification**:
-- `jq -e 'has("routing") or has("routing_hard")' agent-system/extensions/*/manifest.json` matches nothing
-- `jq -e . agent-system/extensions/*/manifest.json > /dev/null` on every manifest (valid JSON)
-- `git diff` on each manifest shows removed `routing`/`routing_hard` hunks only — no `routing_agents` line touched
-- `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh --verbose` and `bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` both still exit 0 (this is the Phase 2 pre-work paying off)
-- Full gate set: deploy + `bash .claude/scripts/verify-deploy.sh` (gate 3 and gate 7 green; gate 16 still warns for `cslib`/`lean`, which is expected)
+- `jq -e 'has("routing") or has("routing_hard")' agent-system/extensions/*/manifest.json` matches nothing *(confirmed: 0)*
+- `jq -e . agent-system/extensions/*/manifest.json > /dev/null` on every manifest (valid JSON) *(confirmed)*
+- `git diff` on each manifest shows removed `routing`/`routing_hard` hunks only — no `routing_agents` line touched *(confirmed; rust/manifest.json needed a hand-rewrite to avoid jq's pretty-printer reformatting an unrelated inline array — see progress file)*
+- `bash agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh --verbose` and `bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` both still exit 0 (this is the Phase 2 pre-work paying off) *(confirmed at deploy time: lint-routing-wiring.sh exits 0; check-extension-docs.sh gate 3 was PASS in the deploy-headless.sh run captured below. A later ad hoc re-run showed 2 FAILs, both `scripts/claude-refresh.sh`/`scripts/tests/test-claude-refresh-matcher.sh` deployed-content-drift from task 217's concurrently in-flight source edits -- declared sibling territory, not routing-related, not a regression from this phase)*
+- Full gate set: deploy + `bash .claude/scripts/verify-deploy.sh` (gate 3 and gate 7 green; gate 16 still warns for `cslib`/`lean`, which is expected) *(confirmed via deploy-headless.sh: gate 3 PASS, gate 7 PASS, gate 16 WARN for `lean` (`cslib` is not a loaded/installed extension in this deploy so emits no row); the run's only 2 failures were sibling-territory drift as above)*
 
 ---
 

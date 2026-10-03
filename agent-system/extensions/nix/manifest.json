@@ -28,14 +28,6 @@
     ],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "nix": "skill-nix-research"
-    },
-    "implement": {
-      "nix": "skill-nix-implementation"
-    }
-  },
   "routing_agents": {
     "research": {
       "nix": "nix-research-agent"

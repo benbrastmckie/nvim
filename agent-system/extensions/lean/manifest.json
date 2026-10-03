@@ -76,26 +76,6 @@
       "lean-lsp-register-project.sh"
     ]
   },
-  "routing": {
-    "research": {
-      "lean4": "skill-lean-research",
-      "lean4:lake": "skill-lake-repair",
-      "lean4:version": "skill-lean-version"
-    },
-    "implement": {
-      "lean4": "skill-lean-implementation",
-      "lean4:lake": "skill-lake-repair",
-      "lean4:version": "skill-lean-version"
-    }
-  },
-  "routing_hard": {
-    "research": {
-      "lean4": "skill-lean-research-hard"
-    },
-    "implement": {
-      "lean4": "skill-lean-implementation-hard"
-    }
-  },
   "routing_agents": {
     "research": {
       "lean4": "lean-research-agent",

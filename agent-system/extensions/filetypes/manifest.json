@@ -38,26 +38,6 @@
     "scripts": [],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "filetypes": "skill-filetypes",
-      "filetypes:document": "skill-filetypes",
-      "filetypes:spreadsheet": "skill-filetypes-spreadsheet",
-      "filetypes:presentation": "skill-presentation",
-      "filetypes:scrape": "skill-scrape",
-      "filetypes:docx": "skill-docx-edit",
-      "filetypes:xlsx": "skill-sheet"
-    },
-    "implement": {
-      "filetypes": "skill-filetypes",
-      "filetypes:document": "skill-filetypes",
-      "filetypes:spreadsheet": "skill-filetypes-spreadsheet",
-      "filetypes:presentation": "skill-presentation",
-      "filetypes:scrape": "skill-scrape",
-      "filetypes:docx": "skill-docx-edit",
-      "filetypes:xlsx": "skill-sheet"
-    }
-  },
   "routing_agents": {
     "research": {
       "filetypes": "filetypes-router-agent",

@@ -24,18 +24,6 @@
     "scripts": [],
     "rules": []
   },
-  "routing": {
-    "research": {
-      "epi": "skill-epi-research",
-      "epi:study": "skill-epi-research",
-      "epidemiology": "skill-epi-research"
-    },
-    "implement": {
-      "epi": "skill-epi-implement",
-      "epi:study": "skill-epi-implement",
-      "epidemiology": "skill-epi-implement"
-    }
-  },
   "routing_agents": {
     "research": {
       "epi": "epi-research-agent",

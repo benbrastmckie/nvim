@@ -53,11 +53,6 @@
       "mail-guard.sh"
     ]
   },
-  "routing": {
-    "implement": {
-      "email": "skill-email-implementation"
-    }
-  },
   "routing_agents": {
     "research": {
       "email": "general-research-agent"

@@ -28,14 +28,6 @@
     ],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "typst": "skill-typst-research"
-    },
-    "implement": {
-      "typst": "skill-typst-implementation"
-    }
-  },
   "routing_agents": {
     "research": {
       "typst": "typst-research-agent"

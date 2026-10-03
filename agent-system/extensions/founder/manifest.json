@@ -61,50 +61,6 @@
     "scripts": [],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "founder": "skill-market",
-      "founder:market": "skill-market",
-      "founder:analyze": "skill-analyze",
-      "founder:strategy": "skill-strategy",
-      "founder:legal": "skill-legal",
-      "founder:project": "skill-project",
-      "founder:sheet": "skill-founder-spreadsheet",
-      "founder:finance": "skill-finance",
-      "founder:financial-analysis": "skill-financial-analysis",
-      "founder:deck": "skill-deck-research",
-      "founder:meeting": "skill-meeting",
-      "founder:consult": "skill-consult"
-    },
-    "plan": {
-      "founder": "skill-founder-plan",
-      "founder:market": "skill-founder-plan",
-      "founder:analyze": "skill-founder-plan",
-      "founder:strategy": "skill-founder-plan",
-      "founder:legal": "skill-founder-plan",
-      "founder:project": "skill-founder-plan",
-      "founder:sheet": "skill-founder-plan",
-      "founder:finance": "skill-founder-plan",
-      "founder:financial-analysis": "skill-founder-plan",
-      "founder:deck": "skill-deck-plan",
-      "founder:meeting": "skill-founder-plan",
-      "founder:consult": "skill-founder-plan"
-    },
-    "implement": {
-      "founder": "skill-founder-implement",
-      "founder:market": "skill-founder-implement",
-      "founder:analyze": "skill-founder-implement",
-      "founder:strategy": "skill-founder-implement",
-      "founder:legal": "skill-founder-implement",
-      "founder:project": "skill-founder-implement",
-      "founder:sheet": "skill-founder-implement",
-      "founder:finance": "skill-founder-implement",
-      "founder:financial-analysis": "skill-founder-implement",
-      "founder:deck": "skill-deck-implement",
-      "founder:meeting": "skill-founder-implement",
-      "founder:consult": "skill-founder-implement"
-    }
-  },
   "routing_agents": {
     "research": {
       "founder": "market-agent",

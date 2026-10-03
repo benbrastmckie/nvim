@@ -23,14 +23,6 @@
     "scripts": [],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "z3": "skill-z3-research"
-    },
-    "implement": {
-      "z3": "skill-z3-implementation"
-    }
-  },
   "routing_agents": {
     "research": {
       "z3": "z3-research-agent"

@@ -23,14 +23,6 @@
     "scripts": [],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "python": "skill-python-research"
-    },
-    "implement": {
-      "python": "skill-python-implementation"
-    }
-  },
   "routing_agents": {
     "research": {
       "python": "python-research-agent"

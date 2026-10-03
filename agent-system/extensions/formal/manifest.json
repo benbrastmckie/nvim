@@ -28,14 +28,6 @@
     "scripts": [],
     "rules": []
   },
-  "routing": {
-    "research": {
-      "formal": "skill-formal-research",
-      "formal:logic": "skill-logic-research",
-      "formal:math": "skill-math-research",
-      "formal:physics": "skill-physics-research"
-    }
-  },
   "routing_agents": {
     "research": {
       "formal": "formal-research-agent",

@@ -42,24 +42,6 @@
     "scripts": [],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "cslib": "skill-cslib-research",
-      "pr": "skill-pr-review-research"
-    },
-    "implement": {
-      "cslib": "skill-cslib-implementation",
-      "pr": "skill-pr-review-implementation"
-    }
-  },
-  "routing_hard": {
-    "research": {
-      "cslib": "skill-cslib-research-hard"
-    },
-    "implement": {
-      "cslib": "skill-cslib-implementation-hard"
-    }
-  },
   "routing_agents": {
     "research": {
       "cslib": "cslib-research-agent",

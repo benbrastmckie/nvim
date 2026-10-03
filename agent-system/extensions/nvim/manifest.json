@@ -27,14 +27,6 @@
     ],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "neovim": "skill-neovim-research"
-    },
-    "implement": {
-      "neovim": "skill-neovim-implementation"
-    }
-  },
   "routing_agents": {
     "research": {
       "neovim": "neovim-research-agent"

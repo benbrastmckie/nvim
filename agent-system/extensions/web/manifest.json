@@ -25,14 +25,6 @@
     "scripts": [],
     "hooks": []
   },
-  "routing": {
-    "research": {
-      "web": "skill-web-research"
-    },
-    "implement": {
-      "web": "skill-web-implementation"
-    }
-  },
   "routing_agents": {
     "research": {
       "web": "web-research-agent"
