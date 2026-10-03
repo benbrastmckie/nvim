@@ -1,30 +1,64 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 5,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/plans/01_decisions-writer-handoff-notice.md",
-      "summary": "7-phase, 4-wave plan closing both contract-surface defects: a new flock-guarded orchestrate-record-decision.sh writer (plus its regression suite, manifest/inventory registration, a declared .decisions.lock ephemeral pattern, and a SKILL.md Move 4 repoint), and a verified phase-conditional severity split of the postflight no-handoff notice plus de-falsification of the same claim at its five other surfaces."
+      "type": "summary",
+      "path": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/summaries/01_decisions-writer-handoff-notice-summary.md",
+      "summary": "Adds orchestrate-record-decision.sh as the sanctioned .decisions.json writer, repoints SKILL.md Move 4 at it, and de-falsifies the postflight no-handoff notice plus every documentation/schema site asserting the false 'hard-mode-implement-only' writer predicate."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added orchestrate-record-decision.sh (the sanctioned .decisions.json writer, flock-guarded, additive-only) with a 9-case regression suite, repointed skill-orchestrate/SKILL.md Move 4 at it, and corrected the orchestrate-cycle-postflight.sh no-handoff notice plus 7 documentation/schema sites that falsely claimed base-mode plan/implement never write .orchestrator-handoff.json."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
+    "agent-system/extensions/core/context/schemas/orchestrator-handoff-schema.json",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-record-decision.sh",
+    "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+    "agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan names an exact grep/footprint hypothesis for a de-falsification task ('N files, M statements'), re-running that grep before editing can surface a materially larger real footprint (observed: 3 files hypothesized, 5 files + 2 undiscovered script-comment sites found). The plan's own Scope Hypothesis instruction ('report the count rather than silently expand') is the right discipline: fix every site the regrep finds (same falsehood, same acceptance criterion), but record the expanded count explicitly in the commit message and progress-file deviations rather than quietly absorbing it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/summaries/01_decisions-writer-handoff-notice-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["de-falsification", "scope-hypothesis", "grep-footprint", "plan-deviation", "acceptance-criterion"]
+    },
+    {
+      "content": "A temp-sync-for-testing procedure that copies source-store files into a gitignored deploy tree (.claude/) for test execution, then restores them, MUST restore from the pre-task commit SHA captured before any work began -- not from 'HEAD' read after intermediate phase commits have landed, since HEAD moves forward as work is committed. Restoring from current HEAD mid-task silently hand-deploys the task's own in-progress edits into the deploy tree, violating the source-store-deploy-boundary contract. Capture the starting commit SHA explicitly at the start of any multi-phase task that will need this pattern more than once.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/summaries/01_decisions-writer-handoff-notice-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-boundary", "temp-sync", "git-show-head", "source-store", "test-verification"]
+    },
+    {
+      "content": "When a lib file's parallel-array class member count changes (e.g. 19->20 in runtime-file-patterns.sh), a test suite that hardcodes the OLD count as a pass/fail assertion (not just an array-length-equality check) will legitimately fail after an otherwise-correct addition. This is a 4th class of 'verbatim carrier' beyond the usual gitignore-pattern-block carriers, found only by actually running the test after the edit, not by grep alone.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/summaries/01_decisions-writer-handoff-notice-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["test-maintenance", "hardcoded-count", "parallel-arrays", "regression-suite"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1791065283_d98d41_285",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 8,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "Adding a new per-task lock file under specs/ in this agent system is a shared-lib change, not a local one: scripts/lib/runtime-file-patterns.sh declares each ephemeral path as a member replicated across SIX parallel bash arrays (name list, gitignore PATTERNS, PROBES, Check-B REGEX, IS_DIR, DIR_BASENAME) plus a pattern-count comment, and the same block is carried verbatim by context/standards/orchestrator-runtime-files.md and scripts/tests/test-orchestrate-unwind-dispatch.sh (find carriers live with grep -rln '^\\*\\*/\\.errors\\.lock$'). specs/.gitignore is GENERATED from that lib by init-specs.sh's sentinel-delimited managed block and must never be hand-edited. Critically, do NOT shortcut this by putting a lock file inside the task's already-ignored .lock/ directory: that directory is a mkdir-exclusivity mutex released by rmdir, so a stray file inside makes the release fail and leaves the task permanently locked.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/plans/01_decisions-writer-handoff-notice.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["runtime-file-patterns", "decisions-lock", "specs-gitignore-managed-block", "task-lock-rmdir", "ephemeral-pattern-member"]
-    }
-  ],
-  "next_steps": "Run /implement 285 to execute the plan",
-  "dispatch_seq": 3
+    "session_id": "sess_1791065283_d98d41",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
