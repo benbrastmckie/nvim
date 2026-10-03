@@ -11,8 +11,8 @@ next_project_number: 328
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,184,250,251,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,185,273,275,281,298,302,303,307,308,319,326 | 22,184,250,251,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
+| 1 | 22,185,250,251,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,298,302,303,307,308,319,326 | 22,250,251,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,313 | 273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 282,300 | orchestrator |
 
@@ -20,8 +20,7 @@ next_project_number: 328
 
 ### Core Agent System
 
-184 [IMPLEMENTING] — Surface skeleton-plan follow-ups at completion under the...
-  └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
+185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 250 [PLANNED] — Script-corpus inventory probe, then cut tests/run-all.sh...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
@@ -3719,7 +3718,7 @@ file_scope now names the five known sites; research MUST add the remaining files
 ---
 
 ### 184. Surface skeleton-plan follow-ups at completion under the batch engine (ruled: port the sorry_inventory follow-up report, not pr_ready routing)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 242, Task 243, Task 258, Task 259, Task 266
