@@ -1,0 +1,25 @@
+{
+  "phase": 7,
+  "phase_name": "Tests — push guard, wrapper, exclusions, fail-closed",
+  "started_at": "2026-10-03T04:55:00Z",
+  "last_updated": "2026-10-03T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/tests/test-guard-git-push.sh covering verification items 1-5, 7", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]},
+    {"id": 2, "description": "Register the new test in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "Single-use test relying only on HEAD-move/deletion for non-replay", "result": "failed", "reason": "Re-writing a consumed grant's exact bytes back to disk (with HEAD unchanged) re-created a byte-identical, fully-verifying grant that re-authorized the push -- exposed a real gap: delete-on-use alone is not tamper-independent single-use."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.single-use-mechanism",
+      "description": "Added a consumed-HMAC ledger (specs/.push-grant/.consumed, append-only) to push-grant-lib.sh beyond what Phase 2 originally specified",
+      "type": "altered",
+      "reason": "Discovered via this phase's own single-use test (per the research's 'test it directly, not via the sha side door' instruction) that delete-on-use alone fails to prevent replay when the exact grant bytes are restored to disk with HEAD unchanged. Added pg_consumed_ledger_path/pg_hmac_already_consumed/pg_hmac_record_consumed to push-grant-lib.sh (Phase 2's file) and wired them into pg_grant_find_match (skip a match whose HMAC is already in the ledger) and pg_grant_consume (record the HMAC before deleting). This is a genuine strengthening of Phase 2's design, not a Phase 7 scope expansion for its own sake -- the gap was real and reachable outside the tool-call tamper guard (e.g. a stray backup or restore).",
+      "annotation": "*(deviation: altered — added a consumed-HMAC ledger to push-grant-lib.sh to make single-use tamper-independent, not just delete-on-use; see push-grant-lib.sh's pg_hmac_already_consumed/pg_hmac_record_consumed)*"
+    }
+  ],
+  "verification_notes": "42/42 cases pass. Fixture self-check first. Non-vacuity proven by disabling the HMAC comparison (sed-patched push-grant-lib.sh temporarily) and confirming exactly one case flips to FAIL, then restoring and confirming 42/42 again. Auto-discovery confirmed: run-all.sh globs scripts/tests/test-*.sh with no registration needed. test-guard-destructive-git.sh re-run: 72/72 still pass unmodified after the ledger addition (it doesn't touch that hook's own logic)."
+}

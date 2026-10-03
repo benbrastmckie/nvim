@@ -511,38 +511,38 @@ fix). The implementer confirms by diffing the two settings files and re-reading 
 
 ---
 
-### Phase 7: Tests — push guard, wrapper, exclusions, fail-closed [NOT STARTED]
+### Phase 7: Tests — push guard, wrapper, exclusions, fail-closed [COMPLETED]
 
 **Goal**: `scripts/tests/test-guard-git-push.sh`, covering the dispatch's verification items 1-5
 and 7 as executable assertions, in the fixture-driven style of `test-guard-destructive-git.sh`.
 
 **Tasks**:
-- [ ] Follow `context/standards/shell-script-testing.md` and the existing suite's shape:
+- [x] Follow `context/standards/shell-script-testing.md` and the existing suite's shape:
   `pass()/fail()/info()`, integer counters, `mktemp -d` workdir with `trap EXIT` cleanup, exit 0 on
   all-pass / 1 on any-fail, hook driven as a real subprocess with a synthetic
   `{"tool_input":{"command":...}}` payload, asserting exit codes. The hook is never instrumented
   for testability.
-- [ ] A fixture self-check as the very first case (the existing suite's precedent): assert the
+- [x] A fixture self-check as the very first case (the existing suite's precedent): assert the
   fixture repo has a bare local remote and a non-default working branch, so no later BLOCK case
   can pass vacuously.
-- [ ] Cases: bare `git push` with no grant → blocked, stderr names the sanctioned path (item 1, 2);
+- [x] Cases: bare `git push` with no grant → blocked, stderr names the sanctioned path (item 1, 2);
   `git push` forms enumerated (`-u`, `--set-upstream`, explicit remote+branch, `HEAD`,
   `--force-with-lease`) each classified correctly.
-- [ ] Invalidation cases, one per predicate (item 3): expired (`TIMESTAMP` 700s old), wrong
+- [x] Invalidation cases, one per predicate (item 3): expired (`TIMESTAMP` 700s old), wrong
   branch, wrong remote, HEAD moved since mint, force-vs-non-force mismatch, already-consumed.
-- [ ] Categorical-exclusion cases (item 4), each with an otherwise-valid grant present: bare
+- [x] Categorical-exclusion cases (item 4), each with an otherwise-valid grant present: bare
   `--force`, `--force-with-lease` on the default branch, `--mirror`, `--all`, `--tags`,
   `--delete`, `:ref` deletion, two refspecs.
-- [ ] Valid-grant success case (item 5): wrapper pushes to the fixture remote, remote ref moves,
+- [x] Valid-grant success case (item 5): wrapper pushes to the fixture remote, remote ref moves,
   grant file gone, one `push_grant_consumed` event appended.
-- [ ] Fail-safe cases (item 7): grant file truncated mid-line; HMAC byte flipped; required field
+- [x] Fail-safe cases (item 7): grant file truncated mid-line; HMAC byte flipped; required field
   removed; `TIMESTAMP` non-numeric; key file absent; key file mode `0644`. Each must BLOCK.
-- [ ] Single-use case: re-write the consumed grant's exact bytes back to disk and confirm the
+- [x] Single-use case: re-write the consumed grant's exact bytes back to disk and confirm the
   second push is still refused (HEAD/consumption independence, per the research's
   "test it directly, not via the sha side door").
-- [ ] Tamper cases: `Write` and `Edit` payloads targeting the grant dir and the key path → blocked;
+- [x] Tamper cases: `Write` and `Edit` payloads targeting the grant dir and the key path → blocked;
   a `Bash` payload redirecting into either → blocked.
-- [ ] Unchanged-default case (item 8): with no grant and no mechanism invoked, a non-push git
+- [x] Unchanged-default case (item 8): with no grant and no mechanism invoked, a non-push git
   command (`git status`, `git commit`) is untouched by the new hook.
 
 **Timing**: 1.5 hours

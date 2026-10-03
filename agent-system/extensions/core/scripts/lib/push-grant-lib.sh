@@ -124,6 +124,38 @@ pg_dir_ensure() {
   return 0
 }
 
+pg_consumed_ledger_path() {
+  echo "$(pg_grant_dir)/.consumed"
+}
+
+# pg_hmac_already_consumed <hmac> -- 0 (true) iff this exact HMAC value has already been
+# recorded as consumed. This closes the gap that delete-on-use alone does NOT: deletion
+# prevents a grant from being found via the normal directory glob, but it does nothing if the
+# exact same bytes are ever written back to disk (e.g. a stray backup, a restore, a race) --
+# the file would then be byte-identical to a legitimate unconsumed grant and would re-verify
+# and re-match perfectly. The ledger is independent of the file's existence: once an HMAC has
+# been consumed, it can never authorize again, no matter how the file reappears. A missing
+# ledger is the normal starting state (nothing has ever been consumed yet) and correctly means
+# "not consumed" -- this is not a fail-open gap, it is the correct empty-set answer.
+pg_hmac_already_consumed() {
+  local hmac="$1" ledger
+  [ -n "$hmac" ] || return 1
+  ledger="$(pg_consumed_ledger_path)"
+  [ -f "$ledger" ] || return 1
+  grep -qxF "$hmac" "$ledger" 2>/dev/null
+}
+
+# pg_hmac_record_consumed <hmac> -- appends <hmac> to the consumed ledger. Append-only,
+# never truncated or rewritten; the ledger lives under specs/.push-grant/, already covered by
+# that directory's self-ignoring ".gitignore" (content "*").
+pg_hmac_record_consumed() {
+  local hmac="$1" ledger
+  [ -n "$hmac" ] || return 1
+  pg_dir_ensure || return 1
+  ledger="$(pg_consumed_ledger_path)"
+  printf '%s\n' "$hmac" >> "$ledger" 2>/dev/null
+}
+
 pg_new_grant_path() {
   local dir ts rand
   dir="$(pg_grant_dir)"
@@ -282,7 +314,7 @@ pg_grant_write() {
 pg_grant_verify() {
   local path="$1"
   PG_F_VERSION="" PG_F_TIMESTAMP="" PG_F_ACTION_CLASS="" PG_F_REMOTE="" PG_F_REF=""
-  PG_F_FORCE="" PG_F_HEAD_SHA="" PG_F_REQUEST_TEXT="" PG_F_MINT_SOURCE=""
+  PG_F_FORCE="" PG_F_HEAD_SHA="" PG_F_REQUEST_TEXT="" PG_F_MINT_SOURCE="" PG_F_HMAC=""
 
   [ -n "$path" ] && [ -f "$path" ] && [ -r "$path" ] || return 1
 
@@ -336,6 +368,7 @@ pg_grant_verify() {
   PG_F_HEAD_SHA="$sha"
   PG_F_REQUEST_TEXT="$reqtext"
   PG_F_MINT_SOURCE="$mint"
+  PG_F_HMAC="$claimed"
   return 0
 }
 
@@ -366,6 +399,7 @@ pg_grant_find_match() {
   for f in "$dir"/grant-*.kv; do
     [ -e "$f" ] || continue
     pg_grant_verify "$f" || continue
+    pg_hmac_already_consumed "$PG_F_HMAC" && continue
     pg_grant_fresh "$PG_F_TIMESTAMP" || continue
     [ "$PG_F_ACTION_CLASS" = "$action_class" ] || continue
     [ "$PG_F_REMOTE" = "$remote" ] || continue
@@ -437,7 +471,8 @@ pg_grant_mint() {
 pg_grant_consume() {
   local action_class="$1" remote="$2" ref="$3" force="$4" consumer="$5"
   pg_grant_find_match "$action_class" "$remote" "$ref" "$force" || return 1
-  local consumed_path="$PG_MATCH_PATH" mint_source="$PG_F_MINT_SOURCE" sha="$PG_F_HEAD_SHA"
+  local consumed_path="$PG_MATCH_PATH" mint_source="$PG_F_MINT_SOURCE" sha="$PG_F_HEAD_SHA" consumed_hmac="$PG_F_HMAC"
+  pg_hmac_record_consumed "$consumed_hmac" || true
   rm -f "$consumed_path" 2>/dev/null || true
   local detail
   detail="$(jq -c -n --arg remote "$remote" --arg ref "$ref" --arg sha "$sha" --arg force "$force" \
