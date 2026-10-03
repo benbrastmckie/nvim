@@ -355,7 +355,7 @@ names the correct Move for its write, read, and cleanup points.
 
 ---
 
-### Phase 6: Rewrite the worked trace in `docs/examples/research-flow-example.md` [NOT STARTED]
+### Phase 6: Rewrite the worked trace in `docs/examples/research-flow-example.md` [COMPLETED]
 
 **Goal**: Rewrite the end-to-end worked trace against the current Move 1-4 loop, keeping the
 file's stated purpose intact.
@@ -368,27 +368,33 @@ leave that gap unfilled and contradict the file's first paragraph. The rewrite i
 trace's anchors and flow structure, not to its narrative content or its worked example data.
 
 **Tasks**:
-- [ ] Re-grep and reconcile against the ledger. Note that this file mixes two vocabularies on
+- [x] Re-grep and reconcile against the ledger. Note that this file mixes two vocabularies on
       adjacent lines: `skill-orchestrate` stage citations (`LIVE`, retarget) and the research
       agent's own `Agent Stage 1`..`Agent Stage 6` headings (`UNRELATED`, leave exactly as they
-      are).
-- [ ] Rewrite the flow diagram's `[Layer 2: Skill]` block: replace the
+      are). *(completed: 15 LIVE retargeted, 7 UNRELATED Agent-Stage headings + the live
+      Stage 3.5 script label left untouched)*
+- [x] Rewrite the flow diagram's `[Layer 2: Skill]` block: replace the
       `Stage 1 / 1b / 2 / 3 / 3.5` sequence with the Move 1 sequence, naming
       `orchestrate-cycle-plan.sh` and `orchestrate-build-dispatch.sh` (including the latter's own
-      still-live `Stage 3.5 (Dispatch Prep)` label, cited as the script's label).
-- [ ] Rewrite the return-flow lines (`Stage 5 -> Stage 7 -> Stage 8`) as Move 3 and Move 4.
-- [ ] Rewrite the prose section headings that name `skill-orchestrate` stages
+      still-live `Stage 3.5 (Dispatch Prep)` label, cited as the script's label). *(completed)*
+- [x] Rewrite the return-flow lines (`Stage 5 -> Stage 7 -> Stage 8`) as Move 3 and Move 4.
+      *(completed)*
+- [x] Rewrite the prose section headings that name `skill-orchestrate` stages
       (`**Stage 1: Input Validation**`, `**Stage 2: Loop Guard Initialization**`,
       `**Stage 3: State Machine Loop**`, `**Stage 3.5: Dispatch Prep**`,
       `**Agent -> Stage 5: Handoff Reading**`, `**Stage 7: Loop Guard Update**`,
       `**Stage 8: Postflight**`) to their Move equivalents, merging sections where the mapping
       collapses several old stages into one Move rather than inventing sub-anchors.
-- [ ] Remove or rewrite the `(single-task mode)` qualifier on the `[Layer 2: Skill]` label —
-      there is only one loop now.
-- [ ] Update the closing summary list (the "Return Flow" bullet) to Move vocabulary.
-- [ ] Leave the `task-ref-ok` marker block and the concrete example task number untouched.
-- [ ] Re-read the whole file top-to-bottom (not just the diff) to confirm the trace still reads
-      as one coherent sequence after the section merges.
+      *(completed: Steps 2 ["Stage 1/1b/2/3"] merged into one "Move 1" section; Step 5
+      ["Stage 5/7/8"] merged into one "Move 3" section)*
+- [x] Remove or rewrite the `(single-task mode)` qualifier on the `[Layer 2: Skill]` label —
+      there is only one loop now. *(completed)*
+- [x] Update the closing summary list (the "Return Flow" bullet) to Move vocabulary.
+      *(completed)*
+- [x] Leave the `task-ref-ok` marker block and the concrete example task number untouched.
+      *(completed)*
+- [x] Re-read the whole file top-to-bottom (not just the diff) to confirm the trace still reads
+      as one coherent sequence after the section merges. *(completed)*
 
 **Timing**: 1.25 hours
 

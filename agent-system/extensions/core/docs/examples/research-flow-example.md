@@ -29,15 +29,16 @@ User Input: /orchestrate 427 --research
        |
        | Parses $ARGUMENTS, resolves task_number = 427, forwards to skill-orchestrate
        v
-[Layer 2: Skill] skill-orchestrate/SKILL.md (single-task mode)
+[Layer 2: Skill] skill-orchestrate/SKILL.md (the four-move loop)
        |
-       | Stage 1: Input Validation -- lookup task, extract task_type = "meta"
-       | Stage 1b: Resolve Task-Type Routing -- command-route-agent.sh resolves
-       |           RESEARCH_AGENT = "general-research-agent" for task_type "meta"
-       | Stage 2: Loop Guard Initialization
-       | Stage 3: State Machine Loop -- current_status = "not_started" -> research handler
-       | Stage 3.5: Dispatch Prep -- builds memory_context, lit_context, effort_note
-       | Invoke the Agent tool with subagent_type = "general-research-agent"
+       | Setup -- commands/orchestrate.md generates session_id, forwards task_numbers
+       | Move 1 -- one orchestrate-cycle-plan.sh call: lookup task, extract task_type = "meta",
+       |           resolve routing via command-route-agent.sh (RESEARCH_AGENT =
+       |           "general-research-agent" for task_type "meta"), current_status =
+       |           "not_started" -> research handler, loop-guard initialization, and
+       |           dispatch-file composition via orchestrate-build-dispatch.sh's own live
+       |           Stage 3.5 (Dispatch Prep) -- builds memory_context, lit_context, effort_note
+       | Move 2 -- Invoke the Agent tool with subagent_type = "general-research-agent"
        v
 [Layer 3: Agent] general-research-agent.md
        |
@@ -49,8 +50,10 @@ User Input: /orchestrate 427 --research
        v
 [Return Flow]
        |
-       | Agent -> skill-orchestrate Stage 5 (Handoff Reading) -> Stage 7 (Loop Guard Update)
-       | -> Stage 8 (Postflight, since --research stops the loop after this phase) -> User
+       | Agent -> skill-orchestrate Move 3 (the shared per-row postflight call: handoff/outcome
+       |          read, loop-guard update, postflight)
+       | -> Move 4 (--research stops the loop after this phase, so the branch is terminal here)
+       | -> User
        v
 Output: Research report created at specs/427_document.../reports/01_research-findings.md
 ```
@@ -68,15 +71,20 @@ Output: Research report created at specs/427_document.../reports/01_research-fin
 Claude Code reads `.claude/commands/orchestrate.md`, which invokes `skill-orchestrate` with the
 task number and the `--research` phase-forcing flag.
 
-### Step 2: skill-orchestrate Validates and Resolves Routing
+### Step 2: skill-orchestrate Runs Move 1 (Plan the Cycle)
 
-**Stage 1: Input Validation**
+**Move 1** is one call to `orchestrate-cycle-plan.sh` that performs status refresh, eligibility,
+classification, task-type routing, admission, loop-guard initialization, and dispatch-file
+composition — the separate `Stage 1`/`Stage 1b`/`Stage 2`/`Stage 3` sections this walkthrough
+used to carry here have all collapsed into this one call:
+
 ```bash
-# Lookup task 427 in specs/state.json
+# Lookup task {N} in specs/state.json
 # Exports: task_type = "meta", project_name, padded_num, description
 ```
 
-**Stage 1b: Resolve Task-Type Routing** (`command-route-agent.sh`)
+**Task-type routing** (`command-route-agent.sh`, invoked from inside the same
+`orchestrate-cycle-plan.sh` call):
 ```bash
 source .claude/scripts/command-route-agent.sh "research" "meta" "general-research-agent" "$effort_flag"
 # Resolves RESEARCH_AGENT for task_type "meta" via the manifest routing_agents ladder,
@@ -84,31 +92,31 @@ source .claude/scripts/command-route-agent.sh "research" "meta" "general-researc
 # Extension task types resolve to their own domain-specific research agent instead.
 ```
 
-**Stage 2: Loop Guard Initialization** — creates `.orchestrator-loop-guard`, the ephemeral
-per-cycle runtime state tracking `cycle_count` and `detected_defects` across the state-machine
-loop.
+**Loop-guard initialization** — creates `.orchestrator-loop-guard`, the ephemeral per-cycle
+runtime state tracking `cycle_count` and `detected_defects` across the four-move loop.
 
-### Step 3: skill-orchestrate Dispatches the Research Agent
-
-**Stage 3: State Machine Loop** — `current_status = "not_started"` routes to the research
-handler in Stage 4:
+`current_status = "not_started"` routes to the research handler:
 
 ```bash
 skill_preflight_update "$task_number" "research" "$session_id"
 # Status -> researching
 ```
 
-**Stage 3.5: Dispatch Prep** — builds `memory_context`, `lit_context`, `effort_note`, and
+**Dispatch-file composition** — via `orchestrate-build-dispatch.sh`'s own live
+`Stage 3.5 (Dispatch Prep)` label (a script-internal label, not a `SKILL.md` section — it is
+still correct to cite by name) — builds `memory_context`, `lit_context`, `effort_note`, and
 `hard_contracts_block` (each skipped when empty).
+
+### Step 3: skill-orchestrate Issues Move 2 (Dispatch)
 
 **Invoke the Agent tool**:
 
 | Field | Value |
 |-------|-------|
-| `subagent_type` | `general-research-agent` (resolved in Stage 1b) |
-| `model` | Stage 3.5's `model` output, when non-empty |
-| `prompt` | "Research task 427: {description}" plus `memory_context`, `lit_context`, `effort_note` |
-| `context` | `{ task_number: 427, task_type: "meta", session_id, orchestrator_mode: true, lit_flag, task_dir, handoff_path, dispatch_seq }` |
+| `subagent_type` | `general-research-agent` (resolved by Move 1's routing call) |
+| `model` | Move 1's dispatch-file `model` output, when non-empty |
+| `prompt` | "Research task {N}: {description}" plus `memory_context`, `lit_context`, `effort_note` |
+| `context` | `{ task_number: {N}, task_type: "meta", session_id, orchestrator_mode: true, lit_flag, task_dir, handoff_path, dispatch_seq }` |
 
 ### Step 4: Agent Executes Research
 
@@ -206,17 +214,16 @@ The agent writes `.return-meta.json` (not inline JSON return):
 }
 ```
 
-### Step 5: Return Flow (skill-orchestrate Postflight)
+### Step 5: Return Flow (skill-orchestrate Move 3)
 
-**Agent -> Stage 5: Handoff Reading**
+**Agent -> Move 3: outcome read, loop-guard update, postflight**
 
 `skill-orchestrate` reads the agent's return after the Agent tool call completes, judging
-transport-vs-subagent-authored outcomes per `context/patterns/infra-failure-discrimination.md`.
-
-**Stage 7: Loop Guard Update** — records `cycle_count` and any `detected_defects` for this cycle.
-
-**Stage 8: Postflight** — since `--research` stops the loop after this phase (rather than
-falling through to plan/implement), the loop terminates cleanly here:
+transport-vs-subagent-authored outcomes per `context/patterns/infra-failure-discrimination.md`,
+records `cycle_count` and any `detected_defects` for this cycle, then runs postflight — since
+`--research` stops the loop after this phase (rather than falling through to plan/implement), the
+Move 4 loop-condition check finds nothing non-terminal left to dispatch and the loop terminates
+cleanly here:
 
 ```bash
 skill_postflight_update 427 "research" "$session_id" "$SUBAGENT_STATUS"  # Status -> researched
@@ -322,7 +329,7 @@ specs/
 If user runs `/orchestrate {N} --research` but task {N} does not exist:
 
 ```
-skill-orchestrate Stage 1 (Input Validation):
+skill-orchestrate Move 1 (status refresh / eligibility):
   Lookup task {N} in state.json -> NOT FOUND
   Aborts with: "Task {N} not found in state.json"
 
@@ -360,10 +367,10 @@ Return:
 If user runs `/orchestrate {N} --research` where task {N} has `task_type: "python"` (with the python extension loaded):
 
 ```
-skill-orchestrate Stage 1b:
+skill-orchestrate Move 1 (task-type routing):
   Lookup task {N} -> task_type = "python"
 
-Stage 1b routing resolution:
+Move 1 routing resolution:
   Routing: python -> python-research-agent (via command-route-agent.sh)
 
 Flow:
@@ -383,10 +390,10 @@ Agent uses:
 The session_id flows through all layers:
 
 ```
-skill-orchestrate Stage 1 generates: session_id = "sess_1736700000_abc123"
+commands/orchestrate.md generates: session_id = "sess_1736700000_abc123"
          |
          v
-skill-orchestrate passes session_id in delegation context to the agent
+skill-orchestrate's Setup forwards session_id, then Move 2 passes it in delegation context to the agent
          |
          v
 Agent includes session_id in .return-meta.json
@@ -409,7 +416,7 @@ This example demonstrated:
 1. **Command Layer**: User entry point (`/orchestrate`); parses arguments and forwards to `skill-orchestrate`
 2. **Skill Layer**: `skill-orchestrate`'s state-machine dispatch — resolves routing, prepares delegation context, invokes the agent directly (no per-function skill hop for `general`/`meta`/`markdown` task types)
 3. **Agent Layer**: Executes work, creates artifacts, writes `.return-meta.json` metadata file
-4. **Return Flow**: `skill-orchestrate` reads the handoff (Stage 5), updates the loop guard (Stage 7), and runs postflight (Stage 8) — status update, artifact linking, git commit
+4. **Return Flow**: `skill-orchestrate`'s Move 3 reads the handoff, updates the loop guard, and runs postflight — status update, artifact linking, git commit
 5. **Status Updates**: Atomic state.json + TODO.md updates via shared scripts
 
 The current architecture provides:
