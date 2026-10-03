@@ -583,13 +583,13 @@ the timing and memory figures measured-once and cite them to their artifacts by 
 
 ---
 
-### Phase 7: The authoring workflow and the tooling inventory [NOT STARTED]
+### Phase 7: The authoring workflow and the tooling inventory [COMPLETED]
 
 **Goal**: The executable end-to-end checklist, and a map of what each tooling piece reads and
 writes - with the repo-side machinery marked as not-to-be-duplicated.
 
 **Tasks**:
-- [ ] Write `patterns/authoring-workflow.md` per Finding 5 item 7 as an executable checklist in
+- [x] Write `patterns/authoring-workflow.md` per Finding 5 item 7 as an executable checklist in
       four stages. AUTHOR: licence header on line 1 and `module` on line 2 (structural, because a
       comment parses ahead of the `module` keyword); one `book_layer` per code module;
       `@[book_export]` on each intended export; added **by hand** to the lakefile's explicit globs
@@ -601,7 +601,7 @@ writes - with the repo-side machinery marked as not-to-be-duplicated.
       `book_not_claimed`, and `book_requires` for cross-book hypotheses (checked transitively
       against statement cones, so naming a constant whose declaring module is in the closure is
       correct and sufficient). Then `book.toml` v2 and the `docs/` entry.
-- [ ] BUILD/TEST: the full audit list - clean build green from an empty `.lake/` with no network
+- [x] BUILD/TEST: the full audit list - clean build green from an empty `.lake/` with no network
       and wall time recorded; zero-`sorry` census; no `native_decide`, no search tactic, no
       vacuously-true definition; axiom audit against the declared budget with choice absent and
       the number of SOURCES distinguished from the number of carrying declarations; universe audit;
@@ -615,25 +615,25 @@ writes - with the repo-side machinery marked as not-to-be-duplicated.
       task-reference lint. State the rule: every figure recorded as LANDED, never inherited from
       the design artifact, and a deviation written as a deviation note rather than silently
       absorbed.
-- [ ] Add the step the evidence makes mandatory and point at `domain/gate-tiers.md` for why: run
+- [x] Add the step the evidence makes mandatory and point at `domain/gate-tiers.md` for why: run
       `interface/scripts/layer-lint.sh` at the end of **any** tagging phase, because `lake build`
       never invokes it and that omission is what let 44 violations sit across five phases. Add the
       caution that the execution-construct gate's domain is not enumerable by any existing script
       (register row).
-- [ ] CERTIFY: point at `tools/certify-guide.md` for operation and keep only the sequence here -
+- [x] CERTIFY: point at `tools/certify-guide.md` for operation and keep only the sequence here -
       dependencies first in topological order, `reverify`, the advisory shake, computed `depends`,
       the per-export ledger, `interface_identity`/`identity`/`proof_identity`, the version check as
       a ledger diff, the authored judgments copied in with `source: authored`
       (`books/lean/BookCert/Writer.lean:264-270`), then the docs stage; and the byte-stability
       property (an unchanged tree regenerates the certificate byte for byte).
-- [ ] DOCUMENT: point at `tools/typst-template-contract.md` and open this sub-section with the
+- [x] DOCUMENT: point at `tools/typst-template-contract.md` and open this sub-section with the
       measured state - no real book has a Typst document; 25 of 27 real books declare
       `[docs] entry = "docs/book.md"`; two declare a `book.typ` that does not exist - so this
       stage is a design contract today, not an exercised one. Note that `rules/books.md` mandates
       the flattened `book.typ` form and calls `docs/book.md` legacy-and-held, and that the rule
       file is the extension's own non-negotiable while the measured tree is the opposite; state
       both facts rather than choosing one silently.
-- [ ] Write `tools/tooling-inventory.md` per Finding 5 item 10: `books/` is a tooling directory,
+- [x] Write `tools/tooling-inventory.md` per Finding 5 item 10: `books/` is a tooling directory,
       not a component - nothing there is digested, carries a certificate, or is depended on by a
       component gate. Per piece, what it reads, what it writes, and whether the extension CONSUMES
       it or merely names it: `books/lean/` (package `books`, roots `Books` with the single
@@ -645,7 +645,7 @@ writes - with the repo-side machinery marked as not-to-be-duplicated.
       `record-read-test.sh`); `books/certifier/Certify.lean`; `books/schema/`; `books/scripts/`
       (`certify.sh`, `lint-validated-by.sh`); `books/tests/` (four suites, including
       `validated-by-lint/`, which the dispatch's inventory omits).
-- [ ] Record the three authoring rules under `books/` (header within the first three lines with
+- [x] Record the three authoring rules under `books/` (header within the first three lines with
       the comment-before-`module` order, enforced by
       `components/framed_channel/scripts/check-spdx.sh`; explicit per-module lakefile globs and
       NEVER `Books.+`, because both `books/lean` and `books/tool` use the root `Books` so a
@@ -656,7 +656,7 @@ writes - with the repo-side machinery marked as not-to-be-duplicated.
       `lake env lean` in any consumer's workspace, no `LEAN_PATH` surgery; and why `Certify.lean`
       is a non-`module` script - a `module` library cannot reach another package's private
       `.olean` level, since `import all` is same-package only).
-- [ ] Close with the repo-side documentation machinery to know about and NOT duplicate:
+- [x] Close with the repo-side documentation machinery to know about and NOT duplicate:
       `typst/manual/generated/` (every file generated, never hand-edited),
       `typst-component-doc.sh`, `typst-component-index.sh`, `status-counts.sh`,
       `script-reference.sh`, `certificate-export.sh`, `typst-manual-sync-check.sh`

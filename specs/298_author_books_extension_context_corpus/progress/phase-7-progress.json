@@ -1,0 +1,17 @@
+{
+  "phase": 7,
+  "phase_name": "The authoring workflow and the tooling inventory",
+  "started_at": "2026-10-03T02:15:00Z",
+  "last_updated": "2026-10-03T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write patterns/authoring-workflow.md as a four-stage executable checklist", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/authoring-workflow.md"]},
+    {"id": 2, "description": "Write tools/tooling-inventory.md with reads/writes per piece", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/tools/tooling-inventory.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "7.x", "description": "reference-implementation scale re-measured", "type": "altered", "reason": "The plan's Scope Hypothesis cites 25 of 27 manifests declaring docs/book.md (confirmed) and four test suites (confirmed). The reference-implementation scale was re-measured 2026-10-03: distsys 9 books / 32 layered / 286 exports, framed_channel 13 real books (14 book.toml including the family root) / 101 layered / 647 exports, interface 4 / 4. Written as measured, with the dispatch description's 'nine modules, four books' figure explicitly corrected.", "annotation": "*(deviation: altered -- reference scale re-measured; 27 books tree-wide, not four)*"},
+    {"task_id": "7.y", "description": "Books.Meta line count corrected", "type": "altered", "reason": "Measured 771 lines, not the 413 the dispatch description states. Corrected in the inventory with the measurement date, per the plan's explicit verification item.", "annotation": "*(deviation: altered -- Books.Meta measured at 771 lines)*"}
+  ],
+  "handoff_count": 0
+}
