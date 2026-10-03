@@ -110,10 +110,18 @@ Use `/research N --hard`, `/plan N --hard`, or `/implement N --hard` when one or
 
 **Cost impact**: `--hard` multiplies token cost ~3-5x over standard cslib skills. Use for formally complex or previously-deflected tasks only.
 
-**Hard-mode routing entries** (from manifest.json `routing_hard`):
-- `cslib` research: skill-cslib-research-hard
-- `cslib` implement: skill-cslib-implementation-hard
-- `pr` research/implement: no `routing_hard` entry — falls back to the standard `skill-pr-review-research`/`skill-pr-review-implementation` skills under `--hard`. The `pr` task type used to route through core's own standalone hard-mode research/implement skills, which have since been deleted; core's `--hard` planning/research/implement for `general`/`meta`/`markdown` now resolves through `skill-orchestrate`'s own hard-mode branch instead of a separate skill, and `pr` was never given its own dedicated hard-mode skill to fall back to.
+**Hard-mode routing entries** (from manifest.json `routing_agents_hard` — the skill-level
+`routing_hard` block this used to read from the `skill-cslib-*-hard` SKILL.md files is retired;
+`/orchestrate --hard` dispatches the agents below directly):
+- `cslib` research: `cslib-research-hard-agent`
+- `cslib` implement: `cslib-implementation-hard-agent`
+- `pr` research/implement: no `routing_agents_hard` entry — falls back to the standard
+  `pr-review-research-agent`/`pr-review-implementation-agent` agents under `--hard`. The `pr` task
+  type used to route through core's own standalone hard-mode research/implement skills, which
+  have since been deleted; core's `--hard` planning/research/implement for
+  `general`/`meta`/`markdown` now resolves through `skill-orchestrate`'s own hard-mode branch
+  instead of a separate skill, and `pr` was never given its own dedicated hard-mode agent to fall
+  back to.
 
 ## PR Review Workflow
 

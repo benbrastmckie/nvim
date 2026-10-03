@@ -50,14 +50,16 @@ source .claude/scripts/command-gate-in.sh "$task_number" "<operation>"
 ### STAGE 2: DELEGATE
 
 ```bash
-source .claude/scripts/command-route-skill.sh "<operation>" "$TASK_TYPE" "skill-<default>"
-skill_name="$SKILL_NAME"
+source .claude/scripts/command-route-agent.sh "<operation>" "$TASK_TYPE" "<default-agent>" "${effort_flag:-}"
+agent_name="$AGENT_NAME"
 ```
 
-**Invoke the Skill tool NOW** with:
+**Invoke the Agent tool NOW** with:
 ```
-skill: "{skill_name}"
-args: "task_number={N} session_id={SESSION_ID} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} clean_flag={CLEAN_FLAG} orchestrator_mode=false"
+Agent({
+  subagent_type: "{agent_name}",
+  prompt: "task_number={N} session_id={SESSION_ID} effort_flag={EFFORT_FLAG} model_flag={MODEL_FLAG} clean_flag={CLEAN_FLAG} orchestrator_mode=false"
+})
 ```
 
 **On DELEGATE success**: **IMMEDIATELY CONTINUE** to CHECKPOINT 2.

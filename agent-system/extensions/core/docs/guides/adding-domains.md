@@ -205,8 +205,7 @@ Use this approach only for the repository's primary domain (e.g., python for a P
 /orchestrate --research / --implement
     │
     ▼
-skill-orchestrate's dispatch (command-route-skill.sh / command-route-agent.sh manifest routing
-ladder)
+skill-orchestrate's dispatch (command-route-agent.sh manifest routing ladder)
     │
     ├── task_type: your-domain → skill-your-domain-research / skill-your-domain-implementation
     ├── task_type: general    → general-research-agent / general-implementation-agent (direct)

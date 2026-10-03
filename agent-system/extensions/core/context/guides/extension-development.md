@@ -121,9 +121,9 @@ narrowly enough that this ordering doesn't matter.
 **A `keyword_overrides` key IS a task_type**: the top-level key under `keyword_overrides`
 (`"<task_type>"` above) is used directly as the resolved `task_type` value — it is never
 remapped or validated against the extension's own routing table. An extension declaring
-`routing_exempt: true` with no `.routing` block therefore MUST NOT declare `keyword_overrides`
-at all: the key would resolve to a task_type no routing consumer (`command-route-skill.sh`,
-`command-route-agent.sh`) can dispatch, which is a worse failure than not matching early and
+`routing_exempt: true` with no `.routing_agents` block therefore MUST NOT declare
+`keyword_overrides` at all: the key would resolve to a task_type the sole routing consumer
+(`command-route-agent.sh`) CANNOT dispatch, which is a worse failure than not matching early and
 falling through to the step 4d table or `general`. If an extension's vocabulary needs early
 detection, give it a real `.routing` block first.
 

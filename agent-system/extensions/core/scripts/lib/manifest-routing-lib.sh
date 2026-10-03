@@ -12,10 +12,10 @@
 #
 # "Non-core" here means "not the manifest whose .name == 'core'" -- see routing_core_manifest()
 # below. This is a narrower exclusion than routing_exempt:true (which also covers `literature`
-# and `slidev`): those two extensions never declare `.routing`/`.routing_hard` entries of their
-# own, so treating them as ordinary non-core participants in Steps 1-2 produces identical
-# resolution to the prior per-consumer implementations, while giving core-identification a
-# single unambiguous meaning independent of the exemption field's separately-scoped semantics.
+# and `slidev`): those two extensions never declare `.routing_agents`/`.routing_agents_hard`
+# entries of their own, so treating them as ordinary non-core participants in Steps 1-2 produces
+# identical resolution to the prior per-consumer implementations, while giving core-identification
+# a single unambiguous meaning independent of the exemption field's separately-scoped semantics.
 #
 # CONTRACT (verified by this library's own sourcing callers at Phase 1 of the routing
 # consolidation task):
@@ -76,8 +76,8 @@ routing_core_manifest() {
   return 0
 }
 
-# routing_lookup -- the shared five-step ladder against $1=block (e.g. "routing", "routing_hard",
-# "routing_agents", "routing_agents_hard"), $2=op, $3=task_type.
+# routing_lookup -- the shared five-step ladder against $1=block ("routing_agents" or
+# "routing_agents_hard"), $2=op, $3=task_type.
 #
 # Outputs (both intentional external-facing globals, deliberately NOT unset before return, unlike
 # the _route_-prefixed internals below): $_ROUTE_LAST_VALUE (the resolved value, or empty on a

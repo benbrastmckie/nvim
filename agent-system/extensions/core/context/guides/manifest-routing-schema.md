@@ -8,14 +8,14 @@ agent names are always declared data, never derived strings.
 
 **Collapsed model (post routing-ladder-collapse)**: a prior version of this document described
 FOUR two-level routing blocks (`routing`, `routing_hard`, `routing_agents`, `routing_agents_hard`)
-resolved by two parallel resolvers, one per layer (a skill-level resolver, `command-route-skill.sh`,
+resolved by two parallel resolvers, one per layer (a now-removed skill-level resolver script,
 and an agent-level resolver, `command-route-agent.sh`). The skill-level layer existed only to
 serve the now-deleted `/research`, `/plan`, `/implement` commands; once those commands were
 deleted and `/orchestrate` became the sole dispatch path (dispatching AGENTS directly), the
 skill-level blocks and their resolver had no remaining caller and were retired outright, not
-migrated. `routing`/`routing_hard` are gone from every manifest; `command-route-skill.sh` no
-longer exists. Only `routing_agents`/`routing_agents_hard` survive, both read exclusively by
-`command-route-agent.sh`.
+migrated. `routing`/`routing_hard` are gone from every manifest; the skill-level resolver script
+no longer exists in the source store. Only `routing_agents`/`routing_agents_hard` survive, both
+read exclusively by `command-route-agent.sh`.
 
 **Scope**: This document covers the manifest-level routing schema. For the `--hard`-specific
 resolution path and its historical divergence (now eliminated), see
@@ -127,9 +127,9 @@ falling back to the already-resolved standard `routing_agents` value, falling ba
 caller's default) is a three-rung fallback built ON TOP of this one ladder, not a second ladder —
 see `context/guides/hard-mode-routing.md` for that composition's detail. There is no `-hard`
 append-fallback step here: that mechanism belonged solely to the now-deleted skill-level
-resolver (`command-route-skill.sh`), which derived a `-hard`-suffixed skill name by string
-convention. Agent names carry no such suffix convention, so `command-route-agent.sh` never had
-an equivalent step to retire.
+resolver script, which derived a `-hard`-suffixed skill name by string convention. Agent names
+carry no such suffix convention, so `command-route-agent.sh` never had an equivalent step to
+retire.
 
 ---
 
@@ -169,10 +169,10 @@ lookup.
 failed for `epi` (the extension directory is `epidemiology`, not `epi`) and only worked for
 `neovim`/`lean4` because a hardcoded `case` statement masked the bug. The ladder replaces
 directory-name guessing entirely: it finds the right manifest by what it DECLARES, not by what
-its directory happens to be named. (A former standalone helper, `routing_manifest_for_task_type()`,
-performed this same lookup against the now-deleted `.routing.{op}` blocks for callers that needed
-only the manifest PATH rather than a resolved value; it had no live caller by the time the
-routing-ladder collapse landed and was removed outright, not retargeted.)
+its directory happens to be named. (A former standalone library helper performed this same lookup
+against the now-deleted `.routing.{op}` blocks for callers that needed only the manifest PATH
+rather than a resolved value; it had no live caller by the time the routing-ladder collapse
+landed and was removed outright, not retargeted.)
 
 ---
 

@@ -415,8 +415,7 @@ This example demonstrated:
 The current architecture provides:
 - Clean separation of concerns (command / orchestrator skill / agent)
 - Shared infrastructure via `skill-base.sh` (~60% code reduction versus per-skill hand-rolling)
-- Task-type-based routing via `command-route-agent.sh` (and `command-route-skill.sh` for
-  extensions that still route through a domain skill)
+- Task-type-based routing via `command-route-agent.sh`
 - File-based metadata exchange (`.return-meta.json`)
 - Resume support via partial status, the loop guard, and the orchestrator handoff file
 

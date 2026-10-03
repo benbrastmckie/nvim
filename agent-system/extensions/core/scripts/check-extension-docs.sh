@@ -52,8 +52,8 @@
 # Rule letter index (checks named "Rule X" in function comments below, in first-introduced
 # order; unlettered checks are unnamed/structural and are not part of this index):
 #   A - check_undeclared_skills            : skill dir on disk not in provides.skills
-#   B - check_routing_consistency          : routing/routing_hard target not resolvable anywhere
-#   C - check_routing_consistency          : routing/routing_hard target resolvable but not deployed
+#   B - check_routing_consistency          : routing_agents/routing_agents_hard target not resolvable anywhere
+#   C - check_routing_consistency          : routing_agents/routing_agents_hard target resolvable but not deployed
 #   D - check_deployed_skill_agents        : deployed skill's subagent_type not in .claude/agents/
 #   E - check_referenced_scripts_declared  : script referenced in docs but not in provides.scripts
 #   F - check_deployed_script_drift        : deployed script content drift from extension source

@@ -2734,7 +2734,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Hard-mode routing resolution precedence used by command-route-agent.sh for --hard, against routing_agents_hard",
-      "line_count": 175,
+      "line_count": 164,
       "keywords": [
         "hard-mode",
         "routing",

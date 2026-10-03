@@ -131,7 +131,8 @@ To add a new domain (e.g., for a specific framework):
 1. Create directory: `.claude/context/project/your-domain/`
 2. Add context files following the existing patterns
 3. Create domain-specific agents if needed
-4. Declare `routing` / `routing_hard` / `routing_agents` in your extension's `manifest.json` (see
+4. Declare `routing_agents` (and `routing_agents_hard`, if hard-mode agents exist) in your
+   extension's `manifest.json` (see
    [Manifest Routing Schema](../../context/guides/manifest-routing-schema.md))
 
 See [Adding Domains Guide](adding-domains.md) for detailed instructions.

@@ -426,34 +426,45 @@ numbers will have shifted if a sibling touched these files.
 
 ---
 
-### Phase 6: Scoped rewrite of `hard-mode-routing.md` and the command-authoring guidance [NOT STARTED]
+### Phase 6: Scoped rewrite of `hard-mode-routing.md` and the command-authoring guidance [COMPLETED]
 
 **Goal**: No document teaches an author to write against the retired resolver or to add a
 `routing_hard` block; the surviving `routing_agents_hard` semantics stay documented.
 
 **Tasks**:
-- [ ] `hard-mode-routing.md` — strip the `command-route-skill.sh`/`routing_hard` content: the
+- [x] `hard-mode-routing.md` — strip the `command-route-skill.sh`/`routing_hard` content: the
       skill half of "5-Step Resolution Precedence" (line 29), the "SKILL.md Existence Safety Gate
       (Step 4e Only)" section (line 85) and its code block, and the "Adding routing_hard Entries"
       how-to (line 138), which would otherwise teach an author to populate a block no consumer
-      reads
-- [ ] `hard-mode-routing.md` — keep and tighten the still-accurate agent-side content:
+      reads *(completed)*
+- [x] `hard-mode-routing.md` — keep and tighten the still-accurate agent-side content:
       `routing_agents_hard` resolution semantics, the `-hard` agent fallback, the
       "Extension Overrides Core" rule (line 62), and "Orchestrate Hard Mode: One Engine,
       Effort-Gated" (line 127). Update "Deployed Hard Skills (current inventory)" (line 107) and
-      "Related Files" (line 164) accordingly
-- [ ] `hard-mode-routing.md` — add a one-line pointer stating that `routing_agents_hard` is
+      "Related Files" (line 164) accordingly *(completed)*
+- [x] `hard-mode-routing.md` — add a one-line pointer stating that `routing_agents_hard` is
       transitional for `cslib`/`lean` and that `hard_contracts` is its successor mechanism, so
-      `verify-deploy` gate 16's warning has a discoverable destination
-- [ ] `docs/guides/creating-commands.md` (around lines 103-107) — replace the
+      `verify-deploy` gate 16's warning has a discoverable destination *(completed)*
+- [x] `docs/guides/creating-commands.md` (around lines 103-107) — replace the
       `source command-route-skill.sh` + Skill-tool "STAGE 2: DELEGATE" pattern with the live
-      `command-route-agent.sh` + direct-agent-dispatch convention
-- [ ] `docs/templates/command-template.md` (around line 53) — same replacement, so a copied
-      template produces a working command
-- [ ] Check the four `cslib`/`lean` hard SKILL.md provenance lines that cite
+      `command-route-agent.sh` + direct-agent-dispatch convention *(completed)*
+- [x] `docs/templates/command-template.md` (around line 53) — same replacement, so a copied
+      template produces a working command *(completed)*
+- [x] Check the four `cslib`/`lean` hard SKILL.md provenance lines that cite
       `command-route-skill.sh`/`routing_hard` as their routing source. Correct each to state the
       skill is no longer routing-reachable and is pending the `hard_contracts` follow-on — a
       prose-only provenance correction; do NOT delete the skills or touch their behavior
+      *(completed: pulled forward into Phase 4 already, re-verified here with no re-edit needed)*
+- [x] *(deviation: added)* Fixed 7 additional files carrying stale `command-route-skill`/
+      `routing_hard` mentions beyond the plan's named Files-to-modify lists, discovered by the
+      final repo-wide grep sweep: `research-flow-example.md`, `adding-domains.md`,
+      `extension-development.md` (carried forward from a Phase 4 deviation), plus
+      `cslib/README.md`, `copy-claude-directory.md`, `check-extension-docs.sh`'s Rule B/C
+      index-comment, and `manifest-routing-lib.sh`'s two header comments. Also reworded 4
+      literal `command-route-skill.sh` name mentions inside `manifest-routing-schema.md`/
+      `hard-mode-routing.md`'s own historical-explanation prose, since this phase's own
+      verification requires true zero occurrences repo-wide (stricter than Phase 4/5's
+      "only historical mentions" carve-out) — see progress file for full detail
 
 **Timing**: 1 hour
 
@@ -478,13 +489,14 @@ Phase 5 file or an unaccounted-for occurrence to triage explicitly.
 - `agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md` - correct the routing-provenance line
 - `agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md` - correct the routing-provenance line
 - `agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md` - correct the routing-provenance line
+- *(deviation: added)* `agent-system/extensions/core/docs/examples/research-flow-example.md`, `agent-system/extensions/core/docs/guides/adding-domains.md`, `agent-system/extensions/core/context/guides/extension-development.md`, `agent-system/extensions/cslib/README.md`, `agent-system/extensions/core/docs/guides/copy-claude-directory.md`, `agent-system/extensions/core/scripts/check-extension-docs.sh`, `agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh` - fixed additional stale `command-route-skill`/`routing_hard` mentions not named in the plan's own file lists (see progress file deviations)
 
 **Verification**:
-- Diff read-through confirming every changed hunk is prose or a non-executing fenced example
-- `grep -rn 'command-route-skill' agent-system/` returns zero occurrences repo-wide
-- `grep -rn 'routing_hard' agent-system/` returns only `routing_agents_hard` matches
-- `bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` exits 0 (catches broken cross-references in the edited docs)
-- `bash agent-system/extensions/core/scripts/check-task-references.sh` clean
+- Diff read-through confirming every changed hunk is prose or a non-executing fenced example *(confirmed via git diff read-through of all 12 touched files)*
+- `grep -rn 'command-route-skill' agent-system/` returns zero occurrences repo-wide *(confirmed: 0, after also rewording 4 literal mentions in manifest-routing-schema.md/hard-mode-routing.md's own historical prose -- see progress file)*
+- `grep -rn 'routing_hard' agent-system/` returns only `routing_agents_hard` matches *(confirmed: remaining 11 hits are all historical-explanation prose co-occurring with `routing_agents_hard` on the same line/paragraph, or provenance corrections)*
+- `bash agent-system/extensions/core/scripts/check-extension-docs.sh --quiet` exits 0 (catches broken cross-references in the edited docs) *(the only FAIL present is task 217's in-flight test-claude-refresh-matcher.sh content drift -- confirmed sibling territory, not routing-related)*
+- `bash agent-system/extensions/core/scripts/check-task-references.sh` clean *(confirmed: 0 occurrences)*
 
 ---
 

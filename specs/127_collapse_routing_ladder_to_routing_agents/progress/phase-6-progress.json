@@ -1,0 +1,37 @@
+{
+  "phase": 6,
+  "phase_name": "Scoped rewrite of hard-mode-routing.md and the command-authoring guidance",
+  "started_at": "2026-10-03T07:20:00Z",
+  "last_updated": "2026-10-03T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "hard-mode-routing.md: strip command-route-skill.sh/routing_hard content (5-Step Resolution Precedence skill half, Step 4e safety gate section, Adding routing_hard Entries how-to)", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/hard-mode-routing.md"]},
+    {"id": 2, "description": "hard-mode-routing.md: keep/tighten routing_agents_hard content; update Deployed Hard Skills inventory and Related Files", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/hard-mode-routing.md"]},
+    {"id": 3, "description": "hard-mode-routing.md: add hard_contracts successor pointer", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/hard-mode-routing.md"]},
+    {"id": 4, "description": "creating-commands.md: replace command-route-skill.sh + Skill-tool pattern with command-route-agent.sh + direct-agent-dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/creating-commands.md"]},
+    {"id": 5, "description": "command-template.md: same replacement", "status": "done", "files_touched": ["agent-system/extensions/core/docs/templates/command-template.md"]},
+    {"id": 6, "description": "Correct the 4 cslib/lean hard SKILL.md provenance lines (pulled forward into Phase 4 already -- re-verify, do not re-edit)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "(deviation carried from Phase 4) Fix 3 extra files not in plan's named list: research-flow-example.md, adding-domains.md, extension-development.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/examples/research-flow-example.md", "agent-system/extensions/core/docs/guides/adding-domains.md", "agent-system/extensions/core/context/guides/extension-development.md"]}
+  ],
+  "current_objective": 7,
+  "final_verification_note": "grep -rn command-route-skill agent-system/ returns ZERO occurrences repo-wide (initially 4 remained in manifest-routing-schema.md/hard-mode-routing.md's own historical prose -- reworded to avoid the literal script name, since Phase 6's own verification bullet is stricter than Phase 4/5's 'only historical mentions' carve-out). grep routing_hard returns only routing_agents_hard-adjacent/co-occurrence matches. Diff read-through confirmed every hunk is prose or a non-executing fenced example. check-task-references.sh, validate-context-index.sh, test-routing-resolution.sh, lint-routing-wiring.sh all pass. check-extension-docs.sh's only FAIL is task 217's in-flight test-claude-refresh-matcher.sh drift -- sibling territory.",
+  "approaches_tried": [
+    {"approach": "Left 'command-route-skill.sh' as a literal script-name mention inside manifest-routing-schema.md/hard-mode-routing.md's own historical-explanation prose, matching the pattern Phase 4/5 explicitly allowed ('only historical mentions')", "result": "failed", "reason": "Phase 6's own verification bullet and the plan's global Testing & Validation section both state 'grep -rn command-route-skill agent-system/ returns zero occurrences [repo-wide]' with no historical-mention exception, unlike Phase 4/5's wording. Reworded all 4 occurrences in both files to describe the retired resolver without naming it literally."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6 (proactive fix for a Phase 7 bullet while the file was already open)",
+      "description": "manifest-routing-schema.md still named the retired routing_manifest_for_task_type() helper literally in its own historical-explanation prose. Phase 7's global Testing & Validation bullet ('grep -rn routing_manifest_for_task_type agent-system/ .claude/ returns zero occurrences') is strict, matching the command-route-skill precedent discovered in this same phase.",
+      "type": "altered",
+      "reason": "Reworded to 'a former standalone library helper' (no literal function name) rather than leave a known Phase 7 gate failure for a trivial one-line fix, while this exact file was already open for Phase 6 edits.",
+      "annotation": "Phase 7 should find this already satisfied"
+    },
+    {
+      "task_id": "6 (additional gap files discovered during final grep sweep)",
+      "description": "Beyond the 3 files already flagged as a Phase 4 deviation, the repo-wide grep sweep for Phase 6's own verification turned up 2 more stale non-historical mentions: agent-system/extensions/cslib/README.md (described routing_hard as a still-current mechanism naming skill-level entries) and agent-system/extensions/core/docs/guides/copy-claude-directory.md (taught adding routing/routing_hard/routing_agents to a new extension's manifest). Also found 3 comment-level staleness spots that used 'routing'/'routing_hard' as still-relevant generic examples rather than historical references: check-extension-docs.sh's Rule B/C index-comment, and manifest-routing-lib.sh's routing_core_manifest/routing_lookup header comments.",
+      "type": "altered",
+      "reason": "None of these 5 files were named in the plan's Phase 5/6 Files-to-modify lists, but Phase 6's own verification bullet ('grep -rn routing_hard agent-system/ returns only routing_agents_hard matches') requires them fixed. Corrected all 5 in the same pass as the plan's named Phase 6 work.",
+      "annotation": "repo-wide grep now clean per Phase 6's own verification bullets"
+    }
+  ]
+}

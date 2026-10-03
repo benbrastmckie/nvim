@@ -100,15 +100,21 @@ source .claude/scripts/command-gate-in.sh "$task_number" "<operation>"
 #### STAGE 2: DELEGATE
 
 ```bash
-source .claude/scripts/command-route-skill.sh "<operation>" "$TASK_TYPE" "skill-<default>"
-skill_name="$SKILL_NAME"
+source .claude/scripts/command-route-agent.sh "<operation>" "$TASK_TYPE" "<default-agent>" "${effort_flag:-}"
+agent_name="$AGENT_NAME"
 ```
 
-`command-route-skill.sh` resolves the task type to the appropriate skill name using extension manifests and fallback defaults. Then invoke the skill:
+`command-route-agent.sh` resolves the task type to the appropriate AGENT name directly, using
+extension manifests' `routing_agents`/`routing_agents_hard` blocks and a caller-supplied fallback
+default (there is no intervening skill-dispatch layer: `/research`, `/plan`, and `/implement`
+were retired, and `/orchestrate` dispatches agents directly). Then dispatch the agent via the
+Agent tool:
 
 ```
-Skill: "{skill_name}"
-Args: "task_number={N} session_id={SESSION_ID} ..."
+Agent({
+  subagent_type: "{agent_name}",
+  prompt: "task_number={N} session_id={SESSION_ID} ..."
+})
 ```
 
 #### CHECKPOINT 2: GATE OUT (Postflight)
