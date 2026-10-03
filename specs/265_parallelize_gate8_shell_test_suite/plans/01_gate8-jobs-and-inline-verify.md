@@ -208,22 +208,27 @@ have drifted) and by the two-command reproduction below, which must flip from FA
 
 ---
 
-### Phase 2: Record the sequential Gate 8 baseline [NOT STARTED]
+### Phase 2: Record the sequential Gate 8 baseline [COMPLETED]
 
 **Goal**: Capture the authoritative pre-change baseline — the complete `[FAIL]` set and the wall
 time of a full `verify-deploy.sh` run — with Phase 1's fix already landed, so Verification #1's
 comparison is apples-to-apples.
 
 **Tasks**:
-- [ ] Confirm the tree is otherwise quiet: record `nproc`, `uptime` load averages, and the number
+- [x] Confirm the tree is otherwise quiet: record `nproc`, `uptime` load averages, and the number
       of concurrent agent sessions. If ambient load is heavy, wait or note it prominently; do not
-      silently normalize the number afterwards.
-- [ ] Time a full run with no `--skip-slow`: `time bash agent-system/extensions/core/scripts/verify-deploy.sh --findings` (capture stdout+stderr to a scratch log under the session scratchpad, not the repo).
-- [ ] Extract and record the complete `[FAIL]` line set from Gate 8's own output plus every
-      `FINDING gate8 ...` line — the full sets, verbatim, not counts.
-- [ ] Record Gate 8's own share of the wall time if the output makes it separable; otherwise
-      record the total and say so.
-- [ ] Do not edit any file in this phase.
+      silently normalize the number afterwards. *(completed: nproc=24, load avg 1.54/1.95/1.79 at
+      start; NOT quiet — a sibling task (265's dispatch context named task 165 as an active
+      serialization peer) was observed actively dispatched and writing shared state/lock files
+      during the run, plus an uncommitted in-flight edit to
+      agent-system/extensions/typst/scripts/typst-element-lint.sh from another task. Noted
+      prominently rather than normalized — see phase-2-progress.json's confound_analysis)*
+- [x] Time a full run with no `--skip-slow`: `time bash agent-system/extensions/core/scripts/verify-deploy.sh --findings` (capture stdout+stderr to a scratch log under the session scratchpad, not the repo). *(completed: real 14m1.512s, logged to session scratchpad, not the repo)*
+- [x] Extract and record the complete `[FAIL]` line set from Gate 8's own output plus every
+      `FINDING gate8 ...` line — the full sets, verbatim, not counts. *(completed: recorded verbatim in phase-2-progress.json's baseline_record; 4 failing suites: test-four-tier-conflict.sh, test-gate-out-repair-reporting.sh, test-lint-json-channel-discipline.sh, test-typst-element-lint.sh — 3 of 4 already pre-documented in known-failures.txt or explained by a concurrent sibling's uncommitted edit; test-four-tier-conflict.sh is new and attributed to ambient load-sensitive timing (LOAD_SENSITIVE_BASENAMES), carried forward to Phase 4)*
+- [x] Record Gate 8's own share of the wall time if the output makes it separable; otherwise
+      record the total and say so. *(completed: not separable from --quiet --findings output; total 14m1.512s recorded, materially above the task description's prior ~11m03s expectation, attributed to the same ambient concurrent-session load)*
+- [x] Do not edit any file in this phase. *(completed: no source file edited; only progress/plan-checklist bookkeeping)*
 
 **Timing**: 0.5 hours (including a ~11 minute run)
 

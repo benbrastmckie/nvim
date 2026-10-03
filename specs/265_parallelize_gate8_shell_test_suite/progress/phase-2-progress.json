@@ -1,0 +1,53 @@
+{
+  "phase": 2,
+  "phase_name": "Record the sequential Gate 8 baseline",
+  "started_at": "2026-10-03T00:17:57Z",
+  "last_updated": "2026-10-03T00:32:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm tree is otherwise quiet (nproc, load, concurrent sessions)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Time a full run with no --skip-slow", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Extract and record the complete [FAIL] / FINDING gate8 set", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record Gate 8's own share of wall time if separable", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "baseline_record": {
+    "host_facts": {
+      "nproc": 24,
+      "uptime_load_avg": "1.54, 1.95, 1.79 (at start)",
+      "concurrent_agent_processes_matching_claude": 24,
+      "note": "Load average is modest, but heavy file-lock/state.json contention from concurrently-dispatched sibling agent sessions (observed: orch-165-implement active, plus others) is a real confound not captured by CPU load average alone."
+    },
+    "command": "time bash agent-system/extensions/core/scripts/verify-deploy.sh --findings (no --skip-slow)",
+    "wall_time": "real 14m1.512s / user 9m10.586s / sys 6m17.713s",
+    "overall_result": "[verify-deploy] FAIL -- 1 of 34 check(s) failed",
+    "complete_FAIL_set": [
+      "8. Shell test suite runner (tests/run-all.sh): [FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)"
+    ],
+    "complete_FINDING_set_verbatim": [
+      "FINDING gate16 lean still declares routing_hard/routing_agents_hard",
+      "FINDING gate8     [FAIL] 6: budget-bound -- rc=1 elapsed_ms=2115 budget_ms=1000",
+      "FINDING gate8     [FAIL] real corpus: unexpected VIOLATION line(s): [VIOLATION] /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/chapter-quality-check.sh: $out captured with 2>&1, then consumed as JSON/NDJSON (here-string (jq or while-read NDJSON)) -- the collaborator's stderr can corrupt the payload",
+      "FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+      "FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
+      "FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh",
+      "FINDING gate8 /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh"
+    ],
+    "failing_suite_set_gate8": [
+      "test-four-tier-conflict.sh",
+      "test-gate-out-repair-reporting.sh",
+      "test-lint-json-channel-discipline.sh",
+      "test-typst-element-lint.sh"
+    ],
+    "confound_analysis": {
+      "gate16_finding": "Pre-existing, unrelated to gate8/this task (lean extension routing_hard migration warning).",
+      "test-gate-out-repair-reporting.sh": "Already documented in scripts/tests/known-failures.txt as real-defect/needs-owner (SKILL_VALIDATE_FIXES aggregation bug). Pre-existing, unrelated to this task.",
+      "test-lint-json-channel-discipline.sh": "Already documented in known-failures.txt as real-defect/needs-owner (chapter-quality-check.sh stderr/JSON corruption). Pre-existing, unrelated to this task. Matches the chapter-quality-check.sh FINDING verbatim.",
+      "test-typst-element-lint.sh": "known-failures.txt explicitly documents this suite as deliberately EXCLUDED from the manifest because a prior seed run's redness traced to an uncommitted, concurrently in-flight working-tree change to agent-system/extensions/typst/scripts/typst-element-lint.sh, not a committed defect. git status at the start of this dispatch shows that exact file (agent-system/extensions/typst/scripts/typst-element-lint.sh) modified and uncommitted right now (37 insertions/6 deletions) -- almost certainly a concurrently-dispatched sibling task's in-flight edit, reproducing the identical confound known-failures.txt already warns about. Not touched, not fixed -- reported per the plan's Shared-tree caution mitigation and Stage 3.6 Observation Duty.",
+      "test-four-tier-conflict.sh": "NOT previously documented in known-failures.txt. Failure is case 6, a budget-bound timing assertion (elapsed_ms=2115 vs budget_ms=1000) inside a suite that is one of run-all.sh's five LOAD_SENSITIVE_BASENAMES (always scheduled serially before the parallel pool, specifically because of this kind of sensitivity). With 24 concurrent agent-matching processes and at least one other sibling task (task 165) actively dispatched and writing to shared state/lock files during this 14-minute run, file-lock contention from genuine ambient concurrent-session load is the most likely explanation -- CPU load average (1.5-2.0) does not capture this kind of contention. This failure occurred BEFORE any change to verify-deploy.sh's gate8 call site (sequential --jobs=1 default, unmodified), so it cannot be caused by this task's future --jobs change. Carried forward as a named item to re-check in Phase 4's comparison: if it disappears post-change, it was transient ambient-load noise; if it recurs identically, it is pre-existing and orthogonal to this task's own change, reportable but not a Phase-4 decision-gate blocker (the gate's purpose is to catch sets that DIFFER because of the --jobs change, not to establish a globally clean tree)."
+    },
+    "gate8_own_share_of_wall_time": "Not independently separable from this run's stdout alone (gate8 announcement lacks its own start/end timestamp in --quiet findings mode); task description's prior measurement (~9m21s of ~11m03s, ~86%) is cited as the prior expectation. This run's total (14m1.512s) is materially above the ~11m03s prior expectation, itself likely attributable to the same ambient concurrent-session load discussed above rather than a tree/gate8 regression."
+    }
+}
