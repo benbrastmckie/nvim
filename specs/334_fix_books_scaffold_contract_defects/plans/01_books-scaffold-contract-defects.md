@@ -2,7 +2,7 @@
 
 - **Task**: 334 - Fix two books-extension scaffold contract defects: the hard implementation
   agent's artifacts shape and hand-rolled task lookups in both hard skills
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md
@@ -112,7 +112,7 @@ last.
 
 ---
 
-### Phase 1: Defect 1 -- object-shaped artifacts template in the hard implementation agent [NOT STARTED]
+### Phase 1: Defect 1 -- object-shaped artifacts template in the hard implementation agent [COMPLETED]
 
 **Goal**: `books-implementation-hard-agent.md` Stage 7 carries a literal fenced JSON block with
 `"status"` and an object-shaped `"artifacts"` array, so both `lint-agent-contracts.sh` Check E
@@ -120,20 +120,21 @@ last.
 within a 6-line window of the `"artifacts"` occurrence) pass.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/books/agents/books-implementation-hard-agent.md` (territory
+- [x] Re-read `agent-system/extensions/books/agents/books-implementation-hard-agent.md` (territory
       discipline: a sibling may have touched it) and locate `### Stage 7: Write Metadata File`
-      (currently 4 lines of prose ending "same `artifacts` shape as the base agent").
-- [ ] Copy the Stage 7 block from the passing sibling
+      (currently 4 lines of prose ending "same `artifacts` shape as the base agent"). *(completed)*
+- [x] Copy the Stage 7 block from the passing sibling
       `agent-system/extensions/books/agents/books-implementation-agent.md` verbatim -- the
       `artifacts` shape prose paragraph plus the fenced ```json block with
       `"status": "implemented"` and the single `{type: "summary", path:
-      "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md", summary: ...}` entry.
-- [ ] Keep the hard agent's own prose that the sibling lacks: the `implemented`/`partial`/
+      "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md", summary: ...}` entry. *(completed)*
+- [x] Keep the hard agent's own prose that the sibling lacks: the `implemented`/`partial`/
       `blocked` status vocabulary note, since this agent genuinely reports all three. Per
       `return-meta-artifacts-template.md`'s own "Placement" guidance, prose is kept and the
-      template is *added*; prose alone does not substitute for a copyable example.
-- [ ] Leave Stages 8 and 9 (the H9 wrap-up discipline block) untouched.
-- [ ] Confirm no task-number reference was introduced.
+      template is *added*; prose alone does not substitute for a copyable example. *(completed)*
+- [x] Leave Stages 8 and 9 (the H9 wrap-up discipline block) untouched. *(completed: verified
+      byte-identical in diff)*
+- [x] Confirm no task-number reference was introduced. *(completed: no "task N" text added)*
 
 **Timing**: 0.3 hours
 

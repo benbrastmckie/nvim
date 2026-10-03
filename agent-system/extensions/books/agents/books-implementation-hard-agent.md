@@ -209,8 +209,25 @@ Deviations`.
 
 ### Stage 7: Write Metadata File
 
-Write to `specs/{N}_{SLUG}/.return-meta.json`, status `implemented`/`partial`/`blocked`, same
-`artifacts` shape as the base agent.
+Write to `specs/{N}_{SLUG}/.return-meta.json`, status `implemented`/`partial`/`blocked` (this
+agent genuinely reports all three). **`artifacts` shape (required)**: `artifacts` is a
+**required array of objects** (`type`, `path`, `summary` keys each) — **never an array of bare
+path strings**, per `@.claude/context/formats/return-metadata-file.md`'s `artifacts (required)`
+section. Copy this exact shape (source:
+`@.claude/context/contracts/return-meta-artifacts-template.md`):
+
+```json
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/{N}_{SLUG}/summaries/{NN}_{short-slug}-summary.md",
+      "summary": "One-line description of what the summary covers."
+    }
+  ]
+}
+```
 
 ### Stage 8: Return Brief Text Summary
 
