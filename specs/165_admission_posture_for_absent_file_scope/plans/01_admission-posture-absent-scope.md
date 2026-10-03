@@ -1,7 +1,7 @@
 # Implementation Plan: Admission posture for an absent `file_scope`, plus cross-session visibility for self-modifying candidates
 
 - **Task**: 165 - Admission gates in orchestrate-batch-admit.sh: posture for an absent `file_scope`, then cross-session visibility for self-modifying candidates
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: None outstanding (162 formalize/harvest, 163 surface missing/empty, 245 admitted-set-only narrowing — all archived/completed)
 - **Research Inputs**: `specs/165_admission_posture_for_absent_file_scope/reports/01_admission-posture-absent-scope.md`

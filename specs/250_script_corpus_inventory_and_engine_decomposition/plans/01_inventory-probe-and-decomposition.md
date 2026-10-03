@@ -1,7 +1,7 @@
 # Implementation Plan: Task #250
 
 - **Task**: 250 - Script-corpus inventory probe, then decompose orchestrate-cycle-plan.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: 199, 245, 249, 259, 265, 266 (all COMPLETED — re-verified in the research report); 272 is NOT a declared dependency but overlaps `orchestrate-cycle-plan.sh` and carries a pre-edit status re-check in Phase 4
 - **Research Inputs**: specs/250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md

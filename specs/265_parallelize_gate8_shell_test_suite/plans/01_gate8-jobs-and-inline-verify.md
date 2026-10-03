@@ -1,7 +1,7 @@
 # Implementation Plan: Task #265
 
 - **Task**: 265 - Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh --jobs (absorbing the deploy-headless.sh inline-verify redundancy)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None blocking. Task 266 (deploy-pending/identical-dispatch guard) is COMPLETED and archived; task 261 (run-all.sh `--jobs`) is COMPLETED WITH EXCLUSIONS and archived. Both prerequisites are discharged.
 - **Research Inputs**: specs/265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md

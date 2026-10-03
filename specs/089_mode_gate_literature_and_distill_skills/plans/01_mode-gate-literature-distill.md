@@ -1,7 +1,7 @@
 # Implementation Plan: Task #89
 
 - **Task**: 89 - Apply the mode-gated section convention to skill-literature and skill-distill
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9.75 hours
 - **Dependencies**: 87 (pilot: `skill-email-cleanup` mode-gated extraction — complete, its output is this plan's literal template)
 - **Research Inputs**: `specs/089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md`

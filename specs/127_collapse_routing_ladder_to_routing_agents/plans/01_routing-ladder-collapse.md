@@ -1,7 +1,7 @@
 # Implementation Plan: Collapse Routing Ladder to routing_agents
 
 - **Task**: 127 - Collapse routing ladder to routing agents
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None outstanding (task 121 hard-mode file deletions and task 125 command deletions confirmed landed by research)
 - **Research Inputs**: specs/127_collapse_routing_ladder_to_routing_agents/reports/01_routing-ladder-collapse.md

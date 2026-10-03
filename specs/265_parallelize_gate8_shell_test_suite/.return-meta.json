@@ -76,7 +76,5 @@
     ],
     "phases_completed": 8,
     "phases_total": 8
-  },
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  }
 }

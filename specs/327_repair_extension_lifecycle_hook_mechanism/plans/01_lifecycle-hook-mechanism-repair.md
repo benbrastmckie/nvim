@@ -2,7 +2,7 @@
 
 - **Task**: 327 - Repair the extension lifecycle hook mechanism: broken resolver schema, absent
   return-code channel, uninvoked verification stage
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (no dependency edge on the skeleton-plan follow-up work — deliberate,
   see Risks & Mitigations)

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #326
 
 - **Task**: 326 - Add an advisory `--gate` verification tier at implement dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: None blocking. Sibling-in-flight (territory only, not a dependency): the
   books domain context corpus task, which owns

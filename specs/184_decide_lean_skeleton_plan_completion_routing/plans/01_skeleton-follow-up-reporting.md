@@ -1,7 +1,7 @@
 # Implementation Plan: Surface skeleton-plan follow-ups at completion under the batch engine
 
 - **Task**: 184 - Surface skeleton-plan follow-ups at completion under the batch engine (ruled: port the sorry_inventory follow-up report, not pr_ready routing)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: 242, 243 (both complete/archived — same postflight script/test and handoff-schema.md respectively; no live conflict)
 - **Research Inputs**: specs/184_decide_lean_skeleton_plan_completion_routing/reports/01_skeleton-follow-up-routing.md
