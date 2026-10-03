@@ -366,28 +366,28 @@ the test and reading its case count in the output.
 
 ---
 
-### Phase 6: Commands and direct-execution skills [NOT STARTED]
+### Phase 6: Commands and direct-execution skills [COMPLETED]
 
 **Goal**: `/book` and `/certify` as two commands with non-overlapping scope, each paired with a
 direct-execution skill.
 
 **Tasks**:
-- [ ] `commands/book.md` — single-book developer loop, modeled on `lean/commands/lake.md`'s
+- [x] `commands/book.md` — single-book developer loop, modeled on `lean/commands/lake.md`'s
       step-numbered inline-bash structure: resolve the named book's `book.toml`, build its module
       scope, run the manifest validator, then the environment-walk check against the built library
       directory. State explicitly, in the command body, that full documentation reconciliation is
-      OUT of its scope and owned elsewhere — report it, never silently skip it.
-- [ ] `commands/certify.md` — thin passthrough over `books-certify.sh`, with an options table
+      OUT of its scope and owned elsewhere — report it, never silently skip it. *(completed)*
+- [x] `commands/certify.md` — thin passthrough over `books-certify.sh`, with an options table
       carrying only the flags Phase 1 re-verified. Explain in one line why certification is a
       separate command from `/book`: it is a graph-wide, dependency-ordered operation over many
-      books, not a single-book concern.
-- [ ] `skills/skill-books-build/SKILL.md` — direct-execution skill paired with `/book`, its
-      `description` ending "Invoke for /book command."
-- [ ] `skills/skill-books-certify/SKILL.md` — paired with `/certify`, description ending
-      "Invoke for /certify command."
-- [ ] Rule E compliance: `books-certify.sh` is the only bare `<name>.sh` token permitted in these
-      four files.
-- [ ] Confirm both command filenames and both skill directory names are already in `provides`.
+      books, not a single-book concern. *(completed)*
+- [x] `skills/skill-books-build/SKILL.md` — direct-execution skill paired with `/book`, its
+      `description` ending "Invoke for /book command." *(completed)*
+- [x] `skills/skill-books-certify/SKILL.md` — paired with `/certify`, description ending
+      "Invoke for /certify command." *(completed)*
+- [x] Rule E compliance: `books-certify.sh` is the only bare `<name>.sh` token permitted in these
+      four files. *(completed)*
+- [x] Confirm both command filenames and both skill directory names are already in `provides`. *(completed)*
 
 **Timing**: 1.5 hours
 
