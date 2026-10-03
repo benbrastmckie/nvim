@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 4,
+  "summary": "Created a 7-phase implementation plan repairing all four extension-lifecycle-hook defects: object-schema resolver join, flat-deploy hook path resolution, an observable-but-never-blocking rc channel via SKILL_HOOK_LAST_* globals, and a live verification call site in command-gate-out.sh, plus nine regression cases, a creating-extensions.md addition, and a new all-extensions hooks-path lint rule.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/327_repair_extension_lifecycle_hook_mechanism/plans/01_lifecycle-hook-mechanism-repair.md",
+      "summary": "7 phases, 5 source-store files, 5.5h estimate; waves [[1],[2],[3],[4,5,6],[7]]."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": []
+}

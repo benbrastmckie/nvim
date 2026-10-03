@@ -45,7 +45,7 @@ next_project_number: 329
 297 [PLANNED] — Scaffold the books extension: manifest, four-block routing,...
   └─ 298 [NOT STARTED] — Author the books extension context corpus under...
   └─ 326 [NOT STARTED] — Add a books verification tier at implement dispatch: the...
-327 [PLANNING] — Repair the extension lifecycle hook mechanism: broken...
+327 [PLANNED] — Repair the extension lifecycle hook mechanism: broken...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -148,11 +148,12 @@ Both halves are in scope, and the test corpus is a first-class target rather tha
 
 ### 327. Repair the extension lifecycle hook mechanism: broken resolver schema, absent return-code channel, uninvoked verification stage
 - **Effort**: 1-3 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [327_repair_extension_lifecycle_hook_mechanism/reports/01_lifecycle-hook-mechanism-repair.md]
+- **Plan**: [327_repair_extension_lifecycle_hook_mechanism/plans/01_lifecycle-hook-mechanism-repair.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 
