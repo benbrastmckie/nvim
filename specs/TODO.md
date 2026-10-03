@@ -11,12 +11,11 @@ next_project_number: 335
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,285,295,296,299,300,306,311,318,322,325,334 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,275,281,302,303,319,329 | 22,251,271,272,280,285,300 | core-agent-system, extensions, orchestrator |
-| 3 | 273,282,330 | 271,281,329 | core-agent-system, orchestrator |
-| 4 | 274,304,312,331 | 273,275,282,284,300,302,330 | extensions, orchestrator |
-| 5 | 328,332 | 170,303,304,318,322,331 | core-agent-system, extensions |
-| 6 | 313,333 | 306,328,332 | core-agent-system, extensions |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,329,334 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,330 | 22,251,271,272,280,300,329 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304,331 | 273,275,281,284,302,330 | core-agent-system, extensions, orchestrator |
+| 4 | 312,328,332 | 170,282,300,303,304,318,322,331 | core-agent-system, extensions, orchestrator |
+| 5 | 313,333 | 306,328,332 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -31,8 +30,6 @@ next_project_number: 335
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
-285 [IMPLEMENTING] — Add the missing .decisions.json writer script and correct the...
-  └─ 329 [NOT STARTED] — Per-task issue log: contract, writer and dispatch threading
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
@@ -41,6 +38,7 @@ next_project_number: 335
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
+329 [NOT STARTED] — Per-task issue log: contract, writer and dispatch threading
 
 ### Extensions
 
@@ -68,10 +66,10 @@ next_project_number: 335
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
+319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
-319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 330 [NOT STARTED] — Per-dispatch cost and timing record
 
 ## Tasks
@@ -2485,7 +2483,7 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 285. Add the missing .decisions.json writer script and correct the postflight handoff-recovery notice
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
