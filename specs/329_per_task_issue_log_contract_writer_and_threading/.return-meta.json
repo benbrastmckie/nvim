@@ -1,40 +1,29 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791065283_d98d41_329",
-  "dispatch_seq": 7,
-  "task_number": 329,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md",
-      "summary": "Writer-script precedent analysis (events-append.sh/system-defect-record.sh/orchestrate-record-decision.sh), re-measured orchestrate-build-dispatch.sh threading point and orchestrate-cycle-postflight.sh/orchestrate-cycle-plan.sh call sites, and recommended MIRROR/LEAVE/RETIRE verdicts for the six existing issue surfaces including corroborated-dead reflection field."
+      "type": "plan",
+      "path": "specs/329_per_task_issue_log_contract_writer_and_threading/plans/01_issue-log-writer-threading.md",
+      "summary": "9-phase plan (4 dependency waves, ~11h) for the per-task issues.jsonl contract, the single issue-record.sh writer, dispatch/contract threading, seven orchestrator-side call sites, the six recorded relation verdicts, and the reflection-field retirement."
     }
   ],
-  "findings_count": 9,
+  "metadata": {
+    "session_id": "sess_1791065283_d98d41_329",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 9,
+    "estimated_hours": 11,
+    "dependency_waves": [[1], [2, 7], [3, 4, 5, 6, 8], [9]]
+  },
   "memory_candidates": [
     {
-      "content": "scripts/orchestrate-record-decision.sh is the per-task-file (not global-file) append-one-validated-entry precedent in this codebase: it resolves TASK_DIR from a bare --task N via scripts/lib/task-lookup-lib.sh's task_lookup_entry/task_lookup_dir (archive-aware), uses a dedicated per-task lock file ($TASK_DIR/.decisions.lock, distinct from task-lock.sh's mutex), and documents a read-merge-validate-mv write under flock for a JSON array document. Distinct from events-append.sh/system-defect-record.sh, which append JSONL lines to a GLOBAL file. Any new per-task structured log should pick the write mechanics (array-mv vs. JSONL-append) based on whether the target file is a bare array or an append-only line log, not just copy whichever precedent is named first.",
+      "content": "In this agent system, a per-dispatch instruction that must reach every dispatched agent is threaded at ONE point -- the single brace-grouped section emitter in scripts/orchestrate-build-dispatch.sh that writes the dispatch file -- never by editing agent definition files (there are ~78). Within that emitter, sections split into unconditional (Identity, Description, Artifact Round, Handoff, Wait Discipline, User-Decision Contract) and conditional (Territory, memory/lit/effort/hard-contracts, Prior Decisions, phase-specific artifact blocks). Placing a new section among the unconditional ones is what makes it reach research, plan, and implement phases alike; placing it in a conditional branch silently limits coverage. The shared contract includes are NOT equivalent substitutes: context/contracts/phase-closure.md is loaded in both modes via an explicit @-bullet in the general implementation agent, but context/contracts/wrap-up.md is hard-mode-only, so an instruction placed only there never reaches standard-mode or research/plan dispatches. Verify an addition by generating a dispatch file for all three phase values, not by reading the code.",
       "category": "PATTERN",
-      "source_artifact": "specs/329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md",
+      "source_artifact": "specs/329_per_task_issue_log_contract_writer_and_threading/plans/01_issue-log-writer-threading.md",
       "confidence": 0.85,
-      "suggested_keywords": ["task-lookup-lib", "per-task-file", "flock", "decisions.json", "writer-script-precedent"]
-    },
-    {
-      "content": "The state.json 'reflection' field is corroborated dead by two independent methods: (1) grep across every live postflight script (skill-base.sh, update-task-status.sh, orchestrate-cycle-postflight.sh, state-write.sh) finds zero writers; (2) its sole writer, scripts/orchestrator-postflight.sh, is itself already documented in-repo (skill-base.sh:991) as having no live callers. context/reference/state-management-schema.md's prose describing a live producer for this field is aspirational/stale, not a description of working code — a reminder that schema-reference docs in this codebase can describe intended-but-undeployed wiring, not just current behavior, so a 'field exists in the schema doc' finding needs a grep-for-live-writer follow-up before being trusted.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["reflection", "dead-field", "orchestrator-postflight", "schema-drift", "grep-corroboration"]
-    },
-    {
-      "content": "orchestrate-build-dispatch.sh's per-dispatch prompt-section line ranges drift across unrelated tasks that land first: a dispatch-authored 'measured ~417-558' estimate was already ~20 lines stale by the time the dependent task's own research ran, from two already-completed, file-footprint-serializing dependency tasks (one touching this same build-dispatch script, one touching the sibling postflight script). Any task description citing line ranges in these two files should be treated as a hint to re-measure, never as ground truth, even when the citing task explicitly says RE-MEASURE — the drift is real and fast, not a hypothetical caution.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-build-dispatch", "line-drift", "re-measure", "file-footprint-serialization"]
+      "suggested_keywords": ["orchestrate-build-dispatch", "dispatch-threading", "unconditional-section", "phase-closure", "wrap-up", "hard-mode-only"]
     }
   ],
-  "next_steps": "Run /plan 329 to create implementation plan"
+  "dispatch_seq": 8
 }

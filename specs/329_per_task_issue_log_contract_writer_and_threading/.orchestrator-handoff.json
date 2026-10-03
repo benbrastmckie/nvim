@@ -1,0 +1,19 @@
+{
+  "task_number": 329,
+  "session_id": "sess_1791065283_d98d41_329",
+  "status": "planned",
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 9,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/329_per_task_issue_log_contract_writer_and_threading/plans/01_issue-log-writer-threading.md",
+      "summary": "9-phase implementation plan across 4 dependency waves (~11h) for the per-task issue log contract, writer, threading, orchestrator call sites, relation verdicts, and reflection retirement."
+    }
+  ],
+  "blockers": [],
+  "dead_ends": [],
+  "next_steps": "Run /implement 329 to execute the plan. Wave 3 (phases 3, 4, 5, 6, 8) has five disjoint file footprints and is genuinely parallelizable.",
+  "dispatch_seq": 8
+}
