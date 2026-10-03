@@ -239,22 +239,23 @@ any hit `UNRELATED` or `HISTORICAL`, honour the ledger over this count.
 
 ---
 
-### Phase 3: Retarget `docs/architecture/handoff-schema.md` [NOT STARTED]
+### Phase 3: Retarget `docs/architecture/handoff-schema.md` [COMPLETED]
 
 **Goal**: Retarget this file's citations, which the survey classified from the dispatch's own list
 rather than line-by-line — so this phase carries the heaviest classification burden of the
 editing phases.
 
 **Tasks**:
-- [ ] Re-grep and classify every hit against the Classification rule; do not assume all 28 are
-      `LIVE`.
-- [ ] Pay particular attention to citations describing *who writes* and *who reads* the handoff:
+- [x] Re-grep and classify every hit against the Classification rule; do not assume all 28 are
+      `LIVE`. *(completed: 23 LIVE, 5 UNRELATED)*
+- [x] Pay particular attention to citations describing *who writes* and *who reads* the handoff:
       the write side is the dispatched agent's own obligation, the read side is Move 3
       (`orchestrate-cycle-postflight.sh`). Retarget the read side to Move 3 and leave the write
       side's agent-internal stage references alone if they belong to the agent-execution-flow
-      vocabulary.
-- [ ] Apply each `LIVE` replacement individually, preserving descriptive parentheticals.
-- [ ] Re-read the diff.
+      vocabulary. *(completed)*
+- [x] Apply each `LIVE` replacement individually, preserving descriptive parentheticals.
+      *(completed)*
+- [x] Re-read the diff. *(completed)*
 
 **Timing**: 1 hour
 

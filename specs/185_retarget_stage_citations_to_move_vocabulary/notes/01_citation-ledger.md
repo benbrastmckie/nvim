@@ -62,3 +62,20 @@ per-hit review against the mapping table, LIVE anchors retargeted with step numb
 descriptive parentheticals, HISTORICAL hits reframed with explicit former/deleted framing,
 UNRELATED vocabularies — agent-execution-flow, generic skill-body flow, `/meta` interview stages,
 other scripts' own internal labels, lean extension's agent-stage convention — left untouched).
+
+## Phase 3: handoff-schema.md (28 hits) — LIVE/UNRELATED split
+
+LIVE: 23 lines retargeted. UNRELATED: 5 lines (434, 445, 534, 614, 811) — all either a specific
+hard-mode implementation agent's own internal "Stage 5"/"H9 Stage 5" (agent-execution-flow
+vocabulary, e.g. `cslib-implementation-hard-agent.md` Stage 5, `lean-implementation-hard-agent.md`
+Stage 5) or the generic skill-body postflight convention ("per each skill's own Stage 7 postflight
+contract" at line 534) — left untouched per the Classification rule.
+
+Key structural finding the survey could not determine: several LIVE citations described "three
+call sites" (base Stage 5, base Stage MT-4, hard Stage 5) that read the handoff after a dispatch.
+Since the base/hard orchestrate split is now one engine and Move 3 reads every dispatch row's
+handoff in one shared per-row postflight call, these collapsed to "the now-single Move 3 call
+site (formerly base Stage 5, base Stage MT-4, and hard Stage 5)" — preserving the historical
+enumeration while correctly naming the live mechanism. Per the plan's Phase 3 task note, every
+handoff-READ citation (including "Stage MT-4 step 1") retargeted to Move 3, not Move 2, since
+Move 3 is where all handoff reading now happens (after ALL Move 2 dispatches complete).

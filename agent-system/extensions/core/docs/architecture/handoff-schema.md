@@ -48,7 +48,7 @@ absent from the hook input), so the hook is structurally blind to that class of 
 codebase previously had exactly such a writer (a Bash-redirect helper function in
 `scripts/skill-base.sh` with zero callers); it has been deleted rather than rewired, closing the
 coverage gap by removing the class of writer rather than patching the hook. The orchestrator-side
-stray-handoff sweep (`skill-orchestrate` Stage 5, covering both effort modes) remains the
+stray-handoff sweep (`skill-orchestrate` Move 3, covering both effort modes) remains the
 mechanism-agnostic backstop should a future Bash-redirect writer ever be introduced.
 
 **Readers MUST check freshness.** A handoff at the correct path is not necessarily *this
@@ -60,7 +60,7 @@ still-live predecessor that wakes (via a self-armed watcher/monitor, or an opera
 mtime than the current dispatch window, so the late write passes an mtime-only check and looks
 exactly like this dispatch's own on-time report. The actual discriminator is `dispatch_seq`: an
 orchestrator-minted, unforgeable per-dispatch identity embedded in the delegation context before
-the `Agent` call and echoed back unchanged in the handoff. Stage 5 of both engines compares the
+the `Agent` call and echoed back unchanged in the handoff. Move 3 (now one engine, both effort modes) compares the
 handoff's `dispatch_seq` against the value minted for the current cycle, rejecting a mismatch
 even when the mtime check alone would have passed. The mtime check is retained as a second line
 of defense against a different hazard (a handoff silently restored from an old git commit); it is
@@ -114,8 +114,8 @@ continuation as absent.
 
 **Reader behavior is unchanged by the writer's retirement.** `validate-handoff.sh`,
 `scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate, and
-`skill-orchestrate/SKILL.md` (Stage 4 partial handler and hard-mode H1 branch, Stage 5 result
-read, Stage MT-4 dispatch bullet — one engine, both effort modes) all continue to resolve
+`skill-orchestrate/SKILL.md` (Move 2's per-task dispatch preflight (the partial handler) and hard-mode H1 branch, Move 3 (the result
+read), Move 2 (the dispatch bullet) — one engine, both effort modes) all continue to resolve
 **either** form, normalizing to `{ handoff_path, orchestrator_mode: true }` before the value is
 handed to a successor dispatch. Do not narrow any of these readers to reject the nested form
 without first confirming no in-flight handoff still carries it.
@@ -175,7 +175,7 @@ use it, or attempt to extend it, as a substitute for `dispatch_seq` below.
 Orchestrator-minted, unforgeable per-dispatch identity. See "Readers MUST check freshness" above
 for the full rationale. Minted by the orchestrator immediately before the `Agent` tool call,
 embedded in that dispatch's delegation context (alongside `handoff_path`), and echoed back
-unchanged by the dispatched agent in this field. Stage 5 of `skill-orchestrate` (both effort
+unchanged by the dispatched agent in this field. Move 3 of `skill-orchestrate` (both effort
 modes, one engine) compares this value against the value minted for the current cycle:
 - Match (or field absent from the handoff): accepted, subject to the existing mtime check.
 - Mismatch: rejected — `handoff_stale=true`, the same loud-error path the mtime check already
@@ -307,7 +307,7 @@ Phase-accounting fields read by the completion-claim verification gate (see belo
 ALWAYS top-level fields on the handoff object — never members of `continuation_context`.
 `continuation_context` carries only `handoff_path` and `orchestrator_mode`. The single active
 handoff writer (the hard-mode implementation agents' H9 wrap-up) and the orchestrator's readers
-at all three call sites (base Stage 5, base Stage MT-4, hard Stage 5) agree on top level; do not
+at the now-single Move 3 call site (formerly base Stage 5, base Stage MT-4, and hard Stage 5) agree on top level; do not
 move these fields into `continuation_context` in either a writer or a reader.
 
 **`[COMPLETED WITH EXCLUSIONS]` accounting**: a phase closed via `[COMPLETED WITH EXCLUSIONS]`
@@ -369,7 +369,7 @@ phase headings in the plan file carry `[COMPLETED]` after the final verification
 
 **Orchestrator behavior — the completion-claim verification gate**: `plan_markers_verified` is
 a corroborating signal consumed by `skill_gate_completion_claim` (defined once, in
-`skill-base.sh`, and called identically from all three sites: base Stage 5, base Stage MT-4, and
+`skill-base.sh`, and called from the now-single Move 3 call site (formerly base Stage 5, base Stage MT-4, and
 hard Stage 5). The gate itself has three fail-closed cases, evaluated in this order, and its own
 refusal logic is unconditional and unchanged:
 
@@ -508,7 +508,7 @@ in `context/schemas/orchestrator-handoff-schema.json`.
 producer-defect diagnostic from `skill_corroborate_phase_counts()` in
 `agent-system/extensions/core/scripts/skill-base.sh`, firing only when that function receives a
 non-empty, existing `handoff_path` argument (the handoff-present corroboration call sites in
-`skill-orchestrate/SKILL.md` Stage 5, both effort modes, pass the current handoff; the
+`skill-orchestrate/SKILL.md` Move 3, both effort modes, pass the current handoff; the
 recovery-path call sites pass an empty string, since there is no handoff to validate there). Its
 exit status never influences `skill_corroborate_phase_counts()`'s own return value or the
 completion-claim gate.
@@ -523,8 +523,8 @@ is a fallback bolted onto the other's absence — each mode has exactly one desi
 the "missing handoff" branch below fires by design for base-mode dispatches every time, not as an
 error condition.
 
-`.orchestrator-handoff.json` is the outcome channel Stage 5 (single-task, base and hard mode) and
-Stage MT-4 step 1 (multi-task) read after a dispatch, for the one mode that writes it — see
+`.orchestrator-handoff.json` is the outcome channel Move 3 (covering single-task base/hard mode
+and multi-task alike — formerly separate Stage 5 and Stage MT-4 step 1 sites) reads after a dispatch, for the one mode that writes it — see
 Handoff Writers above.
 
 `.return-meta.json` is read inside the missing/stale-handoff branch, which is the expected,
@@ -535,10 +535,10 @@ hard mode alike) per each skill's own Stage 7 postflight contract.
 
 `agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh` is the single, shared
 implementation of this fallback — the ONE place that normalizes `.return-meta.json`'s `status`,
-`artifacts[0]`, and phase-accounting fields into the same outcome shape Stage 5 already reads from
+`artifacts[0]`, and phase-accounting fields into the same outcome shape Move 3 already reads from
 a handoff (`recovered`, `status`, `phases_completed`, `phases_total`, `artifact_path/type/summary`,
-plus a `reason` token for the non-recovered case). Base Stage 5, hard-mode Stage 5, and multi-task
-Stage MT-4 step 1 each call this one script rather than maintaining three separately-derived
+plus a `reason` token for the non-recovered case). The now-single Move 3 call site (formerly base Stage 5, hard-mode Stage 5, and multi-task
+Stage MT-4 step 1) calls this one script rather than maintaining three separately-derived
 recovery rules. See that script's own header for its full field/exit-code contract, and see the
 "MUST NOT (Context Flatness Constraint) — Recovery exception (return-meta fallback)" section in
 `skills/skill-orchestrate/SKILL.md` for the token-budget and fail-closed bounds it operates under.
@@ -552,10 +552,10 @@ this fallback. This three-value accept-list is drawn from the same normative voc
 because it is a strict subset (the success values), not a competing enumeration.
 
 **Freshness is orthogonal to vocabulary, by design.** The accept-list above needed no change when
-the skill-status vocabulary's forbidden `"completed"` writer was fixed elsewhere (Stage 8 of
+the skill-status vocabulary's forbidden `"completed"` writer was fixed elsewhere (Move 3 of
 `skill-orchestrate/SKILL.md` now emits `"implemented"`): this script's gate is `meta_mtime` versus
 the current dispatch's `window_start_ts`, not the status string. A `.return-meta.json` left over
-from a *previous* invocation's Stage 8 always has an mtime before the current invocation's
+from a *previous* invocation's Move 3 always has an mtime before the current invocation's
 `window_start_ts` and is therefore classified stale regardless of what status value it contains.
 Do not couple these two mechanisms — a future change to the status vocabulary should never need a
 corresponding change here, and vice versa.
@@ -570,7 +570,7 @@ missing for that dispatch. This matters most for hard mode: its implement dispat
 a handoff (H9 wrap-up), so its `implemented` outcome is read from the handoff-present branch, not
 the recovery branch above — if a future editor assumed the handoff carried completion data (by
 analogy with `status`/`phases_completed`/artifact fields, which it does carry), the propagation
-would silently break again. Every `implemented)` postflight site (base Stage 5, hard Stage 5,
+would silently break again. The now-single `implemented)` postflight call site (formerly base Stage 5, hard Stage 5,
 Stage MT-4 step 3) therefore issues its own `orchestrate-recover-outcome.sh` read for this purpose
 independently of which branch supplied `dispatch_status`, reusing that cycle's already-recovered
 JSON when the recovery branch already ran rather than reading the file twice.
@@ -716,8 +716,8 @@ plan_markers_verified=$(echo "$handoff" | jq -r '.plan_markers_verified // "abse
 
 This dual-form resolution is applied identically at every reader site:
 `scripts/orchestrate-triage-classify.sh`'s `continuation_ok` predicate, and
-`skill-orchestrate/SKILL.md` (Stage 4 partial handler and hard-mode H1 branch, Stage 5 result
-read, Stage MT-4 dispatch bullet — one engine, both effort modes). It is one rule, applied in
+`skill-orchestrate/SKILL.md` (Move 2's per-task dispatch preflight (the partial handler) and hard-mode H1 branch, Move 3 (the result
+read), Move 2 (the dispatch bullet) — one engine, both effort modes). It is one rule, applied in
 several places — never independently re-derived.
 
 When `status = "implemented"`, the orchestrator additionally calls
@@ -734,9 +734,9 @@ narrow, grep-only exceptions are sanctioned, and all three are bounded to `### P
 
 | Exception | Variant | When it fires | Bound |
 |-----------|---------|---------------|-------|
-| Adversarial-verification grep over reports | hard mode | Stage 4, before the plan dispatch | Pattern match; no full-file read |
-| Next-phase selection grep over the plan | hard mode | Stage 4 `planned`/`implementing` handler, every cycle | One matched heading, reduced to a phase number |
-| Phase-marker recovery grep over the plan | base + hard | Stage 5, missing/stale-handoff branch only | Two `grep -c` integers, ≤10 tokens per recovery event |
+| Adversarial-verification grep over reports | hard mode | Move 2 (the per-task dispatch preflight), before the plan dispatch | Pattern match; no full-file read |
+| Next-phase selection grep over the plan | hard mode | Move 2's `planned`/`implementing` handler, every cycle | One matched heading, reduced to a phase number |
+| Phase-marker recovery grep over the plan | base + hard | Move 3, missing/stale-handoff branch only | Two `grep -c` integers, ≤10 tokens per recovery event |
 
 Outside these three, the reading contract is unchanged: the handoff object is the sole channel
 by which artifact content reaches the orchestrator. See the "Recovery exception (phase-marker
