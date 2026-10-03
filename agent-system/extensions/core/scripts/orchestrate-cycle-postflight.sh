@@ -990,6 +990,42 @@ if [ "$have_outcome" = "true" ]; then
       if skill_gate_completion_claim "$task_number" "$phases_completed" "$phases_total" \
            "$plan_markers_verified" "$notice_prefix"; then
         implemented_gate_passed=true
+
+        # ─── Skeleton follow-up reporting (report-only; never auto-files tasks) ─────────────────
+        # A strategic-sorry skeleton plan (handoff.skeleton == true) still reaches [COMPLETED]
+        # through this ordinary completion-claim gate above -- see
+        # context/standards/status-markers.md's [COMPLETED] subsection. The single-task engine's
+        # deleted skeleton-exhaustion branch did three things (route via pr_ready, propagate a
+        # summary, report sorry_inventory[] follow-ups); the first is moot under the batch engine
+        # (pr_ready is type=pr-only) and the second is already owned by
+        # skill_orchestrate_propagate_completion below. Only the third was lost, so this block
+        # restores ONLY the reporting -- stderr, completion_summary, and the append-only
+        # skeleton_follow_ups state.json field -- without touching skill_gate_completion_claim.
+        #
+        # `handoff` is set ONLY on the handoff-present path (never on the recovery/return-meta
+        # path, where `skeleton`/`sorry_inventory` cannot appear -- those are handoff-only
+        # fields), so read via "${handoff:-null}": an unset `handoff` degrades to a harmless
+        # `null` read rather than an unbound-variable error. No $hard_mode gate is applied: a
+        # base-mode handoff never populates these fields, so the read is a no-op there -- the
+        # same unconditional-read posture already used for phases_completed/phases_total above.
+        skeleton_flag=$(echo "${handoff:-null}" | jq -r '.skeleton // false' 2>/dev/null) || skeleton_flag=false
+        skeleton_follow_ups=$(echo "${handoff:-null}" | jq -c \
+          --argjson cycle "${cycle_count:-0}" --arg sid "$session_id" \
+          '[(.sorry_inventory // [])[] | select(.strategic == true) |
+            . + {recorded_cycle: $cycle, session_id: $sid}]' 2>/dev/null) || skeleton_follow_ups='[]'
+        [ -z "$skeleton_flag" ] && skeleton_flag=false
+        [ -z "$skeleton_follow_ups" ] && skeleton_follow_ups='[]'
+        skeleton_active=false
+        if [ "$skeleton_flag" = "true" ] && [ "$skeleton_follow_ups" != "[]" ]; then
+          skeleton_active=true
+          # Read-only stderr report -- runs under both live and --dry-run, matching every other
+          # diagnostic-only echo in this script. Iterated via `while read`, never a word-split
+          # `for`, so an assumption/follow_up_task containing spaces is not mis-split.
+          while IFS= read -r skel_line; do
+            echo "${notice_prefix} SKELETON FOLLOW-UP: ${skel_line}" >&2
+          done < <(echo "$skeleton_follow_ups" | jq -r '.[] | "\(.file):\(.line) — \(.assumption) (owner: \(.follow_up_task))"' 2>/dev/null)
+        fi
+
         if is_live; then
           # No per-call-site >&2 on either call below: the entry-point exec 3>&1 1>&2 redirect
           # above already routes their stdout to the diagnostic stream structurally.
@@ -1014,10 +1050,47 @@ if [ "$have_outcome" = "true" ]; then
             deploy_pending_refusal=true
             echo "${notice_prefix} DEPLOY-PENDING: task ${task_number}'s postflight completion write was refused by the completion-deploy gate (exit 6). The task remains at its current in-flight status; the next cycle's Inter-Cycle Redeploy Checkpoint (orchestrate-cycle-plan.sh) deploys and then automatically reconciles this task's status -- no manual action needed unless that deploy or its post-deploy verify fails, in which case the checkpoint emits its own named WARNING there and states the remedy." >&2
           fi
-          skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
-            "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
+          if [ "$skeleton_active" = "true" ]; then
+            # Resolve the completion JSON once and augment it with a "Skeleton follow-ups" block
+            # before handing it to skill_orchestrate_propagate_completion, preserving that
+            # helper's documented single-read property (it is passed as precomputed_json rather
+            # than left to re-read .return-meta.json itself). `recover_json` is set ONLY on the
+            # recovery/return-meta path (the `else` arm far above, ~line 677) -- on this
+            # handoff-present path it is reliably empty, so this is effectively always the fresh
+            # read, done once here rather than left to this call site's normal argument. This
+            # branch is kept entirely separate from the non-skeleton call below (rather than
+            # folded into one call via a shared precomputed-json variable) so that call's own
+            # line stays byte-for-byte unchanged for every non-skeleton completion.
+            skel_completion_json="${recover_json:-}"
+            if [ -z "$skel_completion_json" ]; then
+              skel_completion_json=$(bash "${SCRIPT_DIR}/orchestrate-recover-outcome.sh" "$TASK_DIR" "$dispatch_start_ts" "$expected_dispatch_seq" 2>/dev/null)
+            fi
+            [ -z "$skel_completion_json" ] && skel_completion_json='{}'
+            skel_pre_summary=$(echo "$skel_completion_json" | jq -r '.completion_summary // ""' 2>/dev/null) || skel_pre_summary=""
+            skel_bullets=$(echo "$skeleton_follow_ups" | jq -r '.[] | "- \(.file):\(.line) — \(.assumption) (owner: \(.follow_up_task))"' 2>/dev/null)
+            skel_augmented_json=$(echo "$skel_completion_json" | jq --arg block "Skeleton follow-ups (not auto-filed; file with /task):
+${skel_bullets}" \
+              '.completion_summary = (((.completion_summary // "") + "\n\n" + $block) | ltrimstr("\n\n"))' 2>/dev/null)
+            if [ -z "$skel_augmented_json" ]; then
+              echo "${notice_prefix} WARNING: failed to augment completion_summary with skeleton follow-ups (jq error) — propagating the unaugmented completion JSON instead." >&2
+              skel_augmented_json="$skel_completion_json"
+            fi
+            if [ -z "$skel_pre_summary" ]; then
+              echo "${notice_prefix} WARNING: task completed with empty completion_summary prior to skeleton follow-up augmentation (skeleton=true)" >&2
+            fi
+            skill_propagate_skeleton_follow_ups "$task_number" "$skeleton_follow_ups" "$session_id"
+            skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
+              "$dispatch_start_ts" "${skel_augmented_json:-}" "$notice_prefix"
+          else
+            skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
+              "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
+          fi
         else
           echo "${notice_prefix} [dry-run] would transition task ${task_number} to completed and propagate completion_summary/roadmap_items — no write performed." >&2
+          if [ "$skeleton_active" = "true" ]; then
+            skel_count=$(echo "$skeleton_follow_ups" | jq 'length' 2>/dev/null) || skel_count=0
+            echo "${notice_prefix} [dry-run] would record ${skel_count} skeleton follow-up(s) and augment completion_summary — no write performed." >&2
+          fi
         fi
       else
         implemented_gate_passed=false

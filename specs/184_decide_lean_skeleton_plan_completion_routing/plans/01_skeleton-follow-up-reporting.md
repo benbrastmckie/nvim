@@ -151,49 +151,53 @@ the same place every other propagate helper lives.
 
 ---
 
-### Phase 2: Skeleton detection, stderr report, state write, and summary augmentation in postflight [NOT STARTED]
+### Phase 2: Skeleton detection, stderr report, state write, and summary augmentation in postflight [COMPLETED]
 
 **Goal**: A skeleton completion surfaces its strategic sorries in all three channels (stderr,
 `completion_summary`, `state.json`) without touching the completion-claim gate or the shared
 propagate helper.
 
 **Tasks**:
-- [ ] Re-read the `implemented)` case (the `skill_gate_completion_claim` success branch) before
+- [x] Re-read the `implemented)` case (the `skill_gate_completion_claim` success branch) before
       editing; confirm the hook point and the `recover_json` scoping noted in the Overview.
-- [ ] Inside the gate-passed branch, before the `is_live` fork, compute:
+- [x] Inside the gate-passed branch, before the `is_live` fork, compute:
       `skeleton_flag=$(echo "${handoff:-null}" | jq -r '.skeleton // false' 2>/dev/null)` and
       `skeleton_follow_ups=$(echo "${handoff:-null}" | jq -c '[(.sorry_inventory // [])[] | select(.strategic == true)]' 2>/dev/null)`,
       each with a shell-side fallback (`false` / `[]`) so an unset `handoff` (recovery path) or a
       `jq` failure cannot leak an empty/garbage value into a later test.
-- [ ] Enrich each surviving entry with `recorded_cycle` (from `${cycle_count:-0}`) and
+- [x] Enrich each surviving entry with `recorded_cycle` (from `${cycle_count:-0}`) and
       `session_id` via a `jq --argjson`/`--arg` map; keep the original
       `{file, line, statement, strategic, assumption, why_deferred, follow_up_task}` fields verbatim.
-- [ ] Fire the branch only when `skeleton_flag = "true"` AND the enriched array is non-empty and
+- [x] Fire the branch only when `skeleton_flag = "true"` AND the enriched array is non-empty and
       not `[]`. Add a short comment recording that no `$hard_mode` gate is applied and why
       (base-mode handoffs never populate these fields, so the read is a no-op there — same
       posture as the unconditional `phases_completed`/`phases_total` reads).
-- [ ] stderr report (runs in both live and dry-run — it is read-only): one line per entry,
+- [x] stderr report (runs in both live and dry-run — it is read-only): one line per entry,
       `${notice_prefix} SKELETON FOLLOW-UP: {file}:{line} — {assumption} (owner: {follow_up_task})`,
       iterated over `jq -r` output with a `while IFS= read -r` loop (never a word-split `for`).
-- [ ] Under `is_live` only: resolve the completion JSON once — reuse `recover_json` when non-empty,
+- [x] Under `is_live` only: resolve the completion JSON once — reuse `recover_json` when non-empty,
       otherwise one `bash "${SCRIPT_DIR}/orchestrate-recover-outcome.sh" "$TASK_DIR"
       "$dispatch_start_ts" "$expected_dispatch_seq"` read (the `SCRIPT_DIR`-qualified form used at
       line 677, not a bare relative path), defaulting to `{}` via a separate
       `[ -z ... ] && x='{}'` assignment, never the `${x:-{}}` idiom the helper's own header warns
       about.
-- [ ] Append a `Skeleton follow-ups (not auto-filed; file with /task):` block — one
+- [x] Append a `Skeleton follow-ups (not auto-filed; file with /task):` block — one
       `- {file}:{line} — {assumption} (owner: {follow_up_task})` bullet per entry — to that JSON's
       `.completion_summary` with `jq --arg`; on any `jq` failure fall back to the unaugmented JSON
       rather than passing a corrupted blob.
-- [ ] Pass the augmented JSON as `skill_orchestrate_propagate_completion`'s 5th
+- [x] Pass the augmented JSON as `skill_orchestrate_propagate_completion`'s 5th
       (`precomputed_json`) argument in place of `"${recover_json:-}"` on this branch only; leave
-      the non-skeleton call site byte-for-byte unchanged.
-- [ ] When the pre-augmentation `.completion_summary` was empty, emit a named
+      the non-skeleton call site byte-for-byte unchanged. *(deviation: altered — implemented as
+      two separate call sites in an if/else on `skeleton_active` rather than one shared
+      `completion_precomputed_json` variable, so the non-skeleton call's own two-line statement
+      is textually identical to before, but its indentation shifted by 2 spaces because it is now
+      nested one level deeper; arguments and behavior are unchanged)*
+- [x] When the pre-augmentation `.completion_summary` was empty, emit a named
       `${notice_prefix} WARNING: ...` line from the skeleton branch so the helper's suppressed
       empty-summary warning is not silently lost.
-- [ ] Call `skill_propagate_skeleton_follow_ups "$task_number" "$enriched_json" "$session_id"`
+- [x] Call `skill_propagate_skeleton_follow_ups "$task_number" "$enriched_json" "$session_id"`
       under `is_live`; print a `[dry-run] would record N skeleton follow-up(s)` line otherwise.
-- [ ] `bash -n` the file.
+- [x] `bash -n` the file.
 
 **Timing**: 1.5 hours
 

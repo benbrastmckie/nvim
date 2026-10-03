@@ -1,0 +1,38 @@
+{
+  "phase": 2,
+  "phase_name": "Skeleton detection, stderr report, state write, and summary augmentation in postflight",
+  "started_at": "2026-10-02T00:15:00Z",
+  "last_updated": "2026-10-02T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Skeleton detection (skeleton_flag, skeleton_follow_ups) and stderr report inside implemented) case, before the is_live fork",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 2,
+      "description": "is_live-only completion JSON resolution, summary augmentation, empty-summary warning, precomputed_json pass-through, and skill_propagate_skeleton_follow_ups call; dry-run would-record line",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 3,
+      "description": "bash -n, existing test suites (test-orchestrate-cycle-postflight.sh, test-handoff-reader-parity.sh), lint-json-channel-discipline.sh",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.8",
+      "description": "Pass the augmented JSON as skill_orchestrate_propagate_completion's 5th argument in place of \"${recover_json:-}\" on this branch only; leave the non-skeleton call site byte-for-byte unchanged.",
+      "type": "altered",
+      "reason": "Implemented as two separate call sites in an if/else on skeleton_active (one per branch) rather than a single shared completion_precomputed_json variable feeding one call, so the non-skeleton call's own two-line statement is textually identical to before -- same arguments, same behavior -- but its indentation shifted by 2 spaces because it is now nested one level deeper inside the new if/else. Chosen over the single-variable approach specifically so the non-skeleton behavior stays provably identical rather than merely equal-by-construction.",
+      "annotation": "*(deviation: altered — implemented as two separate call sites in an if/else on skeleton_active rather than one shared completion_precomputed_json variable, so the non-skeleton call's own two-line statement is textually identical to before, but its indentation shifted by 2 spaces because it is now nested one level deeper; arguments and behavior are unchanged)*"
+    }
+  ]
+}
