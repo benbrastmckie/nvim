@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/327_repair_extension_lifecycle_hook_mechanism/reports/01_lifecycle-hook-mechanism-repair.md",
+      "summary": "Confirms the three named defects (dead resolver key, no rc channel, dead verification call site) and discovers a fourth, load-bearing one: hook_path is built against a deployed extensions/<name>/scripts/ layout that never exists on disk, since provides.scripts always flattens into .claude/scripts/ -- fixing the resolver alone would still leave the nix preflight hook dark."
+    }
+  ],
+  "next_steps": "Run /plan 327 to create implementation plan",
+  "proposed_file_scope": [
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh"
+  ],
+  "dispatch_seq": 2,
+  "metadata": {
+    "session_id": "sess_1791040973_97d778_327",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 4
+  },
+  "memory_candidates": [
+    {
+      "content": "In agent-system's extension deploy pipeline, manifest.json's top-level `hooks` object (lifecycle hooks: preflight/context_injection/verification/postflight) is easy to author with a `scripts/<name>.sh` path that mirrors the SOURCE store layout, but the deploy pipeline always flattens `provides.scripts` entries into a flat `.claude/scripts/` directory -- `.claude/extensions/<name>/` only ever contains manifest.json on disk, never a nested scripts/ subdir (confirmed: installed_dirs is [] for every loaded extension). A hook_path built as `${ext_dir}/${hook_script}` will silently never resolve (masked by a silent -x no-op), even once the task_type->extension resolver itself is fixed. Any future hook path must resolve via basename against `.claude/scripts/`, not against the extension directory.",
+      "category": "PATTERN",
+      "source_artifact": "specs/327_repair_extension_lifecycle_hook_mechanism/reports/01_lifecycle-hook-mechanism-repair.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["extension-hooks", "skill-base.sh", "deploy-layout", "manifest.json", "hook_path", "lifecycle-hooks"]
+    },
+    {
+      "content": "check-extension-docs.sh and script-inventory.sh validate manifest.json's provides.scripts and provides.hooks (the Claude-Code-native settings-hook file-copy array) against deployed reality, but never validate the top-level lifecycle `hooks` object's script paths -- a blind spot that let two extensions (nix, nvim) ship a hooks object pointing at a path that was never deployed, undetected by any existing lint.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/327_repair_extension_lifecycle_hook_mechanism/reports/01_lifecycle-hook-mechanism-repair.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["check-extension-docs.sh", "lifecycle-hooks", "validation-gap", "manifest.json"]
+    }
+  ]
+}
