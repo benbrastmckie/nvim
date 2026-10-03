@@ -211,37 +211,37 @@ further metric.
 
 ---
 
-### Phase 2: Probe completion — manifest drift, duplicate blocks, ranked ordering [NOT STARTED]
+### Phase 2: Probe completion — manifest drift, duplicate blocks, ranked ordering [COMPLETED]
 
 **Goal**: the probe reports the remaining two required facts and emits a stable, auditable ranked
 ordering, with test coverage for each.
 
 **Tasks**:
-- [ ] Add `manifest_registered` (boolean) per script by REUSING `check-extension-docs.sh` Rule Q
+- [x] Add `manifest_registered` (boolean) per script by REUSING `check-extension-docs.sh` Rule Q
       (`check_undeclared_scripts`, around lines 530-580) by invocation: run that script and parse
       its `FAIL: script file on disk NOT in provides.scripts: ...` lines, filtering to the probe's
       candidate set. Do NOT extract or reimplement Rule Q's logic — the dispatch says reuse, and
       the research report's rationale (that script is 1,516 lines and multi-purpose) stands. Record
       in the header that a non-zero exit from `check-extension-docs.sh` is expected and parsed, not
       treated as a probe failure.
-- [ ] Add duplicated-block detection across scripts, bounded exactly as scoped: normalize each
+- [x] Add duplicated-block detection across scripts, bounded exactly as scoped: normalize each
       line (strip comments, collapse whitespace), slide a fixed window (8-12 lines, the chosen
       size stated in the header with its rationale), hash each window, and report only windows
       occurring 3+ times or spanning 2+ files. Per script emit `duplicate_blocks` (count) and
       `duplicate_block_peers` (sorted array of co-occurring script paths). State in the header
       that this is deliberately not clone detection and that sophistication is deferred.
-- [ ] Add a stable ranked ordering: an explicit documented composite score (e.g. lines, with
+- [x] Add a stable ranked ordering: an explicit documented composite score (e.g. lines, with
       zero-caller and duplicate-block participation as documented modifiers) plus a deterministic
       tiebreak on path. Emit `rank` per script and a top-level `ranking` array. The scoring formula
       must be written out in the header so a future reader can audit a target choice against it.
-- [ ] Add `--check` mode semantics: print the per-script table and exit non-zero on a declared
+- [x] Add `--check` mode semantics: print the per-script table and exit non-zero on a declared
       finding class (zero callers, or manifest drift), exit 0 otherwise — mirroring
       `measure-eager-context.sh --check`.
-- [ ] Extend `tests/test-script-inventory.sh`: manifest-registered true and false cases; a
+- [x] Extend `tests/test-script-inventory.sh`: manifest-registered true and false cases; a
       synthesized duplicated block detected across two fixture files; a below-threshold near-
       duplicate NOT reported; rank ordering stable across two runs on the same fixture;
       `--check` exit code 0 and non-zero both demonstrated.
-- [ ] Run the suite to green.
+- [x] Run the suite to green.
 
 **Timing**: 2.5 hours
 

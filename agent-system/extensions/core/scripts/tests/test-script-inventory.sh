@@ -267,6 +267,170 @@ else
   fail "no side effects: fixture root file manifest changed; before=[$before_manifest] after=[$after_manifest]"
 fi
 
+# =====================================================================
+# manifest_registered true/false (Rule Q reuse), and the --check manifest-drift exit path.
+# registered.sh declares unregistered.sh as a caller (via its basename appearing in registered.sh's
+# content) so unregistered.sh's inbound_callers is nonzero -- isolating the manifest-drift finding
+# from the zero-caller finding for the --check exit-code case below.
+# =====================================================================
+MANIFEST_DIR="$WORKDIR/manifest"
+mkdir -p "$MANIFEST_DIR/agent-system/extensions/core/scripts"
+cat > "$MANIFEST_DIR/agent-system/extensions/core/scripts/registered.sh" <<'EOF'
+#!/usr/bin/env bash
+# calls unregistered.sh
+bash unregistered.sh
+EOF
+cat > "$MANIFEST_DIR/agent-system/extensions/core/scripts/unregistered.sh" <<'EOF'
+#!/usr/bin/env bash
+echo unregistered
+EOF
+cat > "$MANIFEST_DIR/agent-system/extensions/core/manifest.json" <<'EOF'
+{"provides": {"scripts": ["registered.sh"]}}
+EOF
+mk_git_fixture "$MANIFEST_DIR"
+git -C "$MANIFEST_DIR" add agent-system/extensions/core/scripts/registered.sh \
+  agent-system/extensions/core/scripts/unregistered.sh \
+  agent-system/extensions/core/manifest.json
+git -C "$MANIFEST_DIR" commit -q -m init
+
+if command -v git >/dev/null 2>&1; then
+  MANIFEST_OUT="$(bash "$TOOL" --root "$MANIFEST_DIR" 2>"$WORKDIR/manifest_stderr")"
+  reg_val="$(echo "$MANIFEST_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/registered.sh") | .manifest_registered')"
+  unreg_val="$(echo "$MANIFEST_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/unregistered.sh") | .manifest_registered')"
+  unreg_zero="$(echo "$MANIFEST_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/unregistered.sh") | .zero_caller_finding')"
+  if [ "$reg_val" = "true" ]; then
+    pass "manifest_registered: registered.sh (declared in provides.scripts) reports true"
+  else
+    fail "manifest_registered: registered.sh reports $reg_val (expected true); stderr: $(cat "$WORKDIR/manifest_stderr")"
+  fi
+  if [ "$unreg_val" = "false" ]; then
+    pass "manifest_registered: unregistered.sh (absent from provides.scripts) reports false"
+  else
+    fail "manifest_registered: unregistered.sh reports $unreg_val (expected false)"
+  fi
+  if [ "$unreg_zero" = "false" ]; then
+    pass "manifest_registered isolation: unregistered.sh has a real caller, so its finding is manifest-drift only, not also zero-caller"
+  else
+    fail "manifest_registered isolation: unregistered.sh zero_caller_finding == $unreg_zero (expected false -- registered.sh references it)"
+  fi
+
+  set +e
+  bash "$TOOL" --root "$MANIFEST_DIR" --check >/dev/null 2>"$WORKDIR/manifest_check_stderr"
+  manifest_check_exit=$?
+  set -e 2>/dev/null || true
+  if [ "$manifest_check_exit" -eq 1 ]; then
+    pass "--check: manifest-drift-only fixture exits 1 (zero zero-caller findings present)"
+  else
+    fail "--check: manifest-drift fixture exited $manifest_check_exit (expected 1)"
+  fi
+else
+  info "git not on PATH -- skipping manifest_registered git-fixture cases"
+fi
+
+# =====================================================================
+# --check: a fully clean fixture (registered, referenced, has_test) exits 0.
+# =====================================================================
+CLEANCHECK_DIR="$WORKDIR/cleancheck"
+mkdir -p "$CLEANCHECK_DIR/agent-system/extensions/core/scripts/tests"
+cat > "$CLEANCHECK_DIR/agent-system/extensions/core/scripts/clean.sh" <<'EOF'
+#!/usr/bin/env bash
+echo clean
+EOF
+cat > "$CLEANCHECK_DIR/agent-system/extensions/core/scripts/tests/test-clean.sh" <<'EOF'
+#!/usr/bin/env bash
+echo "testing clean.sh"
+EOF
+cat > "$CLEANCHECK_DIR/agent-system/extensions/core/manifest.json" <<'EOF'
+{"provides": {"scripts": ["clean.sh", "tests/test-clean.sh"]}}
+EOF
+mk_git_fixture "$CLEANCHECK_DIR"
+git -C "$CLEANCHECK_DIR" add agent-system/extensions/core/scripts/clean.sh \
+  agent-system/extensions/core/scripts/tests/test-clean.sh \
+  agent-system/extensions/core/manifest.json
+git -C "$CLEANCHECK_DIR" commit -q -m init
+
+set +e
+bash "$TOOL" --root "$CLEANCHECK_DIR" --check >/dev/null 2>"$WORKDIR/cleancheck_stderr"
+cleancheck_exit=$?
+set -e 2>/dev/null || true
+if [ "$cleancheck_exit" -eq 0 ]; then
+  pass "--check: fully clean fixture (registered + referenced via its own test file) exits 0"
+else
+  fail "--check: clean fixture exited $cleancheck_exit (expected 0); stderr: $(cat "$WORKDIR/cleancheck_stderr")"
+fi
+
+# =====================================================================
+# Duplicate-block detection: a synthesized 10-line block shared verbatim across two files is
+# detected (spans 2+ files); a lone, unshared block (even though it is the same length) is NOT.
+# =====================================================================
+DUP_DIR="$WORKDIR/dup"
+mkdir -p "$DUP_DIR/agent-system/extensions/core/scripts"
+SHARED_BLOCK='echo step_one
+echo step_two
+echo step_three
+echo step_four
+echo step_five
+echo step_six
+echo step_seven
+echo step_eight
+echo step_nine
+echo step_ten'
+{
+  echo '#!/usr/bin/env bash'
+  echo "$SHARED_BLOCK"
+  echo 'echo "dup1 unique tail"'
+} > "$DUP_DIR/agent-system/extensions/core/scripts/dup1.sh"
+{
+  echo '#!/usr/bin/env bash'
+  echo "$SHARED_BLOCK"
+  echo 'echo "dup2 unique tail"'
+} > "$DUP_DIR/agent-system/extensions/core/scripts/dup2.sh"
+cat > "$DUP_DIR/agent-system/extensions/core/scripts/lone.sh" <<'EOF'
+#!/usr/bin/env bash
+echo alpha
+echo beta
+echo gamma
+echo delta
+echo epsilon
+echo zeta
+echo eta
+echo theta
+echo iota
+echo kappa
+EOF
+mk_git_fixture "$DUP_DIR"
+git -C "$DUP_DIR" add agent-system/extensions/core/scripts/dup1.sh \
+  agent-system/extensions/core/scripts/dup2.sh \
+  agent-system/extensions/core/scripts/lone.sh
+git -C "$DUP_DIR" commit -q -m init
+
+DUP_OUT="$(bash "$TOOL" --root "$DUP_DIR" 2>"$WORKDIR/dup_stderr")"
+dup1_count="$(echo "$DUP_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/dup1.sh") | .duplicate_blocks')"
+dup1_peers="$(echo "$DUP_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/dup1.sh") | .duplicate_block_peers[]')"
+lone_count="$(echo "$DUP_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/lone.sh") | .duplicate_blocks')"
+if [ "$dup1_count" -ge 1 ] 2>/dev/null && [ "$dup1_peers" = "agent-system/extensions/core/scripts/dup2.sh" ]; then
+  pass "duplicate-block detection: dup1.sh/dup2.sh's shared 10-line block is detected, cross-referenced to its peer"
+else
+  fail "duplicate-block detection: dup1.sh duplicate_blocks=$dup1_count peers=[$dup1_peers] (expected >=1, peer dup2.sh); stderr: $(cat "$WORKDIR/dup_stderr")"
+fi
+if [ "$lone_count" = "0" ]; then
+  pass "duplicate-block detection: a same-length but unshared block is NOT reported (below the 2-file / 3-occurrence threshold)"
+else
+  fail "duplicate-block detection: lone.sh duplicate_blocks=$lone_count (expected 0)"
+fi
+
+# =====================================================================
+# Rank ordering stable across two runs on the same fixture (full-output diff excluding the one
+# documented non-reproducible field, generated_at).
+# =====================================================================
+RANK_RUN1="$(bash "$TOOL" --root "$DUP_DIR" 2>/dev/null | jq 'del(.generated_at)')"
+RANK_RUN2="$(bash "$TOOL" --root "$DUP_DIR" 2>/dev/null | jq 'del(.generated_at)')"
+if [ "$RANK_RUN1" = "$RANK_RUN2" ]; then
+  pass "rank ordering: two consecutive runs on the same fixture are identical modulo generated_at"
+else
+  fail "rank ordering: two consecutive runs diverged"
+fi
+
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -gt 0 ]; then

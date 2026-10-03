@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Probe completion — manifest drift, duplicate blocks, ranked ordering",
+  "started_at": "2026-10-03T06:19:00Z",
+  "last_updated": "2026-10-03T06:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add manifest_registered via check-extension-docs.sh Rule Q invocation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 2, "description": "Add duplicated-block detection across scripts (bounded fixed-window hashing)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 3, "description": "Add stable ranked ordering with documented composite score", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 4, "description": "Add --check mode exit semantics for zero-caller/manifest-drift findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 5, "description": "Extend test suite for new metrics", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-script-inventory.sh"]},
+    {"id": 6, "description": "Run suite to green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Weight duplicate_blocks at x20 in the composite score", "result": "failed", "reason": "On the real corpus this let a 1,635-line script with 172 duplicate-window hits (score 5075) outrank the corpus's actual largest script, orchestrate-cycle-plan.sh (3,026 lines, score 3026) -- violating the plan's own Phase 2 verification criterion that ranking[0] must be orchestrate-cycle-plan.sh. Reduced duplicate_blocks weight to x1 (a low-weight modifier, not a competing primary signal) and re-verified: orchestrate-cycle-plan.sh ranks #1 with the real weight applied, and the gap to the runner-up (claude-refresh.sh, 2445 lines) is far larger than any realistic modifier contribution."},
+    {"approach": "Build fixture-only check-extension-docs.sh Rule Q tests inside a plain mktemp -d (non-git) directory", "result": "failed", "reason": "check_undeclared_scripts uses `git -C \"$REPO_ROOT\" ls-files`, which errors out silently on a non-git directory, so Rule Q never fires and every candidate reports manifest_registered=true regardless of real registration status. Fixed by using git-initialized fixtures (git init + add + commit) for every manifest_registered test case, matching the no-side-effects suite's own git-fixture convention."}
+  ],
+  "handoff_count": 0
+}
