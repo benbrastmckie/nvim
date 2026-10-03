@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "PSS accounting tests",
+  "started_at": "2026-10-02T00:10:00Z",
+  "last_updated": "2026-10-02T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Isolated-helper known-value and fallback cases for get_pss_reclaimable_kb", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 2, "description": "Shared-page de-duplication case (N=3 workers)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 3, "description": "Full-script Lean PSS output-shape and fallback-label cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 4, "description": "Update existing Claude-pass output-shape case for renamed columns", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 5, "description": "Mutation-check function list + header comment updates", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "baseline_passed": 112,
+    "after_phase1_passed": 110,
+    "after_phase1_failed": 2,
+    "after_phase2_passed": 125,
+    "after_phase2_failed": 0,
+    "non_vacuousness": "Reverted get_pss_reclaimable_kb to a plain rss+VmSwap sum: de-dup case and Lean PSS output-shape cases FAILED as expected (9 failures), confirming the suite is not vacuous. Restored afterward; suite returned to 125/0."
+  }
+}

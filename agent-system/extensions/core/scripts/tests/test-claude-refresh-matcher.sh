@@ -4,8 +4,11 @@
 # selected, (b) a process that merely mentions "claude" in argv without being a Claude
 # executable is never selected, (c) an inhibitor whose held target is still alive is never
 # selected, and (d) the script's own subshells are never self-selected. Later phases added
-# assertions (e)-(j) for the VmSwap accounting, Lean LSP, zombie-reporting, and MCP fan-out
-# passes, and assertion (k) for the orphaned build-waiter poll-loop pass: detection (Family A/B
+# assertions (e)-(j) for the PSS-based reclaimable-memory accounting (shared-page de-duplication
+# via smaps_rollup Pss_Anon/SwapPss, Pss_File reported separately as uncounted shared cache, and
+# an approximate-labeled fallback when smaps_rollup is absent or incomplete), Lean LSP,
+# zombie-reporting, and MCP fan-out passes, and assertion (k) for the orphaned build-waiter
+# poll-loop pass: detection (Family A/B
 # classification, idle+age gating, the PID-reuse ceiling backstop), the widened self-exclusion
 # (pid, ppid, pgid, and the full ancestor chain of $$, all from one frozen snapshot), the
 # fail-closed path when the $$ row is absent, the age-threshold-only gate (reaps without
@@ -309,7 +312,7 @@ FAKE_PS_EOF
 fi
 
 # =====================================================================
-# Assertion (e): VmSwap-aware memory accounting
+# Assertion (e): PSS-based reclaimable memory accounting (plus legacy get_vmswap_kb coverage)
 # =====================================================================
 # Fixtures live under $WORKDIR/fakeproc/<pid>/status (heredocs), never against live /proc or a
 # real PID, per shell-script-testing.md. PROC_ROOT is restored/unset immediately after use, the
@@ -347,6 +350,109 @@ fi
 
 unset PROC_ROOT
 
+# --- get_pss_reclaimable_kb(): isolated-helper cases against fixture smaps_rollup heredocs ---
+PSS_FAKE_PROC_DIR="$WORKDIR/fakeproc-pss"
+mkdir -p "$PSS_FAKE_PROC_DIR/71001" "$PSS_FAKE_PROC_DIR/71002" "$PSS_FAKE_PROC_DIR/71003" "$PSS_FAKE_PROC_DIR/71004"
+
+# Case: known values parse to the expected pipe-delimited triple.
+printf 'Pss_Anon:\t      500 kB\nSwapPss:\t      200 kB\nPss_File:\t    50000 kB\n' > "$PSS_FAKE_PROC_DIR/71001/smaps_rollup"
+PROC_ROOT="$PSS_FAKE_PROC_DIR"
+PSS_KNOWN="$(get_pss_reclaimable_kb 71001 1000)"
+if [ "$PSS_KNOWN" = "700|50000|0" ]; then
+  pass "get_pss_reclaimable_kb: known Pss_Anon/SwapPss/Pss_File fixture returns '700|50000|0'"
+else
+  fail "get_pss_reclaimable_kb: known-value fixture returned '$PSS_KNOWN', expected '700|50000|0'"
+fi
+unset PROC_ROOT
+
+# Fallback (i): smaps_rollup absent but status present -- reclaimable falls back to rss+VmSwap,
+# labeled approximate.
+printf 'Name:\tworker\nVmSwap:\t    300 kB\n' > "$PSS_FAKE_PROC_DIR/71002/status"
+PROC_ROOT="$PSS_FAKE_PROC_DIR"
+PSS_FALLBACK_I="$(get_pss_reclaimable_kb 71002 1000)"
+if [ "$PSS_FALLBACK_I" = "1300|0|1" ]; then
+  pass "get_pss_reclaimable_kb: fallback (i) absent smaps_rollup -> rss+VmSwap, approximate=1"
+else
+  fail "get_pss_reclaimable_kb: fallback (i) returned '$PSS_FALLBACK_I', expected '1300|0|1'"
+fi
+unset PROC_ROOT
+
+# Fallback (ii): smaps_rollup present but missing SwapPss (older-kernel risk) -- same approximate
+# fallback, not a partial PSS-based figure.
+printf 'Pss_Anon:\t      500 kB\nPss_File:\t    50000 kB\n' > "$PSS_FAKE_PROC_DIR/71003/smaps_rollup"
+printf 'Name:\tworker\nVmSwap:\t    400 kB\n' > "$PSS_FAKE_PROC_DIR/71003/status"
+PROC_ROOT="$PSS_FAKE_PROC_DIR"
+PSS_FALLBACK_II="$(get_pss_reclaimable_kb 71003 1000)"
+if [ "$PSS_FALLBACK_II" = "1400|0|1" ]; then
+  pass "get_pss_reclaimable_kb: fallback (ii) smaps_rollup missing SwapPss -> rss+VmSwap, approximate=1"
+else
+  fail "get_pss_reclaimable_kb: fallback (ii) returned '$PSS_FALLBACK_II', expected '1400|0|1'"
+fi
+unset PROC_ROOT
+
+# Fallback (iii): PID path entirely absent -- clean 0|0|1, never an error.
+PROC_ROOT="$PSS_FAKE_PROC_DIR"
+PSS_FALLBACK_III="$(get_pss_reclaimable_kb 71099 0)"
+if [ "$PSS_FALLBACK_III" = "0|0|1" ]; then
+  pass "get_pss_reclaimable_kb: fallback (iii) nonexistent PID path returns '0|0|1', not an error"
+else
+  fail "get_pss_reclaimable_kb: fallback (iii) returned '$PSS_FALLBACK_III', expected '0|0|1'"
+fi
+unset PROC_ROOT
+
+# --- Shared-page de-duplication: N(=3) workers sharing a large, identical Pss_File ---
+# Each worker's Pss_File is the PROPORTIONAL share of one real 150000 kB shared mapping (50000 kB
+# each, matching PSS semantics), with a small distinct Pss_Anon/SwapPss per worker. The summed
+# reclaimable figure must equal sum(Pss_Anon+SwapPss) exactly -- the large shared total must
+# appear ONLY in the shared-cache figure. A plausible per-worker RSS (pss_anon + pss_file, as a
+# real RSS would be at least that large) demonstrates the pre-fix RSS+VmSwap sum would have been
+# strictly larger.
+DEDUP_PROC_DIR="$WORKDIR/fakeproc-pss-dedup"
+mkdir -p "$DEDUP_PROC_DIR/72001" "$DEDUP_PROC_DIR/72002" "$DEDUP_PROC_DIR/72003"
+printf 'Pss_Anon:\t      300 kB\nSwapPss:\t        0 kB\nPss_File:\t    50000 kB\n' > "$DEDUP_PROC_DIR/72001/smaps_rollup"
+printf 'Pss_Anon:\t      400 kB\nSwapPss:\t      100 kB\nPss_File:\t    50000 kB\n' > "$DEDUP_PROC_DIR/72002/smaps_rollup"
+printf 'Pss_Anon:\t      350 kB\nSwapPss:\t       50 kB\nPss_File:\t    50000 kB\n' > "$DEDUP_PROC_DIR/72003/smaps_rollup"
+DEDUP_RSS_72001=50300
+DEDUP_RSS_72002=50400
+DEDUP_RSS_72003=50350
+PROC_ROOT="$DEDUP_PROC_DIR"
+DEDUP_SUM_RECLAIM=0
+DEDUP_SUM_SHARED=0
+DEDUP_SUM_RSS=$((DEDUP_RSS_72001 + DEDUP_RSS_72002 + DEDUP_RSS_72003))
+for dpid in 72001 72002 72003; do
+  case "$dpid" in
+    72001) drss="$DEDUP_RSS_72001" ;;
+    72002) drss="$DEDUP_RSS_72002" ;;
+    72003) drss="$DEDUP_RSS_72003" ;;
+  esac
+  dtriple="$(get_pss_reclaimable_kb "$dpid" "$drss")"
+  IFS='|' read -r dreclaim dshared dapprox <<< "$dtriple"
+  DEDUP_SUM_RECLAIM=$((DEDUP_SUM_RECLAIM + dreclaim))
+  DEDUP_SUM_SHARED=$((DEDUP_SUM_SHARED + dshared))
+  if [ "$dapprox" != "0" ]; then
+    fail "get_pss_reclaimable_kb: de-dup worker $dpid unexpectedly approximate"
+  fi
+done
+unset PROC_ROOT
+
+if [ "$DEDUP_SUM_RECLAIM" = "1200" ]; then
+  pass "get_pss_reclaimable_kb: de-dup -- summed reclaimable across 3 workers equals sum(Pss_Anon+SwapPss) = 1200"
+else
+  fail "get_pss_reclaimable_kb: de-dup summed reclaimable was '$DEDUP_SUM_RECLAIM', expected 1200"
+fi
+
+if [ "$DEDUP_SUM_RECLAIM" -lt "$DEDUP_SUM_RSS" ]; then
+  pass "get_pss_reclaimable_kb: de-dup -- PSS reclaimable ($DEDUP_SUM_RECLAIM) is strictly less than the pre-fix RSS sum ($DEDUP_SUM_RSS), proving the shared pages are no longer triple-counted"
+else
+  fail "get_pss_reclaimable_kb: de-dup reclaimable ($DEDUP_SUM_RECLAIM) was not strictly less than the pre-fix RSS sum ($DEDUP_SUM_RSS)"
+fi
+
+if [ "$DEDUP_SUM_SHARED" = "150000" ]; then
+  pass "get_pss_reclaimable_kb: de-dup -- shared-cache figure (150000 kB) is reported, and separately from reclaimable"
+else
+  fail "get_pss_reclaimable_kb: de-dup summed shared cache was '$DEDUP_SUM_SHARED', expected 150000"
+fi
+
 # Case: formatting -- closes a pre-existing format_memory coverage gap noted in research.
 FORMATTED="$(format_memory 12345)"
 if [ "$FORMATTED" = "12.0 MB" ]; then
@@ -356,15 +462,18 @@ else
 fi
 
 # Case: output shape -- assert on full --dry-run output (not only the isolated helper) that
-# the table carries both a Memory and a Swap column with correct values, structurally catching
-# an orphan_details field-count mismatch between the write site and the read site -- matching
-# how (d-2) above asserts on full script output rather than an isolated function call.
+# the table carries Memory, Reclaimable, and Shared cache columns with correct values,
+# structurally catching an orphan_details field-count mismatch between the write site and the
+# read site -- matching how (d-2) above asserts on full script output rather than an isolated
+# function call. No smaps_rollup fixture is provided for this PID, so this case doubles as the
+# Claude-pass fallback/approximate-marker case: reclaimable falls back to rss+VmSwap, and the
+# row must show the visible "~" approximate prefix.
 SWAP_FAKE_BIN_DIR="$WORKDIR/fakebin-swap"
 mkdir -p "$SWAP_FAKE_BIN_DIR"
 SWAP_ROW_PID=700055
 cat > "$SWAP_FAKE_BIN_DIR/ps" <<'FAKE_PS_SWAP_EOF'
 #!/usr/bin/env bash
-# Fake ps used only by test-claude-refresh-matcher.sh's VmSwap output-shape case (e).
+# Fake ps used only by test-claude-refresh-matcher.sh's PSS-reclaimable output-shape case (e).
 has_p_flag=false
 field_spec=""
 prev=""
@@ -398,18 +507,130 @@ printf 'Name:\tclaude\nVmSwap:\t 1258291 kB\n' > "$SWAP_FAKE_PROC_DIR/$SWAP_ROW_
 
 SWAP_OUT="$(PATH="$SWAP_FAKE_BIN_DIR:$PATH" PROC_ROOT="$SWAP_FAKE_PROC_DIR" bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
-if echo "$SWAP_OUT" | grep -qE '^PID[[:space:]]+Memory[[:space:]]+Swap[[:space:]]+Age[[:space:]]+Command'; then
-  pass "--dry-run output shape: table header carries both Memory and Swap columns"
+if echo "$SWAP_OUT" | grep -qE '^PID[[:space:]]+Memory[[:space:]]+Reclaimable[[:space:]]+Shared cache[[:space:]]+Age[[:space:]]+Command'; then
+  pass "--dry-run output shape: table header carries Memory, Reclaimable, and Shared cache columns"
 else
-  fail "--dry-run output shape: table header missing expected Memory/Swap columns"
+  fail "--dry-run output shape: table header missing expected Memory/Reclaimable/Shared cache columns"
   info "output was: $SWAP_OUT"
 fi
 
-if echo "$SWAP_OUT" | grep -q "$SWAP_ROW_PID" && echo "$SWAP_OUT" | grep -qE '2\.0 MB[[:space:]]+1\.1 GB'; then
-  pass "--dry-run output shape: row shows RSS 2.0 MB alongside swap 1.1 GB (no field-count mismatch)"
+if echo "$SWAP_OUT" | grep -q "$SWAP_ROW_PID" && echo "$SWAP_OUT" | grep -qE '2\.0 MB[[:space:]]+~1\.2 GB[[:space:]]+0 KB'; then
+  pass "--dry-run output shape: row shows RSS 2.0 MB alongside approximate reclaimable ~1.2 GB and 0 KB shared cache (fallback path, no field-count mismatch)"
 else
-  fail "--dry-run output shape: expected row with RSS 2.0 MB and swap 1.1 GB not found"
+  fail "--dry-run output shape: expected row with RSS 2.0 MB, approximate reclaimable ~1.2 GB, and 0 KB shared cache not found"
   info "output was: $SWAP_OUT"
+fi
+
+if echo "$SWAP_OUT" | grep -qE 'Total memory that can be reclaimed:.*\(shared cache:.*not counted\)'; then
+  pass "--dry-run output shape: totals line shows the new 'shared cache ... not counted' format"
+else
+  fail "--dry-run output shape: totals line missing the 'shared cache ... not counted' format"
+  info "output was: $SWAP_OUT"
+fi
+
+# --- Lean pass PSS output-shape case: own dedicated 3-row tree (root, server, 1 worker) ---
+# Drives a fake `ps -C lake,lean` (reusing assertion (g)'s technique, including the `*pgid*)
+# exit 0` guard that keeps the fake inert for the build-waiter pass), plus fixture smaps_rollup
+# files sharing a large, identical Pss_File across all three members (the proportional share of
+# one 180000 kB real shared mapping), and asserts the rendered Lean table carries the Reclaimable
+# and Shared cache columns with the de-duplicated total. A dedicated fixture (own pids/dirs), not
+# assertion (g)'s own, so Phase 5's later eligibility-gate fixture updates to (g) never interact
+# with this one.
+PSS_LEAN_ROOT=810001
+PSS_LEAN_SERVER=810002
+PSS_LEAN_WORKER=810003
+
+PSS_LEAN_BIN_DIR="$WORKDIR/fakebin-pss-lean"
+mkdir -p "$PSS_LEAN_BIN_DIR"
+cat > "$PSS_LEAN_BIN_DIR/ps" <<'FAKE_PS_PSS_LEAN_EOF'
+#!/usr/bin/env bash
+# Fake ps used only by test-claude-refresh-matcher.sh's Lean PSS output-shape case (e).
+has_p_flag=false
+has_c_flag=false
+field_spec=""
+prev=""
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  if [ "$a" = "-C" ]; then has_c_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
+done
+if $has_p_flag; then
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+case "$field_spec" in
+  *pgid*)
+    exit 0
+    ;;
+esac
+cur_uid="$(id -u)"
+CG="0::/user.slice/user-1000.slice/session.scope"
+if $has_c_flag; then
+  # take_lean_snapshot(): pid,ppid,uid,etimes,rss,pcpu,cgroup:200,comm,args
+  printf '%s %s %s %s %s %s %s %s %s\n' __ROOT__   1         "$cur_uid" 20000 1000 0.0 "$CG" lake ".../bin/lake serve -- -Dserver.reportDelayMs=0"
+  printf '%s %s %s %s %s %s %s %s %s\n' __SERVER__ __ROOT__   "$cur_uid" 20000 2000 0.0 "$CG" lean ".../bin/lean --server -Dserver.reportDelayMs=0"
+  printf '%s %s %s %s %s %s %s %s %s\n' __WORKER__ __SERVER__ "$cur_uid" 19998 3000 0.0 "$CG" lean ".../bin/lean --worker -Dserver.reportDelayMs=0 file:///a.lean"
+  exit 0
+fi
+# Plain -eo (Claude pass): no rows -- out of scope for this case.
+exit 0
+FAKE_PS_PSS_LEAN_EOF
+sed -i "s/__ROOT__/$PSS_LEAN_ROOT/g; s/__SERVER__/$PSS_LEAN_SERVER/g; s/__WORKER__/$PSS_LEAN_WORKER/g" "$PSS_LEAN_BIN_DIR/ps"
+chmod +x "$PSS_LEAN_BIN_DIR/ps"
+
+PSS_LEAN_PROC_DIR="$WORKDIR/fakeproc-pss-lean"
+mkdir -p "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER"
+printf 'Pss_Anon:\t      200 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT/smaps_rollup"
+printf 'Pss_Anon:\t      300 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER/smaps_rollup"
+printf 'Pss_Anon:\t      250 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER/smaps_rollup"
+
+PSS_LEAN_OUT="$(PATH="$PSS_LEAN_BIN_DIR:$PATH" PROC_ROOT="$PSS_LEAN_PROC_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+
+if echo "$PSS_LEAN_OUT" | grep -qE 'PID[[:space:]]+Role[[:space:]]+Memory[[:space:]]+Reclaimable[[:space:]]+Shared cache[[:space:]]+Age'; then
+  pass "Lean PSS (e): tree member table carries Reclaimable and Shared cache columns"
+else
+  fail "Lean PSS (e): tree member table missing Reclaimable/Shared cache columns"
+  info "output was: $PSS_LEAN_OUT"
+fi
+
+if echo "$PSS_LEAN_OUT" | grep -q "$PSS_LEAN_WORKER" && echo "$PSS_LEAN_OUT" | grep -qE '250 KB[[:space:]]+58\.5 MB'; then
+  pass "Lean PSS (e): worker row shows de-duplicated reclaimable (250 KB) and shared cache (58.5 MB), never the shared mapping folded in"
+else
+  fail "Lean PSS (e): expected worker row with reclaimable 250 KB and shared cache 58.5 MB not found"
+  info "output was: $PSS_LEAN_OUT"
+fi
+
+if echo "$PSS_LEAN_OUT" | grep -qE 'Total memory that can be reclaimed: 750 KB \(shared cache: 175\.7 MB, not counted\)'; then
+  pass "Lean PSS (e): totals line sums reclaimable to 750 KB (sum of Pss_Anon across 3 members) with 175.7 MB shared cache reported separately -- the pre-fix RSS+VmSwap sum would have been strictly larger"
+else
+  fail "Lean PSS (e): totals line did not show the expected de-duplicated 750 KB reclaimable / 175.7 MB shared cache figures"
+  info "output was: $PSS_LEAN_OUT"
+fi
+
+# --- Fallback-label output case: same fixture, smaps_rollup removed -- approximate marker must
+# be visible in rendered output, not only in the isolated helper's return value. ---
+rm -f "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT/smaps_rollup" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER/smaps_rollup" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER/smaps_rollup"
+printf 'Name:\tlean\nVmSwap:\t    100 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT/status"
+printf 'Name:\tlean\nVmSwap:\t    100 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER/status"
+printf 'Name:\tlean\nVmSwap:\t    100 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER/status"
+
+PSS_LEAN_FALLBACK_OUT="$(PATH="$PSS_LEAN_BIN_DIR:$PATH" PROC_ROOT="$PSS_LEAN_PROC_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+
+if echo "$PSS_LEAN_FALLBACK_OUT" | grep -q "$PSS_LEAN_WORKER" && echo "$PSS_LEAN_FALLBACK_OUT" | grep -qE '~[0-9.]+ (KB|MB|GB)'; then
+  pass "Lean PSS (e) fallback: approximate '~' marker is visible in rendered output when smaps_rollup is absent"
+else
+  fail "Lean PSS (e) fallback: no approximate '~' marker found in rendered output"
+  info "output was: $PSS_LEAN_FALLBACK_OUT"
+fi
+
+if echo "$PSS_LEAN_FALLBACK_OUT" | grep -qE 'Total memory that can be reclaimed:.*\(shared cache: 0 KB, not counted\)'; then
+  pass "Lean PSS (e) fallback: shared cache correctly reports 0 KB (unknown, not computed) when smaps_rollup is absent"
+else
+  fail "Lean PSS (e) fallback: totals line did not show '0 KB' shared cache for the fallback path"
+  info "output was: $PSS_LEAN_FALLBACK_OUT"
 fi
 
 # =====================================================================
@@ -1529,7 +1750,12 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
   # is_shell_comm, build_waiter_family, build_waiter_row_is_idle, build_self_exclusion_set, and
   # run_build_waiter_pass are all brand-NEW functions this change adds, so their absence from the
   # same pinned pre-fix commit is the identical non-vacuousness proof for assertion (k) above.
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot lean_row_is_idle detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass; do
+  #
+  # Further extended for PSS-based reclaimable accounting: get_pss_reclaimable_kb is a brand-NEW
+  # function this change adds (bringing the function-name list to twenty-eight), so its absence
+  # from the same pinned pre-fix commit is the identical non-vacuousness proof for assertion (e)'s
+  # new cases above.
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb get_pss_reclaimable_kb is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot lean_row_is_idle detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -1538,11 +1764,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 27 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 28 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the twenty-seven predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 28 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 29 ]; then
+    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the twenty-eight predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 28 markers absent"
+    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 29 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2

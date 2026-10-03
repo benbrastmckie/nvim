@@ -216,36 +216,40 @@ convert it too and record the deviation.
 
 ---
 
-### Phase 2: PSS accounting tests [NOT STARTED]
+### Phase 2: PSS accounting tests [COMPLETED]
 
 **Goal**: Prove de-duplication of shared pages across multiple workers, correct `smaps_rollup`
 field parsing, and the approximate-labeled fallback, using the suite's established two-layer
 fixture pattern.
 
 **Tasks**:
-- [ ] Extend assertion (e)'s block with isolated-helper cases against fixture
+- [x] Extend assertion (e)'s block with isolated-helper cases against fixture
       `$WORKDIR/fakeproc/<pid>/smaps_rollup` heredocs: known `Pss_Anon`/`SwapPss`/`Pss_File`
       values parse to the expected pipe-delimited triple; `PROC_ROOT` unset immediately after,
-      per the block's existing leakage discipline.
-- [ ] Fallback cases: (i) `smaps_rollup` absent but `status` present -> reclaimable equals
+      per the block's existing leakage discipline. *(completed)*
+- [x] Fallback cases: (i) `smaps_rollup` absent but `status` present -> reclaimable equals
       `rss + VmSwap` with `is_approximate=1`; (ii) `smaps_rollup` present but lacking `SwapPss`
       -> same approximate fallback (the older-kernel risk); (iii) PID path entirely absent ->
-      clean `0|0|1`, no error.
-- [ ] Shared-page de-duplication case: a fixture of N (>= 3) worker PIDs each with a large,
+      clean `0|0|1`, no error. *(completed)*
+- [x] Shared-page de-duplication case: a fixture of N (>= 3) worker PIDs each with a large,
       identical `Pss_File` and a small distinct `Pss_Anon`. Assert the summed reclaimable equals
       `sum(Pss_Anon + SwapPss)` exactly, and that the large `Pss_File` total appears only in the
       shared-cache figure -- i.e. the pre-fix `RSS + VmSwap` sum would have been strictly larger.
-- [ ] Full-script output-shape case: drive a fake `ps -C lake,lean` (reusing assertion (g)'s
+      *(completed: isolated-helper level, N=3 workers)*
+- [x] Full-script output-shape case: drive a fake `ps -C lake,lean` (reusing assertion (g)'s
       technique, including the `*pgid*) exit 0` guard that keeps the fake inert for the
       build-waiter pass) plus fixture `smaps_rollup` files, run `--dry-run`, and assert the
       rendered Lean table carries the `Reclaimable` and `Shared cache` columns with the
-      de-duplicated total -- the field-count-mismatch catcher.
-- [ ] Fallback-label output case: same full-script shape with `smaps_rollup` removed, asserting
+      de-duplicated total -- the field-count-mismatch catcher. *(completed: dedicated 3-row
+      root/server/worker fixture, own pids/dirs, isolated from assertion (g)'s own fixture)*
+- [x] Fallback-label output case: same full-script shape with `smaps_rollup` removed, asserting
       the approximate marker is visible in the rendered output (not only in the helper's return).
-- [ ] Update assertion (e)'s existing Claude-pass output-shape expectations for the renamed column
+      *(completed)*
+- [x] Update assertion (e)'s existing Claude-pass output-shape expectations for the renamed column
       and the new totals line, and add `get_pss_reclaimable_kb` to the mutation-check
-      function-name list.
-- [ ] Update the suite's header comment to describe the new cases.
+      function-name list. *(completed: also updated the mutation-check's expected-missing-count
+      bounds from 27/28 to 28/29 to account for the 28th function name added to the list)*
+- [x] Update the suite's header comment to describe the new cases. *(completed)*
 
 **Timing**: 1.5 hours
 
