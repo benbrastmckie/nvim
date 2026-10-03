@@ -400,38 +400,49 @@ premise; the decision gate above is what happens if it is false.
 
 ---
 
-### Phase 5: Add `--skip-verify` / exit 4 / `RESULT=landed_verify_skipped` to `deploy-headless.sh` [NOT STARTED]
+### Phase 5: Add `--skip-verify` / exit 4 / `RESULT=landed_verify_skipped` to `deploy-headless.sh` [COMPLETED]
 
 **Goal**: An opt-in suppression flag exists and is fully documented and tested, while **no caller
 passes it yet** — so this phase alone demonstrates that every existing caller's behavior, including
 exit 3, is byte-identical.
 
 **Tasks**:
-- [ ] Re-read `scripts/deploy-headless.sh` (header exit-code block `:91-101`, `RESULT=` vocabulary
+- [x] Re-read `scripts/deploy-headless.sh` (header exit-code block `:91-101`, `RESULT=` vocabulary
       `:103-108`, arg loop `:173-201`, inline verify block `:394-417`, final exit `:451-455`)
-      immediately before editing.
-- [ ] Add `--skip-verify` to the arg loop (a plain boolean `SKIP_VERIFY=true`, beside
-      `--consumer-report`) and to the usage string in the unknown-flag error message.
-- [ ] Guard the inline verify block: when `SKIP_VERIFY` is true, skip the
+      immediately before editing. *(completed: re-read; drift from cited line numbers noted --
+      the exit-code block was at :98-108, arg loop :178-206, inline verify block :393-423, final
+      exit :456-460 by implementation time)*
+- [x] Add `--skip-verify` to the arg loop (a plain boolean `SKIP_VERIFY=true`, beside
+      `--consumer-report`) and to the usage string in the unknown-flag error message. *(completed)*
+- [x] Guard the inline verify block: when `SKIP_VERIFY` is true, skip the
       `verify-deploy.sh --skip-slow` invocation entirely, print one explicit line saying
       verification was suppressed by request (not that it passed), and set the outcome to the new
       skipped state. Keep the existing announcement text byte-identical on the unsuppressed path.
-- [ ] Route the final exit: `_dh_result_and_exit landed_verify_skipped 4` for the suppressed path,
+      *(completed: verified live -- `--skip-verify` prints the suppression line and
+      `RESULT=landed_verify_skipped` exit 4; no-flag path unchanged, prints "Verifying deploy..."
+      and `RESULT=landed_verify_clean` exit 0)*
+- [x] Route the final exit: `_dh_result_and_exit landed_verify_skipped 4` for the suppressed path,
       leaving `landed_verify_clean 0` and `landed_verify_red 3` reachable exactly as today. Choose
       4 because 0/1/2/3 are taken and because neither 0 (which would misrepresent "verified clean"
       to a human reading a log, or to a future caller that does distinguish) nor 3 (which means
       "verify ran and found something", false here) is honest about a suppressed verify.
-- [ ] Ensure the post-deploy consumer-report block still runs on the suppressed path exactly as it
+      *(completed: `if verify_rc==0 / elif verify_rc==4 / else (3)` -- a distinct elif arm, not a
+      reuse of the 0 or 3 arms)*
+- [x] Ensure the post-deploy consumer-report block still runs on the suppressed path exactly as it
       does on the 0 and 3 paths (the tree WAS modified in all three cases) and that it still cannot
-      influence `RESULT=` or the exit code.
-- [ ] Extend the header: the `# Exit codes:` block gains 4; the `RESULT=` vocabulary block gains
+      influence `RESULT=` or the exit code. *(completed: the consumer-report block is gated only
+      on `$CONSUMER_REPORT`/checker-existence, never on `$verify_rc`'s value, so it runs
+      identically regardless of which of the three verify_rc values precedes it)*
+- [x] Extend the header: the `# Exit codes:` block gains 4; the `RESULT=` vocabulary block gains
       `landed_verify_skipped`; the `# Usage:` lines gain `--skip-verify` with a one-line statement
       that it is for callers that take their own independent full-depth verification snapshot, and
-      an explicit "a suppressed verify is not a passed verify" note.
-- [ ] **Update the `--help` range** (`sed -n '2,101p' "$0"`) to cover the lengthened header —
+      an explicit "a suppressed verify is not a passed verify" note. *(completed)*
+- [x] **Update the `--help` range** (`sed -n '2,101p' "$0"`) to cover the lengthened header —
       `test-deploy-verify-wiring.sh` case 6 asserts on help *content*, so a stale range silently
-      truncates the new flag out of the help output.
-- [ ] Add cases to `scripts/tests/test-deploy-verify-wiring.sh`, following that suite's existing
+      truncates the new flag out of the help output. *(completed: range bumped to `2,149p`
+      (header grew from ending at line 101 to ending at line 149); verified live that
+      `--help` output contains --skip-verify, landed_verify_skipped, and exit code 4)*
+- [x] Add cases to `scripts/tests/test-deploy-verify-wiring.sh`, following that suite's existing
       structure and its deliberate "no non-dry-run deploy" rule: (a) `--help` output contains
       `--skip-verify`; (b) `--help` output documents exit 4 and `landed_verify_skipped`;
       (c) `--skip-verify --dry-run` still exits 0, prints `DRY RUN`, and prints no verification
@@ -440,8 +451,15 @@ exit 3, is byte-identical.
       `landed_verify_clean 0` is not reachable when suppression is active — this is the Verification
       #4 "distinguishable in a test" requirement, satisfied structurally because a non-dry-run
       deploy inside the suite is not safe. State that limitation in the test's own comment rather
-      than implying end-to-end coverage; Phase 7 supplies the live pair.
-- [ ] Do not add the flag to any caller in this phase.
+      than implying end-to-end coverage; Phase 7 supplies the live pair. *(completed: Cases
+      10-12 added; the live, non-dry-run, with/without-flag exit-code pair was ALSO captured
+      directly during this phase's own verification -- real `bash deploy-headless.sh --skip-verify`
+      -> exit 4 / RESULT=landed_verify_skipped, and real `bash deploy-headless.sh` (no flag) ->
+      exit 0 / RESULT=landed_verify_clean -- recorded in phase-5-progress.json; Phase 7 records
+      this pair again on the actual redeploy-checkpoint caller path, as the plan specifies)*
+- [x] Do not add the flag to any caller in this phase. *(completed: git diff --name-only for this
+      phase's commit touches only deploy-headless.sh and test-deploy-verify-wiring.sh; neither
+      command-gate-out.sh nor orchestrate-cycle-plan.sh was touched)*
 
 **Timing**: 1.5 hours
 

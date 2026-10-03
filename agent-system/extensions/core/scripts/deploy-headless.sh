@@ -44,6 +44,13 @@
 #                        and the redeploy checkpoint pays none of its wall-clock cost. This is a
 #                        report step only; it was never part of verification and passing or
 #                        failing this flag never changes verify_rc or the exit code.
+#   --skip-verify        Opt-in: suppress this script's inline `verify-deploy.sh --skip-slow`
+#                        pass entirely. For callers that already take their own independent,
+#                        full-depth (no --skip-slow) verify-deploy.sh findings snapshot around
+#                        this call -- on that path the inline pass is wholly redundant cost,
+#                        never additional information. A suppressed verify is NOT a passed
+#                        verify: exits 4 / `RESULT=landed_verify_skipped` (see below), never 0.
+#                        Default OFF: absent this flag, behavior is byte-for-byte unchanged.
 #
 # Bootstrap safety (why the default mode is NOT a bare `manager.resync_all` call): the
 # now-retired `load_all_globally` engine never wrote to a project's extension state file
@@ -99,6 +106,11 @@
 #      `### deploy-headless.sh's Inline Verification and Exit Code 3` subsection for the
 #      fast-vs-full gate split and the current orchestrator-consumer interaction with this code.
 #      Not emitted under --dry-run, which returns 0 before verification ever runs.
+#   4  the deploy itself landed, but inline verification was SUPPRESSED by --skip-verify --
+#      like 3, the tree WAS modified; unlike 0, this is NOT "verified clean" (verify never ran).
+#      Reachable ONLY when --skip-verify is passed; never emitted otherwise. See
+#      context/patterns/regeneration-is-manual-only.md's `### deploy-headless.sh's Inline
+#      Verification and Exit Code 3` subsection for the suppression contract.
 #
 # Machine-readable marker vocabulary (the caller-facing contract, stdout, one line each):
 #   [deploy-headless] RESULT=not_landed            -- exit 1 or 2. Always printed by a
@@ -107,6 +119,10 @@
 #                                                     non-dry-run, non---help invocation.
 #   [deploy-headless] RESULT=landed_verify_red     -- exit 3. Always printed by a
 #                                                     non-dry-run, non---help invocation.
+#   [deploy-headless] RESULT=landed_verify_skipped -- exit 4. Printed ONLY when --skip-verify
+#                                                     was passed on a non-dry-run, non---help
+#                                                     invocation. A suppressed verify is not a
+#                                                     passed verify -- never read this as clean.
 #   [deploy-headless] CONSUMERS_STALE=<n>          -- count of stale/cannot-verify consumer rows
 #                                                     from the post-deploy consumer-freshness
 #                                                     report. Opt-in only: printed ONLY when
@@ -130,7 +146,7 @@
 # discarded with `|| true` -- confirmed at runtime, not merely by reading the code (see the
 # inline comment at that block). A caller that wants the consumer-staleness signal on its own
 # passes --consumer-report and reads the CONSUMERS_STALE=<n> marker; it is never folded into
-# 0/1/2/3.
+# 0/1/2/3/4.
 set -euo pipefail
 
 EXT_CONFIG_MODULE="neotex.plugins.ai.shared.extensions.config"
@@ -148,11 +164,12 @@ main() {
   local TARGET=""
   local MINIMAL_INIT_DIR=""
   local CONSUMER_REPORT=false
+  local SKIP_VERIFY=false
 
   # _dh_result_and_exit <RESULT_token> <exit_code> - the single machine-readable outcome marker
   # this script emits before every exit path that follows a real deploy ATTEMPT (i.e. every
-  # exit 1/2 below --dry-run's own early exit, and the two exit 0/3 paths at the very end). A
-  # caller greps stdout/stderr for `RESULT=` rather than inferring the distinction from an exit
+  # exit 1/2 below --dry-run's own early exit, and the three exit 0/3/4 paths at the very end).
+  # A caller greps stdout/stderr for `RESULT=` rather than inferring the distinction from an exit
   # code plus log prose:
   #   RESULT=not_landed          -- exit 1 or 2: the deploy did not land (usage/environment
   #                                 error, or the headless nvim invocation itself failed).
@@ -161,6 +178,8 @@ main() {
   #                                 or more findings (may be pre-existing; this script does not
   #                                 distinguish that -- see command-gate-out.sh / the inter-cycle
   #                                 redeploy checkpoint for the baseline-relative comparison that
+  #   RESULT=landed_verify_skipped -- exit 4: the deploy landed but --skip-verify suppressed the
+  #                                 inline verify-deploy.sh pass entirely. Not a passed verify.
   #                                 does).
   # NOT emitted under --dry-run (which returns 0 before any deploy is attempted) or --help
   # (which performs no deploy at all) -- consistent with this script's existing documented
@@ -175,6 +194,7 @@ main() {
       --dry-run) DRY_RUN=true; shift ;;
       --wipe) WIPE=true; shift ;;
       --consumer-report) CONSUMER_REPORT=true; shift ;;
+      --skip-verify) SKIP_VERIFY=true; shift ;;
       --minimal-init)
         if [ $# -lt 2 ] || [ -z "$2" ]; then
           echo "ERROR: --minimal-init requires a DIR argument (the nvim config directory)" >&2
@@ -183,12 +203,12 @@ main() {
         MINIMAL_INIT_DIR="$2"; shift 2
         ;;
       -h|--help)
-        sed -n '2,101p' "$0" | sed 's/^# \{0,1\}//'
+        sed -n '2,149p' "$0" | sed 's/^# \{0,1\}//'
         exit 0
         ;;
       -*)
         echo "ERROR: unknown flag: $1" >&2
-        echo "Usage: deploy-headless.sh [--dry-run] [--wipe] [--minimal-init DIR] [--consumer-report] [TARGET_REPO]" >&2
+        echo "Usage: deploy-headless.sh [--dry-run] [--wipe] [--minimal-init DIR] [--consumer-report] [--skip-verify] [TARGET_REPO]" >&2
         _dh_result_and_exit not_landed 1
         ;;
       *)
@@ -391,25 +411,39 @@ main() {
     echo "[deploy-headless] Resynced $count extension(s) into $TARGET/.claude"
   fi
 
-  echo "[deploy-headless] Verifying deploy (fast gates; shell test suite deferred) ..."
-  # Verify outcome is captured into a variable rather than exiting directly from each branch, so
-  # the guarded post-deploy consumer report below (both branches: it must run after the tree WAS
-  # modified, whether verification passed or reported findings) can run before the script's
-  # single final exit. Each branch below still exits with EXACTLY the same code it always did --
-  # 0 or 3 -- this restructuring changes nothing about deploy-headless.sh's documented exit-code
-  # contract (see the header's `# Exit codes:` block).
+  # verify_rc now carries a fourth value, 4, for the --skip-verify path (landed_verify_skipped).
+  # It is a LANDED outcome, like 0 and 3 -- the tree WAS modified in all three cases -- but is
+  # neither 0 (would misrepresent "verified clean" to a human or a future caller that does
+  # distinguish) nor 3 (means "verify ran and found something", false here: verify never ran). A
+  # suppressed verify is not a passed verify. --skip-verify is for callers that take their own
+  # independent, full-depth verify-deploy.sh findings snapshot around this call (see
+  # context/patterns/regeneration-is-manual-only.md's `### deploy-headless.sh's Inline
+  # Verification and Exit Code 3` subsection) and would otherwise pay this inline
+  # `--skip-slow` pass as pure redundant cost.
   local verify_rc=0
-  local -a VERIFY_ARGS=(--skip-slow)
-  if [ -n "$MINIMAL_INIT_DIR" ]; then
-    VERIFY_ARGS+=(--minimal-init "$MINIMAL_INIT_DIR")
-  fi
-  if bash "$TARGET/.claude/scripts/verify-deploy.sh" "${VERIFY_ARGS[@]}" "$TARGET"; then
-    echo "[deploy-headless] Verification passed."
-    verify_rc=0
+  if [ "$SKIP_VERIFY" = "true" ]; then
+    echo "[deploy-headless] Verification SUPPRESSED by --skip-verify (caller takes its own independent verification snapshot; this is NOT the same as a passed verify)."
+    verify_rc=4
   else
-    echo "[deploy-headless] ERROR: the deploy itself landed, but the tree fails verification (fast gates)." >&2
-    echo "[deploy-headless] Re-run the full gate set for detail: bash $TARGET/.claude/scripts/verify-deploy.sh" >&2
-    verify_rc=3
+    echo "[deploy-headless] Verifying deploy (fast gates; shell test suite deferred) ..."
+    # Verify outcome is captured into a variable rather than exiting directly from each branch,
+    # so the guarded post-deploy consumer report below (both branches: it must run after the
+    # tree WAS modified, whether verification passed or reported findings) can run before the
+    # script's single final exit. Each branch below still exits with EXACTLY the same code it
+    # always did -- 0 or 3 -- this restructuring changes nothing about deploy-headless.sh's
+    # documented exit-code contract (see the header's `# Exit codes:` block).
+    local -a VERIFY_ARGS=(--skip-slow)
+    if [ -n "$MINIMAL_INIT_DIR" ]; then
+      VERIFY_ARGS+=(--minimal-init "$MINIMAL_INIT_DIR")
+    fi
+    if bash "$TARGET/.claude/scripts/verify-deploy.sh" "${VERIFY_ARGS[@]}" "$TARGET"; then
+      echo "[deploy-headless] Verification passed."
+      verify_rc=0
+    else
+      echo "[deploy-headless] ERROR: the deploy itself landed, but the tree fails verification (fast gates)." >&2
+      echo "[deploy-headless] Re-run the full gate set for detail: bash $TARGET/.claude/scripts/verify-deploy.sh" >&2
+      verify_rc=3
+    fi
   fi
 
   # --- Post-deploy stale-consumer report (TIER 3, additive output only) -----------------------
@@ -450,6 +484,8 @@ main() {
 
   if [ "$verify_rc" -eq 0 ]; then
     _dh_result_and_exit landed_verify_clean 0
+  elif [ "$verify_rc" -eq 4 ]; then
+    _dh_result_and_exit landed_verify_skipped 4
   else
     _dh_result_and_exit landed_verify_red 3
   fi

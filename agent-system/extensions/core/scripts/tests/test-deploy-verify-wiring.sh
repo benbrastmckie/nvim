@@ -251,6 +251,71 @@ else
   fail "deploy-headless.sh --consumer-report --dry-run exited $RC_DRY_RUN_CR, expected 0"
 fi
 
+# =====================================================================
+# Case 10: deploy-headless.sh --help documents the --skip-verify opt-in flag, exit code 4, and
+# the landed_verify_skipped RESULT= token.
+# =====================================================================
+if [[ "$OUT_HELP" == *"--skip-verify"* ]]; then
+  pass "deploy-headless.sh --help output contains --skip-verify"
+else
+  fail "deploy-headless.sh --help output missing --skip-verify: <<<$OUT_HELP>>>"
+fi
+if [[ "$OUT_HELP" == *"landed_verify_skipped"* ]]; then
+  pass "deploy-headless.sh --help output documents landed_verify_skipped"
+else
+  fail "deploy-headless.sh --help output missing landed_verify_skipped: <<<$OUT_HELP>>>"
+fi
+if grep -qE '^#[[:space:]]*4[[:space:]]' "$DEPLOY_HEADLESS"; then
+  pass "deploy-headless.sh header documents exit code 4"
+else
+  fail "deploy-headless.sh header no longer documents exit code 4"
+fi
+
+# =====================================================================
+# Case 11: --skip-verify --dry-run still exits 0, prints DRY RUN, and prints no verification
+# announcement -- the dry-run carve-out (verification never runs under --dry-run at all) is
+# unchanged by the new flag.
+# =====================================================================
+OUT_DRY_RUN_SV="$(bash "$DEPLOY_HEADLESS" --skip-verify --dry-run "$FIXTURE" 2>&1)"
+RC_DRY_RUN_SV=$?
+if [[ "$OUT_DRY_RUN_SV" == *"DRY RUN"* ]]; then
+  pass "deploy-headless.sh --skip-verify --dry-run output contains DRY RUN"
+else
+  fail "deploy-headless.sh --skip-verify --dry-run output missing DRY RUN: <<<$OUT_DRY_RUN_SV>>>"
+fi
+if [[ "$OUT_DRY_RUN_SV" != *"Verifying deploy"* && "$OUT_DRY_RUN_SV" != *"SUPPRESSED"* ]]; then
+  pass "deploy-headless.sh --skip-verify --dry-run prints no verification announcement (dry-run short-circuits before the suppression guard too)"
+else
+  fail "deploy-headless.sh --skip-verify --dry-run unexpectedly printed a verification-related announcement: <<<$OUT_DRY_RUN_SV>>>"
+fi
+if [[ "$RC_DRY_RUN_SV" -eq 0 ]]; then
+  pass "deploy-headless.sh --skip-verify --dry-run exits 0"
+else
+  fail "deploy-headless.sh --skip-verify --dry-run exited $RC_DRY_RUN_SV, expected 0"
+fi
+
+# =====================================================================
+# Case 12: structural assertion that exit 4 / landed_verify_skipped is reachable ONLY under the
+# SKIP_VERIFY guard, and that landed_verify_clean 0 is not reachable on that same path --
+# satisfying Part B's Verification #4 ("distinguishable in a test") structurally, since a
+# non-dry-run deploy is not safe to run inside this suite (see the file header's scope). The
+# live, end-to-end exit-code pair is captured separately as a recorded execution-summary
+# artifact, not by this suite.
+# =====================================================================
+if grep -qE 'SKIP_VERIFY" = "true" \]; then' "$DEPLOY_HEADLESS" && \
+   grep -q '_dh_result_and_exit landed_verify_skipped 4' "$DEPLOY_HEADLESS"; then
+  pass "deploy-headless.sh source: landed_verify_skipped 4 is reachable only under the SKIP_VERIFY guard"
+else
+  fail "deploy-headless.sh source: SKIP_VERIFY guard or exit-4 routing not found as expected"
+fi
+# The final if/elif/else must route verify_rc==4 to exit 4 BEFORE the else (verify_rc==3) arm,
+# so a verify_rc of 0 can never fall through to the skipped-RESULT branch.
+if grep -qE 'elif \[ "\$verify_rc" -eq 4 \]; then' "$DEPLOY_HEADLESS"; then
+  pass "deploy-headless.sh source: verify_rc==4 is routed by its own elif arm, distinct from the verify_rc==0 and verify_rc==3 arms"
+else
+  fail "deploy-headless.sh source: verify_rc==4 elif arm not found as expected"
+fi
+
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"
 
