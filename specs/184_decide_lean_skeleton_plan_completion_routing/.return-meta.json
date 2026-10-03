@@ -1,22 +1,48 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 14,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/184_decide_lean_skeleton_plan_completion_routing/plans/01_skeleton-follow-up-reporting.md",
-      "summary": "5-phase plan adding report-only skeleton-follow-up surfacing (stderr, completion_summary, append-only skeleton_follow_ups) to orchestrate-cycle-postflight.sh, with a new skill-base.sh propagate helper, a regression fixture, and three doc updates."
+      "type": "summary",
+      "path": "specs/184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md",
+      "summary": "All 5 plan phases complete: skeleton-follow-up reporting (stderr, completion_summary, append-only skeleton_follow_ups state.json field) added to orchestrate-cycle-postflight.sh's implemented) case, with a new skill-base.sh propagate helper, two new regression fixtures (166 passed/0 failed), and three doc updates."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /implement 184 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1791000710_cc4f86_184",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4.5,
-    "dependency_waves": [[1], [2], [3, 4], [5]]
+  "completion_data": {
+    "completion_summary": "Added report-only skeleton-plan follow-up surfacing to orchestrate-cycle-postflight.sh: a strategic-sorry skeleton completion now prints its sorry_inventory follow-ups to stderr, appends them to completion_summary, and records them in an append-only skeleton_follow_ups state.json field, closing the one unaddressed capability loss from the deleted single-task engine without any pr_ready routing or auto-task-creation."
   },
-  "dispatch_seq": 10
+  "modified_files": [
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "specs/184_decide_lean_skeleton_plan_completion_routing/plans/01_skeleton-follow-up-reporting.md",
+    "specs/184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When one new case needs to augment a shared completion/propagation call's argument (e.g. passing an augmented precomputed JSON blob), keep the pre-existing call site as a separate, untouched branch in an if/else rather than merging both cases onto one shared variable feeding a single call. This makes the unaffected case's behavior provably identical by construction (same literal statement, same arguments) rather than merely equal by coincidence of variable assignment, at the cost of a few duplicated lines.",
+      "category": "PATTERN",
+      "source_artifact": "specs/184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrate-cycle-postflight", "precomputed_json", "if-else branch", "non-regression", "shared helper"]
+    },
+    {
+      "content": "test-orchestrate-cycle-postflight.sh's existing fixtures all exercise either the recovery/return-meta path or a deliberately stale/mismatched handoff; none tests the handoff-present (trusted: matching dispatch_seq, fresh mtime) success path for the implemented) case directly. Any new handoff-only field requiring postflight logic (like skeleton/sorry_inventory) needs its own trusted-handoff fixture built from scratch -- write .orchestrator-handoff.json with dispatch_seq matching the --dispatch-seq flag and a window_start a few seconds in the past so the mtime check passes.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["test-orchestrate-cycle-postflight", "handoff-present path", "trusted handoff fixture", "dispatch_seq", "fixture gap"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791000710_cc4f86",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }

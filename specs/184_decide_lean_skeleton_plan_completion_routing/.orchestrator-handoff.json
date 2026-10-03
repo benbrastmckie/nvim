@@ -1,14 +1,14 @@
 {
-  "status": "planned",
-  "summary": "Created a 5-phase implementation plan for report-only skeleton-plan follow-up surfacing at completion under the batch engine (no pr_ready porting, no auto-task-creation).",
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "All 5 plan phases complete: added report-only skeleton-plan follow-up surfacing (stderr, completion_summary, append-only skeleton_follow_ups state.json field) to orchestrate-cycle-postflight.sh's implemented) case, with a new skill-base.sh propagate helper, two new regression fixtures (166 passed / 0 failed), and three doc updates (handoff-schema.md, status-markers.md, state-management-schema.md). No pr_ready routing, no auto-task-creation.",
+  "phases_completed": 5,
   "phases_total": 5,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/184_decide_lean_skeleton_plan_completion_routing/plans/01_skeleton-follow-up-reporting.md",
-      "summary": "5-phase plan adding report-only skeleton-follow-up surfacing (stderr, completion_summary, append-only skeleton_follow_ups) to orchestrate-cycle-postflight.sh, with a new skill-base.sh propagate helper, a regression fixture, and three doc updates."
+      "type": "summary",
+      "path": "specs/184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md",
+      "summary": "Execution summary for the skeleton-follow-up reporting implementation, including two plan deviations (if/else call-site split; 6+3 assertions instead of 5+1) and the recover_json-scoping correction to the research report."
     }
   ],
-  "dispatch_seq": 10
+  "dispatch_seq": 14
 }

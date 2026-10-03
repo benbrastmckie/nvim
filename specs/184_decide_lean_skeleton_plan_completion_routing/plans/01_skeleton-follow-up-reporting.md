@@ -329,20 +329,25 @@ this, adapt rather than duplicating.
 
 ---
 
-### Phase 5: Cross-cutting gate run and wrap-up [NOT STARTED]
+### Phase 5: Cross-cutting gate run and wrap-up [COMPLETED]
 
 **Goal**: The full gate set is green across code, test, and docs together, and the work is
 committed with the task's own scoped hunks only.
 
 **Tasks**:
-- [ ] `bash -n` both edited shell files.
-- [ ] Run the postflight suite and the handoff-reader-parity suite; confirm 0 FAIL.
-- [ ] Run the three relevant lints: `lint-state-writer-boundary.sh`,
-      `lint-json-channel-discipline.sh`, and the task-reference check.
-- [ ] Re-read `git status --short` and `git diff --staged`; stage only this task's own files
+- [x] `bash -n` both edited shell files.
+- [x] Run the postflight suite and the handoff-reader-parity suite; confirm 0 FAIL. *(166 passed /
+      0 failed for the postflight suite including the 9 new assertions; 13 passed / 0 failed for
+      handoff-reader-parity, unchanged)*
+- [x] Run the three relevant lints: `lint-state-writer-boundary.sh`,
+      `lint-json-channel-discipline.sh`, and the task-reference check. *(state-writer-boundary:
+      0 violations; json-channel-discipline: 1 violation, pre-existing and unrelated to this task
+      — agent-system/extensions/typst/scripts/chapter-quality-check.sh, not touched by this plan;
+      task-reference check: 0 occurrences on all three doc files)*
+- [x] Re-read `git status --short` and `git diff --staged`; stage only this task's own files
       (explicit file list, never `git add -A`/`.`/a directory pathspec) and commit via
       `git-commit-scoped.sh`.
-- [ ] Write the implementation summary recording: the `recover_json`-scoping correction to the
+- [x] Write the implementation summary recording: the `recover_json`-scoping correction to the
       research report's Recommendation 1(b), the empty-summary-warning interaction, and the two
       `file_scope` additions.
 
