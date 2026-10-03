@@ -690,16 +690,21 @@ JSON
     fix_p4_has_key=$(jq -r '.active_projects[] | select(.project_number==4) | has("file_scope")' "$FIX_FIXTURE_DIR/state.json" 2>/dev/null)
     fix_other_diff=$(diff <(jq -S 'del(.active_projects[].file_scope)' "$FIX_FIXTURE_DIR/state.json.orig") \
                            <(jq -S 'del(.active_projects[].file_scope)' "$FIX_FIXTURE_DIR/state.json"))
-    if [[ "$rc" -eq 0 ]] \
+    # rc is 1, not 0: project 3's file_scope stays a literal null (the whole point of this
+    # fixture -- --fix must not mutate it), and null_value is FAIL-promoted (2026-10-03), so the
+    # validation pass --fix runs before writing now reports exit 1. This is Check 10's FAIL firing
+    # correctly on exactly the shape --fix deliberately leaves untouched, not a --fix regression.
+    if [[ "$rc" -eq 1 ]] \
         && [[ "$fix_fs1" == '["docs/README.md","src/foo.lua","src/bar.lua"]' ]] \
         && [[ "$fix_fs2" == '["src/foo/","src/foo"]' ]] \
         && [[ "$fix_p3_null" == $'true\ttrue' ]] \
         && [[ "$fix_p4_has_key" == "false" ]] \
         && [[ -z "$fix_other_diff" ]] \
+        && grep -q "file_scope null_value: project_number 3 (c)" <<< "$out" \
         && ! grep -q -- '--fix: state-write.sh failed' <<< "$out"; then
-      pass "--fix fixture: exact duplicates removed order-preservingly (project 1), Class B untouched (project 2), null-valued file_scope untouched (project 3), absent-key file_scope untouched (project 4), other fields unchanged"
+      pass "--fix fixture: exact duplicates removed order-preservingly (project 1), Class B untouched (project 2), null-valued file_scope untouched (project 3, now FAIL-promoted and correctly reported), absent-key file_scope untouched (project 4), other fields unchanged"
     else
-      fail "--fix fixture: expected order-preserving dedup on project 1, untouched Class B on project 2, null-valued project 3 untouched, absent-key project 4 untouched, unchanged other fields, and no state-write.sh failure (rc=$rc)"
+      fail "--fix fixture: expected order-preserving dedup on project 1, untouched Class B on project 2, null-valued project 3 untouched and FAIL-reported, absent-key project 4 untouched, unchanged other fields, and no state-write.sh failure (rc=$rc)"
       info "$out"
       info "project 1 file_scope: $fix_fs1"
       info "project 2 file_scope: $fix_fs2"
@@ -731,8 +736,10 @@ else
   info "Check 10/Check 11/--strict fixtures running against: $SCOPE_VALIDATOR (confirmed to contain Check 10 and Check 11)"
 
   # --- Check 10 fixture: one entry each of missing_key / null_value / empty_array / a concrete
-  # (unaffected) entry, all non-terminal -> all three sub-state WARN lines, the summary counts,
-  # and exit 0 ---
+  # (unaffected) entry, all non-terminal -> all three sub-state lines plus the summary counts.
+  # null_value is now FAIL-promoted (2026-10-03): this blended fixture exits 1, not 0, and carries
+  # both the per-finding FAIL line and the aggregate "file_scope literal-null: N finding(s)" FAIL
+  # line, alongside the unpromoted missing_key/empty_array WARN lines ---
   cat > "$WORKDIR/scope10-fixture.json" <<'JSON'
 {
   "next_project_number": 5,
@@ -750,14 +757,70 @@ else
 JSON
   out=$(bash "$SCOPE_VALIDATOR" "$WORKDIR/scope10-fixture.json" 2>&1)
   rc=$?
-  if [[ "$rc" -eq 0 ]] \
+  if [[ "$rc" -eq 1 ]] \
       && grep -q "file_scope missing_key: project_number 1 (cand-missing)" <<< "$out" \
       && grep -q "file_scope null_value: project_number 2 (cand-null)" <<< "$out" \
       && grep -q "file_scope empty_array: project_number 3 (cand-empty)" <<< "$out" \
-      && grep -q "file_scope visibility: 1 missing-key, 1 literal-null, 1 empty-array, out of 4 non-terminal task(s)" <<< "$out"; then
-    pass "Check 10 fixture: missing_key/null_value/empty_array all fire with distinct sub-state lines plus a summary count line, exit 0"
+      && grep -q "file_scope visibility: 1 missing-key, 1 literal-null, 1 empty-array, out of 4 non-terminal task(s)" <<< "$out" \
+      && grep -q "file_scope literal-null: 1 finding(s)" <<< "$out" \
+      && grep -q "STATE VALIDATION FAILED" <<< "$out"; then
+    pass "Check 10 fixture: missing_key/null_value/empty_array all fire with distinct sub-state lines plus a summary count line and the promoted null_value FAIL, exit 1"
   else
-    fail "Check 10 fixture: expected exit 0 with all three sub-state WARN lines plus the summary line (rc=$rc)"
+    fail "Check 10 fixture: expected exit 1 with all three sub-state lines, the summary line, and the null_value FAIL lines (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Check 10 pure-null_value fixture: a single non-terminal entry with a literal null
+  # file_scope, no missing_key or empty_array entries at all -- pins the FAIL independently of
+  # the blended fixture above, confirming the promotion fires on its own rather than only in
+  # combination with the other two sub-states ---
+  cat > "$WORKDIR/scope10-nullonly-fixture.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {"project_number": 1, "project_name": "cand-null-only", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": null}
+  ]
+}
+JSON
+  out=$(bash "$SCOPE_VALIDATOR" "$WORKDIR/scope10-nullonly-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 1 ]] \
+      && grep -q "file_scope null_value: project_number 1 (cand-null-only)" <<< "$out" \
+      && grep -q "file_scope literal-null: 1 finding(s)" <<< "$out" \
+      && ! grep -q "missing_key\|empty_array" <<< "$out" \
+      && grep -q "STATE VALIDATION FAILED" <<< "$out"; then
+    pass "Check 10 pure-null_value fixture: a lone literal-null entry FAILs on its own, no missing_key/empty_array finding present"
+  else
+    fail "Check 10 pure-null_value fixture: expected exit 1 with the FAIL lines and no missing_key/empty_array finding (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- Check 10 display-cap fixture: 12 missing_key entries (sorted ahead by project_number,
+  # exceeding the 10-item WARN display cap) plus one null_value entry at a HIGH project_number
+  # that sorts past the cap -- regression guard for the display-cap exemption. Without the
+  # exemption, a null_value finding sorting past the cap would emit no FAIL line and the
+  # promotion would silently regress to cosmetic the moment missing_key findings outnumber 10 ---
+  {
+    echo '{'
+    echo '  "next_project_number": 1000,'
+    echo '  "active_projects": ['
+    for i in $(seq 1 12); do
+      echo "    {\"project_number\": $i, \"project_name\": \"cand-missing-$i\", \"status\": \"not_started\", \"task_type\": \"general\", \"created\": \"2026-01-01T00:00:00Z\", \"last_updated\": \"2026-01-01T00:00:00Z\"},"
+    done
+    echo '    {"project_number": 999, "project_name": "cand-null-high", "status": "not_started", "task_type": "general", "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": null}'
+    echo '  ]'
+    echo '}'
+  } > "$WORKDIR/scope10-displaycap-fixture.json"
+  out=$(bash "$SCOPE_VALIDATOR" "$WORKDIR/scope10-displaycap-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 1 ]] \
+      && grep -q "file_scope null_value: project_number 999 (cand-null-high)" <<< "$out" \
+      && grep -q "file_scope literal-null: 1 finding(s)" <<< "$out" \
+      && grep -q "more file_scope visibility finding(s) not shown" <<< "$out"; then
+    pass "Check 10 display-cap fixture: a null_value finding sorting past the 10-item WARN cap still produces a FAIL line"
+  else
+    fail "Check 10 display-cap fixture: expected exit 1 with the high-project_number null_value FAIL line surviving the display cap (rc=$rc)"
     info "$out"
   fi
 
@@ -832,14 +895,45 @@ JSON
     info "$out"
   fi
 
-  # --- --strict fixtures: the Check 10 fixture (WARN-only in default mode) becomes exit 1 under
-  # --strict; the warning-free negative fixture stays exit 0 under --strict ---
-  out=$(bash "$SCOPE_VALIDATOR" --strict "$WORKDIR/scope10-fixture.json" 2>&1)
+  # --- WARN-only fixture: one missing_key entry, one empty_array entry, one concrete-scope
+  # control, all non-terminal, deliberately NO null_value entry -- this is the fixture the
+  # --strict assertion below exercises, since scope10-fixture.json now FAILs in default mode
+  # (null_value is FAIL-promoted) and would take the plain "STATE VALIDATION FAILED" branch
+  # before the --strict summary branch is ever reached, silently stopping the --strict assertion
+  # from testing what it claims to test ---
+  cat > "$WORKDIR/scope10-warnonly-fixture.json" <<'JSON'
+{
+  "next_project_number": 4,
+  "active_projects": [
+    {"project_number": 1, "project_name": "cand-missing", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"},
+    {"project_number": 2, "project_name": "cand-empty", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": []},
+    {"project_number": 3, "project_name": "cand-ok", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z", "file_scope": ["a/b.sh"]}
+  ]
+}
+JSON
+  out=$(bash "$SCOPE_VALIDATOR" "$WORKDIR/scope10-warnonly-fixture.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "file_scope missing_key: project_number 1 (cand-missing)" <<< "$out" \
+      && grep -q "file_scope empty_array: project_number 2 (cand-empty)" <<< "$out" \
+      && ! grep -q "null_value\|literal-null: " <<< "$out"; then
+    pass "Check 10 WARN-only fixture: missing_key/empty_array fire as WARN with no null_value, exit 0"
+  else
+    fail "Check 10 WARN-only fixture: expected exit 0 with missing_key/empty_array WARN lines and no null_value finding (rc=$rc)"
+    info "$out"
+  fi
+
+  # --- --strict fixtures: the WARN-only Check 10 fixture becomes exit 1 under --strict; the
+  # warning-free negative fixture stays exit 0 under --strict ---
+  out=$(bash "$SCOPE_VALIDATOR" --strict "$WORKDIR/scope10-warnonly-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 1 ]] && grep -q "STATE VALIDATION FAILED (--strict:" <<< "$out"; then
     pass "--strict fixture: a WARN-only Check 10 finding becomes exit 1 under --strict"
   else
-    fail "--strict fixture: expected exit 1 with the strict-mode summary line against the Check 10 fixture (rc=$rc)"
+    fail "--strict fixture: expected exit 1 with the strict-mode summary line against the WARN-only Check 10 fixture (rc=$rc)"
     info "$out"
   fi
 
