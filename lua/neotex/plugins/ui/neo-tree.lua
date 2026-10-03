@@ -41,7 +41,7 @@ return {
           folder_closed = "",
           folder_open = "",
           folder_empty = "",
-          default = "",
+          default = "",
           highlight = "NeoTreeFileIcon",
         },
         modified = {
