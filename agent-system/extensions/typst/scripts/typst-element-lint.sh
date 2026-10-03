@@ -29,14 +29,31 @@
 #      theorems, that is a signal the remarks are doing work that belongs elsewhere"). Guarded
 #      by an absolute floor so a file with few remarks and zero theorem-family elements does not
 #      warn merely because the ratio is undefined/trivial.
+#   4. Element presence (ADVISORY). Warns when a non-exempt chapter file contains zero
+#      theorem-family elements (definition+theorem+lemma+corollary+example) at all -- placement
+#      (check 1) can only police elements that are PRESENT; a chapter using none of the
+#      vocabulary is invisible to checks 1-3, which is exactly the drift this check exists to
+#      surface. EXEMPTION CLASS (basename-matched, kept short and documented here, not scattered
+#      across a config file): a basename containing "introduction" (pure-narrative front matter,
+#      by convention never carries numbered results), starting with "appendix-" (index/ledger/
+#      export back matter, generally a thin wrapper around generated content), or containing
+#      "glossary" (assembled automatically from other chapters' term-def sites, carries no
+#      elements of its own by construction). A file outside this class and still legitimately
+#      narrative or not-yet-written is expected to WARN here -- that is the check doing its job,
+#      not a false positive to special-case away. Advisory only, for the same reason checks 2-3
+#      are: see SEVERITY SPLIT below.
 #
 # SEVERITY SPLIT (do not change without a documented review pass against real chapters).
-# Checks 2 and 3 are ADVISORY-ONLY: they are reported and counted but NEVER affect the exit
-# code. Promoting either to blocking requires first observing their behavior against a real
-# corpus of chapters (Phase 5 of the plan that introduced this script ran that observation once
-# against typst/manual/chapters/ -- see the implementation summary for the recorded evidence);
-# an unreviewed hard threshold that fires on correct documents is exactly the failure mode this
-# split exists to prevent (a gate that fires on correct documents gets switched off).
+# Checks 2, 3 and 4 are ADVISORY-ONLY: they are reported and counted but NEVER affect the exit
+# code. Promoting any of them to blocking requires first observing their behavior against a real
+# corpus of chapters (Phase 5 of the plan that introduced checks 1-3 ran that observation once
+# against typst/manual/chapters/ -- see that plan's implementation summary for the recorded
+# evidence; check 4 was introduced later, against the same corpus, by the plan that raised the
+# manual's chapters to the BimodalReference textbook standard -- see that task's own record
+# report for the observed presence/exemption counts). An unreviewed hard threshold that fires on
+# correct documents is exactly the failure mode this split exists to prevent (a gate that fires
+# on correct documents gets switched off, and this repository has already watched exactly that
+# drift happen once, silently, before check 4 existed).
 #
 # ELEMENT INVENTORY. Sourced verbatim from
 # context/project/typst/standards/semantic-element-usage.md's Per-Element Semantics section:
@@ -105,6 +122,8 @@ Checks:
   2. Item count (ADVISORY) - a #remark block whose body has more than 3 enumerated items.
   3. Density (ADVISORY)    - a file with more #remark occurrences than theorem-family elements
                              (definition+theorem+lemma+corollary+example), floor 3.
+  4. Presence (ADVISORY)   - a non-exempt file (basename not matching introduction/appendix-/
+                             glossary) with zero theorem-family elements.
 
 Options:
   --verbose, -v   Print per-file counts even when nothing is flagged.
@@ -272,6 +291,14 @@ END {
   if (remarks >= DENSITY_FLOOR && remarks > family) {
     printf "WARN\tdensity\t%s\t%d\t%d\t-\t-\n", FILENAME, remarks, family
   }
+  # ---- Check 4: element presence, exemption class basename-matched (see header comment) ----
+  if (family == 0) {
+    base = FILENAME
+    sub(/^.*\//, "", base)
+    if (base !~ /introduction/ && base !~ /^appendix-/ && base !~ /glossary/) {
+      printf "WARN\tpresence\t%s\t-\t-\t-\t-\n", FILENAME
+    }
+  }
 }
 AWKEOF
 
@@ -302,6 +329,10 @@ for f in "${TYP_FILES[@]}"; do
         elif [[ "$check" == "density" ]]; then
           # f1=remark_count f2=family_count
           echo -e "${YELLOW}[WARN]${NC} ${rfile}: ${f1} #remark occurrences vs ${f2} theorem-family elements -- \"if a chapter has more remarks than theorems, that is a signal the remarks are doing work that belongs elsewhere\" (standards/semantic-element-usage.md, Remark: Expected density). Advisory only."
+          TOTAL_WARNINGS=$((TOTAL_WARNINGS + 1))
+          file_warnings=$((file_warnings + 1))
+        elif [[ "$check" == "presence" ]]; then
+          echo -e "${YELLOW}[WARN]${NC} ${rfile}: zero theorem-family elements (definition/theorem/lemma/corollary/example) in a file outside the introduction/appendix-/glossary exemption class. Placement (check 1) only polices elements that are present -- a chapter using none of the vocabulary is invisible to it. Advisory only; not necessarily wrong (a genuinely narrative file may legitimately have none), but confirm before leaving it this way."
           TOTAL_WARNINGS=$((TOTAL_WARNINGS + 1))
           file_warnings=$((file_warnings + 1))
         fi
