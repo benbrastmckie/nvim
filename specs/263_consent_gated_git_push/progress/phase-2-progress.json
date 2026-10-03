@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Grant token library — format, HMAC, expiry, matching, consumption",
+  "started_at": "2026-10-03T02:45:00Z",
+  "last_updated": "2026-10-03T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create scripts/lib/push-grant-lib.sh with all grant primitives", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.pg_default_branch",
+      "description": "pg_default_branch's third tier (\"the literal set {master, main}\") and the fail-closed undetermined case",
+      "type": "altered",
+      "reason": "The plan names a 3-tier resolution (symbolic-ref, init.defaultBranch config, literal set {master,main}) plus a separate fail-closed catch-all for the fully-undetermined case. Implemented as 2 tiers in pg_default_branch (symbolic-ref, config) plus a single fail-closed return in pg_is_default_branch that treats ANY undetermined case as matching the default branch -- this provably subsumes the literal-set heuristic (master/main would already be caught by the catch-all) without needing a separate tier. Documented inline in both functions' headers.",
+      "annotation": "*(deviation: altered — 2-tier pg_default_branch + fail-closed catch-all in pg_is_default_branch, subsuming the literal-set heuristic; see code comments)*"
+    }
+  ]
+}

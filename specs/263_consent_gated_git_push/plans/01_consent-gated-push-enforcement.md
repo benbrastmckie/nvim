@@ -205,59 +205,59 @@ after restoration.
 
 ---
 
-### Phase 2: Grant token library — format, HMAC, expiry, matching, consumption [NOT STARTED]
+### Phase 2: Grant token library — format, HMAC, expiry, matching, consumption [COMPLETED]
 
 **Goal**: One library implementing every grant primitive, sourced by all three consumers (mint
 hook, push guard, wrapper, destructive guard), so there is exactly one implementation of the
 security-critical logic.
 
 **Tasks**:
-- [ ] Create `scripts/lib/push-grant-lib.sh` with path constants: grant directory
+- [x] Create `scripts/lib/push-grant-lib.sh` with path constants: grant directory
   `specs/.push-grant/`, one grant file per mint named `grant-<epoch>-<rand>.kv`, and key path
   `${XDG_STATE_HOME:-$HOME/.local/state}/claude-agent-system/push-grant.key` (outside the repo, so
   a `.claude/` wipe or a fresh clone cannot destroy or expose it).
-- [ ] Implement `pg_key_ensure()`: create the key directory `0700` and the key `0600` from
+- [x] Implement `pg_key_ensure()`: create the key directory `0700` and the key `0600` from
   `od -An -N32 -tx1 /dev/urandom` on first use; refuse to proceed (return non-zero) if the key
   exists with looser-than-0600 permissions.
-- [ ] Implement `pg_grant_write()`: line-oriented KEY=VALUE (the `.git-snapshot-marker` precedent,
+- [x] Implement `pg_grant_write()`: line-oriented KEY=VALUE (the `.git-snapshot-marker` precedent,
   extended) with required fields `VERSION=1`, `TIMESTAMP`, `ACTION_CLASS`
   (`push_branch`|`push_tag`), `REMOTE`, `REF`, `FORCE` (`0`|`lease`), `HEAD_SHA`, `REQUEST_TEXT`
   (base64, so free text cannot inject newlines), `MINT_SOURCE`
   (`please`|`merge`|`tag`|`pr`), and `HMAC` last. HMAC-SHA256 is computed with
   `openssl dgst -sha256 -hmac "$(cat key)"` over every preceding line verbatim; write via a
   `mktemp` + `mv` so no partial file is ever observable.
-- [ ] Implement `pg_grant_verify()`: recompute the HMAC and compare; return non-zero on any
+- [x] Implement `pg_grant_verify()`: recompute the HMAC and compare; return non-zero on any
   missing field, non-numeric `TIMESTAMP`, unknown `ACTION_CLASS`/`FORCE` value, `VERSION` other
   than `1`, unreadable file, or absent key. Every failure path returns "no grant", never "grant
   present".
-- [ ] Implement `pg_grant_fresh()` with `PG_EXPIRY_WINDOW=600` and the same `0 <= (NOW - TS) <=
+- [x] Implement `pg_grant_fresh()` with `PG_EXPIRY_WINDOW=600` and the same `0 <= (NOW - TS) <=
   WINDOW` shape `guard-destructive-git.sh` uses for its 120s marker (a negative age — a
   future-dated grant — fails).
-- [ ] Implement `pg_default_branch()`: `git symbolic-ref --short refs/remotes/<remote>/HEAD`, else
+- [x] Implement `pg_default_branch()`: `git symbolic-ref --short refs/remotes/<remote>/HEAD`, else
   `git config --get init.defaultBranch`, else the literal set `{master, main}`. **If it cannot be
   determined, return the sentinel that makes the caller treat the target AS the default branch**
   (fail closed).
-- [ ] Implement `pg_categorical_excluded(action, remote, ref, force, flags)` returning the
+- [x] Implement `pg_categorical_excluded(action, remote, ref, force, flags)` returning the
   exclusion reason string, or empty. Excluded: bare `--force`/`-f` on any ref; any force form
   (including `--force-with-lease`) on the default branch; `--mirror`; `--all`; `--tags`;
   `--prune`; a deletion refspec (`--delete`, or a refspec whose source side is empty, `:ref`);
   any command with more than one refspec. These are checked BEFORE any grant lookup.
-- [ ] Implement `pg_grant_match(action, remote, ref, force)`: exact string equality on `REMOTE`
+- [x] Implement `pg_grant_match(action, remote, ref, force)`: exact string equality on `REMOTE`
   and `REF`, exact equality on `ACTION_CLASS` and `FORCE`, and `HEAD_SHA` equal to
   `git rev-parse HEAD` at consumption time (so any commit made since the mint invalidates it).
   For `ACTION_CLASS=push_tag`, `REF` is the literal pattern `refs/tags/*` and matches any single
   tag ref (the tag does not exist yet when `/tag` is typed — documented in the header).
-- [ ] Implement `pg_grant_consume()`: pick the newest verifying, fresh, matching grant; `rm -f` it
+- [x] Implement `pg_grant_consume()`: pick the newest verifying, fresh, matching grant; `rm -f` it
   **before** returning success (delete-on-use, the `guard-destructive-git.sh` marker precedent);
   emit the `push_grant_consumed` audit event via `scripts/events-append.sh`
   (`--category success`, `--detail-json` with remote/ref/sha/force/mint_source/consumer).
-- [ ] Implement `pg_grant_revoke()`: delete every grant file, used by the wrapper's `--revoke`.
-- [ ] Implement `pg_dir_ensure()`: create `specs/.push-grant/` `0700` and write
+- [x] Implement `pg_grant_revoke()`: delete every grant file, used by the wrapper's `--revoke`.
+- [x] Implement `pg_dir_ensure()`: create `specs/.push-grant/` `0700` and write
   `specs/.push-grant/.gitignore` containing `*` on creation, so the directory is self-ignoring in
   every consumer repo with no `.gitignore` edit anywhere (the top-level repo `.gitignore` is NOT
   deployed from the source store — `root-files/.gitignore` lands at `.claude/.gitignore` and only
   covers paths inside it, verified during planning).
-- [ ] Header comment documenting: fail-closed direction; the divergence from
+- [x] Header comment documenting: fail-closed direction; the divergence from
   `git-commit-scoped.sh`'s fail-OPEN mutex behaviour (a push guard must refuse, never proceed
   unserialized); and that the guarantee is grant PROVENANCE, not key confidentiality.
 
@@ -281,35 +281,35 @@ security-critical logic.
 
 ---
 
-### Phase 3: `/please` mint hook (UserPromptSubmit) [NOT STARTED]
+### Phase 3: `/please` mint hook (UserPromptSubmit) [COMPLETED]
 
 **Goal**: The one tamper-resistant mint path: a `UserPromptSubmit` hook that mints a grant only
 from a literal human prompt, and mints nothing at all when the request is ambiguous.
 
 **Tasks**:
-- [ ] Create `hooks/please-grant.sh`, reading stdin JSON and extracting `.prompt` exactly as
+- [x] Create `hooks/please-grant.sh`, reading stdin JSON and extracting `.prompt` exactly as
   `hooks/wezterm-task-number.sh` does (`jq -r '.prompt // ""'`).
-- [ ] Recognise four prefixes on the literal prompt, and nothing else: `/please`, `/merge`,
+- [x] Recognise four prefixes on the literal prompt, and nothing else: `/please`, `/merge`,
   `/tag`, `/pr`. Any other prompt exits 0 with no output and no grant.
-- [ ] `/please` grammar (the absorbed matching rule): mint only when the free text yields exactly
+- [x] `/please` grammar (the absorbed matching rule): mint only when the free text yields exactly
   one `(action_class, remote, ref, force)` tuple. Accept `push <remote> <branch>`,
   `push <branch> to <remote>`, `push tag <name> to <remote>`, with an optional
   `--force-with-lease`. On zero or multiple candidate tuples, mint NOTHING and write a one-line
   refusal to stdout (which Claude Code injects as prompt context) naming the accepted grammar.
-- [ ] `/merge`, `/tag`, `/pr` mint from repo state at prompt time: `REMOTE` = the current branch's
+- [x] `/merge`, `/tag`, `/pr` mint from repo state at prompt time: `REMOTE` = the current branch's
   configured upstream remote, else `origin`; `REF` = the current branch (or `refs/tags/*` for
   `/tag`); `FORCE=0`; `HEAD_SHA` = `git rev-parse HEAD`; `MINT_SOURCE` set accordingly. This is
   what keeps the three pre-existing user-only push flows working unchanged — including cslib's
   `/pr`, which needs no cslib edit.
-- [ ] Refuse to mint (and say so in stdout) when `pg_categorical_excluded` already rejects the
+- [x] Refuse to mint (and say so in stdout) when `pg_categorical_excluded` already rejects the
   requested tuple, so an excluded request never even produces a token.
-- [ ] Emit the `push_grant_issued` audit event (`--category milestone`, `--detail-json` with
+- [x] Emit the `push_grant_issued` audit event (`--category milestone`, `--detail-json` with
   remote/ref/sha/force/mint_source and the request text).
-- [ ] On a successful mint, write one stdout line stating exactly what was granted (remote, ref,
+- [x] On a successful mint, write one stdout line stating exactly what was granted (remote, ref,
   short sha, force-or-not, expiry seconds) and that the sanctioned path is
   `bash .claude/scripts/git-push-granted.sh`.
-- [ ] Revoke any pre-existing grants before minting a new one, so at most one grant is ever live.
-- [ ] Never exit non-zero: a `UserPromptSubmit` hook that fails must not block the user's prompt.
+- [x] Revoke any pre-existing grants before minting a new one, so at most one grant is ever live.
+- [x] Never exit non-zero: a `UserPromptSubmit` hook that fails must not block the user's prompt.
   All failures are reported in stdout and result in NO grant.
 
 **Timing**: 1.5 hours
