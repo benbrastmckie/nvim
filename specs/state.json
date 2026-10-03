@@ -501,10 +501,16 @@
           "path": "specs/265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md",
           "type": "plan",
           "summary": "8-phase implementation plan, ~7 hours, strict-mode validated."
+        },
+        {
+          "path": "specs/265_parallelize_gate8_shell_test_suite/summaries/01_gate8-jobs-and-inline-verify-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: both complete [FAIL] sets, all before/after wall times, the live exit-code pair, the premise correction, and follow-ups."
         }
       ],
       "next_artifact_number": 2,
-      "session_id": "sess_1790968925_5ff73e"
+      "session_id": "sess_1790968925_5ff73e",
+      "completion_summary": "Implemented Gate 8 parallelism in verify-deploy.sh (--jobs auto default, VERIFY_DEPLOY_GATE8_JOBS override, 51.6% measured reduction) and an opt-in --skip-verify/exit-4 suppression flag in deploy-headless.sh threaded into its two genuine callers (command-gate-out.sh, orchestrate-cycle-plan.sh), removing a measured ~2m9s-per-checkpoint-fire redundant inline verification pass. All 8 plan phases completed; a stale premise in the task's own rationale (checkpoint snapshots assumed full-depth, actually already --skip-slow-matched by a prior task) was discovered, corrected, and disclosed rather than silently absorbed."
     },
     {
       "project_number": 270,

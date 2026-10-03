@@ -31,29 +31,52 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/summaries/01_gate8-jobs-and-inline-verify-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["premise-drift", "git log -S", "stale-rationale", "shared-infrastructure", "re-verify-at-implementation-time"]
+      "suggested_keywords": [
+        "premise-drift",
+        "git log -S",
+        "stale-rationale",
+        "shared-infrastructure",
+        "re-verify-at-implementation-time"
+      ]
     },
     {
       "content": "A diagnostic-only boolean field fed by a comparison against a specific exit code (e.g. `deploy_exit -eq 0`) can become silently dead code when an upstream change makes that exit code unreachable at that call site. Don't widen the comparison to include the new code unless the semantics genuinely match (e.g. 0=\"passed\" vs 4=\"suppressed\" are not interchangeable) -- instead, document explicitly why the field is now dead, why it's retained (test fixtures, rollback paths), and confirm the owning test still exercises it correctly (often via an arg-agnostic stub).",
       "category": "PATTERN",
       "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/summaries/01_gate8-jobs-and-inline-verify-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["dead-code", "exit-code-semantics", "diagnostic-field", "test-fixture-stub", "documentation-over-widening"]
+      "suggested_keywords": [
+        "dead-code",
+        "exit-code-semantics",
+        "diagnostic-field",
+        "test-fixture-stub",
+        "documentation-over-widening"
+      ]
     },
     {
       "content": "To demonstrate a red-tree-detectability property without needing a destructive git checkout on a dirty tree (which guard-destructive-git.sh correctly blocks), inject the deliberate defect, capture findings, then revert via the Edit tool (or sed removing the exact appended line) rather than `git checkout -- <path>`. This sidesteps the guard entirely since it's not a git operation, while still producing a clean, verifiable revert.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/265_parallelize_gate8_shell_test_suite/summaries/01_gate8-jobs-and-inline-verify-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["red-tree-probe", "guard-destructive-git", "revert-without-git-checkout", "deliberate-defect-injection"]
+      "suggested_keywords": [
+        "red-tree-probe",
+        "guard-destructive-git",
+        "revert-without-git-checkout",
+        "deliberate-defect-injection"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790980905_de0803",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
