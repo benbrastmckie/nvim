@@ -887,8 +887,18 @@ update_lean_tree_cpu_state() {
         idle_min=$(( (now - last_active) / 60 ))
         CPU_STATE_IDLE_MIN+=("$idle_min")
 
+        # Merge onto the PRIOR per-key object (via jq's `+`, where the right-hand side's keys
+        # win on conflict), never a wholesale replacement -- the notify-before-kill prompt path
+        # (maybe_prompt_for_lean_tree()/record_lean_tree_snooze()) stores its own `prompted`/
+        # `snooze_until` fields on this SAME per-key object, and a bare `.[$k] = {cputime_ticks,
+        # last_active, last_seen}` would silently drop them on every single detection pass,
+        # defeating the prompt dedupe entirely (a tree would re-prompt on every run regardless of
+        # an active snooze). cputime_ticks/last_active/last_seen are always the fresh values;
+        # anything else already on the key (prompted, snooze_until) survives unless this same
+        # run's prompt-path code explicitly updates it afterward.
         new_state=$(printf '%s' "$new_state" | jq --arg k "$key" --argjson ct "$cputicks" --argjson la "$last_active" --argjson ls "$now" \
-            '.[$k] = {cputime_ticks: $ct, last_active: $la, last_seen: $ls}')
+            --argjson prior "$(printf '%s' "$LEAN_TREE_STATE_JSON" | jq --arg k "$key" '.[$k] // {}')" \
+            '.[$k] = ($prior + {cputime_ticks: $ct, last_active: $la, last_seen: $ls})')
     done
 
     LEAN_TREE_STATE_JSON="$new_state"

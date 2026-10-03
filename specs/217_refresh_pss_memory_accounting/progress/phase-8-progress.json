@@ -1,0 +1,36 @@
+{
+  "phase": 8,
+  "phase_name": "Prompt-path tests",
+  "started_at": "2026-10-02T04:20:00Z",
+  "last_updated": "2026-10-02T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Shared 4-row fixture with argv-recording systemd-run stub and controllable notify-send stub", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 2, "description": "Kill-path, Keep-path (x3), unit-name cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 3, "description": "Snooze dedupe cases (exposed and required the update_lean_tree_cpu_state() fix)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh", "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 4, "description": "Degrade cases (x3) via PATH-mirror-minus-one technique", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 5, "description": "Re-verification refusal cases (x3) via isolated function calls", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 6, "description": "Active-tree acceptance-bar case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 7, "description": "Mutation-check list + header comment updates", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Reuse assertion (g)'s enable -n kill fake-kill-log technique for the Kill-path ordering assertion", "result": "failed", "reason": "The Kill outcome re-invokes $SELF_SCRIPT as a genuine separate process (via the systemd-run stub's synchronous exec chain), a process boundary enable -n kill (shell-local) cannot reach -- the real builtin kill runs in that grandchild. Switched to asserting ordering via terminate_pid()'s own 'already gone' log-line sequence on fictional pids instead, which proves the identical ordering guarantee without ever risking a real signal."},
+    {"approach": "Bare /usr/bin:/bin PATH fallback for the three degrade cases", "result": "failed", "reason": "Neither directory contains bash itself on this NixOS sandbox (only env/sh), so the inner bash invocation failed with its own command-not-found, and claude-refresh.sh's inherited set -e (from sourcing) silently aborted the whole suite on the resulting bare failing assignment. Replaced with a PATH-mirror-minus-one-binary technique (symlink every real PATH entry except the one dependency under test)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.kill-ordering-technique",
+      "description": "Kill-path ordering assertion technique differs from assertion (g)'s enable -n kill fake-kill-log",
+      "type": "altered",
+      "reason": "The Kill outcome crosses a real process boundary (re-invoking $SELF_SCRIPT) that enable -n kill cannot reach. Ordering is instead proven via terminate_pid()'s own already-gone log sequence on fictional pids -- an equally conclusive, adapted technique.",
+      "annotation": "*(deviation: altered -- adapted ordering-proof technique for a cross-process re-invocation)*"
+    }
+  ],
+  "verification_notes": {
+    "shellcheck": "clean, same baseline plus one pre-existing SC2016 info (intentional)",
+    "suite": "163 passed / 0 failed",
+    "critical_fix": "update_lean_tree_cpu_state() was silently dropping prompted/snooze_until on every detection pass, defeating prompt dedupe entirely -- fixed by merging onto the prior per-key object instead of replacing it; manually re-verified two consecutive runs now launch exactly one unit with snooze_until persisting",
+    "no_leaked_units": "confirmed via systemctl --user list-units after every suite run in this phase"
+  }
+}

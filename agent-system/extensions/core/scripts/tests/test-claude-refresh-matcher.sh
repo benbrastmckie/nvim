@@ -12,7 +12,15 @@
 # pass's old pcpu/etimes gate: the comm-gotcha-robust /proc/PID/stat parse, the idle state machine
 # (first sighting, unchanged/increased cputime, pruning), PID reuse, state-file tolerance
 # (missing/empty/corrupt), atomic-write cleanliness, and the memory-floor cost gate on both sides
-# of its threshold. Detection (Family A/B
+# of its threshold. Assertion (g3) covers the --lean-tree targeted-termination mode and the
+# notify-before-kill prompt path: the Kill outcome (re-invocation and termination ORDERING,
+# proven via terminate_pid()'s own "already gone" log sequence on fictional pids since the Kill
+# outcome crosses a real process boundary), the Keep outcome (empty/other/nonzero-exit all
+# recording a snooze), snooze dedupe across a window boundary, three independent re-verification
+# refusals (PID reuse, regained activity, dropped below the floor), three independent dependency
+# degrades (notify-send/systemd-run/DBus each absent in turn), the unit-name constraint, and the
+# dispatch's own acceptance bar (a 5h-old tree whose cputime grows between runs is never eligible
+# or prompted). Detection (Family A/B
 # classification, idle+age gating, the PID-reuse ceiling backstop), the widened self-exclusion
 # (pid, ppid, pgid, and the full ancestor chain of $$, all from one frozen snapshot), the
 # fail-closed path when the $$ row is absent, the age-threshold-only gate (reaps without
@@ -1320,6 +1328,456 @@ fi
 unset PROC_ROOT
 
 # =====================================================================
+# Assertion (g3): notify-before-kill prompt path -- outcomes, refusals, dedupe, degrade
+# =====================================================================
+# A dedicated 4-row tree (root, server, 2 workers), own fake pids, stubbed notify-send/systemd-run
+# recording the unit's full argv to a log file and executing the trailing command FOR REAL
+# (synchronously, in-process -- no real transient unit). Kill-outcome and ordering are asserted
+# via terminate_pid()'s own "already gone" log lines (these are fictional, never-real pids, so
+# `kill -0` genuinely and harmlessly reports ESRCH) rather than a fake-kill-log override, since
+# the Kill outcome re-invokes $SELF_SCRIPT as a genuine child process (crossing a process
+# boundary `enable -n kill` cannot reach) -- an adaptation of assertion (g)'s fake-kill-logging
+# technique to this cross-process re-invocation design, proving the same ordering guarantee by a
+# different, equally conclusive signal.
+PROMPT_ROOT=900001
+PROMPT_SERVER=900002
+PROMPT_WORKER1=900003
+PROMPT_WORKER2=900004
+PROMPT_STARTTIME=700000
+
+PROMPT_BIN_DIR="$WORKDIR/fakebin-prompt"
+mkdir -p "$PROMPT_BIN_DIR"
+cat > "$PROMPT_BIN_DIR/ps" <<'FAKE_PS_PROMPT_EOF'
+#!/usr/bin/env bash
+has_p_flag=false
+has_c_flag=false
+field_spec=""
+prev=""
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  if [ "$a" = "-C" ]; then has_c_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
+done
+if $has_p_flag; then
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+case "$field_spec" in
+  *pgid*)
+    exit 0
+    ;;
+esac
+cur_uid="$(id -u)"
+CG="0::/user.slice/user-1000.slice/session.scope"
+if $has_c_flag; then
+  printf '%s %s %s %s %s %s %s %s %s\n' __ROOT__    1          "$cur_uid" 20000 1000 0.0 "$CG" lake ".../bin/lake serve"
+  printf '%s %s %s %s %s %s %s %s %s\n' __SERVER__  __ROOT__   "$cur_uid" 20000 1000 0.0 "$CG" lean ".../bin/lean --server"
+  printf '%s %s %s %s %s %s %s %s %s\n' __WORKER1__ __SERVER__ "$cur_uid" 20000 1000 0.0 "$CG" lean ".../bin/lean --worker file:///a.lean"
+  printf '%s %s %s %s %s %s %s %s %s\n' __WORKER2__ __SERVER__ "$cur_uid" 20000 1000 0.0 "$CG" lean ".../bin/lean --worker file:///b.lean"
+  exit 0
+fi
+exit 0
+FAKE_PS_PROMPT_EOF
+sed -i "s/__ROOT__/$PROMPT_ROOT/g; s/__SERVER__/$PROMPT_SERVER/g; s/__WORKER1__/$PROMPT_WORKER1/g; s/__WORKER2__/$PROMPT_WORKER2/g" "$PROMPT_BIN_DIR/ps"
+chmod +x "$PROMPT_BIN_DIR/ps"
+
+# Argv-recording systemd-run stub: logs every invocation's full argv (one line, `%q`-quoted) to
+# $SYSTEMD_RUN_LOG, then strips systemd-run's own flags and executes the trailing command for
+# real -- so the test can assert BOTH the unit name (from the log) and the live outcome (from the
+# command's actual effect), matching the dispatch's own description of this stub.
+cat > "$PROMPT_BIN_DIR/systemd-run" <<'FAKE_SYSTEMD_RUN_EOF'
+#!/usr/bin/env bash
+{
+  printf 'ARGV:'
+  printf ' %q' "$@"
+  printf '\n'
+} >> "$SYSTEMD_RUN_LOG"
+cmd=()
+for a in "$@"; do
+  case "$a" in
+    --user|--quiet|--collect|--scope|--) continue ;;
+    --unit=*) continue ;;
+    *) cmd+=("$a") ;;
+  esac
+done
+"${cmd[@]}"
+FAKE_SYSTEMD_RUN_EOF
+chmod +x "$PROMPT_BIN_DIR/systemd-run"
+
+# Controllable notify-send stub: echoes the contents of $NOTIFY_OUTPUT_FILE (if present) and exits
+# with the code in $NOTIFY_EXIT_FILE (if present), so each sub-case below can drive a different
+# outcome by writing to these two files before each run.
+cat > "$PROMPT_BIN_DIR/notify-send" <<'FAKE_NOTIFY_SEND_EOF'
+#!/usr/bin/env bash
+if [ -n "${NOTIFY_OUTPUT_FILE:-}" ] && [ -f "$NOTIFY_OUTPUT_FILE" ]; then
+  cat "$NOTIFY_OUTPUT_FILE"
+fi
+if [ -n "${NOTIFY_EXIT_FILE:-}" ] && [ -f "$NOTIFY_EXIT_FILE" ]; then
+  exit "$(cat "$NOTIFY_EXIT_FILE")"
+fi
+exit 0
+FAKE_NOTIFY_SEND_EOF
+chmod +x "$PROMPT_BIN_DIR/notify-send"
+
+PROMPT_PROC_DIR="$WORKDIR/fakeproc-prompt"
+mkdir -p "$PROMPT_PROC_DIR/$PROMPT_ROOT" "$PROMPT_PROC_DIR/$PROMPT_SERVER" "$PROMPT_PROC_DIR/$PROMPT_WORKER1" "$PROMPT_PROC_DIR/$PROMPT_WORKER2"
+printf '%s (lake) S 1 %s %s 0 -1 4194304 100 0 0 0 100 50 0 0 20 0 1 0 %s 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' "$PROMPT_ROOT" "$PROMPT_ROOT" "$PROMPT_ROOT" "$PROMPT_STARTTIME" > "$PROMPT_PROC_DIR/$PROMPT_ROOT/stat"
+for prompt_pid in "$PROMPT_SERVER" "$PROMPT_WORKER1" "$PROMPT_WORKER2"; do
+  printf '%s (lean) S 1 %s %s 0 -1 4194304 100 0 0 0 100 50 0 0 20 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' "$prompt_pid" "$prompt_pid" "$prompt_pid" > "$PROMPT_PROC_DIR/$prompt_pid/stat"
+done
+for prompt_pid in "$PROMPT_ROOT" "$PROMPT_SERVER" "$PROMPT_WORKER1" "$PROMPT_WORKER2"; do
+  printf 'Pss_Anon:\t      650 kB\nSwapPss:\t        0 kB\nPss_File:\t        0 kB\n' > "$PROMPT_PROC_DIR/$prompt_pid/smaps_rollup"
+done
+# Summed cputicks: 4 members x (100 utime + 50 stime) = 600.
+PROMPT_CPUTICKS_TOTAL=600
+
+PROMPT_STATE_DIR="$WORKDIR/state-prompt"
+mkdir -p "$PROMPT_STATE_DIR"
+PROMPT_KEY="${PROMPT_ROOT}:${PROMPT_STARTTIME}"
+
+# reseed_prompt_state: writes a fresh lean-trees.json showing this tree already idle a long time
+# (cputicks matching the fixture exactly, last_active far in the past), with no prompted/snooze
+# fields -- the clean starting point for each sub-case below.
+reseed_prompt_state() {
+  local past
+  past=$(( $(date +%s) - 36000 ))
+  printf '{"%s": {"cputime_ticks": %s, "last_active": %s, "last_seen": %s}}' \
+    "$PROMPT_KEY" "$PROMPT_CPUTICKS_TOTAL" "$past" "$past" > "$PROMPT_STATE_DIR/lean-trees.json"
+}
+
+PROMPT_SYSTEMD_LOG="$WORKDIR/systemd-run-prompt.log"
+PROMPT_NOTIFY_OUT="$WORKDIR/notify-out.txt"
+PROMPT_NOTIFY_EXIT="$WORKDIR/notify-exit.txt"
+export SYSTEMD_RUN_LOG="$PROMPT_SYSTEMD_LOG"
+export NOTIFY_OUTPUT_FILE="$PROMPT_NOTIFY_OUT"
+export NOTIFY_EXIT_FILE="$PROMPT_NOTIFY_EXIT"
+
+# count_prompt_launches: counts only lines carrying a prompt unit's `--unit=claude-refresh-
+# prompt-` argv, never a raw `wc -l` -- every --dry-run invocation ALSO calls systemd-run once
+# for have_systemd_run_for_prompt()'s own liveness probe (`-- true`, no `--unit=`), which this
+# stub logs too, so a raw line count would overcount by one probe-line per run regardless of
+# whether a prompt was actually (re-)launched. Used both by the snooze-dedupe cases (counting
+# launches across consecutive runs) and the degrade cases (asserting exactly zero launches).
+count_prompt_launches() {
+  grep -c -- '--unit=claude-refresh-prompt-' "$PROMPT_SYSTEMD_LOG" 2>/dev/null || true
+}
+
+run_prompt_fixture() {
+  PATH="$PROMPT_BIN_DIR:$PATH" PROC_ROOT="$PROMPT_PROC_DIR" LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR" \
+    LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 LEAN_LSP_SNOOZE_MIN=240 \
+    bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1
+}
+
+# --- Kill-path case: notify-send prints "default" ---
+reseed_prompt_state
+: > "$PROMPT_SYSTEMD_LOG"
+rm -f "$PROMPT_NOTIFY_EXIT"
+printf 'default' > "$PROMPT_NOTIFY_OUT"
+PROMPT_KILL_OUT="$(run_prompt_fixture)"
+
+if echo "$PROMPT_KILL_OUT" | grep -q "Terminated Lean tree root pid $PROMPT_ROOT (starttime $PROMPT_STARTTIME): 0 terminated, 0 failed."; then
+  pass "Prompt path (g3): notify-send 'default' re-invokes --lean-tree=${PROMPT_KEY} --force"
+else
+  fail "Prompt path (g3): Kill outcome did not re-invoke --lean-tree targeted termination"
+  info "output was: $PROMPT_KILL_OUT"
+fi
+
+W1_LINE=$(echo "$PROMPT_KILL_OUT" | grep -n "PID $PROMPT_WORKER1: already gone" | tail -1 | cut -d: -f1)
+W2_LINE=$(echo "$PROMPT_KILL_OUT" | grep -n "PID $PROMPT_WORKER2: already gone" | tail -1 | cut -d: -f1)
+SRV_LINE=$(echo "$PROMPT_KILL_OUT" | grep -n "PID $PROMPT_SERVER: already gone" | head -1 | cut -d: -f1)
+ROOT_LINE=$(echo "$PROMPT_KILL_OUT" | grep -n "PID $PROMPT_ROOT: already gone" | head -1 | cut -d: -f1)
+if [ -n "$W1_LINE" ] && [ -n "$W2_LINE" ] && [ -n "$SRV_LINE" ] && [ -n "$ROOT_LINE" ] \
+   && [ "$W1_LINE" -lt "$SRV_LINE" ] && [ "$W2_LINE" -lt "$SRV_LINE" ] && [ "$SRV_LINE" -lt "$ROOT_LINE" ]; then
+  pass "Prompt path (g3): Kill outcome attempts termination in ORDER workers -> server -> root (proven via terminate_pid()'s own 'already gone' log sequence on these fictional pids, never a real signal)"
+else
+  fail "Prompt path (g3): Kill-outcome termination ordering violated or incomplete"
+  info "output was: $PROMPT_KILL_OUT"
+fi
+
+if grep -qE "unit=claude-refresh-prompt-${PROMPT_ROOT}-${PROMPT_STARTTIME}" "$PROMPT_SYSTEMD_LOG"; then
+  pass "Prompt path (g3): unit-name case -- recorded --unit= value matches claude-refresh-prompt-<rootpid>-<starttime>"
+else
+  fail "Prompt path (g3): unit name not found in systemd-run argv log"
+  info "log was: $(cat "$PROMPT_SYSTEMD_LOG")"
+fi
+if grep -qE 'claude-.*\.scope' "$PROMPT_SYSTEMD_LOG"; then
+  fail "Prompt path (g3): unit name unexpectedly matches claude-*.scope (would be stopped by claude-session-reaper)"
+else
+  pass "Prompt path (g3): unit name never matches claude-*.scope"
+fi
+
+PROMPT_PROMPTED_AFTER_KILL="$(jq -r --arg k "$PROMPT_KEY" '.[$k].prompted // "absent"' "$PROMPT_STATE_DIR/lean-trees.json")"
+if [ "$PROMPT_PROMPTED_AFTER_KILL" != "true" ]; then
+  pass "Prompt path (g3): Kill outcome clears the 'prompted' marker after the termination attempt"
+else
+  fail "Prompt path (g3): 'prompted' marker still true after Kill outcome"
+fi
+
+# --- Keep-path cases: stub prints nothing / another string / exits nonzero ---
+for keep_case in "empty:" "other:some-other-action" "nonzero-exit:"; do
+  keep_label="${keep_case%%:*}"
+  keep_text="${keep_case#*:}"
+
+  reseed_prompt_state
+  : > "$PROMPT_SYSTEMD_LOG"
+  case "$keep_label" in
+    empty)
+      printf '' > "$PROMPT_NOTIFY_OUT"
+      rm -f "$PROMPT_NOTIFY_EXIT"
+      ;;
+    other)
+      printf '%s' "$keep_text" > "$PROMPT_NOTIFY_OUT"
+      rm -f "$PROMPT_NOTIFY_EXIT"
+      ;;
+    nonzero-exit)
+      printf '' > "$PROMPT_NOTIFY_OUT"
+      printf '1' > "$PROMPT_NOTIFY_EXIT"
+      ;;
+  esac
+
+  KEEP_OUT="$(run_prompt_fixture)"
+
+  if echo "$KEEP_OUT" | grep -q "already gone" || echo "$KEEP_OUT" | grep -q "Terminated Lean tree"; then
+    fail "Prompt path (g3) Keep ($keep_label): unexpectedly signaled a termination"
+    info "output was: $KEEP_OUT"
+  else
+    pass "Prompt path (g3) Keep ($keep_label): signals nothing"
+  fi
+
+  # NOTE: deliberately NOT `.prompted // "absent"` -- jq's `//` alternative operator treats
+  # `false` as falsy, so it would substitute "absent" even when `.prompted` is genuinely `false`
+  # (the exact value this assertion expects). `if ... == null` is the correct null-check here.
+  KEEP_SNOOZE="$(jq -r --arg k "$PROMPT_KEY" 'if .[$k].snooze_until == null then "absent" else (.[$k].snooze_until | tostring) end' "$PROMPT_STATE_DIR/lean-trees.json")"
+  KEEP_PROMPTED="$(jq -r --arg k "$PROMPT_KEY" 'if .[$k].prompted == null then "absent" else (.[$k].prompted | tostring) end' "$PROMPT_STATE_DIR/lean-trees.json")"
+  if [[ "$KEEP_SNOOZE" =~ ^[0-9]+$ ]] && [ "$KEEP_PROMPTED" = "false" ]; then
+    pass "Prompt path (g3) Keep ($keep_label): records snooze_until and clears prompted"
+  else
+    fail "Prompt path (g3) Keep ($keep_label): expected snooze_until set and prompted=false, got snooze='$KEEP_SNOOZE' prompted='$KEEP_PROMPTED'"
+  fi
+done
+
+# --- Snooze dedupe cases: inside the window (no second prompt), after expiry (prompts again) ---
+reseed_prompt_state
+: > "$PROMPT_SYSTEMD_LOG"
+printf '' > "$PROMPT_NOTIFY_OUT"
+rm -f "$PROMPT_NOTIFY_EXIT"
+run_prompt_fixture > /dev/null 2>&1   # first run: prompts, records a ~4h snooze
+FIRST_RUN_LOG_LINES=$(count_prompt_launches)
+
+run_prompt_fixture > /dev/null 2>&1   # second run: still inside the snooze window
+SECOND_RUN_LOG_LINES=$(count_prompt_launches)
+if [ "$SECOND_RUN_LOG_LINES" = "$FIRST_RUN_LOG_LINES" ]; then
+  pass "Prompt path (g3): snooze dedupe -- a second run inside the window launches no second prompt"
+else
+  fail "Prompt path (g3): snooze dedupe failed -- prompt-launch count grew from $FIRST_RUN_LOG_LINES to $SECOND_RUN_LOG_LINES"
+fi
+
+# Force the snooze window to have already expired, then run again -- must prompt once more.
+EXPIRED_NOW=$(( $(date +%s) - 60 ))
+jq --arg k "$PROMPT_KEY" --argjson sa "$EXPIRED_NOW" '.[$k].snooze_until = $sa' "$PROMPT_STATE_DIR/lean-trees.json" > "$PROMPT_STATE_DIR/lean-trees.json.tmp"
+mv "$PROMPT_STATE_DIR/lean-trees.json.tmp" "$PROMPT_STATE_DIR/lean-trees.json"
+run_prompt_fixture > /dev/null 2>&1
+THIRD_RUN_LOG_LINES=$(count_prompt_launches)
+if [ "$THIRD_RUN_LOG_LINES" -gt "$SECOND_RUN_LOG_LINES" ]; then
+  pass "Prompt path (g3): a run after the snooze window expires prompts again"
+else
+  fail "Prompt path (g3): expired-snooze run did not prompt again ($THIRD_RUN_LOG_LINES vs $SECOND_RUN_LOG_LINES lines)"
+fi
+
+# --- Degrade cases: notify-send / systemd-run / DBus each missing in turn ---
+# A bare "/usr/bin:/bin" PATH fallback is insufficient here -- on this sandbox neither directory
+# contains `bash` itself (only `env`/`sh`), so the inner `bash "$WORKDIR/..."` invocation would
+# fail with its OWN "command not found" before ever reaching the script under test. Instead,
+# build_mirror_path_excluding() symlinks every executable already on the CURRENT $PATH into a
+# fresh directory, except the one name a given sub-case needs to prove genuinely absent -- every
+# other real utility (bash, jq, ps, coreutils, systemd-run, dbus-send, ...) stays reachable.
+build_mirror_path_excluding() {
+  local exclude_name="$1" dest_dir="$2"
+  mkdir -p "$dest_dir"
+  local -a mirror_dirs=()
+  IFS=':' read -r -a mirror_dirs <<< "$PATH"
+  local dir f name
+  for dir in "${mirror_dirs[@]}"; do
+    [ -d "$dir" ] || continue
+    for f in "$dir"/*; do
+      [ -x "$f" ] || continue
+      name="$(basename "$f")"
+      [ "$name" = "$exclude_name" ] && continue
+      [ -e "$dest_dir/$name" ] && continue
+      ln -sf "$f" "$dest_dir/$name" 2>/dev/null || true
+    done
+  done
+}
+
+PROMPT_DEGRADE_BIN_DIR="$WORKDIR/fakebin-prompt-degrade"
+mkdir -p "$PROMPT_DEGRADE_BIN_DIR"
+cp "$PROMPT_BIN_DIR/ps" "$PROMPT_DEGRADE_BIN_DIR/ps"
+
+PROMPT_MIRROR_NO_NOTIFY="$WORKDIR/mirror-no-notify-send"
+build_mirror_path_excluding "notify-send" "$PROMPT_MIRROR_NO_NOTIFY"
+reseed_prompt_state
+: > "$PROMPT_SYSTEMD_LOG"
+DEGRADE_NOTIFY_OUT="$(PATH="$PROMPT_DEGRADE_BIN_DIR:$PROMPT_MIRROR_NO_NOTIFY" PROC_ROOT="$PROMPT_PROC_DIR" LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+if echo "$DEGRADE_NOTIFY_OUT" | grep -q "notify-send unavailable -- prompt path is log-only" && [ "$(count_prompt_launches)" = "0" ]; then
+  pass "Prompt path (g3) degrade: notify-send absent -> log-only, no prompt launched"
+else
+  fail "Prompt path (g3) degrade: notify-send-absent case did not degrade as expected"
+  info "output was: $DEGRADE_NOTIFY_OUT"
+fi
+
+cp "$PROMPT_BIN_DIR/notify-send" "$PROMPT_DEGRADE_BIN_DIR/notify-send"
+PROMPT_MIRROR_NO_SYSTEMD_RUN="$WORKDIR/mirror-no-systemd-run"
+build_mirror_path_excluding "systemd-run" "$PROMPT_MIRROR_NO_SYSTEMD_RUN"
+reseed_prompt_state
+: > "$PROMPT_SYSTEMD_LOG"
+printf '' > "$PROMPT_NOTIFY_OUT"
+rm -f "$PROMPT_NOTIFY_EXIT"
+DEGRADE_SYSTEMD_OUT="$(PATH="$PROMPT_DEGRADE_BIN_DIR:$PROMPT_MIRROR_NO_SYSTEMD_RUN" PROC_ROOT="$PROMPT_PROC_DIR" LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+if echo "$DEGRADE_SYSTEMD_OUT" | grep -q "systemd-run unavailable" && [ "$(count_prompt_launches)" = "0" ]; then
+  pass "Prompt path (g3) degrade: systemd-run absent -> log-only, no prompt launched"
+else
+  fail "Prompt path (g3) degrade: systemd-run-absent case did not degrade as expected"
+  info "output was: $DEGRADE_SYSTEMD_OUT"
+fi
+
+cp "$PROMPT_BIN_DIR/systemd-run" "$PROMPT_DEGRADE_BIN_DIR/systemd-run"
+PROMPT_MIRROR_NO_DBUS="$WORKDIR/mirror-no-dbus-send"
+build_mirror_path_excluding "dbus-send" "$PROMPT_MIRROR_NO_DBUS"
+reseed_prompt_state
+: > "$PROMPT_SYSTEMD_LOG"
+DEGRADE_DBUS_OUT="$(env -u DBUS_SESSION_BUS_ADDRESS PATH="$PROMPT_DEGRADE_BIN_DIR:$PROMPT_MIRROR_NO_DBUS" PROC_ROOT="$PROMPT_PROC_DIR" LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+if echo "$DEGRADE_DBUS_OUT" | grep -q "no DBus session bus available" && [ "$(count_prompt_launches)" = "0" ]; then
+  pass "Prompt path (g3) degrade: DBus session bus absent -> log-only, no prompt launched"
+else
+  fail "Prompt path (g3) degrade: DBus-absent case did not degrade as expected"
+  info "output was: $DEGRADE_DBUS_OUT"
+fi
+
+# --- Re-verification refusal cases: direct isolated calls to run_lean_tree_targeted_termination ---
+# (i) PID reuse: root pid present, but the caller's starttime does not match the fixture's.
+reseed_prompt_state
+PROC_ROOT="$PROMPT_PROC_DIR"
+LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR"
+# LEAN_TREE_STATE_FILE must be re-derived explicitly here, not left to whatever it was at the
+# suite's own top-level sourcing time -- an earlier assertion block `unset`s it entirely, and
+# every function below runs under `set -u` (inherited from this sourcing test file), so a stale
+# or missing LEAN_TREE_STATE_FILE is an immediate fatal "unbound variable", not a silently wrong
+# path.
+LEAN_TREE_STATE_FILE="$LEAN_TREE_STATE_DIR/lean-trees.json"
+LEAN_LSP_IDLE_THRESHOLD_MIN=1
+LEAN_LSP_MEM_FLOOR_MB=1
+if REFUSAL_I_STDERR="$(PATH="$PROMPT_BIN_DIR:$PATH" run_lean_tree_targeted_termination "$PROMPT_ROOT" "999999999" 2>&1 1>/dev/null)"; then
+  REFUSAL_I_RC=0
+else
+  REFUSAL_I_RC=$?
+fi
+if [ "$REFUSAL_I_RC" -ne 0 ] && echo "$REFUSAL_I_STDERR" | grep -q "starttime mismatch"; then
+  pass "Prompt path (g3) refusal (i): starttime mismatch (PID reuse) refuses with a named reason, signals nothing"
+else
+  fail "Prompt path (g3) refusal (i): expected a starttime-mismatch refusal, got rc=$REFUSAL_I_RC stderr='$REFUSAL_I_STDERR'"
+fi
+
+# (ii) cputime grew since the state snapshot -- no longer idle.
+GREW_PAST=$(( $(date +%s) - 36000 ))
+printf '{"%s": {"cputime_ticks": %s, "last_active": %s, "last_seen": %s}}' "$PROMPT_KEY" "$((PROMPT_CPUTICKS_TOTAL - 100))" "$GREW_PAST" "$GREW_PAST" > "$PROMPT_STATE_DIR/lean-trees.json"
+if REFUSAL_II_STDERR="$(PATH="$PROMPT_BIN_DIR:$PATH" run_lean_tree_targeted_termination "$PROMPT_ROOT" "$PROMPT_STARTTIME" 2>&1 1>/dev/null)"; then
+  REFUSAL_II_RC=0
+else
+  REFUSAL_II_RC=$?
+fi
+if [ "$REFUSAL_II_RC" -ne 0 ] && echo "$REFUSAL_II_STDERR" | grep -q "no longer eligible"; then
+  pass "Prompt path (g3) refusal (ii): cputime grew since the snapshot (regained activity) refuses with a named reason, signals nothing"
+else
+  fail "Prompt path (g3) refusal (ii): expected a no-longer-eligible refusal, got rc=$REFUSAL_II_RC stderr='$REFUSAL_II_STDERR'"
+fi
+
+# (iii) reclaimable dropped below the floor (re-verified with a high floor override).
+reseed_prompt_state
+LEAN_LSP_MEM_FLOOR_MB=999999999
+if REFUSAL_III_STDERR="$(PATH="$PROMPT_BIN_DIR:$PATH" run_lean_tree_targeted_termination "$PROMPT_ROOT" "$PROMPT_STARTTIME" 2>&1 1>/dev/null)"; then
+  REFUSAL_III_RC=0
+else
+  REFUSAL_III_RC=$?
+fi
+if [ "$REFUSAL_III_RC" -ne 0 ] && echo "$REFUSAL_III_STDERR" | grep -q "no longer eligible"; then
+  pass "Prompt path (g3) refusal (iii): reclaimable dropped below the floor refuses with a named reason, signals nothing"
+else
+  fail "Prompt path (g3) refusal (iii): expected a no-longer-eligible (floor) refusal, got rc=$REFUSAL_III_RC stderr='$REFUSAL_III_STDERR'"
+fi
+LEAN_LSP_MEM_FLOOR_MB=1
+unset PROC_ROOT LEAN_TREE_STATE_DIR LEAN_LSP_IDLE_THRESHOLD_MIN LEAN_LSP_MEM_FLOOR_MB
+
+# --- Active-tree case (direct acceptance-bar coverage): a 5h-old tree whose cputime GROWS
+# between two runs is never eligible, and (as a direct consequence) never prompted. ---
+ACTIVE_ROOT=901001
+ACTIVE_BIN_DIR="$WORKDIR/fakebin-active"
+mkdir -p "$ACTIVE_BIN_DIR"
+cp "$PROMPT_BIN_DIR/notify-send" "$ACTIVE_BIN_DIR/notify-send"
+cp "$PROMPT_BIN_DIR/systemd-run" "$ACTIVE_BIN_DIR/systemd-run"
+cat > "$ACTIVE_BIN_DIR/ps" <<'FAKE_PS_ACTIVE_EOF'
+#!/usr/bin/env bash
+has_p_flag=false
+has_c_flag=false
+field_spec=""
+prev=""
+for a in "$@"; do
+  if [ "$a" = "-p" ]; then has_p_flag=true; fi
+  if [ "$a" = "-C" ]; then has_c_flag=true; fi
+  case "$prev" in
+    -eo|-o) field_spec="$a" ;;
+  esac
+  prev="$a"
+done
+if $has_p_flag; then
+  echo "0::/user.slice/user-1000.slice/session.scope"
+  exit 0
+fi
+case "$field_spec" in
+  *pgid*)
+    exit 0
+    ;;
+esac
+cur_uid="$(id -u)"
+CG="0::/user.slice/user-1000.slice/session.scope"
+if $has_c_flag; then
+  printf '%s 1 %s 18000 1000 0.0 %s lake ".../bin/lake serve"\n' "__ROOT__" "$cur_uid" "$CG"
+  exit 0
+fi
+exit 0
+FAKE_PS_ACTIVE_EOF
+sed -i "s/__ROOT__/$ACTIVE_ROOT/g" "$ACTIVE_BIN_DIR/ps"
+chmod +x "$ACTIVE_BIN_DIR/ps"
+
+ACTIVE_PROC_DIR="$WORKDIR/fakeproc-active"
+mkdir -p "$ACTIVE_PROC_DIR/$ACTIVE_ROOT"
+printf 'Pss_Anon:\t     2000 kB\nSwapPss:\t        0 kB\nPss_File:\t        0 kB\n' > "$ACTIVE_PROC_DIR/$ACTIVE_ROOT/smaps_rollup"
+ACTIVE_STATE_DIR="$WORKDIR/state-active"
+mkdir -p "$ACTIVE_STATE_DIR"
+ACTIVE_SYSTEMD_LOG="$WORKDIR/systemd-run-active.log"
+: > "$ACTIVE_SYSTEMD_LOG"
+
+# Run 1: cputicks=100 (first sighting -- not idle, as expected).
+printf '%s (lake) S 1 %s %s 0 -1 4194304 100 0 0 0 100 0 0 0 20 0 1 0 55555 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' "$ACTIVE_ROOT" "$ACTIVE_ROOT" "$ACTIVE_ROOT" > "$ACTIVE_PROC_DIR/$ACTIVE_ROOT/stat"
+SYSTEMD_RUN_LOG="$ACTIVE_SYSTEMD_LOG" PATH="$ACTIVE_BIN_DIR:$PATH" PROC_ROOT="$ACTIVE_PROC_DIR" LEAN_TREE_STATE_DIR="$ACTIVE_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run > /dev/null 2>&1
+
+# Run 2: cputicks grew to 200 -- the tree did work, so it must reset to not-idle, never eligible.
+printf '%s (lake) S 1 %s %s 0 -1 4194304 100 0 0 0 200 0 0 0 20 0 1 0 55555 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' "$ACTIVE_ROOT" "$ACTIVE_ROOT" "$ACTIVE_ROOT" > "$ACTIVE_PROC_DIR/$ACTIVE_ROOT/stat"
+ACTIVE_RUN2_OUT="$(SYSTEMD_RUN_LOG="$ACTIVE_SYSTEMD_LOG" PATH="$ACTIVE_BIN_DIR:$PATH" PROC_ROOT="$ACTIVE_PROC_DIR" LEAN_TREE_STATE_DIR="$ACTIVE_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+
+if echo "$ACTIVE_RUN2_OUT" | grep -q "0 eligible" && [ ! -s "$ACTIVE_SYSTEMD_LOG" ]; then
+  pass "Prompt path (g3) acceptance bar: a 5h-old tree whose cputime grows between runs is never eligible, and is never prompted"
+else
+  fail "Prompt path (g3) acceptance bar: active-tree case was unexpectedly eligible or prompted"
+  info "output was: $ACTIVE_RUN2_OUT"
+  info "systemd-run log was: $(cat "$ACTIVE_SYSTEMD_LOG")"
+fi
+
+unset SYSTEMD_RUN_LOG NOTIFY_OUTPUT_FILE NOTIFY_EXIT_FILE PROC_ROOT
+
+# =====================================================================
 # Assertion (h): zombie-state discrimination (unit) and full pass output shape (end-to-end)
 # =====================================================================
 # Unit-level: zombie_row_is_defunct must accept Z/Z+ and reject every live state code.
@@ -2119,13 +2577,19 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
   #
   # Further extended for the CPU-delta idle state machine: read_proc_stat_fields,
   # read_lean_tree_state, write_lean_tree_state, and update_lean_tree_cpu_state are all brand-NEW
-  # functions this change adds (bringing the function-name list to thirty-one), so their absence
-  # from the same pinned pre-fix commit is the identical non-vacuousness proof for this assertion
-  # block's new cases. `lean_row_is_idle` is REMOVED from this list -- the function itself was
-  # deleted from the live script (replaced entirely by the CPU-delta gate), so asserting its
-  # absence from the pre-fix baseline would no longer be evidence of anything this suite still
-  # exercises.
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb get_pss_reclaimable_kb read_proc_stat_fields read_lean_tree_state write_lean_tree_state update_lean_tree_cpu_state is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot detect_lean_candidate_trees terminate_pid run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass; do
+  # functions this change adds, so their absence from the same pinned pre-fix commit is the
+  # identical non-vacuousness proof for that assertion block's new cases. `lean_row_is_idle` is
+  # REMOVED from this list -- the function itself was deleted from the live script (replaced
+  # entirely by the CPU-delta gate), so asserting its absence from the pre-fix baseline would no
+  # longer be evidence of anything this suite still exercises.
+  #
+  # Further extended for the --lean-tree targeted-termination mode and the notify-before-kill
+  # prompt path: terminate_lean_tree_ordered, run_lean_tree_targeted_termination,
+  # have_notify_send, have_systemd_run_for_prompt, have_dbus_session, record_lean_tree_snooze, and
+  # maybe_prompt_for_lean_tree are all brand-NEW functions this change adds (bringing the
+  # function-name list to thirty-eight), so their absence from the same pinned pre-fix commit is
+  # the identical non-vacuousness proof for this assertion block's new cases.
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb get_pss_reclaimable_kb read_proc_stat_fields read_lean_tree_state write_lean_tree_state update_lean_tree_cpu_state is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot detect_lean_candidate_trees terminate_pid terminate_lean_tree_ordered run_lean_tree_targeted_termination have_notify_send have_systemd_run_for_prompt have_dbus_session record_lean_tree_snooze maybe_prompt_for_lean_tree run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -2134,11 +2598,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 31 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 32 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the thirty-one predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 38 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 39 ]; then
+    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the thirty-eight predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 32 markers absent"
+    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 39 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2

@@ -603,34 +603,64 @@ an explicit user action.
 
 ---
 
-### Phase 8: Prompt-path tests [NOT STARTED]
+### Phase 8: Prompt-path tests [COMPLETED]
 
 **Goal**: Cover both notification outcomes, all three re-verification refusals, snooze dedupe
 across a window boundary, the degrade-to-log-only paths, and the unit-name constraint.
 
 **Tasks**:
-- [ ] New assertion block with stubbed `notify-send` and `systemd-run` first on `$PATH`. The
+- [x] New assertion block with stubbed `notify-send` and `systemd-run` first on `$PATH`. The
       `systemd-run` stub records its full argv to a log file and executes the trailing command
       directly (no real transient unit), so the test observes both the unit name and the
-      notification outcome.
-- [ ] Kill-path case: stub `notify-send` prints `default` -> assert
+      notification outcome. *(completed)*
+- [x] Kill-path case: stub `notify-send` prints `default` -> assert
       `claude-refresh.sh --lean-tree=<pid>:<starttime> --force` is invoked and the ordered
       workers -> server -> root sequence is signaled (reuse assertion (g)'s fake-`kill` logging
-      technique).
-- [ ] Keep-path cases: stub prints nothing; stub prints another action string; stub exits nonzero.
-      Each must record `snooze_until` and signal nothing.
-- [ ] Re-verification refusal cases: (i) root pid present but `starttime` differs (PID reuse);
+      technique). *(completed with an adapted technique: the Kill outcome re-invokes $SELF_SCRIPT
+      as a genuine child process, a boundary `enable -n kill` cannot reach, so ordering is proven
+      via terminate_pid()'s own "already gone" log-line sequence on fictional, never-real pids --
+      equally conclusive, recorded as a deviation)*
+- [x] Keep-path cases: stub prints nothing; stub prints another action string; stub exits nonzero.
+      Each must record `snooze_until` and signal nothing. *(completed)*
+- [x] Re-verification refusal cases: (i) root pid present but `starttime` differs (PID reuse);
       (ii) tree's `cputime` grew since the state snapshot, so no longer idle; (iii) reclaimable
-      dropped below the floor. Each logs a named refusal and signals nothing.
-- [ ] Snooze dedupe cases: a second `--dry-run` run inside the snooze window launches no second
+      dropped below the floor. Each logs a named refusal and signals nothing. *(completed, as
+      direct isolated calls to run_lean_tree_targeted_termination())*
+- [x] Snooze dedupe cases: a second `--dry-run` run inside the snooze window launches no second
       prompt (`systemd-run` stub log unchanged); a run after the window expires prompts again.
-- [ ] Degrade cases: `notify-send` absent; `systemd-run` absent; `DBUS_SESSION_BUS_ADDRESS` empty.
-      Each logs the named line, prompts nothing, and signals nothing.
-- [ ] Unit-name case: assert the recorded `--unit=` value matches
-      `^claude-refresh-prompt-[0-9]+-[0-9]+$` and does NOT match `claude-*.scope`.
-- [ ] Active-tree case covering the dispatch's acceptance bar directly: a 5h-old tree whose
-      `cputime` grows between two runs is never eligible and never prompted.
-- [ ] Update the suite header comment and the mutation-check function-name list.
+      *(completed -- this exposed a genuine implementation bug, see Critical fix below)*
+- [x] Degrade cases: `notify-send` absent; `systemd-run` absent; `DBUS_SESSION_BUS_ADDRESS` empty.
+      Each logs the named line, prompts nothing, and signals nothing. *(completed, via a
+      PATH-mirror-minus-one-binary technique rather than a bare `/usr/bin:/bin` fallback -- see
+      Critical fix below)*
+- [x] Unit-name case: assert the recorded `--unit=` value matches
+      `^claude-refresh-prompt-[0-9]+-[0-9]+$` and does NOT match `claude-*.scope`. *(completed)*
+- [x] Active-tree case covering the dispatch's acceptance bar directly: a 5h-old tree whose
+      `cputime` grows between two runs is never eligible and never prompted. *(completed)*
+- [x] Update the suite header comment and the mutation-check function-name list. *(completed:
+      added terminate_lean_tree_ordered, run_lean_tree_targeted_termination, have_notify_send,
+      have_systemd_run_for_prompt, have_dbus_session, record_lean_tree_snooze,
+      maybe_prompt_for_lean_tree; bounds updated to 38/39)*
+- [x] **Critical fix (recorded, found by this phase's own snooze-dedupe case)**:
+      `update_lean_tree_cpu_state()` (Phase 3/4) rewrote each key's state object as a bare
+      `{cputime_ticks, last_active, last_seen}` on every detection pass, silently DROPPING the
+      `prompted`/`snooze_until` fields the prompt path (Phase 7) stores on that same object --
+      defeating dedupe entirely, since every `detect_lean_candidate_trees()` call wipes the
+      snooze before `maybe_prompt_for_lean_tree()` ever reads it. Fixed by merging onto the prior
+      per-key object (jq's `+`) rather than replacing it outright. Manually verified: two
+      consecutive runs now launch exactly one unit, with `snooze_until` persisting correctly.
+- [x] **Critical fix (recorded, not anticipated by the original task list)**: discovered and
+      fixed two additional test-harness-only defects while building this phase's fixtures: (1) a
+      bare `/usr/bin:/bin` PATH fallback for the degrade cases doesn't contain `bash` itself on
+      this sandbox, and `claude-refresh.sh`'s own `set -e` is inherited into the sourcing test
+      suite's shell, so a bare failing command-substitution assignment (not wrapped in `if`)
+      silently aborted the ENTIRE suite with no error text -- fixed via a PATH-mirror-minus-one
+      technique for the degrade cases and the `if VAR=$(cmd); then ... else rc=$?; fi` idiom
+      (already documented in `scripts/state-write.sh`) for the three refusal-case assignments;
+      (2) an earlier assertion block's `unset LEAN_TREE_STATE_FILE` left it genuinely undefined,
+      which is an immediate fatal "unbound variable" (not merely stale) under the same inherited
+      `set -u` -- fixed by re-deriving it explicitly wherever `LEAN_TREE_STATE_DIR` is reassigned
+      for a direct isolated function call.
 
 **Timing**: 1.5 hours
 
