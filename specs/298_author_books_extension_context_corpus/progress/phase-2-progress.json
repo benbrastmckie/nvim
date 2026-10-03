@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "The spine - layer vocabulary, the may-import matrix, and the metadata split",
+  "started_at": "2026-10-03T00:15:00Z",
+  "last_updated": "2026-10-03T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write domain/layer-vocabulary-and-matrix.md", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/domain/layer-vocabulary-and-matrix.md"]},
+    {"id": 2, "description": "Write standards/metadata-split.md with the book_policy subject-placement rule", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/metadata-split.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "2.x", "description": "Layer-value counts differ from the plan's Scope Hypothesis", "type": "altered", "reason": "The plan's hypothesis cites research figures (refinement 46, impl 38, challenge 29, interface 24, laws 22, instances 14, evidence 7, extraction 3, impl.proofs 2, impl.defs 2; 144 layered modules). Re-measured 2026-10-03 with an anchored '^book_layer ' grep excluding .lake/: refinement 46, impl 36, interface 24, challenge 23, laws 20, instances 14, evidence 7, extraction 3, impl.proofs 1, impl.defs 1; 175 tree-wide, 139 in the four real packages. Written as measured, per Standing Rule 1.", "annotation": "*(deviation: altered -- layer counts re-measured 2026-10-03, lower than the hypothesis)*"}
+  ],
+  "handoff_count": 0
+}

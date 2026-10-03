@@ -252,13 +252,13 @@ repository's `specs/state.json` directly; write the counts found, not the counts
 
 ---
 
-### Phase 2: The spine - layer vocabulary, the may-import matrix, and the metadata split [NOT STARTED]
+### Phase 2: The spine - layer vocabulary, the may-import matrix, and the metadata split [COMPLETED]
 
 **Goal**: The two documents every other document points back to: what a layer is and what it
 licenses, and where each piece of metadata is allowed to live.
 
 **Tasks**:
-- [ ] Write `domain/layer-vocabulary-and-matrix.md` per Finding 5 item 1: the twelve `book_layer`
+- [x] Write `domain/layer-vocabulary-and-matrix.md` per Finding 5 item 1: the twelve `book_layer`
       values with their live-usage counts (re-measured), noting that `instances.defs` and
       `instances.proofs` are declared and unused on the real tree; `baseLayer` tier stripping; the
       `mayImport` matrix reproduced row by row from `books/lean/Books/Meta.lean:139-152`, including
@@ -269,7 +269,7 @@ licenses, and where each piece of metadata is allowed to live.
       enforce confinement - bridge-package-ness is not a layer fact, and confinement is a claim
       about the import closure's packages, not about direct imports' layers
       (`Books.Meta:92-99`).
-- [ ] Add to that document the restricted/unrestricted split and the fail-closed
+- [x] Add to that document the restricted/unrestricted split and the fail-closed
       execution-construct gate, which the dispatch's document 1 omits entirely: `interface`,
       `laws`, `refinement`, `challenge` restricted; `extraction`, `impl`, `instances`, `evidence`
       unrestricted; `.defs`/`.proofs` inheriting through `baseLayer`; ten refused core command
@@ -277,14 +277,14 @@ licenses, and where each piece of metadata is allowed to live.
       `isUnsafe`/`@[implemented_by]`/`@[extern]` refusal at the `@[book_export]` handler
       (`:435`) and its advisory `Linter` twin, which "cannot be otherwise" because `lintersRef` is
       a clearable public `IO.Ref`.
-- [ ] Write `standards/metadata-split.md` per Finding 5 item 6: facts in Lean, judgments in TOML,
+- [x] Write `standards/metadata-split.md` per Finding 5 item 6: facts in Lean, judgments in TOML,
       everything else computed (Decision 6); in a code module exactly two things (`@[book_export]`
       with no kind argument - kind derived from `getOriginalConstKind?` - and one `book_layer`
       line); in the book module everything else with each command's exact syntax (`book`,
       `book_assume "<id>" "<text>" [<anchor>]`, `book_not_claimed`, `book_axioms`, `book_policy`,
       `book_requires`), all read back by `#book_ledger`; a `book_*` command in a code module WARNS
       and the build succeeds.
-- [ ] Add the two things the design record does not carry: the mutual-exclusion guard (`book`,
+- [x] Add the two things the design record does not carry: the mutual-exclusion guard (`book`,
       `book_layer`, `@[book_export]` refusing each other in all three directions, each guard
       naming itself) and - prominently, as the document's highest-severity rule - the
       **`book_policy` subject-placement rule**: a policy row belongs on the book that owns its
@@ -293,7 +293,7 @@ licenses, and where each piece of metadata is allowed to live.
       documented nowhere in Decision 4's text and that Decision 4's own worked example
       contradicts it, and cross-reference `standards/forgery-probe-discipline.md` as the document
       whose grounding instance this is.
-- [ ] Point both documents at `domain/known-gap-register.md` for gap claims instead of carrying
+- [x] Point both documents at `domain/known-gap-register.md` for gap claims instead of carrying
       their own caveats.
 
 **Timing**: 1.5 hours
