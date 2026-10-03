@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 3,
+  "summary": "Authored a nine-phase plan for the books-extension domain context corpus: sixteen documents plus a rewritten navigation README under agent-system/extensions/books/context/project/books/, with seventeen index-entries.json registrations at deliberate Tier 2 / Tier 4 tiering. Plan passes validate-artifact.sh --strict with zero warnings.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/298_author_books_extension_context_corpus/plans/01_books-context-corpus.md",
+      "summary": "Nine phases in three waves (1 | 2-8 parallel | 9), 12 hours estimated, written against the research report's measured ground truth rather than the dispatch description's stale figures."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 9,
+  "blockers": []
+}

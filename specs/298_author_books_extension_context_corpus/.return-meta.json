@@ -1,79 +1,30 @@
 {
-  "status": "researched",
-  "task_number": 298,
-  "agent_type": "general-research-agent",
-  "delegation_path": [
-    "orchestrator",
-    "research",
-    "general-research-agent"
-  ],
-  "session_id": "sess_1791054566_849cf8_298",
-  "dispatch_seq": 1,
-  "phase": "research",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md",
-      "summary": "Per-document authoring specification for the 17-file books domain context corpus, with an eleven-entry staleness ledger correcting the task description against the measured consuming repository, the tier/registration contract, and a six-phase plan shape."
+      "type": "plan",
+      "path": "specs/298_author_books_extension_context_corpus/plans/01_books-context-corpus.md",
+      "summary": "Nine-phase plan to author sixteen books-domain context documents plus a navigation README under agent-system/extensions/books/context/project/books/ and register all seventeen in index-entries.json with deliberate Tier 2 / Tier 4 tiering."
     }
   ],
+  "next_steps": "Run /implement 298 to execute the plan",
   "metadata": {
-    "findings_count": 6,
-    "documents_specified": 16,
-    "files_planned": 17,
-    "staleness_ledger_entries": 11,
-    "decisions": 8,
-    "proposed_phases": 6,
     "session_id": "sess_1791054566_849cf8_298",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "research",
-      "general-research-agent"
-    ]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 9,
+    "estimated_hours": 12,
+    "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8], [9]]
   },
-  "next_steps": "Run /plan 298 to create implementation plan",
   "memory_candidates": [
     {
-      "content": "A domain context corpus added to an agent-system extension must be TIERED deliberately, because validate-context-budgets.sh derives the tier from load_when shape (first match wins: always -> 1, agents non-empty -> 2, commands/task_types non-empty -> 3, all empty -> 4). Registering many large files with load_when.agents makes them all Tier 2, eagerly injected into every dispatch of those agents. The correct shape for a multi-file corpus is: the README.md navigation index at Tier 2 (agents + task_types), and every corpus document at Tier 4 with on_demand: true, discovered through the README's navigation table. on_demand: true is mandatory on an all-hooks-empty entry -- without it the Dead Entry Check flags the entry, and it does not change the derived tier. Note that the per-agent CAPS table in validate-context-budgets.sh lists only ten agents, so a new extension's agents are NOT covered by the budget gate and a tiering mistake would not be caught mechanically.",
+      "content": "Authoring a multi-file domain context corpus for a Claude agent-system extension requires deliberate load_when tiering, decided at plan time rather than inherited from the navigation stub it replaces. The derived-tier rule (validate-context-budgets.sh: always -> Tier 1, agents non-empty -> Tier 2, commands/task_types non-empty -> Tier 3, all-empty -> Tier 4) means a stub entry carrying load_when.agents is Tier 2 and eagerly loaded into every matching dispatch. Reusing that shape for N 150-250-line documents injects the whole corpus into every dispatch. Correct pattern: the README index stays Tier 2 as the single discovery entry point; each document is Tier 4 with load_when hooks empty and on_demand:true (the explicit-intent marker that exempts it from the Dead Entry Check, which is keyed on on_demand precisely because tier is derived). Critically, the budget CAPS table covers only ten named agents, so an all-Tier-2 registration of a new extension's corpus fires no cap and is NOT caught mechanically -- the tiering must be verified by reading back each entry's derived tier (validate-context-budgets.sh --index <extension>/index-entries.json), not by trusting the gate. Also: index-entries.json sits at the extension root, outside any context/ scope glob, yet is the only place new context files can be registered -- registration is inseparable from authoring a context file.",
       "category": "PATTERN",
-      "source_artifact": "specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md",
-      "confidence": 0.9,
-      "suggested_keywords": [
-        "context-tier",
-        "load_when",
-        "on_demand",
-        "index-entries",
-        "context-budget",
-        "corpus-registration"
-      ]
-    },
-    {
-      "content": "When a task description quotes measured figures from a fast-moving external repository, re-measure every one before writing against them. In the books-corpus research, eleven of the task description's measured claims were stale or refuted: its headline known-gap claim ('of 36 built module headers, 0 carry a book_layer') was contradicted by 188 book_layer lines over 155 files, and it listed as 'not yet landed' four artifacts that all existed. The stale source was traceable: the external repo's own books/README.md agreement report had not been updated after the conversion landed, and the task description copied it. The durable lesson: a task description's measured half ages independently of its design half, so treat the design narrative as the normative frame and re-derive every figure, recording each as measured-and-dated rather than inherited.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md",
+      "source_artifact": "specs/298_author_books_extension_context_corpus/plans/01_books-context-corpus.md",
       "confidence": 0.85,
-      "suggested_keywords": [
-        "stale-measurement",
-        "research-verification",
-        "task-description-drift",
-        "measured-vs-inherited",
-        "known-gap-register"
-      ]
-    },
-    {
-      "content": "A design record can carry its own mechanically-linted honesty register, and a derived context document should project it rather than re-judge it. The Logos/Verification books convention installs a '- **Validated by**:' line at the head of each of its 18 decisions in a three-form vocabulary -- 'none yet [-- reason]', 'partially, <instance text>', or anything else (binding) -- enforced by an 802-line lint with two blocking checks: marker presence/well-formedness, and instance liveness (every backtick path, dotted Lean name and bare filename in the marker line must still resolve). Each 'partially' marker names what is exercised, what is not exercised, and sometimes what is CONTRADICTED. When writing a known-gap register for such a system, adopt that vocabulary, project the markers into a dated table, and name the markers as the authority -- a future refresh is then a re-projection rather than a re-reading.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "validated-by-marker",
-        "honesty-register",
-        "design-record",
-        "instance-liveness-lint",
-        "known-gap"
-      ]
+      "suggested_keywords": ["context-corpus", "index-entries", "derived-tier", "on_demand", "validate-context-budgets", "extension-authoring"]
     }
-  ]
+  ],
+  "dispatch_seq": 3
 }
