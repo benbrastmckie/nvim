@@ -1,0 +1,32 @@
+{
+  "phase": 6,
+  "phase_name": "Close the validator blind spot in check-extension-docs.sh",
+  "started_at": "2026-10-03T11:05:00Z",
+  "last_updated": "2026-10-03T11:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm premise: exactly 2 extensions (nix, nvim) declare hooks, zero declare verification, next letter is W", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add new rule function checking hooks.<stage> resolves and is in provides.scripts, for every extension", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 3, "description": "Validate stage names against the closed vocabulary", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 4, "description": "Advisory lane for not-deployed, fail lane for bad stage name / not in provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 5, "description": "Register in Rule letter index and dispatch loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 6, "description": "Run gate across all extensions, confirm no new advisories/failures for nix/nvim", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "premise_confirmation": {
+    "hooks_declaring_extensions": ["nix", "nvim"],
+    "verification_declaring_extensions": [],
+    "next_free_rule_letter": "W"
+  },
+  "verification_evidence": {
+    "bash_-n": "pass",
+    "shellcheck_diff_vs_baseline": "clean (content-only diff ignoring line-number shifts caused by the insertion)",
+    "real_data_run": "REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/check-extension-docs.sh (source-store invocation requires the REPO_ROOT override per deploy-root-guard.sh): [nix] and [nvim] sections show only the pre-existing, unrelated 'README.md older than manifest.json' WARN -- zero new ADVISORY or FAIL lines from Rule W. The 4 FAILs in the overall run are exactly this task's own 4 touched files' expected deployed-vs-source content drift (skill-base.sh, command-gate-out.sh, test-skill-base-lifecycle.sh, check-extension-docs.sh itself) -- all deliberately deferred to Phase 7/operator regeneration.",
+    "negative_probe_bogus_stage": "a throwaway fixture manifest with hooks.bogus_stage produces exactly 1 FAIL naming the bad stage; correcting the stage name to a valid one makes it clean",
+    "negative_probe_not_in_provides_scripts": "a hooks value whose basename is absent from provides.scripts produces exactly 1 FAIL; the fixture's sibling 'preflight' entry (basename present in provides.scripts, deployed, executable) produces zero findings in the same run, confirming no over-triggering",
+    "negative_probe_not_deployed": "a hooks value declared in provides.scripts but with no file under .claude/scripts/ produces exactly 1 ADVISORY (not a FAIL); creating the deployed file and re-running produces zero findings",
+    "rule_letter_index_entry": "W registered immediately after V, naming check_lifecycle_hooks_resolve and its lane split; dispatch-loop call added immediately after check_core_deploy_advisory"
+  },
+  "deviations": []
+}

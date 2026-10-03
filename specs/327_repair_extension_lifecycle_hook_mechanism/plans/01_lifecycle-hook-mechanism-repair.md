@@ -518,40 +518,40 @@ changes. Confirm by diff review: the diff must contain no deletion of that sente
 
 ---
 
-### Phase 6: Close the validator blind spot in `check-extension-docs.sh` [NOT STARTED]
+### Phase 6: Close the validator blind spot in `check-extension-docs.sh` [COMPLETED]
 
 **Goal**: Make the lint catch a lifecycle `hooks` value that cannot resolve once deployed — the
 blind spot that let `nix` and `nvim` ship dead hooks undetected by any existing check.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/check-extension-docs.sh`, specifically its
+- [x] Re-read `agent-system/extensions/core/scripts/check-extension-docs.sh`, specifically its
       Rule letter index, its `advisory()` vs. `fail()` lanes, `check_core_deploy_advisory`'s
       FAIL-vs-ADVISORY rationale comment, and the per-extension dispatch loop.
-- [ ] Add a new rule function checking, **for every extension** (not just `routing_exempt: true`
+- [x] Add a new rule function checking, **for every extension** (not just `routing_exempt: true`
       core — `nix` and `nvim` are neither), that each top-level `hooks.<stage>` value's basename
       resolves to an existing, executable file under `.claude/scripts/`, and that the same
       basename is declared in `provides.scripts`. Model the deployment-presence check on
       `check_core_deploy_advisory`'s existing `deployed="$REPO_ROOT/.claude/scripts/$s"` pattern.
-- [ ] Validate the stage names too: a `hooks` key outside
+- [x] Validate the stage names too: a `hooks` key outside
       `{preflight, context_injection, verification, postflight}` can never fire and must be
       reported.
-- [ ] Choose the **advisory** lane, not `fail()`, for the not-deployed condition, and record the
+- [x] Choose the **advisory** lane, not `fail()`, for the not-deployed condition, and record the
       reason in the function's header comment: a source-store edit legitimately precedes a
       deploy, so failing on undeployed-but-declared would hard-fail this gate for every caller
       until the operator regenerates — the exact reasoning `check_core_deploy_advisory` already
       records. A bad **stage name** or a hook absent from `provides.scripts`, by contrast, is a
       manifest authoring error that no deploy can fix, so those use `fail()`.
-- [ ] Register the new rule in the Rule letter index comment with the next unused letter (`V` is
+- [x] Register the new rule in the Rule letter index comment with the next unused letter (`V` is
       the current last; confirm by reading the index rather than assuming) and add it to the
       per-extension dispatch loop next to the other manifest-entry checks.
-- [ ] Add a one-line note that this rule is about the **top-level `hooks` object** (lifecycle
+- [x] Add a one-line note that this rule is about the **top-level `hooks` object** (lifecycle
       hooks) and explicitly not about `provides.hooks` (the Claude-Code-native settings-hook
       file-copy array), so the two are never conflated by a future reader.
-- [ ] Run the gate across all extensions and confirm the result on real data: with Phase 1's fix
+- [x] Run the gate across all extensions and confirm the result on real data: with Phase 1's fix
       in place and all three hook scripts deployed and declared, `nix` and `nvim` should produce
       **no** new advisories or failures. If either does, that is a real finding to record, not a
       test to loosen.
-- [ ] Commit.
+- [x] Commit.
 
 **Timing**: 0.75 hours
 

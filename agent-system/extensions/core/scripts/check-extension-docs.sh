@@ -74,6 +74,8 @@
 #   T - check_index_entries_schema         : source index-entries.json entry violates index.schema.json's field set
 #   U - check_extension_md_length          : EXTENSION.md exceeds the 60-line limit
 #   V - check_claudemd_size_budget         : shape-(a) claudemd merge source exceeds its configured byte ceiling
+#   W - check_lifecycle_hooks_resolve      : top-level `hooks` entry (lifecycle hooks, NOT
+#       provides.hooks) has a bad stage name or an undeployable/undeployed/non-executable script
 #
 # Exit codes:
 #   0 - all extensions pass (Core Deploy-Drift Advisories, if any, do NOT affect this)
@@ -582,6 +584,60 @@ check_undeclared_scripts() {
       fail "script file on disk NOT in provides.scripts: scripts/$rel_path"
     fi
   done < <(git -C "$REPO_ROOT" ls-files "$ext_path_norm/scripts" | sort)
+}
+
+# Rule W: top-level `hooks` entry (lifecycle hooks called by skill-base.sh) validation, for
+# EVERY extension -- not scoped to routing_exempt core the way Rules O/P are. This is the TOP-
+# LEVEL `hooks` object (`{"preflight": "scripts/x.sh", ...}`), explicitly NOT `provides.hooks`
+# (the Claude-Code-native settings-hook file-copy array deployed to .claude/hooks/) -- the two
+# are unrelated manifest fields and must never be conflated by a future reader of this rule.
+#
+# Closes the blind spot that let nix and nvim ship dead `hooks` entries undetected by any
+# existing check: a manifest's hooks.<stage> value can be syntactically valid JSON and still
+# never resolve at runtime, because skill_run_extension_hook (skill-base.sh) resolves it by
+# BASENAME against the flat deployed .claude/scripts/ directory -- there is no nested
+# .claude/extensions/<name>/scripts/ subdirectory for any extension to resolve against (see this
+# repo's docs/guides/creating-extensions.md "Hook Schema" section for the same rule stated for
+# extension authors).
+#
+# Two distinct severities, mirroring check_core_deploy_advisory's own FAIL-vs-ADVISORY
+# rationale (see that function's header comment): a declared hook not yet DEPLOYED is an
+# ADVISORY, never a fail() -- a source-store edit legitimately precedes a deploy, so hard-failing
+# here would brick this gate for every caller until the operator regenerates. A bad STAGE NAME,
+# or a hook basename that is not declared in provides.scripts at all (which means it will NEVER
+# deploy, regardless of how many times the operator regenerates), is a manifest authoring error
+# that no deploy can fix -- those use fail().
+check_lifecycle_hooks_resolve() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+
+  jq -e 'has("hooks")' "$manifest" > /dev/null 2>&1 || return 0
+
+  local valid_stages=" preflight context_injection verification postflight "
+  local stage script script_basename deployed
+  while IFS=$'\t' read -r stage script; do
+    [[ -n "$stage" ]] || continue
+    case "$valid_stages" in
+      *" $stage "*) ;;
+      *)
+        fail "hooks.$stage: not a valid lifecycle stage (expected one of:$valid_stages)"
+        continue
+        ;;
+    esac
+    script_basename=$(basename "$script")
+    if ! jq -e --arg s "$script_basename" \
+        '.provides.scripts[]? | select((. | (split("/") | last)) == $s)' \
+        "$manifest" > /dev/null 2>&1; then
+      fail "hooks.$stage ('$script') basename '$script_basename' is not declared in provides.scripts -- it will never deploy, regardless of regeneration"
+      continue
+    fi
+    deployed="$REPO_ROOT/.claude/scripts/$script_basename"
+    if [[ ! -f "$deployed" ]]; then
+      advisory "hooks.$stage ('$script') resolves to scripts/$script_basename, which is not yet deployed (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
+    elif [[ ! -x "$deployed" ]]; then
+      advisory "hooks.$stage ('$script') resolves to scripts/$script_basename, which is deployed but not executable"
+    fi
+  done < <(jq -r '.hooks | to_entries[] | [.key, .value] | @tsv' "$manifest" 2>/dev/null)
 }
 
 # INDEX_TRUTH_GATE_MODE controls severity for Rules R and S (the two checks this block
@@ -1443,6 +1499,7 @@ for ext_path in "$EXT_DIR"/*/; do
       check_readme_vs_manifest "$ext_path"
       check_referenced_scripts_declared "$ext_path"
       check_core_deploy_advisory "$ext_path"
+      check_lifecycle_hooks_resolve "$ext_path"
     else
       fail "manifest.json is not valid JSON"
     fi
