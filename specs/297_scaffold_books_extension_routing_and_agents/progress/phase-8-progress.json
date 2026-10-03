@@ -1,0 +1,36 @@
+{
+  "phase": 8,
+  "phase_name": "Lint, wiring and detection gate",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run check-extension-docs.sh and resolve books findings", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run validate-index.sh and validate-wiring.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm README.md newer than manifest.json", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-run 7-row detect_task_type table", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm nothing written under .claude/**", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm no task-number references in the extension", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "8.testing",
+      "description": "bash -n and shellcheck clean on scripts/books-certify.sh and its test",
+      "type": "altered",
+      "reason": "The shellcheck binary in this environment's PATH points at a nix store path that no longer exists (shellcheck-0.11.0-bin), so shellcheck could not be invoked at all. bash -n passed clean on both files and the fixture suite (9 cases) exits 0. shellcheck itself was never run; this is an environment limitation, not a finding against the script.",
+      "annotation": "*(deviation: altered -- shellcheck unavailable in this environment; bash -n and the 9-case fixture suite both pass)*"
+    },
+    {
+      "task_id": "8.check-extension-docs",
+      "description": "check-extension-docs.sh must be run from the deployed .claude/scripts/ tree, not the source store",
+      "type": "altered",
+      "reason": "The source-store copy at agent-system/extensions/core/scripts/check-extension-docs.sh refuses to run outside a deployed tree (it resolves ../.. to a bogus repo root from the source-store path). Ran the already-deployed .claude/scripts/check-extension-docs.sh copy instead, which is the correct, intended invocation path per the script's own error message.",
+      "annotation": null
+    }
+  ],
+  "handoff_count": 0,
+  "observations": [
+    "check-extension-docs.sh reported 2 FAILs under [core] for scripts/command-gate-out.sh and scripts/skill-base.sh (deployed script content drift). Both files are in sibling task 327's declared file_scope for this same /orchestrate cycle (file_scope: agent-system/extensions/core/scripts/command-gate-out.sh, agent-system/extensions/core/scripts/skill-base.sh). This is very likely that sibling's in-flight edit, not a defect introduced by this task. Not touched here, per the dispatch's explicit instruction not to edit core on this task's own authority."
+  ]
+}
