@@ -200,6 +200,97 @@
           "/distill"
         ]
       }
+    },
+    {
+      "path": "project/memory/patterns/distill-dream-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --dream sub-mode (speculative recurring-theme surfacing over history.jsonl with no existing memory/task coverage; no mutation, no AskUserQuestion gate) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 129,
+      "keywords": [
+        "distill",
+        "dream-submode",
+        "history.jsonl",
+        "recurring-themes"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
+    },
+    {
+      "path": "project/memory/patterns/distill-learn-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --learn sub-mode (retroactive batch harvest of unharvested memory_candidates across already-archived tasks, distinguished from /learn --task N and /todo's archive-time harvest) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 137,
+      "keywords": [
+        "distill",
+        "learn-submode",
+        "memory_candidates",
+        "batch-harvest"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
+    },
+    {
+      "path": "project/memory/patterns/distill-review-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --review sub-mode (read-only ad hoc inquiry over the vault and all four telemetry source tiers, funneling actionable findings to --revise/--meta/--learn) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 91,
+      "keywords": [
+        "distill",
+        "review-submode",
+        "telemetry",
+        "ad-hoc-inquiry"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
+    },
+    {
+      "path": "project/memory/patterns/distill-meta-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --meta sub-mode (cross-repo agent-system improvement proposals: candidate discovery from recurring deviations/blockers and reflection phrases, delegated to meta-builder-agent for task creation) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 203,
+      "keywords": [
+        "distill",
+        "meta-submode",
+        "meta-builder-agent",
+        "system-improvement"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
+    },
+    {
+      "path": "project/memory/patterns/distill-revise-submode.md",
+      "domain": "project",
+      "subdomain": "memory",
+      "summary": "Complete specification for /distill --revise sub-mode (event-and-OTel-correlated memory vault review/revision: Event Ingestion, Event-to-Memory Correlation, three-strikes Classification, UPDATE/TOMBSTONE/CREATE gate, Batch Index Regeneration) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 295,
+      "keywords": [
+        "distill",
+        "revise-submode",
+        "otel",
+        "event-correlation",
+        "classification"
+      ],
+      "load_when": {
+        "commands": [
+          "/distill"
+        ]
+      }
     }
   ]
 }

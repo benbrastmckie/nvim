@@ -383,34 +383,60 @@ repoint.
 
 ---
 
-### Phase 4: Distill Extractions, Bottom-Up Part A — dream, learn, review, meta, revise [NOT STARTED]
+### Phase 4: Distill Extractions, Bottom-Up Part A — dream, learn, review, meta, revise [COMPLETED]
 
 **Goal**: Extract the five lowest above-bar distill sub-mode sections, bottom-up, one green
 sub-step each.
 
 **Tasks**:
-- [ ] For each of `dream` (2255-2380), `learn` (2120-2254), `review` (2032-2119), `meta`
+- [x] For each of `dream` (2255-2380), `learn` (2120-2254), `review` (2032-2119), `meta`
       (1832-2031), `revise` (1540-1831) — strictly in that order, re-reading before each:
-  - [ ] Mark with `<!-- branch-gated:begin condition="--<submode>" -->` /
+  - [x] Mark with `<!-- branch-gated:begin condition="--<submode>" -->` /
         `<!-- branch-gated:end -->`, the end marker immediately above the next real `### `
         heading from Phase 1's map (never a fence-interior line such as 1495); confirm by read.
-  - [ ] Create `agent-system/extensions/memory/context/project/memory/patterns/distill-<submode>-submode.md`
+        *(deviation: altered -- same literal-text boundary location as Phase 2/3, without a
+        physical marker-comment insertion step; additionally discovered and corrected for
+        distill's own boundary irregularity: unlike literature's uniform blank/---/blank
+        separator, distill separates sections by a variable 0-or-1 blank lines with no `---` at
+        all -- the extraction tooling was extended with a `--no-dash-separator` mode rather than
+        assuming the literature pattern held)*
+  - [x] Create `agent-system/extensions/memory/context/project/memory/patterns/distill-<submode>-submode.md`
         (creating the `patterns/` subdirectory on the first one, mirroring the literature and
         email extensions' layout) with content verbatim, headings promoted one level uniformly
         (`###`->`#`, `####`->`##`, `#####`->`###`), preceded by the mandatory
-        complete-and-only-specification framing line.
-  - [ ] Replace the marked span with the stub: the original `### Sub-Mode: <x>` heading plus
+        complete-and-only-specification framing line. *(completed: distill-dream-submode.md 129
+        lines/5,773 B, distill-learn-submode.md 137 lines/6,172+ B, distill-review-submode.md 91
+        lines, distill-meta-submode.md 203 lines, distill-revise-submode.md 295 lines; all five
+        content-byte-extracted figures matched Phase 1's measured per-section bytes exactly;
+        round-trip diffs verified clean, promotion-only)*
+  - [x] Replace the marked span with the stub: the original `### Sub-Mode: <x>` heading plus
         `READ .claude/context/project/memory/patterns/distill-<submode>-submode.md now and follow it exactly.`
-  - [ ] Repoint the extracted file's references to shared material that stayed in `SKILL.md` —
+        *(completed for all five)*
+  - [x] Repoint the extracted file's references to shared material that stayed in `SKILL.md` —
         `Shared Sub-Mode Skeleton`, `Scoring Engine`, `Health Report Template`,
         `Distill Log Schema` ("below"), `State Integration` ("below"), and `dream`'s
         `### Overlap Scoring` cross-reference — so each names `skill-distill/SKILL.md` explicitly
-        instead of saying "above"/"below".
-  - [ ] Add the `index-entries.json` entry (`domain: "project"`, `subdomain: "memory"`,
-        `load_when.commands: ["/distill"]`).
-  - [ ] Record before/after bytes; commit with an explicit file list.
-- [ ] Preserve the MANDATORY STOP language verbatim in every mutating sub-mode's extracted file —
+        instead of saying "above"/"below". *(deviation: altered -- all confirmed-cross-boundary
+        "Shared Sub-Mode Skeleton above" and "Distill Log Schema below" occurrences repointed
+        across all five files; meta's and revise's cross-sub-mode "above"/"below" references to
+        each other repointed to their known destination filenames. The `dream`/revise
+        `### Overlap Scoring` reference was investigated and found to be a PRE-EXISTING stale
+        reference independent of this task -- no literal `### Overlap Scoring` heading exists
+        anywhere in the current file (the nearest match is `#### Pairwise Keyword Overlap
+        Algorithm` inside the not-yet-extracted `merge` section); left unchanged rather than
+        guessing a repoint target, since inventing one risks a worse, confidently-wrong pointer.
+        Several generic "every other sub-mode above" statements (not naming a specific heading)
+        were also left unchanged as genuinely diffuse, multi-destination claims.)*
+  - [x] Add the `index-entries.json` entry (`domain: "project"`, `subdomain: "memory"`,
+        `load_when.commands: ["/distill"]`). *(completed: five entries added,
+        `generate-context-line-counts.sh --check` clean)*
+  - [x] Record before/after bytes; commit with an explicit file list. *(deviation: altered -- all
+        five extractions committed together in one commit, matching the established Phase 2/3
+        commit-granularity deviation)*
+- [x] Preserve the MANDATORY STOP language verbatim in every mutating sub-mode's extracted file —
       it is the safety-bearing content of this surface and must survive the move unchanged.
+      *(completed: 19 occurrences before == 19 after, exact byte-for-byte preservation confirmed
+      by grep count across SKILL.md + the five new files)*
 
 **Timing**: 1.75 hours
 

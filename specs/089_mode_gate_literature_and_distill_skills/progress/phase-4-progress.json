@@ -1,0 +1,74 @@
+{
+  "phase": 4,
+  "phase_name": "Distill Extractions, Bottom-Up Part A -- dream, learn, review, meta, revise",
+  "started_at": "2026-10-03T01:15:00Z",
+  "last_updated": "2026-10-03T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract dream, learn, review, meta, revise bottom-up with shift=2 heading promotion and --no-dash-separator boundary mode", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/memory/skills/skill-distill/SKILL.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-dream-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-learn-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-review-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md",
+       "agent-system/extensions/memory/index-entries.json"
+     ]},
+    {"id": 2, "description": "Preserve MANDATORY STOP language verbatim", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {
+      "approach": "Assume distill sections are separated by literature's blank/---/blank pattern",
+      "result": "failed",
+      "reason": "distill's SKILL.md uses a variable 0-or-1 blank-line separator with no '---' rule at all between ### Sub-Mode headings (confirmed by direct read of all nine boundary transitions). The extraction script was extended with a --no-dash-separator mode: content runs up to (not including) the next heading, any blank line(s) before it are swept into extracted content and trimmed there, and exactly one blank line is explicitly re-inserted in SKILL.md after the stub."
+    },
+    {
+      "approach": "Pre-existing 'dream'/'revise' cross-reference to '### Overlap Scoring'",
+      "result": "not_fixed_by_design",
+      "reason": "No literal '### Overlap Scoring' heading exists anywhere in the current skill-distill/SKILL.md (confirmed via fence-aware H2/H3/H4 scan of the whole file). The nearest match is '#### Pairwise Keyword Overlap Algorithm' inside the not-yet-extracted merge section. This is a pre-existing stale/approximate reference predating this task, out of this task's pure-relocation scope; left unchanged rather than inventing a guessed repoint target."
+    }
+  ],
+  "handoff_count": 0,
+  "extraction_log": {
+    "dream": {"content_bytes_extracted": 5355, "dest_bytes": 5773, "dest_lines": 129, "mandatory_stop_count": 1},
+    "learn": {"content_bytes_extracted": 5754, "dest_bytes": 6172, "dest_lines": 137, "mandatory_stop_count": 2},
+    "review": {"content_bytes_extracted": 4826, "dest_bytes": 5247, "dest_lines": 91, "mandatory_stop_count": 2},
+    "meta": {"content_bytes_extracted": 8796, "dest_bytes": 9209, "dest_lines": 203, "mandatory_stop_count": 2},
+    "revise": {"content_bytes_extracted": 12427, "dest_bytes": 12836, "dest_lines": 295, "mandatory_stop_count": 2}
+  },
+  "cross_reference_repoints": [
+    "dream: 'migrated ... to dedicated sub-modes above' -> named distill-revise-submode.md / distill-meta-submode.md; 'Shared Sub-Mode Skeleton above' -> named skill-distill/SKILL.md",
+    "learn: 'Shared Sub-Mode Skeleton above' -> named skill-distill/SKILL.md",
+    "review: 'Shared Sub-Mode Skeleton above' -> named skill-distill/SKILL.md; 'general Distill Log Schema below' -> named skill-distill/SKILL.md",
+    "meta: 'Shared Sub-Mode Skeleton above' -> named skill-distill/SKILL.md; '--revise Classification step above' -> named distill-revise-submode.md",
+    "revise: '--meta below fully contain it' -> named distill-meta-submode.md; 'Shared Sub-Mode Skeleton above' -> named skill-distill/SKILL.md; 'Improvement Proposal (--meta, below)' -> named distill-meta-submode.md"
+  ],
+  "verification": {
+    "mandatory_stop_total_before": 19,
+    "mandatory_stop_total_after": 19,
+    "grep_branch_gated_count": 0,
+    "generate_context_line_counts_check": "memory: 13 entries, 13 exact, 0 mismatch",
+    "lint_branch_gated_sections": "0 violations",
+    "fence_backtick_count_after": 148,
+    "skill_md_before_bytes": 93044,
+    "skill_md_after_bytes": 56483,
+    "skill_md_after_lines": 1676
+  },
+  "deviations": [
+    {
+      "task_id": "4.boundary-pattern",
+      "description": "Mark/locate section boundaries using the blank/---/blank pattern from the mode-gated-section-loading convention's worked literature example",
+      "type": "altered",
+      "reason": "distill's own source formatting never used the '---' separator between ### Sub-Mode sections; discovered during the first extraction attempt (dream) which failed its boundary-pattern assertion. Extraction tooling extended with a --no-dash-separator mode rather than forcing a stylistic '---' insertion that would be its own unwanted content change.",
+      "annotation": "*(deviation: altered -- see Phase 4 task checklist note)*"
+    },
+    {
+      "task_id": "4.commit-granularity",
+      "description": "Commit each of the five extractions as its own sub-step",
+      "type": "altered",
+      "reason": "Matches the Phase 2/3 precedent: all five extractions completed before the first commit in this session.",
+      "annotation": "*(deviation: altered -- see Phase 4 task checklist note)*"
+    }
+  ]
+}
