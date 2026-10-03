@@ -1,42 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
+  "status": "planned",
+  "dispatch_seq": 3,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/297_scaffold_books_extension_routing_and_agents/reports/01_books-extension-scaffold-research.md",
-      "summary": "Resolves the mandatory task-type-detection decision (narrow multi-word keyword_overrides; residual .lean-anchor gap spawned to core, not absorbed) and the mandatory reconciliation-ownership decision (recommend moving the already-scoped /reconcile work into books, not rebuilding it here) with live-measured evidence; corrects the dispatch's stale book-directory-layout and certifier-landed-state grounding against the live Verification repo; decides two routing blocks only, books:certify (not books:document) as the sole compound sub-route, --hard agent variants justified, and both /book and /certify as separate commands."
+      "type": "plan",
+      "path": "specs/297_scaffold_books_extension_routing_and_agents/plans/01_books-extension-wiring.md",
+      "summary": "Eight-phase, five-wave plan to scaffold the books extension in the source store: manifest with two routing blocks (books, books:certify), four sonnet agents with --hard variants, six skills, /book and /certify commands, a flattened-layout books rule, one declared passthrough script plus its fixture test, and the four registration/doc files, gated by check-extension-docs.sh and a re-measured task-type detection table."
     }
   ],
-  "findings_count": 7,
+  "phase_count": 8,
+  "estimated_hours": 10.5,
+  "dependency_waves": [[1], [2, 3, 4, 5], [6], [7], [8]],
   "memory_candidates": [
     {
-      "content": "In this agent-system's task-type detection (task-type-detect.sh), strong anchors for meta/lean4 resolve BEFORE any extension's keyword_overrides are scanned, and the keyword_overrides scan itself is alphabetical-by-extension-directory-name, first-match-wins, final (no alias remap). A new extension whose directory name sorts early (e.g. 'books' sorts before 'core') is scanned ahead of every other extension's overrides, so its keywords must be narrow/multi-word to avoid capturing other extensions' tasks; and any description naming a '.lean' file is captured by the lean4 strong anchor unconditionally, before any extension's own keyword_overrides are consulted at all -- unfixable from inside a dependent extension, only fixable by editing core's strong-anchor step itself.",
+      "content": "When authoring a new agent-system extension, check-extension-docs.sh Rule E (check_referenced_scripts_declared) extracts every '[A-Za-z0-9_-]+\\.(sh|sql)\\b' token from the extension's commands/*.md, skills/*/SKILL.md, agents/*.md, README.md and EXTENSION.md, and hard-fails on any token not declared in some extension's provides.scripts/provides.hooks (basename-normalized; no allowlist, no severity knob). rules/*.md is NOT scanned. Consequence: a command that documents its real invocation of a CONSUMING REPOSITORY's shell script cannot name that script by filename in those five locations -- the fix is to ship a thin, declared extension-local passthrough wrapper and name the wrapper instead, or to confine the bare filename to a rule file. Related on-disk constraints from the same lint: provides.context/scripts/rules entries must exist on disk (so an extension declaring a context dir whose corpus is a separate task still needs a stub there), EXTENSION.md is capped at 60 lines, README.md must mention every manifest command and must be newer than manifest.json, and index-entries.json line_count must equal wc -l of the source file with no description/tags/tier keys.",
       "category": "PATTERN",
-      "source_artifact": "specs/297_scaffold_books_extension_routing_and_agents/reports/01_books-extension-scaffold-research.md",
+      "source_artifact": "specs/297_scaffold_books_extension_routing_and_agents/plans/01_books-extension-wiring.md",
       "confidence": 0.9,
-      "suggested_keywords": ["task-type-detect", "keyword_overrides", "strong-anchor", "extension-routing", "detect_task_type"]
-    },
-    {
-      "content": "As of this research, cslib/lean/typst manifest.json files in agent-system/extensions/ already carry only routing_agents + routing_agents_hard (no routing/routing_hard blocks) -- the routing-ladder-collapse-to-routing_agents-only work is further along than a task description referencing 'all four routing blocks' as current may assume. A new extension should check the live manifests directly rather than trust an older task description's routing-block count.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/297_scaffold_books_extension_routing_and_agents/reports/01_books-extension-scaffold-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["manifest.json", "routing_agents", "routing-ladder-collapse", "extension-manifest"]
-    },
-    {
-      "content": "Established convention in this agent-system: every direct-execution (non-lifecycle) slash command pairs with a same-purpose skill directory invoked by that command, named skill-<domain>-<verb> (e.g. /vet <-> skill-cslib-vet, /pr <-> skill-pr-implementation), whose own SKILL.md description states 'Invoke for /<command> command.' This gives the command both a user-typed entry point and an agent-callable one. /lake and /lean are the exception: their logic is written inline in the command .md itself with a parallel skill-lake-repair/skill-lean-version directory of near-duplicate content, rather than the command delegating to the skill.",
-      "category": "PATTERN",
-      "source_artifact": "specs/297_scaffold_books_extension_routing_and_agents/reports/01_books-extension-scaffold-research.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["command-skill-pairing", "direct-execution-skill", "slash-command", "extension-authoring"]
+      "suggested_keywords": ["check-extension-docs", "rule-E", "provides.scripts", "extension-authoring", "extension-lint", "index-entries"]
     }
   ],
-  "next_steps": "Run /plan 297 to create the implementation plan for the books extension's manifest, agents, skills, commands, rule and tests, using this report's Decisions section as the fixed design (two routing blocks; books:certify only; --hard variants authored; /book and /certify as separate commands; flattened book-directory layout in the rule). Before implementing, re-verify Finding 4's landed/unlanded boundary against the live Verification repo tree, since it is changing day-to-day. Two follow-ups are recorded as added scope to spawn (not to absorb into 297 or its plan): (a) amend core's task-type-detect.sh strong-anchor step to close the .lean-filename-capture gap; (b) move the already-scoped 'Add reconcile command to agent system' work's deliverables from typst+lean into books.",
+  "next_steps": "Run /implement 297 to execute the plan",
   "metadata": {
     "session_id": "sess_1791040973_97d778_297",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   }
 }
