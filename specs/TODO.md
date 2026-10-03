@@ -20,7 +20,7 @@ next_project_number: 326
 
 ### Core Agent System
 
-89 [RESEARCHING] — Apply the mode-gated section convention to the two remaining...
+89 [RESEARCHED] — Apply the mode-gated section convention to the two remaining...
 127 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
@@ -3715,10 +3715,11 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 89. Mode gate literature and distill skills
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 87
+- **Research**: [089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md]
 
 **Description**: Apply the mode-gated section convention to the two remaining large instances, after the pilot proves it.
 

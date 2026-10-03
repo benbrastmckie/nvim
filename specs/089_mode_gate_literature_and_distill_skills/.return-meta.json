@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md",
+      "summary": "Verifies the mode-gated section-loading convention against the live skill-literature and skill-distill files: corrected current byte measurements (literature grew to 100,460 B from an 84,265 B stale baseline; distill unchanged at 93,044 B), confirmed fence-interior heading hazard with exact false-positive line numbers, located all eight extraction boundaries, found three cross-references needing repointing, and flagged a Path Selection Rule conflict between the task description and the formalized convention for the distill extraction's destination."
+    }
+  ],
+  "next_steps": "Run /plan 89 to create implementation plan",
+  "findings_count": 8,
+  "dispatch_seq": 2,
+  "metadata": {
+    "session_id": "sess_1791000710_cc4f86_89",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When computing byte sizes for a mode-gated-section-loading extraction candidate in a file with illustrative example-output fences, do not scan for the next line starting with '## ' as the section boundary -- fenced plain-text output examples (e.g. a command's own printed report template) routinely contain lines that look like markdown headings (e.g. '## Literature Status' inside a ``` block demonstrating command output). The correct boundary is the next heading of the SAME semantic kind (e.g. next '## Mode: X' heading), confirmed by tracking fence-open/close state while scanning, or by direct read of the full span before deleting it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["mode-gated-section-loading", "fence-interior-heading-hazard", "branch-gated", "boundary-detection", "skill-extraction"]
+    },
+    {
+      "content": "The mode-gated-section-loading convention's Path Selection Rule (extension-owned surface -> that extension's own context subtree, never core's context/formats/) sometimes conflicts with a task description's own informal wording about where an extraction should land. context/formats/ is reserved for cross-cutting agent-system artifact formats (report-format.md, plan-format.md) consumed across task types -- a single skill's single sub-mode output template is domain-specific and belongs in that extension's own context/project/<ext>/ tree instead, even if the task text says 'context/formats/'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["mode-gated-section-loading", "path-selection-rule", "context-layers", "extension-owned-context"]
+    }
+  ]
+}
