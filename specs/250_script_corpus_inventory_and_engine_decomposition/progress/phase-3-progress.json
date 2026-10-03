@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Register the probe; act on the zero-caller findings",
+  "started_at": "2026-10-03T06:36:00Z",
+  "last_updated": "2026-10-03T06:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Register script-inventory.sh and tests/test-script-inventory.sh in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "Add docs/reference/utility-scripts-inventory.md entry", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
+    {"id": 3, "description": "Run probe and capture probe-baseline.json", "status": "done", "files_touched": ["specs/250_script_corpus_inventory_and_engine_decomposition/probe-baseline.json"]},
+    {"id": 4, "description": "Verify reproducibility formally (two runs, diff modulo timestamp)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Disposition zero-inbound-caller scripts", "status": "done", "files_touched": [], "note": "zero_caller_count == 0 across the whole real corpus (194 candidates) -- vacuously satisfied, nothing to disposition. Confirmed via probe-baseline.json's summary.zero_caller_count."},
+    {"id": 6, "description": "Run check-extension-docs.sh and confirm no new Rule E/Q drift", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run full gate set (run-all.sh, verify-deploy.sh --skip-slow)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": [
+    "run-all.sh --jobs auto: 104 passed, 4 failed (3 EXPECTED per the suite's known-failures manifest, 1 NEW: tests/test-typst-element-lint.sh), 1 skipped, 109 total. The NEW typst failure traces to a pre-existing, foreign, uncommitted modification to agent-system/extensions/typst/scripts/typst-element-lint.sh that was already present in the working tree before this dispatch began (confirmed via `git diff --stat`, +37/-6 lines) and is entirely outside this task's file_scope and SCOPE DISCIPLINE -- not caused by, or fixable within, this task.",
+    "verify-deploy.sh --skip-slow: 1 of 33 checks failed (manifest-driven verification: 3 findings, all 'missing from deployed tree' / 'content differs' for the three files this phase added/edited in the source store). This is the EXPECTED, self-resolving state until the orchestrator's own Stage MT-3 inter-cycle redeploy checkpoint runs -- deploy-headless.sh has exactly one sanctioned automated caller (context/patterns/regeneration-is-manual-only.md) and this agent is not it, so redeployment was correctly not attempted here. The two previously-recorded pre-existing issues from the dispatch's own 2026-10-02 measurement (migrate-state-legacy-fields.sh doc-lint gap, sandbox orphan tmp file) are both ABSENT from this run -- confirmed resolved, not live."
+  ]
+}

@@ -275,27 +275,27 @@ cross-file windows (drop the within-file case) and say so in the header — neve
 
 ---
 
-### Phase 3: Register the probe; act on the zero-caller findings [NOT STARTED]
+### Phase 3: Register the probe; act on the zero-caller findings [COMPLETED]
 
 **Goal**: the probe is a first-class, registered, documented repo-health probe, and its
 zero-inbound-caller findings are dispositioned (removed or justified) rather than merely reported.
 
 **Tasks**:
-- [ ] Add `script-inventory.sh` and `tests/test-script-inventory.sh` to
+- [x] Add `script-inventory.sh` and `tests/test-script-inventory.sh` to
       `agent-system/extensions/core/manifest.json` `provides.scripts` (the array already carries
       204 entries including `tests/*.sh`, so both belong there). Re-read the file immediately
       before editing — siblings are live in this cycle.
-- [ ] Add a `docs/reference/utility-scripts-inventory.md` entry for `script-inventory.sh`
+- [x] Add a `docs/reference/utility-scripts-inventory.md` entry for `script-inventory.sh`
       alongside the `assess-repo-health.sh` (line ~10) and `measure-eager-context.sh` (line ~29)
       entries, following their one-paragraph format exactly: what it measures, source-store-not-
       deployed-tree note, `--check` semantics, and the deliberate over-count caveat on caller
       counts.
-- [ ] Run the probe over the real source store and capture its output to
+- [x] Run the probe over the real source store and capture its output to
       `specs/250_script_corpus_inventory_and_engine_decomposition/probe-baseline.json` for the
       record.
-- [ ] Verify reproducibility formally: two full runs, `diff` of the two outputs with the timestamp
+- [x] Verify reproducibility formally: two full runs, `diff` of the two outputs with the timestamp
       field filtered, must be empty (acceptance item 1).
-- [ ] Disposition every zero-inbound-caller script the probe names (acceptance item 2): for each,
+- [x] Disposition every zero-inbound-caller script the probe names (acceptance item 2): for each,
       either delete it (only when it is genuinely unreferenced and not a documented entry point —
       and then also remove its `provides.scripts` entry and any test), or record a one-line
       justification. Justifications go in this task's implementation summary under `specs/**`;
@@ -303,9 +303,9 @@ zero-inbound-caller findings are dispositioned (removed or justified) rather tha
       (`no-task-references-in-deliverables.md`). Expect most zero-caller hits to be legitimate
       standalone entry points (probes, migrations, user-invoked utilities) — say so per script
       rather than in aggregate.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm the two
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm the two
       new scripts raise no Rule E / Rule Q drift.
-- [ ] Run the full gate set for this phase (see Verification).
+- [x] Run the full gate set for this phase (see Verification).
 
 **Timing**: 2 hours
 
