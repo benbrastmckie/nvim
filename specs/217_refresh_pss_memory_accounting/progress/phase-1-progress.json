@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "PSS reclaimable helper and both passes' report format",
+  "started_at": "2026-10-02T00:00:00Z",
+  "last_updated": "2026-10-02T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add get_pss_reclaimable_kb() helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Wire into run_claude_pass()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "Wire into detect_lean_candidate_trees()/run_lean_pass() report", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "Correct pcpu comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 5, "description": "shellcheck + baseline suite run", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.extra",
+      "description": "Scope hypothesis assumed exactly two get_vmswap_kb() reporting call sites",
+      "type": "altered",
+      "reason": "A third call site exists in run_mcp_fanout_pass's per-server loop; converted its accounting to get_pss_reclaimable_kb for consistency but left its report format unchanged (out of the dispatch's named scope for report-format changes).",
+      "annotation": "*(deviation: altered -- converted third call site's accounting, left report format unchanged)*"
+    }
+  ]
+}

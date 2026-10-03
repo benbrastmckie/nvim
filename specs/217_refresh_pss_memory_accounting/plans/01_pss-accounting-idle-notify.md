@@ -1,7 +1,7 @@
 # Implementation Plan: Task #217
 
 - **Task**: 217 - Cost-aware idle Lean tree reclamation in /refresh: PSS accounting, CPU-delta idleness, notify-before-kill
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 14.5 hours
 - **Dependencies**: None blocking (former dependency 174 is archived/completed)
 - **Research Inputs**: specs/217_refresh_pss_memory_accounting/reports/01_pss-accounting-idle-notify.md
@@ -140,43 +140,54 @@ would contend on `scripts/claude-refresh.sh` and must be run sequentially.
 
 ---
 
-### Phase 1: PSS reclaimable helper and both passes' report format [NOT STARTED]
+### Phase 1: PSS reclaimable helper and both passes' report format [COMPLETED]
 
 **Goal**: Replace shared-page double-counting with one `smaps_rollup`-based reclaimable figure
 used by both passes, reported alongside an uncounted shared-cache figure and an approximate
 marker, and correct the `pcpu` comment.
 
 **Tasks**:
-- [ ] Add `get_pss_reclaimable_kb()` immediately after `get_vmswap_kb()`, reading
+- [x] Add `get_pss_reclaimable_kb()` immediately after `get_vmswap_kb()`, reading
       `$PROC_ROOT/$pid/smaps_rollup` through the existing seam. Parse `Pss_Anon:`, `SwapPss:`,
       and `Pss_File:` with the same integer-only `awk`-per-field idiom `get_vmswap_kb()` uses
-      (no `bc`, no `jq`).
-- [ ] Echo a single pipe-delimited line `reclaimable_kb|shared_cache_kb|is_approximate`, matching
+      (no `bc`, no `jq`). *(completed)*
+- [x] Echo a single pipe-delimited line `reclaimable_kb|shared_cache_kb|is_approximate`, matching
       the file's existing `member_details` pipe-delimited convention. Signature takes
       `pid` and `rss_kb` (the already-captured snapshot value) so the fallback needs no extra read.
-- [ ] Fallback path: when `smaps_rollup` is absent, unreadable, **or** missing any of the three
+      *(completed)*
+- [x] Fallback path: when `smaps_rollup` is absent, unreadable, **or** missing any of the three
       required fields, return `rss_kb + get_vmswap_kb(pid)` as reclaimable, `0` shared cache, and
       `is_approximate=1`. A PID that exited between snapshot and read must still echo cleanly
-      (`0|0|1`), never error or abort under `set -euo pipefail`.
-- [ ] Wire into `run_claude_pass()`: replace the `swap_kb=$(get_vmswap_kb "$pid"); combined=$((rss + swap_kb))`
+      (`0|0|1`), never error or abort under `set -euo pipefail`. *(completed)*
+- [x] Wire into `run_claude_pass()`: replace the `swap_kb=$(get_vmswap_kb "$pid"); combined=$((rss + swap_kb))`
       pair with a `get_pss_reclaimable_kb` call; accumulate reclaimable into the existing
       `total_mem`/`active_mem`/`orphan_mem` counters and shared cache into a new parallel counter;
-      extend `orphan_details` with the shared-cache and approximate fields.
-- [ ] Wire into `detect_lean_candidate_trees()`: replace the per-member
+      extend `orphan_details` with the shared-cache and approximate fields. *(completed)*
+- [x] Wire into `detect_lean_candidate_trees()`: replace the per-member
       `swap_kb=$(get_vmswap_kb ...)`/`mem_total=$((mem_total + row_rss[m] + swap_kb))` pair the
       same way, accumulating `LEAN_TREE_MEM_KB` from reclaimable only and adding a parallel
       `LEAN_TREE_SHARED_CACHE_KB` array; extend `LEAN_TREE_MEMBER_DETAILS` lines with the
-      shared-cache and approximate fields.
-- [ ] Update both passes' report blocks: rename the per-row `Swap` column to `Reclaimable`, add a
+      shared-cache and approximate fields. *(completed)*
+- [x] Update both passes' report blocks: rename the per-row `Swap` column to `Reclaimable`, add a
       `Shared cache` column, mark an approximate row with a visible `~` prefix (or equivalent),
       and change the totals line to `Total memory that can be reclaimed: X (shared cache: Y, not counted)`.
       Keep the header-comment "reporting-only read happens strictly AFTER candidacy is decided"
-      invariant intact and restate it for the new helper.
-- [ ] Correct the `pcpu` comment above `lean_row_is_idle()`: procps-ng `ps pcpu` is lifetime
+      invariant intact and restate it for the new helper. *(completed)*
+- [x] Correct the `pcpu` comment above `lean_row_is_idle()`: procps-ng `ps pcpu` is lifetime
       `cputime/elapsed`, NOT a decaying average (the decaying characterization applies to `top`'s
-      live `%CPU`). Do not change `lean_row_is_idle()`'s logic in this phase.
-- [ ] Run `shellcheck` on `scripts/claude-refresh.sh` and the existing suite to confirm no
-      regression in the pre-existing assertions.
+      live `%CPU`). Do not change `lean_row_is_idle()`'s logic in this phase. *(completed)*
+- [x] Run `shellcheck` on `scripts/claude-refresh.sh` and the existing suite to confirm no
+      regression in the pre-existing assertions. *(completed: shellcheck clean except two
+      pre-existing warnings (RED unused, SC2009 at the chromium grep) unchanged from baseline;
+      suite baseline recorded as 112 passed/0 failed; after this phase 110 passed/2 failed, both
+      failures isolated to assertion (e)'s renamed-column output-shape case -- the expected
+      hand-off to Phase 2, not a defect)*
+- [x] **Deviation (recorded)**: the scope hypothesis assumed exactly two `get_vmswap_kb()`
+      reporting call sites; a third exists in the MCP fan-out pass (`run_mcp_fanout_pass`'s
+      per-server loop). Converted its accounting to `get_pss_reclaimable_kb()` for consistency
+      (a matched MCP server process could equally mmap a shared library), but left its aggregated
+      single-"Memory"-column report format unchanged, since the dispatch's report-format
+      requirement (b) names only the Claude and Lean passes.
 
 **Timing**: 1.5 hours
 

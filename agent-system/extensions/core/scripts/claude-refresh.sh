@@ -327,15 +327,20 @@ take_lean_snapshot() {
 # tree as a whole is a reclamation candidate only if EVERY member independently passes this gate
 # -- one freshly-spawned or actively-computing member protects the entire tree, not just itself.
 #
-# pcpu handling: ps's `pcpu` column (procps-ng) is a decaying-average percentage rendered as a
-# decimal (e.g. "0.3", "3.0", "555"). This script's other numeric helpers (format_memory,
-# get_vmswap_kb) are integer-only by convention (no bc/jq dependency); the same convention is
-# followed here by comparing only the pre-decimal portion via bash's `${pcpu%%.*}` parameter
-# expansion. A value like "0.3" truncates to "0" (treated as idle -- a genuinely idle process
-# occasionally reports a small nonzero decaying average, and 240-minute-default etimes gating is
-# the primary discriminator, not sub-1% pcpu noise); a value like "3.0" truncates to "3" (treated
-# as busy). This is documented, not incidental: it means anything reporting 1% or more CPU is
-# never considered idle, while sub-1% readings defer entirely to the etimes threshold.
+# pcpu handling: ps's `pcpu` column (procps-ng) is lifetime cputime/elapsed -- the process's total
+# consumed CPU time divided by its total elapsed (wall-clock) age -- NOT a decaying average. (A
+# decaying/windowed average is what `top`'s live %CPU column computes; `ps pcpu` is not that.)
+# This means a long-lived process that was busy early on and idle since reads a near-zero pcpu
+# indefinitely, which is exactly the defect this gate is replaced for elsewhere in this task (a
+# 5h-old actively-used tree reads <1% and is misjudged idle) -- this function's own idle decision
+# is NOT changed here; only this comment's characterization of what `ps pcpu` measures is
+# corrected. Rendered as a decimal (e.g. "0.3", "3.0", "555"). This script's other numeric helpers
+# (format_memory, get_vmswap_kb) are integer-only by convention (no bc/jq dependency); the same
+# convention is followed here by comparing only the pre-decimal portion via bash's `${pcpu%%.*}`
+# parameter expansion. A value like "0.3" truncates to "0" (treated as idle); a value like "3.0"
+# truncates to "3" (treated as busy). This is documented, not incidental: it means anything whose
+# LIFETIME average reports 1% or more CPU is never considered idle, while sub-1% readings defer
+# entirely to the etimes threshold.
 lean_row_is_idle() {
     local etimes="$1"
     local pcpu="$2"
@@ -378,16 +383,22 @@ lean_row_is_idle() {
 #   LEAN_TREE_ROOT_PID[i]    -- the tree's `lake serve` pid
 #   LEAN_TREE_SERVER_PID[i]  -- the tree's `lean --server` pid, or "" if none was found
 #   LEAN_TREE_WORKER_PIDS[i] -- space-separated `lean --worker` pids (may be empty)
-#   LEAN_TREE_MEM_KB[i]      -- combined rss+VmSwap across every member, in KB (reporting only)
-#   LEAN_TREE_MEMBER_DETAILS[i] -- one string, newline-separated "pid|role|mem|swap|age" lines
-#                                  (root, then server if present, then each worker), for the
-#                                  per-PID reporting table -- no 2D bash arrays are used anywhere
-#                                  in this script, matching its existing style
+#   LEAN_TREE_MEM_KB[i]      -- summed PSS reclaimable (Pss_Anon+SwapPss) across every member, in
+#                               KB (reporting only); shared mmapped pages (e.g. Mathlib .olean)
+#                               are never double-counted across workers the way a plain RSS+VmSwap
+#                               sum would
+#   LEAN_TREE_SHARED_CACHE_KB[i] -- summed PSS shared cache (Pss_File) across every member, in KB;
+#                               reported separately, never folded into LEAN_TREE_MEM_KB
+#   LEAN_TREE_MEMBER_DETAILS[i] -- one string, newline-separated "pid|role|mem|reclaim|shared|
+#                                  approx|age" lines (root, then server if present, then each
+#                                  worker), for the per-PID reporting table -- no 2D bash arrays
+#                                  are used anywhere in this script, matching its existing style
 detect_lean_candidate_trees() {
     LEAN_TREE_ROOT_PID=()
     LEAN_TREE_SERVER_PID=()
     LEAN_TREE_WORKER_PIDS=()
     LEAN_TREE_MEM_KB=()
+    LEAN_TREE_SHARED_CACHE_KB=()
     LEAN_TREE_MEMBER_DETAILS=()
 
     local snapshot
@@ -477,14 +488,18 @@ detect_lean_candidate_trees() {
         fi
 
         # Reporting-only, same invariant ruling as the header comment above documents for the
-        # Claude pass: this per-member get_vmswap_kb() read happens strictly AFTER tree_ok has
-        # already been decided from the frozen snapshot above, so it cannot influence which tree
-        # is selected as a candidate -- it only affects the displayed/accumulated memory figure.
-        local mem_total=0
-        local swap_kb role_label age member_details=""
+        # Claude pass: this per-member get_pss_reclaimable_kb() read happens strictly AFTER
+        # tree_ok has already been decided from the frozen snapshot above, so it cannot influence
+        # which tree is selected as a candidate -- it only affects the displayed/accumulated
+        # memory figures. Unlike a plain RSS+VmSwap sum, this correctly avoids double-counting the
+        # shared mmapped Mathlib .olean pages every worker in the tree maps.
+        local mem_total=0 shared_total=0
+        local pss_triple reclaimable_kb shared_kb is_approx role_label age member_details=""
         for m in "${member_idxs[@]}"; do
-            swap_kb=$(get_vmswap_kb "${row_pid[$m]}")
-            mem_total=$((mem_total + row_rss[m] + swap_kb))
+            pss_triple=$(get_pss_reclaimable_kb "${row_pid[$m]}" "${row_rss[$m]}")
+            IFS='|' read -r reclaimable_kb shared_kb is_approx <<< "$pss_triple"
+            mem_total=$((mem_total + reclaimable_kb))
+            shared_total=$((shared_total + shared_kb))
 
             case "${row_kind[$m]}" in
                 serve) role_label="lake serve" ;;
@@ -492,7 +507,7 @@ detect_lean_candidate_trees() {
                 worker) role_label="lean --worker" ;;
             esac
             age=$(get_process_age "${row_etimes[$m]}")
-            member_details="${member_details}${row_pid[$m]}|${role_label}|$(format_memory "${row_rss[$m]}")|$(format_memory "$swap_kb")|${age}"$'\n'
+            member_details="${member_details}${row_pid[$m]}|${role_label}|$(format_memory "${row_rss[$m]}")|$(format_memory "$reclaimable_kb")|$(format_memory "$shared_kb")|${is_approx}|${age}"$'\n'
         done
 
         local worker_pids=""
@@ -508,6 +523,7 @@ detect_lean_candidate_trees() {
         fi
         LEAN_TREE_WORKER_PIDS+=("$worker_pids")
         LEAN_TREE_MEM_KB+=("$mem_total")
+        LEAN_TREE_SHARED_CACHE_KB+=("$shared_total")
         LEAN_TREE_MEMBER_DETAILS+=("$member_details")
     done
 }
@@ -568,6 +584,54 @@ get_vmswap_kb() {
     local kb
     kb=$(awk '/^VmSwap:/ {print $2; exit}' "$PROC_ROOT/$pid/status" 2>/dev/null || true)
     echo "${kb:-0}"
+}
+
+# Read PSS-based reclaimable memory (kB) for a single already-snapshotted candidate PID, from
+# $PROC_ROOT/$pid/smaps_rollup. Replaces a plain RSS+VmSwap sum, which double-counts shared
+# mmapped file pages once per sharer (e.g. N Lean workers each contributing the full cost of a
+# shared 5.6 GB Mathlib .olean mapping -- the live-observed "15.1 GB reclaimable" against a real
+# reclaim of ~2.3 GB). Echoes a pipe-delimited "reclaimable_kb|shared_cache_kb|is_approximate"
+# triple, matching this file's existing member_details pipe-delimited convention:
+#   reclaimable_kb  -- Pss_Anon + SwapPss: memory genuinely freed by killing this ONE process,
+#                      never double-counted across sharers of a mapping.
+#   shared_cache_kb -- Pss_File: this process's proportional share of mmapped file-backed pages.
+#                      Reported separately, NEVER folded into reclaimable_kb, because file-backed
+#                      pages are evictable page cache regardless -- the kernel can already reclaim
+#                      them without killing anything.
+#   is_approximate  -- 1 when smaps_rollup is absent, unreadable, OR missing any of the three
+#                      required fields (an older kernel may expose smaps_rollup without SwapPss),
+#                      in which case reclaimable_kb falls back to rss_kb + get_vmswap_kb(pid) and
+#                      shared_cache_kb is reported as 0 (the fallback has no way to isolate shared
+#                      pages, so this is "not computed", not "verified zero" -- the is_approximate
+#                      flag is what tells the caller to label the figure, not the 0 itself);
+#                      0 otherwise.
+# Takes the already-captured RSS snapshot value (rss_kb) so the fallback path needs no extra read.
+# Integer-only, no bc/jq dependency, same convention as get_vmswap_kb() and format_memory() above.
+# A PID that exited between snapshot and this read still echoes cleanly (smaps_rollup absent ->
+# fallback -> rss_kb (already 0 for a vanished row's snapshot) + get_vmswap_kb's own "0" normal
+# -> "0|0|1"), never an error, under this script's `set -euo pipefail`.
+# Reporting-only, same invariant ruling as get_vmswap_kb()'s header comment: this read happens
+# strictly AFTER candidacy has already been decided from the frozen ps snapshot, so nothing
+# downstream of it can change which process is selected -- only the displayed/accumulated figure.
+get_pss_reclaimable_kb() {
+    local pid="$1"
+    local rss_kb="$2"
+    local rollup="$PROC_ROOT/$pid/smaps_rollup"
+
+    local pss_anon swap_pss pss_file
+    pss_anon=$(awk '/^Pss_Anon:/ {print $2; exit}' "$rollup" 2>/dev/null || true)
+    swap_pss=$(awk '/^SwapPss:/ {print $2; exit}' "$rollup" 2>/dev/null || true)
+    pss_file=$(awk '/^Pss_File:/ {print $2; exit}' "$rollup" 2>/dev/null || true)
+
+    if [ -z "$pss_anon" ] || [ -z "$swap_pss" ] || [ -z "$pss_file" ]; then
+        local vmswap_kb fallback_kb
+        vmswap_kb=$(get_vmswap_kb "$pid")
+        fallback_kb=$((rss_kb + vmswap_kb))
+        echo "${fallback_kb}|0|1"
+        return 0
+    fi
+
+    echo "$((pss_anon + swap_pss))|${pss_file}|0"
 }
 
 # Take the single atomic process snapshot. Fails loudly (non-zero exit, explicit
@@ -684,14 +748,14 @@ run_claude_pass() {
     snapshot=$(take_snapshot)
 
     local total_count=0 active_count=0 orphan_count=0
-    local total_mem=0 active_mem=0 orphan_mem=0
+    local total_mem=0 active_mem=0 orphan_mem=0 orphan_shared_mem=0
     local orphan_pids=()
     local orphan_details=()
 
     while IFS= read -r line; do
         [ -z "$line" ] && continue || true
 
-        local pid ppid uid tty etimes rss comm cgroup args swap_kb combined
+        local pid ppid uid tty etimes rss comm cgroup args combined
         read -r pid ppid uid tty etimes rss comm cgroup args <<< "$line"
 
         # Zero-query self-exclusion: known at parse time, no second query, no race.
@@ -704,10 +768,13 @@ run_claude_pass() {
             continue
         fi
 
-        # Reporting-only VmSwap read (see header's invariant ruling): bounded to the
-        # already-narrow comm-gated candidate set above, never the full process table.
-        swap_kb=$(get_vmswap_kb "$pid")
-        combined=$((rss + swap_kb))
+        # Reporting-only PSS reclaimable read (see header's invariant ruling and
+        # get_pss_reclaimable_kb()'s own comment): bounded to the already-narrow comm-gated
+        # candidate set above, never the full process table.
+        local pss_triple reclaimable_kb shared_kb is_approx
+        pss_triple=$(get_pss_reclaimable_kb "$pid" "$rss")
+        IFS='|' read -r reclaimable_kb shared_kb is_approx <<< "$pss_triple"
+        combined="$reclaimable_kb"
 
         total_count=$((total_count + 1))
         total_mem=$((total_mem + combined))
@@ -735,13 +802,14 @@ run_claude_pass() {
         # Survives every predicate: a genuine orphan.
         orphan_count=$((orphan_count + 1))
         orphan_mem=$((orphan_mem + combined))
+        orphan_shared_mem=$((orphan_shared_mem + shared_kb))
 
         local age cmd_display
         age=$(get_process_age "$etimes")
         cmd_display=$(echo "$args" | cut -c1-50)
 
         orphan_pids+=("$pid")
-        orphan_details+=("$pid|$(format_memory "$rss")|$(format_memory "$swap_kb")|$age|$cmd_display")
+        orphan_details+=("$pid|$(format_memory "$rss")|$(format_memory "$reclaimable_kb")|$(format_memory "$shared_kb")|$is_approx|$age|$cmd_display")
     done <<< "$snapshot"
 
     echo ""
@@ -768,16 +836,19 @@ run_claude_pass() {
         echo ""
         echo "Found $orphan_count orphaned processes using $(format_memory "$orphan_mem"):"
         echo ""
-        printf "%-8s %-12s %-12s %-10s %s\n" "PID" "Memory" "Swap" "Age" "Command"
-        printf "%-8s %-12s %-12s %-10s %s\n" "-----" "-------" "-------" "-------" "--------------------------------"
+        printf "%-8s %-12s %-14s %-14s %-10s %s\n" "PID" "Memory" "Reclaimable" "Shared cache" "Age" "Command"
+        printf "%-8s %-12s %-14s %-14s %-10s %s\n" "-----" "-------" "------------" "------------" "-------" "--------------------------------"
 
         for detail in "${orphan_details[@]}"; do
-            IFS='|' read -r pid mem swap age cmd <<< "$detail"
-            printf "%-8s %-12s %-12s %-10s %s\n" "$pid" "$mem" "$swap" "$age" "$cmd"
+            local reclaim_display
+            IFS='|' read -r pid mem reclaim shared approx age cmd <<< "$detail"
+            reclaim_display="$reclaim"
+            [ "$approx" = "1" ] && reclaim_display="~${reclaim}"
+            printf "%-8s %-12s %-14s %-14s %-10s %s\n" "$pid" "$mem" "$reclaim_display" "$shared" "$age" "$cmd"
         done
 
         echo ""
-        echo "Total memory that can be reclaimed: $(format_memory "$orphan_mem")"
+        echo "Total memory that can be reclaimed: $(format_memory "$orphan_mem") (shared cache: $(format_memory "$orphan_shared_mem"), not counted)"
         echo ""
         # Return here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
         return 0
@@ -840,10 +911,11 @@ run_lean_pass() {
         return 0
     fi
 
-    local total_mem_kb=0
+    local total_mem_kb=0 total_shared_kb=0
     local i
     for ((i = 0; i < n_trees; i++)); do
         total_mem_kb=$((total_mem_kb + LEAN_TREE_MEM_KB[i]))
+        total_shared_kb=$((total_shared_kb + LEAN_TREE_SHARED_CACHE_KB[i]))
     done
 
     # Default mode (no --force) - show status and return, or --dry-run - same, with a banner.
@@ -860,20 +932,22 @@ run_lean_pass() {
 
         for ((i = 0; i < n_trees; i++)); do
             echo ""
-            echo "Tree $((i + 1)) (root PID ${LEAN_TREE_ROOT_PID[$i]}, $(format_memory "${LEAN_TREE_MEM_KB[$i]}")):"
-            printf "  %-8s %-16s %-12s %-12s %s\n" "PID" "Role" "Memory" "Swap" "Age"
-            printf "  %-8s %-16s %-12s %-12s %s\n" "-----" "----------------" "-------" "-------" "-------"
+            echo "Tree $((i + 1)) (root PID ${LEAN_TREE_ROOT_PID[$i]}, $(format_memory "${LEAN_TREE_MEM_KB[$i]}") reclaimable, $(format_memory "${LEAN_TREE_SHARED_CACHE_KB[$i]}") shared cache):"
+            printf "  %-8s %-16s %-12s %-14s %-14s %s\n" "PID" "Role" "Memory" "Reclaimable" "Shared cache" "Age"
+            printf "  %-8s %-16s %-12s %-14s %-14s %s\n" "-----" "----------------" "-------" "------------" "------------" "-------"
 
             while IFS= read -r member_line; do
                 [ -z "$member_line" ] && continue || true
-                local mpid mrole mmem mswap mage
-                IFS='|' read -r mpid mrole mmem mswap mage <<< "$member_line"
-                printf "  %-8s %-16s %-12s %-12s %s\n" "$mpid" "$mrole" "$mmem" "$mswap" "$mage"
+                local mpid mrole mmem mreclaim mshared mapprox mage mreclaim_display
+                IFS='|' read -r mpid mrole mmem mreclaim mshared mapprox mage <<< "$member_line"
+                mreclaim_display="$mreclaim"
+                [ "$mapprox" = "1" ] && mreclaim_display="~${mreclaim}"
+                printf "  %-8s %-16s %-12s %-14s %-14s %s\n" "$mpid" "$mrole" "$mmem" "$mreclaim_display" "$mshared" "$mage"
             done <<< "${LEAN_TREE_MEMBER_DETAILS[$i]}"
         done
 
         echo ""
-        echo "Total memory that can be reclaimed: $(format_memory "$total_mem_kb")"
+        echo "Total memory that can be reclaimed: $(format_memory "$total_mem_kb") (shared cache: $(format_memory "$total_shared_kb"), not counted)"
         echo ""
         # Return here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
         return 0
@@ -1609,11 +1683,19 @@ run_mcp_fanout_pass() {
         local server_mem=0
         local -a roots=()
 
-        local idx pid swap_kb
+        # Deviation from Phase 1's scope hypothesis (recorded, not silent): the hypothesis assumed
+        # exactly two get_vmswap_kb() reporting call sites (Claude pass, Lean pass); this is a
+        # third, in the MCP fan-out pass below. The dispatch names only the Claude and Lean passes
+        # as having the shared-page double-counting defect, so this pass's aggregated single
+        # "Memory" column (no per-process Swap/Reclaimable/Shared-cache breakdown) is left as-is;
+        # only the underlying per-process accounting is switched to the same PSS-based helper for
+        # consistency, since a process matched here could equally mmap a shared library.
+        local idx pid pss_triple reclaimable_kb
         for idx in "${match_idx[@]}"; do
             pid="${all_pid[$idx]}"
-            swap_kb=$(get_vmswap_kb "$pid")
-            server_mem=$((server_mem + all_rss[idx] + swap_kb))
+            pss_triple=$(get_pss_reclaimable_kb "$pid" "${all_rss[$idx]}")
+            reclaimable_kb="${pss_triple%%|*}"
+            server_mem=$((server_mem + reclaimable_kb))
 
             # Walk the ppid chain upward while the parent is ALSO a matched row, to find this
             # row's session root (see header comment's session-count model).
