@@ -186,28 +186,28 @@ accepting the new result.
 
 ---
 
-### Phase 2: Agents [NOT STARTED]
+### Phase 2: Agents [COMPLETED]
 
 **Goal**: Four agent definitions whose `name:` frontmatter matches the manifest's routing targets
 exactly.
 
 **Tasks**:
-- [ ] `agents/books-research-agent.md` — frontmatter `name: books-research-agent`, a one-line
+- [x] `agents/books-research-agent.md` — frontmatter `name: books-research-agent`, a one-line
       `description`, `model: sonnet`. Body follows `typst/agents/typst-research-agent.md`'s
       structure (Overview, Dispatch File, Context References, Execution Flow stages, metadata
-      file contract, Critical Requirements).
-- [ ] `agents/books-implementation-agent.md` — same shape, modeled on
-      `typst/agents/typst-implementation-agent.md`.
-- [ ] `agents/books-research-hard-agent.md` — H-technique prose per cslib's research hard agent:
+      file contract, Critical Requirements). *(completed)*
+- [x] `agents/books-implementation-agent.md` — same shape, modeled on
+      `typst/agents/typst-implementation-agent.md`. *(completed)*
+- [x] `agents/books-research-hard-agent.md` — H-technique prose per cslib's research hard agent:
       H2 (anti-analysis), H3 (reference grounding against the design record), H4 (adversarial
-      verification). `model: sonnet` — the hard variant never changes tier from its base.
-- [ ] `agents/books-implementation-hard-agent.md` — H2, H7 (territory contracts), H9 (wrap-up
-      discipline). `model: sonnet`.
-- [ ] All four reference domain context as plain backticked paths
+      verification). `model: sonnet` — the hard variant never changes tier from its base. *(completed)*
+- [x] `agents/books-implementation-hard-agent.md` — H2, H7 (territory contracts), H9 (wrap-up
+      discipline). `model: sonnet`. *(completed)*
+- [x] All four reference domain context as plain backticked paths
       (`context/project/books/...`), never `@`-imports, and note that the corpus is authored by a
-      separate task so a missing file is expected today.
-- [ ] Rule E compliance: in these four files, do not write any bare `<name>.sh` token other than
-      `books-certify.sh`. Name consuming-repo scripts by their directory plus prose.
+      separate task so a missing file is expected today. *(completed)*
+- [x] Rule E compliance: in these four files, do not write any bare `<name>.sh` token other than
+      `books-certify.sh`. Name consuming-repo scripts by their directory plus prose. *(completed)*
 
 **Timing**: 1.75 hours
 
