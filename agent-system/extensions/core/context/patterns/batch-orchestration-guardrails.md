@@ -244,11 +244,11 @@ self-modification-deadlock defects this repository has fixed were exactly this s
 | `file_scope_collision`, `collision_scope: "cross_batch"`, colliding task carries execution evidence | `file_scope_collision` | ORDERING CONSTRAINT (does not self-clear WITHIN this invocation, but is not a permanent whole-invocation exclusion either — a later invocation re-evaluates once the colliding task's status independently changes) | A human resolves batch composition; the candidate is excluded from THIS run only, never permanently barred from ever running. |
 | `file_scope_collision`, `collision_scope: "cross_batch"`, colliding task provably idle | (admits, with `idle_overlap_advisory`) | Not a defer at all (NARROWED in v5) | No second session to concurrently edit anything, so nothing is lost by admitting; the suppressed overlap is surfaced loudly rather than silently — see `docs/architecture/batch-admit-schema.md`'s Version History. |
 | `session_active` | `session_active` | ORDERING CONSTRAINT | Clears once the contending session releases or its registry entry goes stale — the same convergence `file_scope_collision` already relies on. |
-| Held lock (lock-acquisition-time, `task-lock.sh acquire` exit 1) | n/a (not an `orchestrate-batch-admit.sh` verdict; a Stage MT-4 dispatch-time refusal) | ORDERING CONSTRAINT | A fresh foreign lock defers the task out of THIS cycle's dispatch batch only (never added to `failed_tasks`); a stale lock is reclaimed with a warning, not refused at all. |
+| Held lock (lock-acquisition-time, `task-lock.sh acquire` exit 1) | n/a (not an `orchestrate-batch-admit.sh` verdict; a Move 2 dispatch-time refusal) | ORDERING CONSTRAINT | A fresh foreign lock defers the task out of THIS cycle's dispatch batch only (never added to `failed_tasks`); a stale lock is reclaimed with a warning, not refused at all. |
 | `deploy_checkpoint` (inter-cycle redeploy checkpoint failure, branches (a)/(b)) | n/a (a whole-remaining-invocation defer, not a per-task `orchestrate-batch-admit.sh` verdict) | GENUINE, DELIBERATE EXCLUSION | The one gate this repository does NOT narrow to an ordering constraint, and this is correct: a failed or unverifiable redeploy of orchestrator machinery itself genuinely requires human remediation before ANY further dispatch in this invocation can be trusted. Unlike `self_modifying`'s former deadlock, there is no self-clearing condition to wait for — the system cannot safely make forward progress on unverified machinery, so continuing to defer-and-retry would just repeat the same failure every cycle at real cost. This exclusion is deliberate infra-safety, not an accidental byproduct of an under-built convergence mechanism. |
 | `blocked` classifier verdict, discharged (`dependencies[]` all `status: "completed"`, no handoff blockers) | n/a (not an `orchestrate-batch-admit.sh` verdict; a `orchestrate-triage-classify.sh` verdict) | ORDERING CONSTRAINT | Self-clears as soon as the classifier next runs after the predecessor's `status` write lands; the dependent is dispatched to the phase its `previous_status` names, converged for both engines. This IS the fix this file's own normative principle already implied before it existed as code: the `blocked` classifier verdict's former unconditional `skip` was never a deliberately justified exclusion for this sub-case, it was an accidental byproduct of the classifier never having been taught to look past the status string. |
-| `blocked` classifier verdict, NOT discharged (dependency outstanding, empty `dependencies[]`, a dependency stuck non-completed-terminal, or handoff blockers present) | n/a (not an `orchestrate-batch-admit.sh` verdict; a `orchestrate-triage-classify.sh` verdict) | Whatever the non-discharged classification already is (`skip` for `mt`, `needs_human` for `single`) — a documented, independently-implemented single/mt divergence, not an accidental exclusion | Both engines independently implement this divergence in their own handlers (single-task Stage 4's `blocked` handler always escalates; Stage MT-4's grouping table folds the non-discharged sub-case into `skip` so siblings can proceed) — see `orchestrate-triage-classify.sh`'s own audit discriminator for why independent implementation by both sides reads as design, not a bare shared-table assertion. This row is recorded explicitly here so it is never later misread as an accidental omission from this catalogue. |
-| Unmet predecessor (dependency-graph eligibility) | n/a (not an `orchestrate-batch-admit.sh` verdict; a Stage MT-3 step 3 eligibility-gate exclusion) | ORDERING CONSTRAINT | Matches how the Blocking-vs-Advisory table above already classifies this same guardrail (BLOCKING); folded in here so the two tables stop disagreeing by omission. A task excluded from `eligible_tasks` because a predecessor is still in-progress is re-admitted automatically once that predecessor reaches a terminal state — no separate mechanism is needed to clear it. |
+| `blocked` classifier verdict, NOT discharged (dependency outstanding, empty `dependencies[]`, a dependency stuck non-completed-terminal, or handoff blockers present) | n/a (not an `orchestrate-batch-admit.sh` verdict; a `orchestrate-triage-classify.sh` verdict) | Whatever the non-discharged classification already is (`skip` for `mt`, `needs_human` for `single`) — a documented, independently-implemented single/mt divergence, not an accidental exclusion | Both former engines independently implemented this divergence in their own handlers (the former single-task engine's Stage 4 `blocked` handler always escalated; Move 2's grouping table, formerly Stage MT-4's, folds the non-discharged sub-case into `skip` so siblings can proceed) — see `orchestrate-triage-classify.sh`'s own audit discriminator for why independent implementation by both sides reads as design, not a bare shared-table assertion. This row is recorded explicitly here so it is never later misread as an accidental omission from this catalogue. |
+| Unmet predecessor (dependency-graph eligibility) | n/a (not an `orchestrate-batch-admit.sh` verdict; a Move 1 (the eligibility gate) exclusion) | ORDERING CONSTRAINT | Matches how the Blocking-vs-Advisory table above already classifies this same guardrail (BLOCKING); folded in here so the two tables stop disagreeing by omission. A task excluded from `eligible_tasks` because a predecessor is still in-progress is re-admitted automatically once that predecessor reaches a terminal state — no separate mechanism is needed to clear it. |
 | `absent_file_scope` (NEW in v6) | `absent_file_scope` | ORDERING CONSTRAINT | Converges through the identical designated-candidate tie-breaker `self_modifying` already uses — the lowest-numbered absent-scope candidate admits every cycle, so N co-dispatched absent-scope candidates converge to full dispatch in at most N cycles by construction. No override flag exists (unlike `self_modifying`'s `--allow-self-modifying`): the defer self-clears on its own, and the real remedy — declare a `file_scope` — is a one-line `state.json` edit, so no bypass is needed. See "Absent file_scope Hazard" below. |
 
 `defer_reason` values are echoed verbatim from what `orchestrate-batch-admit.sh` actually emits
@@ -294,14 +294,14 @@ is nine rows today, not ten.)
 | # | Path (relative to the core extension root) | Reachability evidence | Decision-relevance evidence |
 |---|---|---|---|
 | 1 | `skills/skill-orchestrate/SKILL.md` | The multi-task dispatch state machine itself — Stages MT-1 through MT-5 ARE the MT batch-dispatch path, covering both effort modes (the formerly-separate hard-mode engine, which used to inherit and extend MT-1..MT-5 for `/orchestrate --hard` batch runs, has been merged into this same file and deleted) | A defect here silently mis-routes eligibility, wave/cycle admission, or postflight status — the core decision surface, for both effort modes now that there is only one file |
-| 2 | `commands/orchestrate.md` | The command entry point that parses flags and invokes `skill-orchestrate` for MT dispatch; the admission predicate itself is invoked solely at Stage MT-3 step 4.5 (row 1) | A defect here silently breaks flag threading into the delegation context, e.g. dropping a key `skill-orchestrate` reads |
+| 2 | `commands/orchestrate.md` | The command entry point that parses flags and invokes `skill-orchestrate` for MT dispatch; the admission predicate itself is invoked solely at Move 1 (the admission predicate) (row 1) | A defect here silently breaks flag threading into the delegation context, e.g. dropping a key `skill-orchestrate` reads |
 | 3 | `scripts/skill-base.sh` | Sourced by preflight/postflight for every dispatched task in a batch | A defect silently corrupts the preflight/postflight/completion-claim gate for every task in the batch, not just one |
-| 4 | `scripts/task-lock.sh` | Acquired/released per task inside MT dispatch (Stage MT-4) | A defect silently breaks the concurrency mutex itself — the last line of defense against two tasks writing the same files |
+| 4 | `scripts/task-lock.sh` | Acquired/released per task inside dispatch (Move 2) | A defect silently breaks the concurrency mutex itself — the last line of defense against two tasks writing the same files |
 | 5 | `scripts/update-task-status.sh` | Invoked by postflight for every task a batch dispatches | A defect silently writes a wrong status transition, corrupting `state.json` for the whole batch |
 | 6 | `scripts/orchestrate-batch-admit.sh` | THE admission predicate this gate itself extends; called once per wave/cycle | A defect here is maximally silent: it IS the mechanism deciding admission, so a bug in it defeats the very check meant to catch bugs like it |
-| 7 | `scripts/orchestrate-triage-classify.sh` | Called once per MT cycle (Stage MT-4) to route tasks to research/plan/implement | A defect silently misroutes a task to the wrong lifecycle phase |
+| 7 | `scripts/orchestrate-triage-classify.sh` | Called once per cycle (Move 2) to route tasks to research/plan/implement | A defect silently misroutes a task to the wrong lifecycle phase |
 | 8 | `scripts/orchestrate-cycle-plan.sh` (`--dry-run` mode) | Composes the `--dry-run` report human operators trust to preview a live run | A defect silently misrepresents what a live run would actually do, undermining the one human-facing verification surface for batch composition |
-| 9 | `scripts/verify-deploy.sh` | Executed directly from Stage MT-3 step 7 on the MT dispatch path (the inter-cycle redeploy checkpoint) | A defect causing a false PASS is silent and lets a broken deploy be treated as verified — matching row 6's own "a bug in it defeats the very check meant to catch bugs like it" language |
+| 9 | `scripts/verify-deploy.sh` | Executed directly from Move 1 (the inter-cycle redeploy checkpoint) on the dispatch path | A defect causing a false PASS is silent and lets a broken deploy be treated as verified — matching row 6's own "a bug in it defeats the very check meant to catch bugs like it" language |
 
 ### Exclusion Table (explicitly excluded, with evidence)
 
@@ -309,7 +309,7 @@ is nine rows today, not ten.)
 
 | Path | Evidence |
 |---|---|
-| `scripts/command-gate-in.sh` | `skills/skill-orchestrate/SKILL.md` states explicitly that MT dispatch never sources the single-task gate-in/gate-out scripts — the MT path has its own Stage MT-1/MT-2 initialization instead |
+| `scripts/command-gate-in.sh` | `skills/skill-orchestrate/SKILL.md` states explicitly that MT dispatch never sources the single-task gate-in/gate-out scripts — the dispatch path has its own Move 1 initialization instead |
 | `scripts/command-gate-out.sh` | Same explicit statement as above — MT dispatch never sources it |
 | `scripts/orchestrator-postflight.sh` | Zero references anywhere in `skills/skill-orchestrate/SKILL.md` (confirmed by grep at authoring time) — this script belongs to a different command's postflight, not MT dispatch |
 
@@ -321,7 +321,7 @@ MT path but a defect in them fails loudly or is merely cosmetic, not a silent wr
 | `scripts/generate-todo.sh` | Regenerates the human-facing `TODO.md` view from `state.json` — a defect produces a visibly wrong rendered file, not a silent wrong admission/wave/lock/completion decision |
 | `scripts/validate-artifact.sh` | Validates artifact format/presence — a defect fails loudly (a validation error) rather than silently corrupting a scheduling decision |
 | `scripts/lifecycle-notify.sh` | A notification/logging hook — a defect at worst drops or garbles a notification; it does not feed back into any admission, wave, lock, or completion decision |
-| `scripts/deploy-headless.sh` | Executed from Stage MT-3 step 7 immediately before `verify-deploy.sh`, so it is reachable on the MT dispatch path, but its primary failure mode is loud (`exit 1`/`2`, triggering the documented failure-path warning and `deferred_deploy_checkpoint` population) — matching the exclusion rationale already used for `validate-artifact.sh` above. Judged call, not an unconsidered omission: a hypothetical silent partial-sync defect (some files copied, some not, exit 0 anyway) would clear decision-relevance and belong in the Inclusion Table instead; the current implementation's failure mode is the loud one, so it stays here. |
+| `scripts/deploy-headless.sh` | Executed from Move 1 (the inter-cycle redeploy checkpoint) immediately before `verify-deploy.sh`, so it is reachable on the MT dispatch path, but its primary failure mode is loud (`exit 1`/`2`, triggering the documented failure-path warning and `deferred_deploy_checkpoint` population) — matching the exclusion rationale already used for `validate-artifact.sh` above. Judged call, not an unconsidered omission: a hypothetical silent partial-sync defect (some files copied, some not, exit 0 anyway) would clear decision-relevance and belong in the Inclusion Table instead; the current implementation's failure mode is the loud one, so it stays here. |
 
 ### The Deploy-Manual Analysis and the Surviving Hazards
 
@@ -343,7 +343,7 @@ this gate:
    change needs to be reverted, isolating it from sibling tasks' unrelated changes in the same
    commit is harder than it would be for a solo, single-task commit." That batch commit no longer
    exists: MT mode now issues one scoped commit per task per phase transition, inside
-   `skill-orchestrate`'s own per-task postflight loop (Stage MT-4 step 5.5), at the same
+   `skill-orchestrate`'s own per-task postflight loop (Move 2's per-task scoped commit), at the same
    granularity a solo run produces — see `docs/architecture/orchestrate-state-machine.md`'s
    "Commit Granularity" subsection. A self-modifying task's change is therefore isolated in its
    own commit, never mixed with a sibling task's diff. **Stated residual, not total elimination**:
@@ -365,7 +365,7 @@ this gate:
      admission gate excluding such a candidate from the **whole invocation** (the old, never-reset
      `deferred_self_modifying` exclusion set); that premise no longer holds — see "### The
      Same-Cycle Narrowing and Its Hazard Accounting" above. The claim survives on a narrower,
-     already-sufficient premise instead: Stage MT-3 step 3's eligibility rule guarantees an
+     already-sufficient premise instead: Move 1 (the eligibility gate)'s rule guarantees an
      edge-connected successor is never eligible in the same cycle as its predecessor, regardless of
      the self-modification gate's own scope. "W0 fixes it, W1 still runs stale" still cannot happen
      for a correctly-declared, edge-connected candidate — it just was never actually the
@@ -424,7 +424,7 @@ argument the paragraph immediately below relies on, and the A1 resolution's dead
 further down — rests SOLELY on clause (1), which no change in this repository's eligibility-gate
 work has ever touched. Clause (2) has since been REMOVED entirely (eligibility is no longer
 status-gated on an in-flight string at all — see
-`skills/skill-orchestrate/SKILL.md` Stage MT-3 step 3), and its removal falsifies none of the
+`skills/skill-orchestrate/SKILL.md` Move 1 (the eligibility gate)), and its removal falsifies none of the
 claims here, because none of them ever depended on it. A future reader auditing this section
 after any eligibility-rule change should re-derive which of the two clauses (if either survives
 under a new name) a given claim actually rests on, rather than assuming "the eligibility rule"
@@ -434,8 +434,8 @@ The self-modification defer originally excluded a candidate from the WHOLE invoc
 `--invocation-count` exceeded 1 — never merely from the wave/cycle it was actually co-dispatched
 in. That whole-invocation scope has been narrowed to the candidate's actual same-cycle co-dispatch
 count (`${#eligible_tasks[@]}` at the skill's own call site), because a
-`dependencies[]`-edge-connected pair can never share that count in the first place — Stage MT-3
-step 3's eligibility rule guarantees a successor is never eligible until its predecessor leaves
+`dependencies[]`-edge-connected pair can never share that count in the first place — Move 1's
+eligibility gate guarantees a successor is never eligible until its predecessor leaves
 the non-terminal set — so the whole-invocation count fired against pairs that could never
 actually co-occur in a dispatch batch. That was a pure false positive, not a safety margin, and
 removing it removes no protection against any of the three hazards above.
@@ -444,14 +444,14 @@ removing it removes no protection against any of the three hazards above.
 
 - **Hazard 2 (rollback/commit-granularity) — RETIRED, and whole-invocation scope was never this
   hazard's mitigation anyway.** Once MT mode moved to one scoped commit per task per phase
-  transition (Stage MT-4 step 5.5), the commit-granularity concern the original whole-invocation
+  transition (Move 2's per-task scoped commit), the commit-granularity concern the original whole-invocation
   scope might have incidentally helped with was already resolved by a DIFFERENT mechanism. The
   narrowing does not touch this hazard's retired status either way.
 - **Hazard 3's in-batch form — RETIRED, and whole-invocation scope WAS this form's mitigation, now
   replaced.** The old whole-invocation exclusion is exactly what made "a self-modifying candidate
   admitted alongside a sibling in the same invocation" structurally impossible. The narrowing
   removes that specific protection — but does not reopen the hazard, because same-cycle
-  eligibility exclusion (Stage MT-3 step 3) already makes the in-batch, correctly-declared form
+  eligibility exclusion (Move 1's eligibility gate) already makes the in-batch, correctly-declared form
   structurally impossible on its own: an edge-connected successor is never eligible in the same
   cycle as its predecessor, narrowed scope or not. The over-protection here was scope wider than
   the eligibility rule already required, not a hazard the wider scope alone was holding back.
@@ -471,8 +471,8 @@ dimension's comparison set spans EVERY non-terminal task in `specs/state.json` �
 far outside the current wave/cycle — where an edge-connected pair genuinely can and does collide
 if left unexempted (an out-of-batch predecessor sitting in `implementing` for many cycles is a
 real, live comparison target). The self-modification dimension's comparison, by contrast, is now
-scoped to `${#eligible_tasks[@]}` — the current cycle's actual co-dispatch set — and Stage MT-3
-step 3's eligibility rule already guarantees an edge-connected pair can never occupy that set
+scoped to `${#eligible_tasks[@]}` — the current cycle's actual co-dispatch set — and Move 1's
+eligibility gate already guarantees an edge-connected pair can never occupy that set
 together. An explicit dependency-edge exemption in the self-mod branch would therefore be
 unreachable dead code: the condition it would guard against cannot occur once the count is
 same-cycle-scoped. The asymmetry between the two dimensions is real, but it is load-bearing only
@@ -482,7 +482,7 @@ gap in the self-modification check.
 **The `--allow-self-modifying` override — recorded, default off.** Name:
 `--allow-self-modifying`. Default: off (`"false"`), threaded through
 `scripts/parse-command-args.sh`'s scan and strip chain exactly like every other boolean flag, and
-read at the consumer (`skill-orchestrate/SKILL.md` Stage MT-3 step 4.5, covering both effort
+read at the consumer (`skill-orchestrate/SKILL.md` Move 1 (the admission predicate), covering both effort
 modes now that the formerly-separate hard-mode engine's own transcription has been merged in and
 deleted) — never passed to `orchestrate-batch-admit.sh`, which
 always computes and emits the verdict honestly regardless of the flag. Justification for the
@@ -511,7 +511,7 @@ protection.** The narrowing this document records above does NOT transfer to pla
 `/implement`, `/research`, or `/plan` by analogy, and the reason is specific to what those
 commands lack, not a general judgment that they are lower-risk. The narrowed self-modification
 trigger is counted against `${#eligible_tasks[@]}` — a per-CYCLE co-dispatch set produced by
-`/orchestrate`'s own Kahn-ordered wave/cycle machinery (Stage MT-3 steps 1-4). Plain multi-task
+`/orchestrate`'s own Kahn-ordered wave/cycle machinery (Move 1's wave/cycle sequencing). Plain multi-task
 `/implement N,M`, `/research N,M`, and `/plan N,M` have no wave or cycle computation at all: no
 Kahn ordering, no per-cycle eligibility re-evaluation, no concept of "this cycle's co-dispatch
 set" for a narrowed trigger to be counted against. There is therefore no unit the narrowing could
@@ -574,7 +574,7 @@ Non-empty overlap fires the checkpoint.
 `file_scope` check pre-dispatch (see the Self-Modification Hazard section above); using
 post-dispatch `modified_files` is strictly more precise and closes the declared/actual divergence
 gap named under hazard 3 above. The cost is a single jq comparison, since the array is already in
-scope at Stage MT-4 step 5.5 of `skill-orchestrate/SKILL.md`.
+scope at Move 2 (the per-task scoped commit) of `skill-orchestrate/SKILL.md`.
 
 **Rejected alternatives, recorded so a later pass cannot rediscover them**:
 - **"Always redeploy between cycles"** — rejected. It imposes an unjustified deploy/verify cost
@@ -590,11 +590,11 @@ proposal to explicitly HOLD the redeploy checkpoint until every in-flight siblin
 cycle boundary, so no dispatched sibling could ever run against a script mid-swap. This is
 distinct from "rejected" above — it is not a bad idea, it targets a hazard that provably cannot
 occur under this system's existing architecture, so building it would add complexity with no
-behavioral effect. Dispatch is CYCLE-SYNCHRONOUS by construction: the Stage MT-4 BATCHING RULE
+behavioral effect. Dispatch is CYCLE-SYNCHRONOUS by construction: the Move 2 BATCHING RULE
 requires every cycle's Agent tool calls to be issued in a single orchestrator message and their
-handoffs read only after ALL of them return (Stage MT-3's "COMPLETION SEQUENCING" note), and
-every dispatched task's own scoped commit (Stage MT-4 step 5.5) lands, unconditionally, BEFORE
-the Stage MT-3 step 7 redeploy checkpoint for that same cycle ever evaluates (see "Sequencing"
+handoffs read only after ALL of them return (Move 1's "COMPLETION SEQUENCING" note), and
+every dispatched task's own scoped commit (Move 2's per-task scoped commit) lands, unconditionally, BEFORE
+the Move 1 redeploy checkpoint for that same cycle ever evaluates (see "Sequencing"
 above). There is no cross-cycle concurrency for the checkpoint to race against: by the time a
 redeploy fires, every sibling dispatched in that cycle has already returned and committed, and no
 sibling from a FUTURE cycle has been dispatched yet. "Hold the redeploy until in-flight siblings
@@ -758,9 +758,9 @@ later pass does not rediscover them:
   before this redeploy (or the apparent new breakage isn't real/isn't ours), and we proceeded
   deliberately." It is announced via a banner, a machine marker, and a durable
   `mt_state_file.verify_deploy_baseline_notices` record (see `skills/skill-orchestrate/SKILL.md`'s
-  Stage MT-3 step 7 and Stage MT-5 for the mechanism, and
+  Move 1 for the inter-cycle redeploy checkpoint and Move 3 for the detection mechanism, and
   `context/patterns/orchestrate-batch-results-template.md` for the rendering, emitted by
-  Stage MT-5). A baseline must never become a mechanism for quietly swallowing failures — branch
+  Move 4's consolidated output render). A baseline must never become a mechanism for quietly swallowing failures — branch
   (c) exists to make a pre-existing or unattributable failure MORE visible, never less. The
   notice's own `filtered` field distinguishes the two ways this branch can be reached: `false` for
   the original, temporally-pre-existing case (no candidate new finding at all), `true` for the
@@ -860,7 +860,7 @@ consequences:
 **Rejected alternative**: **exit-code-only baseline comparison** — rejected for the masking reason
 given in Baseline mechanism above; recorded here so a later pass cannot rediscover and re-adopt it.
 
-**Sequencing**: per-task commits at Stage MT-4 step 5.5 already precede any point the checkpoint
+**Sequencing**: per-task commits at Move 2 (the per-task scoped commit) already precede any point the checkpoint
 can occupy, unconditionally and inside the same per-task loop iteration. Committed-then-redeployed,
 in that order, is guaranteed by existing step ordering and is stated here, not built.
 
@@ -964,7 +964,7 @@ because it was excluded once.
 ### The Postflight Completion-Deploy Gate
 
 A sibling mechanism to the Inter-Cycle Redeploy Checkpoint above, addressing a DIFFERENT gap: the
-checkpoint above is `/orchestrate`-only (Stage MT-3 step 7). Outside `/orchestrate`, a task whose
+checkpoint above is `/orchestrate`-only (Move 1's inter-cycle redeploy checkpoint). Outside `/orchestrate`, a task whose
 implementation edits `agent-system/extensions/**` could reach `[COMPLETED]` while its changes
 remained absent from the running `.claude/` tree, because the only staleness signal
 (`check-deploy-freshness.sh`) is advisory by contract and always exits 0 (see
@@ -1347,8 +1347,7 @@ The report therefore prints the dependency-ordered solo re-run sequence; the hum
 script** was rejected while the pseudocode still existed (recorded alongside the
 file_scope_collision two-pass work above, since both were weighed together while adding plain
 multi-task resequencing); the pseudocode has since been deleted outright rather than converted,
-so this rejection is history, not a live constraint. `skill-orchestrate/SKILL.md` Stage MT-3 step
-4.5 is now the sole implementation of wave/cycle sequencing, re-deriving eligibility fresh every
+so this rejection is history, not a live constraint. `skill-orchestrate/SKILL.md` Move 1 (the admission predicate) is now the sole implementation of wave/cycle sequencing, re-deriving eligibility fresh every
 cycle rather than consuming any pre-computed wave schedule.
 
 **Adding `file_scope` overlap as a pre-computed `in_degree`/wave-assignment input** (rather than
@@ -1398,14 +1397,14 @@ outcome and requires it to be legible, not merely correct.
 **Statement, precise and cause-agnostic**: the invariant is violated when the validated-candidate
 set is non-empty AND no task was dispatched on any cycle of the invocation. The operational test is
 `mt_state_file.dispatch_start_ts == {}` at loop exit — that map is already written only at actual
-dispatch (three call sites in the skill's Stage MT-4), so detecting the invariant requires no new
+dispatch (three call sites in the skill's Move 2), so detecting the invariant requires no new
 dispatch-side bookkeeping. This is true regardless of which defer reason produced it —
 `self_modifying`, `file_scope_collision` (`in_batch` or `cross_batch`), or a redeploy-checkpoint
 deferral all count identically.
 
 **Detection/rendering split, three loci, named explicitly**:
 
-1. **Detection** — computed once, at the skill's Stage MT-5, as the single source of truth over
+1. **Detection** — computed once, at the skill's Move 3, as the single source of truth over
    `mt_state_file`.
 2. **Rendering (live path)** — the command's Step 5, the human-facing consolidated-output surface.
 3. **Rendering (preview path)** — the `--dry-run` reporter, which renders the same vocabulary
@@ -1430,7 +1429,7 @@ same-cycle narrowing neither creates nor removes.
 mutate `specs/state.json`, does not add any task to `failed_tasks`, and does not mark any task
 failed or blocked. This is the standing defer-not-fail default applied to the whole-run outcome,
 unchanged by naming it. A no-dispatch cycle DOES still consume a cycle — `cycle_count` increments
-unconditionally at Stage MT-3 step 6, after dispatch — and that too is unchanged.
+unconditionally at Move 1 (the cycle-count increment), after dispatch — and that too is unchanged.
 
 **PRINT-ONLY, not auto-degrade (Scope D)** — see the new `## Rejected Approaches` entry below for
 the full justification; this subsection states only the vocabulary, that section states the
@@ -1465,7 +1464,7 @@ These five hold at any batch size and are never relaxed for throughput:
    excludes on its own account. It does not newly exclude an `out_of_batch_live` or `nonexistent`
    predecessor from live dispatch either — `dependency_graph` (built by `commands/orchestrate.md`'s
    compact STAGE 0 multi-task block) is intra-batch-only, so an out-of-batch edge is simply absent
-   from it, and `skills/skill-orchestrate/SKILL.md` Stage MT-3's eligibility check sees no
+   from it, and `skills/skill-orchestrate/SKILL.md` Move 1's eligibility check sees no
    predecessor to wait on. Closing that residual live-path exclusion gap is exactly the Open
    Design Fork question below, left unresolved by this warn-only stage on purpose.
 4. **Never let human-facing batch approval substitute for or gate machine admission decisions.**
@@ -1511,7 +1510,7 @@ to `orchestrate-dry-run-report.sh`'s Step 6 exclusion before that script's retir
 future work a settled answer for closing the live-path gap described under Non-Negotiable 3 above
 — the gap is UNCHANGED by that script's retirement: `orchestrate-cycle-plan.sh`'s live and
 `--dry-run` paths alike defer an out-of-batch unmet predecessor to a later cycle exactly as the
-rest of the eligibility model does (see Stage MT-3 step 3's port in that script), never a distinct
+rest of the eligibility model does (see Move 1 (the eligibility gate)'s port in that script), never a distinct
 permanent exclusion — closing the gap remains future work.
 `scripts/orchestrate-predispatch-review.sh` deliberately stays a
 report-only REVIEW stage and does not itself implement this exclusion on the live dispatch path

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #185
 
 - **Task**: 185 - Retarget the remaining historical "Stage N" and "Stage MT-N" citations to the four-move loop vocabulary
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: Task 88 (the four-move rewrite) is complete. Ordered behind the concurrent
   engine-editing siblings that touch `batch-orchestration-guardrails.md` and `handoff-schema.md`.
@@ -152,31 +152,34 @@ territory by construction — no file appears in two phases' `Files to modify` l
 
 ---
 
-### Phase 1: Build the per-hit classification ledger [NOT STARTED]
+### Phase 1: Build the per-hit classification ledger [COMPLETED]
 
 **Goal**: Produce a durable, per-hit classification of every grep match in the 18 in-scope files,
 so the editing phases execute a decided ledger rather than re-deciding mid-edit.
 
 **Tasks**:
-- [ ] For each of the 18 files listed in Artifacts & Outputs, run
+- [x] For each of the 18 files listed in Artifacts & Outputs, run
       `grep -n -C2 -E "Stage MT-|Stage [0-8]\b" <file>` fresh from
-      `agent-system/extensions/core/`.
-- [ ] Confirm the per-file hit count against the counts recorded in Research Integration above.
+      `agent-system/extensions/core/`. *(completed)*
+- [x] Confirm the per-file hit count against the counts recorded in Research Integration above.
       If a count has changed, read the surrounding diff context and note whether a concurrent
       sibling edit landed; record the new count rather than proceeding on the stale one.
-- [ ] Classify every hit as `LIVE` (retarget), `HISTORICAL` (leave; verify framing is explicit),
-      or `UNRELATED` (leave; name which of the four vocabularies it belongs to).
-- [ ] For each `LIVE` hit, record the replacement anchor from the mapping table, including the
-      descriptive parenthetical to preserve.
-- [ ] Write the ledger to
+      *(completed: all counts unchanged, no drift)*
+- [x] Classify every hit as `LIVE` (retarget), `HISTORICAL` (leave; verify framing is explicit),
+      or `UNRELATED` (leave; name which of the four vocabularies it belongs to). *(completed)*
+- [x] For each `LIVE` hit, record the replacement anchor from the mapping table, including the
+      descriptive parenthetical to preserve. *(completed)*
+- [x] Write the ledger to
       `specs/185_retarget_stage_citations_to_move_vocabulary/notes/01_citation-ledger.md`
       (a working note, not a deliverable artifact — it is not linked into `state.json`).
-- [ ] Resolve the one open question the survey left: `context/patterns/mode-gated-section-loading.md`
+      *(completed)*
+- [x] Resolve the one open question the survey left: `context/patterns/mode-gated-section-loading.md`
       claims `SKILL.md` "already uses an informal paired bash-comment convention"
       (`# --- name:begin ---` / `# --- name:end ---`). A plan-time grep for `begin ---` found
       **no such convention anywhere in the current `SKILL.md`**. Confirm that grep, then record
       in the ledger that this citation must be reframed as historical precedent (or retargeted to
       a currently-live example elsewhere if one is found) — not merely renumbered to a Move.
+      *(completed: confirmed no convention exists; reframed as historical in Phase 8)*
 
 **Timing**: 0.5 hours
 
@@ -201,18 +204,19 @@ appeared outside the 18.
 
 ---
 
-### Phase 2: Retarget `batch-orchestration-guardrails.md` [NOT STARTED]
+### Phase 2: Retarget `batch-orchestration-guardrails.md` [COMPLETED]
 
 **Goal**: Retarget the largest single concentration of citations — all MT-3/MT-4/MT-5 references
 to still-live admission, dispatch, commit, and redeploy mechanics.
 
 **Tasks**:
-- [ ] Re-grep the file and reconcile against the Phase 1 ledger before editing.
-- [ ] Apply each `LIVE` replacement individually (Edit, not `sed`), preserving every descriptive
-      parenthetical naming the mechanism or script.
-- [ ] Where a citation named a sub-step (`MT-3 step 7`, `MT-4 step 4.5`, `MT-4 step 5.5`),
-      collapse it to ``Move K (`<script>`'s `<mechanism>`)`` per the Phrasing rule.
-- [ ] Re-read the diff to confirm no hunk changed prose meaning beyond the anchor rename.
+- [x] Re-grep the file and reconcile against the Phase 1 ledger before editing. *(completed)*
+- [x] Apply each `LIVE` replacement individually (Edit, not `sed`), preserving every descriptive
+      parenthetical naming the mechanism or script. *(completed)*
+- [x] Where a citation named a sub-step (`MT-3 step 7`, `MT-4 step 4.5`, `MT-4 step 5.5`),
+      collapse it to ``Move K (`<script>`'s `<mechanism>`)`` per the Phrasing rule. *(completed)*
+- [x] Re-read the diff to confirm no hunk changed prose meaning beyond the anchor rename.
+      *(completed)*
 
 **Timing**: 1 hour
 

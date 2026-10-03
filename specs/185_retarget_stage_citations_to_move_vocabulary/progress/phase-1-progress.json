@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Build the per-hit classification ledger",
+  "started_at": "2026-10-03T08:10:00Z",
+  "last_updated": "2026-10-03T08:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fresh grep hit counts over 18 files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm counts against survey/plan", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Classify hits LIVE/HISTORICAL/UNRELATED", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Write ledger note", "status": "done", "files_touched": ["specs/185_retarget_stage_citations_to_move_vocabulary/notes/01_citation-ledger.md"]},
+    {"id": 5, "description": "Resolve mode-gated-section-loading.md open question", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/185_retarget_stage_citations_to_move_vocabulary/plans/01_stage-citation-retarget.md",
-      "summary": "9-phase mechanical retarget of skill-orchestrate Stage/Stage-MT citations to Move 1-4 vocabulary across 18 source-store files, with a per-hit classification ledger gate and a scoped acceptance grep."
-    }
-  ],
-  "next_steps": "Run /implement 185 to execute the plan",
-  "phase_count": 9,
-  "estimated_hours": 7.5,
-  "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8], [9]],
-  "memory_candidates": [
-    {
-      "content": "In this repo's agent-system documentation tree, the word 'Stage N' belongs to five independent, lexically colliding numbering vocabularies: (1) skill-orchestrate's own engine stages (now replaced by Move 1-4), (2) the generic agent-execution-flow convention in context/templates/agent-template.md and every agents/*.md derived from it, (3) the generic skill-body preflight/postflight flow (context/patterns/skill-preflight-flow.md et al.), (4) /meta's interview stages, and (5) individual scripts' retained internal labels (e.g. orchestrate-build-dispatch.sh's live 'Stage 3.5 (Dispatch Prep)', orchestrate-stage5-gates.sh). A naive grep for 'Stage MT-|Stage [0-8]' over core/{context,docs,skills,commands,agents} matches ~77 files but only ~18 cite skill-orchestrate. Any sweep that renames section anchors in this tree must classify every hit against these five vocabularies line-by-line; a whole-file find-replace corrupts four live, correct conventions. The reliable discriminator for vocabulary (1) is co-occurrence with the literal strings 'skill-orchestrate', 'orchestrate-cycle-plan.sh', 'orchestrate-cycle-postflight.sh', or 'orchestrate-build-dispatch.sh'.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/185_retarget_stage_citations_to_move_vocabulary/plans/01_stage-citation-retarget.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["stage-numbering", "citation-sweep", "skill-orchestrate", "move-loop", "grep-classification", "documentation-retarget"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791000710_cc4f86_185",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791000710_cc4f86",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 17
+  "dispatch_seq": 18
 }
