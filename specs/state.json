@@ -1,7 +1,22 @@
 {
   "version": "1.1.0",
-  "next_project_number": 334,
+  "next_project_number": 335,
   "active_projects": [
+    {
+      "project_number": 334,
+      "project_name": "fix_books_scaffold_contract_defects",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix two books-extension scaffold contract defects that each fail a verify-deploy gate.\n\n(1) agent-system/extensions/books/agents/books-implementation-hard-agent.md lacks an\nobject-shaped artifacts array with keys (artifacts, path, summary, type), failing\nlint-agent-contracts.sh. The expected shape is in\nagent-system/extensions/core/context/contracts/return-meta-artifacts-template.md, and the\nnon-hard sibling books-implementation-agent.md already carries it correctly, so it is the\nin-repo reference for the fix.\n\n(2) agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md:52 and\nagent-system/extensions/books/skills/skill-books-research-hard/SKILL.md:43 each hand-roll a\nfull-record task lookup ('.active_projects[] | select(.project_number == $num)'), failing\nlint-task-lookup-adoption.sh, which expects the shared task-lookup helper.\n\nBoth defects originate in the books scaffold commits (phase 2 for the agent, phase 3 for the\ntwo skills), established by git blame rather than inferred; neither was introduced by the\ncontext-corpus or --gate work that followed. The scaffold's own completion gate passed while\nleaving both behind, so this task must also rule on why a completion postflight cleared a task\nwhose output carried two standing lint failures -- that is the more general defect, and fixing\nonly the three files would leave it in place.\n\nVerify with: bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose;\nbash agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh --verbose; then\nbash .claude/scripts/verify-deploy.sh --skip-slow (currently FAIL 3 of 33; these two gates are\ntwo of the three, the third being an orchestrator context-budget ceiling tracked separately).",
+      "topic": "extensions",
+      "file_scope": [
+        "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+        "agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md",
+        "agent-system/extensions/books/skills/skill-books-research-hard/SKILL.md"
+      ],
+      "created": "2026-10-03T21:26:48Z",
+      "last_updated": "2026-10-03T21:26:48Z"
+    },
     {
       "project_number": 328,
       "project_name": "systematic_script_and_test_corpus_efficiency",

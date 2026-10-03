@@ -1,5 +1,5 @@
 ---
-next_project_number: 334
+next_project_number: 335
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 334
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,285,295,296,299,300,306,311,318,322,325 | -- | core-agent-system, neovim, orchestrator |
+| 1 | 22,185,251,271,272,280,284,285,295,296,299,300,306,311,318,322,325,334 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,275,281,302,303,319,329 | 22,251,271,272,280,285,300 | core-agent-system, extensions, orchestrator |
 | 3 | 273,282,330 | 271,281,329 | core-agent-system, orchestrator |
 | 4 | 274,304,312,331 | 273,275,282,284,300,302,330 | extensions, orchestrator |
@@ -44,6 +44,7 @@ next_project_number: 334
 
 ### Extensions
 
+334 [NOT STARTED] — Fix two books-extension scaffold contract defects that each...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
@@ -74,6 +75,40 @@ next_project_number: 334
 330 [NOT STARTED] — Per-dispatch cost and timing record
 
 ## Tasks
+
+### 334. Fix books scaffold contract defects
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: Fix two books-extension scaffold contract defects that each fail a verify-deploy gate.
+
+(1) agent-system/extensions/books/agents/books-implementation-hard-agent.md lacks an
+object-shaped artifacts array with keys (artifacts, path, summary, type), failing
+lint-agent-contracts.sh. The expected shape is in
+agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md, and the
+non-hard sibling books-implementation-agent.md already carries it correctly, so it is the
+in-repo reference for the fix.
+
+(2) agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md:52 and
+agent-system/extensions/books/skills/skill-books-research-hard/SKILL.md:43 each hand-roll a
+full-record task lookup ('.active_projects[] | select(.project_number == $num)'), failing
+lint-task-lookup-adoption.sh, which expects the shared task-lookup helper.
+
+Both defects originate in the books scaffold commits (phase 2 for the agent, phase 3 for the
+two skills), established by git blame rather than inferred; neither was introduced by the
+context-corpus or --gate work that followed. The scaffold's own completion gate passed while
+leaving both behind, so this task must also rule on why a completion postflight cleared a task
+whose output carried two standing lint failures -- that is the more general defect, and fixing
+only the three files would leave it in place.
+
+Verify with: bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose;
+bash agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh --verbose; then
+bash .claude/scripts/verify-deploy.sh --skip-slow (currently FAIL 3 of 33; these two gates are
+two of the three, the third being an orchestrator context-budget ceiling tracked separately).
+
+---
 
 ### 333. The /books command with --review and --revise
 - **Effort**: 4-8 hours
