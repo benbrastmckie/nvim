@@ -463,12 +463,12 @@
     {
       "project_number": 265,
       "project_name": "parallelize_gate8_shell_test_suite",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Run Gate 8 in parallel inside verify-deploy.sh via run-all.sh --jobs",
       "created": "2026-09-26T04:34:55Z",
-      "last_updated": "2026-10-02T19:22:31Z",
+      "last_updated": "2026-10-03T02:11:49Z",
       "dependencies": [
         165,
         266,
@@ -509,7 +509,7 @@
         }
       ],
       "next_artifact_number": 2,
-      "session_id": "sess_1790968925_5ff73e",
+      "session_id": "sess_1790980905_de0803",
       "completion_summary": "Implemented Gate 8 parallelism in verify-deploy.sh (--jobs auto default, VERIFY_DEPLOY_GATE8_JOBS override, 51.6% measured reduction) and an opt-in --skip-verify/exit-4 suppression flag in deploy-headless.sh threaded into its two genuine callers (command-gate-out.sh, orchestrate-cycle-plan.sh), removing a measured ~2m9s-per-checkpoint-fire redundant inline verification pass. All 8 plan phases completed; a stale premise in the task's own rationale (checkpoint snapshots assumed full-depth, actually already --skip-slow-matched by a prior task) was discovered, corrected, and disclosed rather than silently absorbed."
     },
     {
