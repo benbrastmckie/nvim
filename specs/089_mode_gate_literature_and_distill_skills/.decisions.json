@@ -1,0 +1,8 @@
+[
+  {
+    "question": "Task 89's distill target (a 43,254 B '## Auto Distill Complete' output-template section) does not exist -- that string is inside a fenced output example, and the 43,254 B figure is the fence-interior-heading artifact itself (it sweeps up five unrelated sub-mode specs). The real '### Sub-Mode: auto' is only 3,358 B. How should the distill half of this task be scoped to still hit the ~42.4k -> ~32k token goal?",
+    "answer": "Extract all nine above-bar '### Sub-Mode:' sections (purge, merge, compress, refine, revise, meta, review, learn, dream) = 65,329 B removed -- wider than described, but the only scope that reaches the stated token target. [Auto-resolved on the planner's own recommendation: the decision was reported non-blocking, and /orchestrate runs without confirmation gates. Surfaced in the batch output for review; re-scope via /revise 89 if a different option is wanted.]",
+    "cycle": 2,
+    "timestamp": "2026-10-03T04:33:28Z"
+  }
+]

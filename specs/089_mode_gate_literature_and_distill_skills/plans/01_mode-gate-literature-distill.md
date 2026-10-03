@@ -1,7 +1,7 @@
 # Implementation Plan: Task #89
 
 - **Task**: 89 - Apply the mode-gated section convention to skill-literature and skill-distill
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9.75 hours
 - **Dependencies**: 87 (pilot: `skill-email-cleanup` mode-gated extraction — complete, its output is this plan's literal template)
 - **Research Inputs**: `specs/089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md`
@@ -149,34 +149,42 @@ No `roadmap_path` was provided in this dispatch; no ROADMAP.md consultation perf
 Phases within the same wave can execute in parallel (phases 2/3 touch only literature files;
 phases 4/5 touch only memory files).
 
-### Phase 1: Baseline Measurement and Corrected Boundary Map [NOT STARTED]
+### Phase 1: Baseline Measurement and Corrected Boundary Map [COMPLETED]
 
 **Goal**: Establish the measured before-state and a fence-aware boundary map that every later
 phase keys on, and record the correction to the task's distill premise with the command that
 proves it.
 
 **Tasks**:
-- [ ] Record `wc -c -l` for `agent-system/extensions/literature/skills/skill-literature/SKILL.md`,
+- [x] Record `wc -c -l` for `agent-system/extensions/literature/skills/skill-literature/SKILL.md`,
       `agent-system/extensions/memory/skills/skill-distill/SKILL.md`,
       `agent-system/extensions/literature/commands/literature.md`, and
-      `agent-system/extensions/memory/commands/distill.md`.
-- [ ] Run the fence-aware heading scan over both SKILL.md files (track ` ``` ` state while
+      `agent-system/extensions/memory/commands/distill.md`. *(completed: literature SKILL.md
+      2574 lines/100,460 B; distill SKILL.md 2497 lines/93,044 B; literature.md 761 lines/41,652 B;
+      distill.md 274 lines/12,075 B)*
+- [x] Run the fence-aware heading scan over both SKILL.md files (track ` ``` ` state while
       matching `^## ` / `^### `) and record: every real heading line number, every fence-interior
-      fake heading, and each target section's span in lines and bytes.
-- [ ] Record the premise correction: show that `## Auto Distill Complete` (line 1495) is
+      fake heading, and each target section's span in lines and bytes. *(completed: recorded in
+      progress/phase-1-progress.json)*
+- [x] Record the premise correction: show that `## Auto Distill Complete` (line 1495) is
       fence-interior (odd count of fence delimiters above it) and that the file's only real `##`
       headings are at 11, 21, 278 — so the described 43,254 B `--auto` section does not exist as
-      a section, and `### Sub-Mode: auto` is 3,358 B.
-- [ ] Confirm the extraction set and per-section byte sizes: literature `Ingest` 1,917 /
+      a section, and `### Sub-Mode: auto` is 3,358 B. *(completed: confirmed exactly)*
+- [x] Confirm the extraction set and per-section byte sizes: literature `Ingest` 1,917 /
       `Validate` 18,484 / `Convert` 22,009 / `Index` 5,451 / `Search` 10,053 /
       `Import Pipeline` 6,152 / `Rebuild` 20,242 (sum 84,308); distill `purge` 6,124 /
       `merge` 8,077 / `compress` 5,996 / `refine` 6,974 / `revise` 12,427 / `meta` 8,796 /
-      `review` 4,826 / `learn` 5,754 / `dream` 5,355 (sum 65,329).
-- [ ] Confirm no `manifest.json` edit is required by re-reading both extensions'
-      `provides.context` arrays.
-- [ ] Write the map and the measurements into the task's progress/summary artifact under
+      `review` 4,826 / `learn` 5,754 / `dream` 5,355 (sum 65,329). *(deviation: altered -- every
+      literature figure confirmed exact, sum 84,308 confirmed; every distill per-item figure
+      confirmed exact, but the correct sum of those nine figures is 64,329 B, not 65,329 B -- the
+      plan text's own sum annotation has an arithmetic error. Using 64,329 B as the measured
+      extraction total going forward.)*
+- [x] Confirm no `manifest.json` edit is required by re-reading both extensions'
+      `provides.context` arrays. *(completed: literature=["project/literature","guides"],
+      memory=["project/memory"], both wholesale directory declarations)*
+- [x] Write the map and the measurements into the task's progress/summary artifact under
       `specs/089_mode_gate_literature_and_distill_skills/` (no file outside `specs/` is modified
-      in this phase).
+      in this phase). *(completed: progress/phase-1-progress.json)*
 
 **Timing**: 0.75 hours
 

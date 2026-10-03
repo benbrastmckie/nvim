@@ -1,0 +1,113 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline Measurement and Corrected Boundary Map",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Record wc -c -l for both SKILL.md files and both command.md files",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Fence-aware heading scan over both SKILL.md files; record real vs fence-interior headings and target spans",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Record premise correction: ## Auto Distill Complete (line 1495) is fence-interior; real ## headings only at 11,21,278",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm extraction set and per-section byte sizes for both files",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Confirm no manifest.json edit required",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Write the map and measurements into the task progress artifact",
+      "status": "done",
+      "files_touched": ["specs/089_mode_gate_literature_and_distill_skills/progress/phase-1-progress.json"]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "measurements": {
+    "baseline": {
+      "literature_skill_md": {"lines": 2574, "bytes": 100460},
+      "distill_skill_md": {"lines": 2497, "bytes": 93044},
+      "literature_command_md": {"lines": 761, "bytes": 41652},
+      "distill_command_md": {"lines": 274, "bytes": 12075}
+    },
+    "literature_real_h2_headings": [13, 21, 101, 171, 267, 346, 730, 1318, 1496, 1783, 1938, 2405, 2539, 2566],
+    "literature_fence_interior_h2_headings": [239, 315, 334, 644, 1291, 1483],
+    "literature_extraction_spans": {
+      "Ingest": {"lines": "101-170", "bytes": 1917},
+      "Validate": {"lines": "346-729", "bytes": 18484},
+      "Convert": {"lines": "730-1317", "bytes": 22009},
+      "Index": {"lines": "1318-1495", "bytes": 5451},
+      "Search": {"lines": "1496-1782", "bytes": 10053},
+      "Import Pipeline": {"lines": "1783-1937", "bytes": 6152},
+      "Rebuild": {"lines": "1938-2404", "bytes": 20242}
+    },
+    "literature_extraction_total_bytes": 84308,
+    "literature_excluded_sections": {
+      "Mode: Status (Default)": "171-266 (default branch, stays inline)",
+      "Mode: Scan": "267-345 (1846 B measured, below extraction bar)"
+    },
+    "distill_real_h2_headings": [11, 21, 278],
+    "distill_fence_interior_h2_headings": [168, 532, 905, 913, 1066, 1156, 1162, 1495],
+    "distill_premise_correction": {
+      "claimed": "## Auto Distill Complete section, 43254 B, 46% of file, --auto-only output template",
+      "verified": "line 1495 '## Auto Distill Complete' is FENCE-INTERIOR (confirmed via fence-state scan: odd fence-delimiter count precedes it). The file's only real ## headings are at 11, 21, 278. No such section exists. The real ### Sub-Mode: auto section is 3358 B (lines 1442-1539) and stays inline per plan Non-Goals.",
+      "decision_applied": "Per specs/089_mode_gate_literature_and_distill_skills/.decisions.json cycle-2 answer: extract all nine above-bar ### Sub-Mode: sections instead (purge, merge, compress, refine, revise, meta, review, learn, dream)."
+    },
+    "distill_extraction_spans": {
+      "purge": {"lines": "317-505", "bytes": 6124},
+      "merge": {"lines": "770-1023", "bytes": 8077},
+      "compress": {"lines": "1024-1220", "bytes": 5996},
+      "refine": {"lines": "1221-1441", "bytes": 6974},
+      "revise": {"lines": "1540-1831", "bytes": 12427},
+      "meta": {"lines": "1832-2031", "bytes": 8796},
+      "review": {"lines": "2032-2119", "bytes": 4826},
+      "learn": {"lines": "2120-2254", "bytes": 5754},
+      "dream": {"lines": "2255-2380", "bytes": 5355}
+    },
+    "distill_extraction_total_bytes_measured": 64329,
+    "distill_extraction_total_bytes_plan_text": 65329,
+    "distill_extraction_total_discrepancy_note": "The plan's prose states 'sum 65,329' but summing its own nine listed per-item byte figures yields 64,329 (an arithmetic/copy error in the plan text itself, not a boundary error -- every individual per-item figure the plan lists matches this phase's direct measurement exactly). Per this phase's Scope Hypothesis instruction, the measured value (64,329 B) is used going forward in place of the planned prose figure (65,329 B).",
+    "distill_excluded_sections": {
+      "Sub-Mode: auto": "1442-1539, 3358 B, stays inline (automated/frequent branch)",
+      "GC Sub-Mode": "648-769, stays inline (default-adjacent, shared)",
+      "Purge Sub-Mode shared material": "Link-Scan Procedure 506-559, Retrieval Exclusion 560-622, Health Report -- Tombstoned Memories Section 623-647 -- evaluated for sharing with GC in Phase 5",
+      "Distill Log Schema": "2381-2447, shared/below bar",
+      "State Integration": "2448-EOF, shared/below bar"
+    },
+    "manifest_json_edit_required": false,
+    "manifest_verification": {
+      "literature_provides_context": ["project/literature", "guides"],
+      "memory_provides_context": ["project/memory"]
+    }
+  },
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Plan prose states distill extraction sum as 65,329 B",
+      "type": "altered",
+      "reason": "Direct measurement and re-summation of the plan's own nine per-item figures both yield 64,329 B; using the measured/re-summed value per the phase's explicit Scope Hypothesis instruction to prefer measured values over planned ones.",
+      "annotation": "*(deviation: altered -- measured total is 64,329 B, not 65,329 B; every per-item figure confirmed exact)*"
+    }
+  ]
+}

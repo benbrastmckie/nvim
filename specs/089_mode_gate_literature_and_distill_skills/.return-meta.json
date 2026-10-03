@@ -1,40 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/089_mode_gate_literature_and_distill_skills/plans/01_mode-gate-literature-distill.md",
-      "summary": "6-phase, 9.75-hour plan applying the mode-gated section-loading convention to skill-literature (7 mode sections, 84,308 B) and skill-distill (9 sub-mode sections, 65,329 B), correcting the task's distill premise: the named '## Auto Distill Complete' 43,254 B section is a fence-interior fake heading, not a document section."
-    }
-  ],
-  "next_steps": "Run /implement 89 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 9.75,
-  "dependency_waves": [[1], [2, 4], [3, 5], [6]],
-  "user_decision": {
-    "question": "Task 89's distill target (a 43,254 B '## Auto Distill Complete' output-template section) does not exist -- that string is inside a fenced output example, and the 43,254 B figure is the fence-interior-heading artifact itself (it sweeps up five unrelated sub-mode specs). The real '### Sub-Mode: auto' is only 3,358 B. How should the distill half of this task be scoped to still hit the ~42.4k -> ~32k token goal?",
-    "options": [
-      "Extract all nine above-bar '### Sub-Mode:' sections (purge, merge, compress, refine, revise, meta, review, learn, dream) = 65,329 B removed -- wider than described, but the only scope that reaches the stated token target",
-      "Extract only the three sections over the 8,000 B lint threshold (revise, meta, merge) = 29,300 B removed -- closest to the described single-extraction size, falls short of the ~32k target",
-      "Drop the distill half and re-scope task 89 to skill-literature only, filing distill as a new task against corrected measurements"
-    ],
-    "recommended": "Extract all nine above-bar '### Sub-Mode:' sections (purge, merge, compress, refine, revise, meta, review, learn, dream) = 65,329 B removed -- wider than described, but the only scope that reaches the stated token target",
-    "blocking": false
-  },
-  "dispatch_seq": 7,
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1791000710_cc4f86_89",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": [
-    {
-      "content": "A fence-interior heading-shaped line can corrupt a TASK PREMISE, not just a measurement. In skill-distill/SKILL.md, '## Auto Distill Complete' at line 1495 sits inside a ``` fenced output example; a boundary scan from it to EOF yields 43,254 B, and that number propagated unchallenged from the task description into a research report as 'an --auto-only output template, 46% of the file'. It is actually five unrelated sub-mode specifications (revise, meta, review, learn, dream) plus two shared sections; the real '### Sub-Mode: auto' is 3,358 B, below any extraction bar. Planner-side rule: when a task names a section by heading text and a byte size, verify the heading is NOT fence-interior (count ``` delimiters above it -- odd means inside) and that the file's real heading map at that level contains it, BEFORE planning an extraction around it. A fence-aware heading map is the cheapest check that distinguishes a real section from a display template.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/089_mode_gate_literature_and_distill_skills/plans/01_mode-gate-literature-distill.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["fence-interior-heading-hazard", "mode-gated-section-loading", "premise-verification", "boundary-detection", "skill-extraction", "false-section"]
-    }
-  ]
+    "session_id": "sess_1791000710_cc4f86",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
