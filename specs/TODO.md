@@ -44,7 +44,7 @@ next_project_number: 335
 
 ### Extensions
 
-334 [RESEARCHING] — Fix two books-extension scaffold contract defects: the hard...
+334 [RESEARCHED] — Fix two books-extension scaffold contract defects: the hard...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
@@ -77,10 +77,11 @@ next_project_number: 335
 ## Tasks
 
 ### 334. Fix two books-extension scaffold contract defects: the hard implementation agent's artifacts shape and hand-rolled task lookups in both hard skills
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md]
 
 **Description**: Fix two books-extension scaffold contract defects that each fail a verify-deploy gate.
 

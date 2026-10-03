@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791065283_d98d41_334",
+  "dispatch_seq": 2,
+  "findings_count": 3,
+  "next_steps": "Run /plan 334 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md",
+      "summary": "Confirms both named lint defects (artifacts/status shape in books-implementation-hard-agent.md; hand-rolled task lookup in both books hard skills), identifies the exact copy-source fix for each from a passing sibling file, traces both to task 297's scaffold commits, and roots the broader completion-gate-passed-anyway question in task 297 Phase 8's Verification-Tier-full phase never actually invoking verify-deploy.sh (and task 326 reproducing the same gap on a second touch of the same files)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "lint-agent-contracts.sh Check F (object-shaped artifacts template) and Check E (terminal status presence) can both fail on the SAME file for the SAME reason: a Stage 7 that only references the artifacts/status shape in prose (e.g. \"same artifacts shape as the base agent\") rather than carrying a literal fenced `\"status\"`/`\"artifacts\"` JSON block. Fixing by copying the passing sibling's exact fenced block resolves both checks in one edit, since the template itself carries both a `\"status\": \"implemented\"` line and the object-shaped `artifacts` array.",
+      "category": "PATTERN",
+      "source_artifact": "specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint-agent-contracts", "Check F", "Check E", "artifacts-template", "terminal-status"]
+    },
+    {
+      "content": "A plan phase declaring `**Verification Tier**: full` is not mechanically tied to an actual verify-deploy.sh invocation anywhere in the authoring or execution path -- it is a documentation convention only. Two real plans (task 297's scaffold Phase 8, and the entirety of task 326) declared/implied full-tier completion while never naming verify-deploy.sh in their own task list, each substituting a self-chosen validator subset instead; nothing in validate-artifact.sh or any lint catches the mismatch between a declared `full` tier and the actual commands a phase's checklist runs. plan-format.md's own text defines `full` as \"the complete gate set for the repository\" but never names the concrete command (`bash .claude/scripts/verify-deploy.sh`) that satisfies it -- every other located full-tier precedent (tasks 165, 127, 184, 265, 250) independently converged on naming it explicitly.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verification-tier", "full-tier", "verify-deploy.sh", "plan-format", "completion-gate"]
+    }
+  ]
+}
