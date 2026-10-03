@@ -164,27 +164,29 @@ attention before this phase closes.
 
 ---
 
-### Phase 2: Defect 2a -- adopt the shared task-lookup helper in skill-books-implementation-hard [NOT STARTED]
+### Phase 2: Defect 2a -- adopt the shared task-lookup helper in skill-books-implementation-hard [COMPLETED]
 
 **Goal**: `skill-books-implementation-hard/SKILL.md`'s Stage 1 bash fence no longer hand-rolls
 `'.active_projects[] | select(.project_number == $num)'`, and instead sources `skill-base.sh` and
 calls `skill_validate_input`, reading the exported variables.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md` and
+- [x] Re-read `agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md` and
       locate the `### Stage 1: Input Validation` fence (hand-rolled lookup at line ~52).
-- [ ] Replace the fence body with the canonical pattern already used by
+      *(completed)*
+- [x] Replace the fence body with the canonical pattern already used by
       `agent-system/extensions/web/skills/skill-web-implementation/SKILL.md`'s Stage 1:
       `source .claude/scripts/skill-base.sh`, `skill_validate_input "$task_number"`, then
       `task_data="$TASK_DATA"`, `task_type="$TASK_TYPE"`, `status="$TASK_STATUS"`,
-      `project_name="$PROJECT_NAME"`, `description="$DESCRIPTION"`.
-- [ ] Drop the now-dead local `if [ -z "$task_data" ]` not-found branch and the local
+      `project_name="$PROJECT_NAME"`, `description="$DESCRIPTION"`. *(completed)*
+- [x] Drop the now-dead local `if [ -z "$task_data" ]` not-found branch and the local
       `completed`/`abandoned`/`expanded` terminal-state branch: `skill_validate_input` exits 1
       itself on both, so both are unreachable. Carry the web sibling's explanatory comment
-      verbatim in spirit so the removal reads as deliberate, not as a lost check.
-- [ ] Leave Stage 1.5 (the hard-mode cost note) and every later stage untouched; do not
-      restructure the file's stage numbering.
-- [ ] Confirm no task-number reference was introduced.
+      verbatim in spirit so the removal reads as deliberate, not as a lost check. *(completed)*
+- [x] Leave Stage 1.5 (the hard-mode cost note) and every later stage untouched; do not
+      restructure the file's stage numbering. *(completed: verified via grep of downstream
+      variable usage)*
+- [x] Confirm no task-number reference was introduced. *(completed)*
 
 **Timing**: 0.4 hours
 
