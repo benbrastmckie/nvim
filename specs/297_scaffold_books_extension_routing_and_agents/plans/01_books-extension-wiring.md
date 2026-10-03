@@ -1,7 +1,7 @@
 # Implementation Plan: Scaffold the books extension (wiring)
 
 - **Task**: 297 - Scaffold the books extension: manifest, routing, agents, skills, commands, rule and tests
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/297_scaffold_books_extension_routing_and_agents/reports/01_books-extension-scaffold-research.md

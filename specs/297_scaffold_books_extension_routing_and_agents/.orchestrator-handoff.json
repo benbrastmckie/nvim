@@ -1,20 +1,16 @@
 {
-  "status": "planned",
-  "dispatch_seq": 3,
-  "task_number": 297,
-  "phases_completed": 0,
-  "phases_total": 8,
-  "summary": "Planned the books extension wiring as 8 phases across 5 waves (10.5h estimate). Fixed design from the research report's Decisions: two routing blocks only (routing_agents, routing_agents_hard) keyed on books and books:certify (books:document deliberately omitted); four model:sonnet agents including --hard variants; six skills (4 lifecycle + 2 direct-execution); /book and /certify as separate commands; a books rule using the flattened book-directory layout. The plan adds one measured decision research left open: check-extension-docs.sh Rule E hard-fails on any bare *.sh token in commands/skills/agents/README/EXTENSION that is not in some provides.scripts, so the plan ships exactly one declared passthrough wrapper (books-certify.sh) plus its fixture test, which also makes the dispatch's deliverable-7 test requirement real. Also resolved: provides.context needs an on-disk navigation stub at context/project/books/README.md because the domain corpus is a separate dependent task. Four follow-ups recorded to spawn, not absorbed.",
-  "blockers": [],
-  "sorry_inventory": [],
-  "continuation_path": null,
+  "status": "implemented",
+  "dispatch_seq": 5,
+  "phase": "implement",
+  "summary": "All eight plan phases completed: the books extension (manifest, agents, skills, commands, rule, script, tests, docs) is fully scaffolded in the source store and passes every re-run gate (check-extension-docs.sh, validate-index.sh, validate-wiring.sh, the 7-row task-type detection table).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/297_scaffold_books_extension_routing_and_agents/plans/01_books-extension-wiring.md",
-      "summary": "Eight-phase, five-wave implementation plan for the books extension wiring in the agent-system source store."
+      "type": "summary",
+      "path": "specs/297_scaffold_books_extension_routing_and_agents/summaries/01_books-extension-scaffold-summary.md",
+      "summary": "All eight plan phases completed: the books extension is fully scaffolded in the source store and passes check-extension-docs.sh, validate-index.sh, validate-wiring.sh, and the 7-row task-type detection table."
     }
   ],
-  "session_id": "sess_1791040973_97d778_297",
-  "next_steps": "Run /implement 297 to execute the plan"
+  "phases_completed": 8,
+  "phases_total": 8,
+  "blockers": []
 }

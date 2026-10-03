@@ -11,8 +11,8 @@ next_project_number: 329
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,298,302,303,319,326 | 22,251,271,272,280,285,297,300 | core-agent-system, extensions, orchestrator |
+| 1 | 22,185,251,271,272,280,284,285,295,296,298,299,300,306,311,318,322,325,326,327 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,319 | 22,251,271,272,280,285,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,285,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
@@ -42,10 +42,9 @@ next_project_number: 329
 
 ### Extensions
 
-297 [PLANNED] — Scaffold the books extension: manifest, four-block routing,...
-  └─ 298 [NOT STARTED] — Author the books extension context corpus under...
-  └─ 326 [NOT STARTED] — Add a books verification tier at implement dispatch: the...
-327 [PLANNED] — Repair the extension lifecycle hook mechanism: broken...
+298 [NOT STARTED] — Author the books extension context corpus under...
+326 [NOT STARTED] — Add a books verification tier at implement dispatch: the...
+327 [IMPLEMENTING] — Repair the extension lifecycle hook mechanism: broken...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -148,7 +147,7 @@ Both halves are in scope, and the test corpus is a first-class target rather tha
 
 ### 327. Repair the extension lifecycle hook mechanism: broken resolver schema, absent return-code channel, uninvoked verification stage
 - **Effort**: 1-3 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -1615,12 +1614,13 @@ never a task number (`rules/no-task-references-in-deliverables.md`).
 
 ### 297. Scaffold the books extension: manifest, four-block routing, agents, skills, commands, rule and tests
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [297_scaffold_books_extension_routing_and_agents/reports/01_books-extension-scaffold-research.md]
 - **Plan**: [297_scaffold_books_extension_routing_and_agents/plans/01_books-extension-wiring.md]
+- **Summary**: [297_scaffold_books_extension_routing_and_agents/summaries/01_books-extension-scaffold-summary.md]
 
 **Description**: Build a new `books` extension in the agent-system source store at `agent-system/extensions/books/`, providing the `books` task type for authoring, certifying and documenting **lean books** as that standard is defined in the Logos/Verification repository.
 

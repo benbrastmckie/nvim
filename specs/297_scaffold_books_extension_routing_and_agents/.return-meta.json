@@ -1,11 +1,79 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
-  "agent_type": "general-implementation-agent",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/297_scaffold_books_extension_routing_and_agents/summaries/01_books-extension-scaffold-summary.md",
+      "summary": "All eight plan phases completed: the books extension (manifest, two-block routing, four sonnet agents with --hard variants, six skills, /book and /certify commands, the flattened-layout books rule, one declared passthrough script with a 9-case fixture suite, and the four registration/doc files) is fully scaffolded in the source store and passes check-extension-docs.sh, validate-index.sh, validate-wiring.sh, and the 7-row task-type detection table."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Scaffolded the complete books extension (manifest, agents, skills, commands, rule, script, tests, and docs) in agent-system/extensions/books/, re-verifying the landed/unlanded boundary in the Logos/Verification repository and the task-type-detection table before writing any command or rule text."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/agents/books-research-agent.md",
+    "agent-system/extensions/books/agents/books-implementation-agent.md",
+    "agent-system/extensions/books/agents/books-research-hard-agent.md",
+    "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+    "agent-system/extensions/books/skills/skill-books-research/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-implementation/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-research-hard/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-build/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-certify/SKILL.md",
+    "agent-system/extensions/books/rules/books.md",
+    "agent-system/extensions/books/scripts/books-certify.sh",
+    "agent-system/extensions/books/scripts/tests/test-books-certify.sh",
+    "agent-system/extensions/books/commands/book.md",
+    "agent-system/extensions/books/commands/certify.md",
+    "agent-system/extensions/books/EXTENSION.md",
+    "agent-system/extensions/books/README.md",
+    "agent-system/extensions/books/index-entries.json",
+    "agent-system/extensions/books/opencode-agents.json",
+    "agent-system/extensions/books/context/project/books/README.md",
+    "specs/297_scaffold_books_extension_routing_and_agents/plans/01_books-extension-wiring.md",
+    "specs/297_scaffold_books_extension_routing_and_agents/progress/phase-8-progress.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When sourcing agent-system/extensions/core/scripts/lib/task-type-detect.sh's detect_task_type for a new extension's keyword_overrides, pass the real agent-system/extensions directory as the third argument (not the default .claude/extensions) to test against the extension's source-store manifest before it is ever deployed: `detect_task_type \"$desc\" specs/state.json agent-system/extensions`. Step 1 strong anchors (meta and lean4) resolve before any extension's keyword_overrides is ever read, and are structural: a lean4 strong anchor (the regex \\.lean\\b or the literals mathlib/lean4/mathlib4) captures a task unconditionally regardless of what a later-loaded extension declares. Step 2's keyword_overrides scan is alphabetical-directory-order first-match-wins and final (never remapped by step 5's alias pass), so a new extension sorting early alphabetically scans before most others and an over-broad token risks capturing their tasks.",
+      "category": "PATTERN",
+      "source_artifact": "specs/297_scaffold_books_extension_routing_and_agents/summaries/01_books-extension-scaffold-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "task-type-detect",
+        "keyword_overrides",
+        "strong-anchor",
+        "detect_task_type",
+        "extension-authoring"
+      ]
+    },
+    {
+      "content": "check-extension-docs.sh refuses to run from the agent-system source-store path (it resolves ../.. to a bogus repo root from inside extensions/core/scripts/) -- it must be invoked as the already-deployed .claude/scripts/check-extension-docs.sh (or .opencode/scripts/ equivalent) copy, confirmed by the script's own error message pointing at this. The same applies to validate-index.sh and validate-wiring.sh when checking a newly-authored, not-yet-deployed extension: run the deployed copies even though the extension itself lives only in the source store; an uninstalled extension produces INFO/WARN (not FAIL) for its routing targets, which is the expected, non-blocking signal.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/297_scaffold_books_extension_routing_and_agents/summaries/01_books-extension-scaffold-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "check-extension-docs",
+        "deployed-tree",
+        "source-store",
+        "validate-wiring",
+        "validate-index"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791040973_97d778",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }
