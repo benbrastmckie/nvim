@@ -151,6 +151,51 @@ Run `lake build`, `books-tool validate`/`check`, and (when the plan's scope reac
 graph-wide certification) the certify driver under `books/scripts/` (`--check`) over every book
 touched by this task.
 
+**Advisory `--gate` tier (opt-in — read `gate_flag` from the delegation context)**:
+
+**The gate condition is this step's literal first line**: if `gate_flag` is not `true`, do
+nothing — no invocation, no `gate` block, no runtime cost — and skip the rest of this step
+entirely. This step exists to run the cheap intermediate verification tier when — and only
+when — the caller opted in. `lake build` above invokes neither the layer-import rule, nor the
+certifier, nor the Comparator rooms, so a green build says nothing about layer discipline; this
+tier is what sits between that build and the fail-closed full gate.
+
+```bash
+if [ "${gate_flag:-false}" = "true" ]; then
+  gate_json=$(bash .claude/scripts/books-gate.sh --json)
+fi
+```
+
+`books-gate.sh` always exits 0 in its advisory role, so the exit code carries no verdict; read
+the JSON. Copy the object it emits verbatim into `.return-meta.json`'s `gate` block (field
+tables: `@.claude/context/formats/return-metadata-file.md`'s `### gate (optional)` section).
+Omit the `gate` block entirely when `gate_flag` was not `true` — there is no `"ran": false`
+"not requested" record.
+
+**ADVISORY ONLY. This finding never blocks a dispatch, never fails one, and never downgrades
+status.** Whatever `layer_lint.status` or `books_meta_closure.status` it carries, it MUST NOT set
+`verification_passed` to `false`, MUST NOT set `status` to `partial`, MUST NOT set
+`requires_user_review`, and MUST NOT be added to this file's own verification-failure
+enumeration. This wording is placed here, in the step's own text, precisely so a later editor
+does not fold this step into that enumeration. The flag ADDS a cheap tier; it weakens, shortcuts
+and quietens nothing — every existing gate stays fail-closed by design.
+
+Read `layer_lint.status` carefully: `pass_vacuous` is **not** a pass. It means the lint reported
+no violations while matching 0 of `rules_total` rules — nothing was actually checked. Name a
+`pass_vacuous`, `violations` or `rule_set_error` outcome prominently (a dedicated section, not a
+buried line) in both the implementation summary artifact and the returned brief text summary.
+`lint_unavailable` and `provider_absent` are ordinary, expected outcomes in a repository without
+the books tooling: record them, do not escalate them.
+
+Record concrete promotion-to-hard-gate criteria in the implementation summary (N consecutive
+clean non-vacuous runs across M distinct package roots with zero `lint_unavailable`/
+`rule_set_error`/`usage_error` outcomes, plus a measured p95 runtime under an agreed budget), so
+a later decision to promote this tier from advisory to blocking has evidence rather than vibes.
+
+Gate-tier background — plain pointers, read on demand, never eager imports:
+`context/project/books/domain/gate-tiers.md` (what each tier does and does not check) and
+`context/project/books/tools/certify-guide.md` (what a green certify result certifies).
+
 ### Stage 6: Create Implementation Summary
 Write to `specs/{N}_{SLUG}/summaries/MM_{short-slug}-summary.md`. Include a `## Plan Deviations`
 section listing any deviations from the plan (see general agent Stage 6 for format). Use

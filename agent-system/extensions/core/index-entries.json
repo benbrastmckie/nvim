@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 772,
+      "line_count": 842,
       "keywords": [
         "format",
         "metadata",
@@ -1410,7 +1410,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 630,
+      "line_count": 661,
       "keywords": [
         "reference",
         "state",
@@ -1911,7 +1911,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 542,
+      "line_count": 552,
       "keywords": [
         "standards",
         "status",
@@ -2660,7 +2660,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 1796,
+      "line_count": 1795,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3411,7 +3411,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Marker syntax and extraction procedure for mode/branch-gated sections in skill and command bodies -- paired branch-gated:begin/end markers, the imperative pointer test, path selection, and the lint that enforces it",
-      "line_count": 215,
+      "line_count": 218,
       "keywords": [
         "branch-gated",
         "mode-gated",

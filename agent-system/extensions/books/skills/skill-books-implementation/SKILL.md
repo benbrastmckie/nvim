@@ -51,7 +51,9 @@ Follow `@.claude/context/patterns/lit-stage4a-flow.md` in full to resolve `--lit
 preconditions: `lit_flag`, `description`, `orchestrator_mode` (default `"false"` when unset).
 
 ### Stage 4: Prepare Delegation Context
-Include task_context, plan_path, metadata_file_path. If `memory_context` and/or `lit_context`
+Include task_context, plan_path, metadata_file_path, and `gate_flag` (forwarded unchanged from
+the dispatch context, defaulting to `false` when absent — the advisory gate tier is opt-in and
+this skill never decides it). If `memory_context` and/or `lit_context`
 from Stage 4a are non-empty, include them in the prompt (memory context first, then literature
 briefing). Do NOT inject an empty block for either.
 
@@ -77,6 +79,52 @@ subagent or inline (Stage 5b). Do NOT skip these stages for any reason.
 
 ### Stage 6: Parse Subagent Return
 Read the metadata file from `specs/{N}_{SLUG}/.return-meta.json`, including `memory_candidates`.
+
+---
+
+### Stage 6d: Advisory Gate Tier Surface (Read from Metadata)
+
+Read the agent-recorded `gate` block, if any, from metadata and surface it. The gate invocation
+itself was performed by the agent in its Stage 5 Final Verification — this stage reads that
+recorded result and MUST NOT re-run it, per
+`@.claude/context/standards/postflight-tool-restrictions.md` and this skill's own
+"MUST NOT (Postflight Boundary)" section below. This stage does not invoke `books-gate.sh`, does
+not run a build, and does not grep source.
+
+```bash
+gate_ran=$(jq -r '.gate.ran // false' "$metadata_file" 2>/dev/null)
+gate_lint_status=$(jq -r '.gate.layer_lint.status // ""' "$metadata_file" 2>/dev/null)
+gate_rules_matched=$(jq -r '.gate.layer_lint.rules_matched // 0' "$metadata_file" 2>/dev/null)
+gate_rules_total=$(jq -r '.gate.layer_lint.rules_total // 0' "$metadata_file" 2>/dev/null)
+gate_violation_count=$(jq -r '.gate.layer_lint.violation_count // 0' "$metadata_file" 2>/dev/null)
+gate_closure_status=$(jq -r '.gate.books_meta_closure.status // ""' "$metadata_file" 2>/dev/null)
+
+if [ "$gate_ran" = "false" ] && [ -z "$gate_lint_status" ]; then
+    echo "Stage 6d: INFO — no gate block recorded (--gate not requested, or the agent stopped before invocation); proceeding"
+elif [ "$gate_lint_status" = "pass" ] && [ "$gate_closure_status" = "pass" ]; then
+    echo "Stage 6d: Advisory gate tier PASS — layer_lint=pass (${gate_rules_matched}/${gate_rules_total} rules matched), books_meta_closure=pass"
+else
+    echo "Stage 6d: *** ADVISORY GATE FINDING ***"
+    echo "  layer_lint.status: ${gate_lint_status} (rules matched: ${gate_rules_matched}/${gate_rules_total}, violations: ${gate_violation_count})"
+    echo "  books_meta_closure.status: ${gate_closure_status}"
+    if [ "$gate_lint_status" = "pass_vacuous" ]; then
+        echo "  NOTE: pass_vacuous is NOT a pass — the lint reported no violations while matching 0 rules, so nothing was actually checked."
+    fi
+    echo "  This is ADVISORY ONLY — completion is proceeding regardless. See the implementation"
+    echo "  summary's gate section for full detail."
+fi
+```
+
+**Asymmetry note (deliberate, not an omission)**: unlike a `compliance_check == "failed"` branch,
+which sets `status="partial"`, this stage MUST NOT assign `status` on any `gate` status, however
+severe. The tier is advisory-only by binding design decision — see `### gate (optional)` in
+`@.claude/context/formats/return-metadata-file.md`. It ADDS a cheap intermediate tier below the
+existing fail-closed one; it relaxes nothing.
+
+Gate-tier background — plain pointers, read on demand, never eager imports:
+`context/project/books/domain/gate-tiers.md` and
+`context/project/books/tools/certify-guide.md`.
+
 
 ### Stage 7, 7a, 8, 8a, 9: Postflight Status, Memory Candidates, Artifact Linking, Notify, Cleanup
 

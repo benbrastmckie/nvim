@@ -376,31 +376,33 @@ leaving it uncovered.
 
 ---
 
-### Phase 5: Books agent and skill binding [NOT STARTED]
+### Phase 5: Books agent and skill binding [COMPLETED]
 
 **Goal**: an implement dispatch carrying `gate_flag: true` runs the gate in the agent and the
 skill surfaces the finding read-only from metadata, with no status effect on any verdict.
 
 **Tasks**:
-- [ ] `books-implementation-agent.md`: add a gate step to `### Stage 5: Final Verification`, with
+- [x] `books-implementation-agent.md`: add a gate step to `### Stage 5: Final Verification`, with
       the gate condition as the step's **literal first line** (copying the lean agent's own
       wording for reading `gate_flag` from the delegation context), the invocation of
       `books-gate.sh --json`, the obligation to copy the result into `.return-meta.json`'s `gate`
       block, and the advisory MUST-NOTs stated **inside the step**.
-- [ ] `books-implementation-hard-agent.md`: the same step in its own `### Stage 5: Final
+- [x] `books-implementation-hard-agent.md`: the same step in its own `### Stage 5: Final
       Verification`.
-- [ ] `skill-books-implementation/SKILL.md`: add `gate_flag` to Stage 4's delegation context
+- [x] `skill-books-implementation/SKILL.md`: add `gate_flag` to Stage 4's delegation context
       (forwarded unchanged, defaulting to `false` when absent) and to the Stage 5 bullet list; add
       a new read-only surfacing stage after Stage 6 (Parse Subagent Return), copied from the lean
       skill's Stage 6c **including its asymmetry note** and its absent-block INFO-line-and-proceed
-      path.
-- [ ] `skill-books-implementation-hard/SKILL.md`: the same three additions.
-- [ ] Books-awareness via plain backticked pointers only — `context/project/books/domain/gate-tiers.md`
+      path. *(deviation: altered — neither books skill has a Stage 5 bullet list; `gate_flag` is
+      threaded via Stage 4's delegation context, their only field list. New stage added as
+      Stage 6d.)*
+- [x] `skill-books-implementation-hard/SKILL.md`: the same three additions.
+- [x] Books-awareness via plain backticked pointers only — `context/project/books/domain/gate-tiers.md`
       and `context/project/books/tools/certify-guide.md` — never eager imports, and write no file
       under `context/project/books/`.
-- [ ] Respect the postflight boundary: the gate runs in the agent and is only *read* from metadata
+- [x] Respect the postflight boundary: the gate runs in the agent and is only *read* from metadata
       by the skill. The skill must not invoke the wrapper, run a build, or grep source.
-- [ ] Name only `books-gate.sh` in these four files; never the consuming repository's lint script.
+- [x] Name only `books-gate.sh` in these four files; never the consuming repository's lint script.
 
 **Timing**: 1.5 hours
 
