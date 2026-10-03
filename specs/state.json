@@ -363,9 +363,15 @@
           "path": "specs/089_mode_gate_literature_and_distill_skills/plans/01_mode-gate-literature-distill.md",
           "type": "plan",
           "summary": "6 phases, 4 dependency waves, 16 extractions, measured-reduction and acceptance-walk gating in the final phase."
+        },
+        {
+          "path": "specs/089_mode_gate_literature_and_distill_skills/summaries/01_mode-gate-literature-distill-summary.md",
+          "type": "summary",
+          "summary": "Full measured-reduction report, acceptance walk, decisions, and plan deviations."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Extracted skill-literature/SKILL.md's seven Mode: sections and skill-distill/SKILL.md's nine above-bar Sub-Mode: sections into sixteen new context/patterns files per the mode-gated-section-loading convention, reducing skill-literature/SKILL.md from 100,460 B to 17,386 B (82.7%) and skill-distill/SKILL.md from 93,044 B to 30,289 B (67.4%). Corrected the task's distill premise (the named '## Auto Distill Complete' 43,254 B section is a fence-interior fake heading, not a real section) and fixed a scoped-commit-boundary lint regression the file move introduced. Full deploy, gate set, and a 21-entry acceptance walk (9 literature modes + 12 distill sub-modes) all passed."
     },
     {
       "project_number": 127,

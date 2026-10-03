@@ -40,22 +40,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/089_mode_gate_literature_and_distill_skills/summaries/01_mode-gate-literature-distill-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["mode-gated-section-loading", "fence-interior-heading-hazard", "heading-promotion", "round-trip-verification", "content-extraction"]
+      "suggested_keywords": [
+        "mode-gated-section-loading",
+        "fence-interior-heading-hazard",
+        "heading-promotion",
+        "round-trip-verification",
+        "content-extraction"
+      ]
     },
     {
       "content": "A file-level allowlist in a lint keyed on a literal source file PATH (e.g. lint-scoped-commit-boundary.sh's EXCLUDED_FILES array, each entry a path + inline reason) silently stops covering its documented exception the moment that content is relocated by a refactor (a mode-gated-section extraction, a file split/rename) -- the lint then flags previously-exempted, unchanged content as a brand-new violation. When moving content out of a file that carries a path-keyed allowlist/exemption entry anywhere in the repo, grep the destination content for markers that would make it independently identifiable (a distinctive comment, a known pattern) and check whether any OTHER file's allowlist/exemption references the OLD path by name -- then move the entry, don't just leave a now-silently-broken exemption. Caught in task 89 only because the post-move full gate run (verify-deploy.sh) was actually executed before closing the task, not skipped as 'should be fine, it's just a move'.",
       "category": "PATTERN",
       "source_artifact": "specs/089_mode_gate_literature_and_distill_skills/summaries/01_mode-gate-literature-distill-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["path-keyed-allowlist", "lint-regression", "content-relocation", "scoped-commit-boundary", "gate-verification"]
+      "suggested_keywords": [
+        "path-keyed-allowlist",
+        "lint-regression",
+        "content-relocation",
+        "scoped-commit-boundary",
+        "gate-verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791000710_cc4f86",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

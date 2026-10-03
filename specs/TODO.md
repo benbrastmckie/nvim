@@ -4114,6 +4114,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 - **Dependencies**: Task 87
 - **Research**: [089_mode_gate_literature_and_distill_skills/reports/01_mode-gate-literature-distill.md]
 - **Plan**: [089_mode_gate_literature_and_distill_skills/plans/01_mode-gate-literature-distill.md]
+- **Summary**: [089_mode_gate_literature_and_distill_skills/summaries/01_mode-gate-literature-distill-summary.md]
 
 **Description**: Apply the mode-gated section convention to the two remaining large instances, after the pilot proves it.
 
