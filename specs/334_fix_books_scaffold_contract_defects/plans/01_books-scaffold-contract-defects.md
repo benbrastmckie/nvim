@@ -215,26 +215,26 @@ one when this phase lands alone.
 
 ---
 
-### Phase 3: Defect 2b -- adopt the shared task-lookup helper in skill-books-research-hard [NOT STARTED]
+### Phase 3: Defect 2b -- adopt the shared task-lookup helper in skill-books-research-hard [COMPLETED]
 
 **Goal**: `skill-books-research-hard/SKILL.md`'s Stage 1 bash fence no longer hand-rolls the
 narrow full-record lookup, applying the same canonical `skill_validate_input` pattern as Phase 2.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/books/skills/skill-books-research-hard/SKILL.md` and locate
-      the `### Stage 1: Input Validation` fence (hand-rolled lookup at line ~43).
-- [ ] Apply the same replacement as Phase 2: `source .claude/scripts/skill-base.sh`,
+- [x] Re-read `agent-system/extensions/books/skills/skill-books-research-hard/SKILL.md` and locate
+      the `### Stage 1: Input Validation` fence (hand-rolled lookup at line ~43). *(completed)*
+- [x] Apply the same replacement as Phase 2: `source .claude/scripts/skill-base.sh`,
       `skill_validate_input "$task_number"`, then read `TASK_DATA`/`TASK_TYPE`/`TASK_STATUS`/
-      `PROJECT_NAME`/`DESCRIPTION` into the local names the later stages already use.
-- [ ] Note the one asymmetry with Phase 2 and let it stand deliberately: this file's hand-rolled
+      `PROJECT_NAME`/`DESCRIPTION` into the local names the later stages already use. *(completed)*
+- [x] Note the one asymmetry with Phase 2 and let it stand deliberately: this file's hand-rolled
       block has **no** terminal-state check today, so `skill_validate_input` adds one. That is an
       intentional tightening consistent with every other skill-layer call site and with the
       impl-hard sibling -- record it in the commit message body so it is not mistaken for an
-      accidental behavior change.
-- [ ] Leave Stage 1.5 and the later `Stage 2 + Stage 3` block (which already sources
+      accidental behavior change. *(completed: recorded in commit message body)*
+- [x] Leave Stage 1.5 and the later `Stage 2 + Stage 3` block (which already sources
       `skill-base.sh`) untouched; sourcing it twice is idempotent and harmless, so do not
-      restructure to deduplicate.
-- [ ] Confirm no task-number reference was introduced.
+      restructure to deduplicate. *(completed)*
+- [x] Confirm no task-number reference was introduced. *(completed)*
 
 **Timing**: 0.4 hours
 

@@ -39,18 +39,18 @@ This skill activates when:
 ### Stage 1: Input Validation
 
 ```bash
-task_data=$(jq -r --argjson num "$task_number" \
-  '.active_projects[] | select(.project_number == $num)' \
-  specs/state.json)
+# Lookup task (skill_validate_input exits 1 with its own not-found/terminal-state message;
+# this is a newly-inherited terminal-state check -- the prior hand-rolled lookup here had none
+# -- an intentional tightening consistent with every other skill-layer call site)
+source .claude/scripts/skill-base.sh
+skill_validate_input "$task_number"
+task_data="$TASK_DATA"
 
-if [ -z "$task_data" ]; then
-  return error "Task $task_number not found"
-fi
-
-task_type=$(echo "$task_data" | jq -r '.task_type // "general"')
-status=$(echo "$task_data" | jq -r '.status')
-project_name=$(echo "$task_data" | jq -r '.project_name')
-description=$(echo "$task_data" | jq -r '.description // ""')
+# Extract fields
+task_type="$TASK_TYPE"
+status="$TASK_STATUS"
+project_name="$PROJECT_NAME"
+description="$DESCRIPTION"
 ```
 
 ### Stage 1.5: Hard-Mode Cost Note
