@@ -460,33 +460,42 @@ behavior list above is the contract, the count is not.
 
 ---
 
-### Phase 6: `--lean-tree <pid>:<starttime>` targeted-termination mode [NOT STARTED]
+### Phase 6: `--lean-tree <pid>:<starttime>` targeted-termination mode [COMPLETED]
 
 **Goal**: Add a single-tree, re-verifying termination entry point as an explicit early-return
 branch in `main()`, preserving the five-passes-always-run invariant for every other invocation.
 
 **Tasks**:
-- [ ] Extend `main()`'s argument loop with a value-taking `--lean-tree=<pid>:<starttime>` arm
+- [x] Extend `main()`'s argument loop with a value-taking `--lean-tree=<pid>:<starttime>` arm
       (the `=`-joined form, chosen over a following-arg convention because the existing loop is a
       flat `for arg in "$@"` that cannot consume a second token; document the choice inline).
-      Reject a malformed value loudly with a nonzero exit, never a silent no-op.
-- [ ] Add `run_lean_tree_targeted_termination()`: call `detect_lean_candidate_trees()`, filter to
+      Reject a malformed value loudly with a nonzero exit, never a silent no-op. *(completed:
+      whole-string regex validation, not a glob case pattern, to reject a colon-less value that a
+      glob-then-split approach would silently misparse)*
+- [x] Add `run_lean_tree_targeted_termination()`: call `detect_lean_candidate_trees()`, filter to
       the one tree whose root pid AND starttime both match, and re-verify (i) the tree still
       exists with that starttime, (ii) it is still idle past `LEAN_LSP_IDLE_THRESHOLD_MIN`, and
       (iii) its reclaimable figure is still at/above `LEAN_LSP_MEM_FLOOR_MB`. Any failed check
-      logs an explicit named reason and returns without signaling anything.
-- [ ] Reuse `run_lean_pass()`'s existing ordered workers -> server -> root sequence and
+      logs an explicit named reason and returns without signaling anything. *(completed)*
+- [x] Reuse `run_lean_pass()`'s existing ordered workers -> server -> root sequence and
       `terminate_pid()` for the one tree -- do not duplicate the ordering loop. Extract the loop
       into a small shared helper if reuse requires it, keeping the ordering guarantee textually
-      in one place.
-- [ ] Require `--force` for this mode: `--lean-tree` without `--force` reports what it WOULD do
-      and exits 0, terminating nothing.
-- [ ] In `main()`, place the `--lean-tree` dispatch as an early return AFTER
+      in one place. *(completed: terminate_lean_tree_ordered(), used by both run_lean_pass()'s
+      force loop and run_lean_tree_targeted_termination())*
+- [x] Require `--force` for this mode: `--lean-tree` without `--force` reports what it WOULD do
+      and exits 0, terminating nothing. *(completed)*
+- [x] In `main()`, place the `--lean-tree` dispatch as an early return AFTER
       `validate_cgroup_support` but BEFORE `run_claude_pass`, with a comment explaining why it is
       not a sixth pass and pointing at `systemd/claude-refresh.service`'s header ruling.
-- [ ] Clear the tree's `prompted` marker in the state file once termination is attempted, so a
-      respawned tree starts clean.
-- [ ] Extend `print_help()` with `--lean-tree` and run `shellcheck`.
+      *(completed; systemd/claude-refresh.service's own header text is updated in Phase 9)*
+- [x] Clear the tree's `prompted` marker in the state file once termination is attempted, so a
+      respawned tree starts clean. *(completed: also clears snooze_until)*
+- [x] Extend `print_help()` with `--lean-tree` and run `shellcheck`. *(completed: clean, same two
+      pre-existing warnings; full suite unchanged at 143/0; manual verification: two --dry-run
+      runs byte-identical, --lean-tree=99999:1 --force against an empty fixture logs a named
+      refusal and exits 0 with nothing signaled, a malformed value exits 1, --lean-tree without
+      --force previews only, and a live eligible-tree end-to-end run terminates correctly and
+      clears prompted/snooze_until)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "--lean-tree <pid>:<starttime> targeted-termination mode",
+  "started_at": "2026-10-02T02:30:00Z",
+  "last_updated": "2026-10-02T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "main() --lean-tree=<pid>:<starttime> argument arm with validation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "terminate_lean_tree_ordered() shared helper, reused by run_lean_pass()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "run_lean_tree_targeted_termination() with identity/idle/floor re-verification", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "main() early-return dispatch before the five-pass sequence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 5, "description": "print_help() update, shellcheck, suite, manual end-to-end verification", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "shellcheck": "clean, two pre-existing warnings unchanged",
+    "suite": "143 passed / 0 failed (unchanged)",
+    "manual": "two --dry-run runs byte-identical; --lean-tree=99999:1 --force against empty fixture logs named refusal, exits 0, nothing signaled; malformed value exits 1; --lean-tree without --force previews only exits 0; live eligible-tree end-to-end run terminates (SIGTERM then SIGKILL observed in kill log) and clears prompted/snooze_until from state"
+  }
+}

@@ -948,6 +948,7 @@ terminate_pid() {
 
 print_help() {
     echo "Usage: $0 [--force|--dry-run]"
+    echo "       $0 --lean-tree=<pid>:<starttime> [--force]"
     echo ""
     echo "Runs five passes every invocation, in this fixed order: Claude-process reclamation,"
     echo "Lean LSP process-tree reclamation, orphaned build-waiter poll-loop reaping, zombie"
@@ -955,15 +956,26 @@ print_help() {
     echo "only under --force; the build-waiter pass terminates whenever --dry-run is not set,"
     echo "unaffected by --force (age-threshold-only gate); the last two never terminate anything."
     echo ""
+    echo "--lean-tree=<pid>:<starttime> is a SEPARATE, early-return invocation mode -- not a sixth"
+    echo "pass -- that re-verifies a single Lean tree's identity, idleness, and memory-floor"
+    echo "eligibility before terminating it. Requires --force to actually terminate; without"
+    echo "--force it reports what it would do and exits 0, terminating nothing."
+    echo ""
     echo "Options:"
-    echo "  --force      Skip confirmation prompt and terminate immediately"
-    echo "  --dry-run    Preview mode (identical to the no-flag path, with a DRY RUN banner)"
-    echo "  (none)       Show status and exit (for use with /refresh command)"
+    echo "  --force                        Skip confirmation prompt and terminate immediately"
+    echo "  --dry-run                      Preview mode (identical to the no-flag path, with a"
+    echo "                                 DRY RUN banner)"
+    echo "  --lean-tree=<pid>:<starttime>  Re-verify and (with --force) terminate one specific"
+    echo "                                 Lean tree by root pid and /proc/PID/stat starttime"
+    echo "  (none)                         Show status and exit (for use with /refresh command)"
     echo ""
     echo "Environment:"
     echo "  LEAN_LSP_IDLE_THRESHOLD_MIN   Idle-reclamation threshold in minutes for the"
     echo "                                separately-gated Lean LSP process-tree pass"
     echo "                                (default: 240)"
+    echo "  LEAN_LSP_MEM_FLOOR_MB         Memory-floor cost gate in MB: an idle Lean tree is"
+    echo "                                reclamation-eligible only when its reclaimable memory"
+    echo "                                is at/above this floor (default: 1024)"
     echo "  BUILD_WAITER_REAP_MIN         Idle-reclamation threshold in minutes for the"
     echo "                                orphaned build-waiter poll-loop pass (default: 60)"
     echo "  BUILD_WAITER_CEILING_MIN      Secondary ceiling in minutes for a build-waiter whose"
@@ -1143,6 +1155,49 @@ format_idle_minutes() {
     fi
 }
 
+# --- Ordered single-tree termination: workers -> server -> root ---
+# Terminates ONE Lean tree in the fixed order workers -> server -> `lake serve` root, via the
+# shared terminate_pid() escalation helper. Extracted out of run_lean_pass()'s force-mode loop so
+# the ordering guarantee lives in exactly ONE place, textually, reused by both run_lean_pass()
+# (one call per eligible tree, below) and run_lean_tree_targeted_termination() (the `--lean-tree`
+# entry point) for its single re-verified tree. Sets two globals as its output rather than
+# echoing -- a caller needs two integers back, and `$(...)` would fork a subshell, losing them:
+#   LEAN_TREE_TERM_COUNT  -- processes successfully terminated (graceful or forced) this call
+#   LEAN_TREE_FAIL_COUNT  -- processes that failed to terminate (permission denied, etc.)
+# "Already gone" (terminate_pid()'s return code 2) is counted in neither, matching every other
+# termination loop in this file. Both globals are reset at the start of every call.
+LEAN_TREE_TERM_COUNT=0
+LEAN_TREE_FAIL_COUNT=0
+terminate_lean_tree_ordered() {
+    local root_pid="$1" server_pid="$2" worker_pids="$3"
+    LEAN_TREE_TERM_COUNT=0
+    LEAN_TREE_FAIL_COUNT=0
+
+    local -a ordered_pids=()
+    local wpid
+    for wpid in $worker_pids; do
+        ordered_pids+=("$wpid")
+    done
+    if [ -n "$server_pid" ]; then
+        ordered_pids+=("$server_pid")
+    fi
+    ordered_pids+=("$root_pid")
+
+    local pid rc
+    for pid in "${ordered_pids[@]}"; do
+        if terminate_pid "$pid"; then
+            rc=0
+        else
+            rc=$?
+        fi
+        case "$rc" in
+            0) LEAN_TREE_TERM_COUNT=$((LEAN_TREE_TERM_COUNT + 1)) ;;
+            1) LEAN_TREE_FAIL_COUNT=$((LEAN_TREE_FAIL_COUNT + 1)) ;;
+            2) ;; # already gone; not counted
+        esac
+    done
+}
+
 run_lean_pass() {
     local FORCE="$1"
     local DRY_RUN="$2"
@@ -1232,29 +1287,9 @@ run_lean_pass() {
     for ((i = 0; i < n_trees; i++)); do
         [ "${LEAN_TREE_ELIGIBLE[$i]}" = "1" ] || continue
 
-        local -a ordered_pids=()
-        local wpid
-        for wpid in ${LEAN_TREE_WORKER_PIDS[$i]}; do
-            ordered_pids+=("$wpid")
-        done
-        if [ -n "${LEAN_TREE_SERVER_PID[$i]}" ]; then
-            ordered_pids+=("${LEAN_TREE_SERVER_PID[$i]}")
-        fi
-        ordered_pids+=("${LEAN_TREE_ROOT_PID[$i]}")
-
-        local pid rc
-        for pid in "${ordered_pids[@]}"; do
-            if terminate_pid "$pid"; then
-                rc=0
-            else
-                rc=$?
-            fi
-            case "$rc" in
-                0) terminated=$((terminated + 1)) ;;
-                1) failed=$((failed + 1)) ;;
-                2) ;; # already gone; not counted
-            esac
-        done
+        terminate_lean_tree_ordered "${LEAN_TREE_ROOT_PID[$i]}" "${LEAN_TREE_SERVER_PID[$i]}" "${LEAN_TREE_WORKER_PIDS[$i]}"
+        terminated=$((terminated + LEAN_TREE_TERM_COUNT))
+        failed=$((failed + LEAN_TREE_FAIL_COUNT))
         eligible_reclaimed_kb=$((eligible_reclaimed_kb + LEAN_TREE_MEM_KB[i]))
     done
 
@@ -1264,6 +1299,81 @@ run_lean_pass() {
     echo "Terminated: $terminated processes"
     echo "Failed:     $failed processes"
     echo "Memory reclaimed: ~$(format_memory "$eligible_reclaimed_kb")"
+}
+
+# --- `--lean-tree` targeted termination: re-verifies identity/idleness/floor before terminating ---
+# Entry point for `--lean-tree=<pid>:<starttime> --force` (main()'s early-return branch, below).
+# Re-runs detect_lean_candidate_trees() -- a FRESH snapshot and a FRESH CPU-delta state read, NOT
+# a reuse of any earlier detection in this invocation, since the whole point of this function is
+# to catch a tree that changed between whenever it was found eligible (e.g. an hourly --dry-run
+# run, or a notify-send prompt launched from it) and this termination attempt -- and filters to
+# the single tree whose root pid matches the caller's target. Re-verifies, independently, every
+# condition that made a tree eligible in the first place:
+#   (i)   the tree still exists, with that EXACT starttime (catches the root pid having been
+#         reused by an unrelated process, or the tree having exited outright)
+#   (ii)  it is STILL idle past LEAN_LSP_IDLE_THRESHOLD_MIN (catches it having become active again
+#         -- a changed cputime resets the CPU-delta state machine's idle clock)
+#   (iii) its reclaimable figure is STILL at/above LEAN_LSP_MEM_FLOOR_MB (catches a legitimate
+#         reclaim having already happened, or growth pushing it newly over the floor the other way)
+# (ii) and (iii) are both re-derived from THIS fresh detection pass's own LEAN_TREE_ELIGIBLE,
+# never from any value the caller might have cached.
+# A failed check logs an explicit NAMED reason to stderr and returns 1 WITHOUT EVER calling
+# terminate_lean_tree_ordered() -- this function signals nothing on any refusal path. On success,
+# terminates via the shared terminate_lean_tree_ordered() helper (never a duplicated ordering
+# loop) and clears the tree's "prompted"/"snooze_until" markers (Phase 7's prompt-dedupe fields)
+# in the state file so a respawned tree starts with a clean prompt history.
+run_lean_tree_targeted_termination() {
+    local target_pid="$1" target_starttime="$2"
+
+    detect_lean_candidate_trees
+
+    local n_trees="${#LEAN_TREE_ROOT_PID[@]}"
+    local i found_idx=-1
+    for ((i = 0; i < n_trees; i++)); do
+        if [ "${LEAN_TREE_ROOT_PID[$i]}" = "$target_pid" ]; then
+            found_idx=$i
+            break
+        fi
+    done
+
+    if [ "$found_idx" -lt 0 ]; then
+        echo "REFUSED --lean-tree=${target_pid}:${target_starttime}: no live Lean tree with root pid $target_pid was found. Skipping -- nothing signaled." >&2
+        return 1
+    fi
+
+    # (i) starttime re-verification, independent of detection above: a reused pid could in
+    # principle have been re-classified as a DIFFERENT live "serve" row by this same detection
+    # pass, so this check reads /proc/PID/stat directly rather than trusting the match above.
+    local actual_stat actual_starttime
+    actual_stat=$(read_proc_stat_fields "$target_pid")
+    if [ -z "$actual_stat" ]; then
+        echo "REFUSED --lean-tree=${target_pid}:${target_starttime}: root pid $target_pid is no longer readable (vanished). Skipping -- nothing signaled." >&2
+        return 1
+    fi
+    IFS='|' read -r actual_starttime _ _ <<< "$actual_stat"
+    if [ "$actual_starttime" != "$target_starttime" ]; then
+        echo "REFUSED --lean-tree=${target_pid}:${target_starttime}: starttime mismatch (now $actual_starttime) -- pid $target_pid was reused by a different process. Skipping -- nothing signaled." >&2
+        return 1
+    fi
+
+    # (ii)+(iii): the cost gate, as re-evaluated by THIS fresh detection pass.
+    if [ "${LEAN_TREE_ELIGIBLE[$found_idx]}" != "1" ]; then
+        echo "REFUSED --lean-tree=${target_pid}:${target_starttime}: no longer eligible (idle_for=${LEAN_TREE_IDLE_MIN[$found_idx]}m, reclaimable=$(format_memory "${LEAN_TREE_MEM_KB[$found_idx]}")) -- became active, or dropped below the memory floor. Skipping -- nothing signaled." >&2
+        return 1
+    fi
+
+    terminate_lean_tree_ordered "${LEAN_TREE_ROOT_PID[$found_idx]}" "${LEAN_TREE_SERVER_PID[$found_idx]}" "${LEAN_TREE_WORKER_PIDS[$found_idx]}"
+    echo "Terminated Lean tree root pid $target_pid (starttime $target_starttime): $LEAN_TREE_TERM_COUNT terminated, $LEAN_TREE_FAIL_COUNT failed."
+
+    # Clear this tree's prompt-dedupe markers so a respawned tree (new root pid/starttime, a new
+    # key entirely) never inherits them, and so this exact key -- if somehow reused -- starts
+    # clean rather than carrying a stale snooze/prompted flag forward.
+    read_lean_tree_state
+    local key="${target_pid}:${target_starttime}"
+    LEAN_TREE_STATE_JSON=$(printf '%s' "$LEAN_TREE_STATE_JSON" | jq --arg k "$key" 'if has($k) then .[$k] |= del(.prompted, .snooze_until) else . end')
+    write_lean_tree_state
+
+    return 0
 }
 
 # --- Orphaned build-waiter poll-loop reaper: independently-gated, own snapshot ---
@@ -2062,6 +2172,7 @@ run_mcp_fanout_pass() {
 main() {
     local FORCE=false
     local DRY_RUN=false
+    local LEAN_TREE_TARGET=""
 
     for arg in "$@"; do
         case $arg in
@@ -2070,6 +2181,12 @@ main() {
                 ;;
             --dry-run)
                 DRY_RUN=true
+                ;;
+            --lean-tree=*)
+                # The `=`-joined form, chosen over a following-arg convention: this loop is a flat
+                # `for arg in "$@"` with no lookahead, so a value-taking flag must carry its value
+                # inline rather than consuming a second token.
+                LEAN_TREE_TARGET="${arg#--lean-tree=}"
                 ;;
             --help|-h)
                 print_help
@@ -2084,6 +2201,37 @@ main() {
     done
 
     validate_cgroup_support
+
+    # --lean-tree=<pid>:<starttime>: an explicit early-return invocation mode, dispatched AFTER
+    # validate_cgroup_support (the safety predicates still apply) but BEFORE the five-pass
+    # sequence below -- NEVER folded into that sequence as a sixth pass. See
+    # systemd/claude-refresh.service's "New-passes ruling" header comment, which documents that
+    # EVERY invocation runs all five passes unconditionally; this branch returns before ever
+    # reaching that sequence, so the ruling's safety argument is unaffected for every other
+    # invocation shape (no flag, --dry-run, --force).
+    if [ -n "$LEAN_TREE_TARGET" ]; then
+        # Whole-string regex, not a glob case pattern or a split-then-check: a glob like
+        # `[0-9]*:[0-9]*)` would accept a malformed value with no colon at all (both substring
+        # extractions below would then silently return the WHOLE string unchanged), so the
+        # well-formedness check must happen on the undivided value first.
+        if [[ ! "$LEAN_TREE_TARGET" =~ ^[0-9]+:[0-9]+$ ]]; then
+            echo "Error: --lean-tree requires <pid>:<starttime> (both numeric, colon-separated), got '$LEAN_TREE_TARGET'" >&2
+            exit 1
+        fi
+        local lt_pid="${LEAN_TREE_TARGET%%:*}"
+        local lt_starttime="${LEAN_TREE_TARGET#*:}"
+
+        if ! $FORCE; then
+            echo "Preview (no --force): would re-verify and terminate Lean tree root pid $lt_pid (starttime $lt_starttime) if it is still idle and still over the memory floor. Nothing terminated."
+            exit 0
+        fi
+
+        # A refusal (return 1) is a normal, logged outcome -- not a script failure -- so this
+        # exits 0 either way; the caller distinguishes outcomes from the stderr log line, not the
+        # exit code, matching terminate_pid()'s own "already gone" (rc=2) non-error precedent.
+        run_lean_tree_targeted_termination "$lt_pid" "$lt_starttime" || true
+        exit 0
+    fi
 
     # All five passes always run, in this order, regardless of what any of them find -- this is
     # the structural fix that makes the Lean pass (and every pass added since) reachable at all.
