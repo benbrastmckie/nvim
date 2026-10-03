@@ -336,45 +336,45 @@ from a literal human prompt, and mints nothing at all when the request is ambigu
 
 ---
 
-### Phase 4: Push guard hook + sanctioned wrapper [NOT STARTED]
+### Phase 4: Push guard hook + sanctioned wrapper [COMPLETED]
 
 **Goal**: The enforcement pair. A `PreToolUse` hook that blocks every un-granted `git push` (and
 every write to the grant/key paths), plus the explicit-argument wrapper that is the sanctioned
 path agents are told to use.
 
 **Tasks**:
-- [ ] Create `hooks/guard-git-push.sh`, registered on matcher `Bash|Write|Edit`, with a header
+- [x] Create `hooks/guard-git-push.sh`, registered on matcher `Bash|Write|Edit`, with a header
   documenting its two responsibilities and why they share one file (both derive their path
   constants from `push-grant-lib.sh`).
-- [ ] Responsibility A (`Bash`): build `COMMAND_SCAN` with the same quote/comment-stripping
+- [x] Responsibility A (`Bash`): build `COMMAND_SCAN` with the same quote/comment-stripping
   technique `guard-destructive-git.sh` uses (do not invent a second scheme; inherit and document
   its known blind spot symmetrically). Detect any `git push` invocation in any form. Extract
   remote, refspec and force flags from argv; when the command omits them, resolve them the way
   bare `git push` does (the current branch's configured upstream, else `origin` + current branch).
-- [ ] Order of checks, strictly: (1) is this a `git push`? (2) `pg_categorical_excluded` → `exit 2`
+- [x] Order of checks, strictly: (1) is this a `git push`? (2) `pg_categorical_excluded` → `exit 2`
   with the exclusion reason, never reaching grant lookup; (3) `pg_grant_consume` → on success
   `exit 0` (allow, grant consumed, audit written); (4) otherwise `exit 2` with a stderr message
   naming the reason (no grant / expired / wrong target / HEAD moved / bad HMAC / malformed) and
   the sanctioned path (`/please push <remote> <branch>`, then
   `bash .claude/scripts/git-push-granted.sh`).
-- [ ] Responsibility B (`Write`/`Edit`, and `Bash` commands whose argv or redirection targets the
+- [x] Responsibility B (`Write`/`Edit`, and `Bash` commands whose argv or redirection targets the
   grant dir or the key path): `exit 2` unconditionally — no grant, no snapshot, no override exempts
   a write to the grant store. Document explicitly that this closes the model's *write* channel for
   the matchers listed and that wiring any new write-capable tool requires revisiting the matcher
   list.
-- [ ] Block via `exit 2` + stderr, never `permissionDecision: deny` — the latter is
+- [x] Block via `exit 2` + stderr, never `permissionDecision: deny` — the latter is
   documented-buggy for allow-listed `Bash(git:*)` commands (GH #4669, #13214, #18312), as
   `guard-destructive-git.sh`'s own header records.
-- [ ] Create `scripts/git-push-granted.sh`: `--remote <name> --ref <branch-or-tag>
+- [x] Create `scripts/git-push-granted.sh`: `--remote <name> --ref <branch-or-tag>
   [--force-with-lease] [--tag] [--session <sid>] [--revoke] [--help]`. Shape it on
   `git-commit-scoped.sh`: `SCRIPT_DIR` resolution, `. lib/common.sh`,
   `PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"`, `. deploy-root-guard.sh`.
-- [ ] Wrapper semantics: refuse ambiguous or missing arguments rather than inferring them (the
+- [x] Wrapper semantics: refuse ambiguous or missing arguments rather than inferring them (the
   V2/V3/V4 precedent of refusing ambiguous input); run `pg_categorical_excluded` then
   `pg_grant_consume`; on success run the push with the exact flags the grant authorizes and no
   others; **fail CLOSED** on any lock/verify/read failure, with an explicit code comment stating
   this is a deliberate divergence from `git-commit-scoped.sh`'s fail-OPEN mutex behaviour and why.
-- [ ] `--revoke` deletes every live grant and exits 0 (used by `/merge` and `/tag` cancel paths).
+- [x] `--revoke` deletes every live grant and exits 0 (used by `/merge` and `/tag` cancel paths).
 
 **Timing**: 2 hours
 
