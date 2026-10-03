@@ -562,33 +562,51 @@ the footprint is materially larger, report the count rather than silently expand
 
 ---
 
-### Phase 7: Full Gate Sweep [NOT STARTED]
+### Phase 7: Full Gate Sweep [COMPLETED]
 
 **Goal**: every acceptance criterion is demonstrated by a command, not by inspection.
 
 **Tasks**:
-- [ ] `shellcheck` over every shell file this task touched or created (the writer, its suite,
+- [x] `shellcheck` over every shell file this task touched or created (the writer, its suite,
       `runtime-file-patterns.sh`, `orchestrate-cycle-postflight.sh`, `orchestrate-stage5-gates.sh`,
       `test-orchestrate-unwind-dispatch.sh`) — clean, with no suppression directive added to
-      achieve it.
-- [ ] `bash -n` over the same set.
-- [ ] Run the four affected suites: `test-orchestrate-record-decision.sh`,
+      achieve it. *(completed, extended to all 9 touched/created shell files including
+      `orchestrate-recover-outcome.sh`, `skill-base.sh`, `test-runtime-file-tracking.sh`,
+      `test-orchestrate-record-decision.sh`: every finding is either info-level (SC1091/SC2329)
+      or confirmed pre-existing at HEAD before this task's edits via direct diff; no suppression
+      directive added anywhere)*
+- [x] `bash -n` over the same set. *(completed: all 9 clean)*
+- [x] Run the four affected suites: `test-orchestrate-record-decision.sh`,
       `test-orchestrate-cycle-postflight.sh`, `test-runtime-file-tracking.sh`,
-      `test-init-specs.sh`, plus `test-orchestrate-unwind-dispatch.sh`.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` (Rule Q: both new scripts registered in
-      `provides.scripts`).
-- [ ] `bash .claude/scripts/script-inventory.sh --check` — confirm the new writer is
+      `test-init-specs.sh`, plus `test-orchestrate-unwind-dispatch.sh`. *(completed: 9/9, 166/166,
+      9/9, 23/23, 21/21 — all pass)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` (Rule Q: both new scripts registered in
+      `provides.scripts`). *(completed: core extension reports OK; the only remaining notes are
+      the two expected "never deployed" ADVISORYs for the two new scripts and the pre-existing
+      README-staleness WARN — no FAIL)*
+- [x] `bash .claude/scripts/script-inventory.sh --check` — confirm the new writer is
       manifest-registered and has a non-zero inbound caller census (its caller is SKILL.md Move 4
-      from Phase 4).
-- [ ] `bash .claude/scripts/lint/lint-agent-contracts.sh` and
-      `bash .claude/scripts/lint/lint-routing-wiring.sh`.
-- [ ] `bash .claude/scripts/check-task-references.sh` — no task-number reference anywhere outside
-      `specs/**`.
-- [ ] `jq empty agent-system/extensions/core/manifest.json`.
-- [ ] Walk the dispatch's acceptance sentence item by item and record, for each, the command that
-      demonstrates it.
-- [ ] Note in the summary that `.claude/` regeneration and the `specs/.gitignore` managed-block
-      refresh are manual follow-ups, not part of this task.
+      from Phase 4). *(completed: row shows lines=192, inbound_callers=7, has_test=true,
+      manifest_registered=true, duplicate_blocks=0; overall `--check` exits 0, no finding)*
+- [x] `bash .claude/scripts/lint/lint-agent-contracts.sh` and
+      `bash .claude/scripts/lint/lint-routing-wiring.sh`. *(completed: 195/195 and 274/274 passed,
+      0 failed each)*
+- [x] `bash .claude/scripts/check-task-references.sh` — no task-number reference anywhere outside
+      `specs/**`. *(completed: 0 unexempted occurrences)*
+- [x] `jq empty agent-system/extensions/core/manifest.json`. *(completed: valid)*
+- [x] Walk the dispatch's acceptance sentence item by item and record, for each, the command that
+      demonstrates it. *(completed: see the Acceptance Walk-Through table in the implementation
+      summary)*
+- [x] Note in the summary that `.claude/` regeneration and the `specs/.gitignore` managed-block
+      refresh are manual follow-ups, not part of this task. *(completed, see summary)*
+
+**Self-correction recorded during this phase**: an early draft of this phase's `.claude/`
+temp-sync-for-testing step mistakenly restored 8 files from current `HEAD` rather than the
+pre-task commit, which would have silently hand-deployed this task's own edits into the deploy
+tree (a `source-store-deploy-boundary.md` violation). Caught before any gate ran against it;
+all 8 files were re-restored from the pre-task commit (`ed7d50e05`, the session's starting
+`HEAD`) and verified byte-identical to it before `check-extension-docs.sh` was re-run. No gate
+result in this phase reflects the mistaken intermediate state.
 
 **Timing**: 0.75 hours
 
@@ -609,19 +627,19 @@ the footprint is materially larger, report the count rather than silently expand
 
 ## Testing & Validation
 
-- [ ] `.decisions.json` written by the script satisfies `jq -e 'type == "array"'` on the document
+- [x] `.decisions.json` written by the script satisfies `jq -e 'type == "array"'` on the document
       root after one append and after two.
-- [ ] A second append leaves the first entry byte-identical (additive-only).
-- [ ] A pre-existing object-wrapped `{"decisions": [...]}` file is refused and left byte-identical.
-- [ ] Concurrent appends lose no entry.
-- [ ] A missing or malformed argument exits nonzero with nothing written.
-- [ ] The reader's own jq expression from `orchestrate-build-dispatch.sh` renders the written file.
-- [ ] The research-phase no-handoff notice carries no `RECOVERY:` token; the plan and implement
+- [x] A second append leaves the first entry byte-identical (additive-only).
+- [x] A pre-existing object-wrapped `{"decisions": [...]}` file is refused and left byte-identical.
+- [x] Concurrent appends lose no entry.
+- [x] A missing or malformed argument exits nonzero with nothing written.
+- [x] The reader's own jq expression from `orchestrate-build-dispatch.sh` renders the written file.
+- [x] The research-phase no-handoff notice carries no `RECOVERY:` token; the plan and implement
       notices do, and each names its own phase.
-- [ ] No surface in `agent-system/extensions/core/**` still claims base-mode plan or implement never
+- [x] No surface in `agent-system/extensions/core/**` still claims base-mode plan or implement never
       writes a handoff.
-- [ ] `shellcheck` clean across every touched shell file.
-- [ ] `skill-orchestrate/SKILL.md` remains under its context-budget ceiling.
+- [x] `shellcheck` clean across every touched shell file.
+- [x] `skill-orchestrate/SKILL.md` remains under its context-budget ceiling.
 
 ## Artifacts & Outputs
 
