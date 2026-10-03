@@ -1,9 +1,61 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/089_mode_gate_literature_and_distill_skills/summaries/01_mode-gate-literature-distill-summary.md",
+      "summary": "Mode-gated section extraction applied to skill-literature (7 mode files) and skill-distill (9 sub-mode files); SKILL.md reduced 82.7% (literature) and 67.4% (distill); full gate set and 21-entry acceptance walk passed; corrected the task's stale distill premise."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extracted skill-literature/SKILL.md's seven Mode: sections and skill-distill/SKILL.md's nine above-bar Sub-Mode: sections into sixteen new context/patterns files per the mode-gated-section-loading convention, reducing skill-literature/SKILL.md from 100,460 B to 17,386 B (82.7%) and skill-distill/SKILL.md from 93,044 B to 30,289 B (67.4%). Corrected the task's distill premise (the named '## Auto Distill Complete' 43,254 B section is a fence-interior fake heading, not a real section) and fixed a scoped-commit-boundary lint regression the file move introduced. Full deploy, gate set, and a 21-entry acceptance walk (9 literature modes + 12 distill sub-modes) all passed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh",
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-convert-mode.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-import-pipeline-mode.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-index-mode.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-ingest-mode.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-rebuild-mode.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-search-mode.md",
+    "agent-system/extensions/literature/context/project/literature/patterns/literature-validate-mode.md",
+    "agent-system/extensions/literature/index-entries.json",
+    "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-compress-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-dream-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-learn-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-merge-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-purge-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-refine-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-review-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md",
+    "agent-system/extensions/memory/index-entries.json",
+    "agent-system/extensions/memory/skills/skill-distill/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When extracting a heading-gated section verbatim per mode-gated-section-loading.md, a mechanical 'promote every line matching #+ ' heading-promotion step will ALSO promote fence-interior text that merely looks like a heading (a literal sample-output template, an echoed report format) if it isn't tracking fenced-code-block state. This silently rewrites supposedly-verbatim content and, for an output-format template, misrepresents what the command actually prints. Fix: track ``` fence state during promotion and only touch lines outside a fence. Caught in task 89 (skill-literature/skill-distill mode-gated extraction) via round-trip diff review before committing -- the diff showed extra heading-level changes beyond the expected real-heading promotions, in spans already flagged by the fence-aware boundary scan as containing fence-interior fake headings (## Conversion Complete, ## Literature Validation Report, ## Index Entry Added, ## History/## Connections). General rule: before trusting a heading-promotion script's output on any file with fenced examples, diff its full promoted-body output against the pre-extraction original and confirm every changed line is a real heading at the expected level, not a fence-interior line that drifted past a naive line-prefix match.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/089_mode_gate_literature_and_distill_skills/summaries/01_mode-gate-literature-distill-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["mode-gated-section-loading", "fence-interior-heading-hazard", "heading-promotion", "round-trip-verification", "content-extraction"]
+    },
+    {
+      "content": "A file-level allowlist in a lint keyed on a literal source file PATH (e.g. lint-scoped-commit-boundary.sh's EXCLUDED_FILES array, each entry a path + inline reason) silently stops covering its documented exception the moment that content is relocated by a refactor (a mode-gated-section extraction, a file split/rename) -- the lint then flags previously-exempted, unchanged content as a brand-new violation. When moving content out of a file that carries a path-keyed allowlist/exemption entry anywhere in the repo, grep the destination content for markers that would make it independently identifiable (a distinctive comment, a known pattern) and check whether any OTHER file's allowlist/exemption references the OLD path by name -- then move the entry, don't just leave a now-silently-broken exemption. Caught in task 89 only because the post-move full gate run (verify-deploy.sh) was actually executed before closing the task, not skipped as 'should be fine, it's just a move'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/089_mode_gate_literature_and_distill_skills/summaries/01_mode-gate-literature-distill-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["path-keyed-allowlist", "lint-regression", "content-relocation", "scoped-commit-boundary", "gate-verification"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791000710_cc4f86",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
