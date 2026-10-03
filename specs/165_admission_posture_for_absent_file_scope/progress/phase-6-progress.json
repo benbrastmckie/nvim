@@ -1,0 +1,20 @@
+{
+  "phase": 6,
+  "phase_name": "Pattern-doc sync and full gate",
+  "started_at": "2026-10-03T02:50:00Z",
+  "last_updated": "2026-10-03T04:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Absent file_scope Hazard subsection to batch-orchestration-guardrails.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 2, "description": "Reconcile v5 mentions in guardrails.md and file-footprint-overlap.md", "status": "done", "files_touched": []},
+    {"id": 3, "description": "check-task-references.sh clean", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Deploy + run-all.sh full gate, triage all failures", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Treat all 6 run-all.sh failures as blockers requiring a fix", "result": "superseded", "reason": "3 are pre-existing per known-failures.txt; the other 3 ('NEW') were individually triaged and confirmed pre-existing deploy-path-resolution artifacts in unrelated test harnesses (detect-noop-bash, lint-deploy-caller-wrap, orchestrate-build-aux-dispatch), none referencing any file this task touched, confirmed via direct source-store reproduction (all pass cleanly there) and git-stash isolation."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "6.known-failures", "description": "Add the 3 newly-triaged NEW failures to known-failures.txt", "type": "deferred", "reason": "That manifest is outside this task's declared file_scope and the 3 failures are unrelated to the admission-posture ruling; triage is fully recorded in this phase's completion note instead, for a follow-up task to formally accept into the manifest."}
+  ]
+}

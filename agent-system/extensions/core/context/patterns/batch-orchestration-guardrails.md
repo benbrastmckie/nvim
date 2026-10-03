@@ -219,6 +219,8 @@ never demotes a check to advisory.
 | Heuristic drift-percentage signal | ADVISORY | The signal is an estimate from a fork's plan inspection, not a hard fact — fails condition 1's structural-fact requirement in spirit even though it reads on-disk state, because the *derived* percentage is inherently approximate |
 | Absent completion-marker verification signal (`plan_markers_verified` missing or false) | ADVISORY | Per the handoff schema's own documented behavior, this warns but does not block the next lifecycle phase — the condition is logged, not gated, because it is deliberately designed as a non-blocking signal |
 | Postflight completion-deploy gate (a source-store-touching task's own `modified_files` overlap `agent-system/extensions/**` AND the deploy is provably stale) | BLOCKING | Computable purely from on-disk state — the refusing task's own `.return-meta.json` `modified_files` plus a path-scoped `git log -1` freshness comparison, no agent invoked; the harm of proceeding (`[COMPLETED]` while the fix is absent from the running `.claude/` tree) is silent and discoverable only much later, as the research for this mechanism found for four already-completed tasks — satisfying both halves of the criterion exactly as the Self-Modification Hazard row above does |
+| Absent `file_scope`, `in_batch` (NEW in v6; see "Absent file_scope Hazard" below) | BLOCKING | Computable purely from on-disk state (the candidate's own `file_scope` key/value against the co-dispatch set), no agent invoked; the harm — an undeclared scope silently making the collision guard unable to compare anything, measured live as concurrent edits to a shared orchestrator-critical gate script across eight co-dispatched candidates with zero collision-guard coverage — is silent and hard to detect later, satisfying both halves of the criterion exactly as the `in_batch` file-scope-overlap row above does |
+| Absent `file_scope`, `cross_batch` (NEW in v6) | ADVISORY | Fails condition 2 at the measured coverage level this repository currently has: the backfill mitigation this ruling depends on has NOT landed uniformly across the repositories this system deploys into (one deployment repository measured only 42% covered, 2026-09-29), so the candidate false-positive cost of blocking today (stalling legitimate legacy work) is not yet justified by the harm-of-skipping criterion — see the dedicated section below for the full measurement and the recorded promotion criterion |
 
 ## Ordering Constraint vs. Exclusion: The Normative Principle
 
@@ -247,6 +249,7 @@ self-modification-deadlock defects this repository has fixed were exactly this s
 | `blocked` classifier verdict, discharged (`dependencies[]` all `status: "completed"`, no handoff blockers) | n/a (not an `orchestrate-batch-admit.sh` verdict; a `orchestrate-triage-classify.sh` verdict) | ORDERING CONSTRAINT | Self-clears as soon as the classifier next runs after the predecessor's `status` write lands; the dependent is dispatched to the phase its `previous_status` names, converged for both engines. This IS the fix this file's own normative principle already implied before it existed as code: the `blocked` classifier verdict's former unconditional `skip` was never a deliberately justified exclusion for this sub-case, it was an accidental byproduct of the classifier never having been taught to look past the status string. |
 | `blocked` classifier verdict, NOT discharged (dependency outstanding, empty `dependencies[]`, a dependency stuck non-completed-terminal, or handoff blockers present) | n/a (not an `orchestrate-batch-admit.sh` verdict; a `orchestrate-triage-classify.sh` verdict) | Whatever the non-discharged classification already is (`skip` for `mt`, `needs_human` for `single`) — a documented, independently-implemented single/mt divergence, not an accidental exclusion | Both engines independently implement this divergence in their own handlers (single-task Stage 4's `blocked` handler always escalates; Stage MT-4's grouping table folds the non-discharged sub-case into `skip` so siblings can proceed) — see `orchestrate-triage-classify.sh`'s own audit discriminator for why independent implementation by both sides reads as design, not a bare shared-table assertion. This row is recorded explicitly here so it is never later misread as an accidental omission from this catalogue. |
 | Unmet predecessor (dependency-graph eligibility) | n/a (not an `orchestrate-batch-admit.sh` verdict; a Stage MT-3 step 3 eligibility-gate exclusion) | ORDERING CONSTRAINT | Matches how the Blocking-vs-Advisory table above already classifies this same guardrail (BLOCKING); folded in here so the two tables stop disagreeing by omission. A task excluded from `eligible_tasks` because a predecessor is still in-progress is re-admitted automatically once that predecessor reaches a terminal state — no separate mechanism is needed to clear it. |
+| `absent_file_scope` (NEW in v6) | `absent_file_scope` | ORDERING CONSTRAINT | Converges through the identical designated-candidate tie-breaker `self_modifying` already uses — the lowest-numbered absent-scope candidate admits every cycle, so N co-dispatched absent-scope candidates converge to full dispatch in at most N cycles by construction. No override flag exists (unlike `self_modifying`'s `--allow-self-modifying`): the defer self-clears on its own, and the real remedy — declare a `file_scope` — is a one-line `state.json` edit, so no bypass is needed. See "Absent file_scope Hazard" below. |
 
 `defer_reason` values are echoed verbatim from what `orchestrate-batch-admit.sh` actually emits
 (per that script's own header and `docs/architecture/batch-admit-schema.md`'s schema) — a
@@ -1127,6 +1130,96 @@ prompted this closure. It now names the two-outcome structure this section docum
 cycle's checkpoint deploys and then automatically reconciles the task's status, with manual
 action needed only on the residual paths above, where the checkpoint's own named WARNING states
 the remedy.
+
+## Absent file_scope Hazard: The Split Admission Posture (v6)
+
+An undeclared `file_scope` (missing key, literal `null`, or empty array) was, through v5,
+indistinguishable from a scope that provably collides with nothing: the admission predicate's
+absent-scope branch short-circuited to a bare admit before the collision scan ever ran, and when
+the absent scope was the OTHER side of a comparison, the symmetric overlap predicate against `[]`
+always returned no match. Two live incidents showed this was never a detected non-collision — the
+guard was simply never consulted, because an absent scope gave it nothing to compare:
+
+- **Cross-session** (repository BimodalLogic, `/orchestrate 544,545`): dispatched a two-task
+  batch where neither task declared a `file_scope`. A separate, concurrent `/orchestrate` session
+  held a broad scope (`FormalSystem/`, `Tests/`, `docs/`, `typst/`, `README.md`) overlapping the
+  naming domain one of the two dispatched tasks was mid-rename on. Nothing caught the conflicting
+  concurrent edit.
+- **In-batch** (repository Logos/Verification, `/orchestrate 66,70,72,76,77,81,84,85`): an 8-task
+  batch, every task created without a `file_scope`, reached the implement phase with a dry-run
+  admission report showing all 8 admitted, 0 deferred — i.e. it would have run 8 implementers
+  concurrently in ONE working tree. Operator inspection of the plans found heavy real overlap: a
+  shared script edited by 3 tasks (one a 9-phase refactor of it), a CI workflow job edited by one
+  task while deleted by another, a shared doc edited by 4 tasks, and 4 tasks running the full
+  local verification gate (which regenerates a committed certificate) over a tree other agents
+  were mid-edit on.
+
+### The Split Ruling
+
+The posture is SPLIT by scope kind, decided by measurement rather than preference — this is the
+same two-condition Blocking vs. Advisory criterion above, applied to each comparison direction
+separately rather than to the guardrail as a whole:
+
+- **`cross_batch`** (the comparison task is NOT one of this invocation's candidates): stays
+  **ADVISORY**, via the additive `absent_scope_advisory` verdict field — never blocks admission
+  on absence alone. The tradeoff: treating absence as a defer reason closes the silent-passage
+  hole above, but risks blocking legitimate work on legacy tasks that predate any `file_scope`
+  discipline. A live coverage measurement (`validate-state.sh --strict` Check 10's own
+  `missing_key`/`null_value` finding count against non-terminal, plan-bearing tasks, measured
+  2026-09-29) found the backfill mitigation this ruling was gated behind has NOT landed
+  uniformly: this repository 27/28 (96%), a second deployment repository 32/33 (97%), but the
+  THIRD deployment repository where the cross-session incident above was observed live only
+  18/43 (42%) covered, with 24 of the 25 gaps being plan-less tasks that `backfill-file-scope.sh`
+  correctly, by design, leaves absent. Tightening cross-batch absence to blocking today would
+  silently stall legitimate legacy work in exactly the kind of repository the incident came from.
+
+  **Promotion criterion** (recorded now; not performed by this version — mirrors this
+  repository's own Verification Tier rollout precedent, "a missing field emits a warning, not an
+  error ... promote the warning to an error once no non-terminal plan under `specs/` lacks the
+  field"): promote cross-batch absence from `absent_scope_advisory` to the same blocking
+  `absent_file_scope` defer the in-batch case already uses, once `validate-state.sh --strict`
+  reports ZERO Check 10 `missing_key`/`null_value` findings across every repository this system
+  deploys into. Re-derive that coverage measurement before ever flipping this ruling — do not
+  promote on elapsed time or a single repository's local coverage alone.
+
+- **`in_batch`** (the comparison task IS one of this invocation's candidates): is **BLOCKING**,
+  via the `absent_file_scope` `defer_reason` (see the Gate Catalogue above for its ordering-
+  constraint convergence and override-semantics rationale). In-batch absence is EXEMPT from the
+  coverage reasoning above entirely — it only ever concerns candidates being CO-DISPATCHED THIS
+  CYCLE, so legacy-backlog coverage elsewhere in `state.json` is irrelevant to it. The
+  cost/benefit is inverted from the cross-batch case: the cost of wrongly serializing an
+  in-batch absent-scope candidate is one extra cycle (identical in shape to the `self_modifying`
+  tie-breaker's own cost), while the cost of wrongly admitting all of them was, measured live in
+  the in-batch incident above, concurrent edits to a shared script plus concurrent
+  certificate-regenerating gate runs across eight co-dispatched candidates with zero
+  collision-guard coverage.
+
+A research or plan dispatch is exempt from the `in_batch` blocking rule unconditionally (the same
+`--phase-map` phase-aware gate the self-modification dimension already uses): it touches only the
+task's own `reports/`/`plans/` subtree, never orchestrator machinery or the files a declared
+`file_scope` would otherwise name, so deferring it merely because its undeclared IMPLEMENTATION
+footprint happens to match a sibling's would be a pure false positive.
+
+### Closing the Cross-Session Self-Modification Blindness (additive, no-bump sibling)
+
+The cross-session incident above surfaced a second, independent gap: a self-modifying candidate
+dispatched SOLO carried no cross-session collision result at all, even with all metadata
+correctly populated — the self-modification short-circuit inside `orchestrate-batch-admit.sh`
+bypasses the collision scan AND the session-registry pass unconditionally, by design (see
+"Self-Modification Hazard" above), so a live foreign session's overlapping covered scope was
+never visible on the verdict. The fix is additive, not a precedence change: a self-modifying
+ADMIT verdict (solo, phase-exempt, or the tie-break winner) now also runs the session-registry
+contention check and, on a hit, carries a `cross_session_hazard` field naming the foreign
+session, the task it covers, and the overlapping path — without ever changing the admit decision
+itself. The `self_modifying` DEFER branch is deliberately untouched: it already carries its own
+reason and remedy, and attaching a second hazard there would wrongly suggest the defer was
+caused by the session overlap rather than the tie-breaker. See
+`docs/architecture/batch-admit-schema.md`'s Field Definitions and Version History for the full
+field contract.
+
+See `docs/architecture/batch-admit-schema.md` for the complete verdict schema (`v6`), the
+`absent_scope_advisory`/`cross_session_hazard` field contracts, and the full Version History
+entry this ruling landed under.
 
 ## Admission-Time vs. Mid-Flight: A Knowability Test
 
