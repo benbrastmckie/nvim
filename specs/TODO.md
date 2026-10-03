@@ -42,10 +42,10 @@ next_project_number: 329
 
 ### Extensions
 
-297 [NOT STARTED] — Scaffold the books extension: manifest, four-block routing,...
+297 [RESEARCHED] — Scaffold the books extension: manifest, four-block routing,...
   └─ 298 [NOT STARTED] — Author the books extension context corpus under...
   └─ 326 [NOT STARTED] — Add a books verification tier at implement dispatch: the...
-327 [NOT STARTED] — Repair the extension lifecycle hook mechanism: broken...
+327 [RESEARCHING] — Repair the extension lifecycle hook mechanism: broken...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -148,7 +148,7 @@ Both halves are in scope, and the test corpus is a first-class target rather tha
 
 ### 327. Repair the extension lifecycle hook mechanism: broken resolver schema, absent return-code channel, uninvoked verification stage
 - **Effort**: 1-3 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -1613,10 +1613,11 @@ never a task number (`rules/no-task-references-in-deliverables.md`).
 
 ### 297. Scaffold the books extension: manifest, four-block routing, agents, skills, commands, rule and tests
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [297_scaffold_books_extension_routing_and_agents/reports/01_books-extension-scaffold-research.md]
 
 **Description**: Build a new `books` extension in the agent-system source store at `agent-system/extensions/books/`, providing the `books` task type for authoring, certifying and documenting **lean books** as that standard is defined in the Logos/Verification repository.
 
