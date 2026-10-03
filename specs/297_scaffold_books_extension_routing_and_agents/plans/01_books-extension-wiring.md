@@ -1,7 +1,7 @@
 # Implementation Plan: Scaffold the books extension (wiring)
 
 - **Task**: 297 - Scaffold the books extension: manifest, routing, agents, skills, commands, rule and tests
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/297_scaffold_books_extension_routing_and_agents/reports/01_books-extension-scaffold-research.md
@@ -119,48 +119,48 @@ roadmap phases are added and no roadmap file was consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Skeleton, manifest, and task-type detection [NOT STARTED]
+### Phase 1: Skeleton, manifest, and task-type detection [COMPLETED]
 
 **Goal**: The extension directory exists with a complete, honest `manifest.json`, and task-type
 detection is measured to route book descriptions to `books` without capturing any other
 extension's tasks.
 
 **Tasks**:
-- [ ] Re-verify the landed/unlanded boundary in `~/Projects/Logos/Verification` with bounded,
+- [x] Re-verify the landed/unlanded boundary in `~/Projects/Logos/Verification` with bounded,
       targeted reads (not a survey): the real flag set accepted by `books/scripts/certify.sh`;
       the subcommands `books-tool` actually exposes; the presence or absence of
       `books/tool/approve-guarantees.sh`, `books/tool/book-health.sh`, and the certifier docs
       stage; the current `passes` array in a real `book.cert.json`. Record the findings in the
-      implementation progress notes; every later phase's capability claims cite them.
-- [ ] Create `agent-system/extensions/books/{agents,skills,commands,rules,scripts/tests,context/project/books}/`.
-- [ ] Write `context/project/books/README.md` as a navigation stub only: what the `books` task
+      implementation progress notes; every later phase's capability claims cite them. *(completed)*
+- [x] Create `agent-system/extensions/books/{agents,skills,commands,rules,scripts/tests,context/project/books}/`. *(completed)*
+- [x] Write `context/project/books/README.md` as a navigation stub only: what the `books` task
       type covers, and that the domain corpus is authored by a separate dependent task. Do not
-      author domain content here.
-- [ ] Write `manifest.json`: `name: "books"`, `version: "1.0.0"`, a one-line `description`,
-      `task_type: "books"`, `dependencies: ["core", "lean", "typst"]`.
-- [ ] `provides`: the four agent filenames, the six skill directory names, `["book.md",
+      author domain content here. *(completed)*
+- [x] Write `manifest.json`: `name: "books"`, `version: "1.0.0"`, a one-line `description`,
+      `task_type: "books"`, `dependencies: ["core", "lean", "typst"]`. *(completed)*
+- [x] `provides`: the four agent filenames, the six skill directory names, `["book.md",
       "certify.md"]`, `["books.md"]`, `context: ["project/books"]`,
-      `scripts: ["books-certify.sh", "tests/test-books-certify.sh"]`, `hooks: []`.
-- [ ] `routing_agents`: `research.books` -> `books-research-agent`, `plan.books` ->
+      `scripts: ["books-certify.sh", "tests/test-books-certify.sh"]`, `hooks: []`. *(completed)*
+- [x] `routing_agents`: `research.books` -> `books-research-agent`, `plan.books` ->
       `planner-agent`, `implement.books` -> `books-implementation-agent`, each key duplicated for
       `books:certify` mapping to the same agent (the `lean4:lake` precedent).
       `routing_agents_hard`: `research.books` -> `books-research-hard-agent`,
       `implement.books` -> `books-implementation-hard-agent` (no hard plan key — plan always goes
-      to `planner-agent`). Author NO `routing` and NO `routing_hard` block.
-- [ ] `keyword_overrides.books.keywords`: the 14 measured tokens `book.toml`, `book_layer`,
+      to `planner-agent`). Author NO `routing` and NO `routing_hard` block. *(completed)*
+- [x] `keyword_overrides.books.keywords`: the 14 measured tokens `book.toml`, `book_layer`,
       `book_export`, `book module`, `book.cert.json`, `layer matrix`, `certified unit`,
       `book_ledger`, `book_axioms`, `book_requires`, `book_policy`, `book_assume`,
       `book_not_claimed`, `books-tool`. `aliases: []` (no alias remap — unlike cslib, `books`
-      must not steal a weak-signal `lean4` resolution).
-- [ ] `merge_targets`: `claudemd` (source `EXTENSION.md`, target `.claude/CLAUDE.md`,
+      must not steal a weak-signal `lean4` resolution). *(completed)*
+- [x] `merge_targets`: `claudemd` (source `EXTENSION.md`, target `.claude/CLAUDE.md`,
       `section_id: "extension_books"`), `index` (`index-entries.json` ->
       `.claude/context/index.json`), `opencode_json` (`opencode-agents.json` -> `opencode.json`).
-      No `settings` target.
-- [ ] Re-run detection: source `agent-system/extensions/core/scripts/lib/task-type-detect.sh` and
+      No `settings` target. *(completed)*
+- [x] Re-run detection: source `agent-system/extensions/core/scripts/lib/task-type-detect.sh` and
       call `detect_task_type` against the real `specs/state.json` and the real
       `agent-system/extensions` directory for all seven rows of research Findings §2 — the three
       positive book rows AND the four negative rows (`lean4` via `.lean`, `typst`, `pr`, Mathlib).
-      Confirm no negative row changed.
+      Confirm no negative row changed. *(completed)*
 
 **Timing**: 1.5 hours
 

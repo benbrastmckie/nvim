@@ -1,30 +1,11 @@
 {
-  "status": "planned",
-  "dispatch_seq": 3,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/297_scaffold_books_extension_routing_and_agents/plans/01_books-extension-wiring.md",
-      "summary": "Eight-phase, five-wave plan to scaffold the books extension in the source store: manifest with two routing blocks (books, books:certify), four sonnet agents with --hard variants, six skills, /book and /certify commands, a flattened-layout books rule, one declared passthrough script plus its fixture test, and the four registration/doc files, gated by check-extension-docs.sh and a re-measured task-type detection table."
-    }
-  ],
-  "phase_count": 8,
-  "estimated_hours": 10.5,
-  "dependency_waves": [[1], [2, 3, 4, 5], [6], [7], [8]],
-  "memory_candidates": [
-    {
-      "content": "When authoring a new agent-system extension, check-extension-docs.sh Rule E (check_referenced_scripts_declared) extracts every '[A-Za-z0-9_-]+\\.(sh|sql)\\b' token from the extension's commands/*.md, skills/*/SKILL.md, agents/*.md, README.md and EXTENSION.md, and hard-fails on any token not declared in some extension's provides.scripts/provides.hooks (basename-normalized; no allowlist, no severity knob). rules/*.md is NOT scanned. Consequence: a command that documents its real invocation of a CONSUMING REPOSITORY's shell script cannot name that script by filename in those five locations -- the fix is to ship a thin, declared extension-local passthrough wrapper and name the wrapper instead, or to confine the bare filename to a rule file. Related on-disk constraints from the same lint: provides.context/scripts/rules entries must exist on disk (so an extension declaring a context dir whose corpus is a separate task still needs a stub there), EXTENSION.md is capped at 60 lines, README.md must mention every manifest command and must be newer than manifest.json, and index-entries.json line_count must equal wc -l of the source file with no description/tags/tier keys.",
-      "category": "PATTERN",
-      "source_artifact": "specs/297_scaffold_books_extension_routing_and_agents/plans/01_books-extension-wiring.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["check-extension-docs", "rule-E", "provides.scripts", "extension-authoring", "extension-lint", "index-entries"]
-    }
-  ],
-  "next_steps": "Run /implement 297 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 5,
+  "agent_type": "general-implementation-agent",
   "metadata": {
-    "session_id": "sess_1791040973_97d778_297",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791040973_97d778",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

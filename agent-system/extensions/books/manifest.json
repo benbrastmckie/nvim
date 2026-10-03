@@ -1,0 +1,100 @@
+{
+  "name": "books",
+  "version": "1.0.0",
+  "description": "Authoring, certifying and documenting lean books per the Logos/Verification book-convention design record",
+  "task_type": "books",
+  "dependencies": [
+    "core",
+    "lean",
+    "typst"
+  ],
+  "provides": {
+    "agents": [
+      "books-research-agent.md",
+      "books-implementation-agent.md",
+      "books-research-hard-agent.md",
+      "books-implementation-hard-agent.md"
+    ],
+    "skills": [
+      "skill-books-research",
+      "skill-books-implementation",
+      "skill-books-research-hard",
+      "skill-books-implementation-hard",
+      "skill-books-build",
+      "skill-books-certify"
+    ],
+    "commands": [
+      "book.md",
+      "certify.md"
+    ],
+    "rules": [
+      "books.md"
+    ],
+    "context": [
+      "project/books"
+    ],
+    "scripts": [
+      "books-certify.sh",
+      "tests/test-books-certify.sh"
+    ],
+    "hooks": []
+  },
+  "routing_agents": {
+    "research": {
+      "books": "books-research-agent",
+      "books:certify": "books-research-agent"
+    },
+    "plan": {
+      "books": "planner-agent",
+      "books:certify": "planner-agent"
+    },
+    "implement": {
+      "books": "books-implementation-agent",
+      "books:certify": "books-implementation-agent"
+    }
+  },
+  "routing_agents_hard": {
+    "research": {
+      "books": "books-research-hard-agent"
+    },
+    "implement": {
+      "books": "books-implementation-hard-agent"
+    }
+  },
+  "keyword_overrides": {
+    "books": {
+      "keywords": [
+        "book.toml",
+        "book_layer",
+        "book_export",
+        "book module",
+        "book.cert.json",
+        "layer matrix",
+        "certified unit",
+        "book_ledger",
+        "book_axioms",
+        "book_requires",
+        "book_policy",
+        "book_assume",
+        "book_not_claimed",
+        "books-tool"
+      ],
+      "aliases": []
+    }
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "EXTENSION.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_books"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    },
+    "opencode_json": {
+      "source": "opencode-agents.json",
+      "target": "opencode.json"
+    }
+  }
+}
