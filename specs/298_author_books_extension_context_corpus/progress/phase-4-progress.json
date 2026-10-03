@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Identity, versioning, status and trust",
+  "started_at": "2026-10-03T01:00:00Z",
+  "last_updated": "2026-10-03T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write domain/identity-and-versioning.md", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/domain/identity-and-versioning.md"]},
+    {"id": 2, "description": "Write domain/status-and-trust-vocabularies.md", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/domain/status-and-trust-vocabularies.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "4.x", "description": "identity-and-versioning.md line band", "type": "altered", "reason": "Landed above the ~170-line plan estimate because the digest formula block, the exclusion table and the serialisation-format signature are transcribed verbatim per Standing Rule 8 rather than paraphrased. Within the 150-250 corpus band.", "annotation": "*(deviation: altered -- above the ~170-line estimate; formulas transcribed verbatim)*"},
+    {"task_id": "4.y", "description": "docs/trust-model.md is not the source for the six ground classes", "type": "altered", "reason": "The plan names docs/trust-model.md (151 lines) as a primary source for the ground classes. Read 2026-10-03: that file states the component-level trust model (badges, platform matrix, recheck legs) and does not define G0-G5. The ground-class definitions were taken from Decision 12 and the enforced word lists from books/tool/Books/Manifest.lean:33-38, with trust-model.md cited only where it is genuinely the source (G4 as a human judgment).", "annotation": "*(deviation: altered -- ground classes sourced from Decision 12 and Manifest.lean, not trust-model.md)*"}
+  ],
+  "handoff_count": 0
+}

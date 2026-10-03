@@ -381,13 +381,13 @@ shape and add a deviation note.
 
 ---
 
-### Phase 4: Identity, versioning, status and trust [NOT STARTED]
+### Phase 4: Identity, versioning, status and trust [COMPLETED]
 
 **Goal**: How a book's identity is computed and when it must bump; and what each status value and
 trust verdict licenses and forbids.
 
 **Tasks**:
-- [ ] Write `domain/identity-and-versioning.md` per Finding 5 item 4: per-export Merkle digests
+- [x] Write `domain/identity-and-versioning.md` per Finding 5 item 4: per-export Merkle digests
       over the statement cone with axiom sets; the roll-up into **three** identities -
       `interface_identity`, `identity` and `proof_identity` (not two, as the dispatch description
       has it); chaining per export through dependencies' certificates;
@@ -396,12 +396,12 @@ trust verdict licenses and forbids.
       35-minute-then-killed certification into under two minutes); the versioning rule keyed on
       canonical statement serialisation with **no bump on a Lean toolchain bump alone**; and the
       identity exclusions as `books/schema/book-cert-v2.md` states them.
-- [ ] Write `domain/status-and-trust-vocabularies.md` per Finding 5 item 5: the three `status`
+- [x] Write `domain/status-and-trust-vocabularies.md` per Finding 5 item 5: the three `status`
       values and the four verdicts, each with what it licenses and what it forbids; the six ground
       classes G0_checker, G1_translation, G2_ir_faithfulness, G3_models, G4_specification,
       G5_binding; a `certified` book whose record is not fully reconciled FAILS the docs stage and
       is not certified; a `draft` book only reports.
-- [ ] Record in that document, from Decision 12's own marker, what is contradicted: the "derived
+- [x] Record in that document, from Decision 12's own marker, what is contradicted: the "derived
       display status computed once by the certifier" is contradicted because no `status` field is
       written and the only renderer reads `certificate.status.derived`, which exists only in the
       probe. Record that the pure-Lean G1-G3 rule and the composite-trust rule have **no
@@ -409,7 +409,7 @@ trust verdict licenses and forbids.
       mechanically for the first time through the permitted-axiom set - the framed_channel
       composite refused eight times with `axiom-outside-book-axioms` until it declared the two
       `bv_decide` native helper axioms its parts mint.
-- [ ] Defer gap claims to `domain/known-gap-register.md`.
+- [x] Defer gap claims to `domain/known-gap-register.md`.
 
 **Timing**: 1.25 hours
 
