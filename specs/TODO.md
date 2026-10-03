@@ -1,5 +1,5 @@
 ---
-next_project_number: 329
+next_project_number: 334
 ---
 
 # TODO
@@ -12,10 +12,11 @@ next_project_number: 329
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,185,251,271,272,280,284,285,295,296,298,299,300,306,311,318,322,325,326 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,319 | 22,251,271,272,280,285,300 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304 | 273,275,281,284,285,302 | core-agent-system, orchestrator |
-| 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
-| 5 | 313 | 306,328 | core-agent-system |
+| 2 | 29,170,275,281,302,303,319,329 | 22,251,271,272,280,285,300,326 | core-agent-system, extensions, orchestrator |
+| 3 | 273,282,330 | 271,281,329 | core-agent-system, orchestrator |
+| 4 | 274,304,312,331 | 273,275,282,284,300,302,330 | extensions, orchestrator |
+| 5 | 328,332 | 170,298,303,304,318,322,331 | core-agent-system, extensions |
+| 6 | 313,333 | 306,328,332 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -31,6 +32,7 @@ next_project_number: 329
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
+  └─ 329 [NOT STARTED] — Per-task issue log: contract, writer and dispatch threading
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
@@ -43,8 +45,12 @@ next_project_number: 329
 ### Extensions
 
 298 [NOT STARTED] — Author the books extension context corpus under...
+  └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
+    └─ 333 [NOT STARTED] — The /books command with --review and --revise
 326 [NOT STARTED] — Add a books verification tier at implement dispatch: the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
+331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
+  └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record (see above)
 
 ### Neovim
 
@@ -68,8 +74,661 @@ next_project_number: 329
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
+330 [NOT STARTED] — Per-dispatch cost and timing record
 
 ## Tasks
+
+### 333. The /books command with --review and --revise
+- **Effort**: 4-8 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 332
+
+**Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
+gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
+is silently wiped by the next deploy. See rules/source-store-deploy-boundary.md.
+
+No task-number references in any file written into the source store
+(rules/no-task-references-in-deliverables.md). Cite durable anchors -- filenames, section headings,
+convention clause names -- instead. Task numbers are permitted in this description and in specs/**.
+
+== GOAL ==
+
+A new `/books` command with two sub-modes, `--review` and `--revise`, turning the accumulated
+observation records into (i) a read-only performance review of the book convention and (ii) an
+interactive proposal of tasks to research and revise that convention. The books extension today
+ships `/book` and `/certify` only; there is no `/books` command, so this is a new command surface,
+not an extension of an existing one.
+
+== MIRROR /distill's STRUCTURE EXACTLY -- DO NOT INVENT A NEW SHAPE ==
+
+The `/distill` sub-mode architecture is the pattern to follow, and it is already proven in this
+codebase. Read these before designing anything:
+
+  - `extensions/memory/commands/distill.md` -- parses the flags.
+  - `extensions/memory/skills/skill-distill/SKILL.md` -- dispatches via a SHARED SUB-MODE SKELETON
+    (measured ~278-321; RE-MEASURE), a seven-step skeleton with STUB POINTERS out to per-sub-mode
+    pattern files.
+  - `extensions/memory/context/project/memory/patterns/distill-{revise,review,meta}-submode.md` --
+    the stub targets. The skill stays thin; the sub-mode detail lives in context files.
+
+Reproduce that division: flag parse in the command file, shared skeleton plus stub pointers in the
+skill, sub-mode detail in two new pattern files. Reproduce also `/distill --review`'s strict
+read-only posture and `/distill --meta`'s interaction shape (multiSelect over candidates, then
+create/note/skip per candidate, then a confirmation gate).
+
+== `/books --review` -- STRICTLY READ-ONLY ==
+
+A full performance review of the convention, computed from the observation log, the convention
+snapshots and the run records. It WRITES NOTHING except its own dated report. It PROPOSES NO TASKS.
+Contents:
+
+  - Per dimension (the seven dimensions defined in the observation-record standard): positive and
+    negative signals, with FIGURES and TRENDS, not adjectives.
+  - WHAT IS UNMEASURED -- stated explicitly. A review that silently omits a dimension it has no
+    data for is worse than one that names the gap.
+  - Cost per task and per phase kind, from the metrics records.
+  - Recurring issue classes, ranked.
+  - Burdens created versus burdens lifted, as the paired signals the observation record stores.
+
+Output: a dated report under the consuming repository's `specs/` tree, plus a terminal summary. It
+FUNNELS TO `--revise` -- it ends by naming the strongest candidates and telling the user to run
+`--revise` -- and it never proposes tasks itself.
+
+== `/books --revise` -- PROPOSE RESEARCH AND REVISION TASKS ==
+
+Evaluates the logs, then does INITIAL RESEARCH on the strongest candidates before proposing
+anything. Part of that research is mandatory: READ THE CONVENTION'S DECISION RECORD, so that every
+proposal NAMES THE CLAUSE IT BEARS ON and THAT CLAUSE'S VALIDATION MARKER. A proposal that cannot
+name its clause is not ready to be proposed.
+
+Interaction, in the LEAD SESSION ONLY (see the interactive-gate constraint below): multiSelect over
+candidates, then create/note/skip per candidate, then a confirmation gate before anything is
+written. Approved candidates are created as tasks with file scopes and dependencies, AFTER BACKLOG
+RECONCILIATION against the open backlog -- compare each proposed task against open tasks and create,
+widen, add a dependency edge, or narrow a file scope, whichever the comparison warrants, per
+`docs/reference/standards/multi-task-creation-standard.md`.
+
+TWO PROHIBITIONS, both binding:
+  1. It NEVER EDITS THE CONVENTION. It proposes tasks; the tasks do the work through the normal
+     lifecycle.
+  2. It NEVER BYPASSES the consuming repository's own escalation protocol. A proposal that bears on
+     a BINDING clause is filed as a RESEARCH-AND-ESCALATE task, not as a direct revision task.
+
+WATERMARK: record which observations a `--revise` run has already considered, so a later run does
+not re-propose the same evidence. Without this the second run repeats the first.
+
+== INTERACTIVE GATES RUN IN THE LEAD SESSION ==
+
+`AskUserQuestion` is NOT REACHABLE from a dispatched subagent on this harness (measured; a separate
+backlog item exists to correct the frontmatter standard's contrary claim and rehome the affected
+gates). Every multiSelect, per-candidate choice and confirmation gate in `--revise` must therefore
+execute in the LEAD session, with only non-interactive work delegated. Design for this from the
+start rather than discovering it at implementation time.
+
+Honour the telemetry guardrails in
+`extensions/memory/context/project/memory/telemetry-guardrails.md`: evaluator outside the loop, no
+`sess_*`-to-OTel join, and the 30-day transcript window -- which means `--review` reports on what
+was CAPTURED at postflight, and must say so rather than appearing to read live telemetry.
+
+== DELIVERABLES ==
+
+  - `commands/books.md` -- flag parsing, mirroring `distill.md`.
+  - `skills/skill-books-review/SKILL.md` -- the shared sub-mode skeleton plus stub pointers.
+  - `context/project/books/patterns/books-review-submode.md` -- the read-only review in full.
+  - `context/project/books/patterns/books-revise-submode.md` -- the proposal flow, the decision-record
+    reading requirement, the escalation-protocol prohibition, and the watermark.
+  - `manifest.json`, `index-entries.json`, `EXTENSION.md`, `README.md` -- registration and docs.
+
+== ACCEPTANCE ==
+
+`--review` writes only its dated report and proposes nothing; it names unmeasured dimensions
+explicitly; every `--revise` proposal names a convention clause and that clause's validation marker;
+a proposal against a binding clause is filed as research-and-escalate; the watermark prevents
+re-proposal across two consecutive runs; backlog reconciliation precedes creation; every interactive
+gate sits in the lead session; registration files are consistent with
+`scripts/check-extension-docs.sh`.
+
+== DEPENDENCY ==
+
+Depends on the books observer task, which produces the observation records both sub-modes read.
+There is nothing for `--review` to report on, and no evidence for `--revise` to evaluate, until the
+observer is writing records.
+
+---
+
+### 332. Books observer: the per-task convention observation record
+- **Effort**: 4-8 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 298, Task 329, Task 330, Task 331
+
+**Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
+gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
+is silently wiped by the next deploy. See rules/source-store-deploy-boundary.md.
+
+No task-number references in any file written into the source store
+(rules/no-task-references-in-deliverables.md). Cite durable anchors -- filenames, section headings,
+convention clause names -- instead. Task numbers are permitted in this description and in specs/**.
+
+== GOAL ==
+
+Register the books extension's own post-task observer on the generic observer seam, and write
+`scripts/books-observe.sh`, which produces ONE OBSERVATION RECORD PER BOOKS TASK, appended to a log
+in the CONSUMING REPOSITORY's `specs/` tree. The record joins the task's generic per-task records
+with books-specific facts, so that the question "is this convention actually working?" becomes
+answerable from accumulated evidence rather than from recollection.
+
+== REGISTRATION ==
+
+Declare an observer in `manifest.json` matching topic `books` AND task_type `books`. Both, because
+the measured reality in the consuming repository ~/Projects/Logos/Verification is that the 17 tasks
+carrying topic `books` have task_type `lean4` (14), `general` (2) and `typst` (1) -- NOT ONE has
+task_type `books`. Topic is therefore the key that actually matches; task_type is declared for the
+future case where a books-native task type exists. Note also that `manifest.json` today has
+`provides.hooks: []` and NO top-level `hooks` object -- this task adds the `observers` block, it
+does not add lifecycle hooks.
+
+== WHAT ONE OBSERVATION RECORD CONTAINS ==
+
+The join: the task's `issues.jsonl` and `metrics.jsonl` (both written by the generic per-task record
+machinery this task depends on) PLUS books-specific facts:
+
+  - Verification-tier runs and outcomes, with counts and time, for each tier: lake build, layer
+    lint, certify, full gate, recheck.
+  - Certifier outcome classes; refusals; warnings.
+  - Vacuous passes -- a gate that passed while checking nothing is the single most expensive signal
+    in the measured corpus and must be first-class, not inferred.
+  - Escalations and validation-marker promotions, recorded AGAINST THE CONVENTION DECISION they
+    bear on, by that decision's durable name.
+  - `book_requires` churn.
+  - The BEFORE/AFTER DELTA of the consuming repository's own convention snapshot probe, WHEN IT
+    PROVIDES ONE. Invoke it if present; record `absent` otherwise. OWNERSHIP BOUNDARY, binding:
+    the repository owns its probes and the contract for them; the extension owns the join. Do not
+    ship a probe from the extension and do not make the observer's correctness depend on one
+    existing.
+
+== POLARITY AND THE SEVEN DIMENSIONS ==
+
+Every signal carries a POLARITY (`positive` | `negative`) and one or more of exactly seven
+dimensions:
+
+  (a) maintainability by scientists and engineers;
+  (b) cross-pollination between different customers' formalizations;
+  (c) guardrails and QA;
+  (d) token and cost efficiency;
+  (e) readability for engineers who must understand a book well enough to talk with customers;
+  (f) exposing parts to users intuitively;
+  (g) compile and compose efficiency -- with IMPORT WEIGHT and COMPILATION WEIGHT first-class,
+      not folded into a general performance note.
+
+DIVISION OF LABOUR, and it matters: MECHANICAL FIELDS ARE COMPUTED by the observer (tier runs,
+timings, churn, outcome classes, snapshot delta). DIMENSION TAGS ARE SUPPLIED BY THE WORKING AGENTS,
+through the `tags` object on issue-log entries -- the open extension seam on that schema. The
+observer reads them; it does not guess them. The agents are instructed how to tag by a books context
+file injected for books-topic dispatches, which is a deliverable of this task.
+
+== MAINTENANCE BURDENS: PAIRED SIGNALS ==
+
+A convention change that lifts one burden usually creates another. Record burdens CREATED and
+burdens LIFTED AS PAIRED SIGNALS on the same record, so a later review cannot read half of a trade
+and call it a win. This is a schema requirement on the observation record, not a reviewer habit.
+
+== BACKFILL ==
+
+A `--backfill` mode for already-completed books tasks, deriving what is still derivable and marking
+each derived figure as backfilled, consistent with the per-dispatch metrics script's own backfill
+posture. The 16 completed books tasks in the consuming repository are the obvious first corpus.
+
+== DELIVERABLES ==
+
+  - `scripts/books-observe.sh` -- the observer, plus `--backfill`.
+  - `scripts/tests/test-books-observe.sh` -- the join, the absent-probe path, the paired-burden
+    requirement, polarity/dimension validation, backfill marking, and non-blocking failure.
+  - `manifest.json` -- the `observers` declaration.
+  - `context/project/books/standards/observation-record.md` -- the observation-record standard:
+    full schema, the seven dimensions with definitions, the polarity rule, the paired-burden rule,
+    the computed-versus-supplied division of labour, and the probe ownership boundary.
+  - `context/project/books/patterns/signal-tagging.md` -- the signal-tagging guide for working
+    agents: how to populate `tags` on an issue-log entry, with worked examples per dimension.
+  - `index-entries.json` and `EXTENSION.md` -- register the two new context files and document the
+    observer.
+
+NOTE ON CONTEXT TREE OWNERSHIP: the books context corpus tree
+(`extensions/books/context/project/books/**`) is owned by the corpus-authoring backlog item
+task 298, which has not yet run. This task depends on it and ADDS two files to that tree; it does
+not restructure the tree or edit files the corpus task authors.
+
+== REQUIRED COMPLETION-SUMMARY STATEMENT ==
+
+The implementation summary MUST state plainly that NONE OF THIS TAKES EFFECT in the consuming
+repository until the user (i) LOADS THE BOOKS EXTENSION there -- it is currently not loaded -- and
+(ii) REDEPLOYS CORE. Both are the user's actions, not this task's, and not something the task can
+verify. Omitting this leaves a feature that appears shipped and is inert.
+
+== ACCEPTANCE ==
+
+One observation record per books task, with the generic and books-specific facts joined; vacuous
+passes and snapshot deltas present as first-class fields; `absent` recorded when the repository
+provides no probe; paired burdens enforced by the schema; dimension tags read from the issue log
+rather than inferred; backfill produces marked figures for the completed corpus; the deployment
+caveat stated in the summary; shellcheck clean per context/standards/shell-strict-mode.md.
+
+== DEPENDENCIES ==
+
+Depends on task 298 (authors the books context corpus tree this task adds two files to), and on
+the three generic tasks that supply what it joins and the seam it registers on: the per-task issue
+log (the `tags` seam and the issue records), the per-dispatch cost-and-timing record (the metrics
+records), and the topic-keyed observer seam (the registration mechanism itself).
+
+---
+
+### 331. Topic-keyed post-task observer seam for extensions
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 327, Task 330
+
+**Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` is a
+gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
+is silently wiped by the next deploy. See rules/source-store-deploy-boundary.md.
+
+No task-number references in any file written into the source store
+(rules/no-task-references-in-deliverables.md). Cite durable anchors -- filenames, section headings,
+manifest keys -- instead. Task numbers are permitted in this description and in specs/** artifacts.
+
+== GOAL ==
+
+A manifest-declared `observers` block by which an extension registers a script to run AFTER a task
+reaches a resting state under `/orchestrate`, matched on the task's `topic` and/or `task_type`.
+Advisory and non-blocking. This is the generic seam; a concrete first consumer is a separate backlog
+item that depends on this one.
+
+== THE MATCHING CONTRACT ==
+
+An observer declaration names the script plus the keys it matches on:
+
+  - `topic` match: the task's `topic` field.
+  - `task_type` match: the task's `task_type` field.
+  - PREFIX-AWARE on both: a declared match on `books` matches a value of `books:certify`, because
+    compound task-type values with a `:` sub-route are already an established convention in this
+    system (e.g. `present:grant`). Match on the segment before the first `:`.
+  - An observer may declare either key or both. Declaring both means match-if-either, and the
+    reason is below in WHY TOPIC.
+
+== INVOCATION SITE AND ORDERING ==
+
+Invoked EXPLICITLY from `scripts/orchestrate-cycle-postflight.sh`'s completion arm (measured
+~1048-1125; RE-MEASURE BEFORE EDITING, since dependency tasks edit this same file). The script
+already receives `--task-type` (measured line 244).
+
+Arguments passed to the observer: task number, task type, topic, task directory, session id, and
+the resting status reached.
+
+ORDERING IS PART OF THE CONTRACT: the observer runs AFTER the per-dispatch issue-log and metrics
+records for that dispatch have been written, so an observer can READ them. State this ordering in
+the guide; an observer that runs before them sees an incomplete record and the whole seam is
+worthless.
+
+== ADVISORY AND NON-BLOCKING -- NOT NEGOTIABLE ==
+
+An observer can never change task status, never fail a dispatch, never block. Its return code is
+RECORDED AS AN EVENT (in `specs/events.jsonl`) and otherwise ignored. A missing, non-executable, or
+crashing observer script produces a warning event and nothing else. Give it a timeout so a hanging
+observer cannot wedge an orchestration.
+
+== WHY TOPIC: THIS IS THE FIRST PLACE `topic` BECOMES A BINDING KEY ==
+
+MEASURED, 2026-10-03: `topic` is NEVER a routing key today. Its only readers are
+`generate-todo.sh`, `generate-task-order.sh`, `manage-topics.sh`, `validate-state.sh` and
+`orchestrate-predispatch-review.sh` -- all of them presentation, grouping or validation. Nothing
+dispatches on it.
+
+The motivating measurement for keying on `topic` rather than on `task_type` alone: in the consuming
+repository ~/Projects/Logos/Verification, the 17 tasks carrying topic `books` have task_type `lean4`
+(14 of them), `general` (2) and `typst` (1). NOT ONE has task_type `books`, and the books extension
+is not even loaded in that repo. An observer keyed on `task_type` alone would therefore have
+matched NONE of the 17 tasks whose work it exists to observe. That is the whole argument for `topic`
+as a match key, and it must be written down where the next person looks.
+
+Because this makes `topic` load-bearing for the first time, DOCUMENT IT PRECISELY in two places:
+`context/reference/state-management-schema.md` (the `topic` field's description must stop implying
+it is presentational only) and `docs/guides/creating-extensions.md` (the `observers` block schema,
+with a worked example).
+
+== WHY NOT REUSE THE LIFECYCLE-HOOK CONTRACT -- RECORD THIS REASONING ==
+
+The existing extension lifecycle hooks (`manifest.json` top-level `hooks` object: preflight,
+context_injection, verification, postflight) look like the obvious home and are NOT usable here.
+Two measured reasons, both of which belong in the guide so this is not re-litigated:
+
+  1. Lifecycle hooks resolve by MANIFEST TASK_TYPE EQUALITY -- `scripts/skill-base.sh` (measured
+     151-170; RE-MEASURE). Equality, not prefix; task_type, not topic. Per the measurement above
+     that matches nothing for a topic-grouped corpus.
+  2. Under `/orchestrate` the postflight hook receives AN EMPTY TASK TYPE.
+     `scripts/orchestrate-cycle-postflight.sh` contains ZERO `TASK_TYPE` references, and
+     `skill_postflight_update` passes `"${TASK_TYPE:-}"` (measured `skill-base.sh:1089`). So even
+     AFTER the lifecycle-hook repair that has already landed, an extension still has no reliable
+     post-task binding under `/orchestrate`. The repair fixed the resolver, the return-code channel
+     and the verification stage; it did not and could not supply a task type that is never set on
+     that path.
+
+Do not "fix" this by plumbing TASK_TYPE through the postflight hook as a substitute: that would
+still be equality-on-task_type and would still match none of the measured 17 tasks.
+
+== DELIVERABLES ==
+
+  - `scripts/run-task-observers.sh` -- resolve declarations across loaded extensions, match, invoke
+    with a timeout, emit the rc event.
+  - Matching/resolution support in `scripts/lib/manifest-routing-lib.sh`, alongside the existing
+    shared routing ladder, so observer resolution is not a second independent manifest reader.
+  - `scripts/tests/test-run-task-observers.sh` -- prefix match, topic-only match, task_type-only
+    match, both-declared match, no match, missing script, non-zero rc, timeout, and a test that a
+    failing observer does not change status.
+  - `scripts/orchestrate-cycle-postflight.sh` invocation in the completion arm, correctly ordered
+    after the issue-log and metrics writes.
+  - `docs/guides/creating-extensions.md` -- the `observers` schema, the ordering guarantee, the
+    advisory contract, and the WHY NOT LIFECYCLE HOOKS reasoning above.
+  - `context/reference/state-management-schema.md` -- `topic` is now a binding key.
+  - `scripts/check-extension-docs.sh` -- extend the doc/manifest consistency check to cover the new
+    block, so a declared observer with no documentation is caught.
+
+== ACCEPTANCE ==
+
+A test extension declaring an observer on topic `X` has it invoked for a task with topic `X` and
+with topic `X:sub`, and not invoked for topic `Y`; the observer sees a task directory in which this
+dispatch's issue-log and metrics lines are already present; a crashing observer leaves the task's
+status and the orchestration unaffected and produces an rc event; `check-extension-docs.sh` flags an
+undocumented observer; shellcheck clean per context/standards/shell-strict-mode.md.
+
+== DEPENDENCIES ==
+
+Depends on task 327 (the extension lifecycle hook repair), which is COMPLETED: its resolver,
+return-code channel and verification-stage work is the ground this task's "why not reuse" argument
+is measured against, and the guide sections it rewrote are the ones this task extends.
+Depends on the per-dispatch cost-and-timing-record task for the ordering guarantee above (the
+observer must run after both per-dispatch records) and for file-footprint serialization on
+`scripts/orchestrate-cycle-postflight.sh`.
+
+---
+
+### 330. Per-dispatch cost and timing record
+- **Effort**: 4-8 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 329
+
+**Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` is a
+gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
+is silently wiped by the next deploy. See rules/source-store-deploy-boundary.md.
+
+No task-number references in any file written into the source store
+(rules/no-task-references-in-deliverables.md). Cite durable anchors -- filenames, section headings,
+field names -- instead. Task numbers are permitted in this description and in specs/** artifacts.
+
+== GOAL ==
+
+A script, `scripts/dispatch-metrics.sh`, producing an append-only per-task `metrics.jsonl` in the
+task directory -- ONE LINE PER DISPATCH -- called from `scripts/orchestrate-cycle-postflight.sh`'s
+completion, partial AND blocked arms. Without this, the cost of an orchestration is not merely
+unreported, it is unrecoverable.
+
+== WHY: NO COST FIGURE EXISTS ANYWHERE TODAY (MEASURED, 2026-10-03) ==
+
+No token, cost, model or tool-call figure is recorded anywhere under `specs/`. Not one. The figures
+exist only in Claude Code's own transcripts:
+
+  ~/.claude/projects/<slug>/<cc_session_id>.jsonl        (lead session)
+  ~/.claude/projects/<slug>/agent-*.jsonl                (subagent dispatches)
+
+Each message there carries `usage{input_tokens, cache_creation_input_tokens,
+cache_read_input_tokens, output_tokens}` and a `model` field. The join key back to our own records
+is the `cc_session_id` recorded on `session_stop` events in `specs/events.jsonl`.
+
+Three measured traps that have already misled analysis and MUST NOT be repeated:
+
+  - `events.jsonl` `duration_seconds` is THE HOOK SCRIPT'S OWN RUNTIME (measured range 0.2-2.6 s).
+    It is NOT phase duration. Any report that treats it as phase duration is wrong by three orders
+    of magnitude.
+  - `dispatch_seq_counter` is NOT a dispatch count. It advances roughly 3 per dispatch.
+  - Per-phase wall-clock IS derivable, but from PHASE-COMMIT TIMESTAMPS, not from the above.
+    Dispatch counts are derivable from `lifecycle_stage` preflight events. `.dispatch/{seq}.md`
+    carries a `dispatch_start_ts` -- that is the correct dispatch-start anchor.
+
+== WHAT ONE LINE RECORDS ==
+
+  phase kind            research | plan | implement | aux kind | conclusion
+  agent                 the dispatched agent's name
+  model                 as read from the transcript, not as requested by a flag
+  wall_clock_seconds    dispatch start (`.dispatch/{seq}.md` `dispatch_start_ts`) to return.
+                        EXPLICITLY NOT hook runtime -- see the trap above.
+  tokens                by class: input, cache_creation, cache_read, output
+  tool_calls            count, and ideally a per-tool breakdown
+  outcome               completed | partial | blocked | failed | deferred
+  phases_completed      how many plan phases this dispatch closed
+  commits               count and subjects
+  churn                 lines added/removed, SPLIT into inside-specs/ versus outside-specs/.
+                        The split matters: specs/ churn is bookkeeping, outside-specs/ churn is
+                        product.
+  gate_runs             verification/gate invocations with their durations WHERE THE TRANSCRIPT
+                        SHOWS THEM. Where it does not, record absent rather than zero.
+
+== TIMING CONSTRAINT: CAPTURE AT POSTFLIGHT, NOT LATER ==
+
+Tier 4 transcripts have a MEASURED 30-DAY RETENTION WINDOW. The token and tool-call figures are
+therefore perishable: they must be read and written at postflight time, while the transcript is
+still on disk. A design that defers transcript reading to report time is a design that silently
+produces empty metrics for anything older than a month. Honour the telemetry guardrails in
+`extensions/memory/context/project/memory/telemetry-guardrails.md` -- in particular the absent
+`sess_*`-to-OTel join and the evaluator-outside-the-loop constraint.
+
+== --backfill MODE ==
+
+`dispatch-metrics.sh --backfill N` derives, for an already-completed task N, what is STILL
+derivable: per-phase wall-clock from phase-commit timestamps, dispatch counts from `lifecycle_stage`
+preflight events, git churn from the commit range. Every figure produced this way is MARKED AS
+BACKFILLED in the record, so a later report never presents a derived figure as a measured one.
+Token and tool-call figures are omitted (not zeroed) when the transcript is gone.
+
+== NON-BLOCKING ==
+
+A metrics failure NEVER fails a dispatch, never changes status, never emits a user-facing error.
+Warn on stderr and continue. This follows the existing posture of `update-task-status.sh` and of
+`state-write.sh --regen-todo`.
+
+== CALL SITES ==
+
+`scripts/orchestrate-cycle-postflight.sh` receives `--task-type` (measured line 244) and owns the
+completion arm (measured ~1048-1125). RE-MEASURE ALL LINE NUMBERS BEFORE EDITING -- a dependency
+task edits this same file. Wire the completion, partial and blocked arms; a blocked dispatch is
+precisely the one whose cost is most worth knowing and is today recorded nowhere.
+
+== DELIVERABLES ==
+
+  - `scripts/dispatch-metrics.sh`
+  - `scripts/tests/test-dispatch-metrics.sh` -- including a test that a missing transcript yields
+    omitted rather than zeroed token fields, and a test that a metrics failure does not fail the
+    caller.
+  - `context/formats/dispatch-metrics.md` -- the record schema, the join procedure via
+    `cc_session_id`, the three measured traps above stated as warnings, and the 30-day window.
+  - Postflight call sites in all three arms.
+
+== ACCEPTANCE ==
+
+One line per dispatch appears for a real multi-dispatch orchestration; the wall-clock figure is
+dispatch-to-return and demonstrably not hook runtime; a blocked dispatch produces a line; `--backfill`
+on a completed task produces marked-as-backfilled figures and omits what is unrecoverable;
+shellcheck clean per context/standards/shell-strict-mode.md.
+
+== DEPENDENCY ==
+
+Depends on the per-task issue log task for FILE-FOOTPRINT SERIALIZATION on
+`scripts/orchestrate-cycle-postflight.sh`, which both tasks edit. It is also a natural ordering:
+`issues.jsonl` and `metrics.jsonl` are sibling per-task append-only records and should share
+conventions (append atomicity, non-fatal failure, naming), so build the second against the first
+rather than in parallel with it.
+
+---
+
+### 329. Per-task issue log: contract, writer and dispatch threading
+- **Effort**: 4-8 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 326, Task 285
+
+**Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` in
+every repo is a gitignored, disposable deploy artifact regenerated from the source store; a file
+hand-authored there appears to save and is silently wiped by the next deploy. See
+rules/source-store-deploy-boundary.md.
+
+No task-number references in any file written into the source store (rules/no-task-references-in-deliverables.md).
+Task numbers are renumbered by vault operations and are meaningless to a future reader: cite durable
+anchors -- a filename, a section heading, a class name from the taxonomy enum. Task numbers are
+permitted in this description, in specs/** artifacts, and in commit messages, nowhere else.
+
+== GOAL ==
+
+An append-only per-task `issues.jsonl` in the task directory (`specs/{NNN}_{SLUG}/issues.jsonl`),
+written by ONE script -- `issue-record.sh` -- which appends one validated entry per call, and which
+is called by BOTH dispatched agents and the orchestrator. The log survives dispatch overwrites; it
+is CAPTURE ONLY (see the CAPTURE ONLY section below); and it becomes the evidence base from which
+the orchestration conclusion stage derives its proposals.
+
+Model the writer on `scripts/system-defect-record.sh`, which is the existing append-one-validated-
+entry precedent in this codebase (atomic append, schema validation of the entry before it lands,
+non-fatal on failure). Read it first and follow its conventions rather than inventing new ones.
+
+== WHY: WHERE ISSUES GO TODAY (MEASURED, 2026-10-03) ==
+
+Issues are recorded today only as free prose, in six scattered and partly ephemeral places:
+
+  1. Implementation summaries, under free-prose "Plan Deviations" / "Follow-ups" headings.
+  2. `.decisions.json` Q/A entries. (A writer script for this file is the subject of a separate
+     backlog item, task 285, which this task depends on -- see DEPENDENCIES.)
+  3. `progress/phase-N-progress.json` `deviations[]` and `approaches_tried[]` -- present on some
+     tasks only, absent on others.
+  4. Research/implementation handoffs, under "What NOT to Try".
+  5. `.orchestrator-handoff.json` `blockers[]` and `dead_ends` -- rarely populated.
+  6. `.return-meta.json` `errors[]` -- populated for partial/failed/blocked returns only.
+
+Two of these are DESTROYED routinely: `.return-meta.json` and `.orchestrator-handoff.json` are
+OVERWRITTEN on every dispatch, so the detail of a blocked dispatch survives only in the commit
+subject line. A `reflection` field is specified in the state schema but is DEAD: its only writer,
+`scripts/orchestrator-postflight.sh`, has no live callers; zero state.json entries carry it across
+three measured repos; it is present in only 12 of 146 measured `.return-meta.json` files.
+Positive signals -- what worked, what saved time -- have NO home at all.
+`scripts/system-defect-record.sh` plus `skill_orchestrate_append_detected_defect` cover only
+MECHANICALLY DETECTED schema violations in a closed 16-class enum, and are rendered
+accumulate-only at conclusion.
+
+Net effect: the cost of a convention, a gate, or a tooling gap is unrecoverable after the fact.
+
+== ENTRY SCHEMA ==
+
+One JSON object per line. Fields:
+
+  kind              "issue" | "win"  -- positive signals get a home, on equal footing.
+  class             One of the seed enum below. EXTENSIBLE: unknown classes are accepted with a
+                    warning, not refused, so a new failure mode can be recorded the first time it
+                    is hit rather than after a schema change.
+  severity          Ordered scale (choose and document it; e.g. blocking | costly | minor).
+  phase             research | plan | implement | conclusion | other.
+  dispatch_seq      The dispatch sequence number this entry belongs to.
+  what_happened     Free prose, one paragraph. Required.
+  evidence_path     Path to the artifact, log line, commit, or transcript that substantiates it.
+  estimated_cost    Minutes, dispatches, or gate runs LOST (for an issue) or SAVED (for a win).
+                    Record the unit explicitly; do not force everything into minutes.
+  resolution        "fixed_inline" | "worked_around" | "open".
+  suggested_channel "fix_now" | "follow_up_task" | "agent_system". A HINT for the conclusion
+                    stage, never a decision.
+  tags              An OPEN object. Extensions populate it; core neither validates its interior
+                    nor depends on it. This is the seam an extension's own dimension tagging uses.
+
+== SEED CLASS ENUM: THE 15-CLASS TAXONOMY ==
+
+Empirically grounded in 16 completed books tasks in ~/Projects/Logos/Verification. Seed the enum
+with exactly these, with a one-line gloss each in the format doc:
+
+  design-record defect or ambiguity; gate collision; missing cheap verification tier;
+  vacuous or silent pass; tooling bug or gap; resource/OOM including misdiagnosis;
+  plan scope-hypothesis wrong; planned feature absent; language or module-system gotcha;
+  environment; cross-task ownership/territory; stale deploy or source-store boundary;
+  orchestration defect; stale workaround; cost-forced exclusion or substituted verification.
+
+== THREADING: ONE POINT, NOT 78 ==
+
+`scripts/orchestrate-build-dispatch.sh` (measured ~417-558; RE-MEASURE BEFORE EDITING) already
+emits per-dispatch prompt sections -- Identity, Handoff, Territory, Prior Decisions, User-Decision
+Contract. That is a single threading point that reaches EVERY dispatched agent without editing any
+of the 78 agent definition files. Add one `## Issue Log` section there, plus the corresponding
+instruction in the shared includes `context/contracts/wrap-up.md` and
+`context/contracts/phase-closure.md`, so every implementation and research agent is told to RECORD
+AS ISSUES ARISE rather than reconstruct them at the end. Reconstruction at the end is exactly what
+produces the free prose the current state consists of.
+
+Orchestrator-side recording: add calls at the sites that today leave only a commit subject --
+blocked dispatch, off-schema return, recovery, loop-guard exhaustion, and defer. These live in
+`scripts/orchestrate-cycle-postflight.sh`; its completion arm is around lines 1048-1125 (measured;
+RE-MEASURE).
+
+== CAPTURE ONLY -- A HARD BOUNDARY OF THIS TASK ==
+
+Nothing is surfaced to the user mid-run. Nothing is acted on. No proposal is generated, no gate is
+added, no status is changed. Review of the log belongs exclusively to the orchestration conclusion
+stage, which is a separate backlog item (task 273) that this task is a dependency of, and whose
+description has been amended to say that its three channels are DERIVED FROM these logs. Resist
+the pull to add a mid-run summary here: a mid-run surface is the defect the conclusion-stage design
+exists to avoid.
+
+Non-blocking throughout: a failure to record an issue must never fail a dispatch.
+
+== REQUIRED DECISION: RELATION TO THE SIX EXISTING SURFACES ==
+
+Decide and RECORD, in the format doc, the relation of `issues.jsonl` to each of: `.return-meta.json`
+`errors[]`; `progress/phase-N-progress.json` `deviations[]`; handoff `dead_ends`/`blockers`;
+`system_defect` events; and the dead `reflection` field. For each, the verdict is one of SUBSUME
+(the old surface stops being written), MIRROR (both written, one derived from the other), or LEAVE
+(independent, with the boundary stated). If `reflection` is judged subsumed, RETIRE it in the same
+pass -- remove it from the schema, from `KNOWN_ENTRY_FIELDS` in `scripts/validate-state.sh`, and
+from `scripts/orchestrator-postflight.sh` -- rather than leaving a second dead field beside a live
+one. Do not leave this decision implicit.
+
+== DELIVERABLES ==
+
+  - `scripts/issue-record.sh` -- the single writer.
+  - `scripts/tests/test-issue-record.sh` -- schema validation, append atomicity, unknown-class
+    warning path, non-fatal failure path.
+  - `context/formats/issue-log.md` -- the format doc: entry schema, the 15-class enum with glosses,
+    the recorded relation verdicts above, and when an agent should record.
+  - The dispatch threading section and the two shared-contract includes.
+  - Orchestrator-side call sites.
+  - `context/formats/return-metadata-file.md` updated to state the relation verdict for `errors[]`.
+
+== ACCEPTANCE ==
+
+An agent dispatched through `orchestrate-build-dispatch.sh` receives the `## Issue Log` instruction;
+a recorded entry survives a subsequent dispatch's overwrite of `.return-meta.json`; a blocked
+dispatch leaves a structured entry rather than only a commit subject; wins are recordable; the
+relation verdicts are written down; `reflection` is either live or gone, not dead; shellcheck clean
+per context/standards/shell-strict-mode.md.
+
+== DEPENDENCIES AND KNOWN OVERLAP ==
+
+Depends on task 285 (adds the missing `.decisions.json` writer and touches
+`orchestrate-cycle-postflight.sh`) and task 326 (adds `--gate` at implement dispatch and touches
+`orchestrate-build-dispatch.sh`). Both edges are FILE-FOOTPRINT SERIALIZATION on those two scripts,
+not logical prerequisites.
+
+KNOWN OVERLAP, not serialized: task 299 (guarantee detection of in-place plan revision concurrent
+with a live implement dispatch) also edits `scripts/orchestrate-build-dispatch.sh`. Whichever of the
+two lands second must re-measure the line ranges above before editing.
+
+---
 
 ### 328. Systematic script and test corpus efficiency
 - **Status**: [NOT STARTED]
@@ -2350,7 +3009,7 @@ deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 271, Task 184
+- **Dependencies**: Task 271, Task 184, Task 329
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -2424,6 +3083,42 @@ three channels demonstrably cannot fire without its own approval, covered by a t
 meta-builder-agent anti-bypass constraint is shown still to hold for channel (b). Documented in
 docs/architecture/orchestrate-state-machine.md. Shellcheck clean per
 context/standards/shell-strict-mode.md. No task-number references in deliverables outside specs/**.
+
+=== AMENDMENT 2026-10-03: THE THREE CHANNELS ARE DERIVED FROM THE PER-TASK ISSUE LOGS ===
+
+Nothing above is withdrawn or rewritten. This amendment supplies the EVIDENCE BASE the conclusion
+stage's proposals are built from, which was unspecified when this task was filed.
+
+A new dependency has been added: the per-task issue log task (task 329), which introduces an
+append-only `specs/{NNN}_{SLUG}/issues.jsonl` written by `scripts/issue-record.sh` from both
+dispatched agents and the orchestrator, surviving the per-dispatch overwrites of
+`.return-meta.json` and `.orchestrator-handoff.json`. That task is CAPTURE ONLY by design: it
+surfaces nothing to the user mid-run and acts on nothing. Review is THIS stage's job and only this
+stage's job.
+
+THE DERIVATION. This stage's three channels are not composed from the orchestrator's recollection
+of the run. They are DERIVED FROM THE PER-TASK ISSUE LOGS OF THE TASKS THE RUN TOUCHED:
+
+  - Every entry whose `resolution` is `open` or `worked_around` is classified into EXACTLY ONE of
+    the three channels -- (a) what can be fixed now directly; (b) what follow-up tasks are called
+    for in the local repository; (c) what agent-system upgrades are needed, routed via /meta.
+    Exactly one: an entry may not appear in two channels.
+  - The entry's own `suggested_channel` field is a HINT. The ORCHESTRATOR'S JUDGMENT IS THE
+    DECISION. A hint that is overridden should be overridden visibly, not silently.
+  - RECURRING CLASSES ACROSS TASKS ARE GROUPED INTO ONE PROPOSAL. Three tasks hitting the same
+    class is one proposal citing three entries, never three proposals. This is the main reason the
+    derivation is worth doing at all: the recurrence is invisible from any single task.
+  - Entries with `kind: "win"` ARE SUMMARISED, NEVER ACTIONED. Positive signals belong in the
+    report so the user can see what the convention bought; they generate no channel item.
+  - REVIEW HAPPENS ONLY AT THIS STAGE, NEVER MID-RUN. This is the complement of the issue log's
+    capture-only contract, and the two must not drift: if a mid-run surface is ever added, it is
+    added here by amendment, not improvised in the writer.
+  - EACH PROPOSAL CITES ITS ISSUE-LOG ENTRIES -- task number plus entry identifier -- so the user
+    can audit the proposal against its evidence before approving that channel. A proposal with no
+    citation is not presentable.
+
+The per-channel explicit-approval contract above is unchanged by this amendment: deriving a
+proposal from evidence is not approval to fire it.
 
 ---
 
