@@ -31,7 +31,7 @@ next_project_number: 335
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
-285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
+285 [RESEARCHED] — Add the missing .decisions.json writer script and correct the...
   └─ 329 [NOT STARTED] — Per-task issue log: contract, writer and dispatch threading
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
@@ -44,7 +44,7 @@ next_project_number: 335
 
 ### Extensions
 
-334 [NOT STARTED] — Fix two books-extension scaffold contract defects that each...
+334 [RESEARCHING] — Fix two books-extension scaffold contract defects: the hard...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
@@ -76,8 +76,8 @@ next_project_number: 335
 
 ## Tasks
 
-### 334. Fix books scaffold contract defects
-- **Status**: [NOT STARTED]
+### 334. Fix two books-extension scaffold contract defects: the hard implementation agent's artifacts shape and hand-rolled task lookups in both hard skills
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -2482,10 +2482,11 @@ Related files: init.lua.backup, .claude/context/repo/project-overview.md, README
 ---
 
 ### 285. Add the missing .decisions.json writer script and correct the postflight handoff-recovery notice
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per
 rules/source-store-deploy-boundary.md.

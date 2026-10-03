@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791065283_d98d41_285",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
+      "summary": "Confirms no writer exists for .decisions.json (flat-array shape per handoff-schema.md), names errors-append.sh's flock/atomic-mv merge pattern plus system-defect-record.sh's argument-parsing style and lib/task-lookup-lib.sh's task-dir resolution as the precedents for the new orchestrate-record-decision.sh script; and verifies across all seven agent definition files that the postflight RECOVERY notice's 'base-mode research/plan/implement never write one' claim is false for plan/implement (both write .orchestrator-handoff.json unconditionally whenever orchestrator_mode:true, mode-independent) and true only for research (never writes one, in any mode) -- giving the exact phase-conditional fix for orchestrate-cycle-postflight.sh:693."
+    }
+  ],
+  "metadata": {
+    "findings_count": 4
+  },
+  "memory_candidates": [
+    {
+      "content": "When a postflight/notice message claims a phase-dependent behavior ('base-mode X/Y/Z never write...'), verify against each dispatchable agent's own contract section rather than trusting the message: in this codebase, every research agent (general/lean/lean-hard/nix/nvim) carries an identical '.orchestrator-handoff.json -- research agents never write one' section (never, any mode), while every implementation agent and the shared planner-agent carry an identical '(orchestrator-mode dispatches)' section requiring the write whenever orchestrator_mode:true, mode-independent (no hard/base distinction in the condition). A 'mode' qualifier on a handoff-writer claim is a common misdiagnosis for what is actually a 'phase' predicate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrator-handoff", "orchestrate-cycle-postflight", "phase-vs-mode", "research-agent-contract", "handoff-schema"]
+    },
+    {
+      "content": "For a new append-one-entry-to-a-JSON-array-file writer script in agent-system/extensions/core/scripts/, the right composite precedent is: system-defect-record.sh for the surrounding shell (manual while-loop arg parsing, fail-loud validation of every required arg and any --*-json payload via jq -e 'type == \"object\"' before use, source lib/common.sh, then '. deploy-root-guard.sh || exit 1' immediately after so the script refuses to run from the source store itself), but errors-append.sh for the actual write mechanics (flock -x 200 held across read -> merge -> validate-merged-doc -> atomic mv, against a dedicated lock file sibling to the data file, lazy-create the file on first use, jq -c -n record construction, never string concatenation). events-append.sh is NOT the right mechanics precedent despite also being an 'append' script -- it is a JSONL line-appender with no read-modify-write of existing array content, a different shape problem than a JSON-array file.",
+      "category": "PATTERN",
+      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["errors-append.sh", "system-defect-record.sh", "flock", "atomic-mv", "json-array-writer-script"]
+    },
+    {
+      "content": "scripts/lib/task-lookup-lib.sh is the sanctioned sourceable library for task-number-to-task-directory resolution (task_lookup_entry, task_lookup_dir), archive-aware (checks active, then archive, then falls back to the active path for a brand-new task) and read-only (never creates or moves a directory). Prefer sourcing it directly over shelling out to task-lock.sh when no locking/creation semantics are needed beyond the caller's own.",
+      "category": "PATTERN",
+      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["task-lookup-lib", "resolve-task-dir", "task-directory-resolution", "archive-aware-lookup"]
+    }
+  ],
+  "next_steps": "Run /plan 285 to create implementation plan"
+}
