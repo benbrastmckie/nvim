@@ -168,7 +168,13 @@ if [ ! -f "$handoff_file" ] || [ "$handoff_stale" = "true" ]; then
     out_artifact_path=$(echo "$recover_json" | jq -r '.artifact_path // ""')
     out_artifact_type=$(echo "$recover_json" | jq -r '.artifact_type // ""')
     out_artifact_summary=$(echo "$recover_json" | jq -r '.artifact_summary // ""')
-    echo "${notice_prefix} RECOVERY: no handoff written for this dispatch — expected outcome for this phase's writer (base-mode research/plan/implement never write one). .return-meta.json (fresh, within this dispatch window) reports status=${out_dispatch_status}; recovering the dispatch outcome from it." >&2
+    # ORPHANED SCRIPT (zero call sites -- see docs/architecture/orchestrate-cycle-postflight.md's
+    # "What Remains Orphaned" section). This positional interface carries no `phase` argument, so
+    # the notice stays phase-agnostic rather than naming one; the false "base-mode
+    # research/plan/implement never write one" parenthetical this line previously carried has
+    # been removed rather than reproduced -- see orchestrate-cycle-postflight.sh's own
+    # phase-conditional severity split for the live, corrected notice.
+    echo "${notice_prefix} RECOVERY: no handoff written for this dispatch. .return-meta.json (fresh, within this dispatch window) reports status=${out_dispatch_status}; recovering the dispatch outcome from it." >&2
     have_outcome=true
 
     # ── Evidence corroboration (widened detection trigger) ─────────────────────────────────────

@@ -1033,7 +1033,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Distinguishing Agent-tool transport failures from genuine orchestrate work cycles",
-      "line_count": 134,
+      "line_count": 136,
       "keywords": [
         "patterns",
         "orchestrate",

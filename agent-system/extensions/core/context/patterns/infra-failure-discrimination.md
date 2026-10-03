@@ -23,8 +23,10 @@ This discrimination rule is **not** the first thing Move 3 tries inside a
 missing/stale-handoff branch. Outcome recovery via `.return-meta.json`
 (`scripts/orchestrate-recover-outcome.sh`, documented in
 `docs/architecture/handoff-schema.md`'s "Outcome Channels" section) is attempted **first**: for
-the writers that never produce a handoff by design (base-mode research/plan/implement), a missing
-handoff is very often a genuine success, not a failure of any kind — infra or otherwise. Only when
+the writer that never produces a handoff by design (research, in any mode — not plan or
+implement, which write one whenever `orchestrator_mode: true` regardless of hard/base mode), a
+missing handoff is very often a genuine success, not a failure of any kind — infra or otherwise.
+Only when
 that recovery **also declines** (missing, stale, unparseable, `in_progress`, or non-success
 `.return-meta.json`) does control fall through to the two-signal discrimination below. This
 narrows *when* the discrimination fires — a corroborated success recovered above never reaches it

@@ -471,37 +471,60 @@ before relying on it (it is set and validated well above, but re-read rather tha
 
 ---
 
-### Phase 6: De-falsify the Orphaned Copy and the Documented Claim [NOT STARTED]
+### Phase 6: De-falsify the Orphaned Copy and the Documented Claim [COMPLETED]
 
 **Goal**: no remaining surface asserts that base-mode plan or implement never writes a handoff.
 
 **Tasks**:
-- [ ] Re-grep the falsehood's full footprint before editing:
+- [x] Re-grep the falsehood's full footprint before editing:
       `grep -rn 'never write one\|research/plan/implement' --include=*.sh --include=*.md
       agent-system/extensions/core/` and work from what that returns, not from this list.
-- [ ] `scripts/orchestrate-stage5-gates.sh:171` (orphaned, **zero call sites**, no `phase` in its
+      *(completed; also ran `grep -rln 'hard-mode-implement-only' context/ docs/ scripts/` per
+      the Scope Hypothesis note. Footprint was MATERIALLY LARGER than the 3-file hypothesis: 5
+      files, not 3 — the two extra sites were `scripts/orchestrate-recover-outcome.sh`'s own
+      header comment and `scripts/skill-base.sh`'s ORCHESTRATOR MODE comment, both asserting the
+      identical false "only the hard-mode implementation agent writes it" claim, undiscovered by
+      the original research. Fixed both rather than leaving them live, since the acceptance
+      criterion ("no surface... still claims") would otherwise be violated. Reported here per the
+      Scope Hypothesis's own instruction, not silently expanded)*
+- [x] `scripts/orchestrate-stage5-gates.sh:171` (orphaned, **zero call sites**, no `phase` in its
       positional interface): remove the false parenthetical and keep the message truthful and
       phase-agnostic — the handoff is absent and the outcome was recovered from `.return-meta.json`.
-      Do **not** add a `phase` argument to a script with no caller.
-- [ ] `docs/architecture/handoff-schema.md`: correct the per-phase writer predicate at each site
+      Do **not** add a `phase` argument to a script with no caller. *(completed)*
+- [x] `docs/architecture/handoff-schema.md`: correct the per-phase writer predicate at each site
       where it is stated as fact — the "Handoff Writers" table row (~line 446, currently "Never
       writes a handoff, by design" for `planner-agent`/`general-implementation-agent`), the
       base-mode aside (~line 476), the "Outcome Channels" assertion (~line 521), and the "When to
       Write" paragraph (~line 609). Each correction states the verified predicate and cites the
-      agent contract sections as the authority.
-- [ ] `context/patterns/infra-failure-discrimination.md:26`: correct the same claim in place.
-- [ ] `context/schemas/orchestrator-handoff-schema.json`: its top-level `description` states the
+      agent contract sections as the authority. *(completed; also corrected the file's own
+      top-of-document "Written by" summary at lines 7-13, a 5th false-claim site inside this same
+      file beyond the plan's named four, found during editing)*
+- [x] `context/patterns/infra-failure-discrimination.md:26`: correct the same claim in place.
+      *(completed)*
+- [x] `context/schemas/orchestrator-handoff-schema.json`: its top-level `description` states the
       same falsehood as binding decision (1) — "this artifact is hard-mode-implement-only --
       base-mode research/plan/implement return via `.return-meta.json` ... never this file".
       Correct that clause to the verified predicate. Change **only** the prose `description`
       strings; touch no `required`, `enum`, `type`, or property definition, so no consumer's
-      validation behavior changes. Re-validate with `jq empty` afterwards.
-- [ ] Where a corrected statement conflicts with the surrounding one-channel-per-mode design
+      validation behavior changes. Re-validate with `jq empty` afterwards. *(completed; `git diff`
+      confirms only the `description` string changed)*
+- [x] Where a corrected statement conflicts with the surrounding one-channel-per-mode design
       narrative, state the divergence explicitly and briefly (the agent contracts and the live
       evidence are the authority for what the writers do) rather than silently rewriting the
       decision record. If the correction cannot be made without restructuring that narrative, make
       the minimal factual fix and record the restructuring as an observation in the phase's commit
-      message — it is an explicit Non-Goal of this task.
+      message — it is an explicit Non-Goal of this task. *(completed: added an explicit
+      "Divergence note" paragraph in the "Outcome Channels" section rather than silently rewriting
+      the one-channel-per-mode decision record; the broader design-reconciliation question is
+      left as an observation, not resolved)*
+
+**Non-fix, confirmed in scope**: `agents/general-research-agent.md:241` also carries
+"hard-mode-implement-only" inside its own "research agents never write one" subsection — this is
+the explicit Non-Goal ("Not fixing the 'hard-mode-implement-only' phrasing inside the five
+research agents' own 'never write one' subsections") and was deliberately left untouched. The
+sweep found this phrasing present in ALL ~23 research agents (a shared-template artifact), not
+only five — the Non-Goal's scope is unaffected by the corrected count, since it excludes this
+class of site by description, not by an exact number.
 
 **Timing**: 1 hour
 

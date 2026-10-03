@@ -4,13 +4,14 @@
 
 **File location**: `specs/{NNN}_{SLUG}/.orchestrator-handoff.json` (per-dispatch runtime state,
 tracked as durable provenance)
-**Written by**: A hard-mode implementation agent only — this artifact is formally
-hard-mode-implement-only (see "Handoff Writers" below). Core's own standalone hard-mode
-implementation agent was deleted along with the rest of core's `-hard` lifecycle skills/agents;
-today only cslib's and lean's hard-mode implementation agents still write this file, since core's
+**Written by**: Every plan and implement agent, whenever the delegation context carries
+`orchestrator_mode: true` — independent of hard/base mode (see "Handoff Writers" below). Research
+agents never write this file, in any mode. Core's own standalone hard-mode implementation agent
+was deleted along with the rest of core's `-hard` lifecycle skills/agents; core's
 `general`/`meta`/`markdown` task types now resolve hard-mode implement dispatch to the SAME
-base-mode `general-implementation-agent`, which never writes a handoff — see "Handoff Writers"
-below for the full, current writer set.
+base-mode `general-implementation-agent` used by standard mode — which, like every other
+implementation agent and `planner-agent`, writes this file under `orchestrator_mode: true` — see
+"Handoff Writers" below for the full, current writer set.
 **Read by**: `skill-orchestrate`'s state machine loop (a single engine now covers both effort
 modes)
 **Machine-checkable schema**: `context/schemas/orchestrator-handoff-schema.json` is the single
@@ -426,24 +427,28 @@ ${log_prefix} COMPLETION-CLAIM GATE case 3/3 (phase accounting absent, plan_mark
 
 ### Handoff Writers — the settled decision, in one place
 
-`.orchestrator-handoff.json` is formally **hard-mode-implement-only**. Base-mode
-research/plan/implement return via `.return-meta.json` (recovered by
-`orchestrate-recover-outcome.sh` — see "Outcome Channels" below); research agents never write a
-handoff at all, in any mode. This is a decided contract, not a default that happened to emerge.
+`.orchestrator-handoff.json` is written by **every plan and implement agent, whenever the
+delegation context carries `orchestrator_mode: true`** — independent of hard/base mode. Research
+agents never write a handoff at all, in any mode, regardless of `orchestrator_mode`. This is a
+decided contract, not a default that happened to emerge. (Corrected from an earlier,
+**false** "hard-mode-implement-only" framing of this same decision — see the agent contracts
+named in the table below as the authority, not this prose.)
 
-Core's own standalone hard-mode implementation agent (the former sole core writer, H9 Stage 5)
-was deleted along with the rest of core's `-hard` lifecycle skills/agents. Core's
-`general`/`meta`/`markdown` task types now resolve hard-mode implement dispatch to the SAME
-base-mode `general-implementation-agent` used by standard mode (routing_agents_hard for core was
-removed; resolution falls through to routing_agents) — which, per the base-mode row below, never
-writes a handoff. **Consequence**: core task types produce no `.orchestrator-handoff.json` under
-`--hard` any more than they do under standard mode; only cslib and lean, which still declare
-their own hard-mode implementation agents, remain active writers.
+Core's own standalone hard-mode implementation agent (the former sole core writer under the old
+hard/base split, H9 Stage 5) was deleted along with the rest of core's `-hard` lifecycle
+skills/agents. Core's `general`/`meta`/`markdown` task types now resolve hard-mode implement
+dispatch to the SAME base-mode `general-implementation-agent` used by standard mode
+(routing_agents_hard for core was removed; resolution falls through to routing_agents) — which,
+like every other implementation agent and `planner-agent`, writes `.orchestrator-handoff.json`
+under `orchestrator_mode: true` regardless of hard/base mode. **Consequence**: core task types
+write `.orchestrator-handoff.json` under `/orchestrate` exactly as every other extension's
+implementation agent does; cslib and lean are not a special case among writers — every
+implementation agent, plus `planner-agent`, is a writer under this one `orchestrator_mode` gate.
 
 | Writer | Status | Continuation form emitted | Notes |
 |--------|--------|----------------------------|-------|
-| cslib and lean hard-mode implementation agent counterparts | Active | **Flat** `continuation_path` | The only writers of `.orchestrator-handoff.json` today (core's own counterpart is deleted; see above), with two known, named, unlanded gaps left as follow-ups (both extensions are out of this document's declared scope): `cslib-implementation-hard-agent.md` Stage 5 hardcodes `continuation_context: null` with no population instruction, and lacks the `artifacts`-shape spec; `lean-implementation-hard-agent.md` Stage 5 omits `artifacts` entirely and also carries a redundant `continuation_context: null` now that only the flat form is canonical. See `context/contracts/wrap-up.md`'s canonical schema |
-| Base-mode `general-research-agent`, `planner-agent`, `general-implementation-agent` (used for BOTH standard and hard-mode dispatch on core task types) | Never writes a handoff, by design | Neither (no handoff written at all) | Research is explicitly prohibited from writing one (the `.orchestrator-handoff.json` — research agents never write one section in the research-agent contracts); plan/implement rely exclusively on `.return-meta.json`. This is the decided, expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
+| Every `*-implementation-agent`/`*-implement-agent` plus `planner-agent`, across every extension | Active under `orchestrator_mode: true` (any mode, hard or base) | **Flat** `continuation_path` (sole exception: `cslib-implementation-hard-agent.md` writes inline and unconditionally, independent of `orchestrator_mode`, since it is hard-mode-only) | Two known, named, unlanded gaps left as follow-ups (both extensions are out of this document's declared scope): `cslib-implementation-hard-agent.md` Stage 5 hardcodes `continuation_context: null` with no population instruction, and lacks the `artifacts`-shape spec; `lean-implementation-hard-agent.md` Stage 5 omits `artifacts` entirely and also carries a redundant `continuation_context: null` now that only the flat form is canonical. See `context/contracts/wrap-up.md`'s canonical schema |
+| Every `*-research-agent`, across every extension | Never writes a handoff, by design, in any mode | Neither (no handoff written at all) | Research is explicitly prohibited from writing one (the `.orchestrator-handoff.json` — research agents never write one section in the research-agent contracts). This is the decided, expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
 
 Every agent contract that could nonetheless end up writing this file carries its own "Defensive
 case" paragraph covering exactly that scenario; those paragraphs are the fallback guidance for
@@ -517,21 +522,38 @@ completion-claim gate.
 
 ## Outcome Channels
 
-**One channel per mode, by decision.** Hard-mode implement writes `.orchestrator-handoff.json`
-and only that; base-mode research/plan/implement write `.return-meta.json` and only that. Neither
-is a fallback bolted onto the other's absence — each mode has exactly one designated channel, and
-the "missing handoff" branch below fires by design for base-mode dispatches every time, not as an
-error condition.
+**Channel count depends on phase and `orchestrator_mode`, not on hard/base mode.** `.return-meta.json`
+is written by every research/plan/implement dispatch, every time, per each skill's own Stage 7
+postflight contract — this part is unconditional. `.orchestrator-handoff.json` is written ADDITIONALLY
+by plan and implement whenever the delegation context carries `orchestrator_mode: true` (i.e. the
+dispatch came from `/orchestrate`, in any effort mode); research never writes it, in any mode or
+dispatch source. So: research always has exactly one channel; plan and implement have one channel
+under a standalone `/plan`/`/implement` invocation (no `orchestrator_mode`) and two channels under
+`/orchestrate` (both files).
+
+**Divergence note (correcting an earlier, false "one channel per mode" framing of this same
+decision)**: an earlier version of this section stated that hard-mode implement writes only
+`.orchestrator-handoff.json` and base-mode research/plan/implement write only `.return-meta.json`
+— each mode "exactly one designated channel." That framing is factually false for plan and
+implement: both effort modes write `.orchestrator-handoff.json` under `/orchestrate`, and both
+always write `.return-meta.json` regardless of effort mode or dispatch source. The agent contracts
+(see Handoff Writers above) are the authority for what each writer actually does. Whether the
+broader one-channel-per-mode design intent should instead be reconciled with (rather than merely
+corrected against) this reality is logged as an explicit Non-Goal of the task that made this
+correction, not resolved here.
 
 `.orchestrator-handoff.json` is the outcome channel Move 3 (covering single-task base/hard mode
-and multi-task alike — formerly separate Stage 5 and Stage MT-4 step 1 sites) reads after a dispatch, for the one mode that writes it — see
-Handoff Writers above.
+and multi-task alike — formerly separate Stage 5 and Stage MT-4 step 1 sites) reads after a
+dispatch, for the writers that produce it under `orchestrator_mode: true` — see Handoff Writers
+above.
 
 `.return-meta.json` is read inside the missing/stale-handoff branch, which is the expected,
-every-time path for the writers in the "Never writes a handoff, by design" row: a missing handoff
-from base-mode research, plan, or implement is the designed outcome for those writers, not a
-defect, since `.return-meta.json` is written by every research/plan/implement dispatch (base and
-hard mode alike) per each skill's own Stage 7 postflight contract.
+every-time path for research (which never writes a handoff, by design, in any mode): a missing
+handoff from a research dispatch is the designed outcome, not a defect. The same branch is also
+the correct (and, by the Phase 5 correction above, now accurately-labeled) recovery path on the
+rarer occasions a plan or implement dispatch's handoff is genuinely absent despite being
+contractually required — see the postflight notice severity split this same correction pass
+introduced at `orchestrate-cycle-postflight.sh`.
 
 `agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh` is the single, shared
 implementation of this fallback — the ONE place that normalizes `.return-meta.json`'s `status`,
@@ -603,26 +625,27 @@ advisory). Never truncate `status`, `summary`, or `blockers`.
 
 ### When to Write
 
-Only the hard-mode implementation agent writes `.orchestrator-handoff.json` — see "Handoff
-Writers" above for the settled, one-channel-per-mode contract. `orchestrator_mode: true` in the
-delegation context is a necessary condition (the file is never written outside orchestrator
-dispatch) but not a sufficient one: base-mode research/plan/implement also receive
-`orchestrator_mode: true` under `/orchestrate`, and correctly write `.return-meta.json` only,
-never this file.
+Every plan and implement agent writes `.orchestrator-handoff.json` whenever the delegation
+context carries `orchestrator_mode: true` — independent of hard/base mode (see "Handoff Writers"
+above). Research agents never write it, in any mode. `orchestrator_mode: true` is a necessary
+condition for every writer (the file is never written outside orchestrator dispatch) and, for
+plan/implement specifically, also a sufficient one — every plan/implement agent writes it
+whenever that flag is true, hard or base mode alike. Research is the sole exception to
+sufficiency: it never writes the file regardless of the flag.
 
 ```bash
-# In a hard-mode implementation agent's Stage 5 (cslib/lean; core's own is deleted), after
-# receiving delegation context:
+# In any plan or implement agent's own wrap-up step (base or hard mode alike), after receiving
+# delegation context:
 orchestrator_mode=$(echo "$delegation_context" | jq -r '.orchestrator_mode // "false"')
 
 if [ "$orchestrator_mode" = "true" ]; then
-  write_orchestrator_handoff   # hard-mode implement only
+  write_orchestrator_handoff   # every plan/implement agent, any effort mode
 fi
 ```
 
-When NOT in orchestrator mode (normal `/research`, `/plan`, `/implement` invocation), or when in
-base mode, no skill writes this file. The file's presence signals a hard-mode implement dispatch
-specifically, not orchestrator dispatch in general.
+When NOT in orchestrator mode (normal `/research`, `/plan`, `/implement` invocation), no skill
+writes this file — only `.return-meta.json`. The file's presence signals an `/orchestrate`
+dispatch to plan or implement specifically (any effort mode), not a hard-mode-only signal.
 
 ### File Path
 

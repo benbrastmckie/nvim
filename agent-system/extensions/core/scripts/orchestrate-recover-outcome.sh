@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # orchestrate-recover-outcome.sh — Shared .return-meta.json outcome-recovery helper for /orchestrate.
 #
-# Purpose: `.orchestrator-handoff.json` is written by exactly one active writer today (the
-# hard-mode implementation agent's H9 wrap-up). Base-mode research, plan, and implement
-# dispatches never write one — by contractual design for research (Stage 3.6 "Scoping
-# Decision"), and simply never implemented for base-mode plan/implement. Before this script,
+# Purpose: `.orchestrator-handoff.json` is written by every plan and implement agent whenever
+# the delegation context carries `orchestrator_mode: true` -- independent of hard/base mode.
+# Research dispatches never write one, in any mode -- by contractual design (Stage 3.6 "Scoping
+# Decision"). A standalone (non-orchestrator) research, plan, or implement invocation never
+# writes one either, since `orchestrator_mode` is absent there. Before this script,
 # Stage 5 (single-task base and hard mode) and Stage MT-4 (multi-task) each treated every missing
 # handoff identically as a suspected defect, with no way to tell "this dispatch's writer never
 # produces a handoff, and it succeeded anyway" from "something actually broke." This script is

@@ -1,0 +1,63 @@
+{
+  "phase": 6,
+  "phase_name": "De-falsify the Orphaned Copy and the Documented Claim",
+  "started_at": "2026-10-03T02:25:00Z",
+  "last_updated": "2026-10-03T03:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-grep the falsehood's footprint and fix the orphaned orchestrate-stage5-gates.sh notice",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Correct handoff-schema.md at every factual site (top summary, Handoff Writers, Outcome Channels, When to Write)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]
+    },
+    {
+      "id": 3,
+      "description": "Correct infra-failure-discrimination.md and orchestrator-handoff-schema.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
+        "agent-system/extensions/core/context/schemas/orchestrator-handoff-schema.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Fix two additionally-discovered sites: orchestrate-recover-outcome.sh and skill-base.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+        "agent-system/extensions/core/scripts/skill-base.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Repair index-entries.json line_count drift from editing infra-failure-discrimination.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.footprint",
+      "description": "Footprint was larger than the plan's 3-file hypothesis",
+      "type": "altered",
+      "reason": "grep -rln 'hard-mode-implement-only' context/ docs/ scripts/ surfaced two sites beyond the plan's named handoff-schema.md/infra-failure-discrimination.md/orchestrator-handoff-schema.json: scripts/orchestrate-recover-outcome.sh's header comment and scripts/skill-base.sh's ORCHESTRATOR MODE comment, both asserting the identical false claim. Fixed both so the acceptance criterion (no surface still claims this) holds; reported per the Scope Hypothesis's own instruction rather than silently expanding.",
+      "annotation": "*(deviation: altered — found and fixed 2 additional false-claim sites beyond the plan's named 3 files)*"
+    },
+    {
+      "task_id": "6.handoff-schema",
+      "description": "A 5th false-claim site inside handoff-schema.md beyond the plan's named 4",
+      "type": "altered",
+      "reason": "The file's own top-of-document 'Written by' summary (lines 7-13) also stated the false claim and was not named by the plan's ~446/~476/~521/~609 line list. Corrected for consistency with the rest of the file.",
+      "annotation": "*(deviation: altered — corrected an additional false-claim site in the same file's top summary)*"
+    }
+  ]
+}

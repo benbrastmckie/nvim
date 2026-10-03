@@ -312,10 +312,12 @@ _events_append_observable() {
 }
 
 # ORCHESTRATOR MODE: Support for skill-orchestrate dispatch.
-# .orchestrator-handoff.json is a hard-mode-implement-only artifact: only the hard-mode
-# implementation agent writes it (via the Write tool, per context/contracts/wrap-up.md's H9
-# contract). Base-mode research/plan/implement return via .return-meta.json, recovered by
-# orchestrate-recover-outcome.sh. Research agents never write a handoff at all.
+# .orchestrator-handoff.json is written by every plan and implement agent whenever the
+# delegation context carries orchestrator_mode: true -- independent of hard/base mode (via the
+# Write tool, per context/contracts/wrap-up.md's H9 contract, which every plan/implement agent
+# follows, not only hard-mode ones). Every dispatch also always writes .return-meta.json,
+# recovered by orchestrate-recover-outcome.sh when a handoff is absent or stale. Research agents
+# never write a handoff at all, in any mode.
 # See: .claude/docs/architecture/handoff-schema.md and
 # .claude/context/schemas/orchestrator-handoff-schema.json
 
