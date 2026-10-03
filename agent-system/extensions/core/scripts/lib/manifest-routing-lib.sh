@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # manifest-routing-lib.sh - Single source of truth for the manifest routing ladder.
 #
-# Sourced (never executed) by command-route-skill.sh and command-route-agent.sh, and by
-# lint-routing-wiring.sh / test-routing-resolution.sh for validation. Implements the one
-# five-step first-match-wins precedence ladder every routing consumer now shares:
+# Sourced (never executed) by command-route-agent.sh, and by lint-routing-wiring.sh /
+# test-routing-resolution.sh for validation. Implements the one five-step first-match-wins
+# precedence ladder every routing consumer now shares:
 #   1. non-core extension manifest, exact task_type match
 #   2. non-core extension manifest, compound-base task_type match (task_type contains ":")
 #   3. core extension manifest, exact task_type match
@@ -30,8 +30,8 @@
 #     always returns 0, on both hit and miss.
 #
 # Manifest source: `${ROUTE_MANIFEST_ROOT:-.claude}/extensions/*/manifest.json`. Every live
-# routing consumer (command-route-skill.sh, command-route-agent.sh, the orchestrate skills) runs
-# with the default unset, resolving against `.claude/extensions/*/manifest.json` -- the DEPLOYED
+# routing consumer (command-route-agent.sh, the orchestrate skills) runs with the default unset,
+# resolving against `.claude/extensions/*/manifest.json` -- the DEPLOYED
 # tree, matching every existing consumer this library replaces, not the
 # agent-system/extensions/** source store. Callers run post-deploy, from a working directory at
 # the repo root.
@@ -45,10 +45,9 @@
 # Usage:
 #   source .claude/scripts/lib/manifest-routing-lib.sh
 #   manifest=$(routing_core_manifest)
-#   routing_lookup "routing" "research" "general"
+#   routing_lookup "routing_agents" "research" "general"
 #   value="$_ROUTE_LAST_VALUE"                   # resolved value, or empty on a miss
 #   via="$_ROUTE_LAST_VIA"                        # noncore-exact|noncore-compound|core-exact|core-compound|miss
-#   manifest=$(routing_manifest_for_task_type "epi")
 #   routing_trace "research" "epi" "" "$value" "$via"
 #   routing_lookup_flat "hard_contracts" "general"
 #
@@ -56,9 +55,8 @@
 # command substitution forks a subshell, and a subshell's variable assignments never propagate
 # back to the caller, which would silently strand both of routing_lookup's outputs. Read its
 # result from $_ROUTE_LAST_VALUE / $_ROUTE_LAST_VIA immediately after the call, the same way
-# SKILL_NAME/AGENT_NAME are read as plain (non-subshelled) variables today. The two
-# `routing_*_manifest` helpers have no second output to strand, so they remain ordinary
-# echo-and-capture functions.
+# AGENT_NAME is read as a plain (non-subshelled) variable today. `routing_core_manifest` has no
+# second output to strand, so it remains an ordinary echo-and-capture function.
 
 # routing_core_manifest -- echoes the path to the manifest whose .name == "core", or empty.
 # Replaces the old routing_exempt:true-based identification (Defect 4): routing_exempt is not
@@ -75,44 +73,6 @@ routing_core_manifest() {
     fi
   done
   unset _route_manifest _route_name
-  return 0
-}
-
-# routing_manifest_for_task_type -- echoes the path to the manifest whose .routing.{research,
-# plan, implement} keys contain $1 (task_type), exact or compound-base match. This is the
-# Defect-3 fix: scans the same routing-key data command-route-skill.sh already reads (an
-# extension may declare several aliases for itself, e.g. epidemiology's "epi"/"epi:study"/
-# "epidemiology") rather than either the manifest's singular .task_type field alone (which would
-# miss aliases) or directory-name guessing (which assumes directory == task_type).
-routing_manifest_for_task_type() {
-  local _route_task_type="$1"
-  local _route_manifest _route_hit _route_base
-  for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
-    [ -f "$_route_manifest" ] || continue
-    _route_hit=$(jq -r --arg tt "$_route_task_type" \
-      '([(.routing.research // {}), (.routing.plan // {}), (.routing.implement // {})][] | has($tt)) // false' \
-      "$_route_manifest" 2>/dev/null | grep -m1 true || true)
-    if [ "$_route_hit" = "true" ]; then
-      echo "$_route_manifest"
-      unset _route_task_type _route_manifest _route_hit _route_base
-      return 0
-    fi
-  done
-  if printf '%s' "$_route_task_type" | grep -q ":"; then
-    _route_base=$(printf '%s' "$_route_task_type" | cut -d: -f1)
-    for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
-      [ -f "$_route_manifest" ] || continue
-      _route_hit=$(jq -r --arg tt "$_route_base" \
-        '([(.routing.research // {}), (.routing.plan // {}), (.routing.implement // {})][] | has($tt)) // false' \
-        "$_route_manifest" 2>/dev/null | grep -m1 true || true)
-      if [ "$_route_hit" = "true" ]; then
-        echo "$_route_manifest"
-        unset _route_task_type _route_manifest _route_hit _route_base
-        return 0
-      fi
-    done
-  fi
-  unset _route_task_type _route_manifest _route_hit _route_base
   return 0
 }
 
@@ -287,8 +247,8 @@ routing_lookup_flat() {
 
 # routing_trace -- emits one `[LABEL] op=.. task_type=.. effort=.. resolved=.. via=..` line to
 # stderr. Never writes to stdout (would corrupt a caller capturing routing_lookup's own output).
-# $6 (optional) overrides the bracketed label, default "route" (command-route-skill.sh's shape);
-# command-route-agent.sh passes "route-agent" for its own, otherwise-identical trace shape.
+# $6 (optional) overrides the bracketed label, default "route"; command-route-agent.sh passes
+# "route-agent" for its own, otherwise-identical trace shape.
 routing_trace() {
   local _route_op="$1" _route_task_type="$2" _route_effort="$3" _route_resolved="$4" _route_via="${5:-}" _route_label="${6:-route}"
   echo "[${_route_label}] op=${_route_op} task_type=${_route_task_type} effort=${_route_effort} resolved=${_route_resolved} via=${_route_via}" >&2

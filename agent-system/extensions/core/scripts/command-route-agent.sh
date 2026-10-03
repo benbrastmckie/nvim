@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # command-route-agent.sh — Resolve task_type to AGENT_NAME via extension manifest lookup
 #
-# The agent-level counterpart to command-route-skill.sh: both source the same
-# manifest-routing-lib.sh ladder, against routing_agents/routing_agents_hard instead of
-# routing/routing_hard. This is the resolver skill-orchestrate calls (both effort modes, one
-# engine today), replacing its prior independent case tables, directory probes, sed derivations,
-# and — before the standalone hard-mode engine was merged in and deleted — that engine's own
-# no-break last-match-wins manifest loop.
+# Sources the shared manifest-routing-lib.sh ladder against routing_agents/routing_agents_hard --
+# the sole surviving routing block pair since the routing-ladder collapse retired the parallel
+# skill-level routing/routing_hard blocks and their resolver. This is the resolver
+# skill-orchestrate calls (both effort modes, one engine today), replacing its prior independent
+# case tables, directory probes, sed derivations, and — before the standalone hard-mode engine
+# was merged in and deleted — that engine's own no-break last-match-wins manifest loop.
 #
 # USAGE:
 #   source .claude/scripts/command-route-agent.sh "$op" "$TASK_TYPE" "$default_agent" "${effort_flag:-}"
@@ -40,10 +40,9 @@
 #     miss on routing_agents_hard falls back to the extension's own declared standard agent
 #     rather than discarding it, so --hard is never LESS specific than standard mode for
 #     extensions that declare routing_agents without a routing_agents_hard block. The
-#     caller-supplied default is reached only on a genuine total miss of both blocks — mirroring
-#     command-route-skill.sh's own standard-then-hard composition shape. In practice this
-#     default is always a base agent name (see $3 above); it is never itself a "-hard"-suffixed
-#     name today.
+#     caller-supplied default is reached only on a genuine total miss of both blocks. In practice
+#     this default is always a base agent name (see $3 above); it is never itself a
+#     "-hard"-suffixed name today.
 #
 # NOTE: This script uses source semantics. It must be sourced (not executed) to export
 #       AGENT_NAME to the calling shell environment. It must NEVER call exit — a faulty
@@ -59,9 +58,9 @@ _route_task_type="$2"
 _route_default_agent="$3"
 _route_effort_flag="${4:-}"
 
-# Standard-block lookup, computed unconditionally up front (mirrors command-route-skill.sh's own
-# standard-then-hard composition shape) so a hard-mode miss on routing_agents_hard has an
-# already-resolved standard value to fall back to instead of the caller's generic hard default.
+# Standard-block lookup, computed unconditionally up front so a hard-mode miss on
+# routing_agents_hard has an already-resolved standard value to fall back to instead of the
+# caller's generic hard default.
 routing_lookup "routing_agents" "$_route_op" "$_route_task_type"
 _route_std_value="$_ROUTE_LAST_VALUE"
 _route_std_via="$_ROUTE_LAST_VIA"

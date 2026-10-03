@@ -89,7 +89,6 @@
       "command-gate-in.sh",
       "command-gate-out.sh",
       "command-route-agent.sh",
-      "command-route-skill.sh",
       "deploy-headless.sh",
       "deploy-root-guard.sh",
       "errors-append.sh",

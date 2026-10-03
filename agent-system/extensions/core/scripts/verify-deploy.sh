@@ -883,14 +883,16 @@ say ""
 
 fi
 # ── 16. hard_contracts migration warning (non-blocking) ───────────────────────
-# routing_hard/routing_agents_hard are slated for outright removal once the two dependent
-# follow-on tasks land -- NOT a migration to hard_contracts, which is an unrelated manifest key:
-# it resolves the list of behavioral-contract files injected into a --hard dispatch's prompt,
-# never a skill or agent name (see context/guides/manifest-routing-schema.md). This gate
-# WARNS, never fails: both blocks remain genuinely consulted by command-route-skill.sh (for
-# /research, /plan, /implement) and by command-route-agent.sh until those two follow-on tasks
-# land, so declaring them today is not yet an error -- only a removal-is-coming nudge for
-# new/updated extensions.
+# routing_hard was retired by the routing-ladder collapse (no manifest declares it any longer;
+# this gate's jq check keeps looking for it defensively, in case it ever reappears). The
+# surviving block, routing_agents_hard, is itself slated for outright removal once the one
+# remaining follow-on (migrating cslib/lean onto hard_contracts) lands -- NOT a migration of
+# routing_agents_hard's VALUES onto hard_contracts, which is an unrelated manifest key: it
+# resolves the list of behavioral-contract files injected into a --hard dispatch's prompt, never
+# a skill or agent name (see context/guides/manifest-routing-schema.md). This gate WARNS, never
+# fails: routing_agents_hard remains genuinely consulted by command-route-agent.sh until that
+# follow-on lands, so declaring it today is not yet an error -- only a removal-is-coming nudge
+# for new/updated extensions.
 if gate_selected 16; then
 say "16. hard_contracts migration warning (routing_hard/routing_agents_hard)"
 CURRENT_GATE="gate16"

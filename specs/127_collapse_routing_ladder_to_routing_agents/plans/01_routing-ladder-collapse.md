@@ -282,35 +282,48 @@ collapsed. Confirm at implementation time with
 
 ---
 
-### Phase 4: Retire `command-route-skill.sh` and prune the dead skill-side resolution path [NOT STARTED]
+### Phase 4: Retire `command-route-skill.sh` and prune the dead skill-side resolution path [COMPLETED]
 
 **Goal**: The skill-side resolver, its manifest declaration, its now-callerless library helper,
 and the one-line references to it in enumerations are gone; the resolution test is retargeted
 rather than left silently hollow.
 
 **Tasks**:
-- [ ] Re-run `grep -rn 'command-route-skill' agent-system/` and confirm the only remaining
+- [x] Re-run `grep -rn 'command-route-skill' agent-system/` and confirm the only remaining
       occurrences are the ones this phase deletes or rewrites (Phase 1 cleared `epi.md`;
-      Phases 5-6 own the documents)
-- [ ] Delete `agent-system/extensions/core/scripts/command-route-skill.sh`
-- [ ] Remove `"command-route-skill.sh"` from `core/manifest.json`'s `provides.scripts` array
-- [ ] Delete `routing_manifest_for_task_type()` from `manifest-routing-lib.sh` (no live caller;
+      Phases 5-6 own the documents) *(completed: 13 non-.sh occurrences remain; 10 match the
+      plan's named Phase 5/6 files exactly, but 3 extra files were NOT accounted for by either
+      phase's Files-to-modify list -- research-flow-example.md, adding-domains.md,
+      extension-development.md. Recorded as a deviation in the progress file; deferred to Phase
+      6's scope since Phase 6's own verification requires zero occurrences repo-wide)*
+- [x] Delete `agent-system/extensions/core/scripts/command-route-skill.sh` *(completed)*
+- [x] Remove `"command-route-skill.sh"` from `core/manifest.json`'s `provides.scripts` array *(completed)*
+- [x] Delete `routing_manifest_for_task_type()` from `manifest-routing-lib.sh` (no live caller;
       reads only the now-deleted `routing` block) and remove its usage-example line from the
-      library header
-- [ ] Update `manifest-routing-lib.sh`'s header prose that describes the ladder as serving
-      `command-route-skill.sh` and `.routing`/`.routing_hard`
-- [ ] Retarget `test-routing-resolution.sh`: remove Assert 1 (it built its matrix from
+      library header *(completed)*
+- [x] Update `manifest-routing-lib.sh`'s header prose that describes the ladder as serving
+      `command-route-skill.sh` and `.routing`/`.routing_hard` *(completed: also fixed 2 more
+      header mentions beyond the ones the plan called out, at the "Manifest source" and
+      `routing_trace` comments)*
+- [x] Retarget `test-routing-resolution.sh`: remove Assert 1 (it built its matrix from
       `.routing`/`.routing_hard` and exercised the deleted resolver), keep Assert 2
       (`routing_agents`/`routing_agents_hard` via `command-route-agent.sh`), and update the
       file header plus the now-obsolete "one surviving `command-route-skill.sh` caller" comment
-- [ ] Remove `scripts/command-route-skill.sh` from `shell-strict-mode.md`'s sourced-scripts enumeration
-- [ ] Correct `verify-deploy.sh` gate 16's comment prose (around lines 886-890) so it no longer
+      *(completed)*
+- [x] Remove `scripts/command-route-skill.sh` from `shell-strict-mode.md`'s sourced-scripts enumeration *(completed)*
+- [x] Correct `verify-deploy.sh` gate 16's comment prose (around lines 886-890) so it no longer
       claims both blocks are consulted by `command-route-skill.sh`; state that only
       `routing_agents_hard` survives and name the remaining follow-on as the gate's destination.
-      Leave the gate's jq logic unchanged
-- [ ] Confirm the deleted script is absent from `script-inventory.sh` and
+      Leave the gate's jq logic unchanged *(completed; jq logic untouched)*
+- [x] Confirm the deleted script is absent from `script-inventory.sh` and
       `utility-scripts-inventory.md` (verified during planning: it is not listed in either, and
-      both files belong to a concurrent sibling's territory — do not edit them)
+      both files belong to a concurrent sibling's territory — do not edit them) *(completed:
+      confirmed via grep, zero hits; no edit made)*
+- [x] *(deviation: added -- not in original task list)* Reword 3 comment-only
+      `command-route-skill.sh` mentions in `command-route-agent.sh` and 1 in
+      `test-routing-resolution.sh`'s own new header comment, discovered necessary because this
+      phase's own verification requires zero `command-route-skill` occurrences in any `.sh` file
+      repo-wide, not only in the deleted script itself
 
 **Timing**: 1 hour
 
@@ -334,12 +347,14 @@ either turns up an executable caller this plan has not accounted for.
 - `agent-system/extensions/core/scripts/tests/test-routing-resolution.sh` - drop Assert 1, keep Assert 2, update header and stale caller comment
 - `agent-system/extensions/core/context/standards/shell-strict-mode.md` - remove the script from the sourced-scripts enumeration
 - `agent-system/extensions/core/scripts/verify-deploy.sh` - correct gate 16's comment prose only
+- *(deviation: added)* `agent-system/extensions/core/scripts/command-route-agent.sh` - reword 3 comment-only `command-route-skill.sh` mentions (required for the "zero in any .sh file" verification bullet below)
+- *(deviation: added)* `agent-system/extensions/cslib/skills/skill-cslib-research-hard/SKILL.md`, `skill-cslib-implementation-hard/SKILL.md`, `agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md`, `skill-lean-implementation-hard/SKILL.md` - pulled forward from Phase 6: corrected the 4 stale routing-provenance lines (the plan's own Phase 6 wording), because leaving them unedited broke `check-extension-docs.sh`'s undeclared-script-reference check the moment `command-route-skill.sh` was deleted, failing this phase's own "full gate set green" criterion
 
 **Verification**:
-- `grep -rn 'command-route-skill' agent-system/` returns only occurrences owned by Phases 5-6 (schema doc, hard-mode guide, claudemd merge source, creating-commands, command-template, index-entries), and zero in any `.sh` file
-- `grep -rn 'routing_manifest_for_task_type' agent-system/` returns only the schema-doc mentions Phase 5 rewrites
-- `bash -n` clean on every edited shell script; `bash agent-system/extensions/core/scripts/tests/test-routing-resolution.sh` passes
-- Full gate set: deploy + `bash .claude/scripts/verify-deploy.sh` green (confirms `provides.scripts` no longer references a missing file)
+- `grep -rn 'command-route-skill' agent-system/` returns only occurrences owned by Phases 5-6 (schema doc, hard-mode guide, claudemd merge source, creating-commands, command-template, index-entries), and zero in any `.sh` file *(confirmed, after also fixing command-route-agent.sh's 3 comments and this file's own new header comment -- see progress file deviations. Note: 3 further non-.sh occurrences exist beyond the plan's named list -- research-flow-example.md, adding-domains.md, extension-development.md -- deferred to Phase 6, recorded as a separate deviation)*
+- `grep -rn 'routing_manifest_for_task_type' agent-system/` returns only the schema-doc mentions Phase 5 rewrites *(confirmed: exactly 1 hit, manifest-routing-schema.md)*
+- `bash -n` clean on every edited shell script; `bash agent-system/extensions/core/scripts/tests/test-routing-resolution.sh` passes *(confirmed: 13/13 assertions pass)*
+- Full gate set: deploy + `bash .claude/scripts/verify-deploy.sh` green (confirms `provides.scripts` no longer references a missing file) *(confirmed: gate 3, gate 7, and gate 13 (orphan detection) all green after also removing the stale deployed `.claude/scripts/command-route-skill.sh`, which the additive-only copy engine left behind -- see progress file deviations; gate 16 WARN for `lean` as expected. The only 2 remaining FAILs are task 217's in-flight `claude-refresh.sh`/`test-claude-refresh-matcher.sh` content drift, confirmed sibling territory)*
 
 ---
 

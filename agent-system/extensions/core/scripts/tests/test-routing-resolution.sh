@@ -5,10 +5,12 @@
 # covers a different concern -- the partial-status continuation predicate, not routing
 # resolution). This suite asserts, mechanically and repeatably:
 #
-#   Assert 1 (skill resolution): command-route-skill.sh resolves every declared (op, task_type)
-#     pair to exactly the skill its OWN manifest's `.routing`/`.routing_hard` block declares, and
-#     --hard on general/meta/markdown resolves the -hard skills for research/plan/implement via
-#     the core manifest's routing_hard block.
+#   (A former Assert 1 exercised the skill-level router's resolution against each manifest's
+#     `.routing`/`.routing_hard` block. Both that router script and the two manifest blocks it
+#     read are retired by the routing-ladder collapse -- see
+#     context/guides/manifest-routing-schema.md -- so Assert 1 is REMOVED outright, not
+#     retargeted: there is no surviving skill-level resolution path left to test. Agent-level
+#     resolution, Assert 2 below, is unaffected and remains the coverage this suite provides.)
 #   Assert 2 (agent existence): command-route-agent.sh resolves every declared pair to an agent
 #     name that names a real file under some extension's agents/ directory -- the check that
 #     makes the epi-resolves-to-nothing defect class impossible.
@@ -35,17 +37,16 @@
 #     -- pinning first-match-wins against a regression to the former standalone hard-mode
 #     orchestrate skill's old no-break last-match-wins loop.
 #
-# The matrix is built MECHANICALLY from every manifest.json under agent-system/extensions/**
-# rather than hardcoded, so a newly added extension is covered automatically -- a hardcoded list
-# would not notice a newly added extension, which is the exact failure mode this test exists to
-# prevent.
+# Assert 2's matrix is built MECHANICALLY from every manifest.json under
+# agent-system/extensions/** rather than hardcoded, so a newly added extension is covered
+# automatically -- a hardcoded list would not notice a newly added extension, which is the exact
+# failure mode this test exists to prevent.
 #
 # Source resolution: sources manifest-routing-lib.sh directly (Assert 4's fixture) and shells out
-# to command-route-skill.sh / command-route-agent.sh (Assert 1/2, since those are meant to be
-# sourced from a working directory at a repo root, exactly like their real callers) with
-# ROUTE_MANIFEST_ROOT=agent-system so all four assertions validate the SOURCE STORE, matching
-# lint-routing-wiring.sh's own convention -- see manifest-routing-lib.sh's header for the
-# ROUTE_MANIFEST_ROOT contract.
+# to command-route-agent.sh (Assert 2, since it is meant to be sourced from a working directory
+# at a repo root, exactly like its real callers) with ROUTE_MANIFEST_ROOT=agent-system so all
+# three remaining assertions validate the SOURCE STORE, matching lint-routing-wiring.sh's own
+# convention -- see manifest-routing-lib.sh's header for the ROUTE_MANIFEST_ROOT contract.
 #
 # Follows the core shell-test convention in context/standards/shell-script-testing.md:
 # pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d workdir with a trap
@@ -66,7 +67,6 @@ fi
 
 EXT_ROOT="$REPO_ROOT/agent-system/extensions"
 LIB_SRC="$EXT_ROOT/core/scripts/lib/manifest-routing-lib.sh"
-ROUTE_SKILL_SRC="$EXT_ROOT/core/scripts/command-route-skill.sh"
 ROUTE_AGENT_SRC="$EXT_ROOT/core/scripts/command-route-agent.sh"
 ORCH_SKILL="$EXT_ROOT/core/skills/skill-orchestrate/SKILL.md"
 ORCH_CYCLE_PLAN="$EXT_ROOT/core/scripts/orchestrate-cycle-plan.sh"
@@ -78,7 +78,7 @@ pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
 fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 info() { echo "[INFO] $1"; }
 
-for f in "$LIB_SRC" "$ROUTE_SKILL_SRC" "$ROUTE_AGENT_SRC" "$ORCH_SKILL"; do
+for f in "$LIB_SRC" "$ROUTE_AGENT_SRC" "$ORCH_SKILL"; do
   if [ ! -f "$f" ]; then
     echo "ERROR: expected file not found: $f" >&2
     exit 2
@@ -88,103 +88,6 @@ if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required" >&2
   exit 2
 fi
-
-# =====================================================================
-# Build the matrix mechanically: every (manifest, op, task_type, expected_skill) tuple declared
-# in any manifest's .routing block, and every (manifest, op, task_type, expected_hard_skill)
-# tuple declared in any manifest's .routing_hard block.
-# =====================================================================
-STANDARD_MATRIX_FILE="$(mktemp)"
-HARD_MATRIX_FILE="$(mktemp)"
-cleanup_matrix() { rm -f "$STANDARD_MATRIX_FILE" "$HARD_MATRIX_FILE"; }
-trap cleanup_matrix EXIT
-
-find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort | while IFS= read -r manifest; do
-  jq -r --arg m "$manifest" \
-    '(.routing // {}) | to_entries[] | .key as $op | (.value | to_entries[]) | "\($m)\t\($op)\t\(.key)\t\(.value)"' \
-    "$manifest" 2>/dev/null
-done > "$STANDARD_MATRIX_FILE"
-
-find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort | while IFS= read -r manifest; do
-  jq -r --arg m "$manifest" \
-    '(.routing_hard // {}) | to_entries[] | .key as $op | (.value | to_entries[]) | "\($m)\t\($op)\t\(.key)\t\(.value)"' \
-    "$manifest" 2>/dev/null
-done > "$HARD_MATRIX_FILE"
-
-STANDARD_COUNT=$(wc -l < "$STANDARD_MATRIX_FILE" | tr -d ' ')
-HARD_COUNT=$(wc -l < "$HARD_MATRIX_FILE" | tr -d ' ')
-info "Matrix: $STANDARD_COUNT standard (op, task_type) pairs, $HARD_COUNT hard (op, task_type) pairs"
-
-# Independent jq count, to cross-check the matrix build itself did not silently drop rows.
-INDEPENDENT_STANDARD_COUNT=$(jq -s -r '
-  [.[] | (.routing // {}) | to_entries[] | .key as $op | (.value | keys[])] | length
-' "$EXT_ROOT"/*/manifest.json 2>/dev/null)
-if [ "$STANDARD_COUNT" = "$INDEPENDENT_STANDARD_COUNT" ]; then
-  pass "matrix size ($STANDARD_COUNT) matches an independent jq count of declared routing pairs"
-else
-  fail "matrix size ($STANDARD_COUNT) does NOT match independent jq count ($INDEPENDENT_STANDARD_COUNT)"
-fi
-
-# =====================================================================
-# Assert 1: skill resolution -- command-route-skill.sh resolves every pair to its own manifest's
-# declared value, standard and hard.
-# =====================================================================
-echo ""
-echo "--- Assert 1: skill resolution ---"
-# Negative-control note: this assertion's "expected" value is read from the same manifest data
-# command-route-skill.sh itself reads, by design (the matrix is built mechanically from
-# manifests, per this file's header, so a new extension is covered automatically). Mutating a
-# manifest's .routing VALUE therefore moves both sides of the comparison together and proves
-# nothing; the meaningful negative control for THIS assertion is corrupting
-# command-route-skill.sh's own resolution call (verified manually at authoring time: replacing
-# its routing_lookup call with a no-op caused all 140+17 pairs to fail, confirming this
-# assertion does catch a real resolver regression). Assert 4 below is the negative-control-tested
-# check for precedence-DIRECTION bugs specifically.
-
-assert1_failures=0
-while IFS=$'\t' read -r manifest op tt expected; do
-  [ -z "$op" ] && continue
-  actual=$(
-    cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
-      bash -c "source '$ROUTE_SKILL_SRC' '$op' '$tt' '__default__' '' 2>/dev/null; echo \"\$SKILL_NAME\""
-  )
-  if [ "$actual" = "$expected" ]; then
-    :  # quiet on success -- 100+ rows would flood output; failures are what matter
-  else
-    fail "standard: $op/$tt expected '$expected' got '$actual' (manifest: ${manifest#"$EXT_ROOT"/})"
-    assert1_failures=$((assert1_failures + 1))
-  fi
-done < "$STANDARD_MATRIX_FILE"
-
-while IFS=$'\t' read -r manifest op tt expected; do
-  [ -z "$op" ] && continue
-  actual=$(
-    cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
-      bash -c "source '$ROUTE_SKILL_SRC' '$op' '$tt' '__default__' 'hard' 2>/dev/null; echo \"\$SKILL_NAME\""
-  )
-  if [ "$actual" = "$expected" ]; then
-    :
-  else
-    fail "hard: $op/$tt expected '$expected' got '$actual' (manifest: ${manifest#"$EXT_ROOT"/})"
-    assert1_failures=$((assert1_failures + 1))
-  fi
-done < "$HARD_MATRIX_FILE"
-
-if [ "$assert1_failures" -eq 0 ]; then
-  pass "Assert 1: all $STANDARD_COUNT standard + $HARD_COUNT hard pairs resolve to their manifest's declared skill"
-fi
-
-# A former hardcoded loop asserting hard-mode general/meta/markdown resolution to the three
-# core -hard skills lived here. It is REMOVED, not retargeted, for two reasons: (1) it duplicated
-# coverage Assert 1's own mechanical matrix loop above already provides -- that loop is built
-# directly from each manifest's declared `routing_hard` block, so it naturally tracks whatever
-# core's `routing_hard` declares (today, or its absence once removed) without any hardcoded
-# pairing to maintain; (2) the skill-level resolver this loop exercised, command-route-skill.sh,
-# is no longer called by any live research/plan/implement dispatch site -- skill-orchestrate's
-# Stage 1b resolves AGENTS directly via command-route-agent.sh, not skills via
-# command-route-skill.sh, for those three ops. The one surviving command-route-skill.sh caller is
-# the epidemiology extension's /epi command, whose `epi` task type was never declared in any
-# `routing_hard` block and is therefore untouched by this removal.
 
 # =====================================================================
 # Assert 2: agent existence -- command-route-agent.sh resolves every declared routing_agents /
@@ -343,7 +246,7 @@ echo "--- Assert 4: precedence direction (synthetic fixture) ---"
 
 FIXTURE_DIR="$(mktemp -d)"
 cleanup_fixture() { [ -n "${FIXTURE_DIR:-}" ] && [ -d "$FIXTURE_DIR" ] && rm -rf "$FIXTURE_DIR"; }
-trap 'cleanup_matrix; cleanup_fixture' EXIT
+trap cleanup_fixture EXIT
 
 mkdir -p "$FIXTURE_DIR/extensions/core" "$FIXTURE_DIR/extensions/zzz-noncore"
 cat > "$FIXTURE_DIR/extensions/core/manifest.json" <<'EOF'

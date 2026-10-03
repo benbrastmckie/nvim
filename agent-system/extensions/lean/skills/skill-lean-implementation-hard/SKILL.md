@@ -25,7 +25,10 @@ This skill activates when:
 - Dispatched from `skill-orchestrate`'s hard-mode per-phase dispatch (H1) branch — the
   formerly-separate standalone hard-mode engine that used to own this dispatch is deleted and
   merged into `skill-orchestrate` itself
-- Routed by `command-route-skill.sh` via `routing_hard.implement.lean4`
+- Not currently routing-reachable: the routing-ladder collapse retired the skill-side `routing`/
+  `routing_hard` manifest blocks and their resolver. This skill is pending migration onto
+  `hard_contracts` (a separate, not-yet-dispatched follow-on); until then it is reachable only by
+  direct invocation, not through `/implement --hard` dispatch
 
 ---
 

@@ -144,10 +144,10 @@ confirmed by grep of every call site found live — none invoke the file via `ba
   `scripts/lib/task-reference-patterns.sh` — the library convention this doc's own admission test
   is modeled on.
 - `scripts/command-gate-in.sh`, `scripts/command-route-agent.sh`,
-  `scripts/command-route-skill.sh`, `scripts/deploy-root-guard.sh`,
-  `scripts/parse-command-args.sh`, `scripts/skill-base.sh` — sourced into a command/skill's own
-  shell; `common.sh`'s header already documents `command-gate-in.sh` and `skill-base.sh` as
-  confirmed-unchanged by sourcing (see that file's `$-`/`set -o` note).
+  `scripts/deploy-root-guard.sh`, `scripts/parse-command-args.sh`, `scripts/skill-base.sh` —
+  sourced into a command/skill's own shell; `common.sh`'s header already documents
+  `command-gate-in.sh` and `skill-base.sh` as confirmed-unchanged by sourcing (see that file's
+  `$-`/`set -o` note).
 - `hooks/wezterm-utils.sh` — "source this file in WezTerm hooks to get shared TTY discovery."
 
 **Note on `deploy-root-guard.sh`'s callers**: several `scripts/*.sh` files source it via

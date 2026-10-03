@@ -35,8 +35,10 @@ Reference (do not load eagerly):
 
 This skill activates when:
 - `/implement N --hard` is invoked and task type is `cslib`
-- Routed here by `command-route-skill.sh` with `effort_flag="hard"` and task type `cslib`
-- Explicitly listed in `routing_hard.implement.cslib` in the cslib extension manifest
+- Not currently routing-reachable: the routing-ladder collapse retired the skill-side `routing`/
+  `routing_hard` manifest blocks and their resolver. This skill is pending migration onto
+  `hard_contracts` (a separate, not-yet-dispatched follow-on); until then it is reachable only by
+  direct invocation, not through `/implement --hard` dispatch
 - Note: `skill-orchestrate`'s own hard-mode dispatch (both effort modes, one engine — the
   formerly-separate hard-mode engine is deleted) resolves and dispatches the AGENT
   (`cslib-implementation-hard-agent`) directly via `command-route-agent.sh`, not this SKILL

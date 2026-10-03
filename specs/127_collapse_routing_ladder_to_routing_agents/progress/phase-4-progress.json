@@ -1,0 +1,39 @@
+{
+  "phase": 4,
+  "phase_name": "Retire command-route-skill.sh and prune the dead skill-side resolution path",
+  "started_at": "2026-10-03T06:00:00Z",
+  "last_updated": "2026-10-03T06:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run grep for command-route-skill and confirm only Phase 5-6 occurrences remain", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Delete command-route-skill.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-route-skill.sh"]},
+    {"id": 3, "description": "Remove command-route-skill.sh from core/manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Delete routing_manifest_for_task_type() from manifest-routing-lib.sh; remove usage-example line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh"]},
+    {"id": 5, "description": "Update manifest-routing-lib.sh header prose", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh"]},
+    {"id": 6, "description": "Retarget test-routing-resolution.sh: remove Assert 1, keep Assert 2, update header/comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]},
+    {"id": 7, "description": "Remove scripts/command-route-skill.sh from shell-strict-mode.md enumeration", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-strict-mode.md"]},
+    {"id": 8, "description": "Correct verify-deploy.sh gate 16 comment prose", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 9, "description": "Confirm deleted script absent from script-inventory.sh/utility-scripts-inventory.md (do not edit, sibling territory)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "final_verification_note": "bash -n clean on manifest-routing-lib.sh, command-route-agent.sh, test-routing-resolution.sh; test-routing-resolution.sh passes (13/13); deploy-headless.sh + verify-deploy.sh --skip-slow: gate 3 and gate 7 green, gate 13 (orphan detection) green after removing the stale deployed command-route-skill.sh, gate 16 WARN for lean as expected. The only 2 remaining FAILs (doc-lint + manifest-driven verification) are both task 217's claude-refresh.sh/test-claude-refresh-matcher.sh in-flight content drift -- declared sibling territory, confirmed via git log authorship, not routing-related.",
+  "approaches_tried": [
+    {"approach": "Left command-route-agent.sh's design-parity comments referencing command-route-skill.sh unchanged, assuming they were out of Phase 4's scope (Phase 5/6 own the doc fallout)", "result": "failed", "reason": "Phase 4's own verification criterion requires zero 'command-route-skill' occurrences in ANY .sh file repo-wide, not just the deleted script itself. command-route-agent.sh had 3 comment-only mentions and my own newly-added explanatory comment in test-routing-resolution.sh had 1. Fixed by rewording all 4 to describe the retired router without using its literal filename."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4 (scope gap discovered)",
+      "description": "grep -rln 'command-route-skill' agent-system/ (non-.sh files) turns up 13 files, but the plan's Phase 5/6 file lists only account for 10 of them (manifest-routing-schema.md, hard-mode-routing.md, claudemd.md, creating-commands.md, command-template.md, index-entries.json, and the 4 cslib/lean hard SKILL.md files). Three extra files are not named in either phase's Files-to-modify list: agent-system/extensions/core/docs/examples/research-flow-example.md, agent-system/extensions/core/docs/guides/adding-domains.md, agent-system/extensions/core/context/guides/extension-development.md.",
+      "type": "deferred",
+      "reason": "Phase 7's final verification requires 'grep -rn command-route-skill agent-system/ returns zero occurrences repo-wide' (stated in Phase 6's own verification block), so these three files must still be corrected before Phase 7 closes. Deferring the actual edit to Phase 6 (which already does equivalent doc-prose correction work) rather than doing it now mid-Phase-4, to keep this phase's own diff scoped to its named files-to-modify list.",
+      "annotation": "noted in Phase 4 progress; to be swept into Phase 6's scope"
+    },
+    {
+      "task_id": "4 (plan-ordering gap discovered and fixed forward)",
+      "description": "Deleting command-route-skill.sh and leaving the 4 cslib/lean hard SKILL.md provenance lines (which cite it by name) unedited broke check-extension-docs.sh's Rule check ('script referenced in docs/skills/agents but NOT in provides.scripts') for cslib and lean, failing gate 3 of verify-deploy.sh -- a hard requirement of this phase's own verification block ('Full gate set ... green'). The plan had assigned this exact prose correction to Phase 6 (which depends on Phase 4), creating an unavoidable one-phase RED window between Phase 4's close and Phase 6's start.",
+      "type": "altered",
+      "reason": "Pulled the minimal prose fix for all 4 SKILL.md provenance lines forward into Phase 4 (same wording Phase 6 already specified: state the skill is no longer routing-reachable, pending the hard_contracts follow-on) rather than leave a known-RED gate between phases. Also discovered and fixed a second, separate issue: the deployed .claude/scripts/command-route-skill.sh became an undeleted orphan after the source file was removed (the copy engine is additive-only by design -- see context/patterns/deploy-orphan-detection.md, which sanctions 'targeted removal of the specific orphan paths' as the correct manual remedy). Removed that one orphaned deployed file directly.",
+      "annotation": "Phase 6 can now treat its cslib/lean SKILL.md provenance-line task as already satisfied; it should re-verify rather than re-edit"
+    }
+  ]
+}
