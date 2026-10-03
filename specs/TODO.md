@@ -11,8 +11,8 @@ next_project_number: 334
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,285,295,296,299,300,306,311,318,322,325,326 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,275,281,302,303,319,329 | 22,251,271,272,280,285,300,326 | core-agent-system, extensions, orchestrator |
+| 1 | 22,185,251,271,272,280,284,285,295,296,299,300,306,311,318,322,325 | -- | core-agent-system, neovim, orchestrator |
+| 2 | 29,170,275,281,302,303,319,329 | 22,251,271,272,280,285,300 | core-agent-system, extensions, orchestrator |
 | 3 | 273,282,330 | 271,281,329 | core-agent-system, orchestrator |
 | 4 | 274,304,312,331 | 273,275,282,284,300,302,330 | extensions, orchestrator |
 | 5 | 328,332 | 170,303,304,318,322,331 | core-agent-system, extensions |
@@ -44,7 +44,6 @@ next_project_number: 334
 
 ### Extensions
 
-326 [IMPLEMENTING] — Add a books verification tier at implement dispatch: the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
@@ -934,7 +933,7 @@ the skeleton-plan follow-up work by its title only.
 
 ### 326. Add a books verification tier at implement dispatch: the --gate flag mirroring --compare (the lifecycle hook route is rejected with evidence)
 - **Effort**: 3-6 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 297
