@@ -303,35 +303,49 @@ the count.
 
 ---
 
-### Phase 3: Literature Extractions Part B — Index, Convert, Validate, Ingest; Cross-Reference Repoint; Measurement [NOT STARTED]
+### Phase 3: Literature Extractions Part B — Index, Convert, Validate, Ingest; Cross-Reference Repoint; Measurement [COMPLETED]
 
 **Goal**: Finish the literature extraction set, repoint every remaining dangling reference, and
 record the file's measured reduction.
 
 **Tasks**:
-- [ ] Extract, in bottom-up order and by the same six-step per-section procedure as Phase 2:
+- [x] Extract, in bottom-up order and by the same six-step per-section procedure as Phase 2:
       `Index` (1318-1495), `Convert` (730-1317), `Validate` (346-729), `Ingest` (101-170) —
-      one green sub-step and one commit each.
-- [ ] Repoint the four inbound cross-references from inline-staying prose into moved content:
+      one green sub-step and one commit each. *(deviation: altered -- the extraction script's
+      first-pass heading-promotion logic wrongly promoted three fence-interior sample-output
+      "headings" inside Convert/Validate/Index (`## Conversion Complete`, `## Literature
+      Validation Report` and 11 nested headings in its template, `## Index Entry Added`) --
+      caught before committing via round-trip diff review, fixed by making promotion
+      fence-aware, and all three destination files regenerated clean. See
+      progress/phase-3-progress.json approaches_tried for the full account. All four extractions
+      were committed together in one commit rather than four separate ones, matching Phase 2's
+      already-recorded commit-granularity deviation.)*
+- [x] Repoint the four inbound cross-references from inline-staying prose into moved content:
       lines ~2531 and ~2535 (Sub-Index Management, both citing `rebuild_job1_dangling_ref_lint`
       "under 'Mode: Rebuild' above") and ~2545 and ~2557 (Error Handling, both citing
-      `Mode: Convert`) — each now naming the owning extracted file.
-- [ ] Repoint the inter-file handler couplings: `handle_import()`'s calls to `handle_convert()`
+      `Mode: Convert`) — each now naming the owning extracted file. *(completed)*
+- [x] Repoint the inter-file handler couplings: `handle_import()`'s calls to `handle_convert()`
       (in `literature-import-pipeline-mode.md`, ~3 mentions), Rebuild Job 4's citations of
       `handle_convert()`/`handle_ingest()` (in `literature-rebuild-mode.md`, lines ~2162, 2163,
       2211, 2253 of the pre-extraction file), and `Standards Reference`'s `handle_convert()`
-      mention (~2574) — each naming the file where the handler is now specified.
-- [ ] Fresh repo-wide sweep per the convention's mandatory step 6:
+      mention (~2574) — each naming the file where the handler is now specified. *(completed:
+      all four pre-extraction line citations repointed, plus the Standards Reference mention)*
+- [x] Fresh repo-wide sweep per the convention's mandatory step 6:
       `grep -rn "Mode: Rebuild\|Mode: Convert\|Mode: Validate\|Mode: Search\|Mode: Index\|Mode: Ingest\|Mode: Import Pipeline" agent-system/`
       and `grep -rn "handle_convert\|handle_ingest\|handle_rebuild\|handle_import" agent-system/`;
-      record that the check ran even where nothing needed repointing.
-- [ ] Re-run the fence-aware `^## ` scan over the shortened `SKILL.md` to confirm the edits
-      introduced no new fence-state imbalance or fake heading.
-- [ ] Walk the `case "$mode"` block (status, scan, convert, validate, index, search, ingest,
+      record that the check ran even where nothing needed repointing. *(completed: ran both;
+      the only hits outside already-repointed locations are in commands/literature.md and
+      agents/literature-agent.md, which name functions without claiming a location and remain
+      accurate unchanged)*
+- [x] Re-run the fence-aware `^## ` scan over the shortened `SKILL.md` to confirm the edits
+      introduced no new fence-state imbalance or fake heading. *(completed: clean, 34 backticks,
+      even)*
+- [x] Walk the `case "$mode"` block (status, scan, convert, validate, index, search, ingest,
       rebuild, default) and confirm each arm reaches either an inline body or a stub whose pointer
-      target exists and is non-empty.
-- [ ] Record `SKILL.md` before/after bytes and lines, each destination file's bytes, and the
-      total delta.
+      target exists and is non-empty. *(completed: all 8 arms confirmed)*
+- [x] Record `SKILL.md` before/after bytes and lines, each destination file's bytes, and the
+      total delta. *(completed: 100,460 B -> 17,386 B / 493 lines; recorded in
+      progress/phase-3-progress.json)*
 
 **Timing**: 2 hours
 

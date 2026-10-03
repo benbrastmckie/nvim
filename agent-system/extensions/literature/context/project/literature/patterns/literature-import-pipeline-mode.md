@@ -61,6 +61,9 @@ If user selects "Skip this entry": return without importing.
 
 ## Import Step 10: Run Convert with Pre-Populated Zotero Metadata
 
+`handle_convert()` is Mode: Convert's behavior, fully specified in
+`.claude/context/project/literature/patterns/literature-convert-mode.md`.
+
 ```bash
   # Pre-populate metadata from Zotero to reduce user prompts during convert
   # Pass as environment variables read by handle_convert()
@@ -78,7 +81,8 @@ If user selects "Skip this entry": return without importing.
   unset PREFILL_TITLE PREFILL_AUTHORS PREFILL_YEAR PREFILL_DOC_TYPE PREFILL_SOURCE_FORMAT
 ```
 
-**Note**: handle_convert() checks PREFILL_* variables before prompting the user for each field:
+**Note**: handle_convert() (`literature-convert-mode.md`) checks PREFILL_* variables before
+prompting the user for each field:
 ```bash
 # In handle_convert Convert Step 3f (metadata prompts), check PREFILL_* first:
 if [ -n "${PREFILL_TITLE:-}" ]; then

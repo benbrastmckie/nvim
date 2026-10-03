@@ -225,8 +225,9 @@ this corpus and is not relied upon here (orphaned table, explicit non-goal).
 chunks and indexes every `.md` it writes (Convert Step 3h/Step 4), so a `sources/<dir>/` with a
 valid `.md` and zero `chunks_data` rows is no longer explained by the old "`--convert` never
 chunks" root cause — it now signals either a **regression** in the Step 3h/Step 4 wiring or a
-**new, un-wired path** that writes `.md` files without going through `handle_convert()` or
-`handle_ingest()`. Job 4 therefore cross-checks each `missing_dirs` entry against the filesystem
+**new, un-wired path** that writes `.md` files without going through `handle_convert()`
+(`literature-convert-mode.md`) or `handle_ingest()` (`literature-ingest-mode.md`). Job 4
+therefore cross-checks each `missing_dirs` entry against the filesystem
 and buckets it as:
 - **UNEXPECTED** — a valid `.md` exists (`find "$dirpath" -maxdepth 1 -name '*.md' -not -name
   'chunk_*.md'`, excluding `.md.bak-*` / `.md.rejected` by construction) but `chunks_data` has
@@ -274,7 +275,8 @@ function rebuild_job4_coverage_audit() {
         covered_dirs=$((covered_dirs + 1))
       fi
       # Defensive hazard-(b) check: quarantine artifacts must never be chunked. The chunker's
-      # callers (literature-ingest.sh, handle_convert() as of #842) glob strictly on `*.md`,
+      # callers (literature-ingest.sh, handle_convert() in literature-convert-mode.md as of
+      # #842) glob strictly on `*.md`,
       # which by construction excludes `*.md.bak-<UTC>` and `*.md.rejected` (neither filename
       # ends in exactly ".md"). Verify this holds against the real chunks.json manifest rather
       # than assuming it forever.
@@ -316,7 +318,8 @@ function rebuild_job4_coverage_audit() {
   if [ "${#unexpected_dirs[@]}" -gt 0 ]; then
     echo ""
     echo "UNEXPECTED — valid .md exists but chunks_data has zero rows (investigate: wiring"
-    echo "regression in handle_convert()/handle_ingest(), or a new un-wired write path):"
+    echo "regression in handle_convert() [literature-convert-mode.md] / handle_ingest()"
+    echo "[literature-ingest-mode.md], or a new un-wired write path):"
     for d in "${unexpected_dirs[@]}"; do
       echo "  - $d"
     done

@@ -719,7 +719,7 @@
       "domain": "project",
       "subdomain": "literature",
       "summary": "Complete specification for /literature --rebuild mode (sub-index Jobs 1/2/3/4: dangling-ref lint, schema conformance, coverage refresh, chunk/search-index coverage audit) -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
-      "line_count": 467,
+      "line_count": 470,
       "keywords": [
         "literature",
         "rebuild-mode",
@@ -741,7 +741,7 @@
       "domain": "project",
       "subdomain": "literature",
       "summary": "Complete specification for the literature Import Pipeline (Steps 8-12: confirm, symlink PDF, convert with pre-populated Zotero metadata, patch index entry, git commit) -- invoked from Search Step 7 for each pdf_available entry, has no case \"$mode\" dispatch arm of its own -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
-      "line_count": 154,
+      "line_count": 158,
       "keywords": [
         "literature",
         "import-pipeline",
@@ -770,6 +770,90 @@
         "zotero",
         "multi-select",
         "import-routing"
+      ],
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/patterns/literature-index-mode.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Complete specification for /literature --index FILE mode (add an index.json entry for an existing markdown file) -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
+      "line_count": 177,
+      "keywords": [
+        "literature",
+        "index-mode",
+        "index.json"
+      ],
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/patterns/literature-convert-mode.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Complete specification for /literature --convert mode (target resolution, engine-tier delegation to literature-convert.sh, metadata prompts, chunking/indexing, Skipped Files reporting) -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
+      "line_count": 587,
+      "keywords": [
+        "literature",
+        "convert-mode",
+        "pymupdf4llm",
+        "chunking",
+        "quality-gate"
+      ],
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/patterns/literature-validate-mode.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Complete specification for /literature --validate mode (index.json consistency checks: schema shape, author-shape, file existence, dangling refs, known-exceptions gating) -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
+      "line_count": 383,
+      "keywords": [
+        "literature",
+        "validate-mode",
+        "index.json",
+        "consistency-checks"
+      ],
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/patterns/literature-ingest-mode.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Complete specification for /literature --ingest mode (full pipeline ingestion via literature-ingest.sh: convert, chunk, FTS5 index, optional local load) -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
+      "line_count": 69,
+      "keywords": [
+        "literature",
+        "ingest-mode",
+        "literature-ingest.sh",
+        "zotero"
       ],
       "load_when": {
         "agents": [

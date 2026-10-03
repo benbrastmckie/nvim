@@ -1,0 +1,75 @@
+{
+  "phase": 3,
+  "phase_name": "Literature Extractions Part B -- Index, Convert, Validate, Ingest; Cross-Reference Repoint; Measurement",
+  "started_at": "2026-10-03T00:40:00Z",
+  "last_updated": "2026-10-03T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract Index, Convert, Validate, Ingest bottom-up", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+       "agent-system/extensions/literature/context/project/literature/patterns/literature-index-mode.md",
+       "agent-system/extensions/literature/context/project/literature/patterns/literature-convert-mode.md",
+       "agent-system/extensions/literature/context/project/literature/patterns/literature-validate-mode.md",
+       "agent-system/extensions/literature/context/project/literature/patterns/literature-ingest-mode.md",
+       "agent-system/extensions/literature/index-entries.json"
+     ]},
+    {"id": 2, "description": "Repoint four inbound cross-references (Sub-Index Management x2, Error Handling x2)", "status": "done",
+     "files_touched": ["agent-system/extensions/literature/skills/skill-literature/SKILL.md"]},
+    {"id": 3, "description": "Repoint inter-file handler couplings (handle_convert/handle_ingest in Rebuild Job4, Import Pipeline, Standards Reference)", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/literature/context/project/literature/patterns/literature-rebuild-mode.md",
+       "agent-system/extensions/literature/context/project/literature/patterns/literature-import-pipeline-mode.md",
+       "agent-system/extensions/literature/skills/skill-literature/SKILL.md"
+     ]},
+    {"id": 4, "description": "Fresh repo-wide sweep for Mode:/handle_ references", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-run fence-aware scan, confirm no new imbalance", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Walk case \"$mode\" block, confirm all arms resolve", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record before/after bytes and total delta", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {
+      "approach": "Generic heading-promotion script applied '## -> #' etc to every line matching the pattern, without fence-state tracking",
+      "result": "failed",
+      "reason": "Wrongly promoted three fence-interior fake headings that are literal sample-output text (not real document structure) inside the Convert, Validate, and Index extracted spans: '## Conversion Complete' -> wrongly became '# Conversion Complete'; '## Literature Validation Report' and 11 nested headings inside its template block -> wrongly promoted one extra level; '## Index Entry Added' -> wrongly became '# Index Entry Added'. Caught by re-running the round-trip diff and noticing non-heading-promotion-pattern line-count deltas. Fixed by making promote_headings() fence-aware (track ``` state, only promote outside fences) and regenerating all three destination files from the pre-extraction original, then verified clean round-trip diffs (promotion-only, zero fence-interior corruption) before re-registering index entries."
+    }
+  ],
+  "handoff_count": 0,
+  "extraction_log": {
+    "index": {"content_bytes_extracted": 5445, "dest_bytes": 5887, "dest_lines": 177, "cross_references": "none found"},
+    "convert": {"content_bytes_extracted": 22003, "dest_bytes": 22508, "dest_lines": 587, "cross_references": "5 above/below occurrences, all confirmed intra-span"},
+    "validate": {"content_bytes_extracted": 18478, "dest_bytes": 18933, "dest_lines": 383, "cross_references": "11 above/below occurrences, all confirmed intra-span"},
+    "ingest": {"content_bytes_extracted": 1911, "dest_bytes": 2359, "dest_lines": 69, "cross_references": "none found"}
+  },
+  "cross_reference_repoints": [
+    "SKILL.md Sub-Index Management > Validate 'Migrated' note: 'under Mode: Rebuild above' x2 repointed to name literature-rebuild-mode.md explicitly",
+    "SKILL.md Error Handling 'Conversion engine-tier availability' bullet: added explicit literature-convert-mode.md pointer",
+    "SKILL.md Error Handling 'Invariant' bullet: added explicit literature-convert-mode.md pointer",
+    "SKILL.md Standards Reference 'Import pipeline' bullet: added literature-import-pipeline-mode.md and literature-convert-mode.md pointers",
+    "literature-rebuild-mode.md Job4 prose (un-wired path note): named literature-convert-mode.md / literature-ingest-mode.md",
+    "literature-rebuild-mode.md Job4 bash comment (ticket #842 note): named literature-convert-mode.md",
+    "literature-rebuild-mode.md Job4 echo output (UNEXPECTED regression message): named both files bracketed",
+    "literature-import-pipeline-mode.md Step 10 prose line + Note line: named literature-convert-mode.md"
+  ],
+  "repo_wide_sweep": {
+    "mode_grep": "grep -rn 'Mode: Rebuild|Mode: Convert|Mode: Validate|Mode: Search|Mode: Index|Mode: Ingest|Mode: Import Pipeline' agent-system/ -- all hits are either the extracted files' own framing/headings or the already-repointed SKILL.md lines; no dangling reference found",
+    "handle_grep": "grep -rn 'handle_convert|handle_ingest|handle_rebuild|handle_import' agent-system/ -- external hits in commands/literature.md and agents/literature-agent.md reference function names without claiming a now-false location (no above/below), left unchanged as still-accurate"
+  },
+  "final_measurements": {
+    "skill_md_before_bytes": 100460,
+    "skill_md_after_bytes": 17386,
+    "skill_md_after_lines": 493,
+    "total_extracted_literature_bytes": 84308,
+    "dispatch_table_walk": "all 8 case arms (status, scan, convert, validate, index, search, ingest, rebuild) confirmed to resolve: status/scan inline (excluded by design), convert/validate/index/search/ingest/rebuild via stub pointer into a verified non-empty destination file",
+    "fence_scan_after": "no new fence-interior fake heading or imbalance introduced; backtick count even (34)"
+  },
+  "deviations": [
+    {
+      "task_id": "3.heading-promotion-bug",
+      "description": "Heading promotion during extraction must only touch real document-structure headings",
+      "type": "altered",
+      "reason": "First-pass extraction script promoted fence-interior sample-output text that merely looked like a heading, in the Convert/Validate/Index sections (the exact fence-interior-heading hazard this task's own plan repeatedly warns about, just encountered on content-fidelity rather than boundary-detection). Caught via round-trip diff review before registering index entries or committing; fixed and all three destination files regenerated clean.",
+      "annotation": "*(deviation: altered -- see progress file approaches_tried; no plan-text change needed, this was an implementation-detail bug in the extraction tooling itself, not a plan-execution deviation)*"
+    }
+  ]
+}
