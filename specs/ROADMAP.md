@@ -13,10 +13,13 @@ genuinely the user's.
 **`MAX_TASKS` is 8**, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself
 accepts any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**Every open task is accounted for below**: Next 2 + in-flight 1 + A 3 + B 4 + C 3 + D 2 + E 6 +
-F 2 + G 3 + H 3 + I 2 + J 4 = **35**. If that sum stops matching `state.json`, this file has
-drifted — which it does within a day or two, because the structure is still hand-derived. Call G
-fixes that.
+**Every open task is accounted for below**: in-flight 3 + F 6 + A 3 + B 4 + C 3 + D 1 + E 6 +
+G 3 + H 3 + I 2 + J 4 = **38**. If that sum stops matching `state.json`, this file has drifted —
+which it does within a day or two, because the structure is still hand-derived. Call G fixes that.
+
+**Lane letters are stable identifiers, not ranks.** Position on the page is the priority order.
+Call F sits first because its tail was escalated behind the in-flight books work; the letter is
+kept because 306 and 313 reference these lanes by name.
 
 **The deploy gates are green.** `verify-deploy.sh --skip-slow` returns **PASS — 33 checks, 0
 failures**. Both reds that previously stood here are closed. Treat any new failure as real.
@@ -25,26 +28,29 @@ failures**. Both reds that previously stood here are closed. Treat any new failu
 
 ## Next
 
-**One dispatch is still open.** Task **185** has all 9 phases committed (latest `7a89a7871`) but
-never wrote its wrap-up artifacts: `.return-meta.json` still says `in_progress`, the handoff still
-carries the *planner's* `dispatch_seq` 17 rather than the implement dispatch's 18, and no summary
-exists. Until those three land, postflight cannot verify the completion claim and the task cannot
-reach `[COMPLETED]`.
+**Two books tasks are in flight.** `/orchestrate 298, 326` is running its research cycle now: 298
+authors the domain context corpus under `context/project/books/`, and 326 adds the `--gate`
+verification tier at implement dispatch. Both cleared admission on dependency **297**
+`[COMPLETED]`, and both were admitted carrying a live advisory rather than deferred: 298 declares
+the whole `context/project/books/` directory as its scope, and 326 is self-modifying — it edits the
+orchestrator's own `orchestrate-*` scripts and `commands/orchestrate.md`. Detail under Call F.
+
+**One older dispatch is still open.** Task **185** has all 9 phases committed (latest `7a89a7871`)
+but never wrote its wrap-up artifacts: `.return-meta.json` still says `in_progress`, the handoff
+still carries the *planner's* `dispatch_seq` 17 rather than the implement dispatch's 18, and no
+summary exists. Until those three land, postflight cannot verify the completion claim and the task
+cannot reach `[COMPLETED]`.
 
 Its root cause is a known failure mode, now observed three times in one session: the agent armed a
 background wait on the Gate 8 suite, went idle, and nothing resumed it. See the observations
 section — prefer a bounded foreground run over arm-and-idle.
 
-Then the next call:
+Then the next call, which is Call F's off-chain prerequisite and runs without waiting for the two
+in-flight tasks:
 
 ```
-/orchestrate 297, 327
+/orchestrate 285
 ```
-
-| Task | What lands | Gating |
-|---|---|---|
-| **297** | Build the `books` extension in the source store: manifest, four-block routing, agents, skills, commands, rule, registration, tests. Wiring only; source store only | None. **Gates 298, 326** |
-| **327** | Repair the extension lifecycle hook mechanism: broken resolver schema, absent return-code channel, uninvoked verification stage | None. Adjacent to 326, which rejects the lifecycle-hook route *for its own purpose* on evidence — that rejection is about `--gate`, not about leaving the mechanism broken |
 
 **Consumer repos: all 8 are STALE.** `.dotfiles`, `BimodalLogic`, `ModelChecker`,
 `PersonalWebsite`, `cslib`, `Logos/Hardware`, `Logos/Theory` and `PossibleWorlds` — the last of
@@ -53,6 +59,43 @@ cores are 225 behind. If the next work touches a consumer, run `deploy-headless.
 repo** first; this repo never pushes into a consumer.
 
 ---
+
+## Call F — books tail: issue log, metrics, observer seam, `/books` (escalated, 6)
+
+```
+/orchestrate 285
+/orchestrate 329, 330, 331, 332, 333
+```
+
+**Escalated to the front, behind the two in-flight books tasks.** 329–333 are a strict linear
+chain on declared edges (329 ← 330 ← 331 ← 332 ← 333), so the second call orders itself and must
+not be split: an intra-batch edge merely sequences, it does not justify dropping a task from the
+batch. The first call exists only because 329's other dependency, **285**, sits off the chain and
+is unblocked today — run it now, in parallel with the research cycle already in flight.
+
+The second call is **not dispatchable until 298 and 326 reach `[COMPLETED]`**. Those are
+out-of-batch dependencies, so admission defers 329 and 332 rather than sequencing them; issuing
+the call early buys nothing.
+
+| Task | What lands | Gating |
+|---|---|---|
+| **285** | `orchestrate-record-decision.sh` (a documented `.decisions.json` writer that does not exist), and the postflight handoff-recovery notice, which is mislabelled and factually wrong about which phases write a handoff | None — the escalation's only off-chain prerequisite, dispatchable now. One root: the contract tells the lead to do something unexecutable, or states something untrue. Confirmed live — the lead had to hand-write `.decisions.json` for a non-blocking `user_decision` because no writer exists. **Gates 319, 304 and 329**, so escalating it moves three lanes |
+| **329** | Per-task issue log: the format contract, the `issue-record.sh` writer, and threading through dispatch composition, postflight, and the wrap-up and phase-closure contracts | After **326** (in flight) and **285**. Head of the chain. **Gates 330, 332** |
+| **330** | Per-dispatch cost and timing record: `dispatch-metrics.sh` plus its format contract, written at postflight | After **329**. **Gates 331, 332** |
+| **331** | Topic-keyed post-task observer seam for extensions: a manifest-declared `observers` block, `run-task-observers.sh`, the extension-authoring guide and the docs validator that covers it | After **330**. Its other dependency **327** is `[COMPLETED]`, so the lifecycle-hook mechanism this builds on is already repaired — the seam is additive, not a second repair. **Gates 332** |
+| **332** | Books observer: the per-task convention observation record and its signal tagging, registered through 331's seam | After **298** (in flight), **329, 330, 331**. The first consumer of the seam, and the proof it is usable from outside core |
+| **333** | The `/books` command with `--review` and `--revise` sub-modes | After **332**. Tail of the chain |
+
+**Three live hazards around this lane — all already covered by edges or admitted deliberately, so
+do not re-file them.** First, 298 declares the bare directory `context/project/books/`, which
+prefix-covers 332's and 333's context files; the declared edges serialize all three, so the
+coarseness costs nothing here, but it is the same class as 300's and should be narrowed at plan
+time if 332 is ever batched with 298. Second, 300's coarse `scripts/tests/` now overlaps 329, 330
+and 331, so running Call B concurrently with this lane serializes 300 against three of these six
+tasks. Third, 326 is self-modifying — it owns `orchestrate-cycle-plan.sh`,
+`orchestrate-build-dispatch.sh` and `commands/orchestrate.md`, the machinery that dispatches it —
+and was admitted with the hazard live, not deferred; its implement phase is the one to watch, and
+`.claude/` needs a resync before the second call is trusted.
 
 ## Call A — commit-staging and git-exit correctness (3)
 
@@ -79,7 +122,7 @@ Four independent, all dispatchable now.
 | Task | What lands | Gating |
 |---|---|---|
 | **299** | Guarantee a plan revision landing concurrently with a live implement dispatch is detected, via two complementary remedies | None. Mutual exclusion is asserted between aux *kinds*, never between an aux row and the implement row. Observed cost was real: one dispatch excerpted a phase pre-revision and another post-revision |
-| **300** | Resolve `AskUserQuestion` being unreachable from a dispatched subagent: probe the mechanism, correct `agent-frontmatter-standard.md`'s tool-inheritance claim, rehome every user-choice gate inside a dispatched agent | None. **Gates 302, 312.** Carries the only remaining coarse `file_scope` — `scripts/tests/` overlaps **13** non-terminal tasks. Narrow it at plan time or it serializes most of the lane |
+| **300** | Resolve `AskUserQuestion` being unreachable from a dispatched subagent: probe the mechanism, correct `agent-frontmatter-standard.md`'s tool-inheritance claim, rehome every user-choice gate inside a dispatched agent | None. **Gates 302, 312.** Carries the only remaining coarse `file_scope` — `scripts/tests/` overlaps **15** non-terminal tasks, up from 13 now that Call F's 329, 330 and 331 each declare a file there. Narrow it at plan time or it serializes most of the lane |
 | **311** | Replace the static `BUILD_HEAVY_TASK_TYPES=("lean4" "cslib")` list with a measured or probed build-weight signal, and design the no-history fallback | None. The binding constraint on real parallelism for Lean-heavy batches: a Mathlib-free `lean4` package measured at 6 s wall / 17 jobs is refused co-scheduling exactly as a full Mathlib build is |
 | **284** | Exempt the dispatching task's own task directory from the postflight `modified_files`-vs-`file_scope` excursion advisory | None. The advisory fires on **every** phase naming only the artifact it was dispatched to produce — pure noise that trains the reader to ignore a real signal. Confirmed live again across all six tasks of the last batch. One file |
 
@@ -98,16 +141,15 @@ order it.
 | **281** | Repo-wide lint (`check-record-versioning.sh`) over every git-tracked file outside `specs/**`, driven by the shared pattern library, plus fixture test | After **280**. Modeled on `check-task-references.sh` |
 | **282** | PreToolUse hook blocking a Write/Edit that introduces forbidden record-version language, plus fixture test and `settings.json` registration | After **280, 281**. Must inherit `validate-no-task-references.sh`'s three contracts verbatim (exit 2 + stderr). **Gates 312** |
 
-## Call D — two contract defects (2)
+## Call D — refutation blast radius (1)
 
 ```
-/orchestrate 285, 319
+/orchestrate 319
 ```
 
 | Task | What lands | Gating |
 |---|---|---|
-| **285** | `orchestrate-record-decision.sh` (a documented `.decisions.json` writer that does not exist), and the postflight handoff-recovery notice, which is mislabelled and factually wrong about which phases write a handoff | None. One root: the contract tells the lead to do something unexecutable, or states something untrue. Confirmed live — the lead had to hand-write `.decisions.json` for a non-blocking `user_decision` because no writer exists. **Gates 319** |
-| **319** | Surface the blast radius of a machine-checked refutation: when research refutes a premise or closes a question by supersession, the other open tasks whose filed premises that falsifies must reach human triage | After **285**. Today nothing does this, so a refutation's reach is found only if a human hand-checks sibling descriptions. Observed repeatedly: three of six research dispatches in the last batch refuted their own task's filed premise |
+| **319** | Surface the blast radius of a machine-checked refutation: when research refutes a premise or closes a question by supersession, the other open tasks whose filed premises that falsifies must reach human triage | After **285**, which escalated into Call F. Today nothing does this, so a refutation's reach is found only if a human hand-checks sibling descriptions. Observed repeatedly: three of six research dispatches in the last batch refuted their own task's filed premise |
 
 ## Call E — parent_task edge, liveness, conclusion stage, queue (6)
 
@@ -126,19 +168,6 @@ them on declared edges, so one call orders itself.
 | **273** | Three-channel orchestration conclusion stage with per-channel approval, as a distinct post-postflight stage | After **271** |
 | **275** | Per-repo orchestration queue: registered, live, archived on finish, consumed by admission | After **272** |
 | **274** | Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script | Tail of this lane: after **272, 273, 275** |
-
-## Call F — books extension tail (2)
-
-```
-/orchestrate 298, 326
-```
-
-Both after **297** (see Next).
-
-| Task | What lands | Gating |
-|---|---|---|
-| **298** | Author the domain context corpus under `context/project/books/` | After **297**, scoped to `context/project/books/**` only. Write against the design record (`docs/book-convention.md`, 18 accepted decisions; `book-toml-v2.md` normative) in Logos/Verification, not the half-landed tooling, and keep the known-gap register honest |
-| **326** | Add a books verification tier at implement dispatch: the `--gate` flag mirroring `--compare` | After **297**. The lifecycle-hook route is rejected **with evidence** for this purpose; that is a scoping ruling about `--gate`, and does not bless leaving the hook mechanism broken — 327 repairs it |
 
 ## Call G — roadmap and TODO automation (3)
 
@@ -205,9 +234,10 @@ Two independent pairs, independent of every agent-system lane.
   — **space-separated**; admits what you expect, `md5sum specs/state.json` unchanged. Research and
   plan dispatches are exempt from the self-modifying defer (`--phase-map`), so overlap only
   serializes at implement time.
-- `bash .claude/scripts/validate-state.sh --deep` — **17 passed, 3 warnings, 0 failed.** All three
-  warnings are `file_scope`: 300's coarse `scripts/tests/` (13 overlaps), 328's missing key, and
-  the visibility summary line that reports it. Treat any *new* warning, and any failure, as real.
+- `bash .claude/scripts/validate-state.sh --deep` — **17 passed, 3 warnings, 0 failed**, re-measured
+  against the escalated backlog. All three warnings are `file_scope`: 300's coarse `scripts/tests/`
+  (**15** overlaps, up from 13), 328's missing key, and the visibility summary line that reports it
+  (1 missing-key out of 38 non-terminal tasks). Treat any *new* warning, and any failure, as real.
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh` — read the **end-of-run failure
   roster** and the `EXPECTED`/`NEW` split, not just the tally; exit code read directly (never
   through `tail`/`head`). A NEW failure is yours; an EXPECTED one is in `known-failures.txt` with a
