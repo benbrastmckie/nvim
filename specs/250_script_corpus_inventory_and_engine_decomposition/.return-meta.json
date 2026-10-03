@@ -1,0 +1,38 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md",
+      "summary": "Re-measures the stale 2026-09-22 corpus/file-size figures, confirms all 6 dependencies and the two prior verify-deploy findings are resolved, flags a new task-272 file_scope overlap risk, identifies the 784-line territory/contention and 535-line task-classification extraction candidates in orchestrate-cycle-plan.sh, and locates existing conventions (manifest-registration check, probe script shape) Phase 1 must reuse."
+    }
+  ],
+  "next_steps": "Run /plan 250 to create the implementation plan (Phase 1 probe, then Phase 2 decomposition starting with the territory/contention extraction).",
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/lib/territory-contention-lib.sh",
+    "agent-system/extensions/core/scripts/lib/task-classification-lib.sh"
+  ],
+  "metadata": {
+    "session_id": "sess_1791000710_cc4f86_250",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  },
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh, the 657-line build_contended_manifest() plus its three helpers build_sibling_territory(), _paths_contend(), and _sibling_territory_classify_entry() form one cleanly bounded 784-line territory-contention concern, independent of the rest of the file beyond lookup_project() and jq, and distinct from (builds on top of, does not duplicate) lib/file-scope-overlap.sh's path-matching primitives. This is the kind of unit worth checking for before assuming a large script must be decomposed function-by-function from scratch.",
+      "category": "PATTERN",
+      "source_artifact": "specs/250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["orchestrate-cycle-plan", "lib-extraction", "territory-contention", "decomposition", "build_contended_manifest"]
+    },
+    {
+      "content": "check-extension-docs.sh's Rule Q (check_undeclared_scripts, ~lines 530-580) already answers 'is this script registered in its owning manifest's provides.scripts' by full relative-path match. Any new probe needing that same check should shell out to check-extension-docs.sh and filter its FAIL lines rather than reimplementing the predicate, since that script is large (1,500+ lines) and multi-purpose.",
+      "category": "CONFIG",
+      "source_artifact": "specs/250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["check-extension-docs", "manifest-registration", "provides.scripts", "reuse", "rule-q"]
+    }
+  ]
+}

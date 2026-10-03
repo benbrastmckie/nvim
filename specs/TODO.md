@@ -20,14 +20,14 @@ next_project_number: 326
 
 ### Core Agent System
 
-89 [NOT STARTED] — Apply the mode-gated section convention to the two remaining...
-127 [NOT STARTED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
+89 [RESEARCHING] — Apply the mode-gated section convention to the two remaining...
+127 [RESEARCHING] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
-184 [NOT STARTED] — Surface skeleton-plan follow-ups at completion under the...
+184 [RESEARCHING] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
-250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
+217 [RESEARCHING] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
+250 [RESEARCHED] — Script-corpus inventory probe, then cut tests/run-all.sh...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
@@ -2987,10 +2987,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 ---
 
 ### 250. Script-corpus inventory probe, then cut tests/run-all.sh runtime and decompose orchestrate-cycle-plan.sh
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 199, Task 245, Task 249, Task 259, Task 265, Task 266
+- **Research**: [250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -3233,7 +3234,7 @@ orphan tmp file. Re-check whether both are still live before Phase 1 treats them
 
 ### 217. Cost-aware idle Lean tree reclamation in /refresh: PSS accounting, CPU-delta idleness, notify-before-kill
 - **Effort**: 2 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 174
@@ -3330,7 +3331,7 @@ file_scope now names the five known sites; research MUST add the remaining files
 ---
 
 ### 184. Surface skeleton-plan follow-ups at completion under the batch engine (ruled: port the sorry_inventory follow-up report, not pr_ready routing)
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 242, Task 243, Task 258, Task 259, Task 266
@@ -3690,7 +3691,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 127. Collapse routing ladder to routing agents
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 121, Task 124, Task 125
@@ -3714,7 +3715,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 89. Mode gate literature and distill skills
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 87
