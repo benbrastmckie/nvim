@@ -291,34 +291,34 @@ phase into Phase 4's or Phase 6's territory.
 
 ---
 
-### Phase 3: Test Suite for the Writer [NOT STARTED]
+### Phase 3: Test Suite for the Writer [COMPLETED]
 
 **Goal**: `scripts/tests/test-issue-record.sh` covers schema validation, append atomicity, the
 unknown-class warning path, and the non-fatal failure path.
 
 **Tasks**:
-- [ ] Read `scripts/tests/test-orchestrate-record-decision.sh` first — it is the closest sibling
-      test and the one to model on.
-- [ ] Class B strict mode per `context/standards/shell-strict-mode.md`: `set -uo pipefail` (no
+- [x] Read `scripts/tests/test-orchestrate-record-decision.sh` first — it is the closest sibling
+      test and the one to model on. *(completed)*
+- [x] Class B strict mode per `context/standards/shell-strict-mode.md`: `set -uo pipefail` (no
       `-e`), with the mandated `pass()` / `fail()` / `info()` helpers and PASSED/FAILED counters
-      per `context/standards/shell-script-testing.md`.
-- [ ] Schema-validation cases: missing `--what-happened` refuses; empty `--what-happened` refuses;
+      per `context/standards/shell-script-testing.md`. *(completed)*
+- [x] Schema-validation cases: missing `--what-happened` refuses; empty `--what-happened` refuses;
       `--kind` outside `issue|win` refuses; a malformed `--tags-json` refuses; each refusal leaves
-      `issues.jsonl` unchanged (byte-for-byte, not merely line-count-equal).
-- [ ] Append-atomicity case: N concurrent background invocations against one task directory yield
+      `issues.jsonl` unchanged (byte-for-byte, not merely line-count-equal). *(completed)*
+- [x] Append-atomicity case: N concurrent background invocations against one task directory yield
       exactly N well-formed lines, every one parsing with `jq -e`, with no interleaved or
-      truncated line.
-- [ ] Unknown-class case: an unrecognized `--class` exits 0, appends one line carrying that class
-      verbatim, and emits a warning on stderr.
-- [ ] Non-fatal failure case: a call against an unwritable or nonexistent target leaves the
+      truncated line. *(completed)*
+- [x] Unknown-class case: an unrecognized `--class` exits 0, appends one line carrying that class
+      verbatim, and emits a warning on stderr. *(completed)*
+- [x] Non-fatal failure case: a call against an unwritable or nonexistent target leaves the
       caller's exit status unaffected when invoked in the documented non-fatal form, and the
-      script itself still signals failure via its own exit code when invoked directly.
-- [ ] `kind: "win"` case: a win entry is accepted and appended on equal footing with an issue.
-- [ ] `--task N` resolution case: a call with only a bare task number resolves to the right task
-      directory via `task-lookup-lib.sh`, and an unresolvable number refuses cleanly.
-- [ ] Use a scratch task directory under the test harness's own temp area; never write into a real
-      `specs/{NNN}_{SLUG}/` directory.
-- [ ] Run `shellcheck` on the new test file and resolve every finding.
+      script itself still signals failure via its own exit code when invoked directly. *(completed)*
+- [x] `kind: "win"` case: a win entry is accepted and appended on equal footing with an issue. *(completed)*
+- [x] `--task N` resolution case: a call with only a bare task number resolves to the right task
+      directory via `task-lookup-lib.sh`, and an unresolvable number refuses cleanly. *(completed)*
+- [x] Use a scratch task directory under the test harness's own temp area; never write into a real
+      `specs/{NNN}_{SLUG}/` directory. *(completed)*
+- [x] Run `shellcheck` on the new test file and resolve every finding. *(completed)*
 
 **Timing**: 1 hour
 

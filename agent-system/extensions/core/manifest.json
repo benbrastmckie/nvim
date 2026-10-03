@@ -214,6 +214,7 @@
       "tests/test-handoff-reader-parity.sh",
       "tests/test-index-entries-schema.sh",
       "tests/test-init-specs.sh",
+      "tests/test-issue-record.sh",
       "tests/test-lake-build-guard.sh",
       "tests/test-lint-agent-contracts.sh",
       "tests/test-lint-branch-gated-sections.sh",
