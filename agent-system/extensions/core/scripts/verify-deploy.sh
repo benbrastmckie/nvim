@@ -54,6 +54,16 @@
 #   `### deploy-headless.sh's Inline Verification and Exit Code 3` subsection for the full
 #   fast/full split and exit-code contract.
 #
+# Gate 8 concurrency (VERIFY_DEPLOY_GATE8_JOBS, additive-only):
+#   When gate 8 runs (--skip-slow absent), it requests run-all.sh's opt-in --jobs parallelism
+#   instead of the sequential default. VERIFY_DEPLOY_GATE8_JOBS defaults to 'auto' (nproc capped
+#   at run-all.sh's JOBS_CAP of 4); set it to '1' to force fully sequential Gate 8 on a nproc=1,
+#   memory-pressured, or heavily-loaded CI/interactive host -- that override, with no code
+#   change, IS the rollback for this feature. An invalid value surfaces through run-all.sh's own
+#   exit-2 validation; Gate 8's remedy text names the variable when that happens. run-all.sh's
+#   nested-invocation guard (RUN_ALL_NESTED) still forces sequential execution when this script
+#   is itself reached from inside another run-all.sh suite, regardless of this setting.
+#
 # Findings mode (--findings, additive-only):
 #   Emits a normalized, one-per-line, machine-diffable findings set across all eighteen gates
 #   (gate0 through gate17) plus a gate0 "could not run" sentinel, printed to stdout after the
@@ -195,6 +205,11 @@ fi
 # promotion. Does NOT gate the eager-load regression check or the volatile-file check, both of
 # which have their own fixed severity (see gate20 below).
 ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-hard}"
+
+# VERIFY_DEPLOY_GATE8_JOBS controls Gate 8's concurrency request to run-all.sh's opt-in --jobs
+# flag. Default 'auto' resolves to nproc capped at run-all.sh's own JOBS_CAP (4); see gate 8's
+# call site below for the full precedence/rejected-alternatives record.
+GATE8_JOBS="${VERIFY_DEPLOY_GATE8_JOBS:-auto}"
 
 FAILURES=0
 CHECKS=0
@@ -562,13 +577,26 @@ elif [ ! -d "$TARGET/agent-system/extensions" ]; then
 elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" ]; then
   fail "tests/run-all.sh not found in source store"
 else
-  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet 2>&1)
+  # Request run-all.sh's opt-in parallelism (default 'auto'; override via
+  # VERIFY_DEPLOY_GATE8_JOBS, e.g. '1' on a nproc=1 or memory-pressured/heavily-loaded host).
+  # VERIFY_DEPLOY_GATE8_JOBS always wins when set; the value is passed through verbatim and
+  # validated by run-all.sh alone (single source of validation truth) -- no silent fallback here.
+  # Rejected alternatives (do not re-propose): a bare hardcoded `4` (not host-adaptive; identical
+  # to `auto` only on hosts with nproc >= 4); a conservative fixed `2` (leaves measured headroom
+  # unused and still needs the same override); reusing a generic `JOBS` env name (too broad,
+  # collides with unrelated tooling); gating on TTY-ness (implicit, untestable, surprising).
+  # run-all.sh's own nested-invocation guard (RUN_ALL_NESTED) still forces JOBS=1 when this
+  # verify-deploy.sh invocation is itself reached from inside another run-all.sh's suite,
+  # regardless of what --jobs requests here -- unaffected by this change.
+  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" 2>&1)
   run_all_status=$?
   if [ "$run_all_status" -eq 0 ]; then
     pass "run-all.sh: all discovered suites passed"
   else
+    run_all_remedy="re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh"
+    [ "$run_all_status" -eq 2 ] && run_all_remedy="$run_all_remedy (exit 2 may indicate an invalid VERIFY_DEPLOY_GATE8_JOBS value: '$GATE8_JOBS')"
     fail "run-all.sh reported failing or undiscoverable suites (exit $run_all_status)" \
-         "re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh" ""
+         "$run_all_remedy" ""
     if [ "$FINDINGS" = "true" ]; then
       while IFS= read -r run_all_line; do
         FINDINGS_LIST+=("FINDING gate8 ${run_all_line#\[FAIL\] }")

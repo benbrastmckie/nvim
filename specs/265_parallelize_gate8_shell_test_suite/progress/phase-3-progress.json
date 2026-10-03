@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "Wire Gate 8 to request --jobs, with a VERIFY_DEPLOY_GATE8_JOBS override",
+  "started_at": "2026-10-03T00:35:00Z",
+  "last_updated": "2026-10-03T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read verify-deploy.sh around gate 8 block and env-default block", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add GATE8_JOBS env default", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Append --jobs to gate8's run-all.sh invocation (else branch only)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Record precedence comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 5, "description": "Extend fail remedy text for status 2", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 6, "description": "Document new variable in header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 7, "description": "Record rejected alternatives", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_record": {
+    "bash_n": "clean",
+    "deploy_redeployed": "bash agent-system/extensions/core/scripts/deploy-headless.sh (resync, non-destructive) -- required because editing the source-store copy drifted gates 3/5 (deployed-vs-source content check) until redeployed; RESULT=landed_verify_clean",
+    "skip_slow_contract": "bash verify-deploy.sh --skip-slow --findings --quiet -> PASS, 33 checks 0 failures, no FINDING gate8 line (confirmed unchanged)",
+    "deploy_consumer_and_missing_run_all_branches": "git diff confirms only the else branch's invocation + its preceding comment block changed; the --skip-slow, deploy-consumer, and run-all.sh-not-found branches are byte-identical",
+    "invalid_value_remedy": "VERIFY_DEPLOY_GATE8_JOBS=banana bash verify-deploy.sh --only-gate 8 -> [FAIL] run-all.sh reported failing or undiscoverable suites (exit 2); remedy line: \"re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh (exit 2 may indicate an invalid VERIFY_DEPLOY_GATE8_JOBS value: 'banana')\"",
+    "jobs_propagation_trace": "VERIFY_DEPLOY_GATE8_JOBS=1 bash -x verify-deploy.sh --skip-slow 2>&1 showed `+ GATE8_JOBS=1`, confirming the env override reaches the GATE8_JOBS variable",
+    "nested_guard": "Confirmed on the cheap fixture path (per plan's stated preference over a full real-battery run): `env -u RUN_ALL_NESTED bash test-run-all-parallel.sh` and `RUN_ALL_NESTED=1 bash test-run-all-parallel.sh` both 9/9 PASS, including case4's explicit forced-sequential-under-RUN_ALL_NESTED=1 assertion (parallel=717-744ms vs nested=1910-1927ms). No edit was made to run-all.sh.",
+    "test-deploy-verify-wiring.sh": "20 passed, 0 failed",
+    "test-verify-deploy-gate-selection.sh": "5 passed, 0 failed"
+  }
+}

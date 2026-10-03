@@ -254,37 +254,42 @@ silently.
 
 ---
 
-### Phase 3: Wire Gate 8 to request `--jobs`, with a `VERIFY_DEPLOY_GATE8_JOBS` override [NOT STARTED]
+### Phase 3: Wire Gate 8 to request `--jobs`, with a `VERIFY_DEPLOY_GATE8_JOBS` override [COMPLETED]
 
 **Goal**: Gate 8 asks `run-all.sh` for parallelism, defaulting to `auto`, overridable by one
 documented environment variable, with `--skip-slow`, the deploy-consumer branch, the
 missing-`run-all.sh` branch, and the nested-invocation guard all provably untouched.
 
 **Tasks**:
-- [ ] Re-read `scripts/verify-deploy.sh` around the gate 8 block (currently `:544-574`) and around
+- [x] Re-read `scripts/verify-deploy.sh` around the gate 8 block (currently `:544-574`) and around
       the existing env-default block (`ORCHESTRATOR_BUDGET_GATE_MODE` at `:190`) immediately before
-      editing.
-- [ ] Add `GATE8_JOBS="${VERIFY_DEPLOY_GATE8_JOBS:-auto}"` beside the existing
+      editing. *(completed: re-read; drift from task description's cited line numbers noted --
+      gate 8 block was at :551-578 and the env-default block at :197 by implementation time)*
+- [x] Add `GATE8_JOBS="${VERIFY_DEPLOY_GATE8_JOBS:-auto}"` beside the existing
       `ORCHESTRATOR_BUDGET_GATE_MODE` default, following that variable's `${VAR:-default}`
-      convention. Do not invent a central env-var registry; there is none.
-- [ ] Append `--jobs "$GATE8_JOBS"` to the existing `run-all.sh --quiet` invocation inside the
+      convention. Do not invent a central env-var registry; there is none. *(completed)*
+- [x] Append `--jobs "$GATE8_JOBS"` to the existing `run-all.sh --quiet` invocation inside the
       `else` branch only. Leave the `--skip-slow` branch, the deploy-consumer branch, and the
-      `run-all.sh`-not-found branch byte-identical.
-- [ ] Decide and record the precedence in a comment at the call site: an explicit
+      `run-all.sh`-not-found branch byte-identical. *(completed: `git diff` confirms only the
+      `else` branch's invocation line and its preceding comment block changed)*
+- [x] Decide and record the precedence in a comment at the call site: an explicit
       `VERIFY_DEPLOY_GATE8_JOBS` wins over the `auto` default; the value is passed through
       verbatim and validated by `run-all.sh` alone (single source of validation truth); there is no
-      silent fallback.
-- [ ] Extend Gate 8's `fail` remedy text so that when `run_all_status` is 2 (`run-all.sh`'s
+      silent fallback. *(completed)*
+- [x] Extend Gate 8's `fail` remedy text so that when `run_all_status` is 2 (`run-all.sh`'s
       usage/validation exit) the message names `VERIFY_DEPLOY_GATE8_JOBS` as the likely cause, and
-      so the re-run remedy string it already prints stays copy-pasteable.
-- [ ] Document the new variable in `verify-deploy.sh`'s header (a short block beside the existing
+      so the re-run remedy string it already prints stays copy-pasteable. *(completed: verified
+      live with `VERIFY_DEPLOY_GATE8_JOBS=banana bash verify-deploy.sh --only-gate 8`, which
+      printed "...exit 2 may indicate an invalid VERIFY_DEPLOY_GATE8_JOBS value: 'banana'")*
+- [x] Document the new variable in `verify-deploy.sh`'s header (a short block beside the existing
       minimal-init hatch note): name, default `auto`, meaning of `1`, and when to use it (CI,
-      `nproc=1`, memory-pressured, or heavily-loaded interactive hosts).
-- [ ] Record the rejected alternatives in that header block or the call-site comment, so they are
+      `nproc=1`, memory-pressured, or heavily-loaded interactive hosts). *(completed)*
+- [x] Record the rejected alternatives in that header block or the call-site comment, so they are
       not re-proposed: a bare hardcoded `4` (not host-adaptive; identical to `auto` only on hosts
       with `nproc >= 4`); a conservative fixed `2` (leaves measured headroom unused and still needs
       the same override); reusing a generic `JOBS` env name (too broad, collides with unrelated
       tooling); and gating parallelism on TTY-ness (implicit, untestable, surprising).
+      *(completed: recorded in the call-site comment block)*
 
 **Timing**: 0.75 hours
 
