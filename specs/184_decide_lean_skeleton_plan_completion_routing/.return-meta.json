@@ -27,22 +27,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-cycle-postflight", "precomputed_json", "if-else branch", "non-regression", "shared helper"]
+      "suggested_keywords": [
+        "orchestrate-cycle-postflight",
+        "precomputed_json",
+        "if-else branch",
+        "non-regression",
+        "shared helper"
+      ]
     },
     {
       "content": "test-orchestrate-cycle-postflight.sh's existing fixtures all exercise either the recovery/return-meta path or a deliberately stale/mismatched handoff; none tests the handoff-present (trusted: matching dispatch_seq, fresh mtime) success path for the implemented) case directly. Any new handoff-only field requiring postflight logic (like skeleton/sorry_inventory) needs its own trusted-handoff fixture built from scratch -- write .orchestrator-handoff.json with dispatch_seq matching the --dispatch-seq flag and a window_start a few seconds in the past so the mtime check passes.",
       "category": "INSIGHT",
       "source_artifact": "specs/184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["test-orchestrate-cycle-postflight", "handoff-present path", "trusted handoff fixture", "dispatch_seq", "fixture gap"]
+      "suggested_keywords": [
+        "test-orchestrate-cycle-postflight",
+        "handoff-present path",
+        "trusted handoff fixture",
+        "dispatch_seq",
+        "fixture gap"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791000710_cc4f86",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

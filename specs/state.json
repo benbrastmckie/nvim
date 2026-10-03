@@ -279,9 +279,15 @@
           "path": "specs/184_decide_lean_skeleton_plan_completion_routing/plans/01_skeleton-follow-up-reporting.md",
           "type": "plan",
           "summary": "5-phase plan adding report-only skeleton-follow-up surfacing (stderr, completion_summary, append-only skeleton_follow_ups) to orchestrate-cycle-postflight.sh, with a new skill-base.sh propagate helper, a regression fixture, and three doc updates."
+        },
+        {
+          "path": "specs/184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md",
+          "type": "summary",
+          "summary": "Execution summary for the skeleton-follow-up reporting implementation, including two plan deviations (if/else call-site split; 6+3 assertions instead of 5+1) and the recover_json-scoping correction to the research report."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added report-only skeleton-plan follow-up surfacing to orchestrate-cycle-postflight.sh: a strategic-sorry skeleton completion now prints its sorry_inventory follow-ups to stderr, appends them to completion_summary, and records them in an append-only skeleton_follow_ups state.json field, closing the one unaddressed capability loss from the deleted single-task engine without any pr_ready routing or auto-task-creation."
     },
     {
       "project_number": 22,

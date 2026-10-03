@@ -3725,6 +3725,7 @@ file_scope now names the five known sites; research MUST add the remaining files
 - **Dependencies**: Task 242, Task 243, Task 258, Task 259, Task 266
 - **Research**: [184_decide_lean_skeleton_plan_completion_routing/reports/01_skeleton-follow-up-routing.md]
 - **Plan**: [184_decide_lean_skeleton_plan_completion_routing/plans/01_skeleton-follow-up-reporting.md]
+- **Summary**: [184_decide_lean_skeleton_plan_completion_routing/summaries/01_skeleton-follow-up-reporting-summary.md]
 
 **Description**: === RULED 2026-09-22 (eighth-pass phase 0) ===
 Disposition: option (a), narrowed to what was actually lost. The single-task engine's skeleton-exhaustion branch did three things: (1) routed the task to completion via the pr_ready target, (2) propagated a completion summary, (3) derived and reported follow-up tasks from sorry_inventory[].follow_up_task. Under the batch engine (1) is moot: pr_ready is a type=pr-only terminus, and every other task completes through orchestrate-cycle-postflight.sh's completion-claim gate, which a skeleton plan with all phases complete already reaches (orchestrate-cycle-plan.sh's 'no OPEN heading' fallthrough, ~line 2003, and the porting note at ~line 1921). (2) is owned by postflight generally. Only (3) is lost: a skeleton plan completes with its sorry_inventory silently dropped, so the strategic sorries never become tasks.
