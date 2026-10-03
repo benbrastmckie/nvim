@@ -435,10 +435,16 @@
           "path": "specs/127_collapse_routing_ladder_to_routing_agents/plans/01_routing-ladder-collapse.md",
           "type": "plan",
           "summary": "7-phase plan collapsing routing/routing_hard out of 17+2 extension manifests, retiring command-route-skill.sh, and re-scoping validators and docs to routing_agents."
+        },
+        {
+          "path": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary for the routing-ladder collapse across all 7 phases."
         }
       ],
       "session_id": "sess_1791000710_cc4f86",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Collapsed the routing ladder to routing_agents-only across all 19 extension manifests: removed routing/routing_hard from 17+2 manifests, retired command-route-skill.sh and its callerless library helper, re-scoped lint-routing-wiring.sh and check-extension-docs.sh to validate routing_agents/routing_agents_hard, and rewrote manifest-routing-schema.md, hard-mode-routing.md, the CLAUDE.md merge source, and command-authoring guidance (plus 7 additional files discovered by repo-wide grep sweeps) to describe the collapsed two-block model."
     },
     {
       "project_number": 165,

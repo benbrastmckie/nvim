@@ -61,29 +61,53 @@
       "category": "INSIGHT",
       "source_artifact": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["manifest", "config-key-removal", "validator-ordering", "verify-deploy", "cross-reference-check", "grep-before-delete"]
+      "suggested_keywords": [
+        "manifest",
+        "config-key-removal",
+        "validator-ordering",
+        "verify-deploy",
+        "cross-reference-check",
+        "grep-before-delete"
+      ]
     },
     {
       "content": "jq's pretty-printer unconditionally expands every array onto multiple lines, even when the original file hand-compacted a short array onto one line (e.g. [\"a\", \"b\", \"c\"]). A uniform `jq 'del(.key)' file > tmp && mv` loop across many JSON files will silently reformat any file that had such a compacted array, producing an unwanted diff beyond the intended deletion. Before applying a bulk jq-based edit across many files, spot-check each file's diff for unrelated reformatting (not just the intended key removal), and hand-rewrite via Write (preserving exact original formatting) any file where jq's default pretty-printer would mangle unrelated content.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["jq", "json-formatting", "bulk-edit", "pretty-printer", "diff-hygiene"]
+      "suggested_keywords": [
+        "jq",
+        "json-formatting",
+        "bulk-edit",
+        "pretty-printer",
+        "diff-hygiene"
+      ]
     },
     {
       "content": "Plan verification bullets for a multi-phase documentation-cleanup task can tighten across phases: an intermediate phase may explicitly allow 'historical mentions' of a retired name to remain (since later phases still own some of the cleanup), while a later/final phase's own verification bullet may require TRUE ZERO occurrences with no such exception. When a plan's wording shifts from 'only intentional historical mentions' to 'returns zero occurrences repo-wide', treat the stricter wording as authoritative and go back to reword even the canonical documentation's own historical-explanation prose to avoid the literal retired name (e.g. 'the former skill-level resolver' instead of naming the deleted script).",
       "category": "INSIGHT",
       "source_artifact": "specs/127_collapse_routing_ladder_to_routing_agents/summaries/01_routing-ladder-collapse-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["plan-verification", "grep-zero-occurrences", "documentation-cleanup", "phase-sequencing"]
+      "suggested_keywords": [
+        "plan-verification",
+        "grep-zero-occurrences",
+        "documentation-cleanup",
+        "phase-sequencing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791000710_cc4f86",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
