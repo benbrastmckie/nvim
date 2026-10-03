@@ -60,6 +60,15 @@ PG_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PG_SCRIPTS_DIR="$(cd "${PG_LIB_DIR}/.." && pwd)"
 PG_EVENTS_APPEND="${PG_SCRIPTS_DIR}/events-append.sh"
 
+# Sourced unconditionally (never executed) so common_session_id is always available to
+# pg_session_id below, even from a hook (please-grant.sh, guard-git-push.sh) that has no
+# session_id of its own and does not otherwise source lib/common.sh. This is the single-source
+# session-ID generator every *.sh file must use -- see common.sh's own header; a second inline
+# inline duplicate session-id generator here would trip test-common-lib.sh's single-source
+# assertion (that lint greps for the literal pattern this comment deliberately avoids spelling).
+# shellcheck source=./common.sh
+source "${PG_LIB_DIR}/common.sh" 2>/dev/null || true
+
 PG_EXPIRY_WINDOW="${PG_EXPIRY_WINDOW:-600}"
 PG_ACTION_CLASSES="push_branch push_tag reset_hard clean_fd checkout_discard restore_discard stash_drop"
 
@@ -426,12 +435,14 @@ pg_grant_find_match() {
 
 # pg_session_id -- a best-effort session id for audit events when the caller has none handy
 # (e.g. a UserPromptSubmit hook, which has no agent-system sess_* identity of its own).
+# common_session_id (sourced from lib/common.sh above) is the single sanctioned generator --
+# this function never duplicates its pattern inline.
 pg_session_id() {
   if command -v common_session_id >/dev/null 2>&1; then
     common_session_id
     return
   fi
-  echo "sess_$(date -u +%s 2>/dev/null || echo 0)_pushgrant"
+  echo "sess_unavailable"
 }
 
 # pg_events_append_observable <events-append.sh args...> -- non-fatal wrapper, identical
