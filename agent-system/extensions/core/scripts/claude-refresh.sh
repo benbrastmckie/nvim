@@ -292,6 +292,15 @@ is_lean_worker_comm() {
 # LEAN_LSP_IDLE_THRESHOLD_MIN for a different posture.
 LEAN_LSP_IDLE_THRESHOLD_MIN="${LEAN_LSP_IDLE_THRESHOLD_MIN:-240}"
 
+# Memory-floor cost gate (MB), user-approved default 1 GB: a tree idle past the threshold above
+# is prompt/termination-eligible only when its PSS reclaimable figure is ALSO at/above this floor.
+# Motivated by a live-observed case where a Lean LSP tree was reported as "15.1 GB reclaimable"
+# (the pre-fix RSS+VmSwap double-counting defect this task's PSS accounting replaces) while
+# earlyoom showed 14-16.6 GB available throughout; the real reclaim was ~2.3 GB. User policy: an
+# idle tree that costs nothing may stay; only an idle tree that costs real memory is worth the
+# cost of a rebuild. Override via LEAN_LSP_MEM_FLOOR_MB.
+LEAN_LSP_MEM_FLOOR_MB="${LEAN_LSP_MEM_FLOOR_MB:-1024}"
+
 # --- Lean snapshot field-index map (separate, independently-gated `ps -C lake,lean` reading) ---
 # $1 pid   $2 ppid   $3 uid   $4 etimes   $5 rss   $6 pcpu   $7 cgroup   $8 comm   $9..NF args
 # (cgroup is requested at the same explicit 200-column width as SNAPSHOT_PS_FIELDS above, for the
@@ -320,44 +329,17 @@ take_lean_snapshot() {
     printf '%s\n' "$out"
 }
 
-# --- Lean tree-wide idle gate ---
-# Returns 0 (true) when a SINGLE snapshot row (already comm+args-classified as lake-serve/
-# lean-server/lean-worker) is individually idle: `pcpu` at/near zero AND `etimes` at/beyond the
-# configurable threshold. Called once per tree MEMBER by detect_lean_candidate_trees() below; a
-# tree as a whole is a reclamation candidate only if EVERY member independently passes this gate
-# -- one freshly-spawned or actively-computing member protects the entire tree, not just itself.
-#
-# pcpu handling: ps's `pcpu` column (procps-ng) is lifetime cputime/elapsed -- the process's total
-# consumed CPU time divided by its total elapsed (wall-clock) age -- NOT a decaying average. (A
-# decaying/windowed average is what `top`'s live %CPU column computes; `ps pcpu` is not that.)
-# This means a long-lived process that was busy early on and idle since reads a near-zero pcpu
-# indefinitely, which is exactly the defect this gate is replaced for elsewhere in this task (a
-# 5h-old actively-used tree reads <1% and is misjudged idle) -- this function's own idle decision
-# is NOT changed here; only this comment's characterization of what `ps pcpu` measures is
-# corrected. Rendered as a decimal (e.g. "0.3", "3.0", "555"). This script's other numeric helpers
-# (format_memory, get_vmswap_kb) are integer-only by convention (no bc/jq dependency); the same
-# convention is followed here by comparing only the pre-decimal portion via bash's `${pcpu%%.*}`
-# parameter expansion. A value like "0.3" truncates to "0" (treated as idle); a value like "3.0"
-# truncates to "3" (treated as busy). This is documented, not incidental: it means anything whose
-# LIFETIME average reports 1% or more CPU is never considered idle, while sub-1% readings defer
-# entirely to the etimes threshold.
-lean_row_is_idle() {
-    local etimes="$1"
-    local pcpu="$2"
-    local pcpu_int="${pcpu%%.*}"
-
-    # Defensive guard: a malformed/empty field must never be misjudged as "idle" by an arithmetic
-    # fallback. This should not happen from a well-formed ps row, but is not assumed.
-    [[ "$pcpu_int" =~ ^[0-9]+$ ]] || return 1
-    [[ "$etimes" =~ ^[0-9]+$ ]] || return 1
-
-    if [ "$pcpu_int" -gt 0 ]; then
-        return 1
-    fi
-
-    local threshold_seconds=$((LEAN_LSP_IDLE_THRESHOLD_MIN * 60))
-    [ "$etimes" -ge "$threshold_seconds" ]
-}
+# NOTE: the Lean tree-wide idle gate formerly here (lean_row_is_idle(), a per-member pcpu/etimes
+# check) has been REMOVED and replaced entirely by the CPU-delta idle state machine
+# (update_lean_tree_cpu_state(), above) plus the memory-floor cost gate, both wired into
+# detect_lean_candidate_trees() below. `ps pcpu` is lifetime cputime/elapsed -- the process's
+# total consumed CPU time divided by its total elapsed (wall-clock) age, never a decaying/windowed
+# average -- so a long-lived tree that was busy early on and idle since reads a near-zero pcpu
+# indefinitely and was misjudged idle by the old gate (the defect this replacement fixes; a
+# 5h-old actively-used tree reading <1% pcpu is never idle under the new gate, since its cputime
+# keeps growing). build_waiter_row_is_idle() below is UNCHANGED and unrelated -- it serves a
+# different, still-pcpu/etimes-gated pass (its own threshold is independently configurable, not
+# LEAN_LSP_IDLE_THRESHOLD_MIN), and is out of this task's scope.
 
 # --- Lean tree assembly and tree-wide candidacy gate ---
 # Parses take_lean_snapshot()'s frozen rows into pid-keyed, comm-classified data, assembles each
@@ -378,8 +360,9 @@ lean_row_is_idle() {
 # it only reads take_lean_snapshot()'s output and this function's own local/global arrays, and
 # never signals a process.
 #
-# Populated on return (indexed 0..N-1, one entry per ELIGIBLE tree; all four arrays are reset at
-# the start of every call):
+# Populated on return (indexed 0..N-1, one entry per DETECTED tree -- every live tree now appears
+# here regardless of idleness; eligibility is a separate per-tree field, not a detection filter.
+# All eight arrays are reset at the start of every call):
 #   LEAN_TREE_ROOT_PID[i]    -- the tree's `lake serve` pid
 #   LEAN_TREE_SERVER_PID[i]  -- the tree's `lean --server` pid, or "" if none was found
 #   LEAN_TREE_WORKER_PIDS[i] -- space-separated `lean --worker` pids (may be empty)
@@ -393,6 +376,13 @@ lean_row_is_idle() {
 #                                  approx|age" lines (root, then server if present, then each
 #                                  worker), for the per-PID reporting table -- no 2D bash arrays
 #                                  are used anywhere in this script, matching its existing style
+#   LEAN_TREE_IDLE_MIN[i]    -- CPU-delta idle_for in whole minutes, from
+#                               update_lean_tree_cpu_state() (see that function's own comment for
+#                               the state machine)
+#   LEAN_TREE_ELIGIBLE[i]    -- 1 when idle_for_min >= LEAN_LSP_IDLE_THRESHOLD_MIN AND
+#                               reclaimable_kb >= LEAN_LSP_MEM_FLOOR_MB*1024 (the cost gate), 0
+#                               otherwise. ONLY an eligible tree may ever be terminated -- see
+#                               run_lean_pass()'s force-mode loop below.
 detect_lean_candidate_trees() {
     LEAN_TREE_ROOT_PID=()
     LEAN_TREE_SERVER_PID=()
@@ -400,6 +390,8 @@ detect_lean_candidate_trees() {
     LEAN_TREE_MEM_KB=()
     LEAN_TREE_SHARED_CACHE_KB=()
     LEAN_TREE_MEMBER_DETAILS=()
+    LEAN_TREE_IDLE_MIN=()
+    LEAN_TREE_ELIGIBLE=()
 
     local snapshot
     snapshot=$(take_lean_snapshot)
@@ -437,6 +429,17 @@ detect_lean_candidate_trees() {
     local n="${#row_pid[@]}"
     local i j
 
+    # --- Pass 1: assemble EVERY live tree (no idleness filter at detection time -- idleness is
+    # now a CPU-delta state-machine decision, not a per-row pcpu/etimes snapshot check), still
+    # excluding non-owned/system-slice members as defense-in-depth (unchanged from before). Each
+    # assembled tree's membership is remembered via CSV-encoded index lists (this file's existing
+    # no-2D-arrays, no-associative-arrays style) so a SINGLE update_lean_tree_cpu_state() call can
+    # run across every tree this run in pass 2 below -- the pruning step needs the full current
+    # key set in one write, never one write per tree.
+    local -a asm_root_idx=() asm_server_idx=() asm_worker_idxs_csv=()
+    CPU_STATE_KEYS=()
+    CPU_STATE_CPUTICKS=()
+
     for ((i = 0; i < n; i++)); do
         [ "${row_kind[$i]}" = "serve" ] || continue
 
@@ -460,8 +463,10 @@ detect_lean_candidate_trees() {
             done
         fi
 
-        # Tree-wide gate: EVERY member (root + server if present + all workers) must pass
-        # idle+exclusion. A single non-passing member disqualifies the whole tree.
+        # Tree-wide exclusion gate: EVERY member (root + server if present + all workers) must
+        # pass the UID/system-slice predicates. A single non-passing member disqualifies the
+        # whole tree from detection entirely (unchanged safety posture; only the idleness check
+        # that used to live in this same loop has moved to the cost gate below).
         local -a member_idxs=("$i")
         [ "$server_idx" -ge 0 ] && member_idxs+=("$server_idx")
         member_idxs+=("${worker_idxs[@]}")
@@ -477,24 +482,73 @@ detect_lean_candidate_trees() {
                 tree_ok=false
                 break
             fi
-            if ! lean_row_is_idle "${row_etimes[$m]}" "${row_pcpu[$m]}"; then
-                tree_ok=false
-                break
-            fi
         done
 
         if ! $tree_ok; then
             continue
         fi
 
+        # Root's starttime keys this tree in the CPU-delta state file -- pid-reuse safe, since a
+        # reused root pid gets a different starttime and therefore a brand-new, history-free key.
+        # A root that cannot be read here (vanished between snapshot and this read, or an
+        # unreadable /proc/PID/stat) means this tree is skipped entirely THIS RUN rather than
+        # guessing a key -- it reappears next run if it is still live.
+        local stat_triple
+        stat_triple=$(read_proc_stat_fields "$root_pid")
+        [ -z "$stat_triple" ] && continue
+
+        local root_starttime r_utime r_stime cputicks_sum
+        IFS='|' read -r root_starttime r_utime r_stime <<< "$stat_triple"
+        cputicks_sum=$((r_utime + r_stime))
+
+        for m in "${member_idxs[@]}"; do
+            [ "$m" = "$i" ] && continue  # root already summed above
+            local m_stat m_utime m_stime
+            m_stat=$(read_proc_stat_fields "${row_pid[$m]}")
+            [ -z "$m_stat" ] && continue
+            IFS='|' read -r _ m_utime m_stime <<< "$m_stat"
+            cputicks_sum=$((cputicks_sum + m_utime + m_stime))
+        done
+
+        CPU_STATE_KEYS+=("${root_pid}:${root_starttime}")
+        CPU_STATE_CPUTICKS+=("$cputicks_sum")
+
+        asm_root_idx+=("$i")
+        asm_server_idx+=("$server_idx")
+        local worker_csv=""
+        for j in "${worker_idxs[@]}"; do
+            worker_csv="${worker_csv:+$worker_csv,}$j"
+        done
+        asm_worker_idxs_csv+=("$worker_csv")
+    done
+
+    # Single CPU-delta state-machine update across every assembled tree this run -- pruning any
+    # key no longer present (a tree that no longer exists) happens inside this one call.
+    update_lean_tree_cpu_state
+
+    # --- Pass 2: PSS accounting, the cost gate, and population of the public LEAN_TREE_* arrays ---
+    local t
+    local n_trees="${#asm_root_idx[@]}"
+    for ((t = 0; t < n_trees; t++)); do
+        i="${asm_root_idx[$t]}"
+        local server_idx="${asm_server_idx[$t]}"
+        local -a worker_idxs=()
+        if [ -n "${asm_worker_idxs_csv[$t]}" ]; then
+            IFS=',' read -r -a worker_idxs <<< "${asm_worker_idxs_csv[$t]}"
+        fi
+        local root_pid="${row_pid[$i]}"
+
+        local -a member_idxs=("$i")
+        [ "$server_idx" -ge 0 ] && member_idxs+=("$server_idx")
+        member_idxs+=("${worker_idxs[@]}")
+
         # Reporting-only, same invariant ruling as the header comment above documents for the
-        # Claude pass: this per-member get_pss_reclaimable_kb() read happens strictly AFTER
-        # tree_ok has already been decided from the frozen snapshot above, so it cannot influence
-        # which tree is selected as a candidate -- it only affects the displayed/accumulated
-        # memory figures. Unlike a plain RSS+VmSwap sum, this correctly avoids double-counting the
-        # shared mmapped Mathlib .olean pages every worker in the tree maps.
+        # Claude pass: this per-member get_pss_reclaimable_kb() read cannot influence which tree
+        # is DETECTED (pass 1 above already decided that from the frozen snapshot) -- it only
+        # affects the displayed/accumulated memory figures and the cost-gate comparison below.
         local mem_total=0 shared_total=0
         local pss_triple reclaimable_kb shared_kb is_approx role_label age member_details=""
+        local m
         for m in "${member_idxs[@]}"; do
             pss_triple=$(get_pss_reclaimable_kb "${row_pid[$m]}" "${row_rss[$m]}")
             IFS='|' read -r reclaimable_kb shared_kb is_approx <<< "$pss_triple"
@@ -515,6 +569,16 @@ detect_lean_candidate_trees() {
             worker_pids="${worker_pids:+$worker_pids }${row_pid[$j]}"
         done
 
+        # Cost gate: eligible only when BOTH the CPU-delta idle state machine AND the
+        # memory-floor are satisfied. idle_min/eligible are aligned to CPU_STATE_KEYS/
+        # CPU_STATE_IDLE_MIN by construction -- pass 1 appended exactly one CPU_STATE_* entry per
+        # assembled tree, in the same order asm_root_idx was built, which loop index t also walks.
+        local idle_min="${CPU_STATE_IDLE_MIN[$t]}"
+        local eligible=0
+        if [ "$idle_min" -ge "$LEAN_LSP_IDLE_THRESHOLD_MIN" ] && [ "$mem_total" -ge "$((LEAN_LSP_MEM_FLOOR_MB * 1024))" ]; then
+            eligible=1
+        fi
+
         LEAN_TREE_ROOT_PID+=("$root_pid")
         if [ "$server_idx" -ge 0 ]; then
             LEAN_TREE_SERVER_PID+=("${row_pid[$server_idx]}")
@@ -525,6 +589,8 @@ detect_lean_candidate_trees() {
         LEAN_TREE_MEM_KB+=("$mem_total")
         LEAN_TREE_SHARED_CACHE_KB+=("$shared_total")
         LEAN_TREE_MEMBER_DETAILS+=("$member_details")
+        LEAN_TREE_IDLE_MIN+=("$idle_min")
+        LEAN_TREE_ELIGIBLE+=("$eligible")
     done
 }
 
@@ -1064,6 +1130,19 @@ run_claude_pass() {
 # the Claude pass: the terminate_pid() escalation helper, and the is_system_slice_cgroup/
 # is_owned_by_current_uid exclusion predicates (both reused unmodified) -- candidacy, snapshot,
 # and tree-wide gating are entirely separate (detect_lean_candidate_trees()).
+# Format an idle_for figure (in whole minutes) the same human-readable way get_process_age()
+# formats an etimes-in-seconds figure, so the two read consistently side by side in the report.
+format_idle_minutes() {
+    local idle_min="$1"
+    local hours=$((idle_min / 60))
+    local minutes=$((idle_min % 60))
+    if [ "$hours" -gt 0 ]; then
+        echo "${hours}h ${minutes}m"
+    else
+        echo "${minutes}m"
+    fi
+}
+
 run_lean_pass() {
     local FORCE="$1"
     local DRY_RUN="$2"
@@ -1076,18 +1155,33 @@ run_lean_pass() {
     echo -e "${GREEN}Lean LSP Process-Tree Reclamation${NC}"
     echo "=================================="
 
-    # No idle Lean LSP process trees found -- an explicit, non-alarming line, never silence.
+    # No Lean LSP process trees found at all (active or otherwise) -- an explicit, non-alarming
+    # line, never silence. Detection no longer filters by idleness (see detect_lean_candidate_
+    # trees()'s own comment), so this is a genuinely empty process table, not merely "none idle".
     if [ "$n_trees" -eq 0 ]; then
         echo ""
-        echo "No idle Lean LSP process trees found."
+        echo "No Lean LSP process trees found."
         return 0
     fi
 
-    local total_mem_kb=0 total_shared_kb=0
+    # Classify each tree and accumulate totals from ELIGIBLE trees ONLY -- an active or
+    # idle-but-cheap tree is reported, never counted toward "reclaimable", and (see the force-mode
+    # loop below) never terminated even under --force.
+    local eligible_count=0
+    local eligible_mem_kb=0 eligible_shared_kb=0
+    local -a classification=()
     local i
     for ((i = 0; i < n_trees; i++)); do
-        total_mem_kb=$((total_mem_kb + LEAN_TREE_MEM_KB[i]))
-        total_shared_kb=$((total_shared_kb + LEAN_TREE_SHARED_CACHE_KB[i]))
+        if [ "${LEAN_TREE_ELIGIBLE[$i]}" = "1" ]; then
+            classification+=("eligible")
+            eligible_count=$((eligible_count + 1))
+            eligible_mem_kb=$((eligible_mem_kb + LEAN_TREE_MEM_KB[i]))
+            eligible_shared_kb=$((eligible_shared_kb + LEAN_TREE_SHARED_CACHE_KB[i]))
+        elif [ "${LEAN_TREE_IDLE_MIN[$i]}" -ge "$LEAN_LSP_IDLE_THRESHOLD_MIN" ]; then
+            classification+=("idle, cheap, kept")
+        else
+            classification+=("active")
+        fi
     done
 
     # Default mode (no --force) - show status and return, or --dry-run - same, with a banner.
@@ -1100,11 +1194,11 @@ run_lean_pass() {
             echo -e "${BLUE}[DRY RUN]${NC} Preview only -- no processes will be terminated."
         fi
         echo ""
-        echo "Found $n_trees idle Lean LSP process tree(s) using $(format_memory "$total_mem_kb"):"
+        echo "Found $n_trees Lean LSP process tree(s), $eligible_count eligible for reclamation:"
 
         for ((i = 0; i < n_trees; i++)); do
             echo ""
-            echo "Tree $((i + 1)) (root PID ${LEAN_TREE_ROOT_PID[$i]}, $(format_memory "${LEAN_TREE_MEM_KB[$i]}") reclaimable, $(format_memory "${LEAN_TREE_SHARED_CACHE_KB[$i]}") shared cache):"
+            echo "Tree $((i + 1)) (root PID ${LEAN_TREE_ROOT_PID[$i]}, idle $(format_idle_minutes "${LEAN_TREE_IDLE_MIN[$i]}"), $(format_memory "${LEAN_TREE_MEM_KB[$i]}") reclaimable, $(format_memory "${LEAN_TREE_SHARED_CACHE_KB[$i]}") shared cache) -- ${classification[$i]}:"
             printf "  %-8s %-16s %-12s %-14s %-14s %s\n" "PID" "Role" "Memory" "Reclaimable" "Shared cache" "Age"
             printf "  %-8s %-16s %-12s %-14s %-14s %s\n" "-----" "----------------" "-------" "------------" "------------" "-------"
 
@@ -1119,23 +1213,25 @@ run_lean_pass() {
         done
 
         echo ""
-        echo "Total memory that can be reclaimed: $(format_memory "$total_mem_kb") (shared cache: $(format_memory "$total_shared_kb"), not counted)"
+        echo "Total memory that can be reclaimed: $(format_memory "$eligible_mem_kb") (shared cache: $(format_memory "$eligible_shared_kb"), not counted) across $eligible_count eligible tree(s)"
         echo ""
         # Return here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
         return 0
     fi
 
-    # Force mode - terminate every candidate tree strictly workers -> server -> `lake serve`.
-    # Multiple trees are handled one at a time, each fully ordered (siblings within a tree, i.e.
-    # multiple workers, may be signaled in any order relative to each other -- only the
-    # cross-role ordering is a documented guarantee).
+    # Force mode - terminate ONLY eligible trees, strictly workers -> server -> `lake serve`. A
+    # cheap-but-idle or active tree is NEVER terminated, even under --force -- the cost gate is
+    # the sole authority over which trees reach the termination loop at all.
     echo ""
-    echo -e "${GREEN}Terminating idle Lean LSP process trees...${NC}"
+    echo -e "${GREEN}Terminating eligible Lean LSP process trees...${NC}"
 
     local terminated=0
     local failed=0
+    local eligible_reclaimed_kb=0
 
     for ((i = 0; i < n_trees; i++)); do
+        [ "${LEAN_TREE_ELIGIBLE[$i]}" = "1" ] || continue
+
         local -a ordered_pids=()
         local wpid
         for wpid in ${LEAN_TREE_WORKER_PIDS[$i]}; do
@@ -1159,6 +1255,7 @@ run_lean_pass() {
                 2) ;; # already gone; not counted
             esac
         done
+        eligible_reclaimed_kb=$((eligible_reclaimed_kb + LEAN_TREE_MEM_KB[i]))
     done
 
     echo ""
@@ -1166,7 +1263,7 @@ run_lean_pass() {
     echo "=============================="
     echo "Terminated: $terminated processes"
     echo "Failed:     $failed processes"
-    echo "Memory reclaimed: ~$(format_memory "$total_mem_kb")"
+    echo "Memory reclaimed: ~$(format_memory "$eligible_reclaimed_kb")"
 }
 
 # --- Orphaned build-waiter poll-loop reaper: independently-gated, own snapshot ---
@@ -1286,10 +1383,12 @@ build_waiter_family() {
 
 # --- Row-level idle gate ---
 # Returns 0 (true) when a row is individually idle: `pcpu` truncated to its integer portion is 0,
-# AND `etimes` is at/beyond a caller-supplied threshold (in minutes). Reuses lean_row_is_idle's
-# integer-truncation idiom (see that function's own comment for the rationale) rather than calling
-# it directly, since this pass's threshold is independently configurable
-# (BUILD_WAITER_REAP_MIN/BUILD_WAITER_CEILING_MIN), not LEAN_LSP_IDLE_THRESHOLD_MIN.
+# AND `etimes` is at/beyond a caller-supplied threshold (in minutes). `ps`'s `pcpu` column
+# (procps-ng) is lifetime cputime/elapsed, rendered as a decimal (e.g. "0.3", "3.0"); this script's
+# other numeric helpers are integer-only by convention (no bc/jq dependency), so only the
+# pre-decimal portion is compared via bash's `${pcpu%%.*}` parameter expansion -- self-contained
+# here rather than calling a shared helper, since this pass's threshold is independently
+# configurable (BUILD_WAITER_REAP_MIN/BUILD_WAITER_CEILING_MIN), not LEAN_LSP_IDLE_THRESHOLD_MIN.
 build_waiter_row_is_idle() {
     local etimes="$1"
     local pcpu="$2"

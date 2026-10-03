@@ -583,11 +583,28 @@ chmod +x "$PSS_LEAN_BIN_DIR/ps"
 
 PSS_LEAN_PROC_DIR="$WORKDIR/fakeproc-pss-lean"
 mkdir -p "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER"
-printf 'Pss_Anon:\t      200 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT/smaps_rollup"
-printf 'Pss_Anon:\t      300 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER/smaps_rollup"
-printf 'Pss_Anon:\t      250 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER/smaps_rollup"
+printf 'Pss_Anon:\t      500 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT/smaps_rollup"
+printf 'Pss_Anon:\t      600 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER/smaps_rollup"
+printf 'Pss_Anon:\t      500 kB\nSwapPss:\t        0 kB\nPss_File:\t    60000 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER/smaps_rollup"
 
-PSS_LEAN_OUT="$(PATH="$PSS_LEAN_BIN_DIR:$PATH" PROC_ROOT="$PSS_LEAN_PROC_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+# /proc/PID/stat fixtures: the CPU-delta idle gate (Phase 4) now requires a real starttime/
+# cputicks reading for every tree member, not merely an idle-looking ps row -- detection itself
+# is unconditional (every live tree is detected), but ELIGIBILITY requires the CPU-delta state
+# machine to already show a long idle_for, which in turn requires a PRIOR run's state. Rather
+# than running the script twice to build real history, this fixture pre-seeds lean-trees.json
+# below with a matching cputime_ticks total and a far-past last_active, so a SINGLE --dry-run
+# invocation already observes "unchanged cputime, idle for a long time".
+printf '%s (lake) S 1 %s %s 0 -1 4194304 100 0 0 0 100 50 0 0 20 0 1 0 123456 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' "$PSS_LEAN_ROOT" "$PSS_LEAN_ROOT" "$PSS_LEAN_ROOT" > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT/stat"
+printf '%s (lean) S %s %s %s 0 -1 4194304 100 0 0 0 200 100 0 0 20 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' "$PSS_LEAN_SERVER" "$PSS_LEAN_ROOT" "$PSS_LEAN_ROOT" "$PSS_LEAN_ROOT" > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER/stat"
+printf '%s (lean) S %s %s %s 0 -1 4194304 100 0 0 0 150 100 0 0 20 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' "$PSS_LEAN_WORKER" "$PSS_LEAN_SERVER" "$PSS_LEAN_ROOT" "$PSS_LEAN_ROOT" > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER/stat"
+# Summed cputicks across the three members: (100+50)+(200+100)+(150+100) = 700. Keyed on
+# "<root pid>:<root starttime>" per update_lean_tree_cpu_state()'s contract.
+PSS_LEAN_STATE_DIR="$WORKDIR/state-pss-lean"
+mkdir -p "$PSS_LEAN_STATE_DIR"
+PSS_LEAN_PAST=$(( $(date +%s) - 36000 ))
+printf '{"%s:123456": {"cputime_ticks": 700, "last_active": %s, "last_seen": %s}}' "$PSS_LEAN_ROOT" "$PSS_LEAN_PAST" "$PSS_LEAN_PAST" > "$PSS_LEAN_STATE_DIR/lean-trees.json"
+
+PSS_LEAN_OUT="$(PATH="$PSS_LEAN_BIN_DIR:$PATH" PROC_ROOT="$PSS_LEAN_PROC_DIR" LEAN_TREE_STATE_DIR="$PSS_LEAN_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
 if echo "$PSS_LEAN_OUT" | grep -qE 'PID[[:space:]]+Role[[:space:]]+Memory[[:space:]]+Reclaimable[[:space:]]+Shared cache[[:space:]]+Age'; then
   pass "Lean PSS (e): tree member table carries Reclaimable and Shared cache columns"
@@ -596,28 +613,30 @@ else
   info "output was: $PSS_LEAN_OUT"
 fi
 
-if echo "$PSS_LEAN_OUT" | grep -q "$PSS_LEAN_WORKER" && echo "$PSS_LEAN_OUT" | grep -qE '250 KB[[:space:]]+58\.5 MB'; then
-  pass "Lean PSS (e): worker row shows de-duplicated reclaimable (250 KB) and shared cache (58.5 MB), never the shared mapping folded in"
+if echo "$PSS_LEAN_OUT" | grep -q "$PSS_LEAN_WORKER" && echo "$PSS_LEAN_OUT" | grep -qE '500 KB[[:space:]]+58\.5 MB'; then
+  pass "Lean PSS (e): worker row shows de-duplicated reclaimable (500 KB) and shared cache (58.5 MB), never the shared mapping folded in"
 else
-  fail "Lean PSS (e): expected worker row with reclaimable 250 KB and shared cache 58.5 MB not found"
+  fail "Lean PSS (e): expected worker row with reclaimable 500 KB and shared cache 58.5 MB not found"
   info "output was: $PSS_LEAN_OUT"
 fi
 
-if echo "$PSS_LEAN_OUT" | grep -qE 'Total memory that can be reclaimed: 750 KB \(shared cache: 175\.7 MB, not counted\)'; then
-  pass "Lean PSS (e): totals line sums reclaimable to 750 KB (sum of Pss_Anon across 3 members) with 175.7 MB shared cache reported separately -- the pre-fix RSS+VmSwap sum would have been strictly larger"
+if echo "$PSS_LEAN_OUT" | grep -qE 'Total memory that can be reclaimed: 1\.5 MB \(shared cache: 175\.7 MB, not counted\) across 1 eligible'; then
+  pass "Lean PSS (e): totals line sums reclaimable to 1.5 MB (sum of Pss_Anon across 3 members, well past the overridden 1 MB floor) with 175.7 MB shared cache reported separately -- the pre-fix RSS+VmSwap sum would have been strictly larger"
 else
-  fail "Lean PSS (e): totals line did not show the expected de-duplicated 750 KB reclaimable / 175.7 MB shared cache figures"
+  fail "Lean PSS (e): totals line did not show the expected de-duplicated 1.5 MB reclaimable / 175.7 MB shared cache figures across 1 eligible tree"
   info "output was: $PSS_LEAN_OUT"
 fi
 
 # --- Fallback-label output case: same fixture, smaps_rollup removed -- approximate marker must
-# be visible in rendered output, not only in the isolated helper's return value. ---
+# be visible in rendered output, not only in the isolated helper's return value. The CPU-delta
+# state file is unaffected (cputicks are read from /proc/PID/stat, never smaps_rollup), so the
+# tree remains eligible across this second invocation. ---
 rm -f "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT/smaps_rollup" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER/smaps_rollup" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER/smaps_rollup"
 printf 'Name:\tlean\nVmSwap:\t    100 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT/status"
 printf 'Name:\tlean\nVmSwap:\t    100 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER/status"
 printf 'Name:\tlean\nVmSwap:\t    100 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER/status"
 
-PSS_LEAN_FALLBACK_OUT="$(PATH="$PSS_LEAN_BIN_DIR:$PATH" PROC_ROOT="$PSS_LEAN_PROC_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
+PSS_LEAN_FALLBACK_OUT="$(PATH="$PSS_LEAN_BIN_DIR:$PATH" PROC_ROOT="$PSS_LEAN_PROC_DIR" LEAN_TREE_STATE_DIR="$PSS_LEAN_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
 if echo "$PSS_LEAN_FALLBACK_OUT" | grep -q "$PSS_LEAN_WORKER" && echo "$PSS_LEAN_FALLBACK_OUT" | grep -qE '~[0-9.]+ (KB|MB|GB)'; then
   pass "Lean PSS (e) fallback: approximate '~' marker is visible in rendered output when smaps_rollup is absent"

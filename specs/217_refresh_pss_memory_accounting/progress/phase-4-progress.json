@@ -1,0 +1,30 @@
+{
+  "phase": 4,
+  "phase_name": "Replace the pcpu/etimes gate with the CPU-delta idle gate plus memory-floor cost gate",
+  "started_at": "2026-10-02T01:10:00Z",
+  "last_updated": "2026-10-02T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "LEAN_LSP_MEM_FLOOR_MB env var", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Delete lean_row_is_idle(), update build_waiter_row_is_idle() comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "Restructure detect_lean_candidate_trees() to detect-all + CPU-delta + cost gate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "run_lean_pass() classification report + eligibility-gated termination", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 5, "description": "shellcheck + suite run + manual floor-gate smoke test", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.verification",
+      "description": "Assertion (g) and my own Phase 2 Lean PSS (e) full-script cases depend on /proc/PID/stat + seeded lean-trees.json fixtures that the new CPU-delta gate requires",
+      "type": "altered",
+      "reason": "Phase 4's own Verification explicitly sanctions deferring assertion (g)'s fixture fix to Phase 5. I fixed my own Lean PSS (e) fixtures now (bounded effort, I own them) rather than deferring, by adding /proc/PID/stat fixtures, a pre-seeded state file, and LEAN_LSP_MEM_FLOOR_MB=1 overrides.",
+      "annotation": "*(deviation: altered -- fixed Lean PSS (e) fixtures now; assertion (g) deferred to Phase 5 as explicitly sanctioned)*"
+    }
+  ],
+  "verification_notes": {
+    "shellcheck": "clean, two pre-existing warnings unchanged",
+    "suite": "122 passed / 3 failed -- all 3 failures are assertion (g), explicitly sanctioned to defer to Phase 5",
+    "manual_smoke": "a tree idle 10h with 10 KB reclaimable (under the 1 GB floor) renders as 'idle, cheap, kept', totals line shows 0 eligible, and --force terminates 0 processes"
+  }
+}

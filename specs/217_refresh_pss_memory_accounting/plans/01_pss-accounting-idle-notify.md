@@ -337,34 +337,46 @@ approach from additive to migrative.
 
 ---
 
-### Phase 4: Replace the pcpu/etimes gate with the CPU-delta idle gate plus memory-floor cost gate [NOT STARTED]
+### Phase 4: Replace the pcpu/etimes gate with the CPU-delta idle gate plus memory-floor cost gate [COMPLETED]
 
 **Goal**: Make tree eligibility depend on CPU-delta idleness AND the reclaimable-memory floor,
 delete the superseded row-level gate, and report cheap idle trees as kept rather than reclaimable.
 
 **Tasks**:
-- [ ] Add `LEAN_LSP_MEM_FLOOR_MB="${LEAN_LSP_MEM_FLOOR_MB:-1024}"` beside the existing
+- [x] Add `LEAN_LSP_MEM_FLOOR_MB="${LEAN_LSP_MEM_FLOOR_MB:-1024}"` beside the existing
       `LEAN_LSP_IDLE_THRESHOLD_MIN`, with a comment recording the user-approved 1 GB floor and the
-      live observation that motivated it.
-- [ ] Remove the `lean_row_is_idle` call from `detect_lean_candidate_trees()`'s member loop;
+      live observation that motivated it. *(completed)*
+- [x] Remove the `lean_row_is_idle` call from `detect_lean_candidate_trees()`'s member loop;
       delete `lean_row_is_idle()` itself; rewrite `build_waiter_row_is_idle()`'s comment so its
       integer-truncation rationale is self-contained instead of cross-referencing the deleted
       function. The UID and system-slice member checks in that same loop are unchanged.
-- [ ] Have `detect_lean_candidate_trees()` keep detecting every live tree (no idleness filter at
+      *(completed: grep confirms zero remaining calls, only an explanatory NOTE comment)*
+- [x] Have `detect_lean_candidate_trees()` keep detecting every live tree (no idleness filter at
       detection time), call `update_lean_tree_cpu_state()` once per run, and expose per-tree
       `LEAN_TREE_IDLE_MIN` and `LEAN_TREE_ELIGIBLE` arrays alongside the existing ones.
-- [ ] Implement the cost gate as a single predicate: eligible when
+      *(completed: two-pass restructure -- pass 1 assembles every live tree and accumulates
+      per-tree CPU_STATE_KEYS/CPU_STATE_CPUTICKS for one single update_lean_tree_cpu_state() call;
+      pass 2 does PSS accounting and populates the public arrays plus the cost gate)*
+- [x] Implement the cost gate as a single predicate: eligible when
       `idle_for_min >= LEAN_LSP_IDLE_THRESHOLD_MIN` AND
       `reclaimable_kb >= LEAN_LSP_MEM_FLOOR_MB * 1024`. Everything else is reported, never
-      actioned.
-- [ ] Update `run_lean_pass()`'s report to classify each tree as `active`, `idle, cheap, kept`
+      actioned. *(completed)*
+- [x] Update `run_lean_pass()`'s report to classify each tree as `active`, `idle, cheap, kept`
       (idle past the threshold but under the floor), or `eligible` (both gates passed), showing
       `idle_for` and the reclaimable figure in each case. The totals line counts only eligible
-      trees as reclaimable.
-- [ ] Gate `run_lean_pass()`'s `--force` termination loop on `LEAN_TREE_ELIGIBLE` so a cheap or
+      trees as reclaimable. *(completed)*
+- [x] Gate `run_lean_pass()`'s `--force` termination loop on `LEAN_TREE_ELIGIBLE` so a cheap or
       active tree can never be terminated even under `--force`. Termination ordering
-      (workers -> server -> root) and `terminate_pid()` are untouched.
-- [ ] Run `shellcheck`.
+      (workers -> server -> root) and `terminate_pid()` are untouched. *(completed)*
+- [x] Run `shellcheck`. *(completed: clean, same two pre-existing warnings)*
+- [x] **Deviation (recorded, explicitly sanctioned by this phase's own Verification)**: assertion
+      (g) now fails (3 cases) because its fixture tree lacks `/proc/PID/stat`/seeded-state
+      fixtures the new CPU-delta gate requires -- owed to Phase 5 per this phase's own
+      Verification bullet. My own Phase 2 "Lean PSS (e)" full-script cases hit the identical
+      structural dependency; fixed now (not deferred) by adding `/proc/PID/stat` fixtures, a
+      pre-seeded `lean-trees.json`, and `LEAN_LSP_MEM_FLOOR_MB=1` overrides, since I own those
+      fixtures and the fix was bounded. Full suite: 122 passed / 3 failed (only assertion (g)'s
+      three cases, all pre-named as acceptable in this phase's Verification).
 
 **Timing**: 1.5 hours
 
