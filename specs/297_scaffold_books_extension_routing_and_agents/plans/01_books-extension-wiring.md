@@ -232,24 +232,24 @@ across `agents/`.
 
 ---
 
-### Phase 3: Lifecycle skills [NOT STARTED]
+### Phase 3: Lifecycle skills [COMPLETED]
 
 **Goal**: The four lifecycle skills (research/implementation base pair plus `--hard` variants),
 each dispatching to the matching Phase 2 agent.
 
 **Tasks**:
-- [ ] `skills/skill-books-research/SKILL.md` — frontmatter `name`, `description` ending "Invoke
+- [x] `skills/skill-books-research/SKILL.md` — frontmatter `name`, `description` ending "Invoke
       for books research tasks.", and a body modeled on `skill-typst-research/SKILL.md`;
-      `subagent_type: books-research-agent`.
-- [ ] `skills/skill-books-implementation/SKILL.md` — `subagent_type: books-implementation-agent`.
-- [ ] `skills/skill-books-research-hard/SKILL.md` — modeled on `skill-cslib-research-hard`;
-      `subagent_type: books-research-hard-agent`.
-- [ ] `skills/skill-books-implementation-hard/SKILL.md` —
-      `subagent_type: books-implementation-hard-agent`.
-- [ ] No lifecycle skill is created for the `books:certify` sub-route — it reuses the base pair
+      `subagent_type: books-research-agent`. *(completed)*
+- [x] `skills/skill-books-implementation/SKILL.md` — `subagent_type: books-implementation-agent`. *(completed)*
+- [x] `skills/skill-books-research-hard/SKILL.md` — modeled on `skill-cslib-research-hard`;
+      `subagent_type: books-research-hard-agent`. *(completed)*
+- [x] `skills/skill-books-implementation-hard/SKILL.md` —
+      `subagent_type: books-implementation-hard-agent`. *(completed)*
+- [x] No lifecycle skill is created for the `books:certify` sub-route — it reuses the base pair
       per Decision 3. State this once, in the implementation skill's body, so a later reader does
-      not read the sub-route as unimplemented.
-- [ ] Rule E compliance as in Phase 2.
+      not read the sub-route as unimplemented. *(completed)*
+- [x] Rule E compliance as in Phase 2. *(completed)*
 
 **Timing**: 1.5 hours
 
