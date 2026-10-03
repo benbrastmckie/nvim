@@ -209,8 +209,8 @@ MAX_INFRA_FAILURES=3    # Maximum corroborated Agent-tool transport/API failures
   "max_cycles": 5,
   "infra_failures": 0,
   "max_infra_failures": 3,
-  "last_recovered_phases_completed": 2,   # optional; written only by the Stage 5 recovery grep
-  "last_recovered_phases_total": 6,       # optional; written only by the Stage 5 recovery grep
+  "last_recovered_phases_completed": 2,   # optional; written only by Move 3's recovery grep
+  "last_recovered_phases_total": 6,       # optional; written only by Move 3's recovery grep
   "current_state": "planned",
   "started": "2026-05-22T00:00:00Z",
   "last_updated": "2026-05-22T00:30:00Z"

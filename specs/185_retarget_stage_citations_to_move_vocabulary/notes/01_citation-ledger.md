@@ -116,3 +116,28 @@ the rewrite task explicitly licensed), and the closing Summary bullet. Removed t
 "(single-task mode)" qualifier. Confirmed every Move cited (1-4) exists as a `### Move N:`
 heading in the current SKILL.md. Full top-to-bottom re-read confirms the trace reads as one
 coherent sequence.
+
+## Phase 9: reviewed-only files
+
+`docs/architecture/orchestrate-state-machine.md` (5 hits): 4 of 5 already correctly historical
+(explicit "former"/"deleted"/"ported into the batch engine" framing). One hit (the loop-guard
+schema's `last_recovered_phases_completed`/`last_recovered_phases_total` comments, "written only
+by the Stage 5 recovery grep") was a genuine LIVE citation of the same mechanism retargeted to
+Move 3 in handoff-schema.md's exception table (Phase 3) -- fixed via a one-line clarifying
+retarget, consistent with Phase 9's "add a clarifying parenthetical" license.
+
+`context/patterns/file-footprint-overlap.md` (1 hit): confirmed already correctly historical and
+about a WHOLLY DIFFERENT deleted engine (the now-deleted per-mode team-implement skill's own
+Stage 5, not skill-orchestrate's) -- no action needed.
+
+## Known residual gaps outside strict scope (recorded for a future sweep)
+
+- "Stage 3b" (orchestrator-runtime-files.md lines 221, 239) and "Stage 9" (same file, line 149):
+  neither matches the scoped grep pattern `Stage [0-8]\b` (a digit-letter compound like "3b"
+  defeats the `\b` word-boundary) and neither has a mapping-table entry, so retargeting either
+  would require re-deriving a mapping rather than consuming the one given. Left untouched.
+- `scripts/tests/test-orchestrate-recover-message-findings.sh:298` contains the literal text
+  "Move 3 step" -- pre-existing (not authored by this task, confirmed via `git log`), outside
+  file_scope, and not a fabricated sub-anchor (ordinary English "a step [that happens] within
+  Move 3", not "Move 3 step N"). Noted so the acceptance grep's one repo-wide hit is not
+  mistaken for a defect introduced by this sweep.

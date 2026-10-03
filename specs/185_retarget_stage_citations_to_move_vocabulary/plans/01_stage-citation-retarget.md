@@ -523,7 +523,7 @@ hit before editing; a second hit means the file drifted and the ledger must be r
 
 ---
 
-### Phase 9: Acceptance grep, confirmed-clean record, deploy, and full gate run [NOT STARTED]
+### Phase 9: Acceptance grep, confirmed-clean record, deploy, and full gate run [IN PROGRESS]
 
 **Goal**: Establish that the acceptance criteria hold, leave a durable record of the
 reviewed-and-clean files, and confirm deploy plus the full gate run are green.
