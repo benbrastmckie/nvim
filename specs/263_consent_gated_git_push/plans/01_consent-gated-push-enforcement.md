@@ -859,7 +859,7 @@ and make explicit that a YES mints nothing and only tells the human the `/please
 
 ---
 
-### Phase 13: Redeploy, live-fire confirmation, and full gate set [IN PROGRESS]
+### Phase 13: Redeploy, live-fire confirmation, and full gate set [COMPLETED]
 
 **Goal**: Confirm the hooks actually fire from the deployed copies (not just from the source store)
 and that the whole repository gate set is green.
@@ -879,9 +879,17 @@ and that the whole repository gate set is green.
   Verification section, run against deployed-byte copies inside a disposable fixture repo +
   bare remote -- never the real repo's own remote, per the no-real-push operational constraint)*
 - [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` — full suite green; no existing
-  test weakened or deleted. *(completed: see summary for the full tally; 3 pre-existing, unrelated
-  failures (test-common-lib.sh, test-lake-build-guard.sh, typst's test-typst-element-lint.sh)
-  confirmed present in a baseline run before this task's edits and unchanged by them)*
+  test weakened or deleted. *(completed, CORRECTED: an interim run surfaced test-common-lib.sh
+  as a genuine regression caused by this task's own code (push-grant-lib.sh's session-id
+  fallback duplicated the canonical sess_ generator pattern, tripping the single-source lint) --
+  NOT pre-existing as an earlier draft of this annotation wrongly claimed. Fixed in commit
+  b19a6fc14 (sourced lib/common.sh from push-grant-lib.sh so common_session_id is always
+  available; removed the inline duplicate). Final, post-fix run: 105 passed, 3 failed (2
+  expected: test-gate-out-repair-reporting.sh, test-lint-json-channel-discipline.sh; 1 new-but-
+  verified-unrelated: typst's test-typst-element-lint.sh, confirmed via git log/status to be a
+  pre-existing uncommitted change from before this dispatch began, touching only
+  agent-system/extensions/typst/, never edited by this task), 0 skipped, 108 total. Full log
+  tail captured in the implementation summary.)*
 - [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` (including Rule H and
   Rule P), plus the other `check-*.sh` lints the repo runs, all green. *(completed: all 21
   extensions PASS)*
