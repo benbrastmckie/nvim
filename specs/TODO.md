@@ -11,7 +11,7 @@ next_project_number: 335
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,329,334 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,329 | -- | core-agent-system, neovim, orchestrator |
 | 2 | 29,170,273,275,281,302,303,330 | 22,251,271,272,280,300,329 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,331 | 273,275,281,284,302,330 | core-agent-system, extensions, orchestrator |
 | 4 | 312,328,332 | 170,282,300,303,304,318,322,331 | core-agent-system, extensions, orchestrator |
@@ -42,7 +42,6 @@ next_project_number: 335
 
 ### Extensions
 
-334 [IMPLEMENTING] — Fix two books-extension scaffold contract defects: the hard...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
@@ -75,7 +74,7 @@ next_project_number: 335
 ## Tasks
 
 ### 334. Fix two books-extension scaffold contract defects: the hard implementation agent's artifacts shape and hand-rolled task lookups in both hard skills
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
