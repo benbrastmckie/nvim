@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791054566_849cf8_326",
+  "dispatch_seq": 2,
+  "task_number": 326,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/326_books_verification_tier_at_implement_dispatch/reports/01_gate-flag-verification-tier.md",
+      "summary": "Re-measured --compare threading surface, the measured layer-lint.sh/Books.Meta gate contracts, the books-extension binding site, and a six-phase implementation decomposition for the advisory --gate flag."
+    }
+  ],
+  "metadata": {
+    "findings_count": 6
+  },
+  "next_steps": "Run /plan 326 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh Rule E (check_referenced_scripts_declared) extracts every `<name>.sh`/`.sql` token from an extension's commands/*.md, skills/*/SKILL.md, agents/*.md, README.md and EXTENSION.md and hard-fails unless that name is declared in core's provides.scripts/provides.hooks, ANY extension's provides.scripts, or the extension's own provides.hooks (exact OR basename match). scripts/** and context/** are NOT scanned. Consequence: an extension that wants to invoke a script owned by the CONSUMING repository (e.g. interface/scripts/layer-lint.sh) can never satisfy Rule E by naming it in a doc location. The sanctioned answer is a resolve-and-passthrough wrapper script declared in provides.scripts; books-certify.sh is the shipped reference implementation and says so in its own header (resolve git rev-parse --show-toplevel with a pwd fallback, locate the real driver, exit 3 with an actionable message when absent, exec with verbatim argument forwarding). Rule Q separately fails on any file under scripts/ not named in provides.scripts, matched by FULL RELATIVE PATH (so tests/test-foo.sh, not a basename).",
+      "category": "PATTERN",
+      "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/reports/01_gate-flag-verification-tier.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["check-extension-docs", "rule-e", "provides-scripts", "wrapper-script", "extension-packaging", "consuming-repository"]
+    },
+    {
+      "content": "The advisory-only /orchestrate flag pattern (--compare, and now --gate) has a fixed seven-file threading surface that must be re-measured each time because line numbers drift: parse-command-args.sh needs FIVE edits (header doc comment, initializer, the =~ detector, the FOCUS_PROMPT sed strip chain, and the export list -- the strip chain is the one most often forgotten, and omitting it leaks the flag into focus text); orchestrate-cycle-plan.sh needs declaration + parse arm + ONE forwarding line whose `[ \"$g\" = \"implement\" ]` conjunct is the entire mechanism scoping the flag away from research/plan dispatches; orchestrate-build-dispatch.sh needs declaration + parse arm + a CONDITIONAL emission so a no-flag dispatch file stays byte-identical to one built before the flag existed (its test suite asserts \"differs by exactly one added line\"); plus commands/orchestrate.md's Options table, skill-orchestrate/SKILL.md's Move 1, and return-metadata-file.md's optional block. build_args is composed at exactly one site, so there is no second forwarding path. The advisory MUST-NOTs belong INSIDE the agent step's own text, not in a separate section, specifically so a later editor cannot fold the advisory branch into the status-downgrading failure enumeration.",
+      "category": "PATTERN",
+      "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/reports/01_gate-flag-verification-tier.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "advisory-flag", "compare-flag", "dispatch-threading", "byte-identity", "parse-command-args"]
+    },
+    {
+      "content": "A lint whose rules are regexes over file paths can PASS VACUOUSLY -- scanning many files while no rule's file-half matches any of them -- and neither its exit code nor its summary line distinguishes that from a real pass. Measured in Logos/Verification: `bash interface/scripts/layer-lint.sh books` prints `[ok] layer import rule (62 modules, 119 imports, ...)` and exits 0 while 0 of 9 rules apply to anything under books/. Detect vacuity WITHOUT copying the rule set: source the rules file in a SUBSHELL (it may `exit 1` during sourcing -- layer-rules.sh does, when its queue-model derivation yields nothing, which also means an exit 1 is not necessarily a violation), then for each rule take field 1 of the ';'-delimited entry as the file-half regex and grep the scanned path list against it; rules_matched == 0 means vacuous. Report pass_vacuous as a first-class status, never collapsed into pass.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/reports/01_gate-flag-verification-tier.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["vacuous-pass", "layer-lint", "regex-lint", "gate-tiers", "verification-tier", "exit-code-classification"]
+    }
+  ]
+}
