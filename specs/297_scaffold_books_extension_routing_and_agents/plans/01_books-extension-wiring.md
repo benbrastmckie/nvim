@@ -273,15 +273,15 @@ added in Phase 6.
 
 ---
 
-### Phase 4: The books rule [NOT STARTED]
+### Phase 4: The books rule [COMPLETED]
 
 **Goal**: One `books`-scoped rule carrying the non-negotiables, written against the current
 (flattened) design record.
 
 **Tasks**:
-- [ ] `rules/books.md` with `paths:` frontmatter matching book directories, book modules and
-      manifests: `["**/books/**", "**/Book.lean", "**/Book/*.lean"]`.
-- [ ] Content, each stated as a non-negotiable with its measured failure mode:
+- [x] `rules/books.md` with `paths:` frontmatter matching book directories, book modules and
+      manifests: `["**/books/**", "**/Book.lean", "**/Book/*.lean"]`. *(completed)*
+- [x] Content, each stated as a non-negotiable with its measured failure mode:
       (1) facts in Lean, judgments in TOML, everything else computed — a code module carries only
       `@[book_export]` (no kind argument) and one `book_layer <layer>` line; the six `book_*` fact
       commands belong to the book module, and the certifier warns on one found in a code module;
@@ -297,11 +297,11 @@ added in Phase 6.
       line 2, because a comment parses ahead of the `module` keyword), pointing at the consuming
       repository's own SPDX convention for the exact header text rather than hardcoding it;
       (6) never hand-edit a generated certificate or a generated Typst fragment, and never author
-      a computed field.
-- [ ] Name the consuming repo's SPDX header check by filename here if useful — `rules/` is not
-      scanned by Rule E.
-- [ ] No task-number references anywhere in the file; cite file paths, decision numbers and
-      script names.
+      a computed field. *(completed)*
+- [x] Name the consuming repo's SPDX header check by filename here if useful — `rules/` is not
+      scanned by Rule E. *(completed)*
+- [x] No task-number references anywhere in the file; cite file paths, decision numbers and
+      script names. *(completed)*
 
 **Timing**: 1.0 hour
 
