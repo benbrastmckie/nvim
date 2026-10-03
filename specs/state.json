@@ -340,6 +340,11 @@
           "path": "specs/165_admission_posture_for_absent_file_scope/plans/01_admission-posture-absent-scope.md",
           "type": "plan",
           "summary": "6-phase plan: split absent-file_scope admission ruling (cross-batch advisory + promotion criterion, in-batch blocking absent_file_scope defer_reason at v6) plus additive cross_session_hazard for self-modifying solo admits."
+        },
+        {
+          "path": "specs/165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md",
+          "type": "summary",
+          "summary": "Full 6-phase implementation: split absent-file_scope admission posture (v6 schema), additive cross-session hazard for self-modifying admits, both consumers updated, and a 12-test regression repair sweep."
         }
       ],
       "file_scope": [
@@ -353,7 +358,8 @@
         "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh"
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented the split admission posture for an absent file_scope in orchestrate-batch-admit.sh (v5 -> v6: advisory cross-batch, blocking in-batch via a new absent_file_scope defer_reason with its own designated-candidate tie-breaker), additively closed the self-modifying cross-session-blindness gap via a new cross_session_hazard field, updated both executing consumers (orchestrate-cycle-plan.sh, orchestrate-predispatch-review.sh) including a previously-latent silent-exclusion default-arm fix, documented the full ruling in both the script header and the batch-admit-schema.md/batch-orchestration-guardrails.md narrative docs, and repaired 12 pre-existing test regressions the new rule surfaced in unrelated legacy fixtures."
     },
     {
       "project_number": 170,

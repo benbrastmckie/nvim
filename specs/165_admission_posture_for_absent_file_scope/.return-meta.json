@@ -28,29 +28,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["jq", "bash-single-quote", "apostrophe", "orchestrate-batch-admit", "shell-quoting-bug"]
+      "suggested_keywords": [
+        "jq",
+        "bash-single-quote",
+        "apostrophe",
+        "orchestrate-batch-admit",
+        "shell-quoting-bug"
+      ]
     },
     {
       "content": "When a plan's per-phase Task bullets say 'assert the current behavior' for a fixture that is explicitly labelled a 'red baseline', but that SAME plan's later-phase Verification sections require the fixture to 'remain red until Phase N' (a fail-now/pass-later progression), the Task bullet's literal wording is describing the target TDD red/green outcome loosely, not a literal instruction to assert today's defective behavior. Prefer the repeated, mechanically-checkable Verification-section signal over a single ambiguous Task-bullet phrase, write the fixture against the TARGET post-fix shape from the start, and record the resolution as a deviation rather than silently picking one reading.",
       "category": "PATTERN",
       "source_artifact": "specs/165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["tdd-red-green", "plan-ambiguity", "verification-section", "fixture-design", "deviation-record"]
+      "suggested_keywords": [
+        "tdd-red-green",
+        "plan-ambiguity",
+        "verification-section",
+        "fixture-design",
+        "deviation-record"
+      ]
     },
     {
       "content": "When an admission/scheduling predicate is changed to treat an ABSENT or EMPTY declared value (e.g. file_scope: [] or a missing key) as decision-relevant for the first time, every pre-existing test fixture in the same codebase that co-dispatches 2+ candidates sharing that absent/empty value for an UNRELATED reason (lock refusal, flag-forwarding, territory rendering, etc.) can silently break, because the value that used to be admission-neutral padding is now itself a signal. Before landing such a rule, grep the full test corpus for multi-candidate fixtures sharing the newly-meaningful absent/empty value and give each a distinct, disjoint concrete placeholder value (not empty) unless the fixture is deliberately testing the absence/emptiness itself, in which case split it into its own single-signal batch.",
       "category": "INSIGHT",
       "source_artifact": "specs/165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["admission-predicate", "test-fixture-regression", "file_scope", "absent-value-semantics", "regression-sweep"]
+      "suggested_keywords": [
+        "admission-predicate",
+        "test-fixture-regression",
+        "file_scope",
+        "absent-value-semantics",
+        "regression-sweep"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1790980905_de0803",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

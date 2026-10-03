@@ -6,7 +6,7 @@ next_project_number: 326
 
 ## Task Order
 
-*Updated 2026-10-02. Generated from state.json dependency graph.*
+*Updated 2026-10-03. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -3605,6 +3605,7 @@ Contemporaneous context that plausibly supplied the load: the same run-all.sh in
 - **Dependencies**: Task 162, Task 163, Task 245
 - **Research**: [165_admission_posture_for_absent_file_scope/reports/01_admission-posture-absent-scope.md]
 - **Plan**: [165_admission_posture_for_absent_file_scope/plans/01_admission-posture-absent-scope.md]
+- **Summary**: [165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md]
 
 **Description**: Settle whether an ABSENT `file_scope` should be admission-relevant in agent-system/extensions/core/scripts/orchestrate-batch-admit.sh, or remain purely advisory -- and implement the ruling.
 
