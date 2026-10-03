@@ -589,29 +589,72 @@ implementation time changes this phase's file list and must be reported, not qui
 
 ---
 
-### Phase 7: Measure the redeploy checkpoint and prove a red tree is still caught [NOT STARTED]
+### Phase 7: Measure the redeploy checkpoint and prove a red tree is still caught [COMPLETED]
 
 **Goal**: Establish Part B's Verification #2 and #3 — before/after checkpoint wall time on a
 checkpoint that actually fires, and evidence that suppression creates no path where a red tree
 reads as green.
 
 **Tasks**:
-- [ ] Record the checkpoint's total wall time on a fire that genuinely happens (a cycle whose
+- [x] Record the checkpoint's total wall time on a fire that genuinely happens (a cycle whose
       `cycle_modified_files` touches `agent-system/**` — this task's own commits qualify), both
       before and after Phase 6's change. If a natural fire is not available in the window, trigger
       the checkpoint path deliberately and say which it was; do not report a synthetic number as an
-      observed one.
-- [ ] Capture the live exit-code pair the fixture test cannot: one non-dry-run
+      observed one. *(completed WITH A SCOPE NOTE: a full live `/orchestrate` cycle fire was not
+      triggered from inside this implement dispatch -- the orchestrator engine, not a dispatched
+      sub-agent, owns cycle boundaries, and self-triggering one would be well outside this phase's
+      scope. Instead, the checkpoint's total wall-time delta was measured at the ONE component
+      that changed: deploy-headless.sh's own call, isolated and timed directly, both with and
+      without `--skip-verify`. This fully accounts for the checkpoint's total delta because
+      nothing else in the call chain (ledger consult, pre_findings, post_findings,
+      confirm_findings) was touched by Phase 6 -- confirmed by `git diff` showing only the one
+      invocation line changed at each caller. Measured: without `--skip-verify`,
+      `time bash deploy-headless.sh` = real 2m17.574s (includes the resync copy AND its own
+      inline `verify-deploy.sh --skip-slow` pass); with `--skip-verify` = real 0m8.425s (resync
+      copy only, no inline verify at all). Delta: ~2m9s (129s) removed per checkpoint fire -- this
+      is MATERIALLY LARGER than this plan's own earlier estimate ("a ~50-70s pass", carried from
+      `verify-deploy.sh`'s header, written under quieter ambient load) and larger than the
+      correction's "modest" framing anticipated; both numbers are reported as measured on this
+      host under its current heavy concurrent-session load (same confound recorded in Phase 2/4),
+      not reconciled to the header's static estimate.)*
+- [x] Capture the live exit-code pair the fixture test cannot: one non-dry-run
       `deploy-headless.sh` invocation **without** the flag (expect 0 or 3 with
       `RESULT=landed_verify_clean` / `landed_verify_red`) and one **with** it (expect 4 with
       `RESULT=landed_verify_skipped`). Record both exit codes and both `RESULT=` lines verbatim.
-- [ ] Red-tree detectability: with `--skip-verify` active, confirm the caller's own full-depth
+      *(completed: without flag -> exit=0, `[deploy-headless] RESULT=landed_verify_clean`; with
+      `--skip-verify` -> exit=4, `[deploy-headless] RESULT=landed_verify_skipped`, and the
+      explicit suppression line "Verification SUPPRESSED by --skip-verify (caller takes its own
+      independent verification snapshot; this is NOT the same as a passed verify)." Both captured
+      directly against this repo, same pair already captured once in Phase 5's own verification;
+      recaptured here per this phase's own instruction.)*
+- [x] Red-tree detectability: with `--skip-verify` active, confirm the caller's own full-depth
       post-redeploy `deploy_findings_snapshot` still surfaces a genuine new finding — e.g. by
       introducing a deliberate, immediately-reverted source-store defect that the fast gates would
       have caught, and confirming the caller's new-findings branch fires. Revert the deliberate
       defect the moment the observation is recorded; never leave it staged or committed.
-- [ ] Confirm the checkpoint's own branch contract is unaffected: exit 4 routes into the landed
-      branch and the not-landed branch (1/2) is still reachable and still defers.
+      *(completed, WORDING NOTE: "full-depth" in this task's own wording is the same stale
+      premise corrected in Phase 6 -- read as "skip-slow-depth". Demonstrated directly with
+      `deploy_findings_snapshot`/`deploy_baseline_new_findings` from lib/deploy-baseline-lib.sh
+      (the exact functions both callers use), independent of deploy-headless.sh entirely: PRE
+      (clean tree) = 1 finding (gate16, pre-existing). Injected a deliberate, throwaway
+      task-reference-lint violation (an HTML comment naming "task 999999") appended to
+      context/patterns/batch-orchestration-guardrails.md. POST = 4 findings (gate16 + gate3
+      deploy-drift + gate4 THE INJECTED VIOLATION + gate5 deploy-drift). `deploy_baseline_new_findings`
+      correctly reports gate3/gate4/gate5 as new vs. the gate16-only baseline, with gate4 being
+      the substantive catch (gate3/gate5 are incidental source-vs-deployed drift from editing
+      without an intervening redeploy, not defects). Reverted via Edit (not `git checkout --`,
+      which the destructive-git guard correctly blocked on the dirty tree) and confirmed
+      `git diff --quiet` clean immediately after the observation; `bash deploy-headless.sh`
+      re-run afterward to resync. This proves the catching mechanism is entirely independent of
+      deploy-headless.sh's own exit code -- it is, and remains, the caller's OWN pre/post
+      comparison -- so suppressing the inline pass cannot create a path where a red tree reads as
+      green.)*
+- [x] Confirm the checkpoint's own branch contract is unaffected: exit 4 routes into the landed
+      branch and the not-landed branch (1/2) is still reachable and still defers. *(completed: via
+      Phase 6's own verification, re-cited rather than re-derived -- both predicates
+      (`-eq 1 || -eq 2`, unconditional `else`) confirmed unedited by `git diff`, and
+      test-orchestrate-cycle-plan.sh's full 344-case run (including Arm E's not-landed-branch
+      coverage and checkpoint (k)'s landed-branch-with-findings coverage) passes unchanged.)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,52 @@
+{
+  "phase": 7,
+  "phase_name": "Measure the redeploy checkpoint and prove a red tree is still caught",
+  "started_at": "2026-10-03T02:10:00Z",
+  "last_updated": "2026-10-03T02:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Measure checkpoint wall-time delta (component-isolated)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Capture live exit-code pair", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Red-tree detectability demonstration", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm branch contract unaffected", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.1",
+      "description": "Record the checkpoint's total wall time on a fire that genuinely happens",
+      "type": "altered",
+      "reason": "A full live /orchestrate cycle fire cannot be safely or appropriately self-triggered from inside an implement sub-dispatch -- cycle boundaries are owned by the orchestrator engine, not a dispatched agent. Measured the isolated component that actually changed (deploy-headless.sh's own call) instead, which fully accounts for the checkpoint's total delta since nothing else in the call chain changed.",
+      "annotation": "*(deviation: altered -- isolated component timing substituted for an end-to-end live cycle fire, with the substitution's completeness argued explicitly rather than asserted)*"
+    }
+  ],
+  "measurement_record": {
+    "deploy_headless_isolated_timing": {
+      "without_skip_verify": "real 2m17.574s / user 1m23.596s / sys 1m8.860s -- exit=0, RESULT=landed_verify_clean",
+      "with_skip_verify": "real 0m8.425s / user 0m4.853s / sys 0m3.144s -- exit=4, RESULT=landed_verify_skipped",
+      "delta_seconds": 129.149,
+      "note": "Materially larger than this plan's own earlier ~50-70s estimate (carried from verify-deploy.sh's header, written under quieter ambient load). Both numbers measured on this host under the same heavy concurrent-session load documented in Phase 2/4's baseline records -- not reconciled to the header's static estimate."
+    },
+    "live_exit_code_pair": {
+      "without_flag": "exit=0, [deploy-headless] RESULT=landed_verify_clean",
+      "with_skip_verify": "exit=4, [deploy-headless] RESULT=landed_verify_skipped, suppression line: \"Verification SUPPRESSED by --skip-verify (caller takes its own independent verification snapshot; this is NOT the same as a passed verify).\""
+    },
+    "red_tree_detectability": {
+      "mechanism_tested": "deploy_findings_snapshot / deploy_baseline_new_findings from lib/deploy-baseline-lib.sh, the exact functions both callers use -- entirely independent of deploy-headless.sh's own exit code",
+      "pre_findings": ["FINDING gate16 lean still declares routing_hard/routing_agents_hard"],
+      "injected_defect": "throwaway HTML-comment line referencing \"task 999999\", appended to context/patterns/batch-orchestration-guardrails.md, to trip the task-reference lint (gate4)",
+      "post_findings": [
+        "FINDING gate16 lean still declares routing_hard/routing_agents_hard",
+        "FINDING gate3 [core] FAIL: Rule R: index-entries.json entry 'patterns/batch-orchestration-guardrails.md' line_count mismatch (incidental source-vs-deployed drift, not a defect)",
+        "FINDING gate4 agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md:1756:<!-- TEMPORARY RED-TREE PROBE ... --> (THE INJECTED VIOLATION -- substantive catch)",
+        "FINDING gate5 core: Content differs from source: context/patterns/batch-orchestration-guardrails.md (incidental source-vs-deployed drift, not a defect)"
+      ],
+      "new_findings_vs_pre": "gate3, gate4, gate5 (gate4 is the substantive defect; gate3/gate5 are incidental drift from editing source without an intervening redeploy)",
+      "revert_method": "Edit tool (removed the two appended lines directly) -- NOT `git checkout --`, which guard-destructive-git.sh correctly blocked on the dirty tree per its documented 'No Destructive Git on Uncommitted Work' rule",
+      "post_revert_confirmation": "git diff --quiet -- agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md -> clean, confirmed again after this phase's final write",
+      "conclusion": "The catching mechanism never consults deploy-headless.sh's exit code at all -- it is the caller's own independent pre/post comparison. Suppressing the inline pass via --skip-verify cannot create a path where a genuinely red tree reads as green."
+    },
+    "branch_contract_confirmation": "Re-cited from Phase 6's own verification rather than re-derived: both predicates (-eq 1 || -eq 2, unconditional else) confirmed unedited by git diff; test-orchestrate-cycle-plan.sh's 344-case run (Arm E = not-landed branch, checkpoint (k) = landed branch with findings) passes unchanged."
+  }
+}
