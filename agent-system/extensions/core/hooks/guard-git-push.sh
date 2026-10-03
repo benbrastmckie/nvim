@@ -191,8 +191,22 @@ if [ "$IS_DELETE_FLAG" = "1" ]; then
   IS_DELETE_REFSPEC=1
 fi
 
+# Tag-vs-branch classification: a bare `git push <remote> <name>` (no explicit refs/heads or
+# refs/tags prefix) is how /tag's own STEP 8 pushes (skill-tag/SKILL.md, commands/tag.md) --
+# git itself resolves <name> by matching it against local refs. A grant minted for push_tag
+# (REF="refs/tags/*") can never match ACTION_CLASS=push_branch, so this hook must classify the
+# SAME way git does: a local refs/tags/<name> that is NOT also a local refs/heads/<name> means
+# this is a tag push. Without this, /tag's own push would be blocked by its own grant.
+ACTION_CLASS="push_branch"
+MATCH_REF="$REF"
+if git rev-parse --verify --quiet "refs/tags/${REF}" >/dev/null 2>&1 \
+  && ! git rev-parse --verify --quiet "refs/heads/${REF}" >/dev/null 2>&1; then
+  ACTION_CLASS="push_tag"
+  MATCH_REF="refs/tags/*"
+fi
+
 # --- Order of checks, strictly: exclusion before grant lookup ---------------------------------
-EXCLUDE_REASON="$(pg_categorical_excluded push_branch "$REMOTE" "$REF" "$FORCE" \
+EXCLUDE_REASON="$(pg_categorical_excluded "$ACTION_CLASS" "$REMOTE" "$MATCH_REF" "$FORCE" \
   "$IS_MIRROR" "$IS_ALL" "$IS_TAGS_FLAG" "$IS_PRUNE" "$IS_DELETE_REFSPEC" "$REFSPEC_COUNT")"
 if [ -n "$EXCLUDE_REASON" ]; then
   echo "BLOCKED: $EXCLUDE_REASON" >&2
@@ -201,7 +215,7 @@ if [ -n "$EXCLUDE_REASON" ]; then
   exit 2
 fi
 
-if pg_grant_consume push_branch "$REMOTE" "$REF" "$FORCE" "guard-git-push.sh"; then
+if pg_grant_consume "$ACTION_CLASS" "$REMOTE" "$MATCH_REF" "$FORCE" "guard-git-push.sh"; then
   exit 0
 fi
 

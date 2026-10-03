@@ -118,6 +118,13 @@ as a script argument for other task types.
 **Valid Transitions**: To `[COMPLETED]` after `/merge` submits the PR; back to `[IMPLEMENTING]` if
 PR review finds issues (re-dispatch).
 
+**Confirmed unaffected by the consent-gated push mechanism** (`rules/pr-prohibition.md`'s
+`/please` exception, `hooks/guard-git-push.sh`): a successfully granted-and-consumed push does
+NOT change when or whether a task reaches `[PR READY]` — that marker is `task_type == "pr"`-only
+and governs PR *submission* readiness, a separate concern from whether any individual `git push`
+happened to be authorized along the way. A non-`pr` task that used `/please` to push mid-task
+still terminates at `[COMPLETED]` exactly as before; it never passes through `[PR READY]`.
+
 #### `[COMPLETED]`
 **TODO.md Format**: `- **Status**: [COMPLETED]`  
 **state.json Value**: `"status": "completed"`  

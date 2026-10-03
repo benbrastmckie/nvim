@@ -110,6 +110,62 @@ interacts with the fix-forward discipline.
 
 ---
 
+## Consent-Gated Push and Destructive-Action Grants
+
+`git push` is prohibited for agents by `rules/pr-prohibition.md` with ONE narrow,
+mechanically-enforced exception, and `guard-destructive-git.sh`'s dirty-tree predicates (the
+section above this one) gained a parallel authorization path for the same underlying reason:
+rule text alone enforces nothing, and a real human sometimes needs to authorize a specific,
+already-identified action without the agent itself deciding it is permitted.
+
+**The design, in one sentence**: a single-use, HMAC-signed grant, minted ONLY by a literal human
+prompt submission (never by anything a model can write), binds the exact action class, remote,
+branch/tag, commit SHA, and force-or-not — so a YES answer to "may I push?" never becomes a
+blank cheque for *some* push, only for *this* push.
+
+**Why the mint path has to be a `UserPromptSubmit` hook**: any grant file the model itself can
+`Write` is forgeable by construction — the model could simply write itself a valid-looking grant.
+`hooks/please-grant.sh` fires on `UserPromptSubmit`, which only the harness's own
+prompt-submission pipeline triggers. Verified empirically before this mechanism shipped (see
+that hook's header comment): a dispatched subagent never triggers it at all, and an inter-agent
+relayed message DOES trigger it in the receiving session but arrives wrapped in
+`<agent-message from="...">` tags — so the hook's strict, anchored prefix match (`/please`,
+`/merge`, `/tag`, `/pr` — never a substring search) can never be satisfied by a relayed message,
+even one whose inner text is itself a well-formed `/please` request.
+
+**The grant's single-use guarantee is NOT file-deletion alone.** `push-grant-lib.sh` additionally
+records every consumed grant's HMAC in an append-only ledger
+(`specs/.push-grant/.consumed`) — this closes a real gap discovered while testing Phase 7 of the
+implementing task: restoring a consumed grant's exact bytes to disk (bypassing the tamper guard
+entirely, e.g. via a stray backup) would otherwise re-create a byte-identical, fully-verifying
+grant with HEAD unchanged, and silently re-authorize the action. The ledger makes consumption
+independent of the file's existence.
+
+**Fail-closed everywhere**: unlike `git-commit-scoped.sh`'s mutex (which fails OPEN on a lock
+conflict, reasoning the worst residual case is a safe `index.lock` race), every grant
+verification step — missing field, bad HMAC, non-0600 key, expired timestamp, mismatched
+target, already-consumed HMAC — returns "no grant," never "grant present." Categorical
+exclusions (bare `--force` anywhere; any force form on the default branch; `--mirror`, `--all`,
+`--tags`, `--prune`; deletion and multi-refspec forms) are checked BEFORE any grant lookup, so
+no grant can ever authorize them.
+
+**Enforcement pair**: `hooks/guard-git-push.sh` blocks every un-granted `git push` and every
+direct write (`Write`/`Edit`/a redirecting `Bash` command) to the grant store or its key — the
+model has no channel into the one thing that must stay tamper-resistant. `scripts/
+git-push-granted.sh` is the explicit-argument wrapper the `/please` command (and `/merge`,
+`/tag`) actually invokes. `guard-destructive-git.sh` gained the identical grant check for five
+local destructive classes (`reset_hard`, `clean_fd`, `checkout_discard`, `restore_discard`,
+`stash_drop`), inserted after its existing clean-tree and history-rewrite predicates and with NO
+exemption for the over-staging detectors — a grant authorizes exactly the one already-matched
+destructive command, never a scope-widening operation.
+
+See `rules/pr-prohibition.md`'s "Scoped exception" subsection for the policy statement,
+`commands/please.md` for the user-facing confirmation flow and never-list, and
+`context/standards/push-consent-relay.md` for how a dispatched agent (which cannot call
+`AskUserQuestion`) requests a push without ever minting anything itself.
+
+---
+
 ## Git Safety Pattern
 
 ### Standard Pattern

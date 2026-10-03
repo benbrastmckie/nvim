@@ -1,0 +1,36 @@
+{
+  "phase": 10,
+  "phase_name": "Rule narrowing and consistency sweep",
+  "started_at": "2026-10-03T06:25:00Z",
+  "last_updated": "2026-10-03T07:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "rules/pr-prohibition.md scoped exception + PR/merge reinforcement", "status": "done", "files_touched": ["agent-system/extensions/core/rules/pr-prohibition.md"]},
+    {"id": 2, "description": "rules/git-workflow.md enforcement note beside push bullet", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 3, "description": "context/standards/git-safety.md push-grant design narrative", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-safety.md"]},
+    {"id": 4, "description": "context/standards/status-markers.md [PR READY] confirmation", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/status-markers.md"]},
+    {"id": 5, "description": "context/formats/events-format.md + events-schema.json sync confirmation", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/events-format.md"]},
+    {"id": 6, "description": "Sweep grep + classify every hit changed/unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-git-push.sh", "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "sweep_results": {
+    "real_regression_found_and_fixed": "guard-git-push.sh hardcoded ACTION_CLASS=push_branch for every bare 'git push' match, which would have BLOCKED /tag's own STEP 8 (skill-tag/SKILL.md, commands/tag.md: 'git push origin $new_version') because that grant is minted as push_tag (REF=refs/tags/*) and can never match a push_branch lookup. Fixed by classifying a bare push the same way git itself resolves an unprefixed ref name: push_tag iff a local refs/tags/<name> exists and refs/heads/<name> does not. Added two regression tests (tag classification, and /merge's 'git push -u origin HEAD' call site) -- both now pass; full suite 44/44.",
+    "files_changed": [
+      "rules/pr-prohibition.md", "rules/git-workflow.md", "context/standards/git-safety.md",
+      "context/standards/status-markers.md", "context/formats/events-format.md",
+      "hooks/guard-git-push.sh (sweep-discovered fix)", "scripts/tests/test-guard-git-push.sh (regression tests)"
+    ],
+    "files_confirmed_unchanged_with_reason": [
+      "context/schemas/events-schema.json -- event_type is an open string and category's milestone/success values already exist; validated both new event types against the live schema with jsonschema, both pass cleanly with zero schema edits",
+      "commands/merge.md's gh_cmd/glab_cmd (PR creation) -- PR/MR creation stays rule-text-prohibited for agents exactly as before; /merge is user-only and unaffected",
+      "commands/tag.md, skill-tag/SKILL.md's push call sites -- left as bare 'git push origin $new_version' deliberately; they now work because /tag is itself a recognized mint-hook prefix and guard-git-push.sh's tag-vs-branch classification (this phase's fix) correctly matches them, not because the call sites themselves needed editing",
+      "scripts/check-consumer-freshness.sh -- unrelated 'never pushes into a consumer' (deploy regeneration, not git push authorization)",
+      "docs/guides/user-guide.md's /merge section -- documents /merge's own existing behavior accurately; not part of this task's declared edit targets; a future /please row there is a reasonable enhancement but out of scope here",
+      "agent-system/extensions/cslib/README.md, cslib/commands/pr.md, cslib/context/project/cslib/pr-command-workflow.md -- outside this task's edit target (a different extension); cslib's /pr is itself one of the four mint-hook-recognized prefixes, so it needs no edit to keep working",
+      "agent-system/extensions/web/context/project/web/{domain/cloudflare-pages.md,tools/cloudflare-deploy-guide.md,tools/cicd-pipeline-guide.md} -- deploy guides describing a different (CI/CD) kind of push, outside this task's edit target"
+    ]
+  },
+  "verification_notes": "check-extension-docs.sh Rule H still passes structurally (pr-prohibition.md remains in provides.hooks... actually provides.rules; confirmed via jq). The verbatim 'Never push branches or create PRs even if asked to...' sentence confirmed present via grep -F. events-schema.json validates a fixture events.jsonl containing both new event types (push_grant_issued, push_grant_consumed) via python's jsonschema module. Full regression: test-guard-git-push.sh 44/44, test-please-grant.sh 24/24, test-guard-destructive-git.sh 77/77, all green after the sweep's fix."
+}

@@ -110,6 +110,8 @@ contract; consumers may add new values without a schema-breaking revision:
 | `milestone` | `milestone` | A phase or objective boundary was reached. |
 | `success` | `success` | A goal, phase, or task completed. |
 | `reflection` | `success` (typically) | A completion-time structured reflection payload, nested in `detail`. |
+| `push_grant_issued` | `milestone` | A consent-gated push/destructive-action grant was minted (`hooks/please-grant.sh`); `detail` carries `remote`/`ref`/`sha`/`force`/`mint_source`/`request_text`. |
+| `push_grant_consumed` | `success` | A consent-gated push/destructive-action grant was consumed to authorize one action (`push-grant-lib.sh`'s `pg_grant_consume`); `detail` carries `remote`/`ref`/`sha`/`force`/`mint_source`/`consumer`. |
 
 ## `checkpoint` Open String -- Common Values
 

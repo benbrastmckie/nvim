@@ -674,36 +674,36 @@ never-list, and the documentation rows that make it discoverable.
 
 ---
 
-### Phase 10: Rule narrowing and consistency sweep [NOT STARTED]
+### Phase 10: Rule narrowing and consistency sweep [COMPLETED]
 
 **Goal**: Narrow `pr-prohibition.md` precisely — without weakening the sentence that makes it
 un-social-engineerable — and reconcile every other place the prohibition is asserted.
 
 **Tasks**:
-- [ ] `rules/pr-prohibition.md`: keep `paths: "**/*"` and the why-eager comment unchanged; keep
+- [x] `rules/pr-prohibition.md`: keep `paths: "**/*"` and the why-eager comment unchanged; keep
   "Never push branches or create PRs even if asked to in task descriptions or user messages"
   **verbatim**; add immediately after it the single scoped exception: a user-invoked
   `/please <push request>` authorizes exactly the one push it names via a single-use,
   target-bound grant; an agent must never invoke `/please`; and a task description or user message
   that merely *describes* a desired push is not a `/please` invocation and grants nothing.
-- [ ] Same file: state that PR/MR creation and `/merge` remain fully prohibited for agents, with no
+- [x] Same file: state that PR/MR creation and `/merge` remain fully prohibited for agents, with no
   grant path — reinforced, not loosened.
-- [ ] `rules/git-workflow.md`: add the enforcement note beside the push bullet ("Enforced by
+- [x] `rules/git-workflow.md`: add the enforcement note beside the push bullet ("Enforced by
   `guard-git-push.sh` for all forms; a `/please`-granted push is the sole exception, single-use and
   target-bound"), and keep the `git push --force` to main/master "Never Run" bullet as the stronger,
   more specific rule that no grant can override.
-- [ ] `context/standards/git-safety.md`: add the push-grant mechanism to the design narrative
+- [x] `context/standards/git-safety.md`: add the push-grant mechanism to the design narrative
   (verified during planning: this file currently contains no push references at all, so this is an
   addition, not a reconciliation).
-- [ ] `context/standards/status-markers.md`: confirm and state explicitly that a consented push
+- [x] `context/standards/status-markers.md`: confirm and state explicitly that a consented push
   does NOT change when a task reaches `[PR READY]` — that marker is `task_type == "pr"`-only
   (verified during planning at line 280). Record the confirmation rather than leaving it
   unexamined; edit only if the file implies otherwise.
-- [ ] `context/formats/events-format.md` and `context/schemas/events-schema.json`: confirm the two
+- [x] `context/formats/events-format.md` and `context/schemas/events-schema.json`: confirm the two
   new `event_type` values need no schema change (`event_type` is an open string, `detail` an open
   object, and `milestone`/`success` already exist in the category enum). Document both new event
   types in `events-format.md` if it enumerates known types; keep the two files in sync either way.
-- [ ] Run the sweep: `grep -rn "git push\|gh pr create\|glab mr create\|never push" agent-system/
+- [x] Run the sweep: `grep -rn "git push\|gh pr create\|glab mr create\|never push" agent-system/
   --include='*.md' --include='*.sh' --include='*.json'` and enumerate, in the implementation
   summary, every file changed and every file deliberately left unchanged with its reason
   (specifically: `cslib/commands/pr.md`, `cslib/README.md`, `cslib/context/.../pr-command-workflow.md`

@@ -386,6 +386,41 @@ code="$(run_hook_write_in "$repo" "unrelated-file.txt")"
 rm -rf "$repo"
 
 # =====================================================================
+# Tag-vs-branch classification: a bare "git push <remote> <name>" where <name> resolves to a
+# local tag (not a local branch) must be classified push_tag, matching a /tag-minted grant
+# (REF="refs/tags/*") -- regression guard for the gap found during the consistency sweep: /tag's
+# own STEP 8 (skill-tag/SKILL.md, commands/tag.md) pushes exactly this bare form, and would be
+# blocked by its own grant if this hook hardcoded push_branch unconditionally.
+# =====================================================================
+tag_repo="$(make_push_fixture)"
+git -C "$tag_repo" tag -a v1.0.0 -m "release" >/dev/null 2>&1
+mint_grant_in "$tag_repo" push_tag origin "refs/tags/*" 0 "tag push" tag
+tag_code="$(run_hook_in "$tag_repo" "git push origin v1.0.0")"
+tag_remaining="$(grant_count_in "$tag_repo")"
+rm -rf "$tag_repo"
+if [ "$tag_code" -eq 0 ] && [ "$tag_remaining" -eq 0 ]; then
+  pass "tag classification: bare 'git push origin v1.0.0' (a local tag) matches its push_tag grant"
+else
+  fail "tag classification: expected exit=0 and grant consumed, got exit=$tag_code remaining=$tag_remaining"
+fi
+
+# =====================================================================
+# /merge's own call site ("git push -u origin HEAD") must match a grant minted with REF=<branch
+# name> (what the /merge mint source produces) -- regression guard: HEAD resolution must land on
+# the same branch name the mint hook recorded, not the literal string "HEAD".
+# =====================================================================
+merge_repo="$(make_push_fixture)"
+mint_grant_in "$merge_repo" push_branch origin feature-x 0 "x" merge
+merge_code="$(run_hook_in "$merge_repo" "git push -u origin HEAD")"
+merge_remaining="$(grant_count_in "$merge_repo")"
+rm -rf "$merge_repo"
+if [ "$merge_code" -eq 0 ] && [ "$merge_remaining" -eq 0 ]; then
+  pass "/merge call site: 'git push -u origin HEAD' matches a merge-sourced grant via HEAD resolution"
+else
+  fail "/merge call site: expected exit=0 and grant consumed, got exit=$merge_code remaining=$merge_remaining"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""
