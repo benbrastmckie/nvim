@@ -1,17 +1,16 @@
 {
-  "status": "planned",
-  "summary": "Wrote a 5-phase plan: three mechanical source-store fixes (hard agent artifacts/status template, both hard skills' hand-rolled task lookups) plus a plan-format.md amendment naming verify-deploy.sh as the full tier's concrete command, which is the general defect's root cause.",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phase": "implement",
+  "summary": "Fixed the books hard agent's artifacts/status template and both hard skills' hand-rolled task lookups, and named verify-deploy.sh as the full verification-tier command; Phase 5's two remaining verify-deploy.sh FAILs are deploy-tree staleness (this task's own Non-Goal-protected edit plus concurrent sibling task 285's in-flight work) and are recorded as reasoned exclusions, not regressions.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/334_fix_books_scaffold_contract_defects/plans/01_books-scaffold-contract-defects.md",
-      "summary": "5-phase plan fixing the books hard agent's artifacts/status template, both hard skills' hand-rolled task lookups, and the full-tier ambiguity behind the general defect."
+      "type": "summary",
+      "path": "specs/334_fix_books_scaffold_contract_defects/summaries/01_books-scaffold-contract-defects-summary.md",
+      "summary": "Implementation summary for the books scaffold contract defect fixes."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
-  "blockers": [],
-  "phase": "plan",
-  "dispatch_seq": 4,
-  "next_action_hint": "Run /implement 334 to execute the plan; phases 1-4 are parallel (wave 1), phase 5 is the aggregate gate."
+  "blockers": []
 }

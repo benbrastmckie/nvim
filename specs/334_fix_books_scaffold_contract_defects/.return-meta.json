@@ -1,30 +1,41 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 6,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/334_fix_books_scaffold_contract_defects/plans/01_books-scaffold-contract-defects.md",
-      "summary": "5-phase plan fixing the books hard agent's artifacts/status template, both hard skills' hand-rolled task lookups, and the full-tier ambiguity behind the general defect."
+      "type": "summary",
+      "path": "specs/334_fix_books_scaffold_contract_defects/summaries/01_books-scaffold-contract-defects-summary.md",
+      "summary": "Fixed the hard agent's artifacts/status template and both hard skills' hand-rolled task lookups; named verify-deploy.sh as the full-tier command; recorded Phase 5's remaining verify-deploy.sh FAILs as reasoned, evidenced exclusions (self-caused Non-Goal-protected deploy staleness plus concurrent sibling task 285's in-flight edits)."
     }
   ],
-  "next_steps": "Run /implement 334 to execute the plan",
+  "completion_data": {
+    "completion_summary": "Fixed both standing books-extension scaffold lint failures (object-shaped artifacts/status template in the hard implementation agent; hand-rolled task lookups in both hard SKILL.md files) and named verify-deploy.sh as the concrete command satisfying plan-format.md's full verification tier, closing the ambiguity behind the general defect."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+    "agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-research-hard/SKILL.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/334_fix_books_scaffold_contract_defects/plans/01_books-scaffold-contract-defects.md",
+    "specs/334_fix_books_scaffold_contract_defects/handoffs/phase-4-handoff-20261003T223502Z.md",
+    "specs/334_fix_books_scaffold_contract_defects/summaries/01_books-scaffold-contract-defects-summary.md"
+  ],
   "memory_candidates": [
     {
-      "content": "A declared `**Verification Tier**: full` in a plan is documentation only -- nothing mechanically ties it to an actual `verify-deploy.sh` invocation. validate-artifact.sh checks the field's PRESENCE (and only in --strict), never whether a full-tier phase's own task list reaches a full-gate command. Consequence observed twice independently in this repo: a plan declares `full`, its phase checklist names three hand-picked validators instead, the completion postflight passes, and standing lint failures in the task's own new files survive into the tree. When authoring or reviewing a `full`-tier phase, require the phase's verification criteria to name `bash .claude/scripts/verify-deploy.sh` (source store: agent-system/extensions/core/scripts/verify-deploy.sh) or the complete set of gates it aggregates -- a self-chosen validator subset satisfies the letter of the prose but not the tier.",
+      "content": "verify-deploy.sh's doc-lint (gate 3) and manifest-driven verify.lua (gate 5) checks compare the deployed .claude/ tree against agent-system/extensions/ source content, so ANY uncommitted or un-redeployed source-store edit -- whether from this task's own in-flight work or a concurrently-dispatched sibling task on a shared tree -- trips 'content differs from source' / 'missing scripts' findings that look like regressions but are deploy-tree staleness, not defects. Before treating a verify-deploy.sh FAIL as a regression, check whether the named path is (a) one of this task's own recently-edited files with no redeploy phase planned (expected, if the task's own Non-Goals bar redeploying), or (b) inside a concurrent sibling's declared file_scope (check git log for their commits). Neither case is 'fix the gate' or 'fix the foreign file' -- it is 'attribute and record as a Reasoned Exclusion', confirmed by git log/git status evidence per finding.",
       "category": "INSIGHT",
-      "source_artifact": "specs/334_fix_books_scaffold_contract_defects/plans/01_books-scaffold-contract-defects.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verification-tier", "verify-deploy", "plan-format", "completion-gate", "lint", "postflight"]
+      "source_artifact": "specs/334_fix_books_scaffold_contract_defects/summaries/01_books-scaffold-contract-defects-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy", "deploy-drift", "concurrent-dispatch", "territory", "reasoned-exclusions", "source-store"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1791065283_d98d41_334",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 1.75,
-    "dependency_waves": [[1, 2, 3, 4], [5]]
-  },
-  "dispatch_seq": 4
+    "session_id": "sess_1791065283_d98d41",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
