@@ -20,7 +20,7 @@ next_project_number: 328
 
 ### Core Agent System
 
-185 [RESEARCHING] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
+185 [RESEARCHED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 250 [IMPLEMENTING] — Script-corpus inventory probe, then cut tests/run-all.sh...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
@@ -3690,10 +3690,11 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 185. Retarget stage citations to move vocabulary
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: markdown
 - **Topic**: core-agent-system
 - **Dependencies**: Task 266, Task 199, Task 184
+- **Research**: [185_retarget_stage_citations_to_move_vocabulary/reports/01_stage-citation-survey.md]
 
 **Description**: Retarget the remaining historical "Stage N" and "Stage MT-N" citations to the four-move loop vocabulary.
 
