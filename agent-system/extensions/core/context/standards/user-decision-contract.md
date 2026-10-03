@@ -23,7 +23,9 @@ making its own call. Three shapes qualify:
    other for reasons other than taste.
 2. **An external cost or risk the user must accept** — spending money, granting a credential,
    deleting data, or taking an action outside this repository that the agent cannot verify is
-   already sanctioned.
+   already sanctioned. A git push is the canonical instance of this shape — see
+   `context/standards/push-consent-relay.md` for the full specialized contract (always
+   `blocking: true`, self-describing `options[]`, and why a YES never mints anything itself).
 3. **An ambiguity research cannot resolve** — the task description is genuinely underspecified in
    a way no amount of further codebase exploration would settle.
 

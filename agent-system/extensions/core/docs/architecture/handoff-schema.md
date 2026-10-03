@@ -265,7 +265,9 @@ Shape: `{question, options: [...], recommended, blocking: true|false}` — see
 `decisions_made` above**: `decisions_made` is informational/historical (settled questions a
 downstream agent should not re-investigate); `user_decision` is a live, forward-looking request
 for the user's judgment on a choice that is NOT yet settled. Mirrored here only when the same
-dispatch that set it on `.return-meta.json` also writes this handoff.
+dispatch that set it on `.return-meta.json` also writes this handoff. A git-push-consent request
+(`context/standards/push-consent-relay.md`) is mirrored exactly like any other `user_decision` —
+no new handoff field is introduced for it.
 
 ### `dead_ends` (optional)
 Approaches tried but failed. The orchestrator passes these to downstream delegation context

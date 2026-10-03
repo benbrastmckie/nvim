@@ -735,45 +735,45 @@ un-social-engineerable — and reconcile every other place the prohibition is as
 
 ---
 
-### Phase 11: Dispatch relay — a request, never a mint [NOT STARTED]
+### Phase 11: Dispatch relay — a request, never a mint [COMPLETED]
 
 **Goal**: Define how a dispatched agent, which cannot call `AskUserQuestion`, REQUESTS a push —
 and make explicit that a YES mints nothing and only tells the human the `/please` line to type.
 
 **Tasks**:
-- [ ] Create `context/standards/push-consent-relay.md` carrying the full relay contract, so
+- [x] Create `context/standards/push-consent-relay.md` carrying the full relay contract, so
   `skill-orchestrate/SKILL.md` needs at most a one-line pointer (it measures 19,983 B against a
   20,000 B ceiling — 17 B of headroom).
-- [ ] In that file, specify the `user_decision` payload template. `options[]` entries are flat
+- [x] In that file, specify the `user_decision` payload template. `options[]` entries are flat
   strings with no `description` field (research Finding 6), so each must be self-describing, e.g.
   `"Grant via /please push origin feature-x (a1b2c3d, 3 commits ahead, no force)"` /
   `"Do not authorize; the task stops at its current commit"`. `question` names the exact target.
-- [ ] Specify `blocking: true` unconditionally for this decision class, with the reason: the
+- [x] Specify `blocking: true` unconditionally for this decision class, with the reason: the
   non-blocking path proceeds on the AGENT's own recommendation, which would be an agent
   authorizing its own push. Enforce by contract in the agent-facing text.
-- [ ] Specify the return leg explicitly: a YES does NOT mint a grant and does not become one. The
+- [x] Specify the return leg explicitly: a YES does NOT mint a grant and does not become one. The
   relayed answer surfaces the exact `/please` line for the human to type; the human's own prompt
   submission is the only mint path. This closes the `.decisions.json` replay hazard by
   construction — nothing replayable is ever recorded, since the guard never reads
   `.decisions.json` at all.
-- [ ] Specify that `.decisions.json` still records the exchange for audit parity (a normal
+- [x] Specify that `.decisions.json` still records the exchange for audit parity (a normal
   `{question, answer, cycle, timestamp}` entry), that `orchestrate-build-dispatch.sh`'s
   `## Prior Decisions` renderer is deliberately NOT special-cased, and why that is safe: the
   recorded text is informational ("the user was told to run `/please ...`"), never an
   authorization, because authorization lives only in a single-use sha-bound token.
-- [ ] Specify the NO case and the run-ends-before-answer case: no grant exists in either, so the
+- [x] Specify the NO case and the run-ends-before-answer case: no grant exists in either, so the
   guard's default-deny alone guarantees no push, with no special-casing in the relay path.
-- [ ] Specify that a granted push never carries across a cycle: 600s expiry plus `HEAD_SHA`
+- [x] Specify that a granted push never carries across a cycle: 600s expiry plus `HEAD_SHA`
   binding plus delete-on-use, consistent with Phase 2's one-push grant scope.
-- [ ] Add the pointer in `context/standards/user-decision-contract.md` (this case is already inside
+- [x] Add the pointer in `context/standards/user-decision-contract.md` (this case is already inside
   its enumerated qualifying shape 2 — "an external cost or risk the user must accept... an action
   outside this repository") and a one-line cross-reference in
   `context/formats/return-metadata-file.md`'s `user_decision` subsection.
-- [ ] Add at most a pointer line to `skills/skill-orchestrate/SKILL.md`, and offset it byte-for-byte
+- [x] Add at most a pointer line to `skills/skill-orchestrate/SKILL.md`, and offset it byte-for-byte *(deviation: altered — omitted; only 145 B headroom remained against the 20,000 B ceiling, concurrent siblings may also be touching this file this cycle, and the plan explicitly permits omission when the context file + user-decision-contract.md pointer are sufficient)*
   (or omit it entirely if the byte budget cannot absorb it — the context file plus the
   user-decision-contract pointer are sufficient). Measure `wc -c` before and after; the file MUST
   stay ≤ 20,000 B or verify-deploy Gate 20 refuses the redeploy.
-- [ ] Note in `docs/architecture/handoff-schema.md` that `user_decision` for this class is mirrored
+- [x] Note in `docs/architecture/handoff-schema.md` that `user_decision` for this class is mirrored
   onto the handoff as for any other, and that no new handoff field is introduced.
 
 **Timing**: 1.5 hours

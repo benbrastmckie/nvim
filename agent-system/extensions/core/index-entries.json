@@ -516,7 +516,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Loader function reference: all 12 public loader.lua functions with signatures, copy semantics, and source file descriptions",
-      "line_count": 191,
+      "line_count": 226,
       "keywords": [
         "guide",
         "loader",
@@ -989,7 +989,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Inline status update pattern for plans",
-      "line_count": 299,
+      "line_count": 314,
       "keywords": [
         "patterns",
         "status",
@@ -1010,7 +1010,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Workarounds for jq escaping issues",
-      "line_count": 277,
+      "line_count": 285,
       "keywords": [
         "patterns",
         "jq",
@@ -1057,7 +1057,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, dedup rule, and the live-cycle acceptance-criterion decision",
-      "line_count": 516,
+      "line_count": 555,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -1106,7 +1106,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Registration vs. permission ownership boundary for MCP servers",
-      "line_count": 385,
+      "line_count": 436,
       "keywords": [
         "mcp",
         "registration",
@@ -1261,7 +1261,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Implementation phase workflow details",
-      "line_count": 578,
+      "line_count": 588,
       "keywords": [
         "process",
         "implementation",
@@ -1410,7 +1410,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 547,
+      "line_count": 630,
       "keywords": [
         "reference",
         "state",
@@ -1568,7 +1568,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 13-value task-status enum",
-      "line_count": 427,
+      "line_count": 460,
       "keywords": [
         "state",
         "schema",
@@ -1797,7 +1797,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 640,
+      "line_count": 644,
       "keywords": [
         "standards",
         "git",
@@ -1863,7 +1863,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 208,
+      "line_count": 232,
       "keywords": [
         "standards",
         "shell",
@@ -1911,7 +1911,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 454,
+      "line_count": 535,
       "keywords": [
         "standards",
         "status",
@@ -2636,7 +2636,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 666,
+      "line_count": 694,
       "keywords": [
         "regeneration",
         "deploy",
@@ -2660,7 +2660,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 1651,
+      "line_count": 1796,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3039,7 +3039,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 378,
+      "line_count": 433,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -3100,6 +3100,32 @@
       "on_demand": true
     },
     {
+      "path": "standards/push-consent-relay.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "How a dispatched agent (which cannot call AskUserQuestion) requests a git push via a blocking user_decision, why a YES never mints a grant, and why the .decisions.json replay hazard is closed by construction",
+      "line_count": 136,
+      "keywords": [
+        "push-consent",
+        "please-grant",
+        "user-decision",
+        "orchestrator",
+        "push-grant"
+      ],
+      "topics": [
+        "orchestration",
+        "git-safety"
+      ],
+      "load_when": {
+        "agents": [],
+        "task_types": [],
+        "commands": [
+          "/orchestrate"
+        ]
+      },
+      "on_demand": true
+    },
+    {
       "path": "standards/context-tier-semantics.md",
       "domain": "core",
       "subdomain": "standards",
@@ -3151,7 +3177,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Reactive git-workflow elaboration: commit-per-green-substep mechanism detail, snapshot-mode narrative, session ID lifecycle, branch strategy, and commit-failure error handling",
-      "line_count": 131,
+      "line_count": 150,
       "keywords": [
         "git-workflow",
         "commit-per-green-substep",

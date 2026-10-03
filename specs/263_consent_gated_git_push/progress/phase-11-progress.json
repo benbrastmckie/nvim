@@ -1,0 +1,27 @@
+{
+  "phase": 11,
+  "phase_name": "Dispatch relay — a request, never a mint",
+  "started_at": "2026-10-03T07:05:00Z",
+  "last_updated": "2026-10-03T07:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create context/standards/push-consent-relay.md with the full relay contract", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/push-consent-relay.md"]},
+    {"id": 2, "description": "Pointer in user-decision-contract.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/user-decision-contract.md"]},
+    {"id": 3, "description": "Cross-reference in return-metadata-file.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 4, "description": "skill-orchestrate/SKILL.md byte-neutral pointer or omission", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Mirroring note in handoff-schema.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 6, "description": "index-entries.json entry for the new context file", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "11.skill-orchestrate-pointer",
+      "description": "No pointer added to skills/skill-orchestrate/SKILL.md",
+      "type": "altered",
+      "reason": "Measured wc -c = 19855 B against the 20,000 B Gate 20 ceiling -- only 145 B of headroom, down from the 17 B->... measurement the plan recorded at planning time (the file has shifted under concurrent sibling activity this cycle, per the dispatch's cross-task territory note). The plan explicitly permits omitting this pointer entirely when the context file plus the user-decision-contract.md pointer are sufficient, which they are. Omitted to avoid risking Gate 20 on a file multiple concurrent tasks may be touching.",
+      "annotation": "*(deviation: altered — omitted; see plan checklist annotation)*"
+    }
+  ],
+  "verification_notes": "test-orchestrate-cycle-postflight.sh: 153/153 pass unchanged. test-orchestrate-build-dispatch.sh: 119/119 pass unchanged. Neither suite needed any edit since this phase adds no script behavior, only documentation. index-entries.json validated with jq empty."
+}

@@ -516,7 +516,9 @@ research cannot resolve). Absent in every other case — this is not a routine f
 Shape: `{question, options: [...], recommended, blocking: true|false}`. See
 `context/standards/user-decision-contract.md` for the full contract — when to set it, when NOT
 to, the blocking/non-blocking distinction, and how postflight relays it as an `ask_user` verdict.
-This subsection does not restate that contract.
+This subsection does not restate that contract. For the git-push-consent specialization of this
+field (always `blocking: true`, a dispatched agent that cannot call `AskUserQuestion`), see
+`context/standards/push-consent-relay.md`.
 
 **Producer ownership**: consistent with the "Multiple Sequential Writers" section above,
 `user_decision` is producer-owned by the agent that sets it, and MUST survive any later writer's
