@@ -232,6 +232,7 @@
       "tests/test-orchestrate-cycle-plan.sh",
       "tests/test-orchestrate-cycle-postflight.sh",
       "tests/test-orchestrate-predispatch-review.sh",
+      "tests/test-orchestrate-record-decision.sh",
       "tests/test-orchestrate-recover-message-findings.sh",
       "tests/test-orchestrate-recover-outcome.sh",
       "tests/test-orchestrate-triage-classify.sh",

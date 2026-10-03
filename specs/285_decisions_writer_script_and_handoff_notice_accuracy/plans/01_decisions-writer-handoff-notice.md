@@ -275,33 +275,37 @@ accreted; the precedent scripts' validated/append core is well under that.
 
 ---
 
-### Phase 3: Regression Suite for the Writer [NOT STARTED]
+### Phase 3: Regression Suite for the Writer [COMPLETED]
 
 **Goal**: the writer's two load-bearing claims are proven mechanically — concurrent invocation
 neither loses nor corrupts an entry, and malformed input is rejected with the target file left
 byte-identical.
 
 **Tasks**:
-- [ ] Write `scripts/tests/test-orchestrate-record-decision.sh`, structurally modelled on
+- [x] Write `scripts/tests/test-orchestrate-record-decision.sh`, structurally modelled on
       `scripts/tests/test-errors-append.sh`: `set -uo pipefail` (Class B per `shell-strict-mode.md`'s
       test-suite admission), `pass()`/`fail()`/`info()` helpers, `PASSED`/`FAILED` counters,
-      exit 0 all-pass / 1 any-fail / 2 environment error.
-- [ ] Reuse that suite's script-under-test resolution (deploy-tree-first, source-store fallback) and
+      exit 0 all-pass / 1 any-fail / 2 environment error. *(completed)*
+- [x] Reuse that suite's script-under-test resolution (deploy-tree-first, source-store fallback) and
       its `git rev-parse --show-toplevel`-first `REPO_ROOT` derivation, so the suite runs from both
-      the deployed and the source-store copy.
-- [ ] Reuse its scratch-sandbox harness: `mktemp -d` project root with
+      the deployed and the source-store copy. *(completed)*
+- [x] Reuse its scratch-sandbox harness: `mktemp -d` project root with
       `<scratch>/.claude/scripts/` populated so `deploy-root-guard.sh` matches and `PROJECT_ROOT`
-      resolves to the scratch root. Never touch the live `specs/`.
-- [ ] Cases, at minimum: (a) first append lazily creates the file as a **bare top-level array**;
+      resolves to the scratch root. Never touch the live `specs/`. *(completed; also populates a
+      scratch specs/state.json + task directory, since the writer resolves tasks via
+      task-lookup-lib.sh rather than a bare file path)*
+- [x] Cases, at minimum: (a) first append lazily creates the file as a **bare top-level array**;
       (b) a second append is additive and leaves entry 1 byte-identical; (c) all four fields present
       with `cycle` a JSON **number** and `timestamp` ISO 8601 UTC; (d) concurrent appends
       (background invocations, then `wait`) lose nothing; (e) a pre-existing object-wrapped
       `{"decisions": [...]}` file is **refused** with the file left byte-identical — the exact
       observed failure shape; (f) a missing required argument exits nonzero and writes nothing;
       (g) a non-integer `--cycle` is refused; (h) the file the writer produces is rendered correctly
-      by the reader's own jq expression from `orchestrate-build-dispatch.sh`.
-- [ ] Register `tests/test-orchestrate-record-decision.sh` in `manifest.json`'s `provides.scripts`,
-      alongside the other `tests/test-orchestrate-*.sh` entries.
+      by the reader's own jq expression from `orchestrate-build-dispatch.sh`. *(completed; added a
+      9th case beyond the plan's named eight: an unresolvable task number exits nonzero and writes
+      nothing)*
+- [x] Register `tests/test-orchestrate-record-decision.sh` in `manifest.json`'s `provides.scripts`,
+      alongside the other `tests/test-orchestrate-*.sh` entries. *(completed)*
 
 **Timing**: 1.75 hours
 

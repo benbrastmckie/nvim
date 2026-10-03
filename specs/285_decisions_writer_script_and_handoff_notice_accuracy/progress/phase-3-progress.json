@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Regression Suite for the Writer",
+  "started_at": "2026-10-03T00:45:00Z",
+  "last_updated": "2026-10-03T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write test-orchestrate-record-decision.sh modelled on test-errors-append.sh with cases a-h plus unresolvable-task",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Register the test in manifest.json's provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
