@@ -1,11 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 21,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md",
+      "summary": "Full 6-phase implementation: split absent-file_scope admission posture (v6 schema), additive cross-session hazard for self-modifying admits, both consumers updated, and a 12-test regression repair sweep."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the split admission posture for an absent file_scope in orchestrate-batch-admit.sh (v5 -> v6: advisory cross-batch, blocking in-batch via a new absent_file_scope defer_reason with its own designated-candidate tie-breaker), additively closed the self-modifying cross-session-blindness gap via a new cross_session_hazard field, updated both executing consumers (orchestrate-cycle-plan.sh, orchestrate-predispatch-review.sh) including a previously-latent silent-exclusion default-arm fix, documented the full ruling in both the script header and the batch-admit-schema.md/batch-orchestration-guardrails.md narrative docs, and repaired 12 pre-existing test regressions the new rule surfaced in unrelated legacy fixtures."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "specs/165_admission_posture_for_absent_file_scope/plans/01_admission-posture-absent-scope.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/orchestrate-batch-admit.sh (and any script that splices jq source into a bash single-quoted string via a pattern like \"$JQ_DEFS\"'...'), a possessive apostrophe inside a jq-embedded `#` comment (e.g. \"the task's own\", \"this cycle's candidates\") silently terminates the enclosing bash single-quote early, producing either a confusing bash syntax error far from the real line, or a jq compile error. This recurred independently 4+ times across one multi-phase task. Fix: reword to avoid the apostrophe (e.g. \"of the task\" instead of \"the task's\"); never use an escaped apostrophe inside the single-quoted region. Grep the region between the opening `\"$VAR\"'` and the matching closing `'` for a bare `'` before considering any jq-program edit done.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["jq", "bash-single-quote", "apostrophe", "orchestrate-batch-admit", "shell-quoting-bug"]
+    },
+    {
+      "content": "When a plan's per-phase Task bullets say 'assert the current behavior' for a fixture that is explicitly labelled a 'red baseline', but that SAME plan's later-phase Verification sections require the fixture to 'remain red until Phase N' (a fail-now/pass-later progression), the Task bullet's literal wording is describing the target TDD red/green outcome loosely, not a literal instruction to assert today's defective behavior. Prefer the repeated, mechanically-checkable Verification-section signal over a single ambiguous Task-bullet phrase, write the fixture against the TARGET post-fix shape from the start, and record the resolution as a deviation rather than silently picking one reading.",
+      "category": "PATTERN",
+      "source_artifact": "specs/165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["tdd-red-green", "plan-ambiguity", "verification-section", "fixture-design", "deviation-record"]
+    },
+    {
+      "content": "When an admission/scheduling predicate is changed to treat an ABSENT or EMPTY declared value (e.g. file_scope: [] or a missing key) as decision-relevant for the first time, every pre-existing test fixture in the same codebase that co-dispatches 2+ candidates sharing that absent/empty value for an UNRELATED reason (lock refusal, flag-forwarding, territory rendering, etc.) can silently break, because the value that used to be admission-neutral padding is now itself a signal. Before landing such a rule, grep the full test corpus for multi-candidate fixtures sharing the newly-meaningful absent/empty value and give each a distinct, disjoint concrete placeholder value (not empty) unless the fixture is deliberately testing the absence/emptiness itself, in which case split it into its own single-signal batch.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/165_admission_posture_for_absent_file_scope/summaries/01_admission-posture-absent-scope-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["admission-predicate", "test-fixture-regression", "file_scope", "absent-value-semantics", "regression-sweep"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1790980905_de0803",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }
