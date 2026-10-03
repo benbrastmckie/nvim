@@ -399,24 +399,29 @@ section survives as reader reference; the script is discoverable in the utility 
 
 ---
 
-### Phase 5: Establish the Writer Predicate and Fix the Live Notice [NOT STARTED]
+### Phase 5: Establish the Writer Predicate and Fix the Live Notice [COMPLETED]
 
 **Goal**: `orchestrate-cycle-postflight.sh`'s no-handoff notice states a verified, phase-specific
 truth, and the expected and unexpected cases are distinguishable at a glance.
 
 **Tasks**:
-- [ ] **Verify first, do not restate.** Re-derive the predicate mechanically across **every**
+- [x] **Verify first, do not restate.** Re-derive the predicate mechanically across **every**
       extension, not just the loaded ones: for every `agents/*research*.md` that mentions
       `orchestrator-handoff`, confirm the "never write one" prohibition is present; for every
       `agents/*implement*.md` plus `agents/planner-agent.md`, confirm the
       `orchestrator_mode: true` MUST-write is present. Record the counts and any exception in the
-      phase's commit message.
-- [ ] Expected result (a hypothesis to confirm, not a fact to assume): **research never writes a
+      phase's commit message. *(completed: 22 research agents swept, all 22 carry the "never
+      write one, in any mode" prohibition with zero exceptions; 20 implement/planner agents
+      swept, 19 carry the `orchestrator_mode: true` MUST-write, 1 exception
+      (`cslib-implementation-hard-agent.md`) writes inline and unconditionally — matches the
+      plan's hypothesis exactly)*
+- [x] Expected result (a hypothesis to confirm, not a fact to assume): **research never writes a
       handoff, in any mode; plan and implement always write one when `orchestrator_mode: true`,
       independent of hard/base mode.** The sole structural exception is
       `cslib-implementation-hard-agent.md`, which writes inline and unconditionally — still a
       writer. If the sweep contradicts this, fix the message to match the sweep, not this plan.
-- [ ] At `scripts/orchestrate-cycle-postflight.sh:693`, split the single `echo` on the already-
+      *(confirmed, not contradicted)*
+- [x] At `scripts/orchestrate-cycle-postflight.sh:693`, split the single `echo` on the already-
       validated, already-in-scope `$phase` local (`research|plan|implement`, enforced at
       `:289-291`) — no new argument, no new plumbing:
       - `research`: an **informational** tag (not `RECOVERY:`), stating that the research phase
@@ -425,15 +430,21 @@ truth, and the expected and unexpected cases are distinguishable at a glance.
       - `plan` / `implement`: keep the `RECOVERY:` label and its prominence, naming the specific
         phase and stating that the absence is unexpected because that phase's writer is
         contractually required to write one on every `orchestrator_mode: true` dispatch.
-- [ ] Keep the existing recovery sentence (`status=${dispatch_status}`; "recovering the dispatch
+      *(completed: `if [ "$phase" = "research" ]` branch, verified `$phase` in scope at this
+      point by re-reading :289-291 before relying on it)*
+- [x] Keep the existing recovery sentence (`status=${dispatch_status}`; "recovering the dispatch
       outcome from it") verbatim in both branches. Only the lead-in label and claim change.
-- [ ] Add a one-line code comment beside the branch pointing at the agent contract sections
+      *(completed)*
+- [x] Add a one-line code comment beside the branch pointing at the agent contract sections
       (`.orchestrator-handoff.json — research agents never write one` /
       `.orchestrator-handoff.json (orchestrator-mode dispatches)`) as the source of truth, so a
-      future drift has one place to re-check instead of 68 files to re-derive from.
-- [ ] Choose an informational tag already in this script's vocabulary where one fits rather than
+      future drift has one place to re-check instead of 68 files to re-derive from. *(completed)*
+- [x] Choose an informational tag already in this script's vocabulary where one fits rather than
       inventing a new one; if none fits, use a plainly non-`RECOVERY` prefix and keep it consistent
-      with the file's surrounding notice style.
+      with the file's surrounding notice style. *(completed: none of the existing tags
+      (ADVISORY/ERROR/EVIDENCE/WARN/WARNING) fit without semantic collision — ADVISORY is already
+      claimed for the unrelated file_scope-excursion detection-only finding — so a new, plainly
+      non-RECOVERY `NOTE:` tag was introduced, matching the file's `${notice_prefix} TAG:` shape)*
 
 **Timing**: 1.25 hours
 

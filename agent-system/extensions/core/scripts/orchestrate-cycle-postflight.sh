@@ -690,7 +690,20 @@ else
     artifact_path=$(echo "$recover_json" | jq -r '.artifact_path // ""')
     artifact_type=$(echo "$recover_json" | jq -r '.artifact_type // ""')
     artifact_summary=$(echo "$recover_json" | jq -r '.artifact_summary // ""')
-    echo "${notice_prefix} RECOVERY: no handoff written for this dispatch — expected outcome for this phase's writer (base-mode research/plan/implement never write one). .return-meta.json (fresh, within this dispatch window) reports status=${dispatch_status}; recovering the dispatch outcome from it." >&2
+    # Severity split by $phase (validated and in scope since :289-291 above): research never
+    # writes a handoff, in any mode -- an ordinary, expected fallback, so it is tagged NOTE, not
+    # RECOVERY. plan and implement are each contractually required to write one on every
+    # orchestrator_mode: true dispatch, so a missing handoff there is a genuine, unexpected
+    # degradation and keeps the RECOVERY label and its prominence. Source of truth: every
+    # agents/*research*.md's own ".orchestrator-handoff.json -- research agents never write one"
+    # subsection, and every agents/*implement*.md / planner-agent.md's own
+    # ".orchestrator-handoff.json (orchestrator-mode dispatches)" MUST-write subsection -- re-check
+    # there, not here, if this predicate ever needs re-deriving.
+    if [ "$phase" = "research" ]; then
+      echo "${notice_prefix} NOTE: no handoff written for this dispatch — expected for the research phase, which never writes .orchestrator-handoff.json in any mode. .return-meta.json (fresh, within this dispatch window) reports status=${dispatch_status}; recovering the dispatch outcome from it." >&2
+    else
+      echo "${notice_prefix} RECOVERY: no handoff written for this ${phase} dispatch — this is UNEXPECTED: the ${phase} phase's writer is contractually required to write .orchestrator-handoff.json on every orchestrator_mode: true dispatch. .return-meta.json (fresh, within this dispatch window) reports status=${dispatch_status}; recovering the dispatch outcome from it." >&2
+    fi
     have_outcome=true
 
     evidence_suspect=$(echo "$recover_json" | jq -r '.evidence_suspect // false' 2>/dev/null) || evidence_suspect=false
