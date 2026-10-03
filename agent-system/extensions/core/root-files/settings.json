@@ -60,6 +60,15 @@
             "command": "bash .claude/hooks/validate-no-task-references.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/guard-git-push.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -144,6 +153,15 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/please-grant.sh"
           }
         ]
       }

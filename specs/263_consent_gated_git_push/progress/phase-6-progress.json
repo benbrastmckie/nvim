@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "phase_name": "Manifest and settings registration (both templates)",
+  "started_at": "2026-10-03T04:35:00Z",
+  "last_updated": "2026-10-03T04:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "manifest.json provides.hooks + provides.scripts additions", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 2, "description": "root-files/settings.json: PreToolUse guard-git-push.sh + UserPromptSubmit please-grant.sh", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 3, "description": "merge-sources/settings-hooks.json: same two, plus the missing guard-destructive-git.sh Bash matcher fix", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "jq empty clean on all three files. jq -r queries confirm guard-git-push.sh present in both settings files' PreToolUse, please-grant.sh present in both UserPromptSubmit arrays, and guard-destructive-git.sh now present in merge-sources/settings-hooks.json's PreToolUse (the pre-existing gap). check-extension-docs.sh itself requires a deployed tree (deploy-root-guard.sh) and is deferred to Phase 13's redeploy + full gate set, consistent with this phase's own 'local' verification tier (vs Phase 13's 'full')."
+}

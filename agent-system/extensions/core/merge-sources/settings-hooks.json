@@ -6,6 +6,18 @@
         "hooks": [
           { "type": "command", "command": "bash .claude/hooks/validate-no-task-references.sh" }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/guard-destructive-git.sh" }
+        ]
+      },
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/guard-git-push.sh" }
+        ]
       }
     ],
     "SessionStart": [
@@ -39,6 +51,12 @@
         "hooks": [
           { "type": "command", "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'" },
           { "type": "command", "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'" }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "bash .claude/hooks/please-grant.sh" }
         ]
       }
     ],

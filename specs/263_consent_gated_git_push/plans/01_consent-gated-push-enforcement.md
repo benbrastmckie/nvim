@@ -457,32 +457,32 @@ written.
 
 ---
 
-### Phase 6: Manifest and settings registration (both templates) [NOT STARTED]
+### Phase 6: Manifest and settings registration (both templates) [COMPLETED]
 
 **Goal**: Deploy and wire the new hooks and script so neither is silently inert — the exact failure
 mode `check-extension-docs.sh` Rule H exists to catch for rules, and Rule P's merge-source
 sub-check for hooks.
 
 **Tasks**:
-- [ ] `manifest.json`: add `guard-git-push.sh` and `please-grant.sh` to `provides.hooks`; add
+- [x] `manifest.json`: add `guard-git-push.sh` and `please-grant.sh` to `provides.hooks`; add
   `git-push-granted.sh` and `lib/push-grant-lib.sh` to `provides.scripts` following the existing
   entry convention for `lib/` paths.
-- [ ] `root-files/settings.json` (install-once; fresh deploys): add a `PreToolUse` entry with
+- [x] `root-files/settings.json` (install-once; fresh deploys): add a `PreToolUse` entry with
   matcher `Bash|Write|Edit` running `bash .claude/hooks/guard-git-push.sh` as its own dedicated
   single-command matcher object, and a `UserPromptSubmit` entry running
   `bash .claude/hooks/please-grant.sh`, likewise its own object.
-- [ ] `merge-sources/settings-hooks.json` (add-only merge; already-initialized repos): add the same
+- [x] `merge-sources/settings-hooks.json` (add-only merge; already-initialized repos): add the same
   two entries, each as its own dedicated single-command matcher object — never appended into an
   existing shared `*` matcher's `hooks` array, so re-merges stay idempotent under object-level
   dedup.
-- [ ] Same edit, in-scope adjacent fix: add the missing `PreToolUse` / `Bash` entry for
+- [x] Same edit, in-scope adjacent fix: add the missing `PreToolUse` / `Bash` entry for
   `guard-destructive-git.sh` to `merge-sources/settings-hooks.json`. Verified during planning:
   that hook is registered only in `root-files/settings.json`, so an already-initialized consumer
   repo can never receive it. Rule P's condition 3 suppresses the advisory in *this* repo only
   because the entry is already live here.
-- [ ] Do NOT wrap either new guard's command in `2>/dev/null || echo '{}'`. That idiom belongs to
+- [x] Do NOT wrap either new guard's command in `2>/dev/null || echo '{}'`. That idiom belongs to
   advisory hooks; a guard must be able to exit 2.
-- [ ] `jq empty` both settings files and the manifest after editing.
+- [x] `jq empty` both settings files and the manifest after editing.
 
 **Timing**: 0.75 hours
 
