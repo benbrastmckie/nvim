@@ -209,18 +209,17 @@ Use `--hard` when one or more of the following apply:
 
 - `--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts (also
   composable with `--fable`, e.g. `--hard --fable`)
-- `--hard` works with extension routing: extensions declare `routing_hard` in their manifest
+- `--hard` works with extension routing: extensions declare `routing_agents_hard` in their manifest
 - Graceful fallback: commands without hard variants silently use standard behavior
 
 ### Routing Mechanism
 
-Every routing consumer (`command-route-skill.sh` for skills, `command-route-agent.sh` for
-agents, called from both `/orchestrate` engines) shares
-one ladder, implemented once in `scripts/lib/manifest-routing-lib.sh`, resolving `--hard` as a
-4th `effort_flag` argument against the `routing_hard`/`routing_agents_hard` manifest blocks.
-See `context/guides/manifest-routing-schema.md` for the full routing model (all four
-manifest blocks, agent-name declaration rules) and `context/guides/hard-mode-routing.md` for
-`--hard`-specific detail.
+Every routing consumer (`command-route-agent.sh`, called from `/orchestrate`) shares one ladder,
+implemented once in `scripts/lib/manifest-routing-lib.sh`, resolving `--hard` as a 4th
+`effort_flag` argument against the `routing_agents`/`routing_agents_hard` manifest blocks.
+See `context/guides/manifest-routing-schema.md` for the full routing model (the two surviving
+routing blocks plus the unrelated `hard_contracts` key, agent-name declaration rules) and
+`context/guides/hard-mode-routing.md` for `--hard`-specific detail.
 
 ### Per-Invocation Only
 

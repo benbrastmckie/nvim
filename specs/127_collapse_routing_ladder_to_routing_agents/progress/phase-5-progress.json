@@ -1,0 +1,29 @@
+{
+  "phase": 5,
+  "phase_name": "Rewrite manifest-routing-schema.md and the CLAUDE.md merge source",
+  "started_at": "2026-10-03T06:50:00Z",
+  "last_updated": "2026-10-03T06:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "manifest-routing-schema.md: retitle/rewrite Five Blocks to three surviving keys", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 2, "description": "manifest-routing-schema.md: rewrite Single Five-Step Ladder and -hard append-fallback subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 3, "description": "manifest-routing-schema.md: replace completeness-rule paragraph with Phase 2 Check A/C contract", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 4, "description": "manifest-routing-schema.md: rewrite .task_type vs .routing.{op} keys section; drop routing_manifest_for_task_type refs", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 5, "description": "manifest-routing-schema.md: record work item 5 negative audit result", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 6, "description": "manifest-routing-schema.md: record work item 6 confirmation", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 7, "description": "manifest-routing-schema.md: update Adding Routing sample JSON and Related Files", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 8, "description": "merge-sources/claudemd.md: rewrite Routing Mechanism section", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 9, "description": "core/index-entries.json: update manifest-routing-schema.md and hard-mode-routing.md entries", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5 (scope addition, same file already in Phase 5's list)",
+      "description": "merge-sources/claudemd.md's Composability bullet ('--hard works with extension routing: extensions declare routing_hard in their manifest') was also stale, beyond the Routing Mechanism section the plan explicitly named.",
+      "type": "altered",
+      "reason": "Corrected to routing_agents_hard in the same edit pass since it is the identical staleness class the plan's own task already targets in this file, and leaving it would contradict the just-rewritten Routing Mechanism section two paragraphs later.",
+      "annotation": "no plan checklist item needed; folded into the existing claudemd.md task"
+    }
+  ]
+}

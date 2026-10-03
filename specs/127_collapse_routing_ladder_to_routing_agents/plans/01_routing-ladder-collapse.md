@@ -358,42 +358,44 @@ either turns up an executable caller this plan has not accounted for.
 
 ---
 
-### Phase 5: Rewrite `manifest-routing-schema.md` and the CLAUDE.md merge source [NOT STARTED]
+### Phase 5: Rewrite `manifest-routing-schema.md` and the CLAUDE.md merge source [COMPLETED]
 
 **Goal**: The authoritative routing schema document and the highest-visibility generated prose
 (read every session via CLAUDE.md) describe the collapsed model, and the work-item 5/6 audit
 results are recorded where a future reviewer will find them.
 
 **Tasks**:
-- [ ] `manifest-routing-schema.md` — retitle and rewrite "The Five Blocks" (line 17) as the
+- [x] `manifest-routing-schema.md` — retitle and rewrite "The Five Blocks" (line 17) as the
       surviving three keys: `routing_agents`, `routing_agents_hard`, `hard_contracts`. State
       explicitly that this is **two routing blocks plus one unrelated one-level key**, so a
-      future reader is not left reconciling "two-block" against a three-row table
-- [ ] `manifest-routing-schema.md` — rewrite "The Single Five-Step Ladder" (line 87) and the
+      future reader is not left reconciling "two-block" against a three-row table *(completed)*
+- [x] `manifest-routing-schema.md` — rewrite "The Single Five-Step Ladder" (line 87) and the
       `-hard` append-fallback subsection (line 112) to drop skill resolution and
-      `command-route-skill.sh`'s Step 4e, which no longer exists
-- [ ] `manifest-routing-schema.md` — replace the completeness-rule paragraph with the Phase 2
+      `command-route-skill.sh`'s Step 4e, which no longer exists *(completed)*
+- [x] `manifest-routing-schema.md` — replace the completeness-rule paragraph with the Phase 2
       re-scoped Check A/C contract (research-anchored `routing_agents` completeness;
-      `routing_agents_hard` counterpart check), so doc and lint agree
-- [ ] `manifest-routing-schema.md` — rewrite "`.task_type` (singular) vs. `.routing.{op}` keys"
+      `routing_agents_hard` counterpart check), so doc and lint agree *(completed)*
+- [x] `manifest-routing-schema.md` — rewrite "`.task_type` (singular) vs. `.routing.{op}` keys"
       (line 144) in terms of `routing_agents.{op}` keys, and drop the two
-      `routing_manifest_for_task_type()` references (lines 150, 158) now that the helper is gone
-- [ ] `manifest-routing-schema.md` — under "Agent Names Are Declared, Never Derived" (line 164),
+      `routing_manifest_for_task_type()` references (lines 150, 158) now that the helper is gone *(completed)*
+- [x] `manifest-routing-schema.md` — under "Agent Names Are Declared, Never Derived" (line 164),
       record the **work item 5 negative audit result**: no `routing_agents`/`routing_agents_hard`
       value anywhere carries a colon suffix, and the sweep to re-run
-      (`contains(":")` over both blocks across all manifests) before re-opening the question
-- [ ] `manifest-routing-schema.md` — record the **work item 6 confirmation**: Check B plus
-      `verify-deploy` gate 7 already make a nonexistent-agent declaration a hard deploy failure
-- [ ] `manifest-routing-schema.md` — update "Adding Routing to a New Extension" (line 196) so its
+      (`contains(":")` over both blocks across all manifests) before re-opening the question *(completed)*
+- [x] `manifest-routing-schema.md` — record the **work item 6 confirmation**: Check B plus
+      `verify-deploy` gate 7 already make a nonexistent-agent declaration a hard deploy failure *(completed)*
+- [x] `manifest-routing-schema.md` — update "Adding Routing to a New Extension" (line 196) so its
       sample JSON shows `routing_agents` only, and "Related Files" (line 221) so it no longer
-      lists `command-route-skill.sh` or the deleted commands
-- [ ] `merge-sources/claudemd.md` — rewrite the "Routing Mechanism" section (around lines
+      lists `command-route-skill.sh` or the deleted commands *(completed)*
+- [x] `merge-sources/claudemd.md` — rewrite the "Routing Mechanism" section (around lines
       215-222): drop `command-route-skill.sh`, correct the block count, and keep the pointer to
-      `manifest-routing-schema.md` and `hard-mode-routing.md`
-- [ ] `core/index-entries.json` — update the `guides/manifest-routing-schema.md` and
+      `manifest-routing-schema.md` and `hard-mode-routing.md` *(completed: also corrected an
+      adjacent stale "routing_hard" mention in the Composability bullet -- see progress file)*
+- [x] `core/index-entries.json` — update the `guides/manifest-routing-schema.md` and
       `guides/hard-mode-routing.md` entries (around lines 2733-2763): drop the
       `command-route-skill` keyword from both and rewrite the hard-mode-routing summary that
-      currently describes it as "used by command-route-skill.sh for --hard"
+      currently describes it as "used by command-route-skill.sh for --hard" *(completed; also
+      updated manifest-routing-schema.md's line_count to 269 to match its rewritten length)*
 
 **Timing**: 1 hour
 
@@ -416,11 +418,11 @@ numbers will have shifted if a sibling touched these files.
 - `agent-system/extensions/core/index-entries.json` - correct the two routing-guide entries' summary and keywords
 
 **Verification**:
-- `grep -n 'command-route-skill\|routing_hard\|routing_manifest_for_task_type' agent-system/extensions/core/context/guides/manifest-routing-schema.md` returns only intentional historical/`routing_agents_hard` mentions
-- `jq -e . agent-system/extensions/core/index-entries.json > /dev/null`
-- `bash agent-system/extensions/core/scripts/validate-context-index.sh` passes
-- `bash agent-system/extensions/core/scripts/check-task-references.sh` clean (no task numbers introduced into any deliverable)
-- Deploy and confirm the generated `.claude/CLAUDE.md` "Routing Mechanism" section reads correctly
+- `grep -n 'command-route-skill\|routing_hard\|routing_manifest_for_task_type' agent-system/extensions/core/context/guides/manifest-routing-schema.md` returns only intentional historical/`routing_agents_hard` mentions *(confirmed: 5 hits, all historical-context prose explaining what was retired)*
+- `jq -e . agent-system/extensions/core/index-entries.json > /dev/null` *(confirmed valid)*
+- `bash agent-system/extensions/core/scripts/validate-context-index.sh` passes *(confirmed: 286 entries, 0 errors, 0 warnings)*
+- `bash agent-system/extensions/core/scripts/check-task-references.sh` clean (no task numbers introduced into any deliverable) *(confirmed: 0 occurrences)*
+- Deploy and confirm the generated `.claude/CLAUDE.md` "Routing Mechanism" section reads correctly *(confirmed: reads correctly, references command-route-agent.sh only)*
 
 ---
 

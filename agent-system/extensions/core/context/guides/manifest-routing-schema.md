@@ -1,10 +1,21 @@
 # Manifest Routing Schema
 
-This document is the authoritative description of the consolidated routing model: the five
-manifest blocks (`routing`, `routing_hard`, `routing_agents`, `routing_agents_hard`,
-`hard_contracts`), the single five-step first-match-wins ladder every routing consumer shares,
-core-manifest identification, `routing_exempt`'s narrowed meaning, and the rule that agent names
-are always declared data, never derived strings.
+This document is the authoritative description of the consolidated routing model: the two
+surviving routing blocks (`routing_agents`, `routing_agents_hard`) plus one unrelated one-level
+key (`hard_contracts`), the single five-step first-match-wins ladder every routing consumer
+shares, core-manifest identification, `routing_exempt`'s narrowed meaning, and the rule that
+agent names are always declared data, never derived strings.
+
+**Collapsed model (post routing-ladder-collapse)**: a prior version of this document described
+FOUR two-level routing blocks (`routing`, `routing_hard`, `routing_agents`, `routing_agents_hard`)
+resolved by two parallel resolvers, one per layer (a skill-level resolver, `command-route-skill.sh`,
+and an agent-level resolver, `command-route-agent.sh`). The skill-level layer existed only to
+serve the now-deleted `/research`, `/plan`, `/implement` commands; once those commands were
+deleted and `/orchestrate` became the sole dispatch path (dispatching AGENTS directly), the
+skill-level blocks and their resolver had no remaining caller and were retired outright, not
+migrated. `routing`/`routing_hard` are gone from every manifest; `command-route-skill.sh` no
+longer exists. Only `routing_agents`/`routing_agents_hard` survive, both read exclusively by
+`command-route-agent.sh`.
 
 **Scope**: This document covers the manifest-level routing schema. For the `--hard`-specific
 resolution path and its historical divergence (now eliminated), see
@@ -14,34 +25,39 @@ from `merge-sources/claudemd.md`).
 
 ---
 
-## The Five Blocks
+## The Two Routing Blocks (Plus One Unrelated Key)
 
-Every extension manifest may declare up to four **two-level** routing blocks, all sharing the
+Every extension manifest may declare up to two **two-level** routing blocks, both sharing the
 same `{ op: { task_type: value } }` shape (`op` is `"research"`, `"plan"`, or `"implement"`, plus
 occasionally an extension-specific op like `present`'s `"critique"`), plus one **one-level**
-block, `hard_contracts`, with a genuinely different shape (see its own subsection below):
+key, `hard_contracts`, with a genuinely different shape and no relation to routing at all (see
+its own subsection below). This is deliberately a two-block-plus-one-unrelated-key model, not a
+three-row routing table — do not read the table below as "three kinds of routing."
 
 | Block | Value type | Consumed by |
 |-------|-----------|-------------|
-| `routing` | skill name (e.g. `"skill-epi-research"`) | `command-route-skill.sh` (standard mode) |
-| `routing_hard` | skill name (e.g. `"skill-lean-research-hard"`) | `command-route-skill.sh` (`--hard` mode) |
 | `routing_agents` | agent name, no `.md` suffix (e.g. `"epi-research-agent"`) | `command-route-agent.sh` (standard mode) |
 | `routing_agents_hard` | agent name (e.g. `"lean-research-hard-agent"`) | `command-route-agent.sh` (`--hard` mode) |
 | `hard_contracts` | array of contract paths/`replace:` entries (see below) | `orchestrate-build-dispatch.sh`'s Stage 3.5 Dispatch Prep, via `routing_lookup_flat()` |
 
-`routing`/`routing_hard` resolve which **skill** a command (`/research`, `/plan`, `/implement`)
-invokes. `routing_agents`/`routing_agents_hard` resolve which **agent** `/orchestrate` and
-`/orchestrate --hard` dispatch directly (bypassing the skill layer). Both pairs are read by the
-exact same underlying ladder — only the block name and the resolver script differ. `hard_contracts`
-is unrelated to either pair — it does not resolve a skill or an agent name, it resolves the list
-of behavioral-contract files injected into a `--hard` dispatch's prompt.
+`routing_agents`/`routing_agents_hard` resolve which **agent** `/orchestrate` and
+`/orchestrate --hard` dispatch directly. `hard_contracts` is unrelated to this pair — it does not
+resolve an agent name, it resolves the list of behavioral-contract files injected into a
+`--hard` dispatch's prompt.
 
-**Completeness rule**: every key present in `routing.{op}` MUST have a counterpart key in
-`routing_agents.{op}` on the same manifest, and every key in `routing_hard.{op}` MUST have a
-counterpart in `routing_agents_hard.{op}`. `lint-routing-wiring.sh` (Checks A and C) enforces
-this as a hard FAIL, not a silent gap — this is the mechanical backstop against the defect class
-that let sed-derived agent names silently resolve to non-existent files. `hard_contracts` has no
-counterpart-key rule; it is independently optional.
+**Completeness rule (research-anchored, re-scoped by the routing-ladder collapse)**: every
+task_type key present under `routing_agents.research` MUST have a counterpart key under
+`routing_agents.plan` and `routing_agents.implement` on the same manifest.
+`lint-routing-wiring.sh` Check A enforces this as a hard FAIL, not a silent gap — this is the
+mechanical backstop against the defect class that let a per-op gap go undetected. Keys present
+in `plan`/`implement` but absent from `research` (including an extension-specific op's own keys,
+e.g. `present`'s bare `slides` key) are REPORTed, never failed — the rule is deliberately
+one-directional. Separately, `lint-routing-wiring.sh` Check C enforces `routing_agents_hard`'s
+own internal completeness: every task_type declared under any `routing_agents_hard.{op}` MUST
+have a same-op counterpart key under `routing_agents.{op}` (a hard-mode entry for a task_type
+standard mode cannot route is the gap this catches). Plan parity is NOT required in
+`routing_agents_hard` — `cslib` and `lean` legitimately declare `research` + `implement` only.
+`hard_contracts` has no counterpart-key rule; it is independently optional.
 
 ---
 
@@ -86,7 +102,7 @@ which builds the final `hard_contracts_block` prompt-injection string from the r
 
 ## The Single Five-Step Ladder
 
-All four blocks resolve through ONE ladder, implemented once in
+Both routing blocks resolve through ONE ladder, implemented once in
 `scripts/lib/manifest-routing-lib.sh`'s `routing_lookup()` function:
 
 ```
@@ -99,26 +115,21 @@ Step 5: no match -> empty (caller substitutes its own default)
 ```
 
 "First match wins" and "non-core scanned before core" are the SAME rule applied identically by
-every consumer: `command-route-skill.sh`, `command-route-agent.sh`, and `skill-orchestrate`
-(both effort modes share this one engine today). Before the standalone hard-mode orchestrator was
-merged into `skill-orchestrate` and then deleted, it used a different, undocumented rule
-(last-match-wins, no core exclusion) — see `context/guides/hard-mode-routing.md` for that
-history.
+every consumer: `command-route-agent.sh` and `skill-orchestrate` (both effort modes share this
+one engine today). Before the standalone hard-mode orchestrator was merged into
+`skill-orchestrate` and then deleted, it used a different, undocumented rule (last-match-wins,
+no core exclusion) — see `context/guides/hard-mode-routing.md` for that history.
 
-Only Step 5's emptiness is a true "miss" — a caller's own default (e.g. `skill-epi-research`,
-`general-research-agent`) is substituted OUTSIDE the ladder, by the caller, never inside
-`routing_lookup()` itself.
-
-### The `-hard` append fallback (skill resolution only)
-
-`command-route-skill.sh` has one additional fallback step, Step 4e, that `command-route-agent.sh`
-does NOT have: if hard-mode resolution (Steps 1-4 against `routing_hard`) misses entirely, it
-tries appending `-hard` to the already-resolved standard `SKILL_NAME`, using the result only if
-`.claude/skills/${candidate}-hard/SKILL.md` exists on disk (a safety gate against resolving to an
-undeployed skill). `command-route-agent.sh` has no equivalent — a hard-mode agent miss falls
-through directly to the caller-supplied hard default (a `-hard`-suffixed agent name), never
-to the standard `routing_agents` block. This asymmetry is deliberate: skill names follow a
-predictable `-hard` suffix convention; agent names do not.
+Only Step 5's emptiness is a true "miss" — a caller's own default (e.g. `general-research-agent`)
+is substituted OUTSIDE the ladder, by the caller, never inside `routing_lookup()` itself.
+`command-route-agent.sh`'s own hard-mode composition (Steps 1-4 against `routing_agents_hard`,
+falling back to the already-resolved standard `routing_agents` value, falling back again to the
+caller's default) is a three-rung fallback built ON TOP of this one ladder, not a second ladder —
+see `context/guides/hard-mode-routing.md` for that composition's detail. There is no `-hard`
+append-fallback step here: that mechanism belonged solely to the now-deleted skill-level
+resolver (`command-route-skill.sh`), which derived a `-hard`-suffixed skill name by string
+convention. Agent names carry no such suffix convention, so `command-route-agent.sh` never had
+an equivalent step to retire.
 
 ---
 
@@ -141,23 +152,27 @@ routing). It no longer has any role in core identification.
 
 ---
 
-## `.task_type` (singular) vs. `.routing.{op}` keys (aliases)
+## `.task_type` (singular) vs. `.routing_agents.{op}` keys (aliases)
 
 Every manifest carries a singular top-level `.task_type` string (e.g. epidemiology's is `"epi"`),
-but its `.routing.{op}` blocks may declare SEVERAL alias keys resolving to the same extension —
-epidemiology declares `epi`, `epi:study`, AND `epidemiology`, all routing to
-`skill-epi-research`/`skill-epi-implement`. The singular field is insufficient by itself for
-directory/extension resolution; `routing_manifest_for_task_type()` in the shared library scans
-the `.routing.{research,plan,implement}` keys (exact or compound-base match) instead — the same
-data every other ladder step already reads.
+but its `.routing_agents.{op}` blocks may declare SEVERAL alias keys resolving to the same
+extension — epidemiology declares `epi`, `epi:study`, AND `epidemiology`, all routing to
+`skill-epi-research` at the command layer and to the same research agent at the dispatch layer.
+The singular field is insufficient by itself for directory/extension resolution;
+`routing_lookup()` itself scans the `.routing_agents.{op}` keys (exact or compound-base match)
+across every manifest, so no separate manifest-finding helper is needed — the resolution IS the
+lookup.
 
-**Directory-resolution-via-routing-keys convention**: before this task, `skill-orchestrate`
-(base mode) resolved an extension's directory by assuming `directory_name == task_type`
-(`.claude/extensions/${TASK_TYPE}/manifest.json`) — which silently failed for `epi` (the
-extension directory is `epidemiology`, not `epi`) and only worked for `neovim`/`lean4` because a
-hardcoded `case` statement masked the bug. `routing_manifest_for_task_type()` replaces
+**Directory-resolution-via-routing-keys convention**: before the original routing consolidation,
+`skill-orchestrate` (base mode) resolved an extension's directory by assuming
+`directory_name == task_type` (`.claude/extensions/${TASK_TYPE}/manifest.json`) — which silently
+failed for `epi` (the extension directory is `epidemiology`, not `epi`) and only worked for
+`neovim`/`lean4` because a hardcoded `case` statement masked the bug. The ladder replaces
 directory-name guessing entirely: it finds the right manifest by what it DECLARES, not by what
-its directory happens to be named.
+its directory happens to be named. (A former standalone helper, `routing_manifest_for_task_type()`,
+performed this same lookup against the now-deleted `.routing.{op}` blocks for callers that needed
+only the manifest PATH rather than a resolved value; it had no live caller by the time the
+routing-ladder collapse landed and was removed outright, not retargeted.)
 
 ---
 
@@ -191,6 +206,33 @@ enters an agent name.
 deliberate general-routing decision (e.g. `memory`, `email` research) is auditable rather than
 indistinguishable from an oversight.
 
+**Audit record: no colon-suffixed `routing_agents`/`routing_agents_hard` value exists (negative
+result)**. The now-deleted skill-level `routing.implement` block used colon-suffixed compound
+VALUES for a brief period (e.g. `present`'s `"present:grant"` resolving to a skill name like
+`"skill-grant:assemble"`, where the colon suffix encoded a sub-operation `workflow_type` mode a
+caller would split out); that encoding disappeared with the block, mooting the question for the
+skill layer. A `contains(":")` sweep of `routing_agents`/`routing_agents_hard` VALUES (not keys —
+compound-base KEYS like `"founder:deck"` are the normal, expected alias mechanism documented
+above) across all manifests returns nothing: zero live instances. The resolution is to record
+this negative audit result rather than build a colon-splitting encoding that has no present use.
+Re-run the sweep before reopening the question:
+```bash
+jq -r '
+  ["routing_agents","routing_agents_hard"][] as $b
+  | (.[$b] // {}) | to_entries[] | .value | to_entries[]
+  | select(.value | contains(":"))
+  | "\($b).\(.key)"
+' agent-system/extensions/*/manifest.json
+```
+
+**Audit record: a nonexistent-agent declaration is already a hard deploy failure (confirmed,
+not newly built)**. `lint-routing-wiring.sh` Check B already fails on any
+`routing_agents`/`routing_agents_hard` value naming a nonexistent agent file, and is already
+wired as `verify-deploy.sh` gate 7 (hard fail) — this makes the original defect this task
+collapses the ladder in response to (a manifest naming a nonexistent dispatch target, shipped
+silently) impossible to reintroduce under the collapsed model without a hard CI-equivalent
+failure.
+
 ---
 
 ## Adding Routing to a New Extension
@@ -199,10 +241,6 @@ indistinguishable from an oversight.
 {
   "name": "myext",
   "task_type": "mytype",
-  "routing": {
-    "research": { "mytype": "skill-mytype-research" },
-    "implement": { "mytype": "skill-mytype-implementation" }
-  },
   "routing_agents": {
     "research": { "mytype": "mytype-research-agent" },
     "plan": { "mytype": "planner-agent" },
@@ -211,10 +249,10 @@ indistinguishable from an oversight.
 }
 ```
 
-Add `routing_hard`/`routing_agents_hard` only if hard-mode skills/agents actually exist for this
-extension. Ground-truth every `routing_agents` value against the routed skill's own
-`subagent_type` dispatch line — never derive it. Run `lint-routing-wiring.sh --verbose` before
-committing; it fails loudly on a missing counterpart key or a non-existent agent file.
+Add `routing_agents_hard` only if hard-mode agents actually exist for this extension. Ground-truth
+every `routing_agents` value against the routed skill's own `subagent_type` dispatch line — never
+derive it. Run `lint-routing-wiring.sh --verbose` before committing; it fails loudly on a missing
+counterpart key or a non-existent agent file.
 
 ---
 
@@ -222,8 +260,8 @@ committing; it fails loudly on a missing counterpart key or a non-existent agent
 
 - `scripts/lib/manifest-routing-lib.sh` — the one ladder implementation, plus the
   `hard_contracts` sibling ladder, `routing_lookup_flat()`
-- `scripts/command-route-skill.sh` — skill resolution (`/research`, `/plan`, `/implement`)
-- `scripts/command-route-agent.sh` — agent resolution (`/orchestrate`, `/orchestrate --hard`)
+- `scripts/command-route-agent.sh` — agent resolution (`/orchestrate`, `/orchestrate --hard`) —
+  the sole surviving routing resolver
 - `scripts/lint/lint-routing-wiring.sh` — wiring-validation gate (verify-deploy.sh gate7)
 - `scripts/tests/test-routing-resolution.sh` — table-driven parity test
 - `scripts/orchestrate-build-dispatch.sh` — Stage 3.5 Dispatch Prep, the `hard_contracts` block's
