@@ -1,5 +1,5 @@
 ---
-next_project_number: 328
+next_project_number: 329
 ---
 
 # TODO
@@ -14,15 +14,16 @@ next_project_number: 328
 | 1 | 22,185,251,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,298,302,303,307,308,319,326 | 22,251,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,313 | 273,275,281,284,285,302,308 | core-agent-system, orchestrator |
-| 4 | 312 | 282,300 | orchestrator |
+| 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
 ### Core Agent System
 
-185 [PLANNED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
+185 [IMPLEMENTING] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
+    └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
@@ -34,7 +35,9 @@ next_project_number: 328
   └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
     └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
+  └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
+  └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
 
 ### Extensions
@@ -73,6 +76,79 @@ next_project_number: 328
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 
 ## Tasks
+
+### 328. Systematic script and test corpus efficiency
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 170, Task 318, Task 322, Task 304, Task 303
+
+**Description**: Systematic top-to-bottom efficiency refactor of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Supersedes and folds in tasks 307, 308 and 270. Depends on 170, 318, 322, 304, 303.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**, a disposable deploy artifact).
+
+== MOTIVATION: A GAP IN THE INTAKE MECHANISM ==
+
+Tasks touching this corpus are filed by hand from defects hit live during /orchestrate runs. That intake only ever surfaces what BROKE. Needless complexity, duplicated logic, poor division of labor and slow tests never break anything -- they only cost -- so they are invisible to the filing process by construction and will not self-correct. Task 250 closed half this gap by BUILDING the standing probe (scripts/script-inventory.sh) but spent its decomposition budget on a single file (orchestrate-cycle-plan.sh, 3026->2597 lines, 14.2%). This task is the standing consumer of that probe's output, across the whole corpus, including the test corpus.
+
+== MEASURED 2026-10-03 via scripts/script-inventory.sh (RE-MEASURE BEFORE ACTING) ==
+
+Corpus: 197 non-test *.sh files, 72,761 lines, 3,472,506 bytes. Separately: 85 test suites under core/scripts/tests/.
+
+Duplication: 52 of 197 scripts carry duplicate blocks. Verified clusters:
+
+  (1) THE FIVE-LINT CLUSTER -- the clearest extract-a-lib target in the corpus. All five report peers=4, i.e. all are mutual near-copies:
+      - lint/lint-task-lookup-adoption.sh        551L, 107 dup blocks
+      - lint/lint-branch-gated-sections.sh       398L,  78 dup blocks
+      - lint/lint-directory-pathspec-boundary.sh 369L,  67 dup blocks
+      - lint/lint-state-writer-boundary.sh       348L,  97 dup blocks
+      - lint/lint-scoped-commit-boundary.sh      346L,  92 dup blocks
+      Hand-verified independently of the metric: 115-132 shared non-blank, non-comment lines per pair (comm -12 on sorted unique lines, comments and blanks stripped) -- roughly a third of each file is a shared skeleton, DESPITE each already sourcing two libs. ~2,012 lines total.
+
+  (2) install-extension.sh (299L) / uninstall-extension.sh (237L): mutual pair, 33 dup blocks each.
+  (3) typst/scripts/chapter-quality-check.sh (754L) / typst-element-lint.sh (372L): mutual pair, 44 dup blocks each.
+  (4) literature/scripts/literature-search.sh: 1,635L with 172 dup blocks and peers=0 -- i.e. SELF-internal repetition inside one file, a different defect class from the cross-file clusters above.
+
+Test-coverage constraint (binds the whole task): 157 of 197 scripts have no paired test, and 50 of those exceed 300 lines. A large untested script cannot be safely refactored, so characterization tests must precede any edit to one. This is why 170 is a dependency rather than a sibling.
+
+Test-corpus runtime: verify-deploy.sh Gate 8 measured at 117.9s of a ~2.8min total run -- the dominant gate. Cause is volume and process-spawn/IO, not compute: 85 suites, each a separate bash process, many shelling out further. Task 265 already added run-all.sh --jobs (capped at JOBS_CAP=4, deliberately below nproc because pooled suites contend) and --skip-slow. Remaining headroom is the 4x cap and per-suite startup cost, NOT more parallelism.
+
+== TWO PROBE METRICS THAT MUST NOT BE TRUSTED AT FACE VALUE ==
+
+  - zero_caller_count = 0 does NOT mean there is no dead code. Task 250's own summary records that a script's own manifest.json entry counts as an inbound caller, so inbound_callers over-counts by design and the field found nothing. Dead-code detection is UNSOLVED and this task must not treat 0 as an answer; devise a real reachability test (note task 251 is solving the analogous problem for the CONTEXT corpus -- borrow its method, do not duplicate it; file_scopes are disjoint so the two run in parallel).
+  - has_test is a filename-convention check only. claude-refresh.sh reports has_test=false although task 217 just grew its matcher suite to 163 assertions, because the file is named test-claude-refresh-matcher.sh. So 157 overstates the true coverage gap. Re-derive real coverage before using it to gate anything.
+
+== FOLDED-IN TASKS (supersede and close these three; their file_scopes merge into this task) ==
+
+  - 307 (/todo: consolidate the duplicated skill-todo implementation, wire roadmap pruning, cut the per-task jq and subprocess fan-out). Files: commands/todo.md, skills/skill-todo/SKILL.md, manifest.json, context/architecture/system-overview.md, context/patterns/context-protective-lead.md, scripts/memory-harvest.sh. NOTE: task 322 is a verified REGRESSION fix on todo.md and skill-todo/SKILL.md and MUST land first -- do not refactor those two files before 322 closes.
+  - 308 (/review: wire roadmap regeneration, collapse the redundant jq and generate-todo passes). Files: commands/review.md.
+  - 270 (re-runnable null-safety audit of jq mutation sites across core scripts, then decide whether a shared guard idiom belongs in scripts/lib/). Files: scripts/check-jq-null-safety.sh, scripts/tests/test-check-jq-null-safety.sh, scripts/orchestrate-build-dispatch.sh, scripts/lib/, docs/reference/utility-scripts-inventory.md. This is the same shape as the rest of the task -- a shared idiom extracted into lib/ -- so it belongs here rather than standing alone.
+
+Each folded task's own substance is to be delivered, not dropped: closing them is a consolidation, not a descope.
+
+== DEPENDENCIES AND WHY EACH GENUINELY BLOCKS ==
+
+  - 170 (audit and isolate shell test suites from ambient host state, record the convention): owns context/standards/shell-script-testing.md, the convention this task must refactor the test corpus AGAINST, plus eight state/timing-sensitive suites and task-lock.sh. Refactoring tests before the convention exists would be rework.
+  - 318 (wire lint-directory-pathspec-boundary.sh into verify-deploy.sh as a numbered gate): that script is one of the five IN the duplication cluster above. Extracting its skeleton while it is still unwired churns verify-deploy gate numbering twice.
+  - 322 (/todo directory-move staging gap, a verified regression): owns commands/todo.md and skill-todo/SKILL.md -- the exact two files folded-in task 307 owns. Direct file collision; the defect fix lands before the refactor of the same files.
+  - 304 (one out-of-repository pathspec entry aborts staging for every valid path; callers sink nonzero exits while the task reports success): owns git-commit-scoped.sh, orchestrate-cycle-postflight.sh, orchestrate-unwind-dispatch.sh and both test-git-commit-scoped.sh / test-orchestrate-cycle-postflight.sh. Every incremental refactor commit in this task rides on that staging and exit-code contract; refactoring on top of a known-broken one would mask failures.
+  - 303 (validate-state.sh resolves its omitted-argument default against CWD instead of the repo being validated): small, and a defect fix on a script+test pair this task's test work would otherwise touch mid-flight.
+
+== SCOPE: TOP TO BOTTOM, BOTH CORPORA ==
+
+Both halves are in scope, and the test corpus is a first-class target rather than only a safety net:
+  (a) The 197 non-test scripts: de-duplicate the verified clusters into scripts/lib/, remove what is genuinely unneeded (after solving reachability honestly), and improve division of labor on the probe's top-ranked files.
+  (b) The 85 test suites: cut per-suite startup cost and the Gate 8 117.9s figure, consolidate the duplicated test scaffolding, and close real coverage gaps on the 50 large untested scripts -- all WITHOUT reducing assertion coverage or functionality.
+
+== HARD CONSTRAINTS ==
+
+  - NO reduction in coverage or functionality. Behaviour preservation must be demonstrated per change, not asserted: prefer byte-identical output diffs against a pre-captured baseline (the technique task 250 used successfully on orchestrate-cycle-plan.sh --dry-run), and never weaken or delete a test to make a refactor pass. Task 250 hit exactly this and correctly REVERTED rather than weaken test-lint-deploy-caller-wrap.sh's two-genuine-caller invariant; it then took its own declared fallback and reported 14.2% against a ~29% target honestly. Do the same.
+  - Characterization tests FIRST for any script that is large and genuinely untested.
+  - Incremental: one cluster or one file per phase, full suite green and committed before the next starts.
+  - Re-measure with script-inventory.sh at the start; the 2026-10-03 figures above are a snapshot, and the probe's own output is the authoritative input.
+  - Note task 250's deferred follow-up: it left roughly half the redeploy-checkpoint region inline in orchestrate-cycle-plan.sh (the 479-line move broke test-lint-deploy-caller-wrap.sh's invariant), and separately flagged that deploy-headless.sh's --skip-verify defers run-all.sh so ~40 deploy-tree-first suites are not exercised against a freshly-redeployed tree. Both are in scope here.
+
+---
 
 ### 327. Repair the extension lifecycle hook mechanism: broken resolver schema, absent return-code channel, uninvoked verification stage
 - **Effort**: 1-3 hours
@@ -3688,7 +3764,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 185. Retarget stage citations to move vocabulary
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: markdown
 - **Topic**: core-agent-system
 - **Dependencies**: Task 266, Task 199, Task 184
