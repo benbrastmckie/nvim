@@ -1,5 +1,5 @@
 ---
-next_project_number: 326
+next_project_number: 328
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 326
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,184,217,250,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,185,251,273,275,281,298,302,303,307,308,319 | 22,127,184,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
+| 1 | 22,89,127,184,217,250,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,185,251,273,275,281,298,302,303,307,308,319,326 | 22,127,184,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,274,282,304,313 | 250,251,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 282,300 | orchestrator |
 
@@ -20,13 +20,13 @@ next_project_number: 326
 
 ### Core Agent System
 
-89 [PLANNED] — Apply the mode-gated section convention to the two remaining...
-127 [PLANNED] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
+89 [IMPLEMENTING] — Apply the mode-gated section convention to the two remaining...
+127 [IMPLEMENTING] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
 184 [PLANNED] — Surface skeleton-plan follow-ups at completion under the...
   └─ 185 [NOT STARTED] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
-217 [PLANNED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
+217 [IMPLEMENTING] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 250 [PLANNED] — Script-corpus inventory probe, then cut tests/run-all.sh...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
@@ -47,6 +47,8 @@ next_project_number: 326
 
 297 [NOT STARTED] — Scaffold the books extension: manifest, four-block routing,...
   └─ 298 [NOT STARTED] — Author the books extension context corpus under...
+  └─ 326 [NOT STARTED] — Add a books verification tier at implement dispatch: the...
+327 [NOT STARTED] — Repair the extension lifecycle hook mechanism: broken...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -77,6 +79,272 @@ next_project_number: 326
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 
 ## Tasks
+
+### 327. Repair the extension lifecycle hook mechanism: broken resolver schema, absent return-code channel, uninvoked verification stage
+- **Effort**: 1-3 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
+
+## Goal
+
+Repair the extension lifecycle hook mechanism so a declared hook actually runs, can report
+failure, and has a live invocation site. Today none of those three things is true.
+
+## THIS IS A STANDING DEFECT, INDEPENDENT OF ANY ONE EXTENSION
+
+The mechanism is not merely unused -- IT IS SILENTLY BROKEN FOR THE EXTENSIONS THAT ALREADY
+DECLARE HOOKS. `agent-system/extensions/nix/manifest.json` declares
+`{"preflight": "scripts/nix-preflight.sh", "context_injection": "scripts/nix-context.sh"}` and
+`agent-system/extensions/nvim/manifest.json` declares
+`{"context_injection": "scripts/nvim-context.sh"}`. NEITHER EVER FIRES. Those are the only two
+extensions in the source store declaring a top-level `hooks` object, and both are dead. No
+extension anywhere declares a `verification` hook.
+
+That is why this is its own task rather than scope on a books task: the breakage predates and is
+independent of the books program, it affects shipped extensions today, and its acceptance gate
+("a declared hook actually fires, and a non-zero exit is observable") is disjoint from any books
+deliverable.
+
+## The three defects, with evidence
+
+All line numbers in `agent-system/extensions/core/scripts/skill-base.sh`. RE-MEASURE BEFORE
+EDITING -- they will have moved.
+
+**1. The resolver is broken against the live `.claude-extensions.json` schema (lines 136-153).**
+`skill_get_extension_dir()` at line 147 queries
+`.loaded_extensions // [] | .[] | select(.task_type == $tt) | .name`. The live file has top-level
+keys `["extensions","version"]`, where `.extensions` is an OBJECT KEYED BY EXTENSION NAME and the
+per-extension entries carry no `task_type` field (their keys are `data_skeleton_files`,
+`installed_dirs`, `installed_files`, `loaded_at`, `merged_sections`, `source_dir`,
+`source_git_head`, `status`, `version`). Verified empirically by sourcing the deployed library:
+`lean4 -> []`, `nix -> []`, `rust -> []`, and `skill_run_extension_hook verification ...` returns
+0 as a silent no-op. Every other consumer already uses the object form -- compare
+`scripts/measure-eager-context.sh:234`
+(`.extensions | to_entries[] | select(.value.status=="active") | .key`). The fix must resolve via
+`.extensions | to_entries` plus each manifest's OWN top-level `task_type` field (which
+`extensions/lean/manifest.json` does carry, as `"lean4"`). THIS DEFECT ALONE MAKES THE ENTIRE
+MECHANISM DEAD, so fix it first and prove it with a test that the `nix` preflight hook fires.
+
+**2. There is no return-code channel (lines 159-192, decisively 190-191).** The invocation is:
+    "$hook_path" "$task_number" "$task_type" "$task_dir" "$session_id" "$operation" || \
+      echo "[skill-base] WARNING: Extension hook '${hook_name}' exited non-zero (non-blocking)"
+The `||` branch is the function's LAST statement, so `skill_run_extension_hook` always returns 0.
+A non-zero hook exit produces a console warning and nothing else -- no variable, no global, no
+file, no `return`. Note that `docs/guides/creating-extensions.md:700-702` makes this NORMATIVE
+("Exit non-zero: warning logged (non-blocking, skill continues)"), so changing the behaviour
+REQUIRES changing that documented contract in the same change. DECIDE AND RECORD whether
+non-blocking stays the DEFAULT with an opt-in blocking mode per stage, or whether the rc simply
+becomes observable to the caller while dispositions stay stage-specific. Do not silently flip a
+documented contract.
+
+**3. The `verification` stage is dead code (lines 607, 622-624).** Its only call site is inside
+`skill_validate_artifact()`, which has ZERO callers outside `skill-base.sh` itself and
+`scripts/tests/test-skill-base-lifecycle.sh`; its rc is not even tested at the call site. Skills
+call `validate-artifact.sh` inline instead -- for example `skills/skill-reviser/SKILL.md:309`,
+and likewise in the cslib and present extensions' skills -- bypassing the function entirely.
+`scripts/command-gate-out.sh` calls the DIFFERENT function `skill_validate_task_artifacts()`,
+which contains no hook call (see also its comments at lines 272 and 275). The stage is declared
+in the contract comment block at lines 114-131 and documented in the stage-mapping table at
+`creating-extensions.md:713`, and is invoked by nothing. Either give it a live call site on a
+path that actually runs, or move the invocation to a site that exists -- and if the stage is
+retired instead, remove it from the contract block and the stage-mapping table in the same
+change so the documentation stops advertising a stage that cannot fire.
+
+## Contract facts to preserve
+
+From the contract comment block at lines 114-131: the four stages are `preflight`,
+`context_injection`, `verification`, `postflight`; a hook receives five POSITIONAL arguments
+(`$1=task_number $2=task_type $3=task_dir $4=session_id $5=operation`) and no environment
+variables; hook stdout goes straight to the console with no capture; and missing hook keys or an
+absent `.claude-extensions.json` are SILENTLY SKIPPED. Discovery is
+`jq -r --arg h "$hook_name" '.hooks[$h] // empty' "$manifest"` (line 179) followed by an
+`[ -x "$hook_path" ]` test (line 185) which silently `return 0`s when the script is not
+executable -- that silent-skip-on-non-executable is itself a plausible footgun worth a warning.
+
+Keep the distinction between the top-level `hooks` object (stage name -> repo-relative script
+path, this mechanism) and `provides.hooks` (an ARRAY of filenames copied into the deploy, a
+Claude-Code-native settings hook, unrelated). `extensions/lean/manifest.json` has no top-level
+`hooks` key -- zero lifecycle hooks -- but its `provides.hooks` is
+`["lean-lsp-register-project.sh"]`, so "lean has hooks" is true in the unrelated sense and false
+in this one. Do not conflate them.
+
+## Deliberately un-sequenced overlap -- read before co-scheduling
+
+`scripts/skill-base.sh` is also declared in the `file_scope` of the skeleton-plan follow-up work
+(titled *"surface skeleton-plan follow-ups at completion under the batch engine"*), which is
+`planned`. THE OVERLAP IS REGION-DISJOINT: that work edits the completion/handoff path, while
+this task edits the hook resolver (line 147), the hook rc channel (lines 190-191) and the
+verification call site (lines 607, 622-624).
+
+NO DEPENDENCY EDGE IS DECLARED, DELIBERATELY. That work sits behind five dependencies of its own,
+and serializing region-disjoint edits in a 900-plus-line infrastructure file behind it would cost
+this task's dispatchability for no correctness benefit -- `skill-base.sh` is a broad,
+widely-edited infrastructure file, which `context/patterns/file-footprint-overlap.md` and
+Component 0's narrowness qualifier both treat as NOT a consolidation signal.
+
+CONSEQUENCE THE NEXT READER MUST KNOW: `scripts/orchestrate-batch-admit.sh` scans every
+non-terminal task in `specs/state.json`, so it WILL detect a `cross_batch` overlap on
+`skill-base.sh` and may defer this task if it is co-scheduled with that work. Dispatch this task
+alone, or alongside tasks whose `file_scope` does not include `skill-base.sh`. If both land
+close together, the later one rebases; the regions do not conflict.
+
+## Acceptance
+
+A declared hook fires (prove it with the `nix` preflight hook, which is dead today); a non-zero
+exit is observable to the caller under the disposition decided above; the `verification` stage
+either has a live call site or is removed from the contract block and the stage-mapping table;
+and `scripts/tests/test-skill-base-lifecycle.sh` covers the resolver against the REAL
+`.claude-extensions.json` object schema rather than a fixture matching the broken query.
+
+## Reference
+
+No task-number references in any file written into the source store -- cite file paths, script
+names and `file:line` anchors instead (`rules/no-task-references-in-deliverables.md`). Refer to
+the skeleton-plan follow-up work by its title only.
+
+---
+
+### 326. Add a books verification tier at implement dispatch: the --gate flag mirroring --compare (the lifecycle hook route is rejected with evidence)
+- **Effort**: 3-6 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 297
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` and `agent-system/extensions/books/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
+
+## Goal
+
+Close the verification gap at DISPATCH TIME rather than only where someone remembers to run a
+lint. Add a `--gate` flag to `/orchestrate`, modelled EXACTLY on the existing advisory-only
+`--compare` flag, which at implement dispatch runs the regex layer lint
+(`interface/scripts/layer-lint.sh` in the consuming repository) plus a `Books.Meta`
+import-closure check. ADVISORY ONLY: it never blocks, never fails a dispatch, and never
+downgrades status.
+
+This is the highest-leverage item in the books program's agent-system work, because it closes the
+gap for EVERY future books task rather than for the one task whose author happens to remember the
+lint.
+
+## Motivating measurement (live, not hypothetical)
+
+44 layer violations sat undetected across five tagging phases that ALL reported green on `lake
+build`. `lake build` invokes neither the layer lint, nor the certifier, nor the Comparator rooms.
+No verification tier exists today between `lake build` and the ten-minute fail-closed full gate,
+so the cheap middle tier this flag provides does not exist in any form.
+
+## MECHANISM DECISION IS ALREADY MADE, WITH EVIDENCE -- DO NOT RE-DERIVE IT
+
+An extension lifecycle `verification` hook via `skill-base.sh` was the obvious candidate
+mechanism and WAS INVESTIGATED AND REJECTED. The hook contract cannot support a gate that
+influences a verification outcome. Three stacked defects, each independently fatal, all in
+`agent-system/extensions/core/scripts/skill-base.sh`:
+
+1. HOOK EXIT CODES ARE SWALLOWED BY DESIGN. Lines 190-191 are the last statement of
+   `skill_run_extension_hook`, so the function ALWAYS returns 0:
+       "$hook_path" "$task_number" "$task_type" "$task_dir" "$session_id" "$operation" || \
+         echo "[skill-base] WARNING: Extension hook '${hook_name}' exited non-zero (non-blocking)"
+   There is no return channel at all -- no variable, no global, no file. The call site inside
+   `skill_validate_artifact()` at lines 622-624 does not even test the rc.
+   `docs/guides/creating-extensions.md:700-702` makes the non-blocking behaviour NORMATIVE.
+
+2. THE RESOLVER IS BROKEN AGAINST THE LIVE SCHEMA, so no lifecycle hook fires at all today.
+   `skill_get_extension_dir()` at line 147 queries
+   `.loaded_extensions // [] | .[] | select(.task_type == $tt) | .name`, but the live
+   `.claude-extensions.json` has top-level keys `["extensions","version"]` where `.extensions` is
+   an OBJECT KEYED BY EXTENSION NAME whose entries carry no `task_type` field. Verified
+   empirically by sourcing the deployed library: `lean4`, `nix` and `rust` all resolve to `[]` and
+   `skill_run_extension_hook verification ...` returns 0 as a silent no-op. Every other consumer
+   uses the object form -- compare `scripts/measure-eager-context.sh:234`.
+
+3. THE `verification` STAGE IS DEAD CODE. Its ONLY call site is `skill_validate_artifact()`
+   (`skill-base.sh:607`), which has ZERO callers outside `skill-base.sh` itself and
+   `scripts/tests/test-skill-base-lifecycle.sh`. Skills call `validate-artifact.sh` inline
+   instead (for example `skills/skill-reviser/SKILL.md:309`), bypassing it entirely.
+   `command-gate-out.sh` calls the DIFFERENT function `skill_validate_task_artifacts()`, which
+   has no hook call. The stage is declared in the contract and documented in the stage-mapping
+   table at `creating-extensions.md:713`, and invoked by nothing.
+
+Additionally the lean implement path has no `skill-base` involvement whatsoever:
+`agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md` contains zero
+`skill-base` or `skill_*` references, and its verification is a pure agent self-report read at
+SKILL.md:169-170 (`verification.verification_passed`), with green requiring only
+`status == "implemented"` AND `verification_passed == true` (SKILL.md:248). That self-report
+boolean is precisely the surface this gate must inform.
+
+Repairing the hook mechanism is a SEPARATE task (titled *"repair the extension lifecycle hook
+mechanism"*) and is deliberately NOT a dependency of this one: this task uses the live route and
+needs none of those repairs.
+
+## The `--compare` precedent -- the exact surface to mirror
+
+`--compare` is advisory-only and lean-implementation-scoped, which is structurally what `--gate`
+must be. Its complete threading surface, measured:
+
+- `scripts/parse-command-args.sh` -- `COMPARE_FLAG`.
+- `scripts/orchestrate-cycle-plan.sh` -- three sites: declaration at line 348
+  (`compare_flag="false"`), parse at line 367, and forwarding at line 2771
+  (`[ "$compare_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--compare)`), which is
+  what scopes it to the implement phase and keeps it from reaching research/plan dispatches.
+- `scripts/orchestrate-build-dispatch.sh` -- four sites: the contract comment at lines 33-34,
+  declaration at line 134, parse at line 151, and emission at lines 427-428
+  (`echo "- compare_flag: true"` into the written dispatch).
+- `commands/orchestrate.md:46` -- the flag table row stating advisory-only, never blocking,
+  never downgrading status, composability, and that it never reaches research/plan.
+- `skills/skill-orchestrate/SKILL.md` -- dispatch threading.
+- `scripts/tests/test-orchestrate-build-dispatch.sh` -- flag coverage.
+- `context/formats/return-metadata-file.md` -- the metadata field.
+
+Mirror this shape exactly. Re-measure every line number before editing (they will have moved).
+
+## Where the gate binds
+
+Bind the advisory finding where a gate can actually act today: the implement skill's own stage
+gate. `skill-lean-implementation/SKILL.md` ALREADY DEMONSTRATES THE PATTERN at its Stage 6b/6c,
+where a `compliance_check == "failed"` and a non-`verified` comparator verdict downgrade `status`
+to `partial`, and where a missing comparator block logs an INFO line and proceeds (SKILL.md:229).
+Follow that live, invoked, already-blocking-capable pattern. Per this task's advisory-only
+constraint the `--gate` finding must NOT downgrade status -- it is surfaced and recorded, and the
+INFO-line-and-proceed path at SKILL.md:229 is the precedent for the absent-block case.
+
+## Constraints
+
+- ADVISORY ONLY. Never blocks a dispatch, never fails it, never downgrades status. Composable
+  with `--hard`, `--lit`, `--compare` and the model flags. Meaningless for research/plan
+  dispatches, so it must never reach them -- the line-2771 guard shape is how that is enforced.
+- GATES ARE FAIL-CLOSED BY DESIGN. Nothing in this task may weaken, shortcut or quieten a gate to
+  make it faster. The flag ADDS a cheap intermediate tier; it does not relax an existing one.
+- Books-awareness (which lint to run, and the gate-tier knowledge of what each tier does and does
+  not check) comes from the books extension's own context corpus via plain backticked path
+  pointers, never eager imports.
+
+## REDEPLOY SEQUENCING -- THIS TASK LANDS LAST IN THE BOOKS CHAIN
+
+The consuming repository's deployed `.claude/` tree is STALE for the `core` and `formal`
+extensions. Measured: the source store HEAD is `3a97e937578ffbb89b0780b5a51432885bff070b`, while
+that repository's `.claude-extensions.json` records `core` at
+`0e465f4f1b9dcc9b393116382f53178b8c1f2756` and `formal` at
+`452d521472956008d15eff08b2005bbbeb9515c1`.
+
+Because this task edits `core` (the orchestrate engine, the command file and the skill) and the
+books extension, NOTHING in this chain takes effect in a consuming repository until that
+repository regenerates its `.claude/` through the loader picker. State explicitly in the
+completion summary that a `core` redeploy is required for `--gate` to exist at all, and that
+enabling the books extension in a consuming repository's `.claude-extensions.json` is the user's
+own action, not this task's work.
+
+## Reference
+
+No task-number references in any file written into the source store -- cite file paths, decision
+numbers, script names and `file:line` anchors instead
+(`rules/no-task-references-in-deliverables.md`). Refer to the books scaffold, context corpus and
+hook-repair work by their titles and deliverables only.
+
+---
 
 ### 325. Stop git add's gitignore advisory exit code from aborting the whole commit when the named file is tracked and was in fact staged
 - **Status**: [NOT STARTED]
@@ -405,6 +673,49 @@ The postflight call site is also NOT declared. `scripts/orchestrate-cycle-postfl
 ## Acceptance
 
 Replaying the observed incident -- the `NoFiniteWidthModel` refutation against the task descriptions of 706, 707, 708, 709 and 712 as they stood before the manual pass -- yields an advisory list naming all five, with no task description or status mutated by the sweep.
+
+
+== ADDED SCOPE (amendment): THE POSITIVE DIRECTION -- PRIOR FINDINGS REACHING THE NEXT TASK ==
+
+The sweep above surfaces the NEGATIVE direction: a result that FALSIFIES a filed premise in
+another task. Extend the same sweep to the POSITIVE direction: a finding already RECORDED in one
+task's artifacts must reach the later task that would otherwise rediscover it.
+
+MOTIVATING MEASUREMENT (live, from a completed books task in the consumer repository, not
+hypothetical). One implement dispatch spent 75 of 127 minutes in a single phase rediscovering six
+integration collisions between the books convention and a component's pre-existing gate. THREE OF
+THOSE SIX FACTS HAD ALREADY BEEN RECORDED IN EARLIER DISPATCHES' ARTIFACTS and were rediscovered
+anyway, because a finding written into `specs/NNN_*/summaries/` is invisible to the next task.
+Nothing reads it, nothing indexes it, and the memory extension's `memory-retrieve.sh` preflight
+injection did not surface it either.
+
+WHY THIS BELONGS HERE RATHER THAN IN ITS OWN TASK: it is the same mechanism in the other
+direction over the same narrow edit target -- the artifact walk this task already builds, plus a
+matching rule. Two directions of one matcher sharing one script is exactly the shared-edit-target
+signal that Component 0 of `docs/reference/standards/multi-task-creation-standard.md` names as
+calling for one task. A parallel cross-task artifact walker built alongside this one is the
+duplication that the backlog-reconciliation work exists to prevent.
+
+WHAT TO DECIDE AND IMPLEMENT (a decision is required; a restatement of the problem is not an
+acceptable outcome). Weigh at least: (i) a harvest trigger, (ii) coverage through the memory
+extension's existing `/distill --dream` surfacing path, and (iii) a dedicated per-domain finding
+ledger. Record the verdict with its evidence. NOTE A BOUNDARY: `scripts/memory-harvest.sh` is
+owned by the `/todo` consolidation work (titled *"consolidate the duplicated skill-todo
+implementation, then wire roadmap pruning"*) -- if the chosen mechanism requires editing that
+script, that is ADDED SCOPE TO SPAWN, NOT TO ABSORB.
+
+PRECISION REQUIRED ON THE MATCHING RULE. The negative direction can key on refutation, which is a
+sharp signal. The positive direction has no equivalently sharp signal, so an over-broad matcher
+would surface every prior artifact for every task and be ignored. State the precision/recall
+posture explicitly and pick a matcher whose false-positive rate is defensible.
+
+ESCAPE HATCH, EXPLICIT: if research finds the two directions together exceed one agent dispatch
+(the phase-sizing bound), the positive direction is SPAWNED AS ITS OWN TASK ORDERED BEHIND THIS
+ONE -- added scope to spawn, not to absorb. Do not silently drop it and do not silently absorb it
+past the sizing bound.
+
+Cite durable anchors only in anything written into the source store -- never a task number
+(`rules/no-task-references-in-deliverables.md`).
 
 ---
 
@@ -1270,6 +1581,54 @@ Repo-side documentation machinery to know about and NOT duplicate: `typst/manual
 
 No task-number references in any file written into the source store: cite file paths, decision numbers and script names instead (`rules/no-task-references-in-deliverables.md`). Refer to in-flight Verification work by its title and deliverables only.
 
+
+== ADDED DOCUMENTS (amendment): FIVE MORE, FROM LIVE CONSUMER-REPO EVIDENCE ==
+
+The eleven documents above are authored as specified. FIVE MORE are added to this same corpus,
+each grounded in measured cost from a completed books task in the consumer repository rather
+than in design-record reading. They land in the same `context/project/books/` tree and are part
+of the same coherent reading, which is why they are added here rather than split off.
+
+**12. `domain/gate-tiers.md` -- the tier chain, and what each tier does NOT check.** The chain is
+`lake build` -> `interface/scripts/layer-lint.sh` -> `certify.sh` -> `full-gate.sh` ->
+`--recheck`. For EACH tier record three things: what it checks, what it does NOT check, and the
+cheapest tier that catches each error class. The motivating measurement: 44 layer violations sat
+undetected across five tagging phases that ALL reported green on `lake build`, because `lake
+build` invokes neither the layer lint nor the certifier nor the Comparator rooms. There is today
+no verification tier between `lake build` and the full gate, and the absence of that intermediate
+tier is the finding this document must state plainly. Also record that a tier can pass VACUOUSLY
+(the regex layer lint over a package no rule's file-half reaches) and that a vacuous pass must be
+reported as vacuous, never as a pass -- this connects to the known-gap register above.
+
+**13. `patterns/warning-driven-convergence.md`.** The `grep | sed` loop that generated 179
+`book_requires` lines with ZERO guesses, by driving off the compiler's own warnings rather than
+off a human reading the source. Record the loop shape, why the warning stream is the correct
+oracle, and the termination condition.
+
+**14. `patterns/gate-collision-ledger.md`.** Six integration collisions between the books
+convention and a component's pre-existing gate, with their fixes. The measured cost: one implement
+dispatch spent 75 of 127 minutes in a SINGLE phase rediscovering them, and five of the six were
+discoverable only by running a ten-minute fail-closed full gate. Record each collision as a
+ledger row with its symptom, its root cause and its fix, so the next books integration reads the
+ledger instead of rediscovering it.
+
+**15. `standards/forgery-probe-discipline.md`.** Every gate predicate gets a forgery probe; a
+gate predicate shipped without one is a REVIEWABLE DEFECT, not a gap to be noted. Ground this in
+the existing FORGE-A..D fixture cases in `books/tests/manifest/run.sh`, which are the pattern to
+generalize rather than a special case.
+
+**16. `tools/certify-guide.md`.** Operating the certifier economically: component-root scoping,
+running `--check` FIRST, the `--no-build` economics, and the misreporting closing line (the
+certifier's final summary line can report success while an earlier stage reported SKIPPED --
+record exactly what the closing line does and does not warrant).
+
+These five are additive to the eleven above and do not change this task's scope boundary: the
+dependency task still owns `manifest.json`, `agents/`, `skills/`, `commands/`, `rules/` and
+`scripts/tests/`, and nothing is hand-authored under `.claude/**`.
+
+Cite durable anchors throughout -- filenames, decision numbers, script names, `file:line` -- and
+never a task number (`rules/no-task-references-in-deliverables.md`).
+
 ---
 
 ### 297. Scaffold the books extension: manifest, four-block routing, agents, skills, commands, rule and tests
@@ -1370,6 +1729,34 @@ Also in flight in Verification and defining the contracts this extension consume
 Enabling the extension in the Verification repo — adding `books` to its `.claude-extensions.json` extensions list via the loader picker — is the user's own action, not this task's work.
 
 No task-number references in any file written into the source store: cite file paths, decision numbers and script names instead (`rules/no-task-references-in-deliverables.md`).
+
+
+== SCOPE CORRECTION (amendment, routing blocks): AUTHOR TWO BLOCKS, NOT FOUR ==
+
+Deliverable 1 above says "all four routing blocks" following the cslib precedent. That is
+CORRECTED: author `routing_agents` and `routing_agents_hard` ONLY. Do NOT author `routing` or
+`routing_hard`.
+
+REASON, recorded so it is not re-derived: the routing-ladder collapse work -- titled *"collapse
+the routing ladder to routing_agents-only across all extension manifests; retire
+command-route-skill.sh"* -- is IN FLIGHT with status `implementing`, and it retires the `routing`
+and `routing_hard` blocks across the extension manifests. Its own `file_scope` enumerates the
+existing extension manifests individually but CANNOT list
+`agent-system/extensions/books/manifest.json`, because the books extension does not exist yet.
+So four-block routing authored here would not be swept by that work and the two stale blocks
+would survive silently in the only manifest nobody is looking at.
+
+This correction is deliberately a SCOPE NOTE AND NOT A DEPENDENCY EDGE. A dependency edge on the
+routing-ladder collapse would block this task behind an in-flight task for no benefit; writing
+two blocks instead of four removes the ordering constraint entirely and keeps this task
+dispatchable with no unmet dependencies.
+
+Consequence for the `--hard` variant decision already required above: `routing_agents_hard` is
+still authored, so the question of whether books gets `--hard` agent variants is unchanged by
+this correction.
+
+Refer to the routing-ladder collapse work by its title and deliverables only, never by a task
+number (`rules/no-task-references-in-deliverables.md`).
 
 ---
 
@@ -3235,7 +3622,7 @@ orphan tmp file. Re-check whether both are still live before Phase 1 treats them
 
 ### 217. Cost-aware idle Lean tree reclamation in /refresh: PSS accounting, CPU-delta idleness, notify-before-kill
 - **Effort**: 2 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 174
@@ -3696,7 +4083,7 @@ NOTE ON LIVENESS DETECTION. Both sessions in the incident reported the SAME pid 
 ---
 
 ### 127. Collapse routing ladder to routing agents
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 121, Task 124, Task 125
@@ -3722,7 +4109,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 89. Mode gate literature and distill skills
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 87
