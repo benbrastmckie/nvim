@@ -1,0 +1,40 @@
+{
+  "phase": 6,
+  "phase_name": "Thread --skip-verify from the two genuine callers",
+  "started_at": "2026-10-03T01:40:00Z",
+  "last_updated": "2026-10-03T02:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive genuine-caller set", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-read both caller sites before editing", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Append --skip-verify + why-safe-here comment at both sites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh", "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Demonstrate exit 4 needs no branch edit at either site", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm ledger bookkeeping keys off landed/not-landed, not exit 0 specifically", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.2-premise",
+      "description": "Dispatch/plan premise: checkpoint's pre/post/confirm snapshots run at FULL depth (never --skip-slow)",
+      "type": "corrected",
+      "reason": "Re-reading both caller sites before editing (as Phase 6's own first task requires) revealed this premise is stale. Task 283 ('stop redeploy-checkpoint gate 8 amplification'), already completed and committed before this dispatch, switched both callers' own independent verify-deploy.sh snapshot pairs to --skip-slow -- matching deploy-headless.sh's own inline verify depth exactly, and removing gate 8 from this checkpoint path entirely (independent of this task). context/patterns/batch-orchestration-guardrails.md's 'Superseded by a LATER task's wall-clock fix' paragraph documents this, and explicitly names 'Suppressing deploy-headless.sh's own internal --skip-slow verify' as an alternative task 283 itself considered and deliberately deferred ('decided OUT, not implemented... a genuine, scoped follow-up for a future task, not folded into this one') -- this task's Phase 5/6 IS that follow-up.",
+      "annotation": "*(deviation: corrected -- the suppression mechanism itself remains valid and was implemented as planned; only the magnitude/framing of the saving was corrected from a ~9min gate8 pass to a ~50-70s --skip-slow pass, and the why-safe-here call-site comments were worded accordingly rather than claiming 'full-depth')*"
+    }
+  ],
+  "verification_record": {
+    "genuine_caller_classification": "test-lint-deploy-caller-wrap.sh: 2 genuine caller file(s) (command-gate-out.sh:211, orchestrate-cycle-plan.sh:933), 17 mention-only file(s) out of 200 scanned .sh files",
+    "predicates_verbatim": {
+      "command-gate-out.sh:213": "if [ \"$gate_out_deploy_rc\" -eq 1 ] || [ \"$gate_out_deploy_rc\" -eq 2 ]; then",
+      "orchestrate-cycle-plan.sh:935": "if [ \"$deploy_exit\" -eq 1 ] || [ \"$deploy_exit\" -eq 2 ]; then"
+    },
+    "branch_edit_needed": false,
+    "deploy_exit_eq_0_site_found": "orchestrate-cycle-plan.sh's Defect A depth_disagreement diagnostic (decision-independent). Documented in place rather than widened -- see plan Phase 6 task annotation for full reasoning.",
+    "bash_n": "clean on both files",
+    "deploy_redeployed": "bash deploy-headless.sh (no flag, resync) -> RESULT=landed_verify_clean",
+    "test-lint-deploy-caller-wrap.sh": "7 passed, 0 failed",
+    "test-deploy-verify-wiring.sh": "28 passed, 0 failed (unaffected by this phase)",
+    "test-orchestrate-cycle-plan.sh": "344 passed, 0 failed, including checkpoint (k)'s depth_disagreement assertions (stub ignores --skip-verify and returns its configured exit code directly, so the fixture is unaffected by this phase's change)",
+    "git_diff_name_only_this_phase": "agent-system/extensions/core/scripts/command-gate-out.sh, agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh -- no other caller touched"
+  }
+}

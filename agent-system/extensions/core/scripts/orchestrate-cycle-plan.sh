@@ -921,8 +921,16 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
     # would make every gate-8 finding look "new" simply because pre never looked for it).
     pre_findings=$(deploy_findings_snapshot "$SCRIPT_DIR/verify-deploy.sh" --skip-slow)
 
+    # --skip-verify: suppression is safe HERE specifically because this checkpoint already takes
+    # its own independent pre/post (and, on a new finding, confirm) verify-deploy.sh --skip-slow
+    # findings snapshot pair around this call (pre_findings above, post_findings/confirm_findings
+    # below) and derives its real clean/red signal from THAT comparison, never from
+    # deploy-headless.sh's own exit code -- so its own inline --skip-slow verify (exactly the
+    # same gate set as this pair) is wholly redundant. Exit 4 (landed_verify_skipped) falls into
+    # the existing `else` branch below alongside 0 and 3, with no predicate change: see the
+    # `-eq 1 || -eq 2` check two lines down.
     deploy_exit=0
-    bash "$SCRIPT_DIR/deploy-headless.sh" >&2 || deploy_exit=$?
+    bash "$SCRIPT_DIR/deploy-headless.sh" --skip-verify >&2 || deploy_exit=$?
 
     if [ "$deploy_exit" -eq 1 ] || [ "$deploy_exit" -eq 2 ]; then
       # Branch (a): the redeploy itself failed to land -- NO baseline consultation, do not
@@ -1074,6 +1082,23 @@ if [ "$cycle_modified_files_json" != "[]" ] && [ "$cycle_modified_files_json" !=
             # non-deterministic gate, or a state change between the two calls), not a depth
             # mismatch -- the name and detection are kept (still worth surfacing loudly) but the
             # message below no longer attributes it to the slow gate specifically.
+            #
+            # EFFECTIVELY DEAD IN REAL OPERATION as of this task's `--skip-verify` addition
+            # (search this file for "suppression is safe HERE" above): this call site now always
+            # passes `--skip-verify`, so `deploy_exit` is never genuinely 0 or 3 here any more --
+            # it is 4 (landed_verify_skipped) whenever the deploy lands, because deploy-headless.sh's
+            # own internal verify no longer runs at all, leaving no second verdict to agree or
+            # disagree with. Deliberately NOT widened to `-eq 0 || -eq 4`: a 4 means "suppressed",
+            # not "ran and passed", so reporting a depth "agreement" against a verify that never
+            # ran would be dishonest, not merely imprecise. Left as `-eq 0` rather than deleted
+            # because (a) it is harmless and decision-independent -- branch (b) already defers
+            # unconditionally regardless of this flag's value -- (b) test-orchestrate-cycle-plan.sh's
+            # checkpoint (k) fixture exercises it via an arg-agnostic stub that ignores
+            # `--skip-verify` and returns exit 0 directly, so the assertion stays meaningful as a
+            # fixture-level regression guard even though the real call site can no longer produce
+            # that exit code, and (c) the escape-hatch rollback of removing `--skip-verify` from
+            # this call site (see deploy-headless.sh's header) would make this branch live again
+            # unchanged.
             depth_disagreement=false
             if [ "$deploy_exit" -eq 0 ]; then
               depth_disagreement=true

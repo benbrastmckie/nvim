@@ -199,8 +199,16 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
       # gate-8 finding look "new" simply because pre never looked for it.
       gate_out_pre_findings="$(deploy_findings_snapshot .claude/scripts/verify-deploy.sh --skip-slow)"
 
+      # --skip-verify: suppression is safe HERE specifically because this caller already takes
+      # its own independent pre/post verify-deploy.sh --skip-slow findings snapshot pair around
+      # this call (gate_out_pre_findings above, gate_out_post_findings below) and derives its
+      # real clean/red signal from THAT comparison, never from deploy-headless.sh's own exit
+      # code -- so its own inline --skip-slow verify (exactly the same gate set as this pair) is
+      # wholly redundant. Exit 4 (landed_verify_skipped) falls into the existing `else` branch
+      # below alongside 0 and 3, with no predicate change: see the `-eq 1 || -eq 2` check two
+      # lines down.
       gate_out_deploy_rc=0
-      gate_out_deploy_log="$(bash .claude/scripts/deploy-headless.sh 2>&1)" || gate_out_deploy_rc=$?
+      gate_out_deploy_log="$(bash .claude/scripts/deploy-headless.sh --skip-verify 2>&1)" || gate_out_deploy_rc=$?
 
       if [ "$gate_out_deploy_rc" -eq 1 ] || [ "$gate_out_deploy_rc" -eq 2 ]; then
         # Branch (a): the redeploy itself failed to land -- NO baseline consultation, do not

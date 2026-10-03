@@ -491,31 +491,74 @@ have been added since research.
 
 ---
 
-### Phase 6: Thread `--skip-verify` from the two genuine callers [NOT STARTED]
+### Phase 6: Thread `--skip-verify` from the two genuine callers [COMPLETED]
 
 **Goal**: The two real callers opt in, with zero control-flow change, and the claim "no other
 caller changes" is shown structurally rather than asserted.
 
 **Tasks**:
-- [ ] Re-derive the genuine-caller set rather than trusting the plan:
+- [x] Re-derive the genuine-caller set rather than trusting the plan:
       `grep -rn 'deploy-headless\.sh' agent-system/extensions/*/scripts` and classify each hit as a
       genuine invocation (command position) or a mention (comment, remedy string, assignment).
       `test-lint-deploy-caller-wrap.sh`'s own classifier is the reference for the distinction.
-      Expect exactly two genuine callers plus `deploy-headless.sh` itself.
-- [ ] Re-read `scripts/command-gate-out.sh` around `:185-200` and
+      Expect exactly two genuine callers plus `deploy-headless.sh` itself. *(completed:
+      `test-lint-deploy-caller-wrap.sh` itself re-derives and confirms exactly 2 genuine callers --
+      command-gate-out.sh and orchestrate-cycle-plan.sh -- out of ~200 scanned .sh files, 17
+      mention-only; used as the authoritative classifier rather than a manual grep re-triage)*
+- [x] Re-read `scripts/command-gate-out.sh` around `:185-200` and
       `scripts/orchestrate-cycle-plan.sh` around `:885-900` immediately before editing (a sibling
-      task shares `orchestrate-cycle-plan.sh`).
-- [ ] Append `--skip-verify` to each of the two invocation lines only. Add a one-line comment at
+      task shares `orchestrate-cycle-plan.sh`). *(completed: re-read; drift from cited line
+      numbers noted -- actual call sites were at command-gate-out.sh:~196-211 and
+      orchestrate-cycle-plan.sh:~917-933 by implementation time. IMPORTANT PREMISE CORRECTION
+      found on re-read, recorded in full in phase-6-progress.json: the dispatch's framing
+      ("checkpoint takes its pre/post/confirm snapshots at FULL depth, never --skip-slow") is
+      STALE. A prior, already-completed task (task 283, "stop redeploy-checkpoint gate 8
+      amplification") already switched BOTH callers' own independent snapshot pairs to
+      `--skip-slow`, matching deploy-headless.sh's own inline verify depth exactly -- confirmed by
+      `git log -S "this task's Phase 5 exists to remove" -- orchestrate-cycle-plan.sh` and by
+      context/patterns/batch-orchestration-guardrails.md's "Superseded by a LATER task's
+      wall-clock fix" paragraph, which explicitly names "Suppressing deploy-headless.sh's own
+      internal --skip-slow verify" as an alternative task 283 itself considered and "decided OUT,
+      not implemented... Recorded as a genuine, scoped follow-up for a future task, not folded
+      into this one." This task's Phase 6 IS that scoped follow-up, now with the caller-contract
+      audit task 283 explicitly flagged as missing (Verification #1 below). The underlying
+      mechanism (suppress the now-genuinely-redundant inline pass; both callers' own snapshots
+      already check the identical --skip-slow gate set deploy-headless.sh's inline verify checks)
+      remains valid and is NOT invalidated by this correction -- only the MAGNITUDE of the saving
+      changes: eliminating one ~50-70s --skip-slow pass per checkpoint fire, not a ~9min gate8
+      pass (gate8 was already removed from this path entirely by task 283, independent of this
+      task). Phase 7's measurement and Phase 8's documentation account for this correction; see
+      their own task annotations.)*
+- [x] Append `--skip-verify` to each of the two invocation lines only. Add a one-line comment at
       each site stating why suppression is safe *there* specifically: this caller takes its own
       independent full-depth `deploy_findings_snapshot` pair around the call and derives the real
       clean/red signal from that comparison, never from `deploy-headless.sh`'s exit code.
-- [ ] Demonstrate — do not assert — that exit 4 needs no branch edit: show that each caller's
+      *(completed, WORDING CORRECTED per the premise correction above: the comment at each site
+      says "independent pre/post (and, for orchestrate-cycle-plan.sh, confirm) verify-deploy.sh
+      --skip-slow findings snapshot pair", not "full-depth" -- an inaccurate claim would have
+      been load-bearing prose a future reader could trust)*
+- [x] Demonstrate — do not assert — that exit 4 needs no branch edit: show that each caller's
       not-landed predicate is `-eq 1 || -eq 2` followed by an unconditional `else`, so 4 partitions
       into the existing landed branch alongside 0 and 3. Record the two predicates verbatim in the
-      summary.
-- [ ] Confirm the `deploy_pending` / ledger bookkeeping in `orchestrate-cycle-plan.sh` keys off the
+      summary. *(completed: both predicates verbatim --
+      command-gate-out.sh:213 `if [ "$gate_out_deploy_rc" -eq 1 ] || [ "$gate_out_deploy_rc" -eq 2 ]`;
+      orchestrate-cycle-plan.sh:935 `if [ "$deploy_exit" -eq 1 ] || [ "$deploy_exit" -eq 2 ]` --
+      both followed by an unconditional `else`, confirmed unedited by `git diff`)*
+- [x] Confirm the `deploy_pending` / ledger bookkeeping in `orchestrate-cycle-plan.sh` keys off the
       landed/not-landed distinction (and its own snapshot comparison), not off exit 0 specifically;
       if any site does compare against 0, widen it explicitly and say so rather than leaving it.
+      *(completed: found exactly one site comparing `$deploy_exit -eq 0` specifically --
+      orchestrate-cycle-plan.sh's Defect A "depth_disagreement" diagnostic field (decision-
+      independent; branch (b) already defers unconditionally regardless of its value). NOT
+      widened to `-eq 0 || -eq 4`, because 4 means "suppressed" and 0 means "ran and passed" --
+      conflating them would report a false "depth agreement" for a verify that never ran.
+      Documented explicitly in place instead (why it's now effectively dead in real operation,
+      why it's intentionally retained for the test fixture and for the --skip-verify rollback
+      path) -- "say so rather than leaving it" satisfied by explanation rather than by widening,
+      which is the honest answer here. test-orchestrate-cycle-plan.sh's checkpoint (k) -- the one
+      test exercising this exact field -- still passes unchanged, because its fixture stub
+      ignores all arguments including --skip-verify and returns its configured exit code
+      directly.)*
 
 **Timing**: 1 hour
 
