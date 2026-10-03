@@ -86,6 +86,14 @@ project_name=$(jq -r --argjson num "$task_number" \
 padded_num=$(printf "%03d" "$task_number")
 task_dir="specs/${padded_num}_${project_name}"
 
+# task_type, for the verification extension hook invocation below (this script otherwise has NO
+# task_type in scope at all). Tolerates an absent value as empty rather than failing -- an
+# archived or not-yet-found project entry simply yields no hook match downstream, same as any
+# other task_type the loaded extensions do not declare.
+gate_out_task_type=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .task_type // ""' \
+  "$state_file" 2>/dev/null)
+
 # Read skill return metadata (non-blocking if missing)
 #
 # Absence here is now a meaningful diagnostic signal, not a routine event: skill_cleanup()
@@ -264,6 +272,17 @@ fi
 # repair is never invisible.
 if [ -d "$task_dir" ]; then
   skill_validate_task_artifacts "$task_dir"
+
+  # Extension hook: verification. This is the live call site for the "verification" lifecycle
+  # stage -- command-gate-out.sh runs for every task on every operation, unlike the callerless
+  # skill_validate_artifact() (still present in skill-base.sh with its own identical hook call;
+  # left in place deliberately, as a harmless duplicate, rather than removed -- see that
+  # function's own comment). Disposition: non-blocking, exactly like every other lifecycle hook
+  # stage -- gate-out proceeds regardless of the hook's outcome. The hook's own rc is visible to
+  # this caller via SKILL_HOOK_LAST_RC/SKILL_HOOK_LAST_STATUS (skill-base.sh) if ever needed, but
+  # nothing here inspects it.
+  skill_run_extension_hook "verification" "$task_number" "${gate_out_task_type}" "$task_dir" "$session_id" "$operation"
+
   echo "[gate-out] Artifact validation for task ${task_number}: ${SKILL_VALIDATE_FIXES:-0} field(s) auto-repaired, ${SKILL_VALIDATE_ERRORS:-0} error(s), ${SKILL_VALIDATE_WARNINGS:-0} warning(s) remaining."
   if [ "${SKILL_VALIDATE_FIXES:-0}" -gt 0 ]; then
     echo "[gate-out] Auto-repaired artifact(s): ${SKILL_VALIDATE_FIXED_FILES}"

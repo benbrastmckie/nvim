@@ -313,35 +313,35 @@ return value, invalidates the hypothesis.
 
 ---
 
-### Phase 3: Give the `verification` stage a live call site [NOT STARTED]
+### Phase 3: Give the `verification` stage a live call site [COMPLETED]
 
 **Goal**: Move the `verification` stage's invocation from the callerless
 `skill_validate_artifact()` to the gate-out path that runs for every task.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/command-gate-out.sh` and the
+- [x] Re-read `agent-system/extensions/core/scripts/command-gate-out.sh` and the
       `skill_validate_task_artifacts` region of `skill-base.sh` immediately before editing.
-- [ ] Re-confirm the premise by measurement, not by inheritance:
+- [x] Re-confirm the premise by measurement, not by inheritance:
       `grep -rln 'skill_validate_artifact\b'` across the repo should show only `skill-base.sh`
       and `test-skill-base-lifecycle.sh`. If a real caller has appeared since the research pass,
       stop and record it — the phase's premise would no longer hold.
-- [ ] In `command-gate-out.sh`, read `task_type` for the task from `specs/state.json` with a
+- [x] In `command-gate-out.sh`, read `task_type` for the task from `specs/state.json` with a
       single `jq` against the already-resolved project entry (the script currently has **no**
       `task_type` in scope at all), tolerating an absent value as empty rather than failing.
-- [ ] Add the `verification` hook invocation in `command-gate-out.sh` immediately after the
+- [x] Add the `verification` hook invocation in `command-gate-out.sh` immediately after the
       existing `skill_validate_task_artifacts "$task_dir"` call, passing the five positional args
       from the variables already in scope there (`task_number`, the newly read `task_type`,
       `task_dir`, `session_id`, `operation`).
-- [ ] Leave `skill_validate_task_artifacts`'s signature unchanged — it takes only `task_dir` and
+- [x] Leave `skill_validate_task_artifacts`'s signature unchanged — it takes only `task_dir` and
       cannot supply five args; this is why the call belongs at the call site, not inside the
       function.
-- [ ] Decide and record, in a one-line comment at the new site, whether
+- [x] Decide and record, in a one-line comment at the new site, whether
       `skill_validate_artifact()`'s now-duplicate hook call is left in place (harmless, still
       callerless) or removed. Default: **leave it**, and say so, so a reader does not mistake the
       duplication for an accident.
-- [ ] Add a comment at the new site stating the disposition explicitly: non-blocking, rc visible
+- [x] Add a comment at the new site stating the disposition explicitly: non-blocking, rc visible
       via `SKILL_HOOK_LAST_RC`, gate-out proceeds regardless.
-- [ ] Commit this green sub-step.
+- [x] Commit this green sub-step.
 
 **Timing**: 0.75 hours
 

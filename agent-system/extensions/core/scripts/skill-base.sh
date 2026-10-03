@@ -695,7 +695,11 @@ skill_validate_artifact() {
       echo "WARNING: ${artifact_kind} artifact has format issues (non-blocking). Review output above."
     fi
   fi
-  # Extension hook: verification (runs after artifact validation, non-blocking)
+  # Extension hook: verification (runs after artifact validation, non-blocking). NOTE: this
+  # function (skill_validate_artifact) has zero callers outside this file and the lifecycle test
+  # suite -- the LIVE verification call site that actually runs on every task is in
+  # command-gate-out.sh, immediately after its skill_validate_task_artifacts call. This call is
+  # left in place deliberately as a harmless duplicate rather than removed.
   if [ -n "$task_number" ]; then
     skill_run_extension_hook "verification" "$task_number" "${TASK_TYPE:-}" "${TASK_DIR:-}" "$session_id" "$operation"
   fi

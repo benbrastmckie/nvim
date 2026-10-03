@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "Give the verification stage a live call site",
+  "started_at": "2026-10-03T09:40:00Z",
+  "last_updated": "2026-10-03T10:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm premise: skill_validate_artifact has zero real callers outside skill-base.sh/test suite; command-gate-out.sh has zero task_type occurrences", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Read task_type from specs/state.json in command-gate-out.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 3, "description": "Add the verification hook invocation immediately after skill_validate_task_artifacts call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh"]},
+    {"id": 4, "description": "Comment the disposition and the retained duplicate site; cross-reference comment in skill-base.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/command-gate-out.sh", "agent-system/extensions/core/scripts/skill-base.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "premise_confirmation": {
+    "skill_validate_artifact_real_callers": "grep -rln across repo shows skill-base.sh (definition) and test-skill-base-lifecycle.sh (test) as actual callers/definers; command-gate-out.sh and all docs hits are prose/comment references only, not function calls. Premise holds.",
+    "command_gate_out_task_type_occurrences": 0
+  },
+  "verification_evidence": {
+    "bash_-n": "pass on both files",
+    "shellcheck_diff_vs_baseline": "clean, both files",
+    "verification_call_count": "2 total across the source store (command-gate-out.sh:1, skill-base.sh:1) -- matches plan's expectation of a retained dead site plus one new live one",
+    "end_to_end_fixture_probe": "built a full command-gate-out.sh fixture (specs/state.json task_type=mytype, .claude-extensions.json + .claude/extensions/myext/manifest.json declaring a verification hook, a synthetic hook script) and ran `REPO_ROOT=$FIX bash .claude/scripts/command-gate-out.sh 1 research sess_fixture_test` directly: the verification hook fired with the correct 5 positional args (1 mytype specs/001_fixture_task sess_fixture_test research), printed its own stdout, and command-gate-out.sh exited 0",
+    "no_extension_fixture_probe": "second fixture with task_type=general and NO .claude-extensions.json at all: command-gate-out.sh completed normally, exit 0, with no hook console noise beyond the existing artifact-validation report line",
+    "full_gate_set_delta": "check-extension-docs.sh (source-store) now reports zero FAIL/ADVISORY lines; lint-agent-contracts.sh still shows the same 2 pre-existing books-attributable failures, unrelated to this task's edits"
+  },
+  "deviations": []
+}
