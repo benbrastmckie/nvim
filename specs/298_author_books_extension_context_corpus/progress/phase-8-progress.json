@@ -1,0 +1,18 @@
+{
+  "phase": 8,
+  "phase_name": "The documentation contracts",
+  "started_at": "2026-10-03T02:45:00Z",
+  "last_updated": "2026-10-03T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write tools/typst-template-contract.md opening with the measured state", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/tools/typst-template-contract.md"]},
+    {"id": 2, "description": "Write standards/reconciliation-contract.md opening with the measured state", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/reconciliation-contract.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "8.x", "description": "typst/lib/book.typ line count and pins re-measured", "type": "altered", "reason": "The plan's Scope Hypothesis cites 183 lines, flagging it as in the staleness ledger's domain. Re-measured 2026-10-03: 462 lines. The four diverging certificate reads PERSIST and were re-verified by grep with line anchors (:101, :138, :141, :142, :268, :343, :401, :409, :446). Pins: typst --version reports 0.14.2 (b33de9de); the only preview imports found anywhere in typst/lib and typst/manual are thmbox:0.3.0 and fletcher:0.5.8 -- cetz 0.3.4 is the declared pin but is not on the book template's dependency path on this tree, and the document says so rather than asserting it as a measured import.", "annotation": "*(deviation: altered -- book.typ measured at 462 lines; cetz pin declared but not measured on the template's path)*"},
+    {"task_id": "8.y", "description": "tier-one prohibition lint recorded as partially built", "type": "altered", "reason": "The plan asks to record the lint as part of the docs stage. Measured 2026-10-03: Decision 17's own classification table marks clause 7 'partially exercised' -- typst/tests/book-template/run.sh lints backtick spans and math symbols on the rendered overview, while dotted identifiers and tool names are NOT yet linted, and docs-stage.sh reports tier_one_lint under unknown. Written as two of three prohibitions enforced by review rather than by a check.", "annotation": "*(deviation: altered -- tier-one lint recorded as partially built, two of three prohibitions unchecked)*"},
+    {"task_id": "8.z", "description": "probe fixture file list", "type": "altered", "reason": "The plan lists the probe as holding book.toml, book.cert.json, book.record.json, docs/book.typ. Measured 2026-10-03: the four files are book.toml, book.cert.json, book.record.json and book.typ -- flat, with no docs/ segment, matching rules/books.md item 3's flattened layout.", "annotation": "*(deviation: altered -- probe carries a flat book.typ, not docs/book.typ)*"}
+  ],
+  "handoff_count": 0
+}

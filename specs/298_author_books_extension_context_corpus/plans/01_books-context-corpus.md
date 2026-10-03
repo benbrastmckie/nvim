@@ -689,13 +689,13 @@ what is found with today's date.
 
 ---
 
-### Phase 8: The documentation contracts [NOT STARTED]
+### Phase 8: The documentation contracts [COMPLETED]
 
 **Goal**: The Typst template contract and the reconciliation contract - both written as design
 contracts with a dated measured-state note, because neither is exercised today.
 
 **Tasks**:
-- [ ] Re-verify `typst/lib/book.typ` at authoring time (the reconciliation of its four certificate
+- [x] Re-verify `typst/lib/book.typ` at authoring time (the reconciliation of its four certificate
       reads is live research in the consuming repository and may have landed), then write
       `tools/typst-template-contract.md` per Finding 5 item 8 **opening with what is not true
       yet**: no real book has a Typst document, and the library reads `certificate.version`,
@@ -703,7 +703,7 @@ contracts with a dated measured-state note, because neither is exercised today.
       which the writer emits (it emits `judgments.fields["book.*"]`/`["trust.*"]` and
       `export_ledger`), so a real certificate cannot currently render. If the live library has
       changed, write the live state and note the change.
-- [ ] Then the contract itself: tiers `overview | full | reference` via `--input tier=` and modes
+- [x] Then the contract itself: tiers `overview | full | reference` via `--input tier=` and modes
       `standalone | embedded` via `--input mode=`; the certificate as the only data input, loaded
       by the book DOCUMENT (`json("book.cert.json")`, a path relative to itself) and handed in via
       `#show: book.with(certificate: ...)`; the mechanism reason - a relative
@@ -712,14 +712,14 @@ contracts with a dated measured-state note, because neither is exercised today.
       the library never calls `json()` for a certificate, never reads `book.toml`, never reads
       `book.record.json` and never reads Lean source; `typst/lib/phrases.toml` as the one
       root-absolute read.
-- [ ] Record the label mechanics: every label book-id-prefixed from a `state()` so labels cannot
+- [x] Record the label mechanics: every label book-id-prefixed from a `state()` so labels cannot
       collide once several books are embedded in one build; a label built in a SEPARATE `context`
       block and placed after already-realized content SILENTLY fails to attach, so labelled
       content and its label must be constructed together inside ONE `context` block (the
       `tagged`/`tagged-metadata` helpers); every `metadata` value carrying an explicit `kind`
       field so a generic `typst query <file> 'metadata'` returns every tagged element from every
       embedded book and the consumer filters on `.value.kind`.
-- [ ] Record the compile root and the pins: the compile root is the REPOSITORY root (`--root .`,
+- [x] Record the compile root and the pins: the compile root is the REPOSITORY root (`--root .`,
       architecture Decision 9) through `bash typst/scripts/build.sh`, so a book's `docs/` outside
       `typst/` compiles standalone AND embeds in the manual; thmbox 0.3.0, fletcher 0.5.8,
       cetz 0.3.4 on Typst 0.14.2, with these marked as VERIFIED on that version rather than
@@ -728,12 +728,12 @@ contracts with a dated measured-state note, because neither is exercised today.
       docs/book.typ): three standalone tier compiles, one embedded compile, `typst query` for
       `<lean-decl>`/`<guarantee>`/`<book-meta>` metadata, and tier=overview containing no backtick
       span and no math.
-- [ ] Record the tier-one content bar: no symbols, no Lean identifiers, no tool names; every
+- [x] Record the tier-one content bar: no symbols, no Lean identifiers, no tool names; every
       guarantee names an export and every export has a guarantee; assumptions and not-claimed items
       rendered FROM the certificate, never retyped; a book that cannot support a section carries a
       scope note naming what is missing; a reworded guarantee needs re-approval exactly as a
       changed statement does; and a mechanical tier-one prohibition lint is part of the docs stage.
-- [ ] Write `standards/reconciliation-contract.md` per Finding 5 item 9: reconciliation triggered
+- [x] Write `standards/reconciliation-contract.md` per Finding 5 item 9: reconciliation triggered
       by CERTIFICATION, never by file save or commit; a proof-only edit changes no digest and
       touches no guarantee; an interface change always does, once. The contract: inputs limited to
       the documenter pack (certificate + tiers one and two + the phrase table + the record);
@@ -742,7 +742,7 @@ contracts with a dated measured-state note, because neither is exercised today.
       record, `book.toml`, approvals and book module NEVER edited. The summary names each
       guarantee touched with old and new digest. **Agents write prose; PEOPLE write records** - the
       command prints the signing invocation and never runs it.
-- [ ] Add the distinctions the measured tree forces: the approval record (`book.record.json`) is
+- [x] Add the distinctions the measured tree forces: the approval record (`book.record.json`) is
       people-written and has **no writer script yet** (`approve-guarantees.sh` is absent), while
       the read-test record (`book.read.json`) has a landed sole writer and one instance records
       `"by": "agent"`; and the docs stage exists in a split form - `books/tool/docs-stage.sh`
@@ -751,7 +751,7 @@ contracts with a dated measured-state note, because neither is exercised today.
       stat'd once and reported under both tier keys with `non_tiered` true and
       `tier_compile: "unknown"` rather than a fabricated `ok`, and **absent documentation is not a
       finding** (Decision 17 clause 4), because per-book content is held until certificates exist.
-- [ ] Both documents defer their gap claims to `domain/known-gap-register.md`, and both carry a
+- [x] Both documents defer their gap claims to `domain/known-gap-register.md`, and both carry a
       dated measured-state note distinct from their contract body, so a future refresh touches
       only the note.
 
