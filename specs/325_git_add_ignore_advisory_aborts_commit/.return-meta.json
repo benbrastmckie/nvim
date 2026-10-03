@@ -1,0 +1,40 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 meta task (#325) for the verified git-commit-scoped.sh defect: git add's gitignore advisory exit 1 on a tracked-but-ignore-matched path aborts the whole commit although the file was in fact staged.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task 325 entry added to TODO.md and Task Order wave 1"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task 325 active_projects row added; next_project_number advanced to 326"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/325_git_add_ignore_advisory_aborts_commit/",
+      "summary": "Task directory with reports/, plans/, summaries/ subdirectories"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1790982506_dd13b5",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [325]
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/state.json"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+  ],
+  "next_steps": "Run /research 325 at /home/benjamin/.config/nvim to begin research. Research must rule on whether 325 and 304 are fixed together at one hardened add step, and must not let the fix mask 304's genuine-failure case."
+}
