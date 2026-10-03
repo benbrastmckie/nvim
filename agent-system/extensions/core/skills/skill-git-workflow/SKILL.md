@@ -25,8 +25,9 @@ orphaned script with no live callers (confirmed by a repo-wide grep for actual i
 — it was the shared postflight-commit execution site for the three base lifecycle skills before
 they were deleted. The actual execution of task-scoped commits happens today in:
 
-- `.claude/skills/skill-orchestrate/SKILL.md`'s own dispatch-loop commit sites (single-task
-  CHECKPOINT 3 and multi-task Stage MT-4 step 5.5) — the shared execution site for
+- `.claude/skills/skill-orchestrate/SKILL.md`'s own dispatch-loop commit site (Move 2's per-task
+  scoped commit, covering both single-task and multi-task dispatch — there is one engine now) —
+  the shared execution site for
   `research`/`plan`/`implement` postflight commits, branching on outcome for targeted staging
   (never staging the entire working tree).
 - `.claude/agents/general-implementation-agent.md`'s Green Sub-Step Commit (per-objective) and

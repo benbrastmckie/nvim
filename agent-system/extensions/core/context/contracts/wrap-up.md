@@ -79,8 +79,8 @@ Required fields:
   Copy the delegation context's `dispatch_seq` value into this field UNCHANGED — never invent,
   increment, or recompute one; that minting happens only in the orchestrator, immediately before
   the `Agent` call. Omit this field when your delegation context omits it — do not fabricate a
-  value. This is the orchestrator-minted per-dispatch identity Stage 5 of both orchestrate
-  engines compares against the value it minted for the current cycle, to discriminate a
+  value. This is the orchestrator-minted per-dispatch identity Move 3 compares against the
+  value it minted for the current cycle, to discriminate a
   still-live predecessor's late write from this dispatch's own report. See
   `context/patterns/dispatch-report-not-termination.md`.
 - `skeleton`: Boolean, default `false`. `true` ONLY when `status == "implemented"` and

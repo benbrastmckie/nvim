@@ -189,7 +189,7 @@ to update it. The protocol:
    merging their own PHASE-SPECIFIC fields into the same handoff round-trip (read, add this
    phase's own data, write) do not need to coordinate with each other on those fields, because
    each phase's fields are disjoint. Fields shared across phases (e.g. `status`,
-   `phases_completed`) still require re-read-merge, as before. The orchestrator's own Stage 5
+   `phases_completed`) still require re-read-merge, as before. The orchestrator's own Move 3
    `dispatch_seq` gate — not "most recent mtime" and not "most recent write" — is the actual
    authority for which write is treated as this cycle's own.
 

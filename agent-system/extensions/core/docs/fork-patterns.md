@@ -32,7 +32,9 @@ that inherits the parent's prompt cache. This is the **current, preferred** fork
 by `skill-orchestrate` for blocker research and drift inspection.
 
 **Current state**: `skill-orchestrate` uses `subagent_type: "fork"` for its two fork dispatch
-points (Stage 5a drift inspection, Stage 6 blocker research). This pattern was confirmed working
+points, both reached via Move 2's `aux_dispatch[]` path (the `drift-inspection` and
+`blocker-research` kinds — formerly Stage 5a drift inspection and Stage 6 blocker research).
+This pattern was confirmed working
 in an earlier lifecycle skill and is now unified across all fork dispatch sites.
 
 **When to use**: Lightweight analysis tasks that benefit from cache sharing (e.g., reading a

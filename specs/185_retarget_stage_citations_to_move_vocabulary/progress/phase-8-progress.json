@@ -1,0 +1,17 @@
+{
+  "phase": 8,
+  "phase_name": "Retarget the five single-citation files",
+  "started_at": "2026-10-03T11:00:00Z",
+  "last_updated": "2026-10-03T11:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-git-workflow/SKILL.md retarget", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"]},
+    {"id": 2, "description": "fork-patterns.md retarget", "status": "done", "files_touched": ["agent-system/extensions/core/docs/fork-patterns.md"]},
+    {"id": 3, "description": "territory.md retarget", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/territory.md"]},
+    {"id": 4, "description": "wrap-up.md retarget", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/wrap-up.md"]},
+    {"id": 5, "description": "mode-gated-section-loading.md historical reframe", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/mode-gated-section-loading.md"]},
+    {"id": 6, "description": "Re-read diffs", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

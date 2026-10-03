@@ -473,29 +473,31 @@ check here, not the count of edits.
 
 ---
 
-### Phase 8: Retarget the five single-citation files [NOT STARTED]
+### Phase 8: Retarget the five single-citation files [COMPLETED]
 
 **Goal**: Retarget the five files carrying exactly one citation each, including the one that needs
 a historical reframe rather than a rename.
 
 **Tasks**:
-- [ ] `skills/skill-git-workflow/SKILL.md`: the line "single-task CHECKPOINT 3 and multi-task
+- [x] `skills/skill-git-workflow/SKILL.md`: the line "single-task CHECKPOINT 3 and multi-task
       Stage MT-4 step 5.5" describes the current commit execution site -> retarget to Move 2,
       collapsing both halves (there is one engine now, so the single-task/multi-task contrast is
-      itself stale).
-- [ ] `docs/fork-patterns.md`: "Stage 5a drift inspection, Stage 6 blocker research" -> Move 2's
+      itself stale). *(completed)*
+- [x] `docs/fork-patterns.md`: "Stage 5a drift inspection, Stage 6 blocker research" -> Move 2's
       `aux_dispatch[]` path, naming the `drift-inspection` and `blocker-research` kinds.
-- [ ] `context/contracts/territory.md`: "The orchestrator's own Stage 5 `dispatch_seq` gate" ->
-      Move 3 (the gate now lives in `orchestrate-cycle-postflight.sh`).
-- [ ] `context/contracts/wrap-up.md`: "...Stage 5 of both orchestrate engines compares against..."
-      -> Move 3, and drop "both orchestrate engines" (there is one engine).
-- [ ] `context/patterns/mode-gated-section-loading.md`: per the Phase 1 ledger, the claim that
+      *(completed)*
+- [x] `context/contracts/territory.md`: "The orchestrator's own Stage 5 `dispatch_seq` gate" ->
+      Move 3 (the gate now lives in `orchestrate-cycle-postflight.sh`). *(completed)*
+- [x] `context/contracts/wrap-up.md`: "...Stage 5 of both orchestrate engines compares against..."
+      -> Move 3, and drop "both orchestrate engines" (there is one engine). *(completed)*
+- [x] `context/patterns/mode-gated-section-loading.md`: per the Phase 1 ledger, the claim that
       `SKILL.md` "already uses an informal paired bash-comment convention" is no longer true of
       the current file. Reframe the sentence as historical precedent (naming the pre-rewrite
       engine) or, if Phase 1 found a currently-live example of the convention elsewhere, point at
       that instead. Do NOT simply renumber `Stage 2` to `Move 1` — that would assert a convention
-      the current `SKILL.md` does not contain.
-- [ ] Re-read each diff.
+      the current `SKILL.md` does not contain. *(completed: no live example found anywhere in
+      the core extension tree; reframed as pure historical precedent)*
+- [x] Re-read each diff. *(completed)*
 
 **Timing**: 0.5 hours
 

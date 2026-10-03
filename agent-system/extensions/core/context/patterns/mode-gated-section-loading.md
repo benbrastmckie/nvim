@@ -52,9 +52,12 @@ fenced blocks in between.
 ## Naming Precedent
 
 This is a formalization of an existing house style, not new syntax invented from nothing.
-`skill-orchestrate/SKILL.md` Stage 2 already uses an informal paired bash-comment convention —
-`# --- name:begin ---` / `# --- name:end ---` — to bracket named blocks for exactly the same
-reason: so a boundary can be located by literal text instead of by structural inference. The
+The pre-rewrite, now-deleted single-task `skill-orchestrate/SKILL.md` engine's own Stage 2 used
+an informal paired bash-comment convention — `# --- name:begin ---` / `# --- name:end ---` — to
+bracket named blocks for exactly the same reason: so a boundary can be located by literal text
+instead of by structural inference. (A fresh grep for `begin ---` over the current, rewritten
+`SKILL.md` finds no surviving instance of that convention — it did not carry over into the
+four-move loop, so this precedent is historical, not a pointer to a live example.) The
 `branch-gated:begin`/`branch-gated:end` HTML-comment marker is the same idea, in a form that
 works inside markdown prose rather than inside a bash block.
 
