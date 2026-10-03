@@ -35,7 +35,7 @@ action is not gated by `--force`. This table agrees row-for-row on gate and dest
 | # | Pass | Owning subsection | Gate | Destructive | Hourly cadence |
 |---|------|--------------------|------|--------------|-----------------|
 | 1 | Orphaned Claude processes | Process Cleanup / Process Protection | interactive-confirm (AskUserQuestion) / `--dry-run` preview / `--force` terminates immediately | Yes | Yes |
-| 2 | Lean LSP process-tree reclamation | Process Protection | interactive-confirm (same combined prompt as row 1) / `--dry-run` preview / `--force` terminates immediately | Yes, but recoverable -- `lean-lsp-mcp` respawns a fresh tree automatically on next tool call | Yes |
+| 2 | Lean LSP process-tree reclamation | Process Protection | interactive-confirm (same combined prompt as row 1, using the shared CPU-delta idle + memory-floor cost gate) / `--dry-run` preview (also launches the notify-before-kill prompt for an eligible tree) / `--force` terminates only ELIGIBLE trees | Yes, but recoverable -- `lean-lsp-mcp` respawns a fresh tree automatically on next tool call | Yes |
 | 3 | Zombie (unreaped-child) reporting | Process Protection | report-only-always (no `--force` branch exists) | No | Yes |
 | 4 | MCP server fan-out reporting | Process Protection | report-only-always (never terminates or reconfigures) | No | Yes |
 | 5 | Orphaned build-waiter poll loops | Orphaned Build Waiters | age-threshold-only (`BUILD_WAITER_REAP_MIN`, default 60 min; canonical-shape waiters also need a dead embedded writer PID or `BUILD_WAITER_CEILING_MIN`, default 240 min), no interactive confirmation, unaffected by `--force` | Yes -- the waiting shell only; the writer and its build are never signaled | Yes (report-only via `--dry-run`; reaping is `/refresh`-only) |
@@ -251,20 +251,63 @@ safety: a leaked process this allow-list fails to recognize survives, which is s
 preferable to ever terminating a live system daemon or another live session's process.
 
 - **Lean LSP process-tree pass (separately gated)**: a second, independent detection+termination
-  pass identifies orphaned `lake serve` -> `lean --server` -> `lean --worker` process trees
-  spawned by `lean-lsp-mcp` (which has no idle timeout or LRU eviction of its own). It takes its
-  own `ps -C lake,lean` snapshot, uses its own comm+argv predicates (`comm` alone cannot
-  distinguish the three Lean process forms), and reuses the system-slice/UID exclusions above
-  unmodified as defense-in-depth. A tree is a candidate only if every member (root, server, all
-  workers) is idle -- near-zero CPU and elapsed time at/beyond a configurable threshold.
-  Termination is strictly ordered workers -> server -> `lake serve` root, so a signaled parent
-  never orphans its children into PID 1. This pass deliberately does **not** use the `TTY == "?"`
-  signal -- live verification showed `lake serve`/`lean --server` retain a non-`?` controlling
-  tty inherited from their spawning pty even once fully orphaned. Reclaiming a tree is fully
-  recoverable: `lean-lsp-mcp` respawns a fresh one automatically on the next tool call.
+  pass identifies `lake serve` -> `lean --server` -> `lean --worker` process trees spawned by
+  `lean-lsp-mcp` (which has no idle timeout or LRU eviction of its own). It takes its own
+  `ps -C lake,lean` snapshot, uses its own comm+argv predicates (`comm` alone cannot distinguish
+  the three Lean process forms), and reuses the system-slice/UID exclusions above unmodified as
+  defense-in-depth. Detection itself is unconditional: every live, non-excluded tree is detected
+  regardless of idleness; a tree is **eligible** for reclamation (reporting and, under `--force`,
+  termination) only when BOTH gates below pass. Termination is strictly ordered
+  workers -> server -> `lake serve` root, so a signaled parent never orphans its children into
+  PID 1. Reclaiming a tree is fully recoverable: `lean-lsp-mcp` respawns a fresh one automatically
+  on the next tool call.
+  - **Idleness gate**: a CPU-delta state machine (`~/.local/state/claude-refresh/lean-trees.json`,
+    keyed by root pid + `/proc/PID/stat` starttime) tracks each tree's summed `utime+stime`
+    across runs. Unchanged cputime since the last run accrues idle time; any increase resets the
+    idle clock to zero. This replaces an earlier `pcpu`/`etimes`-based gate that misjudged a
+    long-lived, actively-used tree as idle (`ps pcpu` is lifetime cputime/elapsed, not a decaying
+    average, so a tree busy early and idle since reads a near-zero `pcpu` indefinitely).
+  - **Memory-floor cost gate**: reclaimable memory (see the PSS accounting note below) must also
+    be at/above `LEAN_LSP_MEM_FLOOR_MB` (default 1024, i.e. 1 GB). An idle tree below the floor is
+    reported as `idle, cheap, kept`, never terminated even under `--force` -- an idle tree that
+    costs nothing is left alone; only one that costs real memory is worth the cost of a rebuild.
+  - **PSS-based reclaimable accounting**: both this pass and the Claude-process pass above report
+    reclaimable memory from `/proc/PID/smaps_rollup` (`Pss_Anon + SwapPss` per process), not a
+    plain `RSS + VmSwap` sum -- the latter double-counts shared mmapped pages (e.g. a large shared
+    Mathlib `.olean` mapping) once per worker that maps them. Shared file-backed pages
+    (`Pss_File`) are reported separately as "shared cache, not counted" rather than folded into
+    the reclaimable figure, since the kernel can already evict that page cache without killing
+    anything. When `smaps_rollup` is unreadable or missing a required field, the figure falls back
+    to `RSS + VmSwap` and is labeled approximate (a visible `~` prefix).
+  - This pass deliberately does **not** use the `TTY == "?"` signal -- live verification showed
+    `lake serve`/`lean --server` retain a non-`?` controlling tty inherited from their spawning
+    pty even once fully orphaned.
 - **`LEAN_LSP_IDLE_THRESHOLD_MIN`**: the Lean pass's idle-reclamation threshold in minutes
   (default: 240, matching this repo's existing reap-threshold precedent, deliberately
   conservative). Override via the environment variable; see `claude-refresh.sh --help`.
+- **`LEAN_LSP_MEM_FLOOR_MB`**: the memory-floor cost gate in MB (default: 1024). Override via the
+  environment variable.
+- **Notify-before-kill prompt path**: on the non-`--force` path (including the hourly
+  `--dry-run` timer run), an eligible tree triggers a detached `systemd-run --user` transient
+  unit running `notify-send` with a single `-A default=Kill` action (chosen because this user's
+  notification daemon, mako, has no dmenu-style action launcher and invokes the default action on
+  left-click) and `-t 0` (never auto-expires). Left-clicking (Kill) re-invokes
+  `claude-refresh.sh --lean-tree=<pid>:<starttime> --force`, which re-verifies the tree's
+  identity, idleness, and floor eligibility from scratch before terminating -- anything that
+  changed (the tree became active again, was already gone, or dropped below the floor) is logged
+  and skipped, never force-terminated on stale information. Dismissing, right-clicking, letting
+  the notification expire, or any outcome other than the default action records a
+  `LEAN_LSP_SNOOZE_MIN`-minute (default 240, i.e. 4h) snooze, deduplicated so a tree is prompted
+  at most once per snooze window. Missing `notify-send`, `systemd-run` (or a user session lacking
+  cgroup delegation), or a DBus session bus degrades to a logged line only -- never a kill, never
+  silence. The interactive `AskUserQuestion` prompt (row 2's interactive-confirm gate) uses this
+  same cost gate and the same reclaimable/idle numbers; this is a second, independent channel, not
+  a replacement for it.
+- **`--lean-tree=<pid>:<starttime>`**: a separate, explicit early-return invocation mode (not one
+  of the five numbered passes) that re-verifies and, with `--force`, terminates ONE specific Lean
+  tree by root pid and `/proc/PID/stat` starttime. Without `--force` it previews only. This is the
+  entry point the notify-before-kill prompt path re-invokes on a Kill outcome; see
+  `claude-refresh.sh --help` for the full flag reference.
 - **Orphaned build-waiter poll-loop pass (self-excluding, age-threshold-only)**: a third,
   independently-gated pass reaps orphaned build-waiter poll loops -- see the "Orphaned Build
   Waiters" section above for the two detected signature families, the widened self-exclusion

@@ -684,41 +684,61 @@ suite's PASSED delta; the enumerated behaviors are the contract.
 
 ---
 
-### Phase 9: Documentation, systemd notes, final gate, and redeploy [NOT STARTED]
+### Phase 9: Documentation, systemd notes, final gate, and redeploy [COMPLETED]
 
 **Goal**: Bring `refresh.md`, `SKILL.md`, and the systemd units in line with the new idle
 definition, cost gate, flag, and env vars; then run the complete gate set, redeploy, and report
 the manual end-to-end check honestly.
 
 **Tasks**:
-- [ ] `commands/refresh.md`: update Pass Inventory rows 1 and 2 for the PSS-based reclaimable
+- [x] `commands/refresh.md`: update Pass Inventory rows 1 and 2 for the PSS-based reclaimable
       figure, the CPU-delta idle definition, and the cost gate (noting that an idle-but-cheap tree
       is reported kept, not reclaimed). Add a short subsection documenting the prompt flow, the
       `--lean-tree` flag, and `LEAN_LSP_IDLE_THRESHOLD_MIN` / `LEAN_LSP_MEM_FLOOR_MB` /
-      `LEAN_LSP_SNOOZE_MIN`.
-- [ ] `skills/skill-refresh/SKILL.md`: the same Pass Inventory row updates, plus a note that the
+      `LEAN_LSP_SNOOZE_MIN`. *(completed)*
+- [x] `skills/skill-refresh/SKILL.md`: the same Pass Inventory row updates, plus a note that the
       interactive `AskUserQuestion` prompt now uses the same gate and the same reclaimable/idle
       numbers as the headless prompt path, and the `--lean-tree` flag in the invocation reference.
-- [ ] `systemd/claude-refresh.service`: extend the "New-passes ruling" header comment to record
+      *(completed; also fixed a real downstream defect this phase discovered: Step 2's
+      interactive-confirmation trigger checked for the now-removed "No idle Lean LSP process
+      trees found." string. Since detection is unconditional (Phase 4), that check would never
+      have fired correctly; replaced with a grep for an actually-eligible tree count)*
+- [x] `systemd/claude-refresh.service`: extend the "New-passes ruling" header comment to record
       that `--lean-tree` is an explicit early-return invocation mode, NOT a sixth pass, so the
       ruling still holds; confirm `ExecStart` still ends in `--dry-run` and state that prompting
       happens only in the separate transient unit. Document that
       `Environment=PATH=/usr/bin:/bin` is broken on NixOS and that NixOS installs these units via
       home-manager (an external dotfiles change, not performed here), while keeping the generic
-      unit portable.
-- [ ] `systemd/claude-refresh.timer`: confirm the hourly cadence is adequate for the CPU-delta
+      unit portable. *(completed; also covers --lean-tree-snooze)*
+- [x] `systemd/claude-refresh.timer`: confirm the hourly cadence is adequate for the CPU-delta
       granularity (it is, per the dispatch) and add a one-line comment saying so; no behavioral
-      change.
-- [ ] Final gate: `shellcheck` on both shell files; full
+      change. *(completed)*
+- [x] Final gate: `shellcheck` on both shell files; full
       `test-claude-refresh-matcher.sh` run; any other repo lint that covers these paths.
-- [ ] Redeploy via `bash .claude/scripts/deploy-headless.sh` and confirm the regenerated
+      *(completed: shellcheck clean on both files -- same baseline warning classes, no new
+      categories; suite 163 passed / 0 failed; check-task-references.sh clean on all four
+      deliverable files)*
+- [x] Redeploy via `bash .claude/scripts/deploy-headless.sh` and confirm the regenerated
       `.claude/scripts/claude-refresh.sh` matches the source store (`diff` the two). Never
-      hand-edit `.claude/**`.
-- [ ] Manual end-to-end check (the dispatch's own acceptance gate, which unit tests do not
+      hand-edit `.claude/**`. *(completed: deploy-headless.sh RESULT=landed_verify_clean, 33
+      checks/0 failures; diff empty)*
+- [x] Manual end-to-end check (the dispatch's own acceptance gate, which unit tests do not
       substitute for): on a real eligible tree, confirm exactly one notification per snooze
       window, a left-click Kill that refuses when the tree became active, and a dismiss that
       records a 4h snooze. Report the actual observed outcome, including anything not reachable in
-      this environment, rather than inferring it from the test suite.
+      this environment, rather than inferring it from the test suite. *(reported honestly: `ps -C
+      lake,lean` found zero real Lean LSP processes running on this machine during this dispatch
+      -- there is no real eligible tree to click a notification for, and this non-interactive
+      agent dispatch has no human present to physically click one regardless. What WAS verified
+      with the real (non-stubbed) `systemd-run`/`notify-send`/DBus session bus during Phase 7's
+      manual testing: real detached transient units genuinely launch and run (observed via
+      `systemctl --user list-units` as "active running", later stopped and cleaned up -- see
+      Phase 7's progress record); every outcome branch (Kill re-invocation, Keep/snooze, the
+      three re-verification refusals, snooze dedupe, and all three dependency degrades) is
+      exercised end-to-end by the automated suite against a structurally faithful fixture tree,
+      using the real binaries wherever this sandbox has them. The literal "one real human
+      left-click on one real notification for one real Lean tree" scenario is NOT reachable in
+      this dispatch's environment; this is reported as a genuine gap, not inferred as passing.)*
 
 **Timing**: 1.5 hours
 

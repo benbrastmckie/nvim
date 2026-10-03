@@ -29,7 +29,7 @@ gated by `--force`.
 | # | Pass | Owning Step / Section | Gate | Destructive | Hourly cadence |
 |---|------|------------------------|------|--------------|-----------------|
 | 1 | Orphaned Claude processes | Step 2 / "Process Safety" | interactive-confirm (AskUserQuestion) / `--dry-run` preview / `--force` terminates immediately | Yes | Yes |
-| 2 | Lean LSP process-tree reclamation | Step 2 / "Process Safety" | interactive-confirm (same combined prompt as row 1) / `--dry-run` preview / `--force` terminates immediately | Yes, but recoverable -- `lean-lsp-mcp` respawns a fresh tree automatically on next tool call | Yes |
+| 2 | Lean LSP process-tree reclamation | Step 2 / "Process Safety" | interactive-confirm (same combined prompt as row 1, using the shared CPU-delta idle + memory-floor cost gate) / `--dry-run` preview (also launches the notify-before-kill prompt for an eligible tree) / `--force` terminates only ELIGIBLE trees | Yes, but recoverable -- `lean-lsp-mcp` respawns a fresh tree automatically on next tool call | Yes |
 | 3 | Zombie (unreaped-child) reporting | "Process Safety" | report-only-always (no `--force` branch exists) | No | Yes |
 | 4 | MCP server fan-out reporting | "Process Safety" | report-only-always (never terminates or reconfigures) | No | Yes |
 | 5 | Orphaned build-waiter poll loops | Step 2 / "Process Safety" | age-threshold-only (`BUILD_WAITER_REAP_MIN`, default 60 min; canonical-shape waiters also need a dead embedded writer PID or `BUILD_WAITER_CEILING_MIN`, default 240 min), no interactive confirmation, unaffected by `--force` | Yes -- the waiting shell only; the writer and its build are never signaled | Yes (report-only via `--dry-run`; reaping is `/refresh`-only) |
@@ -79,9 +79,13 @@ Store process cleanup output for display.
 output but never actually prompted, despite this skill's frontmatter declaring `AskUserQuestion`
 and the script's own header comment already assuming a prompt exists ("skill will prompt with
 AskUserQuestion and re-run with --force if confirmed"). Check `process_output` for candidates
-from either pass by testing for the absence of BOTH "No orphaned processes found." and "No idle
-Lean LSP process trees found." -- if either line is absent (that pass found something), prompt
-once with a single combined confirmation covering both passes:
+from either pass: the Claude-process pass by testing for the absence of "No orphaned processes
+found."; the Lean pass by testing for an ELIGIBLE tree specifically, via
+`echo "$process_output" | grep -qE '[1-9][0-9]* eligible for reclamation'` -- NOT merely the
+absence of a "no trees found" line, since detection is now unconditional (every live tree is
+detected and reported regardless of idleness; see "Process Safety" below) and an `active` or
+`idle, cheap, kept` tree has nothing to confirm. If either pass has a candidate, prompt once with
+a single combined confirmation covering both passes:
 
 ```json
 {
@@ -125,9 +129,10 @@ If the user selects "Yes, terminate", re-run with `--force` and replace the stor
 process_output=$(.claude/scripts/claude-refresh.sh --force)
 ```
 
-If the user selects "No, skip" -- or if both "No orphaned processes found." and "No idle Lean
-LSP process trees found." were already present in `process_output` -- skip this prompt entirely
-and proceed to Step 3 with the already-stored `process_output`.
+If the user selects "No, skip" -- or if neither pass had a candidate (the Claude-pass
+"No orphaned processes found." line was present AND the Lean-pass eligible-tree regex above did
+not match) -- skip this prompt entirely and proceed to Step 3 with the already-stored
+`process_output`.
 
 ### Step 3: Clean Orphaned Postflight Markers
 
@@ -532,25 +537,60 @@ recognize survives (false negative), which is strictly preferable to ever termin
 system daemon or another live session's process (false positive).
 
 - **Lean LSP process-tree pass (separately gated)**: a second, independent detection+termination
-  pass identifies orphaned `lake serve` -> `lean --server` -> `lean --worker` process trees
-  spawned by `lean-lsp-mcp` (which has no idle timeout or LRU eviction of its own). It takes its
-  own `ps -C lake,lean` snapshot, uses its own comm+argv predicate set (`comm` alone cannot
+  pass identifies `lake serve` -> `lean --server` -> `lean --worker` process trees spawned by
+  `lean-lsp-mcp` (which has no idle timeout or LRU eviction of its own). It takes its own
+  `ps -C lake,lean` snapshot, uses its own comm+argv predicate set (`comm` alone cannot
   distinguish the three Lean process forms -- the distinction lives in `args`), and reuses
-  `is_system_slice_cgroup`/`is_owned_by_current_uid` unmodified as defense-in-depth. A tree is a
-  reclamation candidate only if **every** member (root, server, and all workers) is idle:
-  near-zero CPU and elapsed time at/beyond a configurable threshold (see below). Termination is
-  strictly ordered workers -> server -> `lake serve` root, so a signaled parent never orphans its
-  children into PID 1. Deliberately, this pass does **not** use the `TTY == "?"` signal at all --
-  live verification showed `lake serve`/`lean --server` retain a non-`?` controlling tty
-  inherited from their spawning pty even once fully orphaned, so tty cannot discriminate here.
-  Reclaiming a tree is fully recoverable: `lean-lsp-mcp` respawns a fresh one automatically on the
-  next tool call, at the cost of a rebuild.
+  `is_system_slice_cgroup`/`is_owned_by_current_uid` unmodified as defense-in-depth. Detection
+  itself is unconditional -- every live, non-excluded tree is detected and reported regardless of
+  idleness. A tree is **eligible** for reclamation (and, under `--force`, termination) only when
+  BOTH: (a) a CPU-delta idle state machine
+  (`~/.local/state/claude-refresh/lean-trees.json`, keyed by root pid + `/proc/PID/stat`
+  starttime, tracking each tree's summed `utime+stime` across runs -- any increase resets the
+  idle clock) shows it idle past `LEAN_LSP_IDLE_THRESHOLD_MIN`, AND (b) its reclaimable memory
+  (from `/proc/PID/smaps_rollup`'s `Pss_Anon + SwapPss`, never a plain `RSS + VmSwap` sum, which
+  double-counts shared mmapped pages such as a shared Mathlib `.olean` mapping once per worker)
+  is at/above `LEAN_LSP_MEM_FLOOR_MB`. An idle-but-cheap tree is reported `idle, cheap, kept`,
+  never terminated even under `--force`. Termination is strictly ordered
+  workers -> server -> `lake serve` root, so a signaled parent never orphans its children into
+  PID 1. Deliberately, this pass does **not** use the `TTY == "?"` signal at all -- live
+  verification showed `lake serve`/`lean --server` retain a non-`?` controlling tty inherited
+  from their spawning pty even once fully orphaned, so tty cannot discriminate here. Reclaiming a
+  tree is fully recoverable: `lean-lsp-mcp` respawns a fresh one automatically on the next tool
+  call, at the cost of a rebuild. This replaces an earlier `pcpu`/`etimes`-based idle gate that
+  misjudged a long-lived, actively-used tree as idle (`ps pcpu` is lifetime cputime/elapsed, not a
+  decaying average, so a tree busy early and idle since reads a near-zero `pcpu` indefinitely).
 - **`LEAN_LSP_IDLE_THRESHOLD_MIN`**: the Lean pass's idle-reclamation threshold, in minutes
   (default: 240, matching this repo's existing reap-threshold precedent). Deliberately
   conservative -- a single observed 13-hour-idle data point motivated this pass, but the default
   is set well below that to reclaim well before it while still avoiding reclaiming a tree the
   user is about to reuse. Override via the environment variable for a different posture; see
   `--help`.
+- **`LEAN_LSP_MEM_FLOOR_MB`**: the memory-floor cost gate, in MB (default: 1024, i.e. 1 GB) --
+  motivated by a live-observed case where a tree was reported as "15.1 GB reclaimable" (the
+  pre-fix `RSS + VmSwap` double-counting defect) while the real reclaim was ~2.3 GB; an idle tree
+  that costs nothing may stay, only one that costs real memory is worth a rebuild. Override via
+  the environment; see `--help`.
+- **Notify-before-kill prompt path**: on the non-`--force` path (including the hourly `--dry-run`
+  timer run), an eligible tree triggers a detached `systemd-run --user` transient unit running
+  `notify-send` with a single `-A default=Kill` action (mako, this user's notification daemon,
+  has no dmenu-style action launcher and invokes the default action on left-click) and `-t 0`
+  (never auto-expires). The unit's own inline script re-invokes `claude-refresh.sh` itself on
+  either outcome -- `--lean-tree=<pid>:<starttime> --force` on the default (Kill) action, which
+  re-verifies identity/idleness/floor eligibility from scratch before terminating and refuses,
+  logged, if anything changed; or an internal `--lean-tree-snooze=<pid>:<starttime>` entry point
+  on any other outcome (dismiss, right-click, expiry, or another action string), recording a
+  `LEAN_LSP_SNOOZE_MIN`-minute (default 240) snooze so the same tree is not re-prompted until the
+  window elapses. Missing `notify-send`, `systemd-run` (or a user session lacking cgroup
+  delegation), or a DBus session bus degrades to a logged line only -- never a kill, never
+  silence. This interactive confirmation step above uses the same cost gate and the same
+  reclaimable/idle numbers as the prompt path; the two are independent, complementary channels,
+  not a replacement for each other.
+- **`--lean-tree=<pid>:<starttime>`**: a separate, explicit early-return invocation mode of
+  `claude-refresh.sh` (never folded into its five numbered passes) that re-verifies and, with
+  `--force`, terminates ONE specific Lean tree by root pid and `/proc/PID/stat` starttime.
+  Without `--force` it previews only. This is the entry point the notify-before-kill prompt path
+  re-invokes on a Kill outcome.
 - **Orphaned build-waiter poll-loop pass (self-excluding, age-threshold-only)**: a third,
   independently-gated pass reaps orphaned build-waiter poll loops matching
   `context/patterns/bounded-build-waiter.md`'s canonical idiom, plus the legacy self-match shape

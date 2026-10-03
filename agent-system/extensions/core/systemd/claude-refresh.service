@@ -59,6 +59,25 @@ Type=oneshot
 # /refresh-only -- this unit's ExecStart never reaches any of them. The ruling
 # above is scoped to claude-refresh.sh's five internal passes, not to the full
 # eleven-item surface-level inventory.
+#
+# --lean-tree / --lean-tree-snooze ruling: claude-refresh.sh also accepts
+# --lean-tree=<pid>:<starttime> and the internal --lean-tree-snooze=<pid>:
+# <starttime>. BOTH are explicit early-return invocation modes dispatched
+# BEFORE the five-pass sequence above and NEVER folded into it as a sixth
+# pass -- so the "New-passes ruling" above still holds unmodified for THIS
+# unit, which never passes either flag. --lean-tree is the entry point the
+# notify-before-kill prompt path re-invokes on a Kill outcome (left-click);
+# --lean-tree-snooze records a Keep outcome. ExecStart below still always
+# passes --dry-run; the prompt (and the detached transient unit it launches)
+# happens ENTIRELY from inside run_lean_pass()'s non-force branch, which this
+# hourly --dry-run run DOES reach -- an eligible idle Lean tree found by this
+# unit can still trigger a real desktop notification, launched as a SEPARATE
+# `claude-refresh-prompt-<rootpid>-<starttime>.service` transient unit (never
+# matching `claude-*.scope`, so the user's claude-session-reaper never stops
+# it), not as part of this unit's own run. This unit's own non-destructiveness
+# argument is unaffected either way: launching a notification is not itself a
+# termination, and the only termination path (`--lean-tree ... --force`) is
+# never reached from this ExecStart line.
 ExecStart=%h/.config/nvim/.claude/scripts/claude-refresh.sh --dry-run
 # Alternatively, if installed system-wide:
 # ExecStart=/usr/local/bin/claude-refresh.sh --dry-run
@@ -68,6 +87,15 @@ User=%u
 
 # Environment
 Environment=HOME=%h
+#
+# NixOS note: Environment=PATH=/usr/bin:/bin below is BROKEN on NixOS -- NixOS
+# does not populate /usr/bin or /bin with the coreutils/ps/jq/systemd-run/
+# notify-send/dbus-send this script (and its notify-before-kill prompt path)
+# require; those binaries live under /run/current-system/sw/bin and per-user
+# profile directories instead. This generic unit is kept portable (a
+# non-NixOS system typically DOES have a usable /usr/bin:/bin), but NixOS
+# installs this unit (and its PATH) via home-manager instead of this raw
+# unit file -- an external ~/.dotfiles change, not performed in this repo.
 Environment=PATH=/usr/bin:/bin
 
 # Logging

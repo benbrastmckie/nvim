@@ -1,0 +1,36 @@
+{
+  "phase": 9,
+  "phase_name": "Documentation, systemd notes, final gate, and redeploy",
+  "started_at": "2026-10-02T05:40:00Z",
+  "last_updated": "2026-10-02T06:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "commands/refresh.md Pass Inventory + prompt-flow subsection", "status": "done", "files_touched": ["agent-system/extensions/core/commands/refresh.md"]},
+    {"id": 2, "description": "skills/skill-refresh/SKILL.md Pass Inventory + fix stale confirmation-trigger string", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-refresh/SKILL.md"]},
+    {"id": 3, "description": "systemd/claude-refresh.service header ruling + NixOS PATH note", "status": "done", "files_touched": ["agent-system/extensions/core/systemd/claude-refresh.service"]},
+    {"id": 4, "description": "systemd/claude-refresh.timer cadence-adequacy comment", "status": "done", "files_touched": ["agent-system/extensions/core/systemd/claude-refresh.timer"]},
+    {"id": 5, "description": "Final gate: shellcheck, full suite, task-reference check", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Redeploy via deploy-headless.sh and diff verification", "status": "done", "files_touched": [".claude/scripts/claude-refresh.sh"]},
+    {"id": 7, "description": "Manual end-to-end check, reported honestly", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.skill-fix",
+      "description": "SKILL.md's Step 2 interactive-confirmation trigger checked for a report string ('No idle Lean LSP process trees found.') that Phase 4's unconditional-detection change removed entirely",
+      "type": "altered",
+      "reason": "Not in the original task list, but a direct downstream consequence of Phase 4's detection redesign that would have left the skill's own confirmation prompt unable to correctly detect Lean candidates. Fixed by checking for an actually-eligible tree count instead of a now-nonexistent no-findings line.",
+      "annotation": "*(deviation: altered -- fixed a real downstream defect in the skill's confirmation-trigger logic)*"
+    }
+  ],
+  "verification_notes": {
+    "shellcheck": "clean on both files, same baseline warning classes (no new categories)",
+    "suite": "163 passed / 0 failed",
+    "pass_inventory_rows": "11 rows in both refresh.md and SKILL.md, confirmed via grep -c",
+    "task_references": "check-task-references.sh clean on all four deliverable files",
+    "redeploy": "deploy-headless.sh RESULT=landed_verify_clean, 33 checks/0 failures; diff between source-store and deployed claude-refresh.sh is empty",
+    "manual_end_to_end": "ps -C lake,lean found zero real Lean processes on this machine during this dispatch -- no real eligible tree exists, and this non-interactive dispatch has no human to click a real notification. Reported honestly as a genuine environmental gap, not inferred as passing. Phase 7's manual testing already exercised real (non-stubbed) systemd-run/notify-send/DBus mechanics end-to-end (real transient units observed via systemctl, later cleaned up); the full outcome/refusal/dedupe/degrade matrix is covered by the 163-assertion automated suite.",
+    "no_leaked_units": "confirmed empty via systemctl --user list-units after this phase's work"
+  }
+}

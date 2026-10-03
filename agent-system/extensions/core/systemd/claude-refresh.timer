@@ -4,6 +4,15 @@ Documentation=https://github.com/anthropics/claude-code
 
 [Timer]
 # Run every hour
+#
+# Cadence-adequacy note: the Lean LSP pass's CPU-delta idle state machine
+# (claude-refresh.sh's update_lean_tree_cpu_state()) only needs one sample per
+# window to detect whether a tree's cputime changed since the last run; it
+# carries no per-run overhead or decay that would call for a tighter cadence.
+# LEAN_LSP_IDLE_THRESHOLD_MIN defaults to 240 minutes (4h) and
+# LEAN_LSP_SNOOZE_MIN likewise to 240 minutes, both far coarser than this
+# hourly granularity, so hourly sampling resolves idleness and the snooze
+# window with ample margin. No behavioral change from this note.
 OnCalendar=hourly
 
 # Randomize start time within 5 minutes to avoid thundering herd
