@@ -570,6 +570,13 @@ format_memory() {
 # teaching get_vmswap_kb() below that it is under test.
 PROC_ROOT="${PROC_ROOT:-/proc}"
 
+# Overridable Lean-tree CPU-delta idle-state directory seam, same override-for-testing shape as
+# PROC_ROOT immediately above: production resolves to the real per-user state directory, while a
+# test points this at a scratch fixture directory (e.g. LEAN_TREE_STATE_DIR="$WORKDIR/state")
+# without instrumenting read_lean_tree_state()/write_lean_tree_state() below.
+LEAN_TREE_STATE_DIR="${LEAN_TREE_STATE_DIR:-$HOME/.local/state/claude-refresh}"
+LEAN_TREE_STATE_FILE="$LEAN_TREE_STATE_DIR/lean-trees.json"
+
 # Read VmSwap (kB) for a single PID from its /proc/<pid>/status, for reporting/accounting
 # only -- see the header's invariant ruling for why this per-candidate read does not
 # reopen the single-snapshot race-freedom argument. Echoes `0`, never an error, for either
@@ -632,6 +639,171 @@ get_pss_reclaimable_kb() {
     fi
 
     echo "$((pss_anon + swap_pss))|${pss_file}|0"
+}
+
+# --- /proc/PID/stat parser (CPU-delta idleness primitive) ---
+# Reads $PROC_ROOT/$pid/stat and echoes a pipe-delimited "starttime|utime|stime" triple (process
+# start time in clock ticks since boot, user-mode and kernel-mode ticks respectively -- all three
+# from the canonical `man proc` field numbering: starttime is field 22, utime field 14, stime
+# field 15, counting from field 1 = pid).
+#
+# comm-field gotcha (per `man proc`: "the comm value ... can contain ... any characters, including
+# spaces or parentheses"): field 2 (comm) is parenthesized but is NOT guaranteed free of its own
+# parentheses or spaces, so a naive whitespace split (or splitting on the FIRST ')') can
+# desynchronize every field after it. This parser instead locates the LAST ')' in the line and
+# treats everything after it as the remainder, numbered independently starting at field 3 (state)
+# -- immune to whatever comm itself contains.
+# Unreadable or malformed input (missing file, too few remainder fields, or a non-numeric
+# starttime/utime/stime) echoes an EMPTY result, never a partial or guessed one -- callers must
+# treat an empty result as "no data", the same fail-closed posture get_vmswap_kb()/
+# get_pss_reclaimable_kb() apply to their own unreadable-file case.
+read_proc_stat_fields() {
+    local pid="$1"
+    local statfile="$PROC_ROOT/$pid/stat"
+    local line
+
+    line=$(cat "$statfile" 2>/dev/null) || { echo ""; return 0; }
+    [ -z "$line" ] && { echo ""; return 0; }
+
+    # Remainder after the LAST ')': field 3 (state) onward, re-numbered from 0 here.
+    local rest="${line##*)}"
+    rest="${rest# }"
+
+    local -a f
+    read -r -a f <<< "$rest"
+    # f[0]=state f[1]=ppid f[2]=pgrp f[3]=session f[4]=tty_nr f[5]=tpgid f[6]=flags f[7]=minflt
+    # f[8]=cminflt f[9]=majflt f[10]=cmajflt f[11]=utime f[12]=stime f[13]=cutime f[14]=cstime
+    # f[15]=priority f[16]=nice f[17]=num_threads f[18]=itrealvalue f[19]=starttime
+    if [ "${#f[@]}" -lt 20 ]; then
+        echo ""
+        return 0
+    fi
+
+    local utime="${f[11]}" stime="${f[12]}" starttime="${f[19]}"
+    if [[ ! "$utime" =~ ^[0-9]+$ ]] || [[ ! "$stime" =~ ^[0-9]+$ ]] || [[ ! "$starttime" =~ ^[0-9]+$ ]]; then
+        echo ""
+        return 0
+    fi
+
+    echo "${starttime}|${utime}|${stime}"
+}
+
+# --- CPU-delta idle-state file I/O ---
+# Read $LEAN_TREE_STATE_FILE into the global LEAN_TREE_STATE_JSON (a jq-validated JSON object
+# string). THREE benign cases all normalize to "{}" (no history / first sighting for every tree,
+# NEVER idle): the file is missing, the file is empty, or the file fails jq validation. A missing
+# file (the common first-run case) logs nothing; a PRESENT-but-unparseable file emits one explicit
+# warning line to stderr -- corruption degrades audibly, never silently -- but still normalizes to
+# "{}" rather than aborting, since a corrupt state file must never be able to authorize a kill
+# decision by accident.
+LEAN_TREE_STATE_JSON="{}"
+read_lean_tree_state() {
+    mkdir -p "$LEAN_TREE_STATE_DIR"
+    LEAN_TREE_STATE_JSON="{}"
+
+    if [ ! -f "$LEAN_TREE_STATE_FILE" ]; then
+        return 0
+    fi
+
+    local raw
+    raw=$(cat "$LEAN_TREE_STATE_FILE" 2>/dev/null || true)
+    if [ -z "$raw" ]; then
+        return 0
+    fi
+
+    if printf '%s' "$raw" | jq empty 2>/dev/null; then
+        LEAN_TREE_STATE_JSON="$raw"
+    else
+        echo "WARNING: $LEAN_TREE_STATE_FILE is present but failed JSON validation; treating every tree as a first sighting (never idle) for this run." >&2
+        LEAN_TREE_STATE_JSON="{}"
+    fi
+}
+
+# Atomically persist the global LEAN_TREE_STATE_JSON to $LEAN_TREE_STATE_FILE: `mktemp` in the
+# SAME directory as the target (required for an atomic same-filesystem `mv`), write, then `mv`.
+# Reuses scripts/state-write.sh's mktemp-in-same-dir + mv idiom, not its mutex/spill/multi-target
+# machinery -- this file has no specs/state.json-grade cross-process contention story (at most one
+# claude-refresh.sh invocation writes it at a time in practice, and a lost update here only
+# restarts an idle clock, never anything destructive). The tmp file is removed on any failure path
+# so a half-written tmp never lingers in the state directory.
+write_lean_tree_state() {
+    mkdir -p "$LEAN_TREE_STATE_DIR"
+    local tmp
+    tmp=$(mktemp "$LEAN_TREE_STATE_DIR/.lean-trees.json.XXXXXX") || {
+        echo "WARNING: failed to create a temp file under $LEAN_TREE_STATE_DIR; lean-trees.json not updated this run." >&2
+        return 1
+    }
+    if ! printf '%s' "$LEAN_TREE_STATE_JSON" > "$tmp"; then
+        rm -f "$tmp"
+        echo "WARNING: failed to write $tmp; lean-trees.json not updated this run." >&2
+        return 1
+    fi
+    mv "$tmp" "$LEAN_TREE_STATE_FILE"
+}
+
+# --- CPU-delta idle-state machine ---
+# Takes the CURRENT detection pass's tree keys and summed cputime via two parallel GLOBAL input
+# arrays (this file's existing no-associative-arrays style, applied to state bookkeeping):
+#   CPU_STATE_KEYS[i]     -- "root_pid:starttime" for tree i (starttime from
+#                            read_proc_stat_fields() on the root pid -- encodes pid-reuse safety
+#                            directly into the key, since a reused pid gets a different starttime
+#                            and therefore a brand-new key with no history)
+#   CPU_STATE_CPUTICKS[i] -- this run's summed utime+stime (in clock ticks) across every member of
+#                            tree i
+# Reads prior state via read_lean_tree_state(), reconciles against it, and populates one parallel
+# GLOBAL output array:
+#   CPU_STATE_IDLE_MIN[i] -- idle_for in whole minutes for tree i, per the state machine below
+# then OVERWRITES LEAN_TREE_STATE_JSON with a fresh object containing ONLY the keys present in
+# CPU_STATE_KEYS this run -- a tree whose key is absent this run (the tree no longer exists) is
+# thereby pruned, in this same write, with no separate prune pass.
+#
+# State machine per key (never inherited across a pid-reuse starttime change, since the key
+# itself encodes starttime):
+#   - Absent from prior state, OR a prior record with a non-numeric cputime_ticks/last_active
+#     (corrupt) -- first sighting, fails closed: NEVER idle. last_active=now, idle_for_min=0.
+#   - Present, cputime UNCHANGED or DECREASED since last run (a decrease should not happen for a
+#     monotonic counter, but is treated the same as unchanged rather than specially) -- carry
+#     last_active over unchanged; idle_for_min = (now - last_active) / 60.
+#   - Present, cputime INCREASED since last run -- the tree did work; last_active RESET to now;
+#     idle_for_min = 0.
+update_lean_tree_cpu_state() {
+    local now
+    now=$(date +%s)
+
+    read_lean_tree_state
+
+    local n="${#CPU_STATE_KEYS[@]}"
+    CPU_STATE_IDLE_MIN=()
+
+    local new_state="{}"
+    local i key cputicks prior_cputicks prior_last_active last_active idle_min
+
+    for ((i = 0; i < n; i++)); do
+        key="${CPU_STATE_KEYS[$i]}"
+        cputicks="${CPU_STATE_CPUTICKS[$i]}"
+
+        prior_cputicks=$(printf '%s' "$LEAN_TREE_STATE_JSON" | jq -r --arg k "$key" '.[$k].cputime_ticks // empty' 2>/dev/null || true)
+        prior_last_active=$(printf '%s' "$LEAN_TREE_STATE_JSON" | jq -r --arg k "$key" '.[$k].last_active // empty' 2>/dev/null || true)
+
+        if [[ ! "$prior_cputicks" =~ ^[0-9]+$ ]] || [[ ! "$prior_last_active" =~ ^[0-9]+$ ]]; then
+            # First sighting, or a stored value that failed to parse as an integer -- fail closed
+            # to "not idle" rather than inherit a guessed/corrupt history.
+            last_active="$now"
+        elif [ "$cputicks" -gt "$prior_cputicks" ]; then
+            last_active="$now"
+        else
+            last_active="$prior_last_active"
+        fi
+
+        idle_min=$(( (now - last_active) / 60 ))
+        CPU_STATE_IDLE_MIN+=("$idle_min")
+
+        new_state=$(printf '%s' "$new_state" | jq --arg k "$key" --argjson ct "$cputicks" --argjson la "$last_active" --argjson ls "$now" \
+            '.[$k] = {cputime_ticks: $ct, last_active: $la, last_seen: $ls}')
+    done
+
+    LEAN_TREE_STATE_JSON="$new_state"
+    write_lean_tree_state
 }
 
 # Take the single atomic process snapshot. Fails loudly (non-zero exit, explicit

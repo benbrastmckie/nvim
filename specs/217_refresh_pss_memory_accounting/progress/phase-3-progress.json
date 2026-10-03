@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "/proc/PID/stat parsing, state-file I/O, and the CPU-delta state machine",
+  "started_at": "2026-10-02T00:40:00Z",
+  "last_updated": "2026-10-02T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "LEAN_TREE_STATE_DIR seam", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "read_proc_stat_fields()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "read_lean_tree_state()/write_lean_tree_state()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "update_lean_tree_cpu_state() state machine with pruning", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 5, "description": "shellcheck + manual smoke tests", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "shellcheck": "clean, two pre-existing warnings unchanged",
+    "suite": "125 passed / 0 failed (unchanged -- nothing wired in yet)",
+    "manual_smoke": "first sighting not idle; cputime increase resets idle; unchanged cputime with backdated last_active accrues idle_for correctly (~10 min); vanished tree pruned to {}; comm with space+paren parses correctly from the LAST ')'; malformed stat row returns empty; corrupt/empty/missing state file all treated as first sighting with the corrupt case emitting one audible warning; no stray tmp file left in state dir"
+  }
+}

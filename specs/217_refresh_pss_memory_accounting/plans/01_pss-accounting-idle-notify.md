@@ -275,36 +275,43 @@ hypothesis, not a target -- cover the behaviors, then record the real number.
 
 ---
 
-### Phase 3: /proc/PID/stat parsing, state-file I/O, and the CPU-delta state machine [NOT STARTED]
+### Phase 3: /proc/PID/stat parsing, state-file I/O, and the CPU-delta state machine [COMPLETED]
 
 **Goal**: Add the primitives the idleness gate needs -- a safe `/proc/PID/stat` parser, an
 atomic corruption-tolerant `lean-trees.json`, and the per-tree CPU-delta bookkeeping -- without
 yet changing which trees are selected.
 
 **Tasks**:
-- [ ] Add `LEAN_TREE_STATE_DIR="${LEAN_TREE_STATE_DIR:-$HOME/.local/state/claude-refresh}"`
+- [x] Add `LEAN_TREE_STATE_DIR="${LEAN_TREE_STATE_DIR:-$HOME/.local/state/claude-refresh}"`
       immediately below the `PROC_ROOT` seam, with a comment naming it as the same
-      override-for-testing shape.
-- [ ] Add `read_proc_stat_fields()` reading `$PROC_ROOT/$pid/stat`: locate the LAST `)` in the
+      override-for-testing shape. *(completed)*
+- [x] Add `read_proc_stat_fields()` reading `$PROC_ROOT/$pid/stat`: locate the LAST `)` in the
       line, split the remainder, and echo `starttime|utime|stime` (whitespace fields 22, 14, 15
       counted from the canonical field numbering). Document the parenthesized-`comm` gotcha
       inline with a one-line `man proc` justification. Unreadable or malformed input echoes an
-      empty result, never a partial or guessed one.
-- [ ] Add `read_lean_tree_state()`: `mkdir -p` the state dir idempotently; a missing file, an
+      empty result, never a partial or guessed one. *(completed)*
+- [x] Add `read_lean_tree_state()`: `mkdir -p` the state dir idempotently; a missing file, an
       empty file, or a file that fails `jq` validation is treated as **no history** (first
       sighting), never as idle. Emit one explicit log line when a present file is unparseable --
-      degrade audibly, never silently.
-- [ ] Add `write_lean_tree_state()`: `mktemp` in the SAME directory as the target, write, then
+      degrade audibly, never silently. *(completed)*
+- [x] Add `write_lean_tree_state()`: `mktemp` in the SAME directory as the target, write, then
       `mv` for an atomic rename (the `scripts/state-write.sh` idiom, not its locking/spill
-      machinery). Remove the tmp file on any failure path.
-- [ ] Add `update_lean_tree_cpu_state()`: for each detected tree, key on `root_pid:starttime`;
+      machinery). Remove the tmp file on any failure path. *(completed)*
+- [x] Add `update_lean_tree_cpu_state()`: for each detected tree, key on `root_pid:starttime`;
       store `cputime_ticks` (summed `utime+stime` across all members), `last_active` (epoch
       seconds), and `last_seen`. First sighting -> record and set `last_active=now`. Unchanged
       `cputime_ticks` -> leave `last_active` alone. Increased `cputime_ticks` -> reset
-      `last_active=now`. Compute `idle_for_min = (now - last_active) / 60`.
-- [ ] Prune entries whose `root_pid:starttime` key is absent from the current detection pass
-      (tree no longer exists), in the same write.
-- [ ] Run `shellcheck`; do not yet wire any of this into tree selection.
+      `last_active=now`. Compute `idle_for_min = (now - last_active) / 60`. *(completed: takes
+      current-run tree keys/cputicks via two parallel global input arrays
+      CPU_STATE_KEYS/CPU_STATE_CPUTICKS, since detect_lean_candidate_trees() is not wired to call
+      it until Phase 4)*
+- [x] Prune entries whose `root_pid:starttime` key is absent from the current detection pass
+      (tree no longer exists), in the same write. *(completed)*
+- [x] Run `shellcheck`; do not yet wire any of this into tree selection. *(completed: shellcheck
+      clean, same two pre-existing warnings; full suite unchanged at 125/0 since nothing new is
+      wired in yet; manual smoke tests verified first-sighting, cputime-increase, idle-accrual,
+      pruning-on-disappearance, the comm-with-space-and-parenthesis gotcha, and
+      corrupt/empty/missing state-file tolerance, with no stray tmp file left in the state dir)*
 
 **Timing**: 2 hours
 
