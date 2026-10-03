@@ -1043,6 +1043,72 @@ rm -rf "$G16_REPO" "$G16_BARE" "$WORKDIR/g16-push-grant.key"
 rm -f "$DECISIONS_FILE"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 17: --gate -- modelled on Group 9's --compare group. The dispatch file's Identity section
+# gains a single `gate_flag: true` line ONLY when --gate is passed; a no-flag dispatch file is
+# byte-identical to one built without this flag's support at all. Also pins the SUT's deliberate
+# phase-agnosticism: it records whatever it is told, and implement-only scoping is the caller's
+# job (asserted in orchestrate-cycle-plan.sh's own suite, not here).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 17: --gate emits gate_flag: true ONLY when passed (byte-identity otherwise)"
+run_sut implement --clean --seq 17 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_no_gate="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_no_gate" "gate_flag:" "implement (no --gate): gate_flag line absent"
+  cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-gate.md"
+else
+  fail "implement (no --gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+run_sut implement --clean --seq 17 --dispatch-start-ts 1234567890 --gate
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_gate="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_gate" "- gate_flag: true" "implement (--gate): gate_flag: true line present"
+  if diff -q "$WORKDIR/dispatch-no-gate.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
+    fail "implement (--gate): expected a diff against the no-flag dispatch file, got none"
+  else
+    gate_diff_line_count="$(diff "$WORKDIR/dispatch-no-gate.md" "$LAST_DISPATCH_FILE" | grep -c '^>')"
+    if [ "$gate_diff_line_count" -eq 1 ]; then
+      pass "implement (--gate): differs from the no-flag dispatch file by exactly one added line"
+    else
+      fail "implement (--gate): expected exactly 1 added line vs. no-flag dispatch file, got $gate_diff_line_count"
+    fi
+  fi
+else
+  fail "implement (--gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# The SUT itself is phase-agnostic for --gate, exactly as for --compare: implement-only scoping
+# is a CALLER-side decision (orchestrate-cycle-plan.sh only ever passes --gate for an
+# implement-phase candidate). So an explicit --gate passed directly to the SUT for phase=research
+# DOES emit the line -- that scoping is exercised in orchestrate-cycle-plan.sh's own suite.
+run_sut research --clean --seq 17 --gate
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_research_gate="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_research_gate" "- gate_flag: true" "research (--gate passed explicitly): SUT itself is phase-agnostic and still records gate_flag: true (implement-only scoping is a caller-side decision, tested in orchestrate-cycle-plan.sh's own suite)"
+else
+  fail "research (--gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# --gate composes with --compare without interference: both lines present, and the two-flag
+# dispatch differs from the no-flag one by exactly two added lines.
+run_sut implement --clean --seq 17 --dispatch-start-ts 1234567890 --compare --gate
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_both="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_both" "- compare_flag: true" "implement (--compare --gate): compare_flag: true present"
+  assert_contains "$content_both" "- gate_flag: true" "implement (--compare --gate): gate_flag: true present"
+  both_diff_line_count="$(diff "$WORKDIR/dispatch-no-gate.md" "$LAST_DISPATCH_FILE" | grep -c '^>')"
+  if [ "$both_diff_line_count" -eq 2 ]; then
+    pass "implement (--compare --gate): differs from the no-flag dispatch file by exactly two added lines"
+  else
+    fail "implement (--compare --gate): expected exactly 2 added lines vs. no-flag dispatch file, got $both_diff_line_count"
+  fi
+else
+  fail "implement (--compare --gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+rm -f "$WORKDIR/dispatch-no-gate.md"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""

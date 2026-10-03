@@ -4938,6 +4938,152 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 35: --gate forwarding -- modelled on Group 12's --compare group. An implement-phase
+# candidate's build-dispatch argv gains --gate; a plan-phase candidate's and a research-phase
+# candidate's do not. The scoping is done by THIS script's forwarding guard (`$g = the
+# candidate's dispatched phase`), not by orchestrate-build-dispatch.sh, which is deliberately
+# phase-agnostic and exercised in its own suite. Also asserts --gate --compare --hard
+# composition.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Group 35: --gate forwarding (implement-phase only, never research/plan)"
+
+G35_ARGV_LOG="$WORKDIR/g35-build-dispatch-argv.log"
+: > "$G35_ARGV_LOG"
+# Real Identity-bearing file (see Group 4/5's stub comment for why).
+cat > "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$G35_ARGV_LOG"
+proj_num="\$1"; phase="\$2"; shift 2
+seq=""
+while [ "\$#" -gt 0 ]; do
+  case "\$1" in
+    --seq) seq="\$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+dispatch_dir="$WORKDIR/fake-dispatch"
+mkdir -p "\$dispatch_dir"
+dispatch_file="\$dispatch_dir/\${proj_num}-\${phase}.md"
+{ echo "## Identity"; echo ""; echo "- dispatch_seq: \${seq}"; } > "\$dispatch_file"
+jq -n -c --arg f "\$dispatch_file" '{dispatch_file: \$f, model: ""}'
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh"
+
+cat > "$WORKDIR/.claude/scripts/update-task-status.sh" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
+
+# Upstream groups (13, 15/16, 34) overwrite orchestrate-triage-classify.sh and
+# orchestrate-batch-admit.sh with degraded / always-"plan" / unrecognized-defer_reason stubs and
+# do not restore them, so this group installs its own deterministic pair: a classifier that maps
+# each fixture task number to the phase this group needs dispatched, and an always-admit
+# admission stub. Without this, every candidate is deferred and the forwarding assertions below
+# would pass VACUOUSLY on an empty argv log.
+cat > "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh" <<'EOF'
+#!/usr/bin/env bash
+for a in "$@"; do
+  case "$a" in
+    mt) continue ;;
+    3501) jq -n -c '{task_number: 3501, group: "plan", reason: "fixture"}' ;;
+    3502) jq -n -c '{task_number: 3502, group: "implement", reason: "fixture"}' ;;
+    3503) jq -n -c '{task_number: 3503, group: "research", reason: "fixture"}' ;;
+    3504) jq -n -c '{task_number: 3504, group: "implement", reason: "fixture"}' ;;
+    *) ;;
+  esac
+done
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+
+cat > "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh" <<'EOF'
+#!/usr/bin/env bash
+for a in "$@"; do
+  case "$a" in
+    --*) prev="$a"; continue ;;
+    *) if [ "${prev:-}" = "--invocation-count" ] || [ "${prev:-}" = "--session-id" ] || [ "${prev:-}" = "--phase-map" ]; then prev=""; continue; fi
+       jq -n -c --argjson t "$a" '{task_number: $t, decision: "admit", reason: "fixture"}' ;;
+  esac
+done
+EOF
+chmod +x "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3501, "project_name": "g35_plan_candidate", "task_type": "general", "status": "researched", "description": "plan-phase candidate -- the advisory gate flag must never reach this dispatch", "dependencies": [], "file_scope": ["specs/g35-scope/3501"]},
+    {"project_number": 3502, "project_name": "g35_implement_candidate", "task_type": "general", "status": "implementing", "description": "implement-phase candidate -- the advisory gate flag must reach this dispatch", "dependencies": [], "file_scope": ["specs/g35-scope/3502"]},
+    {"project_number": 3503, "project_name": "g35_research_candidate", "task_type": "general", "status": "not started", "description": "research-phase candidate -- the advisory gate flag must never reach this dispatch", "dependencies": [], "file_scope": ["specs/g35-scope/3503"]}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --session g35_sess --gate -- 3501 3502 3503
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  pass "Group 35: SUT exits 0"
+else
+  fail "Group 35: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+
+g35_plan_argv=$(grep '^3501 plan' "$G35_ARGV_LOG" || true)
+g35_implement_argv=$(grep '^3502 implement' "$G35_ARGV_LOG" || true)
+g35_research_argv=$(grep '^3503 research' "$G35_ARGV_LOG" || true)
+
+if echo "$g35_implement_argv" | grep -q -- "--gate"; then
+  pass "Group 35: --gate forwarded into build_args for the implement-phase candidate"
+else
+  fail "Group 35: --gate missing from implement-phase build_args (argv: '$g35_implement_argv')"
+fi
+
+# Non-vacuity guard: an EMPTY argv would make the two non-forwarding assertions below pass for
+# the wrong reason (no dispatch built at all), which is exactly how a deferred candidate would
+# forge a green result here. Require the dispatch to have actually happened first.
+if [ -n "$g35_plan_argv" ]; then
+  if echo "$g35_plan_argv" | grep -q -- "--gate"; then
+    fail "Group 35: --gate unexpectedly forwarded into build_args for the plan-phase candidate (argv: '$g35_plan_argv')"
+  else
+    pass "Group 35: --gate NOT forwarded into build_args for the plan-phase candidate"
+  fi
+else
+  fail "Group 35: no plan-phase dispatch was built, so the non-forwarding assertion would be vacuous (argv log: $(tr '\n' '|' < "$G35_ARGV_LOG"))"
+fi
+
+if [ -n "$g35_research_argv" ]; then
+  if echo "$g35_research_argv" | grep -q -- "--gate"; then
+    fail "Group 35: --gate unexpectedly forwarded into build_args for the research-phase candidate (argv: '$g35_research_argv')"
+  else
+    pass "Group 35: --gate NOT forwarded into build_args for the research-phase candidate"
+  fi
+else
+  fail "Group 35: no research-phase dispatch was built, so the non-forwarding assertion would be vacuous (argv log: $(tr '\n' '|' < "$G35_ARGV_LOG"))"
+fi
+
+# ── --gate --compare --hard together: all three flags reach the implement dispatch
+# (composition, never competition) ────────────────────────────────────────────────────────────
+: > "$G35_ARGV_LOG"
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3504, "project_name": "g35_compose_candidate", "task_type": "general", "status": "implementing", "description": "implement-phase candidate exercising three-flag composition", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+
+run_sut --session g35b_sess --gate --compare --hard -- 3504
+
+g35_compose_argv=$(grep '^3504 implement' "$G35_ARGV_LOG" || true)
+if echo "$g35_compose_argv" | grep -q -- "--gate" \
+  && echo "$g35_compose_argv" | grep -q -- "--compare" \
+  && echo "$g35_compose_argv" | grep -q -- "--hard"; then
+  pass "Group 35: --gate --compare --hard together all reach the implement dispatch (composition, not competition)"
+else
+  fail "Group 35: expected --gate, --compare and --hard in implement build_args, got: '$g35_compose_argv'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

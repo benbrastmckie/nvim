@@ -442,20 +442,20 @@ before editing — the sibling books task may have shifted them.
 
 ---
 
-### Phase 6: Core test coverage [NOT STARTED]
+### Phase 6: Core test coverage [COMPLETED]
 
 **Goal**: the one-added-line byte-identity property and the implement-only scoping are pinned by
 tests in the core suites.
 
 **Tasks**:
-- [ ] `test-orchestrate-build-dispatch.sh`: add a new group modelled on the existing `--compare`
+- [x] `test-orchestrate-build-dispatch.sh`: add a new group modelled on the existing `--compare`
       group, asserting that a `--gate` dispatch file differs from the no-flag dispatch file by
       exactly one added line (`- gate_flag: true`), and asserting the script under test's
       deliberate phase-agnosticism (it records whatever it is told).
-- [ ] `test-orchestrate-cycle-plan.sh`: add a new group modelled on the existing `--compare`
+- [x] `test-orchestrate-cycle-plan.sh`: add a new group modelled on the existing `--compare`
       forwarding group, asserting forwarding for an implement candidate, **non**-forwarding for a
       plan candidate and for a research candidate, and `--gate --compare --hard` composition.
-- [ ] Use the next free group number in each suite; do not renumber existing groups.
+- [x] Use the next free group number in each suite; do not renumber existing groups.
 
 **Timing**: 1 hour
 

@@ -1,0 +1,20 @@
+{
+  "phase": 6,
+  "phase_name": "Core test coverage",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "test-orchestrate-build-dispatch.sh: new Group 17 asserting the one-added-line byte-identity property and the SUT's deliberate phase-agnosticism", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"],
+     "note": "131 passed / 0 failed (was 124/0). Inverting the emission condition makes 6 assertions fail, so the group genuinely binds the behaviour rather than the flag's mere presence."},
+    {"id": 2, "description": "test-orchestrate-cycle-plan.sh: new Group 35 asserting implement forwarding, plan and research non-forwarding, and --gate --compare --hard composition", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"],
+     "note": "349 passed / 0 failed (was 344/0). Inverting the forwarding guard makes 4 assertions fail. The group installs its own deterministic classifier and always-admit stubs: upstream groups 13/15/16/34 leave degraded stubs in place and never restore them, which first made all three candidates defer and would have let the two non-forwarding assertions pass VACUOUSLY on an empty argv log. Non-vacuity guards were added so an absent dispatch FAILS rather than silently passing."},
+    {"id": 3, "description": "Use the next free group number in each suite; do not renumber existing groups", "status": "done", "files_touched": [],
+     "note": "Group 17 and Group 35 confirmed free before use. Both diffs are purely additive: 66 insertions / 0 deletions and 146 insertions / 0 deletions."}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Group 35 relying on the classifier state left by upstream groups", "result": "failed", "reason": "Group 34 leaves an unrecognized-defer_reason classifier stub installed; every candidate deferred and the argv log was empty"}
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}
