@@ -17,9 +17,9 @@
 #      .claude/rules/git-workflow.md's "No History Rewrites While Another Writer Is Live" section
 #      for the motivating incident and the full rationale.
 #
-# Modeled line-for-line on .claude/hooks/block-pr-submission.sh: blocks via exit code 2
-# + a stderr message (NOT permissionDecision: deny, which is documented-buggy for
-# allow-listed Bash(git:*) commands -- GH issues #4669, #13214, #18312).
+# Blocks via exit code 2 + a stderr message (NOT permissionDecision: deny, which is
+# documented-buggy for allow-listed Bash(git:*) commands -- see the rationale two sections below
+# ("Response is binary exit 2 + stderr...") for the GH issue numbers and full detail.
 #
 # Guarded patterns (all git operations that discard uncommitted working-tree changes):
 #   - git reset --hard

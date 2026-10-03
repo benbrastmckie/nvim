@@ -1,7 +1,7 @@
 # Implementation Plan: Task #263
 
 - **Task**: 263 - Consent-gated git push: grant semantics and enforcement mechanism
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 17.5 hours
 - **Dependencies**: 139 (completed/archived — its history-rewrite predicate in
   `hooks/guard-destructive-git.sh` must compose with Phase 5's grant check)
@@ -144,29 +144,41 @@ Phases within the same wave can execute in parallel. Note the cross-task territo
 dispatch: siblings are live on this same working tree this cycle, so re-read every file
 immediately before editing it and stage only this task's own hunks.
 
-### Phase 1: Verify the mint-path assumptions and fix the dead header reference [NOT STARTED]
+### Phase 1: Verify the mint-path assumptions and fix the dead header reference [IN PROGRESS]
 
 **Goal**: Empirically confirm, before any hook is written, that `UserPromptSubmit` receives the
 literal unexpanded prompt text and that a dispatched subagent can never trigger it — and clear the
 confirmed-dead `block-pr-submission.sh` reference out of `guard-destructive-git.sh`.
 
 **Tasks**:
-- [ ] Write a throwaway logging hook (in the scratchpad, not the source store) that appends
+- [x] Write a throwaway logging hook (in the scratchpad, not the source store) that appends
   `$(date +%s) $(jq -r '.prompt // "<none>"')` to a temp log, and register it temporarily in this
-  repo's `.claude/settings.json` `UserPromptSubmit` array.
+  repo's `.claude/settings.json` `UserPromptSubmit` array. *(completed)*
 - [ ] Have the user type a literal `/please push origin some-branch` prompt; confirm the log line
   contains that exact unexpanded string (not an expanded command body, not a rewritten prompt).
-- [ ] Dispatch a throwaway subagent whose instructions literally begin with `/please push origin
-  some-branch`; confirm the log records ZERO new invocations for that dispatch.
+  *(in progress — handoff: requested via SendMessage to "main"; no reply/log entry yet. Related
+  fact confirmed in the meantime: an inter-agent SendMessage delivery to another session ALSO
+  fires UserPromptSubmit there, but wrapped in `<agent-message from="...">...</agent-message>`
+  tags — verified by sending a message whose body literally started with `/please push origin
+  ...`: the logged `.prompt` value started with the wrapper tag, not literally with `/please`. A
+  strict prefix-match mint grammar is therefore safe against this relay vector. Still need the
+  literal human-typed case before fully closing this item.)*
+- [x] Dispatch a throwaway subagent whose instructions literally begin with `/please push origin
+  some-branch`; confirm the log records ZERO new invocations for that dispatch. *(completed: zero
+  new log lines from the Agent-tool dispatch; the log only grew from the two SendMessage-to-main
+  tests)*
 - [ ] Record both observations (command, log contents, verdict) verbatim for the implementation
   summary. If either fails, STOP and report — the entire mint design rests on these two facts.
+  *(in progress — subagent-isolation observation recorded above; human-typed observation pending)*
 - [ ] Remove the temporary hook and its registration; confirm `.claude/settings.json` is back to
-  its prior content.
-- [ ] In `hooks/guard-destructive-git.sh`, delete the line-20 sentence claiming it is "Modeled
+  its prior content. *(deviation: deferred — kept live so the human-typed test can still land;
+  see progress file objective 4)*
+- [x] In `hooks/guard-destructive-git.sh`, delete the line-20 sentence claiming it is "Modeled
   line-for-line on `.claude/hooks/block-pr-submission.sh`" (no such file exists in the source
   store or the deployed tree, and `manifest.json` has no `provides.hooks` entry for it) and
   replace it with a one-line pointer to the exit-2/stderr rationale already documented two lines
-  below.
+  below. *(completed: source-store copy confirmed clean via grep; test-guard-destructive-git.sh
+  72/72 pass unmodified)*
 
 **Timing**: 0.75 hours
 

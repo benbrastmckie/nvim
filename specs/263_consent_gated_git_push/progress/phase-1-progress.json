@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Verify the mint-path assumptions and fix the dead header reference",
+  "started_at": "2026-10-03T02:13:52Z",
+  "last_updated": "2026-10-03T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write throwaway logging hook and register temporarily", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm literal unexpanded /please prompt text is logged by a real human prompt submission", "status": "in_progress", "note": "Requested main (the interactive session) to relay a literal human-typed test prompt via SendMessage; no reply/log entry yet as of last check. Discovered an important related fact in the meantime: an inter-agent SendMessage delivery to main ALSO fires UserPromptSubmit in the receiving session, but the content arrives wrapped in <agent-message from=\"...\">...</agent-message> tags -- confirmed by sending a message whose body literally started with '/please push origin ...': the logged .prompt value started with the <agent-message> wrapper, not literally with '/please'. This means a strict prefix-match mint grammar (startswith, not substring-contains) is safe against the agent-relay vector. Still need the literal human-typed confirmation before fully closing this objective; will retry opportunistically and finalize at Phase 13 live-fire if not landed sooner.", "files_touched": []},
+    {"id": 3, "description": "Confirm a dispatched subagent whose instructions begin with /please triggers zero log entries", "status": "done", "note": "Dispatched a throwaway general-purpose subagent whose prompt began with the literal text. Zero new log lines resulted from that dispatch (log only ever grew from the two SendMessage-to-main tests, never from the Agent-tool dispatch). Confirms a dispatched subagent cannot trigger UserPromptSubmit.", "files_touched": []},
+    {"id": 4, "description": "Remove temporary hook and registration, restore settings.json", "status": "not_started", "note": "Deliberately deferred until objective 2 is resolved (or abandoned) so the log can still catch a human-typed test. Backup is at scratchpad/settings.json.orig-backup.", "files_touched": []},
+    {"id": 5, "description": "Fix dead block-pr-submission.sh reference in guard-destructive-git.sh", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
