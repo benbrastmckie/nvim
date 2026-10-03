@@ -11,9 +11,9 @@ next_project_number: 326
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,184,217,250,263,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,89,127,184,217,250,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,185,251,273,275,281,298,302,303,307,308,319 | 22,127,184,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
-| 3 | 170,274,282,304,313 | 250,251,263,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
+| 3 | 170,274,282,304,313 | 250,251,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 282,300 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -29,7 +29,6 @@ next_project_number: 326
 217 [NOT STARTED] — Cost-aware idle Lean tree reclamation in /refresh: PSS...
 250 [NOT STARTED] — Script-corpus inventory probe, then cut tests/run-all.sh...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
-263 [PLANNED] — Consent-gated git push: grant semantics and enforcement mechanism
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
@@ -2525,12 +2524,13 @@ Serialization-only, not semantic: this task does not consume any output of the a
 ---
 
 ### 263. Consent-gated git push: grant semantics and enforcement mechanism
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 139, Task 265
 - **Research**: [263_consent_gated_git_push/reports/01_consent-gated-push-design.md]
 - **Plan**: [263_consent_gated_git_push/plans/01_consent-gated-push-enforcement.md]
+- **Summary**: [263_consent_gated_git_push/summaries/01_consent-gated-push-enforcement-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).

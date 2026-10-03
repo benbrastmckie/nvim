@@ -1,7 +1,7 @@
 # Implementation Plan: Task #263
 
 - **Task**: 263 - Consent-gated git push: grant semantics and enforcement mechanism
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 17.5 hours
 - **Dependencies**: 139 (completed/archived — its history-rewrite predicate in
   `hooks/guard-destructive-git.sh` must compose with Phase 5's grant check)
