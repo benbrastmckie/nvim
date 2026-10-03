@@ -87,6 +87,13 @@ NC='\033[0m' # No Color
 # Current invoking UID, computed once. Used by is_owned_by_current_uid.
 CURRENT_UID="$(id -u)"
 
+# Resolved absolute path to this script itself, computed once. Used by the notify-before-kill
+# prompt path (maybe_prompt_for_lean_tree(), below) to re-invoke itself from within a detached
+# systemd-run unit. ${BASH_SOURCE[0]} is correct whether this script is executed directly OR
+# sourced (unlike $0, which becomes the SOURCING context's own $0 when sourced -- the shape every
+# `bash -c 'source "$N"; main ...'` test fixture in this repo's test suite uses).
+SELF_SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
 # --- Snapshot field-index map (single `ps -eo` reading, no second live re-query) ---
 # $1 pid   $2 ppid   $3 uid   $4 tty   $5 etimes   $6 rss   $7 comm   $8 cgroup   $9..NF args
 # (cgroup is requested at an explicit 200-column width so a long cgroup path is never
@@ -301,6 +308,13 @@ LEAN_LSP_IDLE_THRESHOLD_MIN="${LEAN_LSP_IDLE_THRESHOLD_MIN:-240}"
 # cost of a rebuild. Override via LEAN_LSP_MEM_FLOOR_MB.
 LEAN_LSP_MEM_FLOOR_MB="${LEAN_LSP_MEM_FLOOR_MB:-1024}"
 
+# Snooze window (minutes) for the notify-before-kill prompt path: once a tree has been prompted
+# and the outcome was anything but the default "Kill" action (dismiss, right-click, expiry, or a
+# degraded log-only run), it is not prompted again until this many minutes have passed. Default
+# 240 (4h), matching this file's other Lean reap-threshold defaults. Override via
+# LEAN_LSP_SNOOZE_MIN.
+LEAN_LSP_SNOOZE_MIN="${LEAN_LSP_SNOOZE_MIN:-240}"
+
 # --- Lean snapshot field-index map (separate, independently-gated `ps -C lake,lean` reading) ---
 # $1 pid   $2 ppid   $3 uid   $4 etimes   $5 rss   $6 pcpu   $7 cgroup   $8 comm   $9..NF args
 # (cgroup is requested at the same explicit 200-column width as SNAPSHOT_PS_FIELDS above, for the
@@ -383,6 +397,9 @@ take_lean_snapshot() {
 #                               reclaimable_kb >= LEAN_LSP_MEM_FLOOR_MB*1024 (the cost gate), 0
 #                               otherwise. ONLY an eligible tree may ever be terminated -- see
 #                               run_lean_pass()'s force-mode loop below.
+#   LEAN_TREE_ROOT_STARTTIME[i] -- the root's /proc/PID/stat starttime, exposed publicly so the
+#                               prompt path (maybe_prompt_for_lean_tree()) can build the
+#                               "<pid>:<starttime>" identity key without a second stat read
 detect_lean_candidate_trees() {
     LEAN_TREE_ROOT_PID=()
     LEAN_TREE_SERVER_PID=()
@@ -392,6 +409,7 @@ detect_lean_candidate_trees() {
     LEAN_TREE_MEMBER_DETAILS=()
     LEAN_TREE_IDLE_MIN=()
     LEAN_TREE_ELIGIBLE=()
+    LEAN_TREE_ROOT_STARTTIME=()
 
     local snapshot
     snapshot=$(take_lean_snapshot)
@@ -591,6 +609,11 @@ detect_lean_candidate_trees() {
         LEAN_TREE_MEMBER_DETAILS+=("$member_details")
         LEAN_TREE_IDLE_MIN+=("$idle_min")
         LEAN_TREE_ELIGIBLE+=("$eligible")
+        # Root's starttime, parsed back out of this same tree's CPU_STATE_KEYS entry (built in
+        # pass 1 as "root_pid:starttime") -- exposed publicly so the prompt path (maybe_prompt_
+        # for_lean_tree(), below) can build the "<pid>:<starttime>" identity key without a second
+        # /proc/PID/stat read.
+        LEAN_TREE_ROOT_STARTTIME+=("${CPU_STATE_KEYS[$t]#*:}")
     done
 }
 
@@ -1270,6 +1293,18 @@ run_lean_pass() {
         echo ""
         echo "Total memory that can be reclaimed: $(format_memory "$eligible_mem_kb") (shared cache: $(format_memory "$eligible_shared_kb"), not counted) across $eligible_count eligible tree(s)"
         echo ""
+
+        # Notify-before-kill prompt path: one call per ELIGIBLE tree (maybe_prompt_for_lean_tree()
+        # itself handles dependency degrade, snooze, and dedupe -- never signals a process). Runs
+        # on BOTH the no-flag and --dry-run invocations of this branch (the interactive /refresh
+        # skill's own AskUserQuestion prompt, which calls the no-flag path, is unaffected -- it
+        # reads this same report text, unchanged by whether a notification was also launched).
+        for ((i = 0; i < n_trees; i++)); do
+            if [ "${LEAN_TREE_ELIGIBLE[$i]}" = "1" ]; then
+                maybe_prompt_for_lean_tree "${LEAN_TREE_ROOT_PID[$i]}" "${LEAN_TREE_ROOT_STARTTIME[$i]}" "${LEAN_TREE_IDLE_MIN[$i]}" "${LEAN_TREE_MEM_KB[$i]}"
+            fi
+        done
+
         # Return here - skill will prompt with AskUserQuestion and re-run with --force if confirmed
         return 0
     fi
@@ -1374,6 +1409,133 @@ run_lean_tree_targeted_termination() {
     write_lean_tree_state
 
     return 0
+}
+
+# --- Notify-before-kill prompt path: dependency probes (fail closed to log-only, never silence) ---
+# Each follows scripts/lake-build-guard.sh's have_systemd_run() two-step idiom: `command -v` alone
+# proves the binary is on PATH, not that it actually works in this session (no cgroup delegation,
+# no session bus, etc.), so each probe additionally performs one cheap REAL invocation.
+have_notify_send() {
+    command -v notify-send >/dev/null 2>&1
+}
+
+have_systemd_run_for_prompt() {
+    command -v systemd-run >/dev/null 2>&1 || return 1
+    systemd-run --user --scope --quiet --collect -- true >/dev/null 2>&1
+}
+
+have_dbus_session() {
+    [ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ] && return 0
+    command -v dbus-send >/dev/null 2>&1 || return 1
+    dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.ListNames >/dev/null 2>&1
+}
+
+# --- `--lean-tree-snooze=<pid>:<starttime>`: record a Keep outcome, clear the prompted marker ---
+# The non-killing half of the notify-before-kill outcome handling (see maybe_prompt_for_lean_tree()
+# below): invoked by the detached systemd-run unit's own inline script when notify-send's --wait
+# returns anything other than the default "Kill" action (empty output, another action string, a
+# nonzero exit from dismiss/right-click/expiry). Never signals any process. A key with no existing
+# entry (the tree already vanished) is a silent no-op -- there is nothing to snooze.
+record_lean_tree_snooze() {
+    local pid="$1" starttime="$2"
+    local key="${pid}:${starttime}"
+
+    read_lean_tree_state
+    local now snooze_at
+    now=$(date +%s)
+    snooze_at=$((now + LEAN_LSP_SNOOZE_MIN * 60))
+    LEAN_TREE_STATE_JSON=$(printf '%s' "$LEAN_TREE_STATE_JSON" | jq --arg k "$key" --argjson sa "$snooze_at" 'if has($k) then (.[$k].snooze_until = $sa | .[$k].prompted = false) else . end')
+    write_lean_tree_state
+}
+
+# --- Notify-before-kill prompt path ---
+# Called from run_lean_pass()'s non-`--force` branch ONLY (so the hourly `--dry-run` unit reaches
+# this, and `--force` never does -- a force-mode invocation is already the ACTION, not a prompt
+# for one). For ONE eligible tree: degrades to log-only (no prompt, no kill) when any of
+# notify-send, a working systemd-run user scope, or a DBus session bus is unavailable; otherwise
+# skips silently when still snoozed or already prompted this window (dedupe); otherwise launches a
+# DETACHED transient unit and returns immediately -- this function itself never blocks on the
+# user's response, since that response may come hours later.
+#
+# Dedupe ordering: "prompted" is recorded in the state file BEFORE the unit is launched, so the
+# dedupe survives a crash between the write and the launch (the tree is treated as already
+# prompted, not re-prompted, which is the safe direction -- a missed prompt is recoverable next
+# run once idle persists, a storm of duplicate prompts is not something to risk).
+#
+# mako-specific design (recorded, not incidental): this user's notification daemon (mako) has no
+# dmenu-style action launcher, so named notify-send actions cannot be individually selected by
+# clicking -- only ONE action can ever be invoked, via left-click, which mako maps to whichever
+# action was marked "default". Hence a single `-A default=Kill` action, with every other outcome
+# (dismiss, right-click, expiry, no action at all) uniformly treated as Keep. `-t 0` so the
+# notification never auto-expires before the user sees it.
+#
+# The detached unit's own inline script (not this function) performs the outcome branch, by
+# re-invoking $SELF_SCRIPT with either `--lean-tree=` (Kill) or `--lean-tree-snooze=` (Keep) --
+# both plain, already-tested CLI entry points, so the unit's own command stays a simple two-way
+# branch with no embedded jq/state-file logic of its own.
+maybe_prompt_for_lean_tree() {
+    local root_pid="$1" root_starttime="$2" idle_min="$3" reclaimable_kb="$4"
+    local key="${root_pid}:${root_starttime}"
+
+    if ! have_notify_send; then
+        echo "Lean tree root pid $root_pid: notify-send unavailable -- prompt path is log-only, never a kill." >&2
+        return 0
+    fi
+    if ! have_systemd_run_for_prompt; then
+        echo "Lean tree root pid $root_pid: systemd-run unavailable (or lacks user-scope cgroup delegation) -- prompt path is log-only, never a kill." >&2
+        return 0
+    fi
+    if ! have_dbus_session; then
+        echo "Lean tree root pid $root_pid: no DBus session bus available -- prompt path is log-only, never a kill." >&2
+        return 0
+    fi
+
+    read_lean_tree_state
+    local snooze_until prompted
+    snooze_until=$(printf '%s' "$LEAN_TREE_STATE_JSON" | jq -r --arg k "$key" '.[$k].snooze_until // empty' 2>/dev/null || true)
+    prompted=$(printf '%s' "$LEAN_TREE_STATE_JSON" | jq -r --arg k "$key" '.[$k].prompted // empty' 2>/dev/null || true)
+
+    local now
+    now=$(date +%s)
+    if [[ "$snooze_until" =~ ^[0-9]+$ ]] && [ "$snooze_until" -gt "$now" ]; then
+        return 0  # still within the snooze window -- silently skipped, not an error
+    fi
+    if [ "$prompted" = "true" ]; then
+        return 0  # already prompted this window -- dedupe
+    fi
+
+    # Record "prompted" BEFORE launching the unit -- see this function's own header comment.
+    LEAN_TREE_STATE_JSON=$(printf '%s' "$LEAN_TREE_STATE_JSON" | jq --arg k "$key" '.[$k].prompted = true')
+    write_lean_tree_state
+
+    # Project label: the basename of lake serve's cwd, falling back to the root pid when the
+    # symlink is unreadable (process gone, permission, or a fixture PROC_ROOT with no cwd link).
+    local project
+    project=$(basename "$(readlink "$PROC_ROOT/$root_pid/cwd" 2>/dev/null || true)" 2>/dev/null || true)
+    [ -z "$project" ] && project="$root_pid"
+
+    local idle_hours=$((idle_min / 60))
+    local reclaimable_display
+    reclaimable_display=$(format_memory "$reclaimable_kb")
+
+    # Unit name is a `.service` (never a `.scope`), and must never match `claude-*.scope`, which
+    # the user's claude-session-reaper stops. "claude-refresh-prompt-<rootpid>-<starttime>" never
+    # ends in ".scope" and never matches the `claude-*.scope` glob (it has no .scope suffix at
+    # all), so this is true by construction, not merely by convention.
+    local unit_name="claude-refresh-prompt-${root_pid}-${root_starttime}"
+
+    # `systemd-run` (without `--pipe`/`--wait`) starts the transient unit and returns immediately
+    # on its own -- this call is already detached by construction, no explicit backgrounding
+    # needed here. The unit's own `notify-send ... --wait` is what blocks, inside that separate
+    # unit, for however long the user takes to respond (possibly hours).
+    systemd-run --user --unit="$unit_name" --quiet --collect bash -c '
+        outcome=$(notify-send -a claude-refresh -u critical -t 0 -A default=Kill --wait "$1" "$2" 2>/dev/null)
+        if [ "$outcome" = "default" ]; then
+            "$3" --lean-tree="$4" --force
+        else
+            "$3" --lean-tree-snooze="$4"
+        fi
+    ' _ "Idle Lean tree ($project)" "idle ${idle_hours}h, ${reclaimable_display} reclaimable -- click to kill, dismiss to keep 4h" "$SELF_SCRIPT" "$key"
 }
 
 # --- Orphaned build-waiter poll-loop reaper: independently-gated, own snapshot ---
@@ -2173,6 +2335,7 @@ main() {
     local FORCE=false
     local DRY_RUN=false
     local LEAN_TREE_TARGET=""
+    local LEAN_TREE_SNOOZE_TARGET=""
 
     for arg in "$@"; do
         case $arg in
@@ -2187,6 +2350,14 @@ main() {
                 # `for arg in "$@"` with no lookahead, so a value-taking flag must carry its value
                 # inline rather than consuming a second token.
                 LEAN_TREE_TARGET="${arg#--lean-tree=}"
+                ;;
+            --lean-tree-snooze=*)
+                # Internal entry point used ONLY by the notify-before-kill prompt path's own
+                # detached unit (maybe_prompt_for_lean_tree()) on a Keep outcome -- not documented
+                # as a user-facing flag in print_help(), the same way no other script in this repo
+                # advertises its own re-invocation plumbing. Records a snooze and clears the
+                # "prompted" marker; never signals any process.
+                LEAN_TREE_SNOOZE_TARGET="${arg#--lean-tree-snooze=}"
                 ;;
             --help|-h)
                 print_help
@@ -2230,6 +2401,18 @@ main() {
         # exits 0 either way; the caller distinguishes outcomes from the stderr log line, not the
         # exit code, matching terminate_pid()'s own "already gone" (rc=2) non-error precedent.
         run_lean_tree_targeted_termination "$lt_pid" "$lt_starttime" || true
+        exit 0
+    fi
+
+    # --lean-tree-snooze=<pid>:<starttime>: same early-return posture as --lean-tree= above --
+    # dispatched before the five-pass sequence, never folded into it. Malformed values are
+    # rejected the same way, loudly and non-fatally-logged-only (never a silent no-op).
+    if [ -n "$LEAN_TREE_SNOOZE_TARGET" ]; then
+        if [[ ! "$LEAN_TREE_SNOOZE_TARGET" =~ ^[0-9]+:[0-9]+$ ]]; then
+            echo "Error: --lean-tree-snooze requires <pid>:<starttime> (both numeric, colon-separated), got '$LEAN_TREE_SNOOZE_TARGET'" >&2
+            exit 1
+        fi
+        record_lean_tree_snooze "${LEAN_TREE_SNOOZE_TARGET%%:*}" "${LEAN_TREE_SNOOZE_TARGET#*:}"
         exit 0
     fi
 

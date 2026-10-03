@@ -521,42 +521,66 @@ the early-return placement rather than assuming this shape.
 
 ---
 
-### Phase 7: notify-before-kill prompt path with snooze and graceful degrade [NOT STARTED]
+### Phase 7: notify-before-kill prompt path with snooze and graceful degrade [COMPLETED]
 
 **Goal**: Have the headless `--dry-run` run prompt once per snooze window for an eligible tree via
 a detached transient unit, treat anything but the default action as Keep, and never kill without
 an explicit user action.
 
 **Tasks**:
-- [ ] Add `LEAN_LSP_SNOOZE_MIN="${LEAN_LSP_SNOOZE_MIN:-240}"` beside the other two Lean env vars.
-- [ ] Add dependency probes following `scripts/lake-build-guard.sh`'s two-step idiom:
+- [x] Add `LEAN_LSP_SNOOZE_MIN="${LEAN_LSP_SNOOZE_MIN:-240}"` beside the other two Lean env vars.
+      *(completed)*
+- [x] Add dependency probes following `scripts/lake-build-guard.sh`'s two-step idiom:
       `command -v notify-send`; `command -v systemd-run` plus a cheap
       `systemd-run --user --scope --quiet --collect -- true` liveness probe; and a DBus
       session-bus check (`$DBUS_SESSION_BUS_ADDRESS` non-empty, or a cheap
       `dbus-send --session` probe). Any missing dependency logs one explicit line and the prompt
-      path becomes log-only -- never a kill, never silence.
-- [ ] Add `maybe_prompt_for_lean_tree()`, called from `run_lean_pass()` only on the non-`--force`
+      path becomes log-only -- never a kill, never silence. *(completed; manually verified all
+      three degrade paths individually against a curated PATH excluding exactly one dependency
+      each)*
+- [x] Add `maybe_prompt_for_lean_tree()`, called from `run_lean_pass()` only on the non-`--force`
       path (so the hourly `--dry-run` unit reaches it and `--force` never does). For each eligible
       tree: skip if `snooze_until > now` or `prompted` is already set for the current window.
-- [ ] Record `prompted` in the state file BEFORE launching the unit (dedupe must survive a crash
-      mid-launch), via the Phase 3 atomic write.
-- [ ] Read the project label from `$PROC_ROOT/<root_pid>/cwd` (basename), falling back to the root
-      pid when unreadable.
-- [ ] Launch detached:
+      *(completed; dedupe-within-window and re-prompt-after-expiry both manually verified via
+      state-file evidence)*
+- [x] Record `prompted` in the state file BEFORE launching the unit (dedupe must survive a crash
+      mid-launch), via the Phase 3 atomic write. *(completed)*
+- [x] Read the project label from `$PROC_ROOT/<root_pid>/cwd` (basename), falling back to the root
+      pid when unreadable. *(completed)*
+- [x] Launch detached:
       `systemd-run --user --unit=claude-refresh-prompt-<rootpid>-<starttime> ...` running
       `notify-send -a claude-refresh -u critical -t 0 -A default=Kill --wait "Idle Lean tree (<project>)" "idle Xh, N GB reclaimable -- click to kill, dismiss to keep 4h"`.
-      The unit is a `.service`, and the name must never match `claude-*.scope`.
-- [ ] Outcome handling: `--wait` printing `default` -> run
+      The unit is a `.service`, and the name must never match `claude-*.scope`. *(completed:
+      systemd-run itself is detached by construction without needing explicit backgrounding --
+      verified no process blocks on the unit's own --wait)*
+- [x] Outcome handling: `--wait` printing `default` -> run
       `claude-refresh.sh --lean-tree=<pid>:<starttime> --force`. Anything else -- empty output,
       another action string, dismiss, right-click, or expiry -- is Keep: record
-      `snooze_until = now + LEAN_LSP_SNOOZE_MIN` and clear `prompted`.
-- [ ] Add a comment recording the mako-specific design: a single `-A default=Kill` action because
+      `snooze_until = now + LEAN_LSP_SNOOZE_MIN` and clear `prompted`. *(completed: the unit's own
+      inline script re-invokes $SELF_SCRIPT with --lean-tree= or the new internal
+      --lean-tree-snooze= entry point, rather than embedding jq/state-file logic in the unit
+      itself -- both outcome branches manually verified end-to-end)*
+- [x] Add a comment recording the mako-specific design: a single `-A default=Kill` action because
       mako has no dmenu-style action launcher and invokes the default action on left-click, with
-      `-t 0` so the notification never auto-expires.
-- [ ] Interactive `/refresh` keeps its existing `AskUserQuestion` prompt; this path adds no second
+      `-t 0` so the notification never auto-expires. *(completed)*
+- [x] Interactive `/refresh` keeps its existing `AskUserQuestion` prompt; this path adds no second
       interactive prompt. Confirm `run_lean_pass()`'s existing early `return 0` for the
-      non-`--force` branch still hands control back to the skill unchanged.
-- [ ] Run `shellcheck`.
+      non-`--force` branch still hands control back to the skill unchanged. *(completed: the
+      `return 0` is unchanged; the prompt loop runs just before it)*
+- [x] Run `shellcheck`. *(completed: clean, same baseline warnings plus one new SC2016 info for
+      the deliberately single-quoted inline bash -c script passed to systemd-run, where `$1`-`$4`
+      must expand inside that subshell, not the parent)*
+- [x] **Critical fix (recorded, not in the original task list)**: discovered mid-phase that
+      several PRE-EXISTING fixtures (from Phases 1-6, predating this prompt path) now produce an
+      eligible tree during a plain `--dry-run` invocation, and this sandbox genuinely has
+      `notify-send`/`systemd-run`/a DBus session bus available -- so those fixtures started
+      launching REAL desktop notifications and REAL detached systemd units (one observed hanging
+      indefinitely on a blocking `notify-send --wait -t 0`, which never auto-expires) instead of
+      staying hermetic. Added `install_neutral_notify_stubs()` to the test suite and wired it into
+      the three affected fixtures (Lean PSS (e), assertion (g), the floor-gate above-floor case).
+      Manually verified and stopped three leaked real transient units
+      (`systemctl --user stop`/`reset-failed`) that had accumulated from ad hoc verification
+      before this fix landed.
 
 **Timing**: 2 hours
 

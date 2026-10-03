@@ -62,6 +62,47 @@ pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
 fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 info() { echo "[INFO] $1"; }
 
+# install_neutral_notify_stubs DIR
+# Installs a neutral notify-send + systemd-run pair into DIR (prepended onto $PATH by the caller),
+# so that ANY fixture whose tree becomes ELIGIBLE during a --dry-run invocation -- even one that
+# predates the notify-before-kill prompt path and is not testing it -- never reaches the REAL
+# notify-send/systemd-run/DBus session on the machine running this suite. Without this, a fixture
+# that merely makes a tree eligible would launch a genuine desktop notification (or hang
+# indefinitely on `notify-send --wait -t 0`, which never auto-expires) on any machine that
+# happens to have a real notification daemon, systemd user session, and DBus bus available --
+# which this repo's own dev/CI sandboxes do. The dedicated prompt-path tests (assertion (h) in a
+# later phase) install their OWN argv-recording stub instead, to actually exercise the outcome
+# branches; this neutral stub is for every OTHER fixture.
+#   notify-send stub: always "dismissed" (prints nothing, exits 0) -- deterministically drives
+#                      every such fixture down the Keep/snooze branch, never Kill.
+#   systemd-run stub: strips systemd-run's own flags and executes the trailing command directly
+#                      and synchronously (no real transient unit), so the Keep branch's state
+#                      write still happens -- inside the SAME process tree, inheriting the
+#                      caller's PROC_ROOT/LEAN_TREE_STATE_DIR -- but nothing is ever detached.
+install_neutral_notify_stubs() {
+  local dir="$1"
+  mkdir -p "$dir"
+  cat > "$dir/notify-send" <<'NEUTRAL_NOTIFY_EOF'
+#!/usr/bin/env bash
+exit 0
+NEUTRAL_NOTIFY_EOF
+  chmod +x "$dir/notify-send"
+
+  cat > "$dir/systemd-run" <<'NEUTRAL_SYSTEMD_RUN_EOF'
+#!/usr/bin/env bash
+cmd=()
+for a in "$@"; do
+  case "$a" in
+    --user|--quiet|--collect|--scope|--) continue ;;
+    --unit=*) continue ;;
+    *) cmd+=("$a") ;;
+  esac
+done
+"${cmd[@]}"
+NEUTRAL_SYSTEMD_RUN_EOF
+  chmod +x "$dir/systemd-run"
+}
+
 # --- Loud-skip discipline: verify the required script exists before running anything. ---
 if [ ! -f "$SRC_SCRIPTS_DIR/$SCRIPT_UNDER_TEST" ]; then
   echo "ERROR: test-claude-refresh-matcher.sh cannot run -- missing required script: $SRC_SCRIPTS_DIR/$SCRIPT_UNDER_TEST" >&2
@@ -584,6 +625,7 @@ exit 0
 FAKE_PS_PSS_LEAN_EOF
 sed -i "s/__ROOT__/$PSS_LEAN_ROOT/g; s/__SERVER__/$PSS_LEAN_SERVER/g; s/__WORKER__/$PSS_LEAN_WORKER/g" "$PSS_LEAN_BIN_DIR/ps"
 chmod +x "$PSS_LEAN_BIN_DIR/ps"
+install_neutral_notify_stubs "$PSS_LEAN_BIN_DIR"
 
 PSS_LEAN_PROC_DIR="$WORKDIR/fakeproc-pss-lean"
 mkdir -p "$PSS_LEAN_PROC_DIR/$PSS_LEAN_ROOT" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_SERVER" "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORKER"
@@ -862,6 +904,7 @@ exit 0
 FAKE_PS_LEAN_EOF
 sed -i "s/__ROOT__/$LEAN_TREE_ROOT/g; s/__SERVER__/$LEAN_TREE_SERVER/g; s/__WORKER1__/$LEAN_TREE_WORKER1/g; s/__WORKER2__/$LEAN_TREE_WORKER2/g; s/__WORKER3__/$LEAN_TREE_WORKER3/g" "$LEAN_FAKE_BIN_DIR/ps"
 chmod +x "$LEAN_FAKE_BIN_DIR/ps"
+install_neutral_notify_stubs "$LEAN_FAKE_BIN_DIR"
 
 # Fixture /proc/<pid>/status files, driven via the PROC_ROOT seam -- get_vmswap_kb() reads these,
 # never live /proc.
@@ -1220,6 +1263,7 @@ exit 0
 FAKE_PS_FLOOR_EOF
 sed -i "s/__ROOT__/$FLOOR_ROOT/g" "$FLOOR_BIN_DIR/ps"
 chmod +x "$FLOOR_BIN_DIR/ps"
+install_neutral_notify_stubs "$FLOOR_BIN_DIR"
 
 FLOOR_PROC_DIR="$WORKDIR/fakeproc-floor"
 mkdir -p "$FLOOR_PROC_DIR/$FLOOR_ROOT"

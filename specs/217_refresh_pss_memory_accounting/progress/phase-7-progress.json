@@ -1,0 +1,31 @@
+{
+  "phase": 7,
+  "phase_name": "notify-before-kill prompt path with snooze and graceful degrade",
+  "started_at": "2026-10-02T03:10:00Z",
+  "last_updated": "2026-10-02T04:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "LEAN_LSP_SNOOZE_MIN env var", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 2, "description": "Dependency probes (notify-send, systemd-run, DBus)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "maybe_prompt_for_lean_tree() with dedupe/snooze", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "record_lean_tree_snooze() + --lean-tree-snooze= entry point", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 5, "description": "LEAN_TREE_ROOT_STARTTIME exposure + run_lean_pass() wiring", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 6, "description": "shellcheck, suite, manual end-to-end verification of all outcome/degrade paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.fixture-safety",
+      "description": "Pre-existing Phase 1-6 fixtures now produce eligible trees and genuinely invoked real notify-send/systemd-run/DBus on this sandbox during --dry-run test runs",
+      "type": "altered",
+      "reason": "Not anticipated by the original plan. Added install_neutral_notify_stubs() to the test suite and wired it into the three affected fixtures (Lean PSS (e), assertion (g), floor-gate above-floor case) to keep them hermetic. Discovered and stopped three real leaked systemd --user transient units from ad hoc verification before this fix.",
+      "annotation": "*(deviation: altered -- added neutral notify-send/systemd-run stubs to three pre-existing fixtures)*"
+    }
+  ],
+  "verification_notes": {
+    "shellcheck": "clean, baseline warnings plus one new SC2016 info (intentional single-quoting for the inline bash -c script)",
+    "suite": "143 passed / 0 failed",
+    "manual_end_to_end": "all three dependency-degrade paths verified individually (notify-send/systemd-run/DBus each missing in turn); Kill outcome re-invokes --lean-tree=X:Y --force correctly (confirmed via already-gone log and cleared prompted/snooze); Keep outcome records snooze_until and clears prompted; dedupe holds within the snooze window (notify-send not re-invoked); re-prompt confirmed after snooze expiry (new snooze_until recorded); no leaked systemd --user units remain after cleanup"
+  }
+}
