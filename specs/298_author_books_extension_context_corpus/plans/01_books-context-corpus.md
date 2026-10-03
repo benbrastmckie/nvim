@@ -1,7 +1,7 @@
 # Implementation Plan: Author the books extension domain context corpus
 
 - **Task**: 298 - author_books_extension_context_corpus
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12 hours
 - **Dependencies**: 297 (scaffold_books_extension_routing_and_agents) - `completed`
 - **Research Inputs**: `specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md`
@@ -182,30 +182,30 @@ its own **Files to modify** list and touches no other file.
 
 ---
 
-### Phase 1: The frame - known-gap register and README navigation index [NOT STARTED]
+### Phase 1: The frame - known-gap register and README navigation index [COMPLETED]
 
 **Goal**: Land the two files every other document depends on: the dated known-gap register that
 later documents defer to instead of re-caveating, and the navigation index that is the corpus's
 only discovery mechanism.
 
 **Tasks**:
-- [ ] Measure, in the consuming repository, read-only: read all eighteen
+- [x] Measure, in the consuming repository, read-only: read all eighteen
       `- **Validated by**:` markers in `docs/book-convention.md` and record each one's form
       (`none yet [-- reason]` / `partially, <instances>` / binding) together with what it names as
       exercised, not exercised, and contradicted.
-- [ ] Re-measure the live in-flight register from that repository's `specs/TODO.md` and
+- [x] Re-measure the live in-flight register from that repository's `specs/TODO.md` and
       `specs/state.json`, recording each relevant entry's directory path and current status.
       Research measured twelve relevant entries; confirm the set and the statuses rather than
       copying them.
-- [ ] Re-run the censuses in the research report's Appendix (book population, annotation census,
+- [x] Re-run the censuses in the research report's Appendix (book population, annotation census,
       layer-value distribution, authored-field census, the `layer-lint.sh` run) and record each
       figure with today's date.
-- [ ] Write `domain/known-gap-register.md` in three parts per D5: (a) the eighteen markers
+- [x] Write `domain/known-gap-register.md` in three parts per D5: (a) the eighteen markers
       projected into a table with exercised / not exercised / contradicted columns, (b) the live
       in-flight register, (c) a dated "measured as of" header that names the markers in
       `docs/book-convention.md` as the authority and this file as a projection. Adopt the marker
       vocabulary; invent no parallel scheme.
-- [ ] Include as named register rows, at minimum: the absence of any verification tier between
+- [x] Include as named register rows, at minimum: the absence of any verification tier between
       `lake build` and the full gate; `lake shake` refusing non-`module` packages so the
       certifier's shake stage reports SKIPPED and never propagates its rc; the regex layer lint's
       ability to pass vacuously and the fact that **reporting a vacuous pass as vacuous is a
@@ -216,17 +216,18 @@ only discovery mechanism.
       closure contains `Books.Meta`") having no enumerating script; the four
       `reserved_passes` named in a real certificate; and the pending `books/` -> `bookkit/` rename
       as a risk to this corpus's own citations.
-- [ ] Explicitly correct, in the register or in the document whose subject it is, every entry of
+- [x] Explicitly correct, in the register or in the document whose subject it is, every entry of
       Finding 3's eleven-row staleness ledger. Do not reproduce the dispatch description's
       register text.
-- [ ] Rewrite `README.md` as the navigation index: a short framing paragraph (what a lean book is,
+- [x] Rewrite `README.md` as the navigation index: a short framing paragraph (what a lean book is,
       and that the design record in the consuming repository is normative and owned there), then a
       table with one row per document - path, one-line subject, and an explicit "read this when"
       - naming all sixteen documents at the Document Register's exact paths. State in the README
       that every document is reachable on demand only, and that the register is the file to read
       first for what is not built.
-- [ ] Verify the README table's sixteen paths match the Document Register character for
+- [x] Verify the README table's sixteen paths match the Document Register character for
       character (a mismatch makes a document unreachable and trips Phase 9's reconciliation).
+      *(completed: 16/16 exact match)*
 
 **Timing**: 1.5-2 hours
 

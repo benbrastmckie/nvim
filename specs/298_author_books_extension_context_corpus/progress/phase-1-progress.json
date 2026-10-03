@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "The frame - known-gap register and README navigation index",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Measure the eighteen Validated by markers and the live register", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-run the research Appendix censuses with today's date", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write domain/known-gap-register.md", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/domain/known-gap-register.md"]},
+    {"id": 4, "description": "Rewrite README.md as the navigation index", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/README.md"]},
+    {"id": 5, "description": "Verify README table matches the Document Register exactly", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "1.x", "description": "check-task-references.sh invocation path", "type": "altered", "reason": "The plan names agent-system/extensions/core/scripts/check-task-references.sh; that copy refuses to run from the source store and directs callers to the deployed .claude/scripts/ copy. The deployed copy is used instead.", "annotation": "*(deviation: altered -- deployed .claude/scripts/ copy used)*"}
+  ],
+  "handoff_count": 0
+}

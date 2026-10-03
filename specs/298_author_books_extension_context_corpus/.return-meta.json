@@ -1,30 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/298_author_books_extension_context_corpus/plans/01_books-context-corpus.md",
-      "summary": "Nine-phase plan to author sixteen books-domain context documents plus a navigation README under agent-system/extensions/books/context/project/books/ and register all seventeen in index-entries.json with deliberate Tier 2 / Tier 4 tiering."
-    }
-  ],
-  "next_steps": "Run /implement 298 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 5,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1791054566_849cf8_298",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 9,
-    "estimated_hours": 12,
-    "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8], [9]]
-  },
-  "memory_candidates": [
-    {
-      "content": "Authoring a multi-file domain context corpus for a Claude agent-system extension requires deliberate load_when tiering, decided at plan time rather than inherited from the navigation stub it replaces. The derived-tier rule (validate-context-budgets.sh: always -> Tier 1, agents non-empty -> Tier 2, commands/task_types non-empty -> Tier 3, all-empty -> Tier 4) means a stub entry carrying load_when.agents is Tier 2 and eagerly loaded into every matching dispatch. Reusing that shape for N 150-250-line documents injects the whole corpus into every dispatch. Correct pattern: the README index stays Tier 2 as the single discovery entry point; each document is Tier 4 with load_when hooks empty and on_demand:true (the explicit-intent marker that exempts it from the Dead Entry Check, which is keyed on on_demand precisely because tier is derived). Critically, the budget CAPS table covers only ten named agents, so an all-Tier-2 registration of a new extension's corpus fires no cap and is NOT caught mechanically -- the tiering must be verified by reading back each entry's derived tier (validate-context-budgets.sh --index <extension>/index-entries.json), not by trusting the gate. Also: index-entries.json sits at the extension root, outside any context/ scope glob, yet is the only place new context files can be registered -- registration is inseparable from authoring a context file.",
-      "category": "PATTERN",
-      "source_artifact": "specs/298_author_books_extension_context_corpus/plans/01_books-context-corpus.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["context-corpus", "index-entries", "derived-tier", "on_demand", "validate-context-budgets", "extension-authoring"]
-    }
-  ],
-  "dispatch_seq": 3
+    "session_id": "sess_1791054566_849cf8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 9
+  }
 }
