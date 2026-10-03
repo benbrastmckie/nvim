@@ -83,12 +83,12 @@ established correction-as-addition pattern (see the `**CORRECTION.**` block abov
 that is no longer fully true is narrowed by a labeled, additive exception, never quietly rewritten
 in place.
 
-**The exact and only sanctioned automated call site**: `skill-orchestrate`'s Stage MT-3 step 7 --
-the inter-cycle redeploy checkpoint. No other automated caller is sanctioned by this subsection.
+**The exact and only sanctioned automated call site**: `skill-orchestrate`'s Move 1 (`orchestrate-cycle-plan.sh`'s
+inter-cycle redeploy checkpoint). No other automated caller is sanctioned by this subsection.
 
 **Why this is not a side effect of an unrelated operation**: the fix that triggers the checkpoint
-is precisely the fix the checkpoint exists to make live. A dispatched task's commit at Stage MT-4
-step 5.5 touching an orchestrator-critical path is the operation the redeploy is *for*, not an
+is precisely the fix the checkpoint exists to make live. A dispatched task's commit at Move 2
+(the per-task scoped commit) touching an orchestrator-critical path is the operation the redeploy is *for*, not an
 operation the redeploy is merely alongside. The operation is not unrelated -- it is the operation
 being corrected.
 
@@ -154,7 +154,7 @@ precondition. Enforcement for the bash-script class is the same
 `scripts/tests/test-lint-deploy-caller-wrap.sh` named above.
 
 **Update -- the D6 residual named below is now closed, WITHOUT adding a third trigger site.**
-`skill-orchestrate`'s Stage MT-3 step 7 (the Inter-Cycle Redeploy Checkpoint, covered exclusively
+`skill-orchestrate`'s Move 1 (the Inter-Cycle Redeploy Checkpoint, covered exclusively
 by the Inter-Cycle Self-Modification Checkpoint exception above) had its own `deploy_pending_any`
 override -- which already existed and already forced the ledger decision to `run` -- hoisted out
 of the narrow `matched_count -gt 0` branch its trigger predicate was previously confined to, and
@@ -169,7 +169,7 @@ redeploy still fires from the checkpoint boundary and not from per-task postflig
 
 **The "exactly and only" sanctioned-site count immediately above is deliberately UNCHANGED by
 this closure** -- still exactly two (`command-gate-out.sh`'s `rc == 6` branch and
-`commands/implement.md` Step 4's batch-refusal trigger). Widening Stage MT-3 step 7's predicate
+`commands/implement.md` Step 4's batch-refusal trigger). Widening Move 1's redeploy-checkpoint predicate
 did not create a third automated `deploy-headless.sh` trigger site: that checkpoint was already
 counted as sanctioned automated-deploy machinery under the Inter-Cycle Self-Modification
 Checkpoint exception above, before this widening, and remains so after it -- only the REACH of
@@ -260,7 +260,7 @@ fix" paragraph) -- this is that follow-up, landed once the two-caller contract a
 was actually done (`scripts/tests/test-lint-deploy-caller-wrap.sh` reconfirms, mechanically, that
 exactly these two files genuinely invoke `deploy-headless.sh`).
 
-**The Stage MT-3 step 7 collision -- DONE.** `skill-orchestrate/SKILL.md`'s deploy-failure branch
+**The Move 1 redeploy-checkpoint collision -- DONE.** `skill-orchestrate/SKILL.md`'s deploy-failure branch
 was written as "Non-zero exit (1 or 2) -> defer unconditionally ... with NO baseline consultation
 whatsoever". Exit 3 sat outside that parenthetical enumeration but inside the leading "Non-zero
 exit" phrase, so the step's behavior on exit 3 was ambiguous, and the most likely reading routed
@@ -270,7 +270,7 @@ failure that baseline comparison is designed to tolerate would instead defer eve
 every cycle. A distinct exit code was chosen specifically so a follow-up task can route exit 3
 through the existing baseline-comparison branches with a small, targeted edit rather than a
 redesign -- **that follow-up has now landed**: `scripts/orchestrate-cycle-plan.sh`'s inter-cycle
-redeploy checkpoint (the live implementation `skill-orchestrate/SKILL.md`'s Stage MT-3 step 7
+redeploy checkpoint (the live implementation `skill-orchestrate/SKILL.md`'s Move 1
 delegates to -- the prose has since collapsed into a single delegated call, so the live edit
 target was `scripts/orchestrate-cycle-plan.sh`, not `skills/skill-orchestrate/SKILL.md` itself)
 now captures `deploy-headless.sh`'s exit code explicitly, excludes ONLY exit 1/2 from the

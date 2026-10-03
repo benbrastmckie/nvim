@@ -66,7 +66,7 @@ waiter loop even when the dispatch that armed it never reports at all.
 This file is the single statement of the model. Fix sites point at it with a one-line pointer —
 they do not restate it:
 
-- `skill-orchestrate/SKILL.md`'s Stage 5 staleness-gate comment block (covering both effort
+- `skill-orchestrate/SKILL.md`'s Move 3 staleness-gate comment block (covering both effort
   modes; the formerly-separate hard-mode engine's own mirrored block was merged into this one)
 - `context/contracts/territory.md`'s Territory Declaration Template
 - `context/standards/orchestrator-runtime-files.md`'s `.orchestrator-handoff.json` tracking

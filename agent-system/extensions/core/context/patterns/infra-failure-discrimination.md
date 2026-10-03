@@ -7,7 +7,7 @@ the work-cycle budget (`cycle_count` / `MAX_CYCLES`).
 ## Why there is no single mechanical signal
 
 An Agent tool call is an LLM tool invocation, observed only at return time by the orchestrator's
-own narration. The Stage 5 bash that inspects `.orchestrator-handoff.json` runs strictly *after*
+own narration. The Move 3 bash that inspects `.orchestrator-handoff.json` runs strictly *after*
 the Agent tool call has already returned — by the time bash executes, the distinguishing signal
 (did the tool call itself fail at the transport/API layer, or did a subagent run and simply not
 write a handoff?) has structurally already been lost to bash. There is no `$?`-style exit code
@@ -19,7 +19,7 @@ discriminating signal.
 
 ## Ordering relative to return-meta outcome recovery
 
-This discrimination rule is **not** the first thing Stage 5 / Stage MT-4 step 1 try inside a
+This discrimination rule is **not** the first thing Move 3 tries inside a
 missing/stale-handoff branch. Outcome recovery via `.return-meta.json`
 (`scripts/orchestrate-recover-outcome.sh`, documented in
 `docs/architecture/handoff-schema.md`'s "Outcome Channels" section) is attempted **first**: for
@@ -35,7 +35,7 @@ narrows *when* the discrimination fires — a corroborated success recovered abo
 | Signal | Kind | Where set | Value meaning |
 |--------|------|-----------|---------------|
 | `dispatch_was_transport_error` | narrated LLM judgment | immediately after each Agent tool call returns | `true` only if the tool call itself returned a transport/API-layer error with **no subagent-authored text at all** |
-| `meta_touched` | mechanical bash | Stage 5 / MT-4 step 1 | `true` if `${TASK_DIR}/.return-meta.json` mtime `>= dispatch_start_ts` |
+| `meta_touched` | mechanical bash | Move 3 | `true` if `${TASK_DIR}/.return-meta.json` mtime `>= dispatch_start_ts` |
 
 **Classification**: infra failure **iff** `dispatch_was_transport_error = true` **AND**
 `meta_touched = false`. Every other combination preserves pre-existing behavior exactly (charge

@@ -421,27 +421,32 @@ in any other phase, because the two vocabularies alternate within a single docum
 
 ---
 
-### Phase 7: Line-level edits in the four mixed-vocabulary files [NOT STARTED]
+### Phase 7: Line-level edits in the four mixed-vocabulary files [COMPLETED]
 
 **Goal**: Apply single-line or few-line retargets in the four files that carry both a genuine
 citation and an unrelated vocabulary, without touching the unrelated hits.
 
 **Tasks**:
-- [ ] `context/patterns/skill-postflight-flow.md`: retarget only the one line that contrasts the
+- [x] `context/patterns/skill-postflight-flow.md`: retarget only the one line that contrasts the
       generic flow with `skill-orchestrate`'s "Stage MT-4 per-task loop" -> Move 2. The file's
       other ~11 hits are the generic skill-body Stage 1-9 convention and MUST NOT change.
-- [ ] `context/patterns/infra-failure-discrimination.md`: retarget the handoff-inspection-timing
+      *(completed: exactly 1 of 12 hits was LIVE)*
+- [x] `context/patterns/infra-failure-discrimination.md`: retarget the handoff-inspection-timing
       citations ("Stage 5", "Stage MT-4 step 1") -> Move 3. The file's `Stage 0`, `Stage 2`, and
       `Stage 7` hits are the agent-execution-flow convention and MUST NOT change.
-- [ ] `context/patterns/regeneration-is-manual-only.md`: retarget the "Stage MT-3 step 7"
+      *(completed: 3 of 7 hits were LIVE)*
+- [x] `context/patterns/regeneration-is-manual-only.md`: retarget the "Stage MT-3 step 7"
       inter-cycle redeploy-checkpoint citations to
       ``Move 1 (`orchestrate-cycle-plan.sh`'s inter-cycle redeploy checkpoint)`` and the
       "Stage MT-4" per-task commit citations to Move 2. Leave the one reference to
-      `orchestrate-build-dispatch.sh`'s own `Stage 3.5` untouched.
-- [ ] `context/patterns/dispatch-report-not-termination.md`: retarget only the one line citing
+      `orchestrate-build-dispatch.sh`'s own `Stage 3.5` untouched. *(completed: 6 of 7 hits were
+      LIVE, 1 was the live script label)*
+- [x] `context/patterns/dispatch-report-not-termination.md`: retarget only the one line citing
       "`skill-orchestrate/SKILL.md`'s Stage 5 staleness-gate comment block" -> Move 3. The other
       two hits belong to the lean extension's own agent-stage convention and MUST NOT change.
-- [ ] After each file, re-grep and confirm the untouched hits are byte-identical to before.
+      *(completed: exactly 1 of 3 hits was LIVE)*
+- [x] After each file, re-grep and confirm the untouched hits are byte-identical to before.
+      *(completed: diff review confirms no collateral edits in any of the four files)*
 
 **Timing**: 0.75 hours
 
