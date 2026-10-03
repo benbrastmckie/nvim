@@ -11,10 +11,11 @@ next_project_number: 329
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,298,302,303,307,308,319,326 | 22,251,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304,313 | 273,275,281,284,285,302,308 | core-agent-system, orchestrator |
+| 1 | 22,185,251,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,298,302,303,319,326 | 22,251,271,272,280,285,297,300 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304 | 273,275,281,284,285,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
+| 5 | 313 | 306,328 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -24,6 +25,7 @@ next_project_number: 329
 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
     └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
+      └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
 280 [NOT STARTED] — Forbid record-versioning language in deliverables: the rule,...
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
@@ -31,9 +33,7 @@ next_project_number: 329
 285 [NOT STARTED] — Add the missing .decisions.json writer script and correct the...
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
-  └─ 307 [NOT STARTED] — /todo: consolidate the duplicated skill-todo implementation,...
-  └─ 308 [NOT STARTED] — /review: wire roadmap regeneration and collapse the redundant...
-    └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
+  └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
@@ -53,10 +53,6 @@ next_project_number: 329
 22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
 295 [NOT STARTED] — Add desc field to 44 keymap.set calls missing documentation
 296 [NOT STARTED] — Repo hygiene: remove stale init.lua.backup, regenerate...
-
-### File Scope Lifecycle
-
-270 [NOT STARTED] — Re-runnable null-safety audit of jq mutation sites across...
 
 ### Orchestrator
 
@@ -850,7 +846,7 @@ This does NOT change this task's scope, which remains the gate wiring, and it is
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 306, Task 308
+- **Dependencies**: Task 306, Task 328
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task numbers in deliverable files outside specs/**.
 
@@ -994,92 +990,6 @@ A task-creation attempt that duplicates, subsumes or is subsumed by an open task
 - **Dependencies**: None
 
 **Description**: Two folded parts sharing one document. PART 1 -- MEASURED BUILD WEIGHT: BUILD_HEAVY_TASK_TYPES=("lean4" "cslib") at orchestrate-cycle-plan.sh line 1819 is a static task-type family list, so any two lean4 implement candidates are categorically refused co-scheduling regardless of real build weight -- a Mathlib-free lean4 package measured at 6 s wall / 17 jobs from an empty .lake/ is blocked exactly as a full Mathlib build is. This is the binding constraint on real parallelism for Lean-heavy batches, which is the primary intended application of concurrent batching here. Replace family membership with a measured or probed signal (recorded prior job count / wall-clock duration per task, or a cheap dry-run probe) and explicitly design the fallback behavior for a task with no measurement history yet. PART 2 -- ISOLATION POSTURE RECORD (folded in per the research report's own Context Extension Recommendation): append to batch-orchestration-guardrails.md's "Working-Tree and Build Isolation Posture" section (i) the two new hazard classes -- repo-scanning pollution from in-tree worktree provisioning, and mode 2's guard-bypass-via-bare-invocation recurrence, evidenced by a plan-sanctioned certify.sh bypassing lake-build-guard.sh via a bare `lake` call -- and (ii) the CoW/reflink/overlayfs/clone-nothing evaluation including the ext4 no-reflink blocker, cross-referencing specs/decisions/worktree-isolation-removal-reaffirmation.md so any future re-opening of the worktree question starts from a complete evidence base. WHY ONE TASK: that single doc carries both the build-heavy co-scheduling rule and the isolation posture in adjacent sections, and the build-weight change must edit it anyway; territory.md also carries build-heavy references. All edits land under agent-system/extensions/core/ per .claude/rules/source-store-deploy-boundary.md, never under .claude/**. Evidence base: specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. NON-GOALS: do NOT restore per-dispatch git worktree isolation (that verdict was re-opened, re-argued and CONFIRMED -- see the decision record); do NOT attempt a Lake/Mathlib shared-cache feasibility spike (named as a possible future spike, not requested). SELF-MODIFICATION: this task IS self-modifying (scripts/orchestrate-cycle-plan.sh is an orchestrator-critical path); expect the admission gate to defer it and re-invoke /orchestrate rather than passing --allow-self-modifying.
-
----
-
-### 308. /review: wire roadmap regeneration and collapse the redundant jq and generate-todo passes
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 306
-
-**Description**: Wire /review to regenerate specs/ROADMAP.md completely, and remove redundant work from the command.
-
-1. ROADMAP REGENERATION. /review Step 2.5 (commands/review.md:71-134) currently calls roadmap-integration.sh --annotate, which only annotates completed checkboxes. Rewire it to the regenerate mode created by the roadmap-generation task, so /review rebuilds the roadmap completely -- including regenerating each phase's and batch's brief description of what it accomplishes, while preserving the authored per-phase description text per the generation contract. Responsibility split: /review regenerates completely; /todo prunes.
-
-2. EFFICIENCY. Collapse the ten separate jq processes spawned over one in-memory string at commands/review.md:88-101 into a single pass. Remove the redundant generate-todo.sh invocation: it is called both per-task (:671) and again for the whole run (:720-721).
-
-CONSTRAINT: keep the existing error-handling contract intact. The missing-script and non-zero-exit guards at :103-134, and the always-on roadmap-structure marker plus warning banners, must survive -- they are what stops a regeneration no-op from masquerading as success.
-
----
-
-### 307. /todo: consolidate the duplicated skill-todo implementation, then wire roadmap pruning and cut the per-task jq and subprocess fan-out
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: Task 306
-
-**Description**: Make /todo faster, cheaper and more reliable, and wire it to the roadmap prune mode. TWO PHASES, IN THIS ORDER. The order is a REQUIREMENT, not a suggestion.
-
-=== PHASE 1 (FIRST, and the bulk of the value): consolidate the duplicated /todo implementation ===
-
-skills/skill-todo/SKILL.md is 1170 lines of prose that hand-implements the same 16 archival stages that commands/todo.md implements, and commands/todo.md never dispatches it: its allowed-tools line (commands/todo.md:3) has no Skill entry, and the string "skill-todo" appears nowhere in that file. Every out-of-directory reference to skill-todo is documentation, manifest registration or a lint registry -- none is a dispatch. The duplication is already written down at scripts/deprecated/README.md:19 ("hand-implement[s] the identical archival behavior directly"), and context/patterns/context-protective-lead.md:260 records skill-todo as direct execution with no subagent.
-
-FRAME THIS AS CONSOLIDATION, NOT DELETION. skill-todo is registered at manifest.json:72 and is deployed, so it appears in the harness's own Skill listing and IS directly invocable as Skill(skill-todo) even though commands/todo.md does not call it. Removing the file alone would break that invocation path. Pick ONE of the two as the single source of truth; make the other a thin delegator, or remove it together with its manifest.json registration in the same change; then reconcile the docs.
-
-Also correct context/architecture/system-overview.md:417, which lists `/todo | Direct | skill-todo | (no agent)` and so implies skill-todo is in /todo's execution path. It is not. That misleading line is the reason this duplication survived.
-
-At roughly 1170 lines this consolidation is about half the 2322-line /todo footprint, and it dwarfs every per-call jq saving in the command. Do NOT spend the dispatch budget collapsing jq subprocesses while leaving the duplicate in place. Two divergence surfaces for identical behaviour is a reliability defect, not only a token one, which matches the stated goals of speed, token efficiency and reliability directly.
-
-=== PHASE 2 (ONLY AFTER PHASE 1): wire roadmap pruning ===
-
-Wire /todo to the roadmap prune mode created by the roadmap-generation task, so /todo removes completed tasks from specs/ROADMAP.md and drops a whole batch or phase once every task in it is complete. Today Stage 11 only appends *(Completed: ...)* annotations via roadmap-integration.sh --annotate; it never removes an item and never drops a phase.
-
-PHASE-ORDERING RATIONALE, which must not be reversed: wiring prune before consolidating would write the new prune behaviour into two divergent copies and then throw one away. Remove the divergence surface BEFORE new behaviour lands on it. Note also that Stage 11's elaborate mktemp filtered-snapshot dance exists only because the script can annotate but not prune, so pruning may let that whole mechanism collapse.
-
-=== SECONDARY micro-optimizations (only after the above; listed, but not the point of this task) ===
-- Up to 3k full jq reads of state.json for an expanded parent with k subtasks (skill-todo/SKILL.md:132-180, which itself notes the second pass is separate).
-- One reconcile-task-status.sh subprocess per in-flight task, run serially (:65-73).
-- Per-orphan state-write.sh calls (:566-577), where the main batch at :499-508 is already correctly batched.
-- scripts/memory-harvest.sh exists but its own header says it is bypassed in favour of inline prose.
-
-=== RELATIONSHIP TO TASK 44 ===
-Task 44 ("Slim commands/task.md, the largest per-invocation context contributor", status planned) is DELIBERATELY kept separate rather than absorbing this work. Its file_scope (commands/task.md, six task-mode pattern files, index-entries.json) is disjoint from this task's, and 44 already has an approved plan that folding new scope in would invalidate. Reuse 44's slimming approach as precedent. Record that 44's title claim is now false: commands/todo.md is 1152 lines and commands/task.md is 1005, so commands/todo.md is the larger per-invocation contributor; that claim should be corrected when 44 is next touched. Do NOT silently edit 44.
-
-=== OVERLAP NOTES ===
-- Task 302 also edits commands/todo.md, for a narrow commit-staging pathspec change. RECOMMENDATION ONLY (deliberately not a dependency edge, which would overconstrain): this task's restructure should land first so 302 then edits a settled file. The file_scope_collision admission gate serializes the two.
-- manifest.json is broad shared infrastructure also claimed by tasks 263, 280, 281 and 282, so expect some serialization there.
-
-=== FOLDED IN: orphan/misplaced detection ignores archived_projects (correctness bug, found live) ===
-
-A live `/todo` run surfaced a detection bug that belongs to this task rather than its own, because it exists SIX times across the two duplicate implementations this task's Phase 1 consolidates. Fixing it without consolidating first would mean fixing it twice and leaving the two copies free to diverge again — which is this task's own stated rationale, now with a concrete instance attached.
-
-THE DEFECT. Orphan and misplaced-directory detection queries only `.completed_projects[]` in `specs/archive/state.json`. Abandoned tasks route to the SIBLING `.archived_projects[]` array. So every directory belonging to an abandoned-then-archived task reads as untracked.
-
-SIX AFFECTED SITES (three per copy, same three logical checks):
-- `commands/todo.md`: line 71 (Step 2.5, orphaned-in-specs), line 88 (Step 2.5, orphaned-in-archive), line 127 (Step 2.6, misplaced)
-- `skills/skill-todo/SKILL.md`: line 241, line 258, line 289
-
-THE ASYMMETRY IS INTERNAL TO EACH FILE, which is what makes it a latent bug rather than a design choice: each copy's WRITE path already handles both arrays correctly (`commands/todo.md:582-583`, `skill-todo/SKILL.md:500-501` both split completed/expanded into `completed_projects` and abandoned into `archived_projects`), while its own DETECTION path reads just the one. The prose carries the error too: `skill-todo/SKILL.md:269` instructs "Cross-reference each against active_projects and archive completed_projects".
-
-MEASURED BLAST RADIUS (live, 2026-10-01, this repository). A `/todo` run with 15 archivable tasks reported SIX false-positive orphans in `specs/archive/`: 202, 208, 224, 256, 264, 267. All six were verified correctly tracked in `.archived_projects[]`. Real orphan count was 0, and real misplaced count was 0.
-
-WHY THIS IS NOT COSMETIC. A false positive here feeds Step 4.5's `AskUserQuestion` ("Found N orphaned directories... Track all orphans?"). Answering "Track all orphans" runs Step 5.E.2, which appends a SECOND `completed_projects` entry with `status: "orphan_archived"` and `source: "orphan_recovery"` for a task that already has a correct `archived_projects` entry — producing a duplicate, mis-statused record for an already-correctly-archived task, in an append-only archive whose stated purpose is an audit trail. The operator is being prompted to corrupt state, with the prompt's own framing ("not tracked in state files") asserting something false. On the live run the prompt was declined and no state was written.
-
-FIX. Every one of the six detection sites must test BOTH arrays before concluding "untracked" — treat a hit in either `.completed_projects[]` or `.archived_projects[]` as tracked. Per Phase 1's consolidation this should collapse to THREE sites in the single surviving implementation, not six. Use `[]?` (optional iteration) so a missing array is empty rather than an error, matching the existing `.archived_projects[]?` convention already used elsewhere. Correct the `skill-todo/SKILL.md:269` prose in the same change so the instruction stops encoding the defect.
-
-ALSO CORRECT the misplaced-directory category table in `context/patterns/todo-archival-reference.md` ("Directory Categories Summary", the `Tracked in archive/state.json?` column), which describes archive tracking as a single yes/no and so cannot express the two-array reality that caused this. That file is NOT in this task's declared file_scope — add it via the research phase's `proposed_file_scope` mechanism if the fix needs to touch it, rather than widening scope silently.
-
-REGRESSION TEST. Assert that a directory whose task sits in `.archived_projects[]` is NOT reported as an orphan or as misplaced. The six task numbers above are a ready-made fixture.
-== CROSS-REFERENCE: THE MOVE-STAGING REGRESSION IS TRACKED SEPARATELY (task 322) ==
-
-A second live /todo defect was found during a later archival run and was deliberately filed as its own task (322, `todo_move_vacated_source_never_staged`) rather than folded in here, unlike the orphan-detection bug above. Recorded so this task's Phase 1 does not re-derive it, clobber its fix, or assume it is covered.
-
-THE DEFECT, in one line: all three directory-move sites in `commands/todo.md` (lines 665, 686, 752) add only the move's DESTINATION to `stage_paths[]`, never the vacated source, so every archival commit leaves the deletion half of each `mv` unstaged. It is a confirmed regression from the task-309 explicit-pathspec migration (commit c482bf40c), which replaced a bare `-- specs/` token that had been covering both rename endpoints incidentally.
-
-WHY IT WAS NOT FOLDED IN HERE, in this task's own "would we fix it twice" terms: `skills/skill-todo/SKILL.md` has the same class of gap by a DIFFERENT mechanism -- its Stage 15 stages `git add specs/archive/ ...` (line 1076), a directory token covering destinations with nothing covering vacated sources. Two different edits, not the same edit duplicated, so consolidating first saves nothing. It also fires unconditionally on every archival run, whereas the orphan-detection bug above needs an operator to answer "Track all orphans" before it can corrupt state.
-
-CONSEQUENCE FOR PHASE 1. Task 322 owns the staging fix in BOTH copies, including `skill-todo/SKILL.md`'s Stage 15 line. If 322 lands first, Phase 1's consolidation must carry its fix into the surviving implementation rather than reintroducing the dest-only pattern. If Phase 1 lands first, 322 narrows to the single surviving copy. Either order is fine; the `file_scope_collision` admission gate serializes the two. No dependency edge is declared, consistent with this task's stated preference not to overconstrain.
 
 ---
 
@@ -2734,83 +2644,6 @@ already renders the string "parenttask" -- the underscore stripped by generate-t
 truncation path -- while state.json and the TODO.md task heading both hold "parent_task" correctly.
 This is a pre-existing defect in the very script this task is scoped to touch, so fix it as part of
 the rendering work item rather than filing it separately.
-
----
-
-### 270. Re-runnable null-safety audit of jq mutation sites across core scripts, then decide whether a shared guard idiom belongs in scripts/lib/
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 269
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
-
-WHY THIS IS SEPARATE FROM THE VALIDATE-STATE FIX. The sibling task repairs one mutation site. This task establishes whether that site was an isolated slip or an instance of a systematic pattern, and leaves behind a mechanism so the answer stays true. The signature to hunt is a REPORT-GUARDED / WRITE-UNGUARDED SPLIT: a read/report filter that correctly null-guards a field with `// []`, paired with a mutation filter over the same field that tests only for KEY PRESENCE via `has("...")` and then iterates with a bare `.[]`, `reduce`, or `map`. `has()` is true for a literal-null value, so the pairing is silently unsafe on exactly the data the report filter was written to tolerate.
-
-STARTING INVENTORY (gathered during triage; VERIFY rather than trust -- the corpus moves, and this list was not produced by a tool that can be re-run). Every file_scope mutation site outside the sibling task's already-identified one appeared null-safe on first pass, which is the outcome that makes a re-runnable check valuable rather than redundant:
-  - scripts/orchestrate-predispatch-review.sh, circa lines 421 and 430, uses the EXPLICIT form `has("dependencies") and .dependencies == null` / `has("file_scope") and .file_scope == null` and then assigns `[]`. This is correct and deliberate -- it is a null-to-empty repair, not a dedup, and it must keep distinguishing null from absent. Do not "simplify" it into a type test; a type test would change its meaning.
-  - scripts/update-task-status.sh, circa lines 704 and 775, uses `((. // []) + $add | unique)`. Null-safe. Note it uses `unique` deliberately, on a DIFFERENT contract from the order-preserving D3 dedup -- do not unify the two.
-  - scripts/backfill-file-scope.sh, circa line 234, uses `((.file_scope // []) + $updates[...] | unique)`. Null-safe.
-  - scripts/orchestrate-batch-admit.sh, circa lines 547 and 570, uses `(($e.file_scope // []) | length)`. Null-safe.
-  - scripts/task-lock.sh, circa line 1380, slurps with `add | unique`. Check its behavior on a null element, not merely on an empty input.
-  - scripts/orchestrate-cycle-postflight.sh, circa line 1059, pipes `jq 'length'` over a file_scope JSON value. `length` on null yields 0 rather than aborting, so this is safe today -- but record WHY it is safe, because that safety is incidental to jq's semantics rather than intentional in the code.
-Extend the sweep past file_scope to every array-valued field that can legitimately be null or absent in practice -- dependencies, artifacts, memory_candidates, modified_files, and any state.json or errors.json field with the same exposure.
-
-DELIVERABLE 1 -- A RE-RUNNABLE CHECK, NOT A ONE-TIME SWEEP. A prose findings list decays immediately. Add a check script alongside the existing repo-health lints (scripts/check-task-references.sh, check-runtime-file-tracking.sh, check-extension-docs.sh are the shape and exit-code convention to follow) that flags the presence-vs-type asymmetry mechanically. The hard part is the false-positive rate: a bare `has("x")` is entirely legitimate as a shape ASSERTION (scripts/validate-return-meta.sh circa line 216 pairs it WITH a type test, which is the correct idiom; the test suites under scripts/tests/ use it as an assertion throughout). Flag only the dangerous pairing -- presence test guarding an ITERATION -- and give the check an explicit, documented exemption mechanism for the deliberate null-vs-absent discriminators named above, so the check can be run at full strength without maintainers learning to ignore it. Register the new script in docs/reference/utility-scripts-inventory.md.
-
-DELIVERABLE 2 -- DECIDE, WITH A RECORDED RATIONALE, WHETHER A SHARED GUARD IDIOM BELONGS IN scripts/lib/. A genuine decision, not a foregone conclusion: if the audit finds the single already-known site, a helper is over-engineering and the check script plus a documented idiom is the proportionate answer. If it finds several, scripts/lib/file-scope-overlap.sh is the precedent to follow -- it already exports jq `def` source text as FILE_SCOPE_OVERLAP_JQ_DEFS via a quoted heredoc for splicing into callers' own jq programs, and its header records exactly why that shape beat a standalone .jq file. A dedup/guard def could ride the same mechanism. Record the decision either way so a future reader does not re-litigate it.
-
-RELATED, DELIBERATELY NOT MERGED. scripts/orchestrate-cycle-postflight.sh's modified_files-vs-file_scope excursion check (circa lines 1053-1069) is detection-only, emitting a stderr advisory where it should be an enforcement gate. That is a genuine follow-on but a DIFFERENT defect class -- advisory-vs-blocking, not null-safety -- and it was recorded separately. Touching the same file is not a reason to bundle it. If the audit turns up null-safety problems inside that same excursion block, fix those here and leave the enforcement-gate question to its own task.
-
-=== ADDITIONAL EVIDENCE (2026-09-30, ~/Projects/Logos/Verification, session sess_1790791567_96a2e0) ===
-A LIVE ABORT FROM THIS DEFECT CLASS, AT A SITE THIS TASK'S INVENTORY DID NOT SURVEY, PLUS A
-CORRECTION TO ONE OF THAT INVENTORY'S SAFETY CLAIMS.
-
-SITE: scripts/orchestrate-build-dispatch.sh:389-392, the Prior Decisions read path over
-specs/{NNN}_{slug}/.decisions.json.
-
-MECHANISM (observed, not derived). An /orchestrate lead wrote .decisions.json as an OBJECT
-wrapper, {"decisions":[...]}, rather than the flat array the schema in
-docs/architecture/handoff-schema.md's "Decisions File Schema" section requires. Then:
-  - line 389: `jq 'length'` over the file returned 1 -- the KEY count of an object, not an
-    element count -- which passed the `-gt 0` gate on line 390;
-  - lines 391-392: `.[] | "... \(.question) ..."` iterated the object's VALUES, yielding the
-    inner array, and indexing that array with a string aborted jq:
-    `jq: error (at <stdin>:13): Cannot index array with string ("timestamp")`.
-Line 389 carries `2>/dev/null || decisions_count=0`; line 391 carries NO guard, so the abort
-propagated and the script exited 5.
-
-BLAST RADIUS -- AN ADVISORY SECTION BLOCKED DISPATCH ENTIRELY. Prior Decisions is context
-enrichment, not a gate. Yet orchestrate-cycle-plan.sh reported only
-`orchestrate-build-dispatch.sh failed; deferring to a later cycle` and deferred the task on two
-consecutive cycles (2 and 3 of a five-cycle run), consuming work-cycle budget for zero work,
-with nothing in either the plan JSON or stderr naming the malformed file or the expected schema.
-Worth weighing as part of DELIVERABLE 2: a type-guard that degrades to "omit the section" would
-have turned this abort into a warning.
-
-CORRECTION TO THIS TASK'S STARTING INVENTORY. That inventory records of
-scripts/orchestrate-cycle-postflight.sh circa line 1059: "pipes `jq 'length'` over a file_scope
-JSON value. `length` on null yields 0 rather than aborting, so this is safe today -- but record
-WHY it is safe, because that safety is incidental to jq's semantics rather than intentional in
-the code." The incidental safety is NARROWER than stated. `length` is total over null and over
-objects alike, and on an object it returns a POSITIVE key count. A `length`-based gate therefore
-establishes NEITHER emptiness NOR type, and is unsafe for any value that could arrive
-object-shaped. The postflight site is safe only because its producer is jq-generated and cannot
-hand it an object; record that as the reason, not `length` itself.
-
-SIGNATURE TO ADD TO DELIVERABLE 1's HUNT. Alongside the has()-presence-vs-iteration pairing,
-flag COUNT-GUARDED / TYPE-UNGUARDED iteration: any `length`-or-count gate followed by `.[]`,
-`map`, or `reduce` over a value whose type was never asserted. The correct idiom is an explicit
-type test (`jq -e 'type == "array"'`) before iterating, never a count. Extend the sweep beyond
-state.json and errors.json to the other lead- and agent-authored JSON the orchestrator reads:
-.decisions.json, .return-meta.json, .orchestrator-handoff.json, .drift-inspection.json -- these
-are hand- or agent-written, so unlike jq-generated values they can legitimately arrive
-object-shaped, which is exactly the exposure `length` does not cover.
-
-SCOPE NOTE. This is the type-safety half only. The companion defects at the same site -- that
-.decisions.json has a documented writer but no writer script, and that its schema lives in a
-different file from the Move 4 instruction to write it -- are an authoring-surface gap rather
-than a jq guard, and are recorded on their own task.
 
 ---
 
