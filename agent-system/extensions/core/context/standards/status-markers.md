@@ -136,6 +136,16 @@ still terminates at `[COMPLETED]` exactly as before; it never passes through `[P
 - `- **Completed**: YYYY-MM-DD` timestamp
 - Do not add emojis; rely on status marker and text alone
 
+**Skeleton-plan terminus**: a strategic-sorry skeleton plan (the final implement handoff carries
+`skeleton: true` — see `handoff-schema.md`'s `skeleton` field) reaches `[COMPLETED]` through this
+same ordinary completion-claim gate as any other task, exactly like a plain `[COMPLETED]`
+transition — never through `[PR READY]`. Its strategic `sorry_inventory[]` entries are not
+auto-filed as tasks; instead `orchestrate-cycle-postflight.sh` surfaces each one in the cycle's
+stderr report, appends a "Skeleton follow-ups" block to the task's `completion_summary`, and
+records the entries on the task's `skeleton_follow_ups` array in state.json (append-only — see
+`context/reference/state-management-schema.md`'s "Skeleton Follow-Ups Field" subsection). The
+human files any follow-up with `/task`.
+
 #### `[PARTIAL]`
 **TODO.md Format**: `- **Status**: [PARTIAL]`  
 **state.json Value**: `"status": "partial"`  

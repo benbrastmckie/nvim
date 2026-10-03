@@ -229,6 +229,7 @@ artifact_number=$((count + 1))
 | `roadmap_items` | array | No | Explicit ROADMAP.md item texts (non-meta only) |
 | `memory_candidates` | array | No | Structured memory candidates emitted by agents (see below) |
 | `reflection` | object | No | Structured completion-time reflection emitted by agents (see below) |
+| `skeleton_follow_ups` | array | No | Strategic-sorry follow-ups from a skeleton completion (see below) |
 
 ### Memory Candidates Field
 
@@ -250,6 +251,36 @@ The `memory_candidates` array on task entries accumulates structured memory cand
 **Responsibility Split**:
 - **`/implement` (Producer)**: Reports what was changed factually
 - **`/todo` (Consumer)**: Evaluates content and decides what warrants CLAUDE.md updates
+
+### Skeleton Follow-Ups Field
+
+The `skeleton_follow_ups` array on task entries accumulates strategic-sorry follow-up entries
+surfaced when a strategic-sorry skeleton plan (handoff `skeleton: true` — see
+`handoff-schema.md`'s `skeleton` field) reaches `[COMPLETED]`. Entries are appended (not
+overwritten), the same convention `memory_candidates` above uses, so follow-ups from more than
+one skeleton completion on the same task coexist. Each entry is the corresponding
+`sorry_inventory` entry (filtered to `strategic == true`) plus two fields recording when and by
+whom it was recorded.
+
+| Field | Type | Required | Description |
+|-------|------|----------|--------------|
+| `file` | string | Yes | Path to the file containing the strategic sorry |
+| `line` | integer | Yes | Line number of the sorry |
+| `statement` | string | Yes | The statement the sorry stands in for |
+| `strategic` | boolean | Yes | Always `true` on a recorded entry — the non-strategic filter already ran |
+| `assumption` | string | Yes | The assumption the sorry rests on |
+| `why_deferred` | string | Yes | Why the sorry was deferred rather than closed |
+| `follow_up_task` | string | Yes | Human-readable description of the follow-up work |
+| `recorded_cycle` | integer | Yes | The `/orchestrate` cycle count at which this entry was recorded |
+| `session_id` | string | Yes | The session that recorded this entry |
+
+**Lifecycle**:
+- **Producer**: `orchestrate-cycle-postflight.sh`'s `implemented)` case, via
+  `skill_propagate_skeleton_follow_ups` (`scripts/skill-base.sh`) — fires only when the final
+  implement handoff carries `skeleton: true` and a non-empty strategic `sorry_inventory[]`
+- **Consumer**: The human, via `/task` — no auto-creation of follow-up tasks (deliberately; see
+  `status-markers.md`'s `[COMPLETED]` subsection)
+- **Semantics**: Append-only; never auto-filed as tasks; no archival-time (`/todo`) consumer today
 
 ### Reflection Field
 

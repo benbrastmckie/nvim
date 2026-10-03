@@ -276,13 +276,22 @@ to prevent repetition.
 ### `skeleton` (optional, boolean, hard-mode-only)
 `true` ONLY when `status == "implemented"` and completeness rests on one or more strategic
 sorries meeting `anti-analysis.md`'s strategic-sorry policy — the "implemented (skeleton)"
-outcome. Read only by the hard engine (H5 divergence-audit routing). See `wrap-up.md`'s
-status/skeleton interaction table for the full validity matrix.
+outcome. Read by the hard engine (H5 divergence-audit routing) AND by
+`orchestrate-cycle-postflight.sh`'s `implemented)` case, which gates its skeleton-follow-up
+completion reporting (stderr, `completion_summary`, the append-only `skeleton_follow_ups`
+state.json field — see `context/standards/status-markers.md`'s `[COMPLETED]` subsection and
+`context/reference/state-management-schema.md`'s "Skeleton Follow-Ups Field" subsection) on this
+flag. That read runs in both the base and hard engines (it is a single shared postflight script,
+not per-engine), but is a no-op for a base-mode handoff, which never populates this field. See
+`wrap-up.md`'s status/skeleton interaction table for the full validity matrix.
 
 ### `sorry_inventory` (optional, array, hard-mode-only)
 Array of entries, one per sorry introduced, with the canonical schema `{file, line, statement,
 strategic, assumption, why_deferred, follow_up_task}` — see `wrap-up.md`'s field-semantics
-section for the full per-field definition. Read only by the hard engine.
+section for the full per-field definition. Read by the hard engine AND by
+`orchestrate-cycle-postflight.sh`'s `implemented)` case, which filters this array to its
+`strategic == true` entries and surfaces each in the skeleton-follow-up completion reporting
+named above — again a no-op on a base-mode handoff, which never populates this field.
 
 ### `git_checkpoint` (optional)
 A git checkpoint reference (commit SHA, `working-progress-*.patch` path, `stash@{N}` ref, or

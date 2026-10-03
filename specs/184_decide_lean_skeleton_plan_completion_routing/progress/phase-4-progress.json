@@ -1,0 +1,36 @@
+{
+  "phase": 4,
+  "phase_name": "Document the skeleton terminus and the new field",
+  "started_at": "2026-10-02T01:10:00Z",
+  "last_updated": "2026-10-02T01:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "handoff-schema.md: amend skeleton/sorry_inventory field sections to name orchestrate-cycle-postflight.sh's skeleton-follow-up reporting",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]
+    },
+    {
+      "id": 2,
+      "description": "status-markers.md: add skeleton-plan terminus paragraph under [COMPLETED]",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/status-markers.md"]
+    },
+    {
+      "id": 3,
+      "description": "state-management-schema.md: skeleton_follow_ups row in Completion Fields table plus Skeleton Follow-Ups Field subsection (field table + Lifecycle)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]
+    },
+    {
+      "id": 4,
+      "description": "check-task-references.sh (deployed copy) clean on all three files; field names cross-checked against Phase 1/2 implementation",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

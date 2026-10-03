@@ -278,31 +278,31 @@ than bundling several into one combined check)*
 
 ---
 
-### Phase 4: Document the skeleton terminus and the new field [NOT STARTED]
+### Phase 4: Document the skeleton terminus and the new field [COMPLETED]
 
 **Goal**: The three authoritative documents state how a skeleton plan terminates now, who reads
 `skeleton`/`sorry_inventory`, and what `skeleton_follow_ups` is.
 
 **Tasks**:
-- [ ] `handoff-schema.md`: in the `skeleton` and `sorry_inventory` field sections, amend the "Read
+- [x] `handoff-schema.md`: in the `skeleton` and `sorry_inventory` field sections, amend the "Read
       only by the hard engine" sentences to also name
       `orchestrate-cycle-postflight.sh`'s skeleton-follow-up completion reporting (both engines;
       base-mode handoffs never populate these fields, so the read is a no-op there).
-- [ ] `status-markers.md`: add a short paragraph under `[COMPLETED]` stating that a strategic-sorry
+- [x] `status-markers.md`: add a short paragraph under `[COMPLETED]` stating that a strategic-sorry
       skeleton plan reaches `[COMPLETED]` through the ordinary completion-claim gate exactly like
       any other task — never through `[PR READY]` — and that its strategic `sorry_inventory`
       entries are surfaced in the cycle's stderr report, the task's `completion_summary`, and the
       `skeleton_follow_ups` array rather than auto-filed as tasks.
-- [ ] `state-management-schema.md`: add a `skeleton_follow_ups` row to the Completion Fields table
+- [x] `state-management-schema.md`: add a `skeleton_follow_ups` row to the Completion Fields table
       and a `### Skeleton Follow-Ups Field` subsection styled on `### Memory Candidates Field` — a
       field table for `{file, line, statement, strategic, assumption, why_deferred,
       follow_up_task, recorded_cycle, session_id}` plus a **Lifecycle** block naming the Producer
       (`orchestrate-cycle-postflight.sh`'s `implemented)` case via
       `skill_propagate_skeleton_follow_ups`), the Consumer (the human, via `/task`), and the
       Semantics (append-only; never auto-filed; no archival consumer today).
-- [ ] Cite durable anchors only — no task-number references in any of these three files (they sit
+- [x] Cite durable anchors only — no task-number references in any of these three files (they sit
       outside `specs/**`).
-- [ ] Keep every added line inside the repo's no-emoji convention.
+- [x] Keep every added line inside the repo's no-emoji convention.
 
 **Timing**: 0.75 hours
 
