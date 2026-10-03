@@ -1,30 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/127_collapse_routing_ladder_to_routing_agents/plans/01_routing-ladder-collapse.md",
-      "summary": "7-phase plan collapsing routing/routing_hard out of 17+2 extension manifests, retiring command-route-skill.sh, and re-scoping validators and docs to routing_agents."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When removing a manifest/config key that multiple validators read, check for validators that FAIL on the key's ABSENCE, not just ones that read its contents. In the agent-system routing collapse, check-extension-docs.sh's check_routing_block() hard-failed any non-exempt extension declaring provides.skills without a `routing` block, and that script is verify-deploy gate 3. A research pass that only inventoried readers of the key's VALUES classified the file as deferrable dead code; the presence-assertion made it blocking. The resulting ordering rule: re-scope presence-asserting validators to the surviving key BEFORE deleting the old key, so every phase stays green independently rather than leaving a knowingly-red gate between phases.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/127_collapse_routing_ladder_to_routing_agents/plans/01_routing-ladder-collapse.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["manifest", "config-key-removal", "validator-ordering", "verify-deploy", "presence-assertion", "phase-sequencing"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 12,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1791000710_cc4f86_127",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 6.5,
-    "dependency_waves": [[1, 2], [3], [4], [5, 6], [7]]
-  },
-  "next_steps": "Run /implement 127 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1791000710_cc4f86",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 7
+  }
 }

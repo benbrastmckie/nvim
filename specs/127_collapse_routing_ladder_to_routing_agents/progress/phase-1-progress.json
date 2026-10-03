@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Migrate /epi off command-route-skill.sh",
+  "started_at": "2026-10-03T04:34:29Z",
+  "last_updated": "2026-10-03T04:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read epi.md Step 2 (around line 362-372)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace command-route-skill.sh source block with direct skill_name=\"skill-epi-research\" assignment", "status": "done", "files_touched": ["agent-system/extensions/epidemiology/commands/epi.md"]},
+    {"id": 3, "description": "Update prose above the block and near line 249 to state direct dispatch with no router indirection", "status": "done", "files_touched": ["agent-system/extensions/epidemiology/commands/epi.md"]},
+    {"id": 4, "description": "Confirm epi declares no routing_hard entry so dropping effort_flag handling loses no behavior", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Grep epi.md for any other command-route-skill occurrence", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Collapse Routing Ladder to routing_agents
 
 - **Task**: 127 - Collapse routing ladder to routing agents
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None outstanding (task 121 hard-mode file deletions and task 125 command deletions confirmed landed by research)
 - **Research Inputs**: specs/127_collapse_routing_ladder_to_routing_agents/reports/01_routing-ladder-collapse.md
@@ -129,17 +129,17 @@ low-visibility and non-blocking; none is a correctness risk after this task land
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Migrate `/epi` off `command-route-skill.sh` [NOT STARTED]
+### Phase 1: Migrate `/epi` off `command-route-skill.sh` [COMPLETED]
 
 **Goal**: `/epi {N}` task-number resume resolves its research skill without the soon-retired
 resolver, with identical resulting `skill_name`.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/epidemiology/commands/epi.md` Step 2 (around line 362-372)
-- [ ] Replace the two-line `source .claude/scripts/command-route-skill.sh "research" "$task_type" "skill-epi-research" "${effort_flag:-}"` + `skill_name="$SKILL_NAME"` block with a direct `skill_name="skill-epi-research"` assignment
-- [ ] Update the prose immediately above the block (and the matching "canonical router (`command-route-skill.sh`)" sentence near line 249) to state that `epi`/`epi:study`/`epidemiology` all dispatch to the one research skill directly, with no router indirection
-- [ ] Confirm `epi` declares no `routing_hard` entry (verified during planning: it does not), so dropping `effort_flag` handling loses no behavior
-- [ ] Grep `epi.md` for any other `command-route-skill` occurrence
+- [x] Re-read `agent-system/extensions/epidemiology/commands/epi.md` Step 2 (around line 362-372) *(completed)*
+- [x] Replace the two-line `source .claude/scripts/command-route-skill.sh "research" "$task_type" "skill-epi-research" "${effort_flag:-}"` + `skill_name="$SKILL_NAME"` block with a direct `skill_name="skill-epi-research"` assignment *(completed)*
+- [x] Update the prose immediately above the block (and the matching "canonical router (`command-route-skill.sh`)" sentence near line 249) to state that `epi`/`epi:study`/`epidemiology` all dispatch to the one research skill directly, with no router indirection *(completed)*
+- [x] Confirm `epi` declares no `routing_hard` entry (verified during planning: it does not), so dropping `effort_flag` handling loses no behavior *(completed: confirmed via jq, manifest has no routing_hard key)*
+- [x] Grep `epi.md` for any other `command-route-skill` occurrence *(completed: 0 occurrences remain)*
 
 **Timing**: 0.5 hours
 

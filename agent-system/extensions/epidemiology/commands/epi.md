@@ -247,8 +247,9 @@ fi
 ### Step 3: Handle Input Type
 
 **If task number**:
-Load existing task, validate task_type starts with "epi", then delegate to research via the
-canonical router (`command-route-skill.sh`).
+Load existing task, validate task_type starts with "epi", then delegate to research directly —
+`epi`, `epi:study`, and `epidemiology` all resolve to `skill-epi-research`, with no router
+indirection.
 
 **If file path**:
 Read the file as study protocol or source material. Run Stage 0 forcing questions (Steps 0.1-0.10) with the file content as context. Then proceed to task creation.
@@ -361,14 +362,11 @@ task_type=$(echo "$task_data" | jq -r '.task_type')
 
 ### Step 2: Delegate
 
-Resolve the skill through the single canonical router, `command-route-skill.sh` — the same
-mechanism every command-driven skill dispatch uses, not a third mechanism. The epidemiology
-manifest declares `epi`, `epi:study`, and `epidemiology` as aliases all resolving to
-`skill-epi-research`.
+`epi`, `epi:study`, and `epidemiology` all dispatch to the one research skill directly, with no
+router indirection.
 
 ```bash
-source .claude/scripts/command-route-skill.sh "research" "$task_type" "skill-epi-research" "${effort_flag:-}"
-skill_name="$SKILL_NAME"
+skill_name="skill-epi-research"
 ```
 
 **Invoke Skill tool**:
