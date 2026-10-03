@@ -20,7 +20,7 @@
 #
 # Usage:
 #   orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
-#     [--clean] [--lit] [--compare] [--hard] [--fast] [--model M] [--focus "..."]
+#     [--clean] [--lit] [--compare] [--gate] [--hard] [--fast] [--model M] [--focus "..."]
 #     [--territory "..."] [--phase-number N] [--dispatch-start-ts TS] [--allow-terminal]
 #
 # --allow-terminal: forwarded verbatim as skill_validate_input's 2nd positional argument, so a
@@ -34,6 +34,14 @@
 # parse-command-args.sh). Emits a single `- compare_flag: true` line into the written dispatch
 # file's `## Identity` section — emitted ONLY when the flag is true, so a no-flag dispatch file
 # is byte-identical to one built before this flag existed.
+#
+# --gate: advisory-only intermediate verification-tier mode hint (see GATE_FLAG in
+# parse-command-args.sh). Emits a single `- gate_flag: true` line into the written dispatch
+# file's `## Identity` section — emitted ONLY when the flag is true, so a no-flag dispatch file
+# is byte-identical to one built before this flag existed, exactly as for --compare above.
+# ADVISORY ONLY: the flag never blocks a dispatch, never fails one, and never downgrades status.
+# This script is deliberately phase-agnostic about it — it records whatever it is told. Scoping
+# `--gate` to implement dispatches is orchestrate-cycle-plan.sh's forwarding guard's job.
 #
 # Prior Decisions: when `specs/{NNN}_{slug}/.decisions.json` exists and is non-empty (schema in
 # docs/architecture/handoff-schema.md's "## Decisions File Schema (.decisions.json)" section),
@@ -103,7 +111,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 usage() {
   cat <<'USAGE'
 Usage: orchestrate-build-dispatch.sh <task_number> <phase> --session SID --seq N
-         [--clean] [--lit] [--compare] [--hard] [--fast] [--model M] [--focus "..."]
+         [--clean] [--lit] [--compare] [--gate] [--hard] [--fast] [--model M] [--focus "..."]
          [--territory "..."] [--phase-number N] [--dispatch-start-ts TS] [--allow-terminal]
 
 <phase> is one of: research | plan | implement
@@ -132,6 +140,7 @@ dispatch_seq=""
 clean_flag="false"
 lit_flag="false"
 compare_flag="false"
+gate_flag="false"
 hard_mode="false"
 effort_flag=""
 model_flag=""
@@ -149,6 +158,7 @@ while [ "$#" -gt 0 ]; do
     --clean) clean_flag="true"; shift ;;
     --lit) lit_flag="true"; shift ;;
     --compare) compare_flag="true"; shift ;;
+    --gate) gate_flag="true"; shift ;;
     --hard) hard_mode="true"; effort_flag="hard"; shift ;;
     --fast) effort_flag="fast"; shift ;;
     --model) model_flag="${2:-}"; shift 2 ;;
@@ -426,6 +436,9 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   fi
   if [ "$compare_flag" = "true" ]; then
     echo "- compare_flag: true"
+  fi
+  if [ "$gate_flag" = "true" ]; then
+    echo "- gate_flag: true"
   fi
   echo ""
   echo "## Description"

@@ -154,7 +154,8 @@
 #
 # Usage:
 #   orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
-#     [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--hard] [--fast]
+#     [--force-phases "research,plan,implement"] [--clean] [--lit] [--compare] [--gate] [--hard]
+#     [--fast]
 #     [--model M] [--allow-self-modifying] [--allow-scope-collision]
 #     [--dry-run] <task_number> [<task_number> ...]
 #   --state-file is always required. --session is required EXCEPT under --dry-run, where it is
@@ -165,6 +166,11 @@
 # `--compare` is forwarded into `build_args` (as `--compare`, mirroring `--lit`) ONLY for an
 # implement-phase candidate (`$g = "implement"`) — it is meaningless for research/plan dispatches
 # and is never forwarded to them.
+#
+# `--gate` is forwarded into `build_args` (as `--gate`) ONLY for an implement-phase candidate
+# (`$g = "implement"`), by the same guard shape as `--compare` immediately above — it is
+# meaningless for research/plan dispatches and is never forwarded to them. `--gate` is ADVISORY
+# ONLY: it never blocks a dispatch, never fails one, and never downgrades status.
 #
 # `--state-file F` is the CANONICAL specs/state.json (or a fixture copy in tests) — the same
 # STATE_FILE every sibling script (orchestrate-batch-admit.sh, orchestrate-triage-classify.sh)
@@ -332,7 +338,7 @@ usage() {
   cat <<'USAGE'
 Usage: orchestrate-cycle-plan.sh --session SID --state-file F [--invocation-count N]
          [--force-phases "research,plan,implement"] [--focus "<text>"] [--clean] [--lit]
-         [--compare] [--hard] [--fast] [--model M] [--allow-self-modifying]
+         [--compare] [--gate] [--hard] [--fast] [--model M] [--allow-self-modifying]
          [--allow-scope-collision] [--dry-run] [--no-plan-cache]
          <task_number> [<task_number> ...]
 
@@ -358,6 +364,7 @@ focus_prompt=""
 clean_flag="false"
 lit_flag="false"
 compare_flag="false"
+gate_flag="false"
 hard_mode="false"
 effort_flag=""
 model_flag=""
@@ -377,6 +384,7 @@ while [ "$#" -gt 0 ]; do
     --clean) clean_flag="true"; shift ;;
     --lit) lit_flag="true"; shift ;;
     --compare) compare_flag="true"; shift ;;
+    --gate) gate_flag="true"; shift ;;
     --hard) hard_mode="true"; effort_flag="hard"; shift ;;
     --fast) effort_flag="fast"; shift ;;
     --model) model_flag="${2:-}"; shift 2 ;;
@@ -2340,6 +2348,7 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   [ "$clean_flag" = "true" ] && build_args+=(--clean)
   [ "$lit_flag" = "true" ] && build_args+=(--lit)
   [ "$compare_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--compare)
+  [ "$gate_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--gate)
   [ "$hard_mode" = "true" ] && build_args+=(--hard)
   [ "${effort_flag:-}" = "fast" ] && build_args+=(--fast)
   [ -n "$model_flag" ] && build_args+=(--model "$model_flag")

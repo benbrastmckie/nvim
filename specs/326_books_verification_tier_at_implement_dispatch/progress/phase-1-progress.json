@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Core flag plumbing",
   "started_at": "2026-10-03T00:00:00Z",
-  "last_updated": "2026-10-03T19:41:30Z",
+  "last_updated": "2026-10-03T19:43:49Z",
   "objectives": [
     {
       "id": 1,
@@ -15,23 +15,28 @@
     {
       "id": 2,
       "description": "orchestrate-cycle-plan.sh: gate_flag declaration, parse, implement-scoped forwarding",
-      "status": "in_progress",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
     },
     {
       "id": 3,
       "description": "orchestrate-build-dispatch.sh: usage, contract, declaration, parse, conditional emission",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+      ]
     },
     {
       "id": 4,
       "description": "Confirm build_args composed at exactly one site; verify byte-identity and implement-only scoping",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [],
+      "note": "build_args composed at exactly one site (orchestrate-cycle-plan.sh:2339). Both existing core suites pass unchanged: build-dispatch 124/0, cycle-plan 344/0. Next free groups measured: 17 (build-dispatch), 35 (cycle-plan)."
     }
   ],
-  "current_objective": 2,
+  "current_objective": 4,
   "approaches_tried": [],
   "deviations": [],
   "handoff_count": 0
