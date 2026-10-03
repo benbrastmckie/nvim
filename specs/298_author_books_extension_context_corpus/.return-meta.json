@@ -1,39 +1,79 @@
 {
-  "status": "tasks_created",
+  "status": "researched",
+  "task_number": 298,
+  "agent_type": "general-research-agent",
+  "delegation_path": [
+    "orchestrator",
+    "research",
+    "general-research-agent"
+  ],
+  "session_id": "sess_1791054566_849cf8_298",
+  "dispatch_seq": 1,
+  "phase": "research",
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task 298 entry added to TODO.md (Task Order wave 2, depends on 297)"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task 298 added to active_projects with topic extensions and dependencies [297]"
+      "type": "report",
+      "path": "specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md",
+      "summary": "Per-document authoring specification for the 17-file books domain context corpus, with an eleven-entry staleness ledger correcting the task description against the measured consuming repository, the tier/registration contract, and a six-phase plan shape."
     }
   ],
-  "next_steps": "Blocked on task 297. Once the extension scaffold exists, run /research 298 to begin the context corpus",
   "metadata": {
-    "session_id": "sess_1790829564_3abc0d",
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
+    "findings_count": 6,
+    "documents_specified": 16,
+    "files_planned": 17,
+    "staleness_ledger_entries": 11,
+    "decisions": 8,
+    "proposed_phases": 6,
+    "session_id": "sess_1791054566_849cf8_298",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
     "delegation_path": [
       "orchestrator",
-      "meta",
-      "skill-meta",
-      "meta-builder-agent"
-    ],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "created": "2026-10-01T04:49:03Z",
-    "tasks_created": 2
+      "research",
+      "general-research-agent"
+    ]
   },
-  "proposed_file_scope": [
-    "agent-system/extensions/books/context/project/books/"
-  ],
-  "modified_files": [
-    "/home/benjamin/.config/nvim/specs/TODO.md",
-    "/home/benjamin/.config/nvim/specs/state.json"
+  "next_steps": "Run /plan 298 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "A domain context corpus added to an agent-system extension must be TIERED deliberately, because validate-context-budgets.sh derives the tier from load_when shape (first match wins: always -> 1, agents non-empty -> 2, commands/task_types non-empty -> 3, all empty -> 4). Registering many large files with load_when.agents makes them all Tier 2, eagerly injected into every dispatch of those agents. The correct shape for a multi-file corpus is: the README.md navigation index at Tier 2 (agents + task_types), and every corpus document at Tier 4 with on_demand: true, discovered through the README's navigation table. on_demand: true is mandatory on an all-hooks-empty entry -- without it the Dead Entry Check flags the entry, and it does not change the derived tier. Note that the per-agent CAPS table in validate-context-budgets.sh lists only ten agents, so a new extension's agents are NOT covered by the budget gate and a tiering mistake would not be caught mechanically.",
+      "category": "PATTERN",
+      "source_artifact": "specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "context-tier",
+        "load_when",
+        "on_demand",
+        "index-entries",
+        "context-budget",
+        "corpus-registration"
+      ]
+    },
+    {
+      "content": "When a task description quotes measured figures from a fast-moving external repository, re-measure every one before writing against them. In the books-corpus research, eleven of the task description's measured claims were stale or refuted: its headline known-gap claim ('of 36 built module headers, 0 carry a book_layer') was contradicted by 188 book_layer lines over 155 files, and it listed as 'not yet landed' four artifacts that all existed. The stale source was traceable: the external repo's own books/README.md agreement report had not been updated after the conversion landed, and the task description copied it. The durable lesson: a task description's measured half ages independently of its design half, so treat the design narrative as the normative frame and re-derive every figure, recording each as measured-and-dated rather than inherited.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "stale-measurement",
+        "research-verification",
+        "task-description-drift",
+        "measured-vs-inherited",
+        "known-gap-register"
+      ]
+    },
+    {
+      "content": "A design record can carry its own mechanically-linted honesty register, and a derived context document should project it rather than re-judge it. The Logos/Verification books convention installs a '- **Validated by**:' line at the head of each of its 18 decisions in a three-form vocabulary -- 'none yet [-- reason]', 'partially, <instance text>', or anything else (binding) -- enforced by an 802-line lint with two blocking checks: marker presence/well-formedness, and instance liveness (every backtick path, dotted Lean name and bare filename in the marker line must still resolve). Each 'partially' marker names what is exercised, what is not exercised, and sometimes what is CONTRADICTED. When writing a known-gap register for such a system, adopt that vocabulary, project the markers into a dated table, and name the markers as the authority -- a future refresh is then a re-projection rather than a re-reading.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "validated-by-marker",
+        "honesty-register",
+        "design-record",
+        "instance-liveness-lint",
+        "known-gap"
+      ]
+    }
   ]
 }

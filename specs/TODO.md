@@ -44,10 +44,10 @@ next_project_number: 334
 
 ### Extensions
 
-298 [NOT STARTED] — Author the books extension context corpus under...
+298 [RESEARCHED] — Author the books extension context corpus under...
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
     └─ 333 [NOT STARTED] — The /books command with --review and --revise
-326 [NOT STARTED] — Add a books verification tier at implement dispatch: the...
+326 [RESEARCHING] — Add a books verification tier at implement dispatch: the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record (see above)
@@ -936,7 +936,7 @@ the skeleton-plan follow-up work by its title only.
 
 ### 326. Add a books verification tier at implement dispatch: the --gate flag mirroring --compare (the lifecycle hook route is rejected with evidence)
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 297
@@ -2154,10 +2154,11 @@ SHARED-FILE CONTENTION (for batch admission awareness, not dependencies). Other 
 
 ### 298. Author the books extension context corpus under context/project/books/
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 297
+- **Research**: [298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md]
 
 **Description**: Author the domain context corpus for the `books` extension under `agent-system/extensions/books/context/project/books/`. The extension's wiring — manifest, four-block routing, agents, skills, commands, rule, registration files and tests — is the dependency task; this task supplies the knowledge those agents and skills point at.
 
