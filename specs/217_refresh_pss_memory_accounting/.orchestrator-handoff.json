@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 9,
+  "summary": "Wrote a 9-phase, 14.5-hour implementation plan for cost-aware idle Lean tree reclamation in /refresh: PSS-based reclaimable accounting, CPU-delta idleness with an atomic state file, a 1 GB memory-floor cost gate, a re-verifying --lean-tree termination mode, and the notify-before-kill prompt path with snooze/dedupe. Plan passes validate-artifact.sh --strict.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/217_refresh_pss_memory_accounting/plans/01_pss-accounting-idle-notify.md",
+      "summary": "9-phase plan across the task's six declared files, sequenced in the strict dependency chain the research identified (accounting -> idleness/cost gate -> prompt path), with per-phase verification tiers, scope hypotheses, and a final gate covering shellcheck, the full matcher suite, redeploy, and the manual end-to-end notification check."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 9,
+  "blockers": []
+}

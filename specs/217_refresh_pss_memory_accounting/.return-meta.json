@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791000710_cc4f86_217",
-  "dispatch_seq": 4,
-  "findings_count": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/217_refresh_pss_memory_accounting/reports/01_pss-accounting-idle-notify.md",
-      "summary": "Research for PSS-based reclaimable memory accounting, CPU-delta idle tracking, and notify-before-kill prompt path, covering all three absorbed sub-tasks (dependency-ordered phases, existing seams/fixtures to reuse, structural main() risk for --lean-tree mode)."
+      "type": "plan",
+      "path": "specs/217_refresh_pss_memory_accounting/plans/01_pss-accounting-idle-notify.md",
+      "summary": "9-phase, 14.5-hour plan covering PSS-based reclaimable accounting (smaps_rollup Pss_Anon+SwapPss with Pss_File reported as uncounted shared cache and an approximate fallback), CPU-delta idle state machine with atomic lean-trees.json, memory-floor cost gate, --lean-tree targeted termination, and the notify-before-kill prompt path with snooze/dedupe, plus three test blocks and docs/systemd updates."
     }
   ],
+  "phase_count": 9,
+  "estimated_hours": 14.5,
+  "dependency_waves": [[1], [2, 3], [4], [5, 6], [7], [8], [9]],
   "memory_candidates": [
     {
-      "content": "claude-refresh.sh (agent-system/extensions/core/scripts/) uses a PROC_ROOT=\"${PROC_ROOT:-/proc}\" overridable seam so get_vmswap_kb() reads /proc/PID/status through it for test fixtures instead of real /proc. Any new /proc-reading helper (e.g. one parsing smaps_rollup for Pss_Anon/SwapPss/Pss_File) should read through the SAME seam rather than inventing a second one, so one fixture convention covers all /proc-reading functions in the file.",
+      "content": "When a script's companion systemd unit header documents an 'all N passes always run unconditionally' invariant that its non-destructiveness argument depends on (claude-refresh.service's 'New-passes ruling' over claude-refresh.sh's main()), a new single-target invocation mode must be an explicit early-return branch BEFORE that sequence, never an additional conditionally-run pass inside it. Folding it in silently invalidates the unit's documented safety derivation without touching the unit file, so the regression is invisible at review time. Pair the code change with an amendment to the unit's own header ruling in the same task.",
       "category": "PATTERN",
-      "source_artifact": "specs/217_refresh_pss_memory_accounting/reports/01_pss-accounting-idle-notify.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["proc_root", "smaps_rollup", "proc-fixture-seam", "claude-refresh"]
-    },
-    {
-      "content": "/proc/PID/stat field parsing gotcha: the 2nd field (comm) is parenthesized and can itself contain spaces or parentheses (processes can rename themselves via prctl(PR_SET_NAME)). Naive whitespace-splitting (e.g. awk '{print $22}' for starttime) silently misparses such rows. Safe parse: find the LAST ')' in the line, then split the remainder by whitespace and count fields from there. man proc documents this explicitly for /proc/pid/stat.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/217_refresh_pss_memory_accounting/reports/01_pss-accounting-idle-notify.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["proc-stat-parsing", "starttime", "comm-field-gotcha", "shell-scripting"]
-    },
-    {
-      "content": "lake-build-guard.sh (agent-system/extensions/core/scripts/) establishes a reusable systemd-run availability-probe + audible-degrade pattern: 'command -v systemd-run >/dev/null 2>&1 || return 1' followed by a cheap no-op 'systemd-run --user --scope --quiet --collect -- true' liveness probe, with the file's header naming the governing principle \"degrade audibly, never silently\" for optional dependencies (flock, systemd-run, PSI). Reuse this exact two-step shape for any new systemd-run/notify-send/DBus-session-bus dependency check rather than a bare command -v alone.",
-      "category": "PATTERN",
-      "source_artifact": "specs/217_refresh_pss_memory_accounting/reports/01_pss-accounting-idle-notify.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["systemd-run", "graceful-degrade", "availability-probe", "lake-build-guard"]
+      "source_artifact": "specs/217_refresh_pss_memory_accounting/plans/01_pss-accounting-idle-notify.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["systemd-unit-invariant", "early-return-mode", "claude-refresh", "pass-sequence", "safety-derivation"]
     }
   ],
-  "next_steps": "Run /plan 217 to create implementation plan"
+  "next_steps": "Run /implement 217 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1791000710_cc4f86_217",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 9
 }

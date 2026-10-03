@@ -177,7 +177,7 @@
       "project_name": "refresh_pss_memory_accounting",
       "title": "Cost-aware idle Lean tree reclamation in /refresh: PSS accounting, CPU-delta idleness, notify-before-kill",
       "task_type": "meta",
-      "status": "planning",
+      "status": "planned",
       "topic": "core-agent-system",
       "dependencies": [
         174
@@ -197,12 +197,17 @@
           "path": "specs/217_refresh_pss_memory_accounting/reports/01_pss-accounting-idle-notify.md",
           "type": "report",
           "summary": "Research for PSS-based reclaimable memory accounting, CPU-delta idle tracking, and notify-before-kill prompt path, covering all three absorbed sub-tasks (dependency-ordered phases, existing seams/fixtures to reuse, structural main() risk for --lean-tree mode)."
+        },
+        {
+          "path": "specs/217_refresh_pss_memory_accounting/plans/01_pss-accounting-idle-notify.md",
+          "type": "plan",
+          "summary": "9-phase plan across the task's six declared files, sequenced in the strict dependency chain the research identified (accounting -> idleness/cost gate -> prompt path), with per-phase verification tiers, scope hypotheses, and a final gate covering shellcheck, the full matcher suite, redeploy, and the manual end-to-end notification check."
         }
       ],
       "created": "2026-09-15T17:00:35Z",
-      "last_updated": "2026-10-03T04:23:06Z",
+      "last_updated": "2026-10-03T04:32:52Z",
       "priority": "medium",
-      "session_id": "sess_1791000710_cc4f86_217",
+      "session_id": "sess_1791000710_cc4f86",
       "next_artifact_number": 2
     },
     {
