@@ -22,11 +22,12 @@ Core is not a domain extension and is never loaded via the extension picker. It 
 
 ## Commands
 
-All 16 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (skill/agent) -> GATE OUT (postflight) -> COMMIT.
+All 17 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (skill/agent) -> GATE OUT (postflight) -> COMMIT. (`/please` is the one exception: it is a direct-execution, user-only confirmation surface with no GATE IN/OUT lifecycle of its own — see its own doc.)
 
 | Command | Usage | Description |
 |---------|-------|-------------|
 | `/task` | `/task "Description"` | Create, recover, expand, sync, or abandon tasks |
+| `/please` | `/please push origin feature-x` | Authorize one otherwise-blocked git push or destructive action for this invocation (user-only) |
 | `/research` | `/research N [focus]` | Research task(s), route by task type |
 | `/plan` | `/plan N` | Create phased implementation plan(s) |
 | `/implement` | `/implement N` | Execute plan(s) with phase resume support |

@@ -187,7 +187,9 @@ Commits:  {commit_count}
 **Response handling**:
 - **"Yes, push and create {PR_type}"**: **IMMEDIATELY CONTINUE** to STEP 5.
 - **"Submit as draft"**: Set `draft=true`, then **IMMEDIATELY CONTINUE** to STEP 5.
-- **"Cancel"**: Display "Merge cancelled. No changes were pushed." and **STOP**.
+- **"Cancel"**: Run `bash .claude/scripts/git-push-granted.sh --revoke` (clears the grant this
+  prompt submission minted so it cannot linger for the rest of its expiry window), then display
+  "Merge cancelled. No changes were pushed." and **STOP**.
 
 ---
 

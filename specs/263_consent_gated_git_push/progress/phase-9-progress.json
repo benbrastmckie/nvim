@@ -1,0 +1,26 @@
+{
+  "phase": 9,
+  "phase_name": "/please command, never-list, and command-table rows",
+  "started_at": "2026-10-03T06:00:00Z",
+  "last_updated": "2026-10-03T06:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create commands/please.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/please.md"]},
+    {"id": 2, "description": "manifest.json provides.commands addition", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "README.md command-table mention", "status": "done", "files_touched": ["agent-system/extensions/core/README.md"]},
+    {"id": 4, "description": "merge-sources/claudemd.md Command Reference row", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 5, "description": "--revoke on commands/merge.md and skill-tag/SKILL.md cancel paths", "status": "done", "files_touched": ["agent-system/extensions/core/commands/merge.md", "agent-system/extensions/core/skills/skill-tag/SKILL.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.commands-readme-row",
+      "description": "No row added to commands/README.md",
+      "type": "altered",
+      "reason": "Per research Finding 5 (restated in the plan's Research Integration section): commands/README.md is prose with no per-command table, so there is nothing to add a row to. Resolved as intended, not skipped.",
+      "annotation": "*(deviation: altered — no commands/README.md edit, per research Finding 5; file has no per-command table)*"
+    }
+  ],
+  "verification_notes": "merge-sources/claudemd.md measured 17730 B after the new row, well under its 19950 B Rule-V ceiling (context/config/claudemd-size-budget.json). check-extension-docs.sh itself (including check_readme_vs_manifest and Rule V) requires a deployed tree and is deferred to Phase 13, consistent with this phase's own 'local' verification tier."
+}

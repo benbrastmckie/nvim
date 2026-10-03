@@ -610,42 +610,42 @@ and 7 as executable assertions, in the fixture-driven style of `test-guard-destr
 
 ---
 
-### Phase 9: `/please` command, never-list, and command-table rows [NOT STARTED]
+### Phase 9: `/please` command, never-list, and command-table rows [COMPLETED]
 
 **Goal**: The user-only `/please` command the whole mechanism is fronted by, its hard-coded
 never-list, and the documentation rows that make it discoverable.
 
 **Tasks**:
-- [ ] Create `commands/please.md`, modelled on `commands/merge.md`'s structure and `commands/tag.md`'s
+- [x] Create `commands/please.md`, modelled on `commands/merge.md`'s structure and `commands/tag.md`'s
   "User Only: YES" warning-block convention: `description: ... (user-only)`, `argument-hint`,
   numbered `STEP` sections with "EXECUTE NOW" framing. `allowed-tools` includes `Bash(git:*)` and
   `AskUserQuestion`; it does NOT include `gh:*`/`glab:*` (push-only, per the PR-creation
   non-goal).
-- [ ] Flow: parse the literal request; show the exact command and its effect (for a push: local vs
+- [x] Flow: parse the literal request; show the exact command and its effect (for a push: local vs
   remote SHAs, commit count); confirm via `AskUserQuestion` before any irreversible step; prefer
   `--force-with-lease=<ref>:<observed remote sha>` over bare `--force`; execute only the literal
   request; push through `scripts/git-push-granted.sh`, never a bare `git push`.
-- [ ] State the caveat in the command itself: the grant proves the user typed `/please`, not that
+- [x] State the caveat in the command itself: the grant proves the user typed `/please`, not that
   the command the agent then runs is the one meant — so the confirmation step is mandatory for
   anything irreversible.
-- [ ] Never-list, hard-coded as a refusal before anything else happens, refused regardless of
+- [x] Never-list, hard-coded as a refusal before anything else happens, refused regardless of
   wording: credential/secret access; deletion outside the repo; `.git` internals; disabling,
   editing or removing hooks or hook settings. State explicitly that this list is enforced by the
   command's own logic, not by a hook — the hooks exist to stop agents, and `/please` is
   user-invoked.
-- [ ] State that `/please` is never available to an agent: it is in no skill-to-agent mapping, and
+- [x] State that `/please` is never available to an agent: it is in no skill-to-agent mapping, and
   its mint path fires only on the human's own literal prompt, never on an expanded command body.
-- [ ] Add `please.md` to `manifest.json` `provides.commands`.
-- [ ] Mention `/please` in `agent-system/extensions/core/README.md`'s command table —
+- [x] Add `please.md` to `manifest.json` `provides.commands`.
+- [x] Mention `/please` in `agent-system/extensions/core/README.md`'s command table —
   `check-extension-docs.sh`'s `check_readme_vs_manifest()` **fails** if a command in
   `provides.commands` is not mentioned in that README (verified during planning; this file is not
   in the task's originally declared `file_scope` and is added deliberately).
-- [ ] Add a `/please` row to `merge-sources/claudemd.md`'s Command Reference table beside `/merge`
+- [x] Add a `/please` row to `merge-sources/claudemd.md`'s Command Reference table beside `/merge`
   and `/tag`, marked user-only, and a `skill`-table/User-Only note only if one is warranted (there
   is no `skill-please`; `/please` is a command with no skill).
-- [ ] Per research Finding 5, add NO row to `commands/README.md` — it is prose with no per-command
+- [x] Per research Finding 5, add NO row to `commands/README.md` — it is prose with no per-command
   table. Note this in the summary so the absorbed instruction reads as resolved, not skipped.
-- [ ] Add `--revoke` calls to the cancel/abort paths of `commands/merge.md` and
+- [x] Add `--revoke` calls to the cancel/abort paths of `commands/merge.md` and
   `skills/skill-tag/SKILL.md`, so a cancelled flow does not leave a live grant for the rest of the
   600s window.
 

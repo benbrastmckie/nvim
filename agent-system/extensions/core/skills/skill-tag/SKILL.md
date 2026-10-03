@@ -454,6 +454,7 @@ If neither flag is set, prompt for confirmation using AskUserQuestion:
 
 If user selects "No, cancel":
 ```bash
+bash .claude/scripts/git-push-granted.sh --revoke 2>/dev/null || true
 echo ""
 echo "Tag creation cancelled."
 exit 0
