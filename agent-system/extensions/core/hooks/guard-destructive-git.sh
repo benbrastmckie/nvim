@@ -17,6 +17,15 @@
 #      .claude/rules/git-workflow.md's "No History Rewrites While Another Writer Is Live" section
 #      for the motivating incident and the full rationale.
 #
+# Predicate-composition note: a grant check (see "Grant check" further down) sits between
+# hazard class 1's MATCHED/REASON determination and its pre-existing snapshot-marker freshness
+# check -- after the clean-tree early exit and after hazard class 2's concurrency-gated
+# history-rewrite predicate (both unchanged by this note). A matching grant authorizes the one
+# already-matched destructive action (reset_hard/clean_fd/checkout_discard/restore_discard/
+# stash_drop) and is consumed on use; it has NO bearing on the over-staging detectors below,
+# which exit 2 unconditionally before this point is ever reached, so a destructive grant can
+# never exempt over-staging by construction, not merely by convention.
+#
 # Blocks via exit code 2 + a stderr message (NOT permissionDecision: deny, which is
 # documented-buggy for allow-listed Bash(git:*) commands -- see the rationale two sections below
 # ("Response is binary exit 2 + stderr...") for the GH issue numbers and full detail.
@@ -362,17 +371,20 @@ fi
 
 MATCHED=0
 REASON=""
+DESTRUCTIVE_ACTION_CLASS=""
 
 # git reset --hard
 if echo "$COMMAND_SCAN" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+reset[^;&|]*--hard\b'; then
   MATCHED=1
   REASON="git reset --hard discards uncommitted working-tree changes"
+  DESTRUCTIVE_ACTION_CLASS="reset_hard"
 fi
 
 # git checkout -- <path>  (pathspec discard form)
 if [ "$MATCHED" = "0" ] && echo "$COMMAND_SCAN" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+checkout[^;&|]*[[:space:]]--([[:space:]]|$)'; then
   MATCHED=1
   REASON="git checkout -- <path> discards uncommitted changes to that path"
+  DESTRUCTIVE_ACTION_CLASS="checkout_discard"
 fi
 
 # git restore <path>  (without --staged; --staged only unstages and is safe)
@@ -384,6 +396,7 @@ if [ "$MATCHED" = "0" ]; then
       if ! echo "$seg" | grep -q -- '--staged'; then
         MATCHED=1
         REASON="git restore <path> (without --staged) discards uncommitted working-tree changes"
+        DESTRUCTIVE_ACTION_CLASS="restore_discard"
         break
       fi
     done <<< "$RESTORE_SEGMENTS"
@@ -403,6 +416,7 @@ if [ "$MATCHED" = "0" ]; then
       if [ "$HAS_F" = "1" ] && [ "$HAS_D" = "1" ]; then
         MATCHED=1
         REASON="git clean -f -d permanently deletes untracked files and directories"
+        DESTRUCTIVE_ACTION_CLASS="clean_fd"
         break
       fi
     done <<< "$CLEAN_SEGMENTS"
@@ -413,6 +427,7 @@ fi
 if [ "$MATCHED" = "0" ] && echo "$COMMAND_SCAN" | grep -qE '(^|[;&|][[:space:]]*)git[[:space:]]+stash[[:space:]]+(drop|clear)\b'; then
   MATCHED=1
   REASON="git stash drop/clear permanently discards stashed changes"
+  DESTRUCTIVE_ACTION_CLASS="stash_drop"
 fi
 
 # forced git checkout / git switch (-f / --force) -- can silently overwrite local changes
@@ -424,6 +439,7 @@ if [ "$MATCHED" = "0" ]; then
       if echo "$seg" | grep -qE -- '(^|[^-])-[a-zA-Z]*f[a-zA-Z]*([[:space:]]|$)|--force'; then
         MATCHED=1
         REASON="forced git checkout/switch (-f/--force) can silently overwrite uncommitted changes"
+        DESTRUCTIVE_ACTION_CLASS="checkout_discard"
         break
       fi
     done <<< "$FORCED_SEGMENTS"
@@ -432,6 +448,34 @@ fi
 
 if [ "$MATCHED" = "0" ]; then
   exit 0
+fi
+
+# --- Grant check (consent-gated push/destructive-action enforcement) --------------------------
+# Inserted at exactly this point: AFTER the clean-tree early exit, AFTER the concurrency-gated
+# history-rewrite predicate (which keeps its own exit 2 and GUARD_ALLOW_HISTORY_REWRITE=1
+# override, untouched above), and at the SAME structural point the pre-existing snapshot-marker
+# freshness check below already occupies -- i.e. only once the hook has already decided this
+# command would otherwise be blocked. A matching, fresh, verifying grant authorizes exactly the
+# ONE already-matched destructive action (reset_hard | clean_fd | checkout_discard |
+# restore_discard | stash_drop, set alongside REASON/MATCHED above) and is consumed on use.
+# Grant REMOTE/REF/FORCE have no meaning for a local destructive action (there is no remote);
+# the fixed sentinel REMOTE="local", REF=<current branch, or "HEAD" if detached>, FORCE="0" is
+# used uniformly so the grant KV format's required fields stay satisfied without inventing a
+# second schema. This check is UNREACHABLE from the over-staging block above (which already
+# exited 2 unconditionally, with no snapshot-marker OR grant exemption of any kind) -- so a
+# destructive grant can never exempt over-staging by construction, not merely by convention.
+if [ -n "${DESTRUCTIVE_ACTION_CLASS:-}" ]; then
+  PG_LIB_CANDIDATE="$(dirname "${BASH_SOURCE[0]}")/../scripts/lib/push-grant-lib.sh"
+  if [ -r "$PG_LIB_CANDIDATE" ]; then
+    # shellcheck source=../scripts/lib/push-grant-lib.sh
+    if source "$PG_LIB_CANDIDATE" 2>/dev/null; then
+      GRANT_REF="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || GRANT_REF=""
+      [ -n "$GRANT_REF" ] && [ "$GRANT_REF" != "HEAD" ] || GRANT_REF="HEAD"
+      if pg_grant_consume "$DESTRUCTIVE_ACTION_CLASS" "local" "$GRANT_REF" "0" "guard-destructive-git.sh"; then
+        exit 0
+      fi
+    fi
+  fi
 fi
 
 # Destructive pattern matched on a dirty tree: check for a fresh, unconsumed snapshot marker.

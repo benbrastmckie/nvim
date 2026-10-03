@@ -133,14 +133,52 @@ if [ "$MINT_SOURCE" = "please" ]; then
     [ -n "${BASH_REMATCH[3]:-}" ] && IS_LEASE=1
   fi
 
+  # Destructive-action forms (the five classes guard-destructive-git.sh's grant check
+  # recognises; see push-grant-lib.sh's PG_ACTION_CLASSES). These have no remote/force concept
+  # -- REMOTE/REF/FORCE are the fixed sentinels guard-destructive-git.sh's own grant check uses
+  # (REMOTE="local", REF=current branch or "HEAD" if detached, FORCE="0"), so minting here
+  # produces a grant that check can actually match. The bare "force" prefix strip above does not
+  # apply to this family (there is no --force-with-lease analogue for a local destructive
+  # action), so IS_BARE_FORCE/IS_LEASE are simply left at 0 for this branch.
+  DESTRUCTIVE_MATCHED=0
   if [ "$MATCHED" -ne 1 ]; then
-    echo "please-grant: could not parse exactly one push request from \"$TEXT\". Accepted forms:" \
-      "'push <remote> <branch>', 'push <branch> to <remote>', 'push tag <name> to <remote>'," \
-      "each with an optional trailing --force-with-lease. No grant minted."
+    case "$TEXT" in
+      "git reset --hard"|"reset --hard"|"reset hard")
+        DESTRUCTIVE_MATCHED=1; ACTION_CLASS="reset_hard" ;;
+      "git clean -fd"|"git clean -df"|"clean -fd"|"clean -df")
+        DESTRUCTIVE_MATCHED=1; ACTION_CLASS="clean_fd" ;;
+      "git stash drop"|"stash drop"|"git stash clear"|"stash clear")
+        DESTRUCTIVE_MATCHED=1; ACTION_CLASS="stash_drop" ;;
+      *)
+        if [[ "$TEXT" =~ ^(git[[:space:]]+)?checkout[[:space:]]+--[[:space:]]+(.+)$ ]] \
+          || [[ "$TEXT" =~ ^(git[[:space:]]+)?(checkout|switch)[[:space:]]+-f(orce)?$ ]]; then
+          DESTRUCTIVE_MATCHED=1; ACTION_CLASS="checkout_discard"
+        elif [[ "$TEXT" =~ ^(git[[:space:]]+)?restore[[:space:]]+(.+)$ ]]; then
+          DESTRUCTIVE_MATCHED=1; ACTION_CLASS="restore_discard"
+        fi
+        ;;
+    esac
+    if [ "$DESTRUCTIVE_MATCHED" -eq 1 ]; then
+      MATCHED=1
+      REMOTE="local"
+      REF="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || REF=""
+      [ -n "$REF" ] && [ "$REF" != "HEAD" ] || REF="HEAD"
+      FORCE="0"
+    fi
+  fi
+
+  if [ "$MATCHED" -ne 1 ]; then
+    echo "please-grant: could not parse exactly one request from \"$TEXT\". Accepted push forms:" \
+      "'push <remote> <branch>', 'push <branch> to <remote>', 'push tag <name> to <remote>'" \
+      "(each with an optional trailing --force-with-lease). Accepted destructive forms:" \
+      "'git reset --hard', 'git clean -fd', 'git checkout -- <path>', 'git restore <path>'," \
+      "'git stash drop', 'git stash clear', 'git checkout -f'/'git switch -f'. No grant minted."
     exit_ok
   fi
 
-  if [ "$IS_BARE_FORCE" -eq 1 ]; then
+  if [ "$DESTRUCTIVE_MATCHED" -eq 1 ]; then
+    : # FORCE/REMOTE/REF already set to the destructive-class sentinels above; skip push FORCE logic.
+  elif [ "$IS_BARE_FORCE" -eq 1 ]; then
     FORCE="bare"
   elif [ "$IS_LEASE" -eq 1 ]; then
     FORCE="lease"
@@ -180,8 +218,17 @@ if [ -z "$GRANT_PATH" ]; then
 fi
 
 SHORT_SHA="${HEAD_SHA:0:7}"
-echo "please-grant: granted ${ACTION_CLASS} to ${REMOTE} ${REF} (${SHORT_SHA}, force=${FORCE})," \
-  "expires in ${PG_EXPIRY_WINDOW}s. Push via: bash .claude/scripts/git-push-granted.sh" \
-  "--remote ${REMOTE} --ref ${REF}$( [ "$FORCE" = lease ] && echo ' --force-with-lease' )"
+case "$ACTION_CLASS" in
+  push_branch|push_tag)
+    echo "please-grant: granted ${ACTION_CLASS} to ${REMOTE} ${REF} (${SHORT_SHA}, force=${FORCE})," \
+      "expires in ${PG_EXPIRY_WINDOW}s. Push via: bash .claude/scripts/git-push-granted.sh" \
+      "--remote ${REMOTE} --ref ${REF}$( [ "$FORCE" = lease ] && echo ' --force-with-lease' )"
+    ;;
+  *)
+    echo "please-grant: granted ${ACTION_CLASS} on branch ${REF} (${SHORT_SHA})," \
+      "expires in ${PG_EXPIRY_WINDOW}s. Run the matching git command directly --" \
+      "hooks/guard-destructive-git.sh consumes this grant the one time that command runs."
+    ;;
+esac
 
 exit_ok

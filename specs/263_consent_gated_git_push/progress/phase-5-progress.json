@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Grant check in guard-destructive-git.sh",
+  "started_at": "2026-10-03T04:05:00Z",
+  "last_updated": "2026-10-03T04:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Insert grant check at the exact structural point (after clean-tree exit, after history-rewrite predicate, same point as the snapshot-marker check)", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 2, "description": "Extend push-grant-lib.sh PG_ACTION_CLASSES (already done in Phase 2, verified here) and extend please-grant.sh's grammar for the 5 destructive classes", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/please-grant.sh"]},
+    {"id": 3, "description": "Header comment recording predicate composition with the history-rewrite predicate", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.destructive-grammar",
+      "description": "/please grammar for the 5 destructive action classes",
+      "type": "altered",
+      "reason": "The plan names the 5 action classes to add but does not specify the exact /please free-text grammar for them (only the push grammar is spelled out in detail). Designed a literal-git-command-shaped grammar ('git reset --hard', 'git clean -fd', 'git checkout -- <path>', 'git restore <path>', 'git stash drop'/'clear', 'git checkout -f'/'git switch -f') since it mirrors what a user would naturally type and requires no new vocabulary to learn. REMOTE/REF/FORCE use fixed sentinels (REMOTE=local, REF=current branch or HEAD if detached, FORCE=0) since these actions have no remote/force concept, matching the sentinels guard-destructive-git.sh's own grant check consumes.",
+      "annotation": "*(deviation: altered — literal-git-command-shaped /please grammar for the 5 destructive classes, with fixed REMOTE=local/FORCE=0 sentinels; see hooks/please-grant.sh comments)*"
+    }
+  ],
+  "verification_notes": "test-guard-destructive-git.sh: 72/72 pass unmodified both before and after the edit (pure-addition witness). Ad-hoc fixture verification: (1) /please git reset --hard mints a reset_hard grant; (2) a dirty-tree git reset --hard with that grant present is ALLOWED and the grant is consumed (file gone); (3) a second attempt with no grant is BLOCKED with the original message; (4) git add -A with a live reset_hard grant present is STILL BLOCKED (over-staging immunity preserved, grant untouched since over-staging's exit 2 happens strictly before the grant-check code is ever reached); (5) the history-rewrite predicate still fires (git commit --amend under a live lock, BLOCKED) with an unrelated reset_hard grant present and live, grant left untouched."
+}

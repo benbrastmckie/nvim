@@ -402,30 +402,30 @@ path agents are told to use.
 
 ---
 
-### Phase 5: Grant check in `guard-destructive-git.sh` [NOT STARTED]
+### Phase 5: Grant check in `guard-destructive-git.sh` [COMPLETED]
 
 **Goal**: Extend the existing destructive-git guard so a matched destructive action can be
 authorized by a matching grant, consumed on use — with zero change to its no-grant behaviour and
 zero change to the ordering of its existing gates.
 
 **Tasks**:
-- [ ] Re-read `hooks/guard-destructive-git.sh` in full immediately before editing (siblings are
+- [x] Re-read `hooks/guard-destructive-git.sh` in full immediately before editing (siblings are
   live on this tree this cycle).
-- [ ] Insert the grant check at exactly one place: after the clean-tree early exit
+- [x] Insert the grant check at exactly one place: after the clean-tree early exit
   (`git status --porcelain` empty → `exit 0`), after the concurrency-gated history-rewrite
   predicate (task 139's, which keeps its own `exit 2` and its `GUARD_ALLOW_HISTORY_REWRITE=1`
   operator override), and at the same structural point the snapshot-marker freshness check already
   occupies — i.e. only once the hook has already decided the command would otherwise be blocked.
-- [ ] Extend the grant's `ACTION_CLASS` vocabulary in `push-grant-lib.sh` with the destructive
+- [x] Extend the grant's `ACTION_CLASS` vocabulary in `push-grant-lib.sh` with the destructive
   classes the absorbed text names (`reset_hard`, `clean_fd`, `checkout_discard`,
   `restore_discard`, `stash_drop`), and have the mint hook accept them from `/please` with the
   same one-tuple-or-nothing grammar.
-- [ ] Preserve, untouched: the clean-tree early exit, the `COMMAND_SCAN` quote/comment stripping,
+- [x] Preserve, untouched: the clean-tree early exit, the `COMMAND_SCAN` quote/comment stripping,
   and — critically — the over-staging detectors' **immunity**. A grant must NEVER exempt
   `git add -A`/`git add .`/a directory-or-glob pathspec/`git commit -am`, for the same asymmetry
   reason the snapshot marker cannot: a snapshot makes data loss recoverable, but over-staging is a
   scope problem no authorization makes acceptable. Assert this with a test, not a comment alone.
-- [ ] Record the composition with task 139's predicate in a header comment naming both predicates
+- [x] Record the composition with task 139's predicate in a header comment naming both predicates
   and their order.
 
 **Timing**: 1 hour
