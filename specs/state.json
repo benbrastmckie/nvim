@@ -1376,6 +1376,11 @@
           "path": "specs/326_books_verification_tier_at_implement_dispatch/plans/01_gate-flag-verification-tier.md",
           "type": "plan",
           "summary": "Six-phase plan adding an advisory-only --gate verification tier at implement dispatch."
+        },
+        {
+          "path": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the advisory --gate verification tier at implement dispatch."
         }
       ],
       "file_scope": [
@@ -1397,7 +1402,8 @@
       ],
       "last_updated": "2026-10-03T19:40:25Z",
       "session_id": "sess_1791054566_849cf8",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added an advisory-only --gate flag to /orchestrate that, at implement dispatch only, runs the consuming repository's regex layer lint plus a Books.Meta import-closure check via a new extension-local books-gate.sh wrapper (one JSON object, always exit 0, vacuous passes reported as vacuous). Threaded through the full --compare surface in core, documented at all four layers including a new ### gate (optional) metadata schema section, bound in both books implementation agents and both books skills, and pinned by a 44-assertion fixture suite with seven forgery probes plus new Group 17 and Group 35 in the two core suites. A core redeploy is required for --gate to exist at all in any consuming repository, since every edit landed in the source store; enabling the books extension in a consuming repository's .claude-extensions.json remains the user's own action."
     },
     {
       "project_number": 327,

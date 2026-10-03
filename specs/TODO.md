@@ -940,6 +940,7 @@ the skeleton-plan follow-up work by its title only.
 - **Dependencies**: Task 297
 - **Research**: [326_books_verification_tier_at_implement_dispatch/reports/01_gate-flag-verification-tier.md]
 - **Plan**: [326_books_verification_tier_at_implement_dispatch/plans/01_gate-flag-verification-tier.md]
+- **Summary**: [326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` and `agent-system/extensions/books/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 

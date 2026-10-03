@@ -35,29 +35,54 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["vacuous-pass", "lint", "subshell", "rule-set", "verification", "shell"]
+      "suggested_keywords": [
+        "vacuous-pass",
+        "lint",
+        "subshell",
+        "rule-set",
+        "verification",
+        "shell"
+      ]
     },
     {
       "content": "An advisory wrapper around a fail-closed tool should ALWAYS exit 0 and carry every finding as JSON fields on stdout. A non-zero exit invites a caller to treat the result as a failure, which defeats the advisory contract. Reserve a real non-zero exit for the wrapper's OWN argument errors, and classify the wrapped tool's ambiguous exit codes into distinct named statuses (disambiguating a shared exit code on stderr content before assigning meaning) rather than passing them through.",
       "category": "PATTERN",
       "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["advisory-gate", "exit-code", "wrapper", "json-stdout", "classification"]
+      "suggested_keywords": [
+        "advisory-gate",
+        "exit-code",
+        "wrapper",
+        "json-stdout",
+        "classification"
+      ]
     },
     {
       "content": "In a shared fixture test suite where upstream groups install degraded collaborator stubs and never restore them, a new group appended at the end inherits them. A forwarding assertion written as 'flag NOT present in argv' then passes VACUOUSLY when no dispatch was built at all. Install the group's own deterministic stubs AND add a non-vacuity guard that FAILS when the expected argv line is absent, rather than treating absence as a negative result.",
       "category": "INSIGHT",
       "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["test-fixture", "vacuous-assertion", "stub-leakage", "non-vacuity-guard", "shell-testing"]
+      "suggested_keywords": [
+        "test-fixture",
+        "vacuous-assertion",
+        "stub-leakage",
+        "non-vacuity-guard",
+        "shell-testing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791054566_849cf8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
