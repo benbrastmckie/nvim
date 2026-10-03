@@ -2325,6 +2325,125 @@ else
   fail "push-consent (2): expected verdict=ask_user, got: $LAST_STDOUT"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Skeleton follow-up reporting (context/standards/status-markers.md's [COMPLETED] subsection):
+# a skeleton=true final implement handoff with a two-entry sorry_inventory (one strategic, one
+# not) surfaces its strategic sorry in all three channels -- stderr, completion_summary, and the
+# append-only skeleton_follow_ups state.json field -- while still reaching the ordinary
+# [COMPLETED] transition through skill_gate_completion_claim's unconditional Case 2 allow
+# (phases_completed >= phases_total > 0, read straight off the handoff). This is the
+# handoff-present (trusted, matching dispatch_seq, fresh mtime) path -- distinct from every
+# Acceptance (1)-(4) case above, which deliberately stales/mismatches the handoff to exercise
+# the recovery fallback instead.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Skeleton follow-up (1): a skeleton=true handoff with a two-entry sorry_inventory reports only the strategic entry"
+setup_sandbox
+sk_candidate_num=970
+mkdir -p "$WORKDIR/specs/${sk_candidate_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${sk_candidate_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${sk_candidate_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${sk_candidate_num} -- skeleton follow-up reporting", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/${sk_candidate_num}_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${sk_candidate_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${sk_candidate_num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":2,"phases_total":2},"completion_data":{"completion_summary":"Completed the skeleton plan; one strategic sorry remains, tracked below."}}
+EOF
+cat > "$WORKDIR/specs/${sk_candidate_num}_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"phases_completed":2,"phases_total":2,"skeleton":true,"sorry_inventory":[{"file":"Proof/Foo.lean","line":42,"statement":"theorem foo_bar : P -> Q","strategic":true,"assumption":"assume decidability of X","why_deferred":"requires a separate decidability lemma not yet proven","follow_up_task":"Prove decidability of X for foo_bar"},{"file":"Proof/Baz.lean","line":17,"statement":"lemma baz_qux : R","strategic":false,"assumption":"routine arithmetic","why_deferred":"will be discharged by norm_num once imports settle","follow_up_task":null}]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut "specs/${sk_candidate_num}_candidate" --session "sess_${sk_candidate_num}" --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file "specs/${sk_candidate_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" --cycle-count 3 "$sk_candidate_num"
+
+sk_follow_up_lines=$(echo "$LAST_STDERR" | grep -c "SKELETON FOLLOW-UP" || true)
+if [ "$sk_follow_up_lines" = "1" ]; then
+  pass "skeleton follow-up (1a): exactly one SKELETON FOLLOW-UP line on stderr (the non-strategic entry is filtered out)"
+else
+  fail "skeleton follow-up (1a): expected exactly 1 SKELETON FOLLOW-UP line, got $sk_follow_up_lines: $LAST_STDERR"
+fi
+if echo "$LAST_STDERR" | grep -q "SKELETON FOLLOW-UP: Proof/Foo.lean:42"; then
+  pass "skeleton follow-up (1a): the stderr line names the strategic entry's file:line"
+else
+  fail "skeleton follow-up (1a): expected a SKELETON FOLLOW-UP line naming Proof/Foo.lean:42, got: $LAST_STDERR"
+fi
+
+sk_state_entry=$(jq -c --argjson n "$sk_candidate_num" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null)
+if [ "$(echo "$sk_state_entry" | jq -r '.skeleton_follow_ups | length' 2>/dev/null)" = "1" ]; then
+  pass "skeleton follow-up (1b): state.json records exactly one skeleton_follow_ups entry (the strategic one)"
+else
+  fail "skeleton follow-up (1b): expected skeleton_follow_ups length 1, got: $sk_state_entry"
+fi
+if [ "$(echo "$sk_state_entry" | jq -r '.skeleton_follow_ups[0].follow_up_task' 2>/dev/null)" = "Prove decidability of X for foo_bar" ] \
+   && [ "$(echo "$sk_state_entry" | jq -r '.skeleton_follow_ups[0].recorded_cycle' 2>/dev/null)" = "3" ] \
+   && [ "$(echo "$sk_state_entry" | jq -r '.skeleton_follow_ups[0].session_id' 2>/dev/null)" = "sess_${sk_candidate_num}" ]; then
+  pass "skeleton follow-up (1b): the recorded entry carries follow_up_task, recorded_cycle, and session_id"
+else
+  fail "skeleton follow-up (1b): missing/wrong follow_up_task, recorded_cycle, or session_id, got: $sk_state_entry"
+fi
+if echo "$sk_state_entry" | jq -r '.completion_summary' 2>/dev/null | grep -q "Skeleton follow-ups" \
+   && echo "$sk_state_entry" | jq -r '.completion_summary' 2>/dev/null | grep -q "Prove decidability of X for foo_bar"; then
+  pass "skeleton follow-up (1c): completion_summary carries the Skeleton follow-ups block and the strategic entry's follow_up_task"
+else
+  fail "skeleton follow-up (1c): completion_summary missing the skeleton follow-up block, got: $(echo "$sk_state_entry" | jq -r '.completion_summary' 2>/dev/null)"
+fi
+if [ "$(jqf '.verdict')" = "ok" ] && [ "$(echo "$sk_state_entry" | jq -r '.status' 2>/dev/null)" = "completed" ]; then
+  pass "skeleton follow-up (1d): the completion outcome is unchanged -- verdict=ok and task status=completed"
+else
+  fail "skeleton follow-up (1d): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$sk_state_entry" | jq -r '.status' 2>/dev/null)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Skeleton follow-up (2) (contrast): an ordinary (non-skeleton) implemented handoff on the same
+# handoff-present path emits zero SKELETON FOLLOW-UP lines and writes no skeleton_follow_ups
+# field -- the reporting is gated on handoff.skeleton, not fired unconditionally for every
+# implemented completion.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Skeleton follow-up (2) (contrast): a non-skeleton implemented handoff produces no skeleton follow-up output"
+setup_sandbox
+ns_candidate_num=971
+mkdir -p "$WORKDIR/specs/${ns_candidate_num}_candidate/summaries"
+echo x > "$WORKDIR/specs/${ns_candidate_num}_candidate/summaries/01_x-summary.md"
+write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${ns_candidate_num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${ns_candidate_num} -- skeleton follow-up contrast (non-skeleton)", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/${ns_candidate_num}_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/${ns_candidate_num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${ns_candidate_num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"completion_data":{"completion_summary":"Completed the ordinary (non-skeleton) plan."}}
+EOF
+cat > "$WORKDIR/specs/${ns_candidate_num}_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"phases_completed":1,"phases_total":1}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut "specs/${ns_candidate_num}_candidate" --session "sess_${ns_candidate_num}" --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file "specs/${ns_candidate_num}_candidate/.orchestrator-loop-guard" \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" "$ns_candidate_num"
+
+if echo "$LAST_STDERR" | grep -q "SKELETON FOLLOW-UP"; then
+  fail "skeleton follow-up (2) (contrast): unexpected SKELETON FOLLOW-UP line for a non-skeleton handoff, got: $LAST_STDERR"
+else
+  pass "skeleton follow-up (2) (contrast): no SKELETON FOLLOW-UP line for a non-skeleton handoff"
+fi
+ns_state_entry=$(jq -c --argjson n "$ns_candidate_num" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null)
+if echo "$ns_state_entry" | jq -e 'has("skeleton_follow_ups")' >/dev/null 2>&1; then
+  fail "skeleton follow-up (2) (contrast): unexpected skeleton_follow_ups field on a non-skeleton task entry, got: $ns_state_entry"
+else
+  pass "skeleton follow-up (2) (contrast): no skeleton_follow_ups field written for a non-skeleton handoff"
+fi
+if [ "$(jqf '.verdict')" = "ok" ] && [ "$(echo "$ns_state_entry" | jq -r '.status' 2>/dev/null)" = "completed" ]; then
+  pass "skeleton follow-up (2) (contrast): the ordinary completion outcome is unchanged -- verdict=ok and task status=completed"
+else
+  fail "skeleton follow-up (2) (contrast): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$ns_state_entry" | jq -r '.status' 2>/dev/null)"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

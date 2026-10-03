@@ -1,0 +1,38 @@
+{
+  "phase": 3,
+  "phase_name": "Regression fixture in test-orchestrate-cycle-postflight.sh",
+  "started_at": "2026-10-02T00:45:00Z",
+  "last_updated": "2026-10-02T01:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Skeleton follow-up (1): skeleton=true, two-entry sorry_inventory fixture (candidate #970) with 6 assertions (filter, stderr line, state write fields, completion_summary augmentation, unchanged completion transition)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Skeleton follow-up (2) contrast: non-skeleton implemented handoff fixture (candidate #971) with 3 assertions (no stderr line, no skeleton_follow_ups field, unchanged completion)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Run test-orchestrate-cycle-postflight.sh and test-handoff-reader-parity.sh, confirm 0 FAIL on both",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3 (Scope Hypothesis)",
+      "description": "five assertions in one new case plus one contrast assertion",
+      "type": "altered",
+      "reason": "Implemented as 6 assertions in the main case plus 3 contrast assertions -- more granular than the hypothesis anticipated, each pinning one independent failure mode (filter count, file:line naming, array length, recorded_cycle/session_id fields, completion_summary content, unchanged verdict/status) rather than bundling several into one combined check.",
+      "annotation": "*(deviation: altered — implemented as 6 assertions in the main case (1a's file:line naming split into its own check; 1b's recorded_cycle/session_id split into its own check alongside the length-1 check) plus 3 contrast assertions (no stderr line; no skeleton_follow_ups field; verdict/status unchanged) — more granular than the hypothesis anticipated, each pinning one independent failure mode rather than bundling several into one combined check)*"
+    }
+  ]
+}

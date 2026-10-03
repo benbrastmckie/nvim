@@ -226,33 +226,33 @@ than forcing the planned shape.
 
 ---
 
-### Phase 3: Regression fixture in test-orchestrate-cycle-postflight.sh [NOT STARTED]
+### Phase 3: Regression fixture in test-orchestrate-cycle-postflight.sh [COMPLETED]
 
 **Goal**: A skeleton=true fixture with a two-entry `sorry_inventory` proves the filter, all three
 report channels, and the unchanged completion transition.
 
 **Tasks**:
-- [ ] Re-read the suite's `setup_sandbox` / `write_state` / `commit_fixture` / `run_sut` helpers
+- [x] Re-read the suite's `setup_sandbox` / `write_state` / `commit_fixture` / `run_sut` helpers
       and one trusted-handoff fixture before writing the new case.
-- [ ] Add one new acceptance case using a fresh synthetic candidate number (referred to as
+- [x] Add one new acceptance case using a fresh synthetic candidate number (referred to as
       "candidate #N", never "task N", per the suite's own header note).
-- [ ] Fixture shape: a `state.json` entry at `status: "implementing"`; a `.return-meta.json`
+- [x] Fixture shape: a `state.json` entry at `status: "implementing"`; a `.return-meta.json`
       carrying `status: "implemented"`, the matching `dispatch_seq`, a summary artifact, and a
       non-empty `completion_data.completion_summary`; and a fresh, `dispatch_seq`-matching
       `.orchestrator-handoff.json` with `"status": "implemented"`, `phases_completed == phases_total`,
       `"skeleton": true`, and a two-entry `sorry_inventory` — one `strategic: true` with a non-null
       `follow_up_task`, one `strategic: false` with no `follow_up_task`.
-- [ ] Assert (a): stderr contains exactly one `SKELETON FOLLOW-UP` line (count it; the
+- [x] Assert (a): stderr contains exactly one `SKELETON FOLLOW-UP` line (count it; the
       non-strategic entry is filtered out).
-- [ ] Assert (b): the task's `state.json` entry has a `skeleton_follow_ups` array of length 1 whose
+- [x] Assert (b): the task's `state.json` entry has a `skeleton_follow_ups` array of length 1 whose
       entry matches the strategic sorry and carries `recorded_cycle` and `session_id`.
-- [ ] Assert (c): `completion_summary` on the task entry contains the `Skeleton follow-ups` block
+- [x] Assert (c): `completion_summary` on the task entry contains the `Skeleton follow-ups` block
       and the strategic entry's `follow_up_task`.
-- [ ] Assert (d): the outcome is unchanged — `verdict=ok` and the task's `state.json` status is
+- [x] Assert (d): the outcome is unchanged — `verdict=ok` and the task's `state.json` status is
       `completed` (the completion-claim gate is unaffected).
-- [ ] Add a short contrast assertion that a non-skeleton `implemented` fixture emits zero
+- [x] Add a short contrast assertion that a non-skeleton `implemented` fixture emits zero
       `SKELETON FOLLOW-UP` lines and no `skeleton_follow_ups` field.
-- [ ] Run the suite and confirm 0 FAIL.
+- [x] Run the suite and confirm 0 FAIL.
 
 **Timing**: 1.25 hours
 
@@ -260,9 +260,12 @@ report channels, and the unchanged completion transition.
 
 **Verification Tier**: full
 
-**Scope Hypothesis**: five assertions in one new case plus one contrast assertion. Confirm at
-implementation time by counting the `pass`/`fail` pairs actually added; if the filter or
-augmentation needs more or fewer assertions to be pinned, adjust and say so in the summary.
+**Scope Hypothesis**: five assertions in one new case plus one contrast assertion. *(deviation:
+altered — implemented as 6 assertions in the main case (1a's file:line naming split into its own
+check; 1b's recorded_cycle/session_id split into its own check alongside the length-1 check) plus
+3 contrast assertions (no stderr line; no skeleton_follow_ups field; verdict/status unchanged) —
+more granular than the hypothesis anticipated, each pinning one independent failure mode rather
+than bundling several into one combined check)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` - new skeleton-follow-up acceptance case plus the non-skeleton contrast assertion
