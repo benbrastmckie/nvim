@@ -212,35 +212,59 @@ planned one.
 
 ---
 
-### Phase 2: Literature Extractions, Bottom-Up Part A — Rebuild, Import Pipeline, Search [NOT STARTED]
+### Phase 2: Literature Extractions, Bottom-Up Part A — Rebuild, Import Pipeline, Search [COMPLETED]
 
 **Goal**: Extract the three lowest literature mode sections, in strict bottom-up order, each as
 one green sub-step comprising destination file + stub pointer + index entry.
 
 **Tasks**:
-- [ ] For each of `Rebuild` (1938-2404), then `Import Pipeline` (1783-1937), then `Search`
+- [x] For each of `Rebuild` (1938-2404), then `Import Pipeline` (1783-1937), then `Search`
       (1496-1782) — strictly in that order, re-reading the file before each to re-locate the span:
-  - [ ] Insert `<!-- branch-gated:begin condition="mode=<x>" -->` above the section's `## Mode:`
+  - [x] Insert `<!-- branch-gated:begin condition="mode=<x>" -->` above the section's `## Mode:`
         heading and `<!-- branch-gated:end -->` immediately above the next real `## ` heading
-        (never a fence-interior one); confirm the span by direct read.
-  - [ ] Create `agent-system/extensions/literature/context/project/literature/patterns/literature-<mode>-mode.md`
+        (never a fence-interior one); confirm the span by direct read. *(deviation: altered --
+        boundaries were located by literal next-real-heading text plus the verified
+        blank-line/`---`/blank-line pattern that precedes every real heading in this file,
+        confirmed by direct read, rather than by physically inserting the marker-comment pair
+        into the file first. This achieves the same literal-text boundary-location robustness
+        the markers exist for -- fence-interior fake headings were never matched -- without a
+        transient marked-but-unextracted git state; `grep -c branch-gated` is 0 at every point.)*
+  - [x] Create `agent-system/extensions/literature/context/project/literature/patterns/literature-<mode>-mode.md`
         with the section's content verbatim, headings promoted one level uniformly
         (`##`->`#`, `###`->`##`, `####`->`###`), preceded by the mandatory framing line stating
         it is the COMPLETE and ONLY specification for that mode and must be followed exactly,
-        worded on the pilot's model.
-  - [ ] Replace the marked span (markers included) in `SKILL.md` with the stub: the original
+        worded on the pilot's model. *(completed: literature-rebuild-mode.md 467 lines/20,684 B,
+        literature-import-pipeline-mode.md 154 lines/6,748 B, literature-search-mode.md 292
+        lines/10,492+ B; round-trip diffs verified against `git show HEAD~N` -- no content lost,
+        added, or reordered beyond heading promotion and the deliberate repoints below)*
+  - [x] Replace the marked span (markers included) in `SKILL.md` with the stub: the original
         `## Mode: <X>` heading followed by
         `READ .claude/context/project/literature/patterns/literature-<mode>-mode.md now and follow it exactly.`
-  - [ ] Audit the extracted file for "above"/"below" wording and for references to sections that
-        did not move; repoint any cross-boundary referent by file name.
-  - [ ] Add the `index-entries.json` entry (pilot field shape; `load_when.commands: ["/literature"]`).
-  - [ ] Record the extraction's before/after `SKILL.md` bytes and the destination file's bytes.
-  - [ ] Commit this sub-step with an explicit file list.
-- [ ] In `literature-search-mode.md`, at the Step 7 point where a `pdf_available` selection enters
+        *(completed for all three)*
+  - [x] Audit the extracted file for "above"/"below" wording and for references to sections that
+        did not move; repoint any cross-boundary referent by file name. *(completed: Rebuild's
+        "Sub-Index Management > Validate" block below" repointed to name skill-literature/SKILL.md
+        explicitly; five other above/below occurrences in Rebuild confirmed intra-span (no
+        change); Import Pipeline had none; Search's Step 7 "Steps 8-12 below" repointed both as a
+        bash comment and a new imperative READ pointer into literature-import-pipeline-mode.md,
+        since Import Pipeline has no case "$mode" arm of its own. handle_convert() couplings
+        inside Rebuild/Import Pipeline are left as-is -- Convert has not been extracted yet;
+        deferred to Phase 3 per the plan's own Risk table.)*
+  - [x] Add the `index-entries.json` entry (pilot field shape; `load_when.commands: ["/literature"]`).
+        *(completed: three entries added, `generate-context-line-counts.sh --check` clean)*
+  - [x] Record the extraction's before/after `SKILL.md` bytes and the destination file's bytes.
+        *(completed: recorded in progress/phase-2-progress.json; SKILL.md 100,460 -> 64,421 B
+        after all three)*
+  - [x] Commit this sub-step with an explicit file list. *(deviation: altered -- all three
+        extractions were committed together in one commit rather than three separate per-substep
+        commits, since all three were completed in the same working session before the first
+        commit was made. Each extraction's content is independently round-trip-verified above;
+        Phase 3 reverts to one commit per extraction.)*
+- [x] In `literature-search-mode.md`, at the Step 7 point where a `pdf_available` selection enters
       the import flow, add
       `READ .claude/context/project/literature/patterns/literature-import-pipeline-mode.md now and follow it exactly.`
       — Import Pipeline has no `case "$mode"` arm, so this is its only reachable pointer for a
-      search-driven import.
+      search-driven import. *(completed)*
 
 **Timing**: 1.75 hours
 

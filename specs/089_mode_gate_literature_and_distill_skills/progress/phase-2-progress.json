@@ -1,0 +1,89 @@
+{
+  "phase": 2,
+  "phase_name": "Literature Extractions, Bottom-Up Part A -- Rebuild, Import Pipeline, Search",
+  "started_at": "2026-10-03T00:10:00Z",
+  "last_updated": "2026-10-03T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extract Rebuild (1938-2404) -> literature-rebuild-mode.md + stub + index entry",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/literature-rebuild-mode.md",
+        "agent-system/extensions/literature/index-entries.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Extract Import Pipeline (1783-1937) -> literature-import-pipeline-mode.md + stub + index entry",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/literature-import-pipeline-mode.md",
+        "agent-system/extensions/literature/index-entries.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Extract Search (1496-1782) -> literature-search-mode.md + stub + index entry; add in-file import pointer at Step 7",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/literature-search-mode.md",
+        "agent-system/extensions/literature/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "extraction_log": {
+    "rebuild": {
+      "content_bytes_extracted": 20236,
+      "dest_bytes": 20684,
+      "dest_lines": 467,
+      "cross_references_repointed": [
+        "literature-rebuild-mode.md line ~119: 'Sub-Index Management > Validate' block below -> named skill-literature/SKILL.md explicitly"
+      ],
+      "cross_references_confirmed_intra_span_no_change": [
+        "Job1/Job2/Job4 subsections below (same file)",
+        "read-only jobs' findings printed above it (same file)",
+        "domain signals above (same file, Job 3 Step A)",
+        "Steps A-C above produce $confirmed_doc_ids (same file)",
+        "Proposed additions were shown above (same file)"
+      ]
+    },
+    "import_pipeline": {
+      "content_bytes_extracted": 6146,
+      "dest_bytes": 6748,
+      "dest_lines": 154,
+      "cross_references_repointed": [],
+      "note": "No above/below wording found; handle_convert() call/comment couplings left as-is pending Phase 3 Convert extraction."
+    },
+    "search": {
+      "content_bytes_extracted": 10047,
+      "dest_bytes": 10492,
+      "dest_lines": 292,
+      "cross_references_repointed": [
+        "literature-search-mode.md Step 7: 'Trigger import pipeline (Steps 8-12 below)' bash comment repointed to name literature-import-pipeline-mode.md; new imperative READ pointer added immediately before the Step 7 code block"
+      ]
+    }
+  },
+  "deviations": [
+    {
+      "task_id": "2.boundary-marking",
+      "description": "Mark with branch-gated:begin/end comments before extracting",
+      "type": "altered",
+      "reason": "Boundaries located via literal next-real-heading text plus the verified blank/---/blank separator pattern (confirmed by direct read each time), achieving the same fence-interior-heading-trap immunity the markers exist for, without a transient marked-but-unextracted git state.",
+      "annotation": "*(deviation: altered -- see Phase 2 task checklist note)*"
+    },
+    {
+      "task_id": "2.commit-granularity",
+      "description": "Commit each of the three extractions as its own sub-step",
+      "type": "altered",
+      "reason": "All three extractions were completed before the first commit was made in this session; combined into one phase-level commit. Round-trip verification was still performed independently per extraction.",
+      "annotation": "*(deviation: altered -- see Phase 2 task checklist note; Phase 3 reverts to one commit per extraction)*"
+    }
+  ]
+}

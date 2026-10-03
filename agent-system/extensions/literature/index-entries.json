@@ -713,6 +713,72 @@
           "/literature"
         ]
       }
+    },
+    {
+      "path": "project/literature/patterns/literature-rebuild-mode.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Complete specification for /literature --rebuild mode (sub-index Jobs 1/2/3/4: dangling-ref lint, schema conformance, coverage refresh, chunk/search-index coverage audit) -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
+      "line_count": 467,
+      "keywords": [
+        "literature",
+        "rebuild-mode",
+        "sub-index",
+        "coverage-refresh",
+        "dangling-ref"
+      ],
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/patterns/literature-import-pipeline-mode.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Complete specification for the literature Import Pipeline (Steps 8-12: confirm, symlink PDF, convert with pre-populated Zotero metadata, patch index entry, git commit) -- invoked from Search Step 7 for each pdf_available entry, has no case \"$mode\" dispatch arm of its own -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
+      "line_count": 154,
+      "keywords": [
+        "literature",
+        "import-pipeline",
+        "zotero",
+        "symlink",
+        "search-driven-import"
+      ],
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
+    },
+    {
+      "path": "project/literature/patterns/literature-search-mode.md",
+      "domain": "project",
+      "subdomain": "literature",
+      "summary": "Complete specification for /literature --search mode (Zotero library + Literature/ index cross-reference, scoring, multi-select results, Step 7 routing into the import pipeline for pdf_available entries) -- extracted from skill-literature/SKILL.md per the mode-gated section loading convention",
+      "line_count": 292,
+      "keywords": [
+        "literature",
+        "search-mode",
+        "zotero",
+        "multi-select",
+        "import-routing"
+      ],
+      "load_when": {
+        "agents": [
+          "literature-agent"
+        ],
+        "commands": [
+          "/literature"
+        ]
+      }
     }
   ]
 }
