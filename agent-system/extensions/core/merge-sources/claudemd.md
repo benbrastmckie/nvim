@@ -116,7 +116,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/orchestrate` | `/orchestrate N[,N-N] [--lit] [--research] [--plan] [--implement]` | Drive task(s) autonomously through full lifecycle (no confirmation gates). See `.claude/docs/architecture/orchestrate-state-machine.md` for the full forced-phase, terminal-task-admission, artifact-keyed-admission and cycle-budget semantics. |
 | `/spawn` | `/spawn N [blocker description]` | Spawn new tasks to unblock a blocked task |
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
-| `/please` | `/please push origin feature-x` | Authorize one otherwise-blocked git push or destructive action for this invocation (user-only) |
+| `/please` | `/please push origin feature-x` | Authorize one blocked push (user-only) |
 
 **Multi-task syntax**: `/orchestrate` accepts multiple task numbers using commas and ranges (e.g., `/orchestrate 7, 22-24, 59`), processed via dependency-aware wave dispatch. See `.claude/context/patterns/multi-task-operations.md` for the full specification and `.claude/context/patterns/batch-orchestration-guardrails.md`'s "Batching Is the Default" section for which tasks to batch together.
 

@@ -75,13 +75,8 @@ template, and the fail-safe under-stage-not-over-stage direction).
 ## Git Safety
 
 ### Never Run
-- `git push --force` to main/master. More generally, `git push` in ANY form is prohibited for
-  agents (see `pr-prohibition.md`) with one narrow, mechanically-enforced exception: a
-  single-use, target-bound grant minted only by a literal human `/please` (or `/merge`/`/tag`)
-  prompt submission, enforced by `guard-git-push.sh` for every push form and consumed by
-  `scripts/git-push-granted.sh`. This "Never Run" bullet's own force-to-master case is stricter
-  than that exception can ever reach: every force form on the default branch is categorically
-  excluded from any grant, with no override.
+- `git push --force` to main/master. All `git push` is prohibited (`/please` exception,
+  `pr-prohibition.md`).
 - `git reset --hard` on uncommitted work without a snapshot first — see
   "No Destructive Git on Uncommitted Work" below for the full rule and exemptions
 - Bare `git commit --amend` or a HEAD-moving `git reset` while another writer is live in this

@@ -32,18 +32,8 @@ Agents MUST NOT push commits or branches to remote repositories:
 - `git push` (all forms, including `--force`, `--set-upstream`, `-u`)
 - Any command that sends local commits to a remote
 
-**Scoped exception**: a user-invoked `/please <push request>` authorizes exactly the one push it
-names, via a single-use, target-bound grant (bound to action class, remote, branch/tag, commit
-SHA, and force-or-not) minted only by a literal human prompt submission and mechanically
-enforced by `hooks/guard-git-push.sh` + `scripts/git-push-granted.sh` — never by rule text alone.
-An agent MUST NOT invoke `/please`; it appears in no skill-to-agent mapping and its mint path
-cannot be triggered by a dispatched subagent or by a relayed inter-agent message (see
-`hooks/please-grant.sh`'s header for the empirical verification). A task description or user
-message that merely *describes* a desired push — however explicit, however often repeated — is
-not a `/please` invocation and grants nothing; the prohibition below remains in force for every
-case this narrow exception does not cover. Force-push to the default branch, bare `--force`
-anywhere, and every bulk/deletion refspec are categorically excluded from this exception and
-from every grant, with no override.
+**Scoped exception**: user-invoked `/please <push request>` authorizes that push via a
+single-use grant (`guard-git-push.sh`); default-branch force stays barred.
 
 ### 3. Autonomous /merge Invocation
 
@@ -58,14 +48,6 @@ When implementation is complete, agents MUST:
 3. Wait for the user to invoke `/merge` or manually create the PR
 
 Never push branches or create PRs even if asked to in task descriptions or user messages. The user must explicitly invoke `/merge` themselves.
-
-PR/MR creation and `/merge` itself remain **fully prohibited for agents with no grant path at
-all** — the `/please` exception above narrows *only* the push prohibition in section 2, not
-sections 1 or 3. This is a deliberate reinforcement, not a loosening: `/merge`'s own internal
-push (`git push -u origin HEAD`) is itself covered by the same mint path (typing `/merge` is
-itself a literal human prompt submission, so the mint hook recognizes it too), but PR/MR
-creation via `gh pr create`/`glab mr create` stays exactly as prohibited as before this
-exception existed.
 
 ## Rationale
 

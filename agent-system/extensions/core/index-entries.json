@@ -239,7 +239,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Unified events/reflection JSONL store schema: specs/events.jsonl field contract, lazy creation, category enum, and cross-link conventions",
-      "line_count": 246,
+      "line_count": 248,
       "keywords": [
         "events",
         "jsonl",
@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 770,
+      "line_count": 772,
       "keywords": [
         "format",
         "metadata",
@@ -1797,7 +1797,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git safety guidelines and patterns",
-      "line_count": 644,
+      "line_count": 700,
       "keywords": [
         "standards",
         "git",
@@ -1911,7 +1911,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 535,
+      "line_count": 542,
       "keywords": [
         "standards",
         "status",
@@ -3083,7 +3083,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Contract for the agent-authored user_decision field: when to raise one, blocking vs. non-blocking, and how postflight relays it",
-      "line_count": 102,
+      "line_count": 104,
       "keywords": [
         "user-decision",
         "ask-user",
