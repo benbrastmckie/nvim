@@ -325,25 +325,25 @@ heading or bolded lead-in per item and counting six.
 
 ---
 
-### Phase 5: Certify passthrough script and its test [NOT STARTED]
+### Phase 5: Certify passthrough script and its test [COMPLETED]
 
 **Goal**: One extension-local wrapper that resolves and invokes the consuming repository's book
 certification driver, with a fixture test, so `/certify` can name a declared script and Rule E
 passes.
 
 **Tasks**:
-- [ ] `scripts/books-certify.sh` — resolve the repository root, locate the certification driver
+- [x] `scripts/books-certify.sh` — resolve the repository root, locate the certification driver
       under the repo's `books/scripts/`, pass every argument through verbatim, and fail loudly
       with an actionable message when the driver is absent (the extension may be loaded in a repo
       that has no books tooling). Pass through only the flags Phase 1 re-verified as real;
-      deliberately do not expose the acceptance-suite-only graph-injection flag.
-- [ ] Mirror the lean/typst script conventions: `#!/usr/bin/env bash`, `set -euo pipefail`, a
-      header comment block stating purpose and exit codes, and no interactive prompts.
-- [ ] `scripts/tests/test-books-certify.sh` — fixture cases: driver present and invoked with
+      deliberately do not expose the acceptance-suite-only graph-injection flag. *(completed)*
+- [x] Mirror the lean/typst script conventions: `#!/usr/bin/env bash`, `set -euo pipefail`, a
+      header comment block stating purpose and exit codes, and no interactive prompts. *(completed)*
+- [x] `scripts/tests/test-books-certify.sh` — fixture cases: driver present and invoked with
       arguments forwarded in order; driver absent and the loud failure path taken with a non-zero
       exit; the suppressed flag rejected rather than silently forwarded. Follow the style of
-      `lean/scripts/tests/test-*.sh`.
-- [ ] Confirm both paths are already declared in `provides.scripts` from Phase 1.
+      `lean/scripts/tests/test-*.sh`. *(completed)*
+- [x] Confirm both paths are already declared in `provides.scripts` from Phase 1. *(completed)*
 
 **Timing**: 1.25 hours
 
