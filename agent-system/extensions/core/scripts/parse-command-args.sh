@@ -23,6 +23,10 @@
 #   COMPARE_FLAG   — "true" or "false" (--compare mode hint for advisory Comparator-gated
 #                    lean implementation dispatches; composes with --hard rather than competing
 #                    with it, same as LIT_FLAG and CLEAN_FLAG)
+#   GATE_FLAG      — "true" or "false" (--gate mode hint for the advisory intermediate
+#                    verification tier at implement dispatch; ADVISORY ONLY — never blocks a
+#                    dispatch, never fails one, never downgrades status. Composes with --hard,
+#                    --lit and --compare rather than competing with any of them)
 #   ALLOW_SELF_MODIFYING_FLAG — "true" or "false" (default off; opt-in bypass of the
 #                    self-modification admission gate, per-invocation only)
 #   ALLOW_SCOPE_COLLISION_FLAG — "true" or "false" (default off; opt-in consumer-side bypass of
@@ -89,6 +93,7 @@ parse_command_args() {
   EXPLORE_FLAG="false"
   LIT_FLAG="false"
   COMPARE_FLAG="false"
+  GATE_FLAG="false"
   ALLOW_SELF_MODIFYING_FLAG="false"
   ALLOW_SCOPE_COLLISION_FLAG="false"
   FORCE_PHASES_FLAG=""
@@ -135,6 +140,9 @@ parse_command_args() {
   if [[ "$remaining" =~ --compare ]]; then
     COMPARE_FLAG="true"
   fi
+  if [[ "$remaining" =~ --gate ]]; then
+    GATE_FLAG="true"
+  fi
   if [[ "$remaining" =~ --allow-self-modifying ]]; then
     ALLOW_SELF_MODIFYING_FLAG="true"
   fi
@@ -167,6 +175,7 @@ parse_command_args() {
     | sed 's/--explore//g' \
     | sed 's/--lit//g' \
     | sed 's/--compare//g' \
+    | sed 's/--gate//g' \
     | sed 's/--allow-self-modifying//g' \
     | sed 's/--allow-scope-collision//g' \
     | sed 's/--research//g' \
@@ -180,7 +189,7 @@ parse_command_args() {
     return 1
   fi
 
-  export TASK_NUMBERS REMAINING_ARGS EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG COMPARE_FLAG ALLOW_SELF_MODIFYING_FLAG ALLOW_SCOPE_COLLISION_FLAG FORCE_PHASES_FLAG FOCUS_PROMPT
+  export TASK_NUMBERS REMAINING_ARGS EFFORT_FLAG MODEL_FLAG CLEAN_FLAG FORCE_FLAG DRY_RUN_FLAG LOCAL_FLAG EXPLOIT_FLAG EXPLORE_FLAG LIT_FLAG COMPARE_FLAG GATE_FLAG ALLOW_SELF_MODIFYING_FLAG ALLOW_SCOPE_COLLISION_FLAG FORCE_PHASES_FLAG FOCUS_PROMPT
 }
 
 parse_command_args "$1"

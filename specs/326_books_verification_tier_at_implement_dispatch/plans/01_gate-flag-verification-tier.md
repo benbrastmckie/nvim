@@ -1,7 +1,7 @@
 # Implementation Plan: Task #326
 
 - **Task**: 326 - Add an advisory `--gate` verification tier at implement dispatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: None blocking. Sibling-in-flight (territory only, not a dependency): the
   books domain context corpus task, which owns
@@ -144,7 +144,7 @@ those sit in different waves.
 
 ---
 
-### Phase 1: Core flag plumbing [NOT STARTED]
+### Phase 1: Core flag plumbing [IN PROGRESS]
 
 **Goal**: `--gate` is parsed, declared, forwarded only for implement dispatches, and emitted into
 the dispatch file as exactly one added line.
