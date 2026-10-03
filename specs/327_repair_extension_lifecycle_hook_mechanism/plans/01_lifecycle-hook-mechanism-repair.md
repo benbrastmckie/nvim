@@ -2,7 +2,7 @@
 
 - **Task**: 327 - Repair the extension lifecycle hook mechanism: broken resolver schema, absent
   return-code channel, uninvoked verification stage
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (no dependency edge on the skeleton-plan follow-up work — deliberate,
   see Risks & Mitigations)
@@ -163,49 +163,49 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Fix the resolver and the hook-script path [NOT STARTED]
+### Phase 1: Fix the resolver and the hook-script path [COMPLETED]
 
 **Goal**: Make a declared hook actually resolve and execute. Fixes defect 1 (dead
 `.loaded_extensions` query) and defect 4 (nested-deploy path assumption) together, since neither
 alone makes a hook fire.
 
 **Tasks**:
-- [ ] Re-measure before editing: locate `skill_get_extension_dir` and `skill_run_extension_hook`
+- [x] Re-measure before editing: locate `skill_get_extension_dir` and `skill_run_extension_hook`
       in `agent-system/extensions/core/scripts/skill-base.sh` by **function name**, not by the
       dispatch's line numbers (they will have moved). Record the current line ranges in the
       progress file.
-- [ ] Re-read the file immediately before the first edit (territory discipline — a sibling task
+- [x] Re-read the file immediately before the first edit (territory discipline — a sibling task
       is live on this working tree this cycle).
-- [ ] In `skill_get_extension_dir`: replace the `.loaded_extensions // [] | .[] | select(.task_type == $tt) | .name`
+- [x] In `skill_get_extension_dir`: replace the `.loaded_extensions // [] | .[] | select(.task_type == $tt) | .name`
       query with a two-step join — enumerate active extension names via
       `.extensions | to_entries[] | select(.value.status=="active") | .key` (the already-correct
       object-schema pattern used at `measure-eager-context.sh`'s extension enumeration), then for
       each name read `.claude/extensions/<name>/manifest.json` and compare its own top-level
       `.task_type` against the requested `task_type`. Echo `.claude/extensions/<name>` on first
       match; echo nothing otherwise.
-- [ ] Preserve the existing early `return 0` when `.claude-extensions.json` is absent, and keep
+- [x] Preserve the existing early `return 0` when `.claude-extensions.json` is absent, and keep
       the resolver's bare-relative path convention (`.claude-extensions.json`,
       `.claude/extensions/<name>`) — the suite's fixture isolation depends on cwd-relative
       resolution.
-- [ ] In `skill_run_extension_hook`: keep `manifest="${ext_dir}/manifest.json"` exactly as-is
+- [x] In `skill_run_extension_hook`: keep `manifest="${ext_dir}/manifest.json"` exactly as-is
       (that half of the current resolution is correct), and change the hook-script half from
       `hook_path="${ext_dir}/${hook_script}"` to resolve against the flat deployed location —
       `.claude/scripts/$(basename "$hook_script")`. Add a short comment recording *why*: the
       deploy pipeline flattens `provides.scripts` into `.claude/scripts/`, so a manifest's
       `scripts/`-prefixed value mirrors the **source** layout and never the deployed one;
       basename resolution deliberately accepts both the prefixed and the bare form.
-- [ ] Replace the silent `[ ! -x "$hook_path" ] && return 0` no-op with a loud one-line stderr
+- [x] Replace the silent `[ ! -x "$hook_path" ] && return 0` no-op with a loud one-line stderr
       NOTE naming the hook stage, the declaring manifest, and the resolved path, then `return 0`.
       This is the exact failure mode that hid defect 4; a future hook-path typo must not get the
       same silent treatment.
-- [ ] Prove the end-to-end fix by hand before closing: from the repo root, source the edited
+- [x] Prove the end-to-end fix by hand before closing: from the repo root, source the edited
       source-store `skill-base.sh` in a subshell and confirm `skill_get_extension_dir nix`
       returns `.claude/extensions/nix` and `skill_get_extension_dir neovim` returns
       `.claude/extensions/nvim` (both return empty today).
-- [ ] Execute each of the three previously-dead hook scripts directly with the five real
+- [x] Execute each of the three previously-dead hook scripts directly with the five real
       positional args (`.claude/scripts/nix-preflight.sh`, `nix-context.sh`, `nvim-context.sh`)
       and confirm each exits 0 — the live-firing safety check from Risks.
-- [ ] Commit this green sub-step before starting Phase 2.
+- [x] Commit this green sub-step before starting Phase 2.
 
 **Timing**: 0.75 hours
 

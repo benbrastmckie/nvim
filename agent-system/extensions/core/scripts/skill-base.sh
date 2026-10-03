@@ -133,6 +133,16 @@ skill_deploy_freshness_stale_names() {
 # skill_get_extension_dir: Map task_type to extension directory via extensions.json
 # Usage: skill_get_extension_dir "$task_type"
 # Outputs: absolute path to extension directory, or empty string if not found
+#
+# The live .claude-extensions.json schema is {extensions: {<name>: {...}}, version} -- an OBJECT
+# keyed by extension name -- and a per-extension entry carries NO task_type field of its own;
+# task_type lives only in each extension's own deployed manifest.json. This is therefore a
+# two-step join, not a single jq query: enumerate active extension names first (the same
+# object-schema pattern already used at measure-eager-context.sh's extension enumeration), then
+# read each deployed manifest's own top-level task_type and compare it against the requested one.
+# A prior revision of this function queried a dead top-level array key that has never existed in
+# this schema, making the whole hook mechanism silently dead; see the EXTENSION HOOKS contract
+# block above for the resolver's cwd-relative path convention, which this preserves.
 skill_get_extension_dir() {
   local task_type="$1"
   # Extension selection manifest lives at the PROJECT ROOT (not inside .claude/)
@@ -141,15 +151,18 @@ skill_get_extension_dir() {
   if [ ! -f "$extensions_json" ]; then
     return 0
   fi
-  # Find extension with matching task_type
-  local ext_name
-  ext_name=$(jq -r --arg tt "$task_type" \
-    '.loaded_extensions // [] | .[] | select(.task_type == $tt) | .name' \
-    "$extensions_json" 2>/dev/null | head -1)
-  if [ -z "$ext_name" ] || [ "$ext_name" = "null" ]; then
-    return 0
-  fi
-  echo ".claude/extensions/${ext_name}"
+  local ext_name ext_manifest ext_task_type
+  for ext_name in $(jq -r '.extensions | to_entries[] | select(.value.status=="active") | .key' \
+      "$extensions_json" 2>/dev/null); do
+    ext_manifest=".claude/extensions/${ext_name}/manifest.json"
+    [ -f "$ext_manifest" ] || continue
+    ext_task_type=$(jq -r '.task_type // empty' "$ext_manifest" 2>/dev/null)
+    if [ -n "$ext_task_type" ] && [ "$ext_task_type" = "$task_type" ]; then
+      echo ".claude/extensions/${ext_name}"
+      return 0
+    fi
+  done
+  return 0
 }
 
 # skill_run_extension_hook: Execute a lifecycle hook for the current task_type
@@ -181,8 +194,19 @@ skill_run_extension_hook() {
     return 0
   fi
 
-  local hook_path="${ext_dir}/${hook_script}"
+  # The deploy pipeline flattens manifest.provides.scripts into .claude/scripts/ -- there is no
+  # nested .claude/extensions/<name>/scripts/ subdirectory for any loaded extension
+  # (installed_dirs is [] for all of them). A manifest's hooks value mirrors the SOURCE layout
+  # (e.g. "scripts/nix-preflight.sh"), never the deployed one, so resolution is by basename
+  # against the flat deployed location. This deliberately accepts both that scripts/-prefixed
+  # source-mirroring form and a bare filename -- no manifest needs to change for this to work.
+  local hook_path
+  hook_path=".claude/scripts/$(basename "$hook_script")"
   if [ ! -x "$hook_path" ]; then
+    # Loud, not silent: a declared hook that cannot resolve is the exact failure mode that hid
+    # this mechanism's breakage for two shipped extensions undetected. A future hook-path typo
+    # must not get the same silent treatment.
+    echo "NOTE: [skill-base] Extension hook '${hook_name}' (declared in ${manifest} as '${hook_script}') resolved to '${hook_path}', which is missing or not executable -- hook skipped." >&2
     return 0
   fi
 

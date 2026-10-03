@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Fix the resolver and the hook-script path",
+  "started_at": "2026-10-03T08:45:00Z",
+  "last_updated": "2026-10-03T09:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure function locations in skill-base.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite skill_get_extension_dir's jq query as object-schema + per-manifest task_type join", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 3, "description": "Change skill_run_extension_hook's hook_path to basename-resolve against .claude/scripts/", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 4, "description": "Replace silent non-executable skip with loud NOTE", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 5, "description": "Prove end-to-end fix via sourced-subshell probe and direct hook execution", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_evidence": {
+    "bash_-n": "pass",
+    "shellcheck_diff_vs_baseline": "no new findings (fixed SC2155 on hook_path declare/assign split)",
+    "resolver_probe": "skill_get_extension_dir nix -> .claude/extensions/nix; neovim -> .claude/extensions/nvim; no-such-type -> empty",
+    "loaded_extensions_grep_count": 0,
+    "direct_hook_script_exits": "nix-preflight.sh, nix-context.sh, nvim-context.sh all exit 0",
+    "end_to_end_hook_fire": "skill_run_extension_hook preflight/nix and context_injection/neovim both fired and printed real hook output (previously dead)",
+    "full_gate_set": "bash .claude/scripts/verify-deploy.sh --skip-slow: 3 of 33 failed. All 3 traced: 1 is this change's OWN expected source/deploy content-hash drift for scripts/skill-base.sh (undeployed by design until Phase 7 / operator regeneration); the other 2 (doc-lint, agent-contracts-lint) are 100% attributable to sibling task 297's in-flight, incomplete agent-system/extensions/books/** work (missing README/EXTENSION.md/skills/commands/rules/scripts files that task has not yet written) -- confirmed via lint-agent-contracts.sh --verbose and check-extension-docs.sh --quiet output naming only books/** paths plus the one expected core/skill-base.sh drift line. No regression attributable to this task's own edits."
+  },
+  "deviations": []
+}
