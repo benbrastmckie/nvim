@@ -240,42 +240,42 @@ hypothesis and must be recorded in the progress file before proceeding.
 
 ---
 
-### Phase 2: Add the hook return-code channel [NOT STARTED]
+### Phase 2: Add the hook return-code channel [COMPLETED]
 
 **Goal**: Make a hook's exit code observable to the caller without changing any call site's
 non-blocking disposition.
 
 **Tasks**:
-- [ ] Re-read `skill-base.sh` immediately before editing.
-- [ ] Introduce four uppercase globals, following the file's existing `SKILL_VALIDATE_*`
+- [x] Re-read `skill-base.sh` immediately before editing.
+- [x] Introduce four uppercase globals, following the file's existing `SKILL_VALIDATE_*`
       convention and its documented unconditional-reset discipline:
       `SKILL_HOOK_LAST_RC` (the hook's exit code), `SKILL_HOOK_LAST_STATUS` (one of `ran`,
       `skipped_no_extension`, `skipped_no_manifest`, `skipped_not_declared`,
       `skipped_not_executable`), `SKILL_HOOK_LAST_NAME` (the stage), `SKILL_HOOK_LAST_PATH` (the
       resolved script path, empty when nothing resolved).
-- [ ] Reset all four **unconditionally at function entry**, before any early return, so a caller
+- [x] Reset all four **unconditionally at function entry**, before any early return, so a caller
       can never read a value left over from a prior invocation. Mirror the wording of
       `skill_validate_task_artifacts`'s existing reset comment rather than inventing a new one.
-- [ ] Set `SKILL_HOOK_LAST_STATUS` on every early-return path, so a skip is distinguishable from
+- [x] Set `SKILL_HOOK_LAST_STATUS` on every early-return path, so a skip is distinguishable from
       a clean run — this is the difference between "no hook declared" and "hook ran and
       succeeded", which today are indistinguishable.
-- [ ] Replace the `|| echo "...non-zero (non-blocking)"` trailing-`||` form with an explicit
+- [x] Replace the `|| echo "...non-zero (non-blocking)"` trailing-`||` form with an explicit
       `set -e`-safe capture (`rc=0; "$hook_path" ... || rc=$?`), keeping the existing console
       WARNING byte-identical so live logs do not change shape.
-- [ ] On a non-zero rc, additionally emit one `_events_append_observable` row with
+- [x] On a non-zero rc, additionally emit one `_events_append_observable` row with
       `--event-type lifecycle_stage --category deviation`, `--checkpoint <hook_name>`, and a
       message naming the hook stage and exit code — mirroring how `skill_validate_artifact`
       already discriminates `_category` by status.
-- [ ] Make `return 0` the function's **literal last statement**, with a comment stating that the
+- [x] Make `return 0` the function's **literal last statement**, with a comment stating that the
       non-blocking disposition is deliberate and unchanged, and that returning the rc is
       specifically unsafe because a caller under `set -e` would abort mid-lifecycle — flipping
       the documented contract as a side effect.
-- [ ] Add a header-comment block documenting the four globals and the "observable, never
+- [x] Add a header-comment block documenting the four globals and the "observable, never
       blocking" contract, alongside the existing EXTENSION HOOKS contract block.
-- [ ] Leave all four existing call sites (`skill_preflight_update`, `skill_context_injection`,
+- [x] Leave all four existing call sites (`skill_preflight_update`, `skill_context_injection`,
       `skill_validate_artifact`, `skill_postflight_update`) **unmodified** — none inspects a
       return value today and none starts to.
-- [ ] Commit this green sub-step.
+- [x] Commit this green sub-step.
 
 **Timing**: 0.75 hours
 

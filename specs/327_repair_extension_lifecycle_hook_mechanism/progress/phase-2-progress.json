@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Add the hook return-code channel",
+  "started_at": "2026-10-03T09:16:00Z",
+  "last_updated": "2026-10-03T09:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Introduce four SKILL_HOOK_LAST_* globals with unconditional entry reset", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 2, "description": "Set SKILL_HOOK_LAST_STATUS on every early-return path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 3, "description": "Replace trailing-|| with rc-capturing form, keep WARNING byte-identical", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 4, "description": "Emit deviation event on non-zero rc", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 5, "description": "Explicit terminal return 0 plus header-comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Leave SKILL_HOOK_LAST_* globals undisabled (no shellcheck directive)", "result": "failed", "reason": "SC2034 x4 new findings (unused-outside-this-file globals) vs. baseline; added a function-level shellcheck disable=SC2034 directive with rationale, mirroring the cross-file-read nature of SKILL_VALIDATE_*"}
+  ],
+  "handoff_count": 0,
+  "verification_evidence": {
+    "bash_-n": "pass",
+    "shellcheck_diff_vs_baseline": "clean after adding function-level disable=SC2034 directive",
+    "exit0_hook_probe": "RC=0 STATUS=ran",
+    "exit3_hook_probe": "RC=3 STATUS=ran, console WARNING still printed, function still returned 0",
+    "no_extension_probe": "STATUS=skipped_no_extension, RC empty (distinguishable from a real 0)",
+    "reset_discipline_probe": "after the exit-3 run, a subsequent no-such-type invocation reported RC=[] (empty), not a leaked 3",
+    "four_call_sites_unmodified": "grep -n skill_run_extension_hook confirms exactly 4 call sites (preflight/context_injection/verification/postflight), none inspecting a return value",
+    "full_gate_set_delta": "check-extension-docs.sh --quiet and lint-agent-contracts.sh: same pattern as Phase 1 -- all FAILs attributable to sibling task 297's in-flight books/** work plus this task's own single expected skill-base.sh source/deploy drift finding; no new regression"
+  },
+  "deviations": []
+}

@@ -127,7 +127,12 @@ skill_deploy_freshness_stale_names() {
 # Hook scripts are called with 5 positional args:
 #   $1 = task_number   $2 = task_type   $3 = task_dir   $4 = session_id   $5 = operation
 #
-# Missing hook keys or absent extensions.json are silently skipped.
+# Missing hook keys or absent extensions.json are silently skipped. A declared hook whose
+# resolved script is missing or not executable is NOT silently skipped -- it emits a one-line
+# stderr NOTE (see skill_run_extension_hook). Exit non-zero: warning logged, non-blocking, skill
+# continues -- and additionally observable to the caller via the SKILL_HOOK_LAST_* globals
+# documented at skill_run_extension_hook's own header comment immediately below. Observability is
+# an addition to this non-blocking contract, never a change to it.
 # ─────────────────────────────────────────────────────────────────────────────
 
 # skill_get_extension_dir: Map task_type to extension directory via extensions.json
@@ -169,6 +174,27 @@ skill_get_extension_dir() {
 # Usage: skill_run_extension_hook "$hook_name" "$task_number" "$task_type" "$task_dir" "$session_id" "$operation"
 # hook_name: preflight | context_injection | verification | postflight
 # Silently skips if: extensions.json missing, extension not loaded, hook not declared, script not found
+#
+# RETURN CHANNEL (observable, never blocking): this function always `return 0` as its literal
+# last statement -- that is a deliberate, structural property, not a convention a caller could
+# accidentally defeat. Returning the hook's own exit code instead would abort any caller running
+# under `set -e` mid-lifecycle, silently flipping this mechanism's documented non-blocking
+# contract (creating-extensions.md's "Exit non-zero: warning logged (non-blocking, skill
+# continues)") as a side effect. A hook's outcome is instead exposed through four uppercase
+# globals -- the same convention skill_validate_task_artifacts already uses for its
+# SKILL_VALIDATE_* counters -- all four reset UNCONDITIONALLY at function entry, before any early
+# return, so a caller can never read a value left over from a prior invocation:
+#   SKILL_HOOK_LAST_RC     -- the hook script's own exit code (only meaningful when STATUS=ran)
+#   SKILL_HOOK_LAST_STATUS -- one of: ran, skipped_no_extension, skipped_no_manifest,
+#                             skipped_not_declared, skipped_not_executable
+#   SKILL_HOOK_LAST_NAME   -- the stage name this invocation was asked to run ($hook_name)
+#   SKILL_HOOK_LAST_PATH   -- the resolved script path, empty until a hook_path is resolved
+# No existing call site (skill_preflight_update, skill_context_injection,
+# skill_validate_artifact, skill_postflight_update) inspects these, and none needs to for this
+# change -- the channel is additive observability, not a new blocking gate.
+# shellcheck disable=SC2034 # SKILL_HOOK_LAST_* are an intentional cross-scope global channel --
+# set here, read by callers in OTHER sourced scripts (e.g. command-gate-out.sh) after sourcing
+# this file, exactly like SKILL_VALIDATE_* above. shellcheck cannot see that cross-file read.
 skill_run_extension_hook() {
   local hook_name="$1"
   local task_number="$2"
@@ -177,20 +203,28 @@ skill_run_extension_hook() {
   local session_id="$5"
   local operation="$6"
 
+  SKILL_HOOK_LAST_RC=""
+  SKILL_HOOK_LAST_STATUS=""
+  SKILL_HOOK_LAST_NAME="$hook_name"
+  SKILL_HOOK_LAST_PATH=""
+
   local ext_dir
   ext_dir=$(skill_get_extension_dir "$task_type")
   if [ -z "$ext_dir" ]; then
+    SKILL_HOOK_LAST_STATUS="skipped_no_extension"
     return 0
   fi
 
   local manifest="${ext_dir}/manifest.json"
   if [ ! -f "$manifest" ]; then
+    SKILL_HOOK_LAST_STATUS="skipped_no_manifest"
     return 0
   fi
 
   local hook_script
   hook_script=$(jq -r --arg h "$hook_name" '.hooks[$h] // empty' "$manifest" 2>/dev/null)
   if [ -z "$hook_script" ]; then
+    SKILL_HOOK_LAST_STATUS="skipped_not_declared"
     return 0
   fi
 
@@ -202,17 +236,35 @@ skill_run_extension_hook() {
   # source-mirroring form and a bare filename -- no manifest needs to change for this to work.
   local hook_path
   hook_path=".claude/scripts/$(basename "$hook_script")"
+  SKILL_HOOK_LAST_PATH="$hook_path"
   if [ ! -x "$hook_path" ]; then
     # Loud, not silent: a declared hook that cannot resolve is the exact failure mode that hid
     # this mechanism's breakage for two shipped extensions undetected. A future hook-path typo
     # must not get the same silent treatment.
+    SKILL_HOOK_LAST_STATUS="skipped_not_executable"
     echo "NOTE: [skill-base] Extension hook '${hook_name}' (declared in ${manifest} as '${hook_script}') resolved to '${hook_path}', which is missing or not executable -- hook skipped." >&2
     return 0
   fi
 
   echo "[skill-base] Running extension hook: ${hook_name} (${hook_path})"
-  "$hook_path" "$task_number" "$task_type" "$task_dir" "$session_id" "$operation" || \
+  # set -e-safe capture: `... || rc=$?` never aborts a caller under `set -e`, and the console
+  # WARNING below stays byte-identical to what this function printed before this change.
+  local rc=0
+  "$hook_path" "$task_number" "$task_type" "$task_dir" "$session_id" "$operation" || rc=$?
+  SKILL_HOOK_LAST_RC="$rc"
+  SKILL_HOOK_LAST_STATUS="ran"
+  if [ "$rc" -ne 0 ]; then
     echo "[skill-base] WARNING: Extension hook '${hook_name}' exited non-zero (non-blocking)"
+    # Unified event store: a non-zero hook exit is a deviation from the plan, surfaced the same
+    # way skill_validate_artifact already discriminates its own category by status.
+    if [ -n "$task_number" ]; then
+      _events_append_observable ".claude/scripts/events-append.sh" \
+        --event-type lifecycle_stage --category deviation \
+        --task "$task_number" --session "$session_id" --checkpoint "$hook_name" \
+        --message "Extension hook '${hook_name}' exited non-zero (rc=${rc}, non-blocking)"
+    fi
+  fi
+  return 0
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
