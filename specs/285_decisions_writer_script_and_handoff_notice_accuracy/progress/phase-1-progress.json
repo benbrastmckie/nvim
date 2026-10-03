@@ -1,0 +1,42 @@
+{
+  "phase": 1,
+  "phase_name": "Declare .decisions.lock as a Runtime Ephemeral Pattern",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add decisions-lock member to all six parallel arrays in runtime-file-patterns.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Update pattern-count comments and runtime_ignore_block heredoc",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Update the three (plus one discovered) verbatim-block carriers",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.3",
+      "description": "Update the three verbatim-block carriers",
+      "type": "altered",
+      "reason": "A 4th carrier was discovered during verification: test-runtime-file-tracking.sh Case 5 hardcodes the class-member count (19) as a pass/fail assertion. Left unfixed, the suite would legitimately FAIL after this phase's correct edit. Updated it to 20 to match.",
+      "annotation": "*(deviation: altered — found and fixed a 4th hardcoded-count carrier beyond the plan's named three)*"
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 # untracked, as distinct from the durable-provenance files (.orchestrator-handoff.json, the
 # bare .return-meta.json) that MUST stay tracked and are deliberately NOT part of this class.
 #
-# Exports one canonical record per class member (19 total) consumed by BOTH mechanical
+# Exports one canonical record per class member (20 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
 # two deploy-harness test fixtures that seed a scratch repo's .gitignore
 # (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
@@ -50,6 +50,12 @@
 # own purposes. This repo's own root `.gitignore` already carries the root-relative `/specs/tmp`
 # form as precedent.
 #
+# `decisions-lock` (20th member) is the lock file for `scripts/orchestrate-record-decision.sh`,
+# the sanctioned writer for `specs/{NNN}_{slug}/.decisions.json`. Declared as a dedicated
+# `**/.decisions.lock` file-class member -- mirroring `.errors.lock` exactly, never placed inside
+# the task's existing `.lock/` directory, whose `rmdir`-based mutex release would fail permanently
+# if a stray file were left inside it.
+#
 # `orchestration` (19th member, added by the specs/-root relocation task) is a DIRECTORY-class
 # member covering `specs/.orchestration/` — the relocation target for the two repo-level
 # session-scoped singletons (`.orchestrator-multi-state-{session_id}.json`,
@@ -78,6 +84,7 @@ declare -a RUNTIME_FILE_IDS=(
   "scope-lock"
   "commit-lock"
   "errors-lock"
+  "decisions-lock"
   "tmp"
   "deploy-ledger"
   "orchestration"
@@ -101,6 +108,7 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "**/.scope-lock/"
   "**/.commit-lock/"
   "**/.errors.lock"
+  "**/.decisions.lock"
   "/specs/tmp/"
   "**/.orchestrator-deploy-ledger.json"
   "**/.orchestration/"
@@ -126,6 +134,7 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/.scope-lock/owner"
   "specs/.commit-lock/owner"
   "specs/.errors.lock"
+  "specs/000_probe/.decisions.lock"
   "specs/tmp/claude-tts-notify.log"
   "specs/.orchestrator-deploy-ledger.json"
   "specs/.orchestration/.orchestrator-multi-state-sess_0000000000_probe.json"
@@ -150,6 +159,7 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '/\.scope-lock/'
   '/\.commit-lock/'
   '\.errors\.lock$'
+  '\.decisions\.lock$'
   '^specs/tmp/'
   '\.orchestrator-deploy-ledger\.json$'
   '/\.orchestration/'
@@ -159,16 +169,16 @@ declare -a RUNTIME_FILE_B_REGEX=(
 # a hit at this index. A "1" member's bare directory basename is given in
 # RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "1" "0" "1"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "1" "0" "1"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "tmp" "" ".orchestration"
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "tmp" "" ".orchestration"
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
 
 # runtime_ignore_block
-# Emits the exact fenced gitignore body (comment header + all 19 patterns, in the order above)
+# Emits the exact fenced gitignore body (comment header + all 20 patterns, in the order above)
 # that context/standards/orchestrator-runtime-files.md's "Consumer Repo Setup" block and both
 # deploy-harness test fixtures (test-deploy-orphans.sh, test-deploy-propagation.sh) must carry
 # verbatim. Callers write this to a `.gitignore` file or embed it in a fenced markdown block --
@@ -200,6 +210,7 @@ runtime_ignore_block() {
 **/.scope-lock/
 **/.commit-lock/
 **/.errors.lock
+**/.decisions.lock
 /specs/tmp/
 **/.orchestrator-deploy-ledger.json
 **/.orchestration/
@@ -207,7 +218,7 @@ BLOCK_EOF
 }
 
 # runtime_specs_ignore_block
-# Emits the same 19-member class as runtime_ignore_block() above, but with every pattern
+# Emits the same 20-member class as runtime_ignore_block() above, but with every pattern
 # rewritten relative to `specs/` instead of the repo root, for a `specs/.gitignore` file (whose
 # patterns are matched relative to the directory the .gitignore file lives in, not the repo
 # root). MECHANICALLY DERIVED from RUNTIME_FILE_PATTERNS -- never a second hand-written literal

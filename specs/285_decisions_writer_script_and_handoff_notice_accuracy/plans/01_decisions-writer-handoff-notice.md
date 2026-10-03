@@ -1,7 +1,7 @@
 # Implementation Plan: Task #285
 
 - **Task**: 285 - Decisions writer script and handoff notice accuracy
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None (task 334 is a concurrent sibling with no file overlap)
 - **Research Inputs**: `specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md`
@@ -144,29 +144,34 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Declare `.decisions.lock` as a Runtime Ephemeral Pattern [NOT STARTED]
+### Phase 1: Declare `.decisions.lock` as a Runtime Ephemeral Pattern [COMPLETED]
 
 **Goal**: `specs/{NNN}_{slug}/.decisions.lock` is a declared member of the runtime ephemeral
 pattern set, so the writer's lock file is ignore-covered the same way `.errors.lock` is and never
 appears as `specs/` residue.
 
 **Tasks**:
-- [ ] Re-read `scripts/lib/runtime-file-patterns.sh` and locate every parallel array that carries
+- [x] Re-read `scripts/lib/runtime-file-patterns.sh` and locate every parallel array that carries
       the existing `errors-lock` member (expected: `RUNTIME_FILE_KEYS`-style name list,
       `RUNTIME_FILE_PATTERNS`, `RUNTIME_FILE_PROBES`, `RUNTIME_FILE_B_REGEX`, `RUNTIME_FILE_IS_DIR`,
-      `RUNTIME_FILE_DIR_BASENAME`).
-- [ ] Add one new member, `decisions-lock`, at the index immediately after `errors-lock`, with:
+      `RUNTIME_FILE_DIR_BASENAME`). *(completed)*
+- [x] Add one new member, `decisions-lock`, at the index immediately after `errors-lock`, with:
       pattern `**/.decisions.lock`; probe `specs/000_probe/.decisions.lock`; Check B regex
-      `\.decisions\.lock$`; `IS_DIR` `"0"`; `DIR_BASENAME` `""`.
-- [ ] Update the `runtime_ignore_block` header comment's pattern count (currently "all 19
-      patterns") to match the new member count.
-- [ ] Update the three verbatim-block carriers found by
+      `\.decisions\.lock$`; `IS_DIR` `"0"`; `DIR_BASENAME` `""`. *(completed: added across all six
+      parallel arrays, verified length 20 after sourcing)*
+- [x] Update the `runtime_ignore_block` header comment's pattern count (currently "all 19
+      patterns") to match the new member count. *(completed: "19 total"->"20 total",
+      "19th member"->"20th member" comment added, "19-member"->"20-member")*
+- [x] Update the three verbatim-block carriers found by
       `grep -rln '^\*\*/\.errors\.lock$' --include=*.md --include=*.sh agent-system/`:
       `context/standards/orchestrator-runtime-files.md` (its fenced block **and** its per-file
       table, adding a `specs/{NNN}_{slug}/.decisions.lock` row mirroring the `specs/.errors.lock`
-      row), and `scripts/tests/test-orchestrate-unwind-dispatch.sh`'s fixture block.
-- [ ] Do **not** hand-edit the live `specs/.gitignore` managed block — it is generated. Note in the
+      row), and `scripts/tests/test-orchestrate-unwind-dispatch.sh`'s fixture block. *(completed;
+      also updated a 4th site found during verification: test-runtime-file-tracking.sh Case 5's
+      hardcoded "19 class members" assertion, which would otherwise regress after this change)*
+- [x] Do **not** hand-edit the live `specs/.gitignore` managed block — it is generated. Note in the
       phase's commit message that the refresh happens on the next deploy's `init-specs.sh` run.
+      *(completed: not touched; refresh deferred to next deploy's init-specs.sh run)*
 
 **Timing**: 0.75 hours
 
