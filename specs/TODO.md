@@ -11,7 +11,7 @@ next_project_number: 328
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,89,127,184,250,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,127,184,250,270,271,272,280,284,285,295,296,297,299,300,306,311,318,322,325,327 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,185,251,273,275,281,298,302,303,307,308,319,326 | 22,127,184,271,272,280,285,297,300,306 | core-agent-system, extensions, orchestrator |
 | 3 | 170,274,282,304,313 | 250,251,273,275,281,284,285,302,308 | core-agent-system, orchestrator |
 | 4 | 312 | 282,300 | orchestrator |
@@ -20,7 +20,6 @@ next_project_number: 328
 
 ### Core Agent System
 
-89 [IMPLEMENTING] — Apply the mode-gated section convention to the two remaining...
 127 [IMPLEMENTING] — === REVISED 2026-09-01 (backlog streamline: absorbs the...
   └─ 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
     └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
@@ -4110,7 +4109,7 @@ REFERENCE: specs/116_core_agent_system_consolidation/reports/03_target-state-des
 ---
 
 ### 89. Mode gate literature and distill skills
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 87
