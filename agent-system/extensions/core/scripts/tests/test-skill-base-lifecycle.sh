@@ -798,6 +798,170 @@ else
 fi
 
 # =====================================================================
+# Group 5: skill_get_extension_dir / skill_run_extension_hook -- the extension lifecycle hook
+# mechanism's resolver and invocation functions.
+#
+# SOURCE-STORE-FIRST resolution, deliberately the REVERSE of this suite's own default
+# (deployed-tree-first, source-store-fallback) candidate order used for SKILL_BASE above. The
+# functions under test here are being changed IN THE SOURCE STORE by the authoring task; the
+# deployed copy at .claude/scripts/skill-base.sh is regenerated only by a separate, later
+# operator action (<leader>al "Reload All", or deploy-headless.sh) that this task deliberately
+# does not perform. A deploy-first resolution would therefore silently exercise the OLD,
+# unchanged deployed code and report a misleading PASS here -- exactly the hazard this suite's
+# own stale-deploy harness guard above (the "_task_dir" grep, which exits 2 rather than letting a
+# stale copy report a false PASS) already exists to prevent, just applied in the opposite
+# direction. Each case below sources its chosen copy inside its OWN subshell (never at suite
+# level), so the suite-level SKILL_BASE-sourced functions used by every other group above remain
+# completely untouched.
+# =====================================================================
+info "=== skill_get_extension_dir / skill_run_extension_hook (source-store-first) ==="
+
+HOOK_SKILL_BASE="$(resolve_candidate "skill-base.sh (source-store-first, for the hook mechanism group)" \
+  "$SCRIPT_DIR/../skill-base.sh" \
+  "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
+info "Group 5 exercises: $HOOK_SKILL_BASE"
+
+# ─── fixture: a real object-schema .claude-extensions.json joined with per-extension manifests ──
+HOOK_ROOT="$WORKDIR/hook-fixture"
+mkdir -p "$HOOK_ROOT/.claude/extensions/fixtureext" "$HOOK_ROOT/.claude/extensions/inactiveext" \
+  "$HOOK_ROOT/.claude/scripts"
+cat > "$HOOK_ROOT/.claude-extensions.json" << 'EOF'
+{"version":"1.0.0","extensions":{"fixtureext":{"status":"active"},"inactiveext":{"status":"inactive"}}}
+EOF
+cat > "$HOOK_ROOT/.claude/extensions/fixtureext/manifest.json" << 'EOF'
+{
+  "task_type": "hookfixturetype",
+  "hooks": {
+    "preflight": "hook-sentinel.sh",
+    "postflight": "scripts/hook-sentinel.sh",
+    "context_injection": "scripts/hook-badrc.sh",
+    "verification": "scripts/does-not-exist.sh"
+  }
+}
+EOF
+cat > "$HOOK_ROOT/.claude/extensions/inactiveext/manifest.json" << 'EOF'
+{"task_type": "inactivetype", "hooks": {}}
+EOF
+cat > "$HOOK_ROOT/.claude/scripts/hook-sentinel.sh" << EOF
+#!/usr/bin/env bash
+echo "sentinel" > "$WORKDIR/hook-sentinel-fired"
+exit 0
+EOF
+cat > "$HOOK_ROOT/.claude/scripts/hook-badrc.sh" << 'EOF'
+#!/usr/bin/env bash
+exit 7
+EOF
+chmod +x "$HOOK_ROOT/.claude/scripts/hook-sentinel.sh" "$HOOK_ROOT/.claude/scripts/hook-badrc.sh"
+
+HOOK_NOEXT_ROOT="$WORKDIR/hook-noext-fixture"
+mkdir -p "$HOOK_NOEXT_ROOT"
+
+# ─── subshell helpers: source HOOK_SKILL_BASE fresh inside the subshell each time, never at suite
+# level, so these cases can never leak their resolution order into any later group. ────────────
+run_resolver_case() {
+  local fixture_root="$1" task_type="$2"
+  (
+    cd "$fixture_root" || exit 2
+    # shellcheck disable=SC1090
+    . "$HOOK_SKILL_BASE"
+    skill_get_extension_dir "$task_type"
+  )
+}
+
+run_hook_case() {
+  local fixture_root="$1"; shift
+  (
+    cd "$fixture_root" || exit 2
+    # shellcheck disable=SC1090
+    . "$HOOK_SKILL_BASE"
+    skill_run_extension_hook "$@" >"$WORKDIR/hook-case-stdout.log" 2>"$WORKDIR/hook-case-stderr.log"
+    func_rc=$?
+    printf 'RC=%s;STATUS=%s;NAME=%s;PATH=%s;FUNC_RC=%s\n' \
+      "${SKILL_HOOK_LAST_RC}" "${SKILL_HOOK_LAST_STATUS}" "${SKILL_HOOK_LAST_NAME}" \
+      "${SKILL_HOOK_LAST_PATH}" "$func_rc"
+  )
+}
+
+# --- resolver hit ---------------------------------------------------------------------------
+RESOLVER_HIT=$(run_resolver_case "$HOOK_ROOT" "hookfixturetype")
+if [[ "$RESOLVER_HIT" == ".claude/extensions/fixtureext" ]]; then
+  pass "skill_get_extension_dir resolves a matching active task_type to its extension dir"
+else
+  fail "skill_get_extension_dir (hit): expected '.claude/extensions/fixtureext', got '$RESOLVER_HIT'"
+fi
+
+# --- resolver miss: unknown task_type -------------------------------------------------------
+RESOLVER_MISS=$(run_resolver_case "$HOOK_ROOT" "no-such-type")
+if [[ -z "$RESOLVER_MISS" ]]; then
+  pass "skill_get_extension_dir returns empty for an unknown task_type"
+else
+  fail "skill_get_extension_dir (miss): expected empty, got '$RESOLVER_MISS'"
+fi
+
+# --- resolver miss: extension present but status != active ---------------------------------
+RESOLVER_INACTIVE=$(run_resolver_case "$HOOK_ROOT" "inactivetype")
+if [[ -z "$RESOLVER_INACTIVE" ]]; then
+  pass "skill_get_extension_dir does not match an extension whose status is not active"
+else
+  fail "skill_get_extension_dir (inactive): expected empty, got '$RESOLVER_INACTIVE'"
+fi
+
+# --- resolver safety: no .claude-extensions.json at all -------------------------------------
+RESOLVER_NOEXT=$(run_resolver_case "$HOOK_NOEXT_ROOT" "hookfixturetype")
+RESOLVER_NOEXT_RC=$?
+if [[ -z "$RESOLVER_NOEXT" && "$RESOLVER_NOEXT_RC" -eq 0 ]]; then
+  pass "skill_get_extension_dir with no .claude-extensions.json at all returns empty and exits 0"
+else
+  fail "skill_get_extension_dir (no extensions.json): expected empty/exit 0, got '$RESOLVER_NOEXT' / rc=$RESOLVER_NOEXT_RC"
+fi
+
+# --- hook fires: bare filename form ---------------------------------------------------------
+rm -f "$WORKDIR/hook-sentinel-fired"
+HOOK_FIRE=$(run_hook_case "$HOOK_ROOT" "preflight" 1 hookfixturetype specs/001_x sess_test implement)
+if [[ -f "$WORKDIR/hook-sentinel-fired" ]] && [[ "$HOOK_FIRE" == "RC=0;STATUS=ran;NAME=preflight;PATH=.claude/scripts/hook-sentinel.sh;FUNC_RC=0" ]]; then
+  pass "skill_run_extension_hook fires a declared hook (bare filename form), RC=0, STATUS=ran"
+else
+  fail "skill_run_extension_hook (hook fires, bare form): sentinel-written=$( [[ -f "$WORKDIR/hook-sentinel-fired" ]] && echo yes || echo no), got '$HOOK_FIRE'"
+fi
+
+# --- prefixed-path tolerance: scripts/<name>.sh form resolves identically -------------------
+rm -f "$WORKDIR/hook-sentinel-fired"
+HOOK_FIRE_PREFIXED=$(run_hook_case "$HOOK_ROOT" "postflight" 1 hookfixturetype specs/001_x sess_test implement)
+if [[ -f "$WORKDIR/hook-sentinel-fired" ]] && [[ "$HOOK_FIRE_PREFIXED" == "RC=0;STATUS=ran;NAME=postflight;PATH=.claude/scripts/hook-sentinel.sh;FUNC_RC=0" ]]; then
+  pass "skill_run_extension_hook resolves the scripts/-prefixed manifest form identically (nix/nvim's actual form)"
+else
+  fail "skill_run_extension_hook (prefixed-path tolerance): sentinel-written=$( [[ -f "$WORKDIR/hook-sentinel-fired" ]] && echo yes || echo no), got '$HOOK_FIRE_PREFIXED'"
+fi
+
+# --- rc observable: non-zero hook exit, function still returns 0 ---------------------------
+HOOK_BADRC=$(run_hook_case "$HOOK_ROOT" "context_injection" 1 hookfixturetype specs/001_x sess_test implement)
+if [[ "$HOOK_BADRC" == "RC=7;STATUS=ran;NAME=context_injection;PATH=.claude/scripts/hook-badrc.sh;FUNC_RC=0" ]]; then
+  pass "skill_run_extension_hook makes a non-zero hook exit observable (RC=7) while the function itself still returns 0"
+else
+  fail "skill_run_extension_hook (rc observable): got '$HOOK_BADRC'"
+fi
+if grep -q "WARNING.*exited non-zero" "$WORKDIR/hook-case-stdout.log" 2>/dev/null; then
+  pass "skill_run_extension_hook prints the existing non-blocking WARNING on a non-zero exit"
+else
+  fail "skill_run_extension_hook (rc observable): expected non-blocking WARNING on stdout, got: $(cat "$WORKDIR/hook-case-stdout.log" 2>/dev/null)"
+fi
+
+# --- loud skip + reset discipline: a declared hook resolving to a missing/non-executable script
+# emits the NOTE on stderr and still returns 0 -- run immediately after the non-zero case above
+# so this ALSO proves a subsequent skipped invocation does not leak the prior run's RC=7. -----
+HOOK_LOUDSKIP=$(run_hook_case "$HOOK_ROOT" "verification" 1 hookfixturetype specs/001_x sess_test implement)
+if [[ "$HOOK_LOUDSKIP" == "RC=;STATUS=skipped_not_executable;NAME=verification;PATH=.claude/scripts/does-not-exist.sh;FUNC_RC=0" ]]; then
+  pass "skill_run_extension_hook resets RC/STATUS on a subsequent skipped invocation (no leak of the prior RC=7); STATUS=skipped_not_executable"
+else
+  fail "skill_run_extension_hook (loud skip / reset discipline): got '$HOOK_LOUDSKIP'"
+fi
+if grep -q "^NOTE:.*hook skipped" "$WORKDIR/hook-case-stderr.log" 2>/dev/null; then
+  pass "skill_run_extension_hook emits a loud one-line NOTE on stderr for a missing/non-executable resolved hook"
+else
+  fail "skill_run_extension_hook (loud skip): expected a NOTE on stderr, got: $(cat "$WORKDIR/hook-case-stderr.log" 2>/dev/null)"
+fi
+
+# =====================================================================
 # Real-tree contamination guard: this suite must never leave a NEW mark on the actual repo's
 # specs/ tree relative to the pre-suite baseline, no matter which group ran. Delta check, not an
 # absolute-emptiness check -- see the BASELINE_SPECS_STATUS comment above for why.
@@ -820,13 +984,15 @@ echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 echo ""
 echo "Residual (uncovered by this suite, out of scope per this suite's own authoring plan):"
-echo "  skill_get_extension_dir, skill_run_extension_hook, _events_append_observable,"
+echo "  _events_append_observable,"
 echo "  skill_validate_input, skill_create_postflight_marker, skill_context_injection,"
 echo "  skill_read_artifact_number, skill_read_metadata, skill_validate_artifact,"
 echo "  skill_propagate_completion_summary,"
 echo "  skill_corroborate_phase_counts (already covered by test-corroborate-phase-counts.sh)."
 echo "  skill_validate_task_artifacts is now covered by test-gate-out-repair-reporting.sh"
 echo "  (its SKILL_VALIDATE_* aggregation globals and command-gate-out.sh's report/events leg)."
+echo "  skill_get_extension_dir and skill_run_extension_hook are now covered by Group 5 above"
+echo "  (source-store-first resolver/hook-mechanism coverage against the real object schema)."
 
 if [[ "$FAILED" -gt 0 ]]; then
   exit 1

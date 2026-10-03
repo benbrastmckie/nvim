@@ -1,0 +1,34 @@
+{
+  "phase": 4,
+  "phase_name": "Regression coverage in test-skill-base-lifecycle.sh",
+  "started_at": "2026-10-03T10:10:00Z",
+  "last_updated": "2026-10-03T10:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the suite's ISOLATION CONTRACT, helpers, and stale-deploy guard", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add new test group (Group 5) with its own source-store-first subshell resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 3, "description": "Build hook fixture repo (real object-schema .claude-extensions.json)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 4, "description": "Cover nine (ended up ten) cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 5, "description": "Update residuals footer, confirm contamination guard, mutation check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_evidence": {
+    "bash_-n": "pass",
+    "shellcheck_diff_vs_baseline": "clean -- the single SC2329 info finding is pre-existing (present in baseline too)",
+    "suite_run_clean": "Results: 48 passed, 0 failed (10 new cases, the plan's 9 plus one extra resolver-safety exit-code assertion)",
+    "mutation_check": "Temporarily overwrote the source-store skill-base.sh with a scratch copy reverting skill_get_extension_dir's query to the old .loaded_extensions form (via `cp`, never `git checkout` -- a dirty-tree destructive-git guard blocked that approach entirely before any command ran, confirmed no damage via `git status --short`). Re-ran the suite: 7 of 10 new cases FAILED as expected (resolver-hit and every hook-dependent case; the three resolver-MISS cases still trivially passed, which is expected since a miss behaves the same under both old and new code). Restored the original file via `cp` from a pre-mutation backup immediately after, confirmed `git status --short` clean, and re-ran the suite to confirm 48 passed / 0 failed again.",
+    "contamination_guard": "pass (real specs/ tree status unchanged relative to pre-run baseline), both pre- and post-mutation-check runs",
+    "manifest_registration": "grep -n test-skill-base-lifecycle.sh agent-system/extensions/core/manifest.json confirms the existing registration; no new test file, no new registration needed",
+    "full_gate_set_delta": "check-extension-docs.sh --quiet (source-store): zero FAIL/ADVISORY lines"
+  },
+  "deviations": [
+    {
+      "task_id": "4.mutation-check-restore",
+      "description": "Plan's mutation-check task says 'Restore immediately; never commit the scratch revert'",
+      "type": "altered",
+      "reason": "A first attempt to restore via `git checkout -- <path>` was correctly BLOCKED by guard-destructive-git.sh (dirty-tree destructive-git guard) before any command in that invocation ran at all -- confirmed via git status showing the file still at HEAD, i.e. the mutation itself had not even been applied yet at that point. Restoration was instead done via a plain `cp` from a pre-mutation backup file, which is not a git operation and is not subject to that guard. End state is identical (file matches HEAD exactly, confirmed via `git status --short`); only the restore MECHANISM differs from a literal 'revert' framing.",
+      "annotation": "*(deviation: altered -- restored via `cp` from a backup instead of `git checkout`, which the destructive-git guard correctly blocks on principle; same end state)*"
+    }
+  ]
+}
