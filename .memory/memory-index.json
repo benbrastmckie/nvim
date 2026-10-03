@@ -21,8 +21,8 @@
       "token_count": 302,
       "created": "2026-04-13",
       "modified": "2026-04-13",
-      "last_retrieved": "2026-09-18",
-      "retrieval_count": 72
+      "last_retrieved": "2026-10-02",
+      "retrieval_count": 84
     },
     {
       "id": "MEM-config-nextcord-discord-nixos",
@@ -150,8 +150,8 @@
       "token_count": 90,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-09-29",
-      "retrieval_count": 104
+      "last_retrieved": "2026-10-03",
+      "retrieval_count": 116
     },
     {
       "id": "MEM-technique-validate-context-budgets-budget",
