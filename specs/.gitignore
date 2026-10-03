@@ -24,6 +24,7 @@
 **/.scope-lock/
 **/.commit-lock/
 **/.errors.lock
+**/.decisions.lock
 /tmp/
 **/.orchestrator-deploy-ledger.json
 **/.orchestration/
