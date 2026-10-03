@@ -1,29 +1,15 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/329_per_task_issue_log_contract_writer_and_threading/plans/01_issue-log-writer-threading.md",
-      "summary": "9-phase plan (4 dependency waves, ~11h) for the per-task issues.jsonl contract, the single issue-record.sh writer, dispatch/contract threading, seven orchestrator-side call sites, the six recorded relation verdicts, and the reflection-field retirement."
-    }
-  ],
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1791065283_d98d41_329",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 9,
-    "estimated_hours": 11,
-    "dependency_waves": [[1], [2, 7], [3, 4, 5, 6, 8], [9]]
+    "session_id": "sess_1791065283_d98d41",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
-  "memory_candidates": [
-    {
-      "content": "In this agent system, a per-dispatch instruction that must reach every dispatched agent is threaded at ONE point -- the single brace-grouped section emitter in scripts/orchestrate-build-dispatch.sh that writes the dispatch file -- never by editing agent definition files (there are ~78). Within that emitter, sections split into unconditional (Identity, Description, Artifact Round, Handoff, Wait Discipline, User-Decision Contract) and conditional (Territory, memory/lit/effort/hard-contracts, Prior Decisions, phase-specific artifact blocks). Placing a new section among the unconditional ones is what makes it reach research, plan, and implement phases alike; placing it in a conditional branch silently limits coverage. The shared contract includes are NOT equivalent substitutes: context/contracts/phase-closure.md is loaded in both modes via an explicit @-bullet in the general implementation agent, but context/contracts/wrap-up.md is hard-mode-only, so an instruction placed only there never reaches standard-mode or research/plan dispatches. Verify an addition by generating a dispatch file for all three phase values, not by reading the code.",
-      "category": "PATTERN",
-      "source_artifact": "specs/329_per_task_issue_log_contract_writer_and_threading/plans/01_issue-log-writer-threading.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-build-dispatch", "dispatch-threading", "unconditional-section", "phase-closure", "wrap-up", "hard-mode-only"]
-    }
-  ],
-  "dispatch_seq": 8
+  "dispatch_seq": 9
 }

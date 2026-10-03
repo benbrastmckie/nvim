@@ -3596,6 +3596,28 @@
           "/task"
         ]
       }
+    },
+    {
+      "path": "formats/issue-log.md",
+      "domain": "core",
+      "subdomain": "formats",
+      "summary": "Per-task issues.jsonl schema: entry field table, 15-class seed taxonomy, severity scale, CAPTURE-ONLY boundary, and the six relation verdicts against existing issue-bearing surfaces",
+      "line_count": 204,
+      "keywords": [
+        "issues",
+        "jsonl",
+        "schema",
+        "capture",
+        "taxonomy"
+      ],
+      "topics": [
+        "observability"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      }
     }
   ]
 }

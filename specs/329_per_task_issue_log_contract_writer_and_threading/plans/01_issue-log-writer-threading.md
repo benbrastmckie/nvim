@@ -1,7 +1,7 @@
 # Implementation Plan: Task #329
 
 - **Task**: 329 - Per-task issue log: contract, writer and dispatch threading
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: Task 285 (completed), Task 326 (completed) — both were file-footprint
   serializations on `orchestrate-cycle-postflight.sh` / `orchestrate-build-dispatch.sh` and have
@@ -135,7 +135,7 @@ commit messages, nowhere else.
 
 ---
 
-### Phase 1: Author the Issue-Log Format Doc and Record the Six Relation Verdicts [NOT STARTED]
+### Phase 1: Author the Issue-Log Format Doc and Record the Six Relation Verdicts [COMPLETED]
 
 **Goal**: `context/formats/issue-log.md` exists as the authoritative contract that every later
 phase cites: entry schema, the 15-class seed enum with a one-line gloss each, the chosen severity
@@ -143,39 +143,39 @@ scale, the CAPTURE-ONLY boundary, when an agent should record, and an explicit S
 LEAVE verdict for each of the six existing surfaces.
 
 **Tasks**:
-- [ ] Read `context/formats/events-format.md` and `docs/architecture/handoff-schema.md`'s
+- [x] Read `context/formats/events-format.md` and `docs/architecture/handoff-schema.md`'s
       "Decisions File Schema" section first, and follow their prose-contract conventions (field
       table with required/type/semantics columns, a worked example line, an explicit producer and
-      consumer statement) rather than inventing a new document shape.
-- [ ] Write the entry field table: `kind` (closed: `issue`|`win`), `class` (open/extensible),
+      consumer statement) rather than inventing a new document shape. *(completed)*
+- [x] Write the entry field table: `kind` (closed: `issue`|`win`), `class` (open/extensible),
       `severity`, `phase` (`research`|`plan`|`implement`|`conclusion`|`other`), `dispatch_seq`,
       `what_happened` (required, free prose, one paragraph), `evidence_path`, `estimated_cost`,
       `resolution` (`fixed_inline`|`worked_around`|`open`), `suggested_channel`
-      (`fix_now`|`follow_up_task`|`agent_system`), `tags` (open object).
-- [ ] Choose and document the ordered severity scale explicitly, with a one-line admission test
-      for each rung so two agents classify the same event the same way.
-- [ ] Document `estimated_cost` as a `{value, unit}` pair with the unit recorded explicitly
-      (minutes, dispatches, or gate runs) rather than forcing everything into minutes.
-- [ ] Seed the `class` enum with exactly the 15 named classes, each with a one-line gloss:
+      (`fix_now`|`follow_up_task`|`agent_system`), `tags` (open object). *(completed)*
+- [x] Choose and document the ordered severity scale explicitly, with a one-line admission test
+      for each rung so two agents classify the same event the same way. *(completed)*
+- [x] Document `estimated_cost` as a `{value, unit}` pair with the unit recorded explicitly
+      (minutes, dispatches, or gate runs) rather than forcing everything into minutes. *(completed)*
+- [x] Seed the `class` enum with exactly the 15 named classes, each with a one-line gloss:
       design-record defect or ambiguity; gate collision; missing cheap verification tier;
       vacuous or silent pass; tooling bug or gap; resource/OOM including misdiagnosis; plan
       scope-hypothesis wrong; planned feature absent; language or module-system gotcha;
       environment; cross-task ownership/territory; stale deploy or source-store boundary;
-      orchestration defect; stale workaround; cost-forced exclusion or substituted verification.
-- [ ] State the extensibility rule prominently: an unrecognized `class` is accepted with a stderr
+      orchestration defect; stale workaround; cost-forced exclusion or substituted verification. *(completed)*
+- [x] State the extensibility rule prominently: an unrecognized `class` is accepted with a stderr
       warning, never refused, so a new failure mode is recordable the first time it is hit. Say
       why, so a future reader does not "fix" it into a closed enum by analogy to
-      `system-defect-record.sh`.
-- [ ] State that `tags` is an open object that extensions populate and core neither validates the
-      interior of nor depends on — this is the seam an extension's own dimension tagging uses.
-- [ ] Write the CAPTURE ONLY section: nothing is surfaced mid-run, nothing is acted on, no
+      `system-defect-record.sh`. *(completed)*
+- [x] State that `tags` is an open object that extensions populate and core neither validates the
+      interior of nor depends on — this is the seam an extension's own dimension tagging uses. *(completed)*
+- [x] Write the CAPTURE ONLY section: nothing is surfaced mid-run, nothing is acted on, no
       proposal is generated, no gate added, no status changed; review belongs exclusively to the
-      conclusion stage; a recording failure never fails a dispatch.
-- [ ] Write the "when to record" section: record as the event arises, not reconstructed at the
+      conclusion stage; a recording failure never fails a dispatch. *(completed)*
+- [x] Write the "when to record" section: record as the event arises, not reconstructed at the
       end. Name the trigger moments (a deviation from plan, a blocker, a workaround, a gate
       collision, an unusually smooth or time-saving result) and state that end-of-dispatch
-      reconstruction is exactly what produces the free prose this log replaces.
-- [ ] Record the six relation verdicts as a table with a stated boundary for each:
+      reconstruction is exactly what produces the free prose this log replaces. *(completed)*
+- [x] Record the six relation verdicts as a table with a stated boundary for each:
       `.return-meta.json` `errors[]` → **MIRROR**; progress-file `approaches_tried[]` →
       **MIRROR** (note: the surface's actual field name is `approaches_tried[]`, not
       `deviations[]` — `progress-file.md` has no `deviations[]` field, and "Plan Deviations" is a
@@ -183,17 +183,17 @@ LEAVE verdict for each of the six existing surfaces.
       handoff `blockers[]`/`dead_ends` → **MIRROR**; `system_defect` events → **LEAVE**
       (independent populations and enums; adjacent calls only at the two sites where both already
       fire); state.json `reflection` → **RETIRE**, with `kind: "win"` becoming the live home for
-      its positive half and `kind: "issue"` for its negative half.
-- [ ] Add a short note acknowledging the deliberate absence of a companion
+      its positive half and `kind: "issue"` for its negative half. *(completed)*
+- [x] Add a short note acknowledging the deliberate absence of a companion
       `context/schemas/issue-log-schema.json`, breaking the prose+schema pairing convention that
       `events-format.md` and `handoff-schema.md` both follow, and recording it as a low-cost
-      follow-up rather than a silent omission.
-- [ ] Add the unknown-class-tally note for the conclusion stage to pick up (the feedback loop that
-      eventually promotes a recurring unknown class into the documented seed enum).
-- [ ] Register the new file in `index-entries.json` for the core extension if that file carries
+      follow-up rather than a silent omission. *(completed)*
+- [x] Add the unknown-class-tally note for the conclusion stage to pick up (the feedback loop that
+      eventually promotes a recurring unknown class into the documented seed enum). *(completed)*
+- [x] Register the new file in `index-entries.json` for the core extension if that file carries
       per-context-file entries — check first; if it does, add an entry with an accurate summary,
       and leave `agents[]` empty so the doc is not auto-loaded at agent spawn (it is read-on-
-      demand reference material).
+      demand reference material). *(completed)*
 
 **Timing**: 1 hour
 

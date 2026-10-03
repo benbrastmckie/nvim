@@ -1,0 +1,28 @@
+{
+  "phase": 1,
+  "phase_name": "Author the Issue-Log Format Doc and Record the Six Relation Verdicts",
+  "started_at": "2026-10-03T23:40:00Z",
+  "last_updated": "2026-10-04T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write context/formats/issue-log.md: field table, severity scale, cost unit convention, 15-class seed enum, extensibility rule, tags seam, CAPTURE ONLY section, when-to-record section, six relation verdicts, schema-absence note, unknown-class-tally note",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/issue-log.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Register the new file in index-entries.json for the core extension",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
