@@ -207,13 +207,19 @@
           "path": "specs/217_refresh_pss_memory_accounting/plans/01_pss-accounting-idle-notify.md",
           "type": "plan",
           "summary": "9-phase plan across the task's six declared files, sequenced in the strict dependency chain the research identified (accounting -> idleness/cost gate -> prompt path), with per-phase verification tiers, scope hypotheses, and a final gate covering shellcheck, the full matcher suite, redeploy, and the manual end-to-end notification check."
+        },
+        {
+          "path": "specs/217_refresh_pss_memory_accounting/summaries/01_pss-accounting-idle-notify-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 9 phases, decisions, deviations, verification evidence, impacts, and the one follow-up (manual end-to-end human-click check not reachable in this dispatch environment)."
         }
       ],
       "created": "2026-09-15T17:00:35Z",
       "last_updated": "2026-10-03T05:43:49Z",
       "priority": "medium",
       "session_id": "sess_1791000710_cc4f86",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented PSS-based reclaimable memory accounting (fixing shared-page double-counting), a CPU-delta idle state machine, a memory-floor cost gate, a re-verifying --lean-tree targeted-termination mode, and a notify-before-kill desktop notification prompt path with snooze/dedupe/graceful-degrade for claude-refresh.sh's Lean LSP process-tree pass. Full 9-phase plan completed; test suite grew from 112 to 163 passing assertions; redeployed and verified byte-identical to source."
     },
     {
       "project_number": 185,

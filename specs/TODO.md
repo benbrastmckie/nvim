@@ -3627,6 +3627,7 @@ orphan tmp file. Re-check whether both are still live before Phase 1 treats them
 - **Dependencies**: Task 174
 - **Research**: [217_refresh_pss_memory_accounting/reports/01_pss-accounting-idle-notify.md]
 - **Plan**: [217_refresh_pss_memory_accounting/plans/01_pss-accounting-idle-notify.md]
+- **Summary**: [217_refresh_pss_memory_accounting/summaries/01_pss-accounting-idle-notify-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact).
 
