@@ -5,7 +5,7 @@
     {
       "project_number": 334,
       "project_name": "fix_books_scaffold_contract_defects",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "Fix two books-extension scaffold contract defects that each fail a verify-deploy gate.\n\n(1) agent-system/extensions/books/agents/books-implementation-hard-agent.md lacks an\nobject-shaped artifacts array with keys (artifacts, path, summary, type), failing\nlint-agent-contracts.sh. The expected shape is in\nagent-system/extensions/core/context/contracts/return-meta-artifacts-template.md, and the\nnon-hard sibling books-implementation-agent.md already carries it correctly, so it is the\nin-repo reference for the fix.\n\n(2) agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md:52 and\nagent-system/extensions/books/skills/skill-books-research-hard/SKILL.md:43 each hand-roll a\nfull-record task lookup ('.active_projects[] | select(.project_number == $num)'), failing\nlint-task-lookup-adoption.sh, which expects the shared task-lookup helper.\n\nBoth defects originate in the books scaffold commits (phase 2 for the agent, phase 3 for the\ntwo skills), established by git blame rather than inferred; neither was introduced by the\ncontext-corpus or --gate work that followed. The scaffold's own completion gate passed while\nleaving both behind, so this task must also rule on why a completion postflight cleared a task\nwhose output carried two standing lint failures -- that is the more general defect, and fixing\nonly the three files would leave it in place.\n\nVerify with: bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose;\nbash agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh --verbose; then\nbash .claude/scripts/verify-deploy.sh --skip-slow (currently FAIL 3 of 33; these two gates are\ntwo of the three, the third being an orchestrator context-budget ceiling tracked separately).",
       "topic": "extensions",
@@ -15,9 +15,9 @@
         "agent-system/extensions/books/skills/skill-books-research-hard/SKILL.md"
       ],
       "created": "2026-10-03T21:26:48Z",
-      "last_updated": "2026-10-03T22:18:34Z",
+      "last_updated": "2026-10-03T22:18:52Z",
       "title": "Fix two books-extension scaffold contract defects: the hard implementation agent's artifacts shape and hand-rolled task lookups in both hard skills",
-      "session_id": "sess_1791065283_d98d41",
+      "session_id": "sess_1791065283_d98d41_334",
       "artifacts": [
         {
           "path": "specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md",
@@ -1007,19 +1007,28 @@
     {
       "project_number": 285,
       "project_name": "decisions_writer_script_and_handoff_notice_accuracy",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per\nrules/source-store-deploy-boundary.md.\n\nClose two lead-facing contract-surface defects in the /orchestrate loop: .decisions.json has a\ndocumented writer but no writer script, and the postflight handoff-recovery notice is both\nmislabelled and factually wrong about which phases write a handoff.\n\nBoth observed live 2026-09-30, ~/Projects/Logos/Verification, session sess_1790791567_96a2e0.\nThey are grouped because they share one root: the orchestrate contract tells the LEAD either to\ndo something, or what just happened, and the instruction is unexecutable as written or untrue.\n\n--- DEFECT 1: A DOCUMENTED WRITER WITH NO WRITER ---\n\ndocs/architecture/handoff-schema.md's \"Decisions File Schema\" section names the loop's own\nbranch move as the writer of specs/{NNN}_{slug}/.decisions.json, and\nskills/skill-orchestrate/SKILL.md Move 4 instructs the lead to \"Append each answer to that\ntask's specs/{padded}_{project}/.decisions.json per handoff-schema.md's 'Decisions File Schema'\nsection\". No script implements it. Every comparable state write in this system goes through one\n-- state-write.sh is the mutex-guarded single writer for state.json, update-task-status.sh for\nstatus transitions -- so .decisions.json is the sole place a lead is told to hand-author JSON.\n\nIt is additionally the only place where the instruction and the schema live in DIFFERENT files:\nMove 4 does not restate the shape, and the shape (a FLAT array of objects carrying question,\nanswer, cycle, timestamp) sits at handoff-schema.md circa line 960. A lead that follows Move 4\nwithout opening that second file is guessing.\n\nOBSERVED CONSEQUENCE. The lead wrote {\"decisions\":[...]} instead of [...]. The reader\n(orchestrate-build-dispatch.sh:389-392) aborted; that script exited 5; orchestrate-cycle-plan.sh\ndeferred the task on two consecutive cycles of a five-cycle run with the message\n`orchestrate-build-dispatch.sh failed; deferring to a later cycle`, naming neither the file nor\nthe expectation. Work-cycle budget was consumed for zero work, and the cause was found only by\nre-running the planner with stderr captured.\n\nDELIVERABLE 1a. Add the writer. The natural shape is\nscripts/orchestrate-record-decision.sh --task N --session SID --cycle C --question TEXT\n--answer TEXT, appending exactly one schema-valid entry, creating the file when absent, and\nadditive only -- handoff-schema.md is explicit that existing entries are never removed or\nrewritten by a later append. scripts/system-defect-record.sh, already in this directory, is the\nprecedent to follow for an append-one-entry-to-a-JSON-file writer. Register the new script in\ndocs/reference/utility-scripts-inventory.md.\nDELIVERABLE 1b. Repoint SKILL.md Move 4 at the script rather than at the prose schema, so the\nlead never hand-authors this file. Keep the schema section as the reference for readers.\nNOTE THE SPLIT, DO NOT DUPLICATE IT. The reader-side hardening at\norchestrate-build-dispatch.sh:389-392 -- a `length` gate that establishes neither emptiness nor\ntype before iterating -- is recorded on task 270 as a jq type-safety instance, with the evidence\nfrom this same session. This task owns the AUTHORING surface only. Both should land; neither\nblocks the other.\n\n--- DEFECT 2: A RECOVERY NOTICE THAT IS MISLABELLED AND WRONG ---\n\nscripts/orchestrate-cycle-postflight.sh:598 emits, on the research postflight:\n  \"RECOVERY: no handoff written for this dispatch -- expected outcome for this phase's writer\n   (base-mode research/plan/implement never write one). .return-meta.json (fresh, within this\n   dispatch window) reports status=researched; recovering the dispatch outcome from it.\"\nTwo problems in one sentence. (i) It carries the RECOVERY label, which the script also uses for\ngenuine degradation, while simultaneously declaring itself the EXPECTED outcome -- so a lead\ncannot distinguish a normal path from a fault. (ii) The parenthetical is FALSE. In this same run\nthe base-mode PLAN dispatch and the base-mode IMPLEMENT dispatch each wrote a handoff, both\nconfirmed by the script's own following line, \"dispatch_seq match (4) -- handoff confirmed as\nthis dispatch's own report\", and the same at seq 5. So base-mode plan and implement do write\nhandoffs; on this evidence it is research alone that does not.\n\nDELIVERABLE 2. Establish which phases actually write .orchestrator-handoff.json in base mode by\nreading the writers -- do not trust this message and do not restate it. Then: correct the\nparenthetical to match what the writers do; and split the notice by severity, so the expected\nno-handoff path reads as an ordinary informational fallback naming the source it recovered from,\nwhile a genuinely unexpected absence keeps the RECOVERY label and its current prominence. If the\nanswer is phase-dependent, name the phases in the message itself rather than generalising.\n\nACCEPTANCE. A lead can record a user decision with one documented script call and no knowledge\nof the JSON shape, and a malformed .decisions.json is no longer reachable through the sanctioned\npath. The new script is registered in the utility-scripts inventory, and SKILL.md Move 4 cites it\ninstead of the prose schema. The handoff notice's phase claim is verified against the writers and\nmatches them, and the expected and unexpected cases are distinguishable at a glance. shellcheck\nclean per context/standards/shell-strict-mode.md.\n\nDELIVERABLE RULE: no task numbers in deliverables outside specs/**.",
       "topic": "core-agent-system",
       "file_scope": [
-        "agent-system/extensions/core/scripts/orchestrate-record-decision.sh",
+        "agent-system/extensions/core/context/patterns/infra-failure-discrimination.md",
+        "agent-system/extensions/core/context/schemas/orchestrator-handoff-schema.json",
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+        "agent-system/extensions/core/scripts/orchestrate-record-decision.sh",
+        "agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "dependencies": [],
       "created": "2026-09-30T19:03:13Z",
-      "last_updated": "2026-10-03T22:18:28Z",
+      "last_updated": "2026-10-03T22:27:50Z",
       "title": "Add the missing .decisions.json writer script and correct the postflight handoff-recovery notice",
       "session_id": "sess_1791065283_d98d41",
       "artifacts": [
@@ -1027,6 +1036,11 @@
           "path": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
           "type": "report",
           "summary": "Confirms no writer exists for .decisions.json (flat-array shape per handoff-schema.md), names errors-append.sh's flock/atomic-mv merge pattern plus system-defect-record.sh's argument-parsing style and lib/task-lookup-lib.sh's task-dir resolution as the precedents for the new orchestrate-record-decision.sh script; and verifies across all seven agent definition files that the postflight RECOVERY notice's 'base-mode research/plan/implement never write one' claim is false for plan/implement (both write .orchestrator-handoff.json unconditionally whenever orchestrator_mode:true, mode-independent) and true only for research (never writes one, in any mode) -- giving the exact phase-conditional fix for orchestrate-cycle-postflight.sh:693."
+        },
+        {
+          "path": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/plans/01_decisions-writer-handoff-notice.md",
+          "type": "plan",
+          "summary": "7 phases across 4 dependency waves, ~8 hours; all edit targets under agent-system/extensions/core/**."
         }
       ],
       "next_artifact_number": 2

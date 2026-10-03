@@ -1,41 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791065283_d98d41_285",
-  "dispatch_seq": 1,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
-      "summary": "Confirms no writer exists for .decisions.json (flat-array shape per handoff-schema.md), names errors-append.sh's flock/atomic-mv merge pattern plus system-defect-record.sh's argument-parsing style and lib/task-lookup-lib.sh's task-dir resolution as the precedents for the new orchestrate-record-decision.sh script; and verifies across all seven agent definition files that the postflight RECOVERY notice's 'base-mode research/plan/implement never write one' claim is false for plan/implement (both write .orchestrator-handoff.json unconditionally whenever orchestrator_mode:true, mode-independent) and true only for research (never writes one, in any mode) -- giving the exact phase-conditional fix for orchestrate-cycle-postflight.sh:693."
+      "type": "plan",
+      "path": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/plans/01_decisions-writer-handoff-notice.md",
+      "summary": "7-phase, 4-wave plan closing both contract-surface defects: a new flock-guarded orchestrate-record-decision.sh writer (plus its regression suite, manifest/inventory registration, a declared .decisions.lock ephemeral pattern, and a SKILL.md Move 4 repoint), and a verified phase-conditional severity split of the postflight no-handoff notice plus de-falsification of the same claim at its five other surfaces."
     }
   ],
   "metadata": {
-    "findings_count": 4
+    "session_id": "sess_1791065283_d98d41_285",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 8,
+    "dependency_waves": 4
   },
   "memory_candidates": [
     {
-      "content": "When a postflight/notice message claims a phase-dependent behavior ('base-mode X/Y/Z never write...'), verify against each dispatchable agent's own contract section rather than trusting the message: in this codebase, every research agent (general/lean/lean-hard/nix/nvim) carries an identical '.orchestrator-handoff.json -- research agents never write one' section (never, any mode), while every implementation agent and the shared planner-agent carry an identical '(orchestrator-mode dispatches)' section requiring the write whenever orchestrator_mode:true, mode-independent (no hard/base distinction in the condition). A 'mode' qualifier on a handoff-writer claim is a common misdiagnosis for what is actually a 'phase' predicate.",
-      "category": "PATTERN",
-      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
+      "content": "Adding a new per-task lock file under specs/ in this agent system is a shared-lib change, not a local one: scripts/lib/runtime-file-patterns.sh declares each ephemeral path as a member replicated across SIX parallel bash arrays (name list, gitignore PATTERNS, PROBES, Check-B REGEX, IS_DIR, DIR_BASENAME) plus a pattern-count comment, and the same block is carried verbatim by context/standards/orchestrator-runtime-files.md and scripts/tests/test-orchestrate-unwind-dispatch.sh (find carriers live with grep -rln '^\\*\\*/\\.errors\\.lock$'). specs/.gitignore is GENERATED from that lib by init-specs.sh's sentinel-delimited managed block and must never be hand-edited. Critically, do NOT shortcut this by putting a lock file inside the task's already-ignored .lock/ directory: that directory is a mkdir-exclusivity mutex released by rmdir, so a stray file inside makes the release fail and leaves the task permanently locked.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/plans/01_decisions-writer-handoff-notice.md",
       "confidence": 0.85,
-      "suggested_keywords": ["orchestrator-handoff", "orchestrate-cycle-postflight", "phase-vs-mode", "research-agent-contract", "handoff-schema"]
-    },
-    {
-      "content": "For a new append-one-entry-to-a-JSON-array-file writer script in agent-system/extensions/core/scripts/, the right composite precedent is: system-defect-record.sh for the surrounding shell (manual while-loop arg parsing, fail-loud validation of every required arg and any --*-json payload via jq -e 'type == \"object\"' before use, source lib/common.sh, then '. deploy-root-guard.sh || exit 1' immediately after so the script refuses to run from the source store itself), but errors-append.sh for the actual write mechanics (flock -x 200 held across read -> merge -> validate-merged-doc -> atomic mv, against a dedicated lock file sibling to the data file, lazy-create the file on first use, jq -c -n record construction, never string concatenation). events-append.sh is NOT the right mechanics precedent despite also being an 'append' script -- it is a JSONL line-appender with no read-modify-write of existing array content, a different shape problem than a JSON-array file.",
-      "category": "PATTERN",
-      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["errors-append.sh", "system-defect-record.sh", "flock", "atomic-mv", "json-array-writer-script"]
-    },
-    {
-      "content": "scripts/lib/task-lookup-lib.sh is the sanctioned sourceable library for task-number-to-task-directory resolution (task_lookup_entry, task_lookup_dir), archive-aware (checks active, then archive, then falls back to the active path for a brand-new task) and read-only (never creates or moves a directory). Prefer sourcing it directly over shelling out to task-lock.sh when no locking/creation semantics are needed beyond the caller's own.",
-      "category": "PATTERN",
-      "source_artifact": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["task-lookup-lib", "resolve-task-dir", "task-directory-resolution", "archive-aware-lookup"]
+      "suggested_keywords": ["runtime-file-patterns", "decisions-lock", "specs-gitignore-managed-block", "task-lock-rmdir", "ephemeral-pattern-member"]
     }
   ],
-  "next_steps": "Run /plan 285 to create implementation plan"
+  "next_steps": "Run /implement 285 to execute the plan",
+  "dispatch_seq": 3
 }

@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 3,
+  "summary": "Wrote a 7-phase, 4-wave implementation plan closing both lead-facing contract-surface defects: a new flock-guarded orchestrate-record-decision.sh writer for .decisions.json (with regression suite, manifest/inventory registration, a declared .decisions.lock ephemeral pattern, and a SKILL.md Move 4 repoint), and a verified phase-conditional severity split of the postflight no-handoff notice plus de-falsification of the same claim at its six other surfaces.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/285_decisions_writer_script_and_handoff_notice_accuracy/plans/01_decisions-writer-handoff-notice.md",
+      "summary": "7 phases across 4 dependency waves, ~8 hours; all edit targets under agent-system/extensions/core/**."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": []
+}
