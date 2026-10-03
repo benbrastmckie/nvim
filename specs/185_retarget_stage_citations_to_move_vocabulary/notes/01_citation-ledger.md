@@ -79,3 +79,23 @@ site (formerly base Stage 5, base Stage MT-4, and hard Stage 5)" — preserving 
 enumeration while correctly naming the live mechanism. Per the plan's Phase 3 task note, every
 handoff-READ citation (including "Stage MT-4 step 1") retargeted to Move 3, not Move 2, since
 Move 3 is where all handoff reading now happens (after ALL Move 2 dispatches complete).
+
+## Phase 5: orchestrator-runtime-files.md (17 hits)
+
+All 17 LIVE lines retargeted (Stage 2 -> Move 1, Stage 5a -> Move 2's aux_dispatch[]
+drift-inspection path, Stage 8 -> Move 4, Stage MT-4/step 5.5 -> Move 2, Stage 5/MT-4 read-side ->
+Move 3). Two lines also carried bare "Stage 5a" occurrences not matched by the scoped grep
+pattern (`Stage [0-8]\b` requires a word boundary after the digit, which fails for "5a"/"3b"
+since the letter is a word character) — fixed anyway since they're unambiguous per the mapping
+table and sat on lines already being edited for an adjacent "Stage 8" match.
+
+Residual, deliberately left out of scope: "Stage 3b" (lines 221, 239, the per-cycle guard-update
+step) and "Stage 9" (line 149, a mid-loop git-add step) — neither matches the scoped grep pattern
+(digit-letter compounds defeat the `\b` boundary) and neither has an entry in the plan's Stage ->
+Move mapping table, so retargeting them would require re-deriving a mapping rather than consuming
+the given one. Recorded here, and in the implementation summary, as a known gap for a future
+sweep rather than silently fixed on inferred semantics.
+
+Three UNRELATED citations confirmed and left untouched: "Stage 7" (generic skill-body postflight
+convention, line 42), "Stage 16" (`skill-spawn/SKILL.md`'s own stage numbering, line 42),
+"Stage 10" (`orchestrator-postflight.sh`'s own orphaned-script internal label, line 42).

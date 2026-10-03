@@ -318,21 +318,23 @@ cycle postflight, and consolidated results rendering.
 
 ---
 
-### Phase 5: Retarget `context/standards/orchestrator-runtime-files.md` [NOT STARTED]
+### Phase 5: Retarget `context/standards/orchestrator-runtime-files.md` [COMPLETED]
 
 **Goal**: Retarget the runtime-file map so each of `.orchestrator-loop-guard`,
 `.orchestrator-churn-state.json`, `.drift-inspection.json`, and `.orchestrator-handoff.json`
 names the correct Move for its write, read, and cleanup points.
 
 **Tasks**:
-- [ ] Re-grep and reconcile against the ledger.
-- [ ] Retarget per the mapping: Stage 2 -> Move 1 (loop-guard creation); Stage 5/5a -> Move 3
+- [x] Re-grep and reconcile against the ledger. *(completed)*
+- [x] Retarget per the mapping: Stage 2 -> Move 1 (loop-guard creation); Stage 5/5a -> Move 3
       (handoff read) and Move 2's `aux_dispatch[]` drift-inspection path; Stage 7 -> Move 3
       (loop-guard update); Stage 8 -> Move 3/Move 4 (postflight and terminal cleanup); MT-4 ->
-      Move 2.
-- [ ] Where the file asserts a write/read ordering between two old stages, confirm the ordering
-      still holds between the Moves it maps onto before asserting it in Move terms.
-- [ ] Re-read the diff.
+      Move 2. *(completed; two bare "Stage 5a" instances not matched by the scoped grep pattern
+      were fixed anyway, see ledger; "Stage 3b"/"Stage 9" left as a recorded residual gap, also
+      unmatched by the scoped pattern and absent from the mapping table)*
+- [x] Where the file asserts a write/read ordering between two old stages, confirm the ordering
+      still holds between the Moves it maps onto before asserting it in Move terms. *(completed)*
+- [x] Re-read the diff. *(completed)*
 
 **Timing**: 0.75 hours
 
