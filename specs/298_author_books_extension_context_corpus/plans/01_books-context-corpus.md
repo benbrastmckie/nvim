@@ -432,14 +432,14 @@ level and the word lists against `books/tool/Books/Manifest.lean:33-38` before w
 
 ---
 
-### Phase 5: Gate tiers and the collision ledger [NOT STARTED]
+### Phase 5: Gate tiers and the collision ledger [COMPLETED]
 
 **Goal**: The two highest-value evidence documents: what each verification tier does and does not
 check, and the six integration collisions a next books integration should read instead of
 rediscover.
 
 **Tasks**:
-- [ ] Write `domain/gate-tiers.md` per Finding 5 item 12. For **each** tier record three things -
+- [x] Write `domain/gate-tiers.md` per Finding 5 item 12. For **each** tier record three things -
       what it checks, what it does NOT check, and the cheapest tier that catches each error class:
       `lake build` (compiles; runs the elaboration-time matrix check over direct imports and the
       execution-construct gate; invokes neither the layer lint nor the certifier nor the
@@ -453,30 +453,30 @@ rediscover.
       consent-gating launcher around a component's `check.sh`; **contains no certifier
       reference**); `--recheck` (the independent Comparator/kernel-replay legs, prebuilt route
       only).
-- [ ] State the motivating measurement plainly: **44 layer violations sat undetected across five
+- [x] State the motivating measurement plainly: **44 layer violations sat undetected across five
       tagging phases that all reported green on `lake build`**, because `lake build` invokes none
       of the above. State the finding the document exists to make: **there is today no
       verification tier between `lake build` and the full gate**, and closing that gap is named,
       dated and NOT STARTED in the consuming repository's register. Correct the dispatch
       description's "chain": it is two disjoint chains, not one.
-- [ ] Record the vacuous-pass rule as a rule the corpus states, not a behaviour the lint
+- [x] Record the vacuous-pass rule as a rule the corpus states, not a behaviour the lint
       implements: the lint's success line prints counts from which vacuity is inferable but never
       labels it; it does carry a narrower guard (a file with `import` lines from whose header none
       were parsed is a `[FAIL]`, `interface/scripts/layer-lint.sh:50-55`); and
       `books/README.md` names the vacuous-pass domain explicitly. Point at the register row.
-- [ ] Carry the source report's own caveat verbatim: every quantitative claim comes from one
+- [x] Carry the source report's own caveat verbatim: every quantitative claim comes from one
       dispatch on one component family, and the diagnostics phase has not run.
-- [ ] Write `patterns/gate-collision-ledger.md` per Finding 5 item 14: the measured cost (one
+- [x] Write `patterns/gate-collision-ledger.md` per Finding 5 item 14: the measured cost (one
       implement dispatch spending **75 of 127 minutes in a single phase**, 59% of the dispatch, 262
       tool calls, while the five phases doing the task's stated work took 33 minutes between them;
       and five of six collisions discoverable only by running the ten-minute fail-closed full
       gate), then the six rows as a table with symptom / root cause / fix / cheapest possible
       catcher, exactly as Finding 5 item 14 tabulates them.
-- [ ] Close that document with the adjacent finding it exists to pre-empt: adding one local-path
+- [x] Close that document with the adjacent finding it exists to pre-empt: adding one local-path
       `require` obliged **six edits across three files**, none referenced from the lakefile and
       none checked by anything until the gate ran. Record the dedicated checklist
       (`patterns/local-path-require-obligations.md`) as a named follow-up, not as content here.
-- [ ] Carry the same measured-once caveat into this document.
+- [x] Carry the same measured-once caveat into this document.
 
 **Timing**: 1.5 hours
 

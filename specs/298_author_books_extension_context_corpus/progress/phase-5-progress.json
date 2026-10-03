@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Gate tiers and the collision ledger",
+  "started_at": "2026-10-03T01:20:00Z",
+  "last_updated": "2026-10-03T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write domain/gate-tiers.md with three columns per tier", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/domain/gate-tiers.md"]},
+    {"id": 2, "description": "Write patterns/gate-collision-ledger.md with six rows", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/gate-collision-ledger.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "5.x", "description": "layer-lint.sh rule count framing", "type": "altered", "reason": "The plan's Scope Hypothesis says 'nine layer-lint rules'. Measured 2026-10-03: nine total, split 7 LAYER_RULES exclusions + 2 LAYER_ALLOW_RULES, and the driver itself is 72 lines with the rules in interface/scripts/layer-rules.sh. Written with the split and both file sizes stated.", "annotation": "*(deviation: altered -- nine rules recorded as 7+2 across two files)*"},
+    {"task_id": "5.y", "description": "the 'tier chain' correction is stated as two disjoint chains", "type": "altered", "reason": "The plan asks to correct the dispatch's single-chain framing. Measured 2026-10-03: grep -n certif full-gate.sh returns two lines, both comments (:19, :186). The document opens with the two-disjoint-chains correction and a diagram rather than listing the chain as given.", "annotation": "*(deviation: altered -- chain correction stated structurally, with the fresh grep)*"}
+  ],
+  "handoff_count": 0
+}
