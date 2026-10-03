@@ -1,11 +1,63 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
+      "summary": "Implementation summary for the advisory --gate verification tier: core flag plumbing, docs and metadata schema, the books-gate.sh wrapper and its fixture suite, the books agent/skill binding, and core test coverage."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an advisory-only --gate flag to /orchestrate that, at implement dispatch only, runs the consuming repository's regex layer lint plus a Books.Meta import-closure check via a new extension-local books-gate.sh wrapper (one JSON object, always exit 0, vacuous passes reported as vacuous). Threaded through the full --compare surface in core, documented at all four layers including a new ### gate (optional) metadata schema section, bound in both books implementation agents and both books skills, and pinned by a 44-assertion fixture suite with seven forgery probes plus new Group 17 and Group 35 in the two core suites. A core redeploy is required for --gate to exist at all in any consuming repository, since every edit landed in the source store; enabling the books extension in a consuming repository's .claude-extensions.json remains the user's own action."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/parse-command-args.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/commands/orchestrate.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/books/scripts/books-gate.sh",
+    "agent-system/extensions/books/scripts/tests/test-books-gate.sh",
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/agents/books-implementation-agent.md",
+    "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+    "agent-system/extensions/books/skills/skill-books-implementation/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A shell lint whose [ok] line reports module/import counts but never RULE APPLICABILITY cannot distinguish 'checked and clean' from 'nothing was checked' by exit code or output. Detect vacuity by sourcing the real rule-set library in a SUBSHELL (never a copy of the rules, never the caller's own shell -- such libraries commonly `exit 1` during sourcing when a derivation yields nothing, which kills the caller), then counting how many rules' file-half regexes match at least one discovered source path. Report a vacuous pass as a first-class status (pass_vacuous) carrying rules_matched/rules_total, never collapsed into pass.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["vacuous-pass", "lint", "subshell", "rule-set", "verification", "shell"]
+    },
+    {
+      "content": "An advisory wrapper around a fail-closed tool should ALWAYS exit 0 and carry every finding as JSON fields on stdout. A non-zero exit invites a caller to treat the result as a failure, which defeats the advisory contract. Reserve a real non-zero exit for the wrapper's OWN argument errors, and classify the wrapped tool's ambiguous exit codes into distinct named statuses (disambiguating a shared exit code on stderr content before assigning meaning) rather than passing them through.",
+      "category": "PATTERN",
+      "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["advisory-gate", "exit-code", "wrapper", "json-stdout", "classification"]
+    },
+    {
+      "content": "In a shared fixture test suite where upstream groups install degraded collaborator stubs and never restore them, a new group appended at the end inherits them. A forwarding assertion written as 'flag NOT present in argv' then passes VACUOUSLY when no dispatch was built at all. Install the group's own deterministic stubs AND add a non-vacuity guard that FAILS when the expected argv line is absent, rather than treating absence as a negative result.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-fixture", "vacuous-assertion", "stub-leakage", "non-vacuity-guard", "shell-testing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791054566_849cf8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

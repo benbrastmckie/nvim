@@ -486,27 +486,27 @@ another task added a group.
 
 ## Testing & Validation
 
-- [ ] `bash -n` clean on all four edited/added shell scripts plus the new wrapper and its suite.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` passes,
-      including the new group.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` passes,
-      including the new group.
-- [ ] `bash agent-system/extensions/books/scripts/tests/test-books-gate.sh` passes.
-- [ ] `bash agent-system/extensions/books/scripts/tests/test-books-certify.sh` still passes
-      (regression check on the shared manifest edit).
-- [ ] A no-flag implement dispatch file is byte-identical to one built before this work (the
-      byte-identity invariant).
-- [ ] `--gate` never appears in a research or plan dispatch file.
-- [ ] `--gate` in a focus-prompt position does not leak into `FOCUS_PROMPT`.
-- [ ] `--gate --compare --hard --lit` compose without interference.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` (Rules E, Q, U) — noting it reads the
+- [x] `bash -n` clean on all four edited/added shell scripts plus the new wrapper and its suite. *(completed: 7 scripts, all clean; `shellcheck` unavailable on this machine, exit 127)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` passes,
+      including the new group. *(completed: 131 passed / 0 failed, up from 124/0)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` passes,
+      including the new group. *(completed: 349 passed / 0 failed, up from 344/0)*
+- [x] `bash agent-system/extensions/books/scripts/tests/test-books-gate.sh` passes. *(completed: 44 passed / 0 failed)*
+- [x] `bash agent-system/extensions/books/scripts/tests/test-books-certify.sh` still passes
+      (regression check on the shared manifest edit). *(completed: 9 passed / 0 failed)*
+- [x] A no-flag implement dispatch file is byte-identical to one built before this work (the
+      byte-identity invariant). *(completed: Group 17 asserts `gate_flag:` absent without the flag and exactly one added line with it)*
+- [x] `--gate` never appears in a research or plan dispatch file. *(completed: Group 35 asserts non-forwarding for both a plan and a research candidate, with non-vacuity guards; inverting the guard makes 4 assertions fail)*
+- [x] `--gate` in a focus-prompt position does not leak into `FOCUS_PROMPT`. *(completed: `326 --gate do the thing` yields `GATE_FLAG=true`, `FOCUS_PROMPT="do the thing"`)*
+- [x] `--gate --compare --hard --lit` compose without interference. *(completed: all four parsed, `FOCUS_PROMPT` empty; Group 35 additionally asserts all three of `--gate --compare --hard` reach the implement dispatch)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` (Rules E, Q, U) — noting it reads the
       **deployed** `.claude/` tree, so a source-store-only change is invisible to it until a
       regeneration; run it after any redeploy and, in the meantime, verify Rules E and Q by direct
-      grep against the source store.
-- [ ] `bash .claude/scripts/tests/run-all.sh` — same deployed-tree caveat; the new books suite is
-      discovered by glob, so confirm a non-zero discovered-suite count.
-- [ ] `bash .claude/scripts/check-task-references.sh` (or equivalent) confirms no task-number
-      reference landed in any source-store file.
+      grep against the source store. *(completed: core Rule R repaired (return-metadata-file.md 772 -> 842); remaining core FAILs are deploy-content drift from the three edited scripts, resolved by a redeploy; the books Rule R FAIL on `project/books/README.md` belongs to the concurrent sibling task, not this work; Rule E verified by direct grep — the only `.sh` token added to any scanned doc location is `books-gate.sh`, now declared; Rule U: `EXTENSION.md` untouched at 52 lines)*
+- [x] `bash .claude/scripts/tests/run-all.sh` — same deployed-tree caveat; the new books suite is
+      discovered by glob, so confirm a non-zero discovered-suite count. *(completed: 107 suites discovered, 100 passed / 6 failed (3 expected) / 1 skipped. None of the 6 reference `--gate`/`gate_flag`/`books-gate.sh`, and `test-lint-deploy-caller-wrap.sh` was reproduced failing identically against the pre-change `orchestrate-cycle-plan.sh`, confirming it is pre-existing)*
+- [x] `bash .claude/scripts/check-task-references.sh` (or equivalent) confirms no task-number
+      reference landed in any source-store file. *(completed: PASS, 0 unexempted occurrences)*
 
 ## Artifacts & Outputs
 

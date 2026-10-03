@@ -1,16 +1,19 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 4,
-  "summary": "Wrote a six-phase implementation plan for the advisory-only --gate verification tier: core flag plumbing mirroring --compare (16 re-measured edit sites across 3 scripts), docs plus a new `### gate (optional)` metadata section, a books-gate.sh resolve-and-run wrapper classifying five lint outcomes with first-class vacuous-pass detection, its fixture suite with forgery probes, books agent/skill binding on the lean Stage 6c template, and core test coverage for the one-added-line byte-identity and implement-only scoping. Two dependency waves, ~7.5 hours.",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "task_number": 326,
+  "phase": "implement",
+  "session_id": "sess_1791054566_849cf8",
+  "phases_completed": 6,
+  "phases_total": 6,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/326_books_verification_tier_at_implement_dispatch/plans/01_gate-flag-verification-tier.md",
-      "summary": "Six-phase plan adding an advisory-only --gate verification tier at implement dispatch."
+      "type": "summary",
+      "path": "specs/326_books_verification_tier_at_implement_dispatch/summaries/01_gate-flag-verification-tier-summary.md",
+      "summary": "Implementation summary for the advisory --gate verification tier at implement dispatch."
     }
   ],
-  "phases_completed": 0,
-  "phases_total": 6,
-  "blockers": []
+  "blockers": [],
+  "next_action": "A core redeploy through the loader picker is required before --gate exists in any consuming repository; every edit landed in the source store. Enabling the books extension in a consuming repository's .claude-extensions.json remains the user's own action.",
+  "notes": "All six plan phases [COMPLETED]. New/updated suites pass directly against the source store: test-books-gate.sh 44/0, test-orchestrate-build-dispatch.sh 131/0, test-orchestrate-cycle-plan.sh 349/0, test-books-certify.sh 9/0. Both new core groups demonstrably bind behaviour (inverting the forwarding guard fails 4 assertions; inverting the dispatch emission fails 6). run-all.sh: 107 discovered, 100 passed / 6 failed (3 expected) / 1 skipped -- none reference --gate/gate_flag/books-gate.sh, and test-lint-deploy-caller-wrap.sh reproduces identically against the pre-change orchestrate-cycle-plan.sh, confirming it is pre-existing. OBSERVATIONS REPORTED, NOT ACTED ON: (1) the concurrent sibling task has uncommitted work under agent-system/extensions/books/context/project/books/ and owns the project/books/README.md Rule R line_count mismatch -- left untouched; (2) the Phase 5 commit of agent-system/extensions/core/index-entries.json unavoidably carried three pre-existing uncommitted line_count corrections already present in the working tree at this dispatch's start, since path-scoped committing stages by path rather than by hunk -- they are correct Rule R repairs and were not reverted."
 }
