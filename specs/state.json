@@ -113,12 +113,12 @@
     {
       "project_number": 250,
       "project_name": "script_corpus_inventory_and_engine_decomposition",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Script-corpus inventory probe, then cut tests/run-all.sh runtime and decompose orchestrate-cycle-plan.sh",
       "created": "2026-09-22T19:00:20Z",
-      "last_updated": "2026-10-03T06:09:56Z",
+      "last_updated": "2026-10-03T08:05:04Z",
       "dependencies": [
         199,
         245,
