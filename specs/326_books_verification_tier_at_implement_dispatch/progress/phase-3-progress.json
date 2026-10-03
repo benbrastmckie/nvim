@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "The books-gate.sh wrapper",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write books-gate.sh: resolve-and-run, --json/--root/--package-root, header Rule E rationale, two legs, five lint classifications, vacuity via subshell-sourced real rule set, always exit 0", "status": "done",
+     "files_touched": ["agent-system/extensions/books/scripts/books-gate.sh"],
+     "note": "Live run against the consuming repository: layer_lint pass, rules_matched 9 of 9, modules 179, imports 733; books_meta_closure pass, private_import_sites 214, provider_require_lines 0; runtime 3.167s wall. jq -e clean, exit 0. pass_vacuous confirmed live (--package-root books: 0 of 9, modules 62). usage_error confirmed live (--package-root nosuchdir, exit 0). lint_unavailable confirmed on an empty root. Wrapper's own argument usage error exits 2 (distinct from the tree's usage_error status, which exits 0)."},
+    {"id": 2, "description": "Declare books-gate.sh in books/manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 3, "description": "Check index-entries.json / README.md convention for books-certify.sh", "status": "done", "files_touched": [],
+     "note": "index-entries.json carries NO entry for books-certify.sh, so the convention requires none for books-gate.sh either. README.md's only mentions are a directory-tree gloss and /certify command rows; README.md is inside the concurrent sibling task's declared file_scope, so it is deliberately left untouched."}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "shellcheck -S warning on the wrapper", "result": "unavailable", "reason": "shellcheck binary missing from the nix store path on this machine (exit 127); bash -n used instead"}
+  ],
+  "deviations": [
+    {"task_id": "3.7", "description": "Add books/index-entries.json / README.md entries only if the existing convention for books-certify.sh requires them", "type": "skipped", "reason": "Convention requires none: index-entries.json has no books-certify.sh entry, and README.md is inside the concurrent sibling task's declared file_scope", "annotation": "*(deviation: skipped — convention requires none; README.md is sibling territory)*"}
+  ],
+  "handoff_count": 0
+}

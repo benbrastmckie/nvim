@@ -254,35 +254,35 @@ Confirm by `grep -n 'compare'` on each of the three files before editing.
 
 ---
 
-### Phase 3: The `books-gate.sh` wrapper [NOT STARTED]
+### Phase 3: The `books-gate.sh` wrapper [IN PROGRESS]
 
 **Goal**: one extension-local script that resolves and runs the layer lint plus the import-closure
 check, classifies five lint outcomes, detects vacuity, emits one JSON object, and always exits 0.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/books/scripts/books-gate.sh`, modelled on
+- [x] Write `agent-system/extensions/books/scripts/books-gate.sh`, modelled on
       `books-certify.sh`'s resolve-and-fail-loudly shape: resolve the repository root via
       `git rev-parse --show-toplevel` with a `pwd` fallback; accept `--json`, `--root DIR`, and a
-      repeatable `--package-root DIR`.
-- [ ] Header comment stating the Rule E rationale explicitly (as `books-certify.sh`'s header
-      does), that the script is advisory-only, and that it always exits 0 in that role.
-- [ ] Layer-lint leg: derive package roots (default `interface` plus every `components/*`
+      repeatable `--package-root DIR`. *(completed)*
+- [x] Header comment stating the Rule E rationale explicitly (as `books-certify.sh`'s header
+      does), that the script is advisory-only, and that it always exits 0 in that role. *(completed)*
+- [x] Layer-lint leg: derive package roots (default `interface` plus every `components/*`
       containing a `lean/` subdirectory; never hardcode a component name), invoke the lint,
       classify into `pass`, `pass_vacuous`, `violations`, `lint_unavailable`, `rule_set_error`,
       `usage_error` — disambiguating exit 1 by matching `no queue model found` on stderr before
-      treating it as violations, and exit 2 as a usage error.
-- [ ] Vacuity detection: source the real rule-set library **in a subshell** (it can `exit 1`
+      treating it as violations, and exit 2 as a usage error. *(completed)*
+- [x] Vacuity detection: source the real rule-set library **in a subshell** (it can `exit 1`
       during sourcing), count how many rules' file-halves match at least one discovered `.lean`
-      path, and carry `rules_matched`/`rules_total`. Never copy the rules into the wrapper.
-- [ ] Import-closure leg: two predicates — no live `.lean` file carries a public import of the
+      path, and carry `rules_matched`/`rules_total`. Never copy the rules into the wrapper. *(completed)*
+- [x] Import-closure leg: two predicates — no live `.lean` file carries a public import of the
       provider module (including the `public meta import` form), and the provider package declares
       no `require` — with `.lake/` **and `specs/`** pruned. Report `provider_absent` when the
-      provider package is not present.
-- [ ] Emit the single JSON object (the research report's Phase 3 shape), `exit 0` unconditionally
-      in advisory mode.
-- [ ] Declare `books-gate.sh` in `books/manifest.json` `provides.scripts` in the same commit.
+      provider package is not present. *(completed)*
+- [x] Emit the single JSON object (the research report's Phase 3 shape), `exit 0` unconditionally
+      in advisory mode. *(completed)*
+- [x] Declare `books-gate.sh` in `books/manifest.json` `provides.scripts` in the same commit. *(completed)*
 - [ ] Add `books/index-entries.json` / `README.md` entries only if the existing convention for
-      `books-certify.sh` requires them; check first rather than assuming.
+      `books-certify.sh` requires them; check first rather than assuming. *(deviation: skipped — checked: index-entries.json carries no books-certify.sh entry, so the convention requires none; README.md is inside the concurrent sibling task's declared file_scope)*
 
 **Timing**: 1.5 hours
 

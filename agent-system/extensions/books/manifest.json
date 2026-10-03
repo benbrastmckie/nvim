@@ -35,6 +35,7 @@
     ],
     "scripts": [
       "books-certify.sh",
+      "books-gate.sh",
       "tests/test-books-certify.sh"
     ],
     "hooks": []
