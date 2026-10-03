@@ -11,11 +11,11 @@ next_project_number: 334
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,285,295,296,298,299,300,306,311,318,322,325,326 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,185,251,271,272,280,284,285,295,296,299,300,306,311,318,322,325,326 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,275,281,302,303,319,329 | 22,251,271,272,280,285,300,326 | core-agent-system, extensions, orchestrator |
 | 3 | 273,282,330 | 271,281,329 | core-agent-system, orchestrator |
 | 4 | 274,304,312,331 | 273,275,282,284,300,302,330 | extensions, orchestrator |
-| 5 | 328,332 | 170,298,303,304,318,322,331 | core-agent-system, extensions |
+| 5 | 328,332 | 170,303,304,318,322,331 | core-agent-system, extensions |
 | 6 | 313,333 | 306,328,332 | core-agent-system, extensions |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -44,13 +44,11 @@ next_project_number: 334
 
 ### Extensions
 
-298 [PLANNED] — Author the books extension context corpus under...
-  └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
-    └─ 333 [NOT STARTED] — The /books command with --review and --revise
-326 [PLANNED] — Add a books verification tier at implement dispatch: the...
+326 [IMPLEMENTING] — Add a books verification tier at implement dispatch: the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
-  └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record (see above)
+  └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
+    └─ 333 [NOT STARTED] — The /books command with --review and --revise
 
 ### Neovim
 
@@ -936,7 +934,7 @@ the skeleton-plan follow-up work by its title only.
 
 ### 326. Add a books verification tier at implement dispatch: the --gate flag mirroring --compare (the lifecycle hook route is rejected with evidence)
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 297
@@ -2156,12 +2154,13 @@ SHARED-FILE CONTENTION (for batch admission awareness, not dependencies). Other 
 
 ### 298. Author the books extension context corpus under context/project/books/
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 297
 - **Research**: [298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md]
 - **Plan**: [298_author_books_extension_context_corpus/plans/01_books-context-corpus.md]
+- **Summary**: [298_author_books_extension_context_corpus/summaries/01_books-context-corpus-summary.md]
 
 **Description**: Author the domain context corpus for the `books` extension under `agent-system/extensions/books/context/project/books/`. The extension's wiring — manifest, four-block routing, agents, skills, commands, rule, registration files and tests — is the dependency task; this task supplies the knowledge those agents and skills point at.
 

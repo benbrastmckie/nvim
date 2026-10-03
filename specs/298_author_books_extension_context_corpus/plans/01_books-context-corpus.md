@@ -1,7 +1,7 @@
 # Implementation Plan: Author the books extension domain context corpus
 
 - **Task**: 298 - author_books_extension_context_corpus
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 12 hours
 - **Dependencies**: 297 (scaffold_books_extension_routing_and_agents) - `completed`
 - **Research Inputs**: `specs/298_author_books_extension_context_corpus/reports/01_books-extension-context-corpus.md`
