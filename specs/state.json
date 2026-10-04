@@ -1694,7 +1694,7 @@
     {
       "project_number": 332,
       "project_name": "books_observer_convention_observation_record",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Books observer: the per-task convention observation record",
       "topic": "extensions",
@@ -1708,8 +1708,14 @@
       "priority": "high",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-03T18:53:53Z",
-      "artifacts": [],
+      "last_updated": "2026-10-04T07:29:45Z",
+      "artifacts": [
+        {
+          "path": "specs/332_books_observer_convention_observation_record/reports/01_books-observer-design.md",
+          "type": "report",
+          "summary": "Grounds books-observe.sh design in the already-enforced manifest observer schema (creating-extensions.md + check-extension-docs.sh Rule X), the generic issues.jsonl/metrics.jsonl shapes, and the consuming repository's own pre-existing book-evidence SNAPSHOT/RUN/OBSERVATION design (docs/book-evidence.md), which already names this extension as OBSERVATION's sole writer and defines the seven-dimension vocabulary verbatim; flags that neither upstream probe (SNAPSHOT, RUN) exists yet, that task 298's corpus is already landed (correcting a stale dispatch premise), and that only book_requires churn and Validated-by marker promotions are mechanically derivable today without an unbuilt probe."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/books/scripts/books-observe.sh",
         "agent-system/extensions/books/scripts/tests/test-books-observe.sh",
@@ -1718,7 +1724,9 @@
         "agent-system/extensions/books/context/project/books/patterns/signal-tagging.md",
         "agent-system/extensions/books/index-entries.json",
         "agent-system/extensions/books/EXTENSION.md"
-      ]
+      ],
+      "session_id": "sess_1791098481_49e186",
+      "next_artifact_number": 2
     },
     {
       "project_number": 333,
