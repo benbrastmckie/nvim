@@ -145,6 +145,129 @@ metrics_project_slug() {
   printf '%s' "$path" | sed 's/[^A-Za-z0-9]/-/g'
 }
 
+# ─── metrics_transcript_join <repo_root> <cc_session_id> <task_number> <dispatch_seq> ──────────
+# Echoes a JSON object `{model, tokens, tool_calls, gate_runs, transcript}` on stdout, every key
+# either populated or explicitly `null` when the join fails for any reason -- the caller drops a
+# `null` value from the final record (see the `+ (if ... == null then {} else ...)` idiom at the
+# call site), it never defaults one to 0. EXACT MATCH ONLY (D4 in the implementation plan this
+# function was built against): candidate selection never falls back to nearest-timestamp or to
+# `.meta.json`'s `description` field. See context/formats/dispatch-metrics.md's "The Exact Join
+# Procedure" section for the full contract this function implements.
+metrics_transcript_join() {
+  local repo_root="$1"
+  local cc_sid="${2:-}"
+  local task_num="${3:-}"
+  local disp_seq="${4:-}"
+  local empty_result='{"model":null,"tokens":null,"tool_calls":null,"gate_runs":null,"transcript":null}'
+
+  if [ -z "$cc_sid" ] || [ -z "$task_num" ] || [ -z "$disp_seq" ]; then
+    echo "dispatch-metrics: transcript join skipped (missing cc_session_id, task, or dispatch_seq) -- omitting model/tokens/tool_calls/transcript" >&2
+    echo "$empty_result"
+    return 0
+  fi
+
+  local slug subagents_dir
+  slug=$(metrics_project_slug "$repo_root")
+  subagents_dir="${HOME}/.claude/projects/${slug}/${cc_sid}/subagents"
+
+  if [ ! -d "$subagents_dir" ]; then
+    echo "dispatch-metrics: transcript join: no subagents directory at $subagents_dir -- omitting model/tokens/tool_calls/transcript (fails soft, never raises)" >&2
+    echo "$empty_result"
+    return 0
+  fi
+
+  # Candidate resolution: read ONLY each candidate's first line, matching this dispatch's own
+  # task_number AND dispatch_seq as exact, anchored substrings inside the dispatch prompt's
+  # unwound (never still-escaped) Context JSON block -- never nearest-timestamp.
+  local matched_path="" match_count=0 candidate first_line content
+  local task_re="\"task_number\": ${task_num}([,}[:space:]]|\$)"
+  local seq_re="\"dispatch_seq\": ${disp_seq}([,}[:space:]]|\$)"
+  for candidate in "$subagents_dir"/agent-*.jsonl; do
+    [ -e "$candidate" ] || continue
+    first_line=$(head -1 "$candidate" 2>/dev/null) || continue
+    [ -z "$first_line" ] && continue
+    content=$(printf '%s' "$first_line" | jq -r '.message.content // ""' 2>/dev/null) || continue
+    if printf '%s' "$content" | grep -qE "$task_re" && printf '%s' "$content" | grep -qE "$seq_re"; then
+      matched_path="$candidate"
+      match_count=$((match_count + 1))
+    fi
+  done
+
+  if [ "$match_count" -eq 0 ]; then
+    echo "dispatch-metrics: transcript join: zero candidates matched task=$task_num dispatch_seq=$disp_seq under $subagents_dir -- omitting (fails soft, never raises)" >&2
+    echo "$empty_result"
+    return 0
+  fi
+  if [ "$match_count" -gt 1 ]; then
+    echo "dispatch-metrics: transcript join: $match_count candidates matched task=$task_num dispatch_seq=$disp_seq under $subagents_dir (want exactly 1) -- omitting rather than guessing" >&2
+    echo "$empty_result"
+    return 0
+  fi
+
+  local agg
+  agg=$(jq -c -s '
+    {
+      input: ([.[] | select(.type=="assistant") | .message.usage.input_tokens] | map(select(. != null)) | add),
+      cache_creation: ([.[] | select(.type=="assistant") | .message.usage.cache_creation_input_tokens] | map(select(. != null)) | add),
+      cache_read: ([.[] | select(.type=="assistant") | .message.usage.cache_read_input_tokens] | map(select(. != null)) | add),
+      output: ([.[] | select(.type=="assistant") | .message.usage.output_tokens] | map(select(. != null)) | add),
+      has_usage: (([.[] | select(.type=="assistant") | .message.usage] | map(select(. != null)) | length) > 0),
+      models: ([.[] | select(.type=="assistant") | .message.model] | map(select(. != null)) | unique),
+      tool_total: ([.[] | select(.type=="assistant") | (.message.content // [])[] | select(.type=="tool_use")] | length),
+      tool_by_name: ([.[] | select(.type=="assistant") | (.message.content // [])[] | select(.type=="tool_use") | .name] | group_by(.) | map({key: .[0], value: length}) | from_entries),
+      first_ts: ([.[] | .timestamp] | map(select(. != null)) | first),
+      last_ts: ([.[] | .timestamp] | map(select(. != null)) | last)
+    }
+  ' "$matched_path" 2>/dev/null) || agg=""
+
+  if [ -z "$agg" ]; then
+    echo "dispatch-metrics: transcript join: matched $matched_path but failed to parse/aggregate -- omitting (fails soft, never raises)" >&2
+    echo "$empty_result"
+    return 0
+  fi
+
+  local has_usage tool_total model_json tokens_json tool_calls_json transcript_json
+  has_usage=$(echo "$agg" | jq -r '.has_usage')
+  tool_total=$(echo "$agg" | jq -r '.tool_total')
+
+  model_json=$(echo "$agg" | jq -c '.models | if length == 0 then null elif length == 1 then .[0] else . end')
+
+  if [ "$has_usage" = "true" ]; then
+    tokens_json=$(echo "$agg" | jq -c '{input, cache_creation, cache_read, output}')
+  else
+    tokens_json="null"
+  fi
+
+  if [ "$tool_total" -gt 0 ] 2>/dev/null; then
+    tool_calls_json=$(echo "$agg" | jq -c '{total: .tool_total, by_name: .tool_by_name}')
+  else
+    tool_calls_json="null"
+  fi
+
+  # transcript.span_seconds: SECONDARY corroboration of wall_clock_seconds only -- never the
+  # primary figure (see context/formats/dispatch-metrics.md). A parse failure on either
+  # timestamp simply omits `transcript` rather than failing the whole join.
+  local first_ts last_ts first_epoch last_epoch span_seconds
+  first_ts=$(echo "$agg" | jq -r '.first_ts // empty')
+  last_ts=$(echo "$agg" | jq -r '.last_ts // empty')
+  transcript_json="null"
+  if [ -n "$first_ts" ] && [ -n "$last_ts" ]; then
+    first_epoch=$(date -u -d "$first_ts" +%s 2>/dev/null || true)
+    last_epoch=$(date -u -d "$last_ts" +%s 2>/dev/null || true)
+    if [ -n "$first_epoch" ] && [ -n "$last_epoch" ]; then
+      span_seconds=$((last_epoch - first_epoch))
+      transcript_json=$(jq -c -n --arg path "$matched_path" --argjson span "$span_seconds" \
+        '{path: $path, span_seconds: $span}')
+    fi
+  fi
+
+  # gate_runs: no transcript marker for gate/verification durations is known to exist yet --
+  # always omitted (absent key), never a synthesized zero. See context/formats/dispatch-metrics.md.
+  jq -c -n --argjson model "$model_json" --argjson tokens "$tokens_json" \
+    --argjson tool_calls "$tool_calls_json" --argjson transcript "$transcript_json" \
+    '{model: $model, tokens: $tokens, tool_calls: $tool_calls, gate_runs: null, transcript: $transcript}'
+}
+
 # ─── metrics_append_line <task_dir> <json_line> ────────────────────────────────────────────────
 # Appends exactly one line under flock -x, lazily creating metrics.jsonl on first use. Never a
 # read-merge-rewrite.

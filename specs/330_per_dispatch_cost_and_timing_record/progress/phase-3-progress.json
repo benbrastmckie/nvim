@@ -1,0 +1,12 @@
+{
+  "phase": 3,
+  "phase_name": "Transcript join - model, tokens by class, tool-call breakdown",
+  "started_at": "2026-10-04T02:05:00Z",
+  "last_updated": "2026-10-04T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add metrics_transcript_join with slug derivation, candidate resolution, token/model/tool-call readers, fail-soft paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-metrics.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

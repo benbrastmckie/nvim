@@ -298,41 +298,41 @@ implementation time with `grep -n '"issue-record.sh"' manifest.json` and
 
 ---
 
-### Phase 3: The Transcript Join — Model, Tokens by Class, Tool-Call Breakdown [NOT STARTED]
+### Phase 3: The Transcript Join — Model, Tokens by Class, Tool-Call Breakdown [COMPLETED]
 
 **Goal**: The one piece of real complexity, isolated into separately testable functions: find this
 dispatch's own transcript by exact match, and read model/tokens/tool-calls from it — or omit them.
 
 **Tasks**:
-- [ ] Add a named `metrics_project_slug()` function deriving the project-directory slug from a
+- [x] Add a named `metrics_project_slug()` function deriving the project-directory slug from a *(completed)*
       given absolute path by replacing every non-alphanumeric character with `-`. Keep it a
       standalone function precisely so Phase 5 can unit-test the exact mapping; do not inline it.
-- [ ] Add a named candidate-resolution function: given `cc_session_id` (from `--cc-session-id`,
+- [x] Add a named candidate-resolution function: given `cc_session_id` (from `--cc-session-id`, *(completed)*
       falling back to `$CLAUDE_CODE_SESSION_ID`) and the slug, enumerate
       `~/.claude/projects/<slug>/<cc_session_id>/subagents/agent-*.jsonl`; for each candidate,
       read only its first line and accept it only when that line's `message.content` contains
       BOTH this dispatch's `task_number` and its `dispatch_seq` as exact `"key": value` matches.
       Return the single matched path, or nothing.
-- [ ] Fail soft on every failure mode: directory absent, session subtree absent, zero candidates,
+- [x] Fail soft on every failure mode: directory absent, session subtree absent, zero candidates, *(completed)*
       more than one match, unparseable line, `jq` missing. Each emits a distinct stderr note and
       results in OMITTED transcript-derived fields — never a raise, never a zero, never a
       nearest-timestamp fallback.
-- [ ] From the matched file: sum `message.usage.input_tokens`,
+- [x] From the matched file: sum `message.usage.input_tokens`, *(completed)*
       `cache_creation_input_tokens`, `cache_read_input_tokens`, `output_tokens` across every
       `type: "assistant"` line into `tokens{input, cache_creation, cache_read, output}`.
-- [ ] `model`: read `message.model` from the assistant lines — the live model actually used, which
+- [x] `model`: read `message.model` from the assistant lines — the live model actually used, which *(completed)*
       may differ from a requested `--sonnet`/`--opus` flag. Record the distinct value; when more
       than one distinct model appears, record the set rather than silently picking one.
-- [ ] `tool_calls`: count every `message.content[]` entry of `type: "tool_use"` into
+- [x] `tool_calls`: count every `message.content[]` entry of `type: "tool_use"` into *(completed)*
       `tool_calls.total`, and tally by its `name` field into `tool_calls.by_name{}`.
-- [ ] `gate_runs`: populate from the transcript only where it genuinely shows gate/verification
+- [x] `gate_runs`: populate from the transcript only where it genuinely shows gate/verification *(completed)*
       invocations with durations; where it does not, OMIT the key. Do not synthesise a zero and
       do not infer durations.
-- [ ] `transcript{path, span_seconds}`: record the matched path and the first-to-last-line
+- [x] `transcript{path, span_seconds}`: record the matched path and the first-to-last-line *(completed)*
       `timestamp` span as a **secondary corroboration** of wall-clock only. State in a comment
       that `wall_clock_seconds` from `dispatch_start_ts` stays the primary figure and that a
       missing transcript must not block emission.
-- [ ] Record `cc_session_id` on the line whenever it is known, including when the join itself
+- [x] Record `cc_session_id` on the line whenever it is known, including when the join itself *(completed)*
       failed — it is the durable join key for any later recovery attempt within the retention
       window.
 
