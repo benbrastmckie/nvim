@@ -116,6 +116,19 @@ Each entry is at minimum:
 with no clearly bearing Decision may omit `convention_decision`, but `description` and `dimension`
 are always present.
 
+**The read contract — how the observer finds a burden among ordinary tagged entries.** A
+`dimension`+`polarity` pair alone marks a general signal, not necessarily a maintenance burden —
+most negative signals are not burden trades. The `tags` object therefore carries one additional,
+optional sub-field reserved for this: `tags.burden`, valued `"created"` or `"lifted"`. An
+`issues.jsonl` entry with `tags.burden` present populates exactly one of `burdens_created[]` /
+`burdens_lifted[]` (never both from one entry): `description` is drawn from the entry's own
+`what_happened`, `dimension` from `tags.dimension[0]` (the first dimension when more than one is
+present), and `convention_decision` from an optional `tags.convention_decision` string — read
+verbatim, never derived from prose. An entry with no `tags.burden` key contributes to
+`dimension_signals` (below) as ordinary signal, never to either burdens array. See
+`patterns/signal-tagging.md`'s paired-burden worked example for the exact `--tags-json` payload
+shape.
+
 ## Computed vs. Supplied — The Division of Labour
 
 **MECHANICAL fields are COMPUTED by the observer**: tier runs and their timings, churn counts,

@@ -33,6 +33,11 @@ needed or permitted.** The seam already exists; this document only tells you how
 - `dimension`: one or more of the **seven keys** below, as a JSON array (even when tagging only
   one — the observer reads an array, not a bare string).
 - `polarity`: exactly `"positive"` or `"negative"`. No third value, no default.
+- `burden` (optional): `"created"` or `"lifted"` — add this **only** when the entry documents one
+  half of a paired-burden trade (see the worked example below). Most entries omit it entirely.
+- `convention_decision` (optional, pairs with `burden`): the bearing Decision's own durable
+  heading text, e.g. `"Decision 13: Exposure policy"` — read verbatim by the observer, never
+  derived from your prose.
 
 This obligation applies identically to **`kind: "issue"` and `kind: "win"` entries**. A `win` is
 positive signal with no cost to fix — it still needs a dimension and a polarity (almost always
@@ -154,7 +159,7 @@ certifier removed an entire class of stale-by-hand manifests.
 bash .claude/scripts/issue-record.sh --task N \
   --kind win --class "tooling bug or gap" --severity none \
   --what-happened "Decision 9's move of identity computation from book.toml into the certifier removed the 'forgot to bump the digest by hand' failure mode entirely -- zero hand-authored identity fields remain." \
-  --tags-json '{"dimension": ["maintainability"], "polarity": "positive"}'
+  --tags-json '{"dimension": ["maintainability"], "polarity": "positive", "burden": "lifted", "convention_decision": "Decision 9: Identity computation"}'
 ```
 
 **Burden created**: the same move means a maintainer can no longer read a book's identity from
@@ -165,13 +170,14 @@ a component that previously needed none for this purpose.
 bash .claude/scripts/issue-record.sh --task N \
   --kind issue --class "cost-forced exclusion or substituted verification" --severity minor \
   --what-happened "Because identity now lives only in book.cert.json, reading a book's current digest requires a certifier run (and therefore a build) where previously book.toml alone sufficed for a stale manual field -- Decision 9 traded staleness risk for a build dependency." \
-  --tags-json '{"dimension": ["compiling_composing", "maintainability"], "polarity": "negative"}'
+  --tags-json '{"dimension": ["compiling_composing", "maintainability"], "polarity": "negative", "burden": "created", "convention_decision": "Decision 9: Identity computation"}'
 ```
 
-Both entries name the bearing Decision by its own durable heading text ("Decision 9's move...")
-inside `what_happened`; `books-observe.sh` folds a tagged pair like this into the observation
-record's `burdens_lifted[]` / `burdens_created[]` arrays when both entries are present for the
-same task.
+Both entries carry `tags.burden` (`"lifted"` / `"created"`) and the same
+`tags.convention_decision`, naming the bearing Decision by its own durable heading text — never
+an invented identifier. `books-observe.sh` reads `tags.burden` directly: each entry populates
+exactly one of `burdens_lifted[]` / `burdens_created[]`, independent of whether the other half
+was also recorded for the same task.
 
 ## What NOT to do
 
