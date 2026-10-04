@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 7-phase implementation plan for dispatch-metrics.sh (live postflight capture + --backfill), its test suite, context/formats/dispatch-metrics.md, manifest.json/index-entries.json registration, and one non-fatal postflight call site. Built on the research report's corrected transcript layout and exact task_number/dispatch_seq join; added planning-time measurements of the seven-arm dispatch_status case, the blocker-gated partial arm, and the individual-file provides.scripts list.",
+  "phase": "plan",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/330_per_dispatch_cost_and_timing_record/plans/01_dispatch-metrics-record.md",
+      "summary": "7-phase plan, ~10h, 5 dependency waves: format doc + index entry, script skeleton with transcript-free fields, transcript join, --backfill mode, test suite, postflight call site, deploy/acceptance."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": [],
+  "next_action_hint": "Dispatch implementation; Phase 1 (format doc) has no dependencies and freezes the record schema before any code is written against it.",
+  "dispatch_seq": 11
+}

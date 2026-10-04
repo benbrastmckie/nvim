@@ -65,7 +65,7 @@ next_project_number: 335
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-330 [RESEARCHED] — Per-dispatch cost and timing record
+330 [PLANNED] — Per-dispatch cost and timing record
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -488,11 +488,12 @@ observer must run after both per-dispatch records) and for file-footprint serial
 
 ### 330. Per-dispatch cost and timing record
 - **Effort**: 4-8 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 329
 - **Research**: [330_per_dispatch_cost_and_timing_record/reports/01_dispatch-metrics-script-design.md]
+- **Plan**: [330_per_dispatch_cost_and_timing_record/plans/01_dispatch-metrics-record.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
