@@ -336,56 +336,56 @@ after Phase 7's deploy that `.claude/scripts/run-task-observers.sh` exists and i
 
 ---
 
-### Phase 3: `scripts/tests/test-run-task-observers.sh` — regression suite [NOT STARTED]
+### Phase 3: `scripts/tests/test-run-task-observers.sh` — regression suite [COMPLETED]
 
 **Goal**: every clause of the matching and advisory contracts is asserted mechanically, in an
 isolated scratch sandbox that never touches the live repo's `specs/` or `.claude/`.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-run-task-observers.sh` on the established harness model
+- [x] Create `scripts/tests/test-run-task-observers.sh` on the established harness model
       (`scripts/tests/test-dispatch-metrics.sh` / `test-issue-record.sh`): `set -uo pipefail`
       (Class B per `shell-strict-mode.md`), `pass()`/`fail()`/`info()` helpers, `PASSED`/`FAILED`
       integer counters, exit 0 all-pass / 1 any-fail / 2 environment error, and the
       deploy-tree-first / source-store-fallback script-under-test candidate list so the suite runs
       both post-deploy and in a source-store-only checkout.
-- [ ] Build a scratch sandbox per case: `mktemp -d` root with `.claude/scripts/` (the SUT,
+- [x] Build a scratch sandbox per case: `mktemp -d` root with `.claude/scripts/` (the SUT,
       `events-append.sh`, `deploy-root-guard.sh`, `lib/common.sh`, `lib/manifest-routing-lib.sh`
       copied in so the `*/.claude` parent check passes and `PROJECT_ROOT` resolves to the
       scratch root), `.claude/extensions/<name>/manifest.json` fixtures, and a scratch `specs/`.
-- [ ] Case: **prefix match** — a `topic: books` declaration fires for topic `books:certify`.
-- [ ] Case: **topic-only match** — a declaration with `topic` and no `task_type` fires on topic,
+- [x] Case: **prefix match** — a `topic: books` declaration fires for topic `books:certify`.
+- [x] Case: **topic-only match** — a declaration with `topic` and no `task_type` fires on topic,
       and does not fire for a task whose topic differs but whose task_type coincidentally equals
       the topic string.
-- [ ] Case: **task_type-only match** — a declaration with `task_type` and no `topic` fires on
+- [x] Case: **task_type-only match** — a declaration with `task_type` and no `topic` fires on
       task_type, prefix-aware (`present` matches `present:grant`).
-- [ ] Case: **both-declared match-if-either** — a declaration with both keys fires when only the
+- [x] Case: **both-declared match-if-either** — a declaration with both keys fires when only the
       topic matches, fires when only the task_type matches, and reports `matched_on: both` when
       both match.
-- [ ] Case: **no match** — a declaration on `Y` does not fire for topic `X`; no event is
+- [x] Case: **no match** — a declaration on `Y` does not fire for topic `X`; no event is
       appended; exit 0.
-- [ ] Case: **multiple matching extensions** — two fixture extensions both matching one task BOTH
+- [x] Case: **multiple matching extensions** — two fixture extensions both matching one task BOTH
       fire (the regression guard against inheriting first-match-wins), in the documented
       deterministic order (D7).
-- [ ] Case: **missing script** — a declaration whose `script` resolves to no deployed file yields
+- [x] Case: **missing script** — a declaration whose `script` resolves to no deployed file yields
       exactly one `deviation` event and exit 0.
-- [ ] Case: **non-executable script** — same shape, distinguished in the detail payload.
-- [ ] Case: **non-zero rc** — an observer exiting 3 yields one `deviation` event carrying
+- [x] Case: **non-executable script** — same shape, distinguished in the detail payload.
+- [x] Case: **non-zero rc** — an observer exiting 3 yields one `deviation` event carrying
       `rc: 3`, and the SUT still exits 0.
-- [ ] Case: **timeout** — an observer that sleeps past a 1-second `timeout_seconds` is killed,
+- [x] Case: **timeout** — an observer that sleeps past a 1-second `timeout_seconds` is killed,
       the event carries `timed_out: true`, the SUT exits 0, and total wall-clock stays bounded.
-- [ ] Case: **no timeout binary** — with `timeout`/`gtimeout` removed from `PATH`, the observer is
+- [x] Case: **no timeout binary** — with `timeout`/`gtimeout` removed from `PATH`, the observer is
       SKIPPED (not invoked un-bounded: assert the observer's own side-effect file was never
       written) and one `deviation` event carrying the skip reason is appended.
-- [ ] Case: **a failing observer does not change status** — a fixture observer that writes garbage
+- [x] Case: **a failing observer does not change status** — a fixture observer that writes garbage
       to its own `specs/state.json` argument path is not given the chance to matter: assert the
       scratch `specs/state.json` byte-identical before and after a crashing-observer run, and that
       the SUT's exit status is 0.
-- [ ] Case: **malformed declaration tolerance** — an entry missing `script`, and an entry with
+- [x] Case: **malformed declaration tolerance** — an entry missing `script`, and an entry with
       neither `topic` nor `task_type`, are skipped without failing the run (structural validation
       belongs to Rule X, not the resolver).
-- [ ] Case: **`--dry-run`** — matches are reported on stderr, no event is appended, the observer's
+- [x] Case: **`--dry-run`** — matches are reported on stderr, no event is appended, the observer's
       side-effect file is absent.
-- [ ] Register `"tests/test-run-task-observers.sh"` in `manifest.json`'s `provides.scripts` as its
+- [x] Register `"tests/test-run-task-observers.sh"` in `manifest.json`'s `provides.scripts` as its
       own entry (the two-entry registration pattern `dispatch-metrics.sh` already follows).
 
 **Timing**: 1.5 hours

@@ -1,0 +1,35 @@
+{
+  "phase": 3,
+  "phase_name": "scripts/tests/test-run-task-observers.sh - regression suite",
+  "started_at": "2026-10-04T02:55:00Z",
+  "last_updated": "2026-10-04T03:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Build 14-case regression suite covering prefix/topic-only/task_type-only/both-declared/no-match/multiple-match/missing-script/non-executable/non-zero-rc/timeout/no-timeout-binary/failing-observer/malformed-declaration/dry-run; register in manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {
+      "approach": "Initial fixture for case (l) wrote garbage into specs/state.json via the observer's own argument path and asserted byte-identity",
+      "result": "failed",
+      "reason": "The observer process is not sandboxed by run-task-observers.sh (out of scope for an advisory invoker); the write legitimately succeeded, so the fixture's premise was wrong. Redesigned to assert the SUT's OWN exit code and that it never touches state.json itself, with the observer only emitting garbage stdout/stderr."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.ordering",
+      "description": "Add an ordering assertion case to scripts/tests/test-run-task-observers.sh",
+      "type": "deferred",
+      "reason": "This task item belongs to Phase 4's task list (which adds the postflight call site this assertion parses), not Phase 3's own 14-case list. Deferred to Phase 4 where it is implemented.",
+      "annotation": "*(deviation: deferred to Phase 4)*"
+    }
+  ]
+}
