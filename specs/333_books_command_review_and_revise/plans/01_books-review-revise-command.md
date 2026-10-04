@@ -225,60 +225,60 @@ before quoting either range; use whatever the grep reports, not these numbers.
 
 ---
 
-### Phase 3: `context/project/books/patterns/books-review-submode.md` [NOT STARTED]
+### Phase 3: `context/project/books/patterns/books-review-submode.md` [COMPLETED]
 
 **Goal**: The complete and only specification for the strictly read-only `--review` sub-mode,
 structured off `distill-review-submode.md`.
 
 **Tasks**:
-- [ ] Read `distill-review-submode.md` (91 lines) in full as the structural model, then open the
+- [x] Read `distill-review-submode.md` (91 lines) in full as the structural model, then open the
       opening sentence with the same "the COMPLETE and ONLY specification for this sub-mode" framing
       both distill pattern files use.
-- [ ] State the read-only posture in the opening: `--review` never proposes and never writes, with
+- [x] State the read-only posture in the opening: `--review` never proposes and never writes, with
       its single sanctioned write — its own dated report — named explicitly, and the MANDATORY-STOP
       exemption restated as an explicit exemption.
-- [ ] **Edge Case Checks**: zero digest-log lines, a digest line whose `record_path` does not
+- [x] **Edge Case Checks**: zero digest-log lines, a digest line whose `record_path` does not
       resolve, and a record present but with every dimension unmeasured — each with its own named
       early-return message string rather than a generic failure.
-- [ ] **Candidate Identification** as a **per-dimension access table**, one row per each of the
+- [x] **Candidate Identification** as a **per-dimension access table**, one row per each of the
       seven dimensions spelled verbatim from the observation-record standard — `maintainability`,
       `cross_pollination`, `guardrails_qa`, `token_cost_efficiency`, `readability`,
       `intuitive_exposure`, `compiling_composing` (the last with its two first-class sub-fields
       `import_weight` and `compilation_weight`). Each row carries: the record field path it reads,
       and a **named degraded-behavior string** for when that dimension has no data yet. Never
       respell or abbreviate a dimension name.
-- [ ] Specify the report's **WHAT IS UNMEASURED** section as a required section, not a conditional
+- [x] Specify the report's **WHAT IS UNMEASURED** section as a required section, not a conditional
       one: every dimension with no data is listed by name. State the rule that a review silently
       omitting an unmeasured dimension is a defect.
-- [ ] Specify signal reporting as **figures and trends, not adjectives**: per dimension, positive
+- [x] Specify signal reporting as **figures and trends, not adjectives**: per dimension, positive
       and negative signal counts by `polarity` (exactly `positive` or `negative`, no default), with
       `untagged` signals counted as `untagged` and never defaulted onto a dimension.
-- [ ] Specify **cost per task and per phase kind** from the observation record's `generic` join
+- [x] Specify **cost per task and per phase kind** from the observation record's `generic` join
       group (`dispatch_count`, `phases`, `outcomes`, `wall_clock_seconds_total`), aggregated across
       every task reached via the digest log. Include a required, verbatim-ish capture-time caveat
       sentence: these figures reflect what was captured at each task's postflight, not live
       telemetry, citing `context/formats/dispatch-metrics.md`'s own "CAPTURE ONLY — No Reporting
       Here" framing and its 30-day transcript window.
-- [ ] Specify **recurring issue classes, ranked**, read from the per-task `issue_counts` /
+- [x] Specify **recurring issue classes, ranked**, read from the per-task `issue_counts` /
       `issues_present` fields of the `generic` group.
-- [ ] Specify **burdens created versus burdens lifted** as the paired-signal report the schema
+- [x] Specify **burdens created versus burdens lifted** as the paired-signal report the schema
       guarantees: `burdens_created[]` and `burdens_lifted[]` are both always present (defaulting to
       `[]`, never one without the other), each entry naming its bearing Decision by durable heading
       text (e.g. `"Decision 13: Exposure policy"`).
-- [ ] State **omit-never-zero (D5)** as a reporting rule: an underivable figure is omitted, never
+- [x] State **omit-never-zero (D5)** as a reporting rule: an underivable figure is omitted, never
       rendered as a fabricated `0`; `absent` is used only for the two fields the standard names
       (`vacuous_passes`, `snapshot_delta`). Report `verification_tiers`/`certifier_outcomes` as
       absent where the consuming repository has not built the probe, per the standard's Probe
       Ownership Boundary — never synthesize one.
-- [ ] Note that vacuous passes are first-class and never inferred by negating an ordinary pass.
-- [ ] **Dry-Run**: an accepted no-op (nothing to suppress), stated explicitly.
-- [ ] **Output**: a dated report written under the consuming repository's `specs/` tree, plus a
+- [x] Note that vacuous passes are first-class and never inferred by negating an ordinary pass.
+- [x] **Dry-Run**: an accepted no-op (nothing to suppress), stated explicitly.
+- [x] **Output**: a dated report written under the consuming repository's `specs/` tree, plus a
       terminal summary. Specify the report path shape and the date format; the report is the sub-
       mode's only write.
-- [ ] **Funnel rule**, as an explicit closing section: the report ends by naming the strongest
+- [x] **Funnel rule**, as an explicit closing section: the report ends by naming the strongest
       candidates and telling the user to run `/books --revise`. `--review` performs none of those
       follow-on actions itself and proposes no task.
-- [ ] **Log Entry**: optional and lightweight, mirroring distill's read-only convention (identical
+- [x] **Log Entry**: optional and lightweight, mirroring distill's read-only convention (identical
       pre/post metrics), explicitly not required for the sub-mode to function.
 
 **Timing**: 1.5 hours
