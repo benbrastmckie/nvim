@@ -1,5 +1,5 @@
 ---
-next_project_number: 335
+next_project_number: 337
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 335
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,333 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303 | 22,251,271,272,280,300 | core-agent-system, extensions, orchestrator |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,333,336 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
@@ -30,6 +30,7 @@ next_project_number: 335
   └─ 281 [NOT STARTED] — Repo-wide record-versioning lint with a blocking/advisory...
     └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning...
 284 [NOT STARTED] — Exempt a task’s own directory from the postflight filescope...
+  └─ 335 [NOT STARTED] — Promote the modifiedfiles-vs-filescope excursion advisory...
 300 [NOT STARTED] — Resolve AskUserQuestion's unreachability in dispatched...
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
@@ -38,10 +39,11 @@ next_project_number: 335
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
+336 [NOT STARTED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
 
 ### Extensions
 
-333 [RESEARCHED] — The /books command with --review and --revise
+333 [PLANNED] — The /books command with --review and --revise
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -68,6 +70,321 @@ next_project_number: 335
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 336. Rule on the in-dispatch phase-commit staging surface: fifteen implementation agents commit with no file_scope check and no contended-path lease
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**), per
+rules/source-store-deploy-boundary.md.
+
+Rule on the in-dispatch PHASE-COMMIT staging surface, which has no file_scope check and no
+contended-path lease, and which is where the only observed out-of-scope commit actually happened.
+Fifteen agent definitions share one commit recipe; none of them passes `--task`.
+
+== THE SURFACE (enumerated, verified in the source store 2026-10-04) ==
+
+An implementation agent commits incrementally at each phase boundary via git-commit-scoped.sh,
+with a recipe of the shape:
+
+    bash .claude/scripts/git-commit-scoped.sh \
+      --message "task {N} phase {P}: {phase_name}" \
+      --session "${session_id}" \
+      -- <modified-files-for-this-phase>
+
+No `--task`, so the V5 contended-path lease is never consulted. No file_scope comparison anywhere,
+so nothing checks the staged list against the task's declared deliverables. The fifteen definitions
+carrying this recipe, each verified to contain zero `--task` occurrences:
+
+  agent-system/extensions/books/agents/books-implementation-agent.md
+  agent-system/extensions/books/agents/books-implementation-hard-agent.md
+  agent-system/extensions/core/agents/general-implementation-agent.md       (lines 297, 790)
+  agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md
+  agent-system/extensions/founder/agents/founder-implement-agent.md
+  agent-system/extensions/latex/agents/latex-implementation-agent.md
+  agent-system/extensions/lean/agents/lean-implementation-agent.md          (line 659)
+  agent-system/extensions/lean/agents/lean-implementation-hard-agent.md
+  agent-system/extensions/nix/agents/nix-implementation-agent.md
+  agent-system/extensions/nvim/agents/neovim-implementation-agent.md
+  agent-system/extensions/python/agents/python-implementation-agent.md
+  agent-system/extensions/rust/agents/rust-implementation-agent.md
+  agent-system/extensions/typst/agents/typst-implementation-agent.md
+  agent-system/extensions/web/agents/web-implementation-agent.md
+  agent-system/extensions/z3/agents/z3-implementation-agent.md
+
+ONE DEFINITION WAS AUDITED AND DELIBERATELY EXCLUDED. agent-system/extensions/core/agents/
+meta-builder-agent.md also invokes git-commit-scoped.sh without `--task`, but its site (line 1499)
+commits `specs/TODO.md specs/state.json` for task CREATION -- it is not a phase commit, it stages
+no deliverables, and it is already declared in the --task-wiring task's file_scope. Including it
+here would create a footprint collision with that task for no gain. If a future reader counts
+sixteen invokers, that is the sixteenth, and this is why it is absent.
+
+== WHY THIS IS NOT COVERED BY THE --task-WIRING TASK ==
+
+That task's audit of missing `--task` enumerates nine recipe sites -- skills/skill-git-workflow/
+SKILL.md, commands/task.md, commands/todo.md, agents/meta-builder-agent.md, skills/skill-meta/
+SKILL.md, epidemiology/commands/epi.md, present/commands/grant.md, present/commands/slides.md,
+present/commands/timeline.md -- and omits every one of the fifteen above. Its declared file_scope
+contains none of them either. So the subjects overlap (both concern `--task` at commit sites) while
+the FILES do not overlap at all. Stated explicitly here so that a future reader does not merge
+them: this task is not a subset of that one, and that one will not close this surface.
+
+This task therefore declares NO dependencies. It is the surface with demonstrated harm, and it must
+not be serialized out behind a dependency chain belonging to tasks that do not touch its files.
+
+== EMPIRICAL BASIS: THIS IS A CASE THE FIX WOULD CATCH ==
+
+Dated observation, 2026-10-04, in the Verification repository (~/Projects/Logos/Verification). The
+commit whose subject is "task 187 phase 5: recertify the five books whose identity this work moves"
+carried ten generated Typst files:
+  typst/manual/generated/components/{channel,crc8,receiver,ring_buffer,seq_num,stuff,
+  stuffed_channel,varint,vec_queue,zigzag}.typ
+That task's declared file_scope names exactly ONE of them
+(typst/manual/generated/components/crc8.typ). Nine were outside the declared scope. The five
+components/framed_channel/books/*/book.cert.json paths in the same commit ARE all in file_scope.
+Scoping held for every declared path and failed only for the undeclared ones.
+
+That commit is a PHASE commit from this very surface -- verified structurally, not inferred: its
+file list contains no state.json, no TODO.md and no task-directory entry other than the plan file,
+whereas both postflight scripts unconditionally stage the task directory, TODO.md and state.json on
+every call. Its message shape ("phase 5:") matches the recipe above. The neighbouring commit
+"task 186: complete implementation" is what a postflight commit looks like by contrast.
+
+THE CONTRAST WITH THE SIBLING TASK IS THE WHOLE REASON THERE ARE TWO TASKS, and both descriptions
+state it. The sibling (gate_modified_files_excursion_at_staging) closes a verified disconnect
+between an excursion advisory and a staging list inside scripts/orchestrate-cycle-postflight.sh;
+that defect is real and worth closing, but a postflight-sited gate could not have prevented the
+observed commit, because the observed commit never went through a postflight. This task owns the
+surface that produced it.
+
+== THE WORK ==
+
+(1) Rule on the mechanism, and record the reason. The candidates are: pass `--task` (engaging the
+V5 lease); add a file_scope check against the phase's staged list; both; or neither, with a
+documented reason. They are not equivalent -- the lease only covers paths declared by some task,
+so it does nothing for a path declared by none, which is exactly the observed shape. A ruling of
+"`--task` alone" must therefore say what it does about the observed case or concede it does not
+address it.
+
+(2) THE ASYMMETRY IS THE HEART OF THE TASK: a phase commit happens mid-dispatch, with no postflight
+in scope and no orchestrator engine running the call. Whatever mechanism is chosen cannot be a
+postflight-sited one, and cannot assume a cycle manifest has been built. Rule on where the check
+can actually live given that constraint -- inside the agent recipe as a documented step, inside
+git-commit-scoped.sh behind a new opt-in flag, or nowhere -- and weigh the cost of a fifteen-file
+prose edit against a single mechanical chokepoint. Prefer a mechanism that cannot be forgotten by
+the sixteenth agent definition someone adds next.
+
+(3) If the ruling touches scripts/git-commit-scoped.sh, that file is NOT in this task's file_scope
+and that change is recorded as a constrained follow-up, coordinated with the out-of-repository-
+pathspec task that owns that script's exit-code contract. Do not widen file_scope to reach it.
+
+(4) Whatever lands must be uniform across all fifteen definitions, or the ruling must say why a
+subset is correct. A per-extension divergence in commit discipline is itself a defect.
+
+== OUT OF SCOPE ==
+
+The postflight excursion gate (the sibling task, gate_modified_files_excursion_at_staging); the
+own-task-directory filter false positive in the postflight advisory; the nine recipe sites owned by
+the --task-wiring task; what file_scope means or how it is harvested; and any change to
+git-commit-scoped.sh (item 3).
+
+== KNOWN SERIALIZATION CONTENDER (no edge declared) ==
+
+The in-place-plan-revision-detection task declares agent-system/extensions/core/agents/
+general-implementation-agent.md and agent-system/extensions/lean/agents/lean-implementation-agent.md
+in its file_scope -- two of this task's fifteen. Its subject is plan-revision detection during a
+live implement dispatch, so the regions do not touch and either order merges cleanly. Recorded here
+visibly rather than as a dependency edge, per the ruling that this task carries no dependencies.
+
+== ACCEPTANCE ==
+
+The mechanism question is RULED ON with reasons recorded, including an explicit answer on whether
+the chosen mechanism addresses the observed undeclared-path case or only the contended-path case;
+the mid-dispatch asymmetry in item (2) is addressed rather than assumed away; whatever lands is
+uniform across all fifteen definitions or the subset is justified; the observed commit's shape is
+exercised as a regression case that demonstrates the pre-fix behaviour; and any git-commit-scoped.sh
+change is recorded as a follow-up rather than made here.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
+
+### 335. Promote the modified_files-vs-file_scope excursion advisory into a staging-time gate, so the per-cycle commit stops carrying paths the advisory already named
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 284
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per
+rules/source-store-deploy-boundary.md.
+
+Make the postflight staging list consult the excursion verdict the same script already computes,
+so a per-cycle commit stops carrying the paths that verdict has already named as outside the
+task's declared file_scope.
+
+== THE DEFECT, LOCATED PRECISELY (verified in the source store 2026-10-04) ==
+
+Both halves live in ONE file: scripts/orchestrate-cycle-postflight.sh (1841 lines).
+
+WORK (h), lines 1315-1331. Computes `excursions_json` as exactly the `.modified_files[]` entries
+not matching any declared `file_scope` prefix, prints "ADVISORY: task N reported modified_files
+outside its declared file_scope: [...]", and labels itself in the same line "(detection only --
+no gate, no exit-code, no verdict effect)". The header's work-item list at line 50 says the same:
+"detection only, never a gate."
+
+WORK (i), lines 1563-1617. Roughly 240 lines later, independently re-reads the SAME
+`.modified_files[]` from the SAME `${TASK_DIR}/.return-meta.json`, appends every entry to
+`stage_paths`, and hands the lot to git-commit-scoped.sh. `excursions_json` is never consulted by
+WORK (i). The gate is one conditional away from existing.
+
+Note the line numbers: an earlier record of this file cites 1121-1132 for WORK (h). That is stale
+drift, not a second site. There is exactly one excursion computation in the file.
+
+== WHY THE CONTENDED-PATH LEASE CANNOT COVER THIS CASE ==
+
+git-commit-scoped.sh's V5 contended-path lease fires only for paths listed in the cycle
+contention manifest, which is derived from tasks' declared file_scope (orchestrate-cycle-plan.sh's
+build_contended_manifest, lib/file-scope-overlap.sh, lib/territory-contention-lib.sh). A path in
+NO task's file_scope is in no manifest, so the lease provably never fires for it. This is a
+different gap from the one the --task-wiring work is closing, and the two must not be merged.
+Note also that THIS call site already passes `--task`, so the lease is in fact consulted here --
+it simply has nothing to say about an undeclared path.
+
+== EMPIRICAL BASIS, AND PRECISELY WHAT IT DOES AND DOES NOT SHOW ==
+
+Dated observation, 2026-10-04, in the Verification repository (~/Projects/Logos/Verification). The
+commit whose subject is "task 187 phase 5: recertify the five books whose identity this work
+moves" carried ten generated Typst files:
+  typst/manual/generated/components/{channel,crc8,receiver,ring_buffer,seq_num,stuff,
+  stuffed_channel,varint,vec_queue,zigzag}.typ
+That task's declared file_scope names exactly ONE of them
+(typst/manual/generated/components/crc8.typ). Nine were outside the declared scope. The five
+components/framed_channel/books/*/book.cert.json paths in the same commit ARE all in file_scope.
+So scoping held for every declared path and failed only for the undeclared ones -- the signature
+of an unvalidated staging list, not a mis-declared scope.
+
+READ THIS QUALIFIER BEFORE BUILDING ANY FIXTURE, AND DO NOT OVERSTATE THE EVIDENCE. That commit
+was NOT produced by this script. Its subject is a PHASE commit, made mid-dispatch by the
+implementation agent, and its file list contains no state.json, no TODO.md and no task-directory
+entry other than the plan file -- whereas WORK (i) unconditionally stages `${TASK_DIR}/`, TODO.md
+and STATE_FILE on every call. The neighbouring commit "task 186: complete implementation" is what
+a real postflight commit looks like. The observed commit is therefore the EVIDENCE THAT THE
+PREDICATE IS WORTH ENFORCING, not a case this gate catches. The regression fixture must be a
+synthesised postflight-shaped case carrying that shape, and no claim may be made anywhere in the
+artifacts that this gate would have prevented the observed commit. The surface where that commit
+actually happened is a separate task, filed alongside this one (phase_commit_staging_has_
+no_scope_check), and work item (7) below points at it.
+
+== THE WORK ==
+
+(1) Make WORK (i) consult WORK (h)'s result instead of recomputing the staging list independently.
+One derivation of the staged set, one verdict on it.
+
+(2) Rule on what an excursion DOES, and record the ruling with its reason in the script header.
+The candidates are materially different: drop the excursion paths and commit the rest, which
+matches context/standards/git-staging-scope.md's recorded "Under-stage, never over-stage" fail-safe
+direction at that document's "Fail-Safe Direction" section; refuse the commit; or widen file_scope
+and proceed. The drop-and-commit shape is the recommended starting hypothesis precisely because it
+filters `stage_paths` upstream, inside this script, and needs no change to git-commit-scoped.sh's
+exit-code contract at all. Follow the recorded advisory-first pattern from the completed
+admission_posture_for_absent_file_scope task: if the honest outcome is to stay advisory, write down
+the promotion criterion rather than asserting the status quo.
+
+SCOPE NOTE ON THE EXIT-CODE CANDIDATE. git-commit-scoped.sh is deliberately NOT in this task's
+file_scope. If research concludes the ruling genuinely requires a new git-commit-scoped.sh exit
+code alongside 2/3/4, that specific change is recorded as a FOLLOW-UP, constrained by the
+exit-code contract owned by the out-of-repository-pathspec task (see the interaction section
+below), rather than made here. This mirrors how the --task-wiring task handles the identical
+situation ("record it as a follow-up instead") -- it is the house pattern, not an improvisation.
+
+(3) Decide whether the same gate belongs in scripts/orchestrator-postflight.sh Stage 9 (lines
+518-547), which assembles its `stage_paths` the same way and has no excursion computation at all.
+In that file file_scope appears only at lines 333-350, where it is WRITTEN (proposed_file_scope
+forwarded for research; plan-file-scope-harvest.sh for plan), never read as a boundary. CONFIRM
+FIRST THAT THE ORPHAN STATUS STILL HOLDS: scripts/skill-base.sh:991 states
+"orchestrator-postflight.sh itself has no live callers" and :1185 calls it "the orphaned
+orchestrator-postflight.sh". The stated default for the ruling is that a gate in dead code is not
+worth the edit; overturning that default requires finding a live caller.
+
+(4) Fail open where file_scope is absent. Most state.json rows carry none, and git-commit-scoped.sh's
+own --task check fails open unconditionally on a missing or malformed manifest precisely so a
+concurrency guard is never the reason an agent cannot commit. Match that posture; the completed
+admission_posture_for_absent_file_scope task is the prior art.
+
+(5) Preserve the two benign cases: the specs/ carve-out (TASK_DIR, TODO.md, state.json and the
+plan path are legitimately outside any file_scope declaration -- file_scope names deliverables)
+and the existing `modified_count -eq 0` branch, which already warns and commits nothing from
+source. Neither may become a refusal.
+
+(6) Tests in the repository's existing shell-test style; scripts/tests/test-lint-scoped-commit-
+boundary.sh and scripts/tests/test-guard-destructive-git.sh are the nearest models, and
+scripts/tests/test-orchestrate-cycle-postflight.sh is the file the cases land in. Cover the
+synthesised excursion shape, the absent-file_scope fail-open, the specs/ carve-out, and the
+zero-modified_files case.
+
+(7) State explicitly, in the script header and the report, that this gate does not cover
+in-dispatch phase commits, and point at the sibling task that owns that surface
+(phase_commit_staging_has_no_scope_check). A phase commit happens mid-dispatch with no postflight
+in scope, so no postflight-sited mechanism can reach it. Disclaiming coverage without naming the
+owner is what let this gap persist.
+
+== LOAD-BEARING INTERACTION TO CHECK AT RESEARCH TIME ==
+
+The out-of-repository-pathspec task (out_of_repo_pathspec_aborts_whole_commit) names, as its own
+candidate surface 2, verbatim: "The postflight consumer (orchestrate-cycle-postflight.sh:1252, and
+orchestrator-postflight.sh, which also reads the field). Filter or partition modified_files before
+it reaches the commit script." That is the same `modified_files` -> `stage_paths` region this task
+rewrites -- a DIFFERENT predicate (repository containment vs file_scope membership) in the SAME
+lines. It also owns git-commit-scoped.sh's exit-code contract and rules on whether callers branch
+on exit 2/4.
+
+No dependency edge is declared on it deliberately: the file_scope overlap (three shared entries --
+orchestrate-cycle-postflight.sh, context/standards/git-staging-scope.md,
+scripts/tests/test-orchestrate-cycle-postflight.sh) already forces serialization through the
+admission gate, and an explicit edge would buy ordering determinism at the price of an eight-deep
+dependency chain for a defect that is one conditional. But research MUST read that task before
+designing: if it has landed, compose with its filter/partition step rather than duplicating it; if
+it has not, do not pre-empt its predicate.
+
+The excursion FILTER's own correctness -- exempting the dispatching task's own directory -- is
+owned by the declared dependency and runs first, for the reason that task states itself: a gate
+sitting on a known-false-positive predicate would block correct work.
+
+== OUT OF SCOPE ==
+
+What file_scope means; how it is harvested (plan-file-scope-harvest.sh, backfill-file-scope.sh);
+the admission and contention machinery that consumes it. This task makes staging honour the
+existing contract, it does not redefine it. Also out of scope: fixing the own-task-directory
+filter false positive, which is the dependency's own work; the phase-commit staging surface, which
+is the sibling task's; and any change to git-commit-scoped.sh, per the scope note in item (2).
+
+== ADMISSION GATE ==
+
+scripts/orchestrate-cycle-postflight.sh IS entry on context/reference/orchestrator-critical-paths.json,
+so this task DOES trip the self-modification admission gate. Declared honestly rather than dodged
+-- the gate is one conditional inside the commit path and cannot be reached from outside it. Note
+that git-commit-scoped.sh is NOT on that registry (the twelve script entries are
+orchestrate-batch-admit, orchestrate-build-dispatch, orchestrate-cycle-plan,
+orchestrate-cycle-postflight, orchestrate-recover-outcome, orchestrate-triage-classify,
+reconcile-task-status, skill-base, system-defect-record, task-lock, update-task-status,
+verify-deploy), so it is not the source of the admission requirement here.
+
+== ACCEPTANCE ==
+
+WORK (i)'s staged set is derived once and checked against WORK (h)'s verdict; an excursion is
+handled per the recorded ruling with the reason in the script header; a task with no file_scope
+commits exactly as it does today; the specs/ carve-out and the zero-modified_files case are both
+green; context/standards/git-staging-scope.md records the new behaviour alongside V2/V3/V5/V6 with
+the dated observation as its empirical basis and with that observation's phase-commit provenance
+stated accurately; the excursion shape is exercised as a synthesised postflight-shaped regression
+fixture that fails before the change and passes after; and no artifact claims this gate would have
+caught the observed commit. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 334. Fix two books-extension scaffold contract defects: the hard implementation agent's artifacts shape and hand-rolled task lookups in both hard skills
 - **Status**: [COMPLETED]
@@ -108,11 +425,12 @@ two of the three, the third being an orchestrator context-budget ceiling tracked
 
 ### 333. The /books command with --review and --revise
 - **Effort**: 4-8 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 332
 - **Research**: [333_books_command_review_and_revise/reports/01_books-review-revise-command.md]
+- **Plan**: [333_books_command_review_and_revise/plans/01_books-review-revise-command.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there

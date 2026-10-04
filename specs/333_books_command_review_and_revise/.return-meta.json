@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791098481_49e186_333",
-  "dispatch_seq": 4,
-  "findings_count": 11,
-  "next_steps": "Run /plan 333 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md",
-      "summary": "Design research for the /books --review and --revise commands: mirrors /distill's three-layer command/skill/pattern-file split verbatim, grounds the books-domain vocabulary (seven dimensions, Validated-by marker three-form vocabulary, observation-record schema, digest log), confirms AskUserQuestion must stay in the lead-session direct-execution skill, and proposes a description-convention shape for research-and-escalate tasks since none exists in this codebase."
+      "type": "plan",
+      "path": "specs/333_books_command_review_and_revise/plans/01_books-review-revise-command.md",
+      "summary": "Six-phase plan for the new /books --review/--revise command, mirroring /distill's three-layer sub-mode split in the books extension source store."
     }
   ],
+  "next_steps": "Run /implement 333 to execute the plan",
   "memory_candidates": [
     {
-      "content": "AskUserQuestion is unreachable from a dispatched subagent on this harness. Every proven interactive multi-candidate flow in this codebase (skill-distill's --meta/--revise/--learn, skill-fix-it) keeps the AskUserQuestion gate inline in a direct-execution skill body (no Agent-tool dispatch around the gate itself), delegating only non-interactive work (e.g. task creation primitives) to a subagent. skill-fix-it's own docs state this explicitly: 'No subagent delegation. Everything executes directly in skill-fix-it using AskUserQuestion for interactivity.'",
+      "content": "This agent system has a reusable three-layer shape for a slash command with many sub-modes, proven twice (memory's /distill, books' /books): (1) commands/<name>.md parses flags into a single sub_mode value and declares the delegation payload once; (2) a single direct-execution skill holds a 'Shared Sub-Mode Skeleton' section stating the common seven-step shape ONCE with generic placeholders, plus one-line stub pointers of the exact form 'READ <pattern-file> now and follow it exactly.'; (3) one context pattern file per sub-mode is 'the COMPLETE and ONLY specification' for that sub-mode, stating only its deltas from the skeleton. Sanctioned skeleton deviations (e.g. a read-only sub-mode skipping the MANDATORY-STOP interactive step) are stated explicitly in the skeleton's own text, never left as a silent omission. Because AskUserQuestion is not reachable from a dispatched subagent on this harness, every interactive gate must live inline in the direct-execution skill body; only non-interactive research or aggregation may be delegated. When adding such a command to an existing extension, note EXTENSION.md's hard 60-line Rule U cap: an extension already at 60 lines requires compression in the same change that adds a table row.",
       "category": "PATTERN",
-      "source_artifact": "specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["AskUserQuestion", "direct-execution-skill", "subagent", "interactive-gate", "lead-session"]
-    },
-    {
-      "content": "The /distill command's Shared Sub-Mode Skeleton in skill-distill/SKILL.md (measured lines 278-321) is a reusable seven-step shape for any new maintenance-style sub-mode family: Edge Case Checks, Candidate Identification, Dry-Run, Interactive Selection (MANDATORY STOP, with report/review/auto as the only sanctioned skip), Execution, Batch Index Regeneration, Log Entry. Each sub-mode's actual logic lives in its own extracted pattern file reached via a one-line 'READ {path} now and follow it exactly' stub, keeping the skill file itself thin regardless of how many sub-modes it grows to.",
-      "category": "PATTERN",
-      "source_artifact": "specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["shared-sub-mode-skeleton", "skill-distill", "stub-pointer", "mandatory-stop", "pattern-file-extraction"]
-    },
-    {
-      "content": "A maintenance-only command family outside the task research/plan/implement lifecycle (e.g. /distill, /learn, and by extension /books --review/--revise) should carry NO routing_agents entry in its extension's manifest.json -- routing_agents is reserved for actual task_type dispatch. The memory extension's manifest.json confirms this: distill.md/skill-distill and learn.md/skill-learn appear only in provides.commands/provides.skills, with routing_agents carrying just a single 'memory' task_type row unrelated to either command.",
-      "category": "CONFIG",
-      "source_artifact": "specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["manifest.json", "routing_agents", "direct-execution-command", "extension-registration"]
+      "source_artifact": "specs/333_books_command_review_and_revise/plans/01_books-review-revise-command.md",
+      "confidence": 0.78,
+      "suggested_keywords": ["sub-mode", "skill-skeleton", "stub-pointer", "AskUserQuestion", "extension-authoring", "direct-execution"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1791098481_49e186_333",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7.75,
+    "dependency_waves": 5
+  },
+  "dispatch_seq": 5
 }

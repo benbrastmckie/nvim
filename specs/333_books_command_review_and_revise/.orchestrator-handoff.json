@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 5,
+  "summary": "Wrote a six-phase, 7.75-hour implementation plan for the new /books command with --review and --revise sub-modes, reproducing /distill's three-layer split (command flag parse, one direct-execution skill holding a shared sub-mode skeleton plus two stub pointers, two new books context pattern files) entirely in the books extension source store, plus registration across manifest/index/EXTENSION/README surfaces and a full gate phase.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/333_books_command_review_and_revise/plans/01_books-review-revise-command.md",
+      "summary": "Six-phase plan for the new /books --review/--revise command, mirroring /distill's three-layer sub-mode split in the books extension source store."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "next_action_hint": "Run /implement 333 to execute the plan"
+}
