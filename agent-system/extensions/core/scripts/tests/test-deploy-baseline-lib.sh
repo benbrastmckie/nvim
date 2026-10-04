@@ -142,6 +142,54 @@ else
   fail "deploy_baseline_new_findings: empty/empty produced '$new7' (expected empty)"
 fi
 
+# ─── Cases 8-11: the governing-source attribution signal ────────────────────────────────────────
+# Regression for a live defect: a batch that modified `runtime-file-patterns.sh` to declare a new
+# ephemeral file class produced the gate finding `specs/000_probe/.decisions.lock is NOT ignored`.
+# Its only identifier is a SYNTHETIC PROBE PATH, which can never match a modified source by
+# basename, so the attribution filter cleared it as unrelated and the batch proceeded over a real
+# defect it had itself caused. The DEPLOY_BASELINE_GOVERNED_GLOBS map must now attribute it.
+
+# Case 8 (regression): probe-path finding + a modified governing source -> ATTRIBUTABLE, i.e. the
+# function must NOT print it (printing means "cleared as unrelated").
+f8='FINDING gate14 specs/000_probe/.decisions.lock is NOT ignored (ephemeral class must be gitignored)'
+mods8='["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh","agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]'
+out8="$(deploy_baseline_unattributable_findings "$f8" "$mods8")"
+if [ -z "$out8" ]; then
+  pass "deploy_baseline_unattributable_findings: probe-path finding is attributed via its governing source (stays blocking)"
+else
+  fail "deploy_baseline_unattributable_findings: probe-path finding wrongly cleared as unrelated (got: '$out8')"
+fi
+
+# Case 9 (no over-attribution): a genuinely unrelated finding must still be cleared, so the new
+# signal cannot degrade into a blanket "attribute everything" that would cause false defers.
+f9='FINDING gate7 scripts/tests/test-lake-build-guard.sh timed out'
+mods9='["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]'
+out9="$(deploy_baseline_unattributable_findings "$f9" "$mods9")"
+if [ "$out9" = "$f9" ]; then
+  pass "deploy_baseline_unattributable_findings: an unrelated finding is still cleared despite a governing source being modified"
+else
+  fail "deploy_baseline_unattributable_findings: over-attributed an unrelated finding (got: '$out9')"
+fi
+
+# Case 10 (signal requires BOTH halves): the same probe-path finding, but the batch touched no
+# governing source -> still cleared as unrelated.
+f10='FINDING gate14 specs/000_probe/.decisions.lock is NOT ignored'
+mods10='["lua/neotex/core/options.lua"]'
+out10="$(deploy_baseline_unattributable_findings "$f10" "$mods10")"
+if [ "$out10" = "$f10" ]; then
+  pass "deploy_baseline_unattributable_findings: governed glob alone does not attribute without a modified governing source"
+else
+  fail "deploy_baseline_unattributable_findings: attributed a governed path with no governing source modified (got: '$out10')"
+fi
+
+# Case 11 (map integrity): the two halves of the governing-source map are indexed in lockstep.
+if [ "${#DEPLOY_BASELINE_GOVERNED_GLOBS[@]}" -eq "${#DEPLOY_BASELINE_GOVERNING_SOURCES[@]}" ] \
+   && [ "${#DEPLOY_BASELINE_GOVERNED_GLOBS[@]}" -gt 0 ]; then
+  pass "governing-source map: both arrays have ${#DEPLOY_BASELINE_GOVERNED_GLOBS[@]} entries (1:1 by construction)"
+else
+  fail "governing-source map: array lengths diverge (${#DEPLOY_BASELINE_GOVERNED_GLOBS[@]} globs vs ${#DEPLOY_BASELINE_GOVERNING_SOURCES[@]} source lists)"
+fi
+
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 [ "$FAILED" -eq 0 ]

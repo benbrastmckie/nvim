@@ -63,6 +63,20 @@
 #     identifier can. This is what stops the filter from degrading into a blanket disable: a
 #     finding this function cannot positively clear stays in the blocking set.
 #
+#     SECOND ATTRIBUTION SIGNAL (governing sources). Basename equality alone is not sufficient:
+#     some gates report a finding against a GENERATED or SYNTHETIC-PROBE path rather than against
+#     the source file that governs it. Such a finding can never match a modified source by
+#     basename, so the equality test above would confidently -- and wrongly -- clear it as
+#     unrelated. This was observed live: a batch that modified `runtime-file-patterns.sh` to
+#     declare a new ephemeral file class produced the gate finding
+#     `specs/000_probe/.decisions.lock is NOT ignored`, whose only identifier is a synthetic probe
+#     path; it was cleared as unrelated even though the batch had caused it. The
+#     DEPLOY_BASELINE_GOVERNED_GLOBS / DEPLOY_BASELINE_GOVERNING_SOURCES map below closes that
+#     hole: when an identifier in the line matches a governed glob AND the batch modified any of
+#     that glob's governing sources, the finding is treated as attributable and stays in the
+#     blocking set. The map is additive and declarative -- adding a gate whose findings name
+#     derived paths means adding one entry, never editing the matching logic.
+#
 # Callers combine these as a two-stage filter on a candidate new-finding set: confirm first
 # (drops flaky), then subtract this function's unattributable output from what confirmed (drops
 # unrelated). Both filters are ADDITIVE and used ONLY by the multi-task inter-cycle checkpoint
@@ -128,6 +142,23 @@ deploy_baseline_confirm_new_findings() {
     <(printf '%s\n' "$confirm_snapshot" | sort -u)
 }
 
+# ─── Governing-source map ───────────────────────────────────────────────────────────────────────
+# Index i's glob and its governing-source list describe the SAME rule. The glob is matched (as a
+# bash `case` pattern) against each punctuation-stripped identifier token in a finding line; the
+# governing-source list is space-separated BASENAMES compared against the batch's modified files.
+# A match on both halves makes the finding attributable. See the "SECOND ATTRIBUTION SIGNAL"
+# paragraph in this file's header for why basename equality alone is insufficient.
+declare -a DEPLOY_BASELINE_GOVERNED_GLOBS=(
+  '*/000_probe/*'
+  '*.lock'
+  '*.gitignore'
+)
+declare -a DEPLOY_BASELINE_GOVERNING_SOURCES=(
+  'runtime-file-patterns.sh init-specs.sh orchestrator-runtime-files.md check-runtime-file-tracking.sh'
+  'runtime-file-patterns.sh init-specs.sh orchestrator-runtime-files.md check-runtime-file-tracking.sh'
+  'runtime-file-patterns.sh init-specs.sh orchestrator-runtime-files.md check-runtime-file-tracking.sh'
+)
+
 # ─── deploy_baseline_unattributable_findings <findings> <modified_files_json> ──────────────────
 deploy_baseline_unattributable_findings() {
   local findings="$1"
@@ -139,7 +170,7 @@ deploy_baseline_unattributable_findings() {
   # finding is STILL never reported, regardless of modified_files_json's shape).
   mod_basenames="$(printf '%s' "$modified_files_json" | jq -r '(. // [])[]?' 2>/dev/null | xargs -r -n1 basename 2>/dev/null)" || true
 
-  local line word token has_ident matched_local
+  local line word token has_ident matched_local gi gsrc
   printf '%s\n' "$findings" | while IFS= read -r line; do
     [ -z "$line" ] && continue
     has_ident=0
@@ -154,6 +185,25 @@ deploy_baseline_unattributable_findings() {
           has_ident=1
           if [ -n "$mod_basenames" ] && printf '%s\n' "$mod_basenames" | grep -qxF "$(basename "$token")"; then
             matched_local=1
+          fi
+          # Second signal: a derived/probe path the batch cannot match by basename, but whose
+          # governing source the batch DID modify, is attributable. See the header's "SECOND
+          # ATTRIBUTION SIGNAL" paragraph.
+          if [ "$matched_local" -eq 0 ] && [ -n "$mod_basenames" ]; then
+            for gi in "${!DEPLOY_BASELINE_GOVERNED_GLOBS[@]}"; do
+              # shellcheck disable=SC2254
+              case "$token" in
+                ${DEPLOY_BASELINE_GOVERNED_GLOBS[$gi]})
+                  for gsrc in ${DEPLOY_BASELINE_GOVERNING_SOURCES[$gi]}; do
+                    if printf '%s\n' "$mod_basenames" | grep -qxF "$gsrc"; then
+                      matched_local=1
+                      break
+                    fi
+                  done
+                  ;;
+              esac
+              [ "$matched_local" -eq 1 ] && break
+            done
           fi
           ;;
       esac
