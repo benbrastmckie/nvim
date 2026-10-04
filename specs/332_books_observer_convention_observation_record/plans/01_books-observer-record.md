@@ -430,42 +430,42 @@ acceptance list is the floor, not the ceiling.
 
 ---
 
-### Phase 6: Registration, documentation and final gate [NOT STARTED]
+### Phase 6: Registration, documentation and final gate [COMPLETED]
 
 **Goal**: Declare the observer, deploy both scripts, register the two context files, document the
 observer where Rule X actually looks, and run the full gate set.
 
 **Tasks**:
-- [ ] `manifest.json`: add the top-level `observers` block —
+- [x] `manifest.json`: add the top-level `observers` block —
       `observers.books-observe` with `script: "scripts/books-observe.sh"`, `topic: "books"`,
       `task_type: "books"`, and a `timeout_seconds`. Both keys are declared deliberately: topic is
       the key that actually matches (the measured corpus carries topic `books` with task_type
       `lean4`/`general`/`typst`, never `books`), task_type is declared for the future
-      books-native case. Add no other key — Rule X rejects strays.
-- [ ] `manifest.json`: add `"books-observe.sh"` and `"tests/test-books-observe.sh"` to
+      books-native case. Add no other key — Rule X rejects strays. *(completed)*
+- [x] `manifest.json`: add `"books-observe.sh"` and `"tests/test-books-observe.sh"` to
       `provides.scripts`, mirroring the existing `books-certify.sh`/`test-books-certify.sh` pair.
-      A script absent from `provides.scripts` never deploys and Rule X hard-fails on it.
-- [ ] `manifest.json`: leave `provides.hooks: []` and add NO top-level `hooks` object — this task
-      adds an observer, not a lifecycle hook.
-- [ ] `index-entries.json`: register `project/books/patterns/signal-tagging.md` with the EAGER
+      A script absent from `provides.scripts` never deploys and Rule X hard-fails on it. *(completed)*
+- [x] `manifest.json`: leave `provides.hooks: []` and add NO top-level `hooks` object — this task
+      adds an observer, not a lifecycle hook. *(completed)*
+- [x] `index-entries.json`: register `project/books/patterns/signal-tagging.md` with the EAGER
       `load_when` (the four books agents + `task_types: ["books"]`), matching the corpus
       `README.md`'s convention, because tagging instructions must reach working agents rather than
       sit behind an on-demand lookup. Register
       `project/books/standards/observation-record.md` with `on_demand: true` and empty `load_when`,
       matching the other corpus documents. Populate `line_count`, `domain`, `subdomain`, `topics`,
-      `summary`, `keywords` for both, in the shape the existing entries use.
-- [ ] `README.md`: update the Directory Map `scripts/` line (currently names only
+      `summary`, `keywords` for both, in the shape the existing entries use. *(completed)*
+- [x] `README.md`: update the Directory Map `scripts/` line (currently names only
       `books-certify.sh`) to include `books-observe.sh`, and add a short Observer subsection naming
       the observer key and its script basename. Rule X's `check_observers_documented` checks
-      `README.md` specifically — `EXTENSION.md` alone does not satisfy it.
-- [ ] `EXTENSION.md`: document the observer (what it writes, where, and that it is advisory and
-      non-blocking) and add the two new context files to the Context Pointers section.
-- [ ] Record the REQUIRED DEPLOYMENT CAVEAT as a completion obligation for the implementation
+      `README.md` specifically — `EXTENSION.md` alone does not satisfy it. *(completed)*
+- [x] `EXTENSION.md`: document the observer (what it writes, where, and that it is advisory and
+      non-blocking) and add the two new context files to the Context Pointers section. *(completed)*
+- [x] Record the REQUIRED DEPLOYMENT CAVEAT as a completion obligation for the implementation
       summary: none of this takes effect in the consuming repository until the user (i) LOADS the
       books extension there — it is currently not loaded — and (ii) REDEPLOYS core. Both are the
       user's actions, not this task's, and not something this task can verify. Omitting it leaves
-      a feature that appears shipped and is inert.
-- [ ] Run the full gate set and fix anything it reports.
+      a feature that appears shipped and is inert. *(completed)*
+- [x] Run the full gate set and fix anything it reports. *(completed)*
 
 **Timing**: 1 hour
 
@@ -502,21 +502,21 @@ that edit rather than padding the change set.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/books/scripts/tests/test-books-observe.sh` — all cases pass.
-- [ ] `shellcheck` clean on `books-observe.sh` and `test-books-observe.sh` per
-      `context/standards/shell-strict-mode.md` (Class A for the observer, Class B for the test).
-- [ ] `bash .claude/scripts/check-extension-docs.sh` — Rule X green for the new observer.
-- [ ] `bash .claude/scripts/verify-deploy.sh` — full gate set passes.
-- [ ] `manifest.json` and `index-entries.json` parse as valid JSON.
-- [ ] Observer invoked with the six positional arguments against a fixture exits 0 and writes a
+- [x] `bash agent-system/extensions/books/scripts/tests/test-books-observe.sh` — all cases pass. *(completed: 47/47 PASS, 0 FAIL)*
+- [x] `shellcheck` clean on `books-observe.sh` and `test-books-observe.sh` per
+      `context/standards/shell-strict-mode.md` (Class A for the observer, Class B for the test). *(completed)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` — Rule X green for the new observer. *(completed: books PASS)*
+- [x] `bash .claude/scripts/verify-deploy.sh` — full gate set passes. *(completed: --skip-slow 33/0; full tests/run-all.sh separately confirmed 103/111 passed, 6 failed all pre-existing/unrelated)*
+- [x] `manifest.json` and `index-entries.json` parse as valid JSON. *(completed)*
+- [x] Observer invoked with the six positional arguments against a fixture exits 0 and writes a
       parseable record; invoked against an empty fixture still exits 0 with `absent`/omitted
-      fields rather than zeros.
-- [ ] `--backfill` produces records marked `backfilled: true` with `figure_provenance` and
-      per-group `source`.
-- [ ] Every one of the seven dimension keys and both polarity values appear in the standard and in
-      the tagging guide, spelled identically in both.
-- [ ] No task-number reference in any source-store file written by this task.
-- [ ] No write anywhere under `.claude/**`.
+      fields rather than zeros. *(completed)*
+- [x] `--backfill` produces records marked `backfilled: true` with `figure_provenance` and
+      per-group `source`. *(completed)*
+- [x] Every one of the seven dimension keys and both polarity values appear in the standard and in
+      the tagging guide, spelled identically in both. *(completed)*
+- [x] No task-number reference in any source-store file written by this task. *(completed)*
+- [x] No write anywhere under `.claude/**`. *(completed)*
 - [ ] The implementation summary states the deployment caveat plainly (extension not loaded in the
       consuming repository + core redeploy required, both user actions).
 

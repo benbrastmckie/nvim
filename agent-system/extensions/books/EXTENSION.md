@@ -46,7 +46,15 @@ to `books` automatically — create it with an explicit `--task-type books` at `
 `<package-dir>/books/<name>/` holds `book.toml`, `book.cert.json` and `book.typ` side by side —
 never a `docs/` subdirectory. See `rules/books.md` for the full non-negotiable set.
 
+### Observer
+
+`books-observe` (`scripts/books-observe.sh`, `manifest.json`'s `observers` block, advisory and
+non-blocking) writes one OBSERVATION record per books-topic task
+(`specs/{NNN}_{SLUG}/book.observation.json`), joining `issues.jsonl`/`metrics.jsonl` with
+books-specific facts. See `context/project/books/standards/observation-record.md` (schema) and
+`context/project/books/patterns/signal-tagging.md` (how agents feed it).
+
 ### Context Pointers
 
-- `context/project/books/README.md` — the navigation index of the landed domain corpus
-  (sixteen documents under `domain/`, `patterns/`, `standards/`, `tools/`), reachable on demand
+- `context/project/books/README.md` — navigation index of the domain corpus (eighteen docs),
+  reachable on demand

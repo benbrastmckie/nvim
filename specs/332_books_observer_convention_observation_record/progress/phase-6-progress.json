@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "phase_name": "Registration, documentation and final gate",
+  "started_at": "2026-10-04T09:15:00Z",
+  "last_updated": "2026-10-04T09:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "manifest.json: add observers block", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 2, "description": "manifest.json: add both scripts to provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 3, "description": "manifest.json: leave provides.hooks:[] and no top-level hooks object", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 4, "description": "index-entries.json: register both context files with correct tiering", "status": "done", "files_touched": ["agent-system/extensions/books/index-entries.json"]},
+    {"id": 5, "description": "README.md: Directory Map line + Observer subsection", "status": "done", "files_touched": ["agent-system/extensions/books/README.md"]},
+    {"id": 6, "description": "EXTENSION.md: document observer; add two context pointers", "status": "done", "files_touched": ["agent-system/extensions/books/EXTENSION.md"]},
+    {"id": 7, "description": "Record required deployment caveat as a completion obligation", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run the full gate set and fix anything it reports", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "First EXTENSION.md edit (Observer section + 3 context pointers) landed at 73 lines, exceeding Rule U's hard 60-line cap", "result": "failed", "reason": "check-extension-docs.sh FAILed with 'Rule U: EXTENSION.md is 72 lines, exceeding the 60-line limit'; trimmed the Observer section and Context Pointers to a terser form (60 lines exactly), re-ran check-extension-docs.sh and got a clean PASS for books"}
+  ],
+  "handoff_count": 0
+}

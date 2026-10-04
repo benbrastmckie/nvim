@@ -280,6 +280,37 @@
       ]
     },
     {
+      "path": "project/books/patterns/signal-tagging.md",
+      "line_count": 204,
+      "load_when": {
+        "agents": [
+          "books-research-agent",
+          "books-implementation-agent",
+          "books-research-hard-agent",
+          "books-implementation-hard-agent"
+        ],
+        "task_types": [
+          "books"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "signal-tagging",
+        "issue-log-tags-seam",
+        "observation-record"
+      ],
+      "summary": "How working agents populate tags.dimension/tags.polarity/tags.burden on an issues.jsonl entry: the exact shape books-observe.sh reads, one worked example per dimension, a paired-burden example, and what not to do.",
+      "keywords": [
+        "tags",
+        "dimension",
+        "polarity",
+        "burden",
+        "issue-record.sh",
+        "books-observe.sh"
+      ]
+    },
+    {
       "path": "project/books/standards/metadata-split.md",
       "line_count": 180,
       "load_when": {
@@ -352,6 +383,31 @@
         "docs-stage.sh",
         "book.record.json",
         "blocking policy"
+      ]
+    },
+    {
+      "path": "project/books/standards/observation-record.md",
+      "line_count": 249,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "observation-record",
+        "post-task-observer",
+        "convention-evidence"
+      ],
+      "summary": "The full observation-record schema books-observe.sh implements: the seven dimensions, the polarity and paired-burden rules, the computed-vs-supplied division of labour, the probe ownership boundary, vacuous passes, dual provenance marking, and the record location.",
+      "keywords": [
+        "observation-v1",
+        "books-observe.sh",
+        "burdens_created",
+        "burdens_lifted",
+        "snapshot_delta",
+        "vacuous_passes"
       ]
     },
     {

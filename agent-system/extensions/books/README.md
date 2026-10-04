@@ -29,9 +29,20 @@ books/
 ├── skills/                     # four lifecycle skills + two direct-execution skills
 ├── commands/                   # /book, /certify
 ├── rules/                      # books.md -- the non-negotiables
-├── scripts/                    # books-certify.sh (the one declared passthrough script) + tests
-└── context/project/books/      # the domain corpus: README.md index + sixteen documents
+├── scripts/                    # books-certify.sh, books-observe.sh (the post-task observer) + tests
+└── context/project/books/      # the domain corpus: README.md index + eighteen documents
 ```
+
+## Observer
+
+`books-observe` (`scripts/books-observe.sh`) is a topic/task_type-keyed post-task observer,
+registered in `manifest.json`'s `observers` block (topic `books`, task_type `books`). It fires
+after a books-topic task reaches a resting state under `/orchestrate`, writing ONE OBSERVATION
+record per task (`book.observation.json`, beside `.decisions.json`) that joins the generic
+per-task `issues.jsonl`/`metrics.jsonl` logs with books-specific facts. Advisory and
+non-blocking: it can never change task status or fail a dispatch. See
+`context/project/books/standards/observation-record.md` for the full schema and
+`context/project/books/patterns/signal-tagging.md` for how working agents feed it.
 
 ## Commands
 

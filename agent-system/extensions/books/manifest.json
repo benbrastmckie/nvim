@@ -36,10 +36,20 @@
     "scripts": [
       "books-certify.sh",
       "books-gate.sh",
+      "books-observe.sh",
       "tests/test-books-certify.sh",
-      "tests/test-books-gate.sh"
+      "tests/test-books-gate.sh",
+      "tests/test-books-observe.sh"
     ],
     "hooks": []
+  },
+  "observers": {
+    "books-observe": {
+      "script": "scripts/books-observe.sh",
+      "topic": "books",
+      "task_type": "books",
+      "timeout_seconds": 30
+    }
   },
   "routing_agents": {
     "research": {
