@@ -170,6 +170,7 @@
       "reconcile-artifacts.sh",
       "reconcile-task-status.sh",
       "roadmap-integration.sh",
+      "run-task-observers.sh",
       "script-inventory.sh",
       "skill-base.sh",
       "state-write.sh",

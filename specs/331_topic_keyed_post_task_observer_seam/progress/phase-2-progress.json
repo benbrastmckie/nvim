@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "scripts/run-task-observers.sh - the advisory, non-blocking invoker",
+  "started_at": "2026-10-04T02:30:00Z",
+  "last_updated": "2026-10-04T02:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create run-task-observers.sh: resolve, match, bounded-timeout invoke, rc event, always exit 0; register in manifest.json provides.scripts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/run-task-observers.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

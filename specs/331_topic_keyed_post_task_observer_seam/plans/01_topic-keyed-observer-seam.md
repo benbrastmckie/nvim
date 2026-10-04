@@ -259,51 +259,51 @@ relying on that dependent list for this phase's verification.
 
 ---
 
-### Phase 2: `scripts/run-task-observers.sh` — the advisory, non-blocking invoker [NOT STARTED]
+### Phase 2: `scripts/run-task-observers.sh` — the advisory, non-blocking invoker [COMPLETED]
 
 **Goal**: a standalone script that, given a task's identity and resting status, invokes every
 matching observer under a bounded timeout and records exactly one event per attempt, and that
 can never fail its caller.
 
 **Tasks**:
-- [ ] Create `scripts/run-task-observers.sh` with `set -uo pipefail` and a header comment
+- [x] Create `scripts/run-task-observers.sh` with `set -uo pipefail` and a header comment
       documenting the advisory contract verbatim (never changes status, never fails a dispatch,
       never blocks; rc is recorded as an event and otherwise ignored; always exits 0) plus the
       ordering guarantee it depends on.
-- [ ] Flag-parse `--task N --task-type T --topic P --task-dir D --session S --status ST`, plus
+- [x] Flag-parse `--task N --task-type T --topic P --task-dir D --session S --status ST`, plus
       `--dry-run`. Accept an empty `--topic` and an empty `--task-type` without erroring (either
       may legitimately be unset on a task row); a task with BOTH empty resolves to zero matches
       and the script exits 0 silently.
-- [ ] Resolve `PROJECT_ROOT` via the established `deploy-root-guard.sh` / `lib/common.sh`
+- [x] Resolve `PROJECT_ROOT` via the established `deploy-root-guard.sh` / `lib/common.sh`
       convention used by sibling scripts, then set `ROUTE_MANIFEST_ROOT="${PROJECT_ROOT}/.claude"`
       when unset (D6) and source `lib/manifest-routing-lib.sh`.
-- [ ] Call `routing_resolve_observers "$topic" "$task_type"` and iterate its TSV lines. Zero
+- [x] Call `routing_resolve_observers "$topic" "$task_type"` and iterate its TSV lines. Zero
       lines: exit 0 with no event and no output (a seam with no declarations must be silent).
-- [ ] Per match: resolve `script` by BASENAME against `"${PROJECT_ROOT}/.claude/scripts/"` (D1).
+- [x] Per match: resolve `script` by BASENAME against `"${PROJECT_ROOT}/.claude/scripts/"` (D1).
       A missing or non-executable resolved path produces a `deviation` rc event and nothing else
       — never a failure, never a status change.
-- [ ] Select the timeout binary per D3 (`timeout`, then `gtimeout`, else skip-with-event).
-- [ ] Invoke the observer with the six positional arguments in this fixed order:
+- [x] Select the timeout binary per D3 (`timeout`, then `gtimeout`, else skip-with-event).
+- [x] Invoke the observer with the six positional arguments in this fixed order:
       `$1` task_number, `$2` task_type, `$3` topic, `$4` task_dir, `$5` session_id,
       `$6` resting_status. Redirect its stdout and stderr to a scratch capture so an observer can
       never corrupt the caller's own channels; measure wall-clock around the call.
-- [ ] Emit exactly ONE event per attempted observer via `scripts/events-append.sh`:
+- [x] Emit exactly ONE event per attempted observer via `scripts/events-append.sh`:
       `--event-type task_observer_run`, `--category success` on rc 0 and `--category deviation`
       on any non-zero rc / crash / missing / non-executable / timeout / no-timeout-binary,
       `--task`, `--session`, `--duration`, a one-line `--message`, and a `--detail-json` payload
       carrying `observer`, `extension`, `script`, `matched_on`, `rc`, `timed_out` (boolean),
       `timeout_seconds`, and `skipped` when applicable. Keep the category enum closed — every
       distinguishing fact lives in the detail payload, never in a new category value.
-- [ ] Treat a timeout as rc 124 (the `timeout` convention) and set `timed_out: true`; record the
+- [x] Treat a timeout as rc 124 (the `timeout` convention) and set `timed_out: true`; record the
       distinction in the detail payload rather than inventing an event type per failure mode.
-- [ ] Make the event append itself non-fatal (`|| true` with a stderr note): a failure to record
+- [x] Make the event append itself non-fatal (`|| true` with a stderr note): a failure to record
       must never become a failure to run, and vice versa.
-- [ ] `--dry-run`: print one `would invoke observer <name> (<script>) matched_on=<k>` line per
+- [x] `--dry-run`: print one `would invoke observer <name> (<script>) matched_on=<k>` line per
       match to stderr, append no event, invoke nothing, exit 0.
-- [ ] Final statement is an unconditional `exit 0`. Add an explicit header note that returning a
+- [x] Final statement is an unconditional `exit 0`. Add an explicit header note that returning a
       child rc here would flip the non-blocking contract for any caller running under `set -e` —
       the same reasoning `skill_run_extension_hook`'s own `return 0` already records.
-- [ ] Register `"run-task-observers.sh"` in `manifest.json`'s `provides.scripts` array (sorted
+- [x] Register `"run-task-observers.sh"` in `manifest.json`'s `provides.scripts` array (sorted
       into position alongside the existing entries, e.g. near `"dispatch-metrics.sh"`), so the
       script actually deploys.
 
