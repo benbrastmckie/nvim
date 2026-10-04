@@ -39,6 +39,10 @@ grep. None is auto-loaded into a dispatch. This README is the only entry point.
 | `tools/tooling-inventory.md` | What each piece of the tooling directory reads and writes, and what to consume rather than reimplement | Looking for an existing tool, or about to write a new one |
 | `tools/typst-template-contract.md` | The three-tier Typst template: tiers, modes, the certificate-only data input, label mechanics, pins | Authoring or compiling a book's Typst document |
 | `tools/certify-guide.md` | Operating the certifier economically, and what its output does and does not warrant | Running `books/scripts/certify.sh`, or reading a run that looks green |
+| `standards/observation-record.md` | The OBSERVATION record schema `books-observe.sh` writes: the seven dimensions, paired burdens, vacuous passes, omit-never-zero, and the digest-is-a-pointer rule | Reading or reasoning about `book.observation.json`, or writing anything that consumes it |
+| `patterns/signal-tagging.md` | How working agents populate `tags.dimension`/`tags.polarity`/`tags.burden` on an `issues.jsonl` entry, with one worked example per dimension | Tagging a signal mid-dispatch so it survives into the observation record |
+| `patterns/books-review-submode.md` | The complete and only specification for `/books --review`: per-dimension figures and trends, WHAT IS UNMEASURED, cost/issue-class/burden reporting, and the funnel to `--revise` | Running or modifying `/books --review` |
+| `patterns/books-revise-submode.md` | The complete and only specification for `/books --revise`: the mandatory decision-record research step, the binding-clause research-and-escalate fork, backlog reconciliation, lead-session-only gates, and the watermark | Running or modifying `/books --revise` |
 
 ## Reading order, by what you are doing
 

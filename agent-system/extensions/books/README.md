@@ -27,10 +27,10 @@ books/
 ├── manifest.json               # task_type, dependencies, provides, routing, keyword_overrides
 ├── agents/                     # four agents (base pair + --hard pair, all model: sonnet)
 ├── skills/                     # four lifecycle skills + two direct-execution skills
-├── commands/                   # /book, /certify
+├── commands/                   # /book, /certify, /books (--review/--revise)
 ├── rules/                      # books.md -- the non-negotiables
 ├── scripts/                    # books-certify.sh, books-observe.sh (the post-task observer) + tests
-└── context/project/books/      # the domain corpus: README.md index + eighteen documents
+└── context/project/books/      # the domain corpus: README.md index + twenty documents
 ```
 
 ## Observer
@@ -44,12 +44,18 @@ non-blocking: it can never change task status or fail a dispatch. See
 `context/project/books/standards/observation-record.md` for the full schema and
 `context/project/books/patterns/signal-tagging.md` for how working agents feed it.
 
+`/books --revise` reads this same evidence and tracks which of it a prior run already considered
+via a watermark cursor at `specs/books-evidence/revise-log.json` (sibling to the digest log
+`specs/books-evidence/observations.jsonl`), so a second run never re-proposes the first run's
+evidence.
+
 ## Commands
 
 | Command | Usage | Description |
 |---------|-------|--------------|
 | `/book` | `/book <name> [--lib DIR]` | Single-book developer loop: resolve the named book's `book.toml`, build its module scope, run the manifest validator, then the environment-walk check. Documentation reconciliation is explicitly out of its scope. |
 | `/certify` | `/certify [OPTIONS] [ROOT]...` | Thin passthrough over the certify driver via `books-certify.sh`: graph-wide, dependency-ordered certification over every book under ROOT. |
+| `/books` | `/books --review` or `/books --revise [--dry-run] [--verbose]` | Two sub-modes over the accumulated observation evidence: `--review` is a strictly read-only, per-dimension performance review of the convention that funnels to `--revise`; `--revise` is an interactive proposer of research-and-revision tasks, gated entirely in the lead session. Bare `/books` prints usage and exits non-zero — there is no default sub-mode. |
 
 ## Skill-Agent Mapping
 
@@ -61,6 +67,7 @@ non-blocking: it can never change task status or fail a dispatch. See
 | skill-books-implementation-hard | books-implementation-hard-agent | Hard-mode books implementation |
 | skill-books-build | (direct execution) | `/book` |
 | skill-books-certify | (direct execution) | `/certify` |
+| skill-books-review | (direct execution) | `/books --review` / `/books --revise` |
 
 ## Language Routing
 

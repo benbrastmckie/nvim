@@ -9,13 +9,12 @@ design record.
 This extension covers authoring `book_layer`/`@[book_export]` facts, writing book modules (the
 `book`/`book_assume`/`book_not_claimed`/`book_axioms`/`book_policy`/`book_requires` fact
 commands and `#book_ledger`), authoring `book.toml` judgments, and running `books-tool`/the
-certify driver. **Originating or mathematically verifying new Lean content is out of scope** —
-routes to `lean4`/`cslib`/`formal` instead. `books` owns the metadata layer around content that
-already exists, not the content itself.
-
-**Detection note**: a `books` task description naming a `.lean` file, or `mathlib`/`lean4`, is
-captured by the `lean4` strong anchor ahead of any extension's own keywords and will NOT route
-to `books` automatically — create it with an explicit `--task-type books` at `/task` creation.
+certify driver, plus reviewing and revising the convention itself from accumulated observation
+evidence (`/books`). **Originating or verifying new Lean content is out of scope** — routes to
+`lean4`/`cslib`/`formal` instead; `books` owns the metadata layer and its own convention's health,
+not the content itself. **Detection note**: a `books` task naming a `.lean` file, or
+`mathlib`/`lean4`, is captured by the `lean4` strong anchor first and will NOT auto-route to
+`books` — use an explicit `--task-type books` at `/task` creation.
 
 ### Language Routing
 
@@ -33,6 +32,7 @@ to `books` automatically — create it with an explicit `--task-type books` at `
 | skill-books-implementation-hard | books-implementation-hard-agent | Hard-mode books implementation |
 | skill-books-build | (direct execution) | `/book` single-book developer loop |
 | skill-books-certify | (direct execution) | `/certify` graph-wide passthrough |
+| skill-books-review | (direct execution) | `/books --review`/`--revise` convention health |
 
 ### Commands
 
@@ -40,6 +40,7 @@ to `books` automatically — create it with an explicit `--task-type books` at `
 |---------|-------|--------------|
 | `/book` | `/book <name> [--lib DIR]` | Single-book developer loop: resolve, build, validate, environment-check |
 | `/certify` | `/certify [OPTIONS] [ROOT]...` | Thin passthrough over the certify driver (graph-wide, dependency-ordered) |
+| `/books` | `/books --review` / `/books --revise [--dry-run] [--verbose]` | Read-only convention performance review, or interactive research-and-revision task proposal |
 
 ### Book Directory Layout (flattened)
 
@@ -56,5 +57,4 @@ books-specific facts. See `context/project/books/standards/observation-record.md
 
 ### Context Pointers
 
-- `context/project/books/README.md` — navigation index of the domain corpus (eighteen docs),
-  reachable on demand
+- `context/project/books/README.md` — navigation index of the domain corpus (twenty docs), reachable on demand

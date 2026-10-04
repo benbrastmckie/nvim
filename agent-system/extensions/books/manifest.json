@@ -21,11 +21,13 @@
       "skill-books-research-hard",
       "skill-books-implementation-hard",
       "skill-books-build",
-      "skill-books-certify"
+      "skill-books-certify",
+      "skill-books-review"
     ],
     "commands": [
       "book.md",
-      "certify.md"
+      "certify.md",
+      "books.md"
     ],
     "rules": [
       "books.md"

@@ -2,7 +2,7 @@
   "entries": [
     {
       "path": "project/books/README.md",
-      "line_count": 84,
+      "line_count": 88,
       "load_when": {
         "agents": [
           "books-research-agent",
@@ -21,7 +21,7 @@
         "books-convention",
         "corpus-index"
       ],
-      "summary": "Navigation index for the books domain corpus: a sixteen-row table with a read-this-when per document, three reading orders by task, and the corpus's own conventions.",
+      "summary": "Navigation index for the books domain corpus: a twenty-row table with a read-this-when per document, three reading orders by task, and the corpus's own conventions.",
       "keywords": [
         "books",
         "book.toml",
@@ -483,6 +483,55 @@
         "earlyoom",
         "loadExts",
         "OLeanLevel.private"
+      ]
+    },
+    {
+      "path": "project/books/patterns/books-review-submode.md",
+      "line_count": 219,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "books-review",
+        "observation-record",
+        "convention-health"
+      ],
+      "summary": "The complete and only specification for /books --review: strictly read-only per-dimension figures and trends over the observation evidence, a required WHAT IS UNMEASURED section, cost/issue-class/burden reporting, and the funnel to --revise.",
+      "keywords": [
+        "books-review",
+        "observation-record",
+        "dimension-signals",
+        "burdens",
+        "funnel"
+      ]
+    },
+    {
+      "path": "project/books/patterns/books-revise-submode.md",
+      "line_count": 288,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "books-revise",
+        "validated-by-marker",
+        "watermark",
+        "backlog-reconciliation"
+      ],
+      "summary": "The complete and only specification for /books --revise: mandatory decision-record research naming each candidate's Decision and verbatim Validated-by marker, the binding-clause research-and-escalate fork, backlog reconciliation, lead-session-only gates, and the revise-log.json watermark.",
+      "keywords": [
+        "books-revise",
+        "validated-by",
+        "binding-clause",
+        "watermark",
+        "backlog-reconciliation"
       ]
     }
   ]

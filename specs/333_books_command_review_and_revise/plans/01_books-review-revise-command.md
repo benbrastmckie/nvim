@@ -409,42 +409,42 @@ fact in the deliverable.
 
 ---
 
-### Phase 5: Registration and documentation [NOT STARTED]
+### Phase 5: Registration and documentation [COMPLETED]
 
 **Goal**: Register the new command, skill, and two context files across all four registration
 surfaces so that `check-extension-docs.sh` passes, including the EXTENSION.md 60-line cap.
 
 **Tasks**:
-- [ ] `agent-system/extensions/books/manifest.json`: add `"books.md"` to `provides.commands` and
+- [x] `agent-system/extensions/books/manifest.json`: add `"books.md"` to `provides.commands` and
       `"skill-books-review"` to `provides.skills`. Add **no** `routing_agents` or
       `routing_agents_hard` entry — `/books` is a direct-execution maintenance command outside the
       research/plan/implement lifecycle, exactly as `/distill` and `/learn` carry none in the memory
       manifest. Validate the file parses (`python3 -c 'import json,sys;json.load(open(...))'`).
-- [ ] `agent-system/extensions/books/index-entries.json`: add one entry per new pattern file, using
+- [x] `agent-system/extensions/books/index-entries.json`: add one entry per new pattern file, using
       the existing per-entry field set only (`path`, `line_count`, `load_when` with keys drawn from
       `agents`/`commands`/`task_types`/`always`, optional `on_demand`, `domain`, `subdomain`,
       `topics`, `summary`, `keywords`). Do **not** add a `description` or `tags` key — Rule T
       forbids both. Set `domain: "project"`, `subdomain: "books"`, and mark both `on_demand: true`
       following the sibling pattern files' convention.
-- [ ] Update the existing `project/books/README.md` index entry's `summary`, which currently says
+- [x] Update the existing `project/books/README.md` index entry's `summary`, which currently says
       "a sixteen-row table" — make it agree with the nav table as it stands after this phase.
-- [ ] `agent-system/extensions/books/EXTENSION.md` (**at exactly 60 lines, zero headroom**): add a
+- [x] `agent-system/extensions/books/EXTENSION.md` (**at exactly 60 lines, zero headroom**): add a
       `/books` row to the `### Commands` table and a `skill-books-review | (direct execution)` row
       to `### Skill-Agent Mapping`, then compress existing prose by at least the number of lines
       added so `wc -l` stays `<= 60`. Also correct the closing Context Pointers line, which states
       the corpus holds "eighteen docs". Re-measure with `wc -l` as the last step of this sub-task.
-- [ ] `agent-system/extensions/books/README.md` (no line cap): add a `/books` row to its
+- [x] `agent-system/extensions/books/README.md` (no line cap): add a `/books` row to its
       `## Commands` table and a `skill-books-review` row to its Skill-Agent Mapping, mention the
       two sub-modes, update the directory-map comment on `commands/` and the
       `context/project/books/` "eighteen documents" count, and briefly note the watermark store.
       The gate checks that every manifest command is mentioned in this README.
-- [ ] `agent-system/extensions/books/context/project/books/README.md`: add navigation rows for the
+- [x] `agent-system/extensions/books/context/project/books/README.md`: add navigation rows for the
       two new pattern files, with a "Read this when" phrasing matching the existing rows' voice.
       While here, note that the nav table is missing rows for `standards/observation-record.md` and
       `patterns/signal-tagging.md` (16 rows against 18 docs on disk — a pre-existing gap found
       during planning); add those two rows as well so the table is truthful, and update the
       document count in the README's own prose.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to set
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to set
       every `line_count` mechanically rather than by hand.
 
 **Timing**: 1.5 hours
