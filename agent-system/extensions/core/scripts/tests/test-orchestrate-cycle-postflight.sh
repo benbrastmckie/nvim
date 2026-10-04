@@ -41,7 +41,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-         errors-append.sh events-append.sh validate-return-meta.sh; do
+         errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh; do
   require_file "$CORE_DIR/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
@@ -66,7 +66,7 @@ setup_sandbox() {
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-           errors-append.sh events-append.sh validate-return-meta.sh; do
+           errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
   # return-meta-status-vocabulary.sh is a HARD dependency of orchestrate-recover-outcome.sh
@@ -2442,6 +2442,121 @@ if [ "$(jqf '.verdict')" = "ok" ] && [ "$(echo "$ns_state_entry" | jq -r '.statu
   pass "skeleton follow-up (2) (contrast): the ordinary completion outcome is unchanged -- verdict=ok and task status=completed"
 else
   fail "skeleton follow-up (2) (contrast): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$ns_state_entry" | jq -r '.status' 2>/dev/null)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Post-task observer invocation (WORK (n)): a test extension declaring an observer on topic
+# "X" fires for a candidate whose topic is "X" and for one whose topic is "X:sub" (prefix-aware),
+# does not fire for topic "Y", sees the per-dispatch issue-log/metrics records already present
+# in its task directory, and -- for a crashing observer -- leaves the SUT's own verdict and the
+# task's persisted status completely unaffected.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+# declare_observer_fixture <ext_name> <observer_key> <script_basename> <topic> <script_body>:
+# writes $WORKDIR/.claude/extensions/<ext_name>/manifest.json declaring one observer, and the
+# observer script itself at $WORKDIR/.claude/scripts/<script_basename> (executable).
+declare_observer_fixture() {
+  local ext="$1" key="$2" script="$3" topic="$4" body="$5"
+  mkdir -p "$WORKDIR/.claude/extensions/$ext"
+  cat > "$WORKDIR/.claude/extensions/$ext/manifest.json" <<EOF
+{"name": "$ext", "observers": {"$key": {"script": "$script", "topic": "$topic"}}}
+EOF
+  printf '#!/usr/bin/env bash\n%s\n' "$body" > "$WORKDIR/.claude/scripts/$script"
+  chmod +x "$WORKDIR/.claude/scripts/$script"
+}
+
+# make_observer_candidate <num> <topic>: writes a minimal implementing-status candidate with
+# summaries/, a pre-written metrics.jsonl and issues.jsonl (simulating WORK (m)/WORK (f) having
+# already run earlier in this same postflight cycle), a loop guard, a fresh-mtime return-meta,
+# and a matching handoff. Returns nothing; caller runs run_sut next.
+make_observer_candidate() {
+  local num="$1" topic="$2"
+  mkdir -p "$WORKDIR/specs/${num}_candidate/summaries"
+  echo x > "$WORKDIR/specs/${num}_candidate/summaries/01_x-summary.md"
+  echo '{"probe": "pre-existing-issue-line"}' > "$WORKDIR/specs/${num}_candidate/issues.jsonl"
+  echo '{"probe": "pre-existing-metrics-line"}' > "$WORKDIR/specs/${num}_candidate/metrics.jsonl"
+  write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${num}, "project_name": "candidate", "task_type": "general", "topic": "${topic}", "status": "implementing", "description": "candidate #${num} -- observer fixture", "dependencies": [], "file_scope": []}]}
+EOF
+  echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+  commit_fixture
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-loop-guard" <<'INNEREOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+INNEREOF
+  cat > "$WORKDIR/specs/${num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1}}
+EOF
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-handoff.json" <<'INNEREOF'
+{"status":"implemented","dispatch_seq":1,"phases_completed":1,"phases_total":1}
+INNEREOF
+}
+
+info "Observer acceptance (A): topic X fires, sees pre-existing metrics/issues records"
+setup_sandbox
+declare_observer_fixture testobs probe-observer probe-observer.sh X \
+  'probe="$4/obs_probe.txt"; { [ -f "$4/metrics.jsonl" ] && echo metrics_present || echo metrics_absent; [ -f "$4/issues.jsonl" ] && echo issues_present || echo issues_absent; } > "$probe"; exit 0'
+make_observer_candidate 981 X
+window_start=$(( $(now_ts) - 5 ))
+run_sut "specs/981_candidate" --session sess_981 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/981_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 981
+if [ -f "$WORKDIR/specs/981_candidate/obs_probe.txt" ] \
+  && grep -q "metrics_present" "$WORKDIR/specs/981_candidate/obs_probe.txt" \
+  && grep -q "issues_present" "$WORKDIR/specs/981_candidate/obs_probe.txt"; then
+  pass "observer acceptance (A): topic X observer fired and saw metrics.jsonl/issues.jsonl already present"
+else
+  fail "observer acceptance (A): probe file missing or did not report both records present"
+fi
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  pass "observer acceptance (A): SUT verdict unaffected by a successful observer (verdict=ok)"
+else
+  fail "observer acceptance (A): expected verdict=ok, got $(jqf '.verdict')"
+fi
+
+info "Observer acceptance (B): topic X:sub (prefix match) fires"
+setup_sandbox
+declare_observer_fixture testobs probe-observer probe-observer.sh X \
+  'probe="$4/obs_probe.txt"; echo fired > "$probe"; exit 0'
+make_observer_candidate 982 "X:sub"
+window_start=$(( $(now_ts) - 5 ))
+run_sut "specs/982_candidate" --session sess_982 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/982_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 982
+if [ -f "$WORKDIR/specs/982_candidate/obs_probe.txt" ]; then
+  pass "observer acceptance (B): topic X:sub prefix-matches declared topic X and fires"
+else
+  fail "observer acceptance (B): observer did not fire for topic X:sub"
+fi
+
+info "Observer acceptance (C): non-matching topic Y does not fire"
+setup_sandbox
+declare_observer_fixture testobs probe-observer probe-observer.sh X \
+  'probe="$4/obs_probe.txt"; echo fired > "$probe"; exit 0'
+make_observer_candidate 983 Y
+window_start=$(( $(now_ts) - 5 ))
+run_sut "specs/983_candidate" --session sess_983 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/983_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 983
+if [ ! -f "$WORKDIR/specs/983_candidate/obs_probe.txt" ]; then
+  pass "observer acceptance (C): non-matching topic Y does not fire the topic-X observer"
+else
+  fail "observer acceptance (C): observer unexpectedly fired for non-matching topic Y"
+fi
+
+info "Observer acceptance (D): a crashing observer leaves the SUT verdict and persisted status unaffected"
+setup_sandbox
+declare_observer_fixture testobs crash-observer crash-observer.sh Z \
+  'echo "deliberate crash noise" >&2; exit 1'
+make_observer_candidate 984 Z
+window_start=$(( $(now_ts) - 5 ))
+run_sut "specs/984_candidate" --session sess_984 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/984_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 984
+obs_state_entry=$(jq -c --argjson n 984 '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null)
+if [ "$(jqf '.verdict')" = "ok" ] && [ "$(echo "$obs_state_entry" | jq -r '.status' 2>/dev/null)" = "completed" ]; then
+  pass "observer acceptance (D): a crashing observer leaves verdict=ok and status=completed unaffected"
+else
+  fail "observer acceptance (D): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$obs_state_entry" | jq -r '.status' 2>/dev/null)"
 fi
 
 echo ""

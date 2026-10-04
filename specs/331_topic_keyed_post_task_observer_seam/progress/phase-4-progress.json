@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Postflight invocation site, correctly ordered",
+  "started_at": "2026-10-04T03:45:00Z",
+  "last_updated": "2026-10-04T04:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add topic read and WORK (n) observer invocation after persisted_status, before Final output; file-header WORK inventory paragraph; sandbox registration + end-to-end acceptance case; ordering assertion case in test-run-task-observers.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

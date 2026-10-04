@@ -66,6 +66,14 @@
 #       stderr and records RETURN_META_SCHEMA_VIOLATION, attributed to the dispatched agent via
 #       --dispatched-agent, without touching dispatch_status/recovered/have_outcome or any
 #       status-write/commit path.
+#   (n) Post-task observer invocation (advisory, non-blocking): run-task-observers.sh, sited
+#       AFTER (m)'s dispatch-metrics.sh call and after this script's own persisted_status read,
+#       so an extension-registered observer matched on the task's topic and/or task_type (see
+#       docs/guides/creating-extensions.md's Post-Task Observers section) can read this
+#       dispatch's already-written issue-log and metrics records. Gated on is_live only (D5),
+#       same posture as (m); the call itself is non-fatal and run-task-observers.sh always exits
+#       0 and never mutates state.json, so a missing, crashing, or hanging observer can never
+#       affect this script's own verdict or status transition.
 #
 # MUST NOT (Context Flatness Constraint and gate-integrity invariants):
 #   - Read report, plan, summary, or handoff PROSE. Only named-field jq reads and count-only
@@ -1708,6 +1716,38 @@ persisted_status=$(jq -r --argjson num "$task_number" \
   '.active_projects[] | select(.project_number == $num) | .status // ""' \
   "$STATE_FILE" 2>/dev/null) || persisted_status=""
 [ -z "$persisted_status" ] && persisted_status="unknown"
+
+# ─── WORK (n): post-task observer invocation (advisory, non-blocking) ──────────────────────────
+# ORDERING GUARANTEE: this call is deliberately sited AFTER WORK (m)'s dispatch-metrics.sh call
+# and after every issue-record.sh call site in the dispatch_status case arm above (WORK (f),
+# 931-1256), and after this very persisted_status read -- an observer that ran before those
+# per-dispatch records were written would see an incomplete record and the whole seam would be
+# worthless (see docs/guides/creating-extensions.md's Post-Task Observers section). Do not move
+# this block earlier than WORK (m) or above the persisted_status assignment for any reason.
+#
+# ADVISORY AND NON-BLOCKING: run-task-observers.sh always exits 0 and never mutates task status
+# or state.json; the call below is itself non-fatal (`|| echo ... non-fatal`) so a missing or
+# crashing run-task-observers.sh can never fail this postflight script either. Gated on
+# `is_live` ONLY (D5), matching WORK (m)'s own dry-run posture -- deliberately NOT gated on
+# dispatch_status/have_outcome/research_gate_failed, since the `blocked)` and ordinary
+# blocker-free `partial)` arms perform no state.json transition at all yet are exactly the
+# outcomes an observer may care about; $persisted_status is passed verbatim and the observer
+# author decides what is interesting.
+#
+# `topic` is read fresh here (plain, never a mutation, correct under --dry-run) -- this script
+# reads it NOWHERE else; it is a new read, not a reuse of an existing variable.
+topic=$(jq -r --argjson num "$task_number" \
+  '.active_projects[] | select(.project_number == $num) | .topic // ""' \
+  "$STATE_FILE" 2>/dev/null) || topic=""
+
+if is_live; then
+  bash "${SCRIPT_DIR}/run-task-observers.sh" \
+    --task "$task_number" --task-type "$task_type" --topic "$topic" \
+    --task-dir "$TASK_DIR" --session "$session_id" --status "$persisted_status" \
+    >/dev/null 2>&1 || echo "Note: task-observer invocation failed (non-fatal)" >&2
+else
+  echo "${notice_prefix} [dry-run] would invoke run-task-observers.sh for task ${task_number} (topic=${topic:-<none>}, task_type=${task_type:-<none>}) — no observer invoked." >&2
+fi
 
 # ─── Final output ────────────────────────────────────────────────────────────────────────────────
 # `halt` and `infra_exempt_cycle` are caller-side loop-control signals a bare `verdict` string

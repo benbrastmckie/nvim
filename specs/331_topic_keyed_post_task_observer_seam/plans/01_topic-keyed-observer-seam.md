@@ -416,51 +416,51 @@ rather than the coverage.
 
 ---
 
-### Phase 4: Postflight invocation site, correctly ordered [NOT STARTED]
+### Phase 4: Postflight invocation site, correctly ordered [COMPLETED]
 
 **Goal**: exactly one `run-task-observers.sh` call in `orchestrate-cycle-postflight.sh`'s
 completion path, provably after this dispatch's issue-log and metrics writes, with the ordering
 guarantee asserted mechanically rather than asserted in prose only.
 
 **Tasks**:
-- [ ] RE-MEASURE FIRST. Do not trust any line number in this plan, in the research report, or in
+- [x] RE-MEASURE FIRST. Do not trust any line number in this plan, in the research report, or in
       the dispatch description. Locate the insertion point by comment marker:
       `grep -n '# ─── WORK (' scripts/orchestrate-cycle-postflight.sh` and
       `grep -n '# ─── persisted_status:' scripts/orchestrate-cycle-postflight.sh`. Confirm that
       WORK (m)'s `dispatch-metrics.sh` call and every `issue-record.sh` call site precede the
       `persisted_status` assignment; if they do not, STOP and record an issue rather than guessing
       a slot.
-- [ ] Add a fresh `topic` read from `$STATE_FILE`, in the style of the adjacent `persisted_status`
+- [x] Add a fresh `topic` read from `$STATE_FILE`, in the style of the adjacent `persisted_status`
       read: a plain `jq -r --argjson num "$task_number" '.active_projects[] | select(.project_number == $num) | .topic // ""'`
       with a `2>/dev/null` and an empty-string fallback, never a mutation, so it is correct under
       `--dry-run` too. `topic` is currently read NOWHERE in this script — this is a new read, not
       a reuse.
-- [ ] Insert the invocation as a new WORK-lettered section immediately AFTER the
+- [x] Insert the invocation as a new WORK-lettered section immediately AFTER the
       `persisted_status` assignment and BEFORE the `# ─── Final output ───` block (D4). Take the
       next free WORK letter by re-reading the file header's own WORK inventory; do not assume a
       letter from this plan.
-- [ ] Gate on `is_live` ONLY, with the standard `[dry-run] would ...` notice on the else branch
+- [x] Gate on `is_live` ONLY, with the standard `[dry-run] would ...` notice on the else branch
       (D5). Call non-fatally in the measured house style:
       `bash "${SCRIPT_DIR}/run-task-observers.sh" ... >/dev/null 2>&1 || echo "Note: task-observer invocation failed (non-fatal)" >&2`.
-- [ ] Pass the six arguments: `--task "$task_number" --task-type "$task_type" --topic "$topic"
+- [x] Pass the six arguments: `--task "$task_number" --task-type "$task_type" --topic "$topic"
       --task-dir "$TASK_DIR" --session "$session_id" --status "$persisted_status"`. `$task_type`
       is the already-parsed `--task-type` flag value (measured at line 244; re-confirm) — no new
       plumbing needed for that field.
-- [ ] Add a paragraph to the script's own file-header WORK-letter inventory for the new section,
+- [x] Add a paragraph to the script's own file-header WORK-letter inventory for the new section,
       matching this script's established self-documentation convention, and stating in-line: the
       ordering guarantee and WHY it matters (an observer that ran before the issue-log and metrics
       writes would see an incomplete record and the seam would be worthless), the `is_live`-only
       gating rationale, and the non-blocking contract.
-- [ ] Add `run-task-observers.sh` to `scripts/tests/test-orchestrate-cycle-postflight.sh`'s
+- [x] Add `run-task-observers.sh` to `scripts/tests/test-orchestrate-cycle-postflight.sh`'s
       `require_file` list and its `setup_sandbox` copy loop, so the suite exercises the real call
       rather than silently hitting the non-fatal missing-script branch.
-- [ ] Add an **ordering assertion** case to `scripts/tests/test-run-task-observers.sh`: parse
+- [x] Add an **ordering assertion** case to `scripts/tests/test-run-task-observers.sh`: parse
       `orchestrate-cycle-postflight.sh` and assert the line number of the
       `run-task-observers.sh` invocation is GREATER than the line numbers of both the
       `dispatch-metrics.sh` invocation and every `issue-record.sh` invocation, and greater than
       the `persisted_status=` assignment. This is the mechanical guard that makes the ordering
       guarantee a test rather than a comment.
-- [ ] Add an **end-to-end acceptance** case to `scripts/tests/test-orchestrate-cycle-postflight.sh`:
+- [x] Add an **end-to-end acceptance** case to `scripts/tests/test-orchestrate-cycle-postflight.sh`:
       a synthetic `$WORKDIR/.claude/extensions/testobs/manifest.json` declaring an observer on
       topic `X`, whose script records into a probe file whether `metrics.jsonl` and `issues.jsonl`
       already exist in the task directory it was handed. Assert the observer fired for a task with

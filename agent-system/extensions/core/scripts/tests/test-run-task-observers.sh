@@ -49,6 +49,10 @@ ROUTING_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/manifest-routing-lib.sh"
   "$SCRIPT_DIR/../lib/manifest-routing-lib.sh"
 )
+POSTFLIGHT_CANDIDATES=(
+  "$REPO_ROOT/.claude/scripts/orchestrate-cycle-postflight.sh"
+  "$SCRIPT_DIR/../orchestrate-cycle-postflight.sh"
+)
 
 resolve_candidate() {
   local name="$1"; shift
@@ -71,6 +75,16 @@ EVENTS_SCRIPT="$(resolve_candidate "events-append.sh" "${EVENTS_CANDIDATES[@]}")
 GUARD_SCRIPT="$(resolve_candidate "deploy-root-guard.sh" "${GUARD_CANDIDATES[@]}")" || exit 2
 COMMON_SCRIPT="$(resolve_candidate "lib/common.sh" "${COMMON_CANDIDATES[@]}")" || exit 2
 ROUTING_SCRIPT="$(resolve_candidate "lib/manifest-routing-lib.sh" "${ROUTING_CANDIDATES[@]}")" || exit 2
+# Postflight is optional -- only case (o) (ordering assertion) needs it, and it is sourced
+# nowhere; it is only read as text, so a missing file degrades that one case to FAIL, not to an
+# environment error for the whole suite.
+POSTFLIGHT_SCRIPT=""
+for candidate in "${POSTFLIGHT_CANDIDATES[@]}"; do
+  if [[ -f "$candidate" ]]; then
+    POSTFLIGHT_SCRIPT="$candidate"
+    break
+  fi
+done
 
 PASSED=0
 FAILED=0
@@ -441,6 +455,30 @@ EOF
   fi
 }
 
+
+# =====================================================================================
+# Case (o): ordering assertion -- the run-task-observers.sh invocation in
+# orchestrate-cycle-postflight.sh is positioned strictly after the dispatch-metrics.sh
+# invocation, every issue-record.sh invocation, and the persisted_status= assignment.
+# =====================================================================================
+{
+  if [ -z "$POSTFLIGHT_SCRIPT" ]; then
+    fail "(o) ordering assertion: orchestrate-cycle-postflight.sh not found at any candidate path"
+  else
+    rto_line=$(grep -n "run-task-observers.sh" "$POSTFLIGHT_SCRIPT" | grep -v '^[0-9]*:#' | head -1 | cut -d: -f1)
+    metrics_line=$(grep -n "dispatch-metrics.sh" "$POSTFLIGHT_SCRIPT" | grep -v '^[0-9]*:#' | tail -1 | cut -d: -f1)
+    persisted_line=$(grep -n "^persisted_status=" "$POSTFLIGHT_SCRIPT" | tail -1 | cut -d: -f1)
+    max_issue_line=$(grep -n "issue-record.sh" "$POSTFLIGHT_SCRIPT" | grep -v '^[0-9]*:#' | tail -1 | cut -d: -f1)
+    if [ -z "$rto_line" ] || [ -z "$metrics_line" ] || [ -z "$persisted_line" ]; then
+      fail "(o) ordering assertion: could not locate one of the three marker lines (rto=$rto_line metrics=$metrics_line persisted=$persisted_line)"
+    elif [ "$rto_line" -gt "$metrics_line" ] && [ "$rto_line" -gt "$persisted_line" ] \
+      && { [ -z "$max_issue_line" ] || [ "$rto_line" -gt "$max_issue_line" ]; }; then
+      pass "(o) ordering assertion: run-task-observers.sh invocation (line $rto_line) is after dispatch-metrics.sh ($metrics_line), issue-record.sh (${max_issue_line:-n/a}), and persisted_status= ($persisted_line)"
+    else
+      fail "(o) ordering assertion: rto=$rto_line metrics=$metrics_line persisted=$persisted_line max_issue=$max_issue_line"
+    fi
+  fi
+}
 
 echo ""
 echo "=== Results: $PASSED passed, $FAILED failed ==="
