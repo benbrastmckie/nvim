@@ -1,7 +1,7 @@
 # Implementation Plan: Task #332
 
 - **Task**: 332 - Books observer: the per-task convention observation record
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 298 (books context corpus), 329 (issue log + `tags` seam), 330 (dispatch metrics + `--backfill` precedent), 331 (topic-keyed observer seam) — all four `completed`
 - **Research Inputs**: specs/332_books_observer_convention_observation_record/reports/01_books-observer-design.md
@@ -156,40 +156,40 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Freeze the observation-record standard [NOT STARTED]
+### Phase 1: Freeze the observation-record standard [COMPLETED]
 
 **Goal**: Write `context/project/books/standards/observation-record.md` — the schema the script
 then implements. This is first because every later phase reads its field names off this document.
 
 **Tasks**:
-- [ ] Write the full OBSERVATION record schema: required keys, types, per-key
-      required/optional/omitted-never-zeroed posture, and the record's own version marker.
-- [ ] Define the seven dimensions with definitions, using the verbatim key spellings
+- [x] Write the full OBSERVATION record schema: required keys, types, per-key
+      required/optional/omitted-never-zeroed posture, and the record's own version marker. *(completed)*
+- [x] Define the seven dimensions with definitions, using the verbatim key spellings
       (`maintainability`, `cross_pollination`, `guardrails_qa`, `token_cost_efficiency`,
       `readability`, `intuitive_exposure`, `compiling_composing`), mapping each to the
       dispatch's (a)-(g) prose. Record that `compiling_composing` carries IMPORT WEIGHT and
-      COMPILATION WEIGHT as first-class sub-fields, not folded into a general performance note.
-- [ ] Define the polarity rule: every signal carries `positive` or `negative` plus one or more
-      dimensions; a signal with no dimension is retained and counted as untagged, never defaulted.
-- [ ] Define the paired-burden rule as a SCHEMA requirement: `burdens_created[]` and
+      COMPILATION WEIGHT as first-class sub-fields, not folded into a general performance note. *(completed)*
+- [x] Define the polarity rule: every signal carries `positive` or `negative` plus one or more
+      dimensions; a signal with no dimension is retained and counted as untagged, never defaulted. *(completed)*
+- [x] Define the paired-burden rule as a SCHEMA requirement: `burdens_created[]` and
       `burdens_lifted[]` are both always present (default `[]`), never one without the other;
-      each entry at minimum `{description, dimension, convention_decision}`.
-- [ ] Define the computed-versus-supplied division of labour: MECHANICAL fields are computed by
+      each entry at minimum `{description, dimension, convention_decision}`. *(completed)*
+- [x] Define the computed-versus-supplied division of labour: MECHANICAL fields are computed by
       the observer (tier runs, timings, churn, outcome classes, snapshot delta); DIMENSION TAGS
       are supplied by working agents through the `tags` object on issue-log entries and are READ,
-      never guessed.
-- [ ] Define the probe ownership boundary (D3): the repository owns its probes and their contract;
+      never guessed. *(completed)*
+- [x] Define the probe ownership boundary (D3): the repository owns its probes and their contract;
       the extension owns the join; the looked-for conventional path and its `--json`/`--diff A B`
-      read contract; `absent` when missing; the extension ships no probe.
-- [ ] Define vacuous passes as a first-class required field — a gate that passed while checking
-      nothing — supplied, never inferred by negation.
-- [ ] Define the dual provenance marking (D2) and the omit-never-zero discipline (D5).
-- [ ] Define the record location and the primary/derived digest relationship (D1).
-- [ ] Summarize the consuming-repo-side field split generically ("if your consuming repository
+      read contract; `absent` when missing; the extension ships no probe. *(completed)*
+- [x] Define vacuous passes as a first-class required field — a gate that passed while checking
+      nothing — supplied, never inferred by negation. *(completed)*
+- [x] Define the dual provenance marking (D2) and the omit-never-zero discipline (D5). *(completed)*
+- [x] Define the record location and the primary/derived digest relationship (D1). *(completed)*
+- [x] Summarize the consuming-repo-side field split generically ("if your consuming repository
       supplies a probe shaped like this contract, expect these fields"), citing
       `book-evidence-observation-v1.md` and `docs/book-evidence.md` by filename as the
       vocabulary's origin — without copying repo-specific prose, so the corpus stays usable by
-      any consuming repository.
+      any consuming repository. *(completed)*
 
 **Timing**: 1.5 hours
 

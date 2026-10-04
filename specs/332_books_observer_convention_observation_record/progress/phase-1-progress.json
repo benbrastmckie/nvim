@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Freeze the observation-record standard",
+  "started_at": "2026-10-04T07:37:49Z",
+  "last_updated": "2026-10-04T07:37:49Z",
+  "objectives": [
+    {"id": 1, "description": "Write the full OBSERVATION record schema", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 2, "description": "Define the seven dimensions with definitions", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 3, "description": "Define the polarity rule", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 4, "description": "Define the paired-burden rule", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 5, "description": "Define computed-vs-supplied division of labour", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 6, "description": "Define the probe ownership boundary (D3)", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 7, "description": "Define vacuous passes as first-class required field", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 8, "description": "Define dual provenance marking (D2) and omit-never-zero (D5)", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 9, "description": "Define record location and primary/derived digest relationship (D1)", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 10, "description": "Summarize consuming-repo-side field split generically", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
