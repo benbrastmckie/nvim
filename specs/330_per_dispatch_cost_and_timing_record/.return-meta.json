@@ -1,22 +1,47 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 12,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/330_per_dispatch_cost_and_timing_record/plans/01_dispatch-metrics-record.md",
-      "summary": "7-phase, ~10-hour plan for dispatch-metrics.sh (live + --backfill), its test suite, the dispatch-metrics record-format doc, manifest/index registration, and one non-fatal postflight call site."
+      "type": "summary",
+      "path": "specs/330_per_dispatch_cost_and_timing_record/summaries/01_dispatch-metrics-record-summary.md",
+      "summary": "All 7 plan phases closed (6 COMPLETED, 1 COMPLETED WITH EXCLUSIONS): dispatch-metrics.sh (live + --backfill), its test suite, the format doc, manifest/index registration, and the postflight WORK (m) call site, with recorded end-to-end acceptance evidence."
     }
   ],
-  "next_steps": "Run /implement 330 to execute the plan",
-  "phase_count": 7,
-  "estimated_hours": 10,
-  "dependency_waves": [[1], [2], [3, 4], [5, 6], [7]],
-  "memory_candidates": [],
-  "metadata": {
-    "session_id": "sess_1791065283_d98d41_330",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  "completion_data": {
+    "completion_summary": "Built dispatch-metrics.sh (live postflight capture + --backfill N), its 11-case test suite, context/formats/dispatch-metrics.md, and wired a single non-fatal WORK (m) call site into orchestrate-cycle-postflight.sh covering every dispatch outcome. All four acceptance criteria demonstrated with real evidence against this task's own commit history and live transcript."
   },
-  "dispatch_seq": 11
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/dispatch-metrics.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/dispatch-metrics.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-dispatch-metrics.sh",
+    "specs/330_per_dispatch_cost_and_timing_record/metrics.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a Claude Code dispatch needs to join back to its own transcript, the exact-match key is the dispatch prompt's own embedded Context JSON block (task_number + dispatch_seq) read from the FIRST line's .message.content as a plain string -- read it with `jq -r '.message.content'` (never raw-grep the still-escaped line) and anchor the match so e.g. 330 does not match 3300. Transcripts live at ~/.claude/projects/<slug>/<cc_session_id>/subagents/agent-*.jsonl where <slug> replaces every non-alphanumeric character in the absolute repo root with '-'. Nearest-timestamp or .meta.json description matching are both unreliable across re-dispatches of the same task+phase.",
+      "category": "PATTERN",
+      "source_artifact": "specs/330_per_dispatch_cost_and_timing_record/summaries/01_dispatch-metrics-record-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["transcript-join", "dispatch_seq", "cc_session_id", "claude-code-transcripts", "exact-match"]
+    },
+    {
+      "content": "A git-log --grep subject-convention commit selector (e.g. matching 'task N: ...' / 'task N phase P: ...') is NOT safe against task-number reuse after a vault/archive operation renumbers tasks: an unfiltered match can silently pull in an unrelated historical task's commits that happened to reuse the same number years earlier, corrupting any derived delta (e.g. a wall-clock computed between two matched commits that are not actually adjacent in the same task's lifecycle). When building a --backfill-style derivation over commit history, either scope the git log to a recency/date window or filter the output to the task's actual lifetime before trusting cross-commit deltas.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/330_per_dispatch_cost_and_timing_record/summaries/01_dispatch-metrics-record-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["task-number-reuse", "git-log-grep", "backfill", "vault-operation", "commit-selection"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791065283_d98d41",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
