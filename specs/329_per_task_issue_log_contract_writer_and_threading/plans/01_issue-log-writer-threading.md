@@ -744,27 +744,27 @@ inventory scoped to the memory extension and classifying each hit field-vs-event
 
 ---
 
-### Phase 9: Register, Deploy, and Verify Against the Acceptance Bar [NOT STARTED]
+### Phase 9: Register, Deploy, and Verify Against the Acceptance Bar [COMPLETED]
 
 **Goal**: The new writer is catalogued, the source store is deployed, the full repository gate set
 passes, and each acceptance criterion is verified by observation rather than by assertion.
 
 **Tasks**:
-- [ ] Register `scripts/issue-record.sh` in `docs/reference/utility-scripts-inventory.md`,
+- [x] Register `scripts/issue-record.sh` in `docs/reference/utility-scripts-inventory.md`,
       following the `orchestrate-record-decision.sh` entry as the model — including its stated
       inclusion-criterion note, since the new writer has the same shape: live lifecycle call sites
-      plus direct invocation by a dispatched agent from a dispatch-file instruction.
-- [ ] Deploy the source store via the sanctioned deploy path (`scripts/deploy-headless.sh`) so the
+      plus direct invocation by a dispatched agent from a dispatch-file instruction. *(completed)*
+- [x] Deploy the source store via the sanctioned deploy path (`scripts/deploy-headless.sh`) so the
       `.claude/` tree reflects the source store. Nothing in this task is complete until deployed —
-      a source-store edit alone changes no live behavior.
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
+      a source-store edit alone changes no live behavior. *(completed)*
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
       `scripts/verify-deploy.sh`). Resolve every finding; a hand-picked subset of validators does
-      not satisfy this tier.
-- [ ] Run the three touched test suites together: `test-issue-record.sh`,
+      not satisfy this tier. *(completed)*
+- [x] Run the three touched test suites together: `test-issue-record.sh`,
       `test-runtime-file-tracking.sh`, `test-orchestrate-unwind-dispatch.sh`, plus
-      `test-init-specs.sh` (it also asserts on the gitignore managed block).
-- [ ] Run `shellcheck` across every shell file this task created or modified, in one sweep.
-- [ ] **Acceptance verification, one check per criterion, each by observation**: (a) an agent
+      `test-init-specs.sh` (it also asserts on the gitignore managed block). *(completed)*
+- [x] Run `shellcheck` across every shell file this task created or modified, in one sweep. *(completed)*
+- [x] **Acceptance verification, one check per criterion, each by observation**: (a) an agent
       dispatched through the builder receives the `## Issue Log` instruction — inspect a generated
       dispatch file for each of the three phases; (b) a recorded entry survives a subsequent
       dispatch's overwrite of `.return-meta.json` — record an entry in a scratch task directory,
@@ -773,9 +773,9 @@ passes, and each acceptance criterion is verified by observation rather than by 
       `failed|blocked)` arm; (d) wins are recordable — append a `kind=win` entry; (e) the relation
       verdicts are written down — confirm 6 rows in the format doc; (f) `reflection` is gone, not
       dead — `grep` confirms zero state.json-field references across both extensions; (g)
-      shellcheck clean per `context/standards/shell-strict-mode.md`.
-- [ ] Record the outcome of each acceptance check, including any that could not be verified and
-      why, rather than reporting a blanket pass.
+      shellcheck clean per `context/standards/shell-strict-mode.md`. *(completed)*
+- [x] Record the outcome of each acceptance check, including any that could not be verified and
+      why, rather than reporting a blanket pass. *(completed)*
 
 **Timing**: 1 hour
 

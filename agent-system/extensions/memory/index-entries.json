@@ -143,7 +143,7 @@
         "events"
       ],
       "summary": "Usage guide for /distill command: all 12 sub-mode workflows (seven hygiene sub-modes plus revise/meta/review/learn/dream), scoring formula, maintenance cadence, and telemetry-sourced log files",
-      "line_count": 297,
+      "line_count": 300,
       "load_when": {
         "commands": [
           "/distill"
@@ -260,7 +260,7 @@
       "domain": "project",
       "subdomain": "memory",
       "summary": "Complete specification for /distill --meta sub-mode (cross-repo agent-system improvement proposals: candidate discovery from recurring deviations/blockers and reflection phrases, delegated to meta-builder-agent for task creation) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
-      "line_count": 203,
+      "line_count": 205,
       "keywords": [
         "distill",
         "meta-submode",
@@ -278,7 +278,7 @@
       "domain": "project",
       "subdomain": "memory",
       "summary": "Complete specification for /distill --revise sub-mode (event-and-OTel-correlated memory vault review/revision: Event Ingestion, Event-to-Memory Correlation, three-strikes Classification, UPDATE/TOMBSTONE/CREATE gate, Batch Index Regeneration) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
-      "line_count": 295,
+      "line_count": 300,
       "keywords": [
         "distill",
         "revise-submode",

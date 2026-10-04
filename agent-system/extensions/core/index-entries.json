@@ -239,7 +239,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Unified events/reflection JSONL store schema: specs/events.jsonl field contract, lazy creation, category enum, and cross-link conventions",
-      "line_count": 248,
+      "line_count": 258,
       "keywords": [
         "events",
         "jsonl",
@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 842,
+      "line_count": 809,
       "keywords": [
         "format",
         "metadata",
@@ -1410,7 +1410,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 661,
+      "line_count": 644,
       "keywords": [
         "reference",
         "state",
@@ -1568,7 +1568,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 13-value task-status enum",
-      "line_count": 460,
+      "line_count": 438,
       "keywords": [
         "state",
         "schema",
@@ -2463,7 +2463,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
-      "line_count": 175,
+      "line_count": 192,
       "keywords": [
         "depth-first",
         "phase-closure",
@@ -2523,7 +2523,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 231,
+      "line_count": 240,
       "keywords": [
         "wrap-up",
         "handoff",
@@ -3063,7 +3063,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 541,
+      "line_count": 550,
       "keywords": [
         "runtime-files",
         "cleanup",
@@ -3083,7 +3083,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Contract for the agent-authored user_decision field: when to raise one, blocking vs. non-blocking, and how postflight relays it",
-      "line_count": 104,
+      "line_count": 103,
       "keywords": [
         "user-decision",
         "ask-user",
@@ -3254,7 +3254,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Archival-status definitions, orphan/misplaced-directory categories, roadmap annotation formats, and jq/shell escaping rules for /todo",
-      "line_count": 174,
+      "line_count": 172,
       "keywords": [
         "patterns",
         "todo",

@@ -1,0 +1,72 @@
+{
+  "phase": 9,
+  "phase_name": "Register, Deploy, and Verify Against the Acceptance Bar",
+  "started_at": "2026-10-04T02:55:00Z",
+  "last_updated": "2026-10-04T03:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Register issue-record.sh in docs/reference/utility-scripts-inventory.md, modeled on the orchestrate-record-decision.sh entry",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Deploy the source store via deploy-headless.sh -- landed_verify_clean (fast gates, 33 checks, 0 failures)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run the full gate set bash .claude/scripts/verify-deploy.sh (no --skip-slow): 1 of 34 checks failed (the shell test suite runner, check 8), all other 33 passed",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run the four named test suites individually: test-issue-record.sh (15/15), test-runtime-file-tracking.sh (9/9), test-orchestrate-unwind-dispatch.sh (21/21), test-init-specs.sh (23/23) -- all PASS against the deployed tree",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Run the full repo sweep scripts/tests/run-all.sh: 107 passed, 5 failed (3 EXPECTED per its own baseline, 2 NEW), 1 skipped, 113 total. Investigated all 5 failures by git-log-range file overlap against this task's commits: ZERO overlap for any of the 5 (test-gate-out-repair-reporting.sh, test-lint-json-channel-discipline.sh, test-verify-deploy-context-budget.sh, test-orchestrate-cycle-plan.sh, test-typst-element-lint.sh). test-orchestrate-cycle-plan.sh additionally directly confirmed identical failure against the unmodified git-HEAD copy of the file. None are regressions from this task",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "shellcheck sweep across every file this task created or modified: zero new findings anywhere (byte-identical finding counts vs. pre-edit baselines for modified files; new files issue-record.sh/test-issue-record.sh match the identical info-only baseline of their modeled precedents)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Acceptance verification, one check per lettered criterion, each by observation: (a) generated dispatch files carry ## Issue Log for research/plan/implement (test-orchestrate-build-dispatch.sh's new assertions, 141/141 PASS); (b) a recorded entry survives a .return-meta.json overwrite in a scratch directory (manually verified); (c) RECOVERY_DECLINED/OFF_SCHEMA_STATUS/DEPLOY-PENDING/failed|blocked paths all exercised with zero issue-recording failures in test-orchestrate-cycle-postflight.sh (166/166 PASS); (d) kind=win entries recordable (test-issue-record.sh case j, manual scratch test); (e) 6 relation-verdict rows and 15 seed classes confirmed in the deployed context/formats/issue-log.md; (f) grep confirms zero state.json-field reflection references remain in the deployed .claude/ tree; (g) shellcheck clean (see objective 6)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "acceptance_record": {
+    "a": "PASS -- test-orchestrate-build-dispatch.sh Groups 1/4/5 (research/plan/implement) each assert ## Issue Log presence, the resolved absolute --task-dir value, and absence of the inlined 15-class enum. 141/141 total suite PASS.",
+    "b": "PASS -- manual scratch-directory test: recorded an entry, overwrote .return-meta.json, confirmed issues.jsonl line survived byte-for-byte and .return-meta.json reflected only the new content.",
+    "c": "PASS -- test-orchestrate-cycle-postflight.sh exercises dispatch_status=failed and dispatch_status=blocked fixtures (Group/Arm cases at the suite's line ~1300, ~1515) with zero 'issue recording failed' notes across all 166 passing cases.",
+    "d": "PASS -- test-issue-record.sh case (j) and a manual scratch-directory kind=win call both confirmed acceptance.",
+    "e": "PASS -- deployed .claude/context/formats/issue-log.md carries exactly 15 glossed seed classes and exactly 6 relation-verdict rows (errors[], approaches_tried[], blockers[], dead_ends, system_defect, reflection).",
+    "f": "PASS -- grep -rn for a state.json-field reflection-read pattern across the deployed .claude/ tree returns zero hits.",
+    "g": "PASS -- shellcheck finding counts are byte-identical to each file's own pre-edit baseline (or to the modeled precedent's baseline for the two new files) across every touched shell file."
+  },
+  "full_sweep_failures_confirmed_unrelated": [
+    "test-gate-out-repair-reporting.sh (EXPECTED per run-all.sh baseline; zero file-overlap with this task)",
+    "test-lint-json-channel-discipline.sh (EXPECTED; the one VIOLATION is in agent-system/extensions/typst/scripts/chapter-quality-check.sh, untouched by this task)",
+    "test-verify-deploy-context-budget.sh (EXPECTED; zero file-overlap with this task)",
+    "test-orchestrate-cycle-plan.sh (NEW per baseline tracking, but directly confirmed identical 335-passed/14-failed split against the unmodified git-HEAD copy of the file)",
+    "test-typst-element-lint.sh (NEW per baseline tracking; zero file-overlap with this task, which never touched the typst extension)"
+  ]
+}
