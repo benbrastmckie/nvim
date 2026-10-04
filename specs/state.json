@@ -1639,7 +1639,7 @@
     {
       "project_number": 331,
       "project_name": "topic_keyed_post_task_observer_seam",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "title": "Topic-keyed post-task observer seam for extensions",
       "topic": "extensions",
@@ -1651,7 +1651,7 @@
       "priority": "high",
       "effort": "3-6 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-04T02:43:13Z",
+      "last_updated": "2026-10-04T03:41:55Z",
       "artifacts": [
         {
           "path": "specs/331_topic_keyed_post_task_observer_seam/reports/01_topic-keyed-observer-seam.md",
@@ -1662,6 +1662,11 @@
           "path": "specs/331_topic_keyed_post_task_observer_seam/plans/01_topic-keyed-observer-seam.md",
           "type": "plan",
           "summary": "7-phase plan: routing_resolve_observers in manifest-routing-lib.sh, run-task-observers.sh invoker, regression suite, postflight call site, check-extension-docs.sh Rule X, guide/schema documentation, deploy and acceptance."
+        },
+        {
+          "path": "specs/331_topic_keyed_post_task_observer_seam/summaries/01_topic-keyed-observer-seam-summary.md",
+          "type": "summary",
+          "summary": "All 7 phases complete: resolve-all observer ladder, run-task-observers.sh invoker, 15-case regression suite, correctly-ordered postflight call site with 4 new end-to-end acceptance cases, check-extension-docs.sh Rule X, and the guide/schema documentation making topic a binding dispatch-matching key. Full test battery green with zero regressions attributable to this task."
         }
       ],
       "file_scope": [
@@ -1676,7 +1681,8 @@
         "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh"
       ],
       "session_id": "sess_1791065283_d98d41",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented the topic-keyed post-task observer seam: a manifest-declared observers block, a resolve-all matching ladder in manifest-routing-lib.sh, the advisory non-blocking run-task-observers.sh invoker, its 15-case regression suite, a correctly-ordered call site in orchestrate-cycle-postflight.sh (after the per-dispatch issue-log and metrics writes) with 4 new end-to-end acceptance cases, check-extension-docs.sh Rule X for structural+documentation enforcement, and documentation making active_projects[].topic a binding dispatch-matching key for the first time."
     },
     {
       "project_number": 332,

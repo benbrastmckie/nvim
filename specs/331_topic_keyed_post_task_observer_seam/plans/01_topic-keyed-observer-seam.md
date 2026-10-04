@@ -1,7 +1,7 @@
 # Implementation Plan: Topic-Keyed Post-Task Observer Seam
 
 - **Task**: 331 - Topic-keyed post-task observer seam for extensions
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: 327 (completed), 330 (completed)
 - **Research Inputs**: specs/331_topic_keyed_post_task_observer_seam/reports/01_topic-keyed-observer-seam.md

@@ -11,9 +11,9 @@ next_project_number: 335
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,331 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,332 | 22,251,271,272,280,300,331 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304,333 | 273,275,281,284,302,332 | core-agent-system, extensions, orchestrator |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,332 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,333 | 22,251,271,272,280,300,332 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
 
@@ -41,9 +41,8 @@ next_project_number: 335
 
 ### Extensions
 
-331 [PLANNED] — Topic-keyed post-task observer seam for extensions
-  └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
-    └─ 333 [NOT STARTED] — The /books command with --review and --revise
+332 [NOT STARTED] — Books observer: the per-task convention observation record
+  └─ 333 [NOT STARTED] — The /books command with --review and --revise
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -357,12 +356,13 @@ records), and the topic-keyed observer seam (the registration mechanism itself).
 
 ### 331. Topic-keyed post-task observer seam for extensions
 - **Effort**: 3-6 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 327, Task 330
 - **Research**: [331_topic_keyed_post_task_observer_seam/reports/01_topic-keyed-observer-seam.md]
 - **Plan**: [331_topic_keyed_post_task_observer_seam/plans/01_topic-keyed-observer-seam.md]
+- **Summary**: [331_topic_keyed_post_task_observer_seam/summaries/01_topic-keyed-observer-seam-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there

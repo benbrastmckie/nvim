@@ -28,21 +28,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/331_topic_keyed_post_task_observer_seam/summaries/01_topic-keyed-observer-seam-summary.md",
       "confidence": 0.82,
-      "suggested_keywords": ["resolver-ladder", "fan-out-seam", "manifest-routing", "first-match-wins", "match-key-selection", "observer-pattern", "topic-vs-task-type"]
+      "suggested_keywords": [
+        "resolver-ladder",
+        "fan-out-seam",
+        "manifest-routing",
+        "first-match-wins",
+        "match-key-selection",
+        "observer-pattern",
+        "topic-vs-task-type"
+      ]
     },
     {
       "content": "When a test fixture asserts that a 'crashing/malicious observer does not affect X', design the assertion around what the SUT ITSELF does (its own exit code, whether it mutates X), not around whether the untrusted child process could theoretically mutate something given direct filesystem access it was handed as an argument -- an advisory, non-sandboxing invoker legitimately cannot and need not prevent an observer from writing to a path it was told about; the contract is about the invoker's own behavior, not about sandboxing an arbitrary child process.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/331_topic_keyed_post_task_observer_seam/summaries/01_topic-keyed-observer-seam-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["test-fixture-design", "advisory-contract", "non-blocking", "sandboxing-scope"]
+      "suggested_keywords": [
+        "test-fixture-design",
+        "advisory-contract",
+        "non-blocking",
+        "sandboxing-scope"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791065283_d98d41",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }
