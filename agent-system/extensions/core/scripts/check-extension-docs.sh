@@ -76,6 +76,10 @@
 #   V - check_claudemd_size_budget         : shape-(a) claudemd merge source exceeds its configured byte ceiling
 #   W - check_lifecycle_hooks_resolve      : top-level `hooks` entry (lifecycle hooks, NOT
 #       provides.hooks) has a bad stage name or an undeployable/undeployed/non-executable script
+#   X - check_observers_resolve/_documented : manifest `observers` block entry is malformed
+#       (missing script, missing both topic/task_type, a stray key, an undeployable script) or
+#       undocumented in the declaring extension's own README.md (distinct from the top-level
+#       `hooks` lifecycle-hook block Rule W governs)
 #
 # Exit codes:
 #   0 - all extensions pass (Core Deploy-Drift Advisories, if any, do NOT affect this)
@@ -638,6 +642,88 @@ check_lifecycle_hooks_resolve() {
       advisory "hooks.$stage ('$script') resolves to scripts/$script_basename, which is deployed but not executable"
     fi
   done < <(jq -r '.hooks | to_entries[] | [.key, .value] | @tsv' "$manifest" 2>/dev/null)
+}
+
+# Rule X: the manifest `observers` block (distinct from the top-level `hooks` lifecycle-hook
+# block Rule W governs) -- structural validation plus the "declared observer must be
+# documented" check. Modeled line-for-line on check_lifecycle_hooks_resolve (Rule W) for the
+# structural half, including its ADVISORY-vs-fail() split: a not-yet-deployed or
+# deployed-but-not-executable script is advisory() (a source-store edit legitimately precedes a
+# deploy), while every other defect is fail(). check_observers_documented is modeled on
+# check_readme_vs_manifest's commands sub-check.
+check_observers_resolve() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+
+  jq -e 'has("observers")' "$manifest" > /dev/null 2>&1 || return 0
+
+  local allowed_keys="script topic task_type timeout_seconds"
+  local key script topic task_type stray_keys script_basename deployed
+  while IFS= read -r key; do
+    [[ -n "$key" ]] || continue
+
+    script=$(jq -r --arg k "$key" '.observers[$k].script // empty' "$manifest" 2>/dev/null)
+    topic=$(jq -r --arg k "$key" '.observers[$k].topic // empty' "$manifest" 2>/dev/null)
+    task_type=$(jq -r --arg k "$key" '.observers[$k].task_type // empty' "$manifest" 2>/dev/null)
+
+    stray_keys=$(jq -r --arg k "$key" '.observers[$k] | keys[]' "$manifest" 2>/dev/null)
+    for sk in $stray_keys; do
+      case " $allowed_keys " in
+        *" $sk "*) ;;
+        *) fail "observers.$key: key '$sk' is not one of the allowed keys ($allowed_keys)" ;;
+      esac
+    done
+
+    if [[ -z "$script" ]]; then
+      fail "observers.$key: missing required 'script' key"
+      continue
+    fi
+    if [[ -z "$topic" && -z "$task_type" ]]; then
+      fail "observers.$key: must declare at least one of 'topic' or 'task_type'"
+      continue
+    fi
+
+    script_basename=$(basename "$script")
+    if ! jq -e --arg s "$script_basename" \
+        '.provides.scripts[]? | select((. | (split("/") | last)) == $s)' \
+        "$manifest" > /dev/null 2>&1; then
+      fail "observers.$key ('$script') basename '$script_basename' is not declared in provides.scripts -- it will never deploy, regardless of regeneration"
+      continue
+    fi
+    deployed="$REPO_ROOT/.claude/scripts/$script_basename"
+    if [[ ! -f "$deployed" ]]; then
+      advisory "observers.$key ('$script') resolves to scripts/$script_basename, which is not yet deployed (regenerate via <leader>al 'Reload All', or bash .claude/scripts/deploy-headless.sh)"
+    elif [[ ! -x "$deployed" ]]; then
+      advisory "observers.$key ('$script') resolves to scripts/$script_basename, which is deployed but not executable"
+    fi
+  done < <(jq -r '.observers | keys[]?' "$manifest" 2>/dev/null)
+}
+
+# Rule X (continued): each declared observer key, OR its script's basename, must appear in the
+# declaring extension's own README.md -- the mechanism that makes "a declared observer with no
+# documentation is caught" literally true at the per-extension level, independent of and
+# additional to the one-time generic schema documentation docs/guides/creating-extensions.md owes.
+check_observers_documented() {
+  local ext_path="$1"
+  local manifest="$ext_path/manifest.json"
+  local readme="$ext_path/README.md"
+
+  jq -e 'has("observers")' "$manifest" > /dev/null 2>&1 || return 0
+  [[ -f "$readme" ]] || return 0
+
+  local key script script_basename
+  while IFS= read -r key; do
+    [[ -n "$key" ]] || continue
+    script=$(jq -r --arg k "$key" '.observers[$k].script // empty' "$manifest" 2>/dev/null)
+    script_basename=$(basename "${script:-}")
+    if grep -q "$key" "$readme" 2>/dev/null; then
+      continue
+    fi
+    if [[ -n "$script_basename" ]] && grep -q "$script_basename" "$readme" 2>/dev/null; then
+      continue
+    fi
+    fail "observers.$key: declared but not mentioned (by key name or script basename) in README.md"
+  done < <(jq -r '.observers | keys[]?' "$manifest" 2>/dev/null)
 }
 
 # INDEX_TRUTH_GATE_MODE controls severity for Rules R and S (the two checks this block
@@ -1500,6 +1586,8 @@ for ext_path in "$EXT_DIR"/*/; do
       check_referenced_scripts_declared "$ext_path"
       check_core_deploy_advisory "$ext_path"
       check_lifecycle_hooks_resolve "$ext_path"
+      check_observers_resolve "$ext_path"
+      check_observers_documented "$ext_path"
     else
       fail "manifest.json is not valid JSON"
     fi

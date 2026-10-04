@@ -500,15 +500,15 @@ numbers here exist only to make a mismatch visible, never to be edited against.
 
 ---
 
-### Phase 5: `check-extension-docs.sh` Rule X — structural + documentation checks [NOT STARTED]
+### Phase 5: `check-extension-docs.sh` Rule X — structural + documentation checks [COMPLETED]
 
 **Goal**: a declared observer that is malformed, undeployable, or undocumented is caught
 mechanically.
 
 **Tasks**:
-- [ ] Re-read `scripts/check-extension-docs.sh`'s header rule index (measured 52-77, A-W) and
+- [x] Re-read `scripts/check-extension-docs.sh`'s header rule index (measured 52-77, A-W) and
       confirm `X` is the next free letter before claiming it.
-- [ ] Add `check_observers_resolve()`, modeled line-for-line on `check_lifecycle_hooks_resolve()`
+- [x] Add `check_observers_resolve()`, modeled line-for-line on `check_lifecycle_hooks_resolve()`
       (measured 610-640) including its ADVISORY-vs-`fail()` split: return 0 immediately when the
       manifest has no `observers` key; then per entry —
       `fail()` when `script` is absent; `fail()` when neither `topic` nor `task_type` is present;
@@ -518,17 +518,17 @@ mechanically.
       `.claude/scripts/<basename>` is not yet deployed or is deployed but not executable (a
       source-store edit legitimately precedes a deploy, so hard-failing would brick the gate for
       every caller).
-- [ ] Add `check_observers_documented()`, modeled on `check_readme_vs_manifest()`'s commands
+- [x] Add `check_observers_documented()`, modeled on `check_readme_vs_manifest()`'s commands
       sub-check (measured 1049-1059): for each key under `observers`, `fail()` unless that key
       name OR its `script` basename appears in the declaring extension's own `README.md`. This is
       the mechanism that makes "a declared observer with no documentation is caught" literally
       true at the per-extension level, independent of and additional to the one-time generic
       schema documentation Phase 6 owes.
-- [ ] Wire both calls into the per-extension dispatch loop alongside
+- [x] Wire both calls into the per-extension dispatch loop alongside
       `check_lifecycle_hooks_resolve "$ext_path"` (measured ~1502).
-- [ ] Add the Rule X entry to the file's own header rule-letter index, in first-introduced order,
+- [x] Add the Rule X entry to the file's own header rule-letter index, in first-introduced order,
       naming both functions and what each catches.
-- [ ] Verify no live extension currently declares `observers`
+- [x] Verify no live extension currently declares `observers`
       (`jq -e 'has("observers")' agent-system/extensions/*/manifest.json`), so the new rule
       cannot hard-fail an existing extension on first run.
 

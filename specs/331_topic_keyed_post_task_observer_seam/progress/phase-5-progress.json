@@ -1,0 +1,20 @@
+{
+  "phase": 5,
+  "phase_name": "check-extension-docs.sh Rule X - structural + documentation checks",
+  "started_at": "2026-10-04T04:35:00Z",
+  "last_updated": "2026-10-04T05:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add check_observers_resolve and check_observers_documented (Rule X), wire into per-extension loop, header rule-letter index entry; verify no live extension declares observers; scratch-fixture exercise of every branch",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/check-extension-docs.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
