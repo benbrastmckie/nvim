@@ -485,48 +485,48 @@ shifted this file once, and a third task that also edits it is not yet landed. C
 
 ---
 
-### Phase 6: Orchestrator-Side Call Sites [NOT STARTED]
+### Phase 6: Orchestrator-Side Call Sites [COMPLETED]
 
 **Goal**: The five anomaly sites in `orchestrate-cycle-postflight.sh` and the two loop-guard
 exhaustion sites in `orchestrate-cycle-plan.sh` each leave a structured `issues.jsonl` entry
 instead of only a commit subject line.
 
 **Tasks**:
-- [ ] **Re-measure every site individually before editing.** The task description's single
+- [x] **Re-measure every site individually before editing.** The task description's single
       "~1048-1125" range is wrong: the sites are not contiguous. Measured this session in
       `orchestrate-cycle-postflight.sh` (1646 lines): the `RECOVERY_DECLINED` arm ~797-860 (its
       existing `system-defect-record.sh` call at ~829); the `implemented)` gate-refused arm's
       existing defect call at ~1115; the `failed|blocked)` arm ~1123-1125; the `OFF_SCHEMA_STATUS`
       catch-all ~1181-1191; and the `verdict="defer"` resolution sub-paths ~1303-1317. In
       `orchestrate-cycle-plan.sh` (2606 lines): `MAX_INFRA_FAILURES` at ~1569 and `MAX_CYCLES` at
-      ~1585. Re-grep each anchor string rather than seeking by line number.
-- [ ] `RECOVERY_DECLINED` arm: add an adjacent `issue-record.sh` call in the same arm, immediately
+      ~1585. Re-grep each anchor string rather than seeking by line number. *(completed)*
+- [x] `RECOVERY_DECLINED` arm: add an adjacent `issue-record.sh` call in the same arm, immediately
       beside the existing `system-defect-record.sh` call — both logs get an entry for the same
-      event, each in its own vocabulary. This is the intended overlap, not duplication.
-- [ ] `OFF_SCHEMA_STATUS` catch-all: same treatment, same-site adjacency.
-- [ ] `partial)` blocker-gated arm: record `kind=issue`, `resolution=open`, with the blocker detail
-      — the "some phases completed, one is externally blocked" case the wrap-up contract documents.
-- [ ] `failed|blocked)` arm: record `kind=issue`. This is the clearest case where today's only
-      durable trace is the commit subject line, so it is the one the acceptance bar names directly.
-- [ ] `verdict="defer"` resolution: record **only** the deploy-pending-refusal sub-path, which is a
+      event, each in its own vocabulary. This is the intended overlap, not duplication. *(completed)*
+- [x] `OFF_SCHEMA_STATUS` catch-all: same treatment, same-site adjacency. *(completed)*
+- [x] `partial)` blocker-gated arm: record `kind=issue`, `resolution=open`, with the blocker detail
+      — the "some phases completed, one is externally blocked" case the wrap-up contract documents. *(completed)*
+- [x] `failed|blocked)` arm: record `kind=issue`. This is the clearest case where today's only
+      durable trace is the commit subject line, so it is the one the acceptance bar names directly. *(completed)*
+- [x] `verdict="defer"` resolution: record **only** the deploy-pending-refusal sub-path, which is a
       genuine anomaly (the status write itself did not land). Leave the ordinary `partial)` and
       `infra_exempt_cycle` defers unrecorded — they are healthy in-flight continuations, and
       recording them would flood the log with non-anomalous routine volume. State this exclusion
-      in a code comment so a later reader does not "complete" the coverage by adding them.
-- [ ] `orchestrate-cycle-plan.sh` loop-guard sites: add a call at each of the `MAX_INFRA_FAILURES`
+      in a code comment so a later reader does not "complete" the coverage by adding them. *(completed)*
+- [x] `orchestrate-cycle-plan.sh` loop-guard sites: add a call at each of the `MAX_INFRA_FAILURES`
       and `MAX_CYCLES` exhaustion branches. These hold only the bare task number `$t` and no task
       directory, so they must use `--task N` resolution — this is the call site that makes that
-      argument form necessary rather than optional.
-- [ ] Every call uses `--task-dir "$TASK_DIR"` where a task directory is already in scope
+      argument form necessary rather than optional. *(completed)*
+- [x] Every call uses `--task-dir "$TASK_DIR"` where a task directory is already in scope
       (`orchestrate-cycle-postflight.sh` sets `TASK_DIR` at ~lines 316-317) and `--task "$t"`
-      only where it is not.
-- [ ] Every call uses the non-fatal form and is co-located in the same `if`/case arm as the sibling
+      only where it is not. *(completed)*
+- [x] Every call uses the non-fatal form and is co-located in the same `if`/case arm as the sibling
       write it mirrors — never hoisted into a separate pass or a shared helper. The two writes must
-      be visibly paired in any future diff.
-- [ ] Respect each site's existing dry-run guard: where a site already prints a
+      be visibly paired in any future diff. *(completed)*
+- [x] Respect each site's existing dry-run guard: where a site already prints a
       `[dry-run] would record ...` line instead of writing, the new call must sit inside the same
-      guard and gain the same dry-run echo.
-- [ ] Run `shellcheck` on both modified scripts.
+      guard and gain the same dry-run echo. *(completed)*
+- [x] Run `shellcheck` on both modified scripts. *(completed)*
 
 **Timing**: 1.5 hours
 

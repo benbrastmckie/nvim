@@ -1,0 +1,84 @@
+{
+  "phase": 6,
+  "phase_name": "Orchestrator-Side Call Sites",
+  "started_at": "2026-10-04T01:40:00Z",
+  "last_updated": "2026-10-04T02:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-measure every anchor site individually (RECOVERY_DECLINED ~797-860, OFF_SCHEMA_STATUS catch-all ~1177-1202, failed|blocked arm ~1166-1168, partial) blocker-gated arm ~1134-1153, verdict=\"defer\" deploy-pending-refusal sub-path ~1070-1073, MAX_INFRA_FAILURES ~1568, MAX_CYCLES ~1584 in cycle-plan.sh) -- all matched the plan's measured line numbers closely",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add adjacent issue-record.sh call to the RECOVERY_DECLINED arm, co-located inside the same if is_live block as the existing system-defect-record.sh call",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add adjacent issue-record.sh call to the OFF_SCHEMA_STATUS catch-all, mapping inferred_phase's \"unknown\" value to issue-record.sh's closed-set \"other\"",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Add issue-record.sh call to the partial) blocker-gated arm, extracting handoff .blockers[] joined text as what_happened",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Add issue-record.sh call to the failed|blocked) arm, the clearest case where the only prior durable trace was the commit subject line",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Add issue-record.sh call at the deploy_pending_refusal=true detection site (co-located where the event is detected, which also covers the verdict=\"defer\" resolution's deploy-pending-refusal sub-path) -- deliberately NOT at the ordinary partial)/infra_exempt_cycle defer paths",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Add issue-record.sh calls (--task N resolution, since these sites hold only the bare task number) at orchestrate-cycle-plan.sh's MAX_INFRA_FAILURES and MAX_CYCLES loop-guard exhaustion branches, gated on dry_run != true",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "shellcheck both scripts: byte-identical finding counts before/after (postflight: 9 SC1091 + 4 SC2012 + 2 SC2034; cycle-plan: 11 SC1091 + 4 SC2012 + 63 SC2016 + 2 SC2034 + 3 SC2154) -- zero new findings",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Run both scripts' existing regression suites: test-orchestrate-cycle-postflight.sh (166/166 PASS, RECOVERY_DECLINED/OFF_SCHEMA_STATUS/DEPLOY-PENDING paths all exercised with zero issue-recording failures) and test-orchestrate-cycle-plan.sh (335 passed/14 failed, identical split confirmed against the unmodified git-HEAD copy -- pre-existing environment defect, not a regression from this phase's edits)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {
+      "approach": "test-orchestrate-cycle-plan.sh reported 14 failures after Phase 6's edits",
+      "result": "confirmed_not_a_regression",
+      "reason": "Re-ran the identical suite against the unmodified git-HEAD copy of orchestrate-cycle-plan.sh and got the same 335 passed/14 failed split, with the same 'generate-task-order.sh failed with exit code 127' root cause (missing binary in the test fixture's scratch .claude/scripts/ copy). Pre-existing, unrelated to this phase; recorded as an issues.jsonl entry rather than fixed (out of this task's scope)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

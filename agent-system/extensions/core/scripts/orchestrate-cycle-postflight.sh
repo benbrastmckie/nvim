@@ -837,6 +837,15 @@ else
                 "${detecting_site_prefix}:cycle-postflight-recovery-declined" \
                 "$recovery_declined_detail" \
                 "$record_result"
+              # Adjacent issue-record.sh call: same event, a second log in its own vocabulary --
+              # intended overlap with the system_defect call above, not duplication (see
+              # context/formats/issue-log.md's system_defect relation verdict).
+              issue_args=(--task-dir "$TASK_DIR" --kind issue --class "orchestration defect" \
+                --severity blocking --phase implement --what-happened "$recovery_declined_detail" \
+                --resolution open --suggested-channel agent_system --session "$session_id")
+              [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+              bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+                >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
             else
               echo "${notice_prefix} [dry-run] would record RECOVERY_DECLINED (${decline_reason}) — no write performed." >&2
             fi
@@ -1062,6 +1071,17 @@ if [ "$have_outcome" = "true" ]; then
           if [ "$postflight_rc" -eq 6 ]; then
             deploy_pending_refusal=true
             echo "${notice_prefix} DEPLOY-PENDING: task ${task_number}'s postflight completion write was refused by the completion-deploy gate (exit 6). The task remains at its current in-flight status; the next cycle's Inter-Cycle Redeploy Checkpoint (orchestrate-cycle-plan.sh) deploys and then automatically reconciles this task's status -- no manual action needed unless that deploy or its post-deploy verify fails, in which case the checkpoint emits its own named WARNING there and states the remedy." >&2
+            # Record ONLY this sub-path (a genuine anomaly: the status write itself did not
+            # land) -- the ordinary partial)/infra_exempt_cycle "defer" verdicts below are
+            # healthy in-flight continuations and are deliberately left unrecorded; recording
+            # them would flood the log with non-anomalous routine volume.
+            issue_args=(--task-dir "$TASK_DIR" --kind issue --class "stale deploy or source-store boundary" \
+              --severity costly --phase implement \
+              --what-happened "Task ${task_number}'s postflight completion write was refused by the completion-deploy gate (exit 6): the deployed .claude/ tree was stale relative to the source store at completion time. Deferred to the next cycle's Inter-Cycle Redeploy Checkpoint to deploy and reconcile." \
+              --resolution worked_around --suggested-channel fix_now --session "$session_id")
+            [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+            bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+              >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
           fi
           if [ "$skeleton_active" = "true" ]; then
             # Resolve the completion JSON once and augment it with a "Skeleton follow-ups" block
@@ -1136,6 +1156,17 @@ ${skel_bullets}" \
           # No per-call-site >&2: the entry-point exec 3>&1 1>&2 redirect above already routes
           # this call's stdout to the diagnostic stream structurally.
           skill_postflight_update "$task_number" "implement" "$session_id" "$dispatch_status" "" "$TASK_DIR" "$clamp_mode"
+          # MIRROR obligation (context/formats/issue-log.md's handoff blockers[] relation
+          # verdict): the handoff's blockers[] is overwritten on the next dispatch; this log is
+          # not. Co-located with the state.json transition it mirrors, same arm.
+          partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | join("; ")' 2>/dev/null)
+          [ -z "$partial_blockers_detail" ] && partial_blockers_detail="partial outcome with ${partial_blocker_count} blocker(s) (detail unavailable)"
+          issue_args=(--task-dir "$TASK_DIR" --kind issue --class "environment" \
+            --severity blocking --phase implement --what-happened "$partial_blockers_detail" \
+            --resolution open --suggested-channel follow_up_task --session "$session_id")
+          [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+          bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+            >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
         else
           echo "${notice_prefix} [dry-run] would transition task ${task_number} to partial (blocker-bearing) — no write performed." >&2
         fi
@@ -1145,6 +1176,21 @@ ${skel_bullets}" \
       ;;
     failed|blocked)
       echo "${notice_prefix} Dispatch status '$dispatch_status' — recognized exception outcome. No state.json transition performed; the task remains at its current in-flight status." >&2
+      # This is the clearest case where, before this log existed, the only durable trace of a
+      # failed/blocked dispatch was the commit subject line -- the handoff/.return-meta.json
+      # that carried the real detail is overwritten by the next dispatch. Record it here.
+      if is_live; then
+        failed_blocked_detail="${dispatch_summary:-}"
+        [ -z "$failed_blocked_detail" ] && failed_blocked_detail="dispatch_status '${dispatch_status}' — no further detail available in the handoff summary"
+        issue_args=(--task-dir "$TASK_DIR" --kind issue --class "orchestration defect" \
+          --severity blocking --phase implement --what-happened "$failed_blocked_detail" \
+          --resolution open --suggested-channel agent_system --session "$session_id")
+        [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+        bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+          >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+      else
+        echo "${notice_prefix} [dry-run] would record a ${dispatch_status} issue-record.sh entry — no write performed." >&2
+      fi
       ;;
     needs_research)
       # Planner-only verdict: the planner declined to write a plan and is asking for a research
@@ -1187,6 +1233,22 @@ ${skel_bullets}" \
         skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
           "OFF_SCHEMA_STATUS" "$attributed_path" "${detecting_site_prefix}:cycle-postflight-tier-c" \
           "dispatch_status '${offschema_display}' is off-schema" "$record_result"
+        # Adjacent issue-record.sh call: same event, a second log in its own vocabulary --
+        # intended overlap with the system_defect call above, not duplication (see
+        # context/formats/issue-log.md's system_defect relation verdict). inferred_phase's
+        # "unknown" value maps to issue-record.sh's "other" -- its closed --phase set has no
+        # "unknown" member.
+        case "$inferred_phase" in
+          research|plan|implement) issue_phase_arg="$inferred_phase" ;;
+          *) issue_phase_arg="other" ;;
+        esac
+        issue_args=(--task-dir "$TASK_DIR" --kind issue --class "orchestration defect" \
+          --severity costly --phase "$issue_phase_arg" \
+          --what-happened "dispatch_status '${offschema_display}' is off-schema (not in the handoff status vocabulary researched|planned|implemented|needs_research|partial|failed|blocked)" \
+          --resolution open --suggested-channel agent_system --session "$session_id")
+        [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+        bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+          >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
       else
         echo "${notice_prefix} [dry-run] would record OFF_SCHEMA_STATUS — no write performed." >&2
       fi

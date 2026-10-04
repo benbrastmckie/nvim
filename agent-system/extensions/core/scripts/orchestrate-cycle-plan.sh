@@ -1568,6 +1568,16 @@ for t in "${task_args[@]}"; do
   # below -- re-invoking /orchestrate is the only way to continue.
   if [ "${infra_failure_counts[$t]:-0}" -ge "$MAX_INFRA_FAILURES" ]; then
     out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "${infra_failure_counts[$t]}" --argjson m "$MAX_INFRA_FAILURES" '{task: $t, reason: ("MAX_INFRA_FAILURES reached (" + ($n|tostring) + "/" + ($m|tostring) + " corroborated Agent-tool transport/API failures)")}')")
+    # Loop-guard exhaustion: today's only durable trace is the blocked row above, which is
+    # per-run scratch state, not a per-task durable record. --task (not --task-dir): this site
+    # holds only the bare task number $t, no task directory.
+    if [ "$dry_run" != "true" ]; then
+      bash "${SCRIPT_DIR}/issue-record.sh" --task "$t" --kind issue --class "resource/OOM including misdiagnosis" \
+        --severity blocking --phase implement \
+        --what-happened "MAX_INFRA_FAILURES reached (${infra_failure_counts[$t]:-0}/${MAX_INFRA_FAILURES} corroborated Agent-tool transport/API failures); task blocked for the remainder of this run" \
+        --resolution open --suggested-channel agent_system --session "$session_id" \
+        >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+    fi
     continue
   fi
 
@@ -1583,6 +1593,16 @@ for t in "${task_args[@]}"; do
   if [ "$_task_cycle_count" -ge "$_task_max_cycles" ]; then
     budget_blocked_tasks[$t]=1
     out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "$_task_cycle_count" --argjson m "$_task_max_cycles" '{task: $t, reason: ("MAX_CYCLES reached (" + ($n|tostring) + "/" + ($m|tostring) + " work cycles for this run); re-invoke /orchestrate to continue")}')")
+    # Loop-guard exhaustion: today's only durable trace is the blocked row above, which is
+    # per-run scratch state, not a per-task durable record. --task (not --task-dir): this site
+    # holds only the bare task number $t, no task directory.
+    if [ "$dry_run" != "true" ]; then
+      bash "${SCRIPT_DIR}/issue-record.sh" --task "$t" --kind issue --class "cost-forced exclusion or substituted verification" \
+        --severity costly --phase implement \
+        --what-happened "MAX_CYCLES reached (${_task_cycle_count}/${_task_max_cycles} work cycles for this run); task blocked for the remainder of this run, re-invoke /orchestrate to continue" \
+        --resolution open --suggested-channel agent_system --session "$session_id" \
+        >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+    fi
     continue
   fi
 
