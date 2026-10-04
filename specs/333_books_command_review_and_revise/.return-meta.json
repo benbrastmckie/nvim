@@ -1,10 +1,43 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/333_books_command_review_and_revise/summaries/01_books-review-revise-command-summary.md",
+      "summary": "All six plan phases completed: /books command, skill-books-review, two new sub-mode pattern files, registration across manifest/index-entries/EXTENSION.md/README.md, and the full gate set run against the books extension."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the /books command with --review (strictly read-only convention performance review) and --revise (interactive research-and-revision task proposal) sub-modes in the books extension, mirroring /distill's three-layer sub-mode split, and registered it across all four registration surfaces."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/commands/books.md",
+    "agent-system/extensions/books/skills/skill-books-review/SKILL.md",
+    "agent-system/extensions/books/context/project/books/patterns/books-review-submode.md",
+    "agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md",
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/index-entries.json",
+    "agent-system/extensions/books/EXTENSION.md",
+    "agent-system/extensions/books/README.md",
+    "agent-system/extensions/books/context/project/books/README.md",
+    "specs/333_books_command_review_and_revise/issues.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a sub-mode spec requires a confirmation gate to show the RECONCILED outcome of an earlier step (e.g. backlog reconciliation resolving a raw candidate to create/widen/dependency-edge/narrow-scope before the user confirms), position that confirmation gate's own section AFTER the reconciliation section in the document, not inside the earlier 'Interactive Selection' block where the raw candidate was first chosen. Document the overall step ordering once, explicitly, near the first interactive step (e.g. '(a) multiSelect -> (b) per-candidate choice -> [intermediate steps] -> (c) confirmation gate') so a reader does not have to infer it from section order alone. This avoids a mechanical-looking but substantively wrong verification pass where a 'confirmation gate positioned after reconciliation' check would otherwise fail even though the prose says the right thing in the wrong place.",
+      "category": "PATTERN",
+      "source_artifact": "specs/333_books_command_review_and_revise/summaries/01_books-review-revise-command-summary.md",
+      "confidence": 0.65,
+      "suggested_keywords": ["confirmation-gate", "backlog-reconciliation", "sub-mode-skeleton", "document-ordering", "AskUserQuestion"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791098481_49e186",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

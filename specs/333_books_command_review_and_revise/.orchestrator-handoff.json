@@ -1,17 +1,19 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 5,
-  "summary": "Wrote a six-phase, 7.75-hour implementation plan for the new /books command with --review and --revise sub-modes, reproducing /distill's three-layer split (command flag parse, one direct-execution skill holding a shared sub-mode skeleton plus two stub pointers, two new books context pattern files) entirely in the books extension source store, plus registration across manifest/index/EXTENSION/README surfaces and a full gate phase.",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phase": "implement",
+  "summary": "Implemented the /books command with --review and --revise sub-modes in the books extension, mirroring /distill's three-layer sub-mode split; all six plan phases completed, registration gates pass, and the task's own files carry no routing_agents change.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/333_books_command_review_and_revise/plans/01_books-review-revise-command.md",
-      "summary": "Six-phase plan for the new /books --review/--revise command, mirroring /distill's three-layer sub-mode split in the books extension source store."
+      "type": "summary",
+      "path": "specs/333_books_command_review_and_revise/summaries/01_books-review-revise-command-summary.md",
+      "summary": "All six plan phases completed: /books command, skill-books-review, two new sub-mode pattern files, registration, and the full gate set run against the books extension."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": [],
-  "next_action_hint": "Run /implement 333 to execute the plan"
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task is fully implemented; ready for postflight/completion. One pre-existing, out-of-scope gate collision (verify-deploy.sh's shell test suite runner: 4 failing suites in core/typst, none mentioning books) was recorded in issues.jsonl but does not block this task."
 }

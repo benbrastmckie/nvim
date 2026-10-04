@@ -477,29 +477,29 @@ before editing; the compression requirement in particular stands or falls on the
 
 ---
 
-### Phase 6: Final gate and acceptance verification [NOT STARTED]
+### Phase 6: Final gate and acceptance verification [COMPLETED]
 
 **Goal**: Prove the full gate set passes and every acceptance clause in the dispatch is satisfied
 by the written files.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` (source-store path:
+- [x] Run `bash .claude/scripts/verify-deploy.sh` (source-store path:
       `agent-system/extensions/core/scripts/verify-deploy.sh`) — the complete gate set — and resolve
       every failure it reports.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm the books
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm the books
       extension raises no Rule A / K / R / T / U finding.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` and confirm no
+- [x] Run `bash agent-system/extensions/core/scripts/check-task-references.sh` and confirm no
       task-number reference landed in any source-store file written by this task.
-- [ ] Confirm `git status --short` shows **no** modification under `.claude/**` — every edit must be
+- [x] Confirm `git status --short` shows **no** modification under `.claude/**` — every edit must be
       in `agent-system/extensions/books/`.
-- [ ] Walk the dispatch's acceptance list clause by clause against the written files, recording the
+- [x] Walk the dispatch's acceptance list clause by clause against the written files, recording the
       file and section that satisfies each: `--review` writes only its dated report and proposes
       nothing; `--review` names unmeasured dimensions explicitly; every `--revise` proposal names a
       convention clause and that clause's validation marker; a binding-clause proposal is filed as
       research-and-escalate; the watermark prevents re-proposal across two consecutive runs; backlog
       reconciliation precedes creation; every interactive gate sits in the lead session;
       registration files are consistent with `check-extension-docs.sh`.
-- [ ] Record any gate collision, deviation, or unusually smooth result via
+- [x] Record any gate collision, deviation, or unusually smooth result via
       `bash .claude/scripts/issue-record.sh` as it arises (non-fatal).
 
 **Timing**: 0.75 hours
@@ -526,14 +526,14 @@ convenience, not a contract, and a clause omitted because it did not fit the num
 
 ## Testing & Validation
 
-- [ ] `verify-deploy.sh` passes (full gate set).
-- [ ] `check-extension-docs.sh` raises no books-extension Rule A/K/R/T/U finding.
-- [ ] `EXTENSION.md` is at most 60 lines.
-- [ ] `manifest.json` and `index-entries.json` parse, and no `routing_agents` row was added.
-- [ ] `check-task-references.sh` reports no new violation.
-- [ ] No file under `.claude/**` was modified.
-- [ ] Each of the eight dispatch acceptance clauses maps to a named file and section.
-- [ ] The command/skill/pattern-file cross-references resolve: Phase 1's delegation payload matches
+- [x] `verify-deploy.sh` passes (full gate set).
+- [x] `check-extension-docs.sh` raises no books-extension Rule A/K/R/T/U finding.
+- [x] `EXTENSION.md` is at most 60 lines.
+- [x] `manifest.json` and `index-entries.json` parse, and no `routing_agents` row was added.
+- [x] `check-task-references.sh` reports no new violation.
+- [x] No file under `.claude/**` was modified.
+- [x] Each of the eight dispatch acceptance clauses maps to a named file and section.
+- [x] The command/skill/pattern-file cross-references resolve: Phase 1's delegation payload matches
       Phase 2's dispatch values, and Phase 2's two stub-pointer paths match the Phase 3/4 filenames
       exactly.
 
