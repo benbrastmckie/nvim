@@ -43,7 +43,7 @@ next_project_number: 337
 
 ### Extensions
 
-333 [PLANNED] — The /books command with --review and --revise
+333 [IMPLEMENTING] — The /books command with --review and --revise
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -425,7 +425,7 @@ two of the three, the third being an orchestrator context-budget ceiling tracked
 
 ### 333. The /books command with --review and --revise
 - **Effort**: 4-8 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 332

@@ -1743,7 +1743,7 @@
     {
       "project_number": 333,
       "project_name": "books_command_review_and_revise",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "The /books command with --review and --revise",
       "topic": "extensions",
@@ -1754,7 +1754,7 @@
       "priority": "medium",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-04T08:41:07Z",
+      "last_updated": "2026-10-04T08:41:22Z",
       "artifacts": [
         {
           "path": "specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md",
