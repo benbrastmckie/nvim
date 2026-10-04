@@ -162,41 +162,41 @@ argument-parsing shape, and rejecting a bare invocation with a usage message.
 
 ---
 
-### Phase 2: Skill — `skills/skill-books-review/SKILL.md` [NOT STARTED]
+### Phase 2: Skill — `skills/skill-books-review/SKILL.md` [COMPLETED]
 
 **Goal**: One direct-execution skill holding a shared sub-mode skeleton for the books domain plus
 two one-line stub pointers, reproducing `skill-distill/SKILL.md`'s hub shape without duplicating
 sub-mode detail.
 
 **Tasks**:
-- [ ] Read `skill-distill/SKILL.md` lines 278–321 (`## Shared Sub-Mode Skeleton`) and lines 700–720
+- [x] Read `skill-distill/SKILL.md` lines 278–321 (`## Shared Sub-Mode Skeleton`) and lines 700–720
       (the stub-pointer block) — re-measure both ranges before relying on them; the line numbers
       here are a hypothesis (see Scope Hypothesis).
-- [ ] Create `agent-system/extensions/books/skills/skill-books-review/SKILL.md`. Frontmatter:
+- [x] Create `agent-system/extensions/books/skills/skill-books-review/SKILL.md`. Frontmatter:
       `name`, `description`, and `allowed-tools: Bash, Grep, Read, Write, Edit, AskUserQuestion` —
       deliberately **no `Agent` tool**, so no interactive gate can be pushed into a subagent.
       Model the frontmatter field set on `skill-books-certify/SKILL.md` (45 lines, the books
       extension's own direct-execution precedent).
-- [ ] Write a short `## Mode: books` section stating the shared data path once: enumerate
+- [x] Write a short `## Mode: books` section stating the shared data path once: enumerate
       books-topic tasks from the append-only digest `specs/books-evidence/observations.jsonl`, then
       dereference each line's `record_path` for the canonical per-task
       `specs/{NNN}_{SLUG}/book.observation.json`. Quote the observation-record standard's own
       framing that the digest is "explicitly a pointer/derived index … never a second source of
       truth", citing `context/project/books/standards/observation-record.md`.
-- [ ] Write the `## Shared Sub-Mode Skeleton` section as the books-domain analogue of distill's
+- [x] Write the `## Shared Sub-Mode Skeleton` section as the books-domain analogue of distill's
       seven steps: Edge Case Checks, Candidate Identification, Dry-Run, Interactive Selection
       (MANDATORY STOP), Execution, Watermark Advance (the books analogue of distill's Batch Index
       Regeneration — batched once after the confirmed set, never per-candidate), Log Entry.
-- [ ] State the MANDATORY-STOP exemption **explicitly** for `--review`, as a named sanctioned
+- [x] State the MANDATORY-STOP exemption **explicitly** for `--review`, as a named sanctioned
       deviation rather than a silent omission — the exact discipline `distill-review-submode.md`
       and the distill skeleton's own `auto`/`report` exemptions already use.
-- [ ] Add an explicit lead-session clause: every `AskUserQuestion` multiSelect, per-candidate
+- [x] Add an explicit lead-session clause: every `AskUserQuestion` multiSelect, per-candidate
       choice, and confirmation gate executes in the lead session; only a bounded non-interactive
       research or aggregation pass may be delegated.
-- [ ] Add the two stub pointers verbatim in form:
+- [x] Add the two stub pointers verbatim in form:
       `### Sub-Mode: review` / `READ .claude/context/project/books/patterns/books-review-submode.md now and follow it exactly.`
       and `### Sub-Mode: revise` / `READ .claude/context/project/books/patterns/books-revise-submode.md now and follow it exactly.`
-- [ ] Keep the skill thin: no sub-mode-specific candidate logic, prompt text, or output shape in
+- [x] Keep the skill thin: no sub-mode-specific candidate logic, prompt text, or output shape in
       this file.
 
 **Timing**: 1 hour
