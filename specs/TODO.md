@@ -11,10 +11,10 @@ next_project_number: 335
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,330 | -- | core-agent-system, neovim, orchestrator |
-| 2 | 29,170,273,275,281,302,303,331 | 22,251,271,272,280,300,330 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304,332 | 273,275,281,284,302,331 | core-agent-system, extensions, orchestrator |
-| 4 | 312,328,333 | 170,282,300,303,304,318,322,332 | core-agent-system, extensions, orchestrator |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,331 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,332 | 22,251,271,272,280,300,331 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304,333 | 273,275,281,284,302,332 | core-agent-system, extensions, orchestrator |
+| 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -41,10 +41,10 @@ next_project_number: 335
 
 ### Extensions
 
-29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
     └─ 333 [NOT STARTED] — The /books command with --review and --revise
+29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
 
@@ -65,7 +65,6 @@ next_project_number: 335
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-330 [PLANNED] — Per-dispatch cost and timing record
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -488,12 +487,13 @@ observer must run after both per-dispatch records) and for file-footprint serial
 
 ### 330. Per-dispatch cost and timing record
 - **Effort**: 4-8 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 329
 - **Research**: [330_per_dispatch_cost_and_timing_record/reports/01_dispatch-metrics-script-design.md]
 - **Plan**: [330_per_dispatch_cost_and_timing_record/plans/01_dispatch-metrics-record.md]
+- **Summary**: [330_per_dispatch_cost_and_timing_record/summaries/01_dispatch-metrics-record-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there

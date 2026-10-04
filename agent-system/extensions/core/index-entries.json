@@ -3624,7 +3624,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Per-task metrics.jsonl schema: entry field table, exact transcript join procedure, three measured traps, omission-not-zeroing rule, 30-day retention window, and the --backfill marking contract",
-      "line_count": 250,
+      "line_count": 265,
       "keywords": [
         "metrics",
         "jsonl",

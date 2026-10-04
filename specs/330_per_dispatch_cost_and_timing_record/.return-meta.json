@@ -26,21 +26,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/330_per_dispatch_cost_and_timing_record/summaries/01_dispatch-metrics-record-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["transcript-join", "dispatch_seq", "cc_session_id", "claude-code-transcripts", "exact-match"]
+      "suggested_keywords": [
+        "transcript-join",
+        "dispatch_seq",
+        "cc_session_id",
+        "claude-code-transcripts",
+        "exact-match"
+      ]
     },
     {
       "content": "A git-log --grep subject-convention commit selector (e.g. matching 'task N: ...' / 'task N phase P: ...') is NOT safe against task-number reuse after a vault/archive operation renumbers tasks: an unfiltered match can silently pull in an unrelated historical task's commits that happened to reuse the same number years earlier, corrupting any derived delta (e.g. a wall-clock computed between two matched commits that are not actually adjacent in the same task's lifecycle). When building a --backfill-style derivation over commit history, either scope the git log to a recency/date window or filter the output to the task's actual lifetime before trusting cross-commit deltas.",
       "category": "INSIGHT",
       "source_artifact": "specs/330_per_dispatch_cost_and_timing_record/summaries/01_dispatch-metrics-record-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["task-number-reuse", "git-log-grep", "backfill", "vault-operation", "commit-selection"]
+      "suggested_keywords": [
+        "task-number-reuse",
+        "git-log-grep",
+        "backfill",
+        "vault-operation",
+        "commit-selection"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791065283_d98d41",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }

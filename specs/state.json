@@ -1591,7 +1591,7 @@
     {
       "project_number": 330,
       "project_name": "per_dispatch_cost_and_timing_record",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "title": "Per-dispatch cost and timing record",
       "topic": "orchestrator",
@@ -1602,7 +1602,7 @@
       "priority": "high",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-04T01:12:13Z",
+      "last_updated": "2026-10-04T02:27:07Z",
       "artifacts": [
         {
           "path": "specs/330_per_dispatch_cost_and_timing_record/reports/01_dispatch-metrics-script-design.md",
@@ -1613,6 +1613,11 @@
           "path": "specs/330_per_dispatch_cost_and_timing_record/plans/01_dispatch-metrics-record.md",
           "type": "plan",
           "summary": "7-phase plan, ~10h, 5 dependency waves: format doc + index entry, script skeleton with transcript-free fields, transcript join, --backfill mode, test suite, postflight call site, deploy/acceptance."
+        },
+        {
+          "path": "specs/330_per_dispatch_cost_and_timing_record/summaries/01_dispatch-metrics-record-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: dispatch-metrics.sh, its test suite, format doc, manifest/index registration, postflight call site, and recorded acceptance evidence."
         }
       ],
       "file_scope": [
@@ -1628,7 +1633,8 @@
         "scripts/tests/test-dispatch-metrics.sh"
       ],
       "session_id": "sess_1791065283_d98d41",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Built dispatch-metrics.sh (live postflight capture + --backfill N), its 11-case test suite, context/formats/dispatch-metrics.md, and wired a single non-fatal WORK (m) call site into orchestrate-cycle-postflight.sh covering every dispatch outcome. All four acceptance criteria demonstrated with real evidence against this task's own commit history and live transcript."
     },
     {
       "project_number": 331,

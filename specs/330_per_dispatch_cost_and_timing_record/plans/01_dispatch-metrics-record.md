@@ -1,7 +1,7 @@
 # Implementation Plan: Task #330
 
 - **Task**: 330 - Per-dispatch cost and timing record
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: Task 329 (per-task issue log) — already `[COMPLETED]`; its `issue-record.sh`
   call sites are live in the same file this task edits, so the file-footprint serialization
