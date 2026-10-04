@@ -126,7 +126,10 @@ Event-and-OTel-correlated memory refactoring proposals. Interactive by default (
    first-class outcome, not an error: revise continues using vault scoring alone
    (staleness/duplicate/size) and reports zero correlations
 3. Pull deviation/blocker events and reflection events via `events-query.sh
-   --category deviation|blocker` / `--event-type reflection --format json-array`
+   --category deviation|blocker` / `--event-type reflection --format json-array` (producer-status
+   note: the `reflection` event type has no live producer any more -- see
+   `context/formats/events-format.md` -- so this pull surfaces only historical rows written
+   before that retirement)
 4. **New**: for events carrying a `cc_session_id`, join against OTel outcome records from that
    same Claude Code session (`cc_session_id == session.id`); if `CLAUDE_CODE_ENABLE_TELEMETRY=1`
    is unset, this is a first-class degraded path, announced explicitly, not silent

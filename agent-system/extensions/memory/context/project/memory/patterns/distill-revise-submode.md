@@ -59,6 +59,11 @@ In order:
 events are append-only across a task's entire history, so `--revise` sees every reflection ever
 captured for a task, not just whichever one happens to currently sit in `state.json`.
 
+**Producer-status note**: the `state.json` `reflection` field has since been retired entirely
+(zero live writers), and the `reflection`-typed event above has no live producer either — see
+`context/formats/events-format.md`'s producer-status note. This pull now surfaces only
+historical rows written before that retirement; do not expect new ones.
+
 ## Candidate Identification: OTel Outcome Join (Tier 1, New)
 
 For each event pulled above that carries a non-null `cc_session_id`, query OTel for outcome

@@ -673,39 +673,39 @@ event-store reference (Phase 8's territory, deliberately left live) or a file th
 
 ---
 
-### Phase 8: Memory-Extension Reflection References and the Event-Type Producer Note [NOT STARTED]
+### Phase 8: Memory-Extension Reflection References and the Event-Type Producer Note [COMPLETED]
 
 **Goal**: No dangling state.json-`reflection` reads remain in the memory extension, and the
 `reflection` event type's producer status is stated honestly rather than left silently
 producerless.
 
 **Tasks**:
-- [ ] Read `extensions/memory/context/project/memory/patterns/distill-revise-submode.md`'s
+- [x] Read `extensions/memory/context/project/memory/patterns/distill-revise-submode.md`'s
       "Reflection pull" section (measured: ~lines 52-59) and confirm by reading — not assuming —
       that `--revise` queries `reflection`-typed **events** via `events-query.sh` and not the
       state.json field. That file's own prose already explains why it chose the event store over
-      the field; if the read contradicts this, stop and re-scope before editing.
-- [ ] Remove the state.json-field read from `extensions/memory/skills/skill-learn/SKILL.md`
+      the field; if the read contradicts this, stop and re-scope before editing. *(completed)*
+- [x] Remove the state.json-field read from `extensions/memory/skills/skill-learn/SKILL.md`
       (measured: ~lines 679-696 for the `jq` read and pseudo-artifact construction, ~717-718 for
       the extra option in the option list) and from `extensions/memory/commands/learn.md`
       (measured: ~line 145). Restore the unconditional, file-artifacts-only behavior those files
       already document as the absent-reflection path, so the removal collapses a branch rather
-      than leaving a dead flag.
-- [ ] Do **not** replace the removed `/learn --task N` reflection segment with an `issues.jsonl`
-      read. Surfacing the log is out of scope; state that boundary in a comment at the removal site.
-- [ ] Add a producer-status note to `context/formats/events-format.md` in the core source store for
+      than leaving a dead flag. *(completed)*
+- [x] Do **not** replace the removed `/learn --task N` reflection segment with an `issues.jsonl`
+      read. Surfacing the log is out of scope; state that boundary in a comment at the removal site. *(completed)*
+- [x] Add a producer-status note to `context/formats/events-format.md` in the core source store for
       the `reflection` event-type row (measured: the event-type table row at ~line 112, with
       supporting prose at ~7, ~64, ~138, ~180): the type has no live producer now that the
       reflection write path is retired, `issues.jsonl` `kind: "win"` / `kind: "issue"` is the live
       home for the same signal, and the row is retained because the memory extension's documented
       query recipes reference it. Do not delete the row — deleting it would break those recipes
-      with nothing to replace them.
-- [ ] Leave `distill-revise-submode.md`, `distill-meta-submode.md`, and `distill-usage.md`'s
+      with nothing to replace them. *(completed)*
+- [x] Leave `distill-revise-submode.md`, `distill-meta-submode.md`, and `distill-usage.md`'s
       event-store queries functionally unchanged, but add a one-line note in each where it claims
       reflection signal is available, pointing at the producer-status note above so a reader is not
-      misled into expecting populated results.
-- [ ] Update the memory extension's `index-entries.json` summaries only where a summary's text
-      names the retired field directly and would now be inaccurate.
+      misled into expecting populated results. *(completed)*
+- [x] Update the memory extension's `index-entries.json` summaries only where a summary's text
+      names the retired field directly and would now be inaccurate. *(completed)*
 
 **Timing**: 1 hour
 

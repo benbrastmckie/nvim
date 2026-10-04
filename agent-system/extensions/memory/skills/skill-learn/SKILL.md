@@ -676,25 +676,11 @@ if [ -z "$artifacts" ]; then
 fi
 ```
 
-Also check for a completion-time reflection on the task's state.json entry, and present it as
-an additional reviewable segment alongside the markdown artifacts (not written to disk -- it
-comes from state.json, not the filesystem):
-
-```bash
-reflection=$(jq -c --argjson num "$task_num" \
-  '.active_projects[] | select(.project_number == $num) | .reflection // null' \
-  specs/state.json)
-
-if [ "$reflection" != "null" ] && [ -n "$reflection" ]; then
-  reflection_segment_available=true
-fi
-```
-
-If `reflection_segment_available` is true, build a pseudo-artifact entry (`label`: "Reflection
-(task ${task_number})", `description`: a short preview of `what_worked`/`successes`) and include
-it in the Step 3 option list; its content is the reflection's four fields rather than file text.
-When absent (`reflection == null`), behavior is unchanged -- only the file-based artifacts list
-is presented.
+Note: `state.json`'s per-task `reflection` field (the source this stage used to check here for a
+completion-time-reflection pseudo-artifact) has been retired -- it had zero live writers. Do NOT
+replace this with an `issues.jsonl` read: surfacing that log is explicitly out of scope and
+belongs exclusively to the separate orchestration conclusion stage. Behavior is now
+unconditionally the file-based artifacts list below, with no reflection pseudo-artifact option.
 
 ### Step 3: Present Artifact List
 
@@ -714,15 +700,10 @@ Display via AskUserQuestion:
 }
 ```
 
-When `reflection_segment_available` is true, append one additional option to the list above:
-`{"label": "Reflection (task ${task_number})", "description": "Completion-time reflection: what
-worked, what was hard, what was missed, successes"}`.
-
 ### Step 4: Process Through Content Mapping
 
 For each selected artifact:
-1. Read content (for the "Reflection" pseudo-artifact, this is the `reflection` object's four
-   fields concatenated as text rather than file content)
+1. Read content
 2. If >500 tokens: run through content mapping (segmentation)
 3. If <=500 tokens: treat as single segment
 4. Proceed to Memory Search (Phase 4)

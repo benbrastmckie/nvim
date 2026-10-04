@@ -113,6 +113,16 @@ contract; consumers may add new values without a schema-breaking revision:
 | `push_grant_issued` | `milestone` | A consent-gated push/destructive-action grant was minted (`hooks/please-grant.sh`); `detail` carries `remote`/`ref`/`sha`/`force`/`mint_source`/`request_text`. |
 | `push_grant_consumed` | `success` | A consent-gated push/destructive-action grant was consumed to authorize one action (`push-grant-lib.sh`'s `pg_grant_consume`); `detail` carries `remote`/`ref`/`sha`/`force`/`mint_source`/`consumer`. |
 
+**`reflection` producer-status note**: the `reflection` event type above has **no live producer**
+as of the per-task `issues.jsonl` log's introduction -- its one-time writer, the state.json
+`reflection` field's companion event emission in `scripts/orchestrator-postflight.sh`, was
+removed when that dead field was retired (see `context/formats/issue-log.md`'s relation table).
+`issues.jsonl`'s `kind: "win"` (positive) and `kind: "issue"` (negative) is the live home for the
+same completion-time signal now. This row is **retained, not deleted**, because the memory
+extension's documented query recipes (`--revise`, `--meta`, `distill-usage.md`) still reference
+`--event-type reflection` against any historical rows already written before the retirement; a
+future reader should not expect NEW rows of this type to appear.
+
 ## `checkpoint` Open String -- Common Values
 
 `checkpoint` is an open, extensible string naming the lifecycle point an event is associated

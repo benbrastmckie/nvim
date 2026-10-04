@@ -141,11 +141,6 @@ When invoked with `--task N`, /learn enters task mode for reviewing task artifac
    - summaries/ - Completion summaries
    - code/ - Code artifacts
    - Any other artifact directories
-
-   Additionally, when the task's `state.json` entry has a `reflection` field (a completion-time
-   `what_worked`/`what_was_hard`/`what_was_missed`/`successes` object), it is included as an
-   additional reviewable segment alongside the markdown artifacts -- not a file on disk, but
-   presented and processed the same way through the remaining steps below.
 3. **Present Artifact List**: Show numbered list of all found files
 4. **Interactive Selection**: Let user select which artifacts to review
 5. **Content Mapping**: For large artifacts (>500 tokens), segment into topic chunks

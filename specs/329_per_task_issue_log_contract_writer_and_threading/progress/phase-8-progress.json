@@ -1,0 +1,63 @@
+{
+  "phase": 8,
+  "phase_name": "Memory-Extension Reflection References and the Event-Type Producer Note",
+  "started_at": "2026-10-04T02:35:00Z",
+  "last_updated": "2026-10-04T02:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read distill-revise-submode.md's Reflection pull section; confirmed by reading that --revise queries reflection-typed EVENTS via events-query.sh, not the state.json field",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Remove the state.json reflection field read and pseudo-artifact construction/option from skill-learn/SKILL.md (Step 2 jq read, Step 3 option append, Step 4 content-read branch) and the reflection-segment sentence from commands/learn.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/skills/skill-learn/SKILL.md",
+        "agent-system/extensions/memory/commands/learn.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Did not replace the removed reflection segment with an issues.jsonl read -- stated that boundary explicitly in a comment at the removal site",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Add producer-status note to events-format.md's reflection event-type row: no live producer, issues.jsonl kind:win/issue is the live home, row retained (not deleted) because memory-extension query recipes still reference it",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/events-format.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Add one-line producer-status pointer notes to distill-revise-submode.md, distill-meta-submode.md, and distill-usage.md where each claims reflection signal is available",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md",
+        "agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md",
+        "agent-system/extensions/memory/context/project/memory/distill-usage.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Checked memory extension's index-entries.json for summaries naming the retired field directly -- found one summary mentioning 'reflection phrases' (distill-meta-submode entry) but it describes the still-live event-type signal, not the retired state.json field, so no correction was needed",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Verify: grep -rn for a .reflection state-field-read pattern across the memory extension returns zero hits; jq -e validates index-entries.json; events-format.md's reflection row carries the producer-status note; skill-learn/SKILL.md's documented option list describes exactly the file-artifacts-only behavior with no residual conditional",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

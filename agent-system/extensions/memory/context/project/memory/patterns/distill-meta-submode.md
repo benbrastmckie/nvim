@@ -55,7 +55,9 @@ is surfaced when either:
   `distill-revise-submode.md`) deviation/blocker
   event points at a named skill, hook, rule, or lifecycle stage/checkpoint, or
 - A recurring `what_was_hard` / `what_was_missed` phrase appears across reflection events for the
-  same or related task types.
+  same or related task types (producer-status note: the `reflection` event type has no live
+  producer any more -- see `context/formats/events-format.md` -- so this signal is limited to
+  historical rows written before that retirement).
 
 **Extension targeting**: `meta-builder-agent` is expected to decide which of this system's
 extension directories (`agent-system/extensions/{core,cslib,email,epidemiology,filetypes,formal,
