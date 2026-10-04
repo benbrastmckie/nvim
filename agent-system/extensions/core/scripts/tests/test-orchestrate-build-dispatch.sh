@@ -212,6 +212,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -n "$LAST_DISPATCH_FILE" ] && [ -f "$LAST_DISPATC
   assert_contains "$content" "artifact_padded: 02" "research: artifact_padded present"
   assert_contains "$content" "output_dir: ${TASK_DIR_REL}/reports/" "research: output_dir present"
   assert_contains "$content" "handoff_path:" "research: handoff_path present"
+  assert_contains "$content" "## Issue Log" "research: Issue Log section present (unconditional)"
+  assert_contains "$content" "issue-record.sh --task-dir" "research: Issue Log call form references issue-record.sh with --task-dir"
+  assert_contains "$content" "--task-dir \"${FIXTURE}/${TASK_DIR_REL}\"" "research: Issue Log --task-dir is the resolved absolute task directory, not a placeholder"
+  assert_contains "$content" "kind: win" "research: Issue Log states wins are recordable"
+  assert_contains "$content" "context/formats/issue-log.md" "research: Issue Log points at the format doc"
+  assert_not_contains "$content" "design-record defect or ambiguity" "research: Issue Log does not inline the 15-class seed enum"
   assert_contains "$content" "user-decision-contract.md" "research: user-decision contract reference always present"
   assert_not_contains "$content" "<memory-context>" "research --clean: memory block suppressed"
   assert_not_contains "$content" "<literature-briefing>" "research (no --lit): lit block suppressed"
@@ -284,6 +290,8 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "artifact_number: 1" "plan: artifact_number (mode=prev, next_artifact_number-1=1)"
   assert_contains "$content" "output_dir: ${TASK_DIR_REL}/plans/" "plan: output_dir present"
   assert_contains "$content" "research_artifact: ${TASK_DIR_REL}/reports/01_fixture-report.md" "plan: research_artifact path resolved from state.json"
+  assert_contains "$content" "## Issue Log" "plan: Issue Log section present (unconditional)"
+  assert_contains "$content" "context/formats/issue-log.md" "plan: Issue Log points at the format doc"
 else
   fail "plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
@@ -303,6 +311,8 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
     fail "implement: expected null continuation, got: $(grep -A4 '## Continuation' "$LAST_DISPATCH_FILE")"
   fi
   assert_not_contains "$content" "## Territory" "implement (no --territory): territory section absent"
+  assert_contains "$content" "## Issue Log" "implement: Issue Log section present (unconditional)"
+  assert_contains "$content" "context/formats/issue-log.md" "implement: Issue Log points at the format doc"
 else
   fail "implement (no continuation): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi

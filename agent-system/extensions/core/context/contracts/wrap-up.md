@@ -99,6 +99,15 @@ Required fields:
     skeleton success.
 - `blockers`: MUST include verbatim goal text (from the plan checklist) for each blocker.
   Paraphrasing is a defect -- the orchestrator uses verbatim text for re-dispatch prompts.
+  **MIRROR obligation (this contract is `--hard`-only — see this file's own header — so this is
+  a reinforcement at the hard-mode wrap-up moment, not the universal recording site; the
+  universal one is `context/contracts/phase-closure.md`'s "Record issues and wins during the
+  phase" section, loaded in both modes):** at the moment a `blockers[]` entry is about to be
+  written here, ALSO call `scripts/issue-record.sh` (`--kind issue`, `--resolution open`,
+  `--class` set to the concrete failure class) with the same blocker detail. This handoff file is
+  overwritten on the next dispatch cycle; `issues.jsonl` is not — so the blocker's detail survives
+  past this one handoff's lifetime. A recording failure here is non-fatal, exactly as everywhere
+  else this writer is called, and must never block this handoff write or the dispatch's return.
 - `continuation_path`: Path to the handoff markdown artifact if `status != "implemented"`.
   Null when status is "implemented".
 

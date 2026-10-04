@@ -1,0 +1,58 @@
+{
+  "phase": 5,
+  "phase_name": "Thread the Instruction to Every Dispatched Agent",
+  "started_at": "2026-10-04T01:15:00Z",
+  "last_updated": "2026-10-04T01:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-measure orchestrate-build-dispatch.sh's section emitters (confirmed ## Handoff at line 499, matching the plan's measured number) and insert a new unconditional ## Issue Log section after ## Handoff and before the conditional ## Territory block",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add the during-phase recording obligation to context/contracts/phase-closure.md (both-modes site, new section appended at end of file)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/phase-closure.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add the hard-mode MIRROR reinforcement to context/contracts/wrap-up.md at the blockers[] field-semantics bullet",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/wrap-up.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Add regression coverage to the existing scripts/tests/test-orchestrate-build-dispatch.sh fixture suite (Groups 1/4/5) proving ## Issue Log appears for phase=research/plan/implement, the --task-dir value is the resolved absolute task directory (not a placeholder), and the 15-class enum is not inlined. Not named in the plan's Phase 5 file list but required to satisfy this phase's own Verification criteria mechanically rather than by one-off manual invocation",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Run the full test-orchestrate-build-dispatch.sh suite (141/141 PASS, no regressions) and shellcheck orchestrate-build-dispatch.sh and the test file (both clean against their pre-existing baselines)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.verification",
+      "description": "Phase 5's Verification section asks for 'a dry-run or direct invocation of the builder for a scratch task' proving the section is unconditional across phases, but names no file to carry that proof",
+      "type": "altered",
+      "reason": "Extended the already-existing scripts/tests/test-orchestrate-build-dispatch.sh fixture suite (not a new file, not named in the plan's Phase 5 file list) rather than performing a one-off manual invocation whose result would not be regression-checked by Phase 9's later full test sweep.",
+      "annotation": null
+    }
+  ]
+}

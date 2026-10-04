@@ -413,45 +413,45 @@ another block copy exists that this plan did not find.
 
 ---
 
-### Phase 5: Thread the Instruction to Every Dispatched Agent [NOT STARTED]
+### Phase 5: Thread the Instruction to Every Dispatched Agent [COMPLETED]
 
 **Goal**: A `## Issue Log` section reaches every dispatched agent through the single per-dispatch
 prompt emitter, reinforced at the two shared-contract moments where an agent is most likely to
 reconstruct-at-the-end instead of record-as-it-happens.
 
 **Tasks**:
-- [ ] **Re-measure first.** Run `grep -n '^  echo "## ' scripts/orchestrate-build-dispatch.sh` and
+- [x] **Re-measure first.** Run `grep -n '^  echo "## ' scripts/orchestrate-build-dispatch.sh` and
       confirm the `## Handoff` emitter's current location (measured this session: line 499, with
       the section body at 499-503, inside the single `{ ... } > "$dispatch_file"` block spanning
       roughly 420-578 of a 581-line file). Do not edit against this plan's numbers; edit against
-      the re-measured ones.
-- [ ] Insert a new unconditional `## Issue Log` section emitter immediately after the `## Handoff`
+      the re-measured ones. *(completed)*
+- [x] Insert a new unconditional `## Issue Log` section emitter immediately after the `## Handoff`
       section's trailing blank line and before the conditional `## Territory` block. It is
       unconditional across every phase, exactly like `## Handoff` and `## Wait Discipline`, so it
-      needs no phase branching.
-- [ ] The section must emit: the resolved `--task-dir "${TASK_DIR_ABS}"` the agent should pass;
+      needs no phase branching. *(completed)*
+- [x] The section must emit: the resolved `--task-dir "${TASK_DIR_ABS}"` the agent should pass;
       the exact non-fatal call form; the `kind: issue|win` distinction with a one-line statement
       that wins are recorded on equal footing; the record-as-it-arises instruction; and a pointer
-      to `context/formats/issue-log.md` for the full schema and the 15-class enum.
-- [ ] Do **not** inline the full schema or the enum in the dispatch file. Every other section in
+      to `context/formats/issue-log.md` for the full schema and the 15-class enum. *(completed)*
+- [x] Do **not** inline the full schema or the enum in the dispatch file. Every other section in
       this emitter is a pointer, not a copy (the Territory section's pointer to
-      `context/contracts/territory.md` is the precedent to follow).
-- [ ] Add the recording instruction to `context/contracts/phase-closure.md` — the correct
+      `context/contracts/territory.md` is the precedent to follow). *(completed)*
+- [x] Add the recording instruction to `context/contracts/phase-closure.md` — the correct
       both-modes injection site, loaded via an explicit `@`-bullet in
       `agents/general-implementation-agent.md`'s Context References. Place it as its own short
       section or adjacent to "Marker/commit synchrony is bidirectional" (measured: ~line 148), and
       word it as a during-phase obligation: call the writer as soon as a deviation, blocker,
       workaround, gate collision, or unusually smooth result is observed, rather than
-      reconstructing it at the final `.return-meta.json` or handoff write.
-- [ ] Add the reinforcing instruction to `context/contracts/wrap-up.md`, stating plainly in the
+      reconstructing it at the final `.return-meta.json` or handoff write. *(completed)*
+- [x] Add the reinforcing instruction to `context/contracts/wrap-up.md`, stating plainly in the
       text that this contract is `--hard`-only (its own header says so) so a reader does not
       mistake it for the universal site. Place it at the `blockers[]` write moment (measured: the
       field-semantics block around lines 66-127) and word it as the MIRROR obligation: a
       `blockers[]` entry about to be written should ALSO be recorded via the writer, because the
-      handoff is overwritten on the next dispatch and the log is not.
-- [ ] State explicitly in both contract additions that a recording failure is non-fatal and must
-      never fail a dispatch or block a phase closure.
-- [ ] Run `shellcheck` on `scripts/orchestrate-build-dispatch.sh`.
+      handoff is overwritten on the next dispatch and the log is not. *(completed)*
+- [x] State explicitly in both contract additions that a recording failure is non-fatal and must
+      never fail a dispatch or block a phase closure. *(completed)*
+- [x] Run `shellcheck` on `scripts/orchestrate-build-dispatch.sh`. *(completed)*
 
 **Timing**: 1.5 hours
 

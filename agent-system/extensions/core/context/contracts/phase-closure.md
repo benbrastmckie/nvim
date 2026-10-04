@@ -173,3 +173,20 @@ the orchestrator cross-checked the marker count against the working tree; a fix 
 tightened promotion-on-commit (the first bullet) would not have caught it, since that direction
 says nothing about verifying an INHERITED marker. Treating this as one problem with one fix would
 have left the other direction's failure mode open.
+
+## Record issues and wins during the phase, not reconstructed at the end
+
+Call `scripts/issue-record.sh` AS SOON AS an event worth recording happens during this phase —
+a deviation from plan, a blocker (whether or how it cleared), a workaround applied in place of
+the planned approach, a gate collision, or an unusually smooth or time-saving result
+(`kind: "win"`, recorded on equal footing with an issue). Do not wait to reconstruct this at the
+final `.return-meta.json` write or handoff — that end-of-dispatch reconstruction is exactly what
+produces the free prose this log exists to replace. See `context/formats/issue-log.md` for the
+full field contract, the severity scale, and the 15-class seed enum; the dispatch file's own
+"## Issue Log" section carries the exact resolved `--task-dir` and non-fatal call form for this
+dispatch.
+
+**Non-fatal, always.** A recording failure must never fail this dispatch or block a phase
+closure — invoke the writer in its documented non-fatal form
+(`... >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2`) exactly as every
+other call site in this codebase does.
