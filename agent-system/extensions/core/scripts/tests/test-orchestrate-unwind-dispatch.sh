@@ -88,6 +88,7 @@ GITIGNORE_BLOCK='**/.lock/
 **/.commit-lock/
 **/.errors.lock
 **/.decisions.lock
+**/.issues.lock
 **/.orchestration/'
 
 # --- build_repo -- a scratch git repo with every real collaborator deployed. Echoes its path. ---

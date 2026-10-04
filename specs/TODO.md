@@ -6,7 +6,7 @@ next_project_number: 335
 
 ## Task Order
 
-*Updated 2026-10-03. Generated from state.json dependency graph.*
+*Updated 2026-10-04. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -38,7 +38,7 @@ next_project_number: 335
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
-329 [PLANNED] — Per-task issue log: contract, writer and dispatch threading
+329 [IMPLEMENTING] — Per-task issue log: contract, writer and dispatch threading
 
 ### Extensions
 
@@ -608,7 +608,7 @@ rather than in parallel with it.
 
 ### 329. Per-task issue log: contract, writer and dispatch threading
 - **Effort**: 4-8 hours
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 326, Task 285

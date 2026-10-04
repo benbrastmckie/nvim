@@ -4,7 +4,7 @@
 # untracked, as distinct from the durable-provenance files (.orchestrator-handoff.json, the
 # bare .return-meta.json) that MUST stay tracked and are deliberately NOT part of this class.
 #
-# Exports one canonical record per class member (20 total) consumed by BOTH mechanical
+# Exports one canonical record per class member (21 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
 # two deploy-harness test fixtures that seed a scratch repo's .gitignore
 # (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
@@ -56,6 +56,14 @@
 # the task's existing `.lock/` directory, whose `rmdir`-based mutex release would fail permanently
 # if a stray file were left inside it.
 #
+# `issues-lock` (21st member) is the lock file for `scripts/issue-record.sh`, the sanctioned
+# writer for `specs/{NNN}_{slug}/issues.jsonl`. Declared immediately after `decisions-lock`,
+# mirroring it exactly (a dedicated `**/.issues.lock` file-class member, never placed inside the
+# task's existing `.lock/` directory). `issues.jsonl` ITSELF IS DELIBERATELY NOT ignored -- it is
+# durable, freshness-gated provenance, the same class as `.orchestrator-handoff.json` and the
+# bare `.return-meta.json` this file's own header already excludes. Only its lock file is
+# ephemeral.
+#
 # `orchestration` (19th member, added by the specs/-root relocation task) is a DIRECTORY-class
 # member covering `specs/.orchestration/` — the relocation target for the two repo-level
 # session-scoped singletons (`.orchestrator-multi-state-{session_id}.json`,
@@ -85,6 +93,7 @@ declare -a RUNTIME_FILE_IDS=(
   "commit-lock"
   "errors-lock"
   "decisions-lock"
+  "issues-lock"
   "tmp"
   "deploy-ledger"
   "orchestration"
@@ -109,6 +118,7 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "**/.commit-lock/"
   "**/.errors.lock"
   "**/.decisions.lock"
+  "**/.issues.lock"
   "/specs/tmp/"
   "**/.orchestrator-deploy-ledger.json"
   "**/.orchestration/"
@@ -135,6 +145,7 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/.commit-lock/owner"
   "specs/.errors.lock"
   "specs/000_probe/.decisions.lock"
+  "specs/000_probe/.issues.lock"
   "specs/tmp/claude-tts-notify.log"
   "specs/.orchestrator-deploy-ledger.json"
   "specs/.orchestration/.orchestrator-multi-state-sess_0000000000_probe.json"
@@ -160,6 +171,7 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '/\.commit-lock/'
   '\.errors\.lock$'
   '\.decisions\.lock$'
+  '\.issues\.lock$'
   '^specs/tmp/'
   '\.orchestrator-deploy-ledger\.json$'
   '/\.orchestration/'
@@ -169,10 +181,10 @@ declare -a RUNTIME_FILE_B_REGEX=(
 # a hit at this index. A "1" member's bare directory basename is given in
 # RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "1" "0" "1"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "1" "0" "1"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "tmp" "" ".orchestration"
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "tmp" "" ".orchestration"
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
@@ -211,6 +223,7 @@ runtime_ignore_block() {
 **/.commit-lock/
 **/.errors.lock
 **/.decisions.lock
+**/.issues.lock
 /specs/tmp/
 **/.orchestrator-deploy-ledger.json
 **/.orchestration/

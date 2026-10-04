@@ -1,0 +1,64 @@
+{
+  "phase": 4,
+  "phase_name": "Register .issues.lock as an Ephemeral Runtime File",
+  "started_at": "2026-10-04T00:45:00Z",
+  "last_updated": "2026-10-04T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-measure runtime-file-patterns.sh member count (confirmed 20, re-measured matching plan) and add issues-lock to all six parallel arrays plus header count and comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Update test-runtime-file-tracking.sh's member-count assertion (20 -> 21) and enumeration comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Update test-orchestrate-unwind-dispatch.sh's embedded gitignore block copy",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Update orchestrator-runtime-files.md: add .issues.lock Class Table row, update embedded block copy, state issues.jsonl's durable classification",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Regenerate specs/.gitignore managed block via init-specs.sh (sanctioned generator, never hand-edited)",
+      "status": "done",
+      "files_touched": [
+        "specs/.gitignore"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Redeploy, run test-runtime-file-tracking.sh (9/9 PASS) and test-orchestrate-unwind-dispatch.sh (21/21 PASS), confirm git check-ignore on .issues.lock (ignored) and issues.jsonl (not ignored), shellcheck all modified files",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "First deploy-headless.sh run was launched concurrently with Phase 4 source edits still in progress",
+      "result": "failed",
+      "reason": "Race: the deployed tree captured a partial edit state, causing test-runtime-file-tracking.sh (which resolves the deploy tree before the source store) to see a stale 20-member lib paired with a stale standards doc, and separately surfaced an unrelated pre-existing specs/TODO.md/state.json sync drift (task 329's own status transition to IMPLEMENTING had not yet been regenerated into TODO.md). Fixed by finishing all source edits first, regenerating TODO.md via generate-todo.sh, then redeploying once cleanly."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

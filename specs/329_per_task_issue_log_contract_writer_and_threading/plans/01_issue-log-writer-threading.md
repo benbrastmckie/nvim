@@ -342,40 +342,40 @@ fewer means a coverage area was collapsed rather than covered.
 
 ---
 
-### Phase 4: Register `.issues.lock` as an Ephemeral Runtime File [NOT STARTED]
+### Phase 4: Register `.issues.lock` as an Ephemeral Runtime File [COMPLETED]
 
 **Goal**: `.issues.lock` is gitignored as a new member of the runtime-file ephemeral class,
 mirroring `.decisions.lock` exactly, while `issues.jsonl` stays tracked as durable provenance.
 
 **Tasks**:
-- [ ] Re-read `scripts/lib/runtime-file-patterns.sh` and confirm the current class-member count
+- [x] Re-read `scripts/lib/runtime-file-patterns.sh` and confirm the current class-member count
       (measured: 20 members across the parallel `RUNTIME_FILE_IDS`, `RUNTIME_FILE_PATTERNS`,
-      `RUNTIME_FILE_PROBES`, and `RUNTIME_FILE_B_REGEX` arrays).
-- [ ] Add an `issues-lock` member to every parallel array, keeping index alignment:
+      `RUNTIME_FILE_PROBES`, and `RUNTIME_FILE_B_REGEX` arrays). *(completed)*
+- [x] Add an `issues-lock` member to every parallel array, keeping index alignment:
       id `issues-lock`; pattern `**/.issues.lock`; probe `specs/000_probe/.issues.lock`; and the
-      matching tracked-file regex entry. Place it immediately after `decisions-lock`.
-- [ ] Add the explanatory comment for the new member in the same style as the existing
+      matching tracked-file regex entry. Place it immediately after `decisions-lock`. *(completed)*
+- [x] Add the explanatory comment for the new member in the same style as the existing
       `decisions-lock` comment (which states it mirrors `.errors.lock` exactly and is never placed
       inside a directory class) — state that `.issues.lock` is the lock for
-      `scripts/issue-record.sh` and that `issues.jsonl` is deliberately NOT ignored.
-- [ ] Update the embedded expected-block copy inside `runtime-file-patterns.sh` itself (the
-      literal block near the end of the file) to include the new pattern line.
-- [ ] Update the member-count assertion in `scripts/tests/test-runtime-file-tracking.sh` (measured:
+      `scripts/issue-record.sh` and that `issues.jsonl` is deliberately NOT ignored. *(completed)*
+- [x] Update the embedded expected-block copy inside `runtime-file-patterns.sh` itself (the
+      literal block near the end of the file) to include the new pattern line. *(completed)*
+- [x] Update the member-count assertion in `scripts/tests/test-runtime-file-tracking.sh` (measured:
       line ~197, asserting exactly 20 members) to the new count, and extend its enumeration
-      comment to name the new member.
-- [ ] Update the verbatim block copy in `scripts/tests/test-orchestrate-unwind-dispatch.sh`
-      (measured: ~line 90) to include the new pattern line.
-- [ ] Update `context/standards/orchestrator-runtime-files.md`: add a row to the ephemeral-class
+      comment to name the new member. *(completed)*
+- [x] Update the verbatim block copy in `scripts/tests/test-orchestrate-unwind-dispatch.sh`
+      (measured: ~line 90) to include the new pattern line. *(completed)*
+- [x] Update `context/standards/orchestrator-runtime-files.md`: add a row to the ephemeral-class
       table (measured: the `.decisions.lock` row is ~line 56) describing `.issues.lock`'s writer,
-      holder, release, and class, and update the embedded block copy (measured: ~line 417).
-- [ ] Add a statement to the same standards file that `specs/{NNN}_{SLUG}/issues.jsonl` is
+      holder, release, and class, and update the embedded block copy (measured: ~line 417). *(completed)*
+- [x] Add a statement to the same standards file that `specs/{NNN}_{SLUG}/issues.jsonl` is
       **durable**, not ephemeral — the same class as `.orchestrator-handoff.json` and
       `.return-meta.json`, which the managed block's own header already calls out as deliberately
-      excluded.
-- [ ] Regenerate the managed block in `specs/.gitignore` via the sanctioned generator
+      excluded. *(completed)*
+- [x] Regenerate the managed block in `specs/.gitignore` via the sanctioned generator
       (`scripts/init-specs.sh`, which generates the block from the lib) rather than hand-editing
-      it — the block's own header says not to hand-edit the pattern list.
-- [ ] Run `shellcheck` on every modified shell file.
+      it — the block's own header says not to hand-edit the pattern list. *(completed)*
+- [x] Run `shellcheck` on every modified shell file. *(completed)*
 
 **Timing**: 1 hour
 
