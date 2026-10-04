@@ -416,39 +416,39 @@ the one-event-per-dispatch property does not hold, record the count as derived-a
 
 ---
 
-### Phase 5: `scripts/tests/test-dispatch-metrics.sh` [NOT STARTED]
+### Phase 5: `scripts/tests/test-dispatch-metrics.sh` [COMPLETED]
 
 **Goal**: The acceptance bar's two named tests exist and pass, alongside coverage of the join, the
 enums, and the append path.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-dispatch-metrics.sh` copying
+- [x] Create `scripts/tests/test-dispatch-metrics.sh` copying *(completed)*
       `scripts/tests/test-issue-record.sh`'s harness structure: `set -uo pipefail` (Class B —
       PASSED/FAILED counters), a `mktemp -d` scratch project root with a minimal
       `<scratch>/.claude/scripts/{dispatch-metrics.sh,deploy-root-guard.sh,lib/common.sh,lib/task-lookup-lib.sh}`
       copy-in, deploy-tree-first-then-source-store-fallback script resolution, and the exit
       0/1/2 convention (all-pass / any-fail / environment error).
-- [ ] **Required test A (acceptance bar)**: a missing transcript yields OMITTED rather than zeroed
+- [x] **Required test A (acceptance bar)**: a missing transcript yields OMITTED rather than zeroed *(completed)*
       token fields — assert `jq 'has("tokens")' == false`, `has("tool_calls") == false`,
       `has("model") == false`, and explicitly assert the record does NOT contain `"input": 0`.
-- [ ] **Required test B (acceptance bar)**: a metrics failure does not fail the caller — induce a
+- [x] **Required test B (acceptance bar)**: a metrics failure does not fail the caller — induce a *(completed)*
       failure (e.g. an unwritable task directory) and assert that the documented non-fatal call
       idiom exits 0 while the script itself exits non-zero.
-- [ ] Test the slug derivation against the exact confirmed mapping
+- [x] Test the slug derivation against the exact confirmed mapping *(completed)*
       `/home/benjamin/.config/nvim` → `-home-benjamin--config-nvim`, plus a path containing dots
       and a path containing a hyphen.
-- [ ] Test the exact-match join: build a fake `subagents/` tree with two candidate transcripts
+- [x] Test the exact-match join: build a fake `subagents/` tree with two candidate transcripts *(completed)*
       differing only in embedded `dispatch_seq`, and assert the correct one is selected; then
       assert that two candidates both matching (an impossible-but-defensive case) results in
       omission rather than an arbitrary pick.
-- [ ] Test closed-enum refusal: an unrecognized `--outcome` and an unrecognized `--phase` each
+- [x] Test closed-enum refusal: an unrecognized `--outcome` and an unrecognized `--phase` each *(completed)*
       refuse loudly with nothing appended.
-- [ ] Test the append path: two sequential invocations yield exactly two lines, each independently
+- [x] Test the append path: two sequential invocations yield exactly two lines, each independently *(completed)*
       `jq`-parseable, and `metrics.jsonl` plus `.metrics.lock` are lazily created.
-- [ ] Test `--backfill` marking: every backfilled line carries `backfilled: true`.
-- [ ] Test the wall-clock sentinel: a `--dispatch-start-ts 9999999999` invocation omits
+- [x] Test `--backfill` marking: every backfilled line carries `backfilled: true`. *(completed)*
+- [x] Test the wall-clock sentinel: a `--dispatch-start-ts 9999999999` invocation omits *(completed)*
       `wall_clock_seconds` rather than emitting a negative number.
-- [ ] Register `tests/test-dispatch-metrics.sh` in `manifest.json`'s `provides.scripts` array,
+- [x] Register `tests/test-dispatch-metrics.sh` in `manifest.json`'s `provides.scripts` array, *(completed)*
       adjacent to the existing `tests/test-issue-record.sh` entry.
 
 **Timing**: 2 hours
@@ -481,36 +481,36 @@ scratch-root + copy-in harness described above and that `tests/test-issue-record
 one `metrics.jsonl` line, written non-fatally and committed with the work it describes.
 
 **Tasks**:
-- [ ] **Re-measure before editing.** Locate by anchor text, not line number: the `--task-type`
+- [x] **Re-measure before editing.** Locate by anchor text, not line number: the `--task-type` *(completed)*
       argument parse, the `dispatch_status` case statement's seven arms, `dispatch_start_ts`
       resolution, `expected_dispatch_seq` resolution, `phases_completed`/`phases_total`
       resolution, the WORK (k) churn section, and the WORK (i) per-task commit section.
-- [ ] Add a new `# ─── WORK (m): per-dispatch metrics record ───` section placed **after** WORK
+- [x] Add a new `# ─── WORK (m): per-dispatch metrics record ───` section placed **after** WORK *(completed)*
       (k) and **immediately before** WORK (i)'s per-task commit, so that (a) `dispatch_status`,
       `phases_completed`, `phases_total`, `agent_name`, `session_id`, `TASK_DIR`,
       `dispatch_start_ts` and `expected_dispatch_seq` are all resolved, and (b) the appended
       `metrics.jsonl` is inside WORK (i)'s `"${TASK_DIR}/"` staging and is committed with the work
       it describes.
-- [ ] Gate the call on `is_live`, with an `else` branch emitting the established
+- [x] Gate the call on `is_live`, with an `else` branch emitting the established *(completed)*
       `[dry-run] would record ...` notice, matching the existing `issue-record.sh` call sites'
       posture. Deliberately do NOT gate it on `have_outcome`, on `research_gate_failed`, or on
       any arm-local condition: a dispatch that produced no usable outcome is precisely the one
       whose cost is most worth knowing.
-- [ ] Map `dispatch_status` to the closed `--outcome` enum in one small local case:
+- [x] Map `dispatch_status` to the closed `--outcome` enum in one small local case: *(completed)*
       `implemented|researched|planned` → `completed`; `partial` → `partial`; `blocked` →
       `blocked`; `failed` → `failed`; `needs_research` → `deferred`; anything else (off-schema or
       empty) → `failed`. Pass `--phase` from the already-computed phase/`artifact_type` mapping,
       with `other` for the unknown case.
-- [ ] Pass `--cc-session-id "${CLAUDE_CODE_SESSION_ID:-}"` so the join does not depend on the
+- [x] Pass `--cc-session-id "${CLAUDE_CODE_SESSION_ID:-}"` so the join does not depend on the *(completed)*
       environment reaching the child process, and `--dispatch-seq "$expected_dispatch_seq"` (the
       cycle's own minted seq, which is always populated here — NOT `handoff_dispatch_seq`, which
       is empty on the recovery path).
-- [ ] Invoke with the mandatory non-fatal idiom, copied verbatim in shape from the live
+- [x] Invoke with the mandatory non-fatal idiom, copied verbatim in shape from the live *(completed)*
       `issue-record.sh` call sites:
       `bash "${SCRIPT_DIR}/dispatch-metrics.sh" "${metrics_args[@]}" >/dev/null 2>&1 || echo "Note: dispatch-metrics recording failed (non-fatal)" >&2`.
       It must never change `verdict`, `halt`, `infra_exempt_cycle`, or the exit code, and must
       never write to stdout (this script's stdout is a single-JSON-line contract).
-- [ ] Add a comment at the call site recording **why one site rather than three** (see Decision
+- [x] Add a comment at the call site recording **why one site rather than three** (see Decision *(completed)*
       D2 below) so a future reader does not "fix" it into three duplicated calls, and recording
       that `commits` deliberately excludes the postflight bookkeeping commit that stages this very
       record.

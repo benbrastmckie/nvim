@@ -1,0 +1,15 @@
+{
+  "phase": 5,
+  "phase_name": "scripts/tests/test-dispatch-metrics.sh",
+  "started_at": "2026-10-04T02:55:00Z",
+  "last_updated": "2026-10-04T03:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write full test suite incl. both acceptance-bar tests, slug/join/enum/append/backfill/sentinel coverage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-dispatch-metrics.sh"]},
+    {"id": 2, "description": "Register tests/test-dispatch-metrics.sh in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "fixture content_str built with pre-escaped backslash-quote/backslash-n sequences to mimic the raw on-disk JSONL", "result": "failed", "reason": "double-escaped relative to the real transcript shape (content is a plain string with REAL quotes/newlines, escaped exactly once by the JSONL encoder); fixed by writing real quotes/newlines and letting jq --arg do the one layer of escaping"}
+  ],
+  "handoff_count": 0
+}

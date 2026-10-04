@@ -210,6 +210,7 @@
       "tests/test-deploy-propagation.sh",
       "tests/test-deploy-verify-wiring.sh",
       "tests/test-detect-noop-bash.sh",
+      "tests/test-dispatch-metrics.sh",
       "tests/test-double-loading-check.sh",
       "tests/test-handoff-dispatch-identity.sh",
       "tests/test-handoff-reader-parity.sh",
