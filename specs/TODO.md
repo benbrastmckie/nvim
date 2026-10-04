@@ -1,5 +1,5 @@
 ---
-next_project_number: 339
+next_project_number: 340
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 339
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338 | -- | core-agent-system, neovim, orchestrator |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,339 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
@@ -44,6 +44,7 @@ next_project_number: 339
 
 ### Extensions
 
+339 [NOT STARTED] — Record the tabular-presentation convention in the typst...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -71,6 +72,125 @@ next_project_number: 339
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 339. Record the tabular-presentation convention in the typst extension context: pagination/element-choice in tables-and-figures.md and a tabular Per-Element Semantics entry in semantic-element-usage.md
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/** (never .claude/**), per
+rules/source-store-deploy-boundary.md. The deployed .claude/ tree is a disposable artifact
+regenerated per repo; a hand edit there is silently wiped by the next deploy.
+
+DO NOT EDIT ANYTHING IN ~/Projects/Logos/Verification. This task owns agent-system typst context
+only. The convention's wording comes FROM that repo; no file there is a deliverable here.
+
+== WHAT THIS TASK IS ==
+
+Record, in the typst extension's context files, a tabular-presentation convention that a manual-
+formatting task in the ~/Projects/Logos/Verification repo is adopting -- so the ruling survives
+beyond the one document that forced it. This task RECORDS the ruling; it does not invent it.
+
+THIS IS DELIBERATELY SMALL. Two short additions plus one recorded decision. It documents one
+ruling and must NOT be expanded into a general formatting framework or over-engineered for the
+issue that prompted it. Do not restate upstream Typst documentation that tables-and-figures.md
+already covers.
+
+== CROSS-REPOSITORY INPUT (read before starting) ==
+
+The exact wording of the convention is an INPUT to this task, produced by the ruling of a manual-
+formatting task in the ~/Projects/Logos/Verification repository. That upstream task lives in a
+DIFFERENT repository, so the prerequisite CANNOT be expressed as a dependencies[] task-number edge
+at this target root -- which is why dependencies is an empty array here rather than an omission or
+an oversight. The prerequisite is stated in prose instead:
+
+  THIS TASK SHOULD STAY not_started UNTIL THAT UPSTREAM RULING EXISTS.
+
+Do not synthesize the convention from this description alone. Read the upstream ruling first and
+record it faithfully. If the ruling does not yet exist when this task is picked up, stop and leave
+the task not_started rather than inventing wording.
+
+== BACKGROUND (already established -- do not re-derive) ==
+
+The upstream repo's typst/manual/template.typ already contains a description-list helper
+(obligation-list) plus a backwards-compatible alias
+
+    #let obligation-table = obligation-list
+
+whose own comment names "the table-to-list change" explicitly, with this rationale: a fixed-width
+column forces long unhyphenatable identifiers into an unreadably narrow measure. That comment also
+records two ALREADY-ABANDONED alternatives, which must not be re-proposed:
+
+  - par(hanging-indent:) is a silent no-op inside a nested block in Typst 0.14.2.
+  - A two-column grid flattens to the same uniform inset.
+
+The structural defect that surfaced all of this: a Typst figure does not break across pages, so a
+grid wrapped in a figure overflows its page and overlaps its own caption instead of continuing onto
+the next page.
+
+== THE GAP THIS CLOSES (measured 2026-10-04; RE-MEASURE at implementation time) ==
+
+  - agent-system/extensions/typst/context/project/typst/patterns/tables-and-figures.md (170 lines)
+    is generic upstream-Typst boilerplate -- basic #table, tablex 0.0.8, cetz, fletcher, figure
+    placement, numbering -- with ZERO mention of breakable, pagination, or overflow, and no
+    statement of when a grid is the wrong element at all.
+
+  - agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md
+    (281 lines) has Per-Element Semantics entries for Definition, Theorem, Lemma, Corollary,
+    Example, Proof, Remark, rule-block and rule-list, but NO entry for tabular or key-value data
+    elements -- so its Universal Placement Rule and Per-Element Semantics sections do not cover the
+    element class that actually fails.
+
+  - A grep for breakable|overflow|paginat across the whole typst context tree hits only two
+    incidental `#show figure.where(kind: "thmbox"): set block(breakable: true)` lines, in
+    standards/document-structure.md and standards/typst-style-guide.md. Both of those are theorem-
+    environment guidance and are OUT OF SCOPE (see below).
+
+== THE WORK (three items) ==
+
+(1) Add to patterns/tables-and-figures.md a SHORT section on pagination and element choice:
+      - that a figure-wrapped grid does not break across pages;
+      - the mechanism for making one breakable when a grid is genuinely the right element;
+      - the requirement to settle header-repeat and caption position for a grid that spans pages,
+        rather than taking the defaults.
+
+(2) Add to standards/semantic-element-usage.md a Per-Element Semantics entry for tabular/key-value
+    content stating the choice rule:
+      - a description-list / stacked shape for key-value content, or for cells carrying long prose
+        or long unhyphenatable identifiers;
+      - a grid ONLY for a genuinely narrow, scannable matrix that benefits from column alignment.
+    The entry must follow that file's EXISTING per-element format (match the shape of the Definition
+    / rule-list entries) and be consistent with its Universal Placement Rule.
+
+(3) CONSIDER, and EXPLICITLY RULE ON rather than silently skip, whether
+    agent-system/extensions/typst/scripts/typst-element-lint.sh should gain a mechanical check for
+    this. That script already exists as that standard's mechanical backstop, which is why the
+    question arises. ADDING THE CHECK IS NOT REQUIRED: a recorded decision NOT to add it, WITH THE
+    REASON, fully satisfies this item. What does not satisfy it is leaving the question unaddressed.
+
+Keep both additions short and in each file's existing voice and format.
+
+== OUT OF SCOPE (do not touch) ==
+
+  - The thmbox / theorem environment guidance, including the two incidental breakable lines in
+    standards/document-structure.md and standards/typst-style-guide.md.
+  - The fletcher diagram patterns.
+  - The chapter-quality standard (standards/chapter-quality.md) and chapter-quality-check.sh.
+  - Any file in ~/Projects/Logos/Verification.
+  - Any file under a deployed .claude/ tree.
+
+== ACCEPTANCE ==
+
+  - Both context files carry the new material, each consistent with its OWN existing format.
+  - An explicit recorded ruling on the typst-element-lint.sh question, either way, with a reason.
+  - No deployed .claude/ file edited.
+  - Nothing in the ~/Projects/Logos/Verification repo edited.
+  - The additions document one ruling; no general formatting framework was built.
+
+DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
+
+---
 
 ### 338. Sweep task support file tracked or ignored
 - **Status**: [NOT STARTED]
