@@ -1,7 +1,7 @@
 # Implementation Plan: Task #330
 
 - **Task**: 330 - Per-dispatch cost and timing record
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: Task 329 (per-task issue log) — already `[COMPLETED]`; its `issue-record.sh`
   call sites are live in the same file this task edits, so the file-footprint serialization
@@ -152,61 +152,61 @@ written against it.
 
 ---
 
-### Phase 1: Freeze the Record Schema in `context/formats/dispatch-metrics.md` [NOT STARTED]
+### Phase 1: Freeze the Record Schema in `context/formats/dispatch-metrics.md` [COMPLETED]
 
 **Goal**: A written record contract exists before any code is written against it, so the script,
 the tests, and the format doc cannot drift. This phase is prose only.
 
 **Tasks**:
-- [ ] Create `context/formats/dispatch-metrics.md`, patterning its shape on
+- [x] Create `context/formats/dispatch-metrics.md`, patterning its shape on *(completed)*
       `context/formats/issue-log.md` (file-location section, field table, worked JSON example,
       closed-enum admission tables, boundary section).
-- [ ] State the file location: `specs/{NNN}_{SLUG}/metrics.jsonl`, lazily created on first use,
+- [x] State the file location: `specs/{NNN}_{SLUG}/metrics.jsonl`, lazily created on first use, *(completed)*
       never gitignored, append-only by line, one line per dispatch.
-- [ ] Define the field table. Required on every record: `entry_id`
+- [x] Define the field table. Required on every record: `entry_id` *(completed)*
       (`met_{timestamp_ms}_{random6}`), `recorded_at`, `task`, `phase`, `agent`, `outcome`,
       `dispatch_seq`, `session_id`, `wall_clock_seconds`, `backfilled`. Conditionally present:
       `cc_session_id`, `model`, `tokens{input, cache_creation, cache_read, output}`,
       `tool_calls{total, by_name{}}`, `phases_completed`, `phases_total`,
       `commits{count, subjects[]}`, `churn{specs{added, removed}, outside_specs{added, removed}}`,
       `gate_runs`, `transcript{path, span_seconds}`, `figure_provenance{}`.
-- [ ] State the closed enums: `phase` ∈ `research|plan|implement|aux|conclusion|other`;
+- [x] State the closed enums: `phase` ∈ `research|plan|implement|aux|conclusion|other`; *(completed)*
       `outcome` ∈ `completed|partial|blocked|failed|deferred`. Both refuse loudly on an
       unrecognized value, matching `issue-record.sh`'s posture for its true closed-set fields.
-- [ ] State the **omission rule** explicitly and prominently: an unavailable figure is an
+- [x] State the **omission rule** explicitly and prominently: an unavailable figure is an *(completed)*
       ABSENT key, never `0` and never `null`-as-zero. A `0` is a false measurement. This applies
       to `tokens`, `tool_calls`, `model`, and `gate_runs` alike — and `gate_runs` is recorded as
       absent, not zero, wherever the transcript does not show gate invocations.
-- [ ] State the exact join procedure: `$CLAUDE_CODE_SESSION_ID` →
+- [x] State the exact join procedure: `$CLAUDE_CODE_SESSION_ID` → *(completed)*
       `~/.claude/projects/<slug>/<cc_session_id>/subagents/agent-*.jsonl`, `<slug>` = repo root
       with every non-alphanumeric character replaced by `-` (worked example:
       `/home/benjamin/.config/nvim` → `-home-benjamin--config-nvim`), candidate selected by exact
       match of `task_number` AND `dispatch_seq` against the candidate's first `type: "user"`
       line. Name the confirmed Claude Code version (`2.1.288`) and state that an unexpected
       directory shape fails soft.
-- [ ] State the **three measured traps as named warnings**, each with its measured evidence:
+- [x] State the **three measured traps as named warnings**, each with its measured evidence: *(completed)*
       (a) `events.jsonl`'s `duration_seconds` is the hook script's own runtime (measured range
       0.2–2.6 s) and is NOT phase duration — treating it as such is wrong by three orders of
       magnitude; (b) `dispatch_seq` is NOT a dispatch count (advances ~3 per dispatch); (c)
       per-dispatch wall-clock comes from `.dispatch/{seq}.md`'s `dispatch_start_ts`, and
       per-phase wall-clock from phase-commit timestamps — never from either of the above.
-- [ ] State the **30-day transcript retention window** and the consequence: token and tool-call
+- [x] State the **30-day transcript retention window** and the consequence: token and tool-call *(completed)*
       figures are perishable and MUST be captured at postflight time; a design that defers
       transcript reading to report time silently produces empty metrics for anything older than
       a month.
-- [ ] State the `--backfill` marking contract: `backfilled: true` at record level plus a
+- [x] State the `--backfill` marking contract: `backfilled: true` at record level plus a *(completed)*
       `figure_provenance` object mapping each present figure to `measured` or `derived`; an
       unmarked record is measured throughout.
-- [ ] State the non-blocking posture: a metrics failure never fails a dispatch, never changes
+- [x] State the non-blocking posture: a metrics failure never fails a dispatch, never changes *(completed)*
       status, never emits a user-facing error — warn on stderr and continue; and give the
       mandatory non-fatal call idiom verbatim.
-- [ ] Cross-reference (do not duplicate) `context/project/memory/telemetry-guardrails.md`'s
+- [x] Cross-reference (do not duplicate) `context/project/memory/telemetry-guardrails.md`'s *(completed)*
       "Tier 4: Transcripts and `.meta.json` Sidecars" section, `context/formats/issue-log.md` as
       the sibling record shape, and `context/formats/events-format.md`'s Claude Code OTel
       Correlation section for `cc_session_id`'s other capture path. Honour
       `telemetry-guardrails.md`'s absent `sess_*`-to-OTel join and evaluator-outside-the-loop
       constraints.
-- [ ] Add the matching entry to `index-entries.json` (source store), copying the
+- [x] Add the matching entry to `index-entries.json` (source store), copying the *(completed)*
       `formats/issue-log.md` entry's field set; set `line_count` to the file's real line count.
 
 **Timing**: 1.5 hours
