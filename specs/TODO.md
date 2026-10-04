@@ -1943,6 +1943,29 @@ The `research_questions` / `KNOWN_ENTRY_FIELDS` schema-validator drift. Task 279
 4. `scripts/tests/test-validate-state.sh` gains a case for the cross-repo omitted-argument invocation, constructed so it cannot pass vacuously (it must fail against the pre-fix script).
 5. `bash scripts/tests/test-validate-state.sh` passes in full; `scripts/verify-deploy.sh` gate 10 (`--deep`, the only production `--deep` caller) still passes.
 6. The sibling survey is recorded in the task report with a per-site verdict.
+=== ADJACENT WORKED PRECEDENT (2026-10-04) ===
+
+A defect of the same family was found and fixed in
+`agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh`: it resolved its
+repository root by a fixed number of `..` hops, which is correct from the source store
+(`agent-system/extensions/core/scripts/tests`) but overshoots to `$HOME` from the deployed tree
+(`.claude/scripts/tests`) that `run-all.sh` actually invokes. The suite exited 2 on a path that
+never exists, so the gate it guards went entirely unexercised and its failure was recorded in
+`known-failures.txt` under a mis-diagnosed reason.
+
+Two transferable conclusions for this task:
+
+1. `scripts/lib/common.sh`'s `common_repo_root()` is NOT a fix for this family. It takes a caller-
+   supplied hop count, so it is the same layout-dependent arithmetic behind a function call; a
+   caller runnable from two layouts of different depths cannot pass one correct value.
+2. The remedy that worked is UPWARD MARKER DISCOVERY: walk up from the script's own directory
+   until a directory containing a known marker is found (there,
+   `agent-system/extensions/core`), and fail loudly with the probed start directory if the walk
+   reaches `/`. That is layout-independent and was verified to yield the same root from both the
+   source-store and deployed locations.
+
+Consider whether this task's own remedy should be the same discovery technique, and whether
+`common_repo_root()` should gain a marker-based mode rather than every caller re-deriving one.
 
 ---
 
@@ -4639,6 +4662,77 @@ per-case output retained.
 
 Contemporaneous context that plausibly supplied the load: the same run-all.sh invocation took
 ~40 minutes of wall clock with concurrent agent activity on the machine.
+
+=== ROSTER ADDENDUM (2026-10-04, measured) — A SECOND DEFECT CLASS SHARES THIS GATE ===
+
+Measured roster, from a full `run-all.sh` on a committed tree:
+`103 passed, 6 failed (2 expected, 4 NEW), 2 skipped, 111 total`. The suite corpus is now 111,
+not the 72 recorded above — re-derive it at research time as this task already instructs.
+
+This task's acceptance requires `run-all.sh` green across at least 3 consecutive runs with
+full-run and isolated-run agreement for every suite. That is currently unreachable, and NOT
+because of ambient-host-state coupling. A SECOND, DISTINCT defect class is red on the same gate:
+**sandbox-fixture incompleteness** — a suite's hardcoded copy-list omits a collaborator the real
+script-under-test invokes, so the first real invocation dies with a 127 that surfaces as an
+unrelated assertion mismatch much later. This is the same mechanism `known-failures.txt`'s own
+header records as having produced three earlier phantom failures via a missing
+`lib/return-meta-status-vocabulary.sh`.
+
+DO NOT TRIAGE THESE AS AMBIENT-HOST-STATE. They are load-INdependent and reproduce identically in
+isolation. Misfiling them as instance-A/instance-B-class would corrupt this task's triage verdicts.
+
+Current roster, with what is already established about each:
+
+  test-orchestrate-cycle-plan.sh        (NEW) — 335 passed, 14 failed. Fixture gap PARTLY FIXED
+      already: `generate-task-order.sh` and `update-plan-status.sh` (transitive collaborators of
+      the real `generate-todo.sh`/`update-task-status.sh` the Group 28 block copies) were added to
+      its copy-list, which removed the 127 cascade. The 14 remaining failures are Group 28/29 and
+      are a REAL product question, not a fixture gap: Group 28 expects an IDENTICAL DISPATCH HALT
+      to fire on cycle 2 and it does not; Arms B/C/D expect the same halt and the streak-freeze
+      notice. Needs its own verdict: either the halt mechanism is broken or the expectations are
+      stale. This is the single largest block of red in the corpus.
+  test-orchestrate-build-aux-dispatch.sh (NEW) — 17 passed, 1 failed. `plan-revision`'s model
+      resolves to empty where the suite expects `opus`. Established: `reviser-agent.md` really does
+      carry `model: opus` in its own frontmatter, and task 331's change to
+      `lib/manifest-routing-lib.sh` was purely additive (107 insertions, 0 deletions), so neither
+      the agent file nor that change explains it. Root cause undetermined.
+  test-detect-noop-bash.sh              (NEW) — root cause undetermined. Note its subject
+      (`hooks/detect-noop-bash.sh`) writes the per-session `tmp/noop-bash-count-*` marker whose
+      orphan-detector exclusion was added separately; check whether the suite and that exclusion
+      now disagree.
+  test-lint-deploy-caller-wrap.sh       (NEW) — root cause undetermined. Its reported finding is
+      about `orchestrate-cycle-plan.sh` not being "wrapped to true EOF" in a self-test scratch
+      copy, which smells like a scratch-copy construction artifact rather than a product defect.
+  test-gate-out-repair-reporting.sh     (EXPECTED, real-defect, needs-owner)
+  test-lint-json-channel-discipline.sh  (EXPECTED, real-defect, needs-owner)
+
+The two EXPECTED rows carry `needs-owner`, and `known-failures.txt`'s own header states that a
+`needs-owner` row is a known gap rather than an accepted steady state, requiring a follow-up to
+either fix or formally accept each. Since this task's acceptance is a green gate, give each of
+the two an explicit verdict here rather than leaving them to a further task.
+
+ALREADY FIXED — DO NOT REDO (all verified, all committed):
+  - `test-verify-deploy-context-budget.sh` resolved `REPO_ROOT` by a fixed four-hop `..` walk,
+    correct from the source store but overshooting to `$HOME` from the deployed tree that
+    `run-all.sh` actually uses. It exited 2 on a path that never exists, so Gate 20 was entirely
+    unexercised. Replaced with upward marker discovery; the suite is now 15 passed, 0 failed and
+    its `known-failures.txt` row is REMOVED. That row's recorded reason was a mis-diagnosis
+    (it blamed `skill-orchestrate/SKILL.md` being over ceiling; the file measures 19,921 B against
+    a 20,000 B ceiling and gate20 reports zero findings) — treat other recorded reasons in that
+    file as unverified until re-measured.
+  - The root `.gitignore` had drifted five canonical ephemeral-class patterns behind
+    `scripts/lib/runtime-file-patterns.sh`; the context-budget fixture copied that root file, so
+    gate14 failed inside the fixture. Both the drift and the fixture's dependence on a
+    hand-maintained file are fixed (it now appends `runtime_ignore_block()` from the single source
+    of truth, as `test-deploy-orphans.sh` already did).
+  - `tmp/noop-bash-count-*` is now an `is_runtime_artifact` exclusion with a planted-canary
+    regression, removing a flaky whole-tree orphan finding.
+
+METHOD NOTE for the fixture-completeness class: the reliable detection is to enumerate every
+`${SCRIPT_DIR}/<name>.sh` invocation in each REAL script a suite copies into its sandbox, then
+diff that set against the suite's copy-list. That is mechanical and worth doing corpus-wide; a
+lint for it would prevent the class recurring, and is a better deliverable than fixing the
+current instances one at a time.
 
 ---
 
