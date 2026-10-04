@@ -250,25 +250,6 @@
       },
       "additionalProperties": false
     },
-    "reflectionObject": {
-      "type": "object",
-      "description": "Overwrite (not append) semantics -- see state-management-schema.md's Reflection Field section.",
-      "properties": {
-        "what_worked": {
-          "type": "string"
-        },
-        "what_was_hard": {
-          "type": "string"
-        },
-        "what_was_missed": {
-          "type": "string"
-        },
-        "successes": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
     "projectEntry": {
       "type": "object",
       "required": [
@@ -397,9 +378,6 @@
           "items": {
             "$ref": "#/definitions/memoryCandidateEntry"
           }
-        },
-        "reflection": {
-          "$ref": "#/definitions/reflectionObject"
         },
         "blockers": {
           "type": "array",

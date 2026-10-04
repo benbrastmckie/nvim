@@ -371,13 +371,10 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       4. Store the classified candidate list as `harvest_candidates`:
          Each entry contains: `task_number`, `content`, `category`, `source_artifact`, `confidence`, `suggested_keywords`, `tier`, `dedup_action`
 
-      5. Collect completion-time reflections (read-only, parallel to memory candidates):
-         - For each completed task in the archival batch:
-           - Read `reflection // null` from the task's state.json entry
-           - If present, append `{task_number, what_worked, what_was_hard, what_was_missed,
-             successes}` to a `harvest_reflections` list; skip tasks with no reflection
-         - No dedup or tiering is applied -- reflections are one-per-task, not vault-deduped
-         - If no reflections across all tasks, set `harvest_reflections = []`
+      Note: the state.json `reflection` field this stage used to read here has been retired
+      (zero live writers; see `context/formats/issue-log.md`'s relation table). Do NOT wire this
+      harvest to `issues.jsonl` as a replacement -- surfacing that log is explicitly out of scope
+      here and belongs exclusively to the separate orchestration conclusion stage.
     </process>
   </stage>
   
@@ -410,9 +407,6 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          - Memory candidates: tiered breakdown from `harvest_candidates`
            - Format: `Memory candidates: {T1} Tier 1, {T2} Tier 2, {T3} Tier 3 ({after_dedup} after dedup, {noop_count} NOOP excluded)`
            - If no candidates: `Memory candidates: none`
-         - Reflections: one summary line from `harvest_reflections`, shown only when non-empty
-           - Format: `Reflections: {N} task(s) reported a completion-time reflection`
-           - If empty, omit the line entirely (mirrors the memory-candidate dry-run line)
          - Status reconciliation: one summary line from `reconcile_candidates` (Stage 1.5)
            - Format: `Status reconciliation: {N} task(s) stranded with artifacts on disk`
            - If `reconcile_candidates` is empty: `Status reconciliation: none`
@@ -444,21 +438,6 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            - Tier 3 candidates formatted as:
              `[TIER 3] [{CATEGORY}] Task {N}: {content first 80 chars}... (confidence: {X.XX})`
          - Store user-approved candidates as `approved_memories` for Stage 14
-         - **Read-only reflection augmentation**: when `harvest_reflections` is non-empty, append
-           a per-task block to the same prompt's `description` text (not a new prompt, not new
-           selectable options -- purely additional read-only context alongside the
-           multiSelect options above):
-           ```
-           Completion-time reflections:
-           Task {N}:
-             What worked: {what_worked}
-             What was hard: {what_was_hard}
-             What was missed: {what_was_missed}
-             Successes: {successes}
-           ```
-           (repeat per entry in `harvest_reflections`; omit any sub-field that is absent). Omit
-           the entire "Completion-time reflections" section when `harvest_reflections` is empty.
-           The multiSelect mechanics (tiers, dedup, NOOP) are unchanged by this augmentation.
       5. **Status reconciliation candidates** (from `reconcile_candidates`, Stage 1.5):
          - If `reconcile_candidates` is empty, skip this sub-step entirely (mirrors how the memory
            harvest sub-step above handles its empty case)
@@ -1015,8 +994,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          - `.memory/10-Memories/README.md`: Update memory listing
 
       Note: `memory_candidates` field is implicitly cleaned when the task entry is removed from
-      active_projects and moved to archive during Stage 10. The `reflection` field is cleaned
-      identically -- no separate cleanup logic exists for it; it rides the same archive-move.
+      active_projects and moved to archive during Stage 10.
     </process>
   </stage>
 

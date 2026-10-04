@@ -46,11 +46,6 @@ The `--lit` flag is the complementary context-injection mechanism to memory retr
                           -> /distill scores, reports, and maintains the vault
 ```
 
-`/todo`'s harvest also surfaces completion-time reflections (the task entry's `reflection`
-field -- `what_worked`/`what_was_hard`/`what_was_missed`/`successes`) read-only alongside
-`memory_candidates`, and `/learn --task N` can pull a present reflection in as an additional
-reviewable segment.
-
 ### Validate-on-Read
 
 There is no `--reindex` command. The memory system uses validate-on-read: before any scoring or retrieval operation, `memory-index.json` is compared against the filesystem. If stale (missing entries or orphaned entries), the index is automatically regenerated. This provides self-healing index consistency without explicit user intervention.

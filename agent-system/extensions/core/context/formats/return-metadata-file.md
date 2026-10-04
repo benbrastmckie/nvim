@@ -69,7 +69,7 @@ invocation — e.g. an implementation agent writes the rich object first, then
 `skill-orchestrate`'s own postflight stage writes again at full-loop termination to update
 `status`/`metadata`. Any writer that runs after an earlier writer in the same invocation MUST
 merge onto the existing file (read-modify-write) rather than overwrite wholesale, touching only
-the fields it owns. `modified_files`, `completion_data`, `memory_candidates`, `reflection`,
+the fields it owns. `modified_files`, `completion_data`, `memory_candidates`,
 `proposed_file_scope`, and `artifacts` are producer-owned by the implementation agent and MUST
 survive a later writer's update untouched.
 
@@ -417,44 +417,10 @@ Each candidate object:
 - `/todo` consumes candidates during archival
 - The field uses `// []` fallback in all jq reads for backward compatibility
 
-### reflection (optional)
-
-**Type**: object
-**Include if**: status is `implemented` and the agent captured a completion-time reflection
-(optional even then)
-
-A structured completion-time reflection, produced alongside `completion_data` and
-`memory_candidates` by implementation agents. Unlike `memory_candidates` (which accumulates
-across a task's history with append semantics), `reflection` is a single top-level object that
-skill postflight propagates to the `state.json` task entry with **overwrite** (not append)
-semantics — the latest implementation's reflection replaces any prior one.
-
-Each `reflection` object has four string sub-fields:
-
-| Field | Type | Required | Description |
-|-------|------|----------|--------------|
-| `what_worked` | string | No | ~1-3 sentences on what approach or technique worked well |
-| `what_was_hard` | string | No | ~1-3 sentences on what was difficult or friction-prone |
-| `what_was_missed` | string | No | ~1-3 sentences on what was overlooked, deferred, or missed initially |
-| `successes` | string | No | ~1-3 sentences summarizing concrete successes |
-
-All four fields are free text (all-or-nothing per agent judgment — an agent may populate all
-four, a subset, or omit the object entirely if there is nothing worth capturing).
-
-**Notes**:
-- `reflection` is a top-level sibling of `memory_candidates`, not nested under `completion_data`.
-- Skill postflight (the `orchestrator-postflight.sh` completion seam) reads this field, logs it
-  once as a `reflection` event to the unified event store, and writes it to the matching
-  `active_projects[]` entry in `state.json`, gated on `operation_type == "implement" && status ==
-  "implemented"`.
-- The write uses overwrite semantics: `state.json`'s `reflection` field always reflects the most
-  recent implementation's reflection, not a history.
-- Absence of `reflection` is valid behavior — it is optional even on a successful implementation.
-
 ### modified_files (optional)
 
 **Type**: optional `string[]` at the **top level** of `.return-meta.json` — a sibling of
-`memory_candidates` and `reflection`, not nested under `completion_data`.
+`memory_candidates`, not nested under `completion_data`.
 
 **Include if**: the operation is `implement` (populated by implementation agents). Unused and
 absent for `research` and `plan` operations.
@@ -496,7 +462,7 @@ step 2's accumulation site differs.
    array (or the flat run-list, for agents without a progress file) into one list and de-duplicate
    it.
 4. **Emit** — write the deduped list as the top-level `modified_files` field in
-   `.return-meta.json`, as a sibling of `memory_candidates` and `reflection`.
+   `.return-meta.json`, as a sibling of `memory_candidates`.
 
 **Field constraints** (restated here so an agent following this section alone cannot get them
 wrong — see the field specification above for the authoritative statement):
@@ -608,6 +574,13 @@ Each error object:
 | `recoverable` | boolean | Yes | Whether retry may succeed |
 | `recommendation` | string | Yes | How to fix or proceed |
 
+**Relation to `issues.jsonl`**: **MIRROR** (see `context/formats/issue-log.md`'s relation table).
+`errors[]` keeps its current shape, its four required fields above, its per-dispatch-overwritten
+lifetime, and its structural consumers unchanged — this is not a semantic change to this field.
+Every call site that builds an `errors[]` entry should also call `scripts/issue-record.sh` with
+the same `message`/`recommendation` content, so the detail survives the next dispatch's overwrite
+of this file without `errors[]` itself changing at all.
+
 ## Agent Instructions
 
 ### Writing Metadata
@@ -718,12 +691,6 @@ rm -f "specs/${padded_num}_${task_slug}/.return-meta.json"
       "suggested_keywords": ["lsp", "server-config", "vim.tbl_deep_extend", "merge"]
     }
   ],
-  "reflection": {
-    "what_worked": "Reading the existing server-config module before editing revealed a shared base table pattern that made the merge approach obvious.",
-    "what_was_hard": "Determining which server-specific overrides were safe to merge versus which needed to remain isolated took a few iterations.",
-    "what_was_missed": "The initial pass missed one server's custom on_attach hook, caught only during final verification.",
-    "successes": "All 4 integrations configured and verified working with a single shared base config, avoiding the duplication the prior setup had."
-  },
   "modified_files": [
     "src/config/server-setup.ext",
     "src/config/keybindings.ext"

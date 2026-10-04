@@ -228,7 +228,6 @@ artifact_number=$((count + 1))
 | `completion_summary` | string | Yes (when completed) | 1-3 sentence summary of accomplishment |
 | `roadmap_items` | array | No | Explicit ROADMAP.md item texts (non-meta only) |
 | `memory_candidates` | array | No | Structured memory candidates emitted by agents (see below) |
-| `reflection` | object | No | Structured completion-time reflection emitted by agents (see below) |
 | `skeleton_follow_ups` | array | No | Strategic-sorry follow-ups from a skeleton completion (see below) |
 
 ### Memory Candidates Field
@@ -282,33 +281,17 @@ whom it was recorded.
   `status-markers.md`'s `[COMPLETED]` subsection)
 - **Semantics**: Append-only; never auto-filed as tasks; no archival-time (`/todo`) consumer today
 
-### Reflection Field
+### Reflection Field (retired)
 
-The `reflection` object on task entries holds a single completion-time reflection emitted by an
-implementation agent. Unlike `memory_candidates`, it is written with **overwrite** (not append)
-semantics — the latest implementation's reflection replaces any prior one on the same task entry.
-
-| Field | Type | Required | Description |
-|-------|------|----------|--------------|
-| `what_worked` | string | No | ~1-3 sentences on what approach or technique worked well |
-| `what_was_hard` | string | No | ~1-3 sentences on what was difficult or friction-prone |
-| `what_was_missed` | string | No | ~1-3 sentences on what was overlooked, deferred, or missed initially |
-| `successes` | string | No | ~1-3 sentences summarizing concrete successes |
-
-**Lifecycle**:
-- **Producer**: Skill postflight reads `reflection` from `.return-meta.json` and writes it to the
-  task entry, gated on `operation_type == "implement" && status == "implemented"`
-- **Consumer**: `/todo` surfaces reflections read-only during its harvest stage (alongside
-  `memory_candidates`); `/learn --task N` can pull a present reflection in as an additional
-  reviewable segment
-- **Semantics**: Overwrite, not append; absence is valid (optional even on a successful
-  implementation)
-
-**Sparsity note**: `reflection` has zero occurrences anywhere in `specs/state.json` or
-`specs/archive/state.json` as of this writing -- unlike `effort`/`next_artifact_number` (sparse
-in the active snapshot but abundant in archive), this is genuinely the one field that may not yet
-have been exercised, per this document's own producer/consumer wiring description above. Not
-evidence the field is dead; documented-optional pending its first real population.
+**Historical note**: a `reflection` object field on task entries (structured completion-time
+reflection, overwrite-not-append semantics) was documented here but never had a live writer —
+its only writer, `scripts/orchestrator-postflight.sh`, had no live callers, and it had zero
+occurrences in `specs/state.json` or `specs/archive/state.json` across multiple measured repos.
+Retired end-to-end (schema, validator, writer, this document) rather than left dead. The live
+home for the same signal is now `issues.jsonl`'s `kind: "win"` (positive) and `kind: "issue"`
+(negative) — see `context/formats/issue-log.md`. The `reflection`-typed **event** in the unified
+event store is a separate, still-live surface the memory extension's `/distill --revise`/`--meta`
+sub-modes query — see `context/formats/events-format.md`'s producer-status note for that type.
 
 ### Dependencies Field
 

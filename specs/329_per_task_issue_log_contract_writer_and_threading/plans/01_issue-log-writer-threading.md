@@ -563,17 +563,17 @@ authority.
 
 ---
 
-### Phase 7: Record the `errors[]` Verdict and Retire `reflection` in Core [NOT STARTED]
+### Phase 7: Record the `errors[COMPLETED]
 
 **Goal**: `return-metadata-file.md` states the `errors[]` relation verdict, and the dead
 state.json `reflection` field is removed from core end-to-end rather than left dead beside a newly
 live log.
 
 **Tasks**:
-- [ ] **Inventory first.** Run `grep -rn "reflection"` across BOTH the core and memory extension
+- [x] **Inventory first.** Run `grep -rn "reflection"` across BOTH the core and memory extension
       source stores and write the hit list down. The task description names three removal sites;
-      the measured footprint is larger. Treat the resulting count as the hypothesis to confirm.
-- [ ] Draw and record the boundary between the two distinct `reflection` surfaces before editing:
+      the measured footprint is larger. Treat the resulting count as the hypothesis to confirm. *(completed)*
+- [x] Draw and record the boundary between the two distinct `reflection` surfaces before editing:
       (a) the **state.json field**, which is dead — zero writers among the scripts that actually
       run in the live postflight path, its only writer being `scripts/orchestrator-postflight.sh`,
       which `scripts/skill-base.sh` itself already documents in-repo as having no live callers;
@@ -581,52 +581,52 @@ live log.
       extension's `--revise` and `--meta` sub-modes query and which
       `distill-revise-submode.md` already documents as deliberately chosen over the state field.
       This phase retires (a). It does not delete (b)'s documented event type — see the last task
-      below and Phase 8.
-- [ ] Add the `errors[]` relation verdict to `context/formats/return-metadata-file.md`'s
+      below and Phase 8. *(completed)*
+- [x] Add the `errors[]` relation verdict to `context/formats/return-metadata-file.md`'s
       `errors[]` section (measured: ~lines 597-609): MIRROR. State that `errors[]` keeps its
       current shape, its four required fields, its per-dispatch overwritten lifetime, and its
       structural consumers unchanged, and that every call site that builds an `errors[]` entry
       should also call the writer with the same `message`/`recommendation` content — that pairing
       is what makes a recorded entry survive the next dispatch's overwrite without touching this
-      field's semantics.
-- [ ] Remove the `### reflection (optional)` section from `return-metadata-file.md` (measured:
+      field's semantics. *(completed)*
+- [x] Remove the `### reflection (optional)` section from `return-metadata-file.md` (measured:
       ~lines 420-452) and every remaining mention of the field in that file (measured: ~lines 72,
       445-457, 499, and the example payload at ~721), replacing each with nothing where the
       sentence survives without it, and leaving no dangling "sibling of `memory_candidates` and
-      `reflection`" phrasing.
-- [ ] Remove `reflection` from `KNOWN_ENTRY_FIELDS` in `scripts/validate-state.sh` (measured:
+      `reflection`" phrasing. *(completed)*
+- [x] Remove `reflection` from `KNOWN_ENTRY_FIELDS` in `scripts/validate-state.sh` (measured:
       ~line 505, inside the array literal spanning ~503-507). Note that file's own comment: this
       list is hand-synced with `context/schemas/state-schema.json` and has no drift test, so both
-      must change together or the validator disagrees with the schema it enforces.
-- [ ] Remove the `reflection` property and the `reflectionObject` definition from
+      must change together or the validator disagrees with the schema it enforces. *(completed)*
+- [x] Remove the `reflection` property and the `reflectionObject` definition from
       `context/schemas/state-schema.json` (measured: definition at ~line 253, property at
-      ~401-402).
-- [ ] Remove the `reflection` logic from `scripts/orchestrator-postflight.sh`: the header-comment
+      ~401-402). *(completed)*
+- [x] Remove the `reflection` logic from `scripts/orchestrator-postflight.sh`: the header-comment
       mentions (~lines 31, 34, 40), the variable init and read (~204, 219), the Stage 6b
       reflection event emission (~269-277), the interpolation-avoidance comment reference (~412),
       and the Stage 7d state.json write (~428-443). Leave the rest of that script untouched — it
       is dead by lack of callers, not by this plan, and removing more than the reflection path
-      widens scope.
-- [ ] Remove or convert to an explicitly historical note the "Reflection Field" subsection of
+      widens scope. *(completed)*
+- [x] Remove or convert to an explicitly historical note the "Reflection Field" subsection of
       `context/reference/state-management-schema.md` (measured: ~lines 287-307) and the
       `reflection` row in its field table (measured: ~line 231). That subsection's prose
       describing a live "Skill postflight reads `reflection` ... and writes it" producer is
       aspirational, not a description of working code, and its own sparsity note already records
-      zero occurrences in `specs/state.json` or `specs/archive/state.json`.
-- [ ] Retire the `reflection` field-reading harvest in `skills/skill-todo/SKILL.md` (measured:
+      zero occurrences in `specs/state.json` or `specs/archive/state.json`. *(completed)*
+- [x] Retire the `reflection` field-reading harvest in `skills/skill-todo/SKILL.md` (measured:
       Stage 5 harvest ~374-380, display line ~413-414, read-only augmentation ~447-460, and the
       Stage 10 cleanup note ~1018). Replace the harvest's state-field read with nothing rather
       than with an `issues.jsonl` read — surfacing the log is explicitly out of scope and belongs
       to the conclusion stage. State that boundary in a comment at the removal site so a later
-      reader does not wire the log in here.
-- [ ] Update `.claude/CLAUDE.md`'s generating merge source for the memory section if it carries the
+      reader does not wire the log in here. *(completed)*
+- [x] Update `.claude/CLAUDE.md`'s generating merge source for the memory section if it carries the
       sentence about `/todo`'s harvest surfacing completion-time reflections — locate the merge
       source under the memory extension and correct it there, never in the deployed
-      `.claude/CLAUDE.md`.
-- [ ] Add a cross-reference in `context/formats/issue-log.md`'s relation table row for
-      `reflection`, pointing at this retirement as the executed verdict rather than a pending one.
-- [ ] Run `shellcheck` on both modified shell files; validate `state-schema.json` parses with
-      `jq -e`.
+      `.claude/CLAUDE.md`. *(completed)*
+- [x] Add a cross-reference in `context/formats/issue-log.md`'s relation table row for
+      `reflection`, pointing at this retirement as the executed verdict rather than a pending one. *(completed)*
+- [x] Run `shellcheck` on both modified shell files; validate `state-schema.json` parses with
+      `jq -e`. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,98 @@
+{
+  "phase": 7,
+  "phase_name": "Record the errors[] Verdict and Retire reflection in Core",
+  "started_at": "2026-10-04T02:05:00Z",
+  "last_updated": "2026-10-04T02:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Inventory: grep -rln reflection across both extensions found 20 files (vs. the plan's 7-file core hypothesis plus memory). Classified each hit field-vs-event-vs-English-word before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add errors[] MIRROR verdict to return-metadata-file.md; remove the ### reflection (optional) section and all remaining mentions (header sibling-field list, modified_files sibling note, example payload object)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/return-metadata-file.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Remove reflection from KNOWN_ENTRY_FIELDS in validate-state.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/validate-state.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Remove reflectionObject definition and the reflection property from state-schema.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/schemas/state-schema.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Remove reflection logic from orchestrator-postflight.sh: header Stage list, var init/read, Stage 6b event emission, interpolation-avoidance comment, Stage 7d write block",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Convert the \"Reflection Field\" subsection of state-management-schema.md to an explicit historical note; remove its field-table row",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/reference/state-management-schema.md"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Retire the reflection harvest in skill-todo/SKILL.md: Stage 5 harvest sub-step, display line, read-only augmentation block, Stage 10 cleanup note -- replaced with nothing (not an issues.jsonl read) plus a boundary comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-todo/SKILL.md"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "Correct the memory-extension merge source (EXTENSION.md) for the generated .claude/CLAUDE.md memory section's /todo reflection-harvest sentence",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 9,
+      "description": "Fix three state.json-field references the plan's 7-file hypothesis did not name: memory-harvest.sh's dead-code comment, todo-archival-reference.md's archival bullet, user-decision-contract.md's producer-ownership field list",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/memory-harvest.sh",
+        "agent-system/extensions/core/context/patterns/todo-archival-reference.md",
+        "agent-system/extensions/core/context/standards/user-decision-contract.md"
+      ]
+    },
+    {
+      "id": 10,
+      "description": "Verify: zero state.json-field reflection references remain in core (grep confirms only event-store/English-word hits and this phase's own historical-note prose); state-schema.json and validate-state.sh shellcheck/jq clean with byte-identical finding counts to the pre-edit baseline; issue-log.md's reflection relation row already marked Executed (written in Phase 1)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.scope",
+      "description": "Scope Hypothesis named a 7-file core footprint (return-metadata-file.md, validate-state.sh, state-schema.json, orchestrator-postflight.sh, state-management-schema.md, skill-todo/SKILL.md, plus one memory-extension merge source)",
+      "type": "altered",
+      "reason": "The 7 named files were all confirmed and fixed exactly as hypothesized, but the grep -rln inventory surfaced 3 additional state.json-field references the hypothesis did not name: scripts/memory-harvest.sh (dead-code comment), context/patterns/todo-archival-reference.md (archival bullet), context/standards/user-decision-contract.md (producer-ownership field list). All three were fixed in this same pass rather than deferred, since each was a small, contained textual edit discovered during the mandated inventory step itself.",
+      "annotation": null
+    }
+  ]
+}

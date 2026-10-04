@@ -28,17 +28,14 @@
 #
 # Stages (implemented inside this script):
 #   Stage 6:  Read .return-meta.json (status, artifact_path, artifact_type, artifact_summary,
-#             memory_candidates, reflection; implement also reads completion_summary,
+#             memory_candidates; implement also reads completion_summary,
 #             roadmap_items, handoff_path)
 #   Stage 6a: Validate artifact via validate-artifact.sh (non-blocking)
-#   Stage 6b: Emit orchestrator_status event, plus a second independent reflection event when a
-#             reflection object is present (non-blocking)
+#   Stage 6b: Emit orchestrator_status event (non-blocking)
 #   Stage 7:  Call update-task-status.sh postflight (research and plan only; implement does inline)
 #   Stage 7a: Increment next_artifact_number via state-write.sh (research only)
 #   Stage 7b: Write completion_summary + roadmap_items to state.json (implement only)
 #   Stage 7c: Propagate memory_candidates via state-write.sh, --argjson payload (all operations)
-#   Stage 7d: Write reflection to state.json via state-write.sh, --argjson, overwrite semantics
-#             (implement-only, gated on status == implemented; non-blocking)
 #   Stage 8:  Link artifacts in state.json via two state-write.sh calls with --arg atype
 #             (Issue #1132 safe)
 #   Stage 8a: Regenerate TODO.md via generate-todo.sh (non-blocking)
@@ -201,7 +198,6 @@ memory_candidates="[]"
 completion_summary=""
 roadmap_items="[]"
 handoff_path=""
-reflection="null"
 
 if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
   # Route status/artifacts/memory_candidates through the shared skill_read_metadata chokepoint
@@ -216,7 +212,6 @@ if [ -f "$metadata_file" ] && jq empty "$metadata_file" 2>/dev/null; then
   artifact_type_from_meta="$ARTIFACT_TYPE"
   artifact_summary="$ARTIFACT_SUMMARY"
   memory_candidates="$MEMORY_CANDIDATES"
-  reflection=$(jq -c '.reflection // null' "$metadata_file")
 
   # implement-specific fields (safe to read for all operations — will be empty for non-implement)
   completion_summary=$(jq -r '.completion_data.completion_summary // ""' "$metadata_file")
@@ -265,17 +260,6 @@ if [ -n "$error_ref" ] && [ "$error_ref" != "null" ]; then
 fi
 
 _events_append_observable ".claude/scripts/events-append.sh" "${event_args[@]}"
-
-# Second, independent event: log a completion-time reflection when present. Never reuses the
-# orchestrator_status event line above; guarded and non-blocking so a reflection-event failure
-# cannot affect the rest of postflight.
-if [ "$reflection" != "null" ] && [ -n "$reflection" ]; then
-  _events_append_observable ".claude/scripts/events-append.sh" \
-    --event-type reflection --category success \
-    --checkpoint postflight --task "$task_number" --session "$session_id" \
-    --detail-json "$reflection" \
-    --message "Completion-time reflection captured for task ${task_number}"
-fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 6a: Validate artifact (non-blocking)
@@ -408,10 +392,10 @@ fi
 # Stage 7c: Propagate memory_candidates (all operations, append semantics)
 # Routed through state-write.sh (replacing the former non-atomic python3 json.load/json.dump
 # in-place write) with the payload passed via --argjson, matching the jq filter
-# `.memory_candidates += $new` recommended by the research report -- the same
-# interpolation-avoidance Stage 7d's reflection write below already uses deliberately, so
-# memory_candidates' free-text content (quotes, newlines) can never break the write the way the
-# old `'''${memory_candidates}'''` python string literal could.
+# `.memory_candidates += $new` recommended by the research report -- --argjson passes the JSON
+# value safely without shell string interpolation, so memory_candidates' free-text content
+# (quotes, newlines) can never break the write the way the old `'''${memory_candidates}'''`
+# python string literal could.
 # ─────────────────────────────────────────────────────────────────────────────
 if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
   echo "[postflight] Propagating memory_candidates to state.json..."
@@ -424,24 +408,6 @@ if [ "$memory_candidates" != "[]" ] && [ -n "$memory_candidates" ]; then
     || echo "[postflight] WARNING: Failed to propagate memory_candidates (non-blocking)" >&2
 fi
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Stage 7d: Write reflection (implement only, overwrite semantics)
-# Uses jq --argjson rather than a shell-interpolated string literal: reflection's four free-text
-# fields may contain embedded quotes/newlines that would break naive string interpolation.
-# --argjson passes the JSON value safely without string interpolation. Guarded and non-blocking:
-# a failure here must not affect the completion_summary/roadmap_items/memory_candidates handling
-# above. Routed through state-write.sh, replacing the former hand-rolled
-# specs/tmp/state.json-staged jq/mv sequence.
-# ─────────────────────────────────────────────────────────────────────────────
-if [ "$operation_type" = "implement" ] && [ "$status" = "implemented" ] && [ "$reflection" != "null" ] && [ -n "$reflection" ]; then
-  echo "[postflight] Writing reflection to state.json..."
-  bash .claude/scripts/state-write.sh \
-    '(.active_projects[] | select(.project_number == $num)).reflection = $refl' \
-    --session-id "$session_id" \
-    --argjson num "$task_number" \
-    --argjson refl "$reflection" \
-    || echo "[postflight] WARNING: Failed to write reflection (non-blocking)" >&2
-fi
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 8: Link artifacts in state.json (two-step jq, Issue #1132 safe), each step routed

@@ -79,10 +79,9 @@ agent's `question`/`options`/`recommended` text.
 
 `user_decision` is producer-owned by the agent that sets it, in the same sense
 `context/formats/return-metadata-file.md`'s "Multiple Sequential Writers" section already defines
-for `modified_files`, `completion_data`, `memory_candidates`, `reflection`, and
-`proposed_file_scope`: any later writer in the same invocation (e.g. `skill-orchestrate`'s own
-postflight stage) MUST merge onto the existing file and leave `user_decision` untouched rather
-than overwrite it.
+for `modified_files`, `completion_data`, `memory_candidates`, and `proposed_file_scope`: any later
+writer in the same invocation (e.g. `skill-orchestrate`'s own postflight stage) MUST merge onto
+the existing file and leave `user_decision` untouched rather than overwrite it.
 
 ## Distinction from `decisions_made`
 
