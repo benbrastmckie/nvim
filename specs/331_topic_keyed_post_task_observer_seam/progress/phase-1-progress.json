@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Resolve-all-matches observer resolution in the shared routing library",
+  "started_at": "2026-10-03T00:00:00Z",
+  "last_updated": "2026-10-03T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add routing_resolve_observers() to manifest-routing-lib.sh with prefix-aware match-if-either, resolve-all stdout TSV shape",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

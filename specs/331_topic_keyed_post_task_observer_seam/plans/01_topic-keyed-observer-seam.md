@@ -1,7 +1,7 @@
 # Implementation Plan: Topic-Keyed Post-Task Observer Seam
 
 - **Task**: 331 - Topic-keyed post-task observer seam for extensions
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 327 (completed), 330 (completed)
 - **Research Inputs**: specs/331_topic_keyed_post_task_observer_seam/reports/01_topic-keyed-observer-seam.md
@@ -191,42 +191,42 @@ Phases within the same wave can execute in parallel; their file sets are disjoin
 
 ---
 
-### Phase 1: Resolve-all-matches observer resolution in the shared routing library [NOT STARTED]
+### Phase 1: Resolve-all-matches observer resolution in the shared routing library [COMPLETED]
 
 **Goal**: `scripts/lib/manifest-routing-lib.sh` gains one sibling function that returns EVERY
 observer declaration matching a given `(topic, task_type)` pair across every loaded extension,
 without touching either existing single-value ladder.
 
 **Tasks**:
-- [ ] Re-read `scripts/lib/manifest-routing-lib.sh` in full (257 lines measured) and confirm its
+- [x] Re-read `scripts/lib/manifest-routing-lib.sh` in full (257 lines measured) and confirm its
       three contract clauses still hold: never calls `exit`, sets no shell options (Class C per
       `context/standards/shell-strict-mode.md`), every internal variable `_route_`-prefixed and
       unset before return.
-- [ ] Add `routing_resolve_observers "<topic>" "<task_type>"`, emitting one TAB-separated line
+- [x] Add `routing_resolve_observers "<topic>" "<task_type>"`, emitting one TAB-separated line
       per match on stdout: `manifest_path<TAB>extension_name<TAB>observer_name<TAB>script<TAB>matched_on<TAB>timeout_seconds`,
       where `matched_on` is one of `topic`, `task_type`, `both`. Empty stdout on a total miss;
       always `return 0`.
-- [ ] Implement match-if-either with prefix awareness on BOTH keys, reusing the existing idiom
+- [x] Implement match-if-either with prefix awareness on BOTH keys, reusing the existing idiom
       verbatim (`printf '%s' "$v" | grep -q ":"` then `cut -d: -f1`): a declared `books` matches a
       value of `books:certify`; an exact match also counts. Compute `matched_on` as `both` only
       when both declared keys matched.
-- [ ] Enumerate `"${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json` in glob order; do
+- [x] Enumerate `"${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json` in glob order; do
       NOT skip the core manifest (unlike `routing_lookup`, core participates — core could
       legitimately declare an observer, and there is no precedence to establish when every match
       fires). Sort observer keys within a manifest for determinism (D7).
-- [ ] Skip, without failing, any entry missing `script` or missing both of `topic`/`task_type` —
+- [x] Skip, without failing, any entry missing `script` or missing both of `topic`/`task_type` —
       structural validation is Rule X's job (Phase 5), not the resolver's; the resolver must
       never be the thing that halts.
-- [ ] Emit `timeout_seconds` as the entry's own value when a positive integer, else the literal
+- [x] Emit `timeout_seconds` as the entry's own value when a positive integer, else the literal
       default `30`.
-- [ ] This is a resolve-all function, NOT a third single-value ladder: use plain stdout, not the
+- [x] This is a resolve-all function, NOT a third single-value ladder: use plain stdout, not the
       `_ROUTE_LAST_VALUE`/`_ROUTE_LAST_VIA` globals, so it is safe under command substitution and
       cannot be mistaken for a sibling of `routing_lookup`.
-- [ ] Extend the FILE-HEADER comment block (not only the function's local comment) to list the
+- [x] Extend the FILE-HEADER comment block (not only the function's local comment) to list the
       new function alongside the two existing ladders, preserving the header's "single source of
       truth" framing, and stating explicitly that this function's return shape is
       resolve-all/one-line-per-match and must not be folded into `routing_lookup`.
-- [ ] Add a `Usage:` line for the new function to the header's existing usage block.
+- [x] Add a `Usage:` line for the new function to the header's existing usage block.
 
 **Timing**: 1 hour
 

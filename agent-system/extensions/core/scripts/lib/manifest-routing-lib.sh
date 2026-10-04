@@ -10,6 +10,15 @@
 #   4. core extension manifest, compound-base task_type match
 #   5. no match -> empty output (never an error)
 #
+# A THIRD, SIBLING function -- routing_resolve_observers() -- lives alongside the two
+# first-match-wins ladders above (routing_lookup / routing_lookup_flat) but is a different shape
+# on purpose: it resolves the manifest `observers` block, which is a fan-out (notify-every-match)
+# seam, not a precedence ladder. It returns every matching entry across every loaded extension
+# (core included -- there is no precedence to establish when every match fires) as one
+# TAB-separated line per match on stdout, via plain command substitution, and never via the
+# _ROUTE_LAST_VALUE/_ROUTE_LAST_VIA globals the two ladders above use. Do not fold it into
+# routing_lookup, and do not widen routing_lookup's single-value return contract to serve it.
+#
 # "Non-core" here means "not the manifest whose .name == 'core'" -- see routing_core_manifest()
 # below. This is a narrower exclusion than routing_exempt:true (which also covers `literature`
 # and `slidev`): those two extensions never declare `.routing_agents`/`.routing_agents_hard`
@@ -50,6 +59,9 @@
 #   via="$_ROUTE_LAST_VIA"                        # noncore-exact|noncore-compound|core-exact|core-compound|miss
 #   routing_trace "research" "epi" "" "$value" "$via"
 #   routing_lookup_flat "hard_contracts" "general"
+#   while IFS=$'\t' read -r manifest ext name script matched_on timeout_s; do
+#     ...
+#   done < <(routing_resolve_observers "$topic" "$task_type")  # resolve-ALL observer matches
 #
 # routing_lookup is called DIRECTLY (never via `$(routing_lookup ...)` command substitution) --
 # command substitution forks a subshell, and a subshell's variable assignments never propagate
@@ -242,6 +254,101 @@ routing_lookup_flat() {
 
   # Step 5 -- total miss ($_ROUTE_LAST_VALUE stays "", $_ROUTE_LAST_VIA stays "miss")
   unset _route_block _route_task_type _route_manifest _route_value _route_name _route_base _route_core_manifest
+  return 0
+}
+
+# routing_resolve_observers -- resolve-ALL-matches ladder for the `observers` manifest block,
+# $1=topic $2=task_type. Unlike routing_lookup/routing_lookup_flat (first-match-wins, single
+# value via globals), this is a fan-out resolver: every matching observer declaration, across
+# every loaded extension (core included -- there is no precedence to establish when every match
+# fires), is emitted as one TAB-separated line on stdout:
+#   manifest_path<TAB>extension_name<TAB>observer_name<TAB>script<TAB>matched_on<TAB>timeout_seconds
+# where matched_on is one of topic|task_type|both. Empty stdout on a total miss. Always
+# `return 0` -- a caller iterating this function's stdout must never see a non-zero status as a
+# signal; emptiness alone means "no match". Deliberately does NOT use the _ROUTE_LAST_VALUE /
+# _ROUTE_LAST_VIA globals: this is a resolve-all function, not a third single-value ladder, so it
+# must be safe to call under command substitution (`while read -r line; do ... done < <(routing_resolve_observers ...)`)
+# and must never be mistaken for a sibling of routing_lookup.
+#
+# Matching is prefix-aware on BOTH keys, reusing the existing idiom verbatim: a declared `books`
+# matches a task value of `books:certify` (compound task_type/topic values with a `:` sub-route,
+# e.g. `present:grant`, are an established convention here). An exact match also counts.
+# matched_on is "both" only when BOTH declared keys on an entry actually matched the task's own
+# values -- not merely when both keys are declared.
+#
+# Structural validation (missing `script`, an entry declaring neither `topic` nor `task_type`, an
+# unrecognized key) is NOT this resolver's job -- see check-extension-docs.sh's Rule X. This
+# function silently SKIPS such an entry rather than failing; it must never be the thing that
+# halts a caller.
+#
+# Enumerates `"${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json` in glob order (D7:
+# deterministic multi-match ordering), with observer keys sorted within a manifest for
+# determinism when more than one declaration in the same manifest matches.
+routing_resolve_observers() {
+  local _route_topic="$1"
+  local _route_task_type="$2"
+  local _route_manifest _route_ext_name _route_has_obs _route_obs_keys _route_obs_key
+  local _route_obs_topic _route_obs_tt _route_obs_script _route_obs_timeout
+  local _route_topic_base _route_tt_base _route_matched
+
+  for _route_manifest in "${ROUTE_MANIFEST_ROOT:-.claude}"/extensions/*/manifest.json; do
+    [ -f "$_route_manifest" ] || continue
+    _route_has_obs=$(jq -r 'has("observers")' "$_route_manifest" 2>/dev/null)
+    [ "$_route_has_obs" = "true" ] || continue
+    _route_ext_name=$(jq -r '.name // empty' "$_route_manifest" 2>/dev/null)
+    _route_obs_keys=$(jq -r '.observers | keys_unsorted | sort | .[]' "$_route_manifest" 2>/dev/null)
+
+    while IFS= read -r _route_obs_key; do
+      [ -n "$_route_obs_key" ] || continue
+
+      _route_obs_script=$(jq -r --arg k "$_route_obs_key" '.observers[$k].script // empty' "$_route_manifest" 2>/dev/null)
+      _route_obs_topic=$(jq -r --arg k "$_route_obs_key" '.observers[$k].topic // empty' "$_route_manifest" 2>/dev/null)
+      _route_obs_tt=$(jq -r --arg k "$_route_obs_key" '.observers[$k].task_type // empty' "$_route_manifest" 2>/dev/null)
+      _route_obs_timeout=$(jq -r --arg k "$_route_obs_key" '.observers[$k].timeout_seconds // empty' "$_route_manifest" 2>/dev/null)
+
+      # Skip without failing: structural validation is Rule X's job, not this resolver's.
+      [ -n "$_route_obs_script" ] || continue
+      if [ -z "$_route_obs_topic" ] && [ -z "$_route_obs_tt" ]; then
+        continue
+      fi
+
+      _route_matched=""
+
+      if [ -n "$_route_obs_topic" ] && [ -n "$_route_topic" ]; then
+        if [ "$_route_obs_topic" = "$_route_topic" ]; then
+          _route_matched="topic"
+        elif printf '%s' "$_route_topic" | grep -q ":"; then
+          _route_topic_base=$(printf '%s' "$_route_topic" | cut -d: -f1)
+          [ "$_route_obs_topic" = "$_route_topic_base" ] && _route_matched="topic"
+        fi
+      fi
+
+      if [ -n "$_route_obs_tt" ] && [ -n "$_route_task_type" ]; then
+        if [ "$_route_obs_tt" = "$_route_task_type" ]; then
+          if [ "$_route_matched" = "topic" ]; then _route_matched="both"; else _route_matched="task_type"; fi
+        elif printf '%s' "$_route_task_type" | grep -q ":"; then
+          _route_tt_base=$(printf '%s' "$_route_task_type" | cut -d: -f1)
+          if [ "$_route_obs_tt" = "$_route_tt_base" ]; then
+            if [ "$_route_matched" = "topic" ]; then _route_matched="both"; else _route_matched="task_type"; fi
+          fi
+        fi
+      fi
+
+      [ -n "$_route_matched" ] || continue
+
+      if ! printf '%s' "$_route_obs_timeout" | grep -qE '^[1-9][0-9]*$'; then
+        _route_obs_timeout=30
+      fi
+
+      printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "$_route_manifest" "$_route_ext_name" "$_route_obs_key" "$_route_obs_script" "$_route_matched" "$_route_obs_timeout"
+    done <<EOF_KEYS
+$_route_obs_keys
+EOF_KEYS
+  done
+
+  unset _route_topic _route_task_type _route_manifest _route_ext_name _route_has_obs _route_obs_keys _route_obs_key
+  unset _route_obs_topic _route_obs_tt _route_obs_script _route_obs_timeout _route_topic_base _route_tt_base _route_matched
   return 0
 }
 
