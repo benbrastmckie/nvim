@@ -336,26 +336,26 @@ must cover both paths.
 
 ---
 
-### Phase 4: `--backfill` mode [NOT STARTED]
+### Phase 4: `--backfill` mode [COMPLETED]
 
 **Goal**: Add `--backfill` for already-completed books tasks, deriving what is still derivable and
 marking every derived figure, consistent with the per-dispatch metrics script's own backfill
 posture.
 
 **Tasks**:
-- [ ] Add the `--backfill` entry point (single task and whole-corpus forms), resolving task
-      directories from the consuming repository's own `specs/` tree.
-- [ ] Derive what remains derivable from git history for a completed task; omit entirely what is
+- [x] Add the `--backfill` entry point (single task and whole-corpus forms), resolving task
+      directories from the consuming repository's own `specs/` tree. *(completed)*
+- [x] Derive what remains derivable from git history for a completed task; omit entirely what is
       not recoverable, never reconstruct a figure a live timer or host fingerprint would have
-      supplied.
-- [ ] Mark every record `--backfill` writes with `backfilled: true` plus a populated
+      supplied. *(completed)*
+- [x] Mark every record `--backfill` writes with `backfilled: true` plus a populated
       `figure_provenance` map (`measured`/`derived` per present figure), mirroring
-      `dispatch-metrics.sh --backfill`'s exact marking contract rather than inventing one.
-- [ ] Mark each books-specific field GROUP with its own `source: collected|backfilled`, never
-      conflating `backfilled` with `collected` (D2).
-- [ ] Carry forward, in the script header and in the standard, the documented commit-subject-grep
-      over-match limitation inherited from the metrics precedent.
-- [ ] Never overwrite a `collected` record with a `backfilled` one without saying so.
+      `dispatch-metrics.sh --backfill`'s exact marking contract rather than inventing one. *(completed)*
+- [x] Mark each books-specific field GROUP with its own `source: collected|backfilled`, never
+      conflating `backfilled` with `collected` (D2). *(completed)*
+- [x] Carry forward, in the script header and in the standard, the documented commit-subject-grep
+      over-match limitation inherited from the metrics precedent. *(completed)*
+- [x] Never overwrite a `collected` record with a `backfilled` one without saying so. *(completed)*
 
 **Timing**: 1 hour
 

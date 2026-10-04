@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "--backfill mode",
+  "started_at": "2026-10-04T08:25:00Z",
+  "last_updated": "2026-10-04T08:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --backfill entry point, single task and whole-corpus forms", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 2, "description": "Derive what remains derivable from git history; omit the rest", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 3, "description": "backfilled:true plus figure_provenance map", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 4, "description": "Per-group source: collected|backfilled marker", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh", "agent-system/extensions/books/context/project/books/standards/observation-record.md"]},
+    {"id": 5, "description": "Carry forward commit-subject-grep over-match limitation", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 6, "description": "Never overwrite a collected record with a backfilled one without saying so", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Wrapped the entire Phase 3 join/compute body into observe_run_core(), parameterized by is_backfill, shared by live and --backfill dispatch paths", "result": "worked", "reason": "avoids duplicating the join logic between modes; required amending observation-record.md's schema to wrap book_requires_churn/validated_by_promotions/verification_tiers/certifier_outcomes/snapshot_delta with a per-group source marker (D2), which Phase 3 had specified but not yet implemented"}
+  ],
+  "handoff_count": 0
+}
