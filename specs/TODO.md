@@ -1,5 +1,5 @@
 ---
-next_project_number: 337
+next_project_number: 339
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 337
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336 | -- | core-agent-system, neovim, orchestrator |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338 | -- | core-agent-system, neovim, orchestrator |
 | 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
@@ -40,6 +40,7 @@ next_project_number: 337
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
 336 [NOT STARTED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
+338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Extensions
 
@@ -64,11 +65,103 @@ next_project_number: 337
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
+337 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 338. Sweep task support file tracked or ignored
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
+
+Sweep every task-support file a producer writes under specs/ and classify each as tracked or ignored, so support artifacts stop dirtying the git tree for no reason
+
+--- WHY ---
+
+context/standards/orchestrator-runtime-files.md defines a two-class split (Ephemeral/gitignored vs. Durable provenance/tracked) and scripts/lib/runtime-file-patterns.sh renders the ephemeral half into each repo's specs/.gitignore. The split is sound. The ENUMERATION is not: it was grown file-by-file as each defect surfaced, never swept, so whole artifact families a producer writes today appear in neither class. The consequence is support files showing permanently in `git status` for no reason, which trains a reader to ignore the residue channel entirely.
+
+MEASURED 2026-10-04 across the two consumer repos (~/.config/nvim and ~/Projects/Logos/Verification):
+
+1. `progress/phase-N-progress.json` -- ZERO mentions in the standard, ZERO in runtime-file-patterns.sh, yet roughly 2,000 such files are TRACKED in nvim's history (391 `phase-1-progress.json`, 382 `phase-2`, 367 `phase-3`, 339 `phase-4`, 276 `phase-5`, 196 `phase-6`, 121 `phase-7`, 60 `phase-8`, and more), plus ~580 in Verification. This is the dominant volume in the whole question and is entirely unpoliced. By its own description it is crash-recovery scratch, which would put it in the ephemeral class -- but it is committed thousands of times over. Settle it.
+2. `.blocker-research.json` -- ZERO mentions in the standard, ZERO in the lib, yet FOUR live scripts write or read it (orchestrate-build-aux-dispatch.sh, orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, lib/territory-contention-lib.sh) and three docs describe it. One instance (specs/187_prove_crc8_detection_and_record_limit/) has sat untracked and unignored in Verification across multiple sessions, reported as residue by every run's own end-of-batch check.
+3. `tools/` under a task directory -- ZERO mentions in either. A task wrote specs/193_improve_docs_presentation/tools/{reflow.py,before-after.md,gates-after.txt} and the postflight's own excursion advisory listed them as out-of-scope writes.
+4. Whole UNTRACKED TASK DIRECTORIES: `specs/335_gate_modified_files_excursion_at_staging/` is untracked in nvim right now because its producer never staged it. Adjacent to the existing vacated-source-never-staged task; coordinate rather than duplicate.
+
+Already correctly covered, as evidence the mechanism works when a name is in it: metrics.jsonl, issues.jsonl, and the 42-pattern enumeration the lib already renders.
+
+--- SCOPE ---
+
+1. ENUMERATE, by grep over the source store rather than from this list, every file and directory any producer writes under `specs/` -- dot-prefixed and plain alike, per-task and specs/-root alike. The deliverable is the inventory itself: producer, reader, lifetime, current git disposition (tracked / ignored / neither).
+2. CLASSIFY each against the two-class split, applying the standard's own freshness-gate test: a file a resume/read site trusts with NO freshness check is ephemeral, because a stale git-restored copy would silently corrupt live state. A per-dispatch audit trail a later reader needs is durable provenance.
+3. RULE EXPLICITLY on the `progress/` family. It is the one case where the current behaviour (thousands of tracked files) and the likely correct class (scratch) disagree at scale, so it needs a stated decision with its reason, not a quiet pattern addition. If it becomes ignored, say what happens to the thousands already in history -- leaving them tracked while ignoring new ones is a legitimate answer, but it must be the recorded answer rather than an accident.
+4. APPLY: add every ephemeral name to runtime-file-patterns.sh's enumeration (the canonical generator; specs/.gitignore is rendered from it by init-specs.sh and must never be hand-edited), and for every durable name confirm its producer actually stages and commits it rather than leaving it untracked.
+5. RECORD the result in context/standards/orchestrator-runtime-files.md's per-file table, including any artifact deliberately left in neither class -- that document already carries two such carve-outs (the deploy ledger, and the stray-handoff/stale-guard trio), so a third is permitted but must be argued, not implied by omission.
+6. Leave a CHECK so the enumeration cannot silently fall behind again: the recurring failure mode is a new producer writing a new artifact name with nothing noticing it belongs in neither class.
+
+--- CONSTRAINTS ---
+
+- Do not collapse the bare-vs-suffixed `.return-meta.json` distinction. The standard states explicitly that it must never be collapsed: bare `.return-meta.json` is tracked durable provenance, `.return-meta-*.json` is ignored.
+- `.orchestrator-handoff.json` and `.return-meta.json` stay tracked. The managed block's own comment names them as deliberate exclusions from the ephemeral class.
+- Verify every claim in the WHY section by grep before acting on it; the counts above were measured on one day in two repos and are a starting point, not the inventory.
+
+---
+
+### 337. Handoff required fields and dropped failure
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
+
+Resolve the handoff-field gap: writers omit required `blockers`/`summary`, and a hard HANDOFF VALIDATION FAILED is printed and then dropped with no durable trace
+
+--- WHY ---
+
+DEFECT (measured live 2026-10-04, ~/Projects/Logos/Verification, batch session sess_1791103758_f1b6b9, an ordinary four-task /orchestrate run). Across the batch's four implement-phase dispatches, `validate-handoff.sh` hard-FAILED on two:
+
+  - task 191 (lean-implementation-agent):    blockers ABSENT                 -> 1 FAIL
+  - task 190 (general-implementation-agent): blockers ABSENT, summary ABSENT -> 2 FAIL
+  - task 197 (general-implementation-agent): clean                           -> PASS
+  - task 193 (general-implementation-agent): clean                           -> PASS
+
+In BOTH failing cases the postflight printed `HANDOFF VALIDATION FAILED` and then completed the task anyway, via `COMPLETION-CLAIM GATE case 2/3 (phase accounting present and complete)`. Nothing durable recorded that the handoff was invalid: not state.json, not the return-meta, not events.jsonl. The validator's verdict reaches a human only as scrollback.
+
+Two observations that constrain the fix:
+
+(a) It is NOT a per-agent bug. `general-implementation-agent` produced one of the two defective handoffs and two clean ones, so this is per-dispatch inconsistency in hand-authored JSON, not a broken template in one agent file.
+
+(b) The same four dispatches ALL emitted WARN for absent `sorry_inventory` and absent `continuation_path`. That is the identical question one severity level down, and belongs in the same ruling rather than a second task.
+
+--- SCOPE ---
+
+Decide and implement ONE of these, repo-wide and consistently:
+
+  (i) WRITER-SIDE: oblige every handoff writer to emit the required fields, enforced somewhere that
+      cannot be forgotten per-dispatch (a composing helper the agents call, rather than prose in
+      each agent file asking them to remember).
+  (ii) POSTFLIGHT-SIDE: normalize an absent `blockers` to [] and derive an absent `summary` from
+      the dispatch's .return-meta.json, so the handoff is completed rather than rejected.
+
+Either way, ALSO make a failed handoff validation leave a durable trace (the natural candidates are an events.jsonl row and a `detected_defects` entry, the latter already rendered by the batch output template) so the next reader sees it without having the terminal still open.
+
+Rule on `sorry_inventory` and `continuation_path` in the same pass: either they are genuinely optional and the WARN should go, or they are expected and belong in whichever mechanism (i)/(ii) establishes.
+
+--- EXPLICIT NON-GOAL ---
+
+DO NOT resolve this by relaxing `validate-handoff.sh` so the failure stops appearing. Dropping `blockers`/`summary` from the required set would convert a real signal into silence and is the one direction this task may not take. If the fields are genuinely not required, that conclusion must be argued from the schema's consumers (who reads `blockers`? who reads `summary`?) and recorded in docs/architecture/handoff-schema.md, not reached by deleting a check to make a red line go away.
+
+--- SITES ---
+
+Verify by grep rather than trusting this list: agent-system/extensions/core/scripts/validate-handoff.sh (the validator and its required set), agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh (the caller, the COMPLETION-CLAIM GATE, and where a durable trace would be written), agent-system/extensions/core/docs/architecture/handoff-schema.md (the schema contract this must stay consistent with), and whichever agent files or templates instruct handoff authoring.
+
+---
 
 ### 336. Rule on the in-dispatch phase-commit staging surface: fifteen implementation agents commit with no file_scope check and no contended-path lease
 - **Status**: [NOT STARTED]
