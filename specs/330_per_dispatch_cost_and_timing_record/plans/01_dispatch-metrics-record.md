@@ -475,7 +475,7 @@ scratch-root + copy-in harness described above and that `tests/test-issue-record
 
 ---
 
-### Phase 6: Wire the Postflight Call Site [NOT STARTED]
+### Phase 6: Wire the Postflight Call Site [COMPLETED]
 
 **Goal**: Every dispatch — completion, partial, blocked, and every other outcome — produces exactly
 one `metrics.jsonl` line, written non-fatally and committed with the work it describes.

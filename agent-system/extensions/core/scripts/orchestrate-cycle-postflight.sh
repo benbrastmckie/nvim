@@ -1488,6 +1488,60 @@ if [ "$verdict" = "blocked" ] || [ "$partial_with_blockers" = "true" ]; then
   fi
 fi
 
+# ─── WORK (m): per-dispatch metrics record ─────────────────────────────────────────────────────
+# One non-fatal dispatch-metrics.sh call per dispatch -- covering every outcome, INCLUDING the
+# no-outcome (have_outcome=false) case, which is precisely the one whose cost is most worth
+# knowing. This is ONE call site, not three arm-local ones, by deliberate design (Decision D2 in
+# the implementation plan this section was built against): the dispatch_status case above has
+# seven arms and sits inside `if [ "$have_outcome" = "true" ]`, and the partial) arm's own
+# issue-record.sh call is gated on partial_blocker_count -gt 0 -- any arm-local metrics call
+# would inherit one of those gates and silently miss research/plan dispatches, the no-outcome
+# path, or an ordinary blocker-free partial. Deliberately NOT gated on have_outcome,
+# research_gate_failed, or dispatch_status -- only on is_live, matching the existing
+# issue-record.sh call sites' dry-run posture. Sited AFTER WORK (k) and BEFORE WORK (i)'s
+# per-task commit below so the appended metrics.jsonl line is staged and committed with the work
+# it describes: `commits` inside that record therefore deliberately EXCLUDES this very
+# postflight bookkeeping commit (Decision D3), capturing only the commits the dispatched agent
+# itself produced between dispatch_start_ts and this postflight run.
+if is_live; then
+  case "$dispatch_status" in
+    implemented|researched|planned) metrics_outcome_arg="completed" ;;
+    partial) metrics_outcome_arg="partial" ;;
+    blocked) metrics_outcome_arg="blocked" ;;
+    failed) metrics_outcome_arg="failed" ;;
+    needs_research) metrics_outcome_arg="deferred" ;;
+    *) metrics_outcome_arg="failed" ;;
+  esac
+
+  # --phase: the already-computed, validated $phase (research|plan|implement) in the ordinary
+  # case; for an off-schema dispatch_status, fall back to the off-schema arm's own inferred_phase
+  # (naming only, set a few hundred lines above), mapping its "unknown" to dispatch-metrics.sh's
+  # closed-enum "other" member.
+  metrics_phase_arg="$phase"
+  if [ "${offschema_dispatch_status:-false}" = "true" ]; then
+    case "${inferred_phase:-}" in
+      research|plan|implement) metrics_phase_arg="$inferred_phase" ;;
+      *) metrics_phase_arg="other" ;;
+    esac
+  fi
+
+  # --cc-session-id: the live environment variable, passed explicitly (D5 in the implementation
+  # plan) rather than left for the child process to re-derive -- already in-process at zero I/O
+  # cost. --dispatch-seq: $expected_dispatch_seq, this cycle's own minted seq (always populated
+  # on a real dispatch) -- deliberately NOT $handoff_dispatch_seq, which is empty on the
+  # recovery path.
+  metrics_args=(--task-dir "$TASK_DIR" --phase "$metrics_phase_arg" --agent "$agent_name" \
+    --outcome "$metrics_outcome_arg" --session "$session_id" \
+    --dispatch-seq "$expected_dispatch_seq" --dispatch-start-ts "$dispatch_start_ts" \
+    --cc-session-id "${CLAUDE_CODE_SESSION_ID:-}" \
+    --phases-completed "$phases_completed" --phases-total "$phases_total")
+
+  bash "${SCRIPT_DIR}/dispatch-metrics.sh" "${metrics_args[@]}" \
+    >/dev/null 2>&1 || echo "Note: dispatch-metrics recording failed (non-fatal)" >&2
+else
+  echo "${notice_prefix} [dry-run] would record a dispatch-metrics.sh entry for task ${task_number} — no write performed." >&2
+fi
+
 # ─── WORK (i): per-task scoped commit ───────────────────────────────────────────────────────────
 # Skipped entirely when the research report gate refused the transition (research_gate_failed) --
 # nothing legitimately advanced this cycle (no status transition, no artifact link, no round

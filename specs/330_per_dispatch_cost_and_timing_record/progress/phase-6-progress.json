@@ -1,0 +1,12 @@
+{
+  "phase": 6,
+  "phase_name": "Wire the Postflight Call Site",
+  "started_at": "2026-10-04T03:20:00Z",
+  "last_updated": "2026-10-04T03:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure anchors; add WORK (m) section before WORK (i) commit, outcome/phase mapping, is_live gate, non-fatal call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
