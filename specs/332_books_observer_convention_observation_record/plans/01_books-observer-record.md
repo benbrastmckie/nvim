@@ -377,34 +377,34 @@ posture.
 
 ---
 
-### Phase 5: Test suite [NOT STARTED]
+### Phase 5: Test suite [COMPLETED]
 
 **Goal**: Write `scripts/tests/test-books-observe.sh` covering the six named acceptance behaviors,
 fixture-driven and hermetic — no dependency on a real `specs/` tree or the external consuming
 repository.
 
 **Tasks**:
-- [ ] Class B strict mode (`set -uo pipefail`) with `PASSED`/`FAILED` counters and
+- [x] Class B strict mode (`set -uo pipefail`) with `PASSED`/`FAILED` counters and
       `pass()`/`fail()`/`info()` helpers, mirroring `scripts/tests/test-books-certify.sh` and
-      `scripts/tests/test-books-gate.sh`'s existing shape; isolated `mktemp -d` git repo per case.
-- [ ] Test: THE JOIN — a fixture with both `issues.jsonl` and `metrics.jsonl` produces a record
-      carrying both halves, grouped by dimension and polarity.
-- [ ] Test: THE ABSENT-PROBE PATH — no RUN log and no executable probe yields `absent` for the
+      `scripts/tests/test-books-gate.sh`'s existing shape; isolated `mktemp -d` git repo per case. *(completed)*
+- [x] Test: THE JOIN — a fixture with both `issues.jsonl` and `metrics.jsonl` produces a record
+      carrying both halves, grouped by dimension and polarity. *(completed)*
+- [x] Test: THE ABSENT-PROBE PATH — no RUN log and no executable probe yields `absent` for the
       probe-dependent groups and the snapshot delta, with exit 0. This is the measured-today
-      default and must be asserted as correct output.
-- [ ] Test: THE PAIRED-BURDEN REQUIREMENT — both `burdens_created[]` and `burdens_lifted[]` are
-      always present (including as `[]`); a record with one and not the other is a test failure.
-- [ ] Test: POLARITY/DIMENSION VALIDATION — a valid tag is read through; an unrecognized
+      default and must be asserted as correct output. *(completed)*
+- [x] Test: THE PAIRED-BURDEN REQUIREMENT — both `burdens_created[]` and `burdens_lifted[]` are
+      always present (including as `[]`); a record with one and not the other is a test failure. *(completed)*
+- [x] Test: POLARITY/DIMENSION VALIDATION — a valid tag is read through; an unrecognized
       dimension or polarity is reported in its dedicated field and never silently coerced; an
-      untagged entry is counted untagged and never defaulted.
-- [ ] Test: BACKFILL MARKING — a `--backfill` record carries `backfilled: true`,
-      `figure_provenance`, and per-group `source`; a live record does not carry `backfilled: true`.
-- [ ] Test: NON-BLOCKING FAILURE — a malformed/truncated `issues.jsonl`, an unreadable task
+      untagged entry is counted untagged and never defaulted. *(completed)*
+- [x] Test: BACKFILL MARKING — a `--backfill` record carries `backfilled: true`,
+      `figure_provenance`, and per-group `source`; a live record does not carry `backfilled: true`. *(completed)*
+- [x] Test: NON-BLOCKING FAILURE — a malformed/truncated `issues.jsonl`, an unreadable task
       directory, and a crashing probe each leave the script exiting 0 with the affected group
-      omitted.
-- [ ] Test: VACUOUS PASS is a first-class field populated from a supplied source, never inferred
-      by negation of a pass.
-- [ ] `chmod +x` the test script; run it green.
+      omitted. *(completed)*
+- [x] Test: VACUOUS PASS is a first-class field populated from a supplied source, never inferred
+      by negation of a pass. *(completed)*
+- [x] `chmod +x` the test script; run it green. *(completed)*
 
 **Timing**: 1.5 hours
 

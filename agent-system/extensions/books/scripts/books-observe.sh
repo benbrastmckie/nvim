@@ -188,7 +188,7 @@ observe_run_core() {
           },
           by_dimension_polarity: (
             [ .[] | . as $e | (($e.tags.dimension // [])[]) as $d
-              | select([$dims[]] | index($d) != null)
+              | select(($dims | index($d)) != null)
               | {dimension: $d, polarity: ($e.tags.polarity // "unknown")} ]
             | group_by(.dimension)
             | map({key: .[0].dimension, value: (group_by(.polarity) | map({key: .[0].polarity, value: length}) | from_entries)})
@@ -196,8 +196,8 @@ observe_run_core() {
           ),
           untagged_count: ([ .[] | select(((.tags.dimension // []) | length) == 0) ] | length),
           unrecognized_tags: (
-            [ .[] | . as $e | (($e.tags.dimension // [])[]) | select(([$dims[]] | index(.)) == null)
-              | {entry_id: $e.entry_id, field: "dimension", value: .} ]
+            [ .[] | . as $e | (($e.tags.dimension // [])[]) as $d | select(($dims | index($d)) == null)
+              | {entry_id: $e.entry_id, field: "dimension", value: $d} ]
             + [ .[] | select(.tags.polarity != null and (.tags.polarity != "positive" and .tags.polarity != "negative"))
                 | {entry_id: .entry_id, field: "polarity", value: .tags.polarity} ]
           ),
@@ -296,8 +296,8 @@ observe_run_core() {
   if [ -n "$commit_hashes" ]; then
     while IFS= read -r h; do
       [ -z "$h" ] && continue
-      a="$(git -C "$repo_root" show "$h" -- '*.lean' 2>/dev/null | grep -cE '^\+[^+].*book_requires' || true)"
-      r="$(git -C "$repo_root" show "$h" -- '*.lean' 2>/dev/null | grep -cE '^-[^-].*book_requires' || true)"
+      a="$(git -C "$repo_root" show "$h" -- '*.lean' 2>/dev/null | grep -cE '^\+[^+]*book_requires' || true)"
+      r="$(git -C "$repo_root" show "$h" -- '*.lean' 2>/dev/null | grep -cE '^-[^-]*book_requires' || true)"
       [ -z "$a" ] && a=0
       [ -z "$r" ] && r=0
       br_added=$((br_added + a))

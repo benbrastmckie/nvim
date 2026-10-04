@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Test suite",
+  "started_at": "2026-10-04T08:50:00Z",
+  "last_updated": "2026-10-04T09:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Class B strict mode, PASSED/FAILED counters, isolated mktemp -d git repo per case", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 2, "description": "Test: THE JOIN", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 3, "description": "Test: THE ABSENT-PROBE PATH", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 4, "description": "Test: THE PAIRED-BURDEN REQUIREMENT", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 5, "description": "Test: POLARITY/DIMENSION VALIDATION", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 6, "description": "Test: BACKFILL MARKING", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 7, "description": "Test: NON-BLOCKING FAILURE", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 8, "description": "Test: VACUOUS PASS", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 9, "description": "chmod +x; run green", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Ran the new suite against the Phase 3/4 script before declaring it done", "result": "caught two real bugs", "reason": "(1) the book_requires-churn grep's '^\\+[^+].*book_requires' pattern never matched a genuinely added line because [^+] consumed the leading content character the literal then needed; fixed to '^\\+[^+]*book_requires'. (2) a jq 'select([$dims[]] | index(.))' expression had '.' already rebound to the piped array by an enclosing pipe, so index() always found the array inside itself; fixed by binding the dimension value to a named variable ($d) before select(). Both fixed inline and re-verified green (47/47)."}
+  ],
+  "handoff_count": 0
+}
