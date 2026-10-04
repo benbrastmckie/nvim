@@ -118,7 +118,16 @@ ONE DEFINITION WAS AUDITED AND DELIBERATELY EXCLUDED. agent-system/extensions/co
 meta-builder-agent.md also invokes git-commit-scoped.sh without `--task`, but its site (line 1499)
 commits `specs/TODO.md specs/state.json` for task CREATION -- it is not a phase commit, it stages
 no deliverables, and it is already declared in the --task-wiring task's file_scope. Including it
-here would create a footprint collision with that task for no gain. If a future reader counts
+here would create a footprint collision with that task for no gain.
+
+Do NOT read that site as carrying a documented ruling on `--task`. The only documented omission
+there concerns a DIFFERENT flag: that recipe states `--honest-index-rows` "is deliberately NOT
+added here, mirroring commands/todo.md's identical documented omission: this commit creates N
+tasks in one call, so there is no single owning task number for the flag to key on." That
+rationale is about honest-index-rows, not about `--task`, and nothing anywhere documents the
+`--task` omission at that site. So its `--task` gap is exactly as undocumented as the fifteen
+below; the reason it is excluded here is ownership (the --task-wiring task declares that file)
+plus the fact that it stages no deliverables, NOT that the omission has been ruled on. If a future reader counts
 sixteen invokers, that is the sixteenth, and this is why it is absent.
 
 == WHY THIS IS NOT COVERED BY THE --task-WIRING TASK ==
