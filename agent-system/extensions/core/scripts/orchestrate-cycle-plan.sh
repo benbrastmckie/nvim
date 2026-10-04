@@ -1519,6 +1519,8 @@ for t in "${task_args[@]}"; do
   all_preds_done=true
   has_failed_pred=false
   dangling_preds=""
+  pending_preds_in_batch=""
+  pending_preds_out_of_batch=""
   if [ "$dep_count" -gt 0 ]; then
     while IFS= read -r d; do
       [ -z "$d" ] && continue
@@ -1543,6 +1545,17 @@ for t in "${task_args[@]}"; do
         dangling_preds="${dangling_preds:+${dangling_preds},}${d}"
         continue
       fi
+      # The predecessor is live and non-terminal. Classify it by BATCH MEMBERSHIP, because the
+      # two cases have opposite operator meanings and only one of them is a defect to surface:
+      #   in-batch     -> ordinary wave ordering. A later cycle of THIS run will dispatch the
+      #                   predecessor and then this task becomes eligible. Stay silent.
+      #   out-of-batch -> this task can NEVER become eligible this run, because nothing in the
+      #                   batch will ever advance that predecessor. Surfaced in blocked[] below.
+      if printf '%s\n' "${task_args[@]}" | grep -qxF "$d"; then
+        pending_preds_in_batch="${pending_preds_in_batch:+${pending_preds_in_batch},}${d}"
+      else
+        pending_preds_out_of_batch="${pending_preds_out_of_batch:+${pending_preds_out_of_batch},}${d}"
+      fi
       all_preds_done=false
     done < <(echo "$deps" | jq -r '.[]')
   fi
@@ -1554,6 +1567,17 @@ for t in "${task_args[@]}"; do
   fi
   if [ -n "$dangling_preds" ]; then
     out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg d "$dangling_preds" '{task: $t, reason: ("dependencies[] names task(s) " + $d + " that resolve in neither active_projects nor the archive; fix or drop the dangling edge before this task can be dispatched")}')")
+    continue
+  fi
+  # An out-of-batch live predecessor with NO in-batch live predecessor means no cycle of this run
+  # can ever make this task eligible. Report it rather than dropping it silently: the aggregate
+  # `no_eligible_stuck` stop message names no task and no predecessor, so an operator running
+  # `/orchestrate N` on a task whose predecessor is merely open saw a bare "waiting for next
+  # cycle" with nothing to act on. This is the live-predecessor twin of the archived-dependency
+  # defect the dangling_preds branch above was added for; that fix covered the resolve-to-nothing
+  # case and left this one silent.
+  if [ -n "$pending_preds_out_of_batch" ] && [ -z "$pending_preds_in_batch" ]; then
+    out_blocked_rows+=("$(jq -n -c --argjson t "$t" --arg d "$pending_preds_out_of_batch" '{task: $t, reason: ("dependencies[] names non-terminal task(s) " + $d + " that are not in this batch; no cycle of this run can advance them, so this task cannot be dispatched -- add them to the invocation (e.g. /orchestrate " + $d + "," + ($t|tostring) + "), complete them first, or drop the edge")}')")
     continue
   fi
   if [ "$all_preds_done" != "true" ]; then

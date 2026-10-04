@@ -246,6 +246,16 @@ Tracks progress for interrupted or partially completed work:
 **Purpose**: Enables skill postflight to determine resume point and provide user guidance when
 an agent is interrupted before completion.
 
+**DELETE THIS KEY WHEN THE STATUS BECOMES TERMINAL-AND-NOT-`partial`.** Most agents write an
+initial `.return-meta.json` carrying `status: "in_progress"` together with a `partial_progress`
+stub, then UPDATE that same file in place at the end of the dispatch. Flipping `status` to
+`researched`/`planned`/`implemented` without also removing `partial_progress` leaves the two
+fields contradicting each other, and the validator FAILS it
+(`RETURN_META_SCHEMA_VIOLATION`: "partial_progress is present but status='implemented'").
+Setting `partial_progress.stage` to `"complete"` is NOT the fix — the key must be absent, not
+re-worded. Either delete the key on the final write, or compose the final object fresh rather
+than merging into the initial stub.
+
 ### completion_data (optional)
 
 **Type**: object

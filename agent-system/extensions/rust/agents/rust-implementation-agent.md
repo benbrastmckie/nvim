@@ -198,6 +198,12 @@ integers derived from the plan's phase headings — never fabricated, never left
 default. `status` is one of `implemented`, `partial`, `blocked`. `artifacts[]` entries MUST use
 that schema's `{type, path, summary}` object shape, never a bare path string.
 
+**`summary` and `blockers` are BOTH required top-level fields.** `summary` is 2-4 sentences
+(~100-token budget) describing what this dispatch accomplished; `blockers` is a JSON array, and
+`[]` is normal and expected on a clean `researched`/`planned`/`implemented` return. The handoff
+validator FAILS on either one missing, so write both every time — a handoff carrying only the
+fields enumerated above does not validate.
+
 This is a different file from the context-pressure handoff at
 `specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md`: a different path, a different
 consumer, and a different trigger. Both may be written in the same dispatch; neither substitutes

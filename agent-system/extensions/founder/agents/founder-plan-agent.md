@@ -73,6 +73,12 @@ cat > "$metadata_file" << 'EOF'
 EOF
 ```
 
+> **Remove `partial_progress` on the final write.** This stub is correct only while `status` is
+> `in_progress`/`partial`. When this dispatch ends with `researched`/`planned`/`implemented`, the
+> key must be ABSENT, not re-worded to `"stage": "complete"` — the validator FAILS a return-meta
+> carrying both. See `context/formats/return-metadata-file.md`'s `partial_progress` section.
+
+
 ### Stage 1: Parse Delegation Context
 
 Extract from input:
@@ -846,6 +852,12 @@ integers — never `null`, never fabricated. Set `phases_total` to the phase cou
 written and `phases_completed` to `0`. `status` is one of `planned`, `partial`, `blocked`.
 `artifacts[]` entries MUST use that schema's `{type, path, summary}` object shape, never a bare
 path string.
+
+**`summary` and `blockers` are BOTH required top-level fields.** `summary` is 2-4 sentences
+(~100-token budget) describing what this dispatch accomplished; `blockers` is a JSON array, and
+`[]` is normal and expected on a clean `researched`/`planned`/`implemented` return. The handoff
+validator FAILS on either one missing, so write both every time — a handoff carrying only the
+fields enumerated above does not validate.
 
 ## Research Report Integration
 

@@ -763,6 +763,12 @@ schema's `{type, path, summary}` object shape, never a bare path string. For the
 between `status: "blocked"` and `status: "partial"` with a populated `blockers[]` entry, see
 `context/contracts/wrap-up.md`'s "`blocked` vs. `partial`-with-`blockers`" subsection.
 
+**`summary` and `blockers` are BOTH required top-level fields.** `summary` is 2-4 sentences
+(~100-token budget) describing what this dispatch accomplished; `blockers` is a JSON array, and
+`[]` is normal and expected on a clean `researched`/`planned`/`implemented` return. The handoff
+validator FAILS on either one missing, so write both every time — a handoff carrying only the
+fields enumerated above does not validate.
+
 ### Stage 8: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: phases executed, files created/modified, summary path, metadata status.

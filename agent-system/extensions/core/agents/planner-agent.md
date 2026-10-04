@@ -502,6 +502,12 @@ written and `phases_completed` to `0`. `status` is one of `planned`, `partial`, 
 `artifacts[]` entries MUST use that schema's `{type, path, summary}` object shape, never a bare
 path string.
 
+**`summary` and `blockers` are BOTH required top-level fields.** `summary` is 2-4 sentences
+(~100-token budget) describing what this dispatch accomplished; `blockers` is a JSON array, and
+`[]` is normal and expected on a clean `researched`/`planned`/`implemented` return. The handoff
+validator FAILS on either one missing, so write both every time — a handoff carrying only the
+fields enumerated above does not validate.
+
 ### Stage 7: Return Brief Text Summary
 
 Return 3-6 bullet points summarizing: phase count, effort estimate, scope covered, plan path, metadata status.

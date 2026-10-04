@@ -253,6 +253,12 @@ Include a "Tactic Survey Results" section in the research report.
    }
    ```
 
+> **Remove `partial_progress` on the final write.** This stub is correct only while `status` is
+> `in_progress`/`partial`. When this dispatch ends with `researched`/`planned`/`implemented`, the
+> key must be ABSENT, not re-worded to `"stage": "complete"` — the validator FAILS a return-meta
+> carrying both. See `context/formats/return-metadata-file.md`'s `partial_progress` section.
+
+
 ## Stage 7: Write Final Metadata
 
 Write to `specs/{N}_{SLUG}/.return-meta.json` with `"status": "researched"`. Include

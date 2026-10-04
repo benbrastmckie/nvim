@@ -78,6 +78,12 @@ cat > "$metadata_file_path" << 'METAEOF'
 METAEOF
 ```
 
+> **Remove `partial_progress` on the final write.** This stub is correct only while `status` is
+> `in_progress`/`partial`. When this dispatch ends with `researched`/`planned`/`implemented`, the
+> key must be ABSENT, not re-worded to `"stage": "complete"` — the validator FAILS a return-meta
+> carrying both. See `context/formats/return-metadata-file.md`'s `partial_progress` section.
+
+
 ## Stage 1: Parse Delegation Context
 
 Extract from the delegation context JSON passed in the prompt:
