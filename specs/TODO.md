@@ -11,8 +11,8 @@ next_project_number: 335
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,332 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,333 | 22,251,271,272,280,300,332 | core-agent-system, extensions, orchestrator |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,333 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303 | 22,251,271,272,280,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
@@ -41,8 +41,7 @@ next_project_number: 335
 
 ### Extensions
 
-332 [PLANNED] — Books observer: the per-task convention observation record
-  └─ 333 [NOT STARTED] — The /books command with --review and --revise
+333 [NOT STARTED] — The /books command with --review and --revise
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -229,12 +228,13 @@ observer is writing records.
 
 ### 332. Books observer: the per-task convention observation record
 - **Effort**: 4-8 hours
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 298, Task 329, Task 330, Task 331
 - **Research**: [332_books_observer_convention_observation_record/reports/01_books-observer-design.md]
 - **Plan**: [332_books_observer_convention_observation_record/plans/01_books-observer-record.md]
+- **Summary**: [332_books_observer_convention_observation_record/summaries/01_books-observer-record-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there

@@ -1694,7 +1694,7 @@
     {
       "project_number": 332,
       "project_name": "books_observer_convention_observation_record",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "title": "Books observer: the per-task convention observation record",
       "topic": "extensions",
@@ -1708,7 +1708,7 @@
       "priority": "high",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-04T07:35:18Z",
+      "last_updated": "2026-10-04T08:28:13Z",
       "artifacts": [
         {
           "path": "specs/332_books_observer_convention_observation_record/reports/01_books-observer-design.md",
@@ -1719,6 +1719,11 @@
           "path": "specs/332_books_observer_convention_observation_record/plans/01_books-observer-record.md",
           "type": "plan",
           "summary": "Six-phase plan for the books post-task observer: observation-record standard, signal-tagging guide, books-observe.sh live join plus --backfill, fixture test suite, and manifest/index/README/EXTENSION registration."
+        },
+        {
+          "path": "specs/332_books_observer_convention_observation_record/summaries/01_books-observer-record-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the books post-task observer: observation-record standard, signal-tagging guide, books-observe.sh (live join + --backfill), fixture test suite (47/47 green), and manifest/index/README/EXTENSION registration. States the required deployment caveat plainly."
         }
       ],
       "file_scope": [
@@ -1732,7 +1737,8 @@
         "agent-system/extensions/books/scripts/tests/test-books-observe.sh"
       ],
       "session_id": "sess_1791098481_49e186",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Registered books-observe on the topic/task_type-keyed observer seam and shipped the full OBSERVATION-record pipeline: the schema standard, the signal-tagging guide, the observer script (live mode + --backfill), a 47-case fixture test suite, and all manifest/index/doc registration. All 6 plan phases complete; full gate set green (check-extension-docs.sh, verify-deploy.sh, 103/111 run-all.sh suites with only pre-existing unrelated failures). Inert in any consuming repository until the user loads the books extension and redeploys core."
     },
     {
       "project_number": 333,

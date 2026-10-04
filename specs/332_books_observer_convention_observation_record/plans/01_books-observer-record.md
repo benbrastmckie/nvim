@@ -1,7 +1,7 @@
 # Implementation Plan: Task #332
 
 - **Task**: 332 - Books observer: the per-task convention observation record
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: 298 (books context corpus), 329 (issue log + `tags` seam), 330 (dispatch metrics + `--backfill` precedent), 331 (topic-keyed observer seam) — all four `completed`
 - **Research Inputs**: specs/332_books_observer_convention_observation_record/reports/01_books-observer-design.md
