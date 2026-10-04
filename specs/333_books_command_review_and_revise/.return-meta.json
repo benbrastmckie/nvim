@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/333_books_command_review_and_revise/plans/01_books-review-revise-command.md",
-      "summary": "Six-phase plan for the new /books --review/--revise command, mirroring /distill's three-layer sub-mode split in the books extension source store."
-    }
-  ],
-  "next_steps": "Run /implement 333 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "This agent system has a reusable three-layer shape for a slash command with many sub-modes, proven twice (memory's /distill, books' /books): (1) commands/<name>.md parses flags into a single sub_mode value and declares the delegation payload once; (2) a single direct-execution skill holds a 'Shared Sub-Mode Skeleton' section stating the common seven-step shape ONCE with generic placeholders, plus one-line stub pointers of the exact form 'READ <pattern-file> now and follow it exactly.'; (3) one context pattern file per sub-mode is 'the COMPLETE and ONLY specification' for that sub-mode, stating only its deltas from the skeleton. Sanctioned skeleton deviations (e.g. a read-only sub-mode skipping the MANDATORY-STOP interactive step) are stated explicitly in the skeleton's own text, never left as a silent omission. Because AskUserQuestion is not reachable from a dispatched subagent on this harness, every interactive gate must live inline in the direct-execution skill body; only non-interactive research or aggregation may be delegated. When adding such a command to an existing extension, note EXTENSION.md's hard 60-line Rule U cap: an extension already at 60 lines requires compression in the same change that adds a table row.",
-      "category": "PATTERN",
-      "source_artifact": "specs/333_books_command_review_and_revise/plans/01_books-review-revise-command.md",
-      "confidence": 0.78,
-      "suggested_keywords": ["sub-mode", "skill-skeleton", "stub-pointer", "AskUserQuestion", "extension-authoring", "direct-execution"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1791098481_49e186_333",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7.75,
-    "dependency_waves": 5
-  },
-  "dispatch_seq": 5
+    "session_id": "sess_1791098481_49e186",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #333
 
 - **Task**: 333 - The /books command with --review and --revise
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.75 hours
 - **Dependencies**: Task 332 (books-observe.sh post-task observer) — complete
 - **Research Inputs**: specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md
@@ -121,27 +121,27 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Command file — `commands/books.md` [NOT STARTED]
+### Phase 1: Command file — `commands/books.md` [COMPLETED]
 
 **Goal**: A `/books` command file that parses `--review`/`--revise` (plus `--dry-run`/`--verbose`)
 into a `sub_mode` and delegates to one direct-execution skill, mirroring `distill.md`'s
 argument-parsing shape, and rejecting a bare invocation with a usage message.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/memory/commands/distill.md` in full as the structural model
+- [x] Read `agent-system/extensions/memory/commands/distill.md` in full as the structural model
       (frontmatter `description:`, the `# Command:` header with Purpose/Layer/Delegates To/Input,
       the `<argument_parsing>` block with its numbered Sub-Mode Dispatch list and pseudocode).
-- [ ] Write `agent-system/extensions/books/commands/books.md` with that same section order.
-- [ ] Sub-Mode Dispatch: `--review` -> `review`, `--revise` -> `revise`. **No default**: a bare
+- [x] Write `agent-system/extensions/books/commands/books.md` with that same section order.
+- [x] Sub-Mode Dispatch: `--review` -> `review`, `--revise` -> `revise`. **No default**: a bare
       `/books` prints a usage message naming both flags and exits without delegating. State this as
       a deliberate divergence from `distill.md`'s bare-invocation report mode, with the reason (no
       books health-report analogue is specified), so a future reader does not "fix" it.
-- [ ] Additional flags: `--dry-run` (shows candidates, writes nothing — meaningful for `--revise`,
+- [x] Additional flags: `--dry-run` (shows candidates, writes nothing — meaningful for `--revise`,
       an accepted no-op for the already-read-only `--review`) and `--verbose`.
-- [ ] Declare the delegation payload exactly once: `skill-books-review` with
+- [x] Declare the delegation payload exactly once: `skill-books-review` with
       `mode=books, sub_mode={review|revise}` plus the two additional flags, as the contract Phase 2
       consumes.
-- [ ] Mirror `distill.md`'s read-only/mutating annotation so the reader can see at a glance that
+- [x] Mirror `distill.md`'s read-only/mutating annotation so the reader can see at a glance that
       `--review` writes only its own report and `--revise` creates tasks.
 
 **Timing**: 1 hour
