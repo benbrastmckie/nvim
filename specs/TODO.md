@@ -614,6 +614,7 @@ rather than in parallel with it.
 - **Dependencies**: Task 326, Task 285
 - **Research**: [329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md]
 - **Plan**: [329_per_task_issue_log_contract_writer_and_threading/plans/01_issue-log-writer-threading.md]
+- **Summary**: [329_per_task_issue_log_contract_writer_and_threading/summaries/01_issue-log-writer-threading-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` in
 every repo is a gitignored, disposable deploy artifact regenerated from the source store; a file

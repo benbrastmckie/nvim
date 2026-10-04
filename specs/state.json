@@ -1515,7 +1515,7 @@
     {
       "project_number": 329,
       "project_name": "per_task_issue_log_contract_writer_and_threading",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Per-task issue log: contract, writer and dispatch threading",
       "topic": "core-agent-system",
@@ -1527,7 +1527,7 @@
       "priority": "high",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-03T23:40:50Z",
+      "last_updated": "2026-10-03T23:41:23Z",
       "artifacts": [
         {
           "path": "specs/329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md",
@@ -1538,6 +1538,11 @@
           "path": "specs/329_per_task_issue_log_contract_writer_and_threading/plans/01_issue-log-writer-threading.md",
           "type": "plan",
           "summary": "9-phase implementation plan across 4 dependency waves (~11h) for the per-task issue log contract, writer, threading, orchestrator call sites, relation verdicts, and reflection retirement."
+        },
+        {
+          "path": "specs/329_per_task_issue_log_contract_writer_and_threading/summaries/01_issue-log-writer-threading-summary.md",
+          "type": "summary",
+          "summary": "All 9 plan phases completed: issue-log.md format doc, issue-record.sh writer + test suite, .issues.lock ephemeral registration, dispatch/contract threading, seven orchestrator-side call sites, errors[] MIRROR verdict, and end-to-end reflection-field retirement across core and memory."
         }
       ],
       "file_scope": [
@@ -1580,7 +1585,8 @@
         "specs/.gitignore"
       ],
       "session_id": "sess_1791065283_d98d41",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented the per-task issues.jsonl capture log end-to-end: the single issue-record.sh writer and its 15-case test suite, the .issues.lock ephemeral runtime-file registration, the unconditional ## Issue Log dispatch-threading section plus two shared-contract recording obligations, seven orchestrator-side call sites across the cycle postflight/plan scripts, the errors[] MIRROR verdict, and the full retirement of the dead state.json reflection field across both the core and memory extension source stores."
     },
     {
       "project_number": 330,
