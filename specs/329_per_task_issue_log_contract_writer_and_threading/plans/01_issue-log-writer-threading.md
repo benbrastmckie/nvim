@@ -563,7 +563,7 @@ authority.
 
 ---
 
-### Phase 7: Record the `errors[COMPLETED]
+### Phase 7: Record the `errors[]` Verdict and Retire `reflection` in Core [COMPLETED]
 
 **Goal**: `return-metadata-file.md` states the `errors[]` relation verdict, and the dead
 state.json `reflection` field is removed from core end-to-end rather than left dead beside a newly
