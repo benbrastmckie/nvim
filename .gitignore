@@ -47,6 +47,11 @@
 **/.exhausted-loop-guard-*.json
 **/.events.lock
 **/.errors.lock
+**/.decisions.lock
+**/.issues.lock
+**/.metrics.lock
+/specs/tmp/
+**/.orchestration/
 **/.commit-lock/
 **/.deploy-lock/
 **/.scope-lock/

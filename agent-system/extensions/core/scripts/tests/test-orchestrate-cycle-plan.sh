@@ -2983,6 +2983,15 @@ cp "$CORE_DIR/orchestrate-build-dispatch.sh" "$WORKDIR/.claude/scripts/orchestra
 cp "$CORE_DIR/update-task-status.sh" "$WORKDIR/.claude/scripts/update-task-status.sh"
 cp "$CORE_DIR/state-write.sh" "$WORKDIR/.claude/scripts/state-write.sh"
 cp "$CORE_DIR/generate-todo.sh" "$WORKDIR/.claude/scripts/generate-todo.sh"
+# Transitive collaborators of the two REAL scripts copied just above. Omitting them does not fail
+# loudly at copy time -- the sandbox simply lacks them, and the first real invocation dies with a
+# 127 that surfaces as an unrelated assertion mismatch much later: generate-todo.sh calls
+# generate-task-order.sh (its own Task Order section), and update-task-status.sh calls
+# update-plan-status.sh. This is the same hardcoded-copy-list gap that known-failures.txt's header
+# records as having produced three earlier phantom "failures" via a missing
+# lib/return-meta-status-vocabulary.sh -- not a product defect in either case.
+cp "$CORE_DIR/generate-task-order.sh" "$WORKDIR/.claude/scripts/generate-task-order.sh"
+cp "$CORE_DIR/update-plan-status.sh" "$WORKDIR/.claude/scripts/update-plan-status.sh"
 cp "$CORE_DIR/lib/status-vocabulary.sh" "$WORKDIR/.claude/scripts/lib/status-vocabulary.sh"
 chmod +x "$WORKDIR"/.claude/scripts/*.sh
 

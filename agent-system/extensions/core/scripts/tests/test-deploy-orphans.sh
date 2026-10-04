@@ -148,6 +148,12 @@ EOF
 mkdir -p "$TARGET/.claude/tmp"
 echo "planted runtime artifact" > "$TARGET/.claude/tmp/workflow-active-test-canary"
 
+# G: a tmp/noop-bash-count-<session-id> runtime artifact -- must NOT be reported. Shaped like
+# the real per-session counter hooks/detect-noop-bash.sh writes as a side effect of interactive
+# Bash tool use; it was observed appearing and disappearing between consecutive gate runs inside
+# one dispatch, which made it a flaky orphan finding until this exclusion landed.
+echo "3" > "$TARGET/.claude/tmp/noop-bash-count-sess_0000000000_canary"
+
 # F: a scheduled_tasks.lock runtime artifact at the .claude/ root -- must NOT be reported.
 # Shaped like the real lock written by the scheduled-task mechanism at execution time
 # (sessionId/pid/acquiredAt), never by the copy engine.
@@ -197,6 +203,12 @@ else
     fail "Assertion B: runtime artifact 'tmp/workflow-active-test-canary' WAS reported (should be excluded)"
   else
     pass "Assertion B: runtime artifact 'tmp/workflow-active-test-canary' correctly excluded"
+  fi
+
+  if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: tmp/noop-bash-count-sess_0000000000_canary"; then
+    fail "Assertion G: runtime artifact 'tmp/noop-bash-count-*' WAS reported (should be excluded)"
+  else
+    pass "Assertion G: runtime artifact 'tmp/noop-bash-count-*' correctly excluded"
   fi
 
   # Assertion C: the merged/generated artifact context/index.json is NOT reported.

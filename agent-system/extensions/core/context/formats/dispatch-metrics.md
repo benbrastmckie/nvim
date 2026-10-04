@@ -151,7 +151,7 @@ From the matched file, once found:
 - **`transcript.span_seconds`**: the first-to-last-line `timestamp` span, recorded purely as
   secondary corroboration of `wall_clock_seconds` — never the primary figure.
 
-## Three Measured Traps — Named Warnings
+## Four Measured Traps — Named Warnings
 
 Each of the following has already misled analysis in this codebase and MUST NOT be repeated.
 
@@ -180,6 +180,31 @@ wall-clock — a different, coarser-grained figure spanning potentially several 
 from **phase-commit timestamps** (the `git log` timestamps of commits matching the
 `{N} phase {P}: {name}`-shaped commit-subject convention documented in `rules/git-workflow.md`),
 never from `events.jsonl`'s `duration_seconds` and never from counting `dispatch_seq` values.
+
+### Trap (d): `--backfill N` selects commits by subject grep, which task-number reuse breaks
+
+`--backfill N` finds the dispatches to reconstruct by grepping commit subjects for this repo's
+`task N:` / `task N phase P:` convention. Task numbers are **not durable** — they are renumbered
+by vault operations (see `rules/state-management.md`), so number `N` may have belonged to an
+entirely unrelated task earlier in history, and that task's commits match the same grep.
+
+Measured: `--backfill 329` run live matched **20 commits**, including commits from an unrelated
+historical task that had also carried number 329 for a typst-primary documentation update. The
+extra commits are not distinguishable from the intended ones by subject alone.
+
+Consequences for anyone reading or writing backfilled records:
+
+- A `backfilled: true` record's `commits` block may over-count, and any figure derived from it
+  (notably `churn`) may aggregate unrelated work. `figure_provenance` marks such figures
+  `derived`, never `measured` — treat a `derived` figure from a backfill run as an upper bound.
+- Do **not** persist a backfill run's output into a task directory without first checking the
+  matched subjects. The live run above was deliberately not persisted for this reason.
+- A live postflight record (`backfilled: false`) is unaffected: it counts only commits made
+  between `dispatch_start_ts` and the postflight run, with no subject grep involved.
+
+This is a known, documented limitation, not a defect to work around silently. Making the
+selection reuse-safe requires a durable per-dispatch commit key rather than a subject grep, which
+is tracked as its own work item.
 
 ## The 30-Day Retention Window — Capture at Postflight Time, Not Later
 

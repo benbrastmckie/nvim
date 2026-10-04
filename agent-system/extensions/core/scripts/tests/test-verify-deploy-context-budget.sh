@@ -50,7 +50,27 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
+# REPO_ROOT must be DISCOVERED, not computed by a fixed number of `..` hops. This suite is run
+# from two different layouts with different depths: the source store
+# (<repo>/agent-system/extensions/core/scripts/tests, where CORE_DIR/../../../.. is correct) and
+# the deployed tree (<repo>/.claude/scripts/tests, where the same arithmetic overshoots to
+# $HOME). Under run-all.sh the deployed path is the one that runs, so the fixed-hop form made
+# this suite exit 2 with "expected $HOME/agent-system/..." -- a path that never exists -- and
+# Gate 20 went unexercised. Walk up instead, looking for the marker this suite actually needs.
+REPO_ROOT=""
+_probe="$SCRIPT_DIR"
+while [ "$_probe" != "/" ]; do
+  if [ -d "$_probe/agent-system/extensions/core" ]; then
+    REPO_ROOT="$_probe"
+    break
+  fi
+  _probe="$(cd "$_probe/.." && pwd)"
+done
+unset _probe
+if [ -z "$REPO_ROOT" ]; then
+  echo "ERROR: could not locate a repository root containing agent-system/extensions/core above $SCRIPT_DIR" >&2
+  exit 2
+fi
 
 VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
 BASELINE_LIB="$CORE_DIR/lib/deploy-baseline-lib.sh"
@@ -85,6 +105,16 @@ rsync -a --exclude='literature-pyenv' "$REPO_ROOT/agent-system/extensions/" "$FI
 cp "$REPO_ROOT/CLAUDE.md" "$FIXTURE/CLAUDE.md"
 cp "$REPO_ROOT/.claude-extensions.json" "$FIXTURE/.claude-extensions.json"
 [ -f "$REPO_ROOT/.gitignore" ] && cp "$REPO_ROOT/.gitignore" "$FIXTURE/.gitignore"
+# Gate 14 (runtime-file tracking) runs `git check-ignore` against the fixture, so the fixture's
+# .gitignore must carry every canonical ephemeral-class pattern. Copying the repo's root
+# .gitignore alone is NOT sufficient: that file is hand-maintained and had drifted five patterns
+# behind scripts/lib/runtime-file-patterns.sh (.decisions.lock, .issues.lock, .metrics.lock,
+# /specs/tmp/, .orchestration/), which made gate14 fail inside the fixture and tripped the
+# baseline-sanity assertion below even though Gate 20 itself was clean. Append the canonical block
+# from the single source of truth, exactly as tests/test-deploy-orphans.sh already does, so this
+# suite can never again be broken by drift in a hand-maintained file it merely borrows.
+. "${CORE_DIR}/lib/runtime-file-patterns.sh"
+runtime_ignore_block >> "$FIXTURE/.gitignore"
 ln -s "$REPO_ROOT/.claude" "$FIXTURE/.claude"
 git init -q "$FIXTURE"
 git -C "$FIXTURE" config user.email "test@example.com"

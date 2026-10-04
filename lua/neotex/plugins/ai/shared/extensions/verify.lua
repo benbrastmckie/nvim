@@ -878,6 +878,13 @@ local function is_runtime_artifact(rel)
   if rel == "scheduled_tasks.lock" then
     return true
   end
+  -- per-session trivial-Bash counter written by hooks/detect-noop-bash.sh purely as a side
+  -- effect of interactive Bash tool use -- never by the copy engine. Observed to appear and
+  -- disappear between consecutive gate runs inside a single dispatch, which is what made it a
+  -- flaky orphan finding rather than a stable one.
+  if rel:match("^tmp/noop%-bash%-count%-") then
+    return true
+  end
   if rel:match("__pycache__/") or rel:match("%.pyc$") then
     return true
   end
