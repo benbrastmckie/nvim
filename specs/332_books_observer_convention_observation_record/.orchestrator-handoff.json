@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "dispatch_seq": 2,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/332_books_observer_convention_observation_record/plans/01_books-observer-record.md",
+      "summary": "Six-phase plan for the books post-task observer: observation-record standard, signal-tagging guide, books-observe.sh live join plus --backfill, fixture test suite, and manifest/index/README/EXTENSION registration."
+    }
+  ],
+  "session_id": "sess_1791098481_49e186_332",
+  "notes": "Plan validates clean under validate-artifact.sh --strict (0 warnings). Two deviations from the dispatch text, both resolved in the plan's Decisions section: (D1) record location resolved as owner-ruled per-task file plus a derived accumulating digest log, reconciling the dispatch's 'appended to a log' with the consuming repository's ruled one-file-per-task contract; and README.md added as an eighth touched file because check-extension-docs.sh Rule X checks README.md specifically, which the dispatch's seven-file deliverable list omits."
+}

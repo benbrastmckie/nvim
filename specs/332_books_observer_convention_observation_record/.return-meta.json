@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791098481_49e186_332",
-  "dispatch_seq": 1,
-  "findings_count": 8,
-  "next_steps": "Run /plan 332 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/332_books_observer_convention_observation_record/reports/01_books-observer-design.md",
-      "summary": "Grounds books-observe.sh design in the already-enforced manifest observer schema (creating-extensions.md + check-extension-docs.sh Rule X), the generic issues.jsonl/metrics.jsonl shapes, and the consuming repository's own pre-existing book-evidence SNAPSHOT/RUN/OBSERVATION design (docs/book-evidence.md), which already names this extension as OBSERVATION's sole writer and defines the seven-dimension vocabulary verbatim; flags that neither upstream probe (SNAPSHOT, RUN) exists yet, that task 298's corpus is already landed (correcting a stale dispatch premise), and that only book_requires churn and Validated-by marker promotions are mechanically derivable today without an unbuilt probe."
+      "type": "plan",
+      "path": "specs/332_books_observer_convention_observation_record/plans/01_books-observer-record.md",
+      "summary": "Six-phase plan for the books post-task observer: observation-record standard, signal-tagging guide, books-observe.sh live join plus --backfill, fixture test suite, and manifest/index/README/EXTENSION registration."
     }
   ],
+  "next_steps": "Run /implement 332 to execute the plan",
   "memory_candidates": [
     {
-      "content": "Before designing a new per-task evidence/observation record for an extension, check whether the CONSUMING repository has already designed the exact record in its own docs (e.g. a docs/*-evidence.md or schema/ directory) that names the agent-system extension as the record's sole writer. In the Logos/Verification + books-extension case, docs/book-evidence.md and books/schema/book-evidence-observation-v1.md already specified the seven-dimension vocabulary, the field split, and the location/commit policy before the extension-side task was dispatched -- treat such a document as binding design input, not background reading, and adopt its vocabulary verbatim rather than re-deriving a parallel one.",
+      "content": "When an agent-system extension is tasked with building the WRITER for a record consumed by an external repository, check that repository for pre-existing schema/contract documents before designing the schema. Measured case: the books observation record's full vocabulary (seven dimension keys, polarity enum), its repo-side/agent-side field split, its per-field-group provenance marker, and its committed file location were all already specified in the consuming repository's own docs/book-evidence.md plus three books/schema/book-evidence-*-v1.md companions, which explicitly name the agent system's extension as the record's sole writer. Treat such documents as binding design input and conform verbatim (citing them by filename, never by task number) rather than re-deriving a parallel vocabulary that a later cross-repository rollup must reconcile. Corollary for plan decomposition: freeze the schema document as the first phase so every later phase reads field names off one frozen source.",
       "category": "PATTERN",
-      "source_artifact": "specs/332_books_observer_convention_observation_record/reports/01_books-observer-design.md",
+      "source_artifact": "specs/332_books_observer_convention_observation_record/plans/01_books-observer-record.md",
       "confidence": 0.75,
-      "suggested_keywords": ["books", "observer", "evidence-model", "cross-repo-contract", "observation-record"]
-    },
-    {
-      "content": "The manifest 'observers' seam (topic/task_type-keyed, resolve-ALL, matched by routing_resolve_observers() in manifest-routing-lib.sh) requires the observer's script basename to also appear in provides.scripts (or it never deploys) AND requires the observer key or script basename to be mentioned in the extension's own README.md, not just EXTENSION.md -- both are mechanically enforced by check-extension-docs.sh's Rule X (check_observers_resolve / check_observers_documented).",
-      "category": "CONFIG",
-      "source_artifact": "specs/332_books_observer_convention_observation_record/reports/01_books-observer-design.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["observers", "manifest.json", "check-extension-docs", "Rule X", "provides.scripts"]
-    },
-    {
-      "content": "dispatch-metrics.sh and issue-record.sh (the generic per-task issues.jsonl/metrics.jsonl writers) exist in the agent-system source store but had never been exercised in the Logos/Verification consuming repository as of 2026-10-04: none of its ten completed books-topic task directories has an issues.jsonl or metrics.jsonl file, because the books extension is not loaded there and core has not been redeployed with these capabilities. When building an observer/backfill feature against a 'real corpus', always verify the corpus actually has the generic records on disk rather than assuming the generic machinery's own completion implies it was ever invoked in that specific repository.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/332_books_observer_convention_observation_record/reports/01_books-observer-design.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["backfill", "issues.jsonl", "metrics.jsonl", "deployment-inertness", "books"]
+      "suggested_keywords": ["extension", "observer", "schema-conformance", "consuming-repository", "contract-discovery", "vocabulary-drift"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1791098481_49e186_332",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 8,
+    "dependency_waves": [[1], [2, 3], [4], [5], [6]]
+  },
+  "dispatch_seq": 2
 }

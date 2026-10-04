@@ -41,7 +41,7 @@ next_project_number: 335
 
 ### Extensions
 
-332 [RESEARCHED] — Books observer: the per-task convention observation record
+332 [PLANNED] — Books observer: the per-task convention observation record
   └─ 333 [NOT STARTED] — The /books command with --review and --revise
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
@@ -229,11 +229,12 @@ observer is writing records.
 
 ### 332. Books observer: the per-task convention observation record
 - **Effort**: 4-8 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 298, Task 329, Task 330, Task 331
 - **Research**: [332_books_observer_convention_observation_record/reports/01_books-observer-design.md]
+- **Plan**: [332_books_observer_convention_observation_record/plans/01_books-observer-record.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
