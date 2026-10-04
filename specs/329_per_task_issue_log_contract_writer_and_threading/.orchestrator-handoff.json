@@ -1,19 +1,19 @@
 {
   "task_number": 329,
-  "session_id": "sess_1791065283_d98d41_329",
-  "status": "planned",
-  "phase": "plan",
-  "phases_completed": 0,
+  "session_id": "sess_1791065283_d98d41",
+  "status": "implemented",
+  "phase": "implement",
+  "phases_completed": 9,
   "phases_total": 9,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/329_per_task_issue_log_contract_writer_and_threading/plans/01_issue-log-writer-threading.md",
-      "summary": "9-phase implementation plan across 4 dependency waves (~11h) for the per-task issue log contract, writer, threading, orchestrator call sites, relation verdicts, and reflection retirement."
+      "type": "summary",
+      "path": "specs/329_per_task_issue_log_contract_writer_and_threading/summaries/01_issue-log-writer-threading-summary.md",
+      "summary": "All 9 plan phases completed: issue-log.md format doc, issue-record.sh writer + test suite, .issues.lock ephemeral registration, dispatch/contract threading, seven orchestrator-side call sites, errors[] MIRROR verdict, and end-to-end reflection-field retirement across core and memory."
     }
   ],
   "blockers": [],
   "dead_ends": [],
-  "next_steps": "Run /implement 329 to execute the plan. Wave 3 (phases 3, 4, 5, 6, 8) has five disjoint file footprints and is genuinely parallelizable.",
-  "dispatch_seq": 8
+  "next_steps": "Task complete. The separate orchestration conclusion-stage backlog item (which this task is a declared dependency of) is the first real consumer expected to read issues.jsonl at scale.",
+  "dispatch_seq": 9
 }

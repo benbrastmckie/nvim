@@ -1,6 +1,93 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/329_per_task_issue_log_contract_writer_and_threading/summaries/01_issue-log-writer-threading-summary.md",
+      "summary": "All 9 plan phases completed: issue-log.md format doc, issue-record.sh writer + test suite, .issues.lock ephemeral registration, dispatch/contract threading, seven orchestrator-side call sites, errors[] MIRROR verdict, and end-to-end reflection-field retirement across core and memory."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the per-task issues.jsonl capture log end-to-end: the single issue-record.sh writer and its 15-case test suite, the .issues.lock ephemeral runtime-file registration, the unconditional ## Issue Log dispatch-threading section plus two shared-contract recording obligations, seven orchestrator-side call sites across the cycle postflight/plan scripts, the errors[] MIRROR verdict, and the full retirement of the dead state.json reflection field across both the core and memory extension source stores."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/phase-closure.md",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/context/formats/issue-log.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/patterns/todo-archival-reference.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/standards/user-decision-contract.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/issue-record.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/memory-harvest.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-issue-record.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "agent-system/extensions/memory/EXTENSION.md",
+    "agent-system/extensions/memory/commands/learn.md",
+    "agent-system/extensions/memory/context/project/memory/distill-usage.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md",
+    "agent-system/extensions/memory/index-entries.json",
+    "agent-system/extensions/memory/skills/skill-learn/SKILL.md",
+    "specs/.gitignore",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this agent system, a brand-new script placed under agent-system/extensions/<ext>/scripts/ (or scripts/tests/) does NOT reach the deployed .claude/scripts/ tree automatically -- deploy-headless.sh only installs files explicitly whitelisted in that extension's manifest.json 'scripts' array. A new script silently fails to deploy (no error, just absent from .claude/scripts/) until it is added to that whitelist. Always grep manifest.json for the new script's name after creating it and before relying on a deployed-tree test; add it alphabetically-near its closest sibling if the list isn't strictly sorted.",
+      "category": "PATTERN",
+      "source_artifact": "specs/329_per_task_issue_log_contract_writer_and_threading/summaries/01_issue-log-writer-threading-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "manifest.json",
+        "deploy-headless.sh",
+        "scripts-whitelist",
+        "new-script",
+        "deploy"
+      ]
+    },
+    {
+      "content": "scripts/update-phase-status.sh's heading-status replacement (sed -i \"${line_number}s/\\[.*\\]/[...]/\") is GREEDY: if a plan phase's own title contains a literal square-bracket pair (e.g. inline-code like `errors[]`), the match spans from that bracket through the trailing status bracket, silently destroying everything in between including the rest of the title. Phase titles containing literal '[' or ']' characters (even inside backticks) are a hazard with this tool until it is fixed to anchor on the trailing bracket group specifically. Check the heading by eye after any update-phase-status.sh call on a phase whose title has this shape.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/329_per_task_issue_log_contract_writer_and_threading/summaries/01_issue-log-writer-threading-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "update-phase-status.sh",
+        "sed",
+        "greedy-match",
+        "phase-heading",
+        "plan-corruption"
+      ]
+    },
+    {
+      "content": "Never launch deploy-headless.sh (or verify-deploy.sh) in the background and then continue editing the same source-store files it is reading -- the deploy can capture a partial edit state, producing a deployed tree that is internally inconsistent (e.g. a lib file with N members paired with a standards doc still describing N-1). Finish all source-store edits for the phase first, THEN deploy, and treat the deploy as a synchronization point, not something to race against.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/329_per_task_issue_log_contract_writer_and_threading/summaries/01_issue-log-writer-threading-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "deploy-headless.sh",
+        "race-condition",
+        "source-store",
+        "concurrent-edit"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791065283_d98d41",
     "agent_type": "general-implementation-agent",
@@ -9,7 +96,8 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
-  },
-  "dispatch_seq": 9
+    ],
+    "phases_completed": 9,
+    "phases_total": 9
+  }
 }
