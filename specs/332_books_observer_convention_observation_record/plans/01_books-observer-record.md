@@ -218,29 +218,29 @@ plan's list.
 
 ---
 
-### Phase 2: Signal-tagging guide for working agents [NOT STARTED]
+### Phase 2: Signal-tagging guide for working agents [COMPLETED]
 
 **Goal**: Write `context/project/books/patterns/signal-tagging.md` so working agents know how to
 populate `tags` on an issue-log entry — the open seam the observer reads and must never guess.
 
 **Tasks**:
-- [ ] State the mechanism: `tags` is an open object on an `issues.jsonl` entry, written via
+- [x] State the mechanism: `tags` is an open object on an `issues.jsonl` entry, written via
       `issue-record.sh`; core neither validates nor depends on its interior, which is precisely
       why it is this extension's tagging seam. No change to `issue-record.sh` or the core schema
-      is needed or permitted.
-- [ ] Give the exact `tags` shape the observer reads (`dimension` — one or more of the seven
+      is needed or permitted. *(completed)*
+- [x] Give the exact `tags` shape the observer reads (`dimension` — one or more of the seven
       keys — plus `polarity`), with the tagging obligation stated for both `kind: issue` and
-      `kind: win` entries.
-- [ ] Give one worked example per dimension (seven worked examples), each a realistic books
-      situation with the full tagging payload.
-- [ ] Give worked examples of a PAIRED burden: the created-burden entry and the lifted-burden
+      `kind: win` entries. *(completed)*
+- [x] Give one worked example per dimension (seven worked examples), each a realistic books
+      situation with the full tagging payload. *(completed)*
+- [x] Give worked examples of a PAIRED burden: the created-burden entry and the lifted-burden
       entry recorded together, with the bearing convention Decision named by its durable heading
-      name, so a later review cannot read half of a trade and call it a win.
-- [ ] State what NOT to do: do not invent dimension keys, do not omit polarity, do not tag
+      name, so a later review cannot read half of a trade and call it a win. *(completed)*
+- [x] State what NOT to do: do not invent dimension keys, do not omit polarity, do not tag
       retroactively at the end of a dispatch (record as signals arise), do not expect the observer
-      to infer a tag.
-- [ ] Cite `docs/book-evidence.md` by filename as the vocabulary's origin, and
-      `context/formats/issue-log.md` for the `tags` seam itself.
+      to infer a tag. *(completed)*
+- [x] Cite `docs/book-evidence.md` by filename as the vocabulary's origin, and
+      `context/formats/issue-log.md` for the `tags` seam itself. *(completed)*
 
 **Timing**: 1 hour
 

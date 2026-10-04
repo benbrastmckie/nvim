@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Signal-tagging guide for working agents",
+  "started_at": "2026-10-04T07:45:00Z",
+  "last_updated": "2026-10-04T07:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "State the tags mechanism", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/signal-tagging.md"]},
+    {"id": 2, "description": "Give the exact tags shape read by the observer", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/signal-tagging.md"]},
+    {"id": 3, "description": "Seven worked examples, one per dimension", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/signal-tagging.md"]},
+    {"id": 4, "description": "Paired-burden worked example", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/signal-tagging.md"]},
+    {"id": 5, "description": "What NOT to do section", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/signal-tagging.md"]},
+    {"id": 6, "description": "Citations by filename", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/signal-tagging.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
