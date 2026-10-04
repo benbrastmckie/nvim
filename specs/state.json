@@ -1515,7 +1515,7 @@
     {
       "project_number": 329,
       "project_name": "per_task_issue_log_contract_writer_and_threading",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Per-task issue log: contract, writer and dispatch threading",
       "topic": "core-agent-system",
@@ -1527,7 +1527,7 @@
       "priority": "high",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-03T23:41:23Z",
+      "last_updated": "2026-10-04T00:56:36Z",
       "artifacts": [
         {
           "path": "specs/329_per_task_issue_log_contract_writer_and_threading/reports/01_issue-log-contract-writer-threading.md",

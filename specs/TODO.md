@@ -11,11 +11,11 @@ next_project_number: 335
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,329 | -- | core-agent-system, neovim, orchestrator |
-| 2 | 29,170,273,275,281,302,303,330 | 22,251,271,272,280,300,329 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304,331 | 273,275,281,284,302,330 | core-agent-system, extensions, orchestrator |
-| 4 | 312,328,332 | 170,282,300,303,304,318,322,331 | core-agent-system, extensions, orchestrator |
-| 5 | 313,333 | 306,328,332 | core-agent-system, extensions |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,330 | -- | core-agent-system, neovim, orchestrator |
+| 2 | 29,170,273,275,281,302,303,331 | 22,251,271,272,280,300,330 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304,332 | 273,275,281,284,302,331 | core-agent-system, extensions, orchestrator |
+| 4 | 312,328,333 | 170,282,300,303,304,318,322,332 | core-agent-system, extensions, orchestrator |
+| 5 | 313 | 306,328 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -38,7 +38,6 @@ next_project_number: 335
 322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
-329 [IMPLEMENTING] — Per-task issue log: contract, writer and dispatch threading
 
 ### Extensions
 
@@ -66,10 +65,10 @@ next_project_number: 335
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
+330 [NOT STARTED] — Per-dispatch cost and timing record
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
-330 [NOT STARTED] — Per-dispatch cost and timing record
 
 ## Tasks
 
@@ -608,7 +607,7 @@ rather than in parallel with it.
 
 ### 329. Per-task issue log: contract, writer and dispatch threading
 - **Effort**: 4-8 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 326, Task 285
