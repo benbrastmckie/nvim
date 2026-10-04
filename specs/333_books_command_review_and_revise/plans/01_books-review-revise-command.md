@@ -306,7 +306,7 @@ standard wins and the table follows it.
 
 ---
 
-### Phase 4: `context/project/books/patterns/books-revise-submode.md` [NOT STARTED]
+### Phase 4: `context/project/books/patterns/books-revise-submode.md` [COMPLETED]
 
 **Goal**: The complete and only specification for `--revise`: candidate evaluation since the
 watermark, the mandatory decision-record research step, clause-and-marker naming, the
@@ -314,24 +314,24 @@ binding-clause escalation fork, backlog reconciliation, lead-session gates, and 
 advance.
 
 **Tasks**:
-- [ ] Read `distill-meta-submode.md` (205 lines) and `distill-revise-submode.md`'s watermark
+- [x] Read `distill-meta-submode.md` (205 lines) and `distill-revise-submode.md`'s watermark
       mechanism as the structural models; open with the same "COMPLETE and ONLY specification"
       framing.
-- [ ] **Books telemetry posture** subsection: cite
+- [x] **Books telemetry posture** subsection: cite
       `context/project/memory/telemetry-guardrails.md` by path and restate only the two directly
       applicable principles — **evaluator outside the loop** (propose-then-human-review, never
       auto-apply) and **CAPTURE ONLY** (the records are what postflight captured, not live
       telemetry). Citation plus brief restatement; neither silent duplication nor a bare pointer.
-- [ ] **Edge Case Checks**: no digest log; every digest line already at or behind the watermark
+- [x] **Edge Case Checks**: no digest log; every digest line already at or behind the watermark
       (named early-return message: nothing new to consider); the consuming repository's
       `docs/book-convention.md` not found (hard early return — without the decision record no
       proposal can name its clause, so none may be proposed).
-- [ ] **Candidate Identification**: read only digest-log lines whose `recorded_at` is strictly
+- [x] **Candidate Identification**: read only digest-log lines whose `recorded_at` is strictly
       after the stored watermark cursor; group candidates by `convention_decision` (durable heading
       text) and by dimension; rank by recurrence and by paired-burden asymmetry (burdens created
       without a matching lift). State a closed discovery rule and explicitly refuse to invent new
       detection logic beyond it, mirroring `--meta`'s own refusal clause.
-- [ ] **Mandatory preliminary research step**, stated as a precondition on presenting *any*
+- [x] **Mandatory preliminary research step**, stated as a precondition on presenting *any*
       candidate: read the consuming repository's `docs/book-convention.md` and, for every Decision a
       candidate touches, capture that Decision's durable heading text and its current
       `- **Validated by**:` marker **verbatim**. Document the three-form vocabulary
@@ -341,43 +341,43 @@ advance.
       to be proposed and is dropped, not guessed at. Cite
       `context/project/books/domain/known-gap-register.md` as a navigation aid only, noting it is a
       dated projection whose live authority is the convention's markers themselves.
-- [ ] **Interactive Selection (MANDATORY STOP)**, all in the **lead session**: (a)
+- [x] **Interactive Selection (MANDATORY STOP)**, all in the **lead session**: (a)
       `AskUserQuestion` with `multiSelect: true` over candidates, each option's `description`
       carrying the Decision's durable heading text, its marker verbatim, and the evidence citations;
       (b) a per-candidate choice of Create as task / Note in report only / Skip; (c) a second,
       explicit confirmation gate before anything is written. Add a prominent clause: these gates
       MUST NOT be delegated to a subagent — `AskUserQuestion` is not reachable from one on this
       harness; only non-interactive research or aggregation may be delegated.
-- [ ] **Dry-Run**: display the candidate set with clause and marker per candidate, then return
+- [x] **Dry-Run**: display the candidate set with clause and marker per candidate, then return
       early. No task created, and the watermark is **not** advanced.
-- [ ] **Execution — binding-clause fork**, placed before backlog reconciliation: a candidate whose
+- [x] **Execution — binding-clause fork**, placed before backlog reconciliation: a candidate whose
       Decision's marker is **binding** is filed as a **research-and-escalate task** — a task whose
       description states explicitly that its phases perform research only and surface findings for
       the repository owner's ruling, never implement a convention change. Specify this as a
       description-text convention on an ordinarily-typed task (`task_type: meta`), explicitly **not**
       a new `task_type`, state field, or enum value, and say why (nothing mechanically reads such a
       field today). Every non-binding candidate follows the ordinary path.
-- [ ] **Two prohibitions**, as labelled prohibition clauses: (1) `--revise` NEVER edits the
+- [x] **Two prohibitions**, as labelled prohibition clauses: (1) `--revise` NEVER edits the
       convention — it proposes tasks and the tasks do the work through the normal lifecycle;
       (2) `--revise` NEVER bypasses the consuming repository's escalation protocol.
-- [ ] **Backlog reconciliation**, after the create/note/skip choice and before the final
+- [x] **Backlog reconciliation**, after the create/note/skip choice and before the final
       confirmation gate: compare each proposed task against the open backlog (`specs/state.json`
       `active_projects`) and apply `docs/reference/standards/multi-task-creation-standard.md`'s
       Component 0 (one task per finding unless a closed reason justifies splitting), Component 4a
       (file-footprint overlap adds a dependency edge), and Component 7 (final user confirmation).
       Enumerate the four admissible outcomes per comparison: create, widen an open task, add a
       dependency edge, or narrow a file scope.
-- [ ] Specify that task creation delegates to the existing `/task` primitive rather than
+- [x] Specify that task creation delegates to the existing `/task` primitive rather than
       reimplementing it inline, mirroring `--meta`'s delegation discipline, and that a candidate
       whose remedy is a prose edit is a report-only finding, never auto-applied.
-- [ ] **Watermark Advance**: specify `specs/books-evidence/revise-log.json` (sibling to
+- [x] **Watermark Advance**: specify `specs/books-evidence/revise-log.json` (sibling to
       `observations.jsonl`/`runs.jsonl`) with its schema — per-run entries carrying
       `considered_through: {recorded_at, record_path}` plus a proposals rollup
       (`surfaced`, `created_as_task`, `noted_only`, `skipped`, `task_numbers_created`), modelled on
       distill's `meta-log.json`. Advance the cursor once, after the confirmed batch, never
       per-candidate; do not advance on a dry run or an aborted confirmation. State the consequence
       plainly: without this, a second run re-proposes the first run's evidence.
-- [ ] Repeat the digest-is-a-pointer framing with citation, as in Phase 2.
+- [x] Repeat the digest-is-a-pointer framing with citation, as in Phase 2.
 
 **Timing**: 2 hours
 
