@@ -1743,7 +1743,7 @@
     {
       "project_number": 333,
       "project_name": "books_command_review_and_revise",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "The /books command with --review and --revise",
       "topic": "extensions",
@@ -1754,8 +1754,14 @@
       "priority": "medium",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-03T18:53:53Z",
-      "artifacts": [],
+      "last_updated": "2026-10-04T08:35:05Z",
+      "artifacts": [
+        {
+          "path": "specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md",
+          "type": "report",
+          "summary": "Design research for the /books --review and --revise commands: mirrors /distill's three-layer command/skill/pattern-file split verbatim, grounds the books-domain vocabulary (seven dimensions, Validated-by marker three-form vocabulary, observation-record schema, digest log), confirms AskUserQuestion must stay in the lead-session direct-execution skill, and proposes a description-convention shape for research-and-escalate tasks since none exists in this codebase."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/books/commands/books.md",
         "agent-system/extensions/books/skills/skill-books-review/SKILL.md",
@@ -1765,7 +1771,9 @@
         "agent-system/extensions/books/index-entries.json",
         "agent-system/extensions/books/EXTENSION.md",
         "agent-system/extensions/books/README.md"
-      ]
+      ],
+      "session_id": "sess_1791098481_49e186",
+      "next_artifact_number": 2
     }
   ],
   "completed_projects": [],

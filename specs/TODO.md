@@ -41,7 +41,7 @@ next_project_number: 335
 
 ### Extensions
 
-333 [NOT STARTED] — The /books command with --review and --revise
+333 [RESEARCHED] — The /books command with --review and --revise
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -108,10 +108,11 @@ two of the three, the third being an orchestrator context-budget ceiling tracked
 
 ### 333. The /books command with --review and --revise
 - **Effort**: 4-8 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 332
+- **Research**: [333_books_command_review_and_revise/reports/01_books-review-revise-command.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
