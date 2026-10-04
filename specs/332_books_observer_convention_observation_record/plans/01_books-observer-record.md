@@ -517,8 +517,8 @@ that edit rather than padding the change set.
       the tagging guide, spelled identically in both. *(completed)*
 - [x] No task-number reference in any source-store file written by this task. *(completed)*
 - [x] No write anywhere under `.claude/**`. *(completed)*
-- [ ] The implementation summary states the deployment caveat plainly (extension not loaded in the
-      consuming repository + core redeploy required, both user actions).
+- [x] The implementation summary states the deployment caveat plainly (extension not loaded in the
+      consuming repository + core redeploy required, both user actions). *(completed)*
 
 ## Artifacts & Outputs
 

@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 6,
   "phases_total": 6,
-  "dispatch_seq": 2,
+  "dispatch_seq": 3,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/332_books_observer_convention_observation_record/summaries/01_books-observer-record-summary.md",
+      "summary": "Implementation summary for the books post-task observer: observation-record standard, signal-tagging guide, books-observe.sh (live join + --backfill), fixture test suite (47/47 green), and manifest/index/README/EXTENSION registration. States the required deployment caveat plainly."
+    },
     {
       "type": "plan",
       "path": "specs/332_books_observer_convention_observation_record/plans/01_books-observer-record.md",
-      "summary": "Six-phase plan for the books post-task observer: observation-record standard, signal-tagging guide, books-observe.sh live join plus --backfill, fixture test suite, and manifest/index/README/EXTENSION registration."
+      "summary": "Six-phase plan, all phases COMPLETED."
     }
   ],
   "session_id": "sess_1791098481_49e186_332",
-  "notes": "Plan validates clean under validate-artifact.sh --strict (0 warnings). Two deviations from the dispatch text, both resolved in the plan's Decisions section: (D1) record location resolved as owner-ruled per-task file plus a derived accumulating digest log, reconciling the dispatch's 'appended to a log' with the consuming repository's ruled one-file-per-task contract; and README.md added as an eighth touched file because check-extension-docs.sh Rule X checks README.md specifically, which the dispatch's seven-file deliverable list omits."
+  "notes": "All 6 phases complete and committed per-phase. Eight source-store files touched (exactly the plan's Scope Hypothesis), all under agent-system/extensions/books/**, none under .claude/**. Full gate set green: check-extension-docs.sh (all extensions PASS, Rule X green for books-observe), verify-deploy.sh --skip-slow (33/0), tests/run-all.sh full sweep (103 passed, 6 failed -- 2 expected, 4 confirmed pre-existing/unrelated via git-log provenance on each failing suite -- 2 skipped, 111 total). test-books-observe.sh itself: 47/47 PASS. Two real bugs were caught and fixed inline by the new test suite before it went green (a book_requires-churn grep off-by-one, and a jq index()-argument-context bug in the unrecognized-dimension detector); both recorded to issues.jsonl. REQUIRED DEPLOYMENT CAVEAT: inert everywhere until the user loads the books extension and redeploys core -- stated plainly in the implementation summary."
 }

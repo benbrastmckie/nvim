@@ -1,30 +1,78 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 3,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/332_books_observer_convention_observation_record/plans/01_books-observer-record.md",
-      "summary": "Six-phase plan for the books post-task observer: observation-record standard, signal-tagging guide, books-observe.sh live join plus --backfill, fixture test suite, and manifest/index/README/EXTENSION registration."
+      "type": "summary",
+      "path": "specs/332_books_observer_convention_observation_record/summaries/01_books-observer-record-summary.md",
+      "summary": "Implementation summary for the books post-task observer: observation-record standard, signal-tagging guide, books-observe.sh (live join + --backfill), fixture test suite (47/47 green), and manifest/index/README/EXTENSION registration. States the required deployment caveat plainly."
     }
   ],
-  "next_steps": "Run /implement 332 to execute the plan",
+  "completion_data": {
+    "completion_summary": "Registered books-observe on the topic/task_type-keyed observer seam and shipped the full OBSERVATION-record pipeline: the schema standard, the signal-tagging guide, the observer script (live mode + --backfill), a 47-case fixture test suite, and all manifest/index/doc registration. All 6 plan phases complete; full gate set green (check-extension-docs.sh, verify-deploy.sh, 103/111 run-all.sh suites with only pre-existing unrelated failures). Inert in any consuming repository until the user loads the books extension and redeploys core."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/EXTENSION.md",
+    "agent-system/extensions/books/README.md",
+    "agent-system/extensions/books/context/project/books/patterns/signal-tagging.md",
+    "agent-system/extensions/books/context/project/books/standards/observation-record.md",
+    "agent-system/extensions/books/index-entries.json",
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/scripts/books-observe.sh",
+    "agent-system/extensions/books/scripts/tests/test-books-observe.sh"
+  ],
   "memory_candidates": [
     {
-      "content": "When an agent-system extension is tasked with building the WRITER for a record consumed by an external repository, check that repository for pre-existing schema/contract documents before designing the schema. Measured case: the books observation record's full vocabulary (seven dimension keys, polarity enum), its repo-side/agent-side field split, its per-field-group provenance marker, and its committed file location were all already specified in the consuming repository's own docs/book-evidence.md plus three books/schema/book-evidence-*-v1.md companions, which explicitly name the agent system's extension as the record's sole writer. Treat such documents as binding design input and conform verbatim (citing them by filename, never by task number) rather than re-deriving a parallel vocabulary that a later cross-repository rollup must reconcile. Corollary for plan decomposition: freeze the schema document as the first phase so every later phase reads field names off one frozen source.",
+      "content": "jq pitfall: inside a pipe like `X | . as $e | (EXPR) | select(([$arr[]] | index(.)) == null)`, the `.` passed to `index(.)` refers to whatever the ENCLOSING pipe stage just produced (here, the array `[$arr[]]` itself), not the value flowing from `(EXPR)` before the `select`. `index()` then searches the array inside itself and trivially returns 0 for everything, silently defeating the whole membership check. Fix: bind the value to a named variable BEFORE the select (`(EXPR) as $v | select(($arr | index($v)) == null)`), since a bound variable's value is independent of `.`'s current rebinding. Caught by a fixture test asserting an unrecognized-value case actually got flagged -- an assertion that only checks the recognized-value path would never catch this class of bug.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/332_books_observer_convention_observation_record/summaries/01_books-observer-record-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "jq",
+        "index",
+        "select",
+        "pipe-rebinding",
+        "membership-test",
+        "shell-json"
+      ]
+    },
+    {
+      "content": "Shell grep pitfall when counting added/removed lines in a `git show`/`git diff` output while excluding the `+++`/`---` file-header lines: a pattern like `^\\+[^+].*book_requires` looks correct but is WRONG for a genuinely added content line `+book_requires Foo`, because `[^+]` unconditionally consumes exactly one character (here the leading `b` of the content), after which `.*book_requires` must match starting from the REMAINING text (`ook_requires Foo`), which no longer contains the full literal `book_requires`. The line silently never matches. Fix: use `[^+]*` (zero-or-more, backtracking) instead of a single required non-`+` character -- `^\\+[^+]*book_requires` lets the engine backtrack to zero consumed characters when needed, while still correctly excluding `+++`/`---` header lines (whose second character is itself `+`/`-`, which `[^+]*`/`[^-]*` cannot skip past). Caught only because a fixture test asserted a concrete added-line count greater than zero rather than merely asserting the field's shape/presence.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/332_books_observer_convention_observation_record/summaries/01_books-observer-record-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "grep",
+        "git-diff-parsing",
+        "regex-off-by-one",
+        "ere",
+        "added-line-detection"
+      ]
+    },
+    {
+      "content": "When an extension-authored schema specifies a per-group provenance marker (e.g. source: collected|backfilled) attached to several named record groups, implement the shared compute-and-emit body as ONE function parameterized by a mode flag (here is_backfill), called once by the live code path and once per item by the batch/backfill code path -- rather than writing two near-duplicate bodies. This also naturally surfaces exactly where the per-group marker needs to be threaded through, since both call sites share the same emission code.",
       "category": "PATTERN",
-      "source_artifact": "specs/332_books_observer_convention_observation_record/plans/01_books-observer-record.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["extension", "observer", "schema-conformance", "consuming-repository", "contract-discovery", "vocabulary-drift"]
+      "source_artifact": "specs/332_books_observer_convention_observation_record/summaries/01_books-observer-record-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "shell-refactoring",
+        "shared-function",
+        "provenance-marking",
+        "live-vs-backfill",
+        "dry"
+      ]
     }
   ],
   "metadata": {
-    "session_id": "sess_1791098481_49e186_332",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 8,
-    "dependency_waves": [[1], [2, 3], [4], [5], [6]]
-  },
-  "dispatch_seq": 2
+    "session_id": "sess_1791098481_49e186",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }
