@@ -1591,7 +1591,7 @@
     {
       "project_number": 330,
       "project_name": "per_dispatch_cost_and_timing_record",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Per-dispatch cost and timing record",
       "topic": "orchestrator",
@@ -1602,14 +1602,22 @@
       "priority": "high",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-03T18:53:53Z",
-      "artifacts": [],
+      "last_updated": "2026-10-04T01:04:22Z",
+      "artifacts": [
+        {
+          "path": "specs/330_per_dispatch_cost_and_timing_record/reports/01_dispatch-metrics-script-design.md",
+          "type": "report",
+          "summary": "Research on dispatch-metrics.sh design: corrects the dispatch's stale transcript-path assumption against the live nested subagents/ layout, documents the exact cc_session_id + dispatch_seq transcript join, confirms the three measured traps, and grounds the postflight call-site wiring in the current (re-measured) orchestrate-cycle-postflight.sh line numbers."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/dispatch-metrics.sh",
         "agent-system/extensions/core/scripts/tests/test-dispatch-metrics.sh",
         "agent-system/extensions/core/context/formats/dispatch-metrics.md",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
-      ]
+      ],
+      "session_id": "sess_1791065283_d98d41",
+      "next_artifact_number": 2
     },
     {
       "project_number": 331,

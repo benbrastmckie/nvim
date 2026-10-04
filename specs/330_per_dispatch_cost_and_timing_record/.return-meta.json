@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/330_per_dispatch_cost_and_timing_record/reports/01_dispatch-metrics-script-design.md",
+      "summary": "Research on dispatch-metrics.sh design: corrects the dispatch's stale transcript-path assumption against the live nested subagents/ layout, documents the exact cc_session_id + dispatch_seq transcript join, confirms the three measured traps, and grounds the postflight call-site wiring in the current (re-measured) orchestrate-cycle-postflight.sh line numbers."
+    }
+  ],
+  "next_steps": "Run /plan 330 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791065283_d98d41_330",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 11,
+  "memory_candidates": [
+    {
+      "content": "Claude Code's live transcript layout for dispatched subagents (as of version 2.1.288) is nested, not flat: ~/.claude/projects/<slug>/<cc_session_id>/subagents/agent-<agentId>.jsonl with a sibling agent-<agentId>.meta.json carrying {agentType, description, toolUseId, spawnDepth, requestShape, requestNonInteractive}. <slug> is the cwd with every non-alphanumeric character replaced by '-'. This supersedes an older assumed flat sibling-file shape (~/.claude/projects/<slug>/agent-*.jsonl) seen in some task descriptions.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/330_per_dispatch_cost_and_timing_record/reports/01_dispatch-metrics-script-design.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["transcript", "subagents", "cc_session_id", "claude-code-projects", "meta.json"]
+    },
+    {
+      "content": "A dispatched subagent's transcript file (agent-<id>.jsonl) opens with a user-type line whose message.content is the literal dispatch prompt text, which embeds the exact Context JSON block verbatim (task_number, dispatch_seq, session_id, etc.). This gives an exact, unambiguous join from a postflight call site's own (task_number, dispatch_seq) to the correct subagents/agent-*.jsonl file, avoiding any nearest-timestamp or description-string heuristic.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/330_per_dispatch_cost_and_timing_record/reports/01_dispatch-metrics-script-design.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["transcript-join", "dispatch_seq", "exact-match", "subagent-correlation"]
+    },
+    {
+      "content": "$CLAUDE_CODE_SESSION_ID is identical across the lead orchestrator session and every dispatched subagent's own bash tool calls within the same task tree -- it always names the top-level/lead session, never a per-subagent id. This is the same value events-log-lifecycle.sh independently captures into events.jsonl's cc_session_id field from hook stdin's top-level .session_id. A script run directly in the orchestrator's own bash process (e.g. orchestrate-cycle-postflight.sh) can read this env var directly with zero extra I/O to get the join key to that session's transcript directory.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/330_per_dispatch_cost_and_timing_record/reports/01_dispatch-metrics-script-design.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["CLAUDE_CODE_SESSION_ID", "cc_session_id", "env-var", "session-correlation"]
+    }
+  ]
+}
