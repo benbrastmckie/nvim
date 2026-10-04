@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "phase_name": "Documentation - observers schema and topic as a binding key",
+  "started_at": "2026-10-04T05:10:00Z",
+  "last_updated": "2026-10-04T05:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Post-Task Observers section to creating-extensions.md (schema, matching contract, execution contract, ordering guarantee, WHY TOPIC, WHY NOT LIFECYCLE HOOKS, documentation requirement, example, how-to); rewrite topic row in state-management-schema.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/guides/creating-extensions.md",
+        "agent-system/extensions/core/context/reference/state-management-schema.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

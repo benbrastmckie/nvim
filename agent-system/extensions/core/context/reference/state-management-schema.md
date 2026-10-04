@@ -121,7 +121,7 @@ real defect, caught by the schema-to-validator drift test in
 | `status` | string | Yes | Current status (see Status Values) |
 | `task_type` | string | Yes | Task type for routing (see Task Type Values). Bare values (`meta`, `general`) or compound `extension:subtype` (`present:grant`, `founder:deck`) |
 | `title` | string | No | Documented-optional, confirmed live on all current entries. Human-readable task title |
-| `topic` | string | No | Documented-optional, confirmed live on all current entries. Free-text topic label, aggregated into the top-level `active_topics` array |
+| `topic` | string | No | Documented-optional, confirmed live on all current entries. Free-text topic label, aggregated into the top-level `active_topics` array. Also a BINDING, dispatch-matching key as of the manifest `observers` block: matched prefix-aware by a loaded extension's declared observer to select a post-task script to run under `/orchestrate` -- see `docs/guides/creating-extensions.md`'s Post-Task Observers section for the full matching contract |
 | `description` | string | No | Documented-optional, confirmed live on all current entries. Full task description |
 | `session_id` | string | No | Documented-optional, confirmed live. Session ID of the most recent status-changing command invocation (`sess_{timestamp}_{random}`) |
 | `effort` | string | No | Estimated effort. Zero occurrences in the current active snapshot, but this is a lifecycle-timing artifact, not evidence of disuse -- 276 occurrences in `specs/archive/state.json` (populates once a task completes) |

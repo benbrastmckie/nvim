@@ -560,41 +560,41 @@ colliding.
 
 ---
 
-### Phase 6: Documentation — observers schema and `topic` as a binding key [NOT STARTED]
+### Phase 6: Documentation — observers schema and `topic` as a binding key [COMPLETED]
 
 **Goal**: the `observers` block, the ordering guarantee, the advisory contract, the WHY TOPIC
 measurement, and the WHY NOT LIFECYCLE HOOKS reasoning are written where the next person looks;
 and `topic`'s schema row stops implying it is presentational only.
 
 **Tasks**:
-- [ ] Add a `## Post-Task Observers` section to `docs/guides/creating-extensions.md`, placed
+- [x] Add a `## Post-Task Observers` section to `docs/guides/creating-extensions.md`, placed
       immediately after the existing `## Lifecycle Hooks` section (measured 655-833) and before
       `## Troubleshooting`, modeled on that section's own sub-section skeleton:
       `### Observers vs. Lifecycle Hooks`, `### Observer Schema`, `### Observer Execution
       Contract`, `### Invocation Site and Ordering`, `### Example: A Topic-Keyed Observer`,
       `### Adding an Observer to Your Extension`.
-- [ ] **Schema** (D1): the worked `observers` JSON block; `script` required; at least one of
+- [x] **Schema** (D1): the worked `observers` JSON block; `script` required; at least one of
       `topic`/`task_type` required; both means match-if-either; `timeout_seconds` optional
       (default 30); the basename-against-`.claude/scripts/` resolution rule and the consequent
       `provides.scripts` requirement, cross-referencing the identical trap already documented in
       the Hook Schema section.
-- [ ] **Matching contract**: prefix-aware on BOTH keys — a declared `books` matches a value of
+- [x] **Matching contract**: prefix-aware on BOTH keys — a declared `books` matches a value of
       `books:certify`, matching on the segment before the first `:`, because compound task-type
       values with a `:` sub-route (e.g. `present:grant`) are an established convention here.
       Every match fires; this is not a first-match-wins resolver. Document the deterministic
       multi-match order (D7).
-- [ ] **Execution contract**: the six positional arguments in order; a bounded timeout; the rc is
+- [x] **Execution contract**: the six positional arguments in order; a bounded timeout; the rc is
       recorded as a `task_observer_run` event in `specs/events.jsonl` (`success` on 0,
       `deviation` otherwise) and otherwise IGNORED; an observer can never change task status,
       never fail a dispatch, never block; a missing, non-executable, crashing, or hanging observer
       produces a warning event and nothing else.
-- [ ] **Ordering guarantee** (state it explicitly, it is part of the contract): the observer runs
+- [x] **Ordering guarantee** (state it explicitly, it is part of the contract): the observer runs
       AFTER the per-dispatch issue-log and metrics records for that dispatch have been written, so
       an observer can READ them. Name the invocation site (the completion path of
       `scripts/orchestrate-cycle-postflight.sh`, after its `persisted_status` computation) and say
       why: an observer that ran before those writes would see an incomplete record and the whole
       seam would be worthless.
-- [ ] **WHY TOPIC** (the measurement, written down where the next person looks): in the consuming
+- [x] **WHY TOPIC** (the measurement, written down where the next person looks): in the consuming
       repository's corpus, the 17 tasks carrying topic `books` have task_type `lean4` (14),
       `general` (2) and `typst` (1) — NOT ONE has task_type `books`, and the books extension is
       not even loaded there. An observer keyed on `task_type` alone would have matched NONE of the
@@ -603,7 +603,7 @@ and `topic`'s schema row stops implying it is presentational only.
       a **dispatch-matching** key (`scripts/memory-retrieve.sh` already reads a different,
       same-named field — a memory-index entry's own topic taxonomy value used as a
       retrieval-scoring bonus — which this wording must not accidentally contradict).
-- [ ] **WHY NOT LIFECYCLE HOOKS** (D2, so it is not re-litigated): both measured reasons, with
+- [x] **WHY NOT LIFECYCLE HOOKS** (D2, so it is not re-litigated): both measured reasons, with
       their anchors — resolution by manifest `task_type` string EQUALITY in
       `scripts/skill-base.sh`'s `skill_get_extension_dir()` (equality, not prefix; task_type, not
       topic), and the postflight hook receiving an EMPTY task type under `/orchestrate` because
@@ -614,16 +614,16 @@ and `topic`'s schema row stops implying it is presentational only.
       Note that the already-landed lifecycle-hook repair fixed the resolver, the return-code
       channel and the verification stage, and did not and could not supply a task type that is
       never set on that path.
-- [ ] **Documentation requirement**: state that each declared observer must be mentioned in the
+- [x] **Documentation requirement**: state that each declared observer must be mentioned in the
       declaring extension's own `README.md`, and that `scripts/check-extension-docs.sh`'s Rule X
       enforces this.
-- [ ] Rewrite the `topic` row in `context/reference/state-management-schema.md`'s Project Entry
+- [x] Rewrite the `topic` row in `context/reference/state-management-schema.md`'s Project Entry
       Fields table (measured line 124) so it no longer implies presentational-only use: keep the
       aggregation fact, and add that `topic` is a BINDING, dispatch-matching key — matched
       prefix-aware by the manifest `observers` block to select post-task observer scripts under
       `/orchestrate` — with a pointer to the guide section. Do NOT change line 69's
       `active_topics` row; its wording describes aggregation only and is accurate as-is.
-- [ ] Verify the `## Post-Task Observers` heading does not collide with an existing heading, and
+- [x] Verify the `## Post-Task Observers` heading does not collide with an existing heading, and
       that the guide's own internal cross-references still resolve.
 
 **Timing**: 1 hour

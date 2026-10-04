@@ -830,6 +830,184 @@ exit 0
 
 ---
 
+## Post-Task Observers
+
+Extensions can register a script to run AFTER a task reaches a resting state under
+`/orchestrate`, matched on the task's `topic` and/or `task_type`. This is a different seam from
+the Lifecycle Hooks above, with its own schema, invocation site, and contract.
+
+### Observers vs. Lifecycle Hooks
+
+Lifecycle hooks (above) run DURING a single skill's own execution (preflight, context
+injection, verification, postflight stages), resolved by **manifest `task_type` string
+equality** against a single-valued top-level `task_type` field. Observers run AFTER a task
+reaches a resting state under `/orchestrate`, resolved by **prefix-aware matching on `topic`
+and/or `task_type`**, and every matching observer across every loaded extension fires (never
+first-match-wins).
+
+Lifecycle hooks are NOT usable for a topic-grouped seam, for two measured reasons:
+
+1. `skill_get_extension_dir()` (`scripts/skill-base.sh`) resolves by STRING EQUALITY against a
+   manifest's single-valued top-level `task_type` field -- no prefix awareness, no `topic`
+   awareness.
+2. Under `/orchestrate`, `skill_postflight_update` passes `"${TASK_TYPE:-}"` while
+   `orchestrate-cycle-postflight.sh` sets no `TASK_TYPE` anywhere in its own body -- so the
+   postflight hook receives an EMPTY task type on that path, regardless of what the lifecycle-hook
+   resolver itself can do. The lifecycle-hook repair fixed the resolver, the return-code channel,
+   and the verification stage; it did not and could not supply a task type that is never set on
+   that code path. Do not "fix" this by plumbing `TASK_TYPE` through the postflight hook as a
+   substitute -- that would still be equality-on-`task_type`, and a `task_type`-only key still
+   would not match a topic-grouped corpus (see WHY TOPIC below).
+
+### Observer Schema
+
+Add an `observers` object to your manifest, modeled on `keyword_overrides`:
+
+```json
+{
+  "name": "your-domain",
+  ...
+  "observers": {
+    "my-observer": {
+      "script": "scripts/my-observer.sh",
+      "topic": "books",
+      "task_type": "books",
+      "timeout_seconds": 30
+    }
+  }
+}
+```
+
+- `script` is REQUIRED.
+- At least one of `topic` / `task_type` is REQUIRED. Declaring both means match-if-either.
+- `timeout_seconds` is OPTIONAL (default 30).
+- Any other key is rejected by `check-extension-docs.sh`'s Rule X.
+- `script` resolves by BASENAME against the deployed `.claude/scripts/` directory -- identical
+  to the Hook Schema's own path-resolution contract above -- and must therefore also appear in
+  `provides.scripts`, or it will never deploy.
+
+### Matching Contract
+
+Matching is prefix-aware on BOTH `topic` and `task_type`: a declared `books` matches a task
+value of `books:certify`, matching on the segment before the first `:` -- the same convention
+compound task-type values like `present:grant` already establish elsewhere in this system. An
+exact match also counts. Declaring both keys means match-if-either; the resolved `matched_on`
+is `both` only when both declared keys actually matched the task's own values.
+
+Unlike every other resolver in this codebase (`routing_lookup`/`routing_lookup_flat`,
+first-match-wins), observer resolution is resolve-ALL: every matching declaration, across every
+loaded extension (core included), fires. Multiple matches resolve in a deterministic order:
+manifest glob order, then observer key sorted within a manifest.
+
+### Observer Execution Contract
+
+An observer script is invoked with six positional arguments, in this fixed order:
+
+```
+$1  task_number
+$2  task_type
+$3  topic
+$4  task_dir
+$5  session_id
+$6  resting_status
+```
+
+The invocation is bounded by a timeout (`timeout_seconds`, default 30). The observer's return
+code is recorded as one `task_observer_run` event in `specs/events.jsonl` (`success` category on
+rc 0, `deviation` otherwise) and is OTHERWISE IGNORED.
+
+**Advisory and non-blocking, not negotiable**: an observer can never change task status, never
+fail a dispatch, never block. A missing, non-executable, crashing, or hanging observer script
+produces a `deviation` event and nothing else -- the orchestration and the task's own status are
+completely unaffected.
+
+### Invocation Site and Ordering
+
+Observers are invoked from exactly one site: the completion path of
+`scripts/orchestrate-cycle-postflight.sh`, immediately after that script's own `persisted_status`
+computation. This is the ONLY invocation site -- not from `skill-base.sh`, and not from the
+single-task `/research`/`/plan`/`/implement` skills.
+
+**The ordering guarantee is part of the contract**: the observer runs AFTER the per-dispatch
+issue-log and metrics records for that dispatch have been written, so an observer can READ them
+(both already exist in the task directory it is handed, via its `$4` argument). An observer that
+ran before those writes would see an incomplete record, and the whole seam would be worthless.
+
+### WHY TOPIC: the first binding use of `active_projects[].topic`
+
+Before this seam, `topic` was read only by presentation/grouping/validation consumers
+(`generate-todo.sh`, `generate-task-order.sh`, `manage-topics.sh`, `validate-state.sh`,
+`orchestrate-predispatch-review.sh`) -- nothing dispatched on it. This seam makes
+`active_projects[].topic` a **dispatch-matching** key for the first time (a distinct, same-named
+field from a memory-index entry's own topic taxonomy value, which `scripts/memory-retrieve.sh`
+already reads as a retrieval-scoring bonus -- the two are unrelated).
+
+The motivating measurement: in one consuming repository, a 17-task corpus sharing the topic
+`books` carried `task_type` values of `lean4` (14 of them), `general` (2), and `typst` (1) -- NOT
+ONE had `task_type: books`, and the `books` extension was not even loaded in that repository. An
+observer keyed on `task_type` alone would have matched NONE of the 17 tasks whose work it exists
+to observe. That is the whole argument for `topic` as a match key alongside `task_type`.
+
+### Documentation Requirement
+
+Each declared observer must be mentioned (by key name or by its script's basename) in the
+declaring extension's own `README.md`. `scripts/check-extension-docs.sh`'s Rule X enforces this
+mechanically: a declared observer with no documentation FAILs the check.
+
+### Example: A Topic-Keyed Observer
+
+```json
+{
+  "name": "books",
+  ...
+  "observers": {
+    "books-certify-notify": {
+      "script": "scripts/books-certify-notify.sh",
+      "topic": "books",
+      "timeout_seconds": 20
+    }
+  }
+}
+```
+
+This fires for any task whose `topic` is `books` or `books:<anything>` (e.g. `books:certify`),
+regardless of that task's own `task_type` -- exactly the shape the WHY TOPIC measurement above
+requires.
+
+### Adding an Observer to Your Extension
+
+1. Create the observer script and make it executable:
+   ```bash
+   mkdir -p agent-system/extensions/your-domain/scripts
+   touch agent-system/extensions/your-domain/scripts/your-domain-observer.sh
+   chmod +x agent-system/extensions/your-domain/scripts/your-domain-observer.sh
+   ```
+
+2. Update `manifest.json`:
+   ```json
+   {
+     "observers": {
+       "your-domain-observer": {
+         "script": "scripts/your-domain-observer.sh",
+         "topic": "your-topic"
+       }
+     },
+     "provides": {
+       "scripts": ["scripts/your-domain-observer.sh"]
+     }
+   }
+   ```
+
+3. Mention the observer (by key name or script basename) in your extension's `README.md`.
+
+4. Verify with jq and the doc-consistency check:
+   ```bash
+   jq '.observers' agent-system/extensions/your-domain/manifest.json
+   bash .claude/scripts/check-extension-docs.sh
+   ```
+
+---
+
 ## Troubleshooting
 
 ### Extension Not Appearing in Picker
