@@ -1,7 +1,7 @@
 # Implementation Plan: Task #333
 
 - **Task**: 333 - The /books command with --review and --revise
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.75 hours
 - **Dependencies**: Task 332 (books-observe.sh post-task observer) — complete
 - **Research Inputs**: specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md

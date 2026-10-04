@@ -1743,7 +1743,7 @@
     {
       "project_number": 333,
       "project_name": "books_command_review_and_revise",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "The /books command with --review and --revise",
       "topic": "extensions",
@@ -1754,7 +1754,7 @@
       "priority": "medium",
       "effort": "4-8 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-04T08:41:22Z",
+      "last_updated": "2026-10-04T09:30:17Z",
       "artifacts": [
         {
           "path": "specs/333_books_command_review_and_revise/reports/01_books-review-revise-command.md",
@@ -1765,6 +1765,11 @@
           "path": "specs/333_books_command_review_and_revise/plans/01_books-review-revise-command.md",
           "type": "plan",
           "summary": "Six-phase plan for the new /books --review/--revise command, mirroring /distill's three-layer sub-mode split in the books extension source store."
+        },
+        {
+          "path": "specs/333_books_command_review_and_revise/summaries/01_books-review-revise-command-summary.md",
+          "type": "summary",
+          "summary": "All six plan phases completed: /books command, skill-books-review, two new sub-mode pattern files, registration, and the full gate set run against the books extension."
         }
       ],
       "file_scope": [
@@ -1779,7 +1784,8 @@
         "agent-system/extensions/books/skills/skill-books-review/SKILL.md"
       ],
       "session_id": "sess_1791098481_49e186",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented the /books command with --review (strictly read-only convention performance review) and --revise (interactive research-and-revision task proposal) sub-modes in the books extension, mirroring /distill's three-layer sub-mode split, and registered it across all four registration surfaces."
     },
     {
       "project_number": 335,

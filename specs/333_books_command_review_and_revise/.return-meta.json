@@ -29,14 +29,24 @@
       "category": "PATTERN",
       "source_artifact": "specs/333_books_command_review_and_revise/summaries/01_books-review-revise-command-summary.md",
       "confidence": 0.65,
-      "suggested_keywords": ["confirmation-gate", "backlog-reconciliation", "sub-mode-skeleton", "document-ordering", "AskUserQuestion"]
+      "suggested_keywords": [
+        "confirmation-gate",
+        "backlog-reconciliation",
+        "sub-mode-skeleton",
+        "document-ordering",
+        "AskUserQuestion"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791098481_49e186",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }

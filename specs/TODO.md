@@ -11,7 +11,7 @@ next_project_number: 337
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,333,336 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336 | -- | core-agent-system, neovim, orchestrator |
 | 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
@@ -43,7 +43,6 @@ next_project_number: 337
 
 ### Extensions
 
-333 [IMPLEMENTING] — The /books command with --review and --revise
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -434,12 +433,13 @@ two of the three, the third being an orchestrator context-budget ceiling tracked
 
 ### 333. The /books command with --review and --revise
 - **Effort**: 4-8 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 332
 - **Research**: [333_books_command_review_and_revise/reports/01_books-review-revise-command.md]
 - **Plan**: [333_books_command_review_and_revise/plans/01_books-review-revise-command.md]
+- **Summary**: [333_books_command_review_and_revise/summaries/01_books-review-revise-command-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
