@@ -265,47 +265,47 @@ before closing the phase.
 
 ---
 
-### Phase 3: The observer script — live-mode join [NOT STARTED]
+### Phase 3: The observer script — live-mode join [COMPLETED]
 
 **Goal**: Write `scripts/books-observe.sh` implementing the Phase 1 schema in live mode: the join,
 the two unconditionally-computable books facts, the present-or-`absent` probe-dependent groups,
 and the record write.
 
 **Tasks**:
-- [ ] Script skeleton: header comment block (purpose, the six-positional-argument observer
+- [x] Script skeleton: header comment block (purpose, the six-positional-argument observer
       contract `$1 task_number $2 task_type $3 topic $4 task_dir $5 session_id $6 resting_status`,
       usage, exit codes, "advisory and non-blocking"), `set -euo pipefail` (Class A per
       `context/standards/shell-strict-mode.md`; document any `-e`-hostile construct inline per
       that document's admission tests if one is found), argument parsing tolerant of being called
-      with the six positionals OR with `--backfill`.
-- [ ] Add the `json_string`/`json_array` no-`jq` emission helpers following `books-gate.sh`'s
-      existing idiom (D4).
-- [ ] Join half (generic): read `$4/issues.jsonl` and `$4/metrics.jsonl`. Group issue entries by
+      with the six positionals OR with `--backfill`. *(completed)*
+- [x] Add the `json_string`/`json_array` no-`jq` emission helpers following `books-gate.sh`'s
+      existing idiom (D4). *(completed)*
+- [x] Join half (generic): read `$4/issues.jsonl` and `$4/metrics.jsonl`. Group issue entries by
       `tags.dimension` and `tags.polarity`; carry `kind`, `class`, `severity`; emit an
       `untagged_count` for entries carrying no usable tag. Aggregate the metrics records'
-      dispatch count, phases, outcomes and wall-clock. Omit any group whose source file is absent.
-- [ ] Books fact 1 (`book_requires` churn): count over `.lean` files in the task's own commit
-      range via `git diff`/`grep`, no probe, no build.
-- [ ] Books fact 2 (escalations and validation-marker promotions): `git diff` of
+      dispatch count, phases, outcomes and wall-clock. Omit any group whose source file is absent. *(completed)*
+- [x] Books fact 1 (`book_requires` churn): count over `.lean` files in the task's own commit
+      range via `git diff`/`grep`, no probe, no build. *(completed)*
+- [x] Books fact 2 (escalations and validation-marker promotions): `git diff` of
       `docs/book-convention.md` (and its documented siblings) over the task's commit range, scoped
       to `- **Validated by**:` lines, with heading lookback to attribute each change to its
-      Decision's durable heading name. Record each promotion AGAINST that decision name.
-- [ ] Probe-dependent groups, strictly present-or-`absent`: verification-tier runs and outcomes
+      Decision's durable heading name. Record each promotion AGAINST that decision name. *(completed)*
+- [x] Probe-dependent groups, strictly present-or-`absent`: verification-tier runs and outcomes
       with counts and time per tier (lake build, layer lint, certify, full gate, recheck),
       certifier outcome classes, refusals, warnings, and vacuous passes — read from the RUN log
-      when it exists, filtered to this task; omit/`absent` otherwise, never a zeroed tally.
-- [ ] Snapshot before/after delta: test the conventional probe path (D3) for executability,
+      when it exists, filtered to this task; omit/`absent` otherwise, never a zeroed tally. *(completed)*
+- [x] Snapshot before/after delta: test the conventional probe path (D3) for executability,
       invoke it if present, record `"snapshot_delta": "absent"` otherwise. Never synthesize a
-      snapshot.
-- [ ] Paired burdens: always emit both `burdens_created[]` and `burdens_lifted[]` (default `[]`),
-      sourced from tagged issue entries.
-- [ ] Validate polarity and dimension values against the frozen enums; an unrecognized value is
-      reported in a dedicated field, never silently coerced or dropped.
-- [ ] Write the canonical record to the per-task path and append the derived digest line to the
-      accumulating log (D1), creating the log's directory if needed.
-- [ ] Fail-soft throughout: any read failure, shape mismatch, or missing source omits its group
-      and the script still exits 0. Nothing it does can block or fail a dispatch.
-- [ ] `chmod +x` the script.
+      snapshot. *(completed)*
+- [x] Paired burdens: always emit both `burdens_created[]` and `burdens_lifted[]` (default `[]`),
+      sourced from tagged issue entries. *(completed)*
+- [x] Validate polarity and dimension values against the frozen enums; an unrecognized value is
+      reported in a dedicated field, never silently coerced or dropped. *(completed)*
+- [x] Write the canonical record to the per-task path and append the derived digest line to the
+      accumulating log (D1), creating the log's directory if needed. *(completed)*
+- [x] Fail-soft throughout: any read failure, shape mismatch, or missing source omits its group
+      and the script still exits 0. Nothing it does can block or fail a dispatch. *(completed)*
+- [x] `chmod +x` the script. *(completed)*
 
 **Timing**: 2 hours
 

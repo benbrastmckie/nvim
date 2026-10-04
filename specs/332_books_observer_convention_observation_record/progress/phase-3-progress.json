@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "The observer script -- live-mode join",
+  "started_at": "2026-10-04T07:55:00Z",
+  "last_updated": "2026-10-04T08:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Script skeleton, strict mode, usage, argument parsing", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 2, "description": "json_string/json_array no-jq emission helpers", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 3, "description": "Join half (generic): issues.jsonl + metrics.jsonl aggregation", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 4, "description": "Books fact 1: book_requires churn via git diff/grep", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 5, "description": "Books fact 2: Validated-by marker promotions by Decision heading", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 6, "description": "Probe-dependent groups: tier runs, certifier outcomes, vacuous passes", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 7, "description": "Snapshot before/after delta via conventional probe path", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 8, "description": "Paired burdens always emitted", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 9, "description": "Polarity/dimension validation against frozen enums", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 10, "description": "Write canonical record + append derived digest line", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 11, "description": "Fail-soft throughout; chmod +x", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [
+    {"approach": "Pretty-printed final JSON via jq when available, raw compact otherwise", "result": "worked", "reason": "keeps canonical record human-readable without a hard jq dependency"}
+  ],
+  "handoff_count": 0
+}
