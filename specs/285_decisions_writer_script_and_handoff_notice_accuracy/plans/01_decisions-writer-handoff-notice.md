@@ -1,7 +1,7 @@
 # Implementation Plan: Task #285
 
 - **Task**: 285 - Decisions writer script and handoff notice accuracy
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None (task 334 is a concurrent sibling with no file overlap)
 - **Research Inputs**: `specs/285_decisions_writer_script_and_handoff_notice_accuracy/reports/01_decisions-writer-handoff-notice.md`

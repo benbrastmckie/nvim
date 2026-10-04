@@ -2,7 +2,7 @@
 
 - **Task**: 334 - Fix two books-extension scaffold contract defects: the hard implementation
   agent's artifacts shape and hand-rolled task lookups in both hard skills
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/334_fix_books_scaffold_contract_defects/reports/01_books-scaffold-contract-defects.md

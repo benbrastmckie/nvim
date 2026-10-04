@@ -1,7 +1,7 @@
 # Implementation Plan: Task #329
 
 - **Task**: 329 - Per-task issue log: contract, writer and dispatch threading
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: Task 285 (completed), Task 326 (completed) — both were file-footprint
   serializations on `orchestrate-cycle-postflight.sh` / `orchestrate-build-dispatch.sh` and have
