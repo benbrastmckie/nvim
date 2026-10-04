@@ -230,43 +230,43 @@ the tests, and the format doc cannot drift. This phase is prose only.
 
 ---
 
-### Phase 2: `dispatch-metrics.sh` — Skeleton and Transcript-Free Fields [NOT STARTED]
+### Phase 2: `dispatch-metrics.sh` — Skeleton and Transcript-Free Fields [COMPLETED]
 
 **Goal**: A deployable, runnable `dispatch-metrics.sh` that appends a complete record using only
 figures derivable without the transcript, with the arg surface, enums, locking, and append path
 final.
 
 **Tasks**:
-- [ ] Create `scripts/dispatch-metrics.sh` with `set -euo pipefail` (Class A per
+- [x] Create `scripts/dispatch-metrics.sh` with `set -euo pipefail` (Class A per *(completed)*
       `context/standards/shell-strict-mode.md` — an ordinary non-counter writer script), the
       `SCRIPT_DIR`/`common_repo_root`/`deploy-root-guard.sh`/`task-lookup-lib.sh` preamble copied
       structurally from `scripts/issue-record.sh`, and a header comment block in the same shape
       (usage, single responsibility, source-store-not-runnable note, mandatory non-fatal call
       idiom, exit codes).
-- [ ] Argument surface: `--task-dir PATH` (absolute verbatim, relative against `PROJECT_ROOT`) or
+- [x] Argument surface: `--task-dir PATH` (absolute verbatim, relative against `PROJECT_ROOT`) or *(completed)*
       `--task N` (via `task_lookup_entry`/`task_lookup_dir`); `--phase`, `--agent`, `--outcome`,
       `--dispatch-seq`, `--dispatch-start-ts`, `--session`, `--cc-session-id`,
       `--phases-completed`, `--phases-total`. Closed-set `--phase`/`--outcome` refuse loudly on
       an unrecognized value; required-and-empty refuses with nothing written (exit 1).
-- [ ] `entry_id` as `met_{timestamp_ms}_{random6}`, mirroring `issue-record.sh`'s construction.
-- [ ] `wall_clock_seconds` = now − `--dispatch-start-ts`. Refuse to emit the figure (omit it) when
+- [x] `entry_id` as `met_{timestamp_ms}_{random6}`, mirroring `issue-record.sh`'s construction. *(completed)*
+- [x] `wall_clock_seconds` = now − `--dispatch-start-ts`. Refuse to emit the figure (omit it) when *(completed)*
       `dispatch_start_ts` is absent or equals the caller's fail-closed sentinel `9999999999`,
       rather than emitting a negative or absurd number. Add an inline comment naming the
       hook-runtime trap so a future reader cannot mistake the provenance.
-- [ ] Commits and churn: `git log --since="@${dispatch_start_ts}" --grep="$session_id"` over the
+- [x] Commits and churn: `git log --since="@${dispatch_start_ts}" --grep="$session_id"` over the *(completed)*
       repo root for `commits.count` and `commits.subjects[]`; `git log --numstat` over that same
       commit set, summed separately for pathspec `specs/` and `':!specs/'`, for
       `churn.specs{added,removed}` and `churn.outside_specs{added,removed}`. Both halves are
       omitted when the git query fails or the repo root is not a git tree.
-- [ ] Append exactly one `jq -c -n`-built line (never string concatenation) to
+- [x] Append exactly one `jq -c -n`-built line (never string concatenation) to *(completed)*
       `${TASK_DIR}/metrics.jsonl` under `flock -x` on `${TASK_DIR}/.metrics.lock`, lazily creating
       the target on first use. Never read-merge-rewrite.
-- [ ] Build the line so that every conditionally-present field is **dropped when unavailable**,
+- [x] Build the line so that every conditionally-present field is **dropped when unavailable**, *(completed)*
       not defaulted — e.g. assemble optional sub-objects as `jq` arguments that are omitted from
       the object construction when their source variable is empty. Add a comment stating that
       substituting `0` here is a correctness defect, not a style choice.
-- [ ] Emit `entry_id` on stdout on success; all diagnostics to stderr.
-- [ ] Register `dispatch-metrics.sh` in `manifest.json`'s `provides.scripts` array, adjacent to
+- [x] Emit `entry_id` on stdout on success; all diagnostics to stderr. *(completed)*
+- [x] Register `dispatch-metrics.sh` in `manifest.json`'s `provides.scripts` array, adjacent to *(completed)*
       the existing `issue-record.sh` entry.
 
 **Timing**: 2 hours
