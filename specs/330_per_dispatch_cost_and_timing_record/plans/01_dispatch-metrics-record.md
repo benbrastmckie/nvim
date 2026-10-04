@@ -365,30 +365,30 @@ if a class is absent on some lines, omit that class rather than summing it as ze
 
 ---
 
-### Phase 4: `--backfill N` Mode [NOT STARTED]
+### Phase 4: `--backfill N` Mode [COMPLETED]
 
 **Goal**: For an already-completed task, derive what is still derivable and mark every derived
 figure as such, omitting what is unrecoverable.
 
 **Tasks**:
-- [ ] Add `--backfill N` as a second mode in the same script (not a separate file), resolving the
+- [x] Add `--backfill N` as a second mode in the same script (not a separate file), resolving the *(completed)*
       task directory via `task-lookup-lib.sh` (active, then archive).
-- [ ] Derive per-phase wall-clock from **phase-commit timestamps** (`git log` over the task's own
+- [x] Derive per-phase wall-clock from **phase-commit timestamps** (`git log` over the task's own *(completed)*
       commits, matched by the `task {N}: ...` / `task {N} phase {P}: ...` subject convention
       documented in `rules/git-workflow.md`), never from `events.jsonl`'s `duration_seconds`.
-- [ ] Derive the dispatch count from `events.jsonl` lines with `event_type == "lifecycle_stage"`
+- [x] Derive the dispatch count from `events.jsonl` lines with `event_type == "lifecycle_stage"` *(completed)*
       and `checkpoint == "preflight"`, filtered to the task — and state in a comment why
       `dispatch_seq` is NOT used for this (trap b).
-- [ ] Derive git churn over the task's full commit range, split `specs/` vs `':!specs/'`, reusing
+- [x] Derive git churn over the task's full commit range, split `specs/` vs `':!specs/'`, reusing *(completed)*
       the Phase 2 churn helper rather than duplicating it.
-- [ ] Mark every record this mode writes with `backfilled: true` AND populate
+- [x] Mark every record this mode writes with `backfilled: true` AND populate *(completed)*
       `figure_provenance{}` mapping each present figure to `derived` (or `measured` where the
       figure genuinely is, e.g. a commit timestamp). Omit `tokens`, `tool_calls`, `model`, and
       `gate_runs` entirely when the transcript is gone — never zero them.
-- [ ] Attempt the Phase 3 join opportunistically in backfill mode too: when the transcript is
+- [x] Attempt the Phase 3 join opportunistically in backfill mode too: when the transcript is *(completed)*
       still inside the 30-day window, record the measured figures and mark them `measured` in
       `figure_provenance` even on an otherwise-backfilled record.
-- [ ] Append backfill records through the same `flock`ed append path, so a backfill run cannot
+- [x] Append backfill records through the same `flock`ed append path, so a backfill run cannot *(completed)*
       corrupt a live postflight write.
 
 **Timing**: 1.5 hours

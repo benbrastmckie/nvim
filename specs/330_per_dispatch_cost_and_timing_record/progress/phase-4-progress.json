@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "--backfill N mode",
+  "started_at": "2026-10-04T02:25:00Z",
+  "last_updated": "2026-10-04T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --backfill N mode: phase-commit wall-clock, preflight-event dispatch counting, full-range churn, backfilled/figure_provenance marking", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/dispatch-metrics.sh", "agent-system/extensions/core/context/formats/dispatch-metrics.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [
+    {"approach": "attempt opportunistic transcript re-join during --backfill using a correlating cc_session_id/dispatch_seq pair", "result": "deferred", "reason": "no reliable per-historical-commit dispatch_seq exists to drive the exact-match join; documented as a known limitation rather than faked"}
+  ],
+  "handoff_count": 0
+}

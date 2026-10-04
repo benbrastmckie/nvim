@@ -339,12 +339,210 @@ metrics_commits_and_churn() {
     '{commits: $commits, churn: $churn}'
 }
 
+# ─── metrics_churn_for_hashes <repo_root> <newline_separated_commit_hashes> ────────────────────
+# Echoes `{specs:{added,removed}, outside_specs:{added,removed}}` (never null -- callers decide
+# whether to omit) summed via `git show --numstat` over the GIVEN commit hashes, split specs/ vs
+# outside, same method as metrics_commits_and_churn's own numstat summation but driven by an
+# explicit hash list rather than a --grep-derived set -- --backfill's commit selection (subject
+# pattern, not session grep) differs from the live path's, so the two share the summation
+# approach without sharing the same commit-selection call.
+metrics_churn_for_hashes() {
+  local repo_root="$1"
+  local hashes="$2"
+  local specs_added=0 specs_removed=0 outside_added=0 outside_removed=0
+  local h s_line o_line sa sr oa oo
+  while IFS= read -r h; do
+    [ -z "$h" ] && continue
+    s_line=$(git -C "$repo_root" show --numstat --pretty=format:'' "$h" -- specs/ 2>/dev/null | \
+      awk '{a+=$1; r+=$2} END {printf "%d %d\n", (a?a:0), (r?r:0)}')
+    o_line=$(git -C "$repo_root" show --numstat --pretty=format:'' "$h" -- . ':!specs/' 2>/dev/null | \
+      awk '{a+=$1; r+=$2} END {printf "%d %d\n", (a?a:0), (r?r:0)}')
+    sa=$(echo "$s_line" | awk '{print $1}'); sr=$(echo "$s_line" | awk '{print $2}')
+    oa=$(echo "$o_line" | awk '{print $1}'); oo=$(echo "$o_line" | awk '{print $2}')
+    [ -z "$sa" ] && sa=0; [ -z "$sr" ] && sr=0; [ -z "$oa" ] && oa=0; [ -z "$oo" ] && oo=0
+    specs_added=$((specs_added + sa)); specs_removed=$((specs_removed + sr))
+    outside_added=$((outside_added + oa)); outside_removed=$((outside_removed + oo))
+  done <<< "$hashes"
+  jq -c -n --argjson sa "$specs_added" --argjson sr "$specs_removed" \
+    --argjson oa "$outside_added" --argjson orr "$outside_removed" \
+    '{specs: {added: $sa, removed: $sr}, outside_specs: {added: $oa, removed: $orr}}'
+}
+
+# ─── metrics_run_backfill <task_number> <repo_root> ────────────────────────────────────────────
+# Implements `--backfill N` (Phase 4). Derives per-phase wall-clock from phase-commit timestamps
+# (Trap (c)'s correct source -- never events.jsonl's duration_seconds), dispatch counts from
+# events.jsonl's lifecycle_stage/preflight events filtered to the task (Trap (b)'s correct
+# source -- dispatch_seq itself is deliberately NOT used here), and git churn over the task's
+# full commit range (metrics_churn_for_hashes above). Every emitted record carries
+# `backfilled: true` and a populated `figure_provenance`. Appends one record per recovered
+# phase-commit via the same flock-guarded metrics_append_line path the live mode uses, so a
+# backfill run can never corrupt a concurrent live postflight write. Echoes each appended
+# entry_id on stdout; returns 1 (nothing written) when the task cannot be resolved or no
+# phase-commits are found.
+metrics_run_backfill() {
+  local task_num="$1"
+  local repo_root="$2"
+  local state_file="${repo_root}/specs/state.json"
+
+  local task_entry project_name task_dir_rel task_dir
+  task_entry="$(task_lookup_entry "$task_num" "$state_file")"
+  if [ -z "$task_entry" ]; then
+    echo "error: --backfill: task $task_num does not resolve to any entry in $state_file (active or archived)" >&2
+    return 1
+  fi
+  project_name="$(echo "$task_entry" | jq -r '.project_name // empty')"
+  if [ -z "$project_name" ]; then
+    echo "error: --backfill: task $task_num's state.json entry has no project_name" >&2
+    return 1
+  fi
+  task_dir_rel="$(task_lookup_dir "$task_num" "$project_name" "$repo_root")"
+  task_dir="${repo_root}/${task_dir_rel}"
+  if [ ! -d "$task_dir" ]; then
+    echo "error: --backfill: resolved task directory does not exist: $task_dir" >&2
+    return 1
+  fi
+
+  if ! git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "error: --backfill: $repo_root is not a git work tree" >&2
+    return 1
+  fi
+
+  # Phase-commit enumeration: subjects matching the `task {N}: {action}` / `task {N} phase {P}:
+  # {name}` convention (rules/git-workflow.md), oldest-first so consecutive deltas are forward
+  # in time.
+  local commit_hashes
+  commit_hashes=$(git -C "$repo_root" log --reverse --format='%H' -E \
+    --grep="^task ${task_num}:" --grep="^task ${task_num} phase " 2>/dev/null) || commit_hashes=""
+
+  if [ -z "$commit_hashes" ]; then
+    echo "error: --backfill: no commits matching the 'task ${task_num}:' / 'task ${task_num} phase P:' subject convention were found" >&2
+    return 1
+  fi
+
+  # Dispatch count (Trap (b): dispatch_seq is NOT a dispatch count) -- events.jsonl lines with
+  # event_type=="lifecycle_stage" and checkpoint=="preflight", filtered to this task. jq streams
+  # events.jsonl's newline-delimited top-level values natively; no -s/slurp needed.
+  local events_file dispatch_count
+  events_file="${repo_root}/specs/events.jsonl"
+  dispatch_count=0
+  if [ -f "$events_file" ]; then
+    dispatch_count=$(jq -c --argjson t "$task_num" \
+      'select(.event_type=="lifecycle_stage" and .checkpoint=="preflight" and .task==$t)' \
+      "$events_file" 2>/dev/null | wc -l | tr -d ' ') || dispatch_count=0
+  fi
+
+  # Full-range churn, computed ONCE over every recovered commit and attached identically to
+  # every emitted record below (never duplicated per-commit) -- "the task's full commit range",
+  # per the plan this function was built against.
+  local full_range_churn
+  full_range_churn=$(metrics_churn_for_hashes "$repo_root" "$commit_hashes")
+
+  echo "dispatch-metrics: --backfill ${task_num}: ${dispatch_count} dispatch(es) found via events.jsonl preflight markers (NOT derived from dispatch_seq -- see Trap (b))" >&2
+
+  local prev_epoch="" wrote_any=false
+  local commit_hash subject commit_epoch body session_from_commit
+  local phase_out outcome_out wall_clock_json recorded_at
+  local timestamp_ms random6 entry_id session_json commits_json provenance_json line
+
+  while IFS= read -r commit_hash; do
+    [ -z "$commit_hash" ] && continue
+    subject=$(git -C "$repo_root" show -s --format='%s' "$commit_hash" 2>/dev/null)
+    commit_epoch=$(git -C "$repo_root" show -s --format='%ct' "$commit_hash" 2>/dev/null)
+    body=$(git -C "$repo_root" show -s --format='%b' "$commit_hash" 2>/dev/null)
+    session_from_commit=$(printf '%s' "$body" | grep -m1 -oE 'sess_[0-9]+_[A-Za-z0-9]+' || true)
+
+    # phase/outcome inference from the commit-subject convention (rules/git-workflow.md).
+    case "$subject" in
+      "task ${task_num}: complete research") phase_out="research"; outcome_out="completed" ;;
+      "task ${task_num}: create implementation plan") phase_out="plan"; outcome_out="completed" ;;
+      "task ${task_num} phase "*) phase_out="implement"; outcome_out="completed" ;;
+      "task ${task_num}: complete implementation"*) phase_out="implement"; outcome_out="completed" ;;
+      "task ${task_num}: orchestration paused"*) phase_out="implement"; outcome_out="partial" ;;
+      "task ${task_num}: orchestration dispatch blocked"*) phase_out="implement"; outcome_out="blocked" ;;
+      "task ${task_num}: orchestration dispatch failed"*) phase_out="implement"; outcome_out="failed" ;;
+      "task ${task_num}: request research"*) phase_out="plan"; outcome_out="deferred" ;;
+      *) phase_out="other"; outcome_out="completed" ;;
+    esac
+
+    # Per-phase wall-clock: delta to the PREVIOUS recovered phase-commit's timestamp (Trap (c)'s
+    # correct source). The first recovered commit has no predecessor, so it carries none.
+    wall_clock_json="null"
+    if [ -n "$prev_epoch" ] && [ -n "$commit_epoch" ]; then
+      local delta=$((commit_epoch - prev_epoch))
+      if [ "$delta" -ge 0 ]; then
+        wall_clock_json="$delta"
+      fi
+    fi
+    [ -n "$commit_epoch" ] && prev_epoch="$commit_epoch"
+
+    recorded_at=$(date -u -d "@${commit_epoch}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null)
+    [ -z "$recorded_at" ] && recorded_at="$(common_timestamp_iso)"
+
+    timestamp_ms=$(date -u +%s%3N)
+    random6=$(tr -dc 'a-zA-Z0-9' < /dev/urandom 2>/dev/null | head -c 6 || true)
+    if [ -z "$random6" ] || [ "${#random6}" -lt 6 ]; then
+      random6=$(printf '%06x' "$RANDOM$RANDOM" | tail -c 6)
+    fi
+    entry_id="met_${timestamp_ms}_${random6}"
+
+    session_json="null"
+    [ -n "$session_from_commit" ] && session_json="\"${session_from_commit}\""
+
+    commits_json=$(jq -c -n --arg s "$subject" '{count: 1, subjects: [$s]}')
+
+    # figure_provenance: maps every PRESENT figure to measured|derived. commits/subject are
+    # measured (read verbatim off the commit); wall_clock_seconds and churn are derived.
+    provenance_json=$(jq -c -n \
+      --argjson has_wall "$([ "$wall_clock_json" != "null" ] && echo true || echo false)" \
+      '{commits: "measured"} + (if $has_wall then {wall_clock_seconds: "derived"} else {} end) + {churn: "derived"}')
+
+    line=$(jq -c -n \
+      --arg entry_id "$entry_id" \
+      --arg recorded_at "$recorded_at" \
+      --argjson task "$task_num" \
+      --arg phase "$phase_out" \
+      --arg outcome "$outcome_out" \
+      --argjson session_id "$session_json" \
+      --argjson wall_clock_seconds "$wall_clock_json" \
+      --argjson commits "$commits_json" \
+      --argjson churn "$full_range_churn" \
+      --argjson figure_provenance "$provenance_json" \
+      '{
+        entry_id: $entry_id,
+        recorded_at: $recorded_at,
+        task: $task,
+        phase: $phase,
+        outcome: $outcome,
+        backfilled: true
+      }
+      + (if $session_id == null then {} else {session_id: $session_id} end)
+      + (if $wall_clock_seconds == null then {} else {wall_clock_seconds: $wall_clock_seconds} end)
+      + (if $commits == null then {} else {commits: $commits} end)
+      + (if $churn == null then {} else {churn: $churn} end)
+      + {figure_provenance: $figure_provenance}
+      ')
+
+    metrics_append_line "$task_dir" "$line"
+    echo "$entry_id"
+    wrote_any=true
+  done <<< "$commit_hashes"
+
+  if [ "$wrote_any" != "true" ]; then
+    return 1
+  fi
+  return 0
+}
+
 # ════════════════════════════════════════════════════════════════════════════════════════════
-# BACKFILL MODE DISPATCH (Phase 4 replaces this stub body with the real implementation)
+# BACKFILL MODE DISPATCH
 # ════════════════════════════════════════════════════════════════════════════════════════════
 if [ -n "$backfill_arg" ]; then
-  echo "error: --backfill mode is not yet available in this build of dispatch-metrics.sh" >&2
-  exit 1
+  if ! [[ "$backfill_arg" =~ ^[0-9]+$ ]]; then
+    echo "error: --backfill must be a bare non-negative task number, got: $backfill_arg" >&2
+    exit 1
+  fi
+  metrics_run_backfill "$backfill_arg" "$PROJECT_ROOT"
+  exit $?
 fi
 
 # ════════════════════════════════════════════════════════════════════════════════════════════

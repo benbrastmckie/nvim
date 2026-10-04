@@ -198,25 +198,40 @@ can be reconstructed.
 ## The `--backfill` Marking Contract
 
 `dispatch-metrics.sh --backfill N` derives, for an already-completed task `N`, what is **still**
-derivable without a live transcript:
+derivable without a live transcript, emitting one record per recovered phase-commit (subjects
+matching the `{N}: {action}` / `{N} phase {P}: {name}` commit-subject convention documented in
+`rules/git-workflow.md`):
 
-- Per-phase wall-clock from phase-commit timestamps (Trap (c)'s correct source).
-- Dispatch counts from `events.jsonl`'s `lifecycle_stage`/`preflight` events (Trap (b)'s correct
-  source), filtered to the task.
-- Git churn over the task's full commit range, split `specs/` vs `':!specs/'`, reusing the same
-  churn-derivation logic the live postflight call site uses — never a duplicated implementation.
+- Per-phase wall-clock as the delta between each recovered phase-commit's timestamp and its
+  predecessor's (Trap (c)'s correct source; the first recovered commit carries no
+  `wall_clock_seconds` since it has no predecessor).
+- A dispatch count from `events.jsonl`'s `lifecycle_stage`/`preflight` events (Trap (b)'s correct
+  source), filtered to the task and reported to stderr as a corroborating diagnostic — it is
+  **not** written into any individual record, since no single phase-commit maps uniquely to one
+  dispatch count.
+- Git churn over the task's full recovered commit range (every matched phase-commit, summed via
+  `git show --numstat`), split `specs/` vs `':!specs/'`. Computed **once** per `--backfill`
+  invocation and attached identically to every record it emits — not recomputed per commit.
+- `session_id`, when recoverable from a commit's own body (the `Session: sess_{...}` trailer
+  `git-workflow.md`'s commit-message convention already carries); omitted otherwise.
+
+`agent`, `dispatch_seq`, `cc_session_id`, `model`, `tokens`, and `tool_calls` are **omitted
+entirely** on every backfilled record in the current implementation: none is recoverable from git
+history alone, and the exact-match transcript join (`metrics_transcript_join`) requires a known
+`dispatch_seq`, which a historical commit does not carry. A future enhancement could attempt the
+opportunistic re-join this document's design anticipated — for a transcript still inside the
+30-day window, if a correlating `cc_session_id`/`dispatch_seq` pair can be recovered by some other
+means — but the current implementation does not attempt it; this is a recorded limitation, not an
+implied claim that it runs today.
 
 Every record `--backfill` writes carries `backfilled: true` at the top level, plus a populated
 `figure_provenance` object mapping each present figure's name to `measured` or `derived`. An
 **unmarked** record (no `backfilled` key at all is never valid — `backfilled: false` is the
 unmarked/measured state) is measured throughout; a record with `backfilled: true` has at least
-one derived figure, named explicitly in `figure_provenance`. Token and tool-call figures are
-**omitted, never zeroed**, when the transcript is gone — exactly the same omission rule as the
-live path. When a backfilled task's transcript happens to still be inside the 30-day retention
-window, `--backfill` opportunistically re-attempts the exact-match join from "The Exact Join
-Procedure" above, and marks whatever it recovers as `measured` in `figure_provenance` even on an
-otherwise-`backfilled: true` record — a backfill run is never worse than the live capture it is
-standing in for, whenever the transcript genuinely still permits the real join.
+one derived figure, named explicitly in `figure_provenance` (`commits` is `measured` — the
+subject is read verbatim off the commit; `wall_clock_seconds`, when present, and `churn` are
+always `derived`). Token and tool-call figures are **omitted, never zeroed** — exactly the same
+omission rule as the live path.
 
 ## Non-Blocking Posture
 
