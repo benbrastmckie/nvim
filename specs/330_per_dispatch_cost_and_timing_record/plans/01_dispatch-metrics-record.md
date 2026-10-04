@@ -550,40 +550,74 @@ insertion point, not to edit by line number.
 
 ---
 
-### Phase 7: Deploy, Shellcheck Sweep, and End-to-End Acceptance [NOT STARTED]
+### Phase 7: Deploy, Shellcheck Sweep, and End-to-End Acceptance [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Prove the acceptance bar on real data, not on scratch fixtures.
 
 **Tasks**:
-- [ ] Deploy the source store (`bash .claude/scripts/deploy-headless.sh`) and confirm
+- [x] Deploy the source store (`bash .claude/scripts/deploy-headless.sh`) and confirm *(completed)*
       `.claude/scripts/dispatch-metrics.sh`, `.claude/scripts/tests/test-dispatch-metrics.sh`, and
       `.claude/context/formats/dispatch-metrics.md` all exist in the deployed tree — i.e. the
-      `manifest.json` registrations actually took.
-- [ ] Run `bash .claude/scripts/validate-context-index.sh` and confirm the new format-doc entry
-      validates (including its `line_count`).
-- [ ] Run `shellcheck` over both new scripts and over the edited
+      `manifest.json` registrations actually took. **Evidence**: `ls -la` on all three deployed
+      paths succeeded (`.claude/scripts/dispatch-metrics.sh` 36324 bytes executable,
+      `.claude/scripts/tests/test-dispatch-metrics.sh` 21345 bytes,
+      `.claude/context/formats/dispatch-metrics.md` 20736 bytes), and
+      `[deploy-headless] RESULT=landed_verify_clean` / `[verify-deploy] PASS -- 33 check(s), 0
+      failure(s)` on the deploy run that landed these three phases.
+- [x] Run `bash .claude/scripts/validate-context-index.sh` and confirm the new format-doc entry *(completed)*
+      validates (including its `line_count`). **Evidence**: `Entries checked: 288 / Errors: 0 /
+      Warnings: 0 / Validation PASSED`, entry count up from the pre-task 287; deployed
+      `line_count` auto-corrected to 265 (actual) on deploy, confirmed via
+      `jq '.entries[] | select(.path|test("dispatch-metrics.md")) | .line_count'` → `265`.
+- [x] Run `shellcheck` over both new scripts and over the edited *(completed)*
       `orchestrate-cycle-postflight.sh`, confirming clean per
-      `context/standards/shell-strict-mode.md`.
-- [ ] Run `bash .claude/scripts/tests/test-dispatch-metrics.sh` and
+      `context/standards/shell-strict-mode.md`. **Evidence**: `dispatch-metrics.sh` and
+      `test-dispatch-metrics.sh` each show only the same info-level `SC1091`/`SC2329` findings as
+      their respective siblings `issue-record.sh`/`test-issue-record.sh` (byte-identical findings
+      modulo filename); a `diff` of `shellcheck orchestrate-cycle-postflight.sh` against the
+      pre-edit committed version shows zero new findings (only the filename differs line-for-line).
+- [x] Run `bash .claude/scripts/tests/test-dispatch-metrics.sh` and *(completed)*
       `bash .claude/scripts/tests/test-issue-record.sh` (the sibling must not have regressed).
-- [ ] **Acceptance 1 — one line per dispatch**: inspect this task's own `metrics.jsonl` after the
+      **Evidence**: `=== Results: 11 passed, 0 failed ===` and `=== Results: 15 passed, 0 failed
+      ===` respectively, both against the deployed `.claude/scripts/` copies.
+- [x] **Acceptance 1 — one line per dispatch**: inspect this task's own `metrics.jsonl` after the *(completed)*
       implementing dispatch(es) and confirm one line per dispatch, each `jq`-parseable.
-- [ ] **Acceptance 2 — wall-clock is not hook runtime**: confirm `wall_clock_seconds` on a real
+      **Evidence**: `--backfill 330` against this task's own real commit history, filtered to
+      this round (`recorded_at >= "2026-10-03"`), yields exactly 8 lines — one per phase-commit
+      (research, plan, phases 1–6) — every line independently `jq -c .`-parseable, persisted at
+      `specs/330_per_dispatch_cost_and_timing_record/metrics.jsonl`.
+- [x] **Acceptance 2 — wall-clock is not hook runtime**: confirm `wall_clock_seconds` on a real *(completed)*
       line is on the order of hundreds-to-thousands of seconds, not the 0.2–2.6 s range
       `events.jsonl`'s `duration_seconds` occupies; state the measured comparison explicitly in
-      the phase record.
-- [ ] **Acceptance 3 — a blocked dispatch produces a line**: exercise the blocked path (a
+      the phase record. **Evidence**: the six implementation-phase lines in the same
+      `metrics.jsonl` carry `wall_clock_seconds` ∈ {445, 385, 272, 411, 415, 307} — three orders
+      of magnitude above the 0.2–2.6 s hook-runtime range, and the live-join unit test (Phase 3)
+      separately measured `wall_clock_seconds: 1072` and `1079` against this dispatch's own live
+      transcript window.
+- [x] **Acceptance 3 — a blocked dispatch produces a line**: exercise the blocked path (a *(completed)*
       scratch `--outcome blocked` invocation at minimum, and a real blocked/partial dispatch if
       one occurs) and confirm a line appears. Confirm specifically that a `partial` outcome with
       ZERO blockers still produces a line (the `partial)` arm's own `issue-record.sh` call is
-      blocker-gated; the metrics call must not be).
-- [ ] **Acceptance 4 — `--backfill`**: run `--backfill` against a completed task, confirm every
+      blocker-gated; the metrics call must not be). **Evidence**: direct
+      `dispatch-metrics.sh --outcome blocked ...` and `--outcome partial ...` (no blocker
+      argument involved at all — WORK (m) has no blocker-count parameter) each appended one line:
+      `{"phase":"implement","outcome":"blocked","wall_clock_seconds":900}` and
+      `{"phase":"implement","outcome":"partial","wall_clock_seconds":600}`; corroborated at the
+      code level by the Phase 6 diff showing WORK (m) sits entirely outside the `partial)` arm's
+      `partial_blocker_count -gt 0` gate.
+- [x] **Acceptance 4 — `--backfill`**: run `--backfill` against a completed task, confirm every *(completed)*
       line is marked `backfilled: true` with a populated `figure_provenance`, and confirm
-      unrecoverable figures are absent keys rather than zeros.
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh`.
-- [ ] Confirm no task-number references leaked into any source-store file:
+      unrecoverable figures are absent keys rather than zeros. **Evidence**: both the Phase 4
+      scratch fixture (5 commits → 5 lines) and this real `--backfill 330` run (8 lines) show
+      `jq -s 'map(.backfilled) | unique'` → `[true]`, `map(has("figure_provenance")) | unique` →
+      `[true]`, `map(has("tokens")) | unique` → `[false]` on every line.
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh`. **Result: 32/34 pass; 2 *(completed: see Reasoned Exclusions)*
+      pre-existing, unrelated failures excluded** — see `#### Reasoned Exclusions` below.
+- [x] Confirm no task-number references leaked into any source-store file: *(completed)*
       `bash .claude/scripts/check-task-references.sh` (or the equivalent repo-wide lint) is clean
-      for the files this task touched.
+      for the files this task touched. **Evidence**: `0 occurrence(s)` individually confirmed for
+      `dispatch-metrics.sh`, `test-dispatch-metrics.sh`, `dispatch-metrics.md`,
+      `orchestrate-cycle-postflight.sh`, `manifest.json`, and `index-entries.json`.
 
 **Timing**: 1 hour
 
@@ -596,27 +630,54 @@ insertion point, not to edit by line number.
 
 **Verification**:
 - All four acceptance checks above demonstrated with recorded evidence (the actual `jq` output
-  quoted in the phase record, not merely asserted).
-- `bash .claude/scripts/verify-deploy.sh` passes.
-- Both test suites exit 0.
+  quoted in the phase record above, not merely asserted). ✅
+- `bash .claude/scripts/verify-deploy.sh`: 32/34 checks pass; the 2 residual failures are
+  pre-existing and unrelated (see Reasoned Exclusions below) — this task's own file footprint
+  (`dispatch-metrics.sh`, `test-dispatch-metrics.sh`, `dispatch-metrics.md`,
+  `orchestrate-cycle-postflight.sh`, `manifest.json`, `index-entries.json`) contributes zero new
+  findings to any of verify-deploy's 34 checks.
+- Both test suites exit 0. ✅
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Whole-tree orphan detection check (verify-deploy.sh check 13): flags `tmp/noop-bash-count-<this-session-id>` | Not a product of this task's committed changes. `scripts/detect-noop-bash.sh` writes this file as a transient per-session marker tracking consecutive no-op Bash calls; it is created and removed repeatedly over the course of this very dispatch's own interactive tool use, purely as a side effect of issuing many Bash commands in sequence — unrelated to `dispatch-metrics.sh`, `orchestrate-cycle-postflight.sh`, or any file this task touches. | `git check-ignore -v .claude/tmp/noop-bash-count-53633f54-4eac-4b2d-b1d5-f641d51ec21d` → matched by the blanket `/.claude/` rule in `.gitignore:6` (confirmed gitignored, never staged, never committed). The file was observed to disappear and reappear across two consecutive `verify-deploy.sh` runs within this same dispatch, confirming it is a live, session-scoped artifact of ongoing tool use rather than a static deploy defect. `context/patterns/deploy-orphan-detection.md`'s own "Runtime artifact" exclusion class already covers the same conceptual pattern (`tmp/workflow-active-*`, etc.) but has not yet been extended to this specific hook's filename pattern — a pre-existing gap in that document, out of this task's scope to fix. |
+| 3 of the suites `run-all.sh` aggregates (verify-deploy.sh check 8) report FAIL: `test-gate-out-repair-reporting.sh`, `test-lint-json-channel-discipline.sh`, `test-orchestrate-cycle-plan.sh` | None of the three failing suites, nor their failure content, has any connection to this task's file footprint. `test-gate-out-repair-reporting.sh`'s one failing case concerns `command-gate-out.sh`'s phase-check repair-count reporting; `test-lint-json-channel-discipline.sh`'s two failing cases concern the JSON/NDJSON channel-discipline lint flagging `agent-system/extensions/typst/scripts/chapter-quality-check.sh` (a Typst-extension script); `test-orchestrate-cycle-plan.sh` concerns `orchestrate-cycle-plan.sh` (the CYCLE-PLAN script, a different file from this task's own edit target `orchestrate-cycle-postflight.sh`). | `git log --oneline -3 -- <each of the three test files and chapter-quality-check.sh>` shows all were last touched by `task 326 phase 6: core test coverage` and `task 250 phase 6`/`phase 5` commits — both predating this task's dispatch entirely and belonging to unrelated prior work. This task's own new/edited files (`dispatch-metrics.sh`, `test-dispatch-metrics.sh`, `dispatch-metrics.md`, `orchestrate-cycle-postflight.sh`, `manifest.json`, `index-entries.json`) appear nowhere in any of the three failure transcripts. The sibling suite this task DOES own responsibility for (`test-issue-record.sh`) and the directly-dependent suite (`test-orchestrate-cycle-postflight.sh`, 166/166 passing) both pass cleanly. |
+
+No residual work remains from either exclusion: both are environment/pre-existing conditions this
+task did not create and has no file-footprint basis to fix (fixing either would mean editing
+files this task's own territory never touched, for defects this task's dispatch did not
+introduce).
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/tests/test-dispatch-metrics.sh` exits 0, including the two
+- [x] `bash .claude/scripts/tests/test-dispatch-metrics.sh` exits 0, including the two
       acceptance-bar tests (missing transcript → omitted not zeroed; metrics failure → caller
-      unaffected).
-- [ ] `bash .claude/scripts/tests/test-issue-record.sh` still exits 0 (no sibling regression).
-- [ ] `shellcheck` clean on `scripts/dispatch-metrics.sh`,
+      unaffected). *(completed: 11/11 passed)*
+- [x] `bash .claude/scripts/tests/test-issue-record.sh` still exits 0 (no sibling regression).
+      *(completed: 15/15 passed)*
+- [x] `shellcheck` clean on `scripts/dispatch-metrics.sh`,
       `scripts/tests/test-dispatch-metrics.sh`, and `scripts/orchestrate-cycle-postflight.sh` per
-      `context/standards/shell-strict-mode.md`.
-- [ ] `bash -n` parses on all three scripts.
-- [ ] `jq .` parses every line of a produced `metrics.jsonl`.
-- [ ] `bash .claude/scripts/validate-context-index.sh` validates the new format-doc entry.
-- [ ] `bash .claude/scripts/verify-deploy.sh` passes (the `full` tier's complete gate set).
-- [ ] `orchestrate-cycle-postflight.sh`'s stdout remains exactly one JSON object.
-- [ ] No task-number references in any source-store file touched by this task.
+      `context/standards/shell-strict-mode.md`. *(completed: info-only findings matching each
+      sibling's own baseline; zero new findings on orchestrate-cycle-postflight.sh vs. its
+      pre-edit committed version)*
+- [x] `bash -n` parses on all three scripts. *(completed)*
+- [x] `jq .` parses every line of a produced `metrics.jsonl`. *(completed: confirmed on this
+      task's own real 8-line backfilled metrics.jsonl and on every scratch-fixture output across
+      Phases 2-5)*
+- [x] `bash .claude/scripts/validate-context-index.sh` validates the new format-doc entry.
+      *(completed: 288 entries checked, 0 errors, 0 warnings)*
+- [x] `bash .claude/scripts/verify-deploy.sh` passes (the `full` tier's complete gate set).
+      *(deviation: altered — 32/34 checks pass; 2 pre-existing, unrelated failures excluded per
+      Phase 7's `#### Reasoned Exclusions` record)*
+- [x] `orchestrate-cycle-postflight.sh`'s stdout remains exactly one JSON object. *(completed:
+      corroborated by all 166 passing cases in test-orchestrate-cycle-postflight.sh, several of
+      which parse this script's own stdout as JSON)*
+- [x] No task-number references in any source-store file touched by this task. *(completed: 0
+      occurrences on every touched file)*
 
 ## Artifacts & Outputs
 
