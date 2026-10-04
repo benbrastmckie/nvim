@@ -41,7 +41,7 @@ next_project_number: 335
 
 ### Extensions
 
-331 [NOT STARTED] — Topic-keyed post-task observer seam for extensions
+331 [RESEARCHED] — Topic-keyed post-task observer seam for extensions
   └─ 332 [NOT STARTED] — Books observer: the per-task convention observation record
     └─ 333 [NOT STARTED] — The /books command with --review and --revise
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
@@ -357,10 +357,11 @@ records), and the topic-keyed observer seam (the registration mechanism itself).
 
 ### 331. Topic-keyed post-task observer seam for extensions
 - **Effort**: 3-6 hours
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 327, Task 330
+- **Research**: [331_topic_keyed_post_task_observer_seam/reports/01_topic-keyed-observer-seam.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/core/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there

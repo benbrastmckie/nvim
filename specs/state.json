@@ -1639,7 +1639,7 @@
     {
       "project_number": 331,
       "project_name": "topic_keyed_post_task_observer_seam",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Topic-keyed post-task observer seam for extensions",
       "topic": "extensions",
@@ -1651,8 +1651,14 @@
       "priority": "high",
       "effort": "3-6 hours",
       "created": "2026-10-03T18:53:53Z",
-      "last_updated": "2026-10-03T18:53:53Z",
-      "artifacts": [],
+      "last_updated": "2026-10-04T02:35:18Z",
+      "artifacts": [
+        {
+          "path": "specs/331_topic_keyed_post_task_observer_seam/reports/01_topic-keyed-observer-seam.md",
+          "type": "report",
+          "summary": "Re-measures orchestrate-cycle-postflight.sh's current structure (1762 lines, superseding the dispatch's stale ~1048-1125 estimate), verifies both lifecycle-hook-reuse objections against live code, identifies the events.jsonl rc-event target, the manifest-routing-lib.sh reuse boundary (enumeration/prefix helpers yes, first-match-wins return no), the exact topic-field doc line to rewrite, the next check-extension-docs.sh Rule letter (X), and the manifest.json observers block schema modeled on keyword_overrides."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh",
@@ -1661,7 +1667,9 @@
         "agent-system/extensions/core/docs/guides/creating-extensions.md",
         "agent-system/extensions/core/context/reference/state-management-schema.md",
         "agent-system/extensions/core/scripts/check-extension-docs.sh"
-      ]
+      ],
+      "session_id": "sess_1791065283_d98d41",
+      "next_artifact_number": 2
     },
     {
       "project_number": 332,

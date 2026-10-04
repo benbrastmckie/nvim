@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791065283_d98d41_331",
+  "dispatch_seq": 13,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/331_topic_keyed_post_task_observer_seam/reports/01_topic-keyed-observer-seam.md",
+      "summary": "Re-measures orchestrate-cycle-postflight.sh's current structure (1762 lines, superseding the dispatch's stale ~1048-1125 estimate), verifies both lifecycle-hook-reuse objections against live code, identifies the events.jsonl rc-event target, the manifest-routing-lib.sh reuse boundary (enumeration/prefix helpers yes, first-match-wins return no), the exact topic-field doc line to rewrite, the next check-extension-docs.sh Rule letter (X), and the manifest.json observers block schema modeled on keyword_overrides."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /plan 331 to create implementation plan"
+}
