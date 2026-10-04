@@ -2559,6 +2559,104 @@ else
   fail "observer acceptance (D): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$obs_state_entry" | jq -r '.status' 2>/dev/null)"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# stall_suspected: the abandoned-wrap-up signal
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Regression for a live failure mode: two implement dispatches in one batch each detached a
+# verification sweep, ended the turn waiting for a harness notification, and returned with their
+# committed phase work on disk but no summary / .return-meta.json / .orchestrator-handoff.json.
+# "No outcome" alone cannot tell that apart from a dispatch that never did anything, so the loop
+# had no mechanical way to know the correct response was a single foreground re-prompt rather than
+# charging a failure. stall_suspected supplies exactly that discrimination, advisorily.
+
+setup_sandbox
+mkdir -p "$WORKDIR/specs/700_stall_probe/plans"
+write_state <<'EOF'
+{"active_projects":[{"project_number":700,"title":"stall probe","status":"implementing","task_type":"meta","next_artifact_number":1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_0000000000_stall.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"700": 1}, "dispatch_start_ts": {}}
+EOF
+
+# Case S1 (positive): no outcome artifacts at all, but one commit touching the task directory
+# lands inside the dispatch window -> stall_suspected must be true.
+stall_ts="$(now_ts)"
+sleep 1
+echo "phase 1 work" > "$WORKDIR/specs/700_stall_probe/plans/01_p.md"
+( cd "$WORKDIR" && git add specs/700_stall_probe >/dev/null 2>&1 \
+    && git commit -q -m "fixture phase 1: work landed, wrap-up abandoned" >/dev/null 2>&1 )
+run_sut "specs/700_stall_probe" 700 --session sess_0000000000_stall --phase implement \
+  --task-type meta --agent general-implementation-agent --cycle-count 1 \
+  --transport-error false --force-invoked false --dispatch-start-ts "$stall_ts" --dry-run
+s1="$(jqf '.stall_suspected')"
+if [ "$s1" = "true" ]; then
+  pass "stall_suspected (S1): no outcome + a commit inside the dispatch window flags the abandoned wrap-up"
+else
+  fail "stall_suspected (S1): expected true, got '$s1' (verdict=$(jqf '.verdict'))"
+fi
+
+# Case S2 (advisory only): the flag must not change verdict/status bookkeeping. Whatever verdict
+# the no-outcome path already produced, stall_suspected must not have rewritten it into something
+# else -- it is a parallel signal, exactly like report_missing.
+if [ -n "$(jqf '.verdict')" ] && [ "$(jqf '.verdict')" != "null" ]; then
+  pass "stall_suspected (S2): the no-outcome verdict is still emitted alongside the flag (verdict=$(jqf '.verdict'))"
+else
+  fail "stall_suspected (S2): verdict missing or null when stall_suspected fired"
+fi
+
+# Case S3 (negative, the discriminating half): same no-outcome dispatch, but NO commit inside the
+# window -> a genuinely dead dispatch, which must NOT be flagged as re-promptable.
+setup_sandbox
+mkdir -p "$WORKDIR/specs/701_stall_probe/plans"
+write_state <<'EOF'
+{"active_projects":[{"project_number":701,"title":"dead dispatch probe","status":"implementing","task_type":"meta","next_artifact_number":1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_0000000000_dead.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"701": 1}, "dispatch_start_ts": {}}
+EOF
+sleep 1
+dead_ts="$(now_ts)"
+run_sut "specs/701_stall_probe" 701 --session sess_0000000000_dead --phase implement \
+  --task-type meta --agent general-implementation-agent --cycle-count 1 \
+  --transport-error false --force-invoked false --dispatch-start-ts "$dead_ts" --dry-run
+s3="$(jqf '.stall_suspected')"
+if [ "$s3" = "false" ]; then
+  pass "stall_suspected (S3): no outcome and no commit in the window is NOT flagged (genuine failure, not a stall)"
+else
+  fail "stall_suspected (S3): expected false, got '$s3'"
+fi
+
+# Case S4 (research is out of scope): the research phase has its own report_missing/D4 recovery
+# channel, so it must never set this flag even with a commit in the window.
+setup_sandbox
+mkdir -p "$WORKDIR/specs/702_stall_probe/reports"
+write_state <<'EOF'
+{"active_projects":[{"project_number":702,"title":"research scope probe","status":"researching","task_type":"meta","next_artifact_number":1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_0000000000_res.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "dispatch_seq": {"702": 1}, "dispatch_start_ts": {}}
+EOF
+r_ts="$(now_ts)"
+sleep 1
+echo "x" > "$WORKDIR/specs/702_stall_probe/reports/scratch.md"
+( cd "$WORKDIR" && git add specs/702_stall_probe >/dev/null 2>&1 \
+    && git commit -q -m "fixture: partial research output" >/dev/null 2>&1 )
+run_sut "specs/702_stall_probe" 702 --session sess_0000000000_res --phase research \
+  --task-type meta --agent general-research-agent --cycle-count 1 \
+  --transport-error false --force-invoked false --dispatch-start-ts "$r_ts" --dry-run
+s4="$(jqf '.stall_suspected')"
+if [ "$s4" = "false" ]; then
+  pass "stall_suspected (S4): the research phase never sets the flag (report_missing owns that path)"
+else
+  fail "stall_suspected (S4): expected false for research phase, got '$s4'"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

@@ -1038,6 +1038,59 @@ EXIT: All 2 tasks completed. Cycles used: 3/10.
 
 ---
 
+## Abandoned Wrap-Up: Re-Prompt Once Before Accepting a No-Outcome Verdict
+
+A dispatch can return having done its work and committed it, yet without writing any of its three
+closing artifacts (the summary, `.return-meta.json`, `.orchestrator-handoff.json`). The cause is
+always the same: the agent detached a build/test sweep and ended its turn waiting for a harness
+completion notification instead of finishing in the foreground.
+`context/patterns/bounded-build-waiter.md` calls this symptom 2, and
+`agents/general-implementation-agent.md`'s "Local Long-Running Command Discipline" already
+forbids it outright ("MUST NOT end the turn on an unresolved local background wait"). The rule
+being written down is not sufficient — it has been observed violated by two dispatches in a
+single batch, one of which had the prohibition restated verbatim in its own dispatch prompt.
+
+### Why the loop must treat this case separately
+
+`have_outcome = false` on its own cannot distinguish two outcomes that deserve opposite responses:
+
+| Observation | Correct response |
+|---|---|
+| No outcome, **and** no commit for this task inside the dispatch window | A genuine failure (transport death, immediate refusal). Accept `verdict=failed`. |
+| No outcome, **but** one or more commits for this task inside the dispatch window | An abandoned wrap-up. The work is on disk and committed; only the closing artifacts are missing. |
+
+Accepting `verdict=failed` in the second row discards completed, committed work and charges a
+failure to a task that had in fact finished its phases.
+
+### The mechanical signal
+
+`orchestrate-cycle-postflight.sh` emits `stall_suspected` for exactly the second row: phase is
+`plan` or `implement`, no outcome was recovered, and `git log --since=@<dispatch_start_ts>` over
+the task directory counts at least one commit. It is a git count only — no artifact prose is
+read, so the Context Flatness Guarantee is preserved. The field is **advisory**: it never changes
+`verdict`, `persisted_status`, or `failed_tasks` bookkeeping, in the same way `report_missing`
+does not. The research phase never sets it, because `report_missing` and the D4 message-findings
+recovery already own that path.
+
+### Loop obligation
+
+On `stall_suspected = true`, re-prompt **the same dispatch once** before accepting its verdict,
+instructing it to:
+
+1. Re-run the verification it was waiting on in the foreground, with a bounded `timeout`,
+   redirecting output to a file and grepping that file — never awaiting a harness notification.
+2. Attribute each failure to its own edits or to pre-existing breakage, with `git log` /
+   `git status` overlap evidence.
+3. Close every phase with an explicit verdict — `[COMPLETED]`, or
+   `[COMPLETED WITH EXCLUSIONS]` plus a `#### Reasoned Exclusions` record — leaving none open.
+4. Write all three closing artifacts, then commit them.
+
+A documented exclusion or an honest `partial` is an acceptable result of that re-prompt; returning
+again with no artifacts is not. Only one re-prompt is owed: a second no-outcome return on the same
+dispatch is a genuine failure and takes the ordinary path.
+
+---
+
 ## Loop-Owned Runtime State: `mt_state_file` Field Reference
 
 **This is now the only engine's runtime state file** — `specs/.orchestration/.orchestrator-multi-state-${session_id}.json`, initialized once per invocation (including a single-task-number invocation, which is simply a batch of one). The field list below is the authoritative reference; `skill-orchestrate/SKILL.md` itself carries only the initialization call, not this narrative.

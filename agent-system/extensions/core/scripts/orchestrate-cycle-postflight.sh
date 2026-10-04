@@ -148,6 +148,11 @@
 #     {kind: "drift-inspection"} | {kind: "blocker-research", blocker_desc}. Never changes
 #     verdict/halt/infra_exempt_cycle; the NEXT cycle's orchestrate-cycle-plan.sh is what actually
 #     turns a recorded aux_pending entry into a dispatch.
+#   stall_suspected: true only when phase is plan/implement AND no outcome was recovered AND this
+#     task produced >=1 commit at/after dispatch_start_ts -- the abandoned-wrap-up signature. Pure
+#     advisory: never changes verdict/status/failed_tasks. The lead re-prompts the dispatch once
+#     (foreground verification, close all phases, write all three artifacts) before accepting the
+#     verdict, so committed work is not discarded as a failure. See the field's own block below.
 #   report_missing: true only when phase="research" AND (no outcome was ever recovered, OR the
 #     research report gate refused a claimed "researched" transition) AND no non-empty report
 #     file exists for the round this dispatch was expected to produce. The lead
@@ -1702,6 +1707,37 @@ if [ "$phase" = "research" ] && { [ "$have_outcome" != "true" ] || [ "$research_
   [ "$report_present" != "true" ] && report_missing=true
 fi
 
+# ─── stall_suspected: abandoned-wrap-up signal (distinct from a dead dispatch) ─────────────────
+# True exactly when NO usable outcome was recovered for a plan/implement dispatch, YET this task
+# produced at least one commit at or after dispatch_start_ts. That conjunction is the signature of
+# an agent that did real work and then ended its turn on an unresolved local background wait --
+# detaching a build/test sweep and stopping for a harness completion notification instead of
+# finishing in the foreground. bounded-build-waiter.md calls this symptom 2, and
+# agents/general-implementation-agent.md's "Local Long-Running Command Discipline" already
+# forbids it ("MUST NOT end the turn on an unresolved local background wait"); this field is the
+# MECHANICAL detection the loop previously lacked, observed live when two dispatches in one batch
+# each stalled this way and had to be re-prompted by hand before postflight could run at all.
+#
+# Why it matters for loop control: "no outcome" alone cannot distinguish an abandoned wrap-up from
+# a dispatch that never did anything (transport death, immediate refusal). The former is
+# RE-PROMPTABLE -- the work is on disk and committed, only the closing artifacts are missing, so
+# one foreground re-prompt recovers it -- while the latter is a genuine failure. Charging the
+# former to failed_tasks discards completed, committed work. This field is ADVISORY: it never
+# changes verdict, status, or failed_tasks bookkeeping, exactly like report_missing above. The
+# lead reads it to decide whether to re-prompt the same dispatch once before accepting the
+# verdict. An existence/count probe via git only -- no artifact prose is read, so Context
+# Flatness is preserved.
+stall_suspected=false
+if { [ "$phase" = "implement" ] || [ "$phase" = "plan" ]; } && [ "$have_outcome" != "true" ] \
+   && [ "$dispatch_start_ts" != "9999999999" ]; then
+  stall_commit_count=$(git -C "${SKILL_REPO_ROOT:-.}" log --oneline \
+    --since="@${dispatch_start_ts}" -- "$TASK_DIR" 2>/dev/null | grep -c . ) || stall_commit_count=0
+  if [ "${stall_commit_count:-0}" -gt 0 ]; then
+    stall_suspected=true
+    echo "${notice_prefix} STALL SUSPECTED for task ${task_number} (${phase}): no usable outcome was recovered, yet ${stall_commit_count} commit(s) for this task landed during this dispatch window. This is the abandoned-wrap-up signature (bounded-build-waiter.md symptom 2): the agent did the work, then ended its turn on an unresolved background wait instead of writing its summary/.return-meta.json/.orchestrator-handoff.json. REMEDY: re-prompt this same dispatch ONCE, instructing it to re-run its verification in the FOREGROUND (bounded timeout, redirect to a file, grep the file -- never await a harness notification) and to close every phase and write all three artifacts before returning. Do NOT charge this to failed_tasks without that re-prompt: the committed work is intact and only the wrap-up is missing." >&2
+  fi
+fi
+
 # ─── persisted_status: state.json's actual current status, read fresh at emit time ─────────────
 # Deliberately UNCONDITIONAL and deliberately SEPARATE from the `fresh_status` read inside WORK
 # (j) above (:1363-1364): that read is multi-task-engine-only (`[ -z "$loop_guard_file" ]`) and
@@ -1774,11 +1810,13 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson infra_exempt_cycle "$infra_exempt_cycle" \
     --argjson aux_signal "$aux_signal_json" \
     --argjson report_missing "$report_missing" \
+    --argjson stall_suspected "$stall_suspected" \
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       user_decision: $user_decision, halt: $halt, infra_exempt_cycle: $infra_exempt_cycle,
-      aux_signal: $aux_signal, report_missing: $report_missing, note: $note}' >&3
+      aux_signal: $aux_signal, report_missing: $report_missing,
+      stall_suspected: $stall_suspected, note: $note}' >&3
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -1792,11 +1830,12 @@ else
     --argjson infra_exempt_cycle "$infra_exempt_cycle" \
     --argjson aux_signal "$aux_signal_json" \
     --argjson report_missing "$report_missing" \
+    --argjson stall_suspected "$stall_suspected" \
     --arg note "" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
-      report_missing: $report_missing, note: $note}' >&3
+      report_missing: $report_missing, stall_suspected: $stall_suspected, note: $note}' >&3
 fi
 
 exit 0
