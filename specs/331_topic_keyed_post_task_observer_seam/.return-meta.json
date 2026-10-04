@@ -1,17 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791065283_d98d41_331",
-  "dispatch_seq": 13,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/331_topic_keyed_post_task_observer_seam/reports/01_topic-keyed-observer-seam.md",
-      "summary": "Re-measures orchestrate-cycle-postflight.sh's current structure (1762 lines, superseding the dispatch's stale ~1048-1125 estimate), verifies both lifecycle-hook-reuse objections against live code, identifies the events.jsonl rc-event target, the manifest-routing-lib.sh reuse boundary (enumeration/prefix helpers yes, first-match-wins return no), the exact topic-field doc line to rewrite, the next check-extension-docs.sh Rule letter (X), and the manifest.json observers block schema modeled on keyword_overrides."
+      "type": "plan",
+      "path": "specs/331_topic_keyed_post_task_observer_seam/plans/01_topic-keyed-observer-seam.md",
+      "summary": "7-phase, 5-wave plan for the manifest-declared topic/task_type-keyed post-task observer seam: resolve-all matching in manifest-routing-lib.sh, run-task-observers.sh invoker with bounded timeout and rc events, regression suite, correctly-ordered orchestrate-cycle-postflight.sh call site, check-extension-docs.sh Rule X, and the guide/schema documentation making active_projects[].topic a dispatch-matching key."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /plan 331 to create implementation plan"
+  "memory_candidates": [
+    {
+      "content": "A shared first-match-wins resolver ladder cannot be reused for a fan-out (notify-all) seam. When a new feature needs 'every declaration that matches', add a SIBLING resolve-all function to the same library -- reusing its enumeration and prefix-match idioms -- rather than widening the existing single-value ladder's return contract. Measured instance: manifest-routing-lib.sh's routing_lookup/routing_lookup_flat return exactly one winning value via two globals; an observer seam that must invoke every matching extension's script would have silently dropped all matches but the first. Corollary for match-key selection: before keying a dispatch mechanism on task_type, check whether the real corpus actually carries that task_type -- a 17-task topic-grouped corpus had task_type lean4/general/typst and NONE matching its own topic, so a task_type-keyed observer would have matched nothing it existed to observe.",
+      "category": "PATTERN",
+      "source_artifact": "specs/331_topic_keyed_post_task_observer_seam/plans/01_topic-keyed-observer-seam.md",
+      "confidence": 0.78,
+      "suggested_keywords": ["resolver-ladder", "fan-out-seam", "manifest-routing", "first-match-wins", "match-key-selection", "observer-pattern"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791065283_d98d41_331",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 8,
+    "dependency_waves": [[1], [2, 5, 6], [3], [4], [7]]
+  },
+  "next_steps": "Run /implement 331 to execute the plan",
+  "dispatch_seq": 14
 }

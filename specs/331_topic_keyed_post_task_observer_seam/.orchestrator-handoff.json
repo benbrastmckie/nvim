@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 14,
+  "summary": "Created a 7-phase, 5-wave implementation plan for the manifest-declared topic/task_type-keyed post-task observer seam, integrating the research pass's re-measured insertion point (after persisted_status in orchestrate-cycle-postflight.sh, superseding the dispatch's stale line estimate) and its resolve-all-vs-first-match-wins library boundary. Seven plan-level decisions (D1-D7) fix the manifest schema, the why-not-lifecycle-hooks reasoning, the timeout mechanism, the insertion point, the gating posture, cwd-independent manifest-root resolution, and multiple-match ordering.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/331_topic_keyed_post_task_observer_seam/plans/01_topic-keyed-observer-seam.md",
+      "summary": "7-phase plan: routing_resolve_observers in manifest-routing-lib.sh, run-task-observers.sh invoker, regression suite, postflight call site, check-extension-docs.sh Rule X, guide/schema documentation, deploy and acceptance."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": []
+}
