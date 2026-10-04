@@ -1,11 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/331_topic_keyed_post_task_observer_seam/summaries/01_topic-keyed-observer-seam-summary.md",
+      "summary": "All 7 phases complete: resolve-all observer ladder, run-task-observers.sh invoker, 15-case regression suite, correctly-ordered postflight call site with 4 new end-to-end acceptance cases, check-extension-docs.sh Rule X, and the guide/schema documentation making topic a binding dispatch-matching key. Full test battery green with zero regressions attributable to this task."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the topic-keyed post-task observer seam: a manifest-declared observers block, a resolve-all matching ladder in manifest-routing-lib.sh, the advisory non-blocking run-task-observers.sh invoker, its 15-case regression suite, a correctly-ordered call site in orchestrate-cycle-postflight.sh (after the per-dispatch issue-log and metrics writes) with 4 new end-to-end acceptance cases, check-extension-docs.sh Rule X for structural+documentation enforcement, and documentation making active_projects[].topic a binding dispatch-matching key for the first time."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh",
+    "agent-system/extensions/core/scripts/run-task-observers.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/check-extension-docs.sh",
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A shared first-match-wins resolver ladder (e.g. manifest-routing-lib.sh's routing_lookup/routing_lookup_flat, which use globals _ROUTE_LAST_VALUE/_ROUTE_LAST_VIA and return exactly one winning value) cannot be reused for a fan-out (notify-every-match) seam. Add a SIBLING resolve-all function to the same library instead, reusing its enumeration and prefix-match idioms but emitting plain stdout (one line per match), never the single-value globals -- this keeps the function safe under command substitution/process substitution and structurally distinct from the ladders it sits beside. When choosing a dispatch-matching key for a new seam, measure the real corpus first: a topic-grouped corpus (17 tasks sharing one topic value) had task_type values of lean4/general/typst and NONE matching its own topic string, so a task_type-only key would have matched zero of the tasks it existed to observe -- topic had to be added as a match-if-either key alongside task_type.",
+      "category": "PATTERN",
+      "source_artifact": "specs/331_topic_keyed_post_task_observer_seam/summaries/01_topic-keyed-observer-seam-summary.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["resolver-ladder", "fan-out-seam", "manifest-routing", "first-match-wins", "match-key-selection", "observer-pattern", "topic-vs-task-type"]
+    },
+    {
+      "content": "When a test fixture asserts that a 'crashing/malicious observer does not affect X', design the assertion around what the SUT ITSELF does (its own exit code, whether it mutates X), not around whether the untrusted child process could theoretically mutate something given direct filesystem access it was handed as an argument -- an advisory, non-sandboxing invoker legitimately cannot and need not prevent an observer from writing to a path it was told about; the contract is about the invoker's own behavior, not about sandboxing an arbitrary child process.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/331_topic_keyed_post_task_observer_seam/summaries/01_topic-keyed-observer-seam-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["test-fixture-design", "advisory-contract", "non-blocking", "sandboxing-scope"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791065283_d98d41",
     "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 7,
     "phases_total": 7
   }
 }

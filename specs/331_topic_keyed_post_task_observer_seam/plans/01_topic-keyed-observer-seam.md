@@ -657,33 +657,33 @@ Confirm both by `grep -n "topic" context/reference/state-management-schema.md` a
 
 ---
 
-### Phase 7: Deploy, shellcheck sweep, end-to-end acceptance [NOT STARTED]
+### Phase 7: Deploy, shellcheck sweep, end-to-end acceptance [COMPLETED]
 
 **Goal**: the seam is deployed, every gate is green, and each clause of the dispatch's ACCEPTANCE
 line is demonstrated rather than asserted.
 
 **Tasks**:
-- [ ] Deploy the source store (`bash .claude/scripts/deploy-headless.sh`, or the operator's
+- [x] Deploy the source store (`bash .claude/scripts/deploy-headless.sh`, or the operator's
       `Reload All`) and confirm `.claude/scripts/run-task-observers.sh` and
       `.claude/scripts/tests/test-run-task-observers.sh` exist and are executable.
-- [ ] `shellcheck` sweep over every script this task touched, per
+- [x] `shellcheck` sweep over every script this task touched, per
       `context/standards/shell-strict-mode.md`, with each file's strict-mode class justified in
       its own header (Class A for `run-task-observers.sh` unless its own control flow justifies
       B; Class B for the test suite; Class C unchanged for `manifest-routing-lib.sh`).
-- [ ] Run the full test battery: `bash .claude/scripts/tests/run-all.sh` (which auto-discovers
+- [x] Run the full test battery: `bash .claude/scripts/tests/run-all.sh` (which auto-discovers
       `tests/test-*.sh` by glob — confirm the new suite is picked up), with particular attention
       to `test-run-task-observers.sh`, `test-orchestrate-cycle-postflight.sh`, and
       `test-routing-resolution.sh`.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` exits 0 (and with `STRICT_CORE_DEPLOY=1`).
-- [ ] Full gate set: `bash .claude/scripts/verify-deploy.sh` clean.
-- [ ] Walk the ACCEPTANCE line clause by clause and record which test proves each:
+- [x] `bash .claude/scripts/check-extension-docs.sh` exits 0 (and with `STRICT_CORE_DEPLOY=1`).
+- [x] Full gate set: `bash .claude/scripts/verify-deploy.sh` clean.
+- [x] Walk the ACCEPTANCE line clause by clause and record which test proves each:
       (i) a test extension declaring an observer on topic `X` is invoked for topic `X` and for
       `X:sub`, and not for `Y`; (ii) the observer sees a task directory in which this dispatch's
       issue-log and metrics lines are already present; (iii) a crashing observer leaves the task's
       status and the orchestration unaffected and produces an rc event; (iv)
       `check-extension-docs.sh` flags an undocumented observer; (v) shellcheck clean.
       Any clause with no test behind it is a gap to close here, not a clause to narrate.
-- [ ] Confirm the seam is inert in production: no live extension declares `observers`, so a real
+- [x] Confirm the seam is inert in production: no live extension declares `observers`, so a real
       `/orchestrate` postflight resolves zero matches, appends no event, and prints nothing.
       Verify by running the deployed `run-task-observers.sh` once against a real task's identity
       and asserting silent exit 0 with `specs/events.jsonl` unchanged.

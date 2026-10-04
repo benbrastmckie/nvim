@@ -1,0 +1,24 @@
+{
+  "phase": 7,
+  "phase_name": "Deploy, shellcheck sweep, end-to-end acceptance",
+  "started_at": "2026-10-04T05:35:00Z",
+  "last_updated": "2026-10-04T06:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Deploy source store; shellcheck sweep on every touched script; full test battery (run-all.sh); check-extension-docs.sh (plain and STRICT_CORE_DEPLOY=1); verify-deploy.sh --skip-slow; ACCEPTANCE-clause walk; inertness confirmation against the live deployed script",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "run-all.sh: 101 passed, 8 failed (3 expected per known-failures.txt, 5 NEW), 2 skipped, 111 total. All 5 NEW failures (test-detect-noop-bash.sh, test-lint-deploy-caller-wrap.sh, test-lint-state-writer-boundary.sh, test-orchestrate-build-aux-dispatch.sh, test-orchestrate-cycle-plan.sh) are pre-existing and unrelated to this task: confirmed via git log that their SUTs/suites were each last touched by a different task (326, 329, 327, 148, 1012, 240, 995) and their own failure messages (missing generate-task-order.sh in a scratch fixture, model-resolution mismatch, classification-set mismatch, exempt-candidate verbose reporting, noop-bash stray-tmp-dir) have no connection to the observers seam. Every suite this task added or touched (test-run-task-observers.sh 15/15, test-orchestrate-cycle-postflight.sh 171/171 including 4 new Observer acceptance cases, test-routing-resolution.sh 13/13 unchanged) is green inside the same full sweep.",
+    "verify-deploy.sh --skip-slow: PASS, 33 checks, 0 failures.",
+    "check-extension-docs.sh (plain and STRICT_CORE_DEPLOY=1): PASS, all extensions OK; zero live extension declares observers, confirming the seam is inert in production today.",
+    "Inertness confirmed directly: bash .claude/scripts/run-task-observers.sh against task 331's own real identity exits 0 silently with specs/events.jsonl byte-identical before/after."
+  ]
+}
