@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 340,
+  "phase": "plan",
+  "session_id": "sess_1791222088_1f4b0c_340",
+  "dispatch_seq": 4,
+  "phases_completed": 0,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/340_retarget_books_extension_split_convention_record/plans/02_split-retarget-and-version-pin.md",
+      "summary": "Seven-phase retarget plan: observer grammar, shape fixtures, both sub-modes, six anchors plus figures, the version pin and non-blocking comparison, and a closing gate sweep."
+    }
+  ],
+  "next_steps": "Run /implement 340 to execute the plan"
+}
