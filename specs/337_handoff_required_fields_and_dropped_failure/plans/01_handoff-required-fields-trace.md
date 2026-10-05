@@ -178,29 +178,29 @@ and re-read both files before editing (sibling-concurrency rule).
 
 ---
 
-### Phase 2: Wire the durable trace at postflight [NOT STARTED]
+### Phase 2: Wire the durable trace at postflight [COMPLETED]
 
 **Goal**: Replace the discarded `|| true` with a real recorder, on a path that sees every
 handoff-writing phase rather than `implemented` only, without gating completion.
 
 **Tasks**:
-- [ ] In `scripts/skill-base.sh`, remove the `if [ -n "$handoff_path" ] && [ -f "$handoff_path" ]`
+- [x] In `scripts/skill-base.sh`, remove the `if [ -n "$handoff_path" ] && [ -f "$handoff_path" ]`
       block that invokes `bash .claude/scripts/validate-handoff.sh ... || true` from
       `skill_corroborate_phase_counts` (around lines 1543-1548), and update that function's
       header comment to state that handoff schema validation now lives at the postflight
       handoff-present read path, with the reason (all-status coverage; separation of concerns).
       Leave the `handoff_path` parameter accepted-and-ignored OR removed — whichever keeps all
       three existing call sites valid without touching them; record which was chosen in the
-      commit message.
-- [ ] In `scripts/orchestrate-cycle-postflight.sh`, inside the handoff-present branch
+      commit message. *(completed)*
+- [x] In `scripts/orchestrate-cycle-postflight.sh`, inside the handoff-present branch
       (`[ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]`), after the existing `jq`
       field reads and the `Dispatch result:` notice and before the WORK (c) corroboration block,
       invoke the validator once: resolve it deploy-tree-first with a source-store fallback (mirror
       `skill_corroborate_phase_counts`'s own `_cpc_lib_candidates` idiom rather than hardcoding
       `.claude/scripts/validate-handoff.sh`, so a source-store-only checkout does not record a
       false failure from exit 127), capture the exit code without letting `set -e` abort, and
-      stream its output to stderr.
-- [ ] On non-zero exit: print a loud `${notice_prefix} ERROR: HANDOFF VALIDATION FAILED — ...`
+      stream its output to stderr. *(completed)*
+- [x] On non-zero exit: print a loud `${notice_prefix} ERROR: HANDOFF VALIDATION FAILED — ...`
       line naming the handoff path, then, gated on `is_live`, copy the stale-handoff recorder
       template verbatim (the `--defect-class HANDOFF_STALE_OR_ABSENT` block) changing only the
       class name to `HANDOFF_VALIDATION_FAILED`, the detecting site to
@@ -208,23 +208,23 @@ handoff-writing phase rather than `implemented` only, without gating completion.
       attribution — use `--dispatched-agent "$agent_name"` (not `--attributed-path`), since the
       dispatched agent authored the malformed JSON. Follow it with the matching
       `skill_orchestrate_append_detected_defect "$defect_store" ...` call. Add the
-      `[dry-run] would record HANDOFF_VALIDATION_FAILED` else-arm.
-- [ ] Carry `--extra-detail-json` with the failing field names when they are cheap to derive from
-      the captured validator output (grep its `[FAIL]` lines); omit the flag rather than guess.
-- [ ] Assert non-gating explicitly in a code comment: this block must not assign
+      `[dry-run] would record HANDOFF_VALIDATION_FAILED` else-arm. *(completed)*
+- [x] Carry `--extra-detail-json` with the failing field names when they are cheap to derive from
+      the captured validator output (grep its `[FAIL]` lines); omit the flag rather than guess. *(completed)*
+- [x] Assert non-gating explicitly in a code comment: this block must not assign
       `dispatch_status`, must not set `handoff_stale`, and must not influence the script's exit
-      code or the completion-claim gate. It is a recorder, not a gate.
-- [ ] Update `scripts/tests/test-corroborate-phase-counts.sh`: retarget Fixture H (which exists
+      code or the completion-claim gate. It is a recorder, not a gate. *(completed)*
+- [x] Update `scripts/tests/test-corroborate-phase-counts.sh`: retarget Fixture H (which exists
       solely to pin the now-removed in-function diagnostic as non-gating) to assert the function
       no longer invokes the validator at all, and update the header note at lines ~87-91 that
-      explains the `cd "$REPO_ROOT"` requirement for the cwd-relative validator path.
-- [ ] Add cases to `scripts/tests/test-orchestrate-cycle-postflight.sh` modeled on the existing
+      explains the `cd "$REPO_ROOT"` requirement for the cwd-relative validator path. *(completed)*
+- [x] Add cases to `scripts/tests/test-orchestrate-cycle-postflight.sh` modeled on the existing
       `RETURN_META_SCHEMA_VIOLATION` cases 950/951/952: (a) an `implemented` handoff missing
       `blockers` records exactly one `HANDOFF_VALIDATION_FAILED` defect attributed to the
       dispatched agent's own source-store file; (b) `--dry-run` prints the would-record line and
       writes nothing; (c) a clean handoff produces no `HANDOFF_VALIDATION_FAILED` mention on
       stderr; (d) a `planned`-status handoff missing `summary` also records — the coverage this
-      phase's refinement exists to add.
+      phase's refinement exists to add. *(completed)*
 
 **Timing**: 1.5 hours
 

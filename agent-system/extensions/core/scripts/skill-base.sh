@@ -1430,12 +1430,15 @@ skill_gate_completion_claim() {
 #   $1 = task_number   : task number, named in every log line
 #   $2 = plan_path     : path to the plan file to corroborate against (may be empty)
 #   $3 = log_prefix    : "[orchestrate]" or "[hard-orchestrate]"
-#   $4 = handoff_path  : OPTIONAL. When non-empty and the file exists, validate-handoff.sh is
-#                        invoked against it as a log-only, non-gating producer-defect diagnostic
-#                        (D5/B1 below). Its exit status never influences this function's own
-#                        return value. Pass an EMPTY string on the recovery-path call sites
-#                        (Phase 7 of the plan that introduced this function) — there is no
-#                        handoff to validate on that path.
+#   $4 = handoff_path  : ACCEPTED-AND-IGNORED. This function no longer invokes the handoff schema
+#                        validator at all — that check now lives at the postflight
+#                        handoff-present read path (scripts/orchestrate-cycle-postflight.sh,
+#                        detecting site cycle-postflight-handoff-validation), not here, for two
+#                        reasons: (a) this function is reached only when dispatch_status ==
+#                        "implemented", which would leave plan-phase handoffs with no such
+#                        validation at all; (b) schema validation is not a phase-count
+#                        corroborator's job. The parameter is kept (rather than removed) so all
+#                        three existing call sites remain valid without being touched.
 #
 # Prints exactly one line on stdout, shell-assignable via `read` (callers MUST NOT `eval` it):
 #   phases_completed=<int> phases_total=<int> plan_markers_verified=<true|absent>
@@ -1539,13 +1542,6 @@ skill_corroborate_phase_counts() {
     # — do not treat this as a second trigger.
     echo "${log_prefix} Evidence corroboration: non-corroborating (plan headings show ${_cpc_completed}/${_cpc_total} in ${plan_path}) — leaving plan_markers_verified=absent." >&2
     _cpc_rc=1
-  fi
-
-  if [ -n "$handoff_path" ] && [ -f "$handoff_path" ]; then
-    # Log-only, non-gating producer-defect diagnostic (D5/B1). Never allowed to influence this
-    # function's own return value — guarded with `|| true` because validate-handoff.sh runs under
-    # `set -euo pipefail` and exits non-zero on any failed check.
-    bash .claude/scripts/validate-handoff.sh "$handoff_path" >&2 || true
   fi
 
   echo "phases_completed=${_cpc_out_completed} phases_total=${_cpc_out_total} plan_markers_verified=${_cpc_out_verified}"

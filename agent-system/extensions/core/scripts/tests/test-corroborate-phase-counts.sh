@@ -84,10 +84,11 @@ WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-# skill_corroborate_phase_counts invokes `bash .claude/scripts/validate-handoff.sh` (a cwd-relative
-# path, matching the exact idiom the SKILL.md call sites use, since a live dispatch always runs
-# with cwd == repo root under a real deploy). Run this suite's own invocations from REPO_ROOT so
-# that path resolves identically to a production run.
+# skill_corroborate_phase_counts no longer invokes the handoff schema validator at all (see
+# Fixture H below) -- that check moved to scripts/orchestrate-cycle-postflight.sh's
+# handoff-present read path. This `cd` is kept anyway: other fixtures in this suite rely on
+# cwd == REPO_ROOT for their own relative-path resolution, matching a live dispatch's cwd under a
+# real deploy.
 cd "$REPO_ROOT" || { echo "ERROR: cannot cd to REPO_ROOT ($REPO_ROOT)" >&2; exit 2; }
 
 # ─── parse_cpc_output <output_line> ────────────────────────────────────────────────────────────
@@ -320,8 +321,11 @@ else
 fi
 
 # =====================================================================
-# Fixture H: validate-handoff.sh invoked against a handoff with null counts. Assert the function
-# still returns its own verdict and does not abort -- the diagnostic is non-gating.
+# Fixture H: a handoff path is still passed as the 4th argument (all three existing call sites
+# remain valid, unchanged), but the function no longer invokes validate-handoff.sh at all -- that
+# check now lives at the postflight handoff-present read path
+# (scripts/orchestrate-cycle-postflight.sh), not here. Assert BOTH that the function returns its
+# own verdict unaffected, AND that it never shells out to the validator in the first place.
 # =====================================================================
 fixture_h_plan="$WORKDIR/fixture-h-plan.md"
 cat > "$fixture_h_plan" << 'EOF'
@@ -337,26 +341,23 @@ cat > "$fixture_h_handoff" << 'EOF'
 }
 EOF
 
-# Sanity precondition: validate-handoff.sh itself must exit non-zero (FAIL) against this fixture,
-# otherwise this fixture would not actually exercise the non-gating guarantee.
-if bash .claude/scripts/validate-handoff.sh "$fixture_h_handoff" >/dev/null 2>&1; then
-  info "Fixture H precondition: validate-handoff.sh unexpectedly exited 0 against a null-count handoff -- diagnostic non-gating guarantee is untested by this run, but the function-level assertions below still hold"
-else
-  info "Fixture H precondition confirmed: validate-handoff.sh exits non-zero against a null-count handoff"
-fi
-
 cpc_out_h="$(skill_corroborate_phase_counts 968 "$fixture_h_plan" "[test]" "$fixture_h_handoff" 2>"$WORKDIR/fixture-h.stderr")"
 cpc_rc_h=$?
 if [[ "$cpc_rc_h" -eq 0 ]]; then
-  pass "Fixture H: function returns its own verdict (0, corroborated) despite validate-handoff.sh failing on the null-count handoff"
+  pass "Fixture H: function returns its own verdict (0, corroborated); the handoff_path argument is accepted-and-ignored"
 else
   fail "Fixture H: expected return 0, got $cpc_rc_h"
 fi
 parse_cpc_output "$cpc_out_h"
 if [[ "$CPC_VERIFIED" == "true" && "$CPC_COMPLETED" == "1" && "$CPC_TOTAL" == "1" ]]; then
-  pass "Fixture H: output unaffected by the non-gating validate-handoff.sh diagnostic"
+  pass "Fixture H: output unaffected by the (now-removed) handoff validation call"
 else
   fail "Fixture H: unexpected output ($cpc_out_h)"
+fi
+if grep -q "HANDOFF VALIDATION" "$WORKDIR/fixture-h.stderr" 2>/dev/null; then
+  fail "Fixture H: function's stderr unexpectedly mentions HANDOFF VALIDATION -- it should no longer invoke validate-handoff.sh at all"
+else
+  pass "Fixture H: function never invokes validate-handoff.sh (no HANDOFF VALIDATION mention on its stderr)"
 fi
 
 # =====================================================================

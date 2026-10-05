@@ -621,6 +621,75 @@ if [ -f "$handoff_file" ] && [ "$handoff_stale" != "true" ]; then
   echo "${notice_prefix} Dispatch result: $dispatch_status — $dispatch_summary" >&2
   [ "$phases_total" -gt 0 ] && echo "${notice_prefix} Phase progress: $phases_completed/$phases_total" >&2
 
+  # ── WORK: handoff schema validation, durable trace (handoff-present branch, every phase) ──────
+  # Replaces the discarded `|| true` call formerly inside skill_corroborate_phase_counts (see that
+  # function's own header comment) -- runs here instead so EVERY handoff-writing phase is covered,
+  # not only dispatch_status == "implemented". Resolution mirrors
+  # skill_corroborate_phase_counts's own _cpc_lib_candidates idiom (deploy-tree-first cwd-relative
+  # candidate, then a source-store-fallback sibling of this script's own location) rather than
+  # hardcoding .claude/scripts/validate-handoff.sh, so a source-store-only checkout does not
+  # record a false failure from exit 127.
+  #
+  # NON-GATING, by construction: this block never assigns dispatch_status, never sets
+  # handoff_stale, and never influences this script's own exit code or the completion-claim gate
+  # (skill_gate_completion_claim, called later, reads none of this block's locals). It is a
+  # recorder, not a gate -- independent of the completion-deploy gate elsewhere in the cycle.
+  _hv_candidates=(
+    ".claude/scripts/validate-handoff.sh"
+    "${SCRIPT_DIR}/validate-handoff.sh"
+  )
+  _hv_validator=""
+  for _hv_candidate in "${_hv_candidates[@]}"; do
+    if [ -f "$_hv_candidate" ]; then
+      _hv_validator="$_hv_candidate"
+      break
+    fi
+  done
+  if [ -n "$_hv_validator" ]; then
+    hv_output=$(bash "$_hv_validator" "$handoff_file" 2>&1)
+    hv_exit=$?
+    echo "$hv_output" >&2
+    if [ "$hv_exit" -ne 0 ]; then
+      echo "${notice_prefix} ERROR: HANDOFF VALIDATION FAILED — $handoff_file fails validate-handoff.sh's required-field checks; see the validator output above." >&2
+      # Cheap to derive: strip ANSI color codes, then the [FAIL] lines' own text. Omit the flag
+      # (never guess) when nothing parses out.
+      hv_fail_fields=$(printf '%s\n' "$hv_output" | sed -E 's/\x1b\[[0-9;]*m//g' \
+        | grep -E '^\[FAIL\]' | sed -E 's/^\[FAIL\] //' \
+        | jq -R -s -c 'split("\n") | map(select(length > 0))' 2>/dev/null)
+      hv_extra_detail_args=()
+      if [ -n "$hv_fail_fields" ] && [ "$hv_fail_fields" != "[]" ]; then
+        hv_extra_detail_args=(--extra-detail-json "{\"failing_fields\":${hv_fail_fields}}")
+      fi
+      if is_live; then
+        hv_record_result=$(bash "${SCRIPT_DIR}/system-defect-record.sh" \
+          --defect-class HANDOFF_VALIDATION_FAILED \
+          --detecting-site "${detecting_site_prefix}:cycle-postflight-handoff-validation" \
+          --task "$task_number" --session "$session_id" \
+          --message "handoff at $handoff_file failed validate-handoff.sh's required-field checks" \
+          --dispatched-agent "$agent_name" \
+          "${hv_extra_detail_args[@]}" \
+          2>/dev/null) || echo "Note: system-defect recording failed (non-fatal)" >&2
+        # Local agent-name -> agent-file resolver, mirroring the return-meta schema probe block's
+        # own nullglob verbatim, falling back to $attributed_path (skill-orchestrate/SKILL.md)
+        # when unresolved.
+        hv_agent_path="$attributed_path"
+        shopt -s nullglob
+        _hv_agent_matches=("$PROJECT_ROOT"/agent-system/extensions/*/agents/"${agent_name}.md")
+        shopt -u nullglob
+        if [ "${#_hv_agent_matches[@]}" -gt 0 ] && [ -f "${_hv_agent_matches[0]}" ]; then
+          hv_agent_path="${_hv_agent_matches[0]#"$PROJECT_ROOT"/}"
+        fi
+        skill_orchestrate_append_detected_defect "$defect_store" "$notice_prefix" \
+          "HANDOFF_VALIDATION_FAILED" "$hv_agent_path" \
+          "${detecting_site_prefix}:cycle-postflight-handoff-validation" \
+          "handoff at $handoff_file failed validate-handoff.sh's required-field checks" \
+          "$hv_record_result"
+      else
+        echo "${notice_prefix} [dry-run] would record HANDOFF_VALIDATION_FAILED — no write performed." >&2
+      fi
+    fi
+  fi
+
   # ── WORK (c): evidence corroboration (handoff-present branch), D3/D4 precondition ─────────────
   # Widened from the original `phases_total -eq 0` ALONE (the Case 3 shape) to
   # `dispatch_status = "implemented"` alone, so a Case 1 shape (phases_total > 0 but

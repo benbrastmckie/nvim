@@ -41,7 +41,8 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-         errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh; do
+         errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh \
+         validate-handoff.sh; do
   require_file "$CORE_DIR/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
@@ -66,7 +67,8 @@ setup_sandbox() {
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-           errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh; do
+           errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh \
+           validate-handoff.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
   # return-meta-status-vocabulary.sh is a HARD dependency of orchestrate-recover-outcome.sh
@@ -2655,6 +2657,160 @@ if [ "$s4" = "false" ]; then
   pass "stall_suspected (S4): the research phase never sets the flag (report_missing owns that path)"
 else
   fail "stall_suspected (S4): expected false for research phase, got '$s4'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 970: an implemented handoff missing `blockers` records exactly one HANDOFF_VALIDATION_FAILED
+# defect, attributed to the dispatched agent's own source-store file -- the exact shape measured
+# live in the production incidents that motivated this check.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 970: implemented handoff missing blockers records one HANDOFF_VALIDATION_FAILED defect"
+setup_sandbox
+stub_agent_file general-implementation-agent
+mkdir -p "$WORKDIR/specs/970_candidate/summaries"
+echo x > "$WORKDIR/specs/970_candidate/summaries/01_x-summary.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 970, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #970 -- handoff validation probe, missing blockers", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/970_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/970_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "implemented", "dispatch_seq": 1, "summary": "Implemented everything.", "artifacts": [{"type": "summary", "path": "specs/970_candidate/summaries/01_x-summary.md"}], "phases_completed": 2, "phases_total": 2}
+EOF
+run_sut specs/970_candidate --session sess_970 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/970_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 970
+
+if echo "$LAST_STDERR" | grep -q "ERROR: HANDOFF VALIDATION FAILED"; then
+  pass "case 970: ERROR: HANDOFF VALIDATION FAILED notice appears on stderr"
+else
+  fail "case 970: expected an ERROR: HANDOFF VALIDATION FAILED notice, got: $LAST_STDERR"
+fi
+case_970_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_VALIDATION_FAILED")) | length' \
+  "$WORKDIR/specs/970_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$case_970_defect_count" = "1" ]; then
+  pass "case 970: exactly one HANDOFF_VALIDATION_FAILED defect row recorded"
+else
+  fail "case 970: expected exactly 1 HANDOFF_VALIDATION_FAILED defect, got $case_970_defect_count"
+fi
+if jq -e '.detected_defects[] | select(.defect_class == "HANDOFF_VALIDATION_FAILED") | .attributed_source_path == "agent-system/extensions/core/agents/general-implementation-agent.md"' \
+     "$WORKDIR/specs/970_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
+  pass "case 970: HANDOFF_VALIDATION_FAILED attributed to the dispatched agent's own file"
+else
+  fail "case 970: HANDOFF_VALIDATION_FAILED attribution did not resolve to the dispatched agent's file"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 971: the --dry-run variant of Case 970 -- asserts the [dry-run] would record line and
+# performs no recorder call / no detected_defects write.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 971: --dry-run variant asserts the [dry-run] would record line, no recorder call"
+setup_sandbox
+stub_agent_file general-implementation-agent
+mkdir -p "$WORKDIR/specs/971_candidate/summaries"
+echo x > "$WORKDIR/specs/971_candidate/summaries/01_x-summary.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 971, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #971 -- handoff validation probe, dry-run variant", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/971_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/971_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "implemented", "dispatch_seq": 1, "summary": "Implemented everything.", "artifacts": [{"type": "summary", "path": "specs/971_candidate/summaries/01_x-summary.md"}], "phases_completed": 2, "phases_total": 2}
+EOF
+run_sut specs/971_candidate --session sess_971 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/971_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" --dry-run 971
+
+if echo "$LAST_STDERR" | grep -q '\[dry-run\] would record HANDOFF_VALIDATION_FAILED'; then
+  pass "case 971: --dry-run prints the would-record line for HANDOFF_VALIDATION_FAILED"
+else
+  fail "case 971: expected the [dry-run] would record HANDOFF_VALIDATION_FAILED line, got: $LAST_STDERR"
+fi
+case_971_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/971_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$case_971_defect_count" = "0" ]; then
+  pass "case 971: --dry-run performs no detected_defects write"
+else
+  fail "case 971: expected 0 detected_defects under --dry-run, got $case_971_defect_count"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 972: a clean, fully-conforming handoff produces no HANDOFF_VALIDATION_FAILED mention on
+# stderr at all -- the regression guard proving this check does not fire on an ordinary dispatch.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 972: a clean handoff produces no HANDOFF_VALIDATION_FAILED mention on stderr"
+setup_sandbox
+stub_agent_file general-implementation-agent
+mkdir -p "$WORKDIR/specs/972_candidate/summaries"
+echo x > "$WORKDIR/specs/972_candidate/summaries/01_x-summary.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 972, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #972 -- handoff validation probe, clean handoff", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/972_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/972_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "implemented", "dispatch_seq": 1, "summary": "Implemented everything.", "artifacts": [{"type": "summary", "path": "specs/972_candidate/summaries/01_x-summary.md"}], "phases_completed": 2, "phases_total": 2, "blockers": []}
+EOF
+run_sut specs/972_candidate --session sess_972 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/972_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 972
+
+if echo "$LAST_STDERR" | grep -q "HANDOFF_VALIDATION_FAILED"; then
+  fail "case 972: unexpected HANDOFF_VALIDATION_FAILED mention on stderr for a clean handoff, got: $LAST_STDERR"
+else
+  pass "case 972: no HANDOFF_VALIDATION_FAILED mention on stderr for a clean handoff"
+fi
+case_972_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_VALIDATION_FAILED")) | length' \
+  "$WORKDIR/specs/972_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$case_972_defect_count" = "0" ]; then
+  pass "case 972: zero HANDOFF_VALIDATION_FAILED defects recorded for a clean handoff"
+else
+  fail "case 972: expected 0 HANDOFF_VALIDATION_FAILED defects, got $case_972_defect_count"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 973: a planned-status handoff missing `summary` also records -- the coverage this phase's
+# refinement exists to add (validation is no longer gated on dispatch_status == "implemented").
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+info "Case 973: a planned-status handoff missing summary also records HANDOFF_VALIDATION_FAILED"
+setup_sandbox
+stub_agent_file planner-agent
+mkdir -p "$WORKDIR/specs/973_candidate/plans"
+echo x > "$WORKDIR/specs/973_candidate/plans/01_x-plan.md"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 973, "project_name": "candidate", "task_type": "general", "status": "planning", "description": "candidate #973 -- handoff validation probe, planned status missing summary", "dependencies": [], "file_scope": [], "next_artifact_number": 1}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/973_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/973_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "planned", "dispatch_seq": 1, "artifacts": [{"type": "plan", "path": "specs/973_candidate/plans/01_x-plan.md"}], "phases_completed": 0, "phases_total": 0, "blockers": []}
+EOF
+run_sut specs/973_candidate --session sess_973 --phase plan --task-type general \
+  --agent planner-agent --loop-guard-file specs/973_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 973
+
+if echo "$LAST_STDERR" | grep -q "ERROR: HANDOFF VALIDATION FAILED"; then
+  pass "case 973: ERROR: HANDOFF VALIDATION FAILED notice appears on stderr for a planned-status handoff"
+else
+  fail "case 973: expected an ERROR: HANDOFF VALIDATION FAILED notice, got: $LAST_STDERR"
+fi
+case_973_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_VALIDATION_FAILED")) | length' \
+  "$WORKDIR/specs/973_candidate/.orchestrator-loop-guard" 2>/dev/null)
+if [ "$case_973_defect_count" = "1" ]; then
+  pass "case 973: exactly one HANDOFF_VALIDATION_FAILED defect row recorded for a planned-status handoff"
+else
+  fail "case 973: expected exactly 1 HANDOFF_VALIDATION_FAILED defect, got $case_973_defect_count"
 fi
 
 echo ""
