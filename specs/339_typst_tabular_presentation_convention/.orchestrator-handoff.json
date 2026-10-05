@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 339,
+  "phase": "plan",
+  "session_id": "sess_1791222088_1f4b0c_339",
+  "dispatch_seq": 3,
+  "phases_completed": 0,
+  "phases_total": 2,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/339_typst_tabular_presentation_convention/plans/01_tabular-presentation-convention.md",
+      "summary": "Two-phase plan: audit the already-landed tabular-presentation convention additions against the acceptance criteria, then repair the two stale typst index-entries.json line_count values they left behind."
+    }
+  ],
+  "next_steps": "Run /implement 339 to execute the plan",
+  "notes": "Research dispatch seq 2 already committed all three substantive work items (7af9640c9, 64 insertions in the two target context files). Remaining real work: verification audit plus repairing typst index-entries.json line_count (170->214, 281->301). Deployed .claude/ typst copy is now stale; redeploy is an operator follow-up, deliberately out of scope."
+}
