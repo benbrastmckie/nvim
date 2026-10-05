@@ -11,8 +11,8 @@ next_project_number: 344
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,342,343 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,342 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,335,343 | 22,251,271,272,280,284,300,337 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
@@ -35,9 +35,9 @@ next_project_number: 344
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-322 [NOT STARTED] — Fix /todo's directory-move staging gap: a moved task...
+322 [RESEARCHING] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-325 [NOT STARTED] — Stop git add's gitignore advisory exit code from aborting the...
+325 [RESEARCHED] — Stop git add's gitignore advisory exit code from aborting the...
 336 [NOT STARTED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
@@ -65,8 +65,8 @@ next_project_number: 344
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-337 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-343 [NOT STARTED] — Bound an implementation agent's wait on a backgrounded...
+337 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 343 [NOT STARTED] — Bound an implementation agent's wait on a backgrounded...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
@@ -77,7 +77,7 @@ next_project_number: 344
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 337
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 
@@ -668,7 +668,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 337. Handoff required fields and dropped failure
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -2151,10 +2151,11 @@ hook-repair work by their titles and deliverables only.
 ---
 
 ### 325. Stop git add's gitignore advisory exit code from aborting the whole commit when the named file is tracked and was in fact staged
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [325_git_add_ignore_advisory_aborts_commit/reports/01_git-add-ignore-advisory.md]
 
 **Description**: Stop git-commit-scoped.sh from aborting the whole commit when `git add` emits its gitignore advisory for a TRACKED file whose path matches an ignore rule: git exits 1 while correctly staging the file, and the script reads that false-negative exit as a hard failure. VERIFIED LIVE; hard blocker on every `/todo` archival run in repos where `specs/archive/` is gitignored.
 
@@ -2336,7 +2337,7 @@ Filed by the 2026-10-02 review: specs/reviews/review-2026-10-02.md
 ---
 
 ### 322. Todo move vacated source never staged
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
