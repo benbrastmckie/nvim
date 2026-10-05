@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md",
+      "summary": "Re-verifies the seed report's seven-obligation rule draft and diagnostics map against the live Verification repo and the books-extension source store; finds the version-bump dependency already landed (so obligation 7 should be unconditional, not conditional as the dispatch anticipated), flags EXTENSION.md's zero-slack 60-line Rule U cap, and flags that manifest.json's provides.rules array also needs the new rule filename."
+    }
+  ],
+  "next_steps": "Run /plan 341 to create the implementation plan for the rule file, context file, pointer line, and registration.",
+  "metadata": {
+    "session_id": "sess_1791222088_1f4b0c_341",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  },
+  "memory_candidates": [
+    {
+      "content": "In the ~/.config/nvim agent-system, a dependency extension's README can carry a single plain-text pointer line into a dependent extension's context tree (e.g. lean4's README pointing into the books extension's context/project/books/patterns/), safely and against the normal manifest dependencies[] arrow, because README bullet lists are inert prose, not a load_when/paths: mechanism -- if the dependent extension isn't loaded, the line is just harmless dead text, never a broken load path.",
+      "category": "PATTERN",
+      "source_artifact": "specs/341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["cross-extension-pointer", "manifest-dependencies", "README", "load_when", "books-extension"]
+    },
+    {
+      "content": "check-extension-docs.sh's Rule U caps EXTENSION.md at 60 lines per extension (exact, checked via check_extension_md_length); the books extension's EXTENSION.md is already at exactly 60 lines with zero slack, so any future addition to it must trim an equal amount elsewhere in the same file or the gate fails. Separately, manifest.json's provides.rules array is a literal filename list (not auto-covering new rule files the way provides.context's directory reference does) and is what Rule I's deployed-vs-source drift check keys off -- a new rule file must be added there explicitly to be considered 'provided'.",
+      "category": "CONFIG",
+      "source_artifact": "specs/341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["Rule U", "Rule I", "EXTENSION.md", "manifest.json", "provides.rules", "check-extension-docs.sh"]
+    }
+  ]
+}
