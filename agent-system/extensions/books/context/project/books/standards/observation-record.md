@@ -55,6 +55,7 @@ per-field below so a reader never has to guess which applies.
 | `dimension_signals` | no (omit if `issues.jsonl` carried no tagged entries) | object | Issue-log entries grouped by `tags.dimension` × `tags.polarity`, plus `untagged_count`. See "Computed vs. Supplied" below. |
 | `unrecognized_tags` | no (omit if empty) | array of object | Each entry `{entry_id, field, value}` for a `tags.dimension`/`tags.polarity` value outside the frozen enums — reported, never silently coerced or dropped. |
 | `record_path` | yes | string | The canonical per-task path this exact record was written to (self-referential, so the digest log's pointer can always be dereferenced back). |
+| `convention_version` | no (omit if unset) | string | This corpus's `convention_version` pin (`manifest.json`) at the time this record was written, sourced from the consuming repository's own `- **Convention version**:` marker (`docs/book-convention.md`'s second header bullet; Decision 19, `docs/book-convention/19-convention-versioning-and-lockstep.md`). See `README.md`'s "Convention version pin and staleness comparison" section for the full non-blocking comparison this field feeds. |
 
 ### The Join (Generic Half) — `generic`
 
@@ -174,6 +175,13 @@ Looking for a conventional path is not shipping a probe: nothing in this extensi
 requires, or depends on `books/tool/book-snapshot.sh` existing. A consuming repository that never
 builds one simply gets `"absent"` on every record, forever — which is correct output, not a
 degraded mode.
+
+**Confirmed, not merely documented**: in the reference consuming repository, `books/tool/`
+carries no `book-snapshot.sh` at all (checked directly, not inferred). Every record this
+observer writes there exercises step 3 above and gets the documented `"absent"` sentinel — the
+probe's NAME and CONTRACT (`books/tool/book-snapshot.sh`, `--json` for a single read, `--diff A
+B --json` for a before/after delta) are pinned above for whichever repository eventually builds
+one; its current absence here is the designed behavior, not a defect to track.
 
 ## The RUN Log (Verification Tiers, Certifier Outcomes)
 

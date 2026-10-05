@@ -52,6 +52,9 @@ principles from it apply directly to this sub-mode:
    be made without one. Nothing can be proposed this run."
    Return early -- this is a HARD early return, not a degraded continuation: Candidate
    Identification below never runs without at least one of the two shapes.
+5. Non-blocking: run the convention-version comparison -- see context/project/books/README.md's
+   "Convention version pin and staleness comparison" section (pointer only, not restated here).
+   Never a return; it reports and continues.
 ```
 
 ## Candidate Identification: Closed Discovery Rule

@@ -468,42 +468,48 @@ the convention record is not.
 
 ---
 
-### Phase 6: The convention-version pin and the non-blocking preflight comparison [NOT STARTED]
+### Phase 6: The convention-version pin and the non-blocking preflight comparison [COMPLETED]
 
 **Goal**: a structured `convention_version` / `measured_at_commit` pin replaces the prose git SHA
 as the staleness handle, a non-blocking comparison against the record reports mismatch and absence
 exactly once each, and `convention_version` is an optional observation-record field.
 
 **Tasks**:
-- [ ] Add top-level `"convention_version"` and `"measured_at_commit"` to
+- [x] Add top-level `"convention_version"` and `"measured_at_commit"` to
       `agent-system/extensions/books/manifest.json` (research confirmed `check-extension-docs.sh`
       walks only known keys and rejects no sibling). Set `convention_version` to the value read
       from the record if the record carries a `- **Convention version**:` line, and to the
       explicit sentinel `"unversioned"` if it does not — which, per research, is the current
-      state in the reference consuming repository.
-- [ ] Mirror the pin as prose in `context/project/books/README.md`'s normative-record paragraph,
+      state in the reference consuming repository. *(completed: the live record had, by
+      implementation time, landed its own Decision 19 adding exactly this line -- pinned
+      `convention_version: "0.1.0-pre"`, `measured_at_commit: "d255518"` to the genuinely live
+      value rather than the research-time "unversioned" finding; see issue log)*
+- [x] Mirror the pin as prose in `context/project/books/README.md`'s normative-record paragraph,
       keeping the "where the two disagree, the record wins and this corpus is stale" framing.
-- [ ] Add one named section to `context/project/books/README.md` — "Convention version pin and
+      *(completed)*
+- [x] Add one named section to `context/project/books/README.md` — "Convention version pin and
       staleness comparison" — stating the whole comparison once: read
       `- **Convention version**:` from the consuming repository's `docs/book-convention.md`;
       on mismatch report **once** that the record wins and the corpus is stale; on an absent line
       report **once** that the record is unversioned; **never blocking**; **no hook** (the
       extension has none by design and must not gain one); no new script, no new rule file.
-- [ ] Reference that section with a one-line pointer from
+      *(completed)*
+- [x] Reference that section with a one-line pointer from
       `skill-books-review/SKILL.md`'s Shared Sub-Mode Skeleton step 1 (Edge Case Checks) so both
       `/books` sub-modes inherit it once, and from each sub-mode file's own Edge Case Checks
       (`books-review-submode.md`, `books-revise-submode.md`) — a pointer, not a third copy of the
-      procedure.
-- [ ] Add `convention_version` as an **optional** field to
+      procedure. *(completed)*
+- [x] Add `convention_version` as an **optional** field to
       `context/project/books/standards/observation-record.md`'s field table, and note the
-      `- **Convention version**:` record marker there as its source.
-- [ ] Record the snapshot-probe confirmation in `observation-record.md`'s Probe Ownership Boundary
+      `- **Convention version**:` record marker there as its source. *(completed)*
+- [x] Record the snapshot-probe confirmation in `observation-record.md`'s Probe Ownership Boundary
       discussion: the probe name and contract are `books/tool/book-snapshot.sh` with `--json` and
       `--diff A B --json`; it is **absent** in the reference consuming repository, which exercises
-      the documented `"absent"` sentinel rather than indicating a defect.
-- [ ] Confirm `manifest.json`'s `"hooks": []` is still empty and no `observers` entry gained a
-      script.
-- [ ] Do **not** edit `index-entries.json` — Phase 7 owns it.
+      the documented `"absent"` sentinel rather than indicating a defect. *(completed: re-confirmed
+      absent by a direct `ls` of `books/tool/` in the consuming repository)*
+- [x] Confirm `manifest.json`'s `"hooks": []` is still empty and no `observers` entry gained a
+      script. *(completed: `provides.hooks` unchanged at `[]`; `observers.books-observe` unchanged)*
+- [x] Do **not** edit `index-entries.json` — Phase 7 owns it. *(completed: untouched)*
 
 **Timing**: 1.5 hours
 

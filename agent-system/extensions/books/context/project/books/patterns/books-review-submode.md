@@ -55,6 +55,9 @@ writing, because nothing beyond the dated report is written), not an oversight.
    marker) and continue — this, too, is a degraded report, not an early return. Only Check 2's
    and Check 3's all-lines-unresolvable cases return early; a single unresolvable Decision never
    does.
+6. Non-blocking: run the convention-version comparison -- see context/project/books/README.md's
+   "Convention version pin and staleness comparison" section (pointer only, not restated here).
+   Never a return; its verdict feeds the Execution: Output report header.
 ```
 
 ## Candidate Identification: The Seven Dimensions, Per-Dimension Access

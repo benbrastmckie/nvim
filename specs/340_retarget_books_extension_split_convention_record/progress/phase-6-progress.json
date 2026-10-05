@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "The convention-version pin and the non-blocking preflight comparison",
+  "started_at": "2026-10-05T19:25:00Z",
+  "last_updated": "2026-10-05T19:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add convention_version/measured_at_commit to manifest.json", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 2, "description": "Mirror pin as prose in README.md and add Convention version pin and staleness comparison section", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/README.md"]},
+    {"id": 3, "description": "Add one-line pointers from skill-books-review/SKILL.md and both sub-mode Edge Case Checks", "status": "done", "files_touched": [
+      "agent-system/extensions/books/skills/skill-books-review/SKILL.md",
+      "agent-system/extensions/books/context/project/books/patterns/books-review-submode.md",
+      "agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md"
+    ]},
+    {"id": 4, "description": "Add convention_version optional field and snapshot-probe confirmation to observation-record.md", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/standards/observation-record.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Pin convention_version to the research-time sentinel 'unversioned'", "result": "superseded", "reason": "the consuming repository's live HEAD had, between research and implementation, landed Decision 19 adding a live '- **Convention version**: 0.1.0-pre' line; re-read the live record directly and pinned the genuinely current value and commit instead, since pinning a value already known-false on day one would defeat the comparison's purpose"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

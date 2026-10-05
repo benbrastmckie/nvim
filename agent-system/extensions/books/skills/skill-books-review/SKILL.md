@@ -55,7 +55,10 @@ steps, and log payload, rather than restating the shape itself.
 
 1. **Edge Case Checks** — Validate preconditions before identifying candidates (e.g. the digest
    log exists and has at least one line resolvable to a readable canonical record). If a
-   precondition fails, display a specific message and return early without further action.
+   precondition fails, display a specific message and return early without further action. Also
+   run the non-blocking convention-version comparison here — see `context/project/books/README.md`'s
+   "Convention version pin and staleness comparison" section for the full procedure; this is a
+   pointer, not a restatement.
 2. **Candidate Identification** — Compute the sub-mode's specific candidate set from the
    canonical per-task records reached via the shared data path above. If a shared dependency
    (the digest log, a specific record field) is used, cite it by name rather than re-deriving it.

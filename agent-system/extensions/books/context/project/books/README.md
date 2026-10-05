@@ -15,6 +15,10 @@ accepted decisions) plus its paired exercise-history evidence under
 This corpus explains, grounds and dates that record for an agent working inside it; where the
 two disagree, the record wins and this corpus is stale.
 
+`convention_version: "0.1.0-pre"` (`manifest.json`, `measured_at_commit: "d255518"`) is this
+corpus's own pin of the record's text -- see "Convention version pin and staleness comparison"
+below for the full procedure.
+
 **Read `domain/known-gap-register.md` first.** Large parts of the design record describe
 contracts with no live instance. The register is the dated projection of what is and is not
 built, and every document below defers its gap claims to it rather than re-caveating.
@@ -89,3 +93,38 @@ either.
   or a consuming-repository artifact path. Never an ephemeral task reference.
 - **Where the design record describes something unbuilt, the document says so in the same
   breath**, and points at `domain/known-gap-register.md` for the detail.
+
+## Convention version pin and staleness comparison
+
+`manifest.json` carries two top-level keys, `convention_version` and `measured_at_commit`: this
+corpus's own pin of the record's text, and the consuming-repository commit it was pinned against.
+The record's own authority for this value is its second header bullet,
+`- **Convention version**: X.Y.Z` (optionally `X.Y.Z-pre`), in `docs/book-convention.md` --
+Decision 19's "one handle" (`docs/book-convention/19-convention-versioning-and-lockstep.md`, in
+the consuming repository).
+
+The whole comparison, stated once here rather than restated at each consuming site:
+
+1. Read `- **Convention version**:` from the consuming repository's `docs/book-convention.md`.
+2. If it is present and differs from this corpus's pinned `convention_version`: report **once**
+   that the record wins and this corpus is stale.
+3. If the line is absent: report **once** that the record is unversioned (this corpus's own pin
+   then has nothing live to compare against).
+4. **Never blocking.** This extension has no hook (`manifest.json`'s `"hooks": []` stays empty)
+   and gains none for this -- the comparison is a reported observation, never a gate. This
+   mirrors Decision 19's own severity split: a record-vs-manual mismatch is blocking *inside the
+   consuming repository's own check*, but an extension-pin mismatch is advisory there precisely
+   because the extension is deployed on its own schedule from another repository; this corpus's
+   own non-blocking posture is the mirror image on this side.
+5. No new script, no new rule file, no new command or flag performs this. It is a documented
+   procedure an agent dispatched into `/books`'s sub-modes follows by reading the two values and
+   reporting per the rule above -- the three consuming sites below each carry a one-line pointer
+   here rather than a second copy of the procedure.
+
+**Consuming sites** (pointer only, not a restatement): `skills/skill-books-review/SKILL.md`'s
+Shared Sub-Mode Skeleton step 1 (Edge Case Checks), and each sub-mode's own Edge Case Checks in
+`patterns/books-review-submode.md` and `patterns/books-revise-submode.md`.
+
+**`convention_version` is also an optional field** on the canonical observation record
+(`standards/observation-record.md`), carrying the pin value a given task's dispatch was measured
+against, sourced from the same `- **Convention version**:` marker.
