@@ -27,22 +27,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/341_record_editing_guardrails_convention_pointer/summaries/02_record-editing-guardrails-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verify-deploy.sh", "COMPLETED WITH EXCLUSIONS", "deploy-freshness-context", "gate-sweep-triage", "reasoned-exclusions"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "COMPLETED WITH EXCLUSIONS",
+        "deploy-freshness-context",
+        "gate-sweep-triage",
+        "reasoned-exclusions"
+      ]
     },
     {
       "content": "Adding one bullet/pointer line to an EXTENSION.md already sitting at exactly its Rule U 60-line cap can often be absorbed at ZERO net line growth by folding the addition into an existing sentence (appending text to a line rather than inserting a new physical line), since wc -l only counts newline characters, not visual wrap width. This avoids needing to find and execute a trim elsewhere in the same file.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/341_record_editing_guardrails_convention_pointer/summaries/02_record-editing-guardrails-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["EXTENSION.md", "Rule U", "line-count-cap", "fold-into-sentence", "zero-net-growth"]
+      "suggested_keywords": [
+        "EXTENSION.md",
+        "Rule U",
+        "line-count-cap",
+        "fold-into-sentence",
+        "zero-net-growth"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791222088_1f4b0c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

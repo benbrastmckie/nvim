@@ -756,7 +756,7 @@
     },
     {
       "path": "project/lean4/domain/decidability-provenance.md",
-      "line_count": 116,
+      "line_count": 123,
       "load_when": {
         "agents": [
           "lean-implementation-agent",
