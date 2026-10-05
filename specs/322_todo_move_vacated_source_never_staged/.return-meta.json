@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791241405_83aa14_322",
+  "dispatch_seq": 2,
+  "findings_count": 7,
+  "next_steps": "Run /plan 322 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md",
+      "summary": "Verifies the dispatch's defect/cause/fix claims against the live source-store tree (all three stage_paths dest-only sites, the vault paired-staging pattern, the regression commit c482bf40c, and skill-todo/SKILL.md's distinct Stage 15 gap), confirms current line numbers, flags the task-307->328 cross-reference as superseded but intact in substance, and recommends the exact fix plus a new git-staging-scope.md section and regression test."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When auditing a directory-pathspec-to-explicit-list migration (e.g. task 309's stage_paths[] accumulator replacing a bare `-- specs/` token), check every rename/move call site the migration touched for whether BOTH the old and new path were preserved. A directory token silently covers both sides of a rename; an explicit list only covers what it is told, so the migration's predictable blind spot is an omitted vacated-source path at each mv site it converted. Grep `git log -S '<the exact stage_paths literal>'` to find the introducing commit precisely.",
+      "category": "PATTERN",
+      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-staging", "directory-pathspec-migration", "rename-invariant", "stage_paths", "todo-archival"]
+    },
+    {
+      "content": "lint-directory-pathspec-boundary.sh and git-commit-scoped.sh's V2/V5/V6 gates are all structurally blind to an OMITTED pathspec token (too-narrow list), as opposed to a too-WIDE bare directory token. The lint's Layer 2 classifier only flags tokens that are present and end in `/` with no task-scoped component; the V2/V5/V6 gates only ever inspect pathspecs they are given. A missing rename endpoint is therefore invisible to every existing staging gate and fails silently (commit exits 0, `create mode` only, vacated source left as an unstaged ` D`).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-commit-scoped", "lint-directory-pathspec-boundary", "staging-gap", "silent-failure", "phantom_paths"]
+    }
+  ]
+}
