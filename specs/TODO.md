@@ -11,9 +11,9 @@ next_project_number: 343
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,340 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,335,341 | 22,251,271,272,280,284,300,340 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304,342 | 273,275,281,284,302,341 | core-agent-system, extensions, orchestrator |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,341 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,335,342 | 22,251,271,272,280,284,300,341 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
 
@@ -44,9 +44,8 @@ next_project_number: 343
 
 ### Extensions
 
-340 [IMPLEMENTING] — Retarget the books extension to the split convention record...
-  └─ 341 [NOT STARTED] — Record-editing guardrails and the convention-maintenance...
-    └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
+341 [NOT STARTED] — Record-editing guardrails and the convention-maintenance...
+  └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -316,7 +315,7 @@ Seed report: specs/341_record_editing_guardrails_convention_pointer/reports/01_s
 
 ### 340. Retarget the books extension to the split convention record and pin the convention version
 - **Effort**: 1-2 days
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None

@@ -1,17 +1,22 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 340,
-  "phase": "plan",
-  "session_id": "sess_1791222088_1f4b0c_340",
-  "dispatch_seq": 4,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1791222088_1f4b0c",
+  "dispatch_seq": 6,
+  "phases_completed": 7,
   "phases_total": 7,
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/340_retarget_books_extension_split_convention_record/plans/02_split-retarget-and-version-pin.md",
       "summary": "Seven-phase retarget plan: observer grammar, shape fixtures, both sub-modes, six anchors plus figures, the version pin and non-blocking comparison, and a closing gate sweep."
+    },
+    {
+      "type": "summary",
+      "path": "specs/340_retarget_books_extension_split_convention_record/summaries/02_split-retarget-and-version-pin-summary.md",
+      "summary": "Full implementation summary covering all seven phases, including two mid-implementation discoveries: the consuming repository's live advancement past the research commit, and its own contemporaneous Decision 19 specifying the convention-version pin mechanism this task independently builds."
     }
   ],
-  "next_steps": "Run /implement 340 to execute the plan"
+  "next_steps": "All phases complete and gate-verified for the books extension. Mark task 340 complete via postflight."
 }

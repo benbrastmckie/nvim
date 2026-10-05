@@ -1,7 +1,7 @@
 # Implementation Plan: Task #340
 
 - **Task**: 340 - Retarget the books extension to the split convention record and pin the convention version
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/340_retarget_books_extension_split_convention_record/reports/02_split-retarget-grammar-and-anchors.md`, `specs/340_retarget_books_extension_split_convention_record/reports/01_seed-books-extension-split-retarget.md`

@@ -1,10 +1,88 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/340_retarget_books_extension_split_convention_record/summaries/02_split-retarget-and-version-pin-summary.md",
+      "summary": "Full implementation summary covering all seven phases: observer discovery grammar, four new test fixtures removing the false green, both sub-mode shape-tolerant research steps, six retargeted anchors plus three refreshed figures, the convention_version pin with its non-blocking comparison, and the line-count reconciliation plus gate sweep."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Retargeted the books extension's observer, test suite, both /books sub-modes, six corpus anchors, and three stale figures to the consuming repository's actual split convention-record shape, and added a convention_version pin with a non-blocking staleness comparison; all seven plan phases completed and the full gate sweep is green for the books extension."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/scripts/books-observe.sh",
+    "agent-system/extensions/books/scripts/tests/test-books-observe.sh",
+    "agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md",
+    "agent-system/extensions/books/context/project/books/patterns/books-review-submode.md",
+    "agent-system/extensions/books/context/project/books/standards/metadata-split.md",
+    "agent-system/extensions/books/context/project/books/domain/book-toml-v2.md",
+    "agent-system/extensions/books/context/project/books/domain/certificate-ledger-and-records.md",
+    "agent-system/extensions/books/context/project/books/domain/identity-and-versioning.md",
+    "agent-system/extensions/books/context/project/books/domain/layer-vocabulary-and-matrix.md",
+    "agent-system/extensions/books/context/project/books/domain/status-and-trust-vocabularies.md",
+    "agent-system/extensions/books/context/project/books/README.md",
+    "agent-system/extensions/books/context/project/books/tools/tooling-inventory.md",
+    "agent-system/extensions/books/context/project/books/domain/known-gap-register.md",
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/context/project/books/standards/observation-record.md",
+    "agent-system/extensions/books/skills/skill-books-review/SKILL.md",
+    "agent-system/extensions/books/index-entries.json",
+    "specs/340_retarget_books_extension_split_convention_record/plans/02_split-retarget-and-version-pin.md",
+    "specs/340_retarget_books_extension_split_convention_record/summaries/02_split-retarget-and-version-pin-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To scope a repo-wide housekeeping script that iterates every extension under a fixed directory (e.g. generate-context-line-counts.sh walking $EXT_DIR/*/index-entries.json) to just ONE extension, without a built-in per-extension flag, override the script's EXT_DIR env var to a throwaway temp directory containing a single symlink to the target extension (e.g. ln -s $(pwd)/agent-system/extensions/books /tmp/scope-dir/books). This avoids touching every other extension's files when only one extension's drift should be corrected -- critical when another concurrent task owns those other extensions' territory.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/340_retarget_books_extension_split_convention_record/summaries/02_split-retarget-and-version-pin-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "ext-dir-scoping",
+        "generate-context-line-counts",
+        "temp-symlink-scope",
+        "multi-extension-script",
+        "territory-isolation"
+      ]
+    },
+    {
+      "content": "validate-no-task-references.sh (the PreToolUse Edit/Write hook enforcing no-task-references-in-deliverables.md) scans only the new_string/content passed to the tool call, never the whole file on disk. A file-top task-ref-ok:begin/:end exemption block opened at the start of the file does NOT cover a later mid-file Edit's own new_string, even though both land in the same already-exempted region once written. Any mid-file insertion carrying task-N-shaped fixture text (commit-subject examples, etc.) needs its own self-contained task-ref-ok:begin/:end pair inside that same Edit call's new_string, not reliance on an earlier marker elsewhere in the file.",
+      "category": "CONFIG",
+      "source_artifact": "specs/340_retarget_books_extension_split_convention_record/summaries/02_split-retarget-and-version-pin-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "task-ref-ok",
+        "validate-no-task-references",
+        "edit-hook-scope",
+        "exemption-marker",
+        "mid-file-insertion"
+      ]
+    },
+    {
+      "content": "When a shell script or test fixture must match a specific multibyte Unicode character extracted from an external reference file (e.g. an arrow U+2192 or em dash U+2014 inside another repository's markdown), embed it via an ANSI-C-quoted byte escape ($'\\xe2\\x86\\x92') or a printf '\\xHH\\xHH\\xHH' call rather than typing/pasting the literal character through an editing tool. This guarantees byte-for-byte correctness and is immune to the tool pipeline silently rendering an ASCII look-alike (a plain '-' for '--', a plain '>' sequence for an arrow) that would make the intended regex or string match silently fail.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/340_retarget_books_extension_split_convention_record/summaries/02_split-retarget-and-version-pin-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "unicode-literal",
+        "ansi-c-quoting",
+        "byte-escape",
+        "multibyte-character-matching",
+        "shell-script-correctness"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791222088_1f4b0c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 6
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
