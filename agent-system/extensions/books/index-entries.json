@@ -2,7 +2,7 @@
   "entries": [
     {
       "path": "project/books/README.md",
-      "line_count": 88,
+      "line_count": 130,
       "load_when": {
         "agents": [
           "books-research-agent",
@@ -32,7 +32,7 @@
     },
     {
       "path": "project/books/domain/known-gap-register.md",
-      "line_count": 275,
+      "line_count": 279,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -82,7 +82,7 @@
     },
     {
       "path": "project/books/domain/book-toml-v2.md",
-      "line_count": 187,
+      "line_count": 188,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -107,7 +107,7 @@
     },
     {
       "path": "project/books/domain/certificate-ledger-and-records.md",
-      "line_count": 275,
+      "line_count": 277,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -132,7 +132,7 @@
     },
     {
       "path": "project/books/domain/identity-and-versioning.md",
-      "line_count": 237,
+      "line_count": 238,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -157,7 +157,7 @@
     },
     {
       "path": "project/books/domain/status-and-trust-vocabularies.md",
-      "line_count": 163,
+      "line_count": 164,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -312,7 +312,7 @@
     },
     {
       "path": "project/books/standards/metadata-split.md",
-      "line_count": 180,
+      "line_count": 181,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -387,7 +387,7 @@
     },
     {
       "path": "project/books/standards/observation-record.md",
-      "line_count": 249,
+      "line_count": 257,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -487,7 +487,7 @@
     },
     {
       "path": "project/books/patterns/books-review-submode.md",
-      "line_count": 219,
+      "line_count": 256,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -511,7 +511,7 @@
     },
     {
       "path": "project/books/patterns/books-revise-submode.md",
-      "line_count": 288,
+      "line_count": 309,
       "load_when": {
         "agents": [],
         "task_types": []
