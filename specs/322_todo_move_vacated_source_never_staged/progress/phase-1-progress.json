@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Pair Both Endpoints at the Three commands/todo.md Move Sites",
+  "started_at": "2026-10-05T00:00:00Z",
+  "last_updated": "2026-10-05T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-grep stage_paths+= to re-establish line numbers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Step 5D: stage_paths+=(\"$src\" \"$dst\")", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "Step 5E.1: stage_paths+=(\"$orphan_dir\" \"specs/archive/${dir_name}\")", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 4, "description": "Step 5F: stage_paths+=(\"$dir\" \"$dst\")", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 5, "description": "Add anti-simplification inline comments at all three sites", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 6, "description": "Confirm other stage_paths sites untouched", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #322
 
 - **Task**: 322 - todo_move_vacated_source_never_staged
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None (cross-references only: tasks 302, 318, 328 — not dependency edges)
 - **Research Inputs**: specs/322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md
@@ -114,19 +114,19 @@ consultation was performed and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Pair Both Endpoints at the Three `commands/todo.md` Move Sites [NOT STARTED]
+### Phase 1: Pair Both Endpoints at the Three `commands/todo.md` Move Sites [COMPLETED]
 
 **Goal**: Every directory `mv` in `commands/todo.md` contributes BOTH its old and new path to
 `stage_paths[]`, matching the vault site's existing correct pattern and its stated rationale.
 
 **Tasks**:
 
-- [ ] Re-read the file and re-grep `grep -n 'stage_paths+=' agent-system/extensions/core/commands/todo.md` to re-establish current line numbers before any edit.
-- [ ] Step 5D (archive a completed/abandoned/expanded task, currently line 665, inside the existing `if [ -n "$src" ] && [ -d "$src" ]; then` guard so an absent source is still skipped): change `stage_paths+=("$dst")` to `stage_paths+=("$src" "$dst")`.
-- [ ] Step 5E.1 (move an approved orphan, currently line 686): change `stage_paths+=("specs/archive/${dir_name}")` to `stage_paths+=("$orphan_dir" "specs/archive/${dir_name}")`.
-- [ ] Step 5F (move a misplaced directory, currently line 752): change `stage_paths+=("$dst")` to `stage_paths+=("$dir" "$dst")`.
-- [ ] At each of the three sites, add an inline comment — mirroring the vault site's existing comment at ~908-911 in wording and intent — stating that the two tokens name the two exact paths this one `mv` touched, that this is deliberately NOT a bare shared-directory pathspec, and that the pairing must not be collapsed back to a single token. Cite the standard section added in Phase 3 by name (`Rename and Directory-Move Staging`), not by line number.
-- [ ] Confirm the three pre-existing non-move stages are left alone: line 602 (`specs/archive/state.json`), line 831 (`specs/ROADMAP.md`), and the already-correct vault pairing at line 912.
+- [x] Re-read the file and re-grep `grep -n 'stage_paths+=' agent-system/extensions/core/commands/todo.md` to re-establish current line numbers before any edit. *(completed)*
+- [x] Step 5D (archive a completed/abandoned/expanded task, currently line 665, inside the existing `if [ -n "$src" ] && [ -d "$src" ]; then` guard so an absent source is still skipped): change `stage_paths+=("$dst")` to `stage_paths+=("$src" "$dst")`. *(completed)*
+- [x] Step 5E.1 (move an approved orphan, currently line 686): change `stage_paths+=("specs/archive/${dir_name}")` to `stage_paths+=("$orphan_dir" "specs/archive/${dir_name}")`. *(completed)*
+- [x] Step 5F (move a misplaced directory, currently line 752): change `stage_paths+=("$dst")` to `stage_paths+=("$dir" "$dst")`. *(completed)*
+- [x] At each of the three sites, add an inline comment — mirroring the vault site's existing comment at ~908-911 in wording and intent — stating that the two tokens name the two exact paths this one `mv` touched, that this is deliberately NOT a bare shared-directory pathspec, and that the pairing must not be collapsed back to a single token. Cite the standard section added in Phase 3 by name (`Rename and Directory-Move Staging`), not by line number. *(completed)*
+- [x] Confirm the three pre-existing non-move stages are left alone: line 602 (`specs/archive/state.json`), line 831 (`specs/ROADMAP.md`), and the already-correct vault pairing at line 912. *(completed: line numbers shifted to 602, 842, 923 after this phase's edits but content unchanged)*
 
 **Timing**: 0.5 hours
 

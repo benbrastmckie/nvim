@@ -661,8 +661,11 @@ dst="specs/archive/${padded_num}_${project_name}"
 if [ -n "$src" ] && [ -d "$src" ]; then
   mv "$src" "$dst"
   echo "Moved: $(basename "$src") -> archive/${padded_num}_${project_name}/"
-  # Track this move for output reporting
-  stage_paths+=("$dst")
+  # Stage the move's exact old and new paths together so `git add` records the source's
+  # removal rather than leaving it unstaged. This is NOT a bare shared-directory pathspec --
+  # both tokens name the two exact paths this one `mv` touched. See
+  # context/standards/git-staging-scope.md's "Rename and Directory-Move Staging" section.
+  stage_paths+=("$src" "$dst")
 else
   echo "Note: No directory for task ${project_number} (skipped)"
   # Track this skip for output reporting
@@ -683,7 +686,11 @@ for orphan_dir in "${orphaned_in_specs[@]}"; do
   dir_name=$(basename "$orphan_dir")
   mv "$orphan_dir" "specs/archive/${dir_name}"
   echo "Moved orphan: ${dir_name} -> archive/"
-  stage_paths+=("specs/archive/${dir_name}")
+  # Stage the move's exact old and new paths together so `git add` records the source's
+  # removal rather than leaving it unstaged. This is NOT a bare shared-directory pathspec --
+  # both tokens name the two exact paths this one `mv` touched. See
+  # context/standards/git-staging-scope.md's "Rename and Directory-Move Staging" section.
+  stage_paths+=("$orphan_dir" "specs/archive/${dir_name}")
 done
 ```
 
@@ -749,7 +756,11 @@ for dir in "${misplaced_in_specs[@]}"; do
   mv "$dir" "$dst"
   echo "Moved misplaced: ${dir_name} -> archive/"
   ((misplaced_moved++))
-  stage_paths+=("$dst")
+  # Stage the move's exact old and new paths together so `git add` records the source's
+  # removal rather than leaving it unstaged. This is NOT a bare shared-directory pathspec --
+  # both tokens name the two exact paths this one `mv` touched. See
+  # context/standards/git-staging-scope.md's "Rename and Directory-Move Staging" section.
+  stage_paths+=("$dir" "$dst")
 done
 ```
 

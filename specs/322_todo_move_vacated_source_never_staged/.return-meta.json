@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/322_todo_move_vacated_source_never_staged/plans/01_todo-move-pair-staging.md",
-      "summary": "5-phase plan pairing both endpoints of every directory move in /todo's two recipe copies, naming the invariant in git-staging-scope.md, and adding a behavioral-plus-static regression suite."
-    }
-  ],
-  "next_steps": "Run /implement 322 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 4,
-  "dependency_waves": [[1, 2, 3], [4], [5]],
-  "memory_candidates": [
-    {
-      "content": "Migrating a git commit pathspec from a bare directory token to an explicit file list has a specific, predictable blind spot: a directory token covers BOTH endpoints of every rename inside it incidentally, while an explicit list covers only what it names. If the accumulator built during such a migration is only ever taught to collect each move's DESTINATION, every vacated source's removal is left unstaged -- the copy lands as a fresh `create mode`, the old tree stays in the index pointing at files that no longer exist, and the commit still exits 0 reporting success. No pathspec lint can catch this: a lint classifies only tokens that are PRESENT, and an omission is not a textual pattern. Likewise, a commit wrapper's own pathspec-classification gates only ever inspect pathspecs they are GIVEN. Practical rule: any `mv` whose two endpoints are both inside the staged tree must contribute BOTH endpoints to the pathspec list, explicitly and together, in the same commit. When auditing such a migration, enumerate every call site that performs a rename AND builds a commit pathspec -- those are exactly the sites the migration silently narrowed.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/plans/01_todo-move-pair-staging.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-staging", "pathspec-migration", "rename-staging", "explicit-file-list", "unstaged-deletion", "lint-blind-spot"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791241405_83aa14_322",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791241405_83aa14",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 5
+  "dispatch_seq": 7
 }
