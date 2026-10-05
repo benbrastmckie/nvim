@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Add an Explicit Move-Pair Accumulator to skill-todo/SKILL.md",
+  "started_at": "2026-10-05T00:15:00Z",
+  "last_updated": "2026-10-05T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-grep mv/git add to re-establish current move-site inventory", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Introduce moved_paths[] accumulator at top of Stage 10", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 3, "description": "Thread accumulator through all seven Stage 10 move sites", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 4, "description": "Rewrite Stage 15 git add to consume moved_paths[] and drop specs/archive/ token", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 5, "description": "Add note citing the new standard section", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 6, "description": "Guard empty moved_paths[] case", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -155,7 +155,7 @@ count, invalidates the hypothesis and must be reported rather than silently abso
 
 ---
 
-### Phase 2: Add an Explicit Move-Pair Accumulator to `skill-todo/SKILL.md` [NOT STARTED]
+### Phase 2: Add an Explicit Move-Pair Accumulator to `skill-todo/SKILL.md` [COMPLETED]
 
 **Goal**: Stage 15's `git add` stages every vacated source path this run moved, enumerated
 explicitly, and no longer relies on a bare `specs/archive/` directory token for the destination
@@ -163,12 +163,12 @@ side.
 
 **Tasks**:
 
-- [ ] Re-read the file and re-grep `grep -n 'mv \|<stage id=\|git add' agent-system/extensions/core/skills/skill-todo/SKILL.md` to re-establish the current move-site inventory and the Stage 15 line.
-- [ ] Introduce a `moved_paths[]` accumulator convention, declared once at the top of Stage 10's `<process>`, explicitly described as mirroring `commands/todo.md`'s `stage_paths[]` and holding BOTH endpoints of every move, old path first.
-- [ ] Thread the accumulator through each Stage 10 move site, prose-level where the step is prose and bash-level where it is bash: step 4 (move project directories to `specs/archive/`), step 5 (track orphaned directories), step 7 (move misplaced directories), step 8c (TODO.md orphan archive, currently the `mv "$source_dir" "$target_dir"` at ~561), the vault moves (~691 `specs/archive` -> `${vault_path}/archive`, ~700 the archive `state.json` rename), and the renumber rename (~821).
-- [ ] Rewrite Stage 15's step 2 so the `git add` invocation is `git add specs/TODO.md specs/state.json "${moved_paths[@]}"` plus the existing conditional additions, **removing** the bare `specs/archive/` directory token. Keep the existing conditional list (`specs/CHANGE_LOG.md`, `specs/ROADMAP.md`, updated `README.md` files, `.memory/`) unchanged in behavior.
-- [ ] Add a short note at Stage 15 stating why the destinations are now enumerated rather than swept by `specs/archive/`: a directory token cannot reach the source side by construction, and the token is itself forbidden by `git-staging-scope.md`'s `## Forbidden Operations`. Cite the Phase 3 standard section by name.
-- [ ] Guard the empty case: when no directories were moved, `moved_paths[]` is empty and the `git add` must not degenerate into a bare `git add` with no pathspec — state the guard explicitly.
+- [x] Re-read the file and re-grep `grep -n 'mv \|<stage id=\|git add' agent-system/extensions/core/skills/skill-todo/SKILL.md` to re-establish the current move-site inventory and the Stage 15 line. *(completed)*
+- [x] Introduce a `moved_paths[]` accumulator convention, declared once at the top of Stage 10's `<process>`, explicitly described as mirroring `commands/todo.md`'s `stage_paths[]` and holding BOTH endpoints of every move, old path first. *(completed)*
+- [x] Thread the accumulator through each Stage 10 move site, prose-level where the step is prose and bash-level where it is bash: step 4 (move project directories to `specs/archive/`), step 5 (track orphaned directories), step 7 (move misplaced directories), step 8c (TODO.md orphan archive, currently the `mv "$source_dir" "$target_dir"` at ~561), the vault moves (~691 `specs/archive` -> `${vault_path}/archive`, ~700 the archive `state.json` rename), and the renumber rename (~821). *(completed: all seven sites confirmed by grep)*
+- [x] Rewrite Stage 15's step 2 so the `git add` invocation is `git add specs/TODO.md specs/state.json "${moved_paths[@]}"` plus the existing conditional additions, **removing** the bare `specs/archive/` directory token. Keep the existing conditional list (`specs/CHANGE_LOG.md`, `specs/ROADMAP.md`, updated `README.md` files, `.memory/`) unchanged in behavior. *(completed)*
+- [x] Add a short note at Stage 15 stating why the destinations are now enumerated rather than swept by `specs/archive/`: a directory token cannot reach the source side by construction, and the token is itself forbidden by `git-staging-scope.md`'s `## Forbidden Operations`. Cite the Phase 3 standard section by name. *(completed)*
+- [x] Guard the empty case: when no directories were moved, `moved_paths[]` is empty and the `git add` must not degenerate into a bare `git add` with no pathspec — state the guard explicitly. *(completed)*
 
 **Timing**: 1 hour
 

@@ -459,6 +459,15 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
   <stage id="10" name="ArchiveTasks" checkpoint="vault_check_complete">
     <action>Archive tasks to completed_projects (includes mandatory vault check)</action>
     <process>
+      Declare a `moved_paths[]` accumulator before any move below runs — the same convention as
+      `commands/todo.md`'s `stage_paths[]`: every directory `mv` this stage performs appends
+      BOTH its old and new path (old first), together, so Stage 15's `git add` can stage each
+      vacated source's removal rather than leaving it unstaged. See
+      `context/standards/git-staging-scope.md`'s "Rename and Directory-Move Staging" section.
+      ```bash
+      moved_paths=()
+      ```
+
       For each task in `archivable_tasks[]` (the guard-filtered list from Stage 2 — never a
       freshly-recomputed status match, so deferred expanded parents are excluded):
       1. Update specs/archive/state.json:
@@ -516,11 +525,19 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            (numbering continues from highest used number)
 
       4. Move project directories to specs/archive/ — again driven by `archivable_tasks[]`; a
-         deferred parent's directory stays in place until a later `/todo` run archives it
+         deferred parent's directory stays in place until a later `/todo` run archives it. For
+         each directory moved, append both its old and new path to `moved_paths[]`
+         (`moved_paths+=("$old_dir" "$new_dir")`), mirroring `commands/todo.md`'s Step 5D
+         pairing.
 
-      5. Track orphaned directories (if approved)
+      5. Track orphaned directories (if approved). For each directory moved from specs/ to
+         specs/archive/, append both its old and new path to `moved_paths[]`
+         (`moved_paths+=("$old_dir" "$new_dir")`), mirroring `commands/todo.md`'s Step 5E.1
+         pairing.
 
-      7. Move misplaced directories (if approved)
+      7. Move misplaced directories (if approved). For each directory moved, append both its
+         old and new path to `moved_paths[]` (`moved_paths+=("$old_dir" "$new_dir")`), mirroring
+         `commands/todo.md`'s Step 5F pairing.
 
       8. Archive TODO.md orphans:
          For each selected orphan in `selected_todo_orphans`:
@@ -559,6 +576,9 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
             fi
             target_dir="specs/archive/$(basename "$source_dir")"
             mv "$source_dir" "$target_dir"
+            # Pair both endpoints so `git add` records the source's removal -- see
+            # context/standards/git-staging-scope.md's "Rename and Directory-Move Staging".
+            moved_paths+=("$source_dir" "$target_dir")
             ```
          d. Track orphan archival for CHANGE_LOG.md
          e. If no directory found, log warning:
@@ -699,6 +719,12 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          if [ -f "${vault_path}/archive/state.json" ]; then
            mv "${vault_path}/archive/state.json" "${vault_path}/state.json"
          fi
+
+         # Pair the rename's exact old and new paths together so `git add` records it rather
+         # than leaving the old tree's removal unstaged -- mirrors commands/todo.md's identical
+         # vault-site pairing. See context/standards/git-staging-scope.md's "Rename and
+         # Directory-Move Staging" section.
+         moved_paths+=(specs/archive "${vault_path}/")
          ```
 
          Create vault meta.json:
@@ -819,6 +845,9 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            if [ -n "$source_dir" ]; then
              target_dir="specs/${new_padded}_${task_name}"
              mv "$source_dir" "$target_dir"
+             # Pair both endpoints so `git add` records the source's removal -- see
+             # context/standards/git-staging-scope.md's "Rename and Directory-Move Staging".
+             moved_paths+=("$source_dir" "$target_dir")
            fi
          done
          ```
@@ -1050,11 +1079,21 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
     <process>
       1. **Pre-commit vault safety net**: If next_project_number > 1000 and vault_count unchanged, block commit with error directing back to Stage 10 sub-step 9
       2. Apply the purpose-built archive scope from `.claude/context/standards/git-staging-scope.md`
-         — never a repo-wide add. Stage the fixed archive paths plus every path this run actually
-         touched: `git add specs/archive/ specs/TODO.md specs/state.json`, then conditionally add
+         — never a repo-wide add. Stage `specs/TODO.md`, `specs/state.json`, and every path
+         Stage 10 accumulated into `moved_paths[]` (both endpoints of every directory move this
+         run performed — the enumerated destinations AND their vacated sources):
+         `git add specs/TODO.md specs/state.json "${moved_paths[@]}"`, then conditionally add
          `specs/CHANGE_LOG.md` (Stage 12), `specs/ROADMAP.md` (Stage 11 annotations), any
          `README.md` files updated (Stage 13), and `.memory/` (Stage 14 memory harvest) — each
-         only when that stage reports it made changes
+         only when that stage reports it made changes. Deliberately **do not** stage a bare
+         `specs/archive/` directory token here: a directory token cannot reach the vacated
+         source side by construction (it only ever covered the destination incidentally when a
+         wider directory pathspec was in play), and it is itself a forbidden shared-directory
+         pathspec under `git-staging-scope.md`'s `## Forbidden Operations` — see that file's
+         "Rename and Directory-Move Staging" section for the full rule. Guard the no-moves case
+         so an empty `moved_paths[]` never degenerates into a bare, pathspec-less `git add`:
+         when `moved_paths[]` is empty, omit `"${moved_paths[@]}"` from the invocation entirely
+         rather than passing it unexpanded.
       3. Commit: `todo: archive {N} tasks` with counts for completed, abandoned, expanded, roadmap, orphans, misplaced, readme, memories
     </process>
   </stage>
