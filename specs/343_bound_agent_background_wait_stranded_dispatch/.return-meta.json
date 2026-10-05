@@ -1,0 +1,36 @@
+{
+  "status": "tasks_created",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task 343 entry added to TODO.md (wave 1, Orchestrator topic group) by generate-todo.sh regeneration."
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task 343 appended to active_projects with task_type meta, topic orchestrator, no dependencies, and a four-entry source-store file_scope."
+    }
+  ],
+  "next_steps": "Run /research 343 to begin research on the bounded-wait and stranded-dispatch-detection rulings",
+  "metadata": {
+    "session_id": "sess_1791238164_f2ae82",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1
+  },
+  "modified_files": [
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md"
+  ]
+}

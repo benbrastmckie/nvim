@@ -1,5 +1,5 @@
 ---
-next_project_number: 343
+next_project_number: 344
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 343
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,342 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,342,343 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
@@ -67,11 +67,86 @@ next_project_number: 343
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 337 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+343 [NOT STARTED] — Bound an implementation agent's wait on a backgrounded...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 343. Bound an implementation agent's wait on a backgrounded process, and give the orchestrator a way to detect a stranded dispatch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**), per rules/source-store-deploy-boundary.md.
+
+An implementation agent can park indefinitely on a backgrounded verification process and strand a dispatch mid-phase, with no bounded-wait fallback and no orchestrator-visible signal.
+
+--- MEASURED LIVE (2026-10-05, nvim/, batch session sess_1791222088_1f4b0c, task 341 implement dispatch, dispatch_seq 9, general-implementation-agent) ---
+
+At Phase 5 (the full gate sweep) the agent launched verify-deploy.sh as a detached background process (PID 74968) and entered a wait loop for a completion notification. The process exited while the agent was waiting; the notification never arrived. The agent reported "I'll pause here until that notification arrives rather than polling further" and went idle holding an UNFINISHED dispatch:
+
+  - Phases 1-4: committed (4ca4aa3f1, e0fd139d6, aeff20082, 55e26aa05)
+  - Phase 5: still [IN PROGRESS] in the plan file
+  - summaries/: empty, no summary written
+  - .return-meta.json and .orchestrator-handoff.json: still carrying the PRIOR (plan) dispatch's values — status "planned", dispatch_seq 8, not this dispatch's 9
+
+--- WHY IT MATTERS ---
+
+Nothing in the orchestrator detected this. The agent was idle, not failed; its Agent-tool call returned no error. Had postflight run at that moment it would have recorded a 4/5 [PARTIAL] and Phase 5's work would have been lost — despite the underlying gate having actually finished. Recovery required out-of-band human diagnosis (reading progress/*.json, the plan's phase markers, the dispatch_seq in the metadata, and `ps` on the recorded PID) followed by a hand-written resume message telling the agent to re-run the gate in the FOREGROUND and finish its metadata. The dispatch then completed 5/5 normally, which is the proof the work was recoverable and the stall was the only real failure.
+
+--- THE DEFECT IS THE PARKING, NOT THE SLOW GATE ---
+
+The gate's runtime belongs to tasks 170 and 328, which already own it and have both been revised with this batch's measurements. This task is about the failure mode being reachable at all: an agent that backgrounds ANY process and waits on a notification that never comes has no fallback. An instantaneous process that failed to notify would produce the identical stall. Do not let research or planning drift into the runtime question.
+
+--- SCOPE TO SETTLE AND IMPLEMENT (rule on each; do not assume) ---
+
+(1) Whether an implementation agent may background a verification/gate process at all during a dispatch, or must run it in the foreground and accept the timeout. If backgrounding stays permitted, it needs a bounded-wait fallback with a deadline after which the agent re-checks the process directly (its PID, its output file) instead of waiting on a notification that may never arrive.
+
+(2) Whether the agent, on reaching such a deadline with no result, should close the phase as COMPLETED WITH EXCLUSIONS (which is what it eventually did, correctly, once resumed — with a full evidence-bearing Reasoned Exclusions table) or as PARTIAL. Record the ruling where the exclusion contract lives.
+
+(3) Whether the orchestrator can detect a stranded dispatch at all. Today a dispatch whose agent goes idle without writing this dispatch's metadata is indistinguishable, from the orchestrator's side, from one still working. Candidate signals already on disk: the dispatch_seq in .return-meta.json (a RETURNED dispatch whose metadata still carries the PREVIOUS seq is by definition unfinished — this is the cheapest and most direct), the progress/*.json files, and the plan's own phase markers. Rule on whether a cheap post-return staleness check belongs in orchestrate-cycle-postflight.sh, bearing in mind two hard constraints it must respect: the Context Flatness Constraint (postflight must not read reports/plans/summaries) and the postflight boundary's prohibited-operations list.
+
+--- EXPLICIT NON-GOAL ---
+
+Do not resolve this by making the gate faster or by dropping the gate from the full tier. That is tasks 170/328's territory, and it would leave the parking failure mode intact for every other backgrounded process.
+
+--- RELATED, NOT BLOCKING (state the relationship in the deliverable; do NOT create dependency edges) ---
+
+Task 330 (per-dispatch cost and timing record) would make a stall visible after the fact but neither prevents nor detects one. Task 272 (honest session liveness for concurrent same-repo batches) addresses liveness BETWEEN batches, not within a single dispatch.
+
+--- SITES (verify by grep rather than trusting this list) ---
+
+agent-system/extensions/core/agents/general-implementation-agent.md and the other implementation agents that would carry the same guidance; agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh (where a post-return staleness check would go, and where the postflight boundary is enforced); agent-system/extensions/core/context/standards/postflight-tool-restrictions.md (the boundary ruling 3 must respect); agent-system/extensions/core/docs/architecture/handoff-schema.md (the dispatch-identity contract that makes the dispatch_seq signal meaningful).
+
+DELIVERABLE RULE: no task-number references in any file written into the source store (rules/no-task-references-in-deliverables.md). The RELATED relationships above must be stated in deliverable prose by durable anchor — the cost/timing record, the cross-batch session-liveness work — never as "task 330" or "task 272". Task numbers are permitted in this description and elsewhere in specs/**.
+
+--- DELIBERATELY UN-SEQUENCED FILE_SCOPE OVERLAP (read before co-scheduling) ---
+
+All four declared file_scope entries are shared with other non-terminal tasks. No dependency edge
+was created for any of them: this task is independent by decision, not by oversight, and the
+overlap is recorded here instead of being serialized.
+
+  - agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh — also declared by
+    tasks 273, 284, 304, 335, 337
+  - agent-system/extensions/core/docs/architecture/handoff-schema.md — also declared by
+    tasks 185, 337
+  - agent-system/extensions/core/context/standards/postflight-tool-restrictions.md — also
+    declared by task 273
+  - agent-system/extensions/core/agents/general-implementation-agent.md — also declared by
+    tasks 299, 336
+
+CONSEQUENCE THE NEXT READER MUST KNOW: scripts/orchestrate-batch-admit.sh scans every
+non-terminal task in specs/state.json, so it WILL detect a cross_batch overlap on
+orchestrate-cycle-postflight.sh and may defer this task if it is co-scheduled with that work.
+Dispatch this task alone, or alongside tasks whose file_scope does not include the four files
+above. If two land close together, the later one rebases; the edits sought here (a bounded-wait
+contract and a post-return staleness check) occupy different regions from the handoff-field and
+excursion-advisory work.
+
+---
 
 ### 342. Refactor the books extension's context corpus against the settled convention: role-scoped loading, agent-set review, version-pinned files
 - **Effort**: 2-3 days
