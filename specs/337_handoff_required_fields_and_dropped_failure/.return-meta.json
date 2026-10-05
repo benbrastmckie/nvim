@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/337_handoff_required_fields_and_dropped_failure/plans/01_handoff-required-fields-trace.md",
-      "summary": "7-phase plan: new HANDOFF_VALIDATION_FAILED defect class, postflight durable trace, write-time PostToolUse content gate, two WARN scopings, schema-doc rulings, 42-file writer-prose append, deploy cutover."
-    }
-  ],
-  "next_steps": "Run /implement 337 to execute the plan",
-  "phase_count": 7,
-  "estimated_hours": 6.5,
-  "dependency_waves": [[1, 4], [2, 3], [5, 6], [7]],
-  "memory_candidates": [
-    {
-      "content": "In this codebase's shell helpers, a function whose stdout contract is one space-separated line of key=value tokens parsed by callers as `IFS=' ' read -r a b c` plus suffix-stripping (`${c#key=}`) CANNOT be extended by appending a fourth token: `read` assigns the whole remainder of the line to the last variable, so every un-updated call site silently receives 'true nextkey=value' instead of 'true'. skill_corroborate_phase_counts (scripts/skill-base.sh) has three such call sites across two scripts plus a test-suite parser. When a new signal must cross such a boundary, prefer relocating the producing call to the consumer that needs it over widening the stdout contract -- relocation touches one site, widening touches every parser and fails silently where it is missed.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/337_handoff_required_fields_and_dropped_failure/plans/01_handoff-required-fields-trace.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["shell-function-contract", "stdout-tokens", "read-remainder", "skill-base", "silent-corruption", "call-site-parity"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791241405_83aa14_337",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791241405_83aa14",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 6
+  "dispatch_seq": 8
 }

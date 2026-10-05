@@ -1,7 +1,7 @@
 # Implementation Plan: Handoff Required-Field Gate and Durable Validation Trace
 
 - **Task**: 337 - Resolve the handoff-field gap: writers omit required `blockers`/`summary`, and a hard HANDOFF VALIDATION FAILED is printed and then dropped with no durable trace
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/337_handoff_required_fields_and_dropped_failure/reports/01_handoff-required-fields-dropped-failure.md
@@ -122,33 +122,33 @@ no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Name the `HANDOFF_VALIDATION_FAILED` defect class [NOT STARTED]
+### Phase 1: Name the `HANDOFF_VALIDATION_FAILED` defect class [COMPLETED]
 
 **Goal**: Add the one new Signal A instance both detection sites will record under, so Phases 2
 and 3 have a class name the recorder accepts.
 
 **Tasks**:
-- [ ] Add `HANDOFF_VALIDATION_FAILED` to the closed `--defect-class` `case` in
-      `scripts/system-defect-record.sh` (the `AMBIENT_BINDING_MISMATCH|RECOVERY_DECLINED|RETURN_META_SCHEMA_VIOLATION)` arm).
-- [ ] Update the three places in that script that state the enum's size or membership: the header
+- [x] Add `HANDOFF_VALIDATION_FAILED` to the closed `--defect-class` `case` in
+      `scripts/system-defect-record.sh` (the `AMBIENT_BINDING_MISMATCH|RECOVERY_DECLINED|RETURN_META_SCHEMA_VIOLATION)` arm). *(completed)*
+- [x] Update the three places in that script that state the enum's size or membership: the header
       comment ("One of the sixteen Signal A instances"), the `--defect-class` usage text's
       class list, the `sixteen-value enum` comment above the `case`, and the invalid-class error
-      message. All must read seventeen/seventeenth consistently.
-- [ ] Add a "A seventeenth instance, `HANDOFF_VALIDATION_FAILED`, was added deliberately..."
+      message. All must read seventeen/seventeenth consistently. *(completed)*
+- [x] Add a "A seventeenth instance, `HANDOFF_VALIDATION_FAILED`, was added deliberately..."
       paragraph to `context/patterns/system-defect-discrimination.md`, immediately after the
       existing sixteenth-instance (`RETURN_META_SCHEMA_VIOLATION`) paragraph. State: what it
       names (a dispatch's `.orchestrator-handoff.json` fails `validate-handoff.sh`'s
       required-field checks — `status`, `summary`, `artifacts`, `blockers`, `phases_completed`,
       `phases_total`); the two detecting sites; the split attribution rule (postflight uses
       `--dispatched-agent`, the hook leaves Signal B unresolved); and, following that section's
-      own convention, that none of the sixteen pre-existing instances was reworded to cover it.
-- [ ] Add one row to the **Class (a) — loud but unactioned** registry table for the postflight
+      own convention, that none of the sixteen pre-existing instances was reworded to cover it. *(completed)*
+- [x] Add one row to the **Class (a) — loud but unactioned** registry table for the postflight
       site (`scripts/orchestrate-cycle-postflight.sh`, detecting site
       `cycle-postflight-handoff-validation`), modeled on the existing Return-meta schema probe
-      row.
-- [ ] Amend the **Class (c) — ephemeral** table's `validate-handoff-location.sh` row so its
+      row. *(completed)*
+- [x] Amend the **Class (c) — ephemeral** table's `validate-handoff-location.sh` row so its
       "Detects" and "Defect class" cells name the second, content check and
-      `HANDOFF_VALIDATION_FAILED` alongside the existing location check and `HANDOFF_MISLOCATED`.
+      `HANDOFF_VALIDATION_FAILED` alongside the existing location check and `HANDOFF_MISLOCATED`. *(completed)*
 
 **Timing**: 0.5 hours
 

@@ -216,6 +216,23 @@ where this document first names it. Attribution uses `--dispatched-agent` (the a
 the offending `.return-meta.json`), never `skill-orchestrate/SKILL.md` — the violation is in the
 dispatched agent's own output, not in orchestrator plumbing.
 
+A seventeenth instance, `HANDOFF_VALIDATION_FAILED`, was added deliberately, to give the
+long-standing `validate-handoff.sh` verdict a durable home. The validator was already correctly
+strict — it names a dispatch's `.orchestrator-handoff.json` as rejected when any of its required
+fields (`status`, `summary`, `artifacts`, `blockers`, `phases_completed`, `phases_total`) is
+missing or malformed — but its one live invocation (`skill_corroborate_phase_counts`) discarded
+the exit code via `|| true`, and no other consumer read it. Two measured incidents (tasks 190/191
+in one batch, task 340 in a second, independent batch) printed a loud `HANDOFF VALIDATION FAILED`
+line and then completed anyway via the COMPLETION-CLAIM GATE's phase-accounting case, leaving no
+trace in `state.json`, `.return-meta.json`, or `events.jsonl`. Two sites now detect this class:
+`scripts/orchestrate-cycle-postflight.sh`, once per handoff-present phase, attributing via
+`--dispatched-agent` (the dispatched agent authored the malformed JSON); and
+`hooks/validate-handoff-location.sh`'s write-time content check, which leaves Signal B
+deliberately unresolved (`--attributed-path "unresolved:hooks/validate-handoff-location.sh"`),
+exactly as its existing `HANDOFF_MISLOCATED` call already does for the same hook. None of the
+sixteen pre-existing instances was reworded or reinterpreted to cover this shape; this paragraph
+is where this document first names it.
+
 ### Signal B — attribution
 
 Detection alone is not enough: the violation must resolve to a **named** file under
@@ -284,6 +301,7 @@ beside the existing banner** — the diagnosis is already in hand.
 | Completion-claim gate, Case 3/3 refuse | `scripts/skill-base.sh:729` | `META_MISSING_AFTER_NARRATION`-shaped: phase accounting absent/malformed AND no corroborating plan-marker signal — already logs the phrase `handoff-writer defect suspected` verbatim | `META_MISSING_AFTER_NARRATION` |
 | Recovery-declined sub-branch, detecting site `cycle-postflight-recovery-declined` | `scripts/orchestrate-cycle-postflight.sh` (WORK (d) absent-handoff branch, discriminated on `recover_json`'s `.reason`) | a `.return-meta.json` exists, was read, and recovery declined because the reported status could not be accepted as terminal (`STATUS_IN_PROGRESS`, `STATUS_NOT_SUCCESS`, `META_DISPATCH_SEQ_MISMATCH`) — attributed to the dispatched agent's own file via `--dispatched-agent`, never to `skill-orchestrate/SKILL.md`. The sibling `META_MISSING` sub-case (nothing usable produced at all) stays on the pre-existing `HANDOFF_STALE_OR_ABSENT` row above, unchanged | `RECOVERY_DECLINED` |
 | Return-meta schema probe, detecting site `cycle-postflight-return-meta-schema` | `scripts/orchestrate-cycle-postflight.sh` (warn-only probe, gated on `validate-return-meta.sh`'s `partial_progress`-specific `[FAIL]` output, never on its aggregate exit code) | a `.return-meta.json`'s `partial_progress` field violates its documented type or conditional-presence rule — attributed to the dispatched agent's own file via `--dispatched-agent` | `RETURN_META_SCHEMA_VIOLATION` |
+| Handoff validation probe, detecting site `cycle-postflight-handoff-validation` | `scripts/orchestrate-cycle-postflight.sh` (handoff-present read path; invokes `validate-handoff.sh` once per handoff-writing phase, replacing the discarded `|| true` call formerly inside `skill_corroborate_phase_counts`) | a `.orchestrator-handoff.json` fails `validate-handoff.sh`'s required-field checks (`status`, `summary`, `artifacts`, `blockers`, `phases_completed`, `phases_total`) — attributed to the dispatched agent's own file via `--dispatched-agent`, non-gating for task completion | `HANDOFF_VALIDATION_FAILED` |
 
 **Return-meta schema probe row, class fit**: classified here by analogy to Class (a) — loud via a
 `WARN:`-prefixed stderr notice at the point of detection, with the defect record as the
@@ -335,7 +353,7 @@ that single tool-call turn:
 | Hook | Detects | Defect class |
 |------|---------|--------------|
 | `validate-meta-write.sh` | a direct write under `.claude/**` during `/meta`-adjacent work | `SOURCE_STORE_BOUNDARY_VIOLATION` |
-| `validate-handoff-location.sh` | a handoff written outside its task directory (Write/Edit-tool path only — structurally blind to the Bash-redirection write path, by design; see the hook's own header) | `HANDOFF_MISLOCATED` |
+| `validate-handoff-location.sh` | two checks: a handoff written outside its task directory, and (added for the `HANDOFF_VALIDATION_FAILED` instance) a required-field content check against `validate-handoff.sh` on every Write/Edit of `.orchestrator-handoff.json` (Write/Edit-tool path only — structurally blind to the Bash-redirection write path, by design; see the hook's own header) | `HANDOFF_MISLOCATED` and `HANDOFF_VALIDATION_FAILED` |
 | `validate-no-task-references.sh` | a task-number citation in a deliverable outside `specs/**` (blocking, not advisory — the one hook in this class that denies the write rather than merely annotating context) | `TASK_REFERENCE_IN_DELIVERABLE` |
 | `validate-plan-write.sh` | an artifact write under `specs/*/{plans,reports,summaries}/*.md` that fails format validation | `ARTIFACT_FORMAT_VIOLATION` |
 | `validate-state-sync.sh` | `state.json`/`TODO.md` desynchronization | `STATE_SYNC_DIVERGENCE` |

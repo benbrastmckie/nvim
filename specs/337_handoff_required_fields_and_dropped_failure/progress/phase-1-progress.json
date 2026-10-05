@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Name the HANDOFF_VALIDATION_FAILED defect class",
+  "started_at": "2026-10-05T16:35:00Z",
+  "last_updated": "2026-10-05T16:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add HANDOFF_VALIDATION_FAILED to the closed --defect-class case in system-defect-record.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/system-defect-record.sh"]},
+    {"id": 2, "description": "Update the four size/membership wordings in system-defect-record.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/system-defect-record.sh"]},
+    {"id": 3, "description": "Add seventeenth-instance paragraph to system-defect-discrimination.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 4, "description": "Add Class (a) registry row for the postflight site", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 5, "description": "Amend Class (c) validate-handoff-location.sh row", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
