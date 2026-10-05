@@ -1,17 +1,27 @@
 {
-  "status": "planned",
-  "summary": "Planned the books record-editing rule file and record-maintenance diagnostics context file in five phases (two parallel authoring phases, two parallel registration phases, one full gate sweep), correcting two stale diagnostics figures the dispatch and research report both carried.",
-  "phase": "plan",
-  "dispatch_seq": 8,
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "Implemented the books record-editing rule file (book-convention-record.md, seven anchored obligations under 70 lines) and the record-maintenance diagnostics context file (four diagnostics, blocking/advisory split, run order, probe/observer boundary), plus a single lean4 README pointer line, registered across manifest.json, index-entries.json, EXTENSION.md and the corpus README. All five plan phases completed; Phase 5 closed COMPLETED WITH EXCLUSIONS after verify-deploy.sh surfaced three pre-existing/out-of-scope findings (core's concurrent-session script drift, pre-existing cross-extension deploy staleness plus one expected source-only edit, and an unconfirmed full test-suite run), each documented with evidence in the plan's Reasoned Exclusions table.",
+  "phase": "implement",
+  "dispatch_seq": 9,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/341_record_editing_guardrails_convention_pointer/plans/02_record-editing-guardrails.md",
-      "summary": "Five-phase plan for the books record-editing rule file, the record-maintenance diagnostics context file, the lean4 README pointer, and registration across three surfaces in two extensions."
+      "type": "summary",
+      "path": "specs/341_record_editing_guardrails_convention_pointer/summaries/02_record-editing-guardrails-summary.md",
+      "summary": "Full implementation summary covering all five phases, plan deviations, verification, impacts and follow-ups."
+    },
+    {
+      "type": "rule",
+      "path": "agent-system/extensions/books/rules/book-convention-record.md",
+      "summary": "New books-extension rule file governing record-editing: seven anchored obligations under 70 lines."
+    },
+    {
+      "type": "context",
+      "path": "agent-system/extensions/books/context/project/books/patterns/record-maintenance.md",
+      "summary": "New diagnostics map naming the four record-editing scripts, run order, blocking/advisory split, probe/observer ownership, and record locations."
     }
   ],
-  "next_action_hint": "Run /implement 341 to execute the plan"
+  "next_action_hint": "Task complete; the only open follow-ups are operator-level (a redeploy to propagate the lean4/README.md pointer, and confirming tests/run-all.sh independently if the question recurs) and out of scope for this task."
 }
