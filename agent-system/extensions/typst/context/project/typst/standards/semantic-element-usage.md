@@ -158,6 +158,26 @@ former's rules — not a grab-bag of unrelated rules.
 **Legal placement**: Within the definitional exposition of the type former it belongs to, after
 the prose introducing that type former. Never as the first content after a heading.
 
+### Tabular / Key-Value Data
+
+**What it is for**: Presenting structured data — a label-to-value mapping, or a genuinely narrow
+matrix — as a `#figure(kind: table, ...)`. Unlike the elements above, this entry governs a
+*structural choice within one figure kind*, not which element to reach for: a grid-based layout
+for a genuinely narrow, scannable matrix, or a description-list / stacked layout for key-value
+content or for cells carrying long prose or long unhyphenatable identifiers. See
+`patterns/tables-and-figures.md`'s "Pagination and Element Choice" for the full operational test
+and the pagination mechanics that follow once a shape is chosen.
+
+**Expected density**: One structural choice per table, made once at authoring time rather than
+revisited ad hoc. Stay with the grid shape only when every cell renders in roughly two lines or
+fewer at its own column width and the whole table fits comfortably within the page measure;
+otherwise use the description-list shape.
+
+**Legal placement**: Same as every other element in this file — never as the first content after
+a heading. The tabular/key-value choice is orthogonal to the Universal Placement Rule, not an
+exception to it: a table needs the same preceding prose as any other element to establish what it
+is presenting and why.
+
 ## Where Tracking Content Belongs
 
 The motivating defect for this standard was not only a placement violation — it was also content
