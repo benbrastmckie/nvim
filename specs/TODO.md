@@ -1,19 +1,19 @@
 ---
-next_project_number: 340
+next_project_number: 343
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-10-04. Generated from state.json dependency graph.*
+*Updated 2026-10-05. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,339 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,339,340 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,335,341 | 22,251,271,272,280,284,300,340 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304,342 | 273,275,281,284,302,341 | core-agent-system, extensions, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
 
@@ -45,6 +45,9 @@ next_project_number: 340
 ### Extensions
 
 339 [NOT STARTED] — Record the tabular-presentation convention in the typst...
+340 [NOT STARTED] — Retarget the books extension to the split convention record...
+  └─ 341 [NOT STARTED] — Record-editing guardrails and the convention-maintenance...
+    └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -72,6 +75,361 @@ next_project_number: 340
 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 342. Refactor the books extension's context corpus against the settled convention: role-scoped loading, agent-set review, version-pinned files
+- **Effort**: 2-3 days
+- **Status**: [HOLD]
+- **Held**: 2026-10-05
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 340, Task 341
+- **Research**: [342_refactor_books_context_corpus_role_scoped/reports/01_seed-books-context-engineering.md]
+
+**Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
+gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
+is silently wiped by the next deploy. See rules/source-store-deploy-boundary.md.
+
+No task-number references in any file written into the source store
+(rules/no-task-references-in-deliverables.md). Cite durable anchors -- filenames, section headings,
+decision numbers -- instead. Task numbers are permitted in this description and in specs/**.
+
+== PROSE PRECONDITION (not a dependency edge) ==
+
+This task refactors against the SETTLED record, not the one in flight. Before it runs, the consuming
+repository ~/Projects/Logos/Verification must have landed its alpha review of the book convention WITH
+THE VERSION STAMPED. If the review has not landed, this task waits -- refactoring the corpus against a
+record still being revised buys a second refactor.
+
+== GOAL ==
+
+The books context corpus is 21 files, about 4,450 lines, WRITTEN BEFORE THE SPLIT AND BEFORE THE ALPHA
+REVIEW. Review it against the settled record and refactor it so each books agent loads EXACTLY THE CONTEXT
+ITS JOB NEEDS, with the AGENT SET ITSELF reviewed and EVERY FILE PINNED to the convention version.
+
+== THE MEASURED STARTING POINT ==
+
+  - `index-entries.json` (538 lines, 21 entries): only `project/books/README.md` and
+    `patterns/signal-tagging.md` carry `load_when.task_types: ["books"]` -- AND NO REAL CONSUMING-REPO TASK
+    CARRIES TYPE `books` (measured: fourteen books-topic tasks are `lean4`, two `general`, one `typst`).
+    The other 19 entries are on-demand with empty `task_types`. NOTHING IS KEYED BY ROLE.
+  - Corpus line counts: `README.md` 88; `domain/` known-gap-register 275, layer-vocabulary-and-matrix 230,
+    book-toml-v2 187, certificate-ledger-and-records 275, identity-and-versioning 237,
+    status-and-trust-vocabularies 163, gate-tiers 194; `patterns/` authoring-workflow 213,
+    warning-driven-convergence 174, gate-collision-ledger 198, signal-tagging 204, books-review-submode 219,
+    books-revise-submode 288; `standards/` metadata-split 180, forgery-probe-discipline 171,
+    reconciliation-contract 231, observation-record 249; `tools/` tooling-inventory 213,
+    typst-template-contract 244, certify-guide 214.
+  - FIVE domain files restate Decisions 2, 3, 7, 8, 9, 11 and 12, which after the split are SINGLE FILES OF
+    70 TO 330 LINES WITH STABLE ANCHORS. Before the split, restating Decision 7 saved an agent from
+    ingesting a 359 KB file; after it, that decision is a short file at a stable path, so the
+    restatement's REMAINING value is only whatever it ADDS.
+  - FOUR agents split by LIFECYCLE PHASE (research 188, research-hard 295, implementation 294,
+    implementation-hard 285 lines), NOT BY JOB.
+
+== THE FIVE JOBS, MEASURED ==
+
+| Job | Files needed today | Lines |
+|---|---|---|
+| Author a book | layer-vocabulary-and-matrix, metadata-split, book-toml-v2, authoring-workflow, warning-driven-convergence, rules/books.md | ~1,050 |
+| Certify / diagnose | gate-tiers, gate-collision-ledger, certify-guide, tooling-inventory, forgery-probe-discipline | ~990 |
+| Document a book | typst-template-contract, reconciliation-contract, status-and-trust-vocabularies | ~640 |
+| Maintain the record | the record-editing guardrail rule and maintenance pointer, identity-and-versioning, known-gap-register | ~580 |
+| Review / revise the convention | observation-record, signal-tagging, books-review-submode, books-revise-submode | ~960 |
+
+Nothing in the extension selects by job. A research dispatch that reads the corpus README is pointed at all
+of it.
+
+== FIVE DELIVERABLES ==
+
+(1) A PER-FILE REVIEW TABLE, all 21 files: what it RESTATES, what it ADDS BEYOND THE DECISION FILE MEASURED
+IN LINES, which job needs it, and a disposition -- KEEP / TRIM TO THE DELTA / MERGE / RETIRE INTO THE RECORD
+/ SPLIT BY ROLE. "Lines that are not in the decision file" is a measurement, not a judgement; make it.
+
+(2) A LOADING MATRIX for the five jobs, giving each agent and skill an EAGER SET and an ON-DEMAND SET,
+expressed in `index-entries.json` `load_when` keys and in each agent's context references, with a
+PER-DISPATCH EAGER BUDGET MEASURED BEFORE AND AFTER.
+
+(3) THE AGENT-SET RULING: which jobs need their own agent and which are served by EXISTING agents given a
+role-specific context slice -- including whether the existing typst and planner agents already cover
+documenting and planning -- with the frontmatter and routing-table changes that implement it.
+
+(4) A `- **Reviewed against convention version**:` HEADER ON EVERY CORPUS FILE, matching the extension pin,
+plus THE RULE THAT A BUMP OBLIGES RE-REVIEW of every file whose header is BELOW the pin. This turns "update
+all the parts" from a search into a list.
+
+(5) Registration (`README.md`, `EXTENSION.md`, `index-entries.json`, `manifest.json`), the gate suite green,
+and A STATED MEASUREMENT THAT NO DISPATCH KIND'S EAGER CONTEXT GREW.
+
+== BINDING PREFERENCES AND PROTECTED FILES ==
+
+PREFER TRIMMING TO THE DELTA over retiring a file, unless the delta is empty. PREFER A ROLE-SPECIFIC
+CONTEXT SLICE over a new agent, unless the slice would exceed the budget for an existing agent's other jobs.
+
+These carry MEASURED FAILURE MODES THE RECORD DOES NOT HAVE and MUST SURVIVE: `gate-collision-ledger`
+(the six gate collisions), `forgery-probe-discipline`, `warning-driven-convergence` (the `book_requires`
+loop), and `certify-guide` (the certifier's economical operation) -- along with the `Books.+` glob failure
+and the `certificate/` directory discovery corruption these files record.
+
+Deleting the corpus and pointing agents at the record directly was considered; it is REJECTED AS AN
+ASSUMPTION and must instead be MEASURED per file, precisely because of those failure modes.
+
+== OWNER GATE ==
+
+The owner looks at THE LOADING MATRIX DURING PLANNING, BEFORE the rewrite. Role separation is a design
+choice, not a mechanical consequence of the measurements.
+
+== SCOPE BOUNDARY ==
+
+NO change to the record. NO change to `/books` sub-mode SEMANTICS beyond their context references. NO
+repo-side files. Applying the same loading-matrix method to the lean4 and typst corpora is a possible later
+task, NOT this one.
+
+== ACCEPTANCE ==
+
+The review table covers all 21 files with measured deltas and a disposition each; the loading matrix names
+an eager and on-demand set per job with before/after budgets; the agent-set ruling is recorded with reasons;
+every corpus file carries the version header and the bump rule is stated; the four protected files survive;
+no dispatch kind's eager context grew, stated as a measurement. Gate: `verify-deploy.sh`,
+`check-extension-docs.sh`, `check-task-references.sh`, and the books test suites.
+
+== DEPENDENCIES ==
+
+Depends on the books-extension split-retarget task (the retargeted anchors and the version pin every corpus
+header must match) and on the record-editing guardrails task (the rule and maintenance pointer that the
+"maintain the record" job's eager set loads).
+
+Seed report: specs/342_refactor_books_context_corpus_role_scoped/reports/01_seed-books-context-engineering.md
+
+---
+
+### 341. Record-editing guardrails and the convention-maintenance context pointer
+- **Effort**: 4-8 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 340
+- **Research**: [341_record_editing_guardrails_convention_pointer/reports/01_seed-record-editing-guardrails.md]
+
+**Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
+gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
+is silently wiped by the next deploy. See rules/source-store-deploy-boundary.md.
+
+No task-number references in any file written into the source store
+(rules/no-task-references-in-deliverables.md). Cite durable anchors -- filenames, section headings,
+decision numbers -- instead. Task numbers are permitted in this description and in specs/**.
+
+== GOAL ==
+
+The books extension's only rule file, `rules/books.md`
+(`paths: ["**/books/**", "**/Book.lean", "**/Book/*.lean"]`, six non-negotiables), governs BOOK
+DIRECTORIES AND MODULES. NOTHING governs the act of EDITING THE CONVENTION RECORD -- which is exactly
+where the escalation protocol, the marker-plus-evidence edit contract, the no-register rule, the
+no-task-numbers rule and the version bump all apply. An agent dispatched to amend a decision must today
+find and reconcile three separate sources (Decision 17's escalation protocol, the evidence README's
+Ruling 5 mechanics, and `docs/book-evidence.md`'s no-register rule) with nothing loading them for it.
+
+Close that gap with ONE RULE FILE and ONE CONTEXT FILE. Add NO MECHANISM.
+
+A PostToolUse hook refusing writes under `docs/book-convention*` was considered and REJECTED: the
+extension has no hooks by design, the repository-side lint and citation inventory already block at the
+gate, and a rule that loads on path match is the proportionate layer.
+
+== DELIVERABLE 1: rules/book-convention-record.md ==
+
+`paths: ["**/docs/book-convention.md", "**/docs/book-convention/**", "**/docs/book-convention-evidence/**"]`.
+UNDER 70 LINES. Seven obligations, one numbered item each, EACH CARRYING ITS SOURCE ANCHOR. Mirror
+`rules/books.md`'s "measured failure mode" style wherever a failure has actually been measured -- the
+record's own split was motivated by a measured 0% in-place reduction and a 72 KB marker mass. The rule
+RESTATES obligations; it MUST NOT INVENT ANY.
+
+  1. A decision whose marker NAMES AN INSTANCE is BINDING. Work that cannot satisfy it STOPS,
+     researches, ESCALATES TO THE OWNER, and lands the ruling as an amendment PLUS an updated marker.
+     (Decision 17, escalation protocol.)
+  2. NEITHER SILENT DEPARTURE NOR SILENT COMPLIANCE. (Same.)
+  3. A `none yet` clause is a HYPOTHESIS, amended in place by the first exercising work, which PROMOTES
+     the marker. (Same.)
+  4. THE SPLIT-RECORD EDIT CONTRACT: edit the decision file's ONE-LINE REDUCED MARKER, keeping its value
+     vocabulary AND its evidence pointer, and APPEND a dated
+     `## <ISO date> -- <Newly exercised | Extended | Amended> by <instance>` entry to the PAIRED EVIDENCE
+     FILE. (`docs/book-convention-evidence/README.md`, Ruling 5 file-split mechanics; marker template and
+     evidence-file template in the same README.)
+  5. NO NEW ARTIFACT AND NO REGISTER: the ruling lands in the task's `.decisions.json`, proposals are
+     TRANSIENT, and THE MARKER IS THE STATUS. (Decision 17 "No new artifact"; the no-register rule in
+     `docs/book-evidence.md`, whose harness computes and proposes but never decides, with triage
+     vocabulary revise now / defer / reject.)
+  6. CITATIONS ARE DURABLE ANCHORS -- file path, decision number, script name -- NEVER a task number in
+     the record; and EVERY BACKTICK CITATION MUST SURVIVE an edit
+     (`check-citation-inventory.sh`, zero-citation-loss multiset).
+  7. THE CONVENTION VERSION LINE BUMPS per the record's own versioning decision, and the extension's pin
+     is then stale and says so. WORD THIS CONDITIONALLY until that decision exists, then tighten it in
+     the same change that bumps the pin.
+
+== DELIVERABLE 2: context/project/books/patterns/record-maintenance.md ==
+
+Names WHERE THE DIAGNOSTICS LIVE and THE ORDER TO RUN THEM, and what each certifies:
+
+  - `lint-validated-by.sh`: CHECK 1 and CHECK 2 BLOCKING, CHECK 3 and CHECK 4 ADVISORY, and the newer
+    STRUCTURAL CHECKS 5 through 8 (cross-link integrity, anchor liveness, index/content agreement,
+    orphaned decision).
+  - `check-citation-inventory.sh`: the zero-citation-loss multiset.
+  - The snapshot probe, and the observer.
+  - `/books --review` is STRICTLY READ-ONLY; `/books --revise` NEVER EDITS THE RECORD.
+  - THE REPOSITORY OWNS PROBES -- the extension owns the join, not the probe.
+  - Where observation, run and snapshot records live.
+
+MUST NOT SAY: anything about convention SUBSTANCE. That lives in the record and in the domain corpus
+already, and restating it here creates a second source to drift.
+
+== DELIVERABLE 3: THE LEAN POINTER ==
+
+ONE LINE in `agent-system/extensions/lean/context/project/lean4/README.md` pointing to
+`record-maintenance.md`. Reason, measured: every books-topic Lean task in the consuming repository is
+`lean4`-typed (fourteen of them), so a books task that amends the record arrives through the lean
+extension's context and would otherwise never see the pointer. The pointer BELONGS in the books
+extension -- the books extension depends on `lean` and loads only where books exist -- and the lean4
+README carries only the one line to it. (An earlier proposal placed this file under the lean4 extension
+because the books extension was believed not to exist; that premise is false.)
+
+== REGISTRATION ==
+
+`index-entries.json` and `EXTENSION.md`, within the Rule U 60-line cap.
+
+== SCOPE BOUNDARY ==
+
+NO change to the protocol's SUBSTANCE. NO hooks. NO repo-side files. The same rule shape could later
+govern `docs/architecture-decisions.md` and `docs/fault-frame-design.md`; that is NOT this task.
+
+== ACCEPTANCE ==
+
+The rule is under 70 lines, every obligation carries its anchor, obligation 7 is conditional, the context
+file names the diagnostics and their blocking/advisory split without restating convention substance, the
+lean4 README carries exactly one pointer line, and both files are registered.
+Gate: `check-extension-docs.sh` (Rule U) and `check-task-references.sh` (ZERO task numbers in the rule).
+
+== DEPENDENCY ==
+
+Depends on the books-extension split-retarget task: the retargeted anchors and the convention-version pin
+that obligations 4, 6 and 7 cite must exist before this rule can cite them.
+
+Seed report: specs/341_record_editing_guardrails_convention_pointer/reports/01_seed-record-editing-guardrails.md
+
+---
+
+### 340. Retarget the books extension to the split convention record and pin the convention version
+- **Effort**: 1-2 days
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+- **Research**: [340_retarget_books_extension_split_convention_record/reports/01_seed-books-extension-split-retarget.md]
+
+**Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
+gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
+is silently wiped by the next deploy. See rules/source-store-deploy-boundary.md.
+
+No task-number references in any file written into the source store
+(rules/no-task-references-in-deliverables.md). Cite durable anchors -- filenames, section headings,
+decision numbers -- instead. Task numbers are permitted in this description and in specs/**.
+
+== GOAL ==
+
+The books extension is correct against a convention-record file shape THAT NO LONGER EXISTS. The
+consuming repository ~/Projects/Logos/Verification split its single `docs/book-convention.md` into
+`docs/book-convention/NN-slug.md` (ONE FILE PER DECISION, H1 `# Decision N: ...`, carrying a one-line
+REDUCED `- **Validated by**:` marker that ends with
+`-> full exercise history and citations: [...](../book-convention-evidence/NN-slug.md)`) plus a paired
+`docs/book-convention-evidence/NN-slug.md`, keeping `docs/book-convention.md` as a SLIM INDEX. Retarget
+the extension to that shape, and pin the convention version the corpus was measured against.
+
+Two of the three failures are SILENT -- they produce no error, only wrong output -- and the test suite
+stays green through all of them.
+
+== THE MEASURED BREAKAGE ==
+
+  - `scripts/books-observe.sh:312` hard-codes the three FLAT record paths
+    (`validated_by_files="docs/book-convention.md docs/architecture-decisions.md docs/fault-frame-design.md"`),
+    and `:131-135` matches `^## Decision` with a single regex for all three files. Consequence:
+    `validated_by_promotions` sees ONLY Decision 18. The same single regex ALREADY mis-reads
+    `docs/fault-frame-design.md`, which uses `### Decision N --` headings: twelve markers are
+    attributed to at most one heading. This defect predates the split.
+  - `context/project/books/patterns/books-revise-submode.md`'s MANDATORY PRELIMINARY RESEARCH STEP reads
+    the flat file and drops every candidate whose marker it cannot quote verbatim -- i.e. every
+    candidate bearing Decisions 1 through 17.
+  - `scripts/tests/test-books-observe.sh:106-127` writes a fixture in the OBSOLETE flat
+    `## Decision 13` shape and therefore stays GREEN against a record shape the consuming repository no
+    longer has. The false green is the reason the first two went unnoticed.
+  - Six corpus files cite `docs/book-convention.md:NNN` LINE RANGES, which the split guarantees nothing
+    about: `standards/metadata-split.md:4`, `domain/book-toml-v2.md:8`,
+    `domain/certificate-ledger-and-records.md:8`, `domain/identity-and-versioning.md:9`,
+    `domain/layer-vocabulary-and-matrix.md:7-8`, `domain/status-and-trust-vocabularies.md:7`.
+  - Stale figures: `context/project/books/README.md:10,26` ("3,212 lines", "eighteen markers"),
+    `tools/tooling-inventory.md:134`, `domain/known-gap-register.md:3,27-28` (a prose git SHA, and a
+    2/15/1 census against the record's own 1/15/2).
+
+== DISCOVERY GRAMMAR: COPY, DO NOT REINVENT ==
+
+Adopt the consuming repository's own directory-tolerant discovery grammar VERBATIM from
+`books/scripts/lint-validated-by.sh:191-241` and cite it by path in the script header so the two stay
+recognisably the same: a PER-RECORD HEADING REGEX TABLE (`book-convention.md` flat `^## Decision [0-9]+:`
+and directory `^# Decision [0-9]+[[:space:]]*:`; `architecture-decisions.md` `^## Decision`;
+`fault-frame-design.md` `^### Decision [0-9]+[[:space:]]*(--|-)`), the FLAT FILE ALWAYS SCANNED, and the
+directory expanded by NUMERIC PREFIX. Do NOT shell out to that lint: the observer must run standalone in
+any consuming repository per its own ownership decisions. Copy the grammar, not the dependency.
+
+PROMOTION DETECTION compares the marker's VALUE PREFIX ONLY -- the text before the
+` -> full exercise history` pointer -- so an evidence-pointer edit is never misread as a promotion.
+
+== SUB-MODE FIXES ==
+
+The revise sub-mode's research step ENUMERATES `docs/book-convention/*.md` sorted by numeric prefix plus
+any `## Decision` heading remaining in the flat index; the durable heading text is the decision file's
+H1; the marker quoted verbatim is the ONE-LINE REDUCED marker; the step also records the paired evidence
+file path so a proposal can cite the exercise history. Edge Case 4's HARD RETURN fires only when NEITHER
+shape exists. The review sub-mode's research step and report header get the same treatment, the header
+carrying the convention version.
+
+== THE VERSION PIN ==
+
+Replace the prose git SHA as the staleness handle. The corpus header declares `convention_version:
+"<X.Y.Z>"` plus `measured_at_commit` (whichever of manifest.json or the corpus README
+`check-extension-docs.sh` accepts). A NON-BLOCKING PREFLIGHT COMPARISON reads
+`- **Convention version**:` from the consuming repository's `docs/book-convention.md`: on mismatch it
+reports ONCE that the RECORD WINS AND THE CORPUS IS STALE; an ABSENT LINE means "unversioned" and is
+likewise reported once. Never blocking, and NO HOOK -- the extension has none by design and must not gain
+one for this. Add `convention_version` as an OPTIONAL observation-record field and note the version
+marker in `standards/observation-record.md`.
+
+Also confirm the snapshot probe name and contract: `books/tool/book-snapshot.sh` with `--json` and
+`--diff A B --json`.
+
+== TEST SUITE ==
+
+Add fixtures and remove the false green: a DIRECTORY-SHAPED record with a reduced marker and evidence
+pointer; a TRANSITIONAL flat-plus-directory record; the FAULT-FRAME `### Decision N --` heading grammar;
+and a promotion in which ONLY THE POINTER TEXT CHANGED, which MUST NOT COUNT.
+
+== SCOPE BOUNDARY ==
+
+NO new command, flag or hook. No rule file (that is the guardrails task). No repo-side script. Deployment
+into any consuming repository is the owner's action, not this task's.
+
+== SUGGESTED PHASE ORDER ==
+
+Observer and fixtures first; revise/review pattern edits second; the six anchor retargets and the figure
+refresh third; the pin and the preflight comparison fourth.
+
+== ACCEPTANCE ==
+
+The observer resolves promotions across all three records in both shapes with the correct per-record
+heading grammar; an evidence-pointer-only edit counts as no promotion; the revise and review sub-modes
+quote reduced markers for every decision; the six anchors point at `docs/book-convention/NN-slug.md`; the
+figures are dated and measured; the pin exists and the comparison reports mismatch and absence once each
+without blocking; the fault-frame fixture proves the mis-read is fixed. Gate: `verify-deploy.sh`,
+`check-extension-docs.sh`, `check-task-references.sh`, and all three books test suites.
+
+Seed report: specs/340_retarget_books_extension_split_convention_record/reports/01_seed-books-extension-split-retarget.md
+
+---
 
 ### 339. Record the tabular-presentation convention in the typst extension context: pagination/element-choice in tables-and-figures.md and a tabular Per-Element Semantics entry in semantic-element-usage.md
 - **Status**: [NOT STARTED]
