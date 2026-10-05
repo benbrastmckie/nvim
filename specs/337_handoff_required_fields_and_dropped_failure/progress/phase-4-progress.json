@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Scope the two companion WARNs to the cases where they inform",
+  "started_at": "2026-10-05T16:41:00Z",
+  "last_updated": "2026-10-05T16:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove unconditional sorry_inventory WARN in Check 3 else branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-handoff.sh"]},
+    {"id": 2, "description": "Reduce continuation_path/continuation_context block to pure variable capture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-handoff.sh"]},
+    {"id": 3, "description": "Add --help Validation rules bullets for the new scoping", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-handoff.sh"]},
+    {"id": 4, "description": "Add reject-no-blockers, assert_accept_no_warn helper, no-WARN fixtures, and partial tripwire", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-handoff.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

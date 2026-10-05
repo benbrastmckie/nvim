@@ -55,6 +55,10 @@ while [[ $# -gt 0 ]]; do
       echo "    follow_up_task"
       echo "  - dispatch_seq: present-and-integer passes; absent WARNs (never rejects -- the strict"
       echo "    reject-on-absent form is deliberately not adopted); present-but-non-integer FAILs"
+      echo "  - sorry_inventory absence is not reported outside skeleton mode (hard-mode-only field;"
+      echo "    expected absent on every base-mode handoff)"
+      echo "  - continuation-pointer (continuation_path/continuation_context) absence is reported"
+      echo "    only when status is partial or blocked (Check 5); not reported for other statuses"
       echo ""
       echo "Exit codes: 0 = valid, 1 = invalid, 3 = file not found"
       exit 0
@@ -227,10 +231,11 @@ if [[ "$skeleton" == "true" ]]; then
     fi
   fi
 else
-  # --- STANDARD mode (skeleton absent/false): existing behavior, byte-for-byte unchanged ---
-  if [[ "$sorry_inventory_present" == "false" ]]; then
-    log_warn "Optional field absent: sorry_inventory (H9 contract field; use [] for empty)"
-  else
+  # --- STANDARD mode (skeleton absent/false) ---
+  # sorry_inventory is a hard-mode-only field (see handoff-schema.md's ### sorry_inventory
+  # section): its absence is the expected, universal case for every base-mode writer, so
+  # absence is silent here -- WARNing on it would fire on ~100% of ordinary dispatches.
+  if [[ "$sorry_inventory_present" == "true" ]]; then
     log_pass "Optional field present: sorry_inventory"
   fi
 fi
@@ -245,14 +250,13 @@ else
   log_fail "dispatch_seq present but not an integer: '$dispatch_seq_raw'"
 fi
 
-# continuation_path or continuation_context (one of these two forms is acceptable)
+# continuation_path or continuation_context (one of these two forms is acceptable).
+# Pure variable capture here -- Check 5 below is the single, correctly status-conditioned
+# reporting site for this field (it WARNs exactly when status is partial/blocked with no
+# continuation pointer set); reporting unconditionally here was redundant and fired on every
+# implemented-status handoff, where absence is schematically correct.
 continuation_path=$(jq -r ".continuation_path // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
 continuation_context=$(jq -r ".continuation_context // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
-if [[ "$continuation_path" == "__MISSING__" ]] && [[ "$continuation_context" == "__MISSING__" ]]; then
-  log_warn "Optional field absent: continuation_path (or continuation_context) -- add null if not applicable"
-else
-  log_pass "Continuation field present (continuation_path or continuation_context)"
-fi
 
 # --- Check 4: Status value validation ---
 status=$(jq -r ".status // \"\"" "$HANDOFF_FILE" 2>/dev/null)

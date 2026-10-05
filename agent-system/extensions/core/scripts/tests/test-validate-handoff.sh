@@ -86,6 +86,24 @@ assert_reject() {
   fi
 }
 
+# ─── assert_accept_no_warn <name> <grep-pattern> <json-content> ──────────────────────────────
+# Writes the fixture, runs the validator, asserts exit 0 AND that <grep-pattern> does not appear
+# anywhere in the captured output -- pins that a given WARN class stays silent on this fixture.
+assert_accept_no_warn() {
+  local name="$1" pattern="$2" content="$3"
+  local f="$WORKDIR/${name}.json"
+  printf '%s' "$content" > "$f"
+  if ! bash "$VALIDATOR" "$f" >"$WORKDIR/${name}.out" 2>&1; then
+    fail "$name: validator exited non-zero (expected accept) -- see $WORKDIR/${name}.out"
+    return
+  fi
+  if grep -q -- "$pattern" "$WORKDIR/${name}.out"; then
+    fail "$name: validator accepted but pattern '$pattern' unexpectedly present -- see $WORKDIR/${name}.out"
+  else
+    pass "$name: validator exits 0 (accept) and pattern '$pattern' absent"
+  fi
+}
+
 # =====================================================================
 # ACCEPT fixtures
 # =====================================================================
@@ -172,6 +190,67 @@ assert_reject "reject-off-vocab-status" '{
   "phases_total": 1,
   "blockers": []
 }'
+
+# Reject 6: handoff missing blockers entirely -- an otherwise-conforming implemented handoff with
+# no blockers key at all, the exact shape measured live in production incidents that motivated
+# this check.
+assert_reject "reject-no-blockers" '{
+  "status": "implemented",
+  "summary": "Missing the blockers field.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/000_x/summaries/01_x-summary.md"}
+  ],
+  "phases_completed": 1,
+  "phases_total": 1
+}'
+
+# =====================================================================
+# WARN-scoping fixtures (Phase 4): sorry_inventory and continuation_path/continuation_context
+# must not WARN on an ordinary clean implemented handoff; Check 5's status-conditioned
+# continuation WARN must still fire when status is partial/blocked with no pointer set.
+# =====================================================================
+
+# A clean implemented handoff emits neither the sorry_inventory WARN nor the unconditioned
+# continuation WARN (both were removed/relocated in Phase 4).
+assert_accept_no_warn "accept-clean-no-sorry-warn" "Optional field absent: sorry_inventory" '{
+  "status": "implemented",
+  "summary": "Clean implemented handoff with no sorry_inventory field.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/000_x/summaries/01_x-summary.md"}
+  ],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "blockers": []
+}'
+
+assert_accept_no_warn "accept-clean-no-continuation-warn" "continuation_path (or continuation_context)" '{
+  "status": "implemented",
+  "summary": "Clean implemented handoff with no continuation pointer at all.",
+  "artifacts": [
+    {"type": "summary", "path": "specs/000_x/summaries/01_x-summary.md"}
+  ],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "blockers": []
+}'
+
+# Tripwire: Check 5's status-conditioned continuation WARN must still fire for a partial-status
+# handoff with no continuation pointer set -- proving the WARN relaxation above did not silence
+# the one case where this signal is actually informative.
+assert_accept "accept-partial-no-continuation-still-warns" '{
+  "status": "partial",
+  "summary": "Partial handoff with no continuation pointer set.",
+  "artifacts": [],
+  "phases_completed": 1,
+  "phases_total": 3,
+  "blockers": []
+}'
+if grep -q "continuation_path and continuation_context are both null or absent" \
+    "$WORKDIR/accept-partial-no-continuation-still-warns.out" 2>/dev/null; then
+  pass "accept-partial-no-continuation-still-warns: Check 5 continuation WARN still fires"
+else
+  fail "accept-partial-no-continuation-still-warns: Check 5 continuation WARN did not fire -- see $WORKDIR/accept-partial-no-continuation-still-warns.out"
+fi
 
 # =====================================================================
 # dispatch_seq fixtures (three outcomes: valid integer, absent, non-integer)

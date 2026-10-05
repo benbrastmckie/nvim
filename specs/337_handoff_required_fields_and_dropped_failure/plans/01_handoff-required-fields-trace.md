@@ -333,37 +333,37 @@ before concluding no third file is needed.
 
 ---
 
-### Phase 4: Scope the two companion WARNs to the cases where they inform [NOT STARTED]
+### Phase 4: Scope the two companion WARNs to the cases where they inform [COMPLETED]
 
 **Goal**: Stop `sorry_inventory` and `continuation_path` from WARNing on ~100% of dispatches,
 without weakening any FAIL check — and close the missing `blockers` reject fixture.
 
 **Tasks**:
-- [ ] In `scripts/validate-handoff.sh`'s Check 3 `else` (non-skeleton) branch, remove the
+- [x] In `scripts/validate-handoff.sh`'s Check 3 `else` (non-skeleton) branch, remove the
       unconditional `log_warn "Optional field absent: sorry_inventory ..."`. Keep the
       `log_pass "Optional field present: sorry_inventory"` arm when the field *is* present, and
       leave a one-line comment recording why absence is silent here (hard-mode-only field; the
-      schema already documents it so; every base-mode writer would otherwise WARN forever).
-- [ ] Leave the entire `if [[ "$skeleton" == "true" ]]` arm of Check 3 — all of its FAIL paths —
-      byte-for-byte untouched.
-- [ ] Reduce the pre-Check-4 `continuation_path`/`continuation_context` block to pure variable
+      schema already documents it so; every base-mode writer would otherwise WARN forever). *(completed)*
+- [x] Leave the entire `if [[ "$skeleton" == "true" ]]` arm of Check 3 — all of its FAIL paths —
+      byte-for-byte untouched. *(completed)*
+- [x] Reduce the pre-Check-4 `continuation_path`/`continuation_context` block to pure variable
       capture: keep both `jq` reads (Check 5 depends on the variables), drop both the `log_warn`
       and the `log_pass`, and add a comment pointing at Check 5 as the single, correctly
-      status-conditioned reporting site for this field.
-- [ ] Leave Check 5 ("Status/continuation consistency") unchanged — it already WARNs exactly when
-      `status` is `partial`/`blocked` with no continuation pointer set.
-- [ ] Add two bullets to the `--help` "Validation rules" list recording the new scoping:
+      status-conditioned reporting site for this field. *(completed)*
+- [x] Leave Check 5 ("Status/continuation consistency") unchanged — it already WARNs exactly when
+      `status` is `partial`/`blocked` with no continuation pointer set. *(completed)*
+- [x] Add two bullets to the `--help` "Validation rules" list recording the new scoping:
       `sorry_inventory` absence is not reported outside skeleton mode; continuation-pointer
-      absence is reported only when `status` is `partial` or `blocked`.
-- [ ] In `scripts/tests/test-validate-handoff.sh`, add `assert_reject "reject-no-blockers"` — an
+      absence is reported only when `status` is `partial` or `blocked`. *(completed)*
+- [x] In `scripts/tests/test-validate-handoff.sh`, add `assert_reject "reject-no-blockers"` — an
       otherwise-conforming `implemented` handoff with no `blockers` key, i.e. the exact shape
-      measured in tasks 191 and 340, which no current fixture covers.
-- [ ] Add an `assert_accept_no_warn <name> <grep-pattern> <json>` helper (accept + assert the
+      measured in tasks 191 and 340, which no current fixture covers. *(completed)*
+- [x] Add an `assert_accept_no_warn <name> <grep-pattern> <json>` helper (accept + assert the
       pattern does not appear in the captured output file) and use it to pin: a clean
-      `implemented` handoff emits no `sorry_inventory` WARN and no continuation WARN.
-- [ ] Add an accept fixture with `status: "partial"`, no continuation pointer, asserting Check
+      `implemented` handoff emits no `sorry_inventory` WARN and no continuation WARN. *(completed)*
+- [x] Add an accept fixture with `status: "partial"`, no continuation pointer, asserting Check
       5's WARN still fires (`assert_accept` plus a positive grep) — the tripwire proving the
-      relaxation did not silence the informative case.
+      relaxation did not silence the informative case. *(completed)*
 
 **Timing**: 1 hour
 
