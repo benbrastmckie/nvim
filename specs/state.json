@@ -165,23 +165,38 @@
     {
       "project_number": 337,
       "project_name": "handoff_required_fields_and_dropped_failure",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.\n\nResolve the handoff-field gap: writers omit required `blockers`/`summary`, and a hard HANDOFF VALIDATION FAILED is printed and then dropped with no durable trace\n\n--- WHY ---\n\nDEFECT (measured live 2026-10-04, ~/Projects/Logos/Verification, batch session sess_1791103758_f1b6b9, an ordinary four-task /orchestrate run). Across the batch's four implement-phase dispatches, `validate-handoff.sh` hard-FAILED on two:\n\n  - task 191 (lean-implementation-agent):    blockers ABSENT                 -> 1 FAIL\n  - task 190 (general-implementation-agent): blockers ABSENT, summary ABSENT -> 2 FAIL\n  - task 197 (general-implementation-agent): clean                           -> PASS\n  - task 193 (general-implementation-agent): clean                           -> PASS\n\nIn BOTH failing cases the postflight printed `HANDOFF VALIDATION FAILED` and then completed the task anyway, via `COMPLETION-CLAIM GATE case 2/3 (phase accounting present and complete)`. Nothing durable recorded that the handoff was invalid: not state.json, not the return-meta, not events.jsonl. The validator's verdict reaches a human only as scrollback.\n\nTwo observations that constrain the fix:\n\n(a) It is NOT a per-agent bug. `general-implementation-agent` produced one of the two defective handoffs and two clean ones, so this is per-dispatch inconsistency in hand-authored JSON, not a broken template in one agent file.\n\n(b) The same four dispatches ALL emitted WARN for absent `sorry_inventory` and absent `continuation_path`. That is the identical question one severity level down, and belongs in the same ruling rather than a second task.\n\n--- SCOPE ---\n\nDecide and implement ONE of these, repo-wide and consistently:\n\n  (i) WRITER-SIDE: oblige every handoff writer to emit the required fields, enforced somewhere that\n      cannot be forgotten per-dispatch (a composing helper the agents call, rather than prose in\n      each agent file asking them to remember).\n  (ii) POSTFLIGHT-SIDE: normalize an absent `blockers` to [] and derive an absent `summary` from\n      the dispatch's .return-meta.json, so the handoff is completed rather than rejected.\n\nEither way, ALSO make a failed handoff validation leave a durable trace (the natural candidates are an events.jsonl row and a `detected_defects` entry, the latter already rendered by the batch output template) so the next reader sees it without having the terminal still open.\n\nRule on `sorry_inventory` and `continuation_path` in the same pass: either they are genuinely optional and the WARN should go, or they are expected and belong in whichever mechanism (i)/(ii) establishes.\n\n--- EXPLICIT NON-GOAL ---\n\nDO NOT resolve this by relaxing `validate-handoff.sh` so the failure stops appearing. Dropping `blockers`/`summary` from the required set would convert a real signal into silence and is the one direction this task may not take. If the fields are genuinely not required, that conclusion must be argued from the schema's consumers (who reads `blockers`? who reads `summary`?) and recorded in docs/architecture/handoff-schema.md, not reached by deleting a check to make a red line go away.\n\n--- SITES ---\n\nVerify by grep rather than trusting this list: agent-system/extensions/core/scripts/validate-handoff.sh (the validator and its required set), agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh (the caller, the COMPLETION-CLAIM GATE, and where a durable trace would be written), agent-system/extensions/core/docs/architecture/handoff-schema.md (the schema contract this must stay consistent with), and whichever agent files or templates instruct handoff authoring.\n--- SECOND CONFIRMING INSTANCE (measured live 2026-10-05, nvim/, batch session sess_1791222088_1f4b0c, an ordinary three-task /orchestrate run) ---\n\nThis batch reproduces the defect in a form that settles observation (a) beyond argument. All three\nimplement-phase dispatches were `general-implementation-agent`, in the SAME batch, under the SAME\nsession:\n\n  - task 340: blockers ABSENT, summary ABSENT -> 2 FAIL (`HANDOFF VALIDATION FAILED`)\n  - task 339: clean -> PASS\n  - task 341: clean -> PASS\n\nSame agent, same batch, same session, divergent output: per-dispatch inconsistency in\nhand-authored JSON, not a per-agent template defect. The 2026-10-04 instance inferred that from\none agent's mixed record; this instance confirms it under tighter controls.\n\nNEW DATUM BEARING ON THE (i)/(ii) CHOICE: task 341's handoff was clean ONLY because the\norchestrator, having just watched task 340 fail, told the agent in a resume message to include a\nnon-empty `summary` and a `blockers` array. Prose instruction demonstrably works -- and\ndemonstrably only when someone remembers to issue it for that one dispatch. That is the argument\nfor option (i)'s \"composing helper the agents call, rather than prose in each agent file asking\nthem to remember\", and should be recorded as evidence for it rather than re-derived.\n\nALSO CONFIRMED: both failures again completed via `COMPLETION-CLAIM GATE case 2/3 (phase\naccounting present and complete)` with no durable trace. state.json, the return-meta,\nevents.jsonl and the batch `detected_defects` array were all empty of it; the consolidated batch\noutput rendered `detected_defects: []`. The verdict reached a human only because the orchestrator\nhappened to re-run `validate-handoff.sh` by hand.\n\nINDEPENDENT OF THE COMPLETION-DEPLOY GATE: task 341's postflight was separately refused by the\ncompletion-deploy gate (exit 6, stale deploy) AFTER its handoff validation had passed. The two\ngates are independent; do not conflate them when wiring the durable trace.\n\nObservation (b) holds unchanged: all three dispatches again emitted WARN for absent\n`sorry_inventory`, and tasks 339/340 for absent `continuation_path`.",
       "topic": "orchestrator",
       "file_scope": [
-        "agent-system/extensions/core/scripts/validate-handoff.sh",
+        "agent-system/extensions/*/agents/*.md",
+        "agent-system/extensions/core/context/contracts/wrap-up.md",
+        "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/hooks/validate-handoff-location.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-        "agent-system/extensions/core/docs/architecture/handoff-schema.md"
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/system-defect-record.sh",
+        "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh",
+        "agent-system/extensions/core/scripts/validate-handoff.sh"
       ],
       "created": "2026-10-04T16:25:30Z",
-      "last_updated": "2026-10-05T23:19:22Z",
-      "session_id": "sess_1791241405_83aa14_337",
+      "last_updated": "2026-10-05T23:31:39Z",
+      "session_id": "sess_1791241405_83aa14",
       "artifacts": [
         {
           "path": "specs/337_handoff_required_fields_and_dropped_failure/reports/01_handoff-required-fields-dropped-failure.md",
           "type": "report",
           "summary": "Decides writer-side enforcement (write-time hook mirroring validate-handoff-location.sh) over postflight normalization, wires the mandatory durable trace at the existing discarded validate-handoff.sh call, and rules to relax the sorry_inventory/continuation_path WARNs."
+        },
+        {
+          "path": "specs/337_handoff_required_fields_and_dropped_failure/plans/01_handoff-required-fields-trace.md",
+          "type": "plan",
+          "summary": "7 phases, 6.5h: new HANDOFF_VALIDATION_FAILED defect class, postflight durable trace, write-time hook content gate, WARN scoping, doc rulings, 42-file writer-prose append, deploy cutover."
         }
       ],
       "next_artifact_number": 2

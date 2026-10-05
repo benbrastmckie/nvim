@@ -1,38 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791241405_83aa14_337",
-  "dispatch_seq": 3,
-  "metadata": {
-    "session_id": "sess_1791241405_83aa14_337",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
-  },
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/337_handoff_required_fields_and_dropped_failure/reports/01_handoff-required-fields-dropped-failure.md",
-      "summary": "Decides writer-side enforcement (write-time hook mirroring validate-handoff-location.sh) over postflight normalization, wires the mandatory durable trace at the existing discarded validate-handoff.sh call, and rules to relax the sorry_inventory/continuation_path WARNs."
+      "type": "plan",
+      "path": "specs/337_handoff_required_fields_and_dropped_failure/plans/01_handoff-required-fields-trace.md",
+      "summary": "7-phase plan: new HANDOFF_VALIDATION_FAILED defect class, postflight durable trace, write-time PostToolUse content gate, two WARN scopings, schema-doc rulings, 42-file writer-prose append, deploy cutover."
     }
   ],
+  "next_steps": "Run /implement 337 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 6.5,
+  "dependency_waves": [[1, 4], [2, 3], [5, 6], [7]],
   "memory_candidates": [
     {
-      "content": "When a validator's hard FAIL result is invoked only as a 'log-only, non-gating diagnostic' (exit code discarded via `|| true`), check whether any durable recorder (events.jsonl / detected_defects) was ever wired beside it -- a correctly-strict validator can still be a dead signal if nothing downstream consumes its exit code. Look for the system-defect-discrimination.md 'Class (a) loud but unactioned' pattern and copy an existing recorder block (e.g. HANDOFF_STALE_OR_ABSENT in orchestrate-cycle-postflight.sh) verbatim rather than designing a new one.",
-      "category": "PATTERN",
-      "source_artifact": "specs/337_handoff_required_fields_and_dropped_failure/reports/01_handoff-required-fields-dropped-failure.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["validate-handoff.sh", "system-defect-discrimination", "detected_defects", "events.jsonl", "log-only diagnostic"]
-    },
-    {
-      "content": "For an unforgettable per-dispatch writer obligation on a specific filename (e.g. .orchestrator-handoff.json), a PostToolUse hook keyed on tool_input.file_path (matcher Write|Edit) is the proven enforcement point in this codebase -- not a composing-helper script, which an agent can simply decline to call. See hooks/validate-handoff-location.sh as the template: exit 2 after the write (fix-forward, since PostToolUse runs post-write), plus an unconditional system-defect-record.sh call. Known limitation: structurally blind to a Bash-redirect write of the same file; this codebase has already resolved that tension once by deleting the Bash-redirect writer rather than patching the hook -- do not reintroduce a Bash-script-driven direct write as an enforcement mechanism for a Write/Edit-hook-guarded file.",
-      "category": "PATTERN",
-      "source_artifact": "specs/337_handoff_required_fields_and_dropped_failure/reports/01_handoff-required-fields-dropped-failure.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["PostToolUse hook", "write-time enforcement", "validate-handoff-location.sh", "Bash-redirect blind spot", "cannot be forgotten"]
+      "content": "In this codebase's shell helpers, a function whose stdout contract is one space-separated line of key=value tokens parsed by callers as `IFS=' ' read -r a b c` plus suffix-stripping (`${c#key=}`) CANNOT be extended by appending a fourth token: `read` assigns the whole remainder of the line to the last variable, so every un-updated call site silently receives 'true nextkey=value' instead of 'true'. skill_corroborate_phase_counts (scripts/skill-base.sh) has three such call sites across two scripts plus a test-suite parser. When a new signal must cross such a boundary, prefer relocating the producing call to the consumer that needs it over widening the stdout contract -- relocation touches one site, widening touches every parser and fails silently where it is missed.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/337_handoff_required_fields_and_dropped_failure/plans/01_handoff-required-fields-trace.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["shell-function-contract", "stdout-tokens", "read-remainder", "skill-base", "silent-corruption", "call-site-parity"]
     }
   ],
-  "next_steps": "Run /plan 337 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1791241405_83aa14_337",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 6
 }

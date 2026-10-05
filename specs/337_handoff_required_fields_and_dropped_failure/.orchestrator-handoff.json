@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 6,
+  "summary": "Wrote a 7-phase implementation plan adopting option (i) writer-side obligation via a write-time content check inside the already-registered PostToolUse hook, plus the mandatory durable trace (events.jsonl system_defect row and detected_defects entry) under one new HANDOFF_VALIDATION_FAILED Signal A class. Rules on both companion WARNs by tightening trigger conditions, touching no FAIL-producing check. Deliberately refines research recommendation 3: the validator call moves out of skill_corroborate_phase_counts into the postflight handoff-present path, because that function is reached only for status=implemented and would leave plan-phase handoffs unvalidated.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/337_handoff_required_fields_and_dropped_failure/plans/01_handoff-required-fields-trace.md",
+      "summary": "7 phases, 6.5h: new HANDOFF_VALIDATION_FAILED defect class, postflight durable trace, write-time hook content gate, WARN scoping, doc rulings, 42-file writer-prose append, deploy cutover."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "blockers": [],
+  "continuation_path": null,
+  "next_action_hint": "Run the implement phase against plans/01_handoff-required-fields-trace.md; do not deploy before Phase 7 (three edit targets are orchestrator-critical paths and the live cycle runs them)."
+}
