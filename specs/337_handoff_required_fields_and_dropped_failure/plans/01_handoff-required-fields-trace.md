@@ -261,23 +261,23 @@ parses a fourth stdout token before and after the edit.
 
 ---
 
-### Phase 3: Add the write-time required-field gate to the hook [NOT STARTED]
+### Phase 3: Add the write-time required-field gate to the hook [COMPLETED]
 
 **Goal**: Make required-field compliance unforgettable, by extending the one hook that already
 fires on every Write/Edit of `.orchestrator-handoff.json`.
 
 **Tasks**:
-- [ ] In `hooks/validate-handoff-location.sh`, after the location allow-branch (the
+- [x] In `hooks/validate-handoff-location.sh`, after the location allow-branch (the
       `grep -Eq '(^|/)specs/(OC_)?[0-9]{3,}_...'` match) and *in place of* its bare
-      `echo '{}'; exit 0`, add a required-field content check against the just-written file.
-- [ ] Resolve the validator as a sibling of the existing `SYSTEM_DEFECT_RECORD` resolution
+      `echo '{}'; exit 0`, add a required-field content check against the just-written file. *(completed)*
+- [x] Resolve the validator as a sibling of the existing `SYSTEM_DEFECT_RECORD` resolution
       (`$SCRIPT_DIR/../scripts/validate-handoff.sh`). **Fail safe**: if the validator is absent
       or not readable, or if `$FILE` does not exist or is not readable, print `{}` and exit 0
       silently — never exit 2 on an unknowable input. This is what keeps the existing suite's
-      synthetic, non-existent paths passing.
-- [ ] Capture the validator's exit code under `set -euo pipefail` without aborting, and keep its
-      output for the banner.
-- [ ] On validator FAIL: print a loud fix-forward banner to stderr in the shape of the existing
+      synthetic, non-existent paths passing. *(completed)*
+- [x] Capture the validator's exit code under `set -euo pipefail` without aborting, and keep its
+      output for the banner. *(completed)*
+- [x] On validator FAIL: print a loud fix-forward banner to stderr in the shape of the existing
       MISPLACED banner — name the file, quote the validator's `[FAIL]` lines, state that
       `summary` must be a non-empty 2-4 sentence string and `blockers` a JSON array (`[]` is
       normal for a clean return), and give the remediation order (re-write the file at the same
@@ -287,23 +287,23 @@ fires on every Write/Edit of `.orchestrator-handoff.json`.
       "unresolved:hooks/validate-handoff-location.sh"` (Signal B deliberately unresolved at a bare
       PostToolUse invocation, exactly as the existing `HANDOFF_MISLOCATED` call does),
       `--extra-detail-json` carrying the file path and failing-field list, and the existing
-      `${CC_SESSION_ID:+...}`/`${CWD:+...}` passthroughs. `exit 2`.
-- [ ] On validator PASS (including pass-with-warnings, exit 0): `echo '{}'` and `exit 0`,
-      preserving the hook's JSON-channel discipline.
-- [ ] Update the hook's header: it now performs two checks, so state both, and add a note that
+      `${CC_SESSION_ID:+...}`/`${CWD:+...}` passthroughs. `exit 2`. *(completed)*
+- [x] On validator PASS (including pass-with-warnings, exit 0): `echo '{}'` and `exit 0`,
+      preserving the hook's JSON-channel discipline. *(completed)*
+- [x] Update the hook's header: it now performs two checks, so state both, and add a note that
       the filename is retained deliberately (renaming would churn `manifest.json`,
       `merge-sources/settings-hooks.json`, the test suite path and every doc citation for no
       behavioral gain). Keep the existing COVERAGE LIMITATION paragraph intact and extend it:
       the content check inherits the same Write/Edit-only blindness to Bash-redirect writes, and
-      the Phase 2 postflight recorder is the mechanism-agnostic backstop for that path.
-- [ ] Extend `scripts/tests/test-validate-handoff-location.sh`: keep every existing fixture
+      the Phase 2 postflight recorder is the mechanism-agnostic backstop for that path. *(completed)*
+- [x] Extend `scripts/tests/test-validate-handoff-location.sh`: keep every existing fixture
       unchanged (they must still pass, proving the fail-safe), and add on-disk fixtures — a
       conforming handoff at a valid task path exits 0 with no banner; the same path with
       `blockers` absent exits 2 with the required-field banner; with `summary` absent exits 2;
       with unparsable JSON exits 2; and a case where the sibling validator is removed from the
       copied layout exits 0 silently (the fail-safe). Add an `assert_field_rejected` helper beside
       the existing `assert_misplaced`, and have the on-disk fixtures create the file under the
-      `$WORKDIR` specs-shaped path the payload names.
+      `$WORKDIR` specs-shaped path the payload names. *(completed)*
 
 **Timing**: 1.5 hours
 

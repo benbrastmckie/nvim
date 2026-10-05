@@ -61,6 +61,19 @@ HOOK="$WORKDIR/hooks/validate-handoff-location.sh"
 cp "$HOOK_SRC" "$HOOK"
 chmod +x "$HOOK"
 
+# The content check resolves its validator as a sibling of system-defect-record.sh
+# ($SCRIPT_DIR/../scripts/validate-handoff.sh, where the hook's SCRIPT_DIR is $WORKDIR/hooks) --
+# copy the real validator into that same layout so the on-disk content-check fixtures below
+# exercise the real, unmocked validator, never a stub.
+mkdir -p "$WORKDIR/scripts"
+VALIDATOR_SRC="$SCRIPT_DIR/../validate-handoff.sh"
+if [ ! -f "$VALIDATOR_SRC" ]; then
+  echo "ERROR: expected validate-handoff.sh at $VALIDATOR_SRC" >&2
+  exit 2
+fi
+cp "$VALIDATOR_SRC" "$WORKDIR/scripts/validate-handoff.sh"
+chmod +x "$WORKDIR/scripts/validate-handoff.sh"
+
 # run_hook <file_path>
 # Builds a synthetic PostToolUse payload via jq and pipes it to the copied hook. Echoes
 # "EXITCODE|STDERR" so callers can assert on both.
@@ -116,6 +129,51 @@ assert_misplaced() {
   fi
 }
 
+# run_hook_on_disk <relative_file_path_under_WORKDIR>
+# Like run_hook, but cds into $WORKDIR first so the relative $FILE argument (and the hook's own
+# content-check [ -f "$FILE" ] test) resolves against a REAL on-disk fixture created under
+# $WORKDIR, rather than a synthetic non-existent path. Required for every content-check fixture
+# below -- the content check is deliberately a no-op (fail-safe) against a path that does not
+# exist on disk, which is exactly what every pre-existing fixture above continues to exercise.
+run_hook_on_disk() {
+  local file_path="$1" out exit_code
+  out="$(cd "$WORKDIR" && jq -n --arg fp "$file_path" \
+    '{tool_input: {file_path: $fp}, session_id: "sess_test_0000", cwd: "/tmp"}' \
+    | bash "$HOOK" 2>&1 1>/dev/null)"
+  exit_code=$?
+  printf '%s|%s' "$exit_code" "$out"
+}
+
+# assert_allowed_on_disk <label> <relative_file_path>
+# Expects exit 0 for an on-disk content-check fixture (conforming handoff, or the fail-safe
+# case).
+assert_allowed_on_disk() {
+  local label="$1" file_path="$2" result code stderr_out
+  result="$(run_hook_on_disk "$file_path")"
+  code="${result%%|*}"
+  stderr_out="${result#*|}"
+  if [ "$code" -eq 0 ]; then
+    pass "$label: exits 0 (allowed)"
+  else
+    fail "$label: expected exit 0, got exit=$code stderr='$stderr_out'"
+  fi
+}
+
+# assert_field_rejected <label> <relative_file_path>
+# Expects exit 2 with the content-check's own banner (distinct from the MISPLACED one) on
+# stderr.
+assert_field_rejected() {
+  local label="$1" file_path="$2" result code stderr_out
+  result="$(run_hook_on_disk "$file_path")"
+  code="${result%%|*}"
+  stderr_out="${result#*|}"
+  if [ "$code" -eq 2 ] && printf '%s' "$stderr_out" | grep -q 'HANDOFF VALIDATION FAILED'; then
+    pass "$label: exits 2 with HANDOFF VALIDATION FAILED diagnostic"
+  else
+    fail "$label: expected exit 2 + HANDOFF VALIDATION FAILED text, got exit=$code stderr='$stderr_out'"
+  fi
+}
+
 # =====================================================================
 # Accept fixtures (must exit 0) -- neutral synthetic directory numbers only, never a live task
 # number, per rules/no-task-references-in-deliverables.md.
@@ -153,6 +211,51 @@ assert_misplaced "reject: 2-digit directory prefix (below the 3-digit minimum)" 
 # =====================================================================
 assert_allowed "non-trigger: differently-named file is ignored entirely" \
   "specs/8842_synthetic-fixture/handoff-example.json"
+
+# =====================================================================
+# Content-check fixtures (Phase 3): the write-time required-field gate, against REAL on-disk
+# files created under $WORKDIR at a valid, allowed task path. Every pre-existing fixture above
+# stays unchanged and must still pass -- that is the fail-safe proof, not a formality: the
+# content check must be a strict no-op against a synthetic, non-existent path.
+# =====================================================================
+
+mkdir -p "$WORKDIR/specs/100_field-fixture/summaries"
+cat > "$WORKDIR/specs/100_field-fixture/.orchestrator-handoff.json" << 'EOF'
+{"status": "implemented", "summary": "Implemented everything and verified the result.", "artifacts": [{"type": "summary", "path": "specs/100_field-fixture/summaries/01_x.md"}], "phases_completed": 1, "phases_total": 1, "blockers": []}
+EOF
+assert_allowed_on_disk "content-check accept: conforming on-disk handoff" \
+  "specs/100_field-fixture/.orchestrator-handoff.json"
+
+mkdir -p "$WORKDIR/specs/101_field-fixture/summaries"
+cat > "$WORKDIR/specs/101_field-fixture/.orchestrator-handoff.json" << 'EOF'
+{"status": "implemented", "summary": "Implemented everything and verified the result.", "artifacts": [{"type": "summary", "path": "specs/101_field-fixture/summaries/01_x.md"}], "phases_completed": 1, "phases_total": 1}
+EOF
+assert_field_rejected "content-check reject: blockers absent" \
+  "specs/101_field-fixture/.orchestrator-handoff.json"
+
+mkdir -p "$WORKDIR/specs/102_field-fixture/summaries"
+cat > "$WORKDIR/specs/102_field-fixture/.orchestrator-handoff.json" << 'EOF'
+{"status": "implemented", "artifacts": [{"type": "summary", "path": "specs/102_field-fixture/summaries/01_x.md"}], "phases_completed": 1, "phases_total": 1, "blockers": []}
+EOF
+assert_field_rejected "content-check reject: summary absent" \
+  "specs/102_field-fixture/.orchestrator-handoff.json"
+
+mkdir -p "$WORKDIR/specs/103_field-fixture"
+printf '%s' '{not valid json' > "$WORKDIR/specs/103_field-fixture/.orchestrator-handoff.json"
+assert_field_rejected "content-check reject: unparsable JSON" \
+  "specs/103_field-fixture/.orchestrator-handoff.json"
+
+# Fail-safe fixture: the sibling validator is removed from the copied layout -- the content
+# check must degrade to a silent exit 0, never exit 2 on an unknowable input. Placed last among
+# the content-check fixtures since it removes the validator for the remainder of the run.
+mkdir -p "$WORKDIR/specs/104_field-fixture"
+cat > "$WORKDIR/specs/104_field-fixture/.orchestrator-handoff.json" << 'EOF'
+{"status": "implemented"}
+EOF
+mv "$WORKDIR/scripts/validate-handoff.sh" "$WORKDIR/scripts/validate-handoff.sh.removed"
+assert_allowed_on_disk "content-check fail-safe: sibling validator removed, silent exit 0" \
+  "specs/104_field-fixture/.orchestrator-handoff.json"
+mv "$WORKDIR/scripts/validate-handoff.sh.removed" "$WORKDIR/scripts/validate-handoff.sh"
 
 # =====================================================================
 # Summary

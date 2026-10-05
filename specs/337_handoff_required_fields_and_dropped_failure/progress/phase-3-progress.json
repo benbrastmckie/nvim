@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Add the write-time required-field gate to the hook",
+  "started_at": "2026-10-05T17:11:00Z",
+  "last_updated": "2026-10-05T17:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add required-field content check in place of the location allow-branch's bare echo/exit", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-handoff-location.sh"]},
+    {"id": 2, "description": "Resolve validator as sibling of SYSTEM_DEFECT_RECORD; fail-safe on absent/unreadable validator or file", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-handoff-location.sh"]},
+    {"id": 3, "description": "FAIL banner + system-defect-record.sh call + exit 2; PASS -> echo {} exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-handoff-location.sh"]},
+    {"id": 4, "description": "Update hook header for two checks, filename-retention note, extended COVERAGE LIMITATION", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-handoff-location.sh"]},
+    {"id": 5, "description": "Extend test-validate-handoff-location.sh with on-disk fixtures, assert_field_rejected helper, validator copy, fail-safe fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
