@@ -1,7 +1,7 @@
 # Implementation Plan: Record-editing guardrails and the convention-maintenance context pointer
 
 - **Task**: 341 - Record-editing guardrails and the convention-maintenance context pointer
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: books-extension split-retarget task (anchors + convention-version pin) — SATISFIED (Decision 19 is `active`; `manifest.json` carries `convention_version: "0.1.0-pre"`, `measured_at_commit: "d255518"`)
 - **Research Inputs**: `specs/341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md`, `specs/341_record_editing_guardrails_convention_pointer/reports/01_seed-record-editing-guardrails.md`
@@ -132,32 +132,32 @@ No `roadmap_path` was provided in this dispatch and no ROADMAP.md was consulted.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: The record-editing rule file [NOT STARTED]
+### Phase 1: The record-editing rule file [COMPLETED]
 
 **Goal**: `agent-system/extensions/books/rules/book-convention-record.md` exists, under 70
 lines, with seven numbered obligations each carrying its source anchor.
 
 **Tasks**:
 
-- [ ] Create the file with `---`-delimited frontmatter carrying exactly
+- [x] Create the file with `---`-delimited frontmatter carrying exactly *(completed)*
       `paths: ["**/docs/book-convention.md", "**/docs/book-convention/**", "**/docs/book-convention-evidence/**"]`
       (matching `rules/books.md`'s own frontmatter convention).
-- [ ] Write a title and a two-or-three-line preamble stating that this rule governs **editing the
+- [x] Write a title and a two-or-three-line preamble stating that this rule governs **editing the *(completed)*
       convention record**, mirroring `rules/books.md`'s "each item states its measured failure
       mode" framing — and applying that framing only where a failure has actually been measured
       (the record's own split was motivated by a measured 0% in-place reduction against a 72 KB
       marker mass; do not manufacture a measured failure for an item that has none).
-- [ ] Obligation 1 — a decision whose `Validated by` marker **names an instance** is binding;
+- [x] Obligation 1 — a decision whose `Validated by` marker **names an instance** is binding; *(completed)*
       work that cannot satisfy it **stops**, researches, **escalates to the repository owner**
       for a ruling, and lands that ruling as an amendment to the clause's text **plus an updated
       marker**. Anchor: `docs/book-convention/17-documentation-reconciliation-and-book-health.md`,
       "**The escalation protocol**".
-- [ ] Obligation 2 — **neither silent departure nor silent compliance**; both are refused.
+- [x] Obligation 2 — **neither silent departure nor silent compliance**; both are refused. *(completed)*
       Anchor: same section.
-- [ ] Obligation 3 — a `none yet` clause is a **hypothesis, not a constraint**: it needs no
+- [x] Obligation 3 — a `none yet` clause is a **hypothesis, not a constraint**: it needs no *(completed)*
       escalation and is amended **in place** by the work that first exercises it, which then
       **promotes its marker**. Anchor: same section.
-- [ ] Obligation 4 — the **split-record edit contract**: "an updated marker" means editing the
+- [x] Obligation 4 — the **split-record edit contract**: "an updated marker" means editing the *(completed)*
       decision file's **one-line reduced marker** — keeping its value vocabulary
       (`<instance>` / `partially, <instance> — <clauses>` / `none yet`) and its evidence pointer
       — **and** appending a dated
@@ -167,19 +167,19 @@ lines, with seven numbered obligations each carrying its source anchor.
       with the marker and evidence-file templates in that same README's "Reduced marker template
       (Ruling 3)" and "Evidence file template" sections; append-only is mechanically enforced by
       `books/scripts/check-evidence-append-only.sh` (blocking).
-- [ ] Obligation 5 — **no new artifact and no register**: the ruling lands in the task's existing
+- [x] Obligation 5 — **no new artifact and no register**: the ruling lands in the task's existing *(completed)*
       `.decisions.json`, proposals are **transient**, and **the marker is the status**. Anchors:
       Decision 17's "**No new artifact**" paragraph ("the marker is the status ... an amended
       clause is the resolution"); the **no-register rule** ("the harness computes and proposes;
       it never decides"; "Nothing tracks a proposal between its emission and its triage") in
       `docs/book-evidence.md`'s "The review protocol" section, with the triage vocabulary
       **revise now / defer / reject**.
-- [ ] Obligation 6 — **citations are durable anchors** (a file path, a `file:line`, a decision
+- [x] Obligation 6 — **citations are durable anchors** (a file path, a `file:line`, a decision *(completed)*
       number, a script name) and **never a task number in the record**; and **every backtick
       citation must survive an edit**. Anchors: `rules/no-task-references-in-deliverables.md`;
       `books/scripts/check-citation-inventory.sh`'s zero-citation-loss **multiset** guarantee (a
       span moving between files passes; a span disappearing from the set entirely fails).
-- [ ] Obligation 7 — **the convention version line bumps**, classified against Decision 19's
+- [x] Obligation 7 — **the convention version line bumps**, classified against Decision 19's *(completed)*
       bump table, and the extension's pin **is then stale and says so**. Write this
       **unconditionally** (see Research Integration finding 1): cite Decision 19's clause 2 table,
       clause 3's three declarations, and clause 5's required `CHANGELOG.md` `## [Unreleased]`
@@ -187,11 +187,11 @@ lines, with seven numbered obligations each carrying its source anchor.
       `measured_at_commit`, and the corpus `README.md`'s "Convention version pin and staleness
       comparison" section); and state that the pin leg is **advisory, never blocking**
       (`check-convention-version.sh` CHECK4), because the extension deploys on its own schedule.
-- [ ] Close with a short **Scope Boundary** section (mirroring `rules/books.md`'s own closing
+- [x] Close with a short **Scope Boundary** section (mirroring `rules/books.md`'s own closing *(completed)*
       section): this rule governs *editing* the record, not the record's substance; point to
       `context/project/books/patterns/record-maintenance.md` for the diagnostics and to
       `rules/books.md` for book-directory and book-module non-negotiables.
-- [ ] Verify the file invents nothing: every obligation sentence traces to text in a cited
+- [x] Verify the file invents nothing: every obligation sentence traces to text in a cited *(completed)*
       anchor. Where the live record's wording differs from this plan's paraphrase, **the record
       wins** — re-read the anchor and match it.
 

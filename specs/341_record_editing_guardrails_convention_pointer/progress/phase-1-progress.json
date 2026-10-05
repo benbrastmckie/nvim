@@ -1,0 +1,12 @@
+{
+  "phase": 1,
+  "phase_name": "The record-editing rule file",
+  "started_at": "2026-10-05T00:00:00Z",
+  "last_updated": "2026-10-05T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create agent-system/extensions/books/rules/book-convention-record.md with frontmatter, preamble, seven anchored obligations, Scope Boundary, under 70 lines", "status": "done", "files_touched": ["agent-system/extensions/books/rules/book-convention-record.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
