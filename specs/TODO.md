@@ -35,7 +35,7 @@ next_project_number: 344
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-322 [PLANNING] — Fix /todo's directory-move staging gap: a moved task...
+322 [PLANNED] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [PLANNED] — Stop git add's gitignore advisory exit code from aborting the...
 336 [NOT STARTED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
@@ -2339,11 +2339,12 @@ Filed by the 2026-10-02 review: specs/reviews/review-2026-10-02.md
 ---
 
 ### 322. Todo move vacated source never staged
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md]
+- **Plan**: [322_todo_move_vacated_source_never_staged/plans/01_todo-move-pair-staging.md]
 
 **Description**: Fix /todo's directory-move staging gap: a moved task directory's vacated SOURCE path is never staged, so every archival commit leaves the deletion half of each `mv` unstaged. This is a verified REGRESSION introduced by the explicit-pathspec migration, found live during an archival run.
 

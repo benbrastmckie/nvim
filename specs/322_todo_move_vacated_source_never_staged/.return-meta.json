@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791241405_83aa14_322",
-  "dispatch_seq": 2,
-  "findings_count": 7,
-  "next_steps": "Run /plan 322 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md",
-      "summary": "Verifies the dispatch's defect/cause/fix claims against the live source-store tree (all three stage_paths dest-only sites, the vault paired-staging pattern, the regression commit c482bf40c, and skill-todo/SKILL.md's distinct Stage 15 gap), confirms current line numbers, flags the task-307->328 cross-reference as superseded but intact in substance, and recommends the exact fix plus a new git-staging-scope.md section and regression test."
+      "type": "plan",
+      "path": "specs/322_todo_move_vacated_source_never_staged/plans/01_todo-move-pair-staging.md",
+      "summary": "5-phase plan pairing both endpoints of every directory move in /todo's two recipe copies, naming the invariant in git-staging-scope.md, and adding a behavioral-plus-static regression suite."
     }
   ],
+  "next_steps": "Run /implement 322 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 4,
+  "dependency_waves": [[1, 2, 3], [4], [5]],
   "memory_candidates": [
     {
-      "content": "When auditing a directory-pathspec-to-explicit-list migration (e.g. task 309's stage_paths[] accumulator replacing a bare `-- specs/` token), check every rename/move call site the migration touched for whether BOTH the old and new path were preserved. A directory token silently covers both sides of a rename; an explicit list only covers what it is told, so the migration's predictable blind spot is an omitted vacated-source path at each mv site it converted. Grep `git log -S '<the exact stage_paths literal>'` to find the introducing commit precisely.",
-      "category": "PATTERN",
-      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-staging", "directory-pathspec-migration", "rename-invariant", "stage_paths", "todo-archival"]
-    },
-    {
-      "content": "lint-directory-pathspec-boundary.sh and git-commit-scoped.sh's V2/V5/V6 gates are all structurally blind to an OMITTED pathspec token (too-narrow list), as opposed to a too-WIDE bare directory token. The lint's Layer 2 classifier only flags tokens that are present and end in `/` with no task-scoped component; the V2/V5/V6 gates only ever inspect pathspecs they are given. A missing rename endpoint is therefore invisible to every existing staging gate and fails silently (commit exits 0, `create mode` only, vacated source left as an unstaged ` D`).",
+      "content": "Migrating a git commit pathspec from a bare directory token to an explicit file list has a specific, predictable blind spot: a directory token covers BOTH endpoints of every rename inside it incidentally, while an explicit list covers only what it names. If the accumulator built during such a migration is only ever taught to collect each move's DESTINATION, every vacated source's removal is left unstaged -- the copy lands as a fresh `create mode`, the old tree stays in the index pointing at files that no longer exist, and the commit still exits 0 reporting success. No pathspec lint can catch this: a lint classifies only tokens that are PRESENT, and an omission is not a textual pattern. Likewise, a commit wrapper's own pathspec-classification gates only ever inspect pathspecs they are GIVEN. Practical rule: any `mv` whose two endpoints are both inside the staged tree must contribute BOTH endpoints to the pathspec list, explicitly and together, in the same commit. When auditing such a migration, enumerate every call site that performs a rename AND builds a commit pathspec -- those are exactly the sites the migration silently narrowed.",
       "category": "INSIGHT",
-      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md",
+      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/plans/01_todo-move-pair-staging.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-commit-scoped", "lint-directory-pathspec-boundary", "staging-gap", "silent-failure", "phantom_paths"]
+      "suggested_keywords": ["git-staging", "pathspec-migration", "rename-staging", "explicit-file-list", "unstaged-deletion", "lint-blind-spot"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1791241405_83aa14_322",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 5
 }
