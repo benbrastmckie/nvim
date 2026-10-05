@@ -127,11 +127,28 @@ DIMENSION_ENUM="maintainability cross_pollination guardrails_qa token_cost_effic
 
 extract_validated_by_pairs() {
   # Reads file content on stdin; emits "heading<TAB>marker" for each Validated-by line, attributed
-  # to the nearest preceding Decision heading (Books Fact 2's heading-lookback rule).
-  awk '
-    /^## Decision/ { heading = $0; sub(/^## /, "", heading); next }
+  # to the nearest preceding heading matching heading_re ($1) -- Books Fact 2's heading-lookback
+  # rule, now generalized across shapes. The durable heading text strips any leading `#`-run plus
+  # whitespace generically (`^#+[[:space:]]+`), so the flat `## Decision N: ...` heading, the
+  # directory shape's `# Decision N: ...` H1, and the fault-frame record's `### Decision N — ...`
+  # heading all yield the same comparison key text.
+  local heading_re="$1"
+  awk -v hre="$heading_re" '
+    $0 ~ hre { heading = $0; sub(/^#+[[:space:]]+/, "", heading); next }
     /^- \*\*Validated by\*\*:/ { if (heading != "") print heading "\t" $0 }
   '
+}
+
+marker_value_prefix() {
+  # Strips the "- **Validated by**: " label, then cuts at the literal evidence-pointer phrase
+  # ("<U+2192> full exercise history and citations:") in the reduced marker -- so an edit to only
+  # the pointer's text or target path is never misread as a promotion. This comparison is new
+  # logic: lint-validated-by.sh's own strip_marker_prefix() strips only the label and compares the
+  # whole remaining value, including the pointer.
+  local marker="$1" stripped pointer_text
+  stripped="$(sed -E 's/^- \*\*Validated by\*\*: ?//' <<<"$marker")"
+  pointer_text=$'\xe2\x86\x92 full exercise history and citations:'
+  printf '%s' "${stripped%%"$pointer_text"*}"
 }
 
 # ─── observe_run_core: the shared join-and-compute body, called once per task directory by ──────
@@ -308,13 +325,54 @@ observe_run_core() {
     fi
   fi
 
-  # BOOKS FACT 2 -- Validated-by marker promotions, by Decision's durable heading name.
-  local validated_by_promotions=() validated_by_files="docs/book-convention.md docs/architecture-decisions.md docs/fault-frame-design.md"
+  # BOOKS FACT 2 -- Validated-by marker promotions, by Decision's durable heading name, across
+  # both the flat-file and directory-split record shapes.
+  #
+  # DISCOVERY GRAMMAR COPIED VERBATIM, NOT SHELLED OUT TO, from the reference consuming
+  # repository's own books/scripts/lint-validated-by.sh:191-241 (its per-record heading regex
+  # table, DIR_HEADING_RE, expand_dir_shape(), and the unconditional flat-path scan), so this
+  # observer stays recognisably the same as that lint while still running standalone in any
+  # consuming repository -- it must not depend on that script existing.
+  local -A RECORD_HEADING_RE=(
+    ["docs/book-convention.md"]='^## Decision [0-9]+[[:space:]]*:'
+    ["docs/architecture-decisions.md"]='^## Decision [0-9]+[[:space:]]*:'
+    ["docs/fault-frame-design.md"]="^### Decision [0-9]+[[:space:]]*($(printf '\xe2\x80\x94')|-)"
+  )
+  local GOVERNED_BASENAMES_ORDER=("docs/book-convention.md" "docs/architecture-decisions.md" "docs/fault-frame-design.md")
+  local DIR_HEADING_RE='^# Decision [0-9]+[[:space:]]*:'
+  local DIR_RECORD_DIR="docs/book-convention"
+
+  local validated_by_promotions=()
   if [ -n "$commit_hashes" ]; then
-    local vf after_content before_content a_heading a_marker b_heading b_marker prev entry
+    local vf after_content before_content a_heading a_marker b_heading b_marker prev entry hre
+    local dir_after dir_before dir_paths dp
     while IFS= read -r h; do
       [ -z "$h" ] && continue
-      for vf in $validated_by_files; do
+
+      # Resolved path list for THIS commit: the three governed flat files, always (pre-, mid-,
+      # and post-migration alike), plus every member of docs/book-convention/ observed at EITHER
+      # h or h^ -- a union, so a decision file's creation or removal is still diffed on its own
+      # path rather than silently dropped. A heading present in both the flat index and a
+      # directory file at once (the transitional migration state) is never compared across
+      # shapes, because each resolved path keeps its own before_map below.
+      local -a resolved_paths=("${GOVERNED_BASENAMES_ORDER[@]}")
+      local -A resolved_hre=()
+      for vf in "${GOVERNED_BASENAMES_ORDER[@]}"; do
+        resolved_hre["$vf"]="${RECORD_HEADING_RE[$vf]}"
+      done
+      dir_after="$(git -C "$repo_root" ls-tree -r --name-only "$h" -- "${DIR_RECORD_DIR}/" 2>/dev/null | grep '\.md$' || true)"
+      dir_before="$(git -C "$repo_root" ls-tree -r --name-only "${h}^" -- "${DIR_RECORD_DIR}/" 2>/dev/null | grep '\.md$' || true)"
+      dir_paths="$(printf '%s\n%s\n' "$dir_after" "$dir_before" | sed '/^$/d' | sort -u)"
+      if [ -n "$dir_paths" ]; then
+        while IFS= read -r dp; do
+          [ -z "$dp" ] && continue
+          resolved_paths+=("$dp")
+          resolved_hre["$dp"]="$DIR_HEADING_RE"
+        done <<< "$dir_paths"
+      fi
+
+      for vf in "${resolved_paths[@]}"; do
+        hre="${resolved_hre[$vf]}"
         after_content="$(git -C "$repo_root" show "${h}:${vf}" 2>/dev/null || true)"
         [ -z "$after_content" ] && continue
         before_content="$(git -C "$repo_root" show "${h}^:${vf}" 2>/dev/null || true)"
@@ -324,17 +382,17 @@ observe_run_core() {
           while IFS=$'\t' read -r b_heading b_marker; do
             [ -z "$b_heading" ] && continue
             before_map["$b_heading"]="$b_marker"
-          done <<< "$(printf '%s\n' "$before_content" | extract_validated_by_pairs)"
+          done <<< "$(printf '%s\n' "$before_content" | extract_validated_by_pairs "$hre")"
         fi
 
         while IFS=$'\t' read -r a_heading a_marker; do
           [ -z "$a_heading" ] && continue
           prev="${before_map[$a_heading]:-}"
-          if [ -n "$prev" ] && [ "$prev" != "$a_marker" ]; then
-            entry="{\"decision\": $(json_string "$a_heading"), \"from\": $(json_string "$prev"), \"to\": $(json_string "$a_marker"), \"commit\": $(json_string "$h")}"
+          if [ -n "$prev" ] && [ "$(marker_value_prefix "$prev")" != "$(marker_value_prefix "$a_marker")" ]; then
+            entry="{\"decision\": $(json_string "$a_heading"), \"from\": $(json_string "$prev"), \"to\": $(json_string "$a_marker"), \"commit\": $(json_string "$h"), \"source_path\": $(json_string "$vf")}"
             validated_by_promotions+=("$entry")
           fi
-        done <<< "$(printf '%s\n' "$after_content" | extract_validated_by_pairs)"
+        done <<< "$(printf '%s\n' "$after_content" | extract_validated_by_pairs "$hre")"
         unset before_map
       done
     done <<< "$commit_hashes"

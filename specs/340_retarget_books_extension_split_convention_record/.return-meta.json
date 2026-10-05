@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/340_retarget_books_extension_split_convention_record/plans/02_split-retarget-and-version-pin.md",
-      "summary": "Seven-phase plan retargeting the books extension to the split convention record: observer discovery grammar, four shape fixtures removing the false green, both sub-mode patterns, six anchor retargets plus three figure refreshes, the convention-version pin with a non-blocking hook-free comparison, and a closing line-count reconciliation and full gate sweep."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791222088_1f4b0c_340",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 10,
-    "dependency_waves": [[1, 3, 4, 5], [2, 6], [7]]
+    "session_id": "sess_1791222088_1f4b0c",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "When a repository's context corpus documents an EXTERNAL repository's file shape, a test fixture written in the external shape becomes a permanent false green the moment that shape changes upstream: the fixture still passes, so the drift is invisible, and silent consumers (a discovery regex, a verbatim-quote research step) degrade without erroring. The fix is not a single updated fixture but a fixture SET encoding the shape transition - old shape, new shape, and the transitional state where both coexist - plus a negative control proving the new fixtures fail against the pre-fix code. Corollary: copy an upstream discovery grammar verbatim and cite it by path rather than shelling out to the upstream tool, so the consumer stays standalone while the two remain recognisably the same; and transcribe its literal Unicode characters (arrows, em dashes) from the source file rather than retyping from a prose description, which silently renders them as ASCII look-alikes that match nothing.",
-      "category": "PATTERN",
-      "source_artifact": "specs/340_retarget_books_extension_split_convention_record/plans/02_split-retarget-and-version-pin.md",
-      "confidence": 0.78,
-      "suggested_keywords": ["false-green-fixture", "external-shape-drift", "discovery-grammar-copy", "transitional-fixture", "unicode-literal-transcription", "silent-consumer-degradation"]
-    }
-  ],
-  "dispatch_seq": 4
+  "dispatch_seq": 6
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #340
 
 - **Task**: 340 - Retarget the books extension to the split convention record and pin the convention version
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/340_retarget_books_extension_split_convention_record/reports/02_split-retarget-grammar-and-anchors.md`, `specs/340_retarget_books_extension_split_convention_record/reports/01_seed-books-extension-split-retarget.md`
@@ -149,39 +149,42 @@ file sets. `index-entries.json` is touched by Phase 7 alone.
 
 ---
 
-### Phase 1: Observer discovery grammar and value-prefix promotion comparison [NOT STARTED]
+### Phase 1: Observer discovery grammar and value-prefix promotion comparison [COMPLETED]
 
 **Goal**: `books-observe.sh` resolves `Validated by` markers across all three records in both the
 flat and directory shapes, with the correct per-record heading grammar, and treats an
 evidence-pointer-only edit as no promotion.
 
 **Tasks**:
-- [ ] Extract the reference grammar verbatim from the consuming repository's
+- [x] Extract the reference grammar verbatim from the consuming repository's
       `books/scripts/lint-validated-by.sh:191-241` (read-only; `sed -n` the literal characters
-      rather than retyping them, so `—` and `→` survive).
-- [ ] Replace the flat `validated_by_files="..."` string (around `:311`, in `observe_run_core`'s
+      rather than retyping them, so `—` and `→` survive). *(completed)*
+- [x] Replace the flat `validated_by_files="..."` string (around `:311`, in `observe_run_core`'s
       BOOKS FACT 2 block) with a per-record heading-regex table mirroring
       `RECORD_HEADING_RE` / `GOVERNED_BASENAMES_ORDER` / `DIR_HEADING_RE` /
-      `DIR_RECORD_LOGICAL_BASE` / `DIR_RECORD_DIRNAME`.
-- [ ] Add a header comment citing `books/scripts/lint-validated-by.sh` by path as the grammar's
+      `DIR_RECORD_LOGICAL_BASE` / `DIR_RECORD_DIRNAME`. *(completed)*
+- [x] Add a header comment citing `books/scripts/lint-validated-by.sh` by path as the grammar's
       origin, and stating that the observer copies the grammar rather than shelling out to that
-      lint, because it must run standalone in any consuming repository.
-- [ ] Generalize `extract_validated_by_pairs` (around `:128-135`) to take the heading regex as an
+      lint, because it must run standalone in any consuming repository. *(completed)*
+- [x] Generalize `extract_validated_by_pairs` (around `:128-135`) to take the heading regex as an
       `awk -v` parameter, and to strip the heading prefix generically (`^#+[[:space:]]+`) so
       `## Decision 13: ...`, `# Decision 13: ...` and `### Decision 13 — ...` all yield the same
-      durable heading text.
-- [ ] Add directory expansion: for each commit, enumerate `docs/book-convention/*.md` with
+      durable heading text. *(completed)*
+- [x] Add directory expansion: for each commit, enumerate `docs/book-convention/*.md` with
       `git ls-tree -r --name-only "$h" -- docs/book-convention/` (and `"$h^"` for the before
       side), filter to `*.md`, sort by numeric prefix. Scan the flat `docs/book-convention.md`
-      **unconditionally** in addition, pre-, mid-, and post-migration alike.
-- [ ] Add the value-prefix-only promotion comparison: strip the label
+      **unconditionally** in addition, pre-, mid-, and post-migration alike. *(completed: union
+      of h/h^ directory members, plain `sort -u` suffices since basenames are zero-padded)*
+- [x] Add the value-prefix-only promotion comparison: strip the label
       (`sed -E 's/^- \*\*Validated by\*\*: ?//'`, as `strip_marker_prefix()` does), then cut at
       the first occurrence of the literal `→ full exercise history and citations:`; a marker with
       no pointer (every flat-file marker) is compared whole. Compare prefixes, not whole lines.
-- [ ] Keep `before_map` per resolved path (reset per path, as today) so a transitional duplicate
+      *(completed: `marker_value_prefix()`, verified with a manual sandbox fixture that a
+      pointer-only edit produces zero promotion entries)*
+- [x] Keep `before_map` per resolved path (reset per path, as today) so a transitional duplicate
       heading is never compared across shapes; add a `source_path` field to each promotion entry
-      so the duplicate is visible in the record.
-- [ ] Leave `schema_version: "observation-v1"` and the snapshot-probe branch unchanged.
+      so the duplicate is visible in the record. *(completed)*
+- [x] Leave `schema_version: "observation-v1"` and the snapshot-probe branch unchanged. *(completed)*
 
 **Timing**: 2 hours
 

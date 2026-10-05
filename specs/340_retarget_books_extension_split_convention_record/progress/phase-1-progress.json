@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Observer discovery grammar and value-prefix promotion comparison",
+  "started_at": "2026-10-05T18:00:00Z",
+  "last_updated": "2026-10-05T18:24:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract reference grammar verbatim and replace flat validated_by_files with per-record heading-regex table (RECORD_HEADING_RE, GOVERNED_BASENAMES_ORDER, DIR_HEADING_RE)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 2, "description": "Add grammar-provenance header comment citing lint-validated-by.sh by path", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 3, "description": "Generalize extract_validated_by_pairs to take heading regex as awk -v parameter with generic prefix strip", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 4, "description": "Add directory expansion via git ls-tree at h and h^, union of paths, sorted by numeric prefix", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 5, "description": "Add value-prefix-only promotion comparison (marker_value_prefix, cutting at literal U+2192 pointer phrase)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 6, "description": "Keep before_map per resolved path; add source_path field to promotion entries", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/books-observe.sh"]},
+    {"id": 7, "description": "Leave schema_version and snapshot-probe branch unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Embed literal U+2192/U+2014 characters directly via Edit tool text", "result": "superseded", "reason": "switched to $'\\xe2\\x86\\x92' / printf '\\xe2\\x80\\x94' ANSI-C/byte escapes for guaranteed-correct bytes per plan's Unicode-transcription risk note"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
