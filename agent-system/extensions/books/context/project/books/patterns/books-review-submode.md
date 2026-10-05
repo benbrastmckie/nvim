@@ -48,6 +48,13 @@ writing, because nothing beyond the dated report is written), not an oversight.
    every dimension listed under WHAT IS UNMEASURED."
    Continue — this is a degraded report, not an early return; a review that cannot measure
    anything still owes the reader a report naming that fact.
+5. If a `burdens_created`/`burdens_lifted` entry names a bearing Decision that resolves to
+   NEITHER the `docs/book-convention/` directory shape NOR a remaining flat-index heading (see
+   Execution: Burdens Created vs. Burdens Lifted below):
+   Report it as a named unresolvable-decision finding in that table row (never a fabricated
+   marker) and continue — this, too, is a degraded report, not an early return. Only Check 2's
+   and Check 3's all-lines-unresolvable cases return early; a single unresolvable Decision never
+   does.
 ```
 
 ## Candidate Identification: The Seven Dimensions, Per-Dimension Access
@@ -159,12 +166,28 @@ defaulting to `[]`, never one without the other — per the standard's "Paired B
 Report them paired, by bearing Decision (durable heading text, e.g. `"Decision 13: Exposure
 policy"`):
 
+**Live-marker step (an addition — this sub-mode has no prior step that reads the decision record
+directly; `convention_decision` strings come purely from `issues.jsonl` tags today).** For each
+bearing Decision named on a `burdens_created`/`burdens_lifted` entry, read the live decision
+record using the same enumeration rule as `--revise`'s Mandatory Preliminary Research Step
+(`patterns/books-revise-submode.md`): the `docs/book-convention/NN-slug.md` directory shape
+first, the flat `docs/book-convention.md` index second. Carry into the table row:
+
+- the Decision's current `- **Validated by**:` **one-line reduced marker**, verbatim (including
+  its `→ full exercise history and citations:` pointer where one is present), and
+- the paired evidence file path, `docs/book-convention-evidence/NN-slug.md`, read off that
+  pointer.
+
+If the named Decision resolves to **neither** shape, report it as a named unresolvable-decision
+finding in that row — never a fabricated marker — per the Omit-Never-Zero rule below and Edge
+Case Check 5 above.
+
 ```
 ## Burdens: Created vs. Lifted
 
-| Convention Decision | Burdens Created | Burdens Lifted | Net |
-|---|---|---|---|
-| {convention_decision or "(no bearing Decision named)"} | {description list} | {description list} | {created_count - lifted_count} |
+| Convention Decision | Live Marker | Evidence Path | Burdens Created | Burdens Lifted | Net |
+|---|---|---|---|---|---|
+| {convention_decision or "(no bearing Decision named)"} | {verbatim reduced marker, or "(unresolvable — neither shape found)"} | {docs/book-convention-evidence/NN-slug.md path, or "--" when unresolvable} | {description list} | {description list} | {created_count - lifted_count} |
 
 Asymmetric Decisions (created without a matching lift) are the strongest `--revise` candidates —
 see Funnel Rule below.
@@ -199,6 +222,17 @@ the same day are distinguishable by a `-N` suffix starting at `-2` on collision)
 section above in order: Signal Summary, What Is Unmeasured, Cost, Recurring Issue Classes,
 Burdens, and the Funnel section below. A terminal summary (the same content, condensed) is also
 printed. **This report is the sub-mode's only write.**
+
+The report header carries the pinned `convention_version` (from `manifest.json`;
+"unversioned" when unset) and the non-blocking preflight comparison's verdict against the
+consuming repository's own `- **Convention version**:` line (match, mismatch, or absent — see
+`context/project/books/README.md`'s "Convention version pin and staleness comparison" section
+for the full procedure, referenced here rather than restated):
+
+```
+Convention version (pinned): {convention_version}
+Comparison against the record: {match | mismatch — the record wins, this corpus is stale | absent — the record is unversioned}
+```
 
 ## Funnel Rule (Explicit Closing Section)
 

@@ -330,28 +330,31 @@ before editing; if a fifth check or a second flat-file read exists, enumerate an
 
 ---
 
-### Phase 4: Review sub-mode — add a live-marker step and a versioned report header [NOT STARTED]
+### Phase 4: Review sub-mode — add a live-marker step and a versioned report header [COMPLETED]
 
 **Goal**: the review sub-mode quotes live reduced markers alongside its Burdens table and its
 dated report header carries the convention version.
 
 **Tasks**:
-- [ ] Add a marker-quoting step to "Execution: Burdens Created vs. Burdens Lifted (Paired)"
+- [x] Add a marker-quoting step to "Execution: Burdens Created vs. Burdens Lifted (Paired)"
       (`:155-172`): for each bearing Decision named on a `burdens_created`/`burdens_lifted` entry,
       read the live decision file (directory shape first, flat index second, same enumeration
       rule as Phase 3) and carry its verbatim reduced marker and paired evidence path into the
       table — stated as an **addition**, since this sub-mode has no live-read step today and
-      sources `convention_decision` purely from `issues.jsonl` tags.
-- [ ] Add two columns (or a stated adjacent line, whichever keeps the table readable at 100
+      sources `convention_decision` purely from `issues.jsonl` tags. *(completed)*
+- [x] Add two columns (or a stated adjacent line, whichever keeps the table readable at 100
       columns) for the live marker and the evidence path, and state the degraded behavior when a
       named Decision resolves to neither shape: report it as a named unresolvable-decision
       finding, never a fabricated marker, consistent with the Omit-Never-Zero rule at `:173`.
-- [ ] Add a convention-version line to the "Execution: Output" dated-report template (`:194-201`),
+      *(completed: two columns, matching the file's own pre-existing long-table-row precedent)*
+- [x] Add a convention-version line to the "Execution: Output" dated-report template (`:194-201`),
       carrying the pinned `convention_version` and the comparison verdict from Phase 6.
-- [ ] Extend Edge Case Checks (`:27-51`) with a non-blocking note that neither shape being present
+      *(completed)*
+- [x] Extend Edge Case Checks (`:27-51`) with a non-blocking note that neither shape being present
       degrades the Burdens table rather than returning early (review is a report-owing sub-mode;
-      only the revise sub-mode hard-returns).
-- [ ] Leave the Funnel Rule, the read-only boundary, and the Log Entry section untouched.
+      only the revise sub-mode hard-returns). *(completed: Edge Case Check 5)*
+- [x] Leave the Funnel Rule, the read-only boundary, and the Log Entry section untouched.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Review sub-mode — add a live-marker step and a versioned report header",
+  "started_at": "2026-10-05T18:50:00Z",
+  "last_updated": "2026-10-05T18:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add marker-quoting step to Burdens section with two new columns", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/books-review-submode.md"]},
+    {"id": 2, "description": "Add convention-version line to Execution: Output report header template", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/books-review-submode.md"]},
+    {"id": 3, "description": "Extend Edge Case Checks with non-blocking degraded-report note (Check 5)", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/books-review-submode.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
