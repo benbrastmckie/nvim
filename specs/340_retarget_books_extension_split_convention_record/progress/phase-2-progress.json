@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Observer fixtures — remove the false green",
+  "started_at": "2026-10-05T18:25:00Z",
+  "last_updated": "2026-10-05T18:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Relabel Case 1 as the flat-index shape specifically", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 2, "description": "Add directory-shaped fixture (Case 8)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 3, "description": "Add transitional fixture (Case 9)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 4, "description": "Add fault-frame fixture (Case 10)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 5, "description": "Add pointer-only-edit fixture (Case 11)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]},
+    {"id": 6, "description": "Update suite header comment naming the shapes covered", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-books-observe.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Negative control against HEAD~1 (sibling task's intervening commit)", "result": "failed", "reason": "HEAD~1 after a concurrent sibling (task 339) commit landed was my own Phase 1 commit, not the pre-Phase-1 observer; resolved by addressing my Phase 1 commit SHA directly (65a5de5ff~1) instead of HEAD~1"},
+    {"approach": "Edit tool insertion of fixture cases without an inline task-ref-ok marker", "result": "failed", "reason": "validate-no-task-references.sh hook scans only the new_string passed to Edit, not the whole file, so the file's top-of-file task-ref-ok:begin block (opened before this hunk) does not cover a mid-file Edit's own new_string; fixed by wrapping the new fixture block in its own self-contained task-ref-ok:begin/:end pair"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

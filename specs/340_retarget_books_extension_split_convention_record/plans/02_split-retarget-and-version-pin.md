@@ -216,35 +216,36 @@ before editing; if another caller exists, enumerate it and widen the dependent s
 
 ---
 
-### Phase 2: Observer fixtures — remove the false green [NOT STARTED]
+### Phase 2: Observer fixtures — remove the false green [COMPLETED]
 
 **Goal**: the observer suite can fail against a drifted record shape. Four new fixtures cover the
 shapes the split introduced, and Case 1 is explicitly labeled as the flat-shape case rather than
 standing in for the whole grammar.
 
 **Tasks**:
-- [ ] Relabel Case 1 ("THE JOIN") so its `## Decision 13: Exposure policy` fixture is named as
+- [x] Relabel Case 1 ("THE JOIN") so its `## Decision 13: Exposure policy` fixture is named as
       the **flat-index** shape specifically, with an assertion comment stating that it alone
       cannot detect directory-shape drift (this is the false green's removal: the obsolete
       fixture stays valid as one shape among four, instead of silently representing all of them).
-- [ ] Add a **directory-shaped** fixture: `docs/book-convention/13-exposure-policy.md` with an H1
+      *(completed)*
+- [x] Add a **directory-shaped** fixture: `docs/book-convention/13-exposure-policy.md` with an H1
       `# Decision 13: Exposure policy` and a reduced marker carrying the
       `→ full exercise history and citations: [...](../book-convention-evidence/13-exposure-policy.md)`
       pointer; promote its value and assert one promotion with the durable heading
-      `Decision 13: Exposure policy`.
-- [ ] Add a **transitional** fixture: the same decision present in both the flat index and a
+      `Decision 13: Exposure policy`. *(completed: Case 8)*
+- [x] Add a **transitional** fixture: the same decision present in both the flat index and a
       directory file, with differing values. Assert the per-path keying behavior decided in
       Phase 1 — each shape diffed within its own file, no cross-shape promotion — and assert
-      `source_path` distinguishes the two.
-- [ ] Add a **fault-frame** fixture: `docs/fault-frame-design.md` with `### Decision N — ...`
+      `source_path` distinguishes the two. *(completed: Case 9)*
+- [x] Add a **fault-frame** fixture: `docs/fault-frame-design.md` with `### Decision N — ...`
       headings (real U+2014) and multiple markers; assert each marker is attributed to its own
       nearest preceding heading, not all to one. This fixture is the proof the pre-existing
-      mis-read is fixed.
-- [ ] Add a **pointer-only-edit** fixture: edit only the `→ full exercise history and
+      mis-read is fixed. *(completed: Case 10)*
+- [x] Add a **pointer-only-edit** fixture: edit only the `→ full exercise history and
       citations: ...` tail of a reduced marker and assert `validated_by_promotions` is absent or
-      has zero entries — this MUST NOT count as a promotion.
-- [ ] Update the suite's header comment to name the shapes covered alongside the seven existing
-      named acceptance behaviors.
+      has zero entries — this MUST NOT count as a promotion. *(completed: Case 11)*
+- [x] Update the suite's header comment to name the shapes covered alongside the seven existing
+      named acceptance behaviors. *(completed)*
 
 **Timing**: 2 hours
 

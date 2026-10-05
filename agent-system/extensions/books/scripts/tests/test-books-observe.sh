@@ -7,9 +7,12 @@
 # strict mode (this is a PASSED/FAILED-counter harness that must report every case, not abort on
 # the first failure).
 #
-# Covers the plan's seven named acceptance behaviors: THE JOIN, THE ABSENT-PROBE PATH, THE
-# PAIRED-BURDEN REQUIREMENT, POLARITY/DIMENSION VALIDATION, BACKFILL MARKING, NON-BLOCKING
-# FAILURE, and VACUOUS PASS.
+# Covers the plan's eleven named acceptance behaviors: THE JOIN (flat-index shape), THE
+# ABSENT-PROBE PATH, THE PAIRED-BURDEN REQUIREMENT, POLARITY/DIMENSION VALIDATION, BACKFILL
+# MARKING, NON-BLOCKING FAILURE, VACUOUS PASS, DIRECTORY SHAPE, TRANSITIONAL SHAPE, FAULT-FRAME
+# HEADING GRAMMAR, and POINTER-ONLY EDIT. The last four (Cases 8-11) cover the record-shape
+# split the consuming repository made to docs/book-convention.md -- see
+# context/project/books/README.md's convention-record paragraph for the shape itself.
 
 # task-ref-ok:begin inline, category 3: command-usage examples -- every fixture below builds a
 # throwaway git repo whose commit subjects and issues.jsonl/metrics.jsonl content follow this
@@ -98,6 +101,14 @@ commit_files() {
 # Case 1: THE JOIN -- a fixture with both issues.jsonl and metrics.jsonl, plus a book_requires
 # commit and a Validated-by promotion commit, produces a record carrying all of it, grouped by
 # dimension and polarity, with both mechanically-computed books facts present.
+#
+# SHAPE NOTE: this fixture is the FLAT-INDEX shape specifically (the pre-split
+# `docs/book-convention.md` carrying `## Decision N: ...` headings directly). It alone cannot
+# detect directory-shape drift -- see Case 8 (directory), Case 9 (transitional), Case 10
+# (fault-frame heading grammar), and Case 11 (pointer-only edit) below for the shapes the split
+# introduced. Before those cases existed, this flat fixture stood in for the whole grammar and
+# stayed green against a record shape the consuming repository no longer has -- the false green
+# this suite now removes.
 # ════════════════════════════════════════════════════════════════════════════════════════════
 repo1="${WORKDIR}/join-repo"
 init_repo "$repo1"
@@ -331,6 +342,171 @@ record7b="$repo7/specs/048_clean-task/book.observation.json"
 (cd "$repo7" && bash "$OBS" 48 books books specs/048_clean-task sess_h completed) >/dev/null
 assert_exit "(7) VACUOUS PASS (clean task): exit code" 0 "$?"
 assert_json "(7) VACUOUS PASS (clean task): vacuous_passes == [] (known-clean, not absent, not inferred)" "$record7b" '.vacuous_passes' "[]"
+
+# task-ref-ok:begin inline, category 3: command-usage examples -- this block's fixtures build
+# throwaway git repos whose commit subjects follow this codebase's own `task {N}:` / `task {N}
+# phase {P}:` commit-subject convention literally, mirroring the identical fixture convention
+# already established above and in scripts/tests/test-dispatch-metrics.sh.
+# ════════════════════════════════════════════════════════════════════════════════════════════
+# Case 8: DIRECTORY SHAPE -- docs/book-convention/NN-slug.md, an H1 `# Decision N: ...` heading,
+# and a reduced one-line marker carrying the evidence-pointer arrow, promotes and resolves to the
+# same durable heading text the flat shape would use.
+# ════════════════════════════════════════════════════════════════════════════════════════════
+repo8="${WORKDIR}/dir-shape-repo"
+init_repo "$repo8"
+mkdir -p "$repo8/docs/book-convention" "$repo8/specs/049_dir-shape-task"
+
+cat > "$repo8/docs/book-convention/13-exposure-policy.md" <<'EOF'
+# Decision 13: Exposure policy
+
+- **Validated by**: none yet
+EOF
+commit_files "$repo8" "task 49: add directory-shaped decision 13" docs/book-convention/13-exposure-policy.md
+
+python3 - "$repo8/docs/book-convention/13-exposure-policy.md" <<'PYEOF'
+import sys
+path = sys.argv[1]
+content = (
+    "# Decision 13: Exposure policy\n\n"
+    "- **Validated by**: partially, the exposure suite → full exercise history and "
+    "citations: [docs/book-convention-evidence/13-exposure-policy.md]"
+    "(../book-convention-evidence/13-exposure-policy.md)\n"
+)
+open(path, "w").write(content)
+PYEOF
+commit_files "$repo8" "task 49 phase 1: promote directory decision 13" docs/book-convention/13-exposure-policy.md
+
+record8="$repo8/specs/049_dir-shape-task/book.observation.json"
+(cd "$repo8" && bash "$OBS" 49 books books specs/049_dir-shape-task sess_dir completed) >/dev/null
+assert_exit "(8) DIRECTORY SHAPE: exit code" 0 "$?"
+assert_json "(8) DIRECTORY SHAPE: exactly one promotion" "$record8" '.validated_by_promotions.entries | length' "1"
+assert_json "(8) DIRECTORY SHAPE: durable heading text" "$record8" '.validated_by_promotions.entries[0].decision' "Decision 13: Exposure policy"
+assert_json "(8) DIRECTORY SHAPE: source_path names the directory file" "$record8" '.validated_by_promotions.entries[0].source_path' "docs/book-convention/13-exposure-policy.md"
+
+# ════════════════════════════════════════════════════════════════════════════════════════════
+# Case 9: TRANSITIONAL SHAPE -- the SAME decision present in both the flat index and a directory
+# file at once, with differing values in each. Per-path keying (Phase 1) means each shape is
+# diffed within its own file only -- no cross-shape promotion -- and source_path distinguishes
+# the two resulting entries.
+# ════════════════════════════════════════════════════════════════════════════════════════════
+repo9="${WORKDIR}/transitional-repo"
+init_repo "$repo9"
+mkdir -p "$repo9/docs/book-convention" "$repo9/specs/050_transitional-task"
+
+cat > "$repo9/docs/book-convention.md" <<'EOF'
+## Decision 7: Book TOML v2 schema
+- **Validated by**: none yet
+EOF
+cat > "$repo9/docs/book-convention/07-book-toml-v2-schema.md" <<'EOF'
+# Decision 7: Book TOML v2 schema
+
+- **Validated by**: none yet
+EOF
+commit_files "$repo9" "task 50: transitional decision 7 in both shapes" docs/book-convention.md docs/book-convention/07-book-toml-v2-schema.md
+
+sed -i 's/none yet/partially, the flat index value/' "$repo9/docs/book-convention.md"
+sed -i 's/none yet/binding, the directory value/' "$repo9/docs/book-convention/07-book-toml-v2-schema.md"
+commit_files "$repo9" "task 50 phase 1: promote decision 7 in both shapes" docs/book-convention.md docs/book-convention/07-book-toml-v2-schema.md
+
+record9="$repo9/specs/050_transitional-task/book.observation.json"
+(cd "$repo9" && bash "$OBS" 50 books books specs/050_transitional-task sess_trans completed) >/dev/null
+assert_exit "(9) TRANSITIONAL: exit code" 0 "$?"
+assert_json "(9) TRANSITIONAL: two promotions, one per shape (no cross-shape merge)" "$record9" '.validated_by_promotions.entries | length' "2"
+if jq -e '[.validated_by_promotions.entries[].source_path] | sort == ["docs/book-convention.md", "docs/book-convention/07-book-toml-v2-schema.md"]' "$record9" >/dev/null 2>&1; then
+  pass "(9) TRANSITIONAL: source_path distinguishes the flat entry from the directory entry"
+else
+  fail "(9) TRANSITIONAL: expected one entry per source_path, each shape diffed within its own file"
+fi
+
+# ════════════════════════════════════════════════════════════════════════════════════════════
+# Case 10: FAULT-FRAME HEADING GRAMMAR -- docs/fault-frame-design.md's `### Decision N — ...`
+# headings (real U+2014 em dash), with multiple decisions in one file. Each marker must attribute
+# to its OWN nearest preceding heading, not all collapse onto the first -- the pre-existing
+# mis-read Phase 1 fixes, proven here rather than merely asserted.
+# ════════════════════════════════════════════════════════════════════════════════════════════
+repo10="${WORKDIR}/fault-frame-repo"
+init_repo "$repo10"
+mkdir -p "$repo10/docs" "$repo10/specs/051_fault-frame-task"
+
+python3 - "$repo10/docs/fault-frame-design.md" <<'PYEOF'
+import sys
+path = sys.argv[1]
+content = (
+    "# Fault frame design\n\n"
+    "### Decision 1 — Signature: two-sorted `Kernel` / `FaultFormula`\n\n"
+    "- **Validated by**: none yet\n\n"
+    "### Decision 2 — Frame class: a lightweight Tier-A `FaultFrame`\n\n"
+    "- **Validated by**: none yet\n"
+)
+open(path, "w").write(content)
+PYEOF
+commit_files "$repo10" "task 51: add fault-frame fixture with two decisions" docs/fault-frame-design.md
+
+python3 - "$repo10/docs/fault-frame-design.md" <<'PYEOF'
+import sys
+path = sys.argv[1]
+content = (
+    "# Fault frame design\n\n"
+    "### Decision 1 — Signature: two-sorted `Kernel` / `FaultFormula`\n\n"
+    "- **Validated by**: binding, the kernel soundness suite\n\n"
+    "### Decision 2 — Frame class: a lightweight Tier-A `FaultFrame`\n\n"
+    "- **Validated by**: none yet\n"
+)
+open(path, "w").write(content)
+PYEOF
+commit_files "$repo10" "task 51 phase 1: promote fault-frame decision 1 only" docs/fault-frame-design.md
+
+record10="$repo10/specs/051_fault-frame-task/book.observation.json"
+(cd "$repo10" && bash "$OBS" 51 books books specs/051_fault-frame-task sess_ff completed) >/dev/null
+assert_exit "(10) FAULT-FRAME: exit code" 0 "$?"
+assert_json "(10) FAULT-FRAME: exactly one promotion (decision 2 untouched)" "$record10" '.validated_by_promotions.entries | length' "1"
+assert_json "(10) FAULT-FRAME: promotion attributed to its own heading, not the first" "$record10" '.validated_by_promotions.entries[0].decision' "Decision 1 — Signature: two-sorted \`Kernel\` / \`FaultFormula\`"
+
+# ════════════════════════════════════════════════════════════════════════════════════════════
+# Case 11: POINTER-ONLY EDIT -- only the "→ full exercise history and citations: ..." tail of a
+# reduced marker changes (e.g. the evidence file was renamed). This MUST NOT count as a
+# promotion: the value-prefix comparison (Phase 1) is new logic absent from both the pre-Phase-1
+# observer and lint-validated-by.sh's own strip_marker_prefix(), which compares the whole value.
+# ════════════════════════════════════════════════════════════════════════════════════════════
+repo11="${WORKDIR}/pointer-only-repo"
+init_repo "$repo11"
+mkdir -p "$repo11/docs/book-convention" "$repo11/specs/052_pointer-only-task"
+
+python3 - "$repo11/docs/book-convention/09-trust-unit-is-the-export.md" <<'PYEOF'
+import sys
+path = sys.argv[1]
+content = (
+    "# Decision 9: Trust unit is the export\n\n"
+    "- **Validated by**: binding, the export suite → full exercise history and "
+    "citations: [docs/book-convention-evidence/09-trust-unit-is-the-export.md]"
+    "(../book-convention-evidence/09-trust-unit-is-the-export.md)\n"
+)
+open(path, "w").write(content)
+PYEOF
+commit_files "$repo11" "task 52: add already-promoted decision 9" docs/book-convention/09-trust-unit-is-the-export.md
+
+python3 - "$repo11/docs/book-convention/09-trust-unit-is-the-export.md" <<'PYEOF'
+import sys
+path = sys.argv[1]
+content = (
+    "# Decision 9: Trust unit is the export\n\n"
+    "- **Validated by**: binding, the export suite → full exercise history and "
+    "citations: [docs/book-convention-evidence/09-trust-unit-renamed.md]"
+    "(../book-convention-evidence/09-trust-unit-renamed.md)\n"
+)
+open(path, "w").write(content)
+PYEOF
+commit_files "$repo11" "task 52 phase 1: rename only the evidence pointer target" docs/book-convention/09-trust-unit-is-the-export.md
+
+record11="$repo11/specs/052_pointer-only-task/book.observation.json"
+(cd "$repo11" && bash "$OBS" 52 books books specs/052_pointer-only-task sess_ptr completed) >/dev/null
+assert_exit "(11) POINTER-ONLY EDIT: exit code" 0 "$?"
+if jq -e '(.validated_by_promotions // {"entries": []}) | .entries | length == 0' "$record11" >/dev/null 2>&1; then
+  pass "(11) POINTER-ONLY EDIT: a pointer-only edit produced zero promotion entries"
+else
+  fail "(11) POINTER-ONLY EDIT: expected zero promotions; an evidence-pointer-only edit must never count as one"
+fi
+# task-ref-ok:end
 
 echo ""
 echo "=== Results: $PASSED passed, $FAILED failed ==="
