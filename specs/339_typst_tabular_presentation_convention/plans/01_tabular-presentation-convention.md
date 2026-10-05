@@ -1,7 +1,7 @@
 # Implementation Plan: Task #339
 
 - **Task**: 339 - Record the tabular-presentation convention in the typst extension context
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.75 hours
 - **Dependencies**: None (prose prerequisite: the upstream Verification-repo ruling, confirmed present at research time)
 - **Research Inputs**: specs/339_typst_tabular_presentation_convention/reports/01_tabular-presentation-convention.md
@@ -91,35 +91,41 @@ No `roadmap_path` was provided in the dispatch context; no roadmap consultation 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Audit the Landed Additions Against the Acceptance Criteria [NOT STARTED]
+### Phase 1: Audit the Landed Additions Against the Acceptance Criteria [COMPLETED]
 
 **Goal**: Establish, with concrete evidence rather than assumption, that the three work items and
 the five acceptance criteria are satisfied by what is already committed — and surface any shortfall
 before the gate closes.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/typst/context/project/typst/patterns/tables-and-figures.md`'s
+- [x] Read `agent-system/extensions/typst/context/project/typst/patterns/tables-and-figures.md`'s
       `## Pagination and Element Choice` section and confirm it states all three required points:
       a figure-wrapped grid does not break across pages; the mechanism for making one breakable;
       and header-repeat plus caption-position as decisions to settle rather than inherit.
-- [ ] Read `agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md`'s
+      *(completed: all three points confirmed present)*
+- [x] Read `agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md`'s
       `### Tabular / Key-Value Data` entry and confirm it (a) states the description-list-vs-grid
       choice rule, (b) uses the same three-subsection shape as the Definition / `rule-list`
       entries, and (c) is consistent with the Universal Placement Rule rather than carving an
-      exception out of it.
-- [ ] Confirm the `### Mechanical Check: Not Added` subsection records a ruling *with a reason*,
+      exception out of it. *(completed: all three sub-checks confirmed)*
+- [x] Confirm the `### Mechanical Check: Not Added` subsection records a ruling *with a reason*,
       and that `agent-system/extensions/typst/scripts/typst-element-lint.sh` is unmodified by this
       task (`git log --oneline -- <script>` shows no commit from this task).
-- [ ] Confirm the task's commit touched only the two context files:
+      *(completed: ruling with reason present; script untouched by commit 7af9640c9)*
+- [x] Confirm the task's commit touched only the two context files:
       `git show --stat 7af9640c9` — no `.claude/**` path, no path outside
       `agent-system/extensions/typst/context/project/typst/`.
-- [ ] Confirm nothing in `~/Projects/Logos/Verification` was modified by this task
+      *(completed: 2 files changed, 64 insertions(+), both under the expected path)*
+- [x] Confirm nothing in `~/Projects/Logos/Verification` was modified by this task
       (`git -C ~/Projects/Logos/Verification status --short`, read-only check only — do not
-      stage, commit, or alter anything there).
-- [ ] Confirm the additions document one ruling and did not become a framework: the combined
+      stage, commit, or alter anything there). *(completed: pre-existing unrelated dirty state
+      only; nothing touched by this task, which performed read-only checks there)*
+- [x] Confirm the additions document one ruling and did not become a framework: the combined
       diff is ~64 inserted lines across two files; flag it if that has grown materially.
-- [ ] Record any shortfall found as an issue via `issue-record.sh` and carry it into Phase 2's
-      task list rather than closing the gate over it.
+      *(completed: exactly 64 lines, confirmed, no growth)*
+- [x] Record any shortfall found as an issue via `issue-record.sh` and carry it into Phase 2's
+      task list rather than closing the gate over it. *(completed: no shortfall found, nothing
+      to record)*
 
 **Timing**: 0.25 hours
 
