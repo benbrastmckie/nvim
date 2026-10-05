@@ -4,8 +4,9 @@ Two vocabularies, three words and four words, both authored in `book.toml` and *
 Lean code**. Each word licenses something specific and forbids something specific, and the gaps
 between them are where a consumer over-reads a certificate.
 
-**Design record**: `docs/book-convention.md` Decision 12 (`:1498-1575`). **Enforced word lists**:
-`books/tool/Books/Manifest.lean:33-38`. Gap claims defer to `domain/known-gap-register.md`.
+**Design record**: Decision 12 (`docs/book-convention/12-status-vocabulary-and-trust-block.md`).
+**Enforced word lists**: `books/tool/Books/Manifest.lean:33-38`. Gap claims defer to
+`domain/known-gap-register.md`.
 
 ## Why judgments are never written by Lean code
 

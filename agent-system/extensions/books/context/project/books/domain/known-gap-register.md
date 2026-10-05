@@ -1,6 +1,10 @@
 # The Known-Gap Register
 
-**Measured as of 2026-10-03**, against the Logos/Verification working tree at git `7281c81`.
+**Measured as of 2026-10-05**, against the Logos/Verification working tree at git `a07ae5f`. The
+staleness handle is now the pinned `convention_version` (`manifest.json`; see
+`README.md`'s "Convention version pin and staleness comparison" section) rather than this prose
+SHA alone -- the SHA is retained here for the mechanical re-verification trail, not as the sole
+freshness signal.
 
 This file is a **dated projection**, not an authority. The authority for what each design
 decision has and has not validated is the `- **Validated by**:` marker at the head of each

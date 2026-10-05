@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Retarget the six anchors and refresh the three stale figures",
+  "started_at": "2026-10-05T19:00:00Z",
+  "last_updated": "2026-10-05T19:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Retarget six line-range anchors to docs/book-convention/NN-slug.md paths", "status": "done", "files_touched": [
+      "agent-system/extensions/books/context/project/books/standards/metadata-split.md",
+      "agent-system/extensions/books/context/project/books/domain/book-toml-v2.md",
+      "agent-system/extensions/books/context/project/books/domain/certificate-ledger-and-records.md",
+      "agent-system/extensions/books/context/project/books/domain/identity-and-versioning.md",
+      "agent-system/extensions/books/context/project/books/domain/layer-vocabulary-and-matrix.md",
+      "agent-system/extensions/books/context/project/books/domain/status-and-trust-vocabularies.md"
+    ]},
+    {"id": 2, "description": "Refresh README.md slim-index line count and shape description", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/README.md"]},
+    {"id": 3, "description": "Refresh tooling-inventory.md:134 marker-shape description", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/tools/tooling-inventory.md"]},
+    {"id": 4, "description": "Refresh known-gap-register.md:3 date/SHA/pin reference, leave 2/15/1 census untouched", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/domain/known-gap-register.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Measure book-convention.md's slim-index line count against the consuming repo's live current HEAD", "result": "superseded", "reason": "live HEAD (9b383116) has drifted since research (a07ae5f) -- a 19th decision file was added, which would also invalidate the 2/15/1 census if the whole task re-anchored to live HEAD; switched to using a07ae5f consistently across both README.md and known-gap-register.md, matching the plan's explicit non-goal against corpus-wide re-measurement"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

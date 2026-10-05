@@ -4,9 +4,11 @@
 tool**. Beside it sit two further JSON files that are easy to conflate and are not the same
 artifact at all.
 
-**Normative source**: `books/schema/book-cert-v2.md` (689 lines). **Design record**:
-`docs/book-convention.md` Decisions 8 (`:907-1092`), 9, 11. Every figure below was measured
-2026-10-03 against the Logos/Verification tree at git `7281c81`. Gap claims defer to
+**Normative source**: `books/schema/book-cert-v2.md` (689 lines). **Design record**: Decisions 8,
+9, 11 -- `docs/book-convention/08-computed-dependencies-and-book-cert-json.md`,
+`docs/book-convention/09-trust-unit-is-the-export.md`,
+`docs/book-convention/11-versioning-rule.md`. Every figure below was measured 2026-10-03 against
+the Logos/Verification tree at git `7281c81`. Gap claims defer to
 `domain/known-gap-register.md`.
 
 ## Where the certificate lives, and the one placement that corrupts a different tool

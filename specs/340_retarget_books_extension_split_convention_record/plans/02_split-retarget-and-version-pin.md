@@ -385,15 +385,15 @@ returning no match before writing; a match means an existing step must be edited
 
 ---
 
-### Phase 5: Retarget the six anchors and refresh the three stale figures [NOT STARTED]
+### Phase 5: Retarget the six anchors and refresh the three stale figures [COMPLETED]
 
 **Goal**: no corpus file cites a `docs/book-convention.md:NNN` line range, and the three figures
 the split invalidated are dated and measured.
 
 **Tasks**:
-- [ ] Retarget the six line-range anchors, dropping the `:LINE-RANGE` suffix entirely and citing
+- [x] Retarget the six line-range anchors, dropping the `:LINE-RANGE` suffix entirely and citing
       the decision file path while keeping the existing "Decision N" prose that every one of the
-      six already carries:
+      six already carries: *(completed)*
 
       | Corpus file:line | Cites | New target |
       |---|---|---|
@@ -404,24 +404,30 @@ the split invalidated are dated and measured.
       | `domain/layer-vocabulary-and-matrix.md:7-8` | Decision 2 (`:245-326`), Decision 3 (`:327-424`) | `docs/book-convention/02-layer-vocabulary.md`, `03-layer-import-matrix.md` |
       | `domain/status-and-trust-vocabularies.md:7` | Decision 12 (`:1498-1575`) | `docs/book-convention/12-status-vocabulary-and-trust-block.md` |
 
-- [ ] Refresh `context/project/books/README.md:9-13`: replace "3,212 lines" with the measured
+- [x] Refresh `context/project/books/README.md:9-13`: replace "3,212 lines" with the measured
       slim-index line count (343 at HEAD `a07ae5f`, re-measured at implementation time) and state
       that `docs/book-convention.md` is now the slim index over `docs/book-convention/NN-slug.md`
       plus `docs/book-convention-evidence/NN-slug.md`. Keep "eighteen accepted decisions" and
-      keep the "where the two disagree, the record wins" framing verbatim.
-- [ ] Refresh `tools/tooling-inventory.md:134`: keep "eighteen `Validated by` markers" (the count
+      keep the "where the two disagree, the record wins" framing verbatim. *(completed: initially
+      measured against the live current HEAD (9b383116, 347 lines) and corrected to a07ae5f/343 for
+      consistency with known-gap-register.md's pinned commit -- see issue log)*
+- [x] Refresh `tools/tooling-inventory.md:134`: keep "eighteen `Validated by` markers" (the count
       is correct) but name the directory-plus-index shape, since the markers no longer all live in
-      one file.
-- [ ] Refresh `domain/known-gap-register.md:3`: bump the date and the git SHA to the measured
+      one file. *(completed)*
+- [x] Refresh `domain/known-gap-register.md:3`: bump the date and the git SHA to the measured
       HEAD, and name the `convention_version` pin (Phase 6) as the staleness handle the prose SHA
       previously served as. **Do not touch the 2/15/1 census at `:31`** — it is already correct;
       re-verify it mechanically per the register's own "How to refresh this file" section and
-      record the re-verification in the issue log.
-- [ ] Do **not** touch any other `2026-10-03` / `7281c81` dated measurement in the corpus (see
+      record the re-verification in the issue log. *(completed: re-verified 2/15/1 holds exactly
+      at a07ae5f; the consuming repo's live HEAD has since drifted further to a 19th decision --
+      recorded in the issue log as out-of-scope drift, census left untouched)*
+- [x] Do **not** touch any other `2026-10-03` / `7281c81` dated measurement in the corpus (see
       Non-Goals) — those measure Lean modules, manifests and tooling unaffected by the split.
       `domain/certificate-ledger-and-records.md:9-10` carries such a measurement line adjacent to
       an anchor being retargeted; retarget the anchor and leave the measurement line alone.
-- [ ] Do **not** edit `index-entries.json` — Phase 7 owns it.
+      *(completed: measurement text preserved verbatim, only reflowed onto a different line by
+      the longer anchor list -- see issue log)*
+- [x] Do **not** edit `index-entries.json` — Phase 7 owns it. *(completed: untouched)*
 
 **Timing**: 1.5 hours
 

@@ -5,10 +5,11 @@ book-level identities, chained per export through dependencies' certificates. Th
 keyed on the **canonical statement serialisation**, which is why a Lean toolchain bump alone
 requires no bump at all.
 
-**Normative source**: `books/schema/book-cert-v2.md`. **Design record**:
-`docs/book-convention.md` Decision 9 (`:1093-1213`) and Decision 11 (`:1367-1497`).
-**Implementation**: `books/lean/BookCert/{Cone,Serial,Ledger,Identity,VersionCheck}.lean`. Gap
-claims defer to `domain/known-gap-register.md`.
+**Normative source**: `books/schema/book-cert-v2.md`. **Design record**: Decision 9
+(`docs/book-convention/09-trust-unit-is-the-export.md`) and Decision 11
+(`docs/book-convention/11-versioning-rule.md`). **Implementation**:
+`books/lean/BookCert/{Cone,Serial,Ledger,Identity,VersionCheck}.lean`. Gap claims defer to
+`domain/known-gap-register.md`.
 
 ## The framing: `H` and `S`
 

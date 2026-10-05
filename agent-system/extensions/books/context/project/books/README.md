@@ -7,10 +7,13 @@ else is computed** by the certifier into `book.cert.json`. That split, and the e
 that follow from it, are the books convention.
 
 **The normative design record is owned by the consuming repository, not by this extension.** It
-is `docs/book-convention.md` (3,212 lines, eighteen accepted decisions) with
-`books/schema/book-toml-v2.md` and `books/schema/book-cert-v2.md` as its normative schemas, plus
-`docs/architecture-decisions.md`. This corpus explains, grounds and dates that record for an
-agent working inside it; where the two disagree, the record wins and this corpus is stale.
+was split: `docs/book-convention.md` is now a **slim index** (343 lines, measured 2026-10-05 at
+git `a07ae5f`) over one file per decision under `docs/book-convention/NN-slug.md` (eighteen
+accepted decisions) plus its paired exercise-history evidence under
+`docs/book-convention-evidence/NN-slug.md`, with `books/schema/book-toml-v2.md` and
+`books/schema/book-cert-v2.md` as its normative schemas, plus `docs/architecture-decisions.md`.
+This corpus explains, grounds and dates that record for an agent working inside it; where the
+two disagree, the record wins and this corpus is stale.
 
 **Read `domain/known-gap-register.md` first.** Large parts of the design record describe
 contracts with no live instance. The register is the dated projection of what is and is not

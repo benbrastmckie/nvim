@@ -5,7 +5,8 @@ elaborator can check it. Everything derivable belongs in the book module and is 
 certifier into `book.cert.json`.
 
 **Normative source**: `books/schema/book-toml-v2.md` (324 lines). **Design record**:
-`docs/book-convention.md` Decision 7 (`:799-906`). **Validator**: `books-tool validate`, over
+`docs/book-convention/07-book-toml-v2-schema.md` (Decision 7). **Validator**:
+`books-tool validate`, over
 `books/tool/Books/Manifest.lean`. Gap claims defer to `domain/known-gap-register.md`.
 
 ## Fifteen fields across seventeen keys -- and what happened to "twelve"

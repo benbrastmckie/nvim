@@ -1,7 +1,8 @@
 # The Metadata Split, as an Authoring Rule
 
 **Facts in Lean, judgments in TOML, everything else computed.** That is Decision 6
-(`docs/book-convention.md:610-798`), and it decides, for every piece of a book's metadata, which
+(`docs/book-convention/06-where-metadata-lives.md`), and it decides, for every piece of a book's
+metadata, which
 of three places it is allowed to live in. Putting a piece in the wrong place is sometimes refused,
 sometimes warned about, and -- in one case this document singles out -- **silently reported as a
 pass**.
