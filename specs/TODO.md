@@ -44,7 +44,7 @@ next_project_number: 343
 
 ### Extensions
 
-341 [RESEARCHED] — Record-editing guardrails and the convention-maintenance...
+341 [PLANNED] — Record-editing guardrails and the convention-maintenance...
   └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
@@ -202,11 +202,12 @@ Seed report: specs/342_refactor_books_context_corpus_role_scoped/reports/01_seed
 
 ### 341. Record-editing guardrails and the convention-maintenance context pointer
 - **Effort**: 4-8 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 340
 - **Research**: [341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md]
+- **Plan**: [341_record_editing_guardrails_convention_pointer/plans/02_record-editing-guardrails.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there

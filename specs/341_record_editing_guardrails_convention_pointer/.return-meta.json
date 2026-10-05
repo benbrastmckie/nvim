@@ -1,35 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md",
-      "summary": "Re-verifies the seed report's seven-obligation rule draft and diagnostics map against the live Verification repo and the books-extension source store; finds the version-bump dependency already landed (so obligation 7 should be unconditional, not conditional as the dispatch anticipated), flags EXTENSION.md's zero-slack 60-line Rule U cap, and flags that manifest.json's provides.rules array also needs the new rule filename."
+      "type": "plan",
+      "path": "specs/341_record_editing_guardrails_convention_pointer/plans/02_record-editing-guardrails.md",
+      "summary": "Five-phase plan for the books record-editing rule file, the record-maintenance diagnostics context file, the lean4 README pointer, and registration across three surfaces in two extensions."
     }
   ],
-  "next_steps": "Run /plan 341 to create the implementation plan for the rule file, context file, pointer line, and registration.",
-  "metadata": {
-    "session_id": "sess_1791222088_1f4b0c_341",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
-  },
+  "next_steps": "Run /implement 341 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 3.5,
+  "dependency_waves": [[1, 2], [3, 4], [5]],
   "memory_candidates": [
     {
-      "content": "In the ~/.config/nvim agent-system, a dependency extension's README can carry a single plain-text pointer line into a dependent extension's context tree (e.g. lean4's README pointing into the books extension's context/project/books/patterns/), safely and against the normal manifest dependencies[] arrow, because README bullet lists are inert prose, not a load_when/paths: mechanism -- if the dependent extension isn't loaded, the line is just harmless dead text, never a broken load path.",
+      "content": "Adding a NEW rule file to an agent-system extension requires three distinct registration surfaces, not one: (1) manifest.json's provides.rules array -- check-extension-docs.sh Rule H (check_undeclared_rules) FAILS on a rule file present on disk but absent from provides.rules, so this is a hard gate failure, not cosmetic; (2) EXTENSION.md, which Rule U caps at 60 lines with no per-extension exemption, so a pointer addition to a file already at the cap must be offset by an equal trim in that same file; (3) for a new CONTEXT file (not a rule), index-entries.json, whose line_count is checked for exact accuracy by Rule R -- never hand-type it, run generate-context-line-counts.sh --write after all content is final. provides.context is a DIRECTORY-level reference ('project/<ext>') and auto-covers new context files; provides.rules is filename-literal and does not. A cross-extension pointer line (extension A's README pointing into extension B's corpus, against the dependency arrow) additionally desyncs A's own index-entries line_count, so the --write sweep must cover both extensions.",
       "category": "PATTERN",
-      "source_artifact": "specs/341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["cross-extension-pointer", "manifest-dependencies", "README", "load_when", "books-extension"]
-    },
-    {
-      "content": "check-extension-docs.sh's Rule U caps EXTENSION.md at 60 lines per extension (exact, checked via check_extension_md_length); the books extension's EXTENSION.md is already at exactly 60 lines with zero slack, so any future addition to it must trim an equal amount elsewhere in the same file or the gate fails. Separately, manifest.json's provides.rules array is a literal filename list (not auto-covering new rule files the way provides.context's directory reference does) and is what Rule I's deployed-vs-source drift check keys off -- a new rule file must be added there explicitly to be considered 'provided'.",
-      "category": "CONFIG",
-      "source_artifact": "specs/341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["Rule U", "Rule I", "EXTENSION.md", "manifest.json", "provides.rules", "check-extension-docs.sh"]
+      "source_artifact": "specs/341_record_editing_guardrails_convention_pointer/plans/02_record-editing-guardrails.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["extension-registration", "provides.rules", "check-extension-docs", "Rule H", "Rule U", "index-entries"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1791222088_1f4b0c_341",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 8
 }

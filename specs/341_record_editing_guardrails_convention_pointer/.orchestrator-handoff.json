@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "summary": "Planned the books record-editing rule file and record-maintenance diagnostics context file in five phases (two parallel authoring phases, two parallel registration phases, one full gate sweep), correcting two stale diagnostics figures the dispatch and research report both carried.",
+  "phase": "plan",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/341_record_editing_guardrails_convention_pointer/plans/02_record-editing-guardrails.md",
+      "summary": "Five-phase plan for the books record-editing rule file, the record-maintenance diagnostics context file, the lean4 README pointer, and registration across three surfaces in two extensions."
+    }
+  ],
+  "next_action_hint": "Run /implement 341 to execute the plan"
+}
