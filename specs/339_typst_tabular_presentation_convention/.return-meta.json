@@ -1,10 +1,34 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/339_typst_tabular_presentation_convention/summaries/01_tabular-presentation-convention-summary.md",
+      "summary": "Audited the research dispatch's already-landed tabular-presentation convention additions (zero shortfalls found) and repaired the two stale typst index-entries.json line_count values they left behind."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Audited commit 7af9640c9's two typst context-file additions (pagination/element-choice guidance and a tabular/key-value Per-Element Semantics entry) against all acceptance criteria with zero shortfalls found, then corrected the two stale line_count values (170->214, 281->301) that commit left in agent-system/extensions/typst/index-entries.json."
+  },
+  "modified_files": [
+    "agent-system/extensions/typst/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When repairing stale line_count entries in a per-extension index-entries.json after editing context files, avoid generate-context-line-counts.sh --write: it rewrites every extension's entries in one pass, risking collateral changes to an extension a concurrent sibling task owns on a shared working tree. Instead, recompute the specific actual counts with `wc -l` and apply a surgical Edit to just the affected entries, then verify narrowly with `generate-context-line-counts.sh --check 2>&1 | grep <extension>`.",
+      "category": "PATTERN",
+      "source_artifact": "specs/339_typst_tabular_presentation_convention/summaries/01_tabular-presentation-convention-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["index-entries.json", "line_count", "generate-context-line-counts", "scoped-staging", "concurrent-siblings"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791222088_1f4b0c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 5
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
+  }
 }

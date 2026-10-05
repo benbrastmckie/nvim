@@ -163,7 +163,7 @@
     },
     {
       "path": "project/typst/patterns/tables-and-figures.md",
-      "line_count": 170,
+      "line_count": 214,
       "load_when": {
         "agents": [
           "typst-implementation-agent"
@@ -285,7 +285,7 @@
     },
     {
       "path": "project/typst/standards/semantic-element-usage.md",
-      "line_count": 281,
+      "line_count": 301,
       "load_when": {
         "agents": [
           "typst-implementation-agent"

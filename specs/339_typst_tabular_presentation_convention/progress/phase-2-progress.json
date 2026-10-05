@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Repair the Stale typst index-entries.json Line Counts",
+  "started_at": "2026-10-05T18:45:00Z",
+  "last_updated": "2026-10-05T18:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read index-entries.json immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Recompute actual counts with wc -l and update exactly two line_count values", "status": "done", "files_touched": ["agent-system/extensions/typst/index-entries.json"], "note": "wc -l confirmed 214 and 301, matching the plan's planning-time measurement exactly"},
+    {"id": 3, "description": "Leave every other field/entry byte-identical; no --write, no jq round-trip", "status": "done", "files_touched": [], "note": "Direct Edit tool surgical replacement used; git diff shows exactly 2 changed lines"},
+    {"id": 4, "description": "Apply any Phase 1 carry-over shortfall fix", "status": "done", "files_touched": [], "note": "No shortfall was found in Phase 1; nothing to carry over"},
+    {"id": 5, "description": "Run acceptance gates: generate-context-line-counts.sh --check, check-task-references.sh, extension doc check", "status": "done", "files_touched": [], "note": "typst: 0 mismatch; check-task-references.sh: PASS; check-extension-docs.sh: typst PASS (core/lean FAILs are pre-existing, unrelated deploy staleness)"},
+    {"id": 6, "description": "Stage only index-entries.json by explicit path, review diff, commit via git-commit-scoped.sh", "status": "done", "files_touched": ["agent-system/extensions/typst/index-entries.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

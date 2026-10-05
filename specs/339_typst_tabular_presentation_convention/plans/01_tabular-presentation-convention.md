@@ -148,28 +148,32 @@ means Phase 2 gains authoring work, not that the check was wrong.
 
 ---
 
-### Phase 2: Repair the Stale typst index-entries.json Line Counts [NOT STARTED]
+### Phase 2: Repair the Stale typst index-entries.json Line Counts [COMPLETED]
 
 **Goal**: Make the typst extension's context index agree with the two files this task changed, so
 the context-budget tooling reports accurate sizes, and commit the repair.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/typst/index-entries.json` immediately before editing (a
-      concurrent sibling task is live on this same working tree).
-- [ ] Recompute both actual counts with `wc -l` rather than trusting this plan's numbers, then
+- [x] Re-read `agent-system/extensions/typst/index-entries.json` immediately before editing (a
+      concurrent sibling task is live on this same working tree). *(completed)*
+- [x] Recompute both actual counts with `wc -l` rather than trusting this plan's numbers, then
       update exactly two values: the `line_count` on the entry whose `path` is
       `project/typst/patterns/tables-and-figures.md`, and the one on
-      `project/typst/standards/semantic-element-usage.md`.
-- [ ] Leave every other field and every other entry in that file byte-identical; do not run
+      `project/typst/standards/semantic-element-usage.md`. *(completed: 170->214, 281->301,
+      matching planning-time measurement exactly)*
+- [x] Leave every other field and every other entry in that file byte-identical; do not run
       `generate-context-line-counts.sh --write` (it rewrites all extensions, including one a
-      sibling task owns) and do not round-trip the file through `jq`.
-- [ ] Apply any shortfall fix carried over from Phase 1, if one was found.
-- [ ] Run the acceptance gates: `generate-context-line-counts.sh --check` (typst must report
+      sibling task owns) and do not round-trip the file through `jq`. *(completed: surgical Edit
+      tool replacement only; git diff shows exactly 2 changed lines)*
+- [x] Apply any shortfall fix carried over from Phase 1, if one was found. *(completed: no
+      shortfall was found, nothing to apply)*
+- [x] Run the acceptance gates: `generate-context-line-counts.sh --check` (typst must report
       `0 mismatch`), `check-task-references.sh` (must PASS), and the extension doc check for
-      typst.
-- [ ] Stage only `agent-system/extensions/typst/index-entries.json` (plus any Phase 1 carry-over
+      typst. *(completed: typst 0 mismatch; check-task-references.sh PASS; check-extension-docs.sh
+      typst PASS)*
+- [x] Stage only `agent-system/extensions/typst/index-entries.json` (plus any Phase 1 carry-over
       file) by explicit path — never `git add -A`, never a directory or glob pathspec — review
-      `git diff --staged`, and commit via `git-commit-scoped.sh`.
+      `git diff --staged`, and commit via `git-commit-scoped.sh`. *(completed)*
 
 **Timing**: 0.5 hours
 

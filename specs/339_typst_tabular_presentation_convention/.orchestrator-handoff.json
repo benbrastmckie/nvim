@@ -1,18 +1,22 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 339,
-  "phase": "plan",
-  "session_id": "sess_1791222088_1f4b0c_339",
-  "dispatch_seq": 3,
-  "phases_completed": 0,
-  "phases_total": 2,
+  "phase": "implement",
+  "session_id": "sess_1791222088_1f4b0c",
+  "dispatch_seq": 5,
+  "summary": "Audited the research dispatch's already-landed tabular-presentation convention additions (zero shortfalls) and repaired the two stale typst index-entries.json line_count values (170->214, 281->301) they left behind.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/339_typst_tabular_presentation_convention/plans/01_tabular-presentation-convention.md",
-      "summary": "Two-phase plan: audit the already-landed tabular-presentation convention additions against the acceptance criteria, then repair the two stale typst index-entries.json line_count values they left behind."
+      "type": "summary",
+      "path": "specs/339_typst_tabular_presentation_convention/summaries/01_tabular-presentation-convention-summary.md",
+      "summary": "Audited commit 7af9640c9's landed additions against all acceptance criteria and repaired the stale typst index-entries.json line counts."
     }
   ],
-  "next_steps": "Run /implement 339 to execute the plan",
-  "notes": "Research dispatch seq 2 already committed all three substantive work items (7af9640c9, 64 insertions in the two target context files). Remaining real work: verification audit plus repairing typst index-entries.json line_count (170->214, 281->301). Deployed .claude/ typst copy is now stale; redeploy is an operator follow-up, deliberately out of scope."
+  "phases_completed": 2,
+  "phases_total": 2,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete; no further dispatch needed. Operator follow-up (out of scope here): redeploy via bash .claude/scripts/deploy-headless.sh to bring the deployed .claude/ typst copy back in sync with the source store.",
+  "notes": "Phase 1 (audit) found zero shortfalls against commit 7af9640c9. Phase 2 corrected exactly two line_count values in agent-system/extensions/typst/index-entries.json via surgical Edit (not --write, to avoid touching the books extension a concurrent sibling task owns). All acceptance gates pass: generate-context-line-counts.sh --check (typst 0 mismatch), check-task-references.sh (PASS), check-extension-docs.sh (typst PASS; core/lean FAILs are pre-existing unrelated deploy staleness)."
 }
