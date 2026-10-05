@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "The lean4 README pointer line",
+  "started_at": "2026-10-05T00:50:00Z",
+  "last_updated": "2026-10-05T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add one bullet under ## Key Files pointing at books' record-maintenance.md", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/README.md"]},
+    {"id": 2, "description": "Update lean index-entries.json project/lean4/README.md line_count 29 to 30", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "The deployed .claude/ tree is flagged stale for the lean extension already (per dispatch's deploy-freshness-context); the pointer only reaches live lean4 dispatches after an operator-run redeploy via bash .claude/scripts/deploy-headless.sh. No hand-patch of .claude/** performed as a substitute."
+}

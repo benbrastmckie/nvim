@@ -412,25 +412,25 @@ run; if still over, trim further in the same file rather than relaxing the addit
 
 ---
 
-### Phase 4: The lean4 README pointer line [NOT STARTED]
+### Phase 4: The lean4 README pointer line [COMPLETED]
 
 **Goal**: exactly one line in the lean extension's `lean4/README.md` points at
 `record-maintenance.md`, and the lean extension's own index `line_count` stays accurate.
 
 **Tasks**:
 
-- [ ] Add **one** bullet under `## Key Files` in
+- [x] Add **one** bullet under `## Key Files` in *(completed)*
       `agent-system/extensions/lean/context/project/lean4/README.md`, in the same style as the
       existing rows (`- \`path\` - description`), pointing at the books extension's
       `context/project/books/patterns/record-maintenance.md` and naming when it applies (a
       dispatch amending `docs/book-convention*`). No new section heading — the file's `## Key
       Files` list is flat.
-- [ ] Keep it to one physical line, under the file's ~100-character working width if possible; if
+- [x] Keep it to one physical line, under the file's ~100-character working width if possible; if *(completed)*
       the line must wrap, it still counts as one bullet but adds a second physical line, which
       the `line_count` update below must reflect.
-- [ ] Update `agent-system/extensions/lean/index-entries.json`'s `project/lean4/README.md` entry
+- [x] Update `agent-system/extensions/lean/index-entries.json`'s `project/lean4/README.md` entry *(completed)*
       `line_count` from `29` to the new real value (Phase 5's `--write` sweep is the authority).
-- [ ] Record, in the phase's own notes rather than in any deliverable file, that the pointer only
+- [x] Record, in the phase's own notes rather than in any deliverable file, that the pointer only *(completed)*
       reaches live `lean4` dispatches after a redeploy — the deployed `.claude/` tree is already
       flagged stale for `lean`. Remedy is `bash .claude/scripts/deploy-headless.sh`, an operator
       action. Do **not** hand-patch `.claude/**` as a substitute.
