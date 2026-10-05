@@ -42,13 +42,16 @@ principles from it apply directly to this sub-mode:
    Display: "No new observation evidence since the last --revise run ({last considered_through
    timestamp}). Nothing new to consider."
    Return early.
-4. Attempt to read the consuming repository's docs/book-convention.md.
-   If it cannot be found:
-   Display: "docs/book-convention.md not found. Without the decision record, no proposal can
-   name the convention clause it bears on, and no proposal may be made without one. Nothing can
-   be proposed this run."
+4. Attempt to read the consuming repository's decision record, in EITHER shape: the flat
+   docs/book-convention.md index (pre-split, or carrying any decision not yet split out), or the
+   docs/book-convention/ directory (one file per decision, post-split). Both are checked;
+   neither alone is required.
+   If NEITHER can be found:
+   Display: "Neither docs/book-convention.md nor docs/book-convention/ was found. Without the
+   decision record, no proposal can name the convention clause it bears on, and no proposal may
+   be made without one. Nothing can be proposed this run."
    Return early -- this is a HARD early return, not a degraded continuation: Candidate
-   Identification below never runs without this file.
+   Identification below never runs without at least one of the two shapes.
 ```
 
 ## Candidate Identification: Closed Discovery Rule
@@ -81,15 +84,30 @@ on manual inspection.
 
 ## Mandatory Preliminary Research Step (Precondition on Presenting Any Candidate)
 
-Before any candidate ranked above may be presented to the user, read the consuming repository's
-`docs/book-convention.md` and, for every Decision a candidate touches, capture:
+Before any candidate ranked above may be presented to the user, enumerate the decision set from
+**both** shapes the consuming repository's record may be in:
 
-1. That Decision's **durable heading text**, verbatim (e.g. `"Decision 13: Exposure policy"`).
-2. That Decision's current `- **Validated by**:` marker line, **verbatim**.
+- Every file under `docs/book-convention/*.md`, sorted by numeric prefix (the post-split,
+  one-file-per-decision shape), **plus**
+- any `## Decision` heading still remaining in the flat `docs/book-convention.md` index (a
+  decision not yet split out, or the whole record pre-split).
 
-The marker vocabulary has exactly three forms (adopted from `docs/book-convention.md`'s own
-scheme, not invented here — see `domain/known-gap-register.md`'s "marker vocabulary, adopted not
-invented" section):
+For every Decision a candidate touches, capture:
+
+1. That Decision's **durable heading text**, verbatim. In the directory shape this is the
+   decision file's **H1** (`# Decision N: ...`); in the flat shape it is the index's own
+   `## Decision N: ...` heading (e.g. `"Decision 13: Exposure policy"` either way).
+2. That Decision's current `- **Validated by**:` marker line, **verbatim** — the **one-line
+   reduced marker**, including its `→ full exercise history and citations:` pointer where one is
+   present (every directory-shape marker carries one; a flat-index marker not yet split out may
+   not).
+3. The **paired evidence file path**, `docs/book-convention-evidence/NN-slug.md`, read off the
+   reduced marker's own pointer target, so a proposal can cite the exercise history behind the
+   reduced marker rather than only the reduced marker itself.
+
+The marker vocabulary has exactly three forms (adopted from the decision record's own scheme, not
+invented here — see `domain/known-gap-register.md`'s "marker vocabulary, adopted not invented"
+section):
 
 | Form | Meaning |
 |---|---|
@@ -98,22 +116,22 @@ invented" section):
 | Anything else (an instance named outright) | **Binding** — work that cannot satisfy it stops and escalates. |
 
 `books/scripts/lint-validated-by.sh` (in the consuming repository) is the mechanical linter for
-this marker's presence and well-formedness; this sub-mode reads the marker the linter already
-validates, rather than re-validating it itself.
+this marker's presence and well-formedness across both shapes; this sub-mode reads the marker the
+linter already validates, rather than re-validating it itself.
 
 **The bar, stated directly**: a candidate that cannot name its Decision's durable heading text
-and quote that Decision's current marker verbatim **is not ready to be proposed and is dropped**
-— never guessed at, never presented with a placeholder marker. This drop happens silently from
-the user's perspective (it never reaches Interactive Selection below) but is recorded in this
-run's log entry so the drop itself is auditable.
+and quote that Decision's current reduced marker verbatim **is not ready to be proposed and is
+dropped** — never guessed at, never presented with a placeholder marker. This drop happens
+silently from the user's perspective (it never reaches Interactive Selection below) but is
+recorded in this run's log entry so the drop itself is auditable.
 
 `domain/known-gap-register.md` is a **navigation aid only** — a dated projection of which
 Decisions are binding/partial/none-yet as of its own last refresh. Its own text says so: "This
 file is a dated projection, not an authority. The authority ... is the `- **Validated by**:`
 marker ... When this file and either authority disagree, the authority wins and this file is
-stale." This sub-mode reads the **live** marker from `docs/book-convention.md` itself for every
-candidate, every run, and uses the register only to orient a human reader toward where to look —
-never as a substitute for the live read.
+stale." This sub-mode reads the **live** marker from the decision record itself — whichever shape
+holds it — for every candidate, every run, and uses the register only to orient a human reader
+toward where to look — never as a substitute for the live read.
 
 ## Dry-Run
 

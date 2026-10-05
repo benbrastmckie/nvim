@@ -276,30 +276,30 @@ before inserting.
 
 ---
 
-### Phase 3: Revise sub-mode — shape-tolerant research step and hard return [NOT STARTED]
+### Phase 3: Revise sub-mode — shape-tolerant research step and hard return [COMPLETED]
 
 **Goal**: the revise sub-mode's mandatory research step enumerates the directory shape, quotes the
 reduced marker verbatim, records the paired evidence path, and its hard return fires only when
 neither shape exists.
 
 **Tasks**:
-- [ ] Rewrite the "Mandatory Preliminary Research Step" (around `:83-116`) so the decision set is
+- [x] Rewrite the "Mandatory Preliminary Research Step" (around `:83-116`) so the decision set is
       enumerated from `docs/book-convention/*.md` sorted by numeric prefix, **plus** any
-      `## Decision` heading remaining in the flat `docs/book-convention.md` index.
-- [ ] State that the durable heading text is the decision file's **H1** (`# Decision N: ...`) in
-      the directory shape, and the `## Decision N: ...` heading in the flat shape.
-- [ ] State that the marker quoted verbatim is the **one-line reduced** marker, including its
+      `## Decision` heading remaining in the flat `docs/book-convention.md` index. *(completed)*
+- [x] State that the durable heading text is the decision file's **H1** (`# Decision N: ...`) in
+      the directory shape, and the `## Decision N: ...` heading in the flat shape. *(completed)*
+- [x] State that the marker quoted verbatim is the **one-line reduced** marker, including its
       `→ full exercise history and citations:` pointer, and add a third capture item: the paired
       `docs/book-convention-evidence/NN-slug.md` path, so a proposal can cite the exercise
-      history.
-- [ ] Keep the three-form marker vocabulary table and the drop-if-unquotable bar unchanged in
-      substance; adjust only the file-shape wording around them.
-- [ ] Amend Edge Case Check 4 (`:45-52`) so the HARD early return fires only when **neither**
+      history. *(completed)*
+- [x] Keep the three-form marker vocabulary table and the drop-if-unquotable bar unchanged in
+      substance; adjust only the file-shape wording around them. *(completed)*
+- [x] Amend Edge Case Check 4 (`:45-52`) so the HARD early return fires only when **neither**
       `docs/book-convention.md` nor the `docs/book-convention/` directory can be found; update
-      its displayed message to name both shapes.
-- [ ] Update the live-marker paragraph (`:114`) and the `lint-validated-by.sh` reference so they
-      name the directory-plus-index shape rather than a single flat file.
-- [ ] Leave the closed-discovery rule, ranking, and `--dry-run` sections untouched.
+      its displayed message to name both shapes. *(completed)*
+- [x] Update the live-marker paragraph (`:114`) and the `lint-validated-by.sh` reference so they
+      name the directory-plus-index shape rather than a single flat file. *(completed)*
+- [x] Leave the closed-discovery rule, ranking, and `--dry-run` sections untouched. *(completed)*
 
 **Timing**: 1.5 hours
 

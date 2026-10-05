@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Revise sub-mode — shape-tolerant research step and hard return",
+  "started_at": "2026-10-05T18:42:00Z",
+  "last_updated": "2026-10-05T18:48:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Mandatory Preliminary Research Step to enumerate both shapes plus third capture item (evidence path)", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md"]},
+    {"id": 2, "description": "Amend Edge Case Check 4 hard return to fire only when neither shape exists", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md"]},
+    {"id": 3, "description": "Update live-marker paragraph and lint-validated-by.sh reference to name both shapes", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
