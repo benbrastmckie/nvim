@@ -2,7 +2,7 @@
   "entries": [
     {
       "path": "project/books/README.md",
-      "line_count": 130,
+      "line_count": 131,
       "load_when": {
         "agents": [
           "books-research-agent",

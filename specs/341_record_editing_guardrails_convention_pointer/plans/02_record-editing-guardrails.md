@@ -464,31 +464,56 @@ pointer reach a `lean4`-typed books task — confirm that `load_when` block is l
 
 ---
 
-### Phase 5: Full gate sweep and count reconciliation [NOT STARTED]
+### Phase 5: Full gate sweep and count reconciliation [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: every declared count is machine-derived rather than hand-typed, and the full gate set
 is green.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` so
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` so
       every `index-entries.json` `line_count` touched by Phases 2–4 is derived, not typed. Review
       its diff: it should touch only the `books` `record-maintenance.md` and `README.md` entries
-      and the `lean` `project/lean4/README.md` entry.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and resolve every finding attributable
+      and the `lean` `project/lean4/README.md` entry. *(completed: run via the deployed
+      `.claude/scripts/generate-context-line-counts.sh --write` copy, which operates on the
+      source store by design; it corrected `books`' `project/books/README.md` 130→131 as
+      expected. It additionally corrected two out-of-scope, pre-existing entries —
+      `core`'s `formats/return-metadata-file.md` and `lean`'s
+      `project/lean4/domain/decidability-provenance.md` — as a side effect of running the
+      generator globally; both were already dirty at session start from a concurrent sibling
+      task and are deliberately NOT staged with this task's commits, per this phase's own Scope
+      Hypothesis.)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and resolve every finding attributable
       to this task (Rules H, R, T, U in particular). Pre-existing findings in unrelated
-      extensions are out of scope — report them, do not fix them here.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm **zero** task-number
-      findings across both new files and all four modified files.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` as the task-closing full gate.
-- [ ] Re-confirm the acceptance criteria one by one against the files on disk: rule under 70
+      extensions are out of scope — report them, do not fix them here. *(completed: `books` and
+      `lean` both report `PASS`; the sole remaining `FAIL` is `core`'s pre-existing deployed
+      script drift on `scripts/orchestrate-cycle-plan.sh`, out of scope — see Reasoned
+      Exclusions.)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm **zero** task-number
+      findings across both new files and all four modified files. *(completed: zero findings
+      across `agent-system/extensions/books` (scoped) and both touched `lean` files.)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` as the task-closing full gate. *(completed with
+      exclusions — see Reasoned Exclusions below.)*
+- [x] Re-confirm the acceptance criteria one by one against the files on disk: rule under 70
       lines; every obligation carries its anchor; obligation 7 is unconditional (see Research
       Integration finding 1 — this plan deliberately satisfies the dispatch's *tightened* form,
       not its conditional fallback); the context file names the diagnostics and their
       blocking/advisory split without restating convention substance; `lean4/README.md` carries
-      exactly one pointer line; both files are registered.
-- [ ] Record any gate collision, deviation or unusually smooth result via
+      exactly one pointer line; both files are registered. *(completed: all six criteria
+      re-verified directly against the files on disk — see each phase's own Verification
+      section.)*
+- [x] Record any gate collision, deviation or unusually smooth result via
       `bash .claude/scripts/issue-record.sh` as it happens, per the dispatch's Issue Log section.
+      *(completed: a win entry for the research-reuse accuracy and an issue entry for the
+      concurrent-session noise surfaced at this phase were both recorded.)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` Gate 3 (doc-lint) `FAIL` | Attributable entirely to a pre-existing, out-of-scope `core`-extension finding (`scripts/orchestrate-cycle-plan.sh` deployed-vs-source drift), already dirty at session start from a concurrent sibling task, not touched by this task | Direct `check-extension-docs.sh` run shows `books PASS`, `lean PASS`; the only `FAIL` row is `core`, message `deployed script content drift (deployed != extension source): scripts/orchestrate-cycle-plan.sh`; `git status --short` at this task's session start already listed `M agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` before any task-341 work began |
+| `verify-deploy.sh` Gate 5 (manifest-driven verification) 13 "content differs from source" findings | 12 of 13 are the pre-existing cross-extension deploy staleness this dispatch's own `<deploy-freshness-context>` block already flagged for `core`, `email`, `lean`, `nix`, `nvim` at dispatch start; the 13th (`lean: context/project/lean4/README.md`) is the by-design, expected consequence of Phase 4's own source-store-only edit, which `rules/source-store-deploy-boundary.md` explicitly forbids hand-patching into `.claude/**` to mask | `diff .claude/context/project/lean4/README.md agent-system/extensions/lean/context/project/lean4/README.md` shows exactly one line of difference — the single pointer bullet Phase 4 added — confirming the deployed and source copies were in lockstep before this task's own edit and diverge only by it; the dispatch's `<deploy-freshness-context>` names core/email/lean/nix/nvim as already stale before this dispatch began |
+| `verify-deploy.sh` Gate 8 (`tests/run-all.sh`, the full shell test suite) unconfirmed | The full corpus suite exceeds this dispatch's practical inline runtime budget (a 570-second foreground attempt and a subsequent backgrounded run both failed to conclude); this task added zero test files and touches none of the shell scripts the suite discovers (two new docs plus four registration/pointer edits only), so a failure here is assessed as very unlikely to be caused by this task, but could not be mechanically confirmed green within this dispatch | Two run attempts timed out without reaching a summary line (100s and 570s); this task's `## Artifacts & Outputs` enumerates its full footprint as two new context-layer files plus four registration edits, none of them a `scripts/tests/test-*.sh` or `scripts/test-*.sh` suite file `run-all.sh` discovers |
 
 **Timing**: 0.25 hours
 
@@ -518,21 +543,29 @@ commits.
 
 ## Testing & Validation
 
-- [ ] `wc -l agent-system/extensions/books/rules/book-convention-record.md` < 70.
-- [ ] `wc -l agent-system/extensions/books/EXTENSION.md` ≤ 60.
-- [ ] Seven numbered obligations present, each with a resolving source anchor.
-- [ ] Obligation 7 contains no conditional hedging about Decision 19's existence.
-- [ ] `record-maintenance.md` states the live `lint-validated-by.sh` split (blocking 1, 2, 5–11;
+- [x] `wc -l agent-system/extensions/books/rules/book-convention-record.md` < 70. *(completed: 69)*
+- [x] `wc -l agent-system/extensions/books/EXTENSION.md` ≤ 60. *(completed: 60)*
+- [x] Seven numbered obligations present, each with a resolving source anchor. *(completed)*
+- [x] Obligation 7 contains no conditional hedging about Decision 19's existence. *(completed:
+      written unconditionally per Research Integration finding 1)*
+- [x] `record-maintenance.md` states the live `lint-validated-by.sh` split (blocking 1, 2, 5–11;
       advisory 3, 4, 12) and names `check-citation-inventory.sh`,
-      `check-evidence-append-only.sh` and `check-convention-version.sh`.
-- [ ] `record-maintenance.md` restates no convention substance (negative grep, Phase 2).
-- [ ] `grep -c record-maintenance .../lean4/README.md` == 1.
-- [ ] `jq '.provides.rules'` on the books manifest includes the new rule file.
-- [ ] Both `index-entries.json` files parse and declare accurate `line_count`s.
-- [ ] `bash .claude/scripts/check-extension-docs.sh` green for `books` and `lean`.
-- [ ] `bash .claude/scripts/check-task-references.sh` green.
-- [ ] `bash .claude/scripts/verify-deploy.sh` green.
-- [ ] No file under `.claude/**` was written.
+      `check-evidence-append-only.sh` and `check-convention-version.sh`. *(completed)*
+- [x] `record-maintenance.md` restates no convention substance (negative grep, Phase 2).
+      *(completed: both hits are bare mechanical check-name references, not clause restatements)*
+- [x] `grep -c record-maintenance .../lean4/README.md` == 1. *(completed: 1)*
+- [x] `jq '.provides.rules'` on the books manifest includes the new rule file. *(completed)*
+- [x] Both `index-entries.json` files parse and declare accurate `line_count`s. *(completed:
+      `generate-context-line-counts.sh` reports 22/22 exact for books, 40/40 exact for lean)*
+- [x] `bash .claude/scripts/check-extension-docs.sh` green for `books` and `lean`. *(completed:
+      both report PASS)*
+- [x] `bash .claude/scripts/check-task-references.sh` green. *(completed: zero findings)*
+- [ ] `bash .claude/scripts/verify-deploy.sh` green. *(deviation: altered — 3 of 34 checks failed;
+      all three excluded with evidence under Phase 5's Reasoned Exclusions — pre-existing
+      core drift, pre-existing+expected cross-extension deploy staleness, and an unconfirmed
+      full test-suite run outside this task's own footprint)*
+- [x] No file under `.claude/**` was written. *(completed: `git status --short` shows no path
+      under `.claude/` among this task's own changes)*
 
 ## Artifacts & Outputs
 
