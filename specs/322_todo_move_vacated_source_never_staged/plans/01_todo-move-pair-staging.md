@@ -200,21 +200,21 @@ inconsistent — the same internal asymmetry this whole task exists to fix.
 
 ---
 
-### Phase 3: Name the Invariant in `git-staging-scope.md` [NOT STARTED]
+### Phase 3: Name the Invariant in `git-staging-scope.md` [COMPLETED]
 
 **Goal**: The rename/directory-move staging invariant exists once, as a named, citable section
 of the staging standard, so a fourth violation has a rule to be caught against.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` and confirm the section boundaries (`## Forbidden Operations` at 224, `## Commit-Level Path Scoping and Cross-Process Serialization` at 255).
-- [ ] Insert a new `## Rename and Directory-Move Staging` section immediately after `## Forbidden Operations` and before `## Commit-Level Path Scoping and Cross-Process Serialization`.
-- [ ] State the rule as a positive requirement: any `mv` whose two endpoints are both inside the staged tree MUST contribute BOTH endpoints to the pathspec list, together, in the same commit. An explicit list only covers what it names; a directory token that used to cover both sides incidentally is not a substitute and is itself forbidden by the preceding section.
-- [ ] Explain the failure mode in one short paragraph: with only the destination named, `git add` is never asked to record the source's removal, the copy lands as a fresh `create mode`, the old tree stays in the index pointing at files that no longer exist, and the commit still exits 0 reporting success.
-- [ ] Record why no existing gate catches an omission: the directory-pathspec lint classifies only tokens that are present, and `git-commit-scoped.sh`'s V2/V5/V6 gates inspect only pathspecs they are given. A missing token is an omission, not a textual pattern.
-- [ ] Quote the vault site's existing comment as the canonical illustration, and name both mechanisms this rule must be honored under as worked examples: an accumulator array (`commands/todo.md`) and a hand-written `git add` line (`skill-todo/SKILL.md` Stage 15). Reference both by file plus step/stage name, never by line number.
-- [ ] Add a cross-reference from `## Forbidden Operations`' explicit-multi-file-list carve-out bullet to the new section, so the rename case is reachable from the prohibition it elaborates.
-- [ ] Observe `.claude/rules/no-task-references-in-deliverables.md`: no task numbers anywhere in this section — cite durable anchors (file names, section headings, the commit SHA) instead.
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` and confirm the section boundaries (`## Forbidden Operations` at 224, `## Commit-Level Path Scoping and Cross-Process Serialization` at 255). *(completed: confirmed at 224/258 after this phase's own insertion)*
+- [x] Insert a new `## Rename and Directory-Move Staging` section immediately after `## Forbidden Operations` and before `## Commit-Level Path Scoping and Cross-Process Serialization`. *(completed)*
+- [x] State the rule as a positive requirement: any `mv` whose two endpoints are both inside the staged tree MUST contribute BOTH endpoints to the pathspec list, together, in the same commit. An explicit list only covers what it names; a directory token that used to cover both sides incidentally is not a substitute and is itself forbidden by the preceding section. *(completed)*
+- [x] Explain the failure mode in one short paragraph: with only the destination named, `git add` is never asked to record the source's removal, the copy lands as a fresh `create mode`, the old tree stays in the index pointing at files that no longer exist, and the commit still exits 0 reporting success. *(completed)*
+- [x] Record why no existing gate catches an omission: the directory-pathspec lint classifies only tokens that are present, and `git-commit-scoped.sh`'s V2/V5/V6 gates inspect only pathspecs they are given. A missing token is an omission, not a textual pattern. *(completed)*
+- [x] Quote the vault site's existing comment as the canonical illustration, and name both mechanisms this rule must be honored under as worked examples: an accumulator array (`commands/todo.md`) and a hand-written `git add` line (`skill-todo/SKILL.md` Stage 15). Reference both by file plus step/stage name, never by line number. *(completed)*
+- [x] Add a cross-reference from `## Forbidden Operations`' explicit-multi-file-list carve-out bullet to the new section, so the rename case is reachable from the prohibition it elaborates. *(completed)*
+- [x] Observe `.claude/rules/no-task-references-in-deliverables.md`: no task numbers anywhere in this section — cite durable anchors (file names, section headings, the commit SHA) instead. *(completed: verified via grep, no task-number pattern matches)*
 
 **Timing**: 0.5 hours
 

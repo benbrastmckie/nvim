@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Name the Invariant in git-staging-scope.md",
+  "started_at": "2026-10-05T00:35:00Z",
+  "last_updated": "2026-10-05T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read and confirm section boundaries", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert new ## Rename and Directory-Move Staging section", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "State the rule as a positive requirement", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 4, "description": "Explain the failure mode", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 5, "description": "Record why no existing gate catches an omission", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 6, "description": "Quote the vault site comment and name both mechanisms", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 7, "description": "Add cross-reference from Forbidden Operations", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 8, "description": "No task-number references", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

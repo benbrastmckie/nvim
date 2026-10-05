@@ -232,6 +232,9 @@ task-scoped commit:
   `git add src/*.lean`) — stages every modified file the pathspec expands to, the identical
   over-staging harm as `git add -A`/`git add .` in a narrower disguise. The sanctioned explicit
   multi-file list (e.g. `git add -- a.lean b.lean`) is unaffected and remains the correct form.
+  When that explicit list is covering a directory *rename* rather than an ordinary edit, see
+  "Rename and Directory-Move Staging" below for the additional pairing requirement an explicit
+  list must satisfy.
 - `git commit -am` (implicitly stages all tracked-file modifications)
 - A **bare, unscoped `git commit`** (no trailing `-- <pathspec>...`) — see "Commit-Level Path
   Scoping and Cross-Process Serialization" below. Even when staging was correctly narrowed by
@@ -251,6 +254,54 @@ snapshot-marker exemption (see that hook's header for the data-loss vs. scope-po
 rationale). The bare-unscoped-commit bullet is not part of that predicate; it is enforced by
 `git-commit-scoped.sh` always naming its pathspec, per "Commit-Level Path Scoping and
 Cross-Process Serialization" below.
+
+## Rename and Directory-Move Staging
+
+**Rule**: any `mv` whose two endpoints are both inside the staged tree MUST contribute BOTH
+endpoints — the old path and the new path — to the commit's pathspec list, together, in the
+same commit. An explicit file list only covers what it names; a shared-directory token that
+used to sweep up both sides of a rename incidentally is not a substitute for naming both
+endpoints, and is itself forbidden by "Forbidden Operations" above.
+
+**Failure mode this rule prevents**: if an accumulator or hand-written `git add` line is taught
+to collect only a move's destination, the vacated source is never staged. `git add` is never
+asked to record the source's removal, the destination lands in the commit as a fresh
+`create mode` with no matching `delete mode`, and the old tree stays in the index pointing at
+files that no longer exist on disk — while the commit still exits 0 reporting success.
+
+**Why no existing gate catches an omission**: a directory-pathspec lint classifies only tokens
+that are *present* in a call site's pathspec; a missing token is an omission, not a textual
+pattern, so such a lint structurally cannot see it. Likewise, `git-commit-scoped.sh`'s own
+pathspec-classification gates (matched / already-staged-deletion / genuinely-unmatched, and the
+per-passed-path contention check) only ever inspect pathspecs they are *given* — an endpoint
+that was never passed is never evaluated by any of them. The rename-pairing discipline below is
+therefore a call-site obligation; no downstream gate can substitute for it.
+
+**Canonical illustration** (the pattern every call site below should match), from the vault
+rename site in `commands/todo.md`:
+
+```bash
+# Stage the rename's exact old and new paths together so `git add` records it as a rename
+# rather than leaving the old tree's removal unstaged. This is NOT a bare shared-directory
+# pathspec: both tokens name the two exact paths this one `mv` just touched, not an open-ended
+# directory sweep.
+stage_paths+=(specs/archive "${vault_path}/")
+```
+
+**Two mechanisms this rule must be honored under** (the two live call sites that pair
+endpoints, named by file plus step/stage, never by line number — both drift):
+
+- An **accumulator array**, in `commands/todo.md`: each move site appends `stage_paths+=("$old"
+  "$new")` to a shared array threaded through the whole archival recipe and consumed once at
+  its final commit step.
+- A **hand-written `git add` line**, in `skill-todo/SKILL.md`'s GitCommit stage: each of that
+  recipe's Stage 10 move sites appends to a `moved_paths[]` array, which the GitCommit stage's
+  `git add` invocation expands with `"${moved_paths[@]}"` rather than naming a fixed destination
+  directory.
+
+Both mechanisms satisfy the same rule; which one a given recipe uses is a function of whether it
+already carries a pathspec accumulator or builds its `git add` invocation inline — not a reason
+to relax the pairing requirement itself.
 
 ## Commit-Level Path Scoping and Cross-Process Serialization
 
