@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Created a 4-phase implementation plan for the git-add gitignore-advisory false-negative defect. Phase 1 replaces git-commit-scoped.sh's blind `if ! git add` guard with captured-output plus per-positive-pathspec index-state verification (git ls-files --error-unmatch + git diff --quiet with the :(exclude) entries passed through), tolerating the advisory exit 1 while still refusing a genuine nothing-staged failure with exit 2. Phases 2-4 add six regression cases plus a negative control to the existing test suite, record the positive-pathspec hazard in git-staging-scope.md, and run the full gate set with baseline-vs-post failure attribution. Waves: [1], [2,3], [4]; 3.25 hours estimated.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/325_git_add_ignore_advisory_aborts_commit/plans/01_git-add-advisory-tolerance.md",
+      "summary": "4-phase plan: post-add index-state verification at the git add step, regression coverage, staging-scope standards subsection, full-gate close-out."
+    }
+  ],
+  "dispatch_seq": 4,
+  "sorry_inventory": [],
+  "continuation_path": null
+}

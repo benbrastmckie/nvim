@@ -1,38 +1,25 @@
 {
-  "status": "researched",
-  "summary": "Confirmed the git-add gitignore-advisory false-negative defect live in an isolated scratch repo (git 2.54.0): a tracked, ignore-matched positive pathspec draws exit 1 but stages correctly, and git-commit-scoped.sh:395-400 wrongly treats that as fatal. Recommended fix: post-add per-path index-state verification (git ls-files + git diff --quiet) rather than trusting git add's exit code in either direction, or reusing git check-ignore -q (which disagrees with git add for this exact case). Ruled 325 and 304 should stay separate fixes (304's out-of-repo trigger is a hard whole-batch abort needing a pre-filter; 325's trigger is per-path-transparent needing only post-hoc tolerance). New finding: task 322's move-destination paths are a genuine git-add drop, not an advisory false negative, so 322 cannot rely on this fix and needs its own destination-ignored guard.",
-  "findings_count": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/325_git_add_ignore_advisory_aborts_commit/reports/01_git-add-ignore-advisory.md",
-      "summary": "Research report: confirms the git-add ignore-advisory false-negative defect, rules 325/304 stay separate fixes, identifies that task 322's move destinations hit a genuine (not false-negative) git-add drop, and recommends a post-add per-path index-state verification fix at git-commit-scoped.sh:395-400."
+      "type": "plan",
+      "path": "specs/325_git_add_ignore_advisory_aborts_commit/plans/01_git-add-advisory-tolerance.md",
+      "summary": "4-phase plan replacing git-commit-scoped.sh's blind git-add exit-code guard with post-add per-path index-state verification, plus regression coverage and a staging-scope standards subsection."
     }
   ],
-  "modified_files": [],
-  "memory_candidates": [
-    {
-      "content": "git's `git add` on a TRACKED file whose path matches a .gitignore rule (via a parent-dir pattern) prints the 'ignored by one of your .gitignore files' advisory and exits 1, but STILL STAGES the file correctly (verified git 2.54.0). This is a false-negative exit code, not a real failure. `git check-ignore -q` (index-aware) disagrees with `git add` for this exact case -- it reports 'not ignored' (exit 1) for the same tracked path, so it cannot be used to detect or avoid this advisory. The robust fix is to verify actual post-add index state per path (e.g. `git ls-files --error-unmatch` + `git diff --quiet`) rather than trusting `git add`'s exit code in either direction, and never to use `-f`/`--ignore-errors` as a blanket fix since that would also force-add genuinely-should-stay-ignored untracked paths.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/325_git_add_ignore_advisory_aborts_commit/reports/01_git-add-ignore-advisory.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["git add", "gitignore advisory", "false negative exit code", "check-ignore", "staging verification"]
-    },
-    {
-      "content": "When moving a tracked file via plain `mv` (not `git mv`) into a destination path that matches a .gitignore rule, `git add <dst>` genuinely fails to stage it (not an advisory false negative) because, from git add's perspective, the destination is a brand-new UNTRACKED path at add time -- rename detection is a diff/log-time heuristic, never applied during `git add` itself. `-f` is required to stage it (and once forced, git does correctly detect and report the rename). This differs from the tracked-path-matches-ignore-rule case, where the SAME path was already tracked before the add and staging succeeds despite the advisory.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/325_git_add_ignore_advisory_aborts_commit/reports/01_git-add-ignore-advisory.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git mv", "gitignore", "directory move", "rename detection", "git add -f"]
-    }
-  ],
-  "next_steps": "Run /plan 325 to create implementation plan",
+  "phase_count": 4,
+  "estimated_hours": 3.25,
+  "dependency_waves": [[1], [2, 3], [4]],
+  "memory_candidates": [],
+  "next_steps": "Run /implement 325 to execute the plan",
   "metadata": {
     "session_id": "sess_1791241405_83aa14_325",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 3
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 3.25,
+    "dependency_waves": [[1], [2, 3], [4]]
   },
-  "dispatch_seq": 1
+  "dispatch_seq": 4
 }

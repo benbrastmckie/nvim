@@ -35,9 +35,9 @@ next_project_number: 344
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-322 [RESEARCHED] — Fix /todo's directory-move staging gap: a moved task...
+322 [PLANNING] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-325 [RESEARCHED] — Stop git add's gitignore advisory exit code from aborting the...
+325 [PLANNED] — Stop git add's gitignore advisory exit code from aborting the...
 336 [NOT STARTED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
@@ -65,7 +65,7 @@ next_project_number: 344
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-337 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
+337 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 343 [NOT STARTED] — Bound an implementation agent's wait on a backgrounded...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
@@ -668,7 +668,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 337. Handoff required fields and dropped failure
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -2152,11 +2152,12 @@ hook-repair work by their titles and deliverables only.
 ---
 
 ### 325. Stop git add's gitignore advisory exit code from aborting the whole commit when the named file is tracked and was in fact staged
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [325_git_add_ignore_advisory_aborts_commit/reports/01_git-add-ignore-advisory.md]
+- **Plan**: [325_git_add_ignore_advisory_aborts_commit/plans/01_git-add-advisory-tolerance.md]
 
 **Description**: Stop git-commit-scoped.sh from aborting the whole commit when `git add` emits its gitignore advisory for a TRACKED file whose path matches an ignore rule: git exits 1 while correctly staging the file, and the script reads that false-negative exit as a hard failure. VERIFIED LIVE; hard blocker on every `/todo` archival run in repos where `specs/archive/` is gitignored.
 
@@ -2338,7 +2339,7 @@ Filed by the 2026-10-02 review: specs/reviews/review-2026-10-02.md
 ---
 
 ### 322. Todo move vacated source never staged
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
