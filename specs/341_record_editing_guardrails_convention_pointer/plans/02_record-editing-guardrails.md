@@ -226,7 +226,7 @@ and prose, **never an obligation and never an anchor**.
 
 ---
 
-### Phase 2: The record-maintenance diagnostics map [NOT STARTED]
+### Phase 2: The record-maintenance diagnostics map [COMPLETED]
 
 **Goal**: `agent-system/extensions/books/context/project/books/patterns/record-maintenance.md`
 exists and names where the diagnostics live, the order to run them, and what each certifies —
@@ -234,12 +234,12 @@ with zero statements about convention substance.
 
 **Tasks**:
 
-- [ ] Re-read, before writing, the live header comment blocks of
+- [x] Re-read, before writing, the live header comment blocks of *(completed)*
       `~/Projects/Logos/Verification/books/scripts/lint-validated-by.sh`,
       `check-citation-inventory.sh`, `check-evidence-append-only.sh` and
       `check-convention-version.sh`, and take the blocking/advisory split from **them**, not from
       this plan or from the research report (see Research Integration findings 4 and 5 for why).
-- [ ] `lint-validated-by.sh` — twelve checks. **Blocking**: CHECK 1 (marker presence and
+- [x] `lint-validated-by.sh` — twelve checks. **Blocking**: CHECK 1 (marker presence and *(completed)*
       well-formedness), CHECK 2 (instance liveness), and — once `docs/book-convention/` exists —
       CHECK 5 (cross-link integrity), CHECK 6 (anchor liveness), CHECK 7 (index/content
       agreement), CHECK 8 (orphaned-decision detection), CHECK 9 (decision status), CHECK 10
@@ -249,43 +249,43 @@ with zero statements about convention substance.
       blocking checks are fully mechanical exact-text checks against a confirmed-green baseline,
       so a false positive would be a bug in the script; the advisory ones are heuristics over
       free text and dates, so "the lint detects, the repository owner rules".
-- [ ] `check-citation-inventory.sh` — the zero-citation-loss **multiset** guard: a span moving
+- [x] `check-citation-inventory.sh` — the zero-citation-loss **multiset** guard: a span moving *(completed)*
       from one file to another is a pass; a span disappearing from the set entirely is a FAIL.
-- [ ] `check-evidence-append-only.sh` — the append-only guard over
+- [x] `check-evidence-append-only.sh` — the append-only guard over *(completed)*
       `docs/book-convention-evidence/NN-*.md` (README.md excluded, being the directory's
       migration-contract document). Every finding blocking; append-only is a property of **each
       commit**, not of the end state, so a rewritten entry is caught exactly like a dropped one;
       no reachable `.git` yields one INFO line and exit 0, reported rather than treated as green.
-- [ ] `check-convention-version.sh` — the three-surface comparison. Blocking: CHECK1 (record
+- [x] `check-convention-version.sh` — the three-surface comparison. Blocking: CHECK1 (record *(completed)*
       line), CHECK2 (generated manual binding), CHECK3 (record-vs-manual mismatch), CHECK5
       (amendment ↔ `CHANGELOG.md` bullet). **Advisory**: CHECK4, the extension-pin leg, with the
       reason (the extension deploys from another repository on its own schedule, so its lag is a
       deploy event there, not a defect in the consuming repository); an absent corpus is one INFO
       line.
-- [ ] **The order to run them**, and what each certifies — cheapest and most structural first,
+- [x] **The order to run them**, and what each certifies — cheapest and most structural first, *(completed)*
       so a structural break is found before a currency heuristic is read:
       `lint-validated-by.sh` → `check-citation-inventory.sh` → `check-evidence-append-only.sh` →
       `check-convention-version.sh`. State plainly that a green run of all four certifies marker
       and structural integrity, citation survival, evidence append-only history and version
       lockstep — and certifies **nothing** about whether a ruling was correct.
-- [ ] **The snapshot probe and the observer.** The extension ships **no** snapshot probe
+- [x] **The snapshot probe and the observer.** The extension ships **no** snapshot probe *(completed)*
       ("PROBE OWNERSHIP BOUNDARY (D3)"): `scripts/books-observe.sh` tests for an executable
       `books/tool/book-snapshot.sh` **in the consuming repository** and invokes it
       (`--diff <before> <after> --json`). The observer is `books-observe.sh` itself —
       topic/`task_type`-keyed, advisory, non-blocking.
-- [ ] **`/books` sub-mode boundaries**: `/books --review` is **strictly read-only** (it never
+- [x] **`/books` sub-mode boundaries**: `/books --review` is **strictly read-only** (it never *(completed)*
       proposes, never writes, never creates a task, never edits the convention, never advances a
       watermark — `patterns/books-review-submode.md`); `/books --revise` **never edits the
       record** (it proposes tasks; the tasks do the work — `patterns/books-revise-submode.md`).
-- [ ] **"The repository owns probes"**: the extension owns the **join**, not the probe — the
+- [x] **"The repository owns probes"**: the extension owns the **join**, not the probe — the *(completed)*
       observer joins `issues.jsonl`/`metrics.jsonl` with books-specific facts and invokes a probe
       that lives in the consuming repository.
-- [ ] **Where the records live**: SNAPSHOT — `specs/books-evidence/snapshot-{ISO_DATE}.json` (one
+- [x] **Where the records live**: SNAPSHOT — `specs/books-evidence/snapshot-{ISO_DATE}.json` (one *(completed)*
       file per snapshot, append-only directory); RUN — `specs/books-evidence/runs.jsonl` (one
       shared append-only log); OBSERVATION — `specs/{NNN}_{SLUG}/book.observation.json` (one per
       task, beside `.decisions.json`), plus the append-only digest log
       `specs/books-evidence/observations.jsonl` (one line per run).
-- [ ] Follow the corpus's own stated conventions: every figure carries a date and a measured
+- [x] Follow the corpus's own stated conventions: every figure carries a date and a measured *(completed)*
       marker; paths are always full; cross-references are plain backticked paths, never eager
       `@`-imports; citations are durable anchors.
 

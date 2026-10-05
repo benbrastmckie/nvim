@@ -1,0 +1,12 @@
+{
+  "phase": 2,
+  "phase_name": "The record-maintenance diagnostics map",
+  "started_at": "2026-10-05T00:15:00Z",
+  "last_updated": "2026-10-05T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create agent-system/extensions/books/context/project/books/patterns/record-maintenance.md naming the four diagnostics, run order, probe/observer boundary, sub-mode facts, and record locations, with no convention-substance restatement", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/record-maintenance.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
