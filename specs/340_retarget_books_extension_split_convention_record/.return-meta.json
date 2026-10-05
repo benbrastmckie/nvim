@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 340,
+  "session_id": "sess_1791222088_1f4b0c_340",
+  "dispatch_seq": 2,
+  "findings_count": 9,
+  "next_steps": "Run /plan 340 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/340_retarget_books_extension_split_convention_record/reports/02_split-retarget-grammar-and-anchors.md",
+      "summary": "Confirms the seed report's measured breakage line-for-line against the live books-observe.sh/test-books-observe.sh, extracts the consuming repo's exact lint-validated-by.sh discovery grammar (with a correction: the pointer arrow is Unicode U+2192, not ASCII '->', and the fault-frame dash is U+2014 em dash), resolves all six anchor citations to concrete docs/book-convention/NN-slug.md targets, corrects the seed's known-gap-register census claim (2/15/1 is already accurate; only the SHA/date are stale), confirms books/tool/book-snapshot.sh does not exist in the consuming repo (expected, not a defect), and recommends manifest.json placement for the convention_version/measured_at_commit pin."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a task description renders a Unicode pointer/separator character (e.g. a reduced-marker '-> full exercise history' pointer or a '--' heading dash) in ASCII form, verify the literal bytes in the actual source file before writing any regex against it -- the consuming repo in this case used U+2192 (->) and U+2014 (em dash), not their ASCII look-alikes, and the reference lint script (lint-validated-by.sh) already encodes the Unicode form correctly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/340_retarget_books_extension_split_convention_record/reports/02_split-retarget-grammar-and-anchors.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["unicode", "regex", "markdown-rendering", "books-extension", "transcription-artifact"]
+    },
+    {
+      "content": "check-extension-docs.sh imposes no top-level-key schema restriction on an extension's manifest.json -- its checks walk specific known keys (provides.*, routing_agents*, observers) and never reject an unrecognized sibling key. A new structured pin/version field can be added safely to any extension's manifest.json without tripping the gate.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/340_retarget_books_extension_split_convention_record/reports/02_split-retarget-grammar-and-anchors.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["manifest.json", "check-extension-docs", "extension-schema", "pin-field"]
+    }
+  ]
+}

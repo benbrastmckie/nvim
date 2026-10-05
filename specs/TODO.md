@@ -45,7 +45,7 @@ next_project_number: 343
 ### Extensions
 
 339 [RESEARCHED] — Record the tabular-presentation convention in the typst...
-340 [RESEARCHING] — Retarget the books extension to the split convention record...
+340 [RESEARCHED] — Retarget the books extension to the split convention record...
   └─ 341 [NOT STARTED] — Record-editing guardrails and the convention-maintenance...
     └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
@@ -317,11 +317,11 @@ Seed report: specs/341_record_editing_guardrails_convention_pointer/reports/01_s
 
 ### 340. Retarget the books extension to the split convention record and pin the convention version
 - **Effort**: 1-2 days
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
-- **Research**: [340_retarget_books_extension_split_convention_record/reports/01_seed-books-extension-split-retarget.md]
+- **Research**: [340_retarget_books_extension_split_convention_record/reports/02_split-retarget-grammar-and-anchors.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
 gitignored, disposable deploy artifact regenerated from the source store; a file hand-authored there
