@@ -11,7 +11,7 @@ next_project_number: 344
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,342,343 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,342,343 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
@@ -21,7 +21,6 @@ next_project_number: 344
 
 ### Core Agent System
 
-185 [IMPLEMENTING] — Retarget the remaining historical "Stage N" and "Stage MT-N"...
 251 [NOT STARTED] — Context-corpus reachability probe (filename, directory,...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state...
     └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell...
@@ -716,6 +715,39 @@ DO NOT resolve this by relaxing `validate-handoff.sh` so the failure stops appea
 --- SITES ---
 
 Verify by grep rather than trusting this list: agent-system/extensions/core/scripts/validate-handoff.sh (the validator and its required set), agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh (the caller, the COMPLETION-CLAIM GATE, and where a durable trace would be written), agent-system/extensions/core/docs/architecture/handoff-schema.md (the schema contract this must stay consistent with), and whichever agent files or templates instruct handoff authoring.
+--- SECOND CONFIRMING INSTANCE (measured live 2026-10-05, nvim/, batch session sess_1791222088_1f4b0c, an ordinary three-task /orchestrate run) ---
+
+This batch reproduces the defect in a form that settles observation (a) beyond argument. All three
+implement-phase dispatches were `general-implementation-agent`, in the SAME batch, under the SAME
+session:
+
+  - task 340: blockers ABSENT, summary ABSENT -> 2 FAIL (`HANDOFF VALIDATION FAILED`)
+  - task 339: clean -> PASS
+  - task 341: clean -> PASS
+
+Same agent, same batch, same session, divergent output: per-dispatch inconsistency in
+hand-authored JSON, not a per-agent template defect. The 2026-10-04 instance inferred that from
+one agent's mixed record; this instance confirms it under tighter controls.
+
+NEW DATUM BEARING ON THE (i)/(ii) CHOICE: task 341's handoff was clean ONLY because the
+orchestrator, having just watched task 340 fail, told the agent in a resume message to include a
+non-empty `summary` and a `blockers` array. Prose instruction demonstrably works -- and
+demonstrably only when someone remembers to issue it for that one dispatch. That is the argument
+for option (i)'s "composing helper the agents call, rather than prose in each agent file asking
+them to remember", and should be recorded as evidence for it rather than re-derived.
+
+ALSO CONFIRMED: both failures again completed via `COMPLETION-CLAIM GATE case 2/3 (phase
+accounting present and complete)` with no durable trace. state.json, the return-meta,
+events.jsonl and the batch `detected_defects` array were all empty of it; the consolidated batch
+output rendered `detected_defects: []`. The verdict reached a human only because the orchestrator
+happened to re-run `validate-handoff.sh` by hand.
+
+INDEPENDENT OF THE COMPLETION-DEPLOY GATE: task 341's postflight was separately refused by the
+completion-deploy gate (exit 6, stale deploy) AFTER its handoff validation had passed. The two
+gates are independent; do not conflate them when wiring the durable trace.
+
+Observation (b) holds unchanged: all three dispatches again emitted WARN for absent
+`sorry_inventory`, and tasks 339/340 for absent `continuation_path`.
 
 ---
 
@@ -1817,6 +1849,32 @@ Both halves are in scope, and the test corpus is a first-class target rather tha
   - Incremental: one cluster or one file per phase, full suite green and committed before the next starts.
   - Re-measure with script-inventory.sh at the start; the 2026-10-03 figures above are a snapshot, and the probe's own output is the authoritative input.
   - Note task 250's deferred follow-up: it left roughly half the redeploy-checkpoint region inline in orchestrate-cycle-plan.sh (the 479-line move broke test-lint-deploy-caller-wrap.sh's invariant), and separately flagged that deploy-headless.sh's --skip-verify defers run-all.sh so ~40 deploy-tree-first suites are not exercised against a freshly-redeployed tree. Both are in scope here.
+RE-MEASURED 2026-10-05 (nvim/, batch session sess_1791222088_1f4b0c) -- two corrections to the
+test-corpus runtime figures above, both of which strengthen the case:
+
+  - The corpus is larger than the 85 recorded above, in two ways the phrase "85 suites under
+    core/scripts/tests/" conflates. That directory itself now holds 89 `test-*.sh` files. But
+    run-all.sh does not run only that directory: one invocation was observed starting 111+ suites
+    spanning core, typst, literature and other extensions before it was stopped. Establish the
+    true count from run-all.sh's own discovery pass, not from `ls` of one directory -- the
+    efficiency target is whatever that pass actually runs.
+  - The 117.9s Gate 8 figure is a PARALLEL measurement and must not be read as the corpus's
+    runtime. verify-deploy.sh requests run-all.sh's opt-in `--jobs` (capped at JOBS_CAP=4);
+    run-all.sh's own default is `--jobs 1`. A bare sequential run reached only ~53 of 111+ suites
+    after ~330s without concluding -- roughly 4-5x the recorded figure. run-all.sh additionally
+    forces `--jobs` to 1 whenever it is reached from inside another run-all.sh suite, so the
+    sequential path is reachable even when a caller asked for parallelism.
+
+WHY THAT ASYMMETRY IS ITSELF IN SCOPE HERE: the fast path is opt-in and the slow path is the
+default, so every caller who does not know to pass `--jobs` -- including an agent that types the
+obvious command during a dispatch -- pays the 4-5x. Consider whether the default should invert
+(parallel by default, `--jobs 1` to opt out), a division-of-labor question of exactly the kind this
+task owns. The nesting rule above is the one real constraint on inverting it.
+
+OBSERVED CONSEQUENCE: in that batch Gate 8 could not conclude within a dispatch's practical budget
+and was closed as a documented Reasoned Exclusion rather than enforced. Task 170 carries the full
+write-up of that failure mode; it is recorded here because the runtime half of the cause is this
+task's to fix.
 
 ---
 
@@ -2469,7 +2527,7 @@ Cite durable anchors only in anything written into the source store -- never a t
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 265, Task 316
+- **Dependencies**: Task 265
 
 **Description**: Wire the directory-pathspec boundary lint into `verify-deploy.sh` as a numbered gate, so the rule it enforces cannot silently regress. The lint and its fixture test already exist and pass; only the gate wiring is missing, and it was deliberately deferred because the wiring target is an orchestrator-critical path.
 
@@ -2704,7 +2762,7 @@ RESPONSIBILITY SPLIT, implemented by the two dependent tasks: /todo prunes; /rev
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 184, Task 263, Task 273, Task 277, Task 279, Task 284, Task 285, Task 302
+- **Dependencies**: Task 184, Task 263, Task 273, Task 284, Task 285, Task 302
 
 **Description**: Make an out-of-repository path in a commit pathspec list non-fatal for the rest of the list, so one bad entry cannot abort staging for every valid path while the task still reports success. A narrow fix with a mechanically located cause; research rules on WHERE the fix belongs and on one genuinely open design question, it does not re-litigate whether the defect is real.
 
@@ -2858,7 +2916,7 @@ Read `context/standards/git-staging-scope.md`'s exit-code table before planning;
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 271, Task 279
+- **Dependencies**: Task 271
 
 **Description**: Make `validate-state.sh`'s omitted-argument state-file default resolve against the repository being validated rather than the current working directory, and survey sibling scripts for the same latent pattern. A narrow, verified fix with a known mechanism — research confirms the resolution strategy and the survey, it does not re-litigate whether the defect is real.
 
@@ -2953,7 +3011,7 @@ Consider whether this task's own remedy should be the same discovery technique, 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 44, Task 292, Task 300, Task 309
+- **Dependencies**: Task 300
 
 **Description**: Pass `--task` at every commit-staging site so `git-commit-scoped.sh`'s contended-path lease is actually consulted, and rule on whether the sanctioned task-scoped directory pathspec carve-out should be narrowed. This task was originally two halves; HALF 1 IS NOW DONE and must not be re-done.
 
@@ -3907,7 +3965,7 @@ references in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 272, Task 51
+- **Dependencies**: Task 272
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -4176,7 +4234,7 @@ proposal from evidence is not approval to fire it.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 51
+- **Dependencies**: None
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
@@ -4301,7 +4359,7 @@ FILE_SCOPE WIDENED by this absorption: `commands/orchestrate.md`, `scripts/orche
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 269, Task 279
+- **Dependencies**: None
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact regenerated by the loader -- see rules/source-store-deploy-boundary.md).
 
@@ -4399,7 +4457,7 @@ the rendering work item rather than filing it separately.
 - **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 165, Task 266, Task 316
+- **Dependencies**: Task 165, Task 266
 - **Research**: [265_parallelize_gate8_shell_test_suite/reports/01_gate8-parallel-and-inline-verify.md]
 - **Plan**: [265_parallelize_gate8_shell_test_suite/plans/01_gate8-jobs-and-inline-verify.md]
 - **Summary**: [265_parallelize_gate8_shell_test_suite/summaries/01_gate8-jobs-and-inline-verify-summary.md]
@@ -4933,7 +4991,7 @@ Serialization-only, not semantic: this task does not consume any output of the G
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 249, Task 44, Task 127
+- **Dependencies**: Task 127
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**).
 
@@ -5028,7 +5086,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 - **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 199, Task 245, Task 249, Task 259, Task 265, Task 266
+- **Dependencies**: Task 199, Task 245, Task 259, Task 265, Task 266
 - **Research**: [250_script_corpus_inventory_and_engine_decomposition/reports/01_script-corpus-inventory-probe-and-decomposition.md]
 - **Plan**: [250_script_corpus_inventory_and_engine_decomposition/plans/01_inventory-probe-and-decomposition.md]
 - **Summary**: [250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md]
@@ -5345,12 +5403,13 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 ---
 
 ### 185. Retarget stage citations to move vocabulary
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: markdown
 - **Topic**: core-agent-system
 - **Dependencies**: Task 266, Task 199, Task 184
 - **Research**: [185_retarget_stage_citations_to_move_vocabulary/reports/01_stage-citation-survey.md]
 - **Plan**: [185_retarget_stage_citations_to_move_vocabulary/plans/01_stage-citation-retarget.md]
+- **Summary**: [185_retarget_stage_citations_to_move_vocabulary/summaries/01_stage-citation-retarget-summary.md]
 
 **Description**: Retarget the remaining historical "Stage N" and "Stage MT-N" citations to the four-move loop vocabulary.
 
@@ -5407,7 +5466,7 @@ ACCEPTANCE: a recorded decision with rationale; if a gap is confirmed, either a 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 51, Task 129, Task 151, Task 169, Task 206, Task 215, Task 250, Task 251
+- **Dependencies**: Task 206, Task 215, Task 250, Task 251
 
 **Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 
@@ -5712,6 +5771,41 @@ METHOD NOTE for the fixture-completeness class: the reliable detection is to enu
 diff that set against the suite's copy-list. That is mechanical and worth doing corpus-wide; a
 lint for it would prevent the class recurring, and is a better deliverable than fixing the
 current instances one at a time.
+=== THIRD INSTANCE, AND A NEW FAILURE MODE THE BLAST-RADIUS PARAGRAPH DOES NOT COVER (measured 2026-10-05, nvim/, batch session sess_1791222088_1f4b0c) ===
+
+A bare sequential `bash agent-system/extensions/core/scripts/tests/run-all.sh` on an otherwise
+idle checkout produced FOUR failing suites. Three are already in this task's own file_scope -- a
+third independent confirmation of the audit premise:
+
+  - test-gate-out-repair-reporting.sh        (in file_scope)
+  - test-lint-json-channel-discipline.sh     (in file_scope)
+  - test-orchestrate-cycle-plan.sh           (in file_scope)
+  - test-orchestrate-recover-outcome.sh      (ADDED to file_scope by this revision)
+
+Caveat to carry into triage rather than assume away: the checkout carried an uncommitted
+source-store modification to scripts/orchestrate-cycle-plan.sh from a concurrent session, a
+plausible honest cause for test-orchestrate-cycle-plan.sh specifically. Re-measure on a clean
+tree before attributing that one to host coupling.
+
+THE NEW FAILURE MODE: the blast-radius paragraph above describes a flaky Gate 8 DEFERRING an
+orchestrate batch. This batch exhibited a worse, quieter outcome -- Gate 8 was EXCLUDED rather
+than enforced. In task 341's implement dispatch the agent could not get run-all.sh to conclude (a
+570s foreground attempt and a backgrounded run both failed to reach a summary line), so it closed
+the phase [COMPLETED WITH EXCLUSIONS] with an evidence-bearing Reasoned Exclusion for Gate 8, and
+the task completed green. That is correct under the exclusion contract, which is exactly why it is
+dangerous: a gate that cannot finish inside a dispatch's practical budget stops being a gate and
+becomes a line in an exclusions table, with no red signal anywhere. A flaky gate trains readers to
+re-run; an unfinishable one trains them to exclude.
+
+RUNTIME MEASUREMENT BEHIND THAT EXCLUSION (the timing axis this task owns): core/scripts/tests/
+holds 89 `test-*.sh` files, but run-all.sh does not run only that directory -- one invocation was
+observed starting 111+ suites across core, typst, literature and others. A bare sequential run had
+reached only ~53 reported results after ~330s and still had not concluded when stopped past ~450s.
+Gate 8's recorded 117.9s is a PARALLEL figure: verify-deploy.sh requests run-all.sh's opt-in
+`--jobs` (capped at JOBS_CAP=4), whereas run-all.sh's own default is `--jobs 1`. Any timeout tuned
+to the former fails against the latter. Note also run-all.sh's rule that `--jobs` is forced to 1
+when it is reached from inside another run-all.sh suite, which makes the sequential path reachable
+even when a caller asked for parallelism.
 
 ---
 
@@ -5863,7 +5957,7 @@ ACCEPTANCE: each mode section loads only when its mode is selected; all seven li
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 210, Task 22, Task 241
+- **Dependencies**: Task 22
 
 **Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is deploy-engine (lua merge-path) and manifest-surface work for extension MCP registration, unrelated to the orchestrate-engine collapse; the consolidation audit confirmed no overlap with the routing ladder it carries forward. Original description follows.Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
 

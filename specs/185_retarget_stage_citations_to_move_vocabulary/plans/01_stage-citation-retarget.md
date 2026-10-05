@@ -1,7 +1,7 @@
 # Implementation Plan: Task #185
 
 - **Task**: 185 - Retarget the remaining historical "Stage N" and "Stage MT-N" citations to the four-move loop vocabulary
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: Task 88 (the four-move rewrite) is complete. Ordered behind the concurrent
   engine-editing siblings that touch `batch-orchestration-guardrails.md` and `handoff-schema.md`.
