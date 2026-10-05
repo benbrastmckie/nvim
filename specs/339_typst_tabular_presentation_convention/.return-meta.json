@@ -20,14 +20,24 @@
       "category": "PATTERN",
       "source_artifact": "specs/339_typst_tabular_presentation_convention/summaries/01_tabular-presentation-convention-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["index-entries.json", "line_count", "generate-context-line-counts", "scoped-staging", "concurrent-siblings"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "generate-context-line-counts",
+        "scoped-staging",
+        "concurrent-siblings"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791222088_1f4b0c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 2,
     "phases_total": 2
   }

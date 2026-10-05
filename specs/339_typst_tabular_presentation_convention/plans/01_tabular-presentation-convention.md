@@ -1,7 +1,7 @@
 # Implementation Plan: Task #339
 
 - **Task**: 339 - Record the tabular-presentation convention in the typst extension context
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.75 hours
 - **Dependencies**: None (prose prerequisite: the upstream Verification-repo ruling, confirmed present at research time)
 - **Research Inputs**: specs/339_typst_tabular_presentation_convention/reports/01_tabular-presentation-convention.md

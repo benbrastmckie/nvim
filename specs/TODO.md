@@ -11,7 +11,7 @@ next_project_number: 343
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,339,340 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,185,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,337,338,340 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,302,303,335,341 | 22,251,271,272,280,284,300,340 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,342 | 273,275,281,284,302,341 | core-agent-system, extensions, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
@@ -44,7 +44,6 @@ next_project_number: 343
 
 ### Extensions
 
-339 [IMPLEMENTING] — Record the tabular-presentation convention in the typst...
 340 [IMPLEMENTING] — Retarget the books extension to the split convention record...
   └─ 341 [NOT STARTED] — Record-editing guardrails and the convention-maintenance...
     └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
@@ -433,12 +432,13 @@ Seed report: specs/340_retarget_books_extension_split_convention_record/reports/
 ---
 
 ### 339. Record the tabular-presentation convention in the typst extension context: pagination/element-choice in tables-and-figures.md and a tabular Per-Element Semantics entry in semantic-element-usage.md
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [339_typst_tabular_presentation_convention/reports/01_tabular-presentation-convention.md]
 - **Plan**: [339_typst_tabular_presentation_convention/plans/01_tabular-presentation-convention.md]
+- **Summary**: [339_typst_tabular_presentation_convention/summaries/01_tabular-presentation-convention-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/** (never .claude/**), per
 rules/source-store-deploy-boundary.md. The deployed .claude/ tree is a disposable artifact
