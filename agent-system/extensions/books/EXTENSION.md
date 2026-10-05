@@ -45,7 +45,7 @@ not the content itself. **Detection note**: a `books` task naming a `.lean` file
 ### Book Directory Layout (flattened)
 
 `<package-dir>/books/<name>/` holds `book.toml`, `book.cert.json` and `book.typ` side by side —
-never a `docs/` subdirectory. See `rules/books.md` for the full non-negotiable set.
+never a `docs/` subdirectory. See `rules/books.md` for the full non-negotiable set, and `rules/book-convention-record.md` for editing the record itself.
 
 ### Observer
 
@@ -57,4 +57,4 @@ books-specific facts. See `context/project/books/standards/observation-record.md
 
 ### Context Pointers
 
-- `context/project/books/README.md` — navigation index of the domain corpus (twenty docs), reachable on demand
+- `context/project/books/README.md` — navigation index of the domain corpus (twenty-one docs), reachable on demand; see `patterns/record-maintenance.md` for the record-editing diagnostics map

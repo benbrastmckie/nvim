@@ -32,7 +32,8 @@
       "books.md"
     ],
     "rules": [
-      "books.md"
+      "books.md",
+      "book-convention-record.md"
     ],
     "context": [
       "project/books"

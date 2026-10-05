@@ -50,6 +50,7 @@ grep. None is auto-loaded into a dispatch. This README is the only entry point.
 | `patterns/signal-tagging.md` | How working agents populate `tags.dimension`/`tags.polarity`/`tags.burden` on an `issues.jsonl` entry, with one worked example per dimension | Tagging a signal mid-dispatch so it survives into the observation record |
 | `patterns/books-review-submode.md` | The complete and only specification for `/books --review`: per-dimension figures and trends, WHAT IS UNMEASURED, cost/issue-class/burden reporting, and the funnel to `--revise` | Running or modifying `/books --review` |
 | `patterns/books-revise-submode.md` | The complete and only specification for `/books --revise`: the mandatory decision-record research step, the binding-clause research-and-escalate fork, backlog reconciliation, lead-session-only gates, and the watermark | Running or modifying `/books --revise` |
+| `patterns/record-maintenance.md` | Where the record-editing diagnostics live, their blocking/advisory split, and the probe-ownership boundary | Amending the convention record, or deciding which check certifies what |
 
 ## Reading order, by what you are doing
 

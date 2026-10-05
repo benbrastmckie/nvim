@@ -328,18 +328,18 @@ differ again, the live script wins and this plan's numbers are stale.
 
 ---
 
-### Phase 3: Registration in the books extension [NOT STARTED]
+### Phase 3: Registration in the books extension [COMPLETED]
 
 **Goal**: both new files are declared by the extension and discoverable through its own
 navigation, with `EXTENSION.md` still at or under 60 lines.
 
 **Tasks**:
 
-- [ ] `manifest.json`: add `"book-convention-record.md"` to `provides.rules` (now
+- [x] `manifest.json`: add `"book-convention-record.md"` to `provides.rules` (now *(completed)*
       `["books.md", "book-convention-record.md"]`). Required — Rule H *fails* on a rule file on
       disk that is absent from `provides.rules`. `provides.context` already covers the new
       context file via its directory-level `"project/books"` reference; no change there.
-- [ ] `index-entries.json`: add one entry for `project/books/patterns/record-maintenance.md`,
+- [x] `index-entries.json`: add one entry for `project/books/patterns/record-maintenance.md`, *(completed)*
       matching the on-demand majority pattern used by nineteen of the twenty-one existing
       entries: `"on_demand": true`, `"load_when": {"agents": [], "task_types": []}`,
       `"domain": "project"`, `"subdomain": "books"`, a `topics` array, a one-sentence `summary`,
@@ -348,7 +348,7 @@ navigation, with `EXTENSION.md` still at or under 60 lines.
       Keep within `index.schema.json`'s closed field set (Rule T): required
       `path`/`domain`/`summary`/`line_count`; optional `subdomain`/`topics`/`keywords`/
       `load_when`/`on_demand`; **no** `description`, `tags` or `tier` keys.
-- [ ] `EXTENSION.md`: add a pointer to the new rule and a pointer to the new context file, at
+- [x] `EXTENSION.md`: add a pointer to the new rule and a pointer to the new context file, at *(completed)*
       **zero net line growth**. Fold them into existing sentences rather than adding a new `###`
       section — the `### Book Directory Layout (flattened)` section's closing sentence already
       says "See `rules/books.md` for the full non-negotiable set" and is the natural host for the
@@ -356,9 +356,9 @@ navigation, with `EXTENSION.md` still at or under 60 lines.
       Offset any wrap-induced growth with a trim in the same file; `### Book Directory Layout
       (flattened)` is the best trim candidate because its substance is already `rules/books.md`
       item 3 and the section is a pointer, not content.
-- [ ] `EXTENSION.md`: update the `### Context Pointers` bullet's "(twenty docs)" count to match
+- [x] `EXTENSION.md`: update the `### Context Pointers` bullet's "(twenty docs)" count to match *(completed)*
       the corpus's new document count.
-- [ ] `context/project/books/README.md`: add one row to the `## Navigation` table for
+- [x] `context/project/books/README.md`: add one row to the `## Navigation` table for *(completed)*
       `patterns/record-maintenance.md` (Subject: where the record-editing diagnostics live, their
       blocking/advisory split, and the probe-ownership boundary; Read this when: amending the
       convention record, or deciding which check certifies what), and reconcile the two
@@ -368,7 +368,7 @@ navigation, with `EXTENSION.md` still at or under 60 lines.
       registered-but-unnavigable document contradicts the corpus's own stated invariant; the row
       is prose, not a mechanism, so it stays inside this task's scope boundary; and the corpus
       rework task that would otherwise absorb it is on `[HOLD]`.
-- [ ] Do **not** touch `convention_version` or `measured_at_commit`. Obligation 7 describes the
+- [x] Do **not** touch `convention_version` or `measured_at_commit`. Obligation 7 describes the *(completed)*
       bump; this task performs none.
 
 **Timing**: 0.75 hours

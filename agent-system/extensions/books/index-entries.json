@@ -21,7 +21,7 @@
         "books-convention",
         "corpus-index"
       ],
-      "summary": "Navigation index for the books domain corpus: a twenty-row table with a read-this-when per document, three reading orders by task, and the corpus's own conventions.",
+      "summary": "Navigation index for the books domain corpus: a twenty-one-row table with a read-this-when per document, three reading orders by task, and the corpus's own conventions.",
       "keywords": [
         "books",
         "book.toml",
@@ -532,6 +532,31 @@
         "binding-clause",
         "watermark",
         "backlog-reconciliation"
+      ]
+    },
+    {
+      "path": "project/books/patterns/record-maintenance.md",
+      "line_count": 65,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "books",
+      "topics": [
+        "record-editing-diagnostics",
+        "blocking-advisory-split",
+        "probe-ownership"
+      ],
+      "summary": "Where the four record-editing diagnostics live and the order to run them, the blocking/advisory split per script, the snapshot-probe/observer ownership boundary, the /books sub-mode read-only facts, and the three record locations.",
+      "keywords": [
+        "lint-validated-by.sh",
+        "check-citation-inventory.sh",
+        "check-evidence-append-only.sh",
+        "check-convention-version.sh",
+        "books-observe.sh",
+        "record-maintenance"
       ]
     }
   ]
