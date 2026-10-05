@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/339_typst_tabular_presentation_convention/reports/01_tabular-presentation-convention.md",
+      "summary": "Confirms the upstream Verification-repo tabular-presentation ruling and records the two context-file additions plus the typst-element-lint.sh decision."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/typst/context/project/typst/patterns/tables-and-figures.md",
+      "summary": "Added a Pagination and Element Choice section (figure non-breakability, the breakable show-rule mechanism and placement, header-repeat/caption-position decisions) and a Mechanical Check: Not Added subsection."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md",
+      "summary": "Added a Tabular / Key-Value Data Per-Element Semantics entry stating the grid-vs-description-list choice rule, consistent with the Universal Placement Rule."
+    }
+  ],
+  "next_steps": "The two context-file additions are already made and committed (commit 7af9640c9). Proceed to /plan 339 only if the orchestrator's phase gate requires a plan artifact before closing the task; otherwise the task can move straight to completion since the dispatch's three work items and acceptance criteria are already satisfied.",
+  "metadata": {
+    "session_id": "sess_1791222088_1f4b0c_339",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 1200,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 3
+  },
+  "memory_candidates": [],
+  "modified_files": [
+    "agent-system/extensions/typst/context/project/typst/patterns/tables-and-figures.md",
+    "agent-system/extensions/typst/context/project/typst/standards/semantic-element-usage.md"
+  ]
+}

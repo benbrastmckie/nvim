@@ -44,8 +44,8 @@ next_project_number: 343
 
 ### Extensions
 
-339 [NOT STARTED] — Record the tabular-presentation convention in the typst...
-340 [NOT STARTED] — Retarget the books extension to the split convention record...
+339 [RESEARCHED] — Record the tabular-presentation convention in the typst...
+340 [RESEARCHING] — Retarget the books extension to the split convention record...
   └─ 341 [NOT STARTED] — Record-editing guardrails and the convention-maintenance...
     └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
@@ -317,7 +317,7 @@ Seed report: specs/341_record_editing_guardrails_convention_pointer/reports/01_s
 
 ### 340. Retarget the books extension to the split convention record and pin the convention version
 - **Effort**: 1-2 days
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -432,10 +432,11 @@ Seed report: specs/340_retarget_books_extension_split_convention_record/reports/
 ---
 
 ### 339. Record the tabular-presentation convention in the typst extension context: pagination/element-choice in tables-and-figures.md and a tabular Per-Element Semantics entry in semantic-element-usage.md
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [339_typst_tabular_presentation_convention/reports/01_tabular-presentation-convention.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/** (never .claude/**), per
 rules/source-store-deploy-boundary.md. The deployed .claude/ tree is a disposable artifact
