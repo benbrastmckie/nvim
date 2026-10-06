@@ -335,32 +335,32 @@ existing sentence was reworded.
 
 ---
 
-### Phase 4: Full gate and deploy-boundary close-out [NOT STARTED]
+### Phase 4: Full gate and deploy-boundary close-out [COMPLETED]
 
 **Goal**: the full repository gate set is run and accounted for, with the source/deploy divergence
 explicitly attributed rather than left as an unexplained failure.
 
 **Tasks**:
-- [ ] Capture a **baseline** `bash .claude/scripts/verify-deploy.sh --skip-slow` result *before*
+- [x] Capture a **baseline** `bash .claude/scripts/verify-deploy.sh --skip-slow` result *before*
       drawing any conclusion, recording the gate numbers and file names of every pre-existing
-      failure (sibling tasks are live on this tree this cycle).
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` (or `--skip-slow`, stating which form was run)
-      and record the full PASS/FAIL tally.
-- [ ] Attribute every failure by name. Specifically expect gate 5 (manifest-driven category parity
+      failure (sibling tasks are live on this tree this cycle). *(completed: --skip-slow baseline captured first, FAIL -- 2 of 33 -- gate3 doc-lint + gate5 content-hash, both my 3 deliberately-edited files)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` (or `--skip-slow`, stating which form was run)
+      and record the full PASS/FAIL tally. *(completed: full form run, FAIL -- 3 of 34)*
+- [x] Attribute every failure by name. Specifically expect gate 5 (manifest-driven category parity
       and content-hash equality) to register the source store being ahead of `.claude/` for
       `git-commit-scoped.sh`, `test-git-commit-scoped.sh`, and `git-staging-scope.md` — this is
       the deliberate, documented consequence of editing the source store without redeploying, not
-      a regression. Any failure in a file outside this task's scope is **reported**, not fixed.
-- [ ] Re-run the full `test-git-commit-scoped.sh` suite once more against the final tree state and
-      confirm `FAILED=0`.
-- [ ] Confirm `git status --short` shows no modification under `.claude/` attributable to this
-      task.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` over the final tree.
-- [ ] Record, in the implementation summary rather than in any deliverable file, that the fix is
+      a regression. Any failure in a file outside this task's scope is **reported**, not fixed. *(completed: see implementation summary for the full attribution table)*
+- [x] Re-run the full `test-git-commit-scoped.sh` suite once more against the final tree state and
+      confirm `FAILED=0`. *(completed: 32 passed, 0 failed)*
+- [x] Confirm `git status --short` shows no modification under `.claude/` attributable to this
+      task. *(completed)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` over the final tree. *(completed: 0 unexempted occurrences)*
+- [x] Record, in the implementation summary rather than in any deliverable file, that the fix is
       live in the source store only until an operator regeneration (`<leader>al` "Reload All", or
       `deploy-headless.sh`) — and that consumer repositories blocked by this defect pick it up at
-      their next deploy, not from this commit.
-- [ ] Commit the final green state.
+      their next deploy, not from this commit. *(completed: recorded in the implementation summary)*
+- [x] Commit the final green state. *(completed)*
 
 **Timing**: 0.5 hours
 
