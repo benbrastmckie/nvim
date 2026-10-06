@@ -1,5 +1,5 @@
 ---
-next_project_number: 344
+next_project_number: 345
 ---
 
 # TODO
@@ -12,10 +12,10 @@ next_project_number: 344
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
-| 4 | 312,328 | 170,282,300,303,304,318 | core-agent-system, orchestrator |
-| 5 | 313 | 306,328 | core-agent-system |
+| 2 | 29,170,273,275,281,302,303,335,344 | 22,251,271,272,280,284,300,311 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
+| 4 | 312,328 | 170,282,300,303,304,318,344 | core-agent-system, orchestrator |
+| 5 | 313 | 306,328,344 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -61,13 +61,93 @@ next_project_number: 344
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 311 [NOT STARTED] — Replace static build-heavy family membership with a measured...
+  └─ 344 [NOT STARTED] — Carry the batching-by-default doctrine to the point of use,...
+    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
+    └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 343 [RESEARCHING] — Bound an implementation agent's wait on a backgrounded...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
-312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 
 ## Tasks
+
+### 344. Carry the batching-by-default doctrine to the point of use, and make a territory overlap produce a serializing edge rather than a separation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 280, Task 311
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept.
+
+GOAL. Make batching-by-default reachable at the moment an agent composes an /orchestrate invocation or writes a batch plan, and make shared file territory a reason to BATCH WITH A SERIALIZING EDGE rather than a reason to separate.
+
+THE DOCTRINE ALREADY EXISTS -- DO NOT RE-AUTHOR IT. context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default" section already states the dominance rule (shared file territory > topic cohesion > graph shape) and rule 1's unconditional mandate, including that territory wins "even when doing so collapses the batch to width 1 (full serialization) and gains nothing from parallel dispatch except collision visibility". The mechanism is sound too: wave dispatch serializes on any dependencies[] edge, and the per-cycle status/description/file_scope refresh in scripts/orchestrate-cycle-plan.sh lets a wave-N task re-scope a wave-N+1 task mid-run. THE GAP IS THAT NOTHING CARRIES THIS DOCTRINE TO THE POINT OF USE, and several surfaces actively teach its opposite. An implementer who sets out to write the doctrine from scratch has misread the task.
+
+=== ITEM 1 -- STATE THE RULE AT THE ALWAYS-LOADED LAYER ===
+merge-sources/claudemd.md already names the guardrails' "Batching Is the Default" section and already says "for which tasks to batch together" -- THE POINTER IS NOT MISSING. Verified independently twice. The defect is placement and framing: it sits directly under the "Multi-task syntax" label following the command table, with no heading of its own between it and the commands, so it reads as comma grammar and is never followed. Add one operative sentence stating the default posture and the overlap-to-edge move, keeping the pointer. JUSTIFY THE TOKEN COST IN WRITING: a posture must fire BEFORE any file read, and a posture discoverable only by reading a 1,795-line pattern file never fires. If research concludes the always-loaded layer should NOT state it, that conclusion must be argued on the same ground rather than assumed.
+
+=== ITEM 2 -- NAME THE OVERLAP-TO-EDGE OPERATION AS THE DEFAULT MOVE ===
+In the guardrails doc and context/patterns/multi-task-operations.md. Today the doctrine says territory-overlapping tasks are mandatory together but never says what to DO about an unordered overlapping pair. State serialize-by-edge as the default move on an overlap.
+
+=== ITEM 3 -- RULE 1 HAS NO NARROWNESS QUALIFIER (FIRST-CLASS ITEM, NOT A FOOTNOTE) ===
+Component 0 of docs/reference/standards/multi-task-creation-standard.md carries a narrowness qualifier ("a shared NARROW file_scope entry or one named acceptance gate -- not a broad, widely-edited infrastructure file or a directory-root scope"). The dominance rule's rule 1 carries NO such qualifier. Two MEASURED instances, both 2026-10-06, both to be re-measured at implementation time:
+
+(i) GLOBAL REPO: declaring agent-system/extensions/core/manifest.json in a proposed file_scope made FIVE open tasks one "mandatory" group under rule 1, purely via a registration file. This task's own host-script ruling (Item 6) deliberately avoids manifest.json precisely to keep its mandatory group at 3 rather than 6 -- so that scoping choice is itself a worked instance of this finding and should be cited as one.
+
+(ii) CONSUMER REPO (~/Projects/Logos/Verification): one rename task declares 135 paths and overlaps NINE open tasks; the resulting 8-task batch drains in SEVEN sequential waves, and is 8 tasks largely BECAUSE of that one task's footprint.
+
+THE STRUCTURAL CONSEQUENCE: rule 1 taken literally can demand a group LARGER than MAX_TASKS=8, which the cap then silently trims -- so the doctrine as written can ask for what the mechanism refuses to deliver. A repository-root gate script, a manifest, a shared README or a CHANGELOG must not make every task that touches it one mandatory group. THE TASK MUST SAY WHAT RULE 1 DOES INSTEAD: a narrowness test on the overlapping path, a cap-aware fallback, or both. Whatever is chosen must stay consistent with the existing truncation-precedence rule (a cap-driven trim can never split a territory-mandatory group off the end).
+
+=== ITEM 4 -- THE OWNER-BLOCKED CARVE-OUT (NON-NEGOTIABLE; THE RULING DEADLOCKS WITHOUT IT) ===
+When the would-be predecessor cannot progress -- blocked on an owner action, PARTIAL behind something no task can unblock, or held -- SEPARATION IS CORRECT, and an edge would park a trivial task behind something permanently stalled. The batch plan must then STATE WHY rather than emit a bare exclusion. LIVE INSTANCE: two tasks in the consumer repo overlap on five components/framed_channel/certificate/*.txt files and were deliberately left unwired for exactly this reason. Without this carve-out the new doctrine produces a deadlock the old "never with" prose avoided.
+
+=== ITEM 5 -- BATCH-PLAN RENDERING RULE ===
+For an unordered territory overlap, a roadmap or batch plan picks an order and records the edge instead of emitting a "never with" note. EVIDENCE THAT THE CURRENT CONVENTION IS ACTIVELY WRONG, measured in the consumer repo with its own scripts/lib/file-scope-overlap.sh: three "never with" notes are genuinely territory-backed (components/framed_channel/books/; full-gate.sh; five certificate/*.txt), but a FOURTH is not backed by file_scope at all -- those two tasks are provably disjoint -- so the convention also manufactures FALSE exclusions. Where an edge is genuinely inadmissible, Item 4 governs.
+BOUNDARY: the ROADMAP batch-block grammar and its declarative sentence belong to the roadmap-generation task and the batch-proposal-lint task. This task states the POSTURE they render; it must NOT edit context/formats/roadmap-format.md and must NOT author that lint.
+
+=== ITEM 6 -- THE EDGE-BACKFILL OPERATION ===
+There is no sanctioned operation today for "these two existing tasks overlap; add the edge that makes them a sequence". Component 4a auto-adds an overlap edge only for tasks created in the SAME batch, so two tasks created in separate sessions that overlap get no edge ever.
+
+Add --depends-on-add to scripts/update-task-status.sh. HOST-SCRIPT RULING: that script is unowned by any non-terminal task, is already registered (so no manifest.json edit, cf. Item 3(i)), and already carries --file-scope-add, --research-questions and --hold-reason, each with the same JSON-array validation shape -- so --depends-on-add is a TRUE EXACT SIBLING, not a new surface.
+
+MIRROR scripts/backfill-file-scope.sh's SHAPE -- idempotent, --dry-run printing the per-task diff and writing nothing, never overwriting what is already there -- but DO NOT MODIFY that script; consume its pattern only (it is a one-shot file_scope backfill, a different operation).
+
+Three things the primitive must provide that nothing provides today:
+(a) A DIRECTION CHOICE per pair, stated as a rule rather than left to the caller.
+(b) A WRITE-TIME CYCLE REFUSAL. Cycle detection ALREADY EXISTS AND IS BLOCKING: validate-state.sh runs Kahn's algorithm over active_projects' dependency edges (archive entries excluded as terminal) and emits log_fail "Dependency cycle detected among project_number(s): ...". BUT IT IS A SEPARATE VALIDATOR, NOT A WRITE-TIME REFUSAL -- state-write.sh has no cycle check of its own, and validate-state.sh is reachable only by explicit invocation or at the next dispatch (via skill-base.sh, orchestrate-batch-admit.sh, orchestrate-predispatch-review.sh, verify-deploy.sh, commands/task.md). So WHETHER A BACKFILLED EDGE IS CYCLE-CHECKED DEPENDS ON WHETHER WHOEVER WROTE IT HAPPENED TO REMEMBER. That is the argument for a write-time refusal, and it does not depend on the writer having been careless. For a primitive whose entire job is adding edges, the check belongs at the point of write: refuse the edge, name the cycle, exit nonzero. THIS IS A REUSE REQUIREMENT, NOT A NEW ALGORITHM -- consume validate-state.sh's existing Kahn implementation; do not transcribe a second copy.
+(c) A DRY-RUN CONFIRMATION that the resulting waves actually drain, via orchestrate-cycle-plan.sh --dry-run.
+
+MOTIVATING INSTANCE (real, performed by hand): 20 edges across 13 tasks were added in the consumer repo via state-write.sh to make eight batches sequence correctly; the direction choice and the drain confirmation were each performed manually, and validate-state.sh was run manually afterwards and passed with 0 failures. The operation Item 6 specifies is exactly that, mechanized.
+
+=== ITEM 7 -- RE-POINT THE NEXT-ADMISSIBLE-BATCH SUGGESTER'S SPEC ===
+A specs/ state write via /revise or state-write.sh, NEVER a hand edit; no deliverable file is touched by this item. Task 274's acceptance criterion -- that a file_scope-colliding pair must not appear as a joint suggestion -- IS CORRECT AS WRITTEN AND MUST NOT BE WEAKENED: without an edge the pair would share a wave and write concurrently, so orchestrate-batch-admit.sh's refusal is right. The defect is narrower: THE SUGGESTER HAS NO EDGE-PROPOSING STEP, so it withholds exactly the pairs rule 1 makes mandatory instead of proposing the edge that would make them admissible as a sequence. Re-point it to "propose the serializing edge, then suggest the pair as a sequence". Do not weaken the disjointness check.
+
+=== DECLARED BOUNDARIES -- DO NOT CROSS ===
+- The stale "Batching is not yet supported. Running with first N tasks only." message at commands/orchestrate.md and docs/architecture/orchestrate-state-machine.md is owned by task 272 item (b). THIS TASK MUST NOT EDIT THAT STRING, and does not declare commands/orchestrate.md at all -- its existing pointer to the guardrails doc is already adequate.
+- Component 4a's cross-batch blind spot is owned by task 312, which owns docs/reference/standards/multi-task-creation-standard.md. This task does NOT declare that file. It supplies the edge-writing primitive that 312's own overlaps-N-add-edge verdict has no way to call -- hence 312's edge on this task.
+- DO NOT touch scripts/orchestrate-batch-admit.sh (owned by task 165) and DO NOT change the admission verdict schema.
+- DO NOT WEAKEN ANY ADMISSION GATE. This task changes what the agent CHOOSES to batch and what the system TEACHES about batching, never what the runtime permits.
+
+=== SCOPE-NOTE CONFLICT TO RULE ON ===
+The guardrails doc's scope note "Territory is a human judgment, not a machine derivation" states that "file_scope declaration granularity, BACKFILL, and absent-scope admission posture are owned by the file-scope-lifecycle topic and are out of scope here". That disclaims file_scope backfill, not DEPENDENCY-EDGE backfill. Rule on the boundary explicitly and amend the note if it is widened -- do not silently widen it.
+
+=== NON-GOAL ===
+Not a parallelism or throughput change. Serialization inside one invocation is an acceptable and often preferred outcome; the property being defended is collision visibility and correct sequencing, not wall-clock.
+
+=== DOGFOOD CONSTRAINT ===
+This task declares territory overlap with task 280 (merge-sources/claudemd.md) and task 311 (context/patterns/batch-orchestration-guardrails.md) and carries serializing dependencies[] edges on both. Verified acyclic, and the batch {280, 311, this} drains in TWO waves: [280, 311] then [this]. IT IS MEANT TO BE RUN IN ONE /orchestrate INVOCATION TOGETHER WITH THEM, not alone. Tasks 274 and 312 cannot join that invocation (blocked behind 272/273/275/165 and 165/300/282 respectively) and instead take edges ON this task. Filing this work with an empty dependencies[] and a "run it by itself" note would have reproduced the exact defect it exists to fix.
+
+=== ACCEPTANCE ===
+- The always-loaded layer STATES the posture rather than only pointing at it, with the token cost justified in writing.
+- Rule 1 carries a narrowness qualifier and/or a cap-aware fallback, consistent with the existing truncation-precedence rule; both measured instances in Item 3 are re-measured and cited.
+- The owner-blocked carve-out of Item 4 is stated, with the five-file certificate pair as its worked instance.
+- The batch-plan rendering rule of Item 5 is stated, including that a bare "never with" note is not an acceptable rendering and can itself be false.
+- --depends-on-add exists with --dry-run, a stated direction rule, and a MANDATORY write-time cycle refusal that reuses validate-state.sh's existing Kahn check, with no second cycle detector anywhere in the new code.
+- A fixture proves a cycle-creating edge is REFUSED AT WRITE TIME (nonzero exit, cycle named), and a second fixture proves an idempotent re-run adds nothing.
+- The next-admissible-batch suggester's spec is re-pointed WITHOUT weakening its disjointness check.
+- Shellcheck clean per context/standards/shell-strict-mode.md. No task-number references in deliverables outside specs/**.
+
+---
 
 ### 343. Bound an implementation agent's wait on a backgrounded process, and give the orchestrator a way to detect a stranded dispatch
 - **Status**: [RESEARCHING]
@@ -2589,7 +2669,7 @@ This does NOT change this task's scope, which remains the gate wiring, and it is
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 306, Task 328
+- **Dependencies**: Task 306, Task 328, Task 344
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task numbers in deliverable files outside specs/**.
 
@@ -2663,7 +2743,7 @@ A consumer repository has its own in-flight task that ALSO edits the /review com
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 165, Task 300, Task 282
+- **Dependencies**: Task 165, Task 282, Task 300, Task 344
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 
@@ -4057,7 +4137,7 @@ in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 272, Task 273, Task 275, Task 165
+- **Dependencies**: Task 165, Task 272, Task 273, Task 275, Task 344
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
