@@ -281,9 +281,15 @@
           "path": "specs/322_todo_move_vacated_source_never_staged/plans/01_todo-move-pair-staging.md",
           "type": "plan",
           "summary": "5-phase plan: 3 recipe/standard edits in wave 1, regression suite in wave 2, redeploy plus full gate set in wave 3; 4h estimate."
+        },
+        {
+          "path": "specs/322_todo_move_vacated_source_never_staged/summaries/01_todo-move-pair-staging-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 5 completed phases."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Paired both endpoints of every directory move into the commit pathspec at all three dest-only sites in commands/todo.md and via a new moved_paths[] accumulator in skill-todo/SKILL.md, named the invariant as a new section in git-staging-scope.md, added a 41-assertion regression suite (behavioral fixture plus static recipe-text checks) verified to fail on the pre-fix shape, and redeployed with the full gate set passing except for one confirmed pre-existing, out-of-scope failure."
     },
     {
       "project_number": 318,

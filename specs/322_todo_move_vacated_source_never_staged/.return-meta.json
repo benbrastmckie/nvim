@@ -1,10 +1,77 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/322_todo_move_vacated_source_never_staged/summaries/01_todo-move-pair-staging-summary.md",
+      "summary": "All 5 plan phases completed: paired both endpoints of every directory mv at all affected sites in commands/todo.md and skill-todo/SKILL.md, named the invariant in git-staging-scope.md, added a 41-case regression suite, and cleared the full gate set (one pre-existing, out-of-scope failure documented, not fixed)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Paired both endpoints of every directory move into the commit pathspec at all three dest-only sites in commands/todo.md and via a new moved_paths[] accumulator in skill-todo/SKILL.md, named the invariant as a new section in git-staging-scope.md, added a 41-assertion regression suite (behavioral fixture plus static recipe-text checks) verified to fail on the pre-fix shape, and redeployed with the full gate set passing except for one confirmed pre-existing, out-of-scope failure."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh",
+    "agent-system/extensions/core/manifest.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When converting a bare shared-directory git pathspec to an explicit stage_paths[]/similar accumulator list (the 'explicit-pathspec migration' pattern), audit every call site that performs a directory mv/rename specifically: a directory token incidentally covers BOTH the old and new path of a rename, but an explicit list only covers what it names. The migration silently narrows coverage at every rename site unless each one is taught to push both the old and new path together. Neither the directory-pathspec lint (checks for tokens that are too WIDE) nor git-commit-scoped.sh's V2/V5/V6 gates (which only inspect pathspecs they are given) can catch the resulting too-NARROW omission -- it is invisible to both layers by construction.",
+      "category": "PATTERN",
+      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/summaries/01_todo-move-pair-staging-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git-staging",
+        "pathspec-migration",
+        "rename",
+        "directory-move",
+        "stage_paths",
+        "regression"
+      ]
+    },
+    {
+      "content": "Before accepting a background run-all.sh/verify-deploy.sh test failure as 'caused by my change', attribute it concretely: (1) check git status/diff on the failing file(s) for pre-existing uncommitted WIP unrelated to your own edits, and if found, git stash push just that file and rerun to see if the failure count is identical with your change absent; (2) check whether the failing suite's file-scope even overlaps your task's touched files at all (different extension entirely is a strong signal of non-attribution). Record the attribution evidence in the plan rather than assuming innocence or guilt.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/summaries/01_todo-move-pair-staging-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "test-attribution",
+        "run-all.sh",
+        "verify-deploy",
+        "git-stash",
+        "regression-isolation"
+      ]
+    },
+    {
+      "content": "A newly added scripts/tests/test-*.sh file in a core-extension source store must also be declared in that extension's manifest.json provides.scripts list, or the doc-lint deploy gate (check-extension-docs.sh) fails with 'script file on disk NOT in provides.scripts', even though run-all.sh's own glob-based discovery finds and runs the file fine. The two mechanisms (test discovery vs. manifest declaration) are independent; passing the former does not imply passing the latter.",
+      "category": "CONFIG",
+      "source_artifact": "specs/322_todo_move_vacated_source_never_staged/summaries/01_todo-move-pair-staging-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "manifest.json",
+        "provides.scripts",
+        "doc-lint",
+        "deploy-headless",
+        "check-extension-docs"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791241405_83aa14",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
   },
-  "dispatch_seq": 7
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

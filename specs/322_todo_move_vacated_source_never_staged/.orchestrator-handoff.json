@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan for the /todo directory-move staging regression. Phases 1-3 are independent (wave 1): pair both endpoints at the three dest-only stage_paths+= sites in commands/todo.md, add an explicit moved_paths[] accumulator across skill-todo/SKILL.md Stage 10 consumed by Stage 15's git add (also removing its forbidden bare specs/archive/ token), and add a named `## Rename and Directory-Move Staging` section to context/standards/git-staging-scope.md. Phase 4 adds a regression suite with a behavioral git fixture (including a negative control that proves the pre-fix shape is detected) plus static recipe-text assertions; Phase 5 redeploys and clears verify-deploy.sh. Plan passes validate-artifact.sh --strict with zero warnings.",
-  "blockers": [],
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 7,
+  "summary": "Paired both endpoints of every directory move into the commit pathspec at all three dest-only sites in commands/todo.md and via a new moved_paths[] accumulator in skill-todo/SKILL.md, named the invariant as a new section in git-staging-scope.md, and added a 41-assertion regression suite (behavioral fixture plus static recipe-text checks) verified to fail on the pre-fix shape. Redeployed and ran the full gate set; all checks pass except one confirmed pre-existing, out-of-scope failure (documented, not fixed).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/322_todo_move_vacated_source_never_staged/plans/01_todo-move-pair-staging.md",
-      "summary": "5-phase plan: 3 recipe/standard edits in wave 1, regression suite in wave 2, redeploy plus full gate set in wave 3; 4h estimate."
+      "type": "summary",
+      "path": "specs/322_todo_move_vacated_source_never_staged/summaries/01_todo-move-pair-staging-summary.md",
+      "summary": "Implementation summary covering all 5 completed phases."
+    },
+    {
+      "type": "test",
+      "path": "agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh",
+      "summary": "New regression suite, 41/41 passing, with a scratch-copy revert confirming it detects the pre-fix dest-only shape."
     }
   ],
-  "dispatch_seq": 5,
-  "sorry_inventory": [],
-  "continuation_path": null
+  "phases_completed": 5,
+  "phases_total": 5,
+  "blockers": [],
+  "plan_markers_verified": true
 }
