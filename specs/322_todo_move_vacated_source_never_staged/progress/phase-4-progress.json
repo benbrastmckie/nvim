@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Regression Suite — Behavioral Fixture Plus Static Recipe Assertions",
+  "started_at": "2026-10-05T23:45:00Z",
+  "last_updated": "2026-10-06T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-todo-move-pair-staging.sh, executable", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh"]},
+    {"id": 2, "description": "Write header stating what the suite can/cannot cover", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh"]},
+    {"id": 3, "description": "Behavioral half positive case per site shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh"]},
+    {"id": 4, "description": "Behavioral half negative control per site shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh"]},
+    {"id": 5, "description": "Static half assertions over commands/todo.md, SKILL.md, and the standard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh"]},
+    {"id": 6, "description": "Run suite and confirm green; confirm red on scratch-copy revert", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Ran the inherited, previously-uncommitted test file as-is",
+      "result": "failed",
+      "reason": "One static assertion (Stage 15 git-add literal-form match) failed due to a stray literal backslash before a backtick in the suite's own grep pattern (line ~308), not a defect in SKILL.md. Fixed by removing the stray backslash; reran to 41/41 green."
+    }
+  ],
+  "handoff_count": 0
+}
