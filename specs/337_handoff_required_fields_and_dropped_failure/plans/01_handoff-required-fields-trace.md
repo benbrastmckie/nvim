@@ -584,6 +584,20 @@ deployed-copy spot-verification greps all returned the expected hits (8 total
 `HANDOFF_VALIDATION_FAILED` occurrences across the three deployed scripts/hook; `log_warn` count
 of 6 identical in source and deployed `validate-handoff.sh`).
 
+**Note on repeated `verify-deploy.sh` runs in this shared, concurrently-dispatched tree**: a
+subsequent confirming run (after this phase's own commit) surfaced a DIFFERENT pair of findings
+than the first pass — doc-lint's strict-mode check on one extension's undeployed observer script,
+and the manifest parity check flagging one sibling task's own new, not-yet-committed test file as
+undeployed. Both are, again, attributable to other concurrently-dispatched sibling tasks' own
+in-flight deploy/commit state in this shared batch, not to any file this plan touches — confirmed
+by `check-extension-docs.sh` run standalone (without the strict flag `verify-deploy.sh` applies),
+which exits 0 with only an advisory, and by the missing-script path naming a file outside this
+plan's `Files to modify` list in every phase. `verify-deploy.sh`'s verdict is observed to
+fluctuate run-to-run in this shared tree as siblings commit/deploy their own work concurrently;
+this plan treats each finding on its merits (fixed if this plan caused it, recorded and left
+alone if attributable elsewhere) rather than chasing a moving target to a literal, point-in-time
+exit 0.
+
 This dispatch's own `.orchestrator-handoff.json` write (made at the close of this phase)
 exercises the new write-time content-check gate live: the write included a non-empty `summary`
 and an explicit `blockers: []`, and passed the hook's content check cleanly (no banner, no
