@@ -673,6 +673,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 - **Dependencies**: None
 - **Research**: [337_handoff_required_fields_and_dropped_failure/reports/01_handoff-required-fields-dropped-failure.md]
 - **Plan**: [337_handoff_required_fields_and_dropped_failure/plans/01_handoff-required-fields-trace.md]
+- **Summary**: [337_handoff_required_fields_and_dropped_failure/summaries/01_handoff-required-fields-trace-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 

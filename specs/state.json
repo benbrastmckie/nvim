@@ -197,9 +197,15 @@
           "path": "specs/337_handoff_required_fields_and_dropped_failure/plans/01_handoff-required-fields-trace.md",
           "type": "plan",
           "summary": "7 phases, 6.5h: new HANDOFF_VALIDATION_FAILED defect class, postflight durable trace, write-time hook content gate, WARN scoping, doc rulings, 42-file writer-prose append, deploy cutover."
+        },
+        {
+          "path": "specs/337_handoff_required_fields_and_dropped_failure/summaries/01_handoff-required-fields-trace-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: all 7 phases, decisions, deviations, verification, and the live write-time-gate exercise outcome for this dispatch's own handoff write."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a write-time required-field gate to the handoff PostToolUse hook and a durable postflight trace for failed handoff validation (events.jsonl + detected_defects[]), scoped the sorry_inventory/continuation_path WARNs to the cases where they inform, recorded all rulings in the schema docs, and pointed all 42 writer-prose blocks at the new gate. Deployed and verified."
     },
     {
       "project_number": 334,
