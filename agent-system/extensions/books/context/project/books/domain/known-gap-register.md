@@ -1,6 +1,6 @@
 # The Known-Gap Register
 
-**Measured as of 2026-10-05**, against the Logos/Verification working tree at git `a07ae5f`. The
+**Measured as of 2026-10-06**, against the Logos/Verification working tree at git `724414b2`. The
 staleness handle is now the pinned `convention_version` (`manifest.json`; see
 `README.md`'s "Convention version pin and staleness comparison" section) rather than this prose
 SHA alone -- the SHA is retained here for the mechanical re-verification trail, not as the sole
@@ -32,10 +32,10 @@ register uses the same three forms rather than a parallel scheme:
 presence and well-formedness) and CHECK 2 (instance liveness -- every backtick path, Lean name and
 bare filename in a marker line must still resolve) are **blocking**; CHECK 3 and CHECK 4 are
 advisory heuristics. `books/tests/validated-by-lint/run.sh` (272 lines) pins all four.
-**Marker census, measured 2026-10-03**: eighteen decisions, eighteen markers -- **two binding**
-(Decision 5, Decision 14), **fifteen `partially`**, **one `none yet`** (Decision 18).
+**Marker census, measured 2026-10-06**: nineteen decisions, nineteen markers -- **two binding**
+(Decision 5, Decision 14), **sixteen `partially`**, **one `none yet`** (Decision 18).
 
-## Part A: the eighteen decisions, projected
+## Part A: the nineteen decisions, projected
 
 Each row names what its own marker records. `--` means the marker names nothing in that column.
 
@@ -59,6 +59,7 @@ Each row names what its own marker records. `--` means the marker names nothing 
 | 16 Named open questions | partially | **every reserved pass** (`passes = ["reverify"]`) | -- (marker records one **stale** count) |
 | 17 Documentation reconciliation and book-health signals | partially | clauses 4, 5, 6, 9, 11, 12 have no instance; clause 7's tier-one prohibition lint, clause 3's statement-splice hash and clause 10's twelve computed signals are unbuilt | -- |
 | 18 Composition and consumption ergonomics | **none yet** | none of the seven mechanisms is built: zero `WithInfo` sites, no `#book_requires?`, `book_example`, `book_instantiate_as`, `book_instantiate`, discovery index or export facade | -- |
+| 19 Convention versioning and lockstep | partially | the evidence-record field (no writer exists) | the extension-pin leg's marker text says "no deployed corpus in this tree" -- a books extension corpus IS now deployed in this tree (loaded 2026-10-06), falsifying that clause; the pin itself remained mangled prose until this task's fix, and is not thereby contradicted by this row |
 
 The pilot's GO was **ratified by the repository owner on 2026-10-03** with four attached
 conditions, recorded in `docs/book-pilot-record.md` (808 lines). The first condition is the
@@ -274,6 +275,6 @@ phase has **not run**. Read those two documents as **measured once**, not as mea
 
 ## How to refresh this file
 
-Re-read the eighteen `- **Validated by**:` markers and rebuild Part A (project them, do not
+Re-read the nineteen `- **Validated by**:` markers and rebuild Part A (project them, do not
 re-judge them); re-run the censuses in B5; re-project Part C from `specs/state.json`; then update
 the `Measured as of` date at the top. A figure without a date in this corpus is a defect.
