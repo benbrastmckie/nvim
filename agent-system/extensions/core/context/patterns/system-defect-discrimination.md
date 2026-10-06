@@ -221,10 +221,11 @@ long-standing `validate-handoff.sh` verdict a durable home. The validator was al
 strict — it names a dispatch's `.orchestrator-handoff.json` as rejected when any of its required
 fields (`status`, `summary`, `artifacts`, `blockers`, `phases_completed`, `phases_total`) is
 missing or malformed — but its one live invocation (`skill_corroborate_phase_counts`) discarded
-the exit code via `|| true`, and no other consumer read it. Two measured incidents (tasks 190/191
-in one batch, task 340 in a second, independent batch) printed a loud `HANDOFF VALIDATION FAILED`
-line and then completed anyway via the COMPLETION-CLAIM GATE's phase-accounting case, leaving no
-trace in `state.json`, `.return-meta.json`, or `events.jsonl`. Two sites now detect this class:
+the exit code via `|| true`, and no other consumer read it. Two measured incidents — one batch
+with two dispatches failing this way, and a second, independent batch with one dispatch failing
+this way — printed a loud `HANDOFF VALIDATION FAILED` line and then completed anyway via the
+COMPLETION-CLAIM GATE's phase-accounting case, leaving no trace in `state.json`,
+`.return-meta.json`, or `events.jsonl`. Two sites now detect this class:
 `scripts/orchestrate-cycle-postflight.sh`, once per handoff-present phase, attributing via
 `--dispatched-agent` (the dispatched agent authored the malformed JSON); and
 `hooks/validate-handoff-location.sh`'s write-time content check, which leaves Signal B

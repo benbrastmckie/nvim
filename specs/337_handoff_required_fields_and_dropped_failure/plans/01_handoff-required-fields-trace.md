@@ -501,25 +501,38 @@ identical, record that and skip it — the fix does not depend on it.
 
 ---
 
-### Phase 7: Deploy cutover and full gate [NOT STARTED]
+### Phase 7: Deploy cutover and full gate [COMPLETED]
 
 **Goal**: Make the source-store changes live in `.claude/` and prove the whole gate set passes.
 
 **Tasks**:
-- [ ] Confirm Phases 1-6 are committed and the tree holds no unrelated staged changes
+- [x] Confirm Phases 1-6 are committed and the tree holds no unrelated staged changes
       (`git status --short`); sibling tasks may have committed in parallel — inspect, do not
-      assume.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` (the non-destructive resync; not `--wipe`).
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and require exit 0 — treat exit 2 as failure,
-      per that script's own header.
-- [ ] Run the full suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Spot-verify the deployed copies carry the changes:
+      assume. *(completed: Phases 1-6 all committed; the only other uncommitted changes present
+      belonged to concurrently-dispatched sibling tasks in this same batch, outside this plan's
+      file scope, and were left untouched)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` (the non-destructive resync; not `--wipe`).
+      *(completed: deploy landed; the resync itself reported `RESULT=landed_verify_red` because
+      the fast-gate sub-check it runs inline found the same two transient/pre-existing issues
+      resolved and triaged below)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and require exit 0 — treat exit 2 as failure,
+      per that script's own header. *(completed with findings, see below — see "Verification"
+      for the full accounting of all findings and their disposition)*
+- [x] Run the full suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
+      *(completed; this phase's own four test suites — the handoff schema validator, the
+      write-time content-check hook, the postflight durable-trace recorder, and the phase-count
+      corroborator — all pass individually: 15/15, 14/14, 184/184, 34/34. The whole-suite run
+      additionally surfaced two failing suites unrelated to this phase's edits; see "Verification"
+      below for the full attribution)*
+- [x] Spot-verify the deployed copies carry the changes:
       `grep -n "HANDOFF_VALIDATION_FAILED" .claude/scripts/system-defect-record.sh .claude/scripts/orchestrate-cycle-postflight.sh .claude/hooks/validate-handoff-location.sh`
       returns hits in all three, and `grep -c log_warn .claude/scripts/validate-handoff.sh`
-      matches the source store.
-- [ ] Note in the implementation summary that this dispatch's own `.orchestrator-handoff.json`
+      matches the source store. *(completed: 8 total hits across the three files, both
+      `log_warn` counts equal 6)*
+- [x] Note in the implementation summary that this dispatch's own `.orchestrator-handoff.json`
       write exercises the new write-time gate live, and record the observed outcome (pass, or the
-      banner and what it said).
+      banner and what it said). *(completed: recorded in the Phase 7 Verification notes and the
+      implementation summary — the write passed the new content check cleanly)*
 
 **Timing**: 0.5 hours
 
@@ -537,21 +550,70 @@ identical, record that and skip it — the fix does not depend on it.
   documented pre-existing entry in `scripts/tests/known-failures.txt`.
 - The deployed-copy greps above all return the expected hits.
 
+**Verification notes (recorded at close, full accounting of findings during this phase)**:
+
+A first `verify-deploy.sh` pass reported `FAIL -- 2 of 34 check(s) failed`:
+1. **Task-reference lint** (`check-task-references.sh`) — a REAL, this-phase-caused finding,
+   fixed in place: Phase 1's seventeenth-instance paragraph in
+   `context/patterns/system-defect-discrimination.md` had cited two task numbers directly
+   (prohibited outside `specs/**` per `rules/no-task-references-in-deliverables.md`). Reworded
+   to describe the same two measured incidents by shape (dispatch counts per batch) instead of
+   by number. Re-run confirms `PASS: 0 unexempted task-reference occurrences`.
+2. **`specs/state.json` schema validation** (`validate-state.sh --deep`) — NOT caused by this
+   phase's edits: `TODO.md` had drifted out of sync with `state.json` from concurrent sibling
+   dispatches' preflight status writes in this same batch. Resolved by running the sanctioned
+   regeneration (`bash .claude/scripts/generate-todo.sh`, the documented remedy in
+   `rules/state-management.md`) rather than hand-editing either file. Re-run confirms
+   `validate-state.sh --deep` passes with 0 FAIL-level findings (warnings only, all pre-existing
+   and unrelated to this plan).
+
+A second full pass still reported the shell-test-suite-runner check (`run-all.sh`) red, triaged
+and attributed as follows, neither caused by this plan's edits and neither touching a file in
+this plan's scope:
+- A test suite asserting an "IDENTICAL DISPATCH HALT" / stranded-dispatch-detection feature that
+  the cycle-planning script under test does not yet implement — the subject of a separate,
+  not-yet-implemented task in this same batch, confirmed by inspecting that script's only
+  uncommitted change (an unrelated, narrow `grep -c` idiom fix untouched by this plan).
+- A typst-extension element-lint case failure, fully committed and unrelated to handoff
+  validation, schema documentation, or writer-prose content in any file this plan touched.
+
+This phase's own four regression suites (named in Testing & Validation below) all pass in full:
+`test-validate-handoff.sh` 15/15, `test-validate-handoff-location.sh` 14/14,
+`test-orchestrate-cycle-postflight.sh` 184/184, `test-corroborate-phase-counts.sh` 34/34. The
+deployed-copy spot-verification greps all returned the expected hits (8 total
+`HANDOFF_VALIDATION_FAILED` occurrences across the three deployed scripts/hook; `log_warn` count
+of 6 identical in source and deployed `validate-handoff.sh`).
+
+This dispatch's own `.orchestrator-handoff.json` write (made at the close of this phase)
+exercises the new write-time content-check gate live: the write included a non-empty `summary`
+and an explicit `blockers: []`, and passed the hook's content check cleanly (no banner, no
+`exit 2`).
+
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-handoff.sh` — including the
-      new `reject-no-blockers` fixture and the zero-WARN assertions.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh` — every
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-handoff.sh` — including the
+      new `reject-no-blockers` fixture and the zero-WARN assertions. *(completed: 15/15 passed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh` — every
       pre-existing fixture still passes (fail-safe proof) plus the five new content fixtures.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` —
-      including the four new `HANDOFF_VALIDATION_FAILED` cases.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh` — with
-      Fixture H retargeted.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh` — whole-suite regression.
-- [ ] `bash .claude/scripts/verify-deploy.sh` — deploy currency and hook registration.
-- [ ] Negative check against the explicit non-goal: `git diff` over
+      *(completed: 14/14 passed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` —
+      including the four new `HANDOFF_VALIDATION_FAILED` cases. *(completed: 184/184 passed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh` — with
+      Fixture H retargeted. *(completed: 34/34 passed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh` — whole-suite regression.
+      *(completed with findings: two failing suites unrelated to this plan's edits —
+      a stranded-dispatch-detection feature a cycle-planning script doesn't yet implement
+      (a separate, not-yet-implemented task in this same batch) and a typst-extension
+      element-lint case — see Phase 7's Verification notes for the full attribution)*
+- [x] `bash .claude/scripts/verify-deploy.sh` — deploy currency and hook registration.
+      *(completed with findings, both triaged: one real, this-phase-caused task-reference-lint
+      finding fixed in place; one pre-existing TODO.md/state.json sync drift from concurrent
+      sibling dispatches, resolved via the sanctioned `generate-todo.sh` regeneration — see
+      Phase 7's Verification notes)*
+- [x] Negative check against the explicit non-goal: `git diff` over
       `scripts/validate-handoff.sh` shows no change to any `log_fail` line and no change to the
-      `required_fields` array.
+      `required_fields` array. *(completed: confirmed against the Phase 4 commit specifically —
+      zero `log_fail`/`required_fields` line changes)*
 
 ## Artifacts & Outputs
 
