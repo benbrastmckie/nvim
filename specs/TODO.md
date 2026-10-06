@@ -1,5 +1,5 @@
 ---
-next_project_number: 347
+next_project_number: 348
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 347
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343,346 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343,346,347 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,302,303,335,344,345 | 22,251,271,272,280,284,300,311,343 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,344 | core-agent-system, orchestrator |
@@ -68,10 +68,270 @@ next_project_number: 347
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 343 [RESEARCHING] — Bound an implementation agent's wait on a backgrounded...
   └─ 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
+347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 
 ## Tasks
+
+### 347. PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any
+file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by
+filename, command or concept. Task numbers are permitted in this description and elsewhere in
+specs/**.
+
+GOAL. Turn bounded-build-waiter.md's Rule 2 ("never use ps | grep, pgrep -f, or any
+process-name-matching test") into a BLOCKING PreToolUse Bash hook, plus its fixture test and its
+settings.json registration. The rule already exists and already failed to bind. This task adds
+teeth, NOT prose.
+
+THE TASK FAILS IF ITS PRIMARY DELIVERABLE IS A NEW OR AMENDED PATTERN DOCUMENT.
+
+=== MEASURED INCIDENT (do not re-derive; re-confirm only) ===
+
+2026-10-06, Logos/Verification consumer repo, a dispatched lean-implementation-agent wrote this
+twice:
+
+  until ! pgrep -f 'distsys/check.sh' >/dev/null 2>&1; do sleep 20; done
+
+pgrep -f matches full command lines, and the watcher's own `bash -c` argv contains the literal
+pattern. pgrep excludes only ITSELF, not its parent shell -- so each watcher matched itself, and
+with two running they also matched each other. One spun for 17 minutes on a gate process that had
+already exited. Verified empirically at the time: `pgrep -af 'distsys/check.sh'` returned 6
+matches, of which 2 were the watchers themselves. The orchestrator killed both by hand.
+
+=== WHY DOCUMENTATION IS NOT THE FIX (verified in the source store during task creation) ===
+
+Every one of these was live and reachable when the agent wrote the banned command:
+
+(1) context/patterns/bounded-build-waiter.md line 35 documents this VERBATIM as Symptom 3, "The
+    name-match self-match", and its worked example is itself a check.sh gate script.
+(2) The same file's Rule 2 (lines 60-63) forbids `ps | grep`, `pgrep -f`, and "any
+    process-name-matching test" by name, and explains the self-match mechanism.
+(3) Its Rule 4 (line 68) is "One waiter per log."
+(4) Its canonical idiom (line 74) is exactly the kill -0 form.
+(5) extensions/lean/agents/lean-implementation-agent.md CITES that file.
+
+So the prohibition was in the dispatched agent's own reference chain and it wrote the banned
+command anyway. Documentation-as-prohibition has demonstrably failed for this command shape.
+
+CORROBORATION THAT IT RECURS: bounded-build-waiter.md records three repositories hitting this in
+three different shapes (one of them "roughly 13 minutes across five recurrences until an operator
+killed the waiter by hand"). scripts/claude-refresh.sh already carries a reaper pass
+(run_build_waiter_pass, line 1763) with a dedicated "Family B (legacy/name-match)" classifier at
+line 1578 naming `until ! ps aux | grep` explicitly. CLEANUP tooling for this exact failure
+already exists; PREVENTION does not. This task builds the prevention.
+
+=== DELIVERABLES ===
+
+(1) hooks/<name>.sh -- a PreToolUse hook, matcher "Bash", that BLOCKS a command conjoining a
+    wait-loop construct with a name-matching liveness test.
+
+    STRUCTURAL MODEL -- READ THIS CAREFULLY, THE OBVIOUS PRECEDENT IS THE WRONG ONE.
+    The originating request named hooks/detect-noop-bash.sh as the model. That is correct for the
+    MOTIVATION (a documented prohibition turned into a hook) and WRONG for the MECHANISM: that
+    hook is PostToolUse, advisory-only, and exits 0 unconditionally, so copying it would produce
+    a hook that cannot block anything. The MECHANISM precedent is hooks/guard-destructive-git.sh
+    -- PreToolUse, matcher "Bash", blocks via exit code 2 + a stderr message, registered BARE,
+    fails open. Its header (lines 26-31, and line 112) records why exit 2 + stderr and NOT
+    `permissionDecision: deny`: deny is documented-buggy for allow-listed tool calls. Inherit
+    that contract verbatim, and inherit FAIL OPEN as well -- any internal error must ALLOW the
+    command, because a broken guard that blocks every Bash call in the repo is a worse outcome
+    than no guard.
+
+    NOTE, A LIVE DEMONSTRATION OF THE TARGET CONVENTION: during the creation of this task, an
+    ordinary scratchpad write was blocked by hooks/validate-no-task-references.sh with exit 2
+    plus an actionable stderr message naming the rule and offering the exemption path. That is
+    precisely the enforcement shape this hook should follow -- a working, observed example of the
+    convention rather than a described one. Read that hook alongside guard-destructive-git.sh.
+
+    SHAPES THAT MUST BLOCK:
+      - until ! pgrep -f ... ; do sleep ... ; done   (and the while/positive-test variant)
+      - while pgrep -f ... ; do sleep ... ; done
+      - until ! ps aux | grep ... ; do ... done
+      - until ! ps -ef | grep ... ; do ... done
+      - the [b]racket variant of the above. bounded-build-waiter.md is explicit that the bracket
+        trick does NOT fix the self-match: it stops GREP matching itself, not the parent shell.
+        A hook that treats the bracket form as safe reproduces the exact bug it exists to stop.
+
+    REUSE THE ALREADY-VALIDATED PATTERN INVENTORY: claude-refresh.sh's Family B classifier
+    (scripts/claude-refresh.sh, roughly lines 1578-1643) already enumerates these argv shapes and
+    has been exercised against real process tables. Derive the hook's matcher from that inventory
+    rather than inventing fresh regexes. RULE IN-TASK on whether the shapes belong in a shared
+    library sourced by both consumers -- the validate-no-task-references.sh /
+    scripts/lib/task-reference-patterns.sh split is the established precedent for a shared pattern
+    library with two consumers. If a shared library is rejected, say why, and ensure the two
+    inventories cannot silently drift apart.
+
+    LOW FALSE-POSITIVE DESIGN IS A FIRM REQUIREMENT. The narrow CONJUNCTION (loop construct AND
+    name-match liveness test) is what makes this mechanically safe to block. A bare `pgrep`, a
+    bare `ps aux | grep`, or a name-match in a one-shot conditional OUTSIDE a wait loop MUST stay
+    legal -- those are legitimate diagnostic uses and the orchestrator's own tooling performs
+    them. A false positive here is worse than no hook.
+
+    REJECTION MESSAGE must be actionable and must carry the canonical idiom INLINE, not merely a
+    pointer to it:
+      cmd >log 2>&1 & pid=$!
+      timeout N bash -c 'while kill -0 "$1" 2>/dev/null; do sleep 10; done' _ "$pid"
+    It should also name bounded-build-waiter.md's Rule 2 and the self-match mechanism in one
+    line, so the blocked agent learns WHY and not merely THAT.
+
+(2) scripts/tests/test-<name>.sh -- fixture test following
+    context/standards/shell-script-testing.md and modeled on
+    scripts/tests/test-detect-noop-bash.sh, which drives its hook as a real subprocess with a
+    jq -n --arg-built payload and asserts on both stdout and exit code. Required cases: each
+    blocking shape above (INCLUDING the bracket variant) rejected with exit 2 and a stderr
+    message carrying the kill -0 idiom; a bare `pgrep` allowed; a bare `ps aux | grep` allowed;
+    a one-shot `if pgrep -f ...; then` outside a loop allowed; the canonical kill -0 waiter
+    allowed; and a malformed or absent-dependency case failing OPEN with exit 0.
+
+(3) Registration. REGISTER IT BARE -- no `2>/dev/null || echo '{}'` wrapper. That wrapper
+    converts exit 2 into exit 0 and silently disables the block. The PostToolUse entries in the
+    same settings files DO use that wrapper, so copying the wrong neighbor is an easy and silent
+    failure.
+
+    TWO REGISTRATION SURFACES EXIST AND THEY DISAGREE. RESOLVING THIS IS REQUIRED WORK, NOT AN
+    OBSERVATION TO NOTE IN PASSING:
+      - root-files/settings.json PreToolUse matchers: ["Write", "Bash", "Write|Edit",
+        "Bash|Write|Edit"]
+      - merge-sources/settings-hooks.json PreToolUse matchers: ["Write|Edit", "Bash",
+        "Bash|Write|Edit"]  (no "Write" block)
+    The DEPLOYED consumer repo's .claude/settings.json PreToolUse matcher list is
+    ["Write", "Bash", "Write|Edit", "Bash|Write|Edit"] -- it matches root-files/settings.json
+    exactly, while merge-sources/settings-hooks.json is a partial duplicate omitting one block.
+    Both files carry duplicate copies of the guard-destructive-git.sh and
+    validate-no-task-references.sh entries. Treat the root-files match as EVIDENCE of which
+    surface governs, but CONFIRM rather than assume. Register in the governing surface, rule
+    explicitly on whether the other surface needs the same entry to stay consistent, then VERIFY
+    BY DEPLOYING and grepping the resulting .claude/settings.json for the entry in bare form
+    (absence of `|| echo` on this entry). A hook registered in the non-governing file never fires
+    -- the same class of silent failure as the wrapper trap above, and it would leave this task
+    looking complete while changing nothing.
+
+(4) manifest.json wiring: add the hook to provides.hooks and the test to the tests list (the
+    detect-noop-bash.sh entries at lines 298 and 213 are the pattern to follow).
+
+=== THE RULE 4 SECOND LEG -- ASSESS, THEN RULE EXPLICITLY ===
+
+bounded-build-waiter.md Rule 4 is "one waiter per log". Assess whether a second waiter on a
+log or PID that already has one is CHEAPLY detectable at PreToolUse time, and either implement it
+with a staleness bound or SCOPE IT OUT EXPLICITLY WITH A STATED REASON. Hand-waving it is not an
+acceptable outcome; this is a ruling the task owes, not an optional extra.
+
+Inputs to that assessment, already established during task creation:
+  - Per-session state at PreToolUse is mechanically feasible: detect-noop-bash.sh already keeps a
+    per-session counter under a session-scoped directory (its NOOP_BASH_STATE_DIR / .claude/tmp
+    precedent), so a state file keyed by session plus log path is available.
+  - THE HARD PROBLEM IS LIFECYCLE, NOT STORAGE: a PreToolUse hook observes waiter STARTS and
+    never waiter EXITS. A naive "this log already has a waiter" record therefore goes stale
+    immediately and would falsely reject legitimate SEQUENTIAL waits on the same log -- a false
+    positive, which this task treats as worse than no hook.
+  - Weigh a timestamped record expiring after a bounded interval against simply declining the
+    leg. If the conclusion is that Rule 4 is enforceable only at reap time rather than write
+    time, RECORD THAT -- it is a legitimate and useful finding, and claude-refresh.sh's reaper is
+    where that enforcement already lives.
+
+=== BOUNDARY AGAINST ADJACENT IN-FLIGHT TASKS (NON-NEGOTIABLE) ===
+
+Two neighbors own adjacent failure modes of the SAME wait. The split is BY COMMAND SHAPE and must
+not blur:
+
+  THIS TASK owns the SELF-MATCH shape: a wait loop whose liveness test matches a process by NAME
+  (pgrep -f, ps | grep), which can match the waiter itself and therefore never resolves.
+  bounded-build-waiter.md Symptom 3.
+
+  Task 345 ("Make the no-op spin ... structurally unreachable", [not_started], topic orchestrator)
+  owns the NO-OP FILLER shape: `echo idle`, bare `true`, and repeated cat/grep of a log issued
+  solely to test for completion. Its file_scope declares
+  context/patterns/bounded-build-waiter.md, context/patterns/external-process-wait.md,
+  hooks/detect-noop-bash.sh and scripts/tests/test-detect-noop-bash.sh.
+
+  THE COLLISION RISK TO AVOID: task 345's Branch A contemplates "a mechanism with teeth (a
+  blocking gate...)" as its possible fix. If both tasks independently build a blocking Bash gate,
+  they must be DIFFERENT gates over DISJOINT command shapes, or one must consume the other's.
+  This task's gate matches ONLY the loop-plus-name-match conjunction and MUST NOT classify a
+  no-op filler command (`echo idle`, bare `true`) at all -- that is 345's territory. Conversely,
+  do NOT wait on 345: a self-match waiter and a no-op spin are independently reachable defects.
+
+  Task 343 ("Bound an implementation agent's wait on a backgrounded process", [researching]) owns
+  the PARKING shape: the agent backgrounds a job, waits on a notification that never arrives, and
+  goes idle. Also disjoint -- that is an ABSENT waiter, not a self-matching one. Do not classify
+  it here.
+
+DELIBERATE SCOPE EXCLUSION: context/patterns/bounded-build-waiter.md is NOT in this task's
+file_scope, even though the hook enforces its Rule 2. Declaring it would create a serializing
+overlap with task 345, and no edit to it is needed -- the hook's rejection message carries the
+idiom and the rule name inline. If implementation concludes a cross-reference line in that
+document is genuinely required, add the entry AT THAT POINT via
+scripts/update-task-status.sh --file-scope-add and accept the resulting edge. That is the
+sanctioned mid-run re-scope path, not a workaround.
+
+=== DECLARED FILE_SCOPE OVERLAP, UN-SEQUENCED BY DECISION ===
+
+root-files/settings.json and manifest.json are both declared by task 282 ("Write-time PreToolUse
+hook blocking record-versioning language, registered bare so exit 2 survives", [not_started],
+itself behind tasks 280 and 281). manifest.json is additionally declared by tasks 280, 281 and
+313.
+
+NO DEPENDENCY EDGE WAS CREATED. This is a decision ratified by the repository owner, not an
+oversight, and it follows the sanctioned un-sequenced-overlap precedent recorded in task 343's
+description. The regions are disjoint: task 282 appends to the PreToolUse "Write|Edit" matcher
+block, this task appends to the PreToolUse "Bash" block, and both manifest.json edits append
+adjacent list entries that rebase trivially. Serializing this prevention hook behind a three-task
+chain (280 -> 281 -> 282) was judged the worse trade for a defect that has ALREADY required
+manual operator intervention more than once.
+
+CONSEQUENCE THE NEXT READER MUST KNOW: scripts/orchestrate-batch-admit.sh scans every non-terminal
+task in specs/state.json, so it WILL detect a cross_batch overlap on these two files and may defer
+this task if it is co-scheduled with 280, 281, 282 or 313. Dispatch this task alone, or alongside
+tasks whose file_scope excludes those two files. If two land close together, the later one
+rebases.
+
+NOTABLY, task 282 is the closest sibling in SHAPE as well as in footprint -- a bare-registered
+PreToolUse hook blocking via exit 2 with a fail-open guard and a fixture test. Whichever lands
+first establishes the house pattern the other should FOLLOW rather than re-derive. Check whether
+it has landed before designing from scratch.
+
+=== EXPLICIT NON-GOALS ===
+
+- Do NOT add a new context/pattern document, and do not restate Rule 2 in new prose. A sixth
+  restatement of a rule four agents already cite would change nothing. THIS IS THE TASK'S CENTRAL
+  CONSTRAINT, not a stylistic preference.
+- Do NOT weaken or relax any existing rule in bounded-build-waiter.md.
+- Do NOT change claude-refresh.sh's reaper behavior. Its Family B classifier is an INPUT to this
+  task (a validated pattern inventory to reuse), not a target. Cleanup and prevention are separate
+  layers and both should exist.
+- Do NOT broaden the hook to no-op filler commands (task 345's territory) or to absent-waiter
+  parking (task 343's).
+- Do NOT fix the consumer repo's gate script or its runtime. Record consumer-repo consequences as
+  recommendations only.
+
+=== ACCEPTANCE ===
+
+- The hook blocks all four bad shapes INCLUDING the [b]racket variant, each with exit 2 and a
+  stderr message carrying the kill -0 canonical idiom inline.
+- A bare pgrep, a bare ps | grep, a one-shot name-match conditional outside a loop, and the
+  canonical kill -0 waiter are ALL allowed. Demonstrated by fixture, not asserted in prose.
+- The hook fails OPEN on any internal error, proven by a fixture.
+- Registration is verified BARE in the DEPLOYED .claude/settings.json (grep for absence of
+  `|| echo` on this entry), and the governing-surface question between root-files/settings.json
+  and merge-sources/settings-hooks.json is ANSWERED and RECORDED, with the hook confirmed to
+  actually fire after deploy.
+- The Rule 4 one-waiter-per-log leg is either implemented with a staleness bound or scoped out
+  with a stated reason grounded in the PreToolUse start-but-never-exit lifecycle limitation.
+- The pattern-inventory relationship to claude-refresh.sh's Family B classifier is settled
+  (shared library, or a recorded reason not to) with no silent-drift path left open.
+- Shellcheck clean per context/standards/shell-strict-mode.md.
+- Net pattern-document count does not increase.
+- No task-number references in any deliverable outside specs/**.
+
+---
 
 ### 346. Reconcile the books observer RUN-record field reads with book-evidence-run-v1, and rule on fail-loud versus silent degradation
 - **Status**: [NOT STARTED]
