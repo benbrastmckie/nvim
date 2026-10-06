@@ -38,7 +38,11 @@ result.
 One write mechanism exists today — the hard-mode implementation agent's direct Write-tool write,
 anchored by `handoff_path` (absolute) supplied in the delegation context, with absolute
 `task_dir` as fallback. `hooks/validate-handoff-location.sh` (PostToolUse, matcher
-`Write\|Edit`) rejects out-of-tree destinations with exit 2.
+`Write\|Edit`) rejects out-of-tree destinations with exit 2. The same hook performs a SECOND,
+unrelated check immediately after the location allow-branch: a required-field content check
+against `validate-handoff.sh`, rejecting a non-compliant write (missing `summary`/`blockers`/etc.)
+with exit 2 and a fix-forward banner naming the failing fields — see "`validate-handoff.sh`
+wiring status" below for the full write-time-vs-postflight detection-site split.
 
 **Hook coverage note, kept for the record even though the second mechanism it once described no
 longer exists.** `validate-handoff-location.sh` reads `tool_input.file_path`, a field only
@@ -204,6 +208,9 @@ draws from that table rather than defining a second, independently-maintained en
 ### `summary` (required)
 2-4 sentences describing what was accomplished. **Token budget: ~100 tokens**. Be concise.
 The orchestrator reads this to understand cycle outcome without reading full artifacts.
+Compliance is enforced at write time: `hooks/validate-handoff-location.sh`'s content check
+rejects a write whose `summary` is missing or empty with `exit 2` and a fix-forward banner,
+rather than this gap being discovered later in postflight.
 
 ### `artifacts` (required)
 List of artifacts written by this cycle. The orchestrator uses these to populate delegation
@@ -226,7 +233,10 @@ the prohibition explicitly.
 
 ### `blockers` (required array; entries populated only when there is a blocker)
 Must be present as a JSON array — `[]` is normal and expected for `implemented` status. Non-empty
-only when `status = "partial"` or `status = "blocked"`. Each blocker entry uses the canonical
+only when `status = "partial"` or `status = "blocked"`. Compliance is enforced at write time:
+`hooks/validate-handoff-location.sh`'s content check rejects a write whose `blockers` key is
+absent entirely with `exit 2` and a fix-forward banner — omitting the key is NOT the same as
+writing `[]`, and only the latter passes. Each blocker entry uses the canonical
 hard/wrap-up shape (fragment below — a single `blockers[]` entry, not a complete handoff object;
 it will not independently pass `validate-handoff.sh`):
 
@@ -294,6 +304,14 @@ section for the full per-field definition. Read by the hard engine AND by
 `strategic == true` entries and surfaces each in the skeleton-follow-up completion reporting
 named above — again a no-op on a base-mode handoff, which never populates this field.
 
+**Ruling: absence is not reported outside skeleton mode.** `validate-handoff.sh` WARNed
+unconditionally on absence until this was tightened — since this field is hard-mode-only and the
+two readers above are both no-ops for a base-mode handoff, absence is the expected, universal
+case for every base-mode writer, and the unconditioned WARN fired on ~100% of ordinary
+dispatches. The validator's skeleton-mode FAIL paths (non-empty `sorry_inventory` required,
+every `strategic:true` entry fully tracked) are untouched — only the standard-mode WARN was
+scoped to stop firing on absence.
+
 ### `git_checkpoint` (optional)
 A git checkpoint reference (commit SHA, `working-progress-*.patch` path, `stash@{N}` ref, or
 `untracked-backup-{ts}` path) recorded at a context-pressure or phase-end handoff, so a fresh
@@ -338,6 +356,14 @@ The **flat** form of the continuation pointer: a top-level string naming the con
 handoff markdown file the agent wrote. This is the ONLY form any live writer emits
 (`context/contracts/wrap-up.md`'s canonical schema; see "One Write Form, Deprecated-But-Accepted
 Read Form" above). `null` when `status = "implemented"`.
+
+**Ruling: absence is reported only when `status` is `partial` or `blocked`.**
+`validate-handoff.sh` used to WARN on absence unconditionally, in a block that ran BEFORE the
+status check further down (Check 5, "Status/continuation consistency") — making the WARN fire on
+every `implemented`-status handoff too, where absence (`null`) is schematically correct per the
+sentence above, not a gap. The unconditioned WARN was dropped; Check 5 remains the single,
+correctly status-conditioned reporting site for this field (it WARNs exactly when `status` is
+`partial`/`blocked` with no continuation pointer set) — nothing about Check 5 itself changed.
 
 The orchestrator resolves this field (or the deprecated nested `continuation_context.handoff_path`
 below, whichever is present) and normalizes the result to `{ handoff_path, orchestrator_mode:
@@ -509,14 +535,32 @@ array reads them via `jq ".phases_completed"` / `jq ".phases_total"`, not
 six-value `status` vocabulary, and the `artifacts`/`summary` presence-and-shape checks described
 in `context/schemas/orchestrator-handoff-schema.json`.
 
-**`validate-handoff.sh` wiring status**: this script is invoked as a **log-only, non-gating**
-producer-defect diagnostic from `skill_corroborate_phase_counts()` in
-`agent-system/extensions/core/scripts/skill-base.sh`, firing only when that function receives a
-non-empty, existing `handoff_path` argument (the handoff-present corroboration call sites in
-`skill-orchestrate/SKILL.md` Move 3, both effort modes, pass the current handoff; the
-recovery-path call sites pass an empty string, since there is no handoff to validate there). Its
-exit status never influences `skill_corroborate_phase_counts()`'s own return value or the
-completion-claim gate.
+**`validate-handoff.sh` wiring status**: this script is no longer invoked from
+`skill_corroborate_phase_counts()` at all — that call was removed (it discarded the exit code via
+`|| true`, and no other consumer read it, so two measured production incidents printed a loud
+`HANDOFF VALIDATION FAILED` and then completed anyway with no durable trace). It now runs at two
+sites instead:
+
+- **Write time**: `hooks/validate-handoff-location.sh`'s `PostToolUse` content check, on every
+  Write/Edit of `.orchestrator-handoff.json` that lands at an allowed task-directory path. On
+  FAIL: a fix-forward banner to stderr plus a `HANDOFF_VALIDATION_FAILED` record (Signal B
+  unresolved, exactly as that hook's pre-existing `HANDOFF_MISLOCATED` call), then `exit 2` —
+  the write is rejected, not merely logged.
+- **Postflight, once per handoff-present phase**: `scripts/orchestrate-cycle-postflight.sh`'s
+  handoff-present read path, detecting site `cycle-postflight-handoff-validation`. Unlike the
+  removed call, this is NOT gated on `dispatch_status == "implemented"` — it runs for every
+  phase that writes a handoff (plan included), so a handoff that somehow still reaches postflight
+  invalid (e.g. written via Bash redirection, past the write-time hook's structural blindness to
+  that path) is durably recorded: an `events.jsonl` `system_defect` row via
+  `system-defect-record.sh` and a `detected_defects[]` entry, attributed via
+  `--dispatched-agent` (the dispatched agent authored the malformed JSON).
+
+**Both sites are non-gating for task completion, and independent of the completion-deploy gate.**
+Neither assigns `dispatch_status`, sets `handoff_stale`, or influences
+`skill_gate_completion_claim`'s own refusal logic; the durable record exists so the next reader
+sees the verdict without the terminal still being open, not to block a dispatch whose work is
+otherwise complete. See `context/patterns/system-defect-discrimination.md`'s seventeenth-instance
+paragraph (`HANDOFF_VALIDATION_FAILED`) for the full detection-site and attribution contract.
 
 ---
 

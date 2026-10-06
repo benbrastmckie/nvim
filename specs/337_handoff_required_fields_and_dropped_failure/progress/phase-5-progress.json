@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Record the rulings in the schema documentation",
+  "started_at": "2026-10-05T23:40:00Z",
+  "last_updated": "2026-10-06T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite validate-handoff.sh wiring status paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 2, "description": "Extend Path Resolution Contract section to name the second content check", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 3, "description": "Record sorry_inventory WARN-scoping ruling", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 4, "description": "Record continuation_path WARN-scoping ruling", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 5, "description": "Add write-time enforcement sentences to summary and blockers sections", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 6, "description": "Update wrap-up.md's one-line hook description to name both checks", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/wrap-up.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

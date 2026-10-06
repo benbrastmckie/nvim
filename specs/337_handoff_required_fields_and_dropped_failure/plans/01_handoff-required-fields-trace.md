@@ -393,34 +393,34 @@ must be unchanged.
 
 ---
 
-### Phase 5: Record the rulings in the schema documentation [NOT STARTED]
+### Phase 5: Record the rulings in the schema documentation [COMPLETED]
 
 **Goal**: Leave the decisions where the next reader finds them, so neither the wiring status nor
 the WARN ruling is re-derived — and satisfy the dispatch's requirement that any relaxation be
 argued from the schema's consumers in `handoff-schema.md`.
 
 **Tasks**:
-- [ ] Rewrite `docs/architecture/handoff-schema.md`'s **`validate-handoff.sh` wiring status**
+- [x] Rewrite `docs/architecture/handoff-schema.md`'s **`validate-handoff.sh` wiring status**
       paragraph: it is no longer invoked from `skill_corroborate_phase_counts` at all; it now runs
       (a) at write time from the `PostToolUse` hook, exit 2 + `HANDOFF_VALIDATION_FAILED` on
       failure, and (b) once per handoff-present postflight for every phase, recording
       `HANDOFF_VALIDATION_FAILED` to `events.jsonl` and `detected_defects[]`. State plainly that
-      it remains non-gating for task completion and is independent of the completion-deploy gate.
-- [ ] Extend the **Path Resolution Contract** section's description of
-      `hooks/validate-handoff-location.sh` to name its second, content check.
-- [ ] In `### sorry_inventory (optional, array, hard-mode-only)`, record the ruling: absence is
+      it remains non-gating for task completion and is independent of the completion-deploy gate. *(completed)*
+- [x] Extend the **Path Resolution Contract** section's description of
+      `hooks/validate-handoff-location.sh` to name its second, content check. *(completed)*
+- [x] In `### sorry_inventory (optional, array, hard-mode-only)`, record the ruling: absence is
       the expected universal case for every base-mode writer, the validator no longer WARNs on it
       outside skeleton mode, and the consumer argument — the only readers are the hard engine and
       the postflight `implemented)` skeleton-follow-up reporting, which the same document already
-      calls a no-op for base-mode handoffs.
-- [ ] In `### continuation_path`, record the ruling: absence is schematically correct whenever
+      calls a no-op for base-mode handoffs. *(completed)*
+- [x] In `### continuation_path`, record the ruling: absence is schematically correct whenever
       `status = "implemented"` (as that section already states), so the unconditioned WARN was
-      redundant with the status-conditioned Check 5, which remains the single reporting site.
-- [ ] In `### summary (required)` and `### blockers (required array; ...)`, add one sentence each
+      redundant with the status-conditioned Check 5, which remains the single reporting site. *(completed)*
+- [x] In `### summary (required)` and `### blockers (required array; ...)`, add one sentence each
       noting that compliance is now enforced at write time by the `PostToolUse` hook, so a
-      non-compliant write is rejected with a fix-forward banner rather than discovered later.
-- [ ] Update `context/contracts/wrap-up.md`'s one-line description of the hook (around line 31)
-      so it names both checks.
+      non-compliant write is rejected with a fix-forward banner rather than discovered later. *(completed)*
+- [x] Update `context/contracts/wrap-up.md`'s one-line description of the hook (around line 31)
+      so it names both checks. *(completed)*
 
 **Timing**: 1 hour
 

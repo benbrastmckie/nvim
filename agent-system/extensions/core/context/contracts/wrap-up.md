@@ -28,9 +28,13 @@ directory, and the orchestrator either sees no handoff or reads the PREVIOUS cyc
 and reports its status as this dispatch's result. That silent wrong-answer failure is worse
 than a missing handoff.
 
-A `PostToolUse` hook (`hooks/validate-handoff-location.sh`) rejects Write/Edit calls whose
-destination is not `specs/{NNN}_{SLUG}/.orchestrator-handoff.json`. Treat that rejection as a
-hard error: delete the stray file, then rewrite at the correct absolute path.
+A `PostToolUse` hook (`hooks/validate-handoff-location.sh`) performs two checks on every
+Write/Edit of `.orchestrator-handoff.json`: it rejects a destination that is not
+`specs/{NNN}_{SLUG}/.orchestrator-handoff.json`, and it separately rejects a write that fails
+`validate-handoff.sh`'s required-field checks (e.g. missing `summary` or `blockers`). Treat
+either rejection as a hard error: for the location check, delete the stray file and rewrite at
+the correct absolute path; for the content check, rewrite the SAME path with the missing/
+malformed field(s) corrected (do not delete it).
 
 The machine-checkable authority for this shape is
 `context/schemas/orchestrator-handoff-schema.json`; this section is the H9 prose contract and
