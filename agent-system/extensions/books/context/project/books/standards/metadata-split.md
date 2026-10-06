@@ -1,7 +1,7 @@
 # The Metadata Split, as an Authoring Rule
 
 **Facts in Lean, judgments in TOML, everything else computed.** That is Decision 6
-(`docs/book-convention/06-where-metadata-lives.md`), and it decides, for every piece of a book's
+(`books/book-convention/06-where-metadata-lives.md`), and it decides, for every piece of a book's
 metadata, which
 of three places it is allowed to live in. Putting a piece in the wrong place is sometimes refused,
 sometimes warned about, and -- in one case this document singles out -- **silently reported as a
@@ -137,7 +137,7 @@ the identical probe is refused twice by name and all twelve hold with non-empty
 `checked_modules`.
 
 Three independent sources specified it the same wrong way: a task description, its plan, and
-**Decision 4's own worked example in `docs/book-convention.md`**. The rule is documented nowhere
+**Decision 4's own worked example in `books/book-convention.md`**. The rule is documented nowhere
 in Decision 4's text; the only hint in the design record is a parenthetical in Decision 3's
 *rejected alternatives* list ("per-book narrowing is what `book_policy` is for").
 

@@ -8,7 +8,7 @@ freshness signal.
 
 This file is a **dated projection**, not an authority. The authority for what each design
 decision has and has not validated is the `- **Validated by**:` marker at the head of each
-decision in `docs/book-convention.md`, mechanically linted by
+decision in `books/book-convention.md`, mechanically linted by
 `books/scripts/lint-validated-by.sh`. The authority for what is in flight is that repository's
 own `specs/state.json`. When this file and either authority disagree, the authority wins and this
 file is stale.
@@ -19,7 +19,7 @@ instance, and this register is where that is recorded.
 
 ## The marker vocabulary, adopted not invented
 
-`docs/book-convention.md` carries one marker per decision in a three-form vocabulary, and this
+`books/book-convention.md` carries one marker per decision in a three-form vocabulary, and this
 register uses the same three forms rather than a parallel scheme:
 
 | Form | Meaning |

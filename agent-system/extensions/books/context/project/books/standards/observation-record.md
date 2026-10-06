@@ -55,7 +55,7 @@ per-field below so a reader never has to guess which applies.
 | `dimension_signals` | no (omit if `issues.jsonl` carried no tagged entries) | object | Issue-log entries grouped by `tags.dimension` × `tags.polarity`, plus `untagged_count`. See "Computed vs. Supplied" below. |
 | `unrecognized_tags` | no (omit if empty) | array of object | Each entry `{entry_id, field, value}` for a `tags.dimension`/`tags.polarity` value outside the frozen enums — reported, never silently coerced or dropped. |
 | `record_path` | yes | string | The canonical per-task path this exact record was written to (self-referential, so the digest log's pointer can always be dereferenced back). |
-| `convention_version` | no (omit if unset) | string | This corpus's `convention_version` pin (`manifest.json`) at the time this record was written, sourced from the consuming repository's own `- **Convention version**:` marker (`docs/book-convention.md`'s second header bullet; Decision 19, `docs/book-convention/19-convention-versioning-and-lockstep.md`). See `README.md`'s "Convention version pin and staleness comparison" section for the full non-blocking comparison this field feeds. |
+| `convention_version` | no (omit if unset) | string | This corpus's `convention_version` pin (`manifest.json`) at the time this record was written, sourced from the consuming repository's own `- **Convention version**:` marker (`books/book-convention.md`'s second header bullet; Decision 19, `books/book-convention/19-convention-versioning-and-lockstep.md`). See `README.md`'s "Convention version pin and staleness comparison" section for the full non-blocking comparison this field feeds. |
 
 ### The Join (Generic Half) — `generic`
 

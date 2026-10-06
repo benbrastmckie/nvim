@@ -7,11 +7,11 @@ else is computed** by the certifier into `book.cert.json`. That split, and the e
 that follow from it, are the books convention.
 
 **The normative design record is owned by the consuming repository, not by this extension.** It
-was split: `docs/book-convention.md` is now a **slim index** (343 lines, measured 2026-10-05 at
-git `a07ae5f`) over one file per decision under `docs/book-convention/NN-slug.md` (eighteen
+was split: `books/book-convention.md` is now a **slim index** (343 lines, measured 2026-10-05 at
+git `a07ae5f`) over one file per decision under `books/book-convention/NN-slug.md` (eighteen
 accepted decisions) plus its paired exercise-history evidence under
-`docs/book-convention-evidence/NN-slug.md`, with `books/schema/book-toml-v2.md` and
-`books/schema/book-cert-v2.md` as its normative schemas, plus `docs/architecture-decisions.md`.
+`books/book-convention-evidence/NN-slug.md`, with `books/schema/book-toml-v2.md` and
+`books/schema/book-cert-v2.md` as its normative schemas, plus `docs/records/architecture-decisions.md`.
 This corpus explains, grounds and dates that record for an agent working inside it; where the
 two disagree, the record wins and this corpus is stale.
 
@@ -100,13 +100,13 @@ either.
 `manifest.json` carries two top-level keys, `convention_version` and `measured_at_commit`: this
 corpus's own pin of the record's text, and the consuming-repository commit it was pinned against.
 The record's own authority for this value is its second header bullet,
-`- **Convention version**: X.Y.Z` (optionally `X.Y.Z-pre`), in `docs/book-convention.md` --
-Decision 19's "one handle" (`docs/book-convention/19-convention-versioning-and-lockstep.md`, in
+`- **Convention version**: X.Y.Z` (optionally `X.Y.Z-pre`), in `books/book-convention.md` --
+Decision 19's "one handle" (`books/book-convention/19-convention-versioning-and-lockstep.md`, in
 the consuming repository).
 
 The whole comparison, stated once here rather than restated at each consuming site:
 
-1. Read `- **Convention version**:` from the consuming repository's `docs/book-convention.md`.
+1. Read `- **Convention version**:` from the consuming repository's `books/book-convention.md`.
 2. If it is present and differs from this corpus's pinned `convention_version`: report **once**
    that the record wins and this corpus is stale.
 3. If the line is absent: report **once** that the record is unversioned (this corpus's own pin

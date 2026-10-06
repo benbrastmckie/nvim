@@ -43,11 +43,11 @@ principles from it apply directly to this sub-mode:
    timestamp}). Nothing new to consider."
    Return early.
 4. Attempt to read the consuming repository's decision record, in EITHER shape: the flat
-   docs/book-convention.md index (pre-split, or carrying any decision not yet split out), or the
-   docs/book-convention/ directory (one file per decision, post-split). Both are checked;
+   books/book-convention.md index (pre-split, or carrying any decision not yet split out), or the
+   books/book-convention/ directory (one file per decision, post-split). Both are checked;
    neither alone is required.
    If NEITHER can be found:
-   Display: "Neither docs/book-convention.md nor docs/book-convention/ was found. Without the
+   Display: "Neither books/book-convention.md nor books/book-convention/ was found. Without the
    decision record, no proposal can name the convention clause it bears on, and no proposal may
    be made without one. Nothing can be proposed this run."
    Return early -- this is a HARD early return, not a degraded continuation: Candidate
@@ -90,9 +90,9 @@ on manual inspection.
 Before any candidate ranked above may be presented to the user, enumerate the decision set from
 **both** shapes the consuming repository's record may be in:
 
-- Every file under `docs/book-convention/*.md`, sorted by numeric prefix (the post-split,
+- Every file under `books/book-convention/*.md`, sorted by numeric prefix (the post-split,
   one-file-per-decision shape), **plus**
-- any `## Decision` heading still remaining in the flat `docs/book-convention.md` index (a
+- any `## Decision` heading still remaining in the flat `books/book-convention.md` index (a
   decision not yet split out, or the whole record pre-split).
 
 For every Decision a candidate touches, capture:
@@ -104,7 +104,7 @@ For every Decision a candidate touches, capture:
    reduced marker**, including its `→ full exercise history and citations:` pointer where one is
    present (every directory-shape marker carries one; a flat-index marker not yet split out may
    not).
-3. The **paired evidence file path**, `docs/book-convention-evidence/NN-slug.md`, read off the
+3. The **paired evidence file path**, `books/book-convention-evidence/NN-slug.md`, read off the
    reduced marker's own pointer target, so a proposal can cite the exercise history behind the
    reduced marker rather than only the reduced marker itself.
 
@@ -203,7 +203,7 @@ For each candidate confirmed as "Create as task" in step (b), check its Decision
 
 1. **`--revise` NEVER edits the books convention.** It proposes tasks; the tasks do the work
    through the normal research/plan/implement lifecycle. No file write under
-   `docs/book-convention.md` (or any consuming-repository convention record) originates from this
+   `books/book-convention.md` (or any consuming-repository convention record) originates from this
    sub-mode, ever.
 2. **`--revise` NEVER bypasses the consuming repository's own escalation protocol.** A candidate
    against a binding clause is always filed as a research-and-escalate task (the fork above),

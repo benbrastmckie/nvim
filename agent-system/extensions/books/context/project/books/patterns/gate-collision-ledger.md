@@ -46,7 +46,7 @@ baseline**.
 | **Severity** | A **trust defect, not a cost problem.** Nothing in the certificate, the log or `DEPENDS.md` distinguished "checked and held" from "checked nothing" |
 
 **Three independent sources specified it the same wrong way**: the task description, the plan, and
-**Decision 4's own worked example in `docs/book-convention.md`**. It was caught **only** because
+**Decision 4's own worked example in `books/book-convention.md`**. It was caught **only** because
 the plan carried an explicit verification line -- "prove the assertions are live, not vacuous by
 construction" -- which the dispatch's own retrospective calls "the single highest-value line in
 the plan". See `standards/metadata-split.md` for the rule and

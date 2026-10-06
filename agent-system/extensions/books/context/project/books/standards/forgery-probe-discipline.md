@@ -42,7 +42,7 @@ Three things make this the right grounding instance for the rule:
 1. **Nothing in the artifact distinguished the two cases.** Not the certificate, not the run log,
    not `DEPENDS.md`. "Checked and held" and "checked nothing" were the same output.
 2. **Three independent sources specified the placement the same wrong way** -- a task description,
-   its plan, and **Decision 4's own worked example in `docs/book-convention.md`**. There was no
+   its plan, and **Decision 4's own worked example in `books/book-convention.md`**. There was no
    correct reading available to copy.
 3. **It was caught only because a human-authored plan carried an explicit verification line** --
    "prove the assertions are live, not vacuous by construction". The dispatch's own retrospective

@@ -2,7 +2,7 @@
 
 Where the diagnostics that certify a **record edit** live, the order to run them, and what each
 certifies. This file names no convention substance — that lives in the record itself
-(`docs/book-convention/`) and in this corpus's own domain documents; see
+(`books/book-convention/`) and in this corpus's own domain documents; see
 `rules/book-convention-record.md` for the editing obligations these diagnostics back.
 
 ## The four diagnostics, in run order
@@ -11,7 +11,7 @@ Cheapest and most structural first, so a structural break is found before a curr
 is read.
 
 1. **`books/scripts/lint-validated-by.sh`** — twelve checks. **Blocking**: CHECK 1 (marker
-   presence/well-formedness), CHECK 2 (instance liveness), and — once `docs/book-convention/`
+   presence/well-formedness), CHECK 2 (instance liveness), and — once `books/book-convention/`
    exists — CHECK 5 (cross-link integrity), CHECK 6 (anchor liveness), CHECK 7 (index/content
    agreement), CHECK 8 (orphaned-decision detection), CHECK 9 (decision status), CHECK 10
    (clause-list resolution), CHECK 11 (record currency). **Advisory** (printed, never changes the
@@ -24,7 +24,7 @@ is read.
    backtick-delimited span moving from one file to another (e.g. during a decision's migration
    into its own file) is a pass; a span disappearing from the set entirely is a FAIL.
 3. **`books/scripts/check-evidence-append-only.sh`** — the append-only guard over
-   `docs/book-convention-evidence/NN-*.md` (`README.md` excluded, being the directory's
+   `books/book-convention-evidence/NN-*.md` (`README.md` excluded, being the directory's
    migration-contract document). Every finding is blocking; append-only is a property of **each
    commit**, not of the end state, so a rewritten entry is caught exactly like a dropped one. No
    reachable `.git` yields one INFO line and exit 0, reported rather than treated as green.

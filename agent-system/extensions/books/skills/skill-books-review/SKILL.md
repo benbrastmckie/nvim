@@ -92,7 +92,7 @@ every confirmation gate in `--revise` executes in the lead session that invoked 
 never inside a dispatched subagent. `AskUserQuestion` is not reachable from a dispatched
 subagent on this harness (measured; a separate backlog item exists to correct any contrary claim
 elsewhere and rehome the affected gates). Only a bounded, non-interactive research or
-aggregation pass — e.g. reading `docs/book-convention.md`'s markers, or querying
+aggregation pass — e.g. reading `books/book-convention.md`'s markers, or querying
 `specs/state.json`'s open backlog — may be delegated; the gate itself never is.
 
 ### Sub-Mode: review

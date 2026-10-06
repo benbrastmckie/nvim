@@ -1,7 +1,7 @@
 # Books Extension
 
 Authoring, certifying and documenting **lean books** per the Logos/Verification repository's
-`docs/book-convention.md` design record: a certified unit inside a Lake package, named by a
+`books/book-convention.md` design record: a certified unit inside a Lake package, named by a
 `book <Name>` command in its own book module, whose metadata splits facts (Lean annotations)
 from judgments (`book.toml`) with everything else computed by the certifier into
 `book.cert.json`.
@@ -115,7 +115,7 @@ re-checking the live tree.
 
 ## References
 
-- `docs/book-convention.md` and `books/schema/book-toml-v2.md` (consuming-repository design
+- `books/book-convention.md` and `books/schema/book-toml-v2.md` (consuming-repository design
   record; normative)
 - `context/project/books/README.md` (the domain corpus's navigation index; start at
   `domain/known-gap-register.md`)

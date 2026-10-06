@@ -165,7 +165,7 @@ description: Review the books convention's accumulated observation evidence, or 
     - `specs/books-evidence/observations.jsonl` (the digest log both sub-modes start from)
     - `specs/{NNN}_{SLUG}/book.observation.json` (the canonical per-task record each digest line points to)
     - `specs/books-evidence/runs.jsonl` (when present; RUN-log-derived fields)
-    - `docs/book-convention.md` (the consuming repository's decision record; `--revise` only, mandatory)
+    - `books/book-convention.md` (the consuming repository's decision record; `--revise` only, mandatory)
     - `specs/books-evidence/revise-log.json` (the watermark cursor; `--revise` only)
     - `specs/state.json` (`active_projects`, for backlog reconciliation; `--revise` only)
   </reads>

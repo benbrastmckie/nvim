@@ -1,7 +1,7 @@
 ## Books Extension
 
 This project includes lean-book authoring, certification and documentation support via the
-books extension, following the Logos/Verification repository's `docs/book-convention.md`
+books extension, following the Logos/Verification repository's `books/book-convention.md`
 design record.
 
 ### Scope

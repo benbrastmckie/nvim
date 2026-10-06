@@ -4,8 +4,8 @@ A `book_layer` line states one fact about one module: which layer it sits at. Th
 licenses and forbids that module's imports, and -- separately -- what decides whether the module
 may contain an execution construct at all.
 
-**Normative sources**: Decision 2 (`docs/book-convention/02-layer-vocabulary.md`, layer
-vocabulary) and Decision 3 (`docs/book-convention/03-layer-import-matrix.md`, the import matrix).
+**Normative sources**: Decision 2 (`books/book-convention/02-layer-vocabulary.md`, layer
+vocabulary) and Decision 3 (`books/book-convention/03-layer-import-matrix.md`, the import matrix).
 **Implementation**: `books/lean/Books/Meta.lean`, which is the only writer of the Lean-side
 facts. Gap claims defer to `domain/known-gap-register.md`.
 

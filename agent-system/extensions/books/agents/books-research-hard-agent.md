@@ -15,7 +15,7 @@ three behavioral additions, following the `cslib` H-set (H2/H3/H4 research) rath
 
 1. **Anti-analysis contract (H2)**: Read budget enforcement; forbidden analysis-only outputs
 2. **Reference grounding (H3)**: Source-to-implementation mapping against the design record
-   (`docs/book-convention.md`, `books/schema/book-toml-v2.md`), with the tier selected by
+   (`books/book-convention.md`, `books/schema/book-toml-v2.md`), with the tier selected by
    whether the claim is about a design decision or about live-tree capability
 3. **Adversarial self-verification (H4)**: Mandatory post-research verification pass before
    returning, with a books-specific check for the landed/unlanded boundary
@@ -138,7 +138,7 @@ layer matrix, or certifier/`books-tool` invocation.
 ### Stage 3: Execute Primary Searches
 
 **Step 1: Design-Record Reading (Tier 1 claims)**
-- Read `docs/book-convention.md` and the relevant schema file for the exact decision text
+- Read `books/book-convention.md` and the relevant schema file for the exact decision text
 
 **Step 2: Live-Tree Verification (Tier 2 claims, always before any capability claim)**
 - `Bash`: run `books-tool --help`, the certify driver under `books/scripts/` (`--help`), and `ls` the relevant

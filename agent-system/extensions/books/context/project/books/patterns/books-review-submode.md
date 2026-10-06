@@ -49,7 +49,7 @@ writing, because nothing beyond the dated report is written), not an oversight.
    Continue — this is a degraded report, not an early return; a review that cannot measure
    anything still owes the reader a report naming that fact.
 5. If a `burdens_created`/`burdens_lifted` entry names a bearing Decision that resolves to
-   NEITHER the `docs/book-convention/` directory shape NOR a remaining flat-index heading (see
+   NEITHER the `books/book-convention/` directory shape NOR a remaining flat-index heading (see
    Execution: Burdens Created vs. Burdens Lifted below):
    Report it as a named unresolvable-decision finding in that table row (never a fabricated
    marker) and continue — this, too, is a degraded report, not an early return. Only Check 2's
@@ -173,12 +173,12 @@ policy"`):
 directly; `convention_decision` strings come purely from `issues.jsonl` tags today).** For each
 bearing Decision named on a `burdens_created`/`burdens_lifted` entry, read the live decision
 record using the same enumeration rule as `--revise`'s Mandatory Preliminary Research Step
-(`patterns/books-revise-submode.md`): the `docs/book-convention/NN-slug.md` directory shape
-first, the flat `docs/book-convention.md` index second. Carry into the table row:
+(`patterns/books-revise-submode.md`): the `books/book-convention/NN-slug.md` directory shape
+first, the flat `books/book-convention.md` index second. Carry into the table row:
 
 - the Decision's current `- **Validated by**:` **one-line reduced marker**, verbatim (including
   its `→ full exercise history and citations:` pointer where one is present), and
-- the paired evidence file path, `docs/book-convention-evidence/NN-slug.md`, read off that
+- the paired evidence file path, `books/book-convention-evidence/NN-slug.md`, read off that
   pointer.
 
 If the named Decision resolves to **neither** shape, report it as a named unresolvable-decision
@@ -190,7 +190,7 @@ Case Check 5 above.
 
 | Convention Decision | Live Marker | Evidence Path | Burdens Created | Burdens Lifted | Net |
 |---|---|---|---|---|---|
-| {convention_decision or "(no bearing Decision named)"} | {verbatim reduced marker, or "(unresolvable — neither shape found)"} | {docs/book-convention-evidence/NN-slug.md path, or "--" when unresolvable} | {description list} | {description list} | {created_count - lifted_count} |
+| {convention_decision or "(no bearing Decision named)"} | {verbatim reduced marker, or "(unresolvable — neither shape found)"} | {books/book-convention-evidence/NN-slug.md path, or "--" when unresolvable} | {description list} | {description list} | {created_count - lifted_count} |
 
 Asymmetric Decisions (created without a matching lift) are the strongest `--revise` candidates —
 see Funnel Rule below.

@@ -5,16 +5,16 @@ tool**. Beside it sit two further JSON files that are easy to conflate and are n
 artifact at all.
 
 **Normative source**: `books/schema/book-cert-v2.md` (689 lines). **Design record**: Decisions 8,
-9, 11 -- `docs/book-convention/08-computed-dependencies-and-book-cert-json.md`,
-`docs/book-convention/09-trust-unit-is-the-export.md`,
-`docs/book-convention/11-versioning-rule.md`. Every figure below was measured 2026-10-03 against
+9, 11 -- `books/book-convention/08-computed-dependencies-and-book-cert-json.md`,
+`books/book-convention/09-trust-unit-is-the-export.md`,
+`books/book-convention/11-versioning-rule.md`. Every figure below was measured 2026-10-03 against
 the Logos/Verification tree at git `7281c81`. Gap claims defer to
 `domain/known-gap-register.md`.
 
 ## Where the certificate lives, and the one placement that corrupts a different tool
 
 **Directly in the book directory, beside `book.toml`** -- per
-`docs/architecture-decisions.md` decision 2, with `DEPENDS.md` generated beside it for the
+`docs/records/architecture-decisions.md` decision 2, with `DEPENDS.md` generated beside it for the
 documentation tier. **Never in a `certificate/` subdirectory**: the reason is mechanical, not
 stylistic -- the framed_channel export tooling treats **every** directory named `certificate` as a
 discovery root, so nesting a certificate under one corrupts that discovery (`rules/books.md`
@@ -23,7 +23,7 @@ item 2).
 **It is the only non-Lean input.** `books-tool`, the certify driver, and any future reconciliation
 or book-health tooling read `book.cert.json` and nothing else as their record of truth (Decisions
 8, 9, 11). A tool reaching for `book.toml`, Lean source, or `book.record.json` instead is reaching
-outside the contract. And per `docs/architecture-decisions.md` decision 10, **any edit to an input
+outside the contract. And per `docs/records/architecture-decisions.md` decision 10, **any edit to an input
 an existing certificate digests regenerates that certificate in the same commit** -- a toolchain
 bump is such an edit.
 

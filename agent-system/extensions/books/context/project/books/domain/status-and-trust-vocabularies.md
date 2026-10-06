@@ -4,7 +4,7 @@ Two vocabularies, three words and four words, both authored in `book.toml` and *
 Lean code**. Each word licenses something specific and forbids something specific, and the gaps
 between them are where a consumer over-reads a certificate.
 
-**Design record**: Decision 12 (`docs/book-convention/12-status-vocabulary-and-trust-block.md`).
+**Design record**: Decision 12 (`books/book-convention/12-status-vocabulary-and-trust-block.md`).
 **Enforced word lists**: `books/tool/Books/Manifest.lean:33-38`. Gap claims defer to
 `domain/known-gap-register.md`.
 
@@ -55,7 +55,7 @@ exploit is **UNVERIFIED**.
 **The owner's ruling** (recorded in Decision 12): `certified` means checked by the pinned kernel
 and the recheck legs as they stand; **no independent-kernel precondition is added**; the exposure
 is stated in the record and in the certificate's toolchain field, and it clears when the Aeneas
-pin (`docs/architecture-decisions.md` decision 4) moves the toolchain past 4.32.2 -- a bump the
+pin (`docs/records/architecture-decisions.md` decision 4) moves the toolchain past 4.32.2 -- a bump the
 owner takes with that pin, not separately. Decision 16's OQ5 records the residual and the
 extension point (the reserved `leanchecker` pass name).
 

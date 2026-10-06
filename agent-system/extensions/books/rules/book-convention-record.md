@@ -1,5 +1,5 @@
 ---
-paths: ["**/docs/book-convention.md", "**/docs/book-convention/**", "**/docs/book-convention-evidence/**"]
+paths: ["**/books/book-convention.md", "**/books/book-convention/**", "**/books/book-convention-evidence/**"]
 ---
 
 # Book Convention Record Editing Rules
@@ -13,7 +13,7 @@ A decision whose `Validated by` marker **names an instance** is binding (a bare 
 the exercised clauses of `partially, <instance> — <clauses>`). Work that cannot satisfy it
 **stops**, researches the conflict, **escalates to the repository owner** for a ruling, and lands
 that ruling as an amendment to the clause's text plus an updated marker.
-(`docs/book-convention/17-documentation-reconciliation-and-book-health.md`, "The escalation
+(`books/book-convention/17-documentation-reconciliation-and-book-health.md`, "The escalation
 protocol".)
 
 ## 2. Neither silent departure nor silent compliance
@@ -33,7 +33,7 @@ exercises it, which then **promotes its marker**. (Same section.)
 value vocabulary (`<instance>` / `partially, <instance> — <clauses>` / `none yet`) and its
 evidence pointer — **and** appending a dated
 `## <ISO date> — <Newly exercised | Extended | Amended | Re-measured> by <instance>` entry to the
-paired file under `docs/book-convention-evidence/`. (`docs/book-convention-evidence/README.md`,
+paired file under `books/book-convention-evidence/`. (`books/book-convention-evidence/README.md`,
 "Ruling 5's file-split mechanics paragraph", marker and evidence-file templates in the same
 README. Append-only is mechanically enforced by `books/scripts/check-evidence-append-only.sh`,
 every finding blocking.)
@@ -59,7 +59,7 @@ Classify the change against Decision 19's bump table, declare it in the same cha
 `convention_version` / `measured_at_commit`, and the corpus `README.md`'s "Convention version pin
 and staleness comparison") is then stale and says so — the pin leg is **advisory, never
 blocking** (`books/scripts/check-convention-version.sh` CHECK4), because the extension deploys on
-its own schedule. (`docs/book-convention/19-convention-versioning-and-lockstep.md`, clauses 2, 3, 5.)
+its own schedule. (`books/book-convention/19-convention-versioning-and-lockstep.md`, clauses 2, 3, 5.)
 
 ## Scope Boundary
 

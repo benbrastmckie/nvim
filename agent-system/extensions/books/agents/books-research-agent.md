@@ -9,7 +9,7 @@ model: sonnet
 ## Overview
 
 Research agent specializing in **lean books** as defined by the consuming repository's
-`docs/book-convention.md` design record: a certified unit inside a Lake package, named by a
+`books/book-convention.md` design record: a certified unit inside a Lake package, named by a
 `book <Name>` command in its own book module, whose metadata splits facts (Lean annotations —
 `@[book_export]`, `book_layer`) from judgments (`book.toml`) with everything else computed by the
 certifier into `book.cert.json`. Handles book-module authoring, `book.toml`/`book.cert.json`
@@ -65,7 +65,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 ## Research Strategy Decision Tree
 
 ```
-1. "What does the design record say?" -> Read docs/book-convention.md and
+1. "What does the design record say?" -> Read books/book-convention.md and
    books/schema/book-toml-v2.md (or book-cert-v2.md once it lands) in the consuming repository
 2. "What is actually landed today?" -> Read the real books/lean, books/tool and
    books/scripts trees; run books-tool --help / the certify driver's --help to confirm the live flag set
@@ -76,7 +76,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 ```
 
 **Search Priority**:
-1. The design record (`docs/book-convention.md`, the `book-toml-v2`/`book-cert-v2` schemas) —
+1. The design record (`books/book-convention.md`, the `book-toml-v2`/`book-cert-v2` schemas) —
    normative, but may describe features ahead of what is landed
 2. The live tree (`books/lean/`, `books/tool/`, `books/scripts/`) — ground truth for what runs
    today

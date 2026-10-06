@@ -153,7 +153,7 @@ field (`"book-meta"`, `"guarantee"`, `"lean-decl"`, ...), and:
 ## The compile root and the pins
 
 **The compile root is the REPOSITORY root** (`--root .`,
-`docs/architecture-decisions.md` decision 9), passed through
+`docs/records/architecture-decisions.md` decision 9), passed through
 `bash typst/scripts/build.sh` -- **the sole caller of `typst compile`** in the tree. It resolves
 the repository root from its own location and passes it to `--root` as an **explicit
 command-line flag only**; it deliberately does **not** export `TYPST_ROOT`, because doing so would

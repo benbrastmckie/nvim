@@ -6,8 +6,8 @@ keyed on the **canonical statement serialisation**, which is why a Lean toolchai
 requires no bump at all.
 
 **Normative source**: `books/schema/book-cert-v2.md`. **Design record**: Decision 9
-(`docs/book-convention/09-trust-unit-is-the-export.md`) and Decision 11
-(`docs/book-convention/11-versioning-rule.md`). **Implementation**:
+(`books/book-convention/09-trust-unit-is-the-export.md`) and Decision 11
+(`books/book-convention/11-versioning-rule.md`). **Implementation**:
 `books/lean/BookCert/{Cone,Serial,Ledger,Identity,VersionCheck}.lean`. Gap claims defer to
 `domain/known-gap-register.md`.
 
