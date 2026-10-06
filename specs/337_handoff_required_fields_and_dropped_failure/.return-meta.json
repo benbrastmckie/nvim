@@ -1,10 +1,110 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/337_handoff_required_fields_and_dropped_failure/summaries/01_handoff-required-fields-trace-summary.md",
+      "summary": "Closed the handoff required-field gap: a write-time content-check gate on the existing PostToolUse hook, a durable postflight trace for HANDOFF_VALIDATION_FAILED, scoped companion WARNs, schema-doc rulings, and the 42 writer-prose blocks updated; deployed and gated."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a write-time required-field gate to the handoff PostToolUse hook and a durable postflight trace for failed handoff validation (events.jsonl + detected_defects[]), scoped the sorry_inventory/continuation_path WARNs to the cases where they inform, recorded all rulings in the schema docs, and pointed all 42 writer-prose blocks at the new gate. Deployed and verified."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/agents/books-implementation-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/context/contracts/wrap-up.md",
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/hooks/validate-handoff-location.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/system-defect-record.sh",
+    "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh",
+    "agent-system/extensions/core/scripts/validate-handoff.sh",
+    "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+    "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+    "agent-system/extensions/email/agents/email-implementation-agent.md",
+    "agent-system/extensions/epidemiology/agents/epi-implement-agent.md",
+    "agent-system/extensions/filetypes/agents/docx-edit-agent.md",
+    "agent-system/extensions/filetypes/agents/filetypes-router-agent.md",
+    "agent-system/extensions/filetypes/agents/filetypes-spreadsheet-agent.md",
+    "agent-system/extensions/filetypes/agents/presentation-agent.md",
+    "agent-system/extensions/filetypes/agents/scrape-agent.md",
+    "agent-system/extensions/filetypes/agents/sheet-agent.md",
+    "agent-system/extensions/founder/agents/analyze-agent.md",
+    "agent-system/extensions/founder/agents/deck-builder-agent.md",
+    "agent-system/extensions/founder/agents/deck-planner-agent.md",
+    "agent-system/extensions/founder/agents/finance-agent.md",
+    "agent-system/extensions/founder/agents/financial-analysis-agent.md",
+    "agent-system/extensions/founder/agents/founder-implement-agent.md",
+    "agent-system/extensions/founder/agents/founder-plan-agent.md",
+    "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
+    "agent-system/extensions/founder/agents/legal-analysis-agent.md",
+    "agent-system/extensions/founder/agents/legal-council-agent.md",
+    "agent-system/extensions/founder/agents/market-agent.md",
+    "agent-system/extensions/founder/agents/meeting-agent.md",
+    "agent-system/extensions/founder/agents/project-agent.md",
+    "agent-system/extensions/founder/agents/strategy-agent.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+    "agent-system/extensions/present/agents/budget-agent.md",
+    "agent-system/extensions/present/agents/funds-agent.md",
+    "agent-system/extensions/present/agents/grant-agent.md",
+    "agent-system/extensions/present/agents/slide-planner-agent.md",
+    "agent-system/extensions/present/agents/slidev-assembly-agent.md",
+    "agent-system/extensions/present/agents/timeline-agent.md",
+    "agent-system/extensions/python/agents/python-implementation-agent.md",
+    "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/z3/agents/z3-implementation-agent.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a mechanical sed/perl pass over a grep-derived file list needs to insert literal `/` characters (e.g. a sentence naming a file path like `hooks/foo.sh`), perl's `-pe 's/old/new/'` with `/` as both delimiter and content character will fail to compile with cryptic 'unknown regexp modifier' errors. Use a small Python script with `str.replace()` (asserting exactly one occurrence per file before writing) instead -- it avoids delimiter collision entirely and is still a single scripted pass over one file list, preserving the 'never file-by-file by hand' intent.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/337_handoff_required_fields_and_dropped_failure/summaries/01_handoff-required-fields-trace-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "perl",
+        "sed",
+        "mechanical-edit",
+        "delimiter-collision",
+        "python-replace"
+      ]
+    },
+    {
+      "content": "In a shared working tree with multiple concurrently-dispatched /orchestrate sibling tasks, verify-deploy.sh's pass/fail verdict can fluctuate run-to-run as siblings commit or deploy their own in-flight work (e.g. an undeployed new test file, a TODO.md/state.json sync drift from a sibling's preflight write). Triage each finding on its own merits -- fix it if your own plan caused it, record and leave it alone if it traces to another task's file scope -- rather than chasing a moving target to a literal point-in-time exit 0.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/337_handoff_required_fields_and_dropped_failure/summaries/01_handoff-required-fields-trace-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "verify-deploy",
+        "concurrent-dispatch",
+        "sibling-tasks",
+        "territory",
+        "shared-tree"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791241405_83aa14",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 8
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
