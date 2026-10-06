@@ -283,18 +283,18 @@ assertions (a) and (b).
 
 ---
 
-### Phase 5: Redeploy and Clear the Full Gate Set [NOT STARTED]
+### Phase 5: Redeploy and Clear the Full Gate Set [COMPLETED]
 
 **Goal**: The deployed `.claude/` tree reflects the four source-store edits, and the complete
 gate set passes.
 
 **Tasks**:
 
-- [ ] Re-read `git status --short` and confirm only this task's four files are staged/modified by this task; a sibling's in-flight edit elsewhere in the tree is theirs, not a regression of this task's (see the Territory concurrency note).
-- [ ] Redeploy the source store with `bash agent-system/extensions/core/scripts/deploy-headless.sh` (no `--wipe`), so `.claude/commands/todo.md`, `.claude/skills/skill-todo/SKILL.md`, `.claude/context/standards/git-staging-scope.md`, and `.claude/scripts/tests/test-todo-move-pair-staging.sh` reflect the edits.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path: `agent-system/extensions/core/scripts/verify-deploy.sh`). This is the `full` tier's named invocation and aggregates the deploy-freshness, hook-registration, suite-runner (Gate 8 -> `run-all.sh`), and scoped-commit-boundary lint gates.
-- [ ] If any gate fails, fix forward within this task's four files only; a failure attributable to a file outside this task's scope is reported, not absorbed.
-- [ ] Confirm the deployed copies are byte-identical to their source-store originals for the four files (the deploy-freshness gate covers this; spot-check with `diff` on at least `commands/todo.md`).
+- [x] Re-read `git status --short` and confirm only this task's four files are staged/modified by this task; a sibling's in-flight edit elsewhere in the tree is theirs, not a regression of this task's (see the Territory concurrency note). *(completed: remaining dirty/untracked paths at Phase 5 start were all sibling-owned or pre-existing WIP — none touched by this task)*
+- [x] Redeploy the source store with `bash agent-system/extensions/core/scripts/deploy-headless.sh` (no `--wipe`), so `.claude/commands/todo.md`, `.claude/skills/skill-todo/SKILL.md`, `.claude/context/standards/git-staging-scope.md`, and `.claude/scripts/tests/test-todo-move-pair-staging.sh` reflect the edits. *(completed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path: `agent-system/extensions/core/scripts/verify-deploy.sh`). This is the `full` tier's named invocation and aggregates the deploy-freshness, hook-registration, suite-runner (Gate 8 -> `run-all.sh`), and scoped-commit-boundary lint gates. *(completed: see Verification notes below for the one residual failure and its attribution)*
+- [x] If any gate fails, fix forward within this task's four files only; a failure attributable to a file outside this task's scope is reported, not absorbed. *(completed: one additional fix-forward was required and applied — the new test file was not yet declared in the core extension's manifest.json `provides.scripts` list, which failed the doc-lint gate with "script file on disk NOT in provides.scripts". Added the missing entry and redeployed; doc-lint then passed clean.)*
+- [x] Confirm the deployed copies are byte-identical to their source-store originals for the four files (the deploy-freshness gate covers this; spot-check with `diff` on at least `commands/todo.md`). *(completed: `diff` empty for all four files: commands/todo.md, skill-todo/SKILL.md, git-staging-scope.md, test-todo-move-pair-staging.sh)*
 
 **Timing**: 0.5 hours
 
@@ -306,22 +306,24 @@ gate set passes.
 
 **Files to modify**:
 
-- none planned — this phase deploys and verifies; any edit it makes is a fix-forward inside the four files already named by Phases 1-4
+- none planned — this phase deploys and verifies; any edit it makes is a fix-forward inside the four files already named by Phases 1-4 *(deviation: altered — one additional one-line fix-forward edit was required in `agent-system/extensions/core/manifest.json`, declaring the new test script in `provides.scripts` so the doc-lint gate recognizes it as deployed-and-declared rather than an undeclared stray file)*
 
 **Verification**:
 
-- `bash .claude/scripts/verify-deploy.sh` exits 0.
-- `bash .claude/scripts/tests/run-all.sh --quiet` exits 0 with the new suite among the discovered suites.
-- `diff agent-system/extensions/core/commands/todo.md .claude/commands/todo.md` is empty.
+- `bash .claude/scripts/verify-deploy.sh` exits 0. *(one residual gate failure, pre-existing and out of scope — see note below; this task's own four files all pass every other gate clean)*
+- `bash .claude/scripts/tests/run-all.sh --quiet` exits 0 with the new suite among the discovered suites. *(new suite discovered and passing; see note below for the two pre-existing failures elsewhere in the 117-suite run)*
+- `diff agent-system/extensions/core/commands/todo.md .claude/commands/todo.md` is empty. *(confirmed empty, along with the other three files this task touched)*
+
+**Residual gate-8 failure (pre-existing, out of task scope)**: the full `bash .claude/scripts/verify-deploy.sh` run reports `FAIL -- 1 of 34 check(s) failed`, entirely attributable to Gate 8 (the `run-all.sh` suite runner), which in turn traces to two pre-existing, unrelated suite failures also observed in the standalone `run-all.sh --jobs auto` run: (1) a suite asserting a stranded-dispatch / identical-dispatch-halt behavior that the orchestrator cycle-planning script does not yet implement (six assertion groups in the test file versus one matching code path in the script under test — a feature gap, not a regression from this task's edits; confirmed unrelated by stashing an unrelated pre-existing uncommitted one-line idiom fix in that same script and reproducing the identical failure count with it removed); (2) one advisory-threshold case in a different extension's element-density lint suite, with no file-scope overlap with this task's four files whatsoever. Both failures pre-date this task's dispatch and are out of its scope; neither is fixed here. All 33 of the other `verify-deploy.sh` checks pass clean, including doc-lint (which required one additional fix-forward: declaring the new test file in the core extension's manifest so it is recognized as a deployed, declared script rather than an undeclared stray file).
 
 ## Testing & Validation
 
 - [x] `bash agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh` passes, with its negative control demonstrating the pre-fix dest-only shape is detected. *(completed: 41 passed, 0 failed)*
 - [x] `bash .claude/scripts/tests/run-all.sh --quiet` passes and discovers the new suite. *(completed with a scoped note: full run (`--jobs auto`, 117 suites) reported `111 passed, 4 failed (2 expected, 2 NEW), 2 skipped, 117 total`. The new suite `test-todo-move-pair-staging.sh` is NOT among the 4 failures — it was discovered and passed. The 4 failures are two already-documented expected failures (`test-gate-out-repair-reporting.sh`, `test-lint-json-channel-discipline.sh`) plus two confirmed pre-existing, out-of-scope failures unrelated to this task: (1) `test-orchestrate-cycle-plan.sh` Group 28/29 (IDENTICAL DISPATCH HALT cases, 14 sub-assertions) — reproduces identically with `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`'s pre-existing uncommitted change (an unrelated `grep -c` idiom fix, present before this dispatch began) stashed out, proving the failure is independent of both that diff and this task's four files; (2) `test-typst-element-lint.sh` case-h2 (1 sub-assertion) — in the unrelated `typst` extension, never touched by this task, reproduces standalone with no task-322 changes present. Neither failure is fixed here; both are out of task 322's scope.)*
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh --verbose` passes — no token introduced by this task is a bare shared-directory pathspec, and Phase 2 removes one that was.
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose` passes.
-- [ ] `bash agent-system/extensions/core/scripts/check-task-references.sh` passes (no task-number references introduced outside `specs/**`).
-- [ ] `bash .claude/scripts/verify-deploy.sh` passes against the redeployed tree.
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh --verbose` passes — no token introduced by this task is a bare shared-directory pathspec, and Phase 2 removes one that was. *(completed: 1248 files checked, 0 violations)*
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose` passes. *(completed: 1248 files checked, 0 violations)*
+- [x] `bash agent-system/extensions/core/scripts/check-task-references.sh` passes (no task-number references introduced outside `specs/**`). *(completed via the deployed copy, `bash .claude/scripts/check-task-references.sh` — the source-store copy refuses to run standalone by design, since it resolves repo root relative to a deployed `scripts/` tree; PASS: 0 unexempted occurrences)*
+- [x] `bash .claude/scripts/verify-deploy.sh` passes against the redeployed tree. *(completed with the one residual, pre-existing, out-of-scope gate-8 failure documented in Phase 5's own Verification notes above; all 33 other checks pass clean)*
 - [ ] **Deferred to the next real archival run (not automatable here, stated rather than hidden)**: the dispatch's end-to-end assertion — that an actual `/todo` run which moves at least one directory leaves no unstaged ` D` under `specs/` and records matching `delete mode`/`create mode` pairs, with `assess-repo-health.sh` reporting `phantom_paths: 0` afterwards — cannot be executed by this task, because `/todo` is an agent-executed markdown recipe with no scripted entry point. Phase 4's fixture pins the pattern and Phase 4's static half pins the recipes' use of it; the live confirmation is a one-line check on the next `/todo` archival run: `git status --porcelain | grep '^ D specs/'` must be empty.
 
 ## Artifacts & Outputs
@@ -330,7 +332,8 @@ gate set passes.
 - `agent-system/extensions/core/skills/skill-todo/SKILL.md` - `moved_paths[]` accumulator across Stage 10, consumed by Stage 15's `git add`, `specs/archive/` directory token removed
 - `agent-system/extensions/core/context/standards/git-staging-scope.md` - new `## Rename and Directory-Move Staging` section plus a cross-reference from `## Forbidden Operations`
 - `agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh` - new regression suite (behavioral fixture plus static recipe assertions)
-- Redeployed `.claude/` copies of all four files
+- `agent-system/extensions/core/manifest.json` - one-line `provides.scripts` entry declaring the new test file (Phase 5 fix-forward)
+- Redeployed `.claude/` copies of all five files
 - `specs/322_todo_move_vacated_source_never_staged/summaries/01_*-summary.md` - implementation summary
 
 ## Rollback/Contingency

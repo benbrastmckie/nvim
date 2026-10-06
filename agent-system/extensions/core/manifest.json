@@ -277,6 +277,7 @@
       "tests/test-verify-deploy-gate-selection.sh",
       "tests/test-check-task-references.sh",
       "tests/test-validate-wiring.sh",
+      "tests/test-todo-move-pair-staging.sh",
       "tier-selection.sh",
       "uninstall-extension.sh",
       "update-phase-status.sh",

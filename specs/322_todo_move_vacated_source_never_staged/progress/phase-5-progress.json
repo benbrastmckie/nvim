@@ -1,0 +1,31 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and Clear the Full Gate Set",
+  "started_at": "2026-10-06T01:00:00Z",
+  "last_updated": "2026-10-06T02:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git status --short, confirm scope isolation", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Redeploy source store via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run complete gate set (verify-deploy.sh)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Fix-forward any gate failure within this task's four files only", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Confirm deployed copies byte-identical to source-store originals", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "First deploy-headless.sh + verify-deploy (fast gates)",
+      "result": "failed",
+      "reason": "Doc-lint FAIL: scripts/tests/test-todo-move-pair-staging.sh existed on disk but was not declared in core extension's manifest.json provides.scripts list. Fixed by adding the entry, redeployed; doc-lint then passed."
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "If any gate fails, fix forward within this task's four files only",
+      "type": "altered",
+      "reason": "A fifth file (agent-system/extensions/core/manifest.json) required a one-line fix-forward edit to declare the new test script, which the plan's four-file scope did not anticipate. This is the minimal registration step required for the doc-lint gate to recognize a newly added script file; no behavioral content was added to manifest.json beyond the declaration.",
+      "annotation": "*(deviation: altered -- manifest.json also needed a one-line provides.scripts entry for the new test file)*"
+    }
+  ],
+  "handoff_count": 0
+}
