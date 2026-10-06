@@ -131,7 +131,7 @@ Both exist. A claim that `book-cert-v2.md` is not yet landed is stale
 | Script | Lines | Reads | Writes |
 |---|---|---|---|
 | `books/scripts/certify.sh` | 711 | `book.toml` discovery under the given roots; lakefiles; `/proc/meminfo`; an existing `book.cert.json` as `--prev` | certificates, through the reader; a run log on stdout |
-| `books/scripts/lint-validated-by.sh` | 802 | the eighteen `Validated by` markers across `books/book-convention/NN-slug.md` (one per decision) plus any remaining in the flat `books/book-convention.md` index, and every path/Lean name/filename they cite | findings on stdout; **two of its four checks are blocking** |
+| `books/scripts/lint-validated-by.sh` | 802 | the nineteen `Validated by` markers across `books/book-convention/NN-slug.md` (one per decision) plus any remaining in the flat `books/book-convention.md` index, and every path/Lean name/filename they cite | findings on stdout; **two of its four checks are blocking** |
 
 `lint-validated-by.sh` is what makes `domain/known-gap-register.md` a projection of a *linted*
 record rather than of free prose: CHECK 1 (marker presence and well-formedness) and CHECK 2

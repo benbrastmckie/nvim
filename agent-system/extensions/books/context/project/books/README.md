@@ -3,21 +3,24 @@
 A **lean book** is a certified unit inside a Lake package, named by a `book <Name>` command in
 its own book module. Its metadata splits three ways: **facts** are declared in Lean
 (`@[book_export]`, `book_layer`), **judgments** are authored in `book.toml`, and **everything
-else is computed** by the certifier into `book.cert.json`. That split, and the eighteen decisions
+else is computed** by the certifier into `book.cert.json`. That split, and the nineteen decisions
 that follow from it, are the books convention.
 
 **The normative design record is owned by the consuming repository, not by this extension.** It
-was split: `books/book-convention.md` is now a **slim index** (343 lines, measured 2026-10-05 at
-git `a07ae5f`) over one file per decision under `books/book-convention/NN-slug.md` (eighteen
+was split: `books/book-convention.md` is now a **slim index** (277 lines, measured 2026-10-06 at
+git `724414b2`) over one file per decision under `books/book-convention/NN-slug.md` (nineteen
 accepted decisions) plus its paired exercise-history evidence under
 `books/book-convention-evidence/NN-slug.md`, with `books/schema/book-toml-v2.md` and
 `books/schema/book-cert-v2.md` as its normative schemas, plus `docs/records/architecture-decisions.md`.
 This corpus explains, grounds and dates that record for an agent working inside it; where the
 two disagree, the record wins and this corpus is stale.
 
-`convention_version: "0.1.0-pre"` (`manifest.json`, `measured_at_commit: "d255518"`) is this
-corpus's own pin of the record's text -- see "Convention version pin and staleness comparison"
-below for the full procedure.
+- **Convention version**: 0.4.1
+- **Measured at commit**: 724414b2
+
+The two bullets above are this corpus's own pin of the record's text (`manifest.json`'s
+`convention_version` and `measured_at_commit` keys) -- see "Convention version pin and
+staleness comparison" below for the full procedure.
 
 **Read `domain/known-gap-register.md` first.** Large parts of the design record describe
 contracts with no live instance. The register is the dated projection of what is and is not
@@ -30,7 +33,7 @@ grep. None is auto-loaded into a dispatch. This README is the only entry point.
 
 | Document | Subject | Read this when |
 |---|---|---|
-| `domain/known-gap-register.md` | Dated projection of the eighteen `Validated by` markers, twelve named gaps, and the live in-flight register | Always, first -- and before trusting any contract described anywhere else here |
+| `domain/known-gap-register.md` | Dated projection of the nineteen `Validated by` markers, thirteen named gaps, and the live in-flight register | Always, first -- and before trusting any contract described anywhere else here |
 | `domain/layer-vocabulary-and-matrix.md` | The twelve `book_layer` values, the may-import matrix row by row, restricted layers and the fail-closed execution-construct gate | Assigning a layer to a module, or diagnosing a matrix refusal |
 | `domain/book-toml-v2.md` | `book.toml` v2: fifteen fields across seventeen keys, the vocabularies, and what is computed instead of authored | Authoring or reviewing a `book.toml` |
 | `domain/certificate-ledger-and-records.md` | `book.cert.json`'s twenty top-level keys and sixteen-key ledger rows; and the two different side records | Reading a certificate, or deciding which record an artifact is |

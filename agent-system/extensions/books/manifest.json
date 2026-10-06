@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Authoring, certifying and documenting lean books per the Logos/Verification book-convention design record",
   "task_type": "books",
-  "convention_version": "0.1.0-pre",
-  "measured_at_commit": "d255518",
+  "convention_version": "0.4.1",
+  "measured_at_commit": "724414b2",
   "dependencies": [
     "core",
     "lean",

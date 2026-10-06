@@ -45,7 +45,7 @@
         "validated-by-markers",
         "staleness"
       ],
-      "summary": "Dated projection of the eighteen Validated-by markers, thirteen named gaps with measurements, and the consuming repository's live in-flight register. Read first; other documents defer here.",
+      "summary": "Dated projection of the nineteen Validated-by markers, thirteen named gaps with measurements, and the consuming repository's live in-flight register. Read first; other documents defer here.",
       "keywords": [
         "known-gap",
         "Validated by",
