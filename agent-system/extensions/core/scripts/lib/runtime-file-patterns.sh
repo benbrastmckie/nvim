@@ -83,6 +83,22 @@
 # directory without modification. The directory-class pattern exists so `specs/.orchestration/`
 # itself is never reported as an untracked directory in `git status`, mirroring the
 # `.sessions/`/`.dispatch/`/`.deploy-lock/` precedent above.
+#
+# `runs-lock` and `observations-lock` (23rd and 24th members) are the lock files for the books
+# extension's evidence writers -- `books/tool/evidence-run.sh`, the sole writer of
+# `specs/books-evidence/runs.jsonl`, and `scripts/books-observe.sh`, the sole writer of
+# `specs/books-evidence/observations.jsonl`. Both mirror `metrics-lock` exactly (a dedicated
+# `**/.<name>.lock` file-class member, never placed inside a `.lock/` directory whose
+# `rmdir`-based mutex release would fail permanently if a stray file were left inside it). As
+# with `issues.jsonl` and `metrics.jsonl`, `runs.jsonl` and `observations.jsonl` THEMSELVES ARE
+# DELIBERATELY NOT ignored -- they are durable, freshness-gated evidence that a consuming
+# repository's evidence baseline reads back, so only the lock files are ephemeral. Unlike every
+# per-task member above, these two sit at a FIXED repo-level path (`specs/books-evidence/`)
+# rather than under `specs/{NNN}_{slug}/`; the `**/` prefix covers that without a root-scoped
+# form, and the root-scoped `/specs/tmp/` precedent is deliberately not followed here, since
+# nothing pins the evidence directory's name at the `specs/` top level the way `tmp` is pinned.
+# These members were omitted when the evidence tooling landed, which left both lock files
+# reported as untracked in `git status` in the consuming repository.
 
 declare -a RUNTIME_FILE_IDS=(
   "lock"
@@ -107,6 +123,8 @@ declare -a RUNTIME_FILE_IDS=(
   "tmp"
   "deploy-ledger"
   "orchestration"
+  "runs-lock"
+  "observations-lock"
 )
 
 # Exact gitignore pattern line for each member, as emitted by runtime_ignore_block().
@@ -133,6 +151,8 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "/specs/tmp/"
   "**/.orchestrator-deploy-ledger.json"
   "**/.orchestration/"
+  "**/.runs.lock"
+  "**/.observations.lock"
 )
 
 # Check A representative probe path: a concrete file this pattern must `git check-ignore -q`.
@@ -161,6 +181,8 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/tmp/claude-tts-notify.log"
   "specs/.orchestrator-deploy-ledger.json"
   "specs/.orchestration/.orchestrator-multi-state-sess_0000000000_probe.json"
+  "specs/books-evidence/.runs.lock"
+  "specs/books-evidence/.observations.lock"
 )
 
 # Check B tracked-file regex: `grep -E` pattern matched against `git ls-files` output. Any hit
@@ -188,16 +210,18 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '^specs/tmp/'
   '\.orchestrator-deploy-ledger\.json$'
   '/\.orchestration/'
+  '\.runs\.lock$'
+  '\.observations\.lock$'
 )
 
 # Directory-class flag ("1" or "0"): governs which `git rm` remediation form Check B prints for
 # a hit at this index. A "1" member's bare directory basename is given in
 # RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "0" "1" "0" "1"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "0" "1" "0" "1" "0" "0"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "" "tmp" "" ".orchestration"
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "" "tmp" "" ".orchestration" "" ""
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
