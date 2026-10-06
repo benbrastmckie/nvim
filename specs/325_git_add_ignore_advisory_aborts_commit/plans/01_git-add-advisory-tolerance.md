@@ -212,45 +212,45 @@ on exit 2, enumerate it and re-scope before editing.
 
 ---
 
-### Phase 2: Regression coverage in the existing suite [NOT STARTED]
+### Phase 2: Regression coverage in the existing suite [COMPLETED]
 
 **Goal**: `test-git-commit-scoped.sh` proves the advisory case now commits, the genuine-failure
 case still refuses, and both assertions fail when the fix is stubbed out.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` and reuse its
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` and reuse its
       existing harness verbatim: `build_repo`, `add_ephemeral`, `run_commit`, the `pass`/`fail`
       counters, and the `mktemp -d` + `trap cleanup EXIT` discipline. Note that
       `SRC_SCRIPTS_DIR="$SCRIPT_DIR/.."` resolves to the **source store** copy of the script, so
-      this suite exercises the Phase 1 edit with **no deploy required**.
-- [ ] Extend `build_repo` (or add a sibling helper) so a scratch repo can carry a tracked file
+      this suite exercises the Phase 1 edit with **no deploy required**. *(completed)*
+- [x] Extend `build_repo` (or add a sibling helper) so a scratch repo can carry a tracked file
       under a directory that `.gitignore` matches via a parent-directory rule — i.e. commit the
       file first, *then* add the ignore rule, reproducing the live `specs/archive/state.json`
-      shape.
-- [ ] Add a case: tracked, ignore-matched path passed alone as a positive pathspec. Assert the
+      shape. *(completed)*
+- [x] Add a case: tracked, ignore-matched path passed alone as a positive pathspec. Assert the
       commit **landed** via `git rev-list --count HEAD` incrementing and `git show --name-only`
-      containing the path — never exit code alone.
-- [ ] Add a case: the same tracked, ignore-matched path **batched** with an ordinary modified path
-      in one invocation. Assert both paths appear in the resulting commit.
-- [ ] Add a case: the tolerated-advisory invocation emits the stderr NOTE (tolerated nonzero add
-      exit) — proving the tolerance is observable rather than silent.
-- [ ] Add a genuine-failure case: a positive pathspec that `git add` hard-fails on with nothing
+      containing the path — never exit code alone. *(completed)*
+- [x] Add a case: the same tracked, ignore-matched path **batched** with an ordinary modified path
+      in one invocation. Assert both paths appear in the resulting commit. *(completed)*
+- [x] Add a case: the tolerated-advisory invocation emits the stderr NOTE (tolerated nonzero add
+      exit) — proving the tolerance is observable rather than silent. *(completed)*
+- [x] Add a genuine-failure case: a positive pathspec that `git add` hard-fails on with nothing
       staged (an out-of-repo absolute path such as `/etc/hostname`, batched with an otherwise-valid
       modified path). Assert exit 2, no new commit, and that the ERROR names the failing path —
       this is the assertion that proves the fix does not paper over the sibling task's hard
-      failure.
-- [ ] Add a case: a brand-new **untracked**, ignore-matched file named as an explicit positive
+      failure. *(completed)*
+- [x] Add a case: a brand-new **untracked**, ignore-matched file named as an explicit positive
       pathspec still does not get committed (no `-f` behavior crept in), and is reported rather
-      than silently accepted.
-- [ ] Add a case: a directory pathspec in a fully-covered repo with ephemeral paths present
+      than silently accepted. *(completed)*
+- [x] Add a case: a directory pathspec in a fully-covered repo with ephemeral paths present
       (reuse `add_ephemeral`) still commits and still excludes them — proving the exclude entries
-      passed into the `git diff --quiet` check do not false-flag the directory.
-- [ ] Negative control: temporarily restore the old `if ! git add ...; then exit 2; fi` guard in a
+      passed into the `git diff --quiet` check do not false-flag the directory. *(completed)*
+- [x] Negative control: temporarily restore the old `if ! git add ...; then exit 2; fi` guard in a
       scratch copy of the script, confirm the new advisory cases FAIL, then restore the fix and
-      confirm green. Record the observed failure output in the phase notes.
-- [ ] Run the full suite: `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`.
-      All pre-existing T1-T10 and V1-V8 cases must still pass.
-- [ ] Commit this green sub-step.
+      confirm green. Record the observed failure output in the phase notes. *(completed)*
+- [x] Run the full suite: `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`.
+      All pre-existing T1-T10 and V1-V8 cases must still pass. *(completed)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 1 hour
 

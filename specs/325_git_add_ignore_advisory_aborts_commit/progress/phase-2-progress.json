@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Regression coverage in the existing suite",
+  "started_at": "2026-10-05T20:20:00Z",
+  "last_updated": "2026-10-05T20:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add build_repo_tracked_ignored fixture helper and U1-U6 regression cases to test-git-commit-scoped.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Run negative control (stub pre-fix guard in a /tmp scratch copy), confirm U1/U2/U3/U5 FAIL and U4 still correctly refuses; confirm full suite green on real tree; shellcheck clean",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Negative control (stubbed pre-fix guard in /tmp/claude-neg-control-325, never touching the real source-store file): U1, U2, U3, U5 FAILED as expected (the exact V7 regression -- advisory-exit treated as hard failure, commit aborted). U4 (genuine out-of-repo-pathspec failure) still correctly refused under the pre-fix script too (rc=2, no commit) -- only the assertion's literal message-text match failed (old script emits 'WARNING: git add failed...', new script emits 'ERROR:...genuinely unstaged'), proving the fix does not regress the hard-failure case while improving its diagnostic wording. U6 (directory pathspec + ephemeral excludes) passed under both scripts, as expected since that scenario never triggers the V7 advisory path. Full suite on the real tree: 32 passed, 0 failed.",
+    "Used /etc/passwd instead of the plan's illustrative /etc/hostname for the out-of-repo pathspec in U4 -- more portably present across Linux distros/containers; same out-of-repo-absolute-path mechanism the plan names as 'such as'."
+  ]
+}

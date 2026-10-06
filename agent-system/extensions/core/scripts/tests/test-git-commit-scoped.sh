@@ -103,6 +103,43 @@ GITIGNORE_EOF
   echo "$repo"
 }
 
+# --- build_repo_tracked_ignored -- reproduces the live `specs/archive/state.json` shape: a file
+# (and an ordinary sibling) is TRACKED FIRST, and only afterwards does a .gitignore rule land that
+# ignore-matches it via a parent-directory pattern. This is the exact ordering the V7 defect
+# requires -- git only emits the "ignored by one of your .gitignore files" advisory-but-stages
+# false negative for a path that is already tracked when the rule is added; a never-tracked path
+# under the same rule is genuinely, correctly dropped (see the untracked case below). Returns the
+# repo path on stdout. ---
+build_repo_tracked_ignored() {
+  local repo
+  repo="$(mktemp -d -p "$TOP_WORKDIR")"
+
+  git -C "$repo" init -q
+  git -C "$repo" config user.email "test@example.com"
+  git -C "$repo" config user.name "Test Suite"
+
+  mkdir -p "$repo/.claude/scripts/lib"
+  local f
+  for f in "${REQUIRED_SCRIPTS[@]}"; do
+    cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+  done
+
+  mkdir -p "$repo/specs/999_probe/archive"
+  echo "line1" > "$repo/specs/999_probe/archive/state.json"
+  echo "line1" > "$repo/specs/999_probe/ordinary.txt"
+  git -C "$repo" add specs/999_probe/archive/state.json specs/999_probe/ordinary.txt
+  git -C "$repo" commit -q -m "initial (tracked before any ignore rule exists)"
+
+  # The ignore rule lands AFTER the tracking commit above -- reproducing the live defect's
+  # ordering, not a from-scratch "never tracked" shape.
+  echo "specs/999_probe/archive/" > "$repo/.gitignore"
+  git -C "$repo" add .gitignore
+  git -C "$repo" commit -q -m "add parent-directory ignore rule after tracking"
+
+  echo "$repo"
+}
+
 # --- add_ephemeral <repo> <kind>... -- creates the named ephemeral runtime paths on disk. ---
 add_ephemeral() {
   local repo="$1"
@@ -420,6 +457,120 @@ if [ "$rc_t13" -eq 0 ] && [ "$after_t13" -eq $((before_t13 + 1)) ] \
   pass "T13: legitimate partial drop with a surviving diff still commits -- exit 0, HEAD +1, WARN names the dropped path (HARD CONSTRAINT partial-drop half)"
 else
   fail "T13: expected rc=0, HEAD count $before_t13 -> $((before_t13 + 1)), file.txt in HEAD, WARN naming 01_absent.md; got rc=$rc_t13 before=$before_t13 after=$after_t13 show='$show_t13' output=$out_t13"
+fi
+
+# =====================================================================
+# U1-U6: V7 gate -- git add's gitignore advisory false negative for a TRACKED, ignore-matched
+# path (the `specs/archive/state.json` live defect shape). Every case verifies commit landing via
+# git log/git show, never exit code alone, matching this suite's house style throughout.
+# =====================================================================
+
+# --- U1: a tracked, ignore-matched path passed ALONE as a positive pathspec still lands. ---
+
+repo_u1="$(build_repo_tracked_ignored)"
+echo "line2" >> "$repo_u1/specs/999_probe/archive/state.json"
+before_u1=$(git -C "$repo_u1" rev-list --count HEAD)
+out_u1="$(run_commit "$repo_u1" --message "U1 probe commit" --session "sess_u1" -- "specs/999_probe/archive/state.json" 2>&1)"
+rc_u1=$?
+after_u1=$(git -C "$repo_u1" rev-list --count HEAD 2>/dev/null || echo "$before_u1")
+show_u1="$(git -C "$repo_u1" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_u1" -eq 0 ] && [ "$after_u1" -eq $((before_u1 + 1)) ] \
+  && echo "$show_u1" | grep -qF "specs/999_probe/archive/state.json"; then
+  pass "U1: tracked, ignore-matched positive pathspec lands despite git add's advisory exit 1 (verified via git log/git show, not exit code alone)"
+else
+  fail "U1: expected rc=0, HEAD count $before_u1 -> $((before_u1 + 1)), state.json in HEAD; got rc=$rc_u1 before=$before_u1 after=$after_u1 show='$show_u1' output=$out_u1"
+fi
+
+# --- U2: the same tracked, ignore-matched path BATCHED with an ordinary modified path -- both
+# land in one commit. ---
+
+repo_u2="$(build_repo_tracked_ignored)"
+echo "line2" >> "$repo_u2/specs/999_probe/archive/state.json"
+echo "line2" >> "$repo_u2/specs/999_probe/ordinary.txt"
+before_u2=$(git -C "$repo_u2" rev-list --count HEAD)
+out_u2="$(run_commit "$repo_u2" --message "U2 probe commit" --session "sess_u2" -- "specs/999_probe/archive/state.json" "specs/999_probe/ordinary.txt" 2>&1)"
+rc_u2=$?
+after_u2=$(git -C "$repo_u2" rev-list --count HEAD 2>/dev/null || echo "$before_u2")
+show_u2="$(git -C "$repo_u2" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_u2" -eq 0 ] && [ "$after_u2" -eq $((before_u2 + 1)) ] \
+  && echo "$show_u2" | grep -qF "specs/999_probe/archive/state.json" \
+  && echo "$show_u2" | grep -qF "specs/999_probe/ordinary.txt"; then
+  pass "U2: tracked ignore-matched path batched with an ordinary modified path -- both land in one commit"
+else
+  fail "U2: expected rc=0, HEAD count $before_u2 -> $((before_u2 + 1)), both paths in HEAD; got rc=$rc_u2 before=$before_u2 after=$after_u2 show='$show_u2' output=$out_u2"
+fi
+
+# --- U3: the tolerated-advisory invocation emits the stderr NOTE -- the tolerance must never be
+# silent. Reuses U1's captured output. ---
+
+if echo "$out_u1" | grep -qi "NOTE:.*tolerated git add"; then
+  pass "U3: the tolerated gitignore-advisory exit is surfaced via a stderr NOTE, not silent"
+else
+  fail "U3: expected a stderr NOTE naming the tolerated git add exit; got output=$out_u1"
+fi
+
+# --- U4: a genuine add failure (out-of-repo pathspec, nothing staged) still refuses with exit 2
+# and names the failing path -- proves the V7 fix does not paper over the sibling out-of-repo-
+# pathspec hard failure (a single all-or-nothing git add call aborts staging for every path). ---
+
+repo_u4="$(build_repo covered)"
+echo "line2" >> "$repo_u4/specs/999_probe/file.txt"
+before_u4=$(git -C "$repo_u4" rev-list --count HEAD)
+out_u4="$(run_commit "$repo_u4" --message "U4 probe commit" --session "sess_u4" -- "specs/999_probe/file.txt" "/etc/passwd" 2>&1)"
+rc_u4=$?
+after_u4=$(git -C "$repo_u4" rev-list --count HEAD 2>/dev/null || echo "$before_u4")
+
+if [ "$rc_u4" -eq 2 ] && [ "$after_u4" -eq "$before_u4" ] \
+  && echo "$out_u4" | grep -q "ERROR:.*genuinely unstaged" \
+  && echo "$out_u4" | grep -qF "/etc/passwd"; then
+  pass "U4: a genuine add failure (out-of-repo pathspec) still refuses -- exit 2, no commit, ERROR names the failing path (V7 does not paper over the hard-failure case)"
+else
+  fail "U4: expected rc=2, no new commit, ERROR naming /etc/passwd; got rc=$rc_u4 before=$before_u4 after=$after_u4 output=$out_u4"
+fi
+
+# --- U5: a brand-new UNTRACKED, ignore-matched file named as an explicit positive pathspec is
+# still NOT committed -- proves no `-f` behavior crept in; the genuine-drop case stays refused. ---
+
+repo_u5="$(build_repo covered)"
+mkdir -p "$repo_u5/specs/999_probe/ignoredsub"
+echo "specs/999_probe/ignoredsub/" >> "$repo_u5/.gitignore"
+git -C "$repo_u5" add .gitignore
+git -C "$repo_u5" commit -q -m "add ignoredsub rule"
+echo "new" > "$repo_u5/specs/999_probe/ignoredsub/new.txt"
+before_u5=$(git -C "$repo_u5" rev-list --count HEAD)
+out_u5="$(run_commit "$repo_u5" --message "U5 probe commit" --session "sess_u5" -- "specs/999_probe/ignoredsub/new.txt" 2>&1)"
+rc_u5=$?
+after_u5=$(git -C "$repo_u5" rev-list --count HEAD 2>/dev/null || echo "$before_u5")
+tracked_u5="$(git -C "$repo_u5" ls-files -- specs/999_probe/ignoredsub/new.txt)"
+
+if [ "$rc_u5" -eq 2 ] && [ "$after_u5" -eq "$before_u5" ] && [ -z "$tracked_u5" ] \
+  && echo "$out_u5" | grep -q "ERROR:.*genuinely unstaged"; then
+  pass "U5: a brand-new untracked, ignore-matched path named explicitly is still refused -- no -f behavior introduced"
+else
+  fail "U5: expected rc=2, no new commit, new.txt never tracked; got rc=$rc_u5 before=$before_u5 after=$after_u5 tracked='$tracked_u5' output=$out_u5"
+fi
+
+# --- U6: a directory pathspec in a fully-covered repo with ephemeral paths present still commits
+# and still excludes them -- proves the exclude entries passed into the new git diff --quiet check
+# do not false-flag the directory pathspec. ---
+
+repo_u6="$(build_repo covered)"
+echo "line2" >> "$repo_u6/specs/999_probe/file.txt"
+add_ephemeral "$repo_u6" lock loopguard churn drift
+before_u6=$(git -C "$repo_u6" rev-list --count HEAD)
+out_u6="$(run_commit "$repo_u6" --message "U6 probe commit" --session "sess_u6" -- "specs/999_probe/" 2>&1)"
+rc_u6=$?
+after_u6=$(git -C "$repo_u6" rev-list --count HEAD 2>/dev/null || echo "$before_u6")
+show_u6="$(git -C "$repo_u6" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_u6" -eq 0 ] && [ "$after_u6" -eq $((before_u6 + 1)) ] \
+  && echo "$show_u6" | grep -qF "specs/999_probe/file.txt" \
+  && ephemeral_absent "$show_u6"; then
+  pass "U6: directory pathspec with ephemeral excludes present still commits and excludes them -- the V7 per-path diff check is not false-flagged by the directory pathspec"
+else
+  fail "U6: expected rc=0, commit landed, ephemerals excluded; got rc=$rc_u6 before=$before_u6 after=$after_u6 show='$show_u6' output=$out_u6"
 fi
 
 # task-ref-ok:begin category 6-adjacent: every "task 40x"/"#40x"/"--task 40x" literal in the V1-V8
