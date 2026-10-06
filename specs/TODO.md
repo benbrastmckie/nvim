@@ -11,10 +11,10 @@ next_project_number: 344
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,322,325,336,338,342,343 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,325,336,338,342,343 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,302,303,335 | 22,251,271,272,280,284,300 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302 | core-agent-system, orchestrator |
-| 4 | 312,328 | 170,282,300,303,304,318,322 | core-agent-system, orchestrator |
+| 4 | 312,328 | 170,282,300,303,304,318 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -34,8 +34,6 @@ next_project_number: 344
 306 [NOT STARTED] — Make ROADMAP.md a generated artifact: extend the format into...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
-  └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-322 [IMPLEMENTING] — Fix /todo's directory-move staging gap: a moved task...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 325 [PLANNED] — Stop git add's gitignore advisory exit code from aborting the...
 336 [NOT STARTED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
@@ -2340,7 +2338,7 @@ Filed by the 2026-10-02 review: specs/reviews/review-2026-10-02.md
 ---
 
 ### 322. Todo move vacated source never staged
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
