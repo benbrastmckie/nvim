@@ -703,6 +703,26 @@ it has landed before designing from scratch.
 - Net pattern-document count does not increase.
 - No task-number references in any deliverable outside specs/**.
 
+
+=== CORRECTION (2026-10-06, verified mechanically; supersedes the registration-surface reasoning above) ===
+REGISTER IN merge-sources/settings-hooks.json, NOT root-files/settings.json. The earlier reasoning
+("the deployed .claude/settings.json matches root-files/settings.json exactly, so root-files
+governs") drew the wrong inference from a correct observation. Two independent confirmations:
+  (1) scripts/verify-deploy.sh, in its own NOT-registered remediation string, says verbatim:
+      "add it to merge-sources/settings-hooks.json, not root-files/settings.json".
+  (2) lua/neotex/plugins/ai/shared/extensions/loader.lua marks settings.json in
+      INSTALL_ONCE_ROOT_FILES -- "copied only when no project copy exists yet, never overwritten
+      on subsequent loads/reloads" (so a hand-edited project settings file survives reloads).
+CONSEQUENCE: a registration placed in root-files/settings.json reaches ONLY a fresh install and can
+never be delivered into an already-deployed repo. The deployed tree matches root-files because that
+is what was copied at first install, not because root-files is the update path. Registering there
+would leave this task looking complete while the hook never fires -- precisely the silent
+half-deployment failure this task exists to prevent.
+Also: the PreToolUse matcher string must be EXACTLY "Bash". deep_merge dedupes per exact
+string-equal matcher, so any other spelling creates a second live registration that the add-only
+merge can never remove.
+file_scope updated accordingly: merge-sources/settings-hooks.json replaces root-files/settings.json.
+
 ---
 
 ### 346. Reconcile the books observer RUN-record field reads with book-evidence-run-v1, and rule on fail-loud versus silent degradation
