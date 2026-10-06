@@ -2208,7 +2208,7 @@
     {
       "project_number": 348,
       "project_name": "append_only_evidence_write_time_hook",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Write-time PreToolUse Write|Edit hook enforcing append-only evidence files, the books extension first hook and its registration path",
@@ -2220,8 +2220,17 @@
         "agent-system/extensions/books/settings-hooks.json",
         "agent-system/extensions/books/manifest.json"
       ],
-      "artifacts": [],
-      "created": "2026-10-06T23:52:00Z"
+      "artifacts": [
+        {
+          "path": "specs/348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md",
+          "type": "report",
+          "summary": "Research report confirming deploy-pipeline mechanics, resolving the settings-fragment naming question via the locked file_scope, and specifying the predicate's parsing/path-resolution design for the plan phase."
+        }
+      ],
+      "created": "2026-10-06T23:52:00Z",
+      "last_updated": "2026-10-06T23:59:08Z",
+      "session_id": "sess_1791330710_42a2e1",
+      "next_artifact_number": 2
     }
   ],
   "completed_projects": [],
