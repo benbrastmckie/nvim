@@ -448,24 +448,30 @@ numbers will have shifted if Phases 2-4 touched this file at all.
 
 ---
 
-### Phase 6: Point the 42 identical writer-prose blocks at the write-time gate [NOT STARTED]
+### Phase 6: Point the 42 identical writer-prose blocks at the write-time gate [COMPLETED]
 
 **Goal**: An agent whose handoff write is rejected should recognize the banner as a documented
 gate, not a novel failure. Comprehension only — the hook, not this prose, is the enforcement.
 
 **Tasks**:
-- [ ] Confirm the block is still byte-identical across all writers:
+- [x] Confirm the block is still byte-identical across all writers:
       `grep -rl "BOTH required top-level fields" agent-system/extensions/ --include=*.md | wc -l`
-      and a spot diff of three files from different extensions.
-- [ ] Append one sentence to the end of that block, in every file carrying it: a write-time
+      and a spot diff of three files from different extensions. *(completed: count was 42,
+      matching the planning-time measurement; spot-checked web/core/lean extensions byte-identical)*
+- [x] Append one sentence to the end of that block, in every file carrying it: a write-time
       `PostToolUse` gate validates the handoff on every Write/Edit and rejects a non-compliant
       write with `exit 2` plus a remediation banner, so a missing field surfaces immediately at
-      the write rather than later in postflight.
-- [ ] Apply mechanically (one scripted `sed`/`perl` pass over the grep-derived file list), never
-      file-by-file by hand, so the 42 blocks cannot drift.
-- [ ] Re-run the count: the new sentence must appear exactly as many times as the block does.
-- [ ] Do not alter any other text in these files, and do not touch `core/agents/planner-agent.md`'s
-      surrounding `dispatch_seq` or `artifacts`-shape paragraphs.
+      the write rather than later in postflight. *(completed)*
+- [x] Apply mechanically (one scripted `sed`/`perl` pass over the grep-derived file list), never
+      file-by-file by hand, so the 42 blocks cannot drift. *(completed: used a Python script,
+      since perl's `/`-delimited `s///` collided with literal slashes in the sentence text —
+      same mechanical, scripted-pass-over-grep-list intent as sed/perl, applied uniformly to all
+      42 files from one file list in one pass)*
+- [x] Re-run the count: the new sentence must appear exactly as many times as the block does.
+      *(completed: both counts are 42)*
+- [x] Do not alter any other text in these files, and do not touch `core/agents/planner-agent.md`'s
+      surrounding `dispatch_seq` or `artifacts`-shape paragraphs. *(completed: verified via
+      git diff --stat — 42 files, 42 insertions, 42 deletions, one line changed per file)*
 
 **Timing**: 0.5 hours
 

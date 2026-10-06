@@ -476,7 +476,7 @@ that schema's `{type, path, summary}` object shape, never a bare path string.
 (~100-token budget) describing what this dispatch accomplished; `blockers` is a JSON array, and
 `[]` is normal and expected on a clean `researched`/`planned`/`implemented` return. The handoff
 validator FAILS on either one missing, so write both every time — a handoff carrying only the
-fields enumerated above does not validate.
+fields enumerated above does not validate. A write-time `PostToolUse` gate (`hooks/validate-handoff-location.sh`) validates the handoff on every Write/Edit and rejects a non-compliant write with `exit 2` plus a remediation banner, so a missing field surfaces immediately at the write rather than later in postflight.
 
 This is a different file from the context-pressure handoff at
 `specs/{NNN}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md`: a different path, a different
