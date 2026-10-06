@@ -1,5 +1,5 @@
 ---
-next_project_number: 348
+next_project_number: 349
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 348
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343,346,347 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343,346,347,348 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,302,303,335,344,345 | 22,251,271,272,280,284,300,311,343 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,344 | core-agent-system, orchestrator |
@@ -42,6 +42,7 @@ next_project_number: 348
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
 346 [NOT STARTED] — Reconcile the books observer RUN-record field reads with...
+348 [NOT STARTED] — Write-time PreToolUse Write|Edit hook enforcing append-only...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -73,6 +74,377 @@ next_project_number: 348
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 
 ## Tasks
+
+### 348. Write-time PreToolUse Write|Edit hook enforcing append-only evidence files, the books extension first hook and its registration path
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/books/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS, otherwise the
+consumer repo keeps running without the hook. No task-number references in any file landing under
+agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or
+concept. Task numbers are permitted in this description and elsewhere in specs/**.
+
+GOAL. Make the append-only property of books/book-convention-evidence/NN-*.md enforceable at WRITE
+TIME, by adding the books extension's FIRST hook: a PreToolUse Write|Edit guard that refuses a
+write which modifies or deletes an existing line of an evidence file, while allowing a pure
+append. The convention already exists and the post-hoc gate already exists. This task adds
+prevention, NOT prose.
+
+THE TASK FAILS IF ITS PRIMARY DELIVERABLE IS A NEW OR AMENDED PATTERN DOCUMENT.
+
+=== MEASURED INCIDENT (do not re-derive; re-confirm only) ===
+
+2026-10-06, Logos/Verification consumer repo. A blanket string replacement (DistSysAeneas ->
+DistsysAeneas) was run across the tree. books/book-convention-evidence/01-book-identity-and-
+membership.md contains that string inside a VERBATIM ARCHIVAL QUOTATION of a historical marker
+value, buried inside a single ~7,800-character line of prose (measured: that file's longest line is
+7814 characters; its sibling 06-where-metadata-lives.md reaches 7456). The replacement could not
+distinguish a live reference that should be renamed from an archival record that must never change,
+because THE IMMUTABILITY SIGNAL IS PROSE-ONLY -- a heading reading "relocated exercise history
+(verbatim, pre-reduction)" and the phrase "quoted verbatim for the record" -- with NO
+machine-readable marker, fence or delimiter anywhere in the file or the directory.
+
+COST OF THE REMEDY, which is the whole justification for a write-time guard: clearing the
+resulting committed finding required an operator-level history rewrite (filter-branch over 66
+commits). Re-verified during task creation: the gate now reports 0 blocking findings, so the
+rewrite succeeded and the incident is closed -- this task prevents the NEXT one.
+
+=== WHY A WRITE-TIME GUARD IS NOT REDUNDANT WITH THE EXISTING GATE (verified during task creation) ===
+
+books/scripts/check-evidence-append-only.sh is a COMMIT/GATE-TIME check. Verified in its source:
+
+(1) Its committed-deletions count SUMS DELETIONS PER COMMIT over BASE..HEAD (the awk reducer over
+    `git log --numstat`, roughly line 92), and its header states "A deleted line is a finding even
+    when a similar line was re-added".
+(2) The count is therefore MONOTONIC IN COMMITS: restoring the line in a later commit is itself a
+    deletion of the current line and RAISES the count. The header records the measurement:
+    "Measured 2026-10-06: a restore-forward attempt took a real finding from one deleted line to
+    two."
+(3) So the ONLY remedy for a COMMITTED finding is rewriting the offending commit(s) -- an
+    operator-level action. No sequence of forward commits can ever reach 0.
+(4) The UNCOMMITTED case is the opposite and is cheaply fixable: nothing is in history yet, so
+    restoring the lines in the working tree IS the remedy.
+
+A write-time refusal is the only intervention that keeps case (3) from ever being created. That
+gate's misleading remediation message (previously "restore the lines and append a dated entry
+instead" -- the advice that makes it worse) has ALREADY been corrected in the consumer repo; its
+header now states the rewrite remedy correctly. DO NOT re-fix it. This task is the complementary
+PREVENTION leg, not a duplicate of that correction.
+
+=== WHY THE BOOKS EXTENSION IS THE CORRECT HOME, AND WHY A CONSUMER-REPO HOOK IS NOT AN OPTION ===
+
+Verified during task creation, because the placement looks debatable until one fact settles it:
+
+- books/book-convention-evidence/ and books/scripts/check-evidence-append-only.sh are BOTH
+  consumer-repo artifacts. Neither exists in the extension source store (the gate is tracked in
+  Logos/Verification and invoked from its full-gate.sh; a find over agent-system/ returns nothing).
+  That asymmetry invites the conclusion that the hook belongs in the consumer repo too.
+- IT DOES NOT. A PreToolUse hook is only live if it is REGISTERED in <repo>/.claude/settings.json,
+  and .claude/ is deploy-generated from the source store. A consumer-repo hook has no durable
+  registration surface. Registering through an extension's merge_targets is the ONLY durable path.
+  Hence: extension placement, and BOOKS rather than core, because the guarded directory and its
+  convention are books-specific and the hook should deploy only where books is loaded.
+- Corroborating that books already owns this concept in the source store: rules/book-convention-
+  record.md (around lines 34-38) already states the append-only rule and already NAMES
+  check-evidence-append-only.sh, and context/project/books/patterns/record-maintenance.md (around
+  lines 26-28) already describes it as blocking and as a per-commit property. The convention is
+  stated. Only the mechanism is missing.
+
+=== THIS IS THE BOOKS EXTENSION'S FIRST HOOK -- THE DEPLOYMENT PATH IS REQUIRED WORK ===
+
+books/manifest.json currently has `"hooks": []` in provides, no hooks/ directory, and -- CRITICALLY
+-- NO `settings` entry in merge_targets at all (its merge_targets are claudemd, index,
+opencode_json only). So BOTH the hook file copy AND a registration surface must be established.
+Treat this as the task's central risk, not a detail.
+
+WHAT WAS ALREADY VERIFIED IN THE DEPLOY IMPLEMENTATION DURING TASK CREATION (re-confirm, do not
+re-derive). All line numbers are in lua/neotex/plugins/ai/shared/extensions/:
+
+(a) provides.hooks is a FILE COPY ONLY and registers nothing. The hooks descriptor
+    (loader.lua:216-219) flows through the same generic "file" branch as every other flat category,
+    plus an execute-bit copy; the call site is init.lua:509. There is no settings mutation anywhere
+    in that path.
+(b) Registration is a separate merge_targets.settings step, and the ORDER is safe. Per extension
+    the sequence is: provides.* copies -> root_files (init.lua:536-541) -> manifest -> data ->
+    index cleanup -> process_merge_targets LAST (init.lua:591). Across extensions the order is
+    dependency-topological (compute_deploy_order, init.lua:902-951); every non-core manifest
+    declares dependencies ["core"], so core always sorts first. Net: core root-files copy -> core
+    settings merge -> non-core settings merge.
+(c) The root-files copy CANNOT wipe the merge, because settings.json and settings.local.json are
+    INSTALL-ONCE (SKIP-IF-EXISTS, not overwrite and not merge). INSTALL_ONCE_ROOT_FILES is defined
+    at loader.lua:134-137, wired into the root_files descriptor at loader.lua:229-232, and the
+    per-entry guard at loader.lua:476 skips the copy whenever the target is already readable. The
+    matching half is in unload, which refuses to delete install-once root files (init.lua:770-776)
+    so that an unload-then-load reload cannot reopen the window. The wipe/regenerate path is
+    ordered to preserve this too: settings are snapshotted before any rm -rf and restored BEFORE
+    resync_all (init.lua:1255-1270, 1298-1320), so the restored file becomes the merge base.
+(d) The merge is idempotent across deploys: the extension's prior merged entries are removed before
+    process_merge_targets re-adds fresh ones (init.lua:565-572), which is why the deployed
+    PreToolUse list has not accumulated duplicates despite core merging on every deploy.
+(e) A non-core extension MAY legally target .claude/settings.json. validate_merge_targets
+    (manifest.lua:91-113) only requires source and target to be present; there is no enum, no path
+    whitelist and no per-extension restriction. process_merge_targets just joins project_dir with
+    the target string (init.lua:93) and creates the file and parent dirs if absent
+    (merge.lua:367-380). Unmerge is symmetric and tracked (init.lua:147-152).
+
+CONSEQUENCE OF (c): because .claude/settings.json is install-once, registration MUST arrive via
+merge_targets. Adding the entry to a root-files copy would never reach an already-deployed repo.
+
+THE MATCHER STRING MUST BE EXACTLY "Write|Edit" -- THIS IS A MECHANICAL TRAP, NOT A STYLE POINT.
+deep_merge takes a dedicated hook-event-array path (merge.lua:287-317, gated by is_hook_event_array
+at merge.lua:182-197). It normalizes the existing target by collapsing duplicate matcher blocks
+(merge.lua:214-240), then appends per-matcher: for each source block it finds the target block whose
+matcher is EXACTLY STRING-EQUAL and appends only hook objects not already deep-equal
+(merge.lua:250-274). Dedupe is therefore scoped to an exact matcher match. Core already registers a
+"Write|Edit" block (validate-no-task-references.sh). Registering this hook under any other spelling
+-- "Edit|Write", "Write", "Write|Edit|MultiEdit" -- produces a SECOND live registration rather than
+joining the existing block, and the merge is add-only so nothing can ever remove it
+(verify-deploy.sh:337-353 reports such cross-block duplicates as a non-blocking WARN for exactly
+this reason). The same add-only property means a later RENAME of this hook script leaves its stale
+registration in already-synced repos forever; core's own manifest _comment on merge_targets.settings
+documents both hazards.
+
+RULE EXPLICITLY ON THE REGISTRATION TARGET -- THIS IS A REQUIRED RULING, NOT A PREFERENCE.
+There is exactly ONE existing precedent for an extension registering a HOOK, and it is WRONG IN TWO
+WAYS THAT MUST BOTH BE REJECTED. (The lean extension is NOT a second precedent: it declares
+lean-lsp-register-project.sh in provides.hooks and the file does deploy, but its
+settings-fragment.json contains only a permissions.allow entry -- so that hook ships UNREGISTERED
+and never fires. Do not read it as a working example.)
+
+  WRONG #1 -- THE WRAPPER. email/settings-fragment.json registers its hook as
+  `bash .claude/hooks/mail-guard.sh 2>/dev/null || echo '{}'`. That wrapper converts exit 2 into
+  exit 0 and SILENTLY DISABLES THE BLOCK. Copying the only available extension precedent therefore
+  produces a hook that cannot block anything. REGISTER BARE.
+
+  WRONG #2 -- THE TARGET FILE. email and lean both target .claude/settings.local.json, which is
+  GITIGNORED in the consumer repo (verified: .gitignore line 19 ignores /.claude/settings.local.json,
+  while .claude/settings.json is tracked along with ~896 other .claude/ files). A guard over a
+  TRACKED, SHARED archival record must not live in a per-clone untracked file. core's own
+  merge_targets.settings _comment states the distinction directly: it targets the committed
+  .claude/settings.json because the WezTerm lifecycle hooks are "required core functionality rather
+  than personal MCP/permission preference (unlike the lean/nix/epidemiology settings.local.json
+  precedent)". An append-only guard is required functionality by that same test. Reinforcing it:
+  verify-deploy.sh's registration gate inspects .claude/settings.json ONLY and never
+  settings.local.json, so a registration in settings.local.json is invisible to the verifier.
+
+  THE RECOMMENDED RULING, to be confirmed or overturned with a stated reason: add
+  merge_targets.settings to books/manifest.json with target ".claude/settings.json" and a new
+  source fragment carrying ONLY the PreToolUse Write|Edit registration, bare. If you overturn it,
+  say why and say how the guard still reaches a fresh clone.
+
+  ALSO CONSIDERED AND REJECTED, record the rejection: adding settings.json to the consumer repo's
+  .syncprotect. It would work -- .syncprotect is consulted in copy_file (loader.lua:55-58), and for
+  root files the key is the BARE FILENAME ("settings.json", not ".claude/settings.json") -- but it
+  would freeze the WHOLE settings file against every future core update to win one hook entry, and
+  it is redundant anyway since install-once already protects those two files. Bad trade.
+
+  Note on naming: core's hooks-bearing fragment is merge-sources/settings-hooks.json; the
+  extensions that ship settings fragments use settings-fragment.json at the extension root. Pick
+  one, state the choice, and do not create both.
+
+VERIFY BY DEPLOYING. Deploy to the consumer repo, then (1) grep the resulting .claude/settings.json
+for the entry and confirm BARE form (no `|| echo` on this entry) and confirm it joined the existing
+"Write|Edit" block rather than creating a second one, (2) confirm .claude/hooks/ holds the hook
+file with its execute bit, and (3) confirm the hook ACTUALLY FIRES -- attempt a real in-place
+modification of an evidence file and observe the refusal. A hook registered but not firing, or
+copied but not registered, leaves this task looking complete while changing nothing. The lean
+extension above is a live instance of exactly that silent half-deployment.
+
+KNOWN LIMITATION TO RECORD, NOT TO FIX HERE: verify-deploy.sh's registration gate (gate 2, roughly
+lines 304-353) checks only THREE hardcoded event:script pairs (PostToolUse:events-log-artifact.sh,
+Stop:events-log-lifecycle.sh, SubagentStop:events-log-lifecycle.sh). There is no generic "every
+provides.hooks entry is registered somewhere" check anywhere in the deploy verifier, so this hook's
+registration will NOT be regression-protected by tooling. Its own header already names the failure
+mode ("A tree can have every hook SCRIPT present and still register none of them"). Extending that
+pair list is DELIBERATELY OUT OF SCOPE: verify-deploy.sh lives in the core extension and is already
+declared by task 318, and a books-specific hook does not belong in core's hardcoded core-hook list.
+A generic registration check is a separate concern worth its own task. Record the gap; do not
+widen scope to close it.
+
+=== THE PREDICATE ===
+
+Scope: paths matching books/book-convention-evidence/NN-*.md where NN is two digits. EXCLUDE
+README.md, matching the gate's own exclusion exactly (the gate excludes it as the directory's
+migration-contract document). ALLOW creation of a new NN-*.md. Handle both absolute and
+repo-relative file_path; the PreToolUse payload also carries `cwd`, which the precedent hook reads.
+The directory exists in only one repository today, so a non-matching path must exit 0 silently --
+the hook deploys wherever books is loaded and must be inert everywhere else.
+
+Core predicate: the write is ALLOWED only if every line currently present in the file survives
+byte-for-byte and in order, with new content added only at end-of-file. Any removal or alteration
+of an existing line is REFUSED.
+
+MECHANICAL NOTE -- THE PRECEDENT HOOK'S PARSING IS NOT SUFFICIENT HERE, DO NOT ASSUME IT IS.
+validate-no-task-references.sh reads only `.tool_input.content // .tool_input.new_string` (roughly
+lines 58-67). That is enough to scan content for a pattern; it is NOT enough to decide whether an
+existing line was altered. This hook needs `old_string`, `new_string` and `replace_all` for Edit,
+and `content` for Write. Suggested shapes, to be settled in the plan:
+  - Write: the current file content must be a byte-exact PREFIX of `content`.
+  - Edit: `old_string` must be a SUFFIX of the current file content AND `new_string` must begin
+    with `old_string`. This is a conservative test that needs no full simulation of Edit semantics
+    and no reasoning about `replace_all` uniqueness; justify it or replace it with simulation.
+
+RULE EXPLICITLY on the trailing-uncommitted-entry question -- DO NOT LEAVE IT IMPLICIT:
+is an in-place edit to the file's own trailing, NOT-YET-COMMITTED appended entry permitted?
+  - Option A (strict, no git): the on-disk content must be an exact prefix of the result. Simple,
+    dependency-free, but refuses a typo fix in an entry appended seconds ago and pushes the author
+    toward appending a correction entry for a typo -- which degrades the record.
+  - Option B (git-aware, RECOMMENDED): only lines present in HEAD's version of the file are
+    immutable; the uncommitted tail may be edited freely. This matches EXACTLY what the gate can
+    and cannot punish -- per finding (4) above, an uncommitted deletion is cheaply remediable and
+    never requires a history rewrite, so refusing it buys nothing and costs record quality.
+  - If Option B is chosen, state the fallback when `git show HEAD:<path>` is unavailable (not a
+    checkout, new file, shallow state). Falling back to the Option A prefix test against the
+    on-disk file is functional and slightly stricter; that is NOT the fail-open case below and must
+    not be conflated with it.
+
+=== INHERITED CONTRACTS (all four verified in the precedent; inherit verbatim) ===
+
+Model on hooks/validate-no-task-references.sh in the core extension, whose contracts were confirmed
+at these lines during task creation:
+
+(1) BLOCK VIA EXIT CODE 2 + STDERR, never `permissionDecision: deny` (documented-buggy for
+    allow-listed Write/Edit). Precedent: exit 2 after multi-line stderr, roughly lines 95-110.
+(2) FAIL OPEN -- exit 0 plus a stderr WARNING -- on any internal error, with the
+    missing-library and failed-to-source cases guarded SEPARATELY. The precedent does exactly this
+    at roughly lines 38-39 and 44-48, and its own comment records WHY both guards are needed:
+    under `set -euo pipefail` (line 26) an unguarded source aborts before the fallthrough. A broken
+    guard must never block every write in the repo.
+(3) RESOLVE PATHS VIA BASH_SOURCE, independent of cwd. Precedent: roughly line 35.
+(4) REGISTER BARE. See WRONG #1 above.
+Also inherit the precedent's early exits: no file_path resolved -> exit 0; out-of-scope path ->
+exit 0; no content captured -> exit 0.
+
+A LIVE DEMONSTRATION OF THE TARGET BEHAVIOUR, observed during this task's creation: an ordinary
+scratchpad write was blocked by validate-no-task-references.sh with exit 2 and an actionable stderr
+message naming the rule and offering the exemption path. That is the enforcement shape to follow --
+an observed working example, not a described one.
+
+REJECTION MESSAGE. Actionable, and it must carry all three facts INLINE rather than as a pointer,
+because the blocked agent needs to learn WHY and not merely THAT:
+  - the file is append-only;
+  - the commit-time counter is MONOTONIC, so a later restore cannot undo a committed deletion and
+    the only remedy is a history rewrite;
+  - append a dated entry instead.
+Name check-evidence-append-only.sh as the companion gate in one line.
+
+=== FIXTURE TEST ===
+
+scripts/tests/test-<name>.sh, following context/standards/shell-script-testing.md and modeled on
+the books extension's own scripts/tests/test-books-gate.sh, which builds each fixture as its own
+git repo under a mktemp -d workdir and drives the target as a real subprocess.
+
+THE BOOKS EXTENSION'S TEST DISCIPLINE IS STRICTER THAN CORE'S AND APPLIES HERE: test-books-gate.sh
+carries FORGERY PROBES per context/project/books/standards/forgery-probe-discipline.md -- each
+predicate gets a probe that stubs the predicate out and asserts that the suite's own expectation
+then FAILS. A test that would pass against a stubbed predicate proves nothing. Include them.
+
+Required cases: in-place modification of an existing committed line REFUSED with exit 2 and a
+stderr message carrying all three facts above; deletion of an existing line REFUSED; a pure
+append via Write ALLOWED; a pure append via Edit ALLOWED; creation of a new NN-*.md ALLOWED; an
+edit to README.md in the same directory ALLOWED; a path outside the evidence directory ALLOWED;
+whichever trailing-uncommitted-entry behaviour the ruling selects, asserted explicitly; and a
+missing-dependency case failing OPEN with exit 0. Add a case covering a modification buried inside
+a multi-thousand-character single line, since that is the shape the measured incident took and a
+line-oriented implementation could pass every other case while missing it.
+
+=== DECLARED FILE_SCOPE OVERLAP: NONE WITH THE SIBLING HOOK TASKS, ONE WITH A HELD TASK ===
+
+The overlap anticipated at task-creation time with tasks 282, 347 and 313 DOES NOT EXIST, and the
+reason matters for whoever schedules this. Those three declare agent-system/extensions/CORE/
+manifest.json and core/root-files/settings.json. This task touches agent-system/extensions/BOOKS/
+manifest.json and a new books-local settings fragment. Different files entirely. Moreover, per
+finding (c) above, core's root-files/settings.json is irrelevant to this registration: it is
+install-once and never re-copied into a deployed repo, so there is no reason to touch it.
+
+THE REAL OVERLAP IS WITH TASK 342 ("Refactor the books extension's context corpus...", [hold]),
+which declares agent-system/extensions/books/manifest.json.
+
+NO DEPENDENCY EDGE WAS CREATED. This applies the un-sequenced-overlap posture the repository owner
+ratified for task 347, and the case here is stronger: 342 is ON HOLD, so an edge would park this
+prevention indefinitely behind a paused task. The regions are disjoint -- 342 restructures the
+context corpus and its index/claudemd entries, while this task appends a provides.hooks entry, a
+tests-list entry, and a new merge_targets.settings block. Both rebase trivially.
+
+CONSEQUENCE THE NEXT READER MUST KNOW: scripts/orchestrate-batch-admit.sh scans every non-terminal
+task in specs/state.json, so it WILL detect a cross_batch overlap on books/manifest.json and may
+defer this task if co-scheduled with 342. Dispatch it alone, or alongside tasks whose file_scope
+excludes that file. If two land close together, the later one rebases.
+
+DELIBERATE SCOPE EXCLUSIONS, each with its reason:
+- rules/book-convention-record.md and context/project/books/patterns/record-maintenance.md are NOT
+  in file_scope even though both describe the append-only rule. Declaring either would create a
+  serializing overlap with task 342 (whose file_scope includes context/project/books/**), and no
+  edit is needed -- the rejection message carries the facts inline. If implementation concludes a
+  one-line cross-reference is genuinely required, add the entry AT THAT POINT via
+  scripts/update-task-status.sh --file-scope-add and accept the edge. That is the sanctioned
+  mid-run re-scope path, not a workaround.
+- EXTENSION.md and README.md in the books extension are excluded for the same reason (both are in
+  342's file_scope).
+- core/scripts/verify-deploy.sh is excluded per the KNOWN LIMITATION note above (declared by task
+  318, and core is the wrong home for a books-specific pair).
+
+SHAPE SIBLING: task 282 ("Write-time PreToolUse hook blocking record-versioning language,
+registered bare so exit 2 survives", [not_started], behind tasks 280 and 281) is the closest
+sibling in SHAPE -- a bare-registered PreToolUse hook blocking via exit 2 with a fail-open guard
+and a fixture test. Check whether it has landed before designing from scratch, and follow its house
+pattern rather than re-deriving. Do NOT wait on it: it is a different rule (record-versioning
+LANGUAGE), driven entirely by a shared pattern library from tasks 280/281, and folding this
+path-scoped structural check into it would serialize a books-specific guard behind a three-task
+core chain and mix two unrelated predicates in one hook. Task 347 is the sibling PREVENTION hook
+for the self-matching-waiter defect -- same intervention class, disjoint predicate, different
+extension.
+
+CROSS-TASK FINDING WORTH RELAYING TO TASK 347, which owes a ruling on which of core's two
+registration surfaces governs: verify-deploy.sh's own remediation text answers it directly --
+"add it to merge-sources/settings-hooks.json, not root-files/settings.json" (roughly line 332).
+Combined with the install-once finding (c) above, root-files/settings.json cannot deliver a
+registration into an already-deployed repo at all. That is evidence 347 should not have to
+re-derive.
+
+=== EXPLICIT NON-GOALS ===
+
+- Do NOT add a new context/pattern document and do not restate the append-only rule in new prose.
+  The convention is already stated in rules/book-convention-record.md and in the gate's own header.
+  THIS IS THE TASK'S CENTRAL CONSTRAINT, not a stylistic preference.
+- Do NOT modify books/scripts/check-evidence-append-only.sh or its remediation message. It is a
+  consumer-repo artifact, it was already corrected, and it is an INPUT to this task (the source of
+  the scope rule, the README exclusion, and the monotonicity fact), not a target.
+- Do NOT add machine-readable immutability markers, fences or delimiters INTO the evidence files.
+  That would itself be a modification of append-only files, and the path-scoped guard makes it
+  unnecessary.
+- Do NOT fix the email extension's wrapped registration, and do not fix lean's unregistered hook.
+  Both are cited here only as precedents to reject; neither is this task's target.
+- Do NOT broaden the hook to any path outside books/book-convention-evidence/NN-*.md.
+- Do NOT register in .claude/settings.local.json without overturning the ruling above in writing.
+
+=== ACCEPTANCE ===
+
+- An in-place modification and a deletion of an existing committed line in an evidence file are
+  both REFUSED with exit 2, including the buried-in-a-7800-character-line shape, each carrying all
+  three required facts in stderr.
+- A pure append (Write and Edit), a new NN-*.md, README.md, and any out-of-scope path are ALL
+  allowed. Demonstrated by fixture, not asserted in prose.
+- The trailing-uncommitted-entry question is RULED on explicitly, the ruling is recorded with its
+  reason, and a fixture asserts the chosen behaviour.
+- The hook fails OPEN on internal error, proven by a fixture, with the missing-library and
+  failed-to-source cases guarded separately.
+- The registration-target ruling (.claude/settings.json vs settings.local.json) is recorded with
+  its reason, and the entry is verified BARE in the DEPLOYED .claude/settings.json, joined to the
+  existing exact-string "Write|Edit" matcher block rather than duplicating it.
+- The hook is confirmed to ACTUALLY FIRE after a real deploy against a real evidence file, not
+  merely present in settings.json.
+- manifest.json wiring is complete: provides.hooks, the tests entry, and merge_targets.settings.
+- Forgery probes present per the books extension's forgery-probe-discipline standard.
+- Shellcheck clean per context/standards/shell-strict-mode.md.
+- books/scripts/check-evidence-append-only.sh still reports 0 blocking findings afterwards.
+- Net pattern-document count does not increase.
+- No task-number references in any deliverable outside specs/**.
+
+---
 
 ### 347. PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives
 - **Status**: [NOT STARTED]
