@@ -1,7 +1,7 @@
 # Implementation Plan: Task #325
 
 - **Task**: 325 - Stop git-commit-scoped.sh from aborting the whole commit when `git add` emits its gitignore advisory for a tracked, ignore-matched path
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None (siblings 304 and 322 share the script but have distinct fix sites — see Non-Goals)
 - **Research Inputs**: specs/325_git_add_ignore_advisory_aborts_commit/reports/01_git-add-ignore-advisory.md
@@ -119,66 +119,66 @@ not consulted and no roadmap-review/roadmap-update phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Replace the blind `git add` exit-code check with post-add index verification [NOT STARTED]
+### Phase 1: Replace the blind `git add` exit-code check with post-add index verification [COMPLETED]
 
 **Goal**: `git-commit-scoped.sh` decides add success from verified index state per positive
 pathspec, tolerating the gitignore-advisory false negative while still refusing a genuine failure,
 with the script's own header documentation extended to match.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
       editing (a sibling task is live on this tree this cycle). The fix site is the
       `# --- git add (guarded; ...) ---` block (currently the `has_positive_pathspec` /
       `if ! git add "${add_pathspecs[@]}"` guard around lines 388-401) — confirm the anchor text
-      rather than trusting the line number.
-- [ ] Split `add_pathspecs` into two local arrays inside the guarded block:
+      rather than trusting the line number. *(completed)*
+- [x] Split `add_pathspecs` into two local arrays inside the guarded block:
       `add_positive_pathspecs` (non-`:(exclude)` entries) and `add_exclude_pathspecs`
       (`:(exclude)...` entries). Keep the `git add` invocation itself unchanged — it still receives
-      the full `add_pathspecs` array, positives and excludes together.
-- [ ] Capture the add's output and exit code instead of short-circuiting, using the script's
+      the full `add_pathspecs` array, positives and excludes together. *(completed)*
+- [x] Capture the add's output and exit code instead of short-circuiting, using the script's
       existing `-e`-exempt idiom: `if add_output=$(git add "${add_pathspecs[@]}" 2>&1); then
-      add_exit=0; else add_exit=$?; fi`. Do not `exit` on a nonzero code at this point.
-- [ ] Add the per-path verification loop over `add_positive_pathspecs`, collecting failures into
+      add_exit=0; else add_exit=$?; fi`. Do not `exit` on a nonzero code at this point. *(completed)*
+- [x] Add the per-path verification loop over `add_positive_pathspecs`, collecting failures into
       `genuinely_failed_adds`. A path fails when either:
       (a) `git ls-files --error-unmatch -- "$p"` is nonzero — the path is not known to the index
       at all, so nothing landed; or
       (b) `git diff --quiet -- "$p" "${add_exclude_pathspecs[@]+${add_exclude_pathspecs[@]}}"` is
       nonzero — the working tree still differs from the index for that path (a partial or failed
       stage), with the exclude entries passed through so a deliberately-excluded sub-path cannot
-      false-flag a directory pathspec.
-- [ ] When `genuinely_failed_adds` is non-empty: echo the captured add output to stderr, then a
+      false-flag a directory pathspec. *(completed)*
+- [x] When `genuinely_failed_adds` is non-empty: echo the captured add output to stderr, then a
       loud ERROR naming every failing path and the reason class, and `exit 2` — preserving today's
-      documented exit-code contract and the "nothing was committed" outcome.
-- [ ] When `genuinely_failed_adds` is empty but `add_exit` is nonzero: echo the captured add output
+      documented exit-code contract and the "nothing was committed" outcome. *(completed)*
+- [x] When `genuinely_failed_adds` is empty but `add_exit` is nonzero: echo the captured add output
       to stderr plus a NOTE stating the exit code was tolerated because every positive pathspec
       verified present and fully staged (naming the gitignore advisory for a tracked
       ignore-matched path as the known case), then fall through to the commit. The tolerated path
-      must never be silent.
-- [ ] Guard every new array expansion for `set -u` behind a `${#arr[@]}` test or the
-      `${arr[@]+...}` form, matching the existing `dropped_pathspecs` treatment.
-- [ ] Extend the script's own header: add this gate to the `# Safety gates` list as the next
+      must never be silent. *(completed)*
+- [x] Guard every new array expansion for `set -u` behind a `${#arr[@]}` test or the
+      `${arr[@]+...}` form, matching the existing `dropped_pathspecs` treatment. *(completed)*
+- [x] Extend the script's own header: add this gate to the `# Safety gates` list as the next
       unused `V` number (V7 at time of writing — confirm against the live header, which already
       documents V2, V3, V5 and V6), stating that `git add`'s exit code is unreliable in **both**
       directions and that index state is authoritative. Record the deliberate residual blind spot:
       a single newly-created, ignore-matched file *inside* a directory pathspec that already has
       other tracked files is not detected by `ls-files --error-unmatch` on the directory — which
       matches the already-settled "an ignored path swept up implicitly is silently skipped"
-      behavior in `git-staging-scope.md` and is therefore intended, not a gap introduced here.
-- [ ] Update the header's `# Exit codes:` entry for `2` so it reads as "git add left one or more
+      behavior in `git-staging-scope.md` and is therefore intended, not a gap introduced here. *(completed)*
+- [x] Update the header's `# Exit codes:` entry for `2` so it reads as "git add left one or more
       staged paths genuinely unstaged (verified against the index, not inferred from git add's
-      exit code)" rather than "git add failed".
-- [ ] Confirm no caller depends on exit 2 firing for the advisory case: inspect the four
+      exit code)" rather than "git add failed". *(completed)*
+- [x] Confirm no caller depends on exit 2 firing for the advisory case: inspect the four
       script-level invocation sites — `orchestrator-postflight.sh`,
       `orchestrate-unwind-dispatch.sh`, `orchestrate-cycle-postflight.sh`, and
       `lib/redeploy-checkpoint-lib.sh` — and confirm each uses the `cmd || echo "WARN ...
-      (non-blocking)"` idiom with no branch on exit code 2.
-- [ ] Run `bash -n` and `shellcheck` on the edited script; run
+      (non-blocking)"` idiom with no branch on exit code 2. *(completed)*
+- [x] Run `bash -n` and `shellcheck` on the edited script; run
       `bash agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh --verbose` and
       `bash agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh --verbose`
-      (both target this script specifically).
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm no task-number reference was
-      introduced.
-- [ ] Commit this green sub-step (source-store script only).
+      (both target this script specifically). *(completed)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm no task-number reference was
+      introduced. *(completed)*
+- [x] Commit this green sub-step (source-store script only). *(completed)*
 
 **Timing**: 1.25 hours
 

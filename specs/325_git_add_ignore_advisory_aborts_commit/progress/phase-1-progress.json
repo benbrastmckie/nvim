@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Replace the blind git add exit-code check with post-add index verification",
+  "started_at": "2026-10-05T20:10:00Z",
+  "last_updated": "2026-10-05T20:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace the git add guard with captured output + per-path index-state verification (V7); extend header safety-gate list and exit-code 2 description",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Run bash -n, shellcheck, both boundary lints, and check-task-references.sh; confirm no caller branches on exit 2",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

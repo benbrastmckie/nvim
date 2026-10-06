@@ -56,7 +56,8 @@
 #       commit itself failed after the bounded index.lock retry; non-blocking, matches every call
 #       site's existing `|| echo "Note: Nothing to commit..."` fallback
 #   2 - usage error, the V3 degenerate-pathspec refusal (exclude-only list; refused before any
-#       git add/commit), or `git add` failed for one or more staged paths
+#       git add/commit), or git add left one or more staged paths genuinely unstaged (verified
+#       against the index, not inferred from git add's exit code — see V7)
 #   3 - contended-path refusal (V5, --task only): a positive pathspec entry is listed as
 #       contended in the cycle manifest AND currently claimed by ANOTHER live task. Refused
 #       before any git add; nothing staged. Never emitted when --task is omitted.
@@ -105,6 +106,25 @@
 #        identically by every current caller, so splitting them buys nothing and adds a
 #        dependency on git's own wording. See context/standards/git-staging-scope.md for the
 #        recorded caller-escalation residual: no caller branches on this exit code today.
+#   V7 - `git add`'s own exit code is unreliable in BOTH directions for a positive pathspec naming
+#        a path that is TRACKED but whose path matches a `.gitignore` rule via a parent-directory
+#        pattern: git prints "The following paths are ignored by one of your .gitignore files"
+#        and exits 1 while CORRECTLY STAGING the file — a false negative, not a failure. `git
+#        check-ignore -q` cannot detect this case either: it is index-aware and reports "not
+#        ignored" for exactly these tracked paths, directly contradicting `git add`. This script
+#        therefore trusts neither signal; it captures `git add`'s output and exit code without
+#        branching on them, then verifies ACTUAL INDEX STATE per positive pathspec: present in
+#        `git ls-files` and no residual `git diff` against the working tree. A path that fails
+#        either check is genuinely unstaged (e.g. the sibling out-of-repo-pathspec hard failure,
+#        which stages nothing and must keep refusing) and aborts the commit exactly as before; a
+#        path that passes both checks is accepted even if `git add` exited nonzero, with a stderr
+#        NOTE naming the tolerated case so it is never silent. Residual blind spot, deliberate and
+#        unchanged from pre-existing behavior: a single newly-created, ignore-matched file swept
+#        up IMPLICITLY inside a directory pathspec that also covers other already-tracked files is
+#        not independently verified by this per-positive-pathspec loop (the directory entry itself
+#        is what is checked) — the same "an ignored path swept up implicitly is silently skipped"
+#        behavior already documented in context/standards/git-staging-scope.md, not a gap
+#        introduced here.
 
 set -euo pipefail
 
@@ -385,17 +405,60 @@ else
   fi
 fi
 
-# --- git add (guarded; a failure here aborts before any commit is attempted) ---
+# --- git add (guarded; a genuine failure here aborts before any commit is attempted) ---
 # Uses add_pathspecs (the case-2-excluded set from the V2 gate above), never the full pathspecs
 # array used for the commit below. Skipped entirely when add_pathspecs carries no positive
 # entries — a deletion-only commit, where every positive pathspec landed in the already-staged-
 # deletion case above and there is nothing left to add; invoking `git add` with an empty or
 # exclude-only list is unnecessary and, for the exclude-only shape, exactly the V3 hazard this
 # script guards against elsewhere.
+#
+# V7: `git add`'s exit code is trusted in NEITHER direction (see the header's V7 note). The add's
+# output and exit code are captured without branching on them, then every positive pathspec is
+# verified against actual index state. Only a genuinely-failed path aborts the commit.
 if has_positive_pathspec "${add_pathspecs[@]}"; then
-  if ! git add "${add_pathspecs[@]}"; then
-    echo "WARNING: git add failed for one or more staged paths (non-blocking); no commit was attempted." >&2
+  add_positive_pathspecs=()
+  add_exclude_pathspecs=()
+  for p in "${add_pathspecs[@]}"; do
+    case "$p" in
+      :\(exclude\)*) add_exclude_pathspecs+=("$p") ;;
+      *) add_positive_pathspecs+=("$p") ;;
+    esac
+  done
+
+  # `-e`-exempt capture idiom (mirrors the git commit capture further below): a nonzero exit here
+  # is a routine, documented possibility (the V7 advisory false negative), not necessarily an
+  # error, so it must not abort the script before the per-path verification below can run.
+  if add_output=$(git add "${add_pathspecs[@]}" 2>&1); then
+    add_exit=0
+  else
+    add_exit=$?
+  fi
+
+  genuinely_failed_adds=()
+  for p in "${add_positive_pathspecs[@]}"; do
+    if ! git ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
+      genuinely_failed_adds+=("${p} (not present in the index at all)")
+      continue
+    fi
+    diff_check_args=("$p")
+    if [ "${#add_exclude_pathspecs[@]}" -gt 0 ]; then
+      diff_check_args+=("${add_exclude_pathspecs[@]}")
+    fi
+    if ! git diff --quiet -- "${diff_check_args[@]}"; then
+      genuinely_failed_adds+=("${p} (working tree still differs from the index — not fully staged)")
+    fi
+  done
+
+  if [ "${#genuinely_failed_adds[@]}" -gt 0 ]; then
+    echo "$add_output" >&2
+    echo "ERROR: git-commit-scoped.sh refuses to commit — git add left one or more staged paths genuinely unstaged, verified against actual index state rather than inferred from git add's exit code (Verified Finding V7). Failing path(s): ${genuinely_failed_adds[*]}" >&2
     exit 2
+  fi
+
+  if [ "$add_exit" -ne 0 ]; then
+    echo "$add_output" >&2
+    echo "NOTE: git-commit-scoped.sh tolerated git add's nonzero exit code (${add_exit}) because every positive pathspec verified present and fully staged against the index (Verified Finding V7). Known case: the gitignore advisory for a tracked path whose path matches a .gitignore rule — git prints \"ignored by one of your .gitignore files\" and exits 1 while correctly staging the file." >&2
   fi
 fi
 
