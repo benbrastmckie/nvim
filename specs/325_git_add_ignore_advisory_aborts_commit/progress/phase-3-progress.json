@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Record the positive-pathspec hazard in the staging-scope standard",
+  "started_at": "2026-10-05T20:40:00Z",
+  "last_updated": "2026-10-05T20:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the Positive-Pathspec Ignore-Advisory Hazard subsection to git-staging-scope.md, beside the existing :(exclude)-side passage",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "The new subsection's prose avoids pointing readers to the document's existing 'Exit-Code Contract and Safety Gates' section for the V7 gate, since updating that mirrored exit-code table and gate-label list was out of this phase's declared scope (the Scope Hypothesis requires the only added hunk to be the new subsection). It instead cites the script's own header directly. A follow-up could later extend that mirrored table with V7, but doing so here would have violated the single-hunk scope constraint."
+  ]
+}

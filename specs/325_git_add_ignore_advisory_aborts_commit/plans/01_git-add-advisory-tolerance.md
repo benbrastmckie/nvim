@@ -280,35 +280,35 @@ added helper explicitly rather than silently widening the file's structure.
 
 ---
 
-### Phase 3: Record the positive-pathspec hazard in the staging-scope standard [NOT STARTED]
+### Phase 3: Record the positive-pathspec hazard in the staging-scope standard [COMPLETED]
 
 **Goal**: `git-staging-scope.md` documents the positive-pathspec side of the ignore-advisory
 hazard, so a future caller cannot "fix" it with `git check-ignore -q` and silently regress.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md`, in particular
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md`, in particular
       the existing passage documenting the `:(exclude)`-side hazard ("Naming a path already covered
       by `.gitignore` in an explicit `:(exclude)...` pathspec entry makes `git add` ... refuse the
-      WHOLE add").
-- [ ] Add a short sibling subsection covering the positive-pathspec case: a **tracked** path whose
+      WHOLE add"). *(completed)*
+- [x] Add a short sibling subsection covering the positive-pathspec case: a **tracked** path whose
       path matches an ignore rule via a parent-directory pattern draws the same advisory and a
       nonzero `git add` exit, but — unlike the exclude case — **does not actually fail**; the file
-      is staged.
-- [ ] State explicitly that `git check-ignore -q` must **not** be used to detect this case: it is
+      is staged. *(completed)*
+- [x] State explicitly that `git check-ignore -q` must **not** be used to detect this case: it is
       index-aware and reports "not ignored" for exactly these tracked paths, contradicting
       `git add`. Name `--no-index` as the only form that agrees, and state that neither is needed
-      because the sanctioned implementation verifies post-add index state instead.
-- [ ] State the tracked-vs-moved distinction by mechanism: a file relocated by plain `mv` into an
+      because the sanctioned implementation verifies post-add index state instead. *(completed)*
+- [x] State the tracked-vs-moved distinction by mechanism: a file relocated by plain `mv` into an
       ignore-matched destination is a brand-new *untracked* path there, so `git add` genuinely
       drops it — a real failure, not an advisory false negative, which this verification correctly
       refuses rather than tolerates. Any caller that intends such a move must carry its own
       destination-ignored guard. Refer to it by mechanism and fix site only; introduce no task
-      number.
-- [ ] Note that `git add -f`/`--ignore-errors` is not the sanctioned remedy, because it would also
-      force-add genuinely untracked, genuinely-should-stay-ignored paths.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` and confirm no task-number reference was
-      introduced.
-- [ ] Commit this green sub-step.
+      number. *(completed)*
+- [x] Note that `git add -f`/`--ignore-errors` is not the sanctioned remedy, because it would also
+      force-add genuinely untracked, genuinely-should-stay-ignored paths. *(completed)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` and confirm no task-number reference was
+      introduced. *(completed)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 0.5 hours
 

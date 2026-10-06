@@ -58,6 +58,41 @@ is intended, not an oversight to fix later.
 Every scope below extends this same array rather than re-deriving its own exclusion list —
 extend it here once if a future audit adopts another ephemeral class.
 
+## Positive-Pathspec Ignore-Advisory Hazard (the `:(exclude)`-side passage's sibling)
+
+The hazard above is about an EXCLUDE entry naming an already-gitignored path. There is a
+distinct, sibling hazard on the POSITIVE-pathspec side: a path that is **tracked**, but whose
+path matches a `.gitignore` rule via a parent-directory pattern (e.g. a tracked
+`specs/archive/state.json` under a `specs/archive/` ignore rule). Naming such a path as an
+ordinary positive pathspec draws the same "ignored by one of your .gitignore files" advisory and
+the same nonzero `git add` exit — but unlike the exclude-entry case, the add does **not**
+genuinely fail: the file is staged correctly. Trusting `git add`'s exit code here is a false
+negative, not a hard failure, and the two cases must not be treated as the same defect.
+
+**`git check-ignore -q` MUST NOT be used to detect this case.** It is index-aware and reports
+"not ignored" (exit 1) for exactly these already-tracked paths — directly contradicting `git
+add`'s own advisory on the same path. Only `git check-ignore -v --no-index` agrees with `git
+add`'s view, and even that is unnecessary: the sanctioned implementation (`git-commit-scoped.sh`'s
+V7 gate, documented in that script's own header) does not pre-check at all. It captures `git add`'s
+output and exit code without branching on them, then verifies ACTUAL POST-ADD INDEX STATE per
+positive pathspec (`git ls-files --error-unmatch` plus a `git diff --quiet` residual check) —
+tolerating the advisory false negative while still refusing a genuine failure (e.g. the
+out-of-repo-pathspec hard failure, which stages nothing and must keep refusing).
+
+**Tracked-vs-moved distinction, by mechanism**: this hazard applies only to a path that is
+ALREADY TRACKED when the ignore rule first matches it. A file relocated by a plain `mv` into an
+ignore-matched destination is, at that destination, a BRAND-NEW UNTRACKED path — `git add`
+genuinely drops it, with nothing staged, because there is no existing index entry for `git
+ls-files --error-unmatch` to find. The V7 post-add verification above correctly refuses this
+case rather than tolerating it. "Rename and Directory-Move Staging" below describes the
+pairing obligation for a move's two endpoints; a caller moving a file INTO an ignore-matched
+directory needs its own destination-ignored guard on top of that pairing — this contract's V7
+tolerance does not and cannot substitute for one.
+
+**`git add -f` / `--ignore-errors` is not the sanctioned remedy.** Either would also force-stage
+a genuinely untracked, genuinely-should-stay-ignored path — the exact over-staging this contract
+exists to prevent, trading a false-negative bug for a silent-ignore-bypass one.
+
 ## Per-Operation Scope
 
 ### `research`
