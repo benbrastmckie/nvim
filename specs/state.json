@@ -1646,9 +1646,15 @@
           "path": "specs/325_git_add_ignore_advisory_aborts_commit/plans/01_git-add-advisory-tolerance.md",
           "type": "plan",
           "summary": "4-phase plan: post-add index-state verification at the git add step, regression coverage, staging-scope standards subsection, full-gate close-out."
+        },
+        {
+          "path": "specs/325_git_add_ignore_advisory_aborts_commit/summaries/01_git-add-advisory-tolerance-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 4 phases, gate attribution table, and source-store-only reach note."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Replaced git-commit-scoped.sh's blind git-add exit-code guard with post-add index-state verification so a tracked, ignore-matched positive pathspec's advisory false negative no longer aborts the whole commit, while a genuine add failure still refuses with exit 2. Added 6 regression cases plus a negative control (test-git-commit-scoped.sh: 32 passed, 0 failed) and a new git-staging-scope.md subsection documenting the hazard and the check-ignore -q prohibition. Full verify-deploy.sh gate run: FAIL 3 of 34, all attributable to this task's own un-redeployed source-store edits (gates 3/5) or to other concurrently-dispatched tasks (gate 8); none caused by this task's logic."
     },
     {
       "project_number": 326,

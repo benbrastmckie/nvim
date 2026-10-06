@@ -1,13 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/325_git_add_ignore_advisory_aborts_commit/summaries/01_git-add-advisory-tolerance-summary.md",
+      "summary": "All 4 plan phases complete: post-add index-state verification in git-commit-scoped.sh (V7), six new regression cases plus a negative control, a new git-staging-scope.md subsection, and a full-gate close-out with every failure attributed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced git-commit-scoped.sh's blind git-add exit-code guard with post-add index-state verification so a tracked, ignore-matched positive pathspec's advisory false negative no longer aborts the whole commit, while a genuine add failure still refuses with exit 2. Added 6 regression cases plus a negative control (test-git-commit-scoped.sh: 32 passed, 0 failed) and a new git-staging-scope.md subsection documenting the hazard and the check-ignore -q prohibition. Full verify-deploy.sh gate run: FAIL 3 of 34, all attributable to this task's own un-redeployed source-store edits (gates 3/5) or to other concurrently-dispatched tasks (gate 8); none caused by this task's logic."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "specs/325_git_add_ignore_advisory_aborts_commit/plans/01_git-add-advisory-tolerance.md",
+    "specs/325_git_add_ignore_advisory_aborts_commit/progress/phase-1-progress.json",
+    "specs/325_git_add_ignore_advisory_aborts_commit/progress/phase-2-progress.json",
+    "specs/325_git_add_ignore_advisory_aborts_commit/progress/phase-3-progress.json",
+    "specs/325_git_add_ignore_advisory_aborts_commit/progress/phase-4-progress.json",
+    "specs/325_git_add_ignore_advisory_aborts_commit/summaries/01_git-add-advisory-tolerance-summary.md",
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a git-add positive pathspec names a TRACKED file whose path matches a .gitignore rule via a parent-directory pattern, `git add` prints the ignore advisory and exits 1, but still stages the file correctly (verified git 2.54.0). `git check-ignore -q` cannot detect this: it is index-aware and reports 'not ignored' for exactly these tracked paths, contradicting git add. The only reliable fix is post-add verification of actual index state (git ls-files --error-unmatch + git diff --quiet), never trusting git add's exit code in either direction -- this also avoids papering over a genuine add failure (e.g. an out-of-repo pathspec, which hard-fails with nothing staged).",
+      "category": "PATTERN",
+      "source_artifact": "specs/325_git_add_ignore_advisory_aborts_commit/summaries/01_git-add-advisory-tolerance-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "git add",
+        "gitignore advisory",
+        "exit code false negative",
+        "index verification",
+        "git-commit-scoped"
+      ]
+    }
+  ],
   "metadata": {
-    "session_id": "sess_1791241405_83aa14",
+    "session_id": "sess_1791260472_6c5749",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

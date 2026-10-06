@@ -2157,6 +2157,7 @@ hook-repair work by their titles and deliverables only.
 - **Dependencies**: None
 - **Research**: [325_git_add_ignore_advisory_aborts_commit/reports/01_git-add-ignore-advisory.md]
 - **Plan**: [325_git_add_ignore_advisory_aborts_commit/plans/01_git-add-advisory-tolerance.md]
+- **Summary**: [325_git_add_ignore_advisory_aborts_commit/summaries/01_git-add-advisory-tolerance-summary.md]
 
 **Description**: Stop git-commit-scoped.sh from aborting the whole commit when `git add` emits its gitignore advisory for a TRACKED file whose path matches an ignore rule: git exits 1 while correctly staging the file, and the script reads that false-negative exit as a hard failure. VERIFIED LIVE; hard blocker on every `/todo` archival run in repos where `specs/archive/` is gitignored.
 
