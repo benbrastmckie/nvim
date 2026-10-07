@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Add Check H to lint-agent-contracts.sh",
+  "started_at": "2026-10-07T10:15:00Z",
+  "last_updated": "2026-10-07T10:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read lint script, add BOUNDED_WAIT_FRAGMENT constant", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 2, "description": "Add curated in-scope array with exclusion comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 3, "description": "Implement check_h_bounded_wait_contract_bullet() and register in main()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 4, "description": "Keep shellcheck clean", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "initial grep -F with literal backtick in single-quoted string", "result": "needed shellcheck disable=SC2016 directive", "reason": "shellcheck SC2016 info-level notice on backtick inside single quotes, even though intentional"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

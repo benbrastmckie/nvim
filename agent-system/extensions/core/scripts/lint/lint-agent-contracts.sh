@@ -114,6 +114,7 @@ STANDARD_FILE="$REPO_ROOT/agent-system/extensions/core/docs/reference/standards/
 FRAGMENT_FILE="$REPO_ROOT/agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
 ARTIFACTS_TEMPLATE_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
 PLAN_STATUS_OWNERSHIP_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/contracts/plan-status-ownership.md"
+BOUNDED_WAIT_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
 
 if [[ ! -d "$AGENTS_ROOT" ]]; then
   echo "ERROR: agents root not found at $AGENTS_ROOT" >&2
@@ -616,6 +617,77 @@ check_g_plan_status_ownership_bullet() {
   done
 }
 
+# ── Check H: bounded-wait contract bullet presence ──────────────────────────────────────────
+# (a) Curated, not a filename glob: three of the 17 files matching `*implementation*agent.md`
+# are legitimate, already-correct exclusions that a literal-text check cannot recognize
+# uniformly (one is the contract's own authoritative prose home; two carry a differently-shaped
+# but equally sanctioned mechanism), so the in-scope set below is a hand-maintained list, exactly
+# as Check C's IN_SCOPE_RELATIVE_PATHS and Check G's OWNERSHIP_IN_SCOPE_RELATIVE_PATHS are.
+# (b) The three recorded exclusions and their per-file reasons:
+#   - core/agents/general-implementation-agent.md -- the contract's authoritative home: the full
+#     prose block the bullet pair below is condensed from. Deliberately not edited to carry the
+#     condensed copy of its own source text.
+#   - lean/agents/lean-implementation-agent.md and lean/agents/lean-implementation-hard-agent.md
+#     -- carry a domain-adapted, sanctioned background-build path routed through the Lean build
+#     guard (lake-build-guard.sh), a different legitimate mechanism satisfying the same
+#     underlying rule rather than an unfixed gap.
+# (c) Re-audit reproduce command (verbatim, so a future auditor can re-derive the set):
+#   cd agent-system/extensions && for f in $(find . -name '*implementation*agent.md' | sort); do
+#     echo "$(grep -c run_in_background "$f") $(grep -c bounded-build-waiter "$f") $f"; done
+# (d) A future agent addition must be added here by applying
+#   bounded-build-waiter.md's "Classification Rule" subsection -- this check does not infer scope
+#   on its own.
+BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS=(
+  "books/agents/books-implementation-agent.md"
+  "books/agents/books-implementation-hard-agent.md"
+  "cslib/agents/cslib-implementation-agent.md"
+  "cslib/agents/cslib-implementation-hard-agent.md"
+  "cslib/agents/pr-review-implementation-agent.md"
+  "email/agents/email-implementation-agent.md"
+  "latex/agents/latex-implementation-agent.md"
+  "nix/agents/nix-implementation-agent.md"
+  "nvim/agents/neovim-implementation-agent.md"
+  "python/agents/python-implementation-agent.md"
+  "rust/agents/rust-implementation-agent.md"
+  "typst/agents/typst-implementation-agent.md"
+  "web/agents/web-implementation-agent.md"
+  "z3/agents/z3-implementation-agent.md"
+)
+
+check_h_bounded_wait_contract_bullet() {
+  echo ""
+  echo "--- Check H: bounded-wait contract bullet presence ---"
+
+  if [[ ! -f "$BOUNDED_WAIT_FRAGMENT" ]]; then
+    log_fail "Check H: canonical fragment not found at ${BOUNDED_WAIT_FRAGMENT#"$REPO_ROOT"/} -- cannot verify bullet text"
+    return
+  fi
+
+  # Extract both anchors from the fragment's fenced "Copy this exact text" block.
+  local expected_must expected_mustnot
+  expected_must="$(grep -F 'canonical idiom VERBATIM' "$BOUNDED_WAIT_FRAGMENT" | head -n1)"
+  # shellcheck disable=SC2016
+  expected_mustnot="$(grep -F 'arm a `Monitor` to watch a local verification' "$BOUNDED_WAIT_FRAGMENT" | head -n1)"
+  if [[ -z "$expected_must" || -z "$expected_mustnot" ]]; then
+    log_fail "Check H: could not extract bullet text from fragment file"
+    return
+  fi
+
+  for rel in "${BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS[@]}"; do
+    local f="$AGENTS_ROOT/$rel"
+    if [[ ! -f "$f" ]]; then
+      log_fail "$rel: in-scope agent file not found"
+      continue
+    fi
+    log_info "Checking $rel"
+    if grep -qF "$expected_must" "$f" && grep -qF "$expected_mustnot" "$f"; then
+      log_pass "$rel: carries the bounded-wait contract bullet pair"
+    else
+      log_fail "$rel: missing the bounded-wait MUST/MUST-NOT bullet pair (expected text from $(rel_path "$BOUNDED_WAIT_FRAGMENT"))"
+    fi
+  done
+}
+
 # ── Deferred follow-up insertion point ──────────────────────────────────────────────────────
 # Check D (required body sections -- ## Agent Metadata, ## Allowed Tools, ## Error Handling) is
 # STILL DEFERRED follow-up work -- see the inline-terminal-status-contracts plan's "Deferred
@@ -662,6 +734,7 @@ main() {
   check_f_artifacts_template
   check_e_terminal_metadata_presence
   check_g_plan_status_ownership_bullet
+  check_h_bounded_wait_contract_bullet
 
   echo ""
   echo "========================================"

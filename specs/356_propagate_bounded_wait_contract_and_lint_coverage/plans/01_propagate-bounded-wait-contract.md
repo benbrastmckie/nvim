@@ -310,18 +310,18 @@ deviation.
 
 ---
 
-### Phase 4: Add Check H to lint-agent-contracts.sh [NOT STARTED]
+### Phase 4: Add Check H to lint-agent-contracts.sh [COMPLETED]
 
 **Goal**: Make the coverage mechanically asserted, so the gap cannot reopen silently.
 
 **Tasks**:
-- [ ] Re-read `core/scripts/lint/lint-agent-contracts.sh` (Checks C and G are the structural
+- [x] Re-read `core/scripts/lint/lint-agent-contracts.sh` (Checks C and G are the structural
       templates to follow; do not invent a new check shape).
-- [ ] Add a root-resolution constant alongside the existing fragment constants:
+- [x] Add a root-resolution constant alongside the existing fragment constants:
       `BOUNDED_WAIT_FRAGMENT="$REPO_ROOT/agent-system/extensions/core/context/patterns/bounded-build-waiter.md"`.
-- [ ] Add `BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS=( ... )` containing exactly the 14 paths from
+- [x] Add `BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS=( ... )` containing exactly the 14 paths from
       Phase 3, both hard variants included per the item 3 ruling.
-- [ ] Add an inline comment block above the array recording:
+- [x] Add an inline comment block above the array recording:
       (a) that the set is curated, not a filename glob, because three of the 17 are legitimate
       already-correct exclusions a literal-text check cannot recognize uniformly;
       (b) the three exclusions with their per-file reasons —
@@ -333,7 +333,7 @@ deviation.
       (c) the re-audit reproduce command, verbatim, so a future auditor can re-derive the set;
       (d) that a future agent addition must be added here by applying the fragment's
       classification rule — the check does not infer scope on its own.
-- [ ] Implement `check_h_bounded_wait_contract_bullet()` on Check C/G's exact shape:
+- [x] Implement `check_h_bounded_wait_contract_bullet()` on Check C/G's exact shape:
       fail loudly and by name if the fragment file is absent (`Check H: canonical fragment not
       found at ...`); extract both anchors with
       `grep -F 'canonical idiom VERBATIM' "$BOUNDED_WAIT_FRAGMENT" | head -n1` and
@@ -341,9 +341,11 @@ deviation.
       fail if either extraction is empty; then per in-scope path, `log_fail` on a missing file,
       and `grep -qF` each anchor, emitting one named `log_pass` on success and one named
       `log_fail` on either anchor missing.
-- [ ] Register `check_h_bounded_wait_contract_bullet` in `main()` after
+- [x] Register `check_h_bounded_wait_contract_bullet` in `main()` after
       `check_g_plan_status_ownership_bullet`.
-- [ ] Keep the script shellcheck-clean per `context/standards/shell-strict-mode.md`.
+- [x] Keep the script shellcheck-clean per `context/standards/shell-strict-mode.md`.
+      *(completed: added `# shellcheck disable=SC2016` for the backtick-containing grep -F
+      pattern; shellcheck exits 0)*
 
 **Timing**: 1.0 hours
 
