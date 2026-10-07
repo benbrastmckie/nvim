@@ -34,7 +34,7 @@ next_project_number: 356
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-336 [RESEARCHED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
+336 [PLANNED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
@@ -1347,11 +1347,12 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 336. Rule on the in-dispatch phase-commit staging surface: fifteen implementation agents commit with no file_scope check and no contended-path lease
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [336_phase_commit_staging_has_no_scope_check/reports/01_phase-commit-scope-check-ruling.md]
+- **Plan**: [336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**), per
 rules/source-store-deploy-boundary.md.

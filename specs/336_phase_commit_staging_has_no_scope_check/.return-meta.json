@@ -1,35 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791352266_ecae58_336",
-  "dispatch_seq": 1,
-  "task_number": 336,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/336_phase_commit_staging_has_no_scope_check/reports/01_phase-commit-scope-check-ruling.md",
-      "summary": "Rules on the phase-commit staging mechanism: --task alone cannot catch the observed undeclared-path case (proven by code trace of build_contended_manifest's >=2-declaring-task gate); ruling is both a now-implementable prose self-check (Containment against the task's own file_scope, drop-and-warn) across all fifteen recipes plus a recorded, out-of-scope follow-up mechanical check inside git-commit-scoped.sh coordinated with task 304."
+      "type": "plan",
+      "path": "specs/336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md",
+      "summary": "Six-phase plan landing both ruled mechanisms (--task plus a canonical pre-commit Containment self-check) uniformly across fifteen implementation-agent definitions, with a live pre-fix regression case and the git-commit-scoped.sh chokepoint recorded as a follow-up."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1791352266_ecae58_336",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1], [2], [3, 4], [5], [6]]
+  },
   "memory_candidates": [
     {
-      "content": "git-commit-scoped.sh's --task flag only engages the V5 contended-path lease for a path listed in specs/.contention-manifest/*.json, and build_contended_manifest (scripts/lib/territory-contention-lib.sh) only ever writes a path into that manifest when at least TWO tasks' own file_scope arrays declare it this cycle (uniq_tasks >= 2 gate). A path declared by zero tasks is therefore structurally invisible to --task under every possible value -- --task is an Overlap-family (sibling-vs-sibling) mechanism, not a Containment-family (one-path-vs-one-scope) one, per context/patterns/file-footprint-overlap.md's own vocabulary. Any defect shaped as 'an agent staged a path outside its OWN declared scope' needs a Containment check against that task's own file_scope, which --task does not and cannot provide.",
+      "content": "A guard mechanism that must fire mid-dispatch cannot be sited at a postflight or cycle-plan layer in this orchestration system, because the cycle-level artifacts those layers build (notably specs/.contention-manifest/*.json, built once per /orchestrate cycle by build_contended_manifest) are not rebuilt while an agent is running and may be overwritten by other cycles during a long dispatch. When planning a guard, first ask at what point in the dispatch lifecycle it must fire; that answer eliminates whole layers of candidate sites before any mechanism is weighed. Relatedly, a lease or contention mechanism keyed on declared-scope OVERLAP (two or more tasks declaring one path) is structurally blind to a path declared by NO task, so it can never substitute for a CONTAINMENT check (one concrete path tested against one declared scope). The two predicates are not interchangeable and a ruling that proposes one for the other's hazard is wrong on its face.",
       "category": "INSIGHT",
-      "source_artifact": "specs/336_phase_commit_staging_has_no_scope_check/reports/01_phase-commit-scope-check-ruling.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["git-commit-scoped.sh", "--task", "contended-path lease", "file_scope", "containment-vs-overlap", "build_contended_manifest"]
-    },
-    {
-      "content": "A mid-dispatch, agent-issued phase commit (git-commit-scoped.sh called directly from inside an implementation agent's own recipe, not from orchestrator-postflight.sh or orchestrate-cycle-postflight.sh) has no postflight in scope and no guarantee that specs/.contention-manifest/ still reflects the current cycle -- that manifest is built once, per /orchestrate cycle, in orchestrate-cycle-plan.sh, before the dispatch loop, and a long-running implement dispatch can outlive several other tasks' cycles. Any scope/contention check for this specific layer must therefore be self-contained (re-derive from specs/state.json directly, or live inside git-commit-scoped.sh itself) rather than assume a freshly-built cycle manifest exists.",
-      "category": "PATTERN",
-      "source_artifact": "specs/336_phase_commit_staging_has_no_scope_check/reports/01_phase-commit-scope-check-ruling.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["phase-commit", "mid-dispatch", "contention-manifest", "orchestrate-cycle-plan", "postflight-asymmetry"]
+      "source_artifact": "specs/336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["mid-dispatch", "contention-manifest", "containment-vs-overlap", "guard-siting", "phase-commit", "file_scope"]
     }
   ],
-  "next_steps": "Run /plan 336 to create implementation plan",
-  "issues": [],
-  "user_decision": null
+  "next_steps": "Run /implement 336 to execute the plan",
+  "dispatch_seq": 2
 }

@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 336,
+  "phase": "plan",
+  "dispatch_seq": 2,
+  "session_id": "sess_1791352266_ecae58_336",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Created a 6-phase implementation plan for the in-dispatch phase-commit staging surface, integrating the research ruling that --task alone is structurally incapable of catching an undeclared path (the contention manifest requires two or more declaring tasks). The plan lands both mechanisms within file_scope: --task at all 21 invocation sites plus a canonical pre-commit Containment self-check authored once in the core definition and pointed at from the other fourteen. It exercises the pre-fix regression case live in a throwaway repo, audits uniformity mechanically across all fifteen definitions, and records the git-commit-scoped.sh chokepoint as a constrained follow-up without widening file_scope.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md",
+      "summary": "Six-phase plan: live pre-fix regression evidence, canonical self-check plus --task in the core definition, uniform wiring across the remaining fourteen in two parallel phases, mechanical uniformity audit with the git-commit-scoped.sh follow-up record, and a full verify-deploy gate."
+    }
+  ]
+}
