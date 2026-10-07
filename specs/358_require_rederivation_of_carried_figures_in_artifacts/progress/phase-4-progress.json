@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "DECISION GATE -- Measure Narrow Impossible-Assertion Detector Feasibility",
+  "started_at": "2026-10-07T09:32:00Z",
+  "last_updated": "2026-10-07T09:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write throwaway probe script in scratchpad", "status": "done", "files_touched": []},
+    {"id": 2, "description": "RECALL TEST against known positive", "status": "done", "files_touched": [], "note": "FAILED. The exact ERE from the plan did not detect the known contradiction (line 353's absence-assertion 'does **not** contain REFUSE or the word \"refused\"' is split by markdown bold **not**, which breaks the literal substring match for 'does not contain'). The probe instead produced an unrelated false hit: the backtick literal `[REFUSE]` appearing twice (line 355 vs line 358), which is not a contradiction -- it is the same tag mentioned twice consistently."},
+    {"id": 3, "description": "PRECISION TEST over existing specs/**/plans/*.md and specs/**/reports/*.md", "status": "done", "files_touched": [], "note": "Corpus = 2711 files (find specs -path */plans/*.md -o -path */reports/*.md). Flagged (HITS>0) = 92 files. Sampled ~12 flagged files by hand; all examined were false positives -- the same short literal (a filename like 'roadmap-integration.sh', a word like \"absent\", a command name) simply quoted multiple times in normal technical prose, not a genuine mandated-literal-vs-absence-assertion contradiction. No genuine instance found in the sample."},
+    {"id": 4, "description": "Apply gate criteria", "status": "done", "files_touched": [], "note": "RECALL: FAIL (known positive not detected). PRECISION: FAIL (0 genuine of ~12 sampled flagged files, far below the 50% threshold). BOUNDEDNESS: FAIL (92 flagged files >> 5-file threshold -- 'an advisory nobody can triage is noise'). GATE OUTCOME: FAIL on all three criteria."},
+    {"id": 5, "description": "Record gate outcome and measured values", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Exact ERE from plan, unmodified, against raw markdown text", "result": "failed", "reason": "Markdown bold emphasis (**not**) splits the trigger phrase 'does not contain', causing a recall miss on the known positive and an unrelated false-positive hit elsewhere in the same file."}
+  ],
+  "handoff_count": 0,
+  "gate_outcome": "FAIL",
+  "measured_values": {
+    "recall_detected": false,
+    "corpus_total_files": 2711,
+    "flagged_files": 92,
+    "boundedness_threshold": 5,
+    "precision_sample_size": 12,
+    "precision_genuine_count": 0
+  }
+}

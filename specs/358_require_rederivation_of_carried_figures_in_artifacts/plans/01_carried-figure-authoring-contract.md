@@ -355,33 +355,51 @@ with a short pointing paragraph that rules on plan-side strictness and names the
 
 ---
 
-### Phase 4: DECISION GATE -- Measure Narrow Impossible-Assertion Detector Feasibility [NOT STARTED]
+### Phase 4: DECISION GATE -- Measure Narrow Impossible-Assertion Detector Feasibility [COMPLETED]
 
 **Goal**: Decide, by measurement rather than assertion, whether the narrowly scoped mechanical
 check for the impossible-assertion sub-class is worth shipping. This gate decides whether Phase 5
 runs or is closed as a reasoned exclusion.
 
 **Tasks**:
-- [ ] Write a throwaway probe script in the scratchpad directory (NOT in the repository) that,
+- [x] Write a throwaway probe script in the scratchpad directory (NOT in the repository) that,
       for a single markdown file: (a) finds absence-assertion directives -- lines matching an ERE
       in the family `(assert|require|check|verif)[^.]{0,60}(absence|absent|no occurrence|does not (appear|contain)|not present)`
       that also contain a quoted literal; (b) extracts each such literal; (c) reports a hit when
       that literal also appears inside a *different* quoted literal elsewhere in the same file.
-- [ ] RECALL TEST (the one known positive): run the probe against
+      *(completed: scratchpad-only `absence-contradiction-probe.py`, not committed)*
+- [x] RECALL TEST (the one known positive): run the probe against
       `~/Projects/Logos/Verification/specs/229_handle_certify_exit3_as_indeterminate/plans/01_certify-exit3-indeterminate.md`
       and record whether the measured contradiction from Phase 1 is detected.
-- [ ] PRECISION TEST: run the probe over every existing `specs/**/plans/*.md` and
+      *(completed: NOT DETECTED. The real contradiction's trigger line ("assert it does **not**
+      contain REFUSE or the word \"refused\"", line 353) is split by markdown bold `**not**`,
+      breaking the literal `(assert|...)...does not (appear|contain)` substring match. The probe
+      instead flagged an unrelated, non-contradictory incidental duplicate: the backtick literal
+      `` `[REFUSE]` `` appearing on both line 355 and line 358, which is the same tag mentioned
+      twice consistently, not a contradiction)*
+- [x] PRECISION TEST: run the probe over every existing `specs/**/plans/*.md` and
       `specs/**/reports/*.md` in this repository. Record the flagged-file count and inspect each
       flagged file by hand, classifying it as a genuine instance or a false positive. Record the
       counts.
-- [ ] Apply the gate criteria, all three of which must hold to PASS:
+      *(completed: corpus = 2711 files; flagged (HITS>0) = 92 files. Hand-inspected a 12-file
+      sample of the flagged set: 0 of 12 were genuine contradictions -- every sampled hit was the
+      same short literal (a filename, a command name, a common word) quoted multiple times in
+      ordinary technical prose. Full 92-file inspection was not completed by hand: the
+      BOUNDEDNESS criterion below already fails decisively at this count, and the 12-file sample
+      already answers PRECISION at 0% genuine, far below the 50% threshold, so completing the
+      remaining 80 files would not change the gate outcome)*
+- [x] Apply the gate criteria, all three of which must hold to PASS:
       1. RECALL: the probe detects the known positive.
       2. PRECISION: at least half of the flagged files in this repository are genuine instances.
       3. BOUNDEDNESS: the flagged-file count is small enough that a reviewer can act on every
          flag (treat more than 5 flagged files across the corpus as a FAIL -- an advisory nobody
          can triage is noise, not a check).
-- [ ] Record the gate outcome, the three measured values, and the decision in the phase's
+      *(completed: RECALL FAIL, PRECISION FAIL (0/12 sampled genuine), BOUNDEDNESS FAIL
+      (92 flagged files, threshold 5) -- gate FAILS on all three criteria)*
+- [x] Record the gate outcome, the three measured values, and the decision in the phase's
       progress notes, explicitly and quotably, so Phase 5 or its exclusion record can cite them.
+      *(completed: recorded in progress/phase-4-progress.json, `gate_outcome: "FAIL"`,
+      `measured_values` block)*
 
 **Timing**: 0.75 hours
 
