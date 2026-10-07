@@ -11,9 +11,9 @@ next_project_number: 356
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,336,338,342,345,347,349,351,354 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344,350,352,355 | 22,251,271,272,280,284,311,349,351 | core-agent-system, extensions, orchestrator, ... |
-| 3 | 274,282,304,353 | 273,275,281,284,302,344,352 | core-agent-system, orchestrator, typst |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,336,338,342,345,347,349,351 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,303,335,344,350,352,354,355 | 22,251,271,272,280,284,311,345,349,351 | core-agent-system, extensions, orchestrator |
+| 3 | 274,282,304,353 | 273,275,281,284,302,344,352 | core-agent-system, extensions, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -36,6 +36,8 @@ next_project_number: 356
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 336 [NOT STARTED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
+354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
 
 ### Extensions
 
@@ -43,6 +45,7 @@ next_project_number: 356
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
   └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
+353 [NOT STARTED] — Resolve the two red typst lint suites:...
 
 ### Neovim
 
@@ -70,24 +73,15 @@ next_project_number: 356
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
-
-### Orchestration
-
 351 [NOT STARTED] — Repair the IDENTICAL DISPATCH HALT mechanism in...
-  └─ 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
   └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
-354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
-
-### Typst
-
-353 [NOT STARTED] — Resolve the two red typst lint suites:...
 
 ## Tasks
 
 ### 355. Close the gap that lets a new test script reach COMPLETED without its manifest.json provides.scripts registration
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: orchestration
+- **Topic**: orchestrator
 - **Dependencies**: Task 351
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
@@ -134,8 +128,8 @@ SO THE SUSPECTED MECHANISM IS: a task whose completion arrives via the post-depl
 ### 354. Rule on whether the local-gate backgrounding prohibition must also cover waiting on a dispatched subagent
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: orchestration
-- **Dependencies**: None
+- **Topic**: core-agent-system
+- **Dependencies**: Task 345
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
@@ -186,7 +180,7 @@ A MIDDLE RULING IS AVAILABLE AND MAY BE THE RIGHT ONE: permit awaiting a dispatc
 ### 353. Resolve the two red typst lint suites: chapter-quality-check.sh's stderr-into-JSON corruption, and typst-element-lint.sh's presence-versus-density check overlap
 - **Status**: [NOT STARTED]
 - **Task Type**: typst
-- **Topic**: typst
+- **Topic**: extensions
 - **Dependencies**: Task 352
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typst/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
@@ -235,7 +229,7 @@ Rule on which, record why, and only then change the assertion, the check, or the
 ### 352. Fix validate-artifact.sh's `SKILL_VALIDATE_FIXES` counters, which neither accumulate across multi-file aggregation nor reset between calls
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: orchestration
+- **Topic**: core-agent-system
 - **Dependencies**: Task 351
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
@@ -282,7 +276,7 @@ Note the scope claim in the known-failures row is narrower than the suite name s
 ### 351. Repair the IDENTICAL DISPATCH HALT mechanism in orchestrate-cycle-plan.sh, which is implemented but never fires
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: orchestration
+- **Topic**: orchestrator
 - **Dependencies**: None
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
