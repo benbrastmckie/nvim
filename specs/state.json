@@ -26,7 +26,8 @@
       "topic": "extensions",
       "dependencies": [
         340,
-        341
+        341,
+        346
       ],
       "priority": "medium",
       "effort": "2-3 days",

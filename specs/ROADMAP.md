@@ -3,7 +3,7 @@
 *Forward-only: what remains, in what order, and the checks that gate each step. Finished work is
 removed, not archived here — it lives in git history, task summaries and `specs/archive/`. Task
 detail lives in `specs/TODO.md`; this file carries only ordering, gates and rulings. Measured
-2026-10-05.*
+2026-10-07.*
 
 ## Goal
 
@@ -14,21 +14,29 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**35 open tasks**: 21 ready, 13 blocked, 1 held. If that stops matching `state.json`, this file has
+**37 open tasks**: 19 ready, 17 blocked, 1 held. If that stops matching `state.json`, this file has
 drifted — it is hand-derived until **306** makes it generated.
 
 ## Gate state
 
-- **Deploy gates are GREEN**: `verify-deploy.sh --skip-slow` returns **PASS — 33 checks, 0
-  failures** (measured 2026-10-05). The three standing reds recorded in earlier passes — the two
-  books-scaffold defects and the orchestrator context-budget overage — are resolved. The redeploy
-  checkpoint that cleared them resynced 7 extensions and dropped findings from 15 to 1, 0 newly
-  introduced; the surviving manifest finding tracks an uncommitted source-store modification to
-  `scripts/orchestrate-cycle-plan.sh` from a concurrent session, not a deploy fault.
-- **`validate-state.sh --deep`**: 16 passed, 0 failed, 6 warnings. All six are `file_scope`: 300's
-  coarse `scripts/tests/` (13 overlaps), 328's missing key, the visibility summary line reporting
-  it, and three glob-shaped entries on 342 that collision detection cannot see. Treat any *new*
-  warning, and any failure, as real.
+- **Deploy gates are GREEN**: `deploy-headless.sh` returns `RESULT=landed_verify_clean`, 33 checks,
+  0 failures (measured 2026-10-07). It was **red earlier the same day** on check 14,
+  runtime-file tracking: the two books-evidence append locks were registered as ephemeral class
+  members while `runtime_ignore_block()` still emitted a hand-written 22-pattern literal, so the
+  generated repo-root block never covered them. Fixed by deriving that function from
+  `RUNTIME_FILE_PATTERNS`. The surviving manifest finding from earlier passes tracked an
+  uncommitted source-store modification to `scripts/orchestrate-cycle-plan.sh` from a concurrent
+  session, not a deploy fault; that file is still uncommitted.
+- **`--skip-slow` hid a second red from the same cause, and this is the measured instance of
+  Settled decision 15.** `test-runtime-file-tracking.sh` Case 3 — the pin making the standards
+  doc's Consumer Repo Setup block byte-identical to `runtime_ignore_block()` — was failing at the
+  same time, and Case 3 only runs under the full gate set. A `--skip-slow` pass is not evidence
+  the doc-sync pins hold. Run `tests/run-all.sh` before trusting a green on any task that edits a
+  lib with a doc-sync pin.
+- **`validate-state.sh --deep`**: 16 passed, 0 failed, **7** warnings, all `file_scope`: 300's
+  coarse `scripts/tests/` (now **16** overlaps, was 13), 328's missing key, 349's empty array, the
+  visibility summary line reporting both, and **three** glob-shaped entries on 342 that collision
+  detection cannot see. Treat any *new* warning, and any failure, as real.
 - **Gate 8 (`tests/run-all.sh`) is not reliably runnable inside a dispatch.** It spans every
   extension (111+ suites observed in one invocation, 89 `test-*.sh` in core alone), and its
   recorded 117.9 s is a *parallel* figure — `verify-deploy.sh` requests `--jobs` (cap 4) while
@@ -43,63 +51,84 @@ drifted — it is hand-derived until **306** makes it generated.
 
 ## Next
 
-Nothing is in flight. Recommended order, by harm-now × actionable-now:
+**343 is in flight** (`researching`). The priority set is **300, 343, 346, 349, 342**, in that
+dependency order:
 
 ```
-/orchestrate 325, 322      # /todo is broken in two independent ways; both small, same workflow
-/orchestrate 337           # handoff validation fails and is swallowed — masks every other signal
-/orchestrate 343           # bounded wait + stranded-dispatch detection
+/orchestrate 300, 343, 346   # admits clean as one batch, measured 2026-10-07: 0 deferred, 0 blocked
+/orchestrate 349             # only after 300 lands — 349 declares dependencies:[300]
+/orchestrate 346             # if not taken in the batch above; 342 is queued behind it
 ```
+
+Why this order, and what each one unblocks:
+- **300** — AskUserQuestion is unreachable in dispatched subagents. The widest blocker in the
+  graph: it gates **302**, **312** and **349**. Nothing else in the priority set is a prerequisite
+  for anything.
+- **343** — bounded background wait plus stranded-dispatch detection. Already `researching`, so it
+  is the cheapest to finish. Gates **345**. Its old "must not share a batch with 337" constraint
+  is gone; 337 completed.
+- **346** — the books observer reads RUN-record fields that do not exist in
+  `book-evidence-run-v1`, so every observation record it has written for a books task is silently
+  wrong rather than honestly absent. Correctness-now, and **342** is queued behind it.
+- **349** — `/approve` as one interactive question instead of a terminal round-trip. Blocked by
+  **300** by construction: it needs AskUserQuestion to work in a dispatched subagent.
+- **342** — held, and **not liftable by an agent**; see the hold note below.
+
+Scheduling constraints that bite:
+- **342 must follow 346**, and the edge is now declared (`342 -> dependencies:[340,341,346]`)
+  because collision detection could not have found it. 346 declares
+  `context/project/books/standards/observation-record.md`, which falls inside 342's glob-shaped
+  `context/project/books/**` — and a glob entry is invisible to overlap-based detection. Without
+  the edge, the two could have been co-scheduled onto the same file with no advisory raised.
+- **349 declares an empty `file_scope`.** Fill it before dispatching: an empty array is a
+  visibility warning now and an admission-posture question at dispatch, and it makes 349's
+  overlap with every other task unmeasurable.
+- **300's `scripts/tests/` declaration now overlaps 16 tasks** (was 13 — it grows as the backlog
+  does). Narrow it before co-scheduling 300 with anything outside this set.
 
 Then the unblocking plays, highest leverage first: **284** (frees 335 and feeds 304), **251**
 (frees 170, which frees 328), **318** and **271**.
-
-Scheduling constraints that bite:
-- **337 and 343 must not share a batch** — both declare `orchestrate-cycle-postflight.sh`.
-- **343 overlaps seven non-terminal tasks** on its four files; `orchestrate-batch-admit.sh` will
-  raise a `cross_batch` advisory. Dispatch it alone or with tasks touching none of them.
-- **300's `scripts/tests/` declaration overlaps 13 tasks.** Narrow it before co-scheduling.
 
 ## Open work
 
 One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 
-**Orchestrator (14)**
+**Orchestrator (16)**
 ```
+343 IN FLIGHT        bound an agent's background wait; detect a stranded dispatch   <- priority
 271 ready            parent_task edge: schema, validation, TODO rendering
 272 ready            honest session liveness for concurrent same-repo batches
 299 ready            detect in-place plan revision concurrent with a live implement dispatch
 311 ready            measured co-scheduling signal replacing static build-heavy family membership
 319 ready            surface cross-task claim invalidation when research refutes a filed premise
-337 ready            handoff required fields, and a dropped validation failure
-343 ready            bound an agent's background wait; detect a stranded dispatch
+347 ready            PreToolUse Bash hook blocking self-matching process-name waiters
 273 blocked:271      three-channel conclusion stage with per-channel approval
 275 blocked:272      per-repo orchestration queue, consumed by admission
 302 blocked:300      pass --task at commit-staging sites to engage the contended-path lease
 303 blocked:271      validate-state.sh default must resolve against the repo, not CWD
-274 blocked:272,273,275   next-admissible-batch suggestion and alternatives-on-conflict
-312 blocked:300,282  backlog reconciliation as a required task-creation component
-304 blocked:273,284,302   one out-of-repo pathspec aborts staging; callers sink nonzero exits
+345 blocked:343      make the no-op spin a bound contract with a single writer
+344 blocked:280,311  carry the batching-by-default doctrine to the point of use
+274 blocked:272,273,275,344   next-admissible-batch suggestion and alternatives-on-conflict
+312 blocked:282,300,344       backlog reconciliation as a required task-creation component
+304 blocked:273,284,302       one out-of-repo pathspec aborts staging; callers sink nonzero exits
 ```
 
-**Core agent system (16)**
+**Core agent system (14)**
 ```
+300 ready            AskUserQuestion unreachable in dispatched subagents   <- priority
 251 ready            context-corpus reachability probe, then act on dead and overlapping files
 280 ready            forbid record-versioning language: rule, exemptions, pattern library
 284 ready            exempt a task's own directory from the file_scope excursion advisory
-300 ready            AskUserQuestion unreachable in dispatched subagents
 306 ready            make ROADMAP.md a generated artifact
 318 ready            wire lint-directory-pathspec-boundary.sh in as a numbered gate
-322 ready            /todo: moved directory's vacated source never staged (verified regression)
-325 ready            git add's gitignore advisory exit code aborts the whole commit
 336 ready            in-dispatch phase-commit staging: 15 agents, no file_scope check, no lease
 338 ready            sweep task support files: tracked or ignored
 170 blocked:251      isolate shell test suites from ambient host state (memory, timing)
 281 blocked:280      repo-wide record-versioning lint, blocking/advisory split
 335 blocked:284      promote the file_scope excursion advisory into a staging-time gate
 282 blocked:280,281  write-time PreToolUse hook blocking record-versioning language
-313 blocked:306,328  advisory lint for hand-authored batch proposals in ROADMAP phase blocks
-328 blocked:170,318,322,304,303   systematic script and test corpus efficiency
+313 blocked:306,328,344        advisory lint for hand-authored batch proposals in ROADMAP blocks
+328 blocked:170,303,304,318    systematic script and test corpus efficiency
 ```
 
 **Neovim (3)**
@@ -109,15 +138,23 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 296 ready            repo hygiene: stale init.lua.backup, project-overview.md, README link
 ```
 
-**Extensions (2)**
+**Extensions (4)**
 ```
+346 ready            books observer reads RUN-record fields that do not exist   <- priority
+349 blocked:300      /approve as one interactive question, not a terminal round-trip   <- priority
 29  blocked:22       generate .mcp.json from extension manifests; register obsidian-memory
-342 HOLD             books context corpus refactor — see below
+342 HOLD/blocked:346 books context corpus refactor — see below   <- priority, gated
 ```
 
-**342's hold**: the dependency half is met (340 and 341 completed 2026-10-05). The only remaining
-condition is the version stamp — 340 measured the consuming repository's Decision 19 at
-`0.1.0-pre` (`d255518`); lift when that line reads `0.1.0`. Operator action, not an agent's.
+**342's hold**: the dependency half is met (340 and 341 completed 2026-10-05) and the new **346**
+edge is ordering, not a blocker on its own. The hold stands on the version stamp alone, and it is
+further from being met than "not yet": the consuming repository's `books/book-convention.md` line 4
+reads `0.1.0-pre` as of 2026-10-07, and Decision 19 records that the line *was* stamped `0.1.0`,
+bumped four more times in one day, and then **reset to `0.1.0-pre` by the owner ruling of
+2026-10-06** because the review it was waiting for had shipped prematurely. So the stamp is a
+deliberate deferral, not a pending formality. Lift when that line reads `0.1.0` — owner action,
+never an agent's, and never as a side effect of prioritising the task here. Dispatching it before
+the stamp lands would refactor the corpus against a premise the convention record contradicts.
 
 ## Checks before and after every call
 

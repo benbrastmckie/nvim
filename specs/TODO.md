@@ -11,8 +11,8 @@ next_project_number: 350
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343,346,347 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,335,344,345,349 | 22,251,271,272,280,284,300,311,343 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,343,346,347 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,335,342,344,345,349 | 22,251,271,272,280,284,300,311,343,346 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -40,8 +40,8 @@ next_project_number: 350
 
 ### Extensions
 
-342 [HOLD] — Refactor the books extension's context corpus against the...
 346 [NOT STARTED] — Reconcile the books observer RUN-record field reads with...
+  └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
 
@@ -740,7 +740,7 @@ excursion-advisory work.
 - **Held**: 2026-10-05
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 340, Task 341
+- **Dependencies**: Task 340, Task 341, Task 346
 - **Research**: [342_refactor_books_context_corpus_role_scoped/reports/01_seed-books-context-engineering.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET (agent-system/extensions/books/..., never .claude/**). `.claude/` is a
