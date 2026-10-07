@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Record the install-once warning where a future editor will see it",
+  "started_at": "2026-10-07T21:15:00Z",
+  "last_updated": "2026-10-07T21:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add top-level _comment key to root-files/settings.json", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 2, "description": "Verify harness accepts the key", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Fallback branch if harness warns", "status": "done", "files_touched": [], "note": "fallback not needed; primary branch succeeded"}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

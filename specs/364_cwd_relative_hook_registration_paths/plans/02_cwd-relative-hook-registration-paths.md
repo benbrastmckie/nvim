@@ -195,25 +195,25 @@ zero total after.
 
 ---
 
-### Phase 2: Record the install-once warning where a future editor will see it [NOT STARTED]
+### Phase 2: Record the install-once warning where a future editor will see it [COMPLETED]
 
 **Goal**: A future author adding a hook registration is warned, at the point of edit, that
 `root-files/settings.json` is install-once and permanently unreachable by resync — so new
 registrations belong in the merge source (D4).
 
 **Tasks**:
-- [ ] Add a top-level `"_comment"` key to `agent-system/extensions/core/root-files/settings.json`
+- [x] Add a top-level `"_comment"` key to `agent-system/extensions/core/root-files/settings.json`
       stating: this file is install-once (`loader.lua`'s `INSTALL_ONCE_ROOT_FILES`), so a hook fix
       made here never reaches an already-deployed repo; add NEW hook registrations to
       `core/merge-sources/settings-hooks.json` instead; and hook commands must use
-      `"$CLAUDE_PROJECT_DIR"`, never a CWD-relative `.claude/` path.
-- [ ] Verify the harness accepts the key: deploy to a scratch tree (or inspect this repo's own
-      settings after a load) and confirm no "unknown setting" warning surfaces.
-- [ ] If the harness warns, remove the key and instead record the same warning in
+      `"$CLAUDE_PROJECT_DIR"`, never a CWD-relative `.claude/` path. *(completed)*
+- [x] Verify the harness accepts the key: deploy to a scratch tree (or inspect this repo's own
+      settings after a load) and confirm no "unknown setting" warning surfaces. *(completed: this repo's own live, loaded `.claude/settings.local.json` already carries a top-level `_comment` key (line 99) with no harness warning in the current running session, confirming the key is tolerated; primary branch taken, no fallback needed)*
+- [x] If the harness warns, remove the key and instead record the same warning in
       `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`'s migration entry
       plus a one-line pointer in `core/manifest.json`'s existing `merge_targets.settings._comment`
       (which already documents the add-only/no-self-heal half). Record which branch was taken and
-      why.
+      why. *(completed: fallback branch not needed -- harness tolerates the key, confirmed above; no change made to manifest.json or the docs inventory for this task)*
 
 **Timing**: 0.5 hours
 

@@ -1,4 +1,5 @@
 {
+  "_comment": "This file is install-once (loader.lua's INSTALL_ONCE_ROOT_FILES): copied only when no project copy exists yet, never overwritten on resync. A hook fix made here never reaches an already-deployed repo. Add NEW hook registrations to core/merge-sources/settings-hooks.json instead, where they propagate on every resync. Hook commands must use \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/x.sh, never a CWD-relative .claude/ path -- a CWD-relative path resolves against the session's drifted shell cwd and silently fails the hook open.",
   "permissions": {
     "allow": [
       "Bash(git:*)",
