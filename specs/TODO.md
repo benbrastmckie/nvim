@@ -11,8 +11,8 @@ next_project_number: 350
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,343,346,347 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,335,342,344,345,349 | 22,251,271,272,280,284,300,311,343,346 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,345,346,347 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,302,303,335,342,344,349 | 22,251,271,272,280,284,300,311,346 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -67,8 +67,7 @@ next_project_number: 350
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
     └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-343 [IMPLEMENTING] — Bound an implementation agent's wait on a backgrounded...
-  └─ 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
+345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
@@ -663,7 +662,7 @@ This task declares territory overlap with task 280 (merge-sources/claudemd.md) a
 ---
 
 ### 343. Bound an implementation agent's wait on a backgrounded process, and give the orchestrator a way to detect a stranded dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 337
