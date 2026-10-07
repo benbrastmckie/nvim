@@ -2208,7 +2208,7 @@
     {
       "project_number": 348,
       "project_name": "append_only_evidence_write_time_hook",
-      "status": "planned",
+      "status": "completed",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Write-time PreToolUse Write|Edit hook enforcing append-only evidence files, the books extension first hook and its registration path",
@@ -2230,12 +2230,18 @@
           "path": "specs/348_append_only_evidence_write_time_hook/plans/01_append-only-evidence-write-time-hook.md",
           "type": "plan",
           "summary": "5-phase plan (5.25h) for the books append-only evidence write-time PreToolUse hook, its fixture suite with forgery probes, its manifest/settings-fragment registration path, and deploy verification in the consumer repo."
+        },
+        {
+          "path": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+          "type": "summary",
+          "summary": "Books extension's first hook plus fixture suite, manifest/settings-fragment wiring, and a verified live deploy."
         }
       ],
       "created": "2026-10-06T23:52:00Z",
-      "last_updated": "2026-10-07T00:07:07Z",
+      "last_updated": "2026-10-07T00:31:06Z",
       "session_id": "sess_1791330710_42a2e1",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented the books extension's first PreToolUse Write|Edit hook, blocking any modification or deletion of a committed line in books/book-convention-evidence/NN-*.md while permitting pure appends; built its 29-assertion forgery-probed fixture suite, wired manifest.json and a new bare settings fragment, and verified the deploy against the live consumer repository (registration bare, joined to the existing matcher block, idempotent, and firing correctly against a real evidence file)."
     }
   ],
   "completed_projects": [],

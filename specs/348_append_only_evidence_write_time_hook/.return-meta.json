@@ -23,28 +23,50 @@
       "category": "PATTERN",
       "source_artifact": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["append-only", "PreToolUse hook", "git HEAD baseline", "write-time guard", "Edit predicate"]
+      "suggested_keywords": [
+        "append-only",
+        "PreToolUse hook",
+        "git HEAD baseline",
+        "write-time guard",
+        "Edit predicate"
+      ]
     },
     {
       "content": "For a books-extension-style forgery probe against a shell script predicate (not a Lean/lake predicate), copy the real script into the test workdir, apply exactly ONE targeted sed substitution to disable or neutralize a single predicate (e.g. the terminal 'exit 2' line, a scope-match case arm, or a specific command-substitution baseline lookup), assert via `cmp -s` that the substitution actually changed the copy (so a probe can't silently pass by failing to stub anything), then drive the stubbed copy with the SAME payload a real behavioral case used and assert the real case's expectation now breaks (probe_expect_broken: actual != real). Always pair a refusal-predicate probe with a scope/admit-predicate probe (the admit half): a refusal-only probe suite cannot distinguish a correct refusal from a predicate that refuses everything.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["forgery probe", "shellcheck", "sed stub", "fixture testing", "PreToolUse hook"]
+      "suggested_keywords": [
+        "forgery probe",
+        "shellcheck",
+        "sed stub",
+        "fixture testing",
+        "PreToolUse hook"
+      ]
     },
     {
       "content": "When constructing a 'jq missing from PATH' fail-open fixture for a hook script, do not set PATH to a nonexistent/empty directory -- the hook's own location-resolution preamble (e.g. `dirname \"${BASH_SOURCE[0]}\"`) needs basic coreutils and will crash before the intended guard ever runs. Instead, compute a coreutils-only PATH via `dirname \"$(command -v cat)\"` (or similar) that excludes only the directory containing the target dependency, with a graceful INFO-skip guard if the environment happens to co-locate that dependency with coreutils anyway (e.g. `PATH=\"$COREUTILS_DIR\" command -v jq` still succeeds).",
       "category": "TECHNIQUE",
       "source_artifact": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["fail-open", "fixture testing", "PATH manipulation", "shell hook", "portability"]
+      "suggested_keywords": [
+        "fail-open",
+        "fixture testing",
+        "PATH manipulation",
+        "shell hook",
+        "portability"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791330710_42a2e1",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

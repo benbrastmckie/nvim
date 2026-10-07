@@ -1,7 +1,7 @@
 # Implementation Plan: Task #348
 
 - **Task**: 348 - Write-time PreToolUse Write|Edit hook enforcing append-only evidence files, the books extension first hook and its registration path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md

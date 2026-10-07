@@ -11,7 +11,7 @@ next_project_number: 349
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343,346,347,348 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343,346,347 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,302,303,335,344,345 | 22,251,271,272,280,284,300,311,343 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,344 | core-agent-system, orchestrator |
@@ -42,7 +42,6 @@ next_project_number: 349
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
 346 [NOT STARTED] — Reconcile the books observer RUN-record field reads with...
-348 [PLANNED] — Write-time PreToolUse Write|Edit hook enforcing append-only...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -76,12 +75,13 @@ next_project_number: 349
 ## Tasks
 
 ### 348. Write-time PreToolUse Write|Edit hook enforcing append-only evidence files, the books extension first hook and its registration path
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md]
 - **Plan**: [348_append_only_evidence_write_time_hook/plans/01_append-only-evidence-write-time-hook.md]
+- **Summary**: [348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/books/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS, otherwise the
