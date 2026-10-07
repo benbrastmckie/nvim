@@ -2,7 +2,7 @@
 
 - **Task**: 336 - Rule on the in-dispatch phase-commit staging surface: fifteen implementation
   agents commit with no file_scope check and no contended-path lease
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (declared explicitly; see Goals & Non-Goals)
 - **Research Inputs**: specs/336_phase_commit_staging_has_no_scope_check/reports/01_phase-commit-scope-check-ruling.md

@@ -39,21 +39,38 @@
       "category": "INSIGHT",
       "source_artifact": "specs/336_phase_commit_staging_has_no_scope_check/summaries/01_phase-commit-containment-self-check-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["containment-vs-overlap", "file_scope", "phase-commit", "git-commit-scoped", "undeclared-path", "staging-scope"]
+      "suggested_keywords": [
+        "containment-vs-overlap",
+        "file_scope",
+        "phase-commit",
+        "git-commit-scoped",
+        "undeclared-path",
+        "staging-scope"
+      ]
     },
     {
       "content": "When a guard mechanism must fire mid-dispatch (inside an already-running agent, between its own start and its own postflight), it structurally cannot be sited at a postflight or cycle-plan layer, because artifacts those layers build (e.g. a once-per-cycle contention manifest) are not guaranteed current or even present at that point. The two remaining candidate sites are: inline in the recipe/prompt itself (reachable immediately, but relies on every future author remembering to copy or point at it -- an interim measure at best), or inside the one shared script/chokepoint every recipe already calls (the durable fix, since it cannot be forgotten by a new caller). When auditing fifteen-plus near-identical recipe copies for a missing check, author the fix ONCE in a canonical, named location and have every other copy POINT at it by name rather than duplicating prose -- this avoids per-copy drift and makes a later mechanical uniformity audit (grep for the pointer/block name plus the flag) trivial.",
       "category": "PATTERN",
       "source_artifact": "specs/336_phase_commit_staging_has_no_scope_check/summaries/01_phase-commit-containment-self-check-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["mid-dispatch-guard-siting", "canonical-block-pointer", "uniformity-audit", "drift-avoidance", "recipe-duplication"]
+      "suggested_keywords": [
+        "mid-dispatch-guard-siting",
+        "canonical-block-pointer",
+        "uniformity-audit",
+        "drift-avoidance",
+        "recipe-duplication"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791352266_ecae58",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }

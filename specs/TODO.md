@@ -11,7 +11,7 @@ next_project_number: 356
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,336,338,342,345,347,349,351 | -- | core-agent-system, extensions, neovim, ... |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,273,275,281,303,335,344,350,352,354,355 | 22,251,271,272,280,284,311,345,349,351 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304,353 | 273,275,281,284,302,344,352 | core-agent-system, extensions, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
@@ -34,7 +34,6 @@ next_project_number: 356
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals... (see above)
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
-336 [PLANNED] — Rule on the in-dispatch phase-commit staging surface: fifteen...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
@@ -1347,12 +1346,13 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 336. Rule on the in-dispatch phase-commit staging surface: fifteen implementation agents commit with no file_scope check and no contended-path lease
-- **Status**: [PLANNED]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [336_phase_commit_staging_has_no_scope_check/reports/01_phase-commit-scope-check-ruling.md]
 - **Plan**: [336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md]
+- **Summary**: [336_phase_commit_staging_has_no_scope_check/summaries/01_phase-commit-containment-self-check-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**), per
 rules/source-store-deploy-boundary.md.
