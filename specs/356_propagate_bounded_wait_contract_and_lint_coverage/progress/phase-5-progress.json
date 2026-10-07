@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Extend the Lint Test Suite with Check H Fixtures",
+  "started_at": "2026-10-07T10:45:00Z",
+  "last_updated": "2026-10-07T11:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add BOUNDED_WAIT_FRAGMENT_SRC constant and copy fragment into scratch tree", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"]},
+    {"id": 2, "description": "Define BOUNDED_WAIT_MUST_LINE / BOUNDED_WAIT_MUSTNOT_LINE constants", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"]},
+    {"id": 3, "description": "Conforming positive fixture (cslib), missing-bullet negative fixture (nvim), near-miss paraphrase fixture (z3)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"]},
+    {"id": 4, "description": "Exclusion-list assertion (lean) and fragment-missing assertion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"]},
+    {"id": 5, "description": "Keep shellcheck clean (zero new findings) and exit contract", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

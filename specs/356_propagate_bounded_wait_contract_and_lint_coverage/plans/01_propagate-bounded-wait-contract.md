@@ -370,41 +370,46 @@ naming the new check, and do not reuse D.
 
 ---
 
-### Phase 5: Extend the Lint Test Suite with Check H Fixtures [NOT STARTED]
+### Phase 5: Extend the Lint Test Suite with Check H Fixtures [COMPLETED]
 
 **Goal**: Prove, by fixture, that the lint FAILS when the bullet is absent and when it is merely
 paraphrased, and PASSES when it is verbatim — satisfying the acceptance bullet without relying on
 a one-off manual experiment.
 
 **Tasks**:
-- [ ] Re-read `core/scripts/tests/test-lint-agent-contracts.sh` (Check G's three-fixture shape is
+- [x] Re-read `core/scripts/tests/test-lint-agent-contracts.sh` (Check G's three-fixture shape is
       the template).
-- [ ] Add `BOUNDED_WAIT_FRAGMENT_SRC="$SCRIPT_DIR/../../context/patterns/bounded-build-waiter.md"`
+- [x] Add `BOUNDED_WAIT_FRAGMENT_SRC="$SCRIPT_DIR/../../context/patterns/bounded-build-waiter.md"`
       with the existing `if [ ! -f ... ]` pre-flight guard, create
       `$WORKDIR/agent-system/extensions/core/context/patterns/`, and copy the fragment in — the
       main scratch tree must carry it or Check H degrades to the fragment-missing branch and the
       per-fixture assertions become meaningless.
-- [ ] Define `BOUNDED_WAIT_MUST_LINE` and `BOUNDED_WAIT_MUSTNOT_LINE` shell constants holding the
+- [x] Define `BOUNDED_WAIT_MUST_LINE` and `BOUNDED_WAIT_MUSTNOT_LINE` shell constants holding the
       two canonical bullet texts, mirroring the existing `BULLET_LINE` / `OWNERSHIP_BULLET_LINE`
       convention.
-- [ ] Conforming positive fixture: add both bullets to the existing
+- [x] Conforming positive fixture: add both bullets to the existing
       `cslib/agents/cslib-implementation-agent.md` fixture (already in Check H's in-scope set, and
       already asserted to produce no FAIL) — assert an explicit named Check H PASS line for it,
       and that it still produces no FAIL at all.
-- [ ] Missing-bullet negative fixture: add a new `nvim/agents/neovim-implementation-agent.md`
+- [x] Missing-bullet negative fixture: add a new `nvim/agents/neovim-implementation-agent.md`
       fixture, otherwise compliant (carrying `BULLET_LINE`, `OWNERSHIP_BULLET_LINE`, and
       `ARTIFACTS_TEMPLATE_BLOCK`) but with neither bounded-wait bullet — assert a named Check H
       FAIL for it.
-- [ ] Near-miss paraphrase fixture: add a new `z3/agents/z3-implementation-agent.md` fixture,
+- [x] Near-miss paraphrase fixture: add a new `z3/agents/z3-implementation-agent.md` fixture,
       otherwise compliant, carrying a plausible-looking paraphrase ("never background a build and
       wait for a notification") instead of the verbatim text — assert it still FAILs Check H,
       proving the match is verbatim rather than loose.
-- [ ] Exclusion-list assertion: assert the existing `lean/agents/lean-implementation-agent.md`
+- [x] Exclusion-list assertion: assert the existing `lean/agents/lean-implementation-agent.md`
       fixture produces **no** Check H FAIL, proving the recorded exclusions are honored.
-- [ ] Fragment-missing assertion: in the existing bare `FRAGDIR` tree, assert
+- [x] Fragment-missing assertion: in the existing bare `FRAGDIR` tree, assert
       `Check H: canonical fragment not found` appears — Check H must fail loudly by name, never
       silently pass, when `bounded-build-waiter.md` is absent.
-- [ ] Keep the test script shellcheck-clean and keep its exit contract (0 all-pass / 1 any-fail).
+- [x] Keep the test script shellcheck-clean and keep its exit contract (0 all-pass / 1 any-fail).
+      *(completed: zero NEW shellcheck findings from this task's edits, verified by adding
+      `# shellcheck disable=SC2016` to the two new backtick-containing constants and diffing
+      against the pre-existing baseline, which already carries two untouched info-level findings
+      (SC2329 on `cleanup`, SC2016 on `OWNERSHIP_BULLET_LINE`) predating this task; exit contract
+      confirmed 0 all-pass (32 passed, 0 failed))*
 
 **Timing**: 1.0 hours
 

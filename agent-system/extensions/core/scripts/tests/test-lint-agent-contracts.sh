@@ -31,6 +31,7 @@ FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/no-task-references-bullet.md"
 ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifacts-template.md"
 STATUS_LIB_SRC="$SCRIPT_DIR/../lib/return-meta-status-vocabulary.sh"
 PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/plan-status-ownership.md"
+BOUNDED_WAIT_FRAGMENT_SRC="$SCRIPT_DIR/../../context/patterns/bounded-build-waiter.md"
 
 PASSED=0
 FAILED=0
@@ -59,6 +60,10 @@ if [ ! -f "$PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" ]; then
   echo "ERROR: expected canonical fragment at $PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" >&2
   exit 1
 fi
+if [ ! -f "$BOUNDED_WAIT_FRAGMENT_SRC" ]; then
+  echo "ERROR: expected canonical fragment at $BOUNDED_WAIT_FRAGMENT_SRC" >&2
+  exit 1
+fi
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
@@ -69,13 +74,19 @@ mkdir -p "$WORKDIR/agent-system/extensions/core/agents"
 mkdir -p "$WORKDIR/agent-system/extensions/core/context/contracts"
 mkdir -p "$WORKDIR/agent-system/extensions/core/docs/reference/standards"
 mkdir -p "$WORKDIR/agent-system/extensions/core/scripts/lib"
+mkdir -p "$WORKDIR/agent-system/extensions/core/context/patterns"
 cp "$FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
 cp "$ARTIFACTS_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
 cp "$STATUS_LIB_SRC" "$WORKDIR/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
 cp "$PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/contracts/plan-status-ownership.md"
+cp "$BOUNDED_WAIT_FRAGMENT_SRC" "$WORKDIR/agent-system/extensions/core/context/patterns/bounded-build-waiter.md"
 
 BULLET_LINE='Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead'
 OWNERSHIP_BULLET_LINE='Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent'"'"'s plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items'
+# shellcheck disable=SC2016
+BOUNDED_WAIT_MUST_LINE='Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md'"'"'s canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool'"'"'s own ceiling'
+# shellcheck disable=SC2016
+BOUNDED_WAIT_MUSTNOT_LINE='Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness'"'"'s own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it'
 
 # A correctly-shaped artifacts template, used by every fixture that should PASS Check F (i.e.
 # every fixture not specifically testing a Check F violation). Wrapped in a status-carrying
@@ -180,6 +191,13 @@ EOF
 # check compares against the fragment text, not a loose pattern). Both use real
 # OWNERSHIP_IN_SCOPE_RELATIVE_PATHS entries other than general-implementation-agent.md (already
 # exercised above as the "missing bullet" negative case for both Check C and Check G).
+#
+# The cslib-implementation-agent.md fixture also now carries BOUNDED_WAIT_MUST_LINE and
+# BOUNDED_WAIT_MUSTNOT_LINE, serving double duty as Check H's conforming positive fixture (it is
+# a real BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS entry). The lean-implementation-agent.md fixture
+# below carries neither bounded-wait bullet; it is a real exclusion-list entry for Check H
+# (lean/agents/lean-implementation-agent.md), so it must produce no Check H FAIL despite lacking
+# the bullet pair entirely -- see the exclusion-list assertion below.
 # =====================================================================
 mkdir -p "$WORKDIR/agent-system/extensions/cslib/agents"
 mkdir -p "$WORKDIR/agent-system/extensions/lean/agents"
@@ -199,10 +217,14 @@ $ARTIFACTS_TEMPLATE_BLOCK
 
 ## Critical Requirements
 
+**MUST**:
+1. $BOUNDED_WAIT_MUST_LINE
+
 **MUST NOT**:
 1. Do the wrong thing
 2. $BULLET_LINE
 3. $OWNERSHIP_BULLET_LINE
+4. $BOUNDED_WAIT_MUSTNOT_LINE
 EOF
 
 cat > "$WORKDIR/agent-system/extensions/lean/agents/lean-implementation-agent.md" <<EOF
@@ -223,6 +245,60 @@ $ARTIFACTS_TEMPLATE_BLOCK
 **MUST NOT**:
 1. Do the wrong thing
 2. Never hand-edit the plan's Status metadata field -- that belongs to update-plan-status.sh
+EOF
+
+# =====================================================================
+# Check H fixtures (added alongside Check H's implementation): a missing-bullet negative fixture
+# (otherwise compliant, carrying BULLET_LINE/OWNERSHIP_BULLET_LINE/ARTIFACTS_TEMPLATE_BLOCK, but
+# neither bounded-wait bullet -> FAILs Check H by name) and a near-miss paraphrase fixture
+# (otherwise compliant, carrying a plausible-looking paraphrase instead of the verbatim text ->
+# still FAILs, proving the match is verbatim rather than loose). Both use real
+# BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS entries.
+# =====================================================================
+mkdir -p "$WORKDIR/agent-system/extensions/nvim/agents"
+mkdir -p "$WORKDIR/agent-system/extensions/z3/agents"
+
+cat > "$WORKDIR/agent-system/extensions/nvim/agents/neovim-implementation-agent.md" <<EOF
+---
+name: neovim-implementation-agent
+description: fixture standing in for the real neovim-implementation-agent, carrying neither bounded-wait bullet
+model: sonnet
+---
+
+# Neovim Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+2. $BULLET_LINE
+3. $OWNERSHIP_BULLET_LINE
+EOF
+
+cat > "$WORKDIR/agent-system/extensions/z3/agents/z3-implementation-agent.md" <<EOF
+---
+name: z3-implementation-agent
+description: fixture standing in for the real z3-implementation-agent, carrying a near-miss paraphrase instead of the verbatim bounded-wait bullet pair
+model: sonnet
+---
+
+# Z3 Implementation Agent
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
+## Critical Requirements
+
+**MUST NOT**:
+1. Do the wrong thing
+2. $BULLET_LINE
+3. $OWNERSHIP_BULLET_LINE
+4. Never background a build and wait for a notification
 EOF
 
 # =====================================================================
@@ -688,6 +764,49 @@ else
 fi
 
 # =====================================================================
+# Check H assertions
+# =====================================================================
+
+# (a) Negative/positive: cslib-implementation-agent.md fixture (now carrying both bounded-wait
+# bullets) produces no FAIL at all, and explicitly passes Check H by name.
+if echo "$out" | grep -F "cslib/agents/cslib-implementation-agent.md" | grep -q "FAIL"; then
+  fail "(a) negative: cslib-implementation-agent.md fixture unexpectedly failed a check (Check H conforming fixture)"
+else
+  pass "(a) negative: cslib-implementation-agent.md fixture produces no FAIL against it (Check H conforming fixture)"
+fi
+if echo "$out" | grep -qF "cslib/agents/cslib-implementation-agent.md: carries the bounded-wait contract bullet pair"; then
+  pass "(a) positive: cslib-implementation-agent.md fixture explicitly passes Check H"
+else
+  fail "(a) positive: expected an explicit Check H PASS line for cslib-implementation-agent.md, not found in output"
+fi
+
+# (b) Positive: neovim-implementation-agent.md fixture (neither bounded-wait bullet) fails
+# Check H by name.
+if echo "$out" | grep -qF "nvim/agents/neovim-implementation-agent.md: missing the bounded-wait MUST/MUST-NOT bullet pair"; then
+  pass "(b) positive: neovim-implementation-agent.md fixture fails Check H (missing bullet pair)"
+else
+  fail "(b) positive: expected Check H failure for neovim-implementation-agent.md, not found in output"
+fi
+
+# (c) Positive: z3-implementation-agent.md fixture (near-miss paraphrase, not the verbatim
+# bullet pair) still FAILs -- proves Check H compares against the fragment text, not a loose
+# pattern.
+if echo "$out" | grep -qF "z3/agents/z3-implementation-agent.md: missing the bounded-wait MUST/MUST-NOT bullet pair"; then
+  pass "(c) positive: z3-implementation-agent.md near-miss paraphrase fixture fails Check H"
+else
+  fail "(c) positive: expected Check H failure for z3-implementation-agent.md near-miss fixture, not found in output"
+fi
+
+# (d) Exclusion-list assertion: lean-implementation-agent.md fixture (a real Check H exclusion,
+# carrying neither bounded-wait bullet) produces NO Check H FAIL -- proves the recorded
+# exclusions are honored even though the file genuinely lacks the bullet pair.
+if echo "$out" | grep -qF "lean/agents/lean-implementation-agent.md: missing the bounded-wait MUST/MUST-NOT bullet pair"; then
+  fail "(d) exclusion-list: lean-implementation-agent.md fixture unexpectedly failed Check H (should be excluded)"
+else
+  pass "(d) exclusion-list: lean-implementation-agent.md fixture produces no Check H FAIL (recorded exclusion honored)"
+fi
+
+# =====================================================================
 # Fragment-missing fixture: Check C must fail loudly, by name, when the fragment file itself
 # is absent -- never a silent skip.
 # =====================================================================
@@ -721,6 +840,14 @@ if echo "$frag_out" | grep -qF "Check G: canonical fragment not found"; then
   pass "(d) fragment-missing: Check G fails loudly by name when plan-status-ownership.md is absent"
 else
   fail "(d) fragment-missing: expected a named Check G fragment-missing failure, not found in output"
+fi
+
+# (e) Fragment-missing fixture: Check H must ALSO fail loudly by name (never a silent pass) when
+# bounded-build-waiter.md specifically is absent from the same bare scratch tree.
+if echo "$frag_out" | grep -qF "Check H: canonical fragment not found"; then
+  pass "(e) fragment-missing: Check H fails loudly by name when bounded-build-waiter.md is absent"
+else
+  fail "(e) fragment-missing: expected a named Check H fragment-missing failure, not found in output"
 fi
 
 # =====================================================================
