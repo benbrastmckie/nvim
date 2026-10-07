@@ -14,7 +14,7 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**40 open tasks**: 20 ready, 19 blocked, 1 held. If that stops matching `state.json`, this file has
+**40 open tasks**: 18 dispatchable, 19 blocked by an in-repo edge, 2 externally blocked (349, 350 — see Next), 1 held (342). If that stops matching `state.json`, this file has
 drifted — it is hand-derived until **306** makes it generated.
 
 ## Gate state
@@ -52,7 +52,16 @@ drifted — it is hand-derived until **306** makes it generated.
 
 ## Next
 
-The priority set is **351, 355, 349, 345, 302**, then the standing **280/311/344** group.
+The priority set is **351, 336, 355, 345, 302**, then the standing **280/311/344** group.
+
+**349 and 350 are out of the near-term set**, despite 349 reading `ready` here. 349's own
+description records a cross-repository prerequisite: the approval mechanism it drives lives in
+Logos/Verification under the slug `owner_labeled_agent_assisted_approvals`, and "until that task
+lands there is no honest value for this command to write." That task was **`not_started` when
+checked on 2026-10-07**. 350 depends on 349, so both are externally blocked. **No dependency edge
+can express this** — task numbers do not carry across repositories — so the in-repo graph cannot
+see it. Check that slug's status in `~/Projects/Logos/Verification/specs/state.json` before
+dispatching either.
 
 **A batch may carry dependency edges between its own members, and should.** Wave dispatch
 re-derives eligibility every cycle from the batch's own `dependency_graph`, so an edge between two
@@ -61,9 +70,9 @@ to width 1 is a correct batch. The calls below are grouped by what belongs toget
 run concurrently — see Settled decision 17.
 
 ```
+/orchestrate 302, 336, 351   # one wave: three ready core-safety tasks, disjoint scopes
 /orchestrate 351, 355        # two waves: [351] then [355]
 /orchestrate 345, 354        # two waves; edge added 2026-10-07 on bounded-build-waiter.md
-/orchestrate 349, 350        # two waves; fill 349's empty file_scope FIRST
 /orchestrate 284, 302        # one wave
 /orchestrate 280, 311, 344   # two waves: [280, 311] then [344]
 /orchestrate 352, 353        # two waves; only after 351
@@ -81,9 +90,12 @@ Why this order, and what each one unblocks:
   (`pre=11 post=2 new=0`) and so passed a batch that introduced a brand-new hard failure, because
   the count fell for unrelated reasons. A count cannot distinguish "fixed nine" from "introduced
   one while fixing ten".
-- **349** — `/approve` as one interactive question instead of a terminal round-trip. Unblocked by
-  300. **Declares an empty `file_scope`**: fill it before dispatching, or its overlap with every
-  other task is unmeasurable, including whether it needs an edge at all. Gates **350**.
+- **336** — the in-dispatch phase-commit staging surface: fifteen implementation agents share one
+  `git-commit-scoped.sh` recipe, none passes `--task`, so the V5 contended-path lease is never
+  consulted and no `file_scope` comparison happens anywhere. **This is where the only observed
+  out-of-scope commit actually happened.** Four of its fifteen files are the books and lean
+  implementation agents, so it is also the only dispatchable work that materially touches that
+  surface. Complements **302**, which covers the command and skill staging sites on disjoint files.
 - **345** — bound the no-op spin to a contract with a single writer. Unblocked by 343, whose work it
   continues directly. Now gates **354**.
 - **302** — pass `--task` at commit-staging sites to engage the contended-path lease. Unblocked by
@@ -116,6 +128,7 @@ Then the unblocking plays, highest leverage first: **284** (frees 335 and feeds 
 ## Open work
 
 One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
+`EXT-BLOCKED` means a prerequisite in ANOTHER repository that no in-repo edge can express.
 
 **Orchestrator (18)**
 ```
@@ -145,7 +158,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 284 ready            exempt a task's own directory from the file_scope excursion advisory
 306 ready            make ROADMAP.md a generated artifact
 318 ready            wire lint-directory-pathspec-boundary.sh in as a numbered gate
-336 ready            in-dispatch phase-commit staging: 15 agents, no file_scope check, no lease
+336 ready            in-dispatch phase-commit staging: 15 agents, no file_scope check, no lease   <- priority
 338 ready            sweep task support files: tracked or ignored
 170 blocked:251      isolate shell test suites from ambient host state (memory, timing)
 281 blocked:280      repo-wide record-versioning lint, blocking/advisory split
@@ -166,8 +179,8 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 
 **Extensions (6)**
 ```
-349 ready            /approve as one interactive question, not a terminal round-trip   <- priority
-350 blocked:349      offer the owner the review path when an approval is needed
+349 EXT-BLOCKED      /approve as one interactive question, not a terminal round-trip
+350 blocked:349      offer the owner the review path when an approval is needed (also EXT-BLOCKED)
 353 blocked:352      typst: stderr-into-JSON corruption; presence-vs-density check overlap
 29  blocked:22       generate .mcp.json from extension manifests; register obsidian-memory
 342 HOLD             books context corpus refactor — see below
@@ -288,6 +301,10 @@ corpus against a premise the convention record contradicts.
   present.** `generate-task-order.sh --goal` writes it; `generate-todo.sh` drops it and never reads
   `active_goal` from `state.json`. So `active_goal` is write-only and the displayed goal is
   permanently blank. Belongs with **306**.
+- **Nothing represents a cross-repository prerequisite.** Task numbers do not carry across repos, so
+  a task gated on work in another repository reads `ready` in this graph and can only be caught by
+  reading its own description. 349 and 350 are the live instance. `validate-state.sh` cannot check
+  it and `orchestrate-predispatch-review.sh` cannot see it.
 - **No mechanism prevents a vault operation from leaving edges pointing at renumbered tasks**, and
   `validate-state.sh` does not check it. Today's 14 such edges all resolve as archived-satisfied, so
   nothing is frozen — but the 2026-08-10 reset did freeze 4 tasks until cleared by hand 2026-10-05.
