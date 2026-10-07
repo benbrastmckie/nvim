@@ -51,13 +51,19 @@ drifted — it is hand-derived until **306** makes it generated.
 
 ## Next
 
-**343 is in flight** (`researching`). The priority set is **300, 343, 346, 349, 342**, in that
-dependency order:
+**343 is in flight** (`researching`). The priority set is **300, 343, 346, 349, 344, 342**.
+
+**A batch may carry dependency edges between its own members, and should.** Wave dispatch
+re-derives eligibility every cycle from the batch's own `dependency_graph`, so an edge between two
+members sequences them inside one invocation instead of excluding either. A batch that serializes
+to width 1 is a correct batch. So the calls below are grouped by what belongs together, not by what
+can run concurrently — see Settled decision 17.
 
 ```
-/orchestrate 300, 343, 346   # admits clean as one batch, measured 2026-10-07: 0 deferred, 0 blocked
-/orchestrate 349             # only after 300 lands — 349 declares dependencies:[300]
-/orchestrate 346             # if not taken in the batch above; 342 is queued behind it
+/orchestrate 300, 343, 346        # one wave: measured 2026-10-07, 0 deferred, 0 blocked
+/orchestrate 280, 311, 344        # two waves: [280, 311] then [344], measured 2026-10-07
+/orchestrate 346, 342             # two waves, ONLY once 342's stamp lands — see the hold note
+/orchestrate 300, 349             # two waves: [300] then [349]
 ```
 
 Why this order, and what each one unblocks:
@@ -72,19 +78,29 @@ Why this order, and what each one unblocks:
   wrong rather than honestly absent. Correctness-now, and **342** is queued behind it.
 - **349** — `/approve` as one interactive question instead of a terminal round-trip. Blocked by
   **300** by construction: it needs AskUserQuestion to work in a dispatched subagent.
+- **344** — carries the batching-by-default doctrine to the point of use and makes a territory
+  overlap produce a serializing edge rather than a separation. It is the task that makes decision
+  17 below standard instead of a per-invocation instruction, and its Item 6 mechanizes the
+  edge-backfill that is currently a hand `state-write.sh` call. Gates **274** and **312**.
+  **Run it with 280 and 311 in one invocation** — that is its own dogfood constraint, not a
+  convenience: filing it to run alone would reproduce the defect it exists to fix.
 - **342** — held, and **not liftable by an agent**; see the hold note below.
 
-Scheduling constraints that bite:
-- **342 must follow 346**, and the edge is now declared (`342 -> dependencies:[340,341,346]`)
-  because collision detection could not have found it. 346 declares
+Scheduling notes:
+- **342 follows 346 by declared edge** (`342 -> dependencies:[340,341,346]`), which is the
+  decision-17 move rather than a "never with" note. The edge was necessary because collision
+  detection could not have found it: 346 declares
   `context/project/books/standards/observation-record.md`, which falls inside 342's glob-shaped
-  `context/project/books/**` — and a glob entry is invisible to overlap-based detection. Without
-  the edge, the two could have been co-scheduled onto the same file with no advisory raised.
+  `context/project/books/**`, and a glob entry is invisible to overlap-based detection. Unordered,
+  the two could have shared a wave and written the same file with no advisory raised.
+- **Nothing depends on 342**, so queuing it behind 346 parks no other work. That check is the
+  decision-17 carve-out and must be made before adding any edge onto a held or owner-blocked task.
 - **349 declares an empty `file_scope`.** Fill it before dispatching: an empty array is a
   visibility warning now and an admission-posture question at dispatch, and it makes 349's
-  overlap with every other task unmeasurable.
+  overlap with every other task unmeasurable — including whether it needs an edge at all.
 - **300's `scripts/tests/` declaration now overlaps 16 tasks** (was 13 — it grows as the backlog
-  does). Narrow it before co-scheduling 300 with anything outside this set.
+  does). This is the one case where narrowing beats edging: 17 tasks cannot be one mandatory group
+  under `MAX_TASKS=8`, so the edge move does not scale here. 344's Item 3 owns the general rule.
 
 Then the unblocking plays, highest leverage first: **284** (frees 335 and feeds 304), **251**
 (frees 170, which frees 328), **318** and **271**.
@@ -107,7 +123,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 302 blocked:300      pass --task at commit-staging sites to engage the contended-path lease
 303 blocked:271      validate-state.sh default must resolve against the repo, not CWD
 345 blocked:343      make the no-op spin a bound contract with a single writer
-344 blocked:280,311  carry the batching-by-default doctrine to the point of use
+344 blocked:280,311  carry the batching-by-default doctrine to the point of use   <- priority
 274 blocked:272,273,275,344   next-admissible-batch suggestion and alternatives-on-conflict
 312 blocked:282,300,344       backlog reconciliation as a required task-creation component
 304 blocked:273,284,302       one out-of-repo pathspec aborts staging; callers sink nonzero exits
@@ -186,7 +202,10 @@ the stamp lands would refactor the corpus against a premise the convention recor
 6. **A linear chain of small tasks serializing on one file is one task with phases.** Apply at
    creation time.
 7. **`file_scope` warnings are live input, not noise.** In-batch collisions block; cross-batch ones
-   are advisory.
+   are advisory. The blocking half is right and is not weakened by decision 17: an *unordered*
+   overlapping pair would share a wave and write concurrently, so the refusal is correct. The
+   remedy is to order the pair with an edge, which moves them into successive waves and makes the
+   batch admissible — not to drop one of them from the batch.
 8. **Rule before mechanism** for the vimtex hazard. Re-file a mechanism task only if the rule proves
    insufficient.
 9. **Skeleton plans terminate through the completion-claim gate.** No `pr_ready` routing outside
@@ -212,6 +231,23 @@ the stamp lands would refactor the corpus against a premise the convention recor
     defects.** Duplication, dead code and slow tests never break anything, so defect-driven intake
     cannot see them. 328 is the standing consumer of `script-inventory.sh`; 307, 308 and 270 were
     abandoned into it.
+17. **A batch may carry dependency edges between its own members, and an unordered territory
+    overlap is resolved by adding the edge, not by separating the pair** (owner ruling).
+    Wave dispatch re-derives eligibility every cycle from the batch's own `dependency_graph`, so an
+    intra-batch edge sequences its two members inside one invocation. Serializing to width 1 is a
+    correct outcome: the property defended is collision visibility and correct ordering, never
+    wall-clock. Consequences, all binding on this file as well as on an agent composing a call:
+    a **"never with" note is not an acceptable rendering** of an overlap — pick an order and record
+    the edge; and a bare exclusion must never stand in for an edge that was simply not added.
+    **Two carve-outs.** (a) *Owner-blocked predecessor*: if the would-be predecessor cannot
+    progress — held, owner-gated, or `PARTIAL` behind something no task can unblock — separation is
+    correct and the reason is stated, because an edge would park live work behind a permanent
+    stall. Check what depends on the target before edging onto it. (b) *Breadth*: a coarse shared
+    path (a manifest, a root gate script, a directory-root scope) can make rule 1 demand a group
+    larger than `MAX_TASKS=8`, which the cap then silently trims; there, narrow the `file_scope`
+    instead. **344 is the task that carries this to the point of use** and mechanizes the edge
+    backfill; until it lands, the edge is added by hand via `state-write.sh` and the acyclicity
+    confirmed with `validate-state.sh --deep`.
 
 ## Standing rules
 
