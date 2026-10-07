@@ -11,9 +11,9 @@ next_project_number: 366
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,347,349,351,356,358,361,364 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,272,273,281,303,335,344,345,350,352,355,360,362,363,365 | 22,251,271,280,284,311,349,351,356,358,361,364 | core-agent-system, extensions, orchestrator, ... |
-| 3 | 275,282,304,353,354,359 | 272,273,281,284,302,345,350,352,356 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,349,351,356,358,361,364 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,272,273,281,303,335,344,345,347,350,352,355,360,362,363,365 | 22,251,271,280,284,311,349,351,356,358,361,364 | core-agent-system, extensions, orchestrator, ... |
+| 3 | 275,282,304,353,354,359 | 272,273,281,284,302,345,350,352,356,364 | core-agent-system, extensions, orchestrator |
 | 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -36,6 +36,7 @@ next_project_number: 366
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 364 [NOT STARTED] — Resolve hook registration paths independently of session CWD...
+  └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning... (see above)
   └─ 365 [NOT STARTED] — Lint forbidding CWD-relative .claude/ paths in hook...
 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
@@ -71,13 +72,13 @@ next_project_number: 366
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
     └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 351 [NOT STARTED] — Repair the IDENTICAL DISPATCH HALT mechanism in...
   └─ 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
     └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
   └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
 345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
+347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 
 ### Agent System
 
@@ -139,6 +140,33 @@ ACCEPTANCE CRITERIA:
   3. It is wired into verify-deploy.sh and runs in that suite.
   4. Its fixture test covers both the passing and the violating case.
   5. A deliberately absent or broken lint library causes a nonzero exit, not a silent pass.
+
+--- REVISION (added after review): COVER MARKDOWN REGISTRATION TEMPLATES ---
+
+The scope above lints settings SURFACES only. Four source-store markdown files carry copy-paste
+hook REGISTRATION templates in the defective CWD-relative form, and a settings-only lint leaves
+every one of them unguarded:
+  - nvim/context/project/neovim/guides/neovim-integration.md
+  - nvim/context/project/neovim/guides/tts-stt-integration.md
+  - nvim/context/project/neovim/hooks/wezterm-integration.md
+  - core/context/troubleshooting/workflow-interruptions.md
+
+The upstream task fixes these four files' current contents. This task must keep them fixed: extend
+the lint to detect a `"type": "command"` / `"command": "bash .claude/..."` registration template
+appearing inside a fenced JSON block in source-store markdown, so documentation cannot drift back
+to teaching the defective shape after the upstream fix lands.
+
+MUST NOT FALSE-POSITIVE (verified live instance): core/scripts/tests/test-please-grant.sh line 222
+invokes a hook by a relative path inside an explicit ( cd "$repo" && ... ) subshell. That is
+correct by construction, not a violation. The lint must distinguish a REGISTRATION (a settings
+command string, or a markdown template of one) from a DIRECT INVOCATION made under an explicit
+cd -- and the fixture suite must include this exact shape as a passing case, so a later widening
+of the lint cannot start flagging it.
+
+ADDITIONAL ACCEPTANCE CRITERIA:
+  6. The lint fails, naming file and line, on a defective registration template inside a fenced
+     JSON block in source-store markdown.
+  7. The fixture suite includes the explicit-cd direct-invocation shape as a PASSING case.
 
 ---
 
@@ -246,6 +274,71 @@ PRE-RESEARCH EVIDENCE: reports/01_cwd-relative-hook-paths.md captures the live r
 affected-surface inventory with file and line numbers, the fail-open analysis, and the open
 CLAUDE_PROJECT_DIR question. It is a reporting-session evidence capture, not a completed research
 report.
+
+--- REVISION (added after review): INSTALL-ONCE PROPAGATION GAP ---
+
+Two of this task's five file_scope entries CANNOT reach an already-deployed consumer repo. As
+originally written this task could pass fully green while leaving every existing repo broken.
+
+lua/neotex/plugins/ai/shared/extensions/loader.lua's INSTALL_ONCE_ROOT_FILES table makes
+settings.json and settings.local.json install-once: "copied only when no project copy exists yet,
+never overwritten on subsequent loads/reloads". verify.lua exempts both from content-hash parity
+for the same stated reason. This is DELIBERATE -- a hand-edited project settings file must survive
+reload -- and is NOT a defect for this task to fix.
+
+Consequence, per file_scope entry:
+  - core/merge-sources/settings-hooks.json  -- PROPAGATES on every resync
+  - email/settings-fragment.json            -- PROPAGATES on every resync
+  - books/settings-hooks.json               -- PROPAGATES on every resync
+  - core/root-files/settings.json           -- INSTALL-ONCE: reaches FRESH deploys only
+  - core/root-files/settings.local.json     -- INSTALL-ONCE: reaches FRESH deploys only
+
+So editing root-files/settings.json does NOT fix the consumer repo where this defect was actually
+reproduced (/home/benjamin/Philosophy/Papers/PossibleWorlds): its .claude/settings.json already
+exists and a resync will never overwrite it.
+
+SECOND-ORDER HAZARD (sharpens research question 2 rather than replacing it): merge.lua's
+deep_merge APPENDS hook-event arrays and adds scalars only "if not exists". On a resync into an
+EXISTING repo, the FIXED registration from the merge source would therefore be appended ALONGSIDE
+the surviving BROKEN one from the install-once settings.json -- duplicate registrations for the
+same hook, both firing, the broken one still failing open. Resolve research question 2's dedup
+check against this concrete existing-repo case, not only against the source-store pair.
+
+REQUIRED ADDITIONAL SCOPE:
+  - Rule on and implement a MIGRATION PATH for already-deployed repos. Options to evaluate (not a
+    pre-commitment): a one-shot migration that rewrites hook commands in an existing
+    .claude/settings.json in place; relocating the affected registrations out of root-files into a
+    merge source so they propagate by the normal path; or an explicit operator step documented and
+    surfaced by verify-deploy. Record the ruling WITH ITS REASON.
+  - State explicitly whether root-files/settings.json should carry hook registrations AT ALL,
+    given that install-once semantics make any future hook fix there unreachable by redeploy.
+  - If the ruling produces a new migration script, declare its path in file_scope at plan time via
+    the existing plan-file-scope-harvest mechanism rather than leaving it undeclared.
+
+ADDITIONAL ACCEPTANCE CRITERIA (criterion 4 covers only a FRESH deploy and is insufficient alone):
+  5. An EXISTING deployed consumer repo whose .claude/settings.json predates the fix reaches the
+     corrected state by the migration path, demonstrated against a real pre-existing deploy and
+     not only against a fresh one.
+  6. No repo ends up carrying BOTH a broken and a fixed registration for the same hook after
+     migration; absence of duplicate registrations is asserted by test, not assumed.
+
+--- REVISION (added after review): DOCUMENTATION TEMPLATES CARRY THE DEFECT ---
+
+Four source-store markdown files contain copy-paste hook REGISTRATION templates in the defective
+CWD-relative form ("type": "command", "command": "bash .claude/hooks/..."):
+  - nvim/context/project/neovim/guides/neovim-integration.md
+  - nvim/context/project/neovim/guides/tts-stt-integration.md
+  - nvim/context/project/neovim/hooks/wezterm-integration.md
+  - core/context/troubleshooting/workflow-interruptions.md
+
+These are templates a future author copies verbatim. Left unfixed they reintroduce the defect by
+example, and the companion lint task's gate is scoped to settings surfaces, so markdown is not
+scanned there either. Update all four to whatever path shape this task settles on, in the same
+change, so the convention and its documentation never disagree.
+
+VERIFIED NOT AFFECTED -- do not "fix" it: core/scripts/tests/test-please-grant.sh line 222 invokes
+a hook by a relative path, but does so inside an explicit ( cd "$repo" && ... ) subshell, so it is
+correct by construction. It must not be rewritten, and a widened lint must not flag it.
 
 ---
 
@@ -1327,7 +1420,7 @@ A path that lets an agent approve without a person answering. The command's reas
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 364
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any
@@ -3506,7 +3599,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 280, Task 281
+- **Dependencies**: Task 280, Task 281, Task 364
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md).
