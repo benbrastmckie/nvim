@@ -1089,6 +1089,22 @@ A documented exclusion or an honest `partial` is an acceptable result of that re
 again with no artifacts is not. Only one re-prompt is owed: a second no-outcome return on the same
 dispatch is a genuine failure and takes the ordinary path.
 
+**Where this actually runs**: `skill-orchestrate/SKILL.md`'s Move 3 reads `stall_suspected` per
+row and, on the first occurrence for that task's current `dispatch_seq`, accumulates the task to
+`pending_stall_reprompt[]` instead of charging `failed_tasks` immediately — issuing no Agent call
+itself, since Move 2's "never interleaved with dispatch" rule and the Postflight Boundary both
+forbid that. Move 4's branch move then drains `pending_stall_reprompt[]` with a **batched stall
+re-prompt relay**, sited directly beside the existing batched `AskUserQuestion` relay (same
+"after every task's Move 3 has run this cycle" timing): one Agent call per queued task, re-using
+the same `subagent_type` the original dispatch used, carrying the four instructions above. After
+each relay call returns, the loop runs `orchestrate-cycle-postflight.sh` once more for that task
+and applies the ordinary verdict handling — `failed_tasks` is now reachable, since the re-prompt
+has been spent — then moves the entry from `pending_stall_reprompt[]` to `stall_reprompted[]`,
+keyed on `{task, dispatch_seq}`. That key is what bounds the obligation to exactly one re-prompt
+per dispatch: a second no-outcome return carrying the same `dispatch_seq` finds its key already
+present in `stall_reprompted[]` and falls straight through to the ordinary `failed_tasks` path on
+its next Move 3 pass, rather than being queued again.
+
 ---
 
 ## Loop-Owned Runtime State: `mt_state_file` Field Reference
@@ -1106,6 +1122,39 @@ Two invocation-scoped fields backing the inter-cycle redeploy checkpoint (full c
 Two more fields back the **forward-progress invariant** (full contract in `context/patterns/batch-orchestration-guardrails.md`'s "The Forward-Progress Invariant" subsection): `defer_ledger: []` (an append-only observation log of every per-cycle defer/exclusion event, entries shaped `{"task": <int>, "defer_reason": <string>, "collision_scope": <string|null>, "cycle": <int>, "detail": <string>}`, with one `defer_reason`-specific extension: a `"deploy_checkpoint"` entry reached via the confirmation/attribution filter pipeline (see `context/patterns/batch-orchestration-guardrails.md`'s "Confirmation and attribution filters" and "Gate depth" subsections) also carries `depth_disagreement: <bool>`, set `true` when `deploy-headless.sh`'s own `--skip-slow` verify passed yet the checkpoint's own (matching-depth, also `--skip-slow`) comparison still found a blocking finding -- EFFECTIVELY DEAD in real operation since the checkpoint's `deploy-headless.sh` call now always passes `--skip-verify` (see `context/patterns/regeneration-is-manual-only.md`'s `--skip-verify` subsection), so `deploy-headless.sh`'s own verify no longer runs at all on this path and this field is always `false` there; retained for the fixture test that exercises it directly and for the operational `--skip-verify` rollback path; never read by any eligibility/admission decision, not a fifth admission gate, additive to `deferred_self_modifying` and `deferred_deploy_checkpoint` rather than a replacement) and `detected_defects: []` (an append-only observation log of every system-defect detection that fired during the run; the single canonical definition of the field's contract across the whole engine, since there is only one engine file). `detected_defects` entries are shaped `{"task": <int>, "defect_class": <string>, "attributed_source_path": <string>, "detecting_site": <string>, "cycle": <int>, "detail": <string>, "record_result": <string|null>}`, and `task` is always populated. The append fires whenever the caller's own detection fires and is never gated on `system-defect-record.sh`'s exit code or a suppression value — the recorder's dedup key is cross-run, while this log answers "what fired during THIS run." Each append emits `[orchestrate] [system-defect:auto] queued for postflight summary — defect_class=<CLASS> attributed_path=<PATH> detecting_site=<SITE>` immediately, so a detection is never a silent no-op. **Absolute constraint**: no site in this mechanism may call `AskUserQuestion` — `orchestrator_mode` means no human is watching mid-run, so accumulate-then-render is the deterministic default (this is a distinct, unrelated mechanism from the `user_decision`/`AskUserQuestion` relay the loop's branch move performs; do not conflate the two). `detected_defects` is additive to `defer_ledger` and to `verify_deploy_baseline_notices`, never merged into either — three separate logs, three separate operator remedies. It is never consulted by `exit_status` branch selection: a batch that succeeded and also observed a defect is still a successful batch.
 
 `forward_progress_violated: false` — initialized false, computed and written once at the batch-postflight move from `dispatch_start_ts`; never read by any loop condition. `idle_overlap_ledger: []` — an append-only observation log of every admitted verdict a cycle carries with a non-empty `idle_overlap_advisory`, entries shaped `{"task": <int>, "colliding_task_number": <int>, "colliding_task_status": <string>, "overlapping_path": <string>, "cycle": <int>}`; follows `defer_ledger`'s exact MUST NOT — never read by any eligibility/admission decision, and never merged into `defer_ledger` since the candidates it names were admitted, not deferred.
+
+Three fields back the **stall re-prompt relay** (see "Abandoned Wrap-Up" above for the full
+mechanism): `pending_stall_reprompt: []` — written by Move 3 on a first-occurrence
+`stall_suspected`, entries shaped `{"task": <int>, "dispatch_seq": <int>, "phase": <string>,
+"agent": <string>, "cycle": <int>}` (`agent` is the `subagent_type` the original dispatch used,
+so Move 4's relay can re-dispatch to the same one); read and drained by Move 4's batched relay.
+`stall_reprompted: []` — written by Move 4 once its relay call and follow-up postflight have run
+for an entry, shaped `{"task": <int>, "dispatch_seq": <int>}`; read by Move 3's suppression guard
+to bound the obligation to exactly one re-prompt per `dispatch_seq`. `stall_ledger: []` — an
+append-only observation log of every `stall_suspected` occurrence, entries shaped `{"task":
+<int>, "dispatch_seq": <int>, "phase": <string>, "cycle": <int>}`, following `defer_ledger`'s
+exact MUST NOT: never read by any eligibility, admission, all-terminal, circuit breaker, or
+convergence check, and never merged into `defer_ledger` or `idle_overlap_ledger`.
+
+**Not to be conflated with IDENTICAL DISPATCH HALT**: `orchestrate-cycle-plan.sh`'s
+`identical_dispatch_streak`/`identical_dispatch_halted` mechanism is a near-synonymous but
+distinct guard. It is a **cross-cycle convergence guard**, keyed on the composed dispatch file's
+own content hash, answering "the same instructions keep being re-issued and nothing changes" —
+and it halts the task for the rest of the run after a second consecutive identical dispatch.
+`stall_suspected` is a **within-dispatch liveness signal**, answering "this one agent went idle
+mid-turn without finishing" — and it triggers exactly one re-prompt, never a halt. Neither
+substitutes for the other: a task can stall without ever producing an identical dispatch (it
+never returned to be compared), and a task can loop on identical dispatches without ever
+stalling (each dispatch returns cleanly, just with no new progress).
+
+**Related work, not relied on here.** A per-dispatch cost-and-timing record (recording wall-clock
+and token spend per dispatch for later analysis) would make a stall visible *after the fact*, in
+a retrospective report — but it neither prevents nor detects one at the time it happens, so it is
+not a substitute for `stall_suspected`. Cross-batch session liveness (detecting whether a
+concurrent `/orchestrate` invocation on the same repository is still alive) addresses a different
+axis entirely: liveness *between* separate batch invocations, not *within* a single dispatch's
+own turn. Both are complementary, independent concerns; neither is a dependency of the mechanism
+this section documents.
 
 ## Consolidated Output and Exit-Status Resolution
 

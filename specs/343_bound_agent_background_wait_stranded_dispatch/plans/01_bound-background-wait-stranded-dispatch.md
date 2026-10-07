@@ -390,7 +390,7 @@ above; report the measured ones in the phase's own verification output.
 
 ---
 
-### Phase 4: Record the three rulings and the signal's boundary [NOT STARTED]
+### Phase 4: Record the three rulings and the signal's boundary [COMPLETED]
 
 **Goal**: Put the scope item (3) ruling, the postflight/loop-level division of labour, the
 `dispatch_seq`-staleness signal's role and weakness, the `stall_suspected` boundary, and the
@@ -400,9 +400,9 @@ not re-derive any of it, and so the fields Phase 3 introduced are documented whe
 
 **Tasks**:
 
-- [ ] Re-read each of the four files immediately before editing; two of them are declared by
-      other non-terminal tasks.
-- [ ] `context/standards/postflight-tool-restrictions.md`: add to **Allowed Operations** that a
+- [x] Re-read each of the four files immediately before editing; two of them are declared by
+      other non-terminal tasks. *(completed)*
+- [x] `context/standards/postflight-tool-restrictions.md`: add to **Allowed Operations** that a
       read-only, count-only liveness or staleness probe is permitted during postflight —
       specifically a `git log --since` commit count scoped to the task directory, and an mtime /
       `dispatch_seq` read of `specs/{NNN}_*/.return-meta.json`. State why it is not the prohibited
@@ -410,21 +410,22 @@ not re-derive any of it, and so the fields Phase 3 introduced are documented whe
       Constraint holds, and it is a count/identity probe rather than verification or source
       analysis. Add the complementary ruling to the same file: **acting** on such a signal — the
       re-prompt — is a loop-level branch-move action, never a per-dispatch postflight action, and
-      a per-dispatch postflight body still MUST NOT issue a dispatch.
-- [ ] `docs/architecture/handoff-schema.md`, in or adjacent to **Readers MUST check freshness**:
+      a per-dispatch postflight body still MUST NOT issue a dispatch. *(completed)*
+- [x] `docs/architecture/handoff-schema.md`, in or adjacent to **Readers MUST check freshness**:
       record that an unfinished dispatch leaves `.return-meta.json` and
       `.orchestrator-handoff.json` carrying the **prior** dispatch's `dispatch_seq`, which makes a
       returned-but-stale-seq observation the cheapest and most direct stranded-dispatch signal.
       Then record its weakness plainly: a stale seq cannot distinguish an abandoned wrap-up from a
       dispatch that died instantly, so it is used for rejection and recovery attribution, never as
       the re-prompt trigger — that discrimination is `stall_suspected`'s commit-gated conjunction.
-- [ ] `docs/architecture/handoff-schema.md`, **Postflight Boundary** section: name the stall
+      *(completed)*
+- [x] `docs/architecture/handoff-schema.md`, **Postflight Boundary** section: name the stall
       re-prompt relay as a loop-level branch-move action sited beside the `AskUserQuestion` relay,
       so the section's "the per-dispatch postflight phase is limited to ..." enumeration stays
       accurate rather than silently contradicted by Phase 3's wiring. This is a clarification of
       where the action lives, not a sixth prohibited operation and not a second exception
-      alongside item 5's verbatim-recovery carve-out.
-- [ ] `scripts/orchestrate-cycle-postflight.sh`: update the `stall_suspected` contract comment in
+      alongside item 5's verbatim-recovery carve-out. *(completed)*
+- [x] `scripts/orchestrate-cycle-postflight.sh`: update the `stall_suspected` contract comment in
       the output-contract header and the field's own inline block. Name the now-real consumer site
       (the loop's Move 3 read plus the branch move's relay) in place of the present
       "the lead re-prompts" phrasing that describes an obligation nothing executed. Record the
@@ -433,25 +434,29 @@ not re-derive any of it, and so the fields Phase 3 introduced are documented whe
       correct, because a dispatch with zero commits has no committed work at stake. Record the
       ruling that the trigger is deliberately **not** widened with an OR against a stale
       `dispatch_seq`, because that would destroy the field's only discrimination. Comment-only:
-      change no executable line.
-- [ ] `docs/architecture/orchestrate-state-machine.md`: add `pending_stall_reprompt`,
+      change no executable line. *(completed: confirmed comment-only via
+      `git diff ... | grep -E '^\+' | grep -vE '^\+\s*#|^\+\+\+'` returning nothing)*
+- [x] `docs/architecture/orchestrate-state-machine.md`: add `pending_stall_reprompt`,
       `stall_reprompted`, and `stall_ledger` to the **Loop-Owned Runtime State: `mt_state_file`
       Field Reference** section, with `stall_ledger` carrying `defer_ledger`'s exact MUST NOT
       (never read by any eligibility/admission/convergence decision, never merged into another
       ledger). Update the **Loop obligation** subsection of "Abandoned Wrap-Up" to name the
       relay's actual site and the one-re-prompt-per-`dispatch_seq` key, replacing the unsited
-      "re-prompt the same dispatch once" prose.
-- [ ] `docs/architecture/orchestrate-state-machine.md`: add a short explicit non-conflation note
+      "re-prompt the same dispatch once" prose. *(completed)*
+- [x] `docs/architecture/orchestrate-state-machine.md`: add a short explicit non-conflation note
       distinguishing the two near-synonymous mechanisms — IDENTICAL DISPATCH HALT is
       `orchestrate-cycle-plan.sh`'s cross-cycle convergence guard, keyed on the composed dispatch
       file's content hash and answering "the same instructions keep being re-issued and nothing
       changes"; `stall_suspected` is a within-dispatch liveness signal answering "this one agent
-      went idle mid-turn without finishing." Neither substitutes for the other.
-- [ ] State the related-but-not-blocking relationships in deliverable prose by durable anchor
+      went idle mid-turn without finishing." Neither substitutes for the other. *(completed)*
+- [x] State the related-but-not-blocking relationships in deliverable prose by durable anchor
       only: the per-dispatch cost-and-timing record would make a stall visible after the fact but
       neither prevents nor detects one; the cross-batch session-liveness work addresses liveness
-      between concurrent batches, not within a single dispatch. Use no task numbers.
-- [ ] Verify no task number appears in any of the four files' added text.
+      between concurrent batches, not within a single dispatch. Use no task numbers. *(completed:
+      stated in orchestrate-state-machine.md's "Related work, not relied on here" paragraph,
+      durable-anchor only, no task numbers)*
+- [x] Verify no task number appears in any of the four files' added text. *(completed:
+      check-task-references.sh reports 0 occurrences)*
 
 **Timing**: 1 hour 15 minutes
 

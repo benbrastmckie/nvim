@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Record the three rulings and the signal's boundary",
+  "started_at": "2026-10-06T00:40:00Z",
+  "last_updated": "2026-10-06T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "postflight-tool-restrictions.md: allowed liveness/staleness probe + loop-level-not-postflight ruling", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/postflight-tool-restrictions.md"]},
+    {"id": 2, "description": "handoff-schema.md Readers MUST check freshness: stale dispatch_seq signal and its weakness", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 3, "description": "handoff-schema.md Postflight Boundary: name the stall relay's loop-level siting", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 4, "description": "orchestrate-cycle-postflight.sh: comment-only contract update naming the real consumer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "orchestrate-state-machine.md: document three new mt_state_file fields, site Loop obligation relay", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 6, "description": "orchestrate-state-machine.md: IDENTICAL DISPATCH HALT non-conflation note + related-but-not-blocking relationships", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

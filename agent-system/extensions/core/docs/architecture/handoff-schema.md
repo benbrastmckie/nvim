@@ -71,6 +71,21 @@ even when the mtime check alone would have passed. The mtime check is retained a
 of defense against a different hazard (a handoff silently restored from an old git commit); it is
 not itself sufficient against a woken predecessor.
 
+**A stale `dispatch_seq` is also the cheapest, most direct stranded-dispatch signal.** An
+unfinished dispatch — one that committed work and then ended its turn without writing its
+closing artifacts — leaves `.return-meta.json` and `.orchestrator-handoff.json` carrying the
+**prior** dispatch's `dispatch_seq`, not the current one. A returned-but-stale-seq observation is
+therefore a cheap, mechanical "this dispatch never finished wrap-up" signal, requiring no content
+read beyond the two small JSON files already read for this freshness check. Its weakness is
+equally plain, though: a stale seq cannot by itself distinguish an abandoned wrap-up (committed
+work on disk, worth a re-prompt) from a dispatch that died before doing anything at all (nothing
+worth recovering). For that reason it is used here for rejection and recovery attribution only,
+never as the trigger for a re-prompt — the signal that actually discriminates the two cases is
+`orchestrate-cycle-postflight.sh`'s `stall_suspected` field, a commit-gated conjunction (no
+outcome recovered, AND at least one commit landed for this task inside the dispatch window). See
+`docs/architecture/orchestrate-state-machine.md`'s "Abandoned Wrap-Up" section for the full
+mechanism `stall_suspected` backs.
+
 **Dual-Consumer Note**: `orchestrator_mode` has TWO independent consumers as of the
 sparse-literature-detection reconciliation (see `EXTENSION.md`'s "Sparse-Coverage Detection"
 section in the literature extension): (1) the handoff-write gate documented on this page
@@ -1021,6 +1036,15 @@ This is distinct from, and additive to, the Context Flatness Constraint (`docs/a
    write, edit, or synthesize report/plan/summary content by any other means.
 
 The per-dispatch postflight phase is limited to: reading the dispatch's `.orchestrator-handoff.json` (or the bounded return-meta/phase-marker recovery exceptions the Context Flatness doc names), driving the state-machine transition to the next stage, cleanup of temp/marker files, and the one named exception in item 5 above. `orchestrate-cycle-postflight.sh` is the sole implementation of this boundary for every task in a batch (including a batch of one) — there is no second, inline copy of this logic in `skill-orchestrate/SKILL.md` to keep in sync. `lint-postflight-boundary.sh` enforces that `skill-orchestrate/SKILL.md` carries a heading its heuristic can locate as this boundary's home; see that script's own header for the current heading pattern it matches.
+
+**Siting clarification, not a sixth item**: the batched stall re-prompt relay (re-dispatching a
+task whose `stall_suspected` signal fired) lives at `skill-orchestrate/SKILL.md`'s Move 4 branch
+move, beside its existing batched `AskUserQuestion` relay — a loop-level action, never something
+the per-dispatch postflight body (`orchestrate-cycle-postflight.sh`, or Move 3's per-row loop
+around it) performs itself. This is a statement of where an existing action lives, not a sixth
+prohibited operation and not a second exception alongside item 5's verbatim-recovery carve-out:
+the per-dispatch postflight still only computes and emits `stall_suspected`, exactly like
+`report_missing` above it; it issues no Agent call under any circumstance.
 
 Reference: `context/standards/postflight-tool-restrictions.md`.
 

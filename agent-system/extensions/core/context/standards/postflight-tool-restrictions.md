@@ -41,6 +41,14 @@ The postflight phase **MUST NOT** perform any work that belongs in the agent, in
 | `git add`, `git commit` | Commit changes |
 | `rm -f specs/{NNN}_*/.return-meta.json` | **`skill-spawn` only**: inline cleanup of the metadata file, since `/spawn` has no `command-gate-out.sh`/CHECKPOINT 3 consumer downstream to own this deletion instead. Every other skill's postflight (`skill_cleanup()`) does NOT remove this file — deletion is owned by the calling command's own last consumer; see `context/patterns/skill-postflight-flow.md`'s reader table |
 | `rm -f specs/{NNN}_*/.postflight-pending` | Cleanup marker file |
+| `git log --since=<ts> -- <task_dir>` (count only) | A read-only, **count-only** liveness/staleness probe — specifically a commit-count scoped to the task directory (backing `stall_suspected` in `orchestrate-cycle-postflight.sh`), and an mtime/`dispatch_seq` read of `specs/{NNN}_*/.return-meta.json` or `.orchestrator-handoff.json`. Neither reads a report, plan, summary, or source content — so the Context Flatness Constraint holds — and both are identity/count probes, not verification or source analysis, so they are not the prohibited "analysis" class below. |
+
+**Acting on the probe is loop-level, never postflight-level.** The probe above only computes a
+signal (e.g. `stall_suspected`). Acting on it — re-prompting the stalled dispatch — is a
+loop-level branch-move action (`skill-orchestrate/SKILL.md`'s Move 4, beside its batched
+`AskUserQuestion` relay), never something a per-dispatch postflight body does itself. A
+per-dispatch postflight invocation (`orchestrate-cycle-postflight.sh`) MUST NOT issue a dispatch
+under any circumstance, including on its own computed signal — it emits the signal and returns.
 
 ### Edit Operations
 

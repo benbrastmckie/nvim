@@ -150,9 +150,18 @@
 #     turns a recorded aux_pending entry into a dispatch.
 #   stall_suspected: true only when phase is plan/implement AND no outcome was recovered AND this
 #     task produced >=1 commit at/after dispatch_start_ts -- the abandoned-wrap-up signature. Pure
-#     advisory: never changes verdict/status/failed_tasks. The lead re-prompts the dispatch once
-#     (foreground verification, close all phases, write all three artifacts) before accepting the
-#     verdict, so committed work is not discarded as a failure. See the field's own block below.
+#     advisory: never changes verdict/status/failed_tasks. Consumer: skill-orchestrate/SKILL.md's
+#     Move 3 reads this field and, on a first occurrence for the dispatch's current dispatch_seq,
+#     accumulates it to pending_stall_reprompt[] instead of charging failed_tasks; Move 4's
+#     branch move then re-prompts the dispatch once (foreground verification, close all phases,
+#     write all three artifacts) before the verdict is ever accepted, so committed work is not
+#     discarded as a failure. A dispatch that stalls before its first commit leaves the count at
+#     zero, so this field stays false and the dispatch falls through to the ordinary no-outcome
+#     path -- correct, since a dispatch with zero commits has no committed work at stake. The
+#     trigger is deliberately NOT widened with an OR against a stale dispatch_seq (see
+#     docs/architecture/handoff-schema.md's "Readers MUST check freshness" section): that would
+#     destroy the commit-gated conjunction's only discrimination between an abandoned wrap-up and
+#     a dispatch that never did anything. See the field's own block below.
 #   report_missing: true only when phase="research" AND (no outcome was ever recovered, OR the
 #     research report gate refused a claimed "researched" transition) AND no non-empty report
 #     file exists for the round this dispatch was expected to produce. The lead
@@ -1796,6 +1805,25 @@ fi
 # lead reads it to decide whether to re-prompt the same dispatch once before accepting the
 # verdict. An existence/count probe via git only -- no artifact prose is read, so Context
 # Flatness is preserved.
+#
+# THE REAL CONSUMER (named here so this comment cannot drift back to describing an obligation
+# nothing executes): skill-orchestrate/SKILL.md's Move 3 extracts this field and, on its first
+# occurrence for the dispatch's current dispatch_seq, accumulates it to pending_stall_reprompt[]
+# instead of charging failed_tasks; Move 4's branch move drains that queue with a batched relay
+# (beside its AskUserQuestion relay), issuing exactly one re-prompt per dispatch_seq
+# (stall_reprompted[] is the idempotency key). This script computes and emits the signal only --
+# it never dispatches anything itself; see context/standards/postflight-tool-restrictions.md and
+# docs/architecture/handoff-schema.md's "Postflight Boundary" section for that division of labour.
+#
+# BOUNDARY: a stall occurring before this task's first commit leaves stall_commit_count at zero,
+# so this field stays false and the dispatch falls through to the ordinary no-outcome/failed
+# path -- correctly, since a dispatch with zero commits has no committed work at stake to lose.
+#
+# DELIBERATE NON-WIDENING: the trigger below is NOT ORed against a stale dispatch_seq (the
+# "handoff/.return-meta.json still carries the prior dispatch_seq" signal docs/architecture/
+# handoff-schema.md's "Readers MUST check freshness" section also names). A stale seq cannot
+# distinguish an abandoned wrap-up from a dispatch that died instantly; ORing it in here would
+# destroy this field's only discrimination, the commit-gated conjunction below.
 stall_suspected=false
 if { [ "$phase" = "implement" ] || [ "$phase" = "plan" ]; } && [ "$have_outcome" != "true" ] \
    && [ "$dispatch_start_ts" != "9999999999" ]; then
