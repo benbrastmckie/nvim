@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 357,
+  "phase": "plan",
+  "session_id": "sess_1791361777_314fa0_357",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Created a 4-phase, 3-wave implementation plan delivering the FOLD outcome: research proved no consumer depends on the per-phase handoff landing in its own commit, so the plan records the single-commit-per-phase ruling in context/standards/git-staging-scope.md's implement section (with the crash-ordering rationale in writing) and corrects the sequencing prose at the real production site, agents/general-implementation-agent.md's Stage 4D-iii plus Phase Checkpoint Protocol. The plan rules out the two declared-but-wrong scope files (skill-orchestrate/SKILL.md, orchestrate-cycle-postflight.sh), which also drops this task out of contention on the cycle's two most-declared paths. Net document count stays flat and no shell script changes.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/357_fold_phase_end_handoff_into_phase_commit/plans/01_fold-phase-end-handoff-into-phase-commit.md",
+      "summary": "4-phase plan (3 waves, 3.5h) folding the phase-end handoff into its phase commit via a git-staging-scope.md ruling plus a general-implementation-agent.md sequencing fix."
+    }
+  ]
+}

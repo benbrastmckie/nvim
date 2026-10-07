@@ -78,7 +78,7 @@ next_project_number: 359
 ### Agent System
 
 356 [PLANNED] — Propagate the bounded-wait contract to the fourteen...
-357 [PLANNING] — Rule on whether the per-phase handoff must land in its own...
+357 [PLANNED] — Rule on whether the per-phase handoff must land in its own...
 358 [PLANNING] — Require a figure or mechanical claim carried into a report or...
 
 ## Tasks
@@ -145,11 +145,12 @@ Measured at creation time: NO non-terminal task declares core/context/formats/re
 ---
 
 ### 357. Rule on whether the per-phase handoff must land in its own commit, and fold it into that phase's work commit if it need not
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [357_fold_phase_end_handoff_into_phase_commit/reports/01_fold_phase_end_handoff_into_phase_commit.md]
+- **Plan**: [357_fold_phase_end_handoff_into_phase_commit/plans/01_fold-phase-end-handoff-into-phase-commit.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
