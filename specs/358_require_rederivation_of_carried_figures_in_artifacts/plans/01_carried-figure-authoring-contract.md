@@ -1,7 +1,7 @@
 # Implementation Plan: Carried-Figure Authoring Contract for Reports and Plans
 
 - **Task**: 358 - Require rederivation of carried figures in artifacts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/358_require_rederivation_of_carried_figures_in_artifacts/reports/01_carried-figure-authoring-contract.md

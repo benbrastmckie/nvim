@@ -1,7 +1,7 @@
 # Implementation Plan: Task #356
 
 - **Task**: 356 - Propagate bounded-wait contract and add lint coverage
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (no dependency edges; related tasks recorded by durable anchor only)
 - **Research Inputs**: specs/356_propagate_bounded_wait_contract_and_lint_coverage/reports/01_propagate-bounded-wait-contract.md
