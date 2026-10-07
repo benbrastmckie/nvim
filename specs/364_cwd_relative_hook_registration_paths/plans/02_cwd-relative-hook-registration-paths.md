@@ -505,26 +505,29 @@ absorbed).
 
 ---
 
-### Phase 7: Fix the four documentation registration templates [NOT STARTED]
+### Phase 7: Fix the four documentation registration templates [COMPLETED]
 
 **Goal**: The copy-paste templates a future author works from teach the fixed path shape, so the
 convention and its documentation never disagree.
 
 **Tasks**:
-- [ ] Update the JSON registration-template snippets to
+- [x] Update the JSON registration-template snippets to
       `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh`, preserving each snippet's existing
       `2>/dev/null || echo '{}'` suffix:
       `nvim/context/project/neovim/guides/neovim-integration.md` (3 snippets),
       `nvim/context/project/neovim/guides/tts-stt-integration.md` (1),
       `nvim/context/project/neovim/hooks/wezterm-integration.md` (3),
-      `core/context/troubleshooting/workflow-interruptions.md` (1).
-- [ ] Do NOT touch the correct-by-different-construction lines: `workflow-interruptions.md`'s
+      `core/context/troubleshooting/workflow-interruptions.md` (1). *(completed)*
+- [x] Do NOT touch the correct-by-different-construction lines: `workflow-interruptions.md`'s
       `ls -la`, `chmod +x`, and bare manual-diagnostic `bash .claude/hooks/subagent-postflight.sh`
       invocations (D7), nor the prose path references (`` `.claude/hooks/x.sh` - description ``
-      lines) which are file-location statements, not commands.
-- [ ] Regenerate per-extension `index-entries.json` line counts if any edited context file's line
+      lines) which are file-location statements, not commands. *(completed: confirmed via diff --
+      only the 8 targeted lines changed, all other `.claude/hooks/` lines byte-unchanged)*
+- [x] Regenerate per-extension `index-entries.json` line counts if any edited context file's line
       count changed (`generate-context-line-counts.sh`), since `check-extension-docs.sh` lints
-      `line_count` accuracy.
+      `line_count` accuracy. *(completed: not needed -- edits were in-line substitutions on
+      existing lines with no insertions/deletions, so line counts are unchanged; confirmed via
+      `wc -l` and `git diff --stat`'s matching +/- counts)*
 
 **Timing**: 0.5 hours
 

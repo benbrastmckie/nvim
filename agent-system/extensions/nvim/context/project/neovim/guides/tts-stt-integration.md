@@ -122,7 +122,7 @@ The hooks are configured in `.claude/settings.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
           }
         ]
       }

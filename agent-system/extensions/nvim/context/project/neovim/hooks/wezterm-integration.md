@@ -170,7 +170,7 @@ Hooks are registered in `.claude/settings.json`:
       "matcher": "*",
       "hooks": [{
         "type": "command",
-        "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
+        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
       }]
     }],
     "UserPromptSubmit": [{
@@ -178,11 +178,11 @@ Hooks are registered in `.claude/settings.json`:
       "hooks": [
         {
           "type": "command",
-          "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
+          "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
         },
         {
           "type": "command",
-          "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
+          "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
         }
       ]
     }]

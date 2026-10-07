@@ -27,7 +27,7 @@ The `SessionStart` hook fires `claude-ready-signal.sh`, which signals Neovim via
     "hooks": [
       {
         "type": "command",
-        "command": "bash .claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
+        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
       },
       {
         "type": "command",
@@ -84,7 +84,7 @@ For comprehensive TTS/STT documentation including software dependencies, model s
     "hooks": [
       {
         "type": "command",
-        "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
       }
     ]
   }
@@ -95,7 +95,7 @@ For comprehensive TTS/STT documentation including software dependencies, model s
     "hooks": [
       {
         "type": "command",
-        "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
       }
     ]
   }

@@ -1,0 +1,19 @@
+{
+  "phase": 7,
+  "phase_name": "Fix the four documentation registration templates",
+  "started_at": "2026-10-07T20:55:00Z",
+  "last_updated": "2026-10-07T21:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update the 8 JSON registration-template snippets across 4 markdown files", "status": "done", "files_touched": [
+      "agent-system/extensions/nvim/context/project/neovim/guides/neovim-integration.md",
+      "agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md",
+      "agent-system/extensions/nvim/context/project/neovim/hooks/wezterm-integration.md",
+      "agent-system/extensions/core/context/troubleshooting/workflow-interruptions.md"
+    ]},
+    {"id": 2, "description": "Confirm exempt diagnostic lines byte-unchanged", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Regenerate index-entries.json line counts if needed", "status": "done", "files_touched": [], "note": "not needed, line counts unchanged"}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1,0 +1,8 @@
+[
+  {
+    "question": "Task 364's implementation is still running with the migration script restored. How should I redirect it?",
+    "answer": "Swap for picker repair action: drop the migration script; add a 'repair settings' action to the <leader>al extension picker (snapshot -> delete deployed settings.json -> load), since install-once load recopies a fresh fixed settings.json when the target is absent.",
+    "cycle": 3,
+    "timestamp": "2026-10-07T21:00:36Z"
+  }
+]

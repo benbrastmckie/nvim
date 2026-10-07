@@ -65,7 +65,7 @@ EOF
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/subagent-postflight.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/subagent-postflight.sh"
           }
         ]
       }
