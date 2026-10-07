@@ -55,21 +55,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/300_askuserquestion_unreachable_in_subagents/summaries/01_rehome-askuserquestion-gates-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["askuserquestion", "dispatched-subagent", "tool-withholding", "skill-pre-delegation", "interview-relocation", "agent-frontmatter"]
+      "suggested_keywords": [
+        "askuserquestion",
+        "dispatched-subagent",
+        "tool-withholding",
+        "skill-pre-delegation",
+        "interview-relocation",
+        "agent-frontmatter"
+      ]
     },
     {
       "content": "A newly-added agent-system/extensions/{ext}/scripts/tests/test-*.sh file must be individually registered in that extension's manifest.json provides.scripts array, or check-extension-docs.sh (part of verify-deploy.sh's gate set) FAILS with 'script file on disk NOT in provides.scripts' on the next deploy-headless.sh run. This is unlike context/ files, where manifest.json can declare a whole directory wholesale (e.g. provides.context listing \"workflows\" once covers every file under context/workflows/). Discovered by running the gate itself, not anticipated at plan time -- when a plan adds a new scripts/tests/ file, add the manifest.json registration as part of the same phase rather than treating it as a later gate-driven surprise.",
       "category": "CONFIG",
       "source_artifact": "specs/300_askuserquestion_unreachable_in_subagents/summaries/01_rehome-askuserquestion-gates-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["manifest.json", "provides.scripts", "check-extension-docs", "deploy-headless", "new-test-file"]
+      "suggested_keywords": [
+        "manifest.json",
+        "provides.scripts",
+        "check-extension-docs",
+        "deploy-headless",
+        "new-test-file"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791337167_c5588f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }

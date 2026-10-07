@@ -1,7 +1,7 @@
 # Implementation Plan: Task #300
 
 - **Task**: 300 - Resolve AskUserQuestion's unreachability in dispatched subagents: verify the mechanism, correct the frontmatter standard's tool-inheritance claim, and rehome every user-choice gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/300_askuserquestion_unreachable_in_subagents/reports/01_askuserquestion-subagent-reachability.md

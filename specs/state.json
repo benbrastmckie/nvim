@@ -495,7 +495,7 @@
       "project_number": 300,
       "project_name": "askuserquestion_unreachable_in_subagents",
       "title": "Resolve AskUserQuestion's unreachability in dispatched subagents: verify the mechanism, correct the frontmatter standard's tool-inheritance claim, and rehome every user-choice gate",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "priority": "high",
@@ -539,7 +539,7 @@
       ],
       "effort": "3-6 hours",
       "created": "2026-10-01T04:57:14Z",
-      "last_updated": "2026-10-07T03:21:06Z",
+      "last_updated": "2026-10-07T04:30:15Z",
       "session_id": "sess_1791337167_c5588f",
       "artifacts": [
         {
@@ -550,10 +550,11 @@
         {
           "path": "specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md",
           "type": "plan",
-          "summary": "7 phases, 4 waves, 9.5h: standard+mirrors+fork-patterns correction, interview relocation into skill-meta, meta-builder-agent de-mandating, 23 agent-file corrections, structural fixture, file_scope narrowing plus full gate set."
+          "summary": "7 phases, all closed (6 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Rehomed every AskUserQuestion-dependent user-choice gate out of dispatched subagents into the invoking skill's own execution (the proven skill-slide-planning/skill-slide-critic pattern), corrected agent-frontmatter-standard.md's tool-inheritance claim and settled every optional frontmatter row against measurement, dropped the unverifiable isolation row with its two mirrors, stripped the self-instructing AskUserQuestion mandate from 23 agent files across 5 extensions, and landed a structural regression fixture plus a 34-path narrowed file_scope."
     },
     {
       "project_number": 302,
