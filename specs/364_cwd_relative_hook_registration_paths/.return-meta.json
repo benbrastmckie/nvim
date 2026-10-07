@@ -1,10 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/364_cwd_relative_hook_registration_paths/summaries/02_cwd-relative-hook-registration-paths-summary.md",
+      "summary": "All 7 plan phases closed. Rewrote all 34 source-store hook registrations to the $CLAUDE_PROJECT_DIR form, fixed 4 doc templates, removed a dead registration, and -- after five operator-directed strategy reversals -- hardened the normal extension resync path (merge.lua identity-based hook dedupe) plus moved six root-files-only registrations into the merge source, so an ordinary resync self-heals any already-deployed repo without a bespoke migration script or picker action."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Resolved CWD-relative hook registration paths across the source store (34 registrations, 4 doc templates, 1 dead registration removed) and hardened the normal extension resync path with identity-based hook deduplication in merge.lua plus a six-registration move into the merge source, so an ordinary resync -- not a migration script -- self-heals any already-deployed repo, demonstrated non-destructively against both real known-affected repos."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/settings-hooks.json",
+    "agent-system/extensions/core/context/troubleshooting/workflow-interruptions.md",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/root-files/settings.json",
+    "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+    "agent-system/extensions/email/settings-fragment.json",
+    "agent-system/extensions/nvim/context/project/neovim/guides/neovim-integration.md",
+    "agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md",
+    "agent-system/extensions/nvim/context/project/neovim/hooks/wezterm-integration.md",
+    "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a resync/merge mechanism's 'already present?' check uses exact vim.deep_equal on a whole {type, command} object, a command-string edit (e.g. fixing a path convention) is invisible to it -- the edited value no longer compares equal to the stale one, so a merge APPENDS a duplicate instead of REPLACING it. The fix is identity-based dedupe: extract a stable identity from the command (e.g. the invoked script's basename) independent of the exact string, and replace-in-place on an identity match with a different value, falling through to exact equality for anything not identity-eligible (a mandatory carve-out for hand-written/custom entries). Track a replacement into the SAME removal-tracking structure an append uses, under the NEW value -- this lets 'undo' logic (unmerge/rollback) work unchanged, since finding-and-removing-by-equality-on-the-new-value is already 'undo what changed', and never resurrects the stale value.",
+      "category": "PATTERN",
+      "source_artifact": "specs/364_cwd_relative_hook_registration_paths/summaries/02_cwd-relative-hook-registration-paths-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["merge-dedup", "identity-based-equality", "deep-equal-pitfall", "idempotent-merge", "config-drift"]
+    },
+    {
+      "content": "When an install-once-copied config file (copied fresh only when absent, never overwritten by resync) needs an already-deployed-with-the-defect repo repaired, consider hardening the NORMAL resync/merge path itself before building a bespoke migration script or a destructive snapshot-delete-reload picker action. A migration script needs ongoing maintenance and a backup story; a delete-then-reload trick only fixes an ABSENT target, not one that already carries a duplicated/corrupted value (a redeploy that can only append, never replace, will leave stale and fixed entries coexisting). Hardening the merge function so it is idempotent and convergent by construction means the ordinary 'reload' action a user already runs becomes self-healing for every repo, with no new surface to maintain.",
+      "category": "PATTERN",
+      "source_artifact": "specs/364_cwd_relative_hook_registration_paths/summaries/02_cwd-relative-hook-registration-paths-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["install-once-config", "self-healing-resync", "migration-script-alternative", "idempotent-repair"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791403152_6152cc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 3
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
+  }
 }
