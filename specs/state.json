@@ -534,7 +534,8 @@
         "agent-system/extensions/present/skills/skill-slide-critic/SKILL.md",
         "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md",
         "agent-system/extensions/literature/agents/literature-agent.md",
-        "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh"
+        "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh",
+        "agent-system/extensions/core/manifest.json"
       ],
       "effort": "3-6 hours",
       "created": "2026-10-01T04:57:14Z",

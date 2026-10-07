@@ -186,6 +186,7 @@
       "test-state-write-spill-names.sh",
       "test-task-lock-reap.sh",
       "tests/run-all.sh",
+      "tests/test-askuserquestion-rehome.sh",
       "tests/test-assess-repo-health.sh",
       "tests/test-backfill-file-scope.sh",
       "tests/test-census-count.sh",
