@@ -811,11 +811,17 @@
           "path": "specs/343_bound_agent_background_wait_stranded_dispatch/plans/01_bound-background-wait-stranded-dispatch.md",
           "type": "plan",
           "summary": "5-phase plan: agent-contract mechanism mandate, deadline exclusion fork, stall_suspected consumer wiring, four contract rulings, regression test plus full gate."
+        },
+        {
+          "path": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 5 phases, decisions, deviations, and verification evidence."
         }
       ],
       "created": "2026-10-05T22:14:03Z",
       "last_updated": "2026-10-07T01:59:58Z",
-      "session_id": "sess_1791337167_c5588f"
+      "session_id": "sess_1791337167_c5588f",
+      "completion_summary": "Closed the bound-agent-background-wait defect across all three scope items: the agent contract now mandates bounded-build-waiter.md's canonical idiom and forbids the detach-then-await-notification path for local gates with an explicit three-way deadline fork; skill-orchestrate/SKILL.md now has a Move 3 consumer and Move 4 batched re-prompt relay for the previously-dead stall_suspected signal; and a grep-based regression test guards the producer/consumer wiring against silently losing its consumer again."
     },
     {
       "project_number": 344,

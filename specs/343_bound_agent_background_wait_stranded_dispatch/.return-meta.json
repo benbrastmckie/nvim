@@ -29,29 +29,54 @@
       "category": "CONFIG",
       "source_artifact": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["budget-ceiling", "verify-deploy", "gate20", "compaction", "ceiling-move", "ORCHESTRATOR_BUDGET_GATE_MODE"]
+      "suggested_keywords": [
+        "budget-ceiling",
+        "verify-deploy",
+        "gate20",
+        "compaction",
+        "ceiling-move",
+        "ORCHESTRATOR_BUDGET_GATE_MODE"
+      ]
     },
     {
       "content": "When closing a 'computed signal has no consumer' defect class in a Markdown procedure file (not itself directly executed by a test harness, e.g. an orchestration SKILL.md), the regression test for the fix is a grep-based static producer/consumer consistency check, not a sandboxed execution test. Verify the assertion is LIVE, not vacuously true, by copying the target file to a scratch path, sed-deleting the consumer lines, and confirming the suite now fails when pointed at the scratch copy (via an env-var override of the file path) -- never by reverting the real file. This is cheap (no sandbox, no fixture repo tree) and catches exactly the defect class every execution-based producer test misses.",
       "category": "PATTERN",
       "source_artifact": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["dead-signal", "producer-consumer", "grep-based-test", "negative-control", "scratch-copy"]
+      "suggested_keywords": [
+        "dead-signal",
+        "producer-consumer",
+        "grep-based-test",
+        "negative-control",
+        "scratch-copy"
+      ]
     },
     {
       "content": "A test fixture that rsync-copies the live repo tree and symlinks the live .claude/ directory (to exercise verify-deploy.sh's full gate battery in isolation) inherits that repo's AMBIENT source/deploy drift as a failure in its own 'baseline is clean' sanity assertion -- any task mid-cycle on the source store without a fresh deploy will trip it, independent of that task's actual correctness. Before treating such a failure as a regression, isolate-reproduce the fixture standalone (same rsync+symlink recipe, same gate invocation) and confirm WHICH specific sub-gate fires (doc-lint/manifest-content-hash drift vs. a genuine budget/logic finding) -- the former is expected and resolves at the next deliberate redeploy; only the latter is this task's own regression to fix.",
       "category": "INSIGHT",
       "source_artifact": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-drift", "fixture-isolation", "test-verify-deploy-context-budget", "source-store-boundary", "attribution"]
+      "suggested_keywords": [
+        "deploy-drift",
+        "fixture-isolation",
+        "test-verify-deploy-context-budget",
+        "source-store-boundary",
+        "attribution"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791337167_c5588f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

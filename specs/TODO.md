@@ -668,6 +668,7 @@ This task declares territory overlap with task 280 (merge-sources/claudemd.md) a
 - **Dependencies**: Task 337
 - **Research**: [343_bound_agent_background_wait_stranded_dispatch/reports/01_background-wait-stranded-dispatch.md]
 - **Plan**: [343_bound_agent_background_wait_stranded_dispatch/plans/01_bound-background-wait-stranded-dispatch.md]
+- **Summary**: [343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**), per rules/source-store-deploy-boundary.md.
 
