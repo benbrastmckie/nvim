@@ -14,51 +14,62 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**48 open tasks**: 22 dispatchable, 0 in flight, 24 blocked by an in-repo edge, 1 externally
-blocked (349, with 350 behind it), 1 held (342). If that stops matching `state.json`, this file has
-drifted — it is hand-derived until **306** makes it generated.
+**47 open tasks**: 24 dispatchable (one of them, 365, in flight), 22 blocked by an in-repo edge,
+1 externally blocked (349, with 350 behind it), 1 held (342). If that stops matching `state.json`,
+this file has drifted — it is hand-derived until **306** makes it generated.
 
 ## Gate state
 
-- **Deploy gates are GREEN**: `verify-deploy.sh --skip-slow` exits 0 — 32 PASS, 0 FAIL, 2m22s
-  (measured after 361's redeploy).
+- **Deploy gates are GREEN on the fast tier**: `verify-deploy.sh --skip-slow` exits 0, no `[FAIL]`
+  lines. The redeploy that landed 364 moved the standing baseline from **7 pre-existing findings to
+  1**, with 0 newly introduced (`pre=7 post=1 new=0`). **That surviving finding is not yet
+  identified** — it sits in the slow gates, so a `--skip-slow` pass cannot name it. Characterize it
+  with a full `verify-deploy.sh` run before treating the suite as clean.
+- **Blocking hooks no longer fail open on a bare `cd`.** Every source-store hook registration now
+  resolves `"$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh`, and the merge path is self-healing (Settled
+  decision 18), so an ordinary resync repairs a stale deploy instead of duplicating it. Measured on
+  this repo's own deploy: 21 CWD-relative registrations to 0, 21 correct, 23 total, no per-event
+  duplicates, `env` and `permissions` byte-identical. **365** gates it against reintroduction.
 - **The orchestrator eager-context budget has NO headroom left**: 65950 B against a 65950 B
-  baseline. 361 hit this ceiling mid-implementation and compressed to fit. The next
+  baseline (*carried from the 361 measurement, not re-measured today*). The next
   orchestrator-surface addition must compact first; there is no slack to spend.
   `commands/orchestrate.md` 20440 B / 21000 B; `skills/skill-orchestrate/SKILL.md` 21121 B / 21500 B.
-- **`validate-state.sh --deep`**: 17 passed, 0 failed, **6** warnings — 328's missing `file_scope`
-  key, 349's empty array, the visibility summary reporting both, and three glob-shaped entries on
-  342 that collision detection cannot see. Treat any *new* warning, and any failure, as real.
-- **Gate 8 (`tests/run-all.sh`) is 92 suites and ~70% of a full `verify-deploy.sh` run.** It
-  concludes under `--jobs 4`; a sequential run on a loaded host does not finish in a sane budget
-  (14m1.5s sequential vs 6m47.4s at `--jobs auto`). **366** adds suite-level selection, **368**
-  stops plans from demanding the full battery at a non-final phase.
-- **Five suites are knowingly red**, all in `known-failures.txt` with reasons:
+- **`validate-state.sh --deep`**: 17 passed, 0 failed, **6** warnings — re-measured today,
+  unchanged: 328's missing `file_scope` key, 349's empty array, the visibility summary reporting
+  both, and three glob-shaped entries on 342 that collision detection cannot see. Treat any *new*
+  warning, and any failure, as real.
+- **Gate 8 (`tests/run-all.sh`) is 92 suites and ~70% of a full `verify-deploy.sh` run** (*timings
+  carried, not re-measured*: 14m1.5s sequential vs 6m47.4s at `--jobs auto`). It concludes under
+  `--jobs 4`; a sequential run on a loaded host does not finish in a sane budget. **366** adds
+  suite-level selection, **368** stops plans from demanding the full battery at a non-final phase.
+- **Five shell suites are knowingly red**, all in `known-failures.txt` with reasons:
   `test-orchestrate-cycle-plan.sh` (**351**), `test-gate-out-repair-reporting.sh` (**352**),
   `test-lint-json-channel-discipline.sh` and `test-typst-element-lint.sh` (**353**), and
   `test-run-all-parallel.sh` (intermittent, accepted). Read the `EXPECTED`/`NEW` split, not the
-  tally — a NEW failure is yours.
+  tally — a NEW failure is yours. **`known-failures.txt` covers shell suites only**; see the
+  unowned Lua spec failure under Unfiled observations.
 - **`--skip-slow` hides doc-sync pin failures.** `test-runtime-file-tracking.sh` Case 3 only runs
   under the full gate set, so a `--skip-slow` pass is not evidence the pins hold. Measured instance
   of Settled decision 15.
-- **Blocking hooks currently fail OPEN whenever session cwd leaves the repo root.** Every hook is
-  registered with a cwd-relative path, so an ordinary `cd` into a subdirectory silently disables
-  `guard-destructive-git.sh`, `guard-git-push.sh` and four others. Observed twice on 2026-10-07.
-  **364** fixes it, **365** gates it.
 - **Consumer repos were all 8 STALE at last measurement (2026-10-03).** If work touches a consumer,
   run `check-consumer-freshness.sh` here and `deploy-headless.sh` **there** first; this repo never
-  pushes into a consumer.
+  pushes into a consumer. One consumer (`Philosophy/Papers/PossibleWorlds`) was repaired by hand on
+  2026-10-07; the other seven were not measured since.
 
 ## Next
 
-Highest value first. Each call is a single `/orchestrate` invocation; intra-batch edges sequence
-the members into waves (Settled decision 17), so a call that serializes to width 1 is correct.
+Highest value first, ordered for stability: finish the in-flight hook work, then repair the
+orchestrator's own live regressions, then cut dispatch cost. Each call is a single `/orchestrate`
+invocation; intra-batch edges sequence the members into waves (Settled decision 17), so a call that
+serializes to width 1 is correct.
 
 ```
-/orchestrate 364, 365        # two waves; blocking guards fail open on a bare `cd`
-/orchestrate 363             # completes the shared-tree git-safety set
+/orchestrate 365             # in flight; the lint that gates the hook-path fix
+/orchestrate 351             # orchestrator regression: a live halt that never fires
 /orchestrate 366, 368        # two waves; test-efficiency mechanism, then the planning guidance
-/orchestrate 367             # independent; why the existing auto-promotion does not fire
+/orchestrate 367             # independent; why the exit-6 promotion is unreliable
+/orchestrate 347             # newly unblocked by 364; self-matching process-name waiters
+/orchestrate 363             # completes the shared-tree git-safety set
 /orchestrate 284, 335        # two waves; the file_scope excursion gate
 /orchestrate 272, 351        # two waves; 351 first
 /orchestrate 351, 352, 353   # three waves; 351 MUST be in the call, not merely done first
@@ -68,23 +79,30 @@ the members into waves (Settled decision 17), so a call that serializes to width
 
 Why this order:
 
-- **364 → 365** — a cwd-relative hook path makes six bare-registered blocking guards fail open,
-  the opposite of the property they are registered bare to guarantee. Reproduced twice on
-  2026-10-07 from ordinary navigation. Note two of 364's five scope entries are **install-once**
-  (`settings.json`, `settings.local.json` are copied once and never overwritten on resync), so the
-  fix cannot reach an existing deploy without the migration step the task now carries.
-- **363** — the post-incident checklist. 361 corrected the rule and the guard; this records what to
-  check after a destructive-git event on a shared tree, uncommitted pre-session state first.
+- **365** — in flight. Its scope grew on 2026-10-07 from a path-shape lint to twelve acceptance
+  criteria, after two defects escaped the original pattern: a registration present only in
+  install-once `root-files/settings.json` is unreachable by any resync, and a relative hook path
+  that does not contain `.claude/` evades a `.claude/`-anchored pattern entirely. The live instance
+  of the second was a `SessionStart` registration of `scripts/claude-ready-signal.sh`, a script that
+  existed nowhere and had been failing silently behind its own `2>/dev/null || echo '{}'`. Both are
+  now gated.
+- **351** — the `IDENTICAL DISPATCH HALT` is implemented but never fires: a repeat-identical
+  dispatch is issued anyway, the dispatch file is not backed out, the task lock stays held, and the
+  counters still advance. A live orchestrator regression that wastes budget and strands locks.
+  Gates **272**, **352** and **355**.
 - **366 → 368, 367** — measured: the orchestrator's own checkpoints were fixed to stop re-running
   the 92-suite battery, but *every dispatched implementation agent still re-runs it at its own
   phase gates against the identical tree*. 366 adds selection, 368 stops plans demanding `full` at
   a non-final phase, 367 removes the refused-completion round trip. Neither 366 nor 368 may weaken
   the final gate.
-- **351** — the `IDENTICAL DISPATCH HALT` is implemented but never fires: a repeat-identical
-  dispatch is issued anyway, the dispatch file is not backed out, the task lock stays held, and the
-  counters still advance. Gates **272**, **352** and **355**.
+- **347** — unblocked by 364 landing. Its own hook registration depended on the path-shape fix
+  being settled first.
+- **363** — the post-incident checklist. 361 corrected the rule and the guard; this records what to
+  check after a destructive-git event on a shared tree, uncommitted pre-session state first.
 - **284 → 335** — 335 promotes the `file_scope` excursion advisory into a staging-time gate; 284
-  first exempts a task's own directory so the signal is visible rather than buried.
+  first exempts a task's own directory so the signal is visible rather than buried. A live instance
+  landed on 2026-10-07: 364 reported `merge.lua`/`merge_spec.lua` outside its declared scope, after
+  the strategy changed mid-task. Advisory only, correctly no gate effect.
 - **272** — the heartbeat never fires; an implementation agent sat silent for ~5h40m while the
   harness still reported it `running`. It is a structural deadlock, not a missing probe:
   `stall_suspected` is computed only *after* a dispatch returns, while Move 3 forbids postflight
@@ -117,8 +135,9 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 311 ready            measured co-scheduling signal replacing static build-heavy family membership
 319 ready            surface cross-task claim invalidation when research refutes a filed premise
 345 ready            bound the no-op spin to a contract with a single writer
+347 ready            PreToolUse hook blocking self-matching process-name waiters   <- newly ready
 351 ready            IDENTICAL DISPATCH HALT implemented but never fires   <- priority
-367 ready            why the existing post-deploy auto-promotion does not fire   <- priority
+367 ready            why the exit-6 post-deploy promotion is unreliable   <- priority
 272 blocked:351      honest session liveness for concurrent same-repo batches   <- priority
 273 blocked:271      three-channel conclusion stage with per-channel approval
 274 blocked:272,273,275,344  next-admissible-batch suggestion and alternatives-on-conflict
@@ -127,12 +146,11 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 304 blocked:273,284,302  one out-of-repo pathspec aborts staging; callers sink nonzero exits
 312 blocked:282,344  backlog reconciliation as a required task-creation component
 344 blocked:280,311  carry the batching-by-default doctrine to the point of use   <- priority
-347 blocked:364      PreToolUse hook blocking self-matching process-name waiters
 354 blocked:345      does the local-gate prohibition cover awaiting a dispatched subagent
 355 blocked:351      unregistered test script reaches COMPLETED; count-based gate comparison
 ```
 
-**Core agent system (21)**
+**Core agent system (20)**
 ```
 251 ready            context-corpus reachability probe, then act on dead and overlapping files
 280 ready            forbid record-versioning language: rule, exemptions, pattern library
@@ -143,17 +161,16 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 360 ready            validate that every CARRIED-UNVERIFIED mark names a source
 362 ready            teach non-destructive history-read techniques at the point of use
 363 ready            post-incident checklist: uncommitted pre-session state checked first   <- priority
-364 ready            cwd-relative hook paths make blocking guards fail open   <- priority
 366 ready            suite-level selection within Gate 8 (--filter/--only + touched-file map)   <- priority
+365 IN FLIGHT        lint forbidding relative paths in hook registrations (12 criteria)
 170 blocked:251,366  isolate shell test suites from ambient host state (memory, timing)
 281 blocked:280      repo-wide record-versioning lint, blocking/advisory split
-282 blocked:280,281,364  write-time PreToolUse hook blocking record-versioning language
+282 blocked:280,281  write-time PreToolUse hook blocking record-versioning language
 313 blocked:306,328,344  advisory lint for hand-authored batch proposals in ROADMAP blocks
 328 blocked:170,303,304,318,366  systematic script and test corpus efficiency
 335 blocked:284      promote the file_scope excursion advisory into a staging-time gate   <- priority
 352 blocked:351      validate-artifact.sh fix counters neither accumulate nor reset
 359 blocked:350      close two agent-contract lint curated-array coverage gaps
-365 blocked:364      lint forbidding CWD-relative .claude/ paths in hook registrations
 368 blocked:366      non-final-phase `full` verification tier must justify itself   <- priority
 ```
 
@@ -194,14 +211,17 @@ parks no other work.
 - **A source-store commit without a resync is itself a red gate** — `check-extension-docs.sh`
   reports it as `deployed script content drift`.
 - A completion postflight refused with **exit 6** should self-clear on the next cycle's redeploy
-  checkpoint. It did not, three times on 2026-10-07; **367** owns the diagnosis. Meanwhile
-  `reconcile-task-status.sh <N> <session>` promotes a stranded task by hand — but only once the
-  source store is actually fresh, and a *live* dispatch editing the source store keeps it stale.
+  checkpoint. It did not, three times on 2026-10-07; it then did on the fourth, promoting 364
+  cleanly. So the mechanism is unreliable rather than inert, which is what **367** must diagnose.
+  Meanwhile `reconcile-task-status.sh <N> <session>` promotes a stranded task by hand — but only
+  once the source store is actually fresh, and a *live* dispatch editing the source store keeps it
+  stale.
 - **To tell a working dispatch from a stranded one, read artifact mtimes and live child processes.**
   Absence of `.orchestrator-handoff.json` is NOT a stall signal — the research phase never writes
   one in any mode.
-- **Never `cd` out of the repo root.** Hooks resolve relative to session cwd, so a `cd` into a
-  subdirectory silently disables every blocking guard until **364** lands. Use absolute paths.
+- **Verify a settings-merge change against a real stale deploy, not a synthetic fixture.** A
+  fixture reconstructed from memory cannot show the duplicate-append shape that an actual
+  install-once file in the field carries.
 
 ## Settled decisions (do not re-litigate)
 
@@ -258,23 +278,52 @@ parks no other work.
     than `MAX_TASKS=8`, which the cap then silently trims; there, narrow the `file_scope` instead.
     **344 carries this to the point of use**; until it lands the edge is added by hand via
     `state-write.sh`, with acyclicity confirmed by `validate-state.sh --deep`.
+18. **A settings drift is repaired by making the merge self-healing, never by a migration script**
+    (owner ruling, 2026-10-07). Hook entries are deduplicated by *identity* — the `hooks/NAME.sh` the
+    command invokes, plus its event and type — so a changed command string is **replaced in place**
+    rather than appended beside the stale one. Implemented in `merge.lua`'s `hook_identity` /
+    `find_hook_match`, used by both `merge_hook_event_array` and `normalize_hook_event_array`, with a
+    **mandatory carve-out**: a command not recognizable as a `.claude/hooks/*.sh` invocation is never
+    matched, moved or deduped, so a hand-written hook survives untouched. Two consequences, both
+    load-bearing: (a) **a hook registration must appear in a fragment surface**
+    (`merge-sources/settings-hooks.json` or an extension's fragment), because a registration living
+    only in install-once `root-files/settings.json` is visited by no resync and is therefore
+    unreachable by this or any future correction; (b) the by-hand repair for a deploy predating the
+    fix is `rm .claude/settings.json` followed by a reload — install-once copies fresh when the
+    target is **absent**, whereas `deploy-headless.sh --wipe` restores its own snapshot as the merge
+    base and reintroduces the staleness. Two approaches were tried and rejected before this one: a
+    migration script (unnecessary once the merge converges) and a picker repair action (same).
 
 ## Standing rules
 
 1. **Agent-system defects get filed here.** A fix in a consuming repo's `.claude/` is wiped on reload.
 2. **`.claude/**` is a deploy artifact.** Edit the source store under `agent-system/extensions/**`,
    then resync. Note `settings.json` and `settings.local.json` are **install-once** — copied only
-   when absent, never overwritten by a resync — so a source edit to either reaches fresh deploys only.
+   when absent, never overwritten by a resync. A source edit to either reaches fresh deploys only;
+   for hook registrations, put them in a fragment surface so the merge can reach them (Settled
+   decision 18).
 3. **`TODO.md` is generated from `state.json`.** Edit `description` via `state-write.sh`, then
    `generate-todo.sh`. A hand edit to `TODO.md` is wiped by the next regeneration.
 4. **Propose, then apply, across repos.**
 5. **Verify by execution, not by reading.** Every number here was measured the day it was written;
-   re-measure before acting on it.
+   re-measure before acting on it. Figures explicitly marked *carried* were not re-measured on the
+   stated date and must be re-derived before they are relied on.
 6. **The lead never reads a report, plan, summary, description or context file during the loop.**
 7. **This file describes the current plan only.** No revision history, no pass numbers.
+8. **A scope cut justified by an unverified premise is not a scope cut.** Two were taken and
+   reversed on 2026-10-07 — "a reload repairs deployed repos" and "the fragment merge reaches every
+   registration" — each disproved by a field test minutes later. Test the premise before dropping
+   the work it would make unnecessary.
 
 ## Unfiled observations (none worth a task yet)
 
+- **An unowned Lua spec failure**: `manifest validate should reject manifest with invalid
+  merge_targets type` fails at `lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua:124`
+  (expected `false`, got `true`). Confirmed pre-existing — `manifest.lua` and `manifest_spec.lua`
+  are byte-identical to their pre-364 state and no 364 commit touched either. No open task addresses
+  it, and `known-failures.txt` cannot carry it: that manifest is keyed to shell suites discovered by
+  `run-all.sh`, so **plenary Lua specs have no known-failing baseline at all**. The gap in coverage
+  is the more significant half of this observation.
 - **Four open tasks carry no `title` key** (328, 338, 349, 350), so this file and `TODO.md` describe
   them from `project_name`. `orchestrate-predispatch-review.sh` Class B checks only for a *literal
   null* and misses an absent key. Belongs with **306**.
