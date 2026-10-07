@@ -1,5 +1,5 @@
 ---
-next_project_number: 366
+next_project_number: 369
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 366
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,345,349,351,360,362,363,364 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,272,273,281,303,335,344,347,350,352,354,355,365 | 22,251,271,280,284,311,345,349,351,364 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,345,349,351,360,362,363,364,366,367 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,272,273,281,303,335,344,347,350,352,354,355,365,368 | 22,251,271,280,284,311,345,349,351,364,366 | core-agent-system, extensions, orchestrator |
 | 3 | 275,282,304,353,359 | 272,273,281,284,302,350,352,364 | core-agent-system, extensions, orchestrator |
 | 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -39,6 +39,10 @@ next_project_number: 366
 364 [NOT STARTED] — Resolve hook registration paths independently of session CWD...
   └─ 282 [NOT STARTED] — Write-time PreToolUse hook blocking record-versioning... (see above)
   └─ 365 [NOT STARTED] — Lint forbidding CWD-relative .claude/ paths in hook...
+366 [NOT STARTED] — Suite-level selection within Gate 8: --filter/--only in...
+  └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
+  └─ 368 [NOT STARTED] — Tier-selection discipline: make a non-final-phase full...
+367 [NOT STARTED] — Reduce the deploy-staleness completion round trip without...
 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
@@ -86,6 +90,436 @@ next_project_number: 366
 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
+
+### 368. Tier-selection discipline: make a non-final-phase full verification tier justify itself
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 366
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**, a disposable
+deploy artifact), per rules/source-store-deploy-boundary.md.
+
+== OWNER FRAMING (carries across this three-task batch) ==
+
+These enhancements must apply WIDELY: improve the planning skills, context, templates and agent
+definitions as appropriate so the system tests efficiently WHERE IT COUNTS, rather than bogging down
+development with redundant testing. This is a planning-layer change, not a one-off flag on one
+script. This task is the GUIDANCE half of the batch: it changes how plans CHOOSE a verification
+tier, across the whole planning surface, so plans routinely pick the cheapest tier that actually
+covers the phase's blast radius.
+
+== THE MECHANISM EXISTS; SELECTION IS THE PROBLEM ==
+
+context/formats/plan-format.md ALREADY defines the four-tier ladder. Verified anchors:
+  - the ordering, prose < local < interface < full, at plan-format.md:258
+  - the per-tier table with each tier's declared blind spot at plan-format.md:265-269 (the `full`
+    row is :269)
+  - the tie-break rule at plan-format.md:271: "When uncertain, apply the strictest applicable tier
+    (full > interface > local > prose)"
+  - the non-negotiable invariant at plan-format.md:273-277
+  - the "a phase declaring `full` names bash .claude/scripts/verify-deploy.sh" requirement at
+    plan-format.md:279-282
+
+Nothing is missing from the ladder. The defect is that the tie-break at plan-format.md:271 is the
+ONLY selection guidance a planner gets, and it biases unconditionally toward `full` -- with no cost
+signal anywhere in the surrounding text and no requirement to justify the choice. A planner that
+follows the written guidance correctly lands on `full` by default.
+
+== WHAT `full` ACTUALLY COSTS (measured 2026-10-07; USE THIS, DO NOT RE-DERIVE) ==
+
+verify-deploy.sh is 20 gates. Gate 8 (verify-deploy.sh:566-596) is 92 suites / 44,682 lines of test
+code and roughly 70% of a full run's wall clock. Idle host: ~2.8 min for a full run. LOADED host
+with several concurrent agent sessions -- the owner's normal operating condition --
+context/standards/shell-script-testing.md records 14m1.5s sequential and 6m47.4s under --jobs auto.
+
+This cost is multiplied by context/contracts/phase-closure.md:167-169, which requires that a phase's
+declared verification "has been run in this dispatch and observed green" and is explicitly "never
+trusted on sight". A `full` declaration is therefore a real full gate run per phase per dispatch,
+not a formality.
+
+== THE LIVE INSTANCE (the shape the new guidance must catch) ==
+
+Task 361's plan declared `full` at Phase 4 -- a MID-task phase -- to verify edits to one guard
+script, running all 92 suites. Three details make it the canonical case:
+  - the relevant suite (test-guard-destructive-git.sh) had ALREADY been run directly on the line
+    above, so the full sweep added no information about the edit;
+  - the plan's own text says the drift findings the full gate would produce "are expected until
+    Phase 6" -- i.e. the plan knew the gate's output would be noise at that point;
+  - Phase 4 and Phase 6 BOTH ran the full gate under `timeout 3000`.
+A non-final phase paying the ceiling tier to produce findings the plan itself predicted and
+discounted is exactly the waste this task removes.
+
+== THE WORK ==
+
+Make a `full` tier at a NON-FINAL phase JUSTIFY ITSELF in the plan, while the FINAL phase always
+retains `full`. Apply it across the planning surface rather than in one file, because a rule written
+only in plan-format.md is not read at the moment a planner assigns a tier:
+
+  (1) context/formats/plan-format.md -- the tier definition and the tie-break. The tie-break at :271
+      is the specific line that needs a cost-aware qualification: keep strict-when-uncertain for the
+      FINAL phase, and require a stated reason for a non-final `full`. Settle the exact form (a
+      required justification line in the phase block, versus prose guidance alone); a required field
+      is checkable and prose is not, which argues for the field.
+  (2) agents/planner-agent.md -- where tier assignment ACTUALLY happens, at planner-agent.md:216-227
+      (step 8, which restates the strictest-when-uncertain bias at :220 and already carries the
+      do-not-weaken-the-final-gate MUST NOT at :227); the plan template field at
+      planner-agent.md:310-311; and the authoring checklist at planner-agent.md:384-385, which the
+      file itself calls the place "where authoring-time enforcement of the tier vocabulary actually
+      lives". That checklist is the enforcement point for any new required justification.
+  (3) context/workflows/task-breakdown.md -- the phase template carrying the tier field at
+      task-breakdown.md:76-78 and :94, plus the worked example at :131. A template that shows a bare
+      tier value teaches a bare tier value.
+  (4) context/contracts/phase-closure.md -- tier already participates in phase sizing at
+      phase-closure.md:53 ("the one with the smallest remaining work -- fewer steps, a lower
+      **Verification Tier**") and in the run-and-observe rule at :167-169. This is where a non-final
+      phase's cheaper tier has to be stated as closing the phase legitimately, or implementers will
+      escalate back to `full` out of caution.
+
+== DEPENDENCY, AND WHY ==
+
+Depends on the Gate 8 suite-selection task (366). Guidance telling a planner to pick a cheaper tier
+is only actionable if a cheaper tier has something to RUN: today a `local` or `interface` tier at
+Gate 8 granularity can run all 92 suites or none, because run-all.sh has no --filter/--only
+(verified, zero matches). This task's guidance cites the selection flag that task introduces. Landing
+the guidance first would produce plans that declare a cheap tier with no mechanism behind it.
+
+== MUST PRESERVE ==
+
+plan-format.md:273-277's non-negotiable invariant, verbatim in force: tiering governs GRANULARITY
+ONLY, "the full gate set still runs before a phase closes and before a task completes, unchanged",
+and "a tiering scheme that weakens the final gate is wrong, not a trade-off". The FINAL phase always
+retains `full`. This task adds a justification requirement at non-final phases; it does not add a
+cheaper option at the final one.
+
+Also binding: ROADMAP Settled decision 15 -- Gate 8's deployed-tree coverage is knowingly reduced
+under --skip-slow, so a --skip-slow pass is NOT evidence that doc-sync pins hold. The new guidance
+must not let a cheaper non-final tier be read as discharging that evidence, and must not present
+--skip-slow as a tier.
+
+== SCOPE EXCLUSION, DELIBERATE AND REASONED ==
+
+agents/reviser-agent.md is EXCLUDED, after checking. It carries no tier guidance of its own: it
+defers wholly to plan-format.md at reviser-agent.md:16 ("always load"), :93 ("Follow plan-format.md
+structure exactly") and :177. It therefore inherits this task's change by reference, and editing it
+would add an unnecessary overlap with an open task (299) for no behavioral gain. If research finds
+the revise path can reintroduce an unjustified `full` despite that deferral, record it as a
+FOLLOW-UP rather than widening scope here.
+
+== ACCEPTANCE: DEMONSTRATED, NOT ASSERTED ==
+
+  1. A real plan written under the new guidance declares a CHEAPER tier at a non-final phase, states
+     its justification, and STILL PASSES ITS FINAL GATE. Demonstrated end to end on an actual task,
+     not asserted in prose.
+  2. The live instance above is replayed: under the new guidance, that mid-task phase selects a
+     cheaper tier and the phase's edit remains genuinely covered -- show which suite covers it.
+  3. A non-final `full` is still ALLOWED where warranted, and its justification requirement is
+     satisfiable rather than a blocker. Show one such phase.
+  4. The final phase of every plan still declares `full` and names the complete gate set per
+     plan-format.md:279-282.
+  5. All four surfaces agree. No surviving copy of the old unqualified tie-break in any of the four
+     files, verified by grep, since a second copy is the drift mechanism.
+  6. If a required justification field is chosen, the authoring checklist at planner-agent.md:384-385
+     checks it, and a plan missing it is detectable.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- cite file AND line
+(the durable anchors used throughout this description), never a task number.
+
+---
+
+### 367. Reduce the deploy-staleness completion round trip without weakening the completion-deploy gate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**, a disposable
+deploy artifact), per rules/source-store-deploy-boundary.md.
+
+== OWNER FRAMING (carries across this three-task batch) ==
+
+These enhancements must apply WIDELY: improve the planning skills, context, templates and agent
+definitions as appropriate so the system tests efficiently WHERE IT COUNTS, rather than bogging
+down development with redundant testing. This is a planning-layer change, not a one-off flag on one
+script. This task is the batch's third cost surface: not redundant testing, but a redundant CYCLE
+spent re-deploying so an already-finished task can record its own completion.
+
+== THE OBSERVED COST, WITH ITS THREE MEASURED INSTANCES ==
+
+A task touching agent-system/** reliably finishes its work and then cannot record it. The postflight
+completion-deploy gate refuses the status write with exit 6, costing an extra redeploy cycle plus a
+reconcile-task-status.sh call. Three instances in a single session (2026-10-07): tasks 356, 358 and
+361's first dispatch each completed their work, were refused, and needed the extra cycle to record.
+The commit subject "promote stranded completions and stamp plan files" in this repository's history
+is the manual remedy being paid by hand. EACH REFUSED CYCLE BURNS A DISPATCH SLOT FROM MAX_CYCLES,
+which is the real damage -- the cost is not the deploy, it is the budget.
+
+== THE GATE IS CORRECT. DO NOT WEAKEN IT. ==
+
+The gate prevents recording a completion against a stale deploy, which is a genuine correctness
+property. The goal is to remove the WASTED CYCLE, not to soften the refusal. Any design whose effect
+is that a completion can be recorded against a stale deployed tree is wrong by construction and must
+be rejected in the plan, not traded off.
+
+Gate implementation sites, all verified in the source store 2026-10-07 (READ these; do not
+re-derive):
+  - scripts/update-task-status.sh:36 documents exit 6; the gate itself is PHASE 0.5, declared
+    "unconditional, check-only, exit 6" at :639, exiting at :787. CHECK-ONLY is the key property:
+    it refuses and changes nothing.
+  - scripts/command-gate-out.sh:180-189 is the rc==6 handler and ALREADY resolves the round trip on
+    its own path: it runs "the sanctioned single-task redeploy trigger" inline. The single-task
+    /implement path therefore does NOT exhibit this defect.
+  - scripts/skill-base.sh:1069-1080 records deploy_pending plus deploy_pending_reason into the
+    task's own .return-meta.json.
+  - scripts/orchestrate-cycle-postflight.sh:1149-1171 is the ORCHESTRATE path, and this is where the
+    cost lives: it does NOT redeploy, it DEFERS to the next cycle, and its notice at :1164 promises
+    the next cycle's Inter-Cycle Redeploy Checkpoint "deploys and then automatically reconciles this
+    task's status -- no manual action needed unless that deploy or its post-deploy verify fails".
+
+== THE ACTUAL DEFECT: AN EXISTING AUTOMATIC PROMOTION THAT DID NOT FIRE ==
+
+The promised automatic reconcile ALREADY EXISTS. scripts/lib/redeploy-checkpoint-lib.sh:51 defines
+run_post_deploy_reconcile_pass(), whose own header states it "Makes the checkpoint's own
+'convergence is deferred to the next cycle' promise real: promote every task THIS cycle's checkpoint
+just deploy-unblocked (post_deploy_reconcile_json, set above inside exactly the three clean-success
+branches -- never on branch (a) deploy failure or branch (b) blocking findings) by replaying
+reconcile-task-status.sh".
+
+So the mechanism exists, the promise at orchestrate-cycle-postflight.sh:1164 cites it, and yet three
+tasks in one session still required a hand-run reconcile. THAT CONTRADICTION IS THE TASK. Research
+must establish which of these is true before any fix is designed:
+  (a) the promotion pass did not run at all on those cycles;
+  (b) it ran but post_deploy_reconcile_json did not include those tasks -- note the header's own
+      restriction to "exactly the three clean-success branches", so a deploy with ANY blocking
+      finding silently promotes nothing; or
+  (c) it ran and promoted, but a later stage overwrote or re-refused the status.
+Fixing a cause that was not the cause is the main failure mode available here.
+
+== HARD CONSTRAINT: NO THIRD AUTOMATED DEPLOY-TRIGGER SITE ==
+
+ROADMAP Settled decision 10: the sanctioned automated deploy-trigger count stays at EXACTLY TWO.
+The remedy must reuse an existing sanctioned site; it may widen an existing trigger's PREDICATE
+(which context/patterns/regeneration-is-manual-only.md:165-179 records as explicitly permitted and
+already done once -- "only the REACH of its existing trigger predicate changed") but it may not add
+a new call site.
+
+A DIVERGENCE TO RESOLVE, NOT INHERIT: the two documents name DIFFERENT pairs.
+context/patterns/regeneration-is-manual-only.md:171 names "command-gate-out.sh's rc == 6 branch and
+commands/implement.md Step 4's batch-refusal trigger". scripts/lib/redeploy-checkpoint-lib.sh:13-16
+reports that scripts/tests/test-lint-deploy-caller-wrap.sh "enforces, by name, that
+deploy-headless.sh has EXACTLY TWO genuine automated callers in the whole corpus --
+orchestrate-cycle-plan.sh and command-gate-out.sh". The MECHANICAL source of truth is the lint.
+Establish which pair is authoritative and correct the prose; do not add a third site to satisfy
+either reading.
+
+ALSO BINDING: redeploy-checkpoint-lib.sh:13-32 records that an earlier attempt to move the
+deploy-headless.sh call into this library CORRECTLY FAILED test-lint-deploy-caller-wrap.sh, because
+a sourced library has no "last physical statement" to wrap and the genuine-caller census then found
+three files. That call was deliberately left INLINE in orchestrate-cycle-plan.sh. Do not re-attempt
+that move, and do not patch the lint to special-case a third shape -- the recorded rule is never
+weaken a test to make a refactor pass.
+
+== FILE_SCOPE EXCLUSIONS, DELIBERATE AND REASONED ==
+
+  - scripts/update-task-status.sh is EXCLUDED because the gate is correct and check-only: this task
+    must not edit the refusal. (It is also claimed by one open task.)
+  - scripts/orchestrate-cycle-postflight.sh is EXCLUDED. It is the deferral site, and it is claimed
+    by five open tasks (273, 284, 304, 335, 350); edging onto all five would park this small fix
+    behind the whole group. The remedy is designed to land in the shared promotion library instead,
+    so BOTH sanctioned sites inherit it from one change -- which is also the better design under
+    Settled decision 10. READ the deferral site; do not edit it. If research proves the fix cannot
+    live in the library alone, add the edge then rather than widening scope now.
+  - scripts/orchestrate-cycle-plan.sh is EXCLUDED for the same contention reason and because the
+    inline deploy-headless.sh call there must not be touched (see the lint constraint above).
+
+== ADMISSION GATE, DECLARED HONESTLY ==
+
+scripts/reconcile-task-status.sh IS on context/reference/orchestrator-critical-paths.json (one of
+its twelve script entries), so this task DOES trip the self-modification admission gate. Declared
+rather than dodged.
+
+== ACCEPTANCE: DEMONSTRATED, NOT ASSERTED ==
+
+  1. The cause is NAMED with evidence -- which of (a)/(b)/(c) above actually happened -- before any
+     fix is proposed. A fix without an identified cause does not satisfy this task.
+  2. A reproduction fixture: a task whose completion write is refused with exit 6, shown recording
+     its completion WITHOUT a hand-run reconcile-task-status.sh call. It must fail before the change
+     and pass after.
+  3. A counted before/after: dispatch cycles consumed from MAX_CYCLES for one agent-system-touching
+     task from work-done to status-recorded. The claim of this task is a reduction in that count, so
+     that count is the number to report.
+  4. The gate still refuses a completion against a genuinely stale deploy -- proven by a test that
+     keeps the tree stale and confirms exit 6 and an unchanged state.json.
+  5. The sanctioned automated deploy-caller census is still exactly two:
+     test-lint-deploy-caller-wrap.sh green, unmodified.
+  6. The documented pair in context/patterns/regeneration-is-manual-only.md matches what the lint
+     mechanically enforces.
+  7. scripts/tests/ passes. No suite may be weakened, skipped or deleted to make this land.
+  8. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- cite file AND line
+(the durable anchors used throughout this description), never a task number.
+
+---
+
+### 366. Suite-level selection within Gate 8: --filter/--only in run-all.sh plus the touched-file-to-suite mapping
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never .claude/**, a disposable
+deploy artifact), per rules/source-store-deploy-boundary.md.
+
+== OWNER FRAMING (carries across this three-task batch) ==
+
+These enhancements must apply WIDELY: improve the planning skills, context, templates and agent
+definitions as appropriate so the system tests efficiently WHERE IT COUNTS, rather than bogging
+down development with redundant testing. This is a planning-layer change, not a one-off flag on
+one script. This task is the MECHANISM half; the tier-selection-discipline task is the GUIDANCE
+half and depends on this one so its guidance can cite the flag introduced here.
+
+== THE GAP, LOCATED PRECISELY ==
+
+verify-deploy.sh --only-gate N,M already provides GATE-level selection. Selection WITHIN Gate 8
+does not exist: scripts/tests/run-all.sh has no --filter and no --only (verified by grep, zero
+matches). Its entire flag surface is run-all.sh:34 (usage) and the parse loop at run-all.sh:127-144
+-- exactly --quiet, --timings FILE, --jobs N|auto, --fail-on-new. So a task touching five files
+runs all 92 suites or none.
+
+Gate 8 is the dominant cost. verify-deploy.sh is 20 gates; Gate 8 (verify-deploy.sh:566-596, the
+invocation itself at :591) is 92 suites / 44,682 lines of test code and roughly 70% of a full
+run's wall clock. On an idle host a full run is ~2.8 min. On a LOADED host with several concurrent
+agent sessions -- the owner's normal operating condition --
+context/standards/shell-script-testing.md records 14m1.5s sequential and 6m47.4s under --jobs auto.
+
+== WHY THIS IS THE LIVE HALF OF AN ALREADY-DIAGNOSED PROBLEM ==
+
+context/standards/shell-script-testing.md already records the core finding verbatim: the
+orchestrator's redeploy checkpoints "were found to re-run the full shell-test battery 2-3 times per
+cycle ON TOP OF every dispatched implementation agent's own phase-gate run of the identical battery
+against the identical source-store tree -- a measured, dominant wall-clock cost, not additional
+coverage".
+
+The --skip-slow remedy was applied to the ORCHESTRATOR checkpoints ONLY
+(scripts/orchestrate-cycle-plan.sh:942, scripts/command-gate-out.sh:208, scripts/deploy-headless.sh).
+The AGENT-SIDE phase-gate re-run named in that same sentence was identified and LEFT IN PLACE.
+That is the live gap, and it cannot be closed by --skip-slow: an agent's mid-task phase gate needs
+REAL coverage of what the phase touched, not a skip. It needs SELECTION. Supplying that selection
+is this task's whole purpose.
+
+== THE WORK ==
+
+(1) Add subset selection to run-all.sh. Settle the flag name and surface (--filter PATTERN vs
+--only SUITE[,SUITE] vs both) rather than assuming; --only-gate already sets a naming precedent in
+verify-deploy.sh worth matching or deliberately departing from.
+
+(2) Build the mechanical touched-file -> suite mapping. The naming convention already supports it:
+guard-destructive-git.sh <-> test-guard-destructive-git.sh, lint-NAME.sh <-> test-lint-NAME.sh. Give
+the mapping a durable home of its own (scripts/lib/suite-selection-lib.sh is the declared candidate)
+so both run-all.sh and a future caller consume one implementation rather than two drifting copies.
+
+(3) The mapping MUST report what it could not map. A touched file with no derivable suite is the
+dangerous case: silently selecting zero suites would read as green. Decide and record the fail-safe
+direction (the house direction is fail-SAFE -- an unmapped touched file escalates to the full sweep
+rather than selecting nothing) and prove it with a test.
+
+== LOAD-BEARING CONSTRAINT: DEPLOYED-VS-SOURCE SUBJECT RESOLUTION ==
+
+A recorded measurement from the completed Gate 8 parallelization work states that 41 of 73 files
+then under scripts/tests/ prefer the DEPLOYED copy of their subject-under-test over the
+source-store copy. RE-MEASURE that ratio against today's 92 suites rather than carrying the old
+figure. It matters here because a source-store path is the mapping's INPUT while a deployed path may
+be the suite's actual subject -- a naive basename mapping can select a suite that is not in fact
+exercising the edited file. Do not design the mapping without resolving this.
+
+== MUST COMPOSE, NOT BYPASS ==
+
+Selection must compose with the existing machinery, all of it already load-bearing in run-all.sh:
+  - --jobs and its JOBS_CAP=4 plus the auto resolution (run-all.sh:156-167)
+  - the nested-invocation guard that forces JOBS=1 (run-all.sh:173)
+  - the separate sequential path kept deliberately byte-identical (run-all.sh:283-285) and the
+    parallel path (run-all.sh:325)
+  - LOAD_SENSITIVE_BASENAMES, which always runs alone and serially before the pool
+    (run-all.sh:353-364, indices at :380-384)
+  - the TOTAL_ACCOUNTED reconciliation (run-all.sh:429), which a selection pass must keep honest
+  - known-failures.txt and the EXPECTED/NEW classification (run-all.sh:260-264, :518-540)
+  - --timings
+Settled decision 13 (specs/ROADMAP.md) binds here: known-failures.txt is advisory and "never
+changes which suites run". Selection is therefore a strictly separate axis from it, and the two must
+not be conflated.
+
+== MUST PRESERVE ==
+
+The full sweep still runs at the final gate. context/formats/plan-format.md:273-277 states the
+non-negotiable invariant -- tiering governs GRANULARITY ONLY and a scheme that weakens the final
+gate "is wrong, not a trade-off". Nothing here may make Gate 8's own full invocation
+(verify-deploy.sh:591) narrower by default; selection is strictly OPT-IN at the call site.
+
+Settled decision 15 (specs/ROADMAP.md) also binds: Gate 8's deployed-tree coverage is knowingly
+reduced under --skip-slow, so a --skip-slow pass is NOT evidence that doc-sync pins hold. A selected
+subset pass is likewise not such evidence, and must not be presented as one.
+
+== DO NOT RE-PROPOSE (rejected alternatives recorded in run-all.sh's own header, with measurements) ==
+
+  - raising the --jobs cap above 4: suites rsync a ~16MB fixture tree or launch headless nvim, so N
+    concurrent copies blow past per-suite sizing
+  - a self-maintaining timing cache: mutable tree state, with gitignore and deploy-hygiene
+    consequences
+  - line count as a cost proxy: disproven, a 261-line suite cost ~391s while a 3,839-line suite
+    cost ~45s
+
+== FILE_SCOPE EXCLUSIONS, DELIBERATE AND REASONED ==
+
+Two files this task will touch are deliberately absent from file_scope under ROADMAP Settled
+decision 17 carve-out (b) (breadth: "a coarse shared path (a manifest, a root gate script, a
+directory-root scope) ... narrow the file_scope instead" of demanding an edge):
+
+  - agent-system/extensions/core/manifest.json -- the new test suite needs a one-line registration
+    in the tests/test-*.sh array (manifest.json:188 onward, 92 entries today). A manifest is the
+    named carve-out case and is claimed by six open tasks. Make the one-line addition; do not
+    declare it.
+  - agent-system/extensions/core/scripts/verify-deploy.sh -- a root gate script, claimed by two
+    open tasks. It is excluded because this task does NOT need it: Gate 8 keeps running the full
+    sweep unchanged, which is the MUST PRESERVE invariant above, and a cheaper tier invokes
+    run-all.sh with the new selection flag directly. If research concludes a verify-deploy.sh
+    pass-through is genuinely required, record it as a FOLLOW-UP rather than widening scope here.
+
+== SERIALIZING EDGES ADDED TO DOWNSTREAM TASKS (not to this one) ==
+
+Per Settled decision 17, an overlap is resolved by adding an edge, not by separating the pair. Two
+edges were added pointing AT this task rather than from it, because this task is a narrow
+single-flag enabler while both others are broad corpus refactors that benefit from selection
+already existing:
+
+  - 170 (isolate_shell_suites_from_host_state) owns
+    context/standards/shell-script-testing.md, this task's one contended path. Edge: 170 depends on
+    this task.
+  - 328 (systematic_script_and_test_corpus_efficiency) declares no file_scope but its own text
+    claims this exact ground -- "(b) The 85 test suites: cut per-suite startup cost and the Gate 8
+    117.9s figure" -- and it is the standing consumer of script-inventory.sh per Settled decision 16.
+    Edge: 328 depends on this task.
+
+== ACCEPTANCE: DEMONSTRATED, NOT ASSERTED ==
+
+  1. A MEASURED before/after wall-clock figure for a representative selected subset versus the full
+     sweep, both on the same host, with the host's concurrent-session load stated. A figure without
+     its load condition is not a result, given the 2.8min-vs-14min idle/loaded spread.
+  2. The pass/fail set of a selected run is a strict SUBSET of the full run's, with no suite
+     reporting differently under selection than without it.
+  3. An unmapped touched file demonstrably triggers the recorded fail-safe direction, proven by a
+     test, not by inspection.
+  4. --jobs, the nested guard, LOAD_SENSITIVE_BASENAMES serialization, TOTAL_ACCOUNTED,
+     known-failures.txt classification and --timings all behave identically with and without
+     selection.
+  5. With no selection flag passed, run-all.sh output is byte-identical to today's.
+  6. scripts/tests/ passes. No suite may be weakened, skipped or deleted to make this land.
+  7. shellcheck clean per context/standards/shell-strict-mode.md.
+
+DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- cite file AND line
+(the durable anchors used throughout this description), never a task number.
+
+---
 
 ### 365. Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate
 - **Status**: [NOT STARTED]
@@ -2557,7 +2991,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/**.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 170, Task 318, Task 322, Task 304, Task 303
+- **Dependencies**: Task 170, Task 303, Task 304, Task 318, Task 322, Task 366
 
 **Description**: Systematic top-to-bottom efficiency refactor of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Supersedes and folds in tasks 307, 308 and 270. Depends on 170, 318, 322, 304, 303.
 
@@ -4449,7 +4883,7 @@ DELIVERABLE RULE: no task numbers in deliverables outside specs/** (no-task-refe
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 206, Task 215, Task 250, Task 251
+- **Dependencies**: Task 206, Task 215, Task 250, Task 251, Task 366
 
 **Description**: Audit all shell test suites in the source store for assertions whose outcome depends on ambient host state, isolate each at the script-under-test's own documented env seams (or, where no seam is possible, by a technique appropriate to the axis), and record the isolation convention in `context/standards/shell-script-testing.md` so future suites inherit it by default.
 
