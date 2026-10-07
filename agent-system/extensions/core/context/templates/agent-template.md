@@ -108,6 +108,11 @@ See `.claude/rules/error-handling.md`. Agent-specific overrides documented here.
 - Secondary artifact: `specs/{NNN}_{SLUG}/summaries/MM_{short-slug}-summary.md`
 - Phase-level git commits: `task {N} phase {P}: {name}`
 - Status transitions: `implementing` -> `implemented`/`partial`
+- Carry the bounded-wait MUST / MUST NOT bullet pair from
+  `.claude/context/patterns/bounded-build-waiter.md`'s "Canonical Agent-Contract Bullet
+  (Generated-Copy Source)" section in `## Critical Requirements`, verbatim — this is
+  forward-looking only (it covers a newly authored agent by construction) and is not a
+  substitute for propagating the bullet pair into any already-existing agent definition.
 
 ## Related Context
 

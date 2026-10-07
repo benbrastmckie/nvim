@@ -91,6 +91,92 @@ pass (`run_build_waiter_pass`) is exactly such a reaper, matching this canonical
 `commands/refresh.md`'s "Orphaned Build Waiters" section for the full detection and
 self-exclusion contract.
 
+## Canonical Agent-Contract Bullet (Generated-Copy Source)
+
+This section is the single authoritative source for the bounded-wait MUST / MUST NOT bullet pair
+that every in-scope dispatchable implementation agent carries in its `## Critical Requirements`
+list. It exists so the bullet pair has exactly one place to edit, instead of drifting
+independently across the agent files that carry a literal copy.
+
+### Generated-Copy Source, Not an `@`-Import
+
+**This section is a generated-copy source, read by a human or a lint script — it is NOT
+`@`-imported into agent bodies at spawn time.** `@`-references inside an agent body do not
+auto-resolve when Claude Code spawns a subagent, so each in-scope agent body carries a **literal
+copy** of the bullet text below; `lint-agent-contracts.sh` Check H keeps every copy in sync by
+comparing it against this file, not against a string baked into the lint. This mirrors the
+precedent already established twice in this same script, by `no-task-references-bullet.md` (its
+own Check C) and `plan-status-ownership.md` (its own Check G).
+
+### Copy this exact text
+
+Copy both bullets below, verbatim and each on a single physical line, into the target agent's
+`## Critical Requirements` MUST and MUST NOT lists respectively, as the next sequential item of
+each. Do not renumber or reword any surrounding bullet.
+
+MUST bullet:
+
+```
+Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+```
+
+MUST NOT bullet:
+
+```
+Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
+```
+
+### Classification Rule
+
+An agent MUST carry this bullet pair if and only if it is a dispatchable implementation agent
+that can run a local verification, gate, build, or test command (every implementation agent
+across core and every extension, hard-mode variants included — see the Item 3 ruling below).
+Three files are recorded exclusions, each for a per-file reason rather than an oversight:
+
+- `core/agents/general-implementation-agent.md` — the contract's authoritative home. This is the
+  full prose block the bullet pair above is condensed from; it is deliberately not edited to
+  carry the condensed copy of its own source text.
+- `lean/agents/lean-implementation-agent.md` and `lean/agents/lean-implementation-hard-agent.md`
+  — these carry a domain-adapted, sanctioned background-build path routed through the Lean build
+  guard (`lake-build-guard.sh`), a different legitimate mechanism satisfying the same underlying
+  rule rather than an unfixed gap.
+
+A future agent addition must be classified by this rule and added to the lint's curated
+in-scope array explicitly — the check does not infer scope from a filename glob.
+
+### Item 3 Ruling: Hard Variants Do Not Inherit
+
+Hard-mode agent files (e.g. `*-implementation-hard-agent.md`) do not inherit this bullet pair
+from their non-hard sibling. A hard-mode file's "Extends `{sibling}-implementation-agent`"
+language is prose documentation of intent, not a file-inclusion or generation mechanism — nothing
+mechanically copies the sibling's `## Critical Requirements` list into the hard variant. The
+evidence is direct: both measured hard variants (`books-implementation-hard-agent.md`,
+`cslib-implementation-hard-agent.md`) are missing the bullet pair independently of their non-hard
+sibling's own coverage state. Each hard-mode agent file therefore carries its own literal copy
+and is listed independently in the lint's curated in-scope array.
+
+### Item 4 Ruling: Research Agents Are Out of Scope Here, Not Dismissed
+
+Research agents are plausibly exposed to the identical defect class: `general-research-agent.md`
+already carries the external/remote-wait discipline (the `external-process-wait.md` idiom) but
+neither half of this local-background bullet pair, and several domain research agents hold Bash
+access explicitly for verification or build commands. The Lean research agents'
+`run_in_background` occurrences are the separate, sanctioned Lean build-guard path, not partial
+coverage of this contract, so they do not change this ruling.
+
+This change rules research-agent propagation **out of its own scope**, not out of relevance: the
+measured coverage gap and this change's acceptance surface are implementation-agent-scoped only.
+Extending the identical fragment-and-lint-check mechanism to research agents is recorded as a
+follow-up recommendation, reusing this same generated-copy section and the same lint shape against
+a separately curated research-agent in-scope array.
+
+### Brittleness Note
+
+This section is the single edit point for the bullet pair's wording. A future wording change here
+is expected to be followed by a mechanical re-propagation pass across every literal copy — the
+same brittleness already accepted for the `no-task-references-bullet.md` and
+`plan-status-ownership.md` fragments this section's shape mirrors.
+
 ## Conforming Examples
 
 - **`lake-build-guard.sh`** already documents this idiom in its own header and `print_help()`:

@@ -152,15 +152,16 @@ inherited from the task description and research, not a fact, until this phase r
 
 ---
 
-### Phase 2: Author the Single Canonical Home, the Rulings, and the Template Complement [NOT STARTED]
+### Phase 2: Author the Single Canonical Home, the Rulings, and the Template Complement [COMPLETED]
 
 **Goal**: Create exactly one hand-edited source for the propagated bullet pair, inside an existing
 file, and record the item 1/3/4 rulings in writing — including the rejected candidate homes.
 
 **Tasks**:
-- [ ] Re-read `core/agents/general-implementation-agent.md` lines ~158-200 and extract the
+- [x] Re-read `core/agents/general-implementation-agent.md` lines ~158-200 and extract the
       MUST/MUST-NOT wording **verbatim**. Do not re-derive or reword it.
-- [ ] Append a new section to the **existing** `core/context/patterns/bounded-build-waiter.md`
+      *(completed: confirmed verbatim text at lines 170-181)*
+- [x] Append a new section to the **existing** `core/context/patterns/bounded-build-waiter.md`
       (an edit, not a new file), placed after "The Canonical Idiom" and before "Conforming
       Examples", structured on `no-task-references-bullet.md`'s shape:
       - `## Canonical Agent-Contract Bullet (Generated-Copy Source)` with a "Generated-Copy
@@ -204,17 +205,19 @@ file, and record the item 1/3/4 rulings in writing — including the rejected ca
         recommended as a follow-up reusing this identical fragment-and-check mechanism.
       - A one-line brittleness note: this file is the single edit point, and a wording change here
         is expected to be followed by a mechanical re-propagation pass across every copy.
-- [ ] Edit the `### Implementation Agent` subsection of
+- [x] Edit the `### Implementation Agent` subsection of
       `core/context/templates/agent-template.md` (the canonical structure `meta-builder-agent`
       generates from) to add one bullet directing a newly authored implementation agent to carry
       the bounded-wait MUST/MUST-NOT pair from
       `.claude/context/patterns/bounded-build-waiter.md`'s canonical-bullet section.
-- [ ] Record, in the same fragment section, that the template complement is **forward-looking
+- [x] Record, in the same fragment section, that the template complement is **forward-looking
       only**: it fixes no existing file and is not a substitute for the propagation in Phase 3 or
       the lint in Phase 4.
-- [ ] Verify no `specs/` path and no "task N"-shaped string entered either file:
+      *(completed: stated in the agent-template.md bullet itself)*
+- [x] Verify no `specs/` path and no "task N"-shaped string entered either file:
       `bash .claude/scripts/check-task-references.sh` (or the repo-wide lint equivalent) over the
       two touched paths.
+      *(completed: both files PASS, 0 occurrences)*
 
 **Timing**: 1.0 hours
 
