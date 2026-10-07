@@ -126,6 +126,19 @@ landed as exactly one commit, with its own phase-end handoff folded inside it.
   (`skill-orchestrate/SKILL.md`, `orchestrate-cycle-postflight.sh`) confirmed untouched by
   `git show --stat` on each of this task's three phase commits; no extension implementation
   agent touched; net document count flat (no file added under `agent-system/**`).
+- **Re-confirmation re-dispatch** (postflight's completion-deploy gate had refused the prior
+  dispatch because `modified_files` overlap `agent-system/extensions/**` and the deploy was
+  stale — redeploy is handled by `orchestrate-cycle-plan.sh`'s redeploy checkpoint, not by this
+  implementation dispatch): re-ran all task-scoped checks. `check-task-references.sh` — PASS (0
+  occurrences) on all four changed `.md` files, confirmed again. `bash
+  .claude/scripts/verify-deploy.sh --skip-slow` — 3 of 33 checks FAIL: Gate 3 (doc-lint) and
+  Gate 5 (manifest content-hash parity, 12 findings) are the same deploy-staleness class already
+  documented above (now including this task's four files, since `.claude/` still has not been
+  regenerated); Gate 10 (`validate-state.sh --deep`: "TODO.md is OUT OF SYNC with
+  specs/state.json") is unrelated to this task — `TODO.md`/`state.json` are not in this task's
+  `file_scope`, and the drift is attributable to concurrent cycle activity (other in-flight
+  tasks' state writes), not to any change this task made. No new edit was required; all four
+  phases' commits and content were re-verified unchanged and correct.
 
 ## Impacts
 
@@ -158,13 +171,11 @@ landed as exactly one commit, with its own phase-end handoff folded inside it.
   behavior only. No consumer repository was touched, and none should be — existing history in
   any consumer repository, including the Logos/Verification repo's measured eight-commit
   evidence, stays exactly as it is.
-- **Uncommitted `index-entries.json` correction** (action needed, small): a verified 2-line
-  `line_count` fix for `contracts/phase-closure.md` and `standards/git-staging-scope.md` remains
-  uncommitted in the working tree (see Plan Deviations) because `index-entries.json` is outside
-  this task's declared `file_scope` and the Phase-Commit Containment Self-Check accordingly
-  drops it from this task's own commits. A future dispatch touching `index-entries.json`, or a
-  manual `git add agent-system/extensions/core/index-entries.json && git commit`, should land
-  it — the fix itself needs no further changes, only a commit.
+- **Uncommitted `index-entries.json` correction — RESOLVED**: the 2-line `line_count` fix for
+  `contracts/phase-closure.md` and `standards/git-staging-scope.md`, left uncommitted by the
+  Phase-Commit Containment Self-Check above, landed in commit `2f881794c` (same session,
+  `agent-system: correct two index-entries line_count values for grown context files`). No
+  further action needed on this item.
 - **Deploy-sync lag** (recommendation, informational): `.claude/` has not been regenerated via
   `deploy-headless.sh` since this and two sibling tasks' concurrent source-store edits landed.
   The next full `verify-deploy.sh` run after a deploy will clear the 12 Gate 5 / 1 Gate 3
