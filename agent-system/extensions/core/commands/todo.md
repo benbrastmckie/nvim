@@ -254,158 +254,6 @@ so a deferred parent's archive-list entry is held back WITHOUT the parent being 
 `active_projects`. Step 5A (archive/state.json insertion) and Step 5D (directory move) both
 iterate `archivable_tasks[]` — the guard-filtered list — never a freshly-recomputed status match.
 
-### 3.5. Scan Roadmap for Task References (Structured Matching)
-
-**Do NOT auto-create `specs/ROADMAP.md`** if it is absent before scanning. An absent roadmap is
-"no roadmap tracked" -- a supported state, not a repair trigger; `roadmap-integration.sh` itself
-treats absence this way (exits 0, emits the `roadmap_absent` warning below, and does not
-recreate the file). Re-creating the file here, ahead of the script call, would silently defeat
-that contract and make any deliberate deletion of the roadmap never stick.
-
-**IMPORTANT**: Meta tasks (task_type: "meta") are excluded from ROADMAP.md matching since they
-modify system infrastructure rather than project deliverables. Expanded tasks are excluded for a
-structural reason: an expanded task has no `completion_summary` of its own by construction (its
-subtasks carry the deliverables), so a future reader must not "fix" this by requiring one.
-`roadmap-integration.sh` has no `task_type` filter and no abandoned-status branch of its own (see
-its header's "Caller contract" section), so this exclusion partition is entirely `/todo`'s
-responsibility -- the script cannot do it for us.
-
-**Step 3.5.1: Separate roadmap-excluded and roadmap-eligible tasks**:
-```bash
-# Separate archivable tasks: excluded from ROADMAP.md matching vs. eligible for it
-roadmap_excluded_tasks=()
-roadmap_eligible_tasks=()
-
-for task in "${archivable_tasks[@]}"; do
-  task_type=$(echo "$task" | jq -r '.task_type // "general"')
-  task_status=$(echo "$task" | jq -r '.status')
-  if [ "$task_type" = "meta" ] || [ "$task_status" = "expanded" ]; then
-    roadmap_excluded_tasks+=("$task")
-  else
-    roadmap_eligible_tasks+=("$task")
-  fi
-done
-```
-
-**Step 3.5.2: Parse-only invocation of `roadmap-integration.sh`**:
-
-This step replaces `/todo`'s own checkbox-only, table-blind grep matcher entirely. Calling the
-shared script in parse-only mode (no `--annotate`) gives `/todo` full table-row-aware parsing,
-the complete `roadmap_matches[]` list (with `confidence`, `match_type`, and for table rows
-`line_index`/`raw_line`/`status_index`), and the always-on `roadmap_structure`/`parseable`/
-`warnings` diagnostics -- with zero duplicate parsing code. `/todo` never implements matching
-itself from this point forward; it only ever constructs an input and reads a payload.
-
-```bash
-# Parse-only call: no --annotate. Capture the invocation's own exit status immediately -- do not
-# rely solely on the file-existence guard below, mirroring commands/review.md's Step 2.5 pattern.
-roadmap_exit=0
-roadmap_output=$(bash .claude/scripts/roadmap-integration.sh \
-  --roadmap specs/ROADMAP.md \
-  --state specs/state.json) || roadmap_exit=$?
-```
-
-**Step 3.5.3: Extract structured fields for downstream use**:
-```bash
-roadmap_state=$(echo "$roadmap_output" | jq '.roadmap_state')
-roadmap_matches_raw=$(echo "$roadmap_output" | jq '.roadmap_matches')
-roadmap_structure=$(echo "$roadmap_output" | jq '.roadmap_structure')
-roadmap_warnings=$(echo "$roadmap_output" | jq '.warnings')
-annotation_summary=$(echo "$roadmap_output" | jq '.annotation_summary')
-high_confidence_matches=$(echo "$annotation_summary" | jq '.high_confidence_matches')
-silent_noop=$(echo "$annotation_summary" | jq '.silent_noop')
-```
-
-**Error handling** (identical contract to `commands/review.md`'s Step 2.5): if
-`roadmap-integration.sh` is missing, exits non-zero, or produces empty output, log a visible
-warning and fall back to the same fully-defined defaults. Both "script missing" and "script
-present but failed" must surface the same warning and fallback -- neither is allowed to fail
-silently, and no downstream branch is left reading an unbound variable:
-
-```bash
-if [ ! -f .claude/scripts/roadmap-integration.sh ]; then
-  echo "Warning: roadmap-integration.sh not found -- skipping roadmap integration" >&2
-  roadmap_state='{"phases":[],"status_tables":[]}'
-  roadmap_matches_raw='[]'
-  roadmap_structure='{"phases":0,"checkboxes":0,"table_rows":0,"parseable":false}'
-  roadmap_warnings='[]'
-  high_confidence_matches=0
-  silent_noop=false
-  roadmap_no_match=false
-elif [[ "$roadmap_exit" -ne 0 ]] || [[ -z "$roadmap_output" ]]; then
-  echo "Warning: roadmap-integration.sh exited $roadmap_exit or produced empty output -- skipping roadmap integration" >&2
-  roadmap_state='{"phases":[],"status_tables":[]}'
-  roadmap_matches_raw='[]'
-  roadmap_structure='{"phases":0,"checkboxes":0,"table_rows":0,"parseable":false}'
-  roadmap_warnings='[]'
-  high_confidence_matches=0
-  silent_noop=false
-  roadmap_no_match=false
-fi
-```
-
-**Step 3.5.4: Eligibility filter -- where meta/expanded exclusion is enforced**:
-
-`roadmap-integration.sh` has no `task_type` filter of its own (see its header's "Caller
-contract"), so `/todo` reduces the raw match list to only the tasks Step 3.5.1 classified as
-eligible. Everything downstream of this step consumes `roadmap_eligible_matches[]`, never
-`roadmap_matches_raw`:
-
-```bash
-roadmap_eligible_nums=$(printf '%s\n' "${roadmap_eligible_tasks[@]}" | jq -s '[.[] | .project_number]')
-roadmap_eligible_matches=$(echo "$roadmap_matches_raw" | jq --argjson eligible "$roadmap_eligible_nums" \
-  '[.[] | select(.matched_task as $t | $eligible | index($t) != null)]')
-```
-
-**Step 3.5.5: `roadmap_no_match` -- distinct silent-zero signal**:
-
-Distinguishes "eligible completed tasks and open roadmap items both existed, but nothing
-matched" from "there was legitimately nothing to compare". Derived from data already in scope
-above -- no new script call, no new matcher tier. `roadmap_open_checkbox_count` is the count of
-still-open (`- [ ]`) items across `roadmap_state`, null-safe against the fallback shape:
-
-```bash
-roadmap_open_checkbox_count=$(echo "$roadmap_state" | jq \
-  '[.phases[].checkboxes.items[]? | select(.completed == false)] | length')
-roadmap_no_match=false
-if [ "${#roadmap_eligible_tasks[@]}" -gt 0 ] && \
-   [ "$(echo "$roadmap_eligible_matches" | jq 'length')" -eq 0 ] && \
-   [ "$roadmap_open_checkbox_count" -gt 0 ]; then
-  roadmap_no_match=true
-fi
-```
-
-`roadmap_no_match` is defined unconditionally on the main path above. It must ALSO be defined
-`false` in both error-handling fallback blocks below (Step 3.5.3's "script missing" and "script
-present but failed" branches), matching the existing treatment of `high_confidence_matches` /
-`silent_noop`, so no downstream branch ever reads an unbound variable.
-
-Track:
-- `roadmap_excluded_tasks[]` - Array of tasks excluded from ROADMAP.md matching (meta tasks, and
-  expanded tasks since they have no `completion_summary` of their own by construction)
-- `roadmap_eligible_tasks[]` - Array of tasks eligible for ROADMAP.md matching
-- `roadmap_structure` / `roadmap_warnings` - The always-on structure signal and warning codes
-  from `roadmap-integration.sh`, present in every mode
-- `roadmap_eligible_matches[]` - The script's `roadmap_matches[]`, filtered to eligible tasks --
-  the sole input to Step 4's dry-run output and Step 5.5's annotation
-- `high_confidence_matches` / `silent_noop` - From `annotation_summary`, always defined even
-  though no annotation has run yet (parse-only mode reports 0/false, never an unbound variable)
-- `roadmap_no_match` - True iff eligible completed tasks existed, none matched any roadmap item,
-  and at least one open roadmap checkbox remains; always defined, never left unbound
-
-**Match Types** (the shared script's vocabulary -- both checkbox and table-row matching are live
-paths in the script, regardless of which shape the file currently has. This repository's actual
-`ROADMAP.md` is currently checkbox-based with zero table rows (a parse-only run reports
-`checkboxes: 12, table_rows: 0`), but a future table-based roadmap would populate
-`roadmap_eligible_matches[]` from the table-row path exactly the same way -- neither format is
-dead code):
-- `confidence`: `high` (auto-annotate candidate), `medium`, or `low` (report only)
-- `match_type`: `explicit_task_ref`, `explicit_roadmap_item`, `exact_title_match`,
-  `title_match`, or `keyword_match` -- see the script's `find_match` heuristic
-- Checkbox-sourced matches carry no `source` key; table-row-sourced matches carry
-  `source: "status_table"` plus `line_index`/`raw_line`/`status_index`, which the annotation
-  step (Step 5.5) uses to locate and safely rewrite the matched row in place
-
 ### 4. Dry Run Output (if --dry-run)
 
 ```
@@ -439,60 +287,12 @@ Misplaced directories in specs/ (tracked in archive/, will be moved): {N}
 - {N8}_{SLUG8}/
 - {N9}_{SLUG9}/
 
-Roadmap updates (from completion summaries):
-
-Task #{N1} ({project_name}):
-  Summary: "{completion_summary}"
-  Matches:
-    - {roadmap_item text} (confidence: high, match_type: explicit_roadmap_item)
-    - {roadmap_item text 2} (confidence: high, match_type: explicit_task_ref)
-
-Task #{N2} ({project_name}):
-  Summary: "{completion_summary}"
-  Matches:
-    - {roadmap_item text} (confidence: high, match_type: exact_title_match)
-
-Task #{N3} ({project_name}) [abandoned]:
-  Matches:
-    - {roadmap_item text} -> *(Task {N} abandoned)*
-
-Total roadmap items to update: {N}
-- Completed: {N} (from roadmap_high_confidence_matches / roadmap_completed_annotated)
-- Abandoned: {N}
-
 Total tasks: {N}
 Total orphans: {N} (specs: {N}, archive: {N})
 Total misplaced: {N}
 
 Run without --dry-run to archive.
 ```
-
-**Roadmap section inclusion is a five-way branch, never a bare "found nothing" omission**:
-- `roadmap_structure.parseable == true`, `roadmap_eligible_matches[]` is empty, AND
-  `roadmap_no_match == false`: omit the "Roadmap updates" section entirely -- legitimately
-  nothing to do.
-- `roadmap_warnings` contains `roadmap_absent` (checked before the generic unparseable case
-  below, since an absent roadmap also carries `parseable == false` but is a distinct, non-error
-  condition): print
-  `Note: no ROADMAP.md tracked (specs/ROADMAP.md is absent) -- roadmap integration skipped; this is a supported state, not an error`
-  (matching `commands/review.md`'s wording verbatim), and skip the generic unparseable message
-  below entirely for this run.
-- `roadmap_structure.parseable == false` (and `roadmap_absent` did NOT fire): **always** print,
-  regardless of match count:
-  `Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload`
-  (matching `commands/review.md`'s wording verbatim).
-- `roadmap_silent_noop == true` (from Step 3.5's `annotation_summary.silent_noop` -- i.e. high
-  confidence matches exist but none would apply): print
-  `Warning: roadmap annotation no-op ({roadmap_high_confidence_matches} high-confidence match(es), 0 applied) -- see skipped_reasons in the payload`.
-- `roadmap_no_match == true` (eligible completed tasks and open roadmap items both existed, but
-  no task's `roadmap_items` matched any of them): print
-  `No roadmap items matched this run's {N} eligible completed task(s) against {M} open roadmap item(s) -- no task populated roadmap_items; see completion_data.roadmap_items`
-  where `{N}` = `${#roadmap_eligible_tasks[@]}` and `{M}` = `roadmap_open_checkbox_count`.
-
-**Invariant**: omission of the "Roadmap updates" section is permitted only when the roadmap
-parsed successfully (`parseable == true`) AND there were genuinely no eligible matches AND
-`roadmap_no_match == false`. An unparseable roadmap is never reportable as a successful (or
-silent) annotation pass.
 
 If no expanded parents were deferred (`deferred_expanded[]` is empty), omit the "Deferred" section.
 
@@ -557,8 +357,7 @@ If no misplaced directories were found, skip this step and proceed.
 ### 5. Archive Tasks
 
 Initialize the Step 6 commit's explicit pathspec accumulator. This archival operation's real
-write set is inherently dynamic (which directories move, whether the roadmap gets annotated,
-whether a vault rotation fires), so Step 6 stages exactly this array rather than a bare `specs/`
+write set is inherently dynamic (which directories move, whether a vault rotation fires), so Step 6 stages exactly this array rather than a bare `specs/`
 directory pathspec -- a bare directory token would sweep any OTHER concurrent session's
 in-progress, uncommitted `specs/` writes into this commit too:
 ```bash
@@ -769,96 +568,6 @@ done
 Track misplaced operations for output reporting:
 - misplaced_moved: count of directories moved from specs/ to archive/
 
-### 5.5. Update Roadmap for Archived Tasks
-
-`/todo` never implements checkbox or table-row rewriting itself: it constructs a filtered input
-and reads a payload from `roadmap-integration.sh`. Completed-task annotation is delegated
-entirely to the script's `--annotate` mode; abandoned-task annotation stays `/todo`-owned, since
-the script has no code path for it at all (see the script's header "Caller contract").
-
-**1. Build the filtered snapshot -- MUST be captured from Step 3.5's pre-archival data**:
-
-Step 5.5 runs *after* Step 5 archival. By then, archived tasks have already been removed from
-`active_projects` and moved into `specs/archive/state.json`. An `--annotate` call pointed at the
-live `specs/state.json` at this point would therefore see none of the tasks being archived --
-the snapshot must instead be synthesized from `roadmap_eligible_tasks[]`, captured at Step 3.5
-*before* Step 5's archival mutated state:
-
-```bash
-# Scratch directory for the snapshot -- input only, never a write target. Removed via trap.
-snapshot_dir=$(mktemp -d)
-trap 'rm -rf "$snapshot_dir"' EXIT
-
-# Filter Step 3.5's pre-archival roadmap_eligible_tasks[] to completed-status entries only.
-# (Abandoned-status entries are handled by /todo's own branch in step 3 below, not by the script.)
-completed_eligible_json=$(printf '%s\n' "${roadmap_eligible_tasks[@]}" | jq -s '[.[] | select(.status == "completed")]')
-jq -n --argjson projects "$completed_eligible_json" '{"active_projects": $projects}' > "${snapshot_dir}/state.json"
-```
-
-Two safety rules govern this snapshot:
-- **Input only, never written back**: the snapshot is passed solely as `--state`; the real
-  `specs/state.json` is never touched by this step.
-- **No sibling archive on purpose**: `roadmap-integration.sh` resolves its archive input as the
-  sibling `${STATE_PATH%state.json}archive/state.json` (see the script's header). Since
-  `${snapshot_dir}/archive/state.json` does not exist, previously archived tasks are deliberately
-  excluded from this run's annotation -- only this run's newly-completed tasks are ever
-  annotated. This is documented, load-bearing behavior, not an accident to work around.
-
-**2. Invoke the script in `--annotate` mode against the real ROADMAP.md, filtered snapshot as state**:
-```bash
-annotate_output=$(bash .claude/scripts/roadmap-integration.sh \
-  --roadmap specs/ROADMAP.md \
-  --state "${snapshot_dir}/state.json" \
-  --annotate) || true
-
-annotate_summary=$(echo "$annotate_output" | jq '.annotation_summary')
-roadmap_completed_annotated=$(echo "$annotate_summary" | jq '.annotations_made')
-roadmap_items_skipped=$(echo "$annotate_summary" | jq '.items_skipped')
-roadmap_skipped_reasons=$(echo "$annotate_summary" | jq '.skipped_reasons')
-roadmap_high_confidence_matches=$(echo "$annotate_summary" | jq '.high_confidence_matches')
-roadmap_silent_noop=$(echo "$annotate_summary" | jq '.silent_noop')
-```
-
-**3. Abandoned-task annotation -- `/todo`-owned, gated on `parseable`**:
-
-The script has no abandoned-status branch at all (its `COMPLETED_TASKS` query only ever selects
-`status == "completed"`). `/todo` retains this annotation itself, gated on the same
-`roadmap_structure.parseable` flag Step 3.5 captured: when `parseable` is `false`, do not attempt
-the annotation -- emit Step 4's `roadmap_absent` note (if the roadmap is absent) or its
-unparseable warning (otherwise) instead of silently no-op'ing.
-
-For each abandoned task in `roadmap_eligible_matches[]` (Step 3.5), skip if the matched line
-already contains `*(Task {N} abandoned:` or `*(Completed:`, else:
-```
-Edit old_string: "- [ ] {item_text}"
-     new_string: "- [ ] {item_text} *(Task {N} abandoned: {short_reason})*"
-```
-Track `roadmap_abandoned_annotated` as the count of these edits applied.
-
-If either annotation count is nonzero, `specs/ROADMAP.md` was written this run -- add it to the
-Step 6 commit's pathspec accumulator:
-```bash
-if [ "${roadmap_completed_annotated:-0}" -gt 0 ] || [ "${roadmap_abandoned_annotated:-0}" -gt 0 ]; then
-  stage_paths+=(specs/ROADMAP.md)
-fi
-```
-
-**4. Track changes for output reporting**:
-- `roadmap_completed_annotated` - from the script's `annotation_summary.annotations_made`
-- `roadmap_abandoned_annotated` - from `/todo`'s own abandoned-path count (step 3 above)
-- `roadmap_items_skipped` / `roadmap_skipped_reasons` - from the script's `annotation_summary`
-- `roadmap_high_confidence_matches` / `roadmap_silent_noop` - from the script's
-  `annotation_summary`, so a no-op annotate run can never be indistinguishable from success
-
-**Safety Rules**:
-- Enforced by `roadmap-integration.sh` for the completed-task path: skip items already containing
-  `*(Completed:` (checkbox and table-row branches both check this at the exact captured line, not
-  by text search); one edit per item; the table-row branch additionally guards against a stale
-  `line_index`/`raw_line` mismatch before writing.
-- Remain `/todo`'s own responsibility for the abandoned-task path: skip items already containing
-  `*(Task {N} abandoned:` or `*(Completed:`; preserve existing formatting and indentation; one
-  edit per item; never remove existing content.
-
 ### 5.7. Vault Operation (when next_project_number > 1000)
 
 When `next_project_number` exceeds 1000, initiate vault archival operation to reset task numbering.
@@ -1042,29 +751,18 @@ bash .claude/scripts/git-commit-scoped.sh \
   -- "${stage_paths[@]}"
 ```
 
-Include roadmap, orphan, and misplaced counts in message as applicable (same `stage_paths`
+Include orphan and misplaced counts in message as applicable (same `stage_paths`
 accumulated above; only the `--message` text varies across these variants):
 ```bash
-# If roadmap items updated, orphans tracked, and misplaced moved:
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items, track {M} orphans, move {P} misplaced" --session "${session_id}" -- "${stage_paths[@]}"
-
-# If roadmap items updated only:
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items" --session "${session_id}" -- "${stage_paths[@]}"
-
-# If roadmap items updated and orphans tracked:
-bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, update {R} roadmap items, track {M} orphaned directories" --session "${session_id}" -- "${stage_paths[@]}"
-
-# If orphans tracked and misplaced moved (no roadmap):
+# If orphans tracked and misplaced moved:
 bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks, track {M} orphans, move {P} misplaced directories" --session "${session_id}" -- "${stage_paths[@]}"
 
-# If only orphans tracked (no roadmap):
+# If only orphans tracked:
 bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and track {M} orphaned directories" --session "${session_id}" -- "${stage_paths[@]}"
 
-# If only misplaced moved (no roadmap):
+# If only misplaced moved:
 bash .claude/scripts/git-commit-scoped.sh --message "todo: archive {N} tasks and move {P} misplaced directories" --session "${session_id}" -- "${stage_paths[@]}"
 ```
-
-Where `{R}` = roadmap_completed_annotated + roadmap_abandoned_annotated (total roadmap items updated).
 
 ### 6.5. Sync Repository Metrics
 
@@ -1151,18 +849,6 @@ Deferred: {F} expanded parent(s) held back (subtasks still active)
 {If orphans or misplaced processed:}
 Cleanup: {O} orphans tracked, {P} misplaced moved
 
-{If roadmap updated:}
-Roadmap: {R} items updated ({roadmap_completed_annotated} completed, {roadmap_abandoned_annotated} abandoned)
-
-{If roadmap_structure.parseable == false:}
-Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload
-
-{If roadmap_silent_noop == true:}
-Warning: roadmap annotation no-op ({roadmap_high_confidence_matches} high-confidence match(es), 0 applied) -- see skipped_reasons in the payload
-
-{If roadmap_no_match == true:}
-No roadmap items matched this run's {N} eligible completed task(s) against {M} open roadmap item(s) -- no task populated roadmap_items; see completion_data.roadmap_items
-
 {If CLAUDE.md suggestions:}
 CLAUDE.md: {applied}/{total} suggestions applied
 
@@ -1181,22 +867,8 @@ Next Steps:
 | Directories | directories_moved > 0 |
 | Deferred | deferred_expanded[] is non-empty |
 | Cleanup | orphans_tracked > 0 OR misplaced_moved > 0 |
-| Roadmap | roadmap_completed_annotated + roadmap_abandoned_annotated > 0, OR `parseable == false`, OR `roadmap_silent_noop == true`, OR `roadmap_no_match == true` |
-
-Same four-way branch as Step 4's dry-run output:
-- `roadmap_structure.parseable == true`, zero items were annotated, AND `roadmap_no_match ==
-  false`: omit the "Roadmap" section -- legitimately nothing to do.
-- `roadmap_structure.parseable == false`: **always** print the unparseable warning line above,
-  regardless of annotation counts.
-- `roadmap_silent_noop == true`: print the annotation-no-op warning line above.
-- `roadmap_no_match == true`: print the no-match line above.
-
-**Invariant**: omission is permitted only when the roadmap parsed successfully AND
-`roadmap_no_match == false`. An unparseable roadmap is never reportable by `/todo` as a
-successful annotation pass.
 
 **Reference material**: the archival-status definitions, orphan and misplaced-directory
-categories, roadmap annotation formats and safety rules, and jq/shell escaping rules that
-Steps 2.5, 2.6, 3, and 5.5 depend on live in
+categories, and jq/shell escaping rules that Steps 2.5, 2.6, and 3 depend on live in
 `.claude/context/patterns/todo-archival-reference.md`. READ that file before executing any of
 those steps.
