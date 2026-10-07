@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 348,
+  "phase": "plan",
+  "dispatch_seq": 2,
+  "session_id": "sess_1791330710_42a2e1_348",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase implementation plan for the books extension's first hook: a bare-registered PreToolUse Write|Edit guard refusing any write that alters or deletes a line already committed in books/book-convention-evidence/NN-*.md. The plan settles the three required rulings in writing (registration into the tracked .claude/settings.json; Option B git-aware trailing-uncommitted-entry exception with an on-disk prefix-test fallback; the two-guard fail-open contract mapped onto the hook's real jq dependency surface since it sources no shared library). Phases: author hook, behavioral fixture cases, forgery probes plus fail-open plus the buried-7814-character-line case, manifest/fragment wiring, then a real deploy into the live consumer repo with independent proof of file copy, bare joined registration, and the deployed hook refusing a real evidence-file modification.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/348_append_only_evidence_write_time_hook/plans/01_append-only-evidence-write-time-hook.md",
+      "summary": "5-phase plan (5.25h) for the books append-only evidence write-time PreToolUse hook, its fixture suite with forgery probes, its manifest/settings-fragment registration path, and deploy verification in the consumer repo."
+    }
+  ],
+  "blockers": []
+}

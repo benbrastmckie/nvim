@@ -2208,7 +2208,7 @@
     {
       "project_number": 348,
       "project_name": "append_only_evidence_write_time_hook",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "extensions",
       "title": "Write-time PreToolUse Write|Edit hook enforcing append-only evidence files, the books extension first hook and its registration path",
@@ -2216,19 +2216,24 @@
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/books/hooks/validate-evidence-append-only.sh",
+        "agent-system/extensions/books/manifest.json",
         "agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh",
-        "agent-system/extensions/books/settings-hooks.json",
-        "agent-system/extensions/books/manifest.json"
+        "agent-system/extensions/books/settings-hooks.json"
       ],
       "artifacts": [
         {
           "path": "specs/348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md",
           "type": "report",
           "summary": "Research report confirming deploy-pipeline mechanics, resolving the settings-fragment naming question via the locked file_scope, and specifying the predicate's parsing/path-resolution design for the plan phase."
+        },
+        {
+          "path": "specs/348_append_only_evidence_write_time_hook/plans/01_append-only-evidence-write-time-hook.md",
+          "type": "plan",
+          "summary": "5-phase plan (5.25h) for the books append-only evidence write-time PreToolUse hook, its fixture suite with forgery probes, its manifest/settings-fragment registration path, and deploy verification in the consumer repo."
         }
       ],
       "created": "2026-10-06T23:52:00Z",
-      "last_updated": "2026-10-06T23:59:08Z",
+      "last_updated": "2026-10-07T00:07:07Z",
       "session_id": "sess_1791330710_42a2e1",
       "next_artifact_number": 2
     }

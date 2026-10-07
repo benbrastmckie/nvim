@@ -6,7 +6,7 @@ next_project_number: 349
 
 ## Task Order
 
-*Updated 2026-10-06. Generated from state.json dependency graph.*
+*Updated 2026-10-07. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -42,7 +42,7 @@ next_project_number: 349
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
 346 [NOT STARTED] — Reconcile the books observer RUN-record field reads with...
-348 [RESEARCHED] — Write-time PreToolUse Write|Edit hook enforcing append-only...
+348 [PLANNED] — Write-time PreToolUse Write|Edit hook enforcing append-only...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -76,11 +76,12 @@ next_project_number: 349
 ## Tasks
 
 ### 348. Write-time PreToolUse Write|Edit hook enforcing append-only evidence files, the books extension first hook and its registration path
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md]
+- **Plan**: [348_append_only_evidence_write_time_hook/plans/01_append-only-evidence-write-time-hook.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/books/ (never .claude/**, a disposable
 deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS, otherwise the

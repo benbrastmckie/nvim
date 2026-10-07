@@ -1,42 +1,22 @@
 {
-  "status": "researched",
-  "summary": "Researched the books extension's first write-time guard: re-confirmed every deploy-pipeline claim in the dispatch (exact-matcher merge semantics, install-once settings.json, hooks-category execute-bit copy, both rejected email/lean precedents) directly in merge.lua/loader.lua, confirmed the task's file_scope already locks the settings-fragment naming question the dispatch left open, and settled the predicate's parsing shape (tool_name branch, cwd-relative path resolution via git rev-parse --show-toplevel, byte-string prefix/suffix tests with no line-splitting).",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md",
-      "summary": "Research report confirming deploy-pipeline mechanics, resolving the settings-fragment naming question via the locked file_scope, and specifying the predicate's parsing/path-resolution design for the plan phase."
+      "type": "plan",
+      "path": "specs/348_append_only_evidence_write_time_hook/plans/01_append-only-evidence-write-time-hook.md",
+      "summary": "5-phase plan (5.25h) for the books extension's first hook: an append-only evidence-file PreToolUse Write|Edit guard, its forgery-probed fixture suite, its manifest and settings-fragment registration path, and deploy verification in the live consumer repo."
     }
   ],
-  "next_steps": "Run /plan 348 to create implementation plan",
+  "next_steps": "Run /implement 348 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 5.25,
+  "dependency_waves": [[1], [2, 4], [3], [5]],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1791330710_42a2e1_348",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "In this repo's extension deploy pipeline (lua/neotex/plugins/ai/shared/extensions/merge.lua), a hook-event array under settings (e.g. .hooks.PreToolUse) is merged by EXACT STRING EQUALITY on the `matcher` field, not by whole-block deep-equal. Registering a new hook under a matcher spelled differently from an existing block (different pipe order, extra tool name, different spacing) creates a second, independently-tracked matcher block rather than joining the existing one -- and the merge is add-only, so a wrong spelling can never be healed by a later redeploy. Always copy the literal existing matcher string byte-for-byte when adding a hook to a shared event (e.g. core's \"Write|Edit\" block) rather than retyping it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["merge.lua", "hook-event-array", "matcher", "settings.json merge", "extension deploy"]
-    },
-    {
-      "content": "Across this repo's non-core extensions with a merge_targets.settings entry, the source filename is uniformly settings-fragment.json at the extension root and the target is uniformly .claude/settings.local.json (gitignored, per-clone). Only core deviates: merge-sources/settings-hooks.json targeting the tracked .claude/settings.json, reserved per core's own manifest _comment for \"required core functionality rather than personal MCP/permission preference.\" Any new extension hook needing a durable, tracked, repo-shared registration (not a personal preference) should target .claude/settings.json like core, not copy the settings.local.json convention from email/lean/nix -- those two also happen to be the only existing extension-hook-registration precedents, and both are documented-wrong (email wraps its hook to silently swallow the block exit code; lean never puts the hook key in its fragment at all, so the hook ships unregistered).",
-      "category": "PATTERN",
-      "source_artifact": "specs/348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["settings-fragment.json", "settings.local.json", "merge_targets", "extension manifest", "hook registration"]
-    },
-    {
-      "content": "In this repo's PreToolUse hook family, the top-level `.cwd` field of the hook's stdin JSON payload is, as of the books append-only-evidence hook's design, used by every existing consumer (events-log-artifact.sh, validate-handoff-location.sh, validate-meta-write.sh, validate-plan-write.sh, validate-state-sync.sh, events-log-lifecycle.sh) only as event-logging provenance (passed through as --cwd to a recorder script) -- never to resolve a relative file_path or scope a git -C invocation. A hook needing to read a file's committed (HEAD) content from a possibly-relative file_path should join file_path onto cwd when not already absolute, then derive the repo root via `git -C \"$(dirname \"$ABS_FILE\")\" rev-parse --show-toplevel` rather than assuming cwd itself is the repo root -- no existing helper in this codebase does this yet.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["PreToolUse hook", "cwd", "file_path resolution", "git show HEAD", "hook stdin payload"]
-    }
-  ],
-  "dispatch_seq": 1
+  "dispatch_seq": 2
 }
