@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 5,
+  "summary": "Created a 6-phase implementation plan for the hook-registration path + fragment-coverage lint, wired as verify-deploy gate 21. The plan decomposes the four distinct checks the dispatch's twelve acceptance criteria require (path shape in settings surfaces; path shape in markdown fenced-JSON registration templates; fragment coverage of install-once root-files registrations; existence of every source-store-resolvable invoked script) into serialized phases, followed by a both-polarity mktemp fixture suite, gate wiring, and a full-battery verification phase. Five explicit Decisions resolve the open questions research flagged (accepting '~/' as a third cwd-independent anchor, exempting it from the existence check, .sh files never scanned, the accepted merge.lua identity divergence, and the identity key shape). The plan adds one file beyond the dispatch's fixed four-entry file_scope, with its rationale documented in a dedicated File Scope Note.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/365_lint_cwd_relative_hook_path_registrations/plans/01_hook-registration-path-lint.md",
+      "summary": "6-phase plan (5 waves) for lint-hook-registration-paths.sh, its fixture suite, and verify-deploy gate 21; ~6.5h estimated."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}
