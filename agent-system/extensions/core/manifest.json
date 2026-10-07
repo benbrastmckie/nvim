@@ -248,6 +248,7 @@
       "tests/test-plan-file-scope-harvest.sh",
       "tests/test-roadmap-argv-ceiling.sh",
       "tests/test-runtime-file-tracking.sh",
+      "tests/test-stall-reprompt-wiring.sh",
       "tests/test-status-vocabulary.sh",
       "tests/test-validate-state.sh",
       "tests/test-postflight-marker-schema.sh",
