@@ -69,14 +69,13 @@ serializes to width 1 is correct.
 
 ```
 /orchestrate 365             # in flight; the lint that gates the hook-path fix
-/orchestrate 351             # orchestrator regression: a live halt that never fires
+/orchestrate 351, 352, 353   # three waves in ONE call; the only route to a green gate 8
+/orchestrate 272, 355        # two waves; 272 first (shared orchestrate-cycle-plan.sh)
 /orchestrate 366, 368        # two waves; test-efficiency mechanism, then the planning guidance
 /orchestrate 367             # independent; why the exit-6 promotion is unreliable
 /orchestrate 347             # newly unblocked by 364; self-matching process-name waiters
 /orchestrate 363             # completes the shared-tree git-safety set
 /orchestrate 284, 335        # two waves; the file_scope excursion gate
-/orchestrate 272, 351        # two waves; 351 first
-/orchestrate 351, 352, 353   # three waves; 351 MUST be in the call, not merely done first
 /orchestrate 280, 311, 344   # two waves; 344's own dogfood constraint — never run it alone
 /orchestrate 345, 354        # two waves
 ```
@@ -90,10 +89,28 @@ Why this order:
   of the second was a `SessionStart` registration of `scripts/claude-ready-signal.sh`, a script that
   existed nowhere and had been failing silently behind its own `2>/dev/null || echo '{}'`. Both are
   now gated.
-- **351** — the `IDENTICAL DISPATCH HALT` is implemented but never fires: a repeat-identical
-  dispatch is issued anyway, the dispatch file is not backed out, the task lock stays held, and the
-  counters still advance. A live orchestrator regression that wastes budget and strands locks.
-  Gates **272**, **352** and **355**.
+- **351, 352, 353 — one call, and the highest-value call on this list.** These three are the
+  *entire* remaining content of the one failing `verify-deploy` check: gate 8 consumes
+  `run-all.sh`'s bare exit code, so while any of the five known-red suites is red the deploy suite
+  reads red and "all gates green" is unreachable. Clearing all three is the only route to a green
+  gate 8.
+  - **351** is the substantive defect: the `IDENTICAL DISPATCH HALT` is implemented but never
+    fires — a repeat-identical dispatch is issued anyway, the dispatch file is not backed out, the
+    task lock stays held, and the counters still advance. A live orchestrator regression that
+    wastes budget and strands locks. Also gates **272** and **355**.
+  - **352** (validate-artifact fix counters) and **353** (two typst lint defects) are independent
+    of 351 and of each other in substance. **Their dependency edges are territory serializations,
+    not work dependencies** — all three declare the single shared
+    `scripts/tests/known-failures.txt`, where each removes its own row. Recorded in 352's and
+    353's own descriptions so a future reader does not mistake the chain for a work order or try
+    to optimize it away: dropping the edges does not parallelize the group, it converts a clean
+    serialization into an in-batch `file_scope` collision that admission blocks.
+  - **Do not combine them into one task.** 353 is `task_type: typst` while 351 and 352 are `meta`,
+    and task_type drives agent routing — one task cannot route two ways. Their subjects are
+    unrelated, their topics differ, and a merged `file_scope` would span ten entries across the
+    core and typst extensions, widening the collision surface against the rest of the backlog. The
+    settled decision about a linear chain becoming one phased task is aimed at tasks whose
+    *subject* is the shared file; here the shared file is one line of incidental bookkeeping each.
 - **366 → 368, 367** — measured: the orchestrator's own checkpoints were fixed to stop re-running
   the 92-suite battery, but *every dispatched implementation agent still re-runs it at its own
   phase gates against the identical tree*. 366 adds selection, 368 stops plans demanding `full` at
@@ -120,7 +137,10 @@ Why this order:
 - **272** — the heartbeat never fires; an implementation agent sat silent for ~5h40m while the
   harness still reported it `running`. It is a structural deadlock, not a missing probe:
   `stall_suspected` is computed only *after* a dispatch returns, while Move 3 forbids postflight
-  until every Move 2 call completes. The Move 3 precondition itself needs amending.
+  until every Move 2 call completes. The Move 3 precondition itself needs amending. **355 was
+  edged onto it on 2026-10-07**: both declare `orchestrate-cycle-plan.sh` and both were gated only
+  on 351, so clearing 351 would have left them an unordered overlap that admission blocks. 272
+  first, because it changes how a dispatch is observed and 355 reads that script afterwards.
 - **344** — carries batching-by-default to the point of use and mechanizes the edge backfill that
   is still a hand `state-write.sh` call. **Run it with 280 and 311 in one invocation** — its own
   dogfood constraint, not a convenience.
@@ -161,7 +181,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 312 blocked:282,344  backlog reconciliation as a required task-creation component
 344 blocked:280,311  carry the batching-by-default doctrine to the point of use   <- priority
 354 blocked:345      does the local-gate prohibition cover awaiting a dispatched subagent
-355 blocked:351      unregistered test script reaches COMPLETED; count-based gate comparison
+355 blocked:272,351  unregistered test script reaches COMPLETED; count-based gate comparison
 ```
 
 **Core agent system (21)**

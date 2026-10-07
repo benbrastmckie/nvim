@@ -12,8 +12,8 @@ next_project_number: 370
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,360,362,363,365,366,367 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,272,273,281,303,335,344,350,352,354,355,368 | 22,251,271,280,284,311,345,349,351,366 | core-agent-system, extensions, orchestrator |
-| 3 | 275,282,304,353,359,369 | 29,272,273,281,284,302,350,352,365 | core-agent-system, extensions, orchestrator |
+| 2 | 29,170,272,273,281,303,335,344,350,352,354,368 | 22,251,271,280,284,311,345,349,351,366 | core-agent-system, extensions, orchestrator |
+| 3 | 275,282,304,353,355,359,369 | 29,272,273,281,284,302,350,352,365 | core-agent-system, extensions, orchestrator |
 | 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -36,7 +36,7 @@ next_project_number: 370
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-365 [PLANNED] — Lint forbidding CWD-relative .claude/ paths in hook...
+365 [IMPLEMENTING] — Lint forbidding CWD-relative .claude/ paths in hook...
   └─ 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 366 [NOT STARTED] — Suite-level selection within Gate 8: --filter/--only in...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
@@ -81,7 +81,7 @@ next_project_number: 370
   └─ 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
     └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
       └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
-  └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
+    └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
 
 ### Agent System
 
@@ -616,7 +616,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 365. Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 364
@@ -1568,7 +1568,7 @@ No overlap found on lint-agent-contracts.sh, agent-template.md, or agent-frontma
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 351
+- **Dependencies**: Task 272, Task 351
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 
@@ -1608,6 +1608,24 @@ SO THE SUSPECTED MECHANISM IS: a task whose completion arrives via the post-depl
 - A fixture pins whichever mechanism is chosen: adding an unregistered test script must fail the chosen gate.
 - The report states whether the other provides.* arrays share the escape, and whether the redeploy checkpoint's count-based comparison should become identity-based.
 - Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.
+
+
+--- REVISION (added after review): EDGE ONTO THE SESSION-LIVENESS TASK ---
+
+A dependency edge was added onto the honest-session-liveness task (project_name
+`honest_session_liveness_for_concurrent_same_repo_batches`). Both tasks declare
+`agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh`, and both were previously gated
+only on the IDENTICAL-DISPATCH-HALT repair, so once that landed the two became an UNORDERED
+territory overlap -- an in-batch `file_scope` collision that admission blocks outright.
+
+Per the settled decision that an unordered overlap is resolved by adding the edge rather than by
+separating the pair (and that a bare "run them separately" note is not an acceptable rendering of
+an overlap), the order was chosen deliberately: the liveness task amends the Move 3 postflight
+precondition, a structural change to how a dispatch is observed, and this task's count-based gate
+comparison reads that same script afterwards. Foundational change first.
+
+This edge is a territory serialization, not a work dependency; nothing in this task's subject
+needs the predecessor's result.
 
 ---
 
@@ -1746,6 +1764,25 @@ Required, for THIS TASK'S OWN ROW(S) ONLY -- never another task's row:
 ACCEPTANCE: after this task, no row it owns still reads `needs-owner` -- the row is either gone
 (fixed) or carries this task's durable slug with a corrected category (formally accepted).
 
+--- REVISION (added after review): WHY THE DEPENDENCY EDGE EXISTS ---
+
+This task's dependency edge is a TERRITORY SERIALIZATION, not a work dependency. Nothing in the
+subject work needs the predecessor's work to land first; the subjects are disjoint files in
+different areas. The edge exists solely because every task in this group declares the single
+shared file `agent-system/extensions/core/scripts/tests/known-failures.txt`, where each one
+removes its own distinct row on completion.
+
+Per the settled decision that an unordered territory overlap is resolved by adding the edge rather
+than by separating the pair, the edge is the CORRECT resolution and must not be "optimized" away:
+dropping it does not parallelize the group, it converts a clean serialization into an in-batch
+`file_scope` collision, which admission blocks outright. `file_scope` is path-level, so the fact
+that each task touches a different LINE of that registry cannot be expressed.
+
+Consequence for dispatch: run the group as ONE `/orchestrate` call. The members serialize into
+successive waves within that single invocation, which is a correct outcome -- the property
+defended is collision visibility and correct ordering, never wall-clock. Do not re-litigate the
+edge, and do not file a task to remove it.
+
 ---
 
 ### 352. Fix validate-artifact.sh's `SKILL_VALIDATE_FIXES` counters, which neither accumulate across multi-file aggregation nor reset between calls
@@ -1823,6 +1860,25 @@ Required, for THIS TASK'S OWN ROW(S) ONLY -- never another task's row:
 
 ACCEPTANCE: after this task, no row it owns still reads `needs-owner` -- the row is either gone
 (fixed) or carries this task's durable slug with a corrected category (formally accepted).
+
+--- REVISION (added after review): WHY THE DEPENDENCY EDGE EXISTS ---
+
+This task's dependency edge is a TERRITORY SERIALIZATION, not a work dependency. Nothing in the
+subject work needs the predecessor's work to land first; the subjects are disjoint files in
+different areas. The edge exists solely because every task in this group declares the single
+shared file `agent-system/extensions/core/scripts/tests/known-failures.txt`, where each one
+removes its own distinct row on completion.
+
+Per the settled decision that an unordered territory overlap is resolved by adding the edge rather
+than by separating the pair, the edge is the CORRECT resolution and must not be "optimized" away:
+dropping it does not parallelize the group, it converts a clean serialization into an in-batch
+`file_scope` collision, which admission blocks outright. `file_scope` is path-level, so the fact
+that each task touches a different LINE of that registry cannot be expressed.
+
+Consequence for dispatch: run the group as ONE `/orchestrate` call. The members serialize into
+successive waves within that single invocation, which is a correct outcome -- the property
+defended is collision visibility and correct ordering, never wall-clock. Do not re-litigate the
+edge, and do not file a task to remove it.
 
 ---
 
