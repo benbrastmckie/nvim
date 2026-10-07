@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 336,
-  "phase": "plan",
-  "dispatch_seq": 2,
-  "session_id": "sess_1791352266_ecae58_336",
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "session_id": "sess_1791352266_ecae58",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Created a 6-phase implementation plan for the in-dispatch phase-commit staging surface, integrating the research ruling that --task alone is structurally incapable of catching an undeclared path (the contention manifest requires two or more declaring tasks). The plan lands both mechanisms within file_scope: --task at all 21 invocation sites plus a canonical pre-commit Containment self-check authored once in the core definition and pointed at from the other fourteen. It exercises the pre-fix regression case live in a throwaway repo, audits uniformity mechanically across all fifteen definitions, and records the git-commit-scoped.sh chokepoint as a constrained follow-up without widening file_scope.",
+  "summary": "Landed the ruled mechanism (--task plus a documented pre-commit Containment self-check) uniformly across all fifteen implementation-agent phase-commit recipes. Exercised the observed undeclared-path defect as a live regression case in a throwaway repo, proving --task supplied does not catch it (exit 0, all ten paths land) while the hand-run Containment predicate correctly yields 1 kept / 9 dropped. Mechanically audited uniformity across all 21 genuine invocation sites and recorded the durable git-commit-scoped.sh chokepoint as a coordinated, unfiled follow-up specification (task 304). Phase 6 closed COMPLETED WITH EXCLUSIONS over one pre-existing, foreign, out-of-scope test-suite failure in orchestrate-cycle-plan.sh, observed but not caused by this task.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/336_phase_commit_staging_has_no_scope_check/summaries/01_phase-commit-containment-self-check-summary.md",
+      "summary": "Full implementation summary: all six phases, what changed across fifteen agent definitions, decisions, deviations, verification results, and follow-ups."
+    },
+    {
       "type": "plan",
       "path": "specs/336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md",
-      "summary": "Six-phase plan: live pre-fix regression evidence, canonical self-check plus --task in the core definition, uniform wiring across the remaining fourteen in two parallel phases, mechanical uniformity audit with the git-commit-scoped.sh follow-up record, and a full verify-deploy gate."
+      "summary": "Six-phase plan, all phases closed (5 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
     }
   ]
 }

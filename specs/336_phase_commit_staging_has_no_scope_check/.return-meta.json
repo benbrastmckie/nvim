@@ -1,9 +1,60 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/336_phase_commit_staging_has_no_scope_check/summaries/01_phase-commit-containment-self-check-summary.md",
+      "summary": "All six plan phases landed: --task plus a canonical pre-commit Containment self-check across all fifteen implementation-agent recipes, a live pre-fix regression case, a mechanical uniformity audit, and a recorded (unfiled) follow-up for the durable git-commit-scoped.sh chokepoint. Phase 6 closed COMPLETED WITH EXCLUSIONS over one pre-existing, foreign, out-of-scope test-suite failure."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Landed --task plus a documented pre-commit Containment self-check uniformly across all fifteen implementation-agent phase-commit recipes, exercised the observed undeclared-path defect as a live regression case proving --task alone does not catch it, mechanically audited uniformity across all 21 invocation sites, and recorded the durable git-commit-scoped.sh chokepoint as a coordinated follow-up specification."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/agents/books-implementation-agent.md",
+    "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+    "agent-system/extensions/founder/agents/founder-implement-agent.md",
+    "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+    "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+    "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+    "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+    "agent-system/extensions/python/agents/python-implementation-agent.md",
+    "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+    "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/z3/agents/z3-implementation-agent.md",
+    "specs/336_phase_commit_staging_has_no_scope_check/evidence/01_pre-fix-regression.md",
+    "specs/336_phase_commit_staging_has_no_scope_check/evidence/02_uniformity-audit.md",
+    "specs/336_phase_commit_staging_has_no_scope_check/evidence/03_followup-mechanical-check.md",
+    "specs/336_phase_commit_staging_has_no_scope_check/plans/01_phase-commit-containment-self-check.md",
+    "specs/336_phase_commit_staging_has_no_scope_check/summaries/01_phase-commit-containment-self-check-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A lease/contention mechanism keyed on declared-scope OVERLAP (two or more tasks declaring the same path, e.g. this codebase's git-commit-scoped.sh --task V5 check against specs/.contention-manifest/) is structurally blind to a path declared by NO task at all -- such a path never enters the manifest regardless of flags passed. This is a different predicate from CONTAINMENT (one concrete about-to-stage path tested against one task's own declared file_scope). When a staging/commit surface needs to catch an UNDECLARED path exceeding a task's own scope, Overlap-family mechanisms (leases, contention manifests) cannot do it; only a Containment check against the acting task's own declared scope can. Verified empirically via a live regression: --task supplied, with a real contention-manifest-dependent script, still landed 9 of 10 undeclared-but-staged paths with exit 0 and no warning.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/336_phase_commit_staging_has_no_scope_check/summaries/01_phase-commit-containment-self-check-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["containment-vs-overlap", "file_scope", "phase-commit", "git-commit-scoped", "undeclared-path", "staging-scope"]
+    },
+    {
+      "content": "When a guard mechanism must fire mid-dispatch (inside an already-running agent, between its own start and its own postflight), it structurally cannot be sited at a postflight or cycle-plan layer, because artifacts those layers build (e.g. a once-per-cycle contention manifest) are not guaranteed current or even present at that point. The two remaining candidate sites are: inline in the recipe/prompt itself (reachable immediately, but relies on every future author remembering to copy or point at it -- an interim measure at best), or inside the one shared script/chokepoint every recipe already calls (the durable fix, since it cannot be forgotten by a new caller). When auditing fifteen-plus near-identical recipe copies for a missing check, author the fix ONCE in a canonical, named location and have every other copy POINT at it by name rather than duplicating prose -- this avoids per-copy drift and makes a later mechanical uniformity audit (grep for the pointer/block name plus the flag) trivial.",
+      "category": "PATTERN",
+      "source_artifact": "specs/336_phase_commit_staging_has_no_scope_check/summaries/01_phase-commit-containment-self-check-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["mid-dispatch-guard-siting", "canonical-block-pointer", "uniformity-audit", "drift-avoidance", "recipe-duplication"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791352266_ecae58",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
