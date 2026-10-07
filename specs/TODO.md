@@ -1,5 +1,5 @@
 ---
-next_project_number: 349
+next_project_number: 350
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 349
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,251,271,272,280,284,295,296,299,300,306,311,318,319,336,338,342,343,346,347 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,302,303,335,344,345 | 22,251,271,272,280,284,300,311,343 | core-agent-system, extensions, orchestrator |
+| 2 | 29,170,273,275,281,302,303,335,344,345,349 | 22,251,271,272,280,284,300,311,343 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,300,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -43,6 +43,7 @@ next_project_number: 349
 342 [HOLD] — Refactor the books extension's context corpus against the...
 346 [NOT STARTED] — Reconcile the books observer RUN-record field reads with...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
+349 [NOT STARTED] — Add an /approve command to the agent system so a...
 
 ### Neovim
 
@@ -73,6 +74,67 @@ next_project_number: 349
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
 
 ## Tasks
+
+### 349. Add approve command owner labeled approvals
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 300
+
+**Description**: Add an /approve command to the agent system so a specification approval is given by answering one interactive question instead of a terminal round-trip
+
+--- WHY ---
+
+Approving specifications currently costs the owner a context switch out of the agent session into a terminal, because approve.sh's person path reads its confirmation from /dev/tty and an agent has no controlling terminal. On 2026-10-07 that friction was hit directly: nineteen specifications needed re-approval after the namespace move, the agent prepared the entire review but could not complete it, and the work was finished only by the owner instructing that an agent record them instead. The owner's stated preference is a command in the agent system that raises an interactive question and records the answer.
+
+This task lives in the agent-system source store (agent-system/extensions/ in THIS repository), never in a consumer repository's .claude/ tree, which is a regenerated deploy artifact.
+
+--- CROSS-REPOSITORY PREREQUISITE ---
+
+The approval mechanism this command drives lives in the Logos/Verification repository, in the task
+named `owner_labeled_agent_assisted_approvals` (cited by slug, because task numbers do not carry
+across repositories --- this repository's own number 233 is an unrelated archived task). Until that
+task lands there is no honest value for this command to write. Check its status in
+~/Projects/Logos/Verification/specs/state.json before dispatching.
+
+--- DEPENDS ON THE OWNER-LABELED CONFIRMATION CHANNEL ---
+
+The repository owner ruled 2026-10-07 that approvals are **agent-assisted but owner-labeled**: the person who answers the prompt is the approver of record, and the agent is recorded as an assistant. The companion repository task implements that --- a `by: person` record reachable without a controlling terminal, with the agent named in an `assisted_by` field and the confirmation channel distinguished from the terminal one.
+
+This command must record the OWNER as the approver and itself as the assistant. Until the companion task lands there is no honest value to write, because today's `by: agent` attributes the judgement to the wrong party. Do NOT ship this command recording itself as the approver.
+
+--- IN-REPOSITORY PREREQUISITE: AskUserQuestion REACHABILITY ---
+
+Task 300 records that `AskUserQuestion` is NOT reachable from a dispatched subagent on this harness.
+That decides this command's shape before anything else: it must be a direct-execution skill run in
+the root session, NOT a dispatched agent, or the prompt it exists to raise cannot be raised at all.
+Settle 300 first and build against its measured finding rather than assuming inheritance.
+
+--- SCOPE ---
+
+In scope.
+(1) Decide where the command lives and record the reason. The books extension already owns /certify and /book, which makes it the nearest existing home, but the books extension's own charter explicitly disclaims component certificates and owns the book metadata layer instead -- so a new small extension may be the correct answer rather than the convenient one. Rule on it before writing files.
+(2) The command itself, which records the owner as approver and never itself. Flow: run the component's approve.sh --review for the requested scope; read the generated review; classify its diff the way a reviewer needs rather than dumping it -- separate the mechanical churn (metadata attributes, licence headers, blank lines, pure requalification) from anything that changes a declaration, and check at declaration level whether any claim was added, removed or restated; present that summary through AskUserQuestion; mark the decisions block from the answer; record with the owner as approver and this command as `assisted_by`, putting the question and the answer verbatim into the review file's Notes (which the companion task makes a precondition of writing the record at all).
+(3) Per-item granularity. AskUserQuestion takes at most four options per question, so a nineteen-item cycle cannot be one option per item. Decide the shape: a single bulk approve/decline with an escape to per-item, or batching by module family. Record the choice; do not let the tool's option cap silently become a design.
+(4) The refusal cases. The command must refuse to record when the review is stale against the tree, when the classification found a declaration-level change the summary did not surface to the person, and when AskUserQuestion is unavailable --- whether because no human is attached, or because of the subagent-reachability limit task 300 records. An autonomous dispatch must never answer this prompt on the owner's behalf. That last one is the whole point of the command and needs a test, not a comment.
+(5) Generalisation. The command should take the component as an argument rather than hardcoding framed_channel, since the approval mechanism is per-component and other components may grow one.
+
+Out of scope. Changing approve.sh or check-approvals.sh, which the companion repository task owns. Any approval policy question about which specifications deserve scrutiny.
+
+--- WHAT MUST NOT BE BUILT ---
+
+A path that lets an agent approve without a person answering. The command's reason for existing is to make a person's decision cheap to give, not to make it optional. If AskUserQuestion cannot be reached, the command stops and reports; it does not fall back to recording as an agent.
+
+--- ACCEPTANCE ---
+
+- The placement ruling is recorded with its reason before any file is written.
+- /approve <component> [--core-only|--aeneas] runs the review, presents a classified summary, asks the owner, and records the approval OWNER-LABELED with the agent as `assisted_by` and the question and answer in Notes.
+- No path exists by which this command records itself as the approver.
+- The per-item-granularity choice is recorded, and the AskUserQuestion option cap is handled deliberately rather than by truncation.
+- Each refusal case has a test: stale review, unsurfaced declaration-level change, and no human attached.
+- A dry-run or equivalent shows the full flow without recording.
+
+---
 
 ### 347. PreToolUse Bash hook blocking self-matching process-name waiters, registered bare so exit 2 survives
 - **Status**: [NOT STARTED]
