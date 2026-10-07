@@ -1,7 +1,7 @@
 # Implementation Plan: Reconcile books-observe.sh RUN record field reads
 
 - **Task**: 346 - Reconcile books-observe.sh RUN record field reads
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/346_reconcile_books_observe_run_record_field_reads/reports/01_reconcile-run-field-reads.md`

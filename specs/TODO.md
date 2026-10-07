@@ -11,8 +11,8 @@ next_project_number: 350
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,336,338,345,346,347,349 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,342,344 | 22,251,271,272,280,284,311,346 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,336,338,342,345,347,349 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,303,335,344 | 22,251,271,272,280,284,311 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -39,8 +39,7 @@ next_project_number: 350
 
 ### Extensions
 
-346 [IMPLEMENTING] — Reconcile the books observer RUN-record field reads with...
-  └─ 342 [HOLD] — Refactor the books extension's context corpus against the...
+342 [HOLD] — Refactor the books extension's context corpus against the...
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
@@ -414,12 +413,13 @@ file_scope updated accordingly: merge-sources/settings-hooks.json replaces root-
 ---
 
 ### 346. Reconcile the books observer RUN-record field reads with book-evidence-run-v1, and rule on fail-loud versus silent degradation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [346_reconcile_books_observe_run_record_field_reads/reports/01_reconcile-run-field-reads.md]
 - **Plan**: [346_reconcile_books_observe_run_record_field_reads/plans/01_reconcile-run-field-reads.md]
+- **Summary**: [346_reconcile_books_observe_run_record_field_reads/summaries/01_reconcile-run-field-reads-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/books/scripts/books-observe.sh (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS, otherwise the consumer repo keeps running the old copy. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md). Task numbers are permitted in this description and elsewhere in specs/**.
 

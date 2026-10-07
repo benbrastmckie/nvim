@@ -23,21 +23,36 @@
       "category": "PATTERN",
       "source_artifact": "specs/346_reconcile_books_observe_run_record_field_reads/summaries/01_reconcile-run-field-reads-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["fail-loud", "silent-degradation", "schema-reconciliation", "jq-type-mismatch", "diagnostic-comparison"]
+      "suggested_keywords": [
+        "fail-loud",
+        "silent-degradation",
+        "schema-reconciliation",
+        "jq-type-mismatch",
+        "diagnostic-comparison"
+      ]
     },
     {
       "content": "The no-task-references-in-deliverables write-time hook scans only the new_string/content payload of a single Edit/Write call, not the surrounding file -- a fixture edit that lands inside an already-open task-ref-ok:begin...end block elsewhere in the file still gets blocked unless the edit's own new_string carries its own marker (or the whole edit is performed via a non-Edit-tool mechanism, e.g. a Bash/python in-place rewrite, which the hook does not intercept). When editing task-citing fixture content inside an existing exempt block via the Edit tool, wrap just the edited hunk in its own inline task-ref-ok:begin/end pair rather than relying on the file-level block.",
       "category": "INSIGHT",
       "source_artifact": "specs/346_reconcile_books_observe_run_record_field_reads/summaries/01_reconcile-run-field-reads-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["task-ref-ok", "write-time-hook", "edit-tool-scope", "fixture-editing"]
+      "suggested_keywords": [
+        "task-ref-ok",
+        "write-time-hook",
+        "edit-tool-scope",
+        "fixture-editing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791337167_c5588f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }
