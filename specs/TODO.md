@@ -11,9 +11,9 @@ next_project_number: 364
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,347,349,351,356,357,358 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,272,273,281,303,335,344,345,350,352,355,360,361,362 | 22,251,271,280,284,311,349,351,356,357,358 | core-agent-system, extensions, orchestrator, ... |
-| 3 | 275,282,304,353,354,359,363 | 272,273,281,284,302,345,350,352,356,361 | core-agent-system, extensions, orchestrator, ... |
+| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,347,349,351,356,358,361 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,272,273,281,303,335,344,345,350,352,355,360,362,363 | 22,251,271,280,284,311,349,351,356,358,361 | core-agent-system, extensions, orchestrator, ... |
+| 3 | 275,282,304,353,354,359 | 272,273,281,284,302,345,350,352,356 | core-agent-system, extensions, orchestrator |
 | 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -81,10 +81,9 @@ next_project_number: 364
 
 356 [IMPLEMENTING] — Propagate the bounded-wait contract to the fourteen...
   └─ 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
-357 [IMPLEMENTING] — Rule on whether the per-phase handoff must land in its own...
-  └─ 361 [NOT STARTED] — Reclassify bare git stash as destructive on a shared tree:...
-    └─ 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 358 [IMPLEMENTING] — Require a figure or mechanical claim carried into a report or...
+361 [NOT STARTED] — Reclassify bare git stash as destructive on a shared tree:...
+  └─ 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
 
@@ -497,7 +496,7 @@ Measured at creation time: NO non-terminal task declares core/context/formats/re
 ---
 
 ### 357. Rule on whether the per-phase handoff must land in its own commit, and fold it into that phase's work commit if it need not
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
