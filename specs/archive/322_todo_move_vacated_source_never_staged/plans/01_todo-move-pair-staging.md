@@ -1,7 +1,7 @@
 # Implementation Plan: Task #322
 
 - **Task**: 322 - todo_move_vacated_source_never_staged
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None (cross-references only: tasks 302, 318, 328 — not dependency edges)
 - **Research Inputs**: specs/322_todo_move_vacated_source_never_staged/reports/01_todo-move-vacated-source-staging.md

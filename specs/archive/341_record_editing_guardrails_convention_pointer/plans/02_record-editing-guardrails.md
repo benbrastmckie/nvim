@@ -1,7 +1,7 @@
 # Implementation Plan: Record-editing guardrails and the convention-maintenance context pointer
 
 - **Task**: 341 - Record-editing guardrails and the convention-maintenance context pointer
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: books-extension split-retarget task (anchors + convention-version pin) — SATISFIED (Decision 19 is `active`; `manifest.json` carries `convention_version: "0.1.0-pre"`, `measured_at_commit: "d255518"`)
 - **Research Inputs**: `specs/341_record_editing_guardrails_convention_pointer/reports/02_record-editing-guardrails.md`, `specs/341_record_editing_guardrails_convention_pointer/reports/01_seed-record-editing-guardrails.md`

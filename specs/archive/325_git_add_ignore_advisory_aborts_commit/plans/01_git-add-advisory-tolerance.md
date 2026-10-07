@@ -1,7 +1,7 @@
 # Implementation Plan: Task #325
 
 - **Task**: 325 - Stop git-commit-scoped.sh from aborting the whole commit when `git add` emits its gitignore advisory for a tracked, ignore-matched path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: None (siblings 304 and 322 share the script but have distinct fix sites — see Non-Goals)
 - **Research Inputs**: specs/325_git_add_ignore_advisory_aborts_commit/reports/01_git-add-ignore-advisory.md
