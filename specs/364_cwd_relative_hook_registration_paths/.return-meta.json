@@ -1,35 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md",
-      "summary": "Empirically confirms $CLAUDE_PROJECT_DIR is exported to hook commands (both event types and the nested bash -c shape) and demonstrates the fixed form still blocks a real guard; maps the root-files/merge-sources dedup overlap, rules out the settings.local.json permission matchers as out of scope, and rules in favor of an explicit migration script for already-deployed repos."
+      "type": "plan",
+      "path": "specs/364_cwd_relative_hook_registration_paths/plans/02_cwd-relative-hook-registration-paths.md",
+      "summary": "7-phase plan rewriting all 34 source-store hook registrations to the $CLAUDE_PROJECT_DIR form, adding the missing merge-source counterpart, shipping an idempotent migration script for already-deployed repos, and demonstrating the guards blocking from a subdirectory CWD."
     }
   ],
-  "next_steps": "Run /plan 364 to create implementation plan",
+  "next_steps": "Run /implement 364 to execute the plan",
   "metadata": {
     "session_id": "sess_1791403152_6152cc_364",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "dispatch_seq": 1,
-  "findings_count": 9,
+  "dispatch_seq": 2,
+  "phase_count": 7,
+  "estimated_hours": 6.5,
+  "dependency_waves": [[1, 3, 7], [2, 4], [5], [6]],
   "memory_candidates": [
     {
-      "content": "Claude Code exports $CLAUDE_PROJECT_DIR into hook command environments (confirmed for PreToolUse:Bash and PostToolUse:Write, including inside a nested `bash -c '...'` wrapper) resolved to the true project/repo root, independent of the session's Bash-tool CWD. It is ABSENT from the Bash tool's own command execution environment -- only the hook-launching mechanism injects it. Use `bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/x.sh` for any hook registration instead of a bare `bash .claude/hooks/x.sh`, which silently fails open (exit 127, non-blocking) once the session cwd drifts into a subdirectory.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md",
-      "confidence": 0.95,
-      "suggested_keywords": ["CLAUDE_PROJECT_DIR", "hooks", "settings.json", "cwd", "PreToolUse", "PostToolUse"]
-    },
-    {
-      "content": "In this repo's extension deploy model, deep_merge dedup (merge.lua) matches hook entries by exact vim.deep_equal on the whole hook object including its command string. root-files/settings.json is install-once (copied only on first install, never overwritten by resync) while merge-sources/*.json propagate on every resync. When a hook's command string changes, any hook that exists identically in BOTH a merge-source and an already-deployed (install-once-sourced) settings.json must be rewritten identically in both places, or the next resync appends a duplicate entry under the same matcher rather than replacing the stale one -- deep_merge cannot self-heal a changed/renamed command string. This is pre-existing, documented behavior (core/manifest.json's merge_targets.settings _comment), not unique to one task.",
+      "content": "When a defect lives in a DEPLOYED artifact whose source is install-once (copied only on first install, never overwritten by resync), a plan that only edits the source store can pass every gate while leaving every existing consumer repo broken. The correct phase decomposition is three-part, not one: (1) fix the source store, (2) ship an idempotent, --dry-run-capable migration script that repairs already-deployed copies in place (plus a de-duplication step, since an add-only merge will otherwise append the fixed entry alongside the surviving broken one), and (3) assert BOTH outcomes separately -- a fresh-deploy test for the source fix and a demonstration against a real pre-existing deploy for the migration. An acceptance criterion phrased as 'a fresh deploy produces X' is never sufficient on its own for an install-once surface.",
       "category": "PATTERN",
-      "source_artifact": "specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["deep_merge", "dedup", "install-once", "settings.json", "merge-sources", "migration-script"]
+      "source_artifact": "specs/364_cwd_relative_hook_registration_paths/plans/02_cwd-relative-hook-registration-paths.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["install-once", "migration-script", "deploy-artifact", "phase-decomposition", "acceptance-criteria", "fresh-deploy"]
     }
   ]
 }
