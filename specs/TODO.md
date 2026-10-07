@@ -950,7 +950,17 @@ The agent launched its certify test suite as a backgrounded shell job:
 
 NOT OURS, AND NOT CHANGEABLE FROM THE AGENT SYSTEM: foreground `sleep` is blocked by the harness, and the harness's own stated alternative (`Monitor` with an until-loop) is not in a dispatched agent's toolset. Do not propose fixing either.
 
-OURS: with both obvious primitives unavailable, a no-op spin loop is a reachable default. Two correct options ARE available and need naming at the point of use: (a) run the long job in the FOREGROUND and let it block, since the Bash tool's own `timeout` parameter accommodates it up to its 600000ms ceiling; (b) launch it with `run_in_background` and let the completion notification wake the agent.
+OURS: with both obvious primitives unavailable, a no-op spin loop is a reachable default.
+
+=== REVISED 2026-10-07 -- ONE OF THE TWO REMEDIES THIS TASK ORIGINALLY NAMED IS NOW FORBIDDEN ===
+
+The original text named two correct options: (a) run the long job in the FOREGROUND and let it block, since the Bash tool's own `timeout` parameter accommodates it up to its 600000ms ceiling; and (b) launch it with `run_in_background` and let the completion notification wake the agent.
+
+OPTION (b) IS NO LONGER AVAILABLE FOR THIS TASK'S OWN INCIDENT SHAPE. `agents/general-implementation-agent.md` now carries a hard prohibition, verified in the source store at line 177: "MUST NOT use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent" -- the local-case sibling of the pre-existing CI/remote prohibition. Its stated reason is that the harness's asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it. The measured incident recorded below was a certify TEST SUITE, i.e. precisely the forbidden shape, so (b) cannot be this task's remedy. Do not propose it, and do not treat the original "two correct options" framing as current.
+
+THE REMEDIES NOW AVAILABLE ARE: (a) the plain foreground form `timeout N cmd`, which the same contract now states as the PREFERRED shape whenever the command plausibly fits the Bash tool's own ceiling; and (c) when it does not fit, `bounded-build-waiter.md`'s canonical idiom VERBATIM -- a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside ONE Bash call that does not return control until the wait resolves. That idiom is load-bearing rather than stylistic precisely because it never surfaces a "wait for a notification" choice point, so there is no moment at which the turn could end mid-wait.
+
+CONSEQUENCE FOR THIS TASK'S BINDING PROBLEM, WHICH IS THE WHOLE POINT OF THE TASK: the contract this task was filed to make bind has since been placed in the implementation-agent contract itself, with the local and CI cases named as explicit siblings, and `status-markers.md` separately records that a bounded-wait deadline reached with no result is not an admissible exclusion by itself. RE-CONFIRM WHAT REMAINS UNBOUND BEFORE PLANNING. The binding gap is likely narrower than when this task was filed, and the honest finding may be that the remaining work is the advisory hook and its fixture rather than any further contract text. The anti-proliferation clause above still governs: do not restate the prohibition a fourth time -- the MUST NOT quoted here is its home.
 
 === THE BINDING PROBLEM IS THE WHOLE TASK (READ BEFORE PLANNING) ===
 
