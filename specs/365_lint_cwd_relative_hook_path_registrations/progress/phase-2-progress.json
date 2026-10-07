@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Check B \u2014 markdown registration templates",
+  "started_at": "2026-10-07T00:00:00Z",
+  "last_updated": "2026-10-07T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create lint-hook-registration-paths.sh scaffold, fail-closed guard, header, Check A",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1-3",
+      "description": "Checks A, B, C, D were all implemented in a single pass in one file rather than incrementally across phases 1/2/3, since all four checks share the same extraction/classification helpers and splitting them would have required writing throwaway stub versions of shared functions.",
+      "type": "altered",
+      "reason": "Shared helper functions (extract_invoked_script, classify_anchor, normalize_identity, check_exists) are used by all four checks; writing them once correctly was more reliable than three incremental edits to the same small set of functions.",
+      "annotation": "*(deviation: altered -- Checks A/B/C/D implemented together; see phase 3 completion note)*"
+    }
+  ]
+}

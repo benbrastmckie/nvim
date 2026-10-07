@@ -2,7 +2,7 @@
 
 - **Task**: 365 - Lint forbidding CWD-relative paths and fragment-absent registrations in hook
   commands, wired as a verify-deploy gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: Task 364 (upstream path-shape fix) — **completed**; its settled path shape and
   its D6 `settings.local.json` ruling are the inputs this lint encodes.
@@ -150,44 +150,44 @@ behind each other rather than run as one wave: both edit the single new lint scr
 dispatch would collide on the same file. Phases 4 and 5 touch disjoint files (the fixture test vs.
 `verify-deploy.sh` + `manifest.json` + the gate-selection test) and are genuinely parallel.
 
-### Phase 1: Lint skeleton + Check A (path shape in settings surfaces) [NOT STARTED]
+### Phase 1: Lint skeleton + Check A (path shape in settings surfaces) [COMPLETED]
 
 **Goal**: Create `lint-hook-registration-paths.sh` with the full house-convention scaffold and the
 first of four checks working end-to-end against the live corpus.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh`, modeled
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh`, modeled *(completed)*
       structurally on `lint-state-writer-boundary.sh` (348 lines): `#!/usr/bin/env bash`,
       `set -euo pipefail`, RED/GREEN/YELLOW/NC colors, `--verbose`/`--quiet`/positional `path...`
       argument loop, `SCRIPT_DIR` resolution.
-- [ ] Add the fail-closed library guard **above** the `source`:
+- [x] Add the fail-closed library guard **above** the `source`: *(completed)*
       `[[ ! -f "${SCRIPT_DIR}/../lib/common.sh" ]] && { echo "ERROR: shared library not found…" >&2; exit 2; }`.
-- [ ] Copy `lint-state-writer-boundary.sh`'s `resolve_project_root()` (walks upward for a directory
+- [x] Copy `lint-state-writer-boundary.sh`'s `resolve_project_root()` *(completed)* (walks upward for a directory
       containing `agent-system/extensions`, falling back to `common_repo_root "$SCRIPT_DIR" 3`) so
       the script runs identically from the source-store and deployed copies.
-- [ ] Write the header comment block, which must state, in these terms: the exit-code contract
+- [x] Write the header comment block, which must state, in these terms: *(completed)* the exit-code contract
       (`0` clean / `1` violations / `2` script error); the **fail-closed vs. fail-open polarity
       contrast** (a deploy gate fails CLOSED so a broken gate cannot silently pass a bad deploy;
       a write-time hook fails OPEN so a broken guard cannot block every write — do not "correct"
       one to match the other); the accepted anchors per D1 including the `~/` rationale; the D3
       by-scan-scope reason `.sh` files are never scanned; the D2 existence-check exemption; the D4
       `merge.lua` identity divergence; and the task-364-D6 `settings.local.json` exclusion.
-- [ ] Enumerate the settings scan surfaces: `core/root-files/settings.json`,
+- [x] Enumerate the settings scan surfaces: *(completed)* `core/root-files/settings.json`,
       `core/merge-sources/settings-hooks.json`, and every `*/settings-hooks.json` and
       `*/settings-fragment.json` under the extensions root. **Exclude**
       `core/root-files/settings.local.json` explicitly, with the D6 reason inline.
-- [ ] Implement Check A: for each surface, select lines matching a `"command"[[:space:]]*:` key
+- [x] Implement Check A: for each surface, select lines matching *(completed)* a `"command"[[:space:]]*:` key
       (never bare path text), extract the invoked script path — handling the nested
       `bash -c '…'` wrapper by finding the innermost invoked `*.sh` token rather than the outer
       `bash -c` — and classify. A line whose `bash -c` body invokes no `*.sh` at all (e.g.
       `core/root-files/settings.json` line 43's inline `permissionDecision` echo) is not a
       registration of a script and must not be flagged. Accept `/`-absolute,
       `"$CLAUDE_PROJECT_DIR"`-anchored, and `~/`-anchored per D1; everything else is a violation.
-- [ ] Emit `[VIOLATION] file:line: <text>` (red) and, under `--verbose`, `[EXEMPT] file:line:
+- [x] Emit `[VIOLATION] file:line: <text>` (red) and, under `--verbose`, *(completed)* `[EXEMPT] file:line:
       <reason> | <text>` (yellow). Close with a `====` banner summary and a `Fix:` footer naming
       the correct `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh` form and the source-store edit
       target.
-- [ ] `chmod +x` the new script.
+- [x] `chmod +x` the new script. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -221,23 +221,23 @@ live, and must be diagnosed, not suppressed.
 
 ---
 
-### Phase 2: Check B — markdown registration templates [NOT STARTED]
+### Phase 2: Check B — markdown registration templates [COMPLETED]
 
 **Goal**: Extend the lint so a copy-paste hook registration template in source-store markdown
 cannot teach the defective shape after the upstream fix landed.
 
 **Tasks**:
-- [ ] Add a markdown scan surface: every `.md` file under the extensions root (default scan root),
+- [x] Add a markdown scan surface: *(completed)* every `.md` file under the extensions root (default scan root),
       processed by a fenced-block state machine that tracks ` ```json ` open/close and considers
       only lines **inside** such a block. Do not attempt `jq` — these blocks are JSON *fragments*,
       not complete documents.
-- [ ] Inside a fenced JSON block, apply the identical `"command"`-key-anchored extraction and
+- [x] Inside a fenced JSON block, apply the identical *(completed)* `"command"`-key-anchored extraction and
       path classifier Check A uses (share one function; do not duplicate the regex), so the two
       checks cannot drift apart on what counts as an accepted anchor.
-- [ ] Require the surrounding block to look like a registration (a `"type": "command"` sibling
+- [x] Require the surrounding block to look like a registration *(completed)* (a `"type": "command"` sibling
       within the block, or a `"command"` key inside a `hooks`/`matcher` structure) so an unrelated
       JSON example carrying a `command` field is not swept in.
-- [ ] Add the Layer-2 file-level allowlist mechanism (`EXCLUDED_FILES` array, repo-relative paths,
+- [x] Add the Layer-2 file-level allowlist mechanism *(completed)* (`EXCLUDED_FILES` array, repo-relative paths,
       **every entry carrying its reason inline** — a bare path list rots into an unauditable
       suppression file). Seed it empty, with a comment stating that no source-store markdown
       currently requires an entry and that any future entry must state why.
@@ -275,36 +275,36 @@ exit 0 with line 34 reported as accepted (not exempted-by-allowlist).
 
 ---
 
-### Phase 3: Check C (fragment coverage) + Check D (script existence) [NOT STARTED]
+### Phase 3: Check C (fragment coverage) + Check D (script existence) [COMPLETED]
 
 **Goal**: Gate the two structural defect classes — a registration unreachable by resync, and a
 registration invoking a script that does not exist.
 
 **Tasks**:
-- [ ] Build the registration inventory with real `jq` over each settings surface's
+- [x] Build the registration inventory with real `jq` *(completed)* over each settings surface's
       `.hooks | to_entries[] | .key as $event | .value[].hooks[]` (these files are complete valid
       JSON, unlike the markdown fragments). Walk only under `.hooks`, never top-level, so
       `mcpServers`-scoped `"command"` fields cannot enter the inventory.
-- [ ] Implement the D5 identity normalization: strip a leading `"$CLAUDE_PROJECT_DIR"/.claude/`,
+- [x] Implement the D5 identity normalization: *(completed)* strip a leading `"$CLAUDE_PROJECT_DIR"/.claude/`,
       `.claude/`, or `/` anchor and keep the remaining directory-qualified path as written, so
       `scripts/foo.sh` and `hooks/foo.sh` are both first-class identities. Key the identity on
       `(normalized path, event, type)`. Do **not** import or mirror `merge.lua`'s
       `hooks/`-anchored `hook_identity()` — see D4.
-- [ ] Implement Check C: compute the root-files identity set and the union of all fragment-surface
+- [x] Implement Check C: compute the root-files identity set *(completed)* and the union of all fragment-surface
       identity sets; flag every identity present in the former and absent from the latter. A
       both-surfaces identity PASSES (the established fresh-install pattern). A fragment-only
       identity PASSES. Only root-files-only is a violation.
-- [ ] Phrase the Check C violation message **in the fragment's terms**: name the hook script and
+- [x] Phrase the Check C violation message **in the fragment's terms**: *(completed)* name the hook script and
       the fragment file it should be added to (`core/merge-sources/settings-hooks.json` for a core
       hook), so the fix is obvious from the message alone.
-- [ ] Implement Check D: for every invoked script path that is source-store-resolvable (a
+- [x] Implement Check D: for every invoked script path *(completed)* that is source-store-resolvable (a
       `"$CLAUDE_PROJECT_DIR"`-anchored or `.claude/`-relative `hooks/NAME.sh` or `scripts/NAME.sh`),
       resolve `NAME.sh` against every `agent-system/extensions/*/hooks/NAME.sh` (hooks are spread
       across each extension's own `hooks/` directory, not only `core/hooks/`) and, for a
       `scripts/`-shaped path, against the corresponding `scripts/` locations; fail naming file and
       line when it resolves nowhere. Skip `~/`-anchored and otherwise non-source-store-resolvable
       paths per D2.
-- [ ] Fold both checks' counts into the single summary banner and keep the one exit-code contract
+- [x] Fold both checks' counts into the single summary banner *(completed)* and keep the one exit-code contract
       (any check's violation → exit 1).
 
 **Timing**: 1.5 hours
