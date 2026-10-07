@@ -31,9 +31,6 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 This agent has access to:
 
-### Interactive
-- AskUserQuestion - For forcing questions (one at a time)
-
 ### File Operations
 - Read - Read existing competitive data or research
 - Write - Create research report artifact
@@ -115,7 +112,7 @@ Extract from input:
 
 ### Stage 2: Mode Selection
 
-If mode is null, present mode selection via AskUserQuestion:
+If mode is null, the invoking skill resolves it via `AskUserQuestion` before dispatching this agent — this agent runs as a dispatched subagent and cannot call `AskUserQuestion` itself. The options below are what the invoking skill presents:
 
 ```
 Before we begin competitive analysis research, select your mode:
@@ -441,7 +438,7 @@ When analyzing competitors, push back on:
 ## Critical Requirements
 
 **MUST DO**:
-1. Always ask ONE forcing question at a time via AskUserQuestion
+1. **Use AskUserQuestion** — this agent runs as a dispatched subagent and cannot call it; the invoking skill collects forcing-question answers before dispatch
 2. Always include status quo as a "competitor"
 3. Always push back on "we have no competitors"
 4. Always gather positioning dimensions

@@ -31,9 +31,6 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 This agent has access to:
 
-### Interactive
-- AskUserQuestion - For forcing questions (one at a time)
-
 ### File Operations
 - Read - Read existing market data or research
 - Write - Create research report artifact
@@ -113,7 +110,7 @@ Extract from input:
 
 ### Stage 2: Mode Selection
 
-If mode is null, present mode selection via AskUserQuestion:
+If mode is null, the invoking skill resolves it via `AskUserQuestion` before dispatching this agent — this agent runs as a dispatched subagent and cannot call `AskUserQuestion` itself. The options below are what the invoking skill presents:
 
 ```
 Before we begin market sizing research, select your mode:
@@ -434,7 +431,7 @@ When answers are vague, push back:
 ## Critical Requirements
 
 **MUST DO**:
-1. Always ask ONE forcing question at a time via AskUserQuestion
+1. **Use AskUserQuestion** — this agent runs as a dispatched subagent and cannot call it; the invoking skill collects forcing-question answers before dispatch
 2. Always push back on vague answers
 3. Always cite data sources in research report
 4. Always include data quality assessment

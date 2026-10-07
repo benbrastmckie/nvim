@@ -447,26 +447,26 @@ non-terminal task. Re-read immediately before editing; stage only this task's hu
 
 ---
 
-### Phase 4: Correct the founder and epidemiology agent files [NOT STARTED]
+### Phase 4: Correct the founder and epidemiology agent files [COMPLETED]
 
 **Goal**: no founder or epidemiology agent file instructs itself to call a tool it cannot call.
 
 **Tasks**:
-- [ ] Re-enumerate the affected set before editing (the list, not the count, is durable):
+- [x] Re-enumerate the affected set before editing (the list, not the count, is durable):
       `grep -rln 'AskUserQuestion' --include='*.md' agent-system/extensions/founder/agents/ agent-system/extensions/epidemiology/agents/`
-- [ ] For each file, replace the self-instruction with the `cslib-vet-agent.md` phrasing, adapted
+- [x] For each file, replace the self-instruction with the `cslib-vet-agent.md` phrasing, adapted
       to the file's own structure: where the file has a `MUST NOT` list, add the bullet there;
       where the instruction sits inside a workflow step, keep the step's non-interactive fallback
       (several already name one — e.g. "document uncertainties in the findings report") and drop
       only the tool call.
-- [ ] Remove `AskUserQuestion` from each file's own tools/capabilities list where it is advertised
+- [x] Remove `AskUserQuestion` from each file's own tools/capabilities list where it is advertised
       (`analyze-agent.md`, `funds-agent.md` and siblings list it as an available tool).
-- [ ] The two heavy files (`founder/agents/legal-analysis-agent.md`, ~18 occurrences, and the
+- [x] The two heavy files (`founder/agents/legal-analysis-agent.md`, ~18 occurrences, and the
       present-extension equivalent handled in Phase 5) carry a question-by-question interactive
       flow rather than a single instruction. For these, state where the asking now happens — the
       invoking skill, before delegation — and keep the agent's own stages non-interactive, rather
       than deleting the content outright.
-- [ ] Do not add any `tools:` declaration to any of these files: measurement forecloses that
+- [x] Do not add any `tools:` declaration to any of these files: measurement forecloses that
       remediation.
 
 **Timing**: 1.5 hours
@@ -485,7 +485,7 @@ epidemiology files. Re-run the enumeration command above and the per-file
 
 **Files to modify**:
 - `agent-system/extensions/founder/agents/analyze-agent.md` - drop the tools-list entry and the mode-selection/forcing-question self-instructions
-- `agent-system/extensions/founder/agents/deck-planner-agent.md` - drop the self-instructions, keep non-interactive fallbacks
+- `agent-system/extensions/founder/agents/deck-planner-agent.md` - drop the self-instructions, keep non-interactive fallbacks *(deviation: altered — on inspection this file already matches the proven-correct pattern verbatim (its Overview, Stage 3, error return, and MUST NOT list already state "the skill handles all interactive AskUserQuestion pickers before delegating"); no edit was needed, same precedent class as cslib-vet-agent.md)*
 - `agent-system/extensions/founder/agents/deck-research-agent.md` - drop the self-instructions, keep non-interactive fallbacks
 - `agent-system/extensions/founder/agents/finance-agent.md` - drop the self-instructions, keep non-interactive fallbacks
 - `agent-system/extensions/founder/agents/financial-analysis-agent.md` - drop the self-instructions, keep non-interactive fallbacks

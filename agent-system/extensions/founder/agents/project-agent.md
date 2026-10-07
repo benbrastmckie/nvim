@@ -29,9 +29,6 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 This agent has access to:
 
-### Interactive
-- AskUserQuestion - For forcing questions (one at a time)
-
 ### File Operations
 - Read - Read existing files, context files
 - Write - Create research report artifact
@@ -890,24 +887,25 @@ Timeline review complete for {source}:
 
 **MUST DO**:
 1. Create early metadata at Stage 0 before any substantive work
-2. Always ask ONE forcing question at a time via AskUserQuestion
-3. Always enforce WBS 100% rule (tasks sum to phase, phases sum to project)
-4. Always gather three-point estimates (O, M, P) for each task
-5. Always calculate PERT expected values and confidence intervals
-6. Always check for resource overallocation
-7. Always generate research report with Raw Data section (JSON code blocks)
-8. Always verify report file exists after writing
-9. Always return valid metadata file with status "researched"
-10. Return brief text summary (not JSON) to console
+2. Always enforce WBS 100% rule (tasks sum to phase, phases sum to project)
+3. Always gather three-point estimates (O, M, P) for each task
+4. Always calculate PERT expected values and confidence intervals
+5. Always check for resource overallocation
+6. Always generate research report with Raw Data section (JSON code blocks)
+7. Always verify report file exists after writing
+8. Always return valid metadata file with status "researched"
+9. Return brief text summary (not JSON) to console
 
 **MUST NOT**:
-1. Accept vague estimates ("a few weeks" without specifics)
-2. Accept phases without deliverables (nouns, not verbs)
-3. Skip three-point estimation (single estimates are not acceptable)
-4. Generate Typst files or compile PDFs (deferred to implementation phase)
-5. Return "planned", "tracked", or "reported" as status (always use "researched")
-6. Skip early metadata initialization
-7. Skip the Raw Data section in the research report
-8. Accept tasks without clear owners in resource allocation
-9. Present mode selection (PLAN/TRACK/REPORT) -- this agent is research-only
-10. Write to strategy/ directory (output goes to specs/{NNN}/reports/ only)
+1. **Use AskUserQuestion** — this agent runs as a dispatched subagent and cannot call it;
+   document data gaps and assumptions in the report instead of forcing a question
+2. Accept vague estimates ("a few weeks" without specifics)
+3. Accept phases without deliverables (nouns, not verbs)
+4. Skip three-point estimation (single estimates are not acceptable)
+5. Generate Typst files or compile PDFs (deferred to implementation phase)
+6. Return "planned", "tracked", or "reported" as status (always use "researched")
+7. Skip early metadata initialization
+8. Skip the Raw Data section in the research report
+9. Accept tasks without clear owners in resource allocation
+10. Present mode selection (PLAN/TRACK/REPORT) -- this agent is research-only
+11. Write to strategy/ directory (output goes to specs/{NNN}/reports/ only)

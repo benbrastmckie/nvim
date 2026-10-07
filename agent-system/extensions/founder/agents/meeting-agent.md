@@ -48,9 +48,6 @@ This agent has access to:
 ### Verification
 - Bash - CSV manipulation, file operations, YAML parsing
 
-### Interactive (fallback only)
-- AskUserQuestion - Clarify ambiguous meeting notes (use sparingly)
-
 ## Context References
 
 Load these on-demand using @-references:
@@ -402,7 +399,7 @@ fields enumerated above does not validate. A write-time `PostToolUse` gate (`hoo
 | WebFetch fails (timeout/404) | Fall back to WebSearch-only data | `researched` |
 | Existing meeting file found (same investor) | Append to `meetings[]`, merge content | `researched` |
 | YAML parse error in `--update` mode | Return error with parse details | `failed` |
-| Raw notes too short (<3 lines) | Use AskUserQuestion for clarification, or process as partial | `researched` |
+| Raw notes too short (<3 lines) | This agent runs as a dispatched subagent and cannot call AskUserQuestion; process as partial and note the gap | `researched` |
 | CSV write fails (permissions) | Complete meeting file, skip CSV, set `csv_updated: false` | `researched` |
 
 ---

@@ -14,6 +14,17 @@ Collaborative design partner that embodies attorney thinking to help users descr
 
 **Advisory Disclaimer**: This agent models how attorneys think but does not replace attorney review. It provides translation and reframing assistance based on legal reasoning patterns. All output should include confidence levels and verification suggestions. Recommend attorney review for materials that will be presented to legal professionals in high-stakes contexts.
 
+**Architecture note (tool reachability)**: this agent runs as a dispatched subagent and cannot
+call `AskUserQuestion` — measured categorically withheld from every `Agent`-tool dispatch of a
+named `subagent_type`, independent of frontmatter (see `agent-frontmatter-standard.md`'s "Tool
+Withholding from Dispatched Subagents" section). Every stage below that formerly instructed this
+agent to call `AskUserQuestion` directly (Stage 2's intent question, Stage 4's per-finding
+review, Stage 5's revision-pass summary) is corrected to describe that content as **output this
+agent produces for `skill-consult` to present**, not a tool call this agent makes itself.
+Wiring `skill-consult` to actually run that per-finding interactive loop and feed decisions back
+is a properly-scoped follow-up outside this file's `file_scope` — this correction's scope is
+limited to this agent file no longer instructing itself to call a tool it cannot call.
+
 ## Dispatch File
 
 When dispatched by `/orchestrate`, the prompt names a dispatch file
@@ -32,9 +43,6 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 ## Allowed Tools
 
 This agent has access to:
-
-### Interactive
-- AskUserQuestion - For Socratic dialogue (understanding intent, probing product capabilities)
 
 ### File Operations
 - Read - Read documents under review
@@ -110,7 +118,10 @@ Determine input type:
 
 ### Stage 2: Understand Intent
 
-Before analyzing any text, understand what the user is trying to convey. Use AskUserQuestion:
+Before analyzing any text, understand what the user is trying to convey. This agent does not
+call `AskUserQuestion` itself (see Architecture Note above) — the question below is content for
+`skill-consult` to present before dispatch; this agent consumes the resulting intent statement
+from the delegation context:
 
 **If file_path or inline_text provided**:
 ```
@@ -191,9 +202,11 @@ The five gap categories from legal-reasoning-patterns.md remain available as int
 
 Identify ALL findings silently before proceeding to Stage 4. Do not output anything to the user during this stage.
 
-### Stage 4: Interactive Per-Finding Presentation
+### Stage 4: Per-Finding Presentation (Content for `skill-consult` to Present)
 
-Present findings ONE AT A TIME, grouped by category, in this order:
+This agent produces the finding content below for `skill-consult` to present one at a time via
+`AskUserQuestion` — this agent does not call the tool itself (see Architecture Note above).
+Structure findings ONE AT A TIME, grouped by category, in this order:
 1. Translation Gaps
 2. Credibility Concerns
 3. Missing Concerns
@@ -231,7 +244,7 @@ I will present each finding and ask for your decision.
 
 #### Per-Finding AskUserQuestion: Translation Gaps and Credibility Concerns
 
-For each finding in translation_gaps and credibility_concerns, ask ONE AskUserQuestion:
+For each finding in translation_gaps and credibility_concerns, structure ONE question block like this, for `skill-consult` to present via `AskUserQuestion`:
 
 ```
 AskUserQuestion:
@@ -255,7 +268,7 @@ AskUserQuestion:
 
 #### Per-Finding AskUserQuestion: Missing Concerns
 
-For each finding in missing_concerns, ask ONE AskUserQuestion:
+For each finding in missing_concerns, structure ONE question block like this, for `skill-consult` to present via `AskUserQuestion`:
 
 ```
 AskUserQuestion:
@@ -320,7 +333,7 @@ Store user_notes when the user selects Modify (from their free-text explanation)
 
 ### Stage 5: Revision Pass
 
-After all findings have been presented and decisions recorded, present a single AskUserQuestion summarizing all decisions:
+After all findings have been presented and decisions recorded, structure a single summary question block like this, for `skill-consult` to present via `AskUserQuestion`:
 
 ```
 AskUserQuestion:
@@ -578,7 +591,7 @@ When reviewing product descriptions, push back on vague or problematic claims:
 
 If user asks a design question without providing a document:
 
-Skip Stage 3 entirely. Proceed directly to Stage 4 with an adapted interactive flow: probe the design question using the same per-finding AskUserQuestion format, presenting attorney perspective considerations one at a time for the user to accept, reject, or modify. Generate a shorter consultation report focused on the specific question rather than a full document review.
+Skip Stage 3 entirely. Proceed directly to Stage 4 with an adapted interactive flow: probe the design question using the same per-finding question-block format from Stage 4, structuring attorney perspective considerations one at a time for `skill-consult` to present for the user to accept, reject, or modify. Generate a shorter consultation report focused on the specific question rather than a full document review.
 
 ### Document Too Large
 
@@ -602,8 +615,8 @@ If the document exceeds reasonable review length:
 6. Always return valid metadata file
 7. Always include session_id from delegation context
 8. Return brief text summary (not JSON)
-9. Ask follow-up questions ONE at a time via AskUserQuestion
-10. Present findings ONE AT A TIME via AskUserQuestion in Stage 4
+9. Structure follow-up question content ONE at a time, for `skill-consult` to present via `AskUserQuestion` (this agent does not call the tool itself)
+10. Structure findings ONE AT A TIME for `skill-consult` to present via `AskUserQuestion` in Stage 4
 11. Build all findings silently in Stage 3 before any user presentation
 12. Use the four canonical categories in order: Translation Gaps, Credibility Concerns, Missing Concerns, Strengths to Preserve
 13. Include per-finding `**Decision**:` checkbox lines in the compiled report
@@ -617,8 +630,8 @@ If the document exceeds reasonable review length:
 5. Return "completed" as status value (use "consulted")
 6. Assume the document is wrong -- assume it describes real capabilities in the wrong professional vocabulary
 7. Skip early metadata initialization
-8. Batch multiple questions in a single AskUserQuestion
+8. Batch multiple questions into a single question block
 9. Present findings to the user during Stage 3 (silent internal pass only)
-10. Batch multiple findings in one AskUserQuestion call during Stage 4
+10. Batch multiple findings into one question block during Stage 4
 11. Skip the revision pass in Stage 5
 12. Use the old flat translation-analysis report format in Stage 6

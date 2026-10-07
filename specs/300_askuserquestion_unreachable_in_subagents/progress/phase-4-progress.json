@@ -1,0 +1,44 @@
+{
+  "phase": 4,
+  "phase_name": "Correct the founder and epidemiology agent files",
+  "started_at": "2026-10-06T21:35:00Z",
+  "last_updated": "2026-10-06T22:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-enumerate affected set (14 files confirmed)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Fix 2 epidemiology files (in-place MUST NOT reword, existing fallback kept)", "status": "done", "files_touched": ["agent-system/extensions/epidemiology/agents/epi-implement-agent.md", "agent-system/extensions/epidemiology/agents/epi-research-agent.md"]},
+    {"id": 3, "description": "Fix project-agent.md (tools-list removal, bullet relocated to MUST NOT)", "status": "done", "files_touched": ["agent-system/extensions/founder/agents/project-agent.md"]},
+    {"id": 4, "description": "Fix meeting-agent.md (tools-list removal, error-table fallback kept)", "status": "done", "files_touched": ["agent-system/extensions/founder/agents/meeting-agent.md"]},
+    {"id": 5, "description": "Batch-fix 7 near-identical mode-selection-template files", "status": "done", "files_touched": [
+      "agent-system/extensions/founder/agents/market-agent.md",
+      "agent-system/extensions/founder/agents/finance-agent.md",
+      "agent-system/extensions/founder/agents/financial-analysis-agent.md",
+      "agent-system/extensions/founder/agents/legal-council-agent.md",
+      "agent-system/extensions/founder/agents/strategy-agent.md",
+      "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
+      "agent-system/extensions/founder/agents/analyze-agent.md"
+    ]},
+    {"id": 6, "description": "Fix deck-research-agent.md (tools-list removal, Stage 5 + error-handling reworded to report/blocked-status fallback)", "status": "done", "files_touched": ["agent-system/extensions/founder/agents/deck-research-agent.md"]},
+    {"id": 7, "description": "Confirm deck-planner-agent.md already correct (no edit needed, precedent-matching)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Fix heaviest file legal-analysis-agent.md (18 occurrences): architecture note + Stage 2/4/5 reworded to skill-consult-presents pattern, honest follow-up-gap statement for the two-way protocol", "status": "done", "files_touched": ["agent-system/extensions/founder/agents/legal-analysis-agent.md"]},
+    {"id": 9, "description": "Run lint-agent-contracts.sh --verbose and test-lint-agent-contracts.sh: 0 warnings/failures", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.deck-planner",
+      "description": "deck-planner-agent.md listed as needing 'drop the self-instructions, keep non-interactive fallbacks'",
+      "type": "altered",
+      "reason": "On inspection the file already matches the proven-correct pattern verbatim; no edit was needed.",
+      "annotation": "*(deviation: altered — file already correct, no edit needed)*"
+    },
+    {
+      "task_id": "4.legal-analysis",
+      "description": "legal-analysis-agent.md's full two-way interactive protocol with skill-consult is not implemented, only documented as a gap",
+      "type": "altered",
+      "reason": "skill-consult is not in this task's file_scope and implementing a full multi-turn round-trip protocol between skill-consult and this agent is a separate, properly-scoped follow-up. This phase's correction is bounded to removing the agent's self-instruction to call a withheld tool and stating clearly where the content/asking now belongs, per the plan's own guidance for the two heaviest files.",
+      "annotation": "*(deviation: altered — documented as a known architectural gap rather than implementing the skill-consult round trip, which is out of file_scope)*"
+    }
+  ],
+  "handoff_count": 0
+}

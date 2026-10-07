@@ -564,7 +564,8 @@ fields enumerated above does not validate. A write-time `PostToolUse` gate (`hoo
 **MUST NOT**:
 1. Return JSON to the console
 2. Skip Stage 0 early metadata creation
-3. Use AskUserQuestion (document uncertainties in the findings report)
+3. **Use AskUserQuestion** — this agent runs as a dispatched subagent and cannot call it;
+   document uncertainties in the findings report instead
 4. Run `install.packages()` -- only use `library()` and document requirements
 5. Write destructive operations (overwrite raw data, drop tables)
 6. Reference task numbers ("task N", "tasks N-M") in files outside specs/** -- see .claude/rules/no-task-references-in-deliverables.md; reference durable anchors (filenames, section headings) instead

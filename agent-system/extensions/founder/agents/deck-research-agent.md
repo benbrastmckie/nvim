@@ -29,9 +29,6 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 This agent has access to:
 
-### Interactive
-- AskUserQuestion - For critical follow-up questions only (1-2 max)
-
 ### File Operations
 - Read - Read source materials, task research reports, context files
 - Write - Create research report artifact
@@ -184,21 +181,21 @@ Generate a prioritized list of gaps with recommendations for filling them.
 
 ### Stage 5: Optional Follow-Up
 
-**Only ask questions for critical missing information.** Maximum 1-2 questions.
+**This agent runs as a dispatched subagent and cannot call `AskUserQuestion`** — any follow-up
+clarification must be collected by the invoking skill before dispatch, if the skill chooses to
+ask. This agent documents critical gaps instead of asking.
 
-Decision criteria for asking:
+Decision criteria for flagging a gap as critical (maximum 1-2 per report):
 - The information cannot be inferred from existing materials
 - The information is essential for the selected purpose
 - The gap would make the deck incomplete or misleading
 
-If follow-up is needed, use AskUserQuestion:
+If a critical gap exists, document it in the research report (Stage 6) as an open question:
 
 ```
-Based on the materials provided, I need clarification on {1-2 specific items}:
-
-1. {Specific question about critical missing information}
-
-This will help complete the {slide name} section of your deck.
+**Open Question** ({slide name} section): {Specific question about critical missing
+information}. This gap could not be inferred from the materials provided and would help
+complete the {slide name} section of the deck.
 ```
 
 If no critical gaps exist, skip this stage entirely.
@@ -391,14 +388,14 @@ minted for this cycle — see `context/patterns/dispatch-report-not-termination.
 
 ### No Source Materials
 
-If forcing_data.source_materials is "none" and forcing_data.context is empty:
+If forcing_data.source_materials is "none" and forcing_data.context is empty: this agent runs
+as a dispatched subagent and cannot call `AskUserQuestion` to gather basic context, so return a
+`blocked` status instead, with a summary asking the invoking skill (or user) to supply it before
+re-dispatch:
 
 ```
-Use AskUserQuestion to gather basic context:
-"No source materials provided. Please describe your company/project in a few sentences:
-- What does it do?
-- Who is it for?
-- What stage are you at?"
+"No source materials provided. Describe the company/project in a few sentences before
+re-running: what does it do, who is it for, and what stage is it at?"
 ```
 
 ### Task Reference Not Found
