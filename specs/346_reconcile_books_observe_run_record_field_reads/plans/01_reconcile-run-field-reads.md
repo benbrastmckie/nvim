@@ -323,33 +323,33 @@ widening.
 
 ---
 
-### Phase 4: Amend observation-record.md to the shapes the reader now writes [NOT STARTED]
+### Phase 4: Amend observation-record.md to the shapes the reader now writes [COMPLETED]
 
 **Goal**: The extension-side record standard describes exactly the record Phase 1 and Phase 2
 produce — no shape the script no longer writes, and no shape it writes that the standard omits.
 
 **Tasks**:
-- [ ] Re-read
+- [x] Re-read
       `agent-system/extensions/books/context/project/books/standards/observation-record.md`
       immediately before editing (task 342 shares this file's glob territory with no
-      machine-visible collision warning — see Risks).
-- [ ] Amend the `certifier_outcomes` row (line ~50) from
+      machine-visible collision warning — see Risks). *(completed)*
+- [x] Amend the `certifier_outcomes` row (line ~50) from
       `{outcome_classes: {}, refusals: [], warnings: [], source}` to
       `{outcome_classes: {}, refusal_count_total, warning_count_total, source}`, and state
       explicitly that the RUN schema carries integer counts only — never per-item refusal or
-      warning text — so a reader does not expect text the log cannot supply.
-- [ ] Fix the `verification_tiers` row's (line ~49) tier vocabulary from underscored
+      warning text — so a reader does not expect text the log cannot supply. *(completed)*
+- [x] Fix the `verification_tiers` row's (line ~49) tier vocabulary from underscored
       `lake_build`/`layer_lint`/`full_gate` to the hyphenated `lake-build`/`layer-lint`/
       `full-gate` the schema and its sole writer both use. Keep `certify` and `recheck` as-is
-      (already correct).
-- [ ] Amend "The RUN Log (Verification Tiers, Certifier Outcomes)" section (line ~186) to record
+      (already correct). *(completed)*
+- [x] Amend "The RUN Log (Verification Tiers, Certifier Outcomes)" section (line ~186) to record
       that `caller_context.task` is matched as a STRING per the RUN schema's type, and to document
       the fail-loud ruling: case (a) silent, case (b) a loud stderr warning, observer still
-      non-blocking.
-- [ ] Confirm `vacuous_passes`'s row (line ~51) needs no change — the `{tier, detail, source}`
-      entry shape is unchanged by Decision 4. Leave it untouched if so.
-- [ ] Confirm no task-number reference is introduced: this file lives under `agent-system/**`,
-      where `rules/no-task-references-in-deliverables.md` applies.
+      non-blocking. *(completed)*
+- [x] Confirm `vacuous_passes`'s row (line ~51) needs no change — the `{tier, detail, source}`
+      entry shape is unchanged by Decision 4. Leave it untouched if so. *(completed)*
+- [x] Confirm no task-number reference is introduced: this file lives under `agent-system/**`,
+      where `rules/no-task-references-in-deliverables.md` applies. *(completed)*
 
 **Timing**: 0.5 hours
 

@@ -46,8 +46,8 @@ per-field below so a reader never has to guess which applies.
 | `generic` | no (omit the whole group if neither source file existed) | object | The join half — see "The Join (Generic Half)" below. |
 | `book_requires_churn` | no (omit if the commit range yielded nothing to count) | object | `{added, removed, source}` counts of `book_requires` lines touched across `.lean` files in the task's own commit range, plus this group's own `source: collected \| backfilled` marker (D2). Mechanically computed, no probe. |
 | `validated_by_promotions` | no (omit if no commits yielded a promotion) | object | `{source, entries: []}` — `entries` holds `{decision, from, to, commit}` objects (see "Books Fact 2" below), keyed by the Decision's own durable heading text, never an invented identifier; `source` is this group's own `collected \| backfilled` marker (D2). |
-| `verification_tiers` | no (omit the whole group; literal `"absent"` string is used only for `snapshot_delta`, not here) | object | `{source, tiers: {}}` — `tiers` holds per-tier run counts/outcomes/time for `lake_build`, `layer_lint`, `certify`, `full_gate`, `recheck`, present only when a RUN log exists and carries entries for this task; `source` is this group's own marker. |
-| `certifier_outcomes` | no (omit if no RUN log entries) | object | `{outcome_classes: {}, refusals: [], warnings: [], source}` — read from the RUN log, never inferred; `source` is this group's own marker. |
+| `verification_tiers` | no (omit the whole group; literal `"absent"` string is used only for `snapshot_delta`, not here) | object | `{source, tiers: {}}` — `tiers` holds per-tier run counts/outcomes/time for `lake-build`, `layer-lint`, `certify`, `full-gate`, `recheck`, present only when a RUN log exists and carries entries for this task; `source` is this group's own marker. Tier names are the hyphenated spellings `book-evidence-run-v1.md`'s own open `tier` vocabulary uses (the writer's and the schema's own form), not the underscored spellings this row carried before the RUN-record field-read reconciliation. |
+| `certifier_outcomes` | no (omit if no RUN log entries) | object | `{outcome_classes: {}, refusal_count_total, warning_count_total, source}` — read from the RUN log, never inferred; `source` is this group's own marker. `refusal_count_total`/`warning_count_total` are integer sums of the RUN schema's own `refusal_count`/`warning_count` fields (certify-tier only, `null` elsewhere) across this task's RUN-log entries. The RUN schema carries integer counts only — **never** per-item refusal or warning text — so a reader of this record must not expect text the log cannot supply. |
 | `vacuous_passes` | yes (first-class — see "Vacuous Passes" below) | array of object \| the literal string `"absent"` | Each entry `{tier, detail, source}`. Never computed by negation of a pass. |
 | `snapshot_delta` | yes | object `{source, delta}` \| the literal string `"absent"` | `delta` is the before/after output from the consuming repository's own snapshot probe, when one exists and is executable; `source` is this group's own marker. The literal `"absent"` string (no wrapping object) is used instead whenever no probe ran. See "Probe Ownership Boundary" below. |
 | `burdens_created` | yes | array of object (default `[]`) | See "Paired Burdens" below. Never absent even when empty. |
@@ -192,6 +192,29 @@ matches this task's number. This file's own schema and writer belong to the cons
 has no entries for this task, the corresponding record groups are omitted (`verification_tiers`,
 `certifier_outcomes`) or set to `"absent"` (`vacuous_passes`) — never a zeroed tally standing in for
 "no runs happened."
+
+**The match is a STRING comparison**, per `book-evidence-run-v1.md`'s own `caller_context.task`
+type (`string or null`). The reader passes the task number to `jq` as a string (`--arg`, not
+`--argjson`) and compares it against `caller_context.task` with plain string equality — never a
+permissive or dual-type comparison in the production filter, because the schema fixes the type
+and a permissive reader would hide a future writer-side regression instead of surfacing it.
+
+**Fail-loud ruling.** A missing or unreadable log, or a log with no entries for this task, is a
+legitimate absent case and stays **silent** — the probe genuinely has nothing to report. But a log
+that exists and parses, whose records the reader cannot legitimately interpret, is a reader defect
+masquerading as an absent case, and the reader is **loud about it on stderr** while remaining
+non-blocking (never changing the exit code or whether a record is written):
+
+1. A RUN-log line whose `schema` field is not `book-evidence-run-v1` is excluded from
+   aggregation and named on stderr, rather than silently coerced in or silently dropped.
+2. A diagnostic, permissive (type-insensitive) re-run of the same `caller_context.task` filter is
+   compared against the strict, schema-faithful result; when the permissive comparison finds
+   matches the strict filter does not, the reader warns on stderr that the RUN log may carry a
+   writer-side type regression (the caller-context field holding a JSON number instead of the
+   schema's required string, for example). This diagnostic comparison never feeds `$mine`, the
+   written record, or any aggregation — it exists purely to make a future silent-zero defect loud
+   the first time it happens, rather than surviving unnoticed the way the original type mismatch
+   between a numeric filter argument and the schema's string field did.
 
 ## Dual Provenance Marking (D2)
 

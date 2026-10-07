@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Amend observation-record.md to the shapes the reader now writes",
+  "started_at": "2026-10-06T01:10:00Z",
+  "last_updated": "2026-10-06T01:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Amend the certifier_outcomes and verification_tiers rows and the RUN Log section to match the record the reader now writes; confirm vacuous_passes needs no change",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/context/project/books/standards/observation-record.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Field-by-field verified against a live fixture record (verification_tiers.tiers keyed by hyphenated tier names, certifier_outcomes = {outcome_classes, refusal_count_total, warning_count_total, source}, vacuous_passes entries = {tier, detail, source}). No collision observed with task 342's hold-blocked glob territory; re-read immediately before editing per the Risks table."
+}
