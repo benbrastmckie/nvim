@@ -1,7 +1,7 @@
 # Implementation Plan: Task #361
 
 - **Task**: 361 - Reclassify bare `git stash` as destructive on a shared working tree
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/361_reclassify_bare_git_stash_as_destructive/reports/01_reclassify-stash-destructive.md
@@ -122,7 +122,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-derive Anchors, Confirm Byte-Identity, Amend the Rule [NOT STARTED]
+### Phase 1: Re-derive Anchors, Confirm Byte-Identity, Amend the Rule [COMPLETED]
 
 **Goal**: Correct the contract before touching any enforcement. Re-confirm every carried figure
 against the live source store, confirm the source-store/deployed guard byte-identity, then move
@@ -130,43 +130,52 @@ bare `git stash` / `git stash push` out of the **Not blocked** list and rewrite 
 state the concurrent-writer hazard. Record the Item 7 and Item 8 verdicts terse in the rule.
 
 **Tasks**:
-- [ ] Re-derive, from `agent-system/extensions/core/`, the current line numbers for: the
+- [x] Re-derive, from `agent-system/extensions/core/`, the current line numbers for: the
       `**Not blocked**` sentence in `rules/git-workflow.md`; the `stash drop|clear` detector and
       `DESTRUCTIVE_ACTION_CLASS="stash_drop"` in `hooks/guard-destructive-git.sh`; the
       `PG_ACTION_CLASSES` assignment in `scripts/lib/push-grant-lib.sh`; the `ACTION_CLASS=` arms
       and accepted-forms error text in `hooks/please-grant.sh`; the bare-`git stash` and
       `git stash pop` assertions in `scripts/tests/test-guard-destructive-git.sh`. Report any
       divergence from the figures carried in this plan rather than absorbing it silently.
-- [ ] Re-confirm byte-identity of `agent-system/extensions/core/hooks/guard-destructive-git.sh`
+      *(completed: all figures confirmed at or near carried line numbers; accepted-forms text at
+      line 171 vs. plan's carried 175, a trivial drift, no other divergence)*
+- [x] Re-confirm byte-identity of `agent-system/extensions/core/hooks/guard-destructive-git.sh`
       and `.claude/hooks/guard-destructive-git.sh` (`diff` plus `md5sum` both sides). If they
       diverge, STOP and report — the premise that this is a coverage gap rather than deploy
       staleness no longer holds, and the plan's ordering assumptions need revisiting.
-- [ ] In `rules/git-workflow.md`, add bare `git stash` / `git stash push` (including the
+      *(completed: diff empty, md5 15f8ba3275f18ea83fb071fa41a0101e both sides — identical)*
+- [x] In `rules/git-workflow.md`, add bare `git stash` / `git stash push` (including the
       implicit-push spellings and `-u` / `--include-untracked`) to the **Forbidden on a dirty
       tree** list, with a one-line effect statement: it reverts the working tree.
-- [ ] Rewrite the **Not blocked** sentence: remove bare `git stash` (push) from it, and replace
+      *(completed)*
+- [x] Rewrite the **Not blocked** sentence: remove bare `git stash` (push) from it, and replace
       the parenthetical "(do not discard uncommitted changes)" with language that states the
       concurrent-writer hazard for the removed form — a stash reverts the tree, and a later
       `git stash pop` can be refused ("local changes would be overwritten") because a sibling
       has since written the same path, at which point the changes exist only inside a stash
       entry requiring path-by-path extraction.
-- [ ] Record the **Item 7 verdict** in the **Not blocked** list, terse: `git stash push --
+      *(completed)*
+- [x] Record the **Item 7 verdict** in the **Not blocked** list, terse: `git stash push --
       <pathspec>` stays permitted — its blast radius is bounded to the named paths, the same
       shape as the already-permitted `git restore --staged <path>` and non-forced
       `checkout`/`switch`; blocking it would deny agents the one stash form that is both safe and
       useful under a shared tree, contradicting the territory-contract model already in use for
       concurrent dispatch.
-- [ ] Record the **Item 8 verdict** in the **Not blocked** list, terse and explicit rather than
+      *(completed)*
+- [x] Record the **Item 8 verdict** in the **Not blocked** list, terse and explicit rather than
       implicit: `git stash pop` / `git stash apply` stay permitted — the data-loss moment is the
       *push* (the tree revert), not the recovery step; a pop or apply that would overwrite local
       changes is refused by git itself and leaves the stash intact or leaves conflict markers,
       never a silent discard. This is the same safe-failure shape that keeps non-forced
       `checkout`/`switch` permitted.
-- [ ] Point the rule at `context/standards/git-workflow-narrative.md` for the full incident
+      *(completed)*
+- [x] Point the rule at `context/standards/git-workflow-narrative.md` for the full incident
       narrative, keeping the rule terse — mirroring the existing split the rule already uses for
       snapshot-mode detail and for the history-rewrite predicate.
-- [ ] Confirm no task-number reference was introduced (`bash .claude/scripts/check-task-references.sh`
+      *(completed)*
+- [x] Confirm no task-number reference was introduced (`bash .claude/scripts/check-task-references.sh`
       or equivalent targeted grep over the edited file).
+      *(completed: 0 occurrences, PASS)*
 
 **Timing**: 1 hour
 
