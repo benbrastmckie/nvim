@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/guard-destructive-git.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-destructive-git.sh"
           }
         ]
       },
@@ -57,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-no-task-references.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-task-references.sh"
           }
         ]
       },
@@ -66,7 +66,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/guard-git-push.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-git-push.sh"
           }
         ]
       }
@@ -77,7 +77,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash .claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'"
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'"
           }
         ]
       },
@@ -86,11 +86,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'"
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'"
           }
         ]
       }
@@ -101,7 +101,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'"
           }
         ]
       },
@@ -110,7 +110,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
           },
           {
             "type": "command",
@@ -125,19 +125,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/post-command.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-command.sh 2>/dev/null || echo '{}'"
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'"
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
           }
         ]
       }
@@ -148,11 +148,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
           }
         ]
       },
@@ -161,7 +161,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/please-grant.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/please-grant.sh"
           }
         ]
       }
@@ -172,12 +172,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
             "timeout": 30000
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
           }
         ]
       }
@@ -188,7 +188,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
           }
         ]
       }

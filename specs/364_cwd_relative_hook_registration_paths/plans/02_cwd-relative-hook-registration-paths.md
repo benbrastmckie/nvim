@@ -2,7 +2,7 @@
 
 - **Task**: 364 - Resolve hook registration paths independently of session CWD so bare-registered
   blocking guards cannot fail open
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md`
@@ -124,35 +124,35 @@ four markdown files).
 
 ---
 
-### Phase 1: Rewrite all source-store hook registrations to the `$CLAUDE_PROJECT_DIR` form [NOT STARTED]
+### Phase 1: Rewrite all source-store hook registrations to the `$CLAUDE_PROJECT_DIR` form [COMPLETED]
 
 **Goal**: Every hook `command` string in the source store resolves against the project root, with
 the bare-vs-fail-open distinction preserved and the four cross-file shared strings byte-identical.
 
 **Tasks**:
-- [ ] Rewrite the 18 occurrences in `agent-system/extensions/core/root-files/settings.json` from
+- [x] Rewrite the 18 occurrences in `agent-system/extensions/core/root-files/settings.json` from
       `bash .claude/hooks/X` to `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/X`, preserving each
       command's existing suffix exactly (bare for `guard-destructive-git.sh`,
       `validate-no-task-references.sh`, `guard-git-push.sh`, `please-grant.sh`; `2>/dev/null || echo
-      '{}'` for the rest).
-- [ ] Handle the nested `bash -c` registration (the `PostToolUse`/`Write` entry wrapping
+      '{}'` for the rest). *(completed)*
+- [x] Handle the nested `bash -c` registration (the `PostToolUse`/`Write` entry wrapping
       `validate-state-sync.sh`) as its own sub-step: change ONLY the inner
       `bash .claude/hooks/validate-state-sync.sh` fragment, leaving the
       `$CLAUDE_TOOL_INPUT`/`$FILE` conditional logic untouched. Use the shape verified in research
-      F3.
-- [ ] Rewrite the 14 occurrences in `agent-system/extensions/core/merge-sources/settings-hooks.json`
-      the same way.
-- [ ] Rewrite the single occurrence in `agent-system/extensions/books/settings-hooks.json`
-      (`validate-evidence-append-only.sh`, bare — stays bare).
-- [ ] Rewrite the single occurrence in `agent-system/extensions/email/settings-fragment.json`
-      (`mail-guard.sh`, keeps its `2>/dev/null || echo '{}'` suffix).
-- [ ] Add the D5 merge-source counterpart: a `PostToolUse`/`Write` entry in
+      F3. *(completed)*
+- [x] Rewrite the 14 occurrences in `agent-system/extensions/core/merge-sources/settings-hooks.json`
+      the same way. *(completed)*
+- [x] Rewrite the single occurrence in `agent-system/extensions/books/settings-hooks.json`
+      (`validate-evidence-append-only.sh`, bare — stays bare). *(completed)*
+- [x] Rewrite the single occurrence in `agent-system/extensions/email/settings-fragment.json`
+      (`mail-guard.sh`, keeps its `2>/dev/null || echo '{}'` suffix). *(completed)*
+- [x] Add the D5 merge-source counterpart: a `PostToolUse`/`Write` entry in
       `core/merge-sources/settings-hooks.json` carrying the same nested `bash -c` registration for
       `validate-state-sync.sh`, byte-identical to the rewritten `root-files/settings.json` string so
-      `deep_merge` dedups it to a no-op on a fresh install.
-- [ ] Mechanically verify byte-identical command strings across the two core files for all five
+      `deep_merge` dedups it to a no-op on a fresh install. *(completed)*
+- [x] Mechanically verify byte-identical command strings across the two core files for all five
       now-shared hooks (`guard-destructive-git.sh`, `validate-no-task-references.sh`,
-      `guard-git-push.sh`, `please-grant.sh`, and the new nested `validate-state-sync.sh`).
+      `guard-git-push.sh`, `please-grant.sh`, and the new nested `validate-state-sync.sh`). *(completed: confirmed byte-equal via jq extraction)*
 
 **Timing**: 1.5 hours
 

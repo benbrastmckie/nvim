@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/364_cwd_relative_hook_registration_paths/plans/02_cwd-relative-hook-registration-paths.md",
-      "summary": "7-phase plan rewriting all 34 source-store hook registrations to the $CLAUDE_PROJECT_DIR form, adding the missing merge-source counterpart, shipping an idempotent migration script for already-deployed repos, and demonstrating the guards blocking from a subdirectory CWD."
-    }
-  ],
-  "next_steps": "Run /implement 364 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791403152_6152cc_364",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791403152_6152cc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 2,
-  "phase_count": 7,
-  "estimated_hours": 6.5,
-  "dependency_waves": [[1, 3, 7], [2, 4], [5], [6]],
-  "memory_candidates": [
-    {
-      "content": "When a defect lives in a DEPLOYED artifact whose source is install-once (copied only on first install, never overwritten by resync), a plan that only edits the source store can pass every gate while leaving every existing consumer repo broken. The correct phase decomposition is three-part, not one: (1) fix the source store, (2) ship an idempotent, --dry-run-capable migration script that repairs already-deployed copies in place (plus a de-duplication step, since an add-only merge will otherwise append the fixed entry alongside the surviving broken one), and (3) assert BOTH outcomes separately -- a fresh-deploy test for the source fix and a demonstration against a real pre-existing deploy for the migration. An acceptance criterion phrased as 'a fresh deploy produces X' is never sufficient on its own for an install-once surface.",
-      "category": "PATTERN",
-      "source_artifact": "specs/364_cwd_relative_hook_registration_paths/plans/02_cwd-relative-hook-registration-paths.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["install-once", "migration-script", "deploy-artifact", "phase-decomposition", "acceptance-criteria", "fresh-deploy"]
-    }
-  ]
+  "dispatch_seq": 3
 }

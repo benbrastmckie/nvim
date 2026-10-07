@@ -4,19 +4,19 @@
       {
         "matcher": "Write|Edit",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/validate-no-task-references.sh" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-task-references.sh" }
         ]
       },
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/guard-destructive-git.sh" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-destructive-git.sh" }
         ]
       },
       {
         "matcher": "Bash|Write|Edit",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/guard-git-push.sh" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-git-push.sh" }
         ]
       }
     ],
@@ -24,7 +24,7 @@
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'" }
         ]
       }
     ],
@@ -32,8 +32,8 @@
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'" },
-          { "type": "command", "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'" },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'" }
         ]
       }
     ],
@@ -41,7 +41,7 @@
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'" }
         ]
       }
     ],
@@ -49,30 +49,36 @@
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'" },
-          { "type": "command", "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'" },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'" }
         ]
       },
       {
         "matcher": "*",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/please-grant.sh" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/please-grant.sh" }
         ]
       }
     ],
     "PostToolUse": [
       {
+        "matcher": "Write",
+        "hooks": [
+          { "type": "command", "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'" }
+        ]
+      },
+      {
         "matcher": "Write|Edit",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/validate-handoff-location.sh" },
-          { "type": "command", "command": "bash .claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'" },
-          { "type": "command", "command": "bash .claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-handoff-location.sh" },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'" },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'" }
         ]
       },
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'" }
         ]
       }
     ]

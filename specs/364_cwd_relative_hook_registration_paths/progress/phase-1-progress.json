@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Rewrite all source-store hook registrations to the $CLAUDE_PROJECT_DIR form",
+  "started_at": "2026-10-07T20:30:00Z",
+  "last_updated": "2026-10-07T21:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite 18 occurrences in core/root-files/settings.json", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 2, "description": "Handle nested bash -c validate-state-sync.sh registration", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 3, "description": "Rewrite 14 occurrences in core/merge-sources/settings-hooks.json", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json"]},
+    {"id": 4, "description": "Rewrite single occurrence in books/settings-hooks.json", "status": "done", "files_touched": ["agent-system/extensions/books/settings-hooks.json"]},
+    {"id": 5, "description": "Rewrite single occurrence in email/settings-fragment.json", "status": "done", "files_touched": ["agent-system/extensions/email/settings-fragment.json"]},
+    {"id": 6, "description": "Add D5 merge-source counterpart for validate-state-sync.sh", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json"]},
+    {"id": 7, "description": "Mechanically verify byte-identical shared hook strings across core files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

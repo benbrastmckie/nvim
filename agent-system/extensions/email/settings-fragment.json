@@ -4,7 +4,7 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/mail-guard.sh 2>/dev/null || echo '{}'" }
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/mail-guard.sh 2>/dev/null || echo '{}'" }
         ]
       }
     ]
