@@ -1,12 +1,61 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md",
+      "summary": "Reclassified bare/whole-tree git stash as destructive on a shared working tree: corrected the rule's wrong premise, added a stash_revert guard detector wired into both existing escape hatches, landed a red-then-green fixture, and redeployed with a fully green gate set."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Corrected rules/git-workflow.md's wrong premise (bare git stash was listed 'Not blocked' though it reverts the tree under concurrent writers), implemented a new stash_revert detector in guard-destructive-git.sh covering bare/push/implicit-push/-u forms while exempting pathspec-scoped stash and recovery forms, wired the class into both the snapshot-marker and /please grant escape hatches, demonstrated the fixture red-then-green, and redeployed with verify-deploy.sh's full gate set green (the sole remaining finding is 4 pre-existing, unrelated run-all.sh suite failures, 0 new)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+    "agent-system/extensions/core/scripts/lib/push-grant-lib.sh",
+    "agent-system/extensions/core/hooks/please-grant.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
+    "specs/361_reclassify_bare_git_stash_as_destructive/progress/phase3-red-run.log",
+    "specs/361_reclassify_bare_git_stash_as_destructive/progress/phase4-green-run.log",
+    "specs/361_reclassify_bare_git_stash_as_destructive/progress/verify-deploy-phase4-full.log",
+    "specs/361_reclassify_bare_git_stash_as_destructive/progress/run-all-phase4.log",
+    "specs/361_reclassify_bare_git_stash_as_destructive/progress/deploy-headless-phase6.log",
+    "specs/361_reclassify_bare_git_stash_as_destructive/progress/verify-deploy-phase6-full.log",
+    "specs/361_reclassify_bare_git_stash_as_destructive/progress/run-all-phase6.log"
+  ],
+  "memory_candidates": [
+    {
+      "content": "This repo's orchestrator eager-context budget gate (Gate 20 in verify-deploy.sh, orchestrator-context-budget.json's eager_load.baseline_bytes) is a FIXED ceiling that must never be silently re-derived -- its own file history shows every prior overage resolved by COMPRESSING the eager-loaded rule text (moving extended reasoning into the companion non-eager context/standards/*-narrative.md file the rule already points to), never by moving the baseline. Editing any file matched by a broad eager-load path glob (e.g. rules/git-workflow.md, which is eager per its own path pattern) -- even a seemingly small addition -- can push the measured total over baseline; re-measure with 'REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check' after any such edit, not just at redeploy time. Pattern: write the full reasoning in the narrative file FIRST, then write only a minimal pointer-plus-verdict in the eager rule, rather than writing verbose rule prose and trimming later.",
+      "category": "PATTERN",
+      "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["eager-context-budget", "orchestrator-context-budget", "gate20", "verify-deploy", "measure-eager-context", "rule-compression"]
+    },
+    {
+      "content": "In push-grant-lib.sh's destructive-action-class machinery, pg_grant_mint does NOT validate PG_ACTION_CLASSES membership for any class name -- it will happily mint a grant for a bogus/unregistered class. It is pg_grant_consume/pg_grant_verify (the function guard-destructive-git.sh's grant check actually calls) that fails closed on an unregistered name. This matters when verifying a new class's wiring end-to-end: testing only 'does pg_grant_mint succeed' proves nothing about fail-closed behavior; test pg_grant_consume (or the full guard-hook round trip) instead.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["push-grant-lib", "pg_grant_mint", "pg_grant_consume", "pg_grant_verify", "fail-closed", "destructive-action-class"]
+    },
+    {
+      "content": "During a multi-phase implementation task that is mid-flight (source store ahead of the deployed .claude/ tree, not yet redeployed), a full verify-deploy.sh / run-all.sh run will surface gate3/gate5 content-drift findings for every file the task has edited so far -- this is EXPECTED and resolves automatically once the task's final redeploy phase runs; it is not a regression. One specific downstream symptom: scripts/tests/test-verify-deploy-context-budget.sh's fixture rsync-copies the live agent-system/extensions/ tree (picking up the task's in-flight edits) while symlinking .claude/ to the real, not-yet-redeployed tree, so its own 'baseline fixture is clean' assumption breaks and run-all.sh classifies it as a 'NEW' failure (not in known-failures.txt) purely because of this timing artifact. Confirm by re-running after the task's redeploy: if it now passes, the 'NEW' classification was this artifact, not a real defect.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["verify-deploy", "run-all.sh", "known-failures", "source-ahead-of-deploy", "test-verify-deploy-context-budget", "mid-implementation-drift"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791392970_a0a292",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

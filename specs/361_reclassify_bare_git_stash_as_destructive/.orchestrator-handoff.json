@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 11,
-  "summary": "Wrote a 6-phase, ~5-hour implementation plan for reclassifying bare whole-tree git stash as destructive. The plan amends the wrong premise in rules/git-workflow.md first (Items 1, 7, 8 verdicts recorded), then adds a per-segment stash_revert detector to hooks/guard-destructive-git.sh with a class-conditional refusal naming git show HEAD:path, git diff HEAD -- path, and a scratchpad copy. It wires the new class into BOTH existing escape-hatch registration points (PG_ACTION_CLASSES validation and please-grant.sh mint grammar) with no second mechanism, lands a fixture demonstrated red pre-change and green post-change, and ends with deploy regeneration plus the full gate set.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 12,
+  "summary": "Implemented all 6 plan phases: corrected rules/git-workflow.md's wrong premise (bare git stash was 'Not blocked' though it reverts the tree under concurrent writers), recorded the full incident and Item 7/8 reasoning in context/standards/git-workflow-narrative.md, added a stash_revert per-segment detector to guard-destructive-git.sh with a class-conditional refusal naming all three non-destructive alternatives, wired the new class into both existing escape hatches (PG_ACTION_CLASSES validation and please-grant.sh's /please mint grammar), landed a fixture demonstrated red (82/7) before the guard change and green (89/0, then 91/0 after Phase 5's grant-pair addition) after, and redeployed with deploy-headless.sh. The full verify-deploy.sh gate set is green except 4 pre-existing, unrelated run-all.sh suite failures already in known-failures.txt (0 new). All 8 dispatch acceptance criteria are met with recorded evidence.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md",
+      "summary": "Implementation summary covering all 6 phases, decisions, deviations, and verification evidence."
+    },
     {
       "type": "plan",
       "path": "specs/361_reclassify_bare_git_stash_as_destructive/plans/01_reclassify-stash-destructive.md",
-      "summary": "6-phase plan: rule amendment first, then stash_revert guard detector, dual escape-hatch wiring, red-then-green fixture, redeploy."
+      "summary": "6-phase plan, all phases marked [COMPLETED] with per-task completion annotations and evidence."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": []
 }
