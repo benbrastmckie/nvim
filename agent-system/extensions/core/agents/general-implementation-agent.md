@@ -167,6 +167,31 @@ test harness or lint sweep run on this machine). The waiter model is
 `@.claude/context/patterns/bounded-build-waiter.md` -- a captured `pid`, a `kill -0` loop, an
 outer `timeout`. The prohibition that file defers to this contract layer:
 
+**MUST**, whenever a local verification/gate process is backgrounded at all, use
+`bounded-build-waiter.md`'s canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"`
+liveness loop, and an outer `timeout N`, all inside **one** Bash call that does not return
+control until the wait resolves. This shape is load-bearing, not stylistic: it never surfaces a
+"wait for a notification" choice point, so there is no point at which the turn could end
+mid-wait.
+
+**MUST NOT** use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local
+verification, gate, build, or test process from within this dispatched subagent -- the local-case
+sibling of the MUST NOT above that already forbids the same for a CI/remote wait. Both instances
+of this one rule exist because the harness's own asynchronous detach-then-await-notification
+path hands the dispatch back unfinished with nothing guaranteed to resume it.
+
+**MUST** prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits
+within the Bash tool's own ceiling, reaching for the detach-plus-waiter shape above only when it
+does not -- `bounded-build-waiter.md`'s own stated preference, restated here because this is
+where the choice is actually made.
+
+**The ruling, stated once so it need not be re-derived**: backgrounding a local verification/gate
+process is not itself unsafe; what is unsafe is the harness-asynchronous detach-then-await-a-
+notification path, because nothing automatically re-enters a turn that has already ended (see
+`@.claude/context/patterns/dispatch-report-not-termination.md` -- the only way back into an ended
+turn is a stale watcher the dispatch itself armed before ending, or an operator-initiated resume,
+never an arriving notification).
+
 **MUST NOT** end the turn on an unresolved local background wait. Detaching a local command and
 then stopping to wait for a harness completion notification hands the dispatch back unfinished
 with no handoff and no `.return-meta.json` -- bounded-build-waiter.md's symptom 2. A notification

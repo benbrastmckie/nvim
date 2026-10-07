@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Mandate the wait mechanism, not only its outcome",
+  "started_at": "2026-10-06T00:00:00Z",
+  "last_updated": "2026-10-06T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add MUST for canonical bounded-build-waiter idiom", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Add MUST NOT against run_in_background/Monitor for local gate", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "Add MUST preferring plain foreground timeout form", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 4, "description": "State the one-sentence ruling on why detach-then-notify is unsafe", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

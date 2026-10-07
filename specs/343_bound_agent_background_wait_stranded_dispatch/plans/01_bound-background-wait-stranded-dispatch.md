@@ -1,7 +1,7 @@
 # Implementation Plan: Task #343
 
 - **Task**: 343 - Bound agent background wait / stranded dispatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: 337 (declared in state.json; no edge was created for any file_scope overlap — see Scope Decision below)
 - **Research Inputs**: specs/343_bound_agent_background_wait_stranded_dispatch/reports/01_background-wait-stranded-dispatch.md
@@ -161,7 +161,7 @@ introduces and must follow it.
 
 ---
 
-### Phase 1: Mandate the wait mechanism, not only its outcome [NOT STARTED]
+### Phase 1: Mandate the wait mechanism, not only its outcome [COMPLETED]
 
 **Goal**: Rule scope item (1) in the agent contract. Backgrounding a local verification/gate
 process stays permitted, but only via `bounded-build-waiter.md`'s single foreground-blocking
@@ -170,28 +170,29 @@ mirroring the MUST NOT that already covers the remote/CI case directly above it.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` lines 145-185
-      in full immediately before editing (a sibling task declares this same file).
-- [ ] In the **Local Long-Running Command Discipline** subsection, add a **MUST** requiring the
+- [x] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` lines 145-185
+      in full immediately before editing (a sibling task declares this same file). *(completed)*
+- [x] In the **Local Long-Running Command Discipline** subsection, add a **MUST** requiring the
       canonical idiom from `context/patterns/bounded-build-waiter.md` verbatim — a captured
       `pid=$!`, a `kill -0 "$pid"` liveness loop, an outer `timeout N`, all inside **one** Bash
       call that does not return control until the wait resolves — and state plainly why that
       shape is load-bearing: it never surfaces a "wait for a notification" choice point, so there
-      is no point at which the turn could end mid-wait.
-- [ ] Add a **MUST NOT** against using `Bash(run_in_background: true)` or arming a `Monitor` for a
+      is no point at which the turn could end mid-wait. *(completed)*
+- [x] Add a **MUST NOT** against using `Bash(run_in_background: true)` or arming a `Monitor` for a
       local verification, gate, build, or test process at all. Word it as a sibling of the
       existing remote/CI MUST NOT ("Use `run_in_background` or arm a Monitor to watch a CI/remote
       wait from within this dispatched subagent") so the two cases read as one rule with two
-      instances, not two unrelated prohibitions.
-- [ ] Add a **MUST** preferring the plain foreground form `timeout N cmd` whenever the command
+      instances, not two unrelated prohibitions. *(completed)*
+- [x] Add a **MUST** preferring the plain foreground form `timeout N cmd` whenever the command
       plausibly fits the Bash tool's own ceiling, reaching for detach-plus-waiter only when it
       does not — `bounded-build-waiter.md`'s own stated preference, restated here because this is
-      where the choice is actually made.
-- [ ] State the ruling explicitly in one sentence so a future reader does not re-derive it: the
+      where the choice is actually made. *(completed)*
+- [x] State the ruling explicitly in one sentence so a future reader does not re-derive it: the
       defect is not that backgrounding is unsafe, it is that the harness-async detach-then-notify
       path is unsafe for a dispatched subagent, because nothing re-enters a terminated turn
-      (cross-reference `context/patterns/dispatch-report-not-termination.md`).
-- [ ] Verify no task number appears in any added text.
+      (cross-reference `context/patterns/dispatch-report-not-termination.md`). *(completed)*
+- [x] Verify no task number appears in any added text. *(completed: check-task-references.sh
+      reports 0 occurrences)*
 
 **Timing**: 1 hour
 
