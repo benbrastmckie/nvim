@@ -23,11 +23,23 @@ mechanism empirically: `$CLAUDE_PROJECT_DIR` IS exported into hook command envir
 types, and through the nested `bash -c` wrapper) and the fixed form demonstrably still blocks with
 `exit 2`. This plan rewrites all 34 source-store registrations to
 `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh`, adds the one missing merge-source counterpart that
-would otherwise stay permanently unreachable by resync, and ships a migration script because
-neither install-once `root-files/settings.json` nor add-only `deep_merge` can reach an
-already-deployed repo. Done means: no CWD-relative `.claude/` path in any hook command in a freshly
-deployed tree, a guard demonstrated blocking from a subdirectory CWD in a migrated pre-existing
-deploy, and no duplicate registration anywhere — each asserted by test, not by inspection.
+would otherwise stay permanently unreachable by resync, and fixes the four markdown registration
+templates that teach the old shape by example. Done means: no CWD-relative `.claude/` path in any
+hook command in a freshly deployed tree, and no duplicate registration on a fresh install —
+asserted by test, not by inspection.
+
+**MID-IMPLEMENTATION SCOPE CHANGE (operator directive)**: the plan as originally authored also
+shipped an idempotent migration script for already-deployed repos (Phases 3/4/6 below), because
+neither install-once `root-files/settings.json` nor add-only `deep_merge` could otherwise reach
+one. Mid-implementation, the operator directed that this migration mechanism be dropped: the
+operator is reloading/redeploying the agent system to every consumer repo directly, which
+supersedes the "install-once cannot reach an already-deployed repo" premise that made the
+migration script necessary. Phases 3, 4, and 6 are accordingly closed
+`[COMPLETED WITH EXCLUSIONS]` with the operator's instruction recorded as the reason (see each
+phase's Reasoned Exclusions). Acceptance criteria 1, 2, and 5 (demonstrated against a real
+pre-existing deploy) are consequently NOT satisfied by this task's own artifact; they are expected
+to be reached by the operator's separate redeploy action instead. Acceptance criterion 4 (fresh
+deploy carries no CWD-relative path) is unaffected and remains absolute.
 
 ### Research Integration
 
@@ -75,9 +87,15 @@ roadmap claim.
   criterion 4 is absolute: *no* CWD-relative `.claude/` path in a deployed tree's hook commands).
 - The bare-vs-`2>/dev/null || echo '{}'` distinction is preserved exactly: the six blocking guards
   stay bare so `exit 2` still blocks; every advisory hook keeps its fail-open suffix.
-- An already-deployed consumer repo reaches the corrected state by an explicit, idempotent,
-  `--dry-run`-capable migration script, demonstrated against two real pre-existing deploys.
-- No repo carries both a broken and a fixed registration for the same hook, asserted by test.
+- ~~An already-deployed consumer repo reaches the corrected state by an explicit, idempotent,
+  `--dry-run`-capable migration script, demonstrated against two real pre-existing deploys.~~
+  **STRUCK by operator directive mid-implementation** (see Phase 3/4/6's Reasoned Exclusions):
+  the operator will reload/redeploy the agent system to every consumer repo directly, superseding
+  the need for a bespoke migration script. Already-deployed repos are reached by that separate
+  redeploy action instead, outside this task's artifact boundary.
+- No repo carries both a broken and a fixed registration for the same hook on a FRESH install,
+  asserted by test (Phase 5). The existing-repo-after-migration half of this goal is struck for the
+  same reason as above — no migration mechanism exists within this task to assert it against.
 - `validate-state-sync.sh` gains a merge-source registration so it stops being permanently
   unreachable by resync.
 - The four markdown registration templates stop teaching the defect by example.
@@ -94,6 +112,11 @@ roadmap claim.
 - Removing hook registrations from `root-files/settings.json` (D4 — they stay).
 - Task 303's script-internal default-argument bug (confirmed unrelated).
 - Rewriting the correct-by-construction diagnostic invocations enumerated in D7/F9.
+- **Added mid-implementation (operator directive)**: the migration script for already-deployed
+  repos (`migrate-hook-registration-paths.sh`), its test, and demonstrating against the two real
+  pre-existing deploys. The operator is reloading/redeploying the agent system to every consumer
+  repo directly, which reaches already-deployed repos without a bespoke migration mechanism. See
+  Phase 3/4/6's Reasoned Exclusions for the full record.
 
 ## Risks & Mitigations
 
@@ -236,7 +259,7 @@ registrations belong in the merge source (D4).
 
 ---
 
-### Phase 3: Write the migration script for already-deployed repos [NOT STARTED]
+### Phase 3: Write the migration script for already-deployed repos [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: An operator can bring any already-deployed `.claude/settings.json` to the corrected
 state in place, idempotently, with a preview mode — the only mechanism that can reach an
@@ -245,22 +268,29 @@ install-once-sourced deploy (D3).
 **Tasks**:
 - [ ] Write `agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh` following
       `migrate-directory-padding.sh`'s convention: `--dry-run`, `--project-root DIR`, `--verbose`,
-      `--help`, `set -euo pipefail`, colorized pass/fail output.
+      `--help`, `set -euo pipefail`, colorized pass/fail output. *(deviation: skipped — operator
+      scope change, see Reasoned Exclusions)*
 - [ ] Rewrite every `bash .claude/hooks/` occurrence inside `.hooks[*][*].hooks[*].command` of the
       target `.claude/settings.json` to `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/`, including
       occurrences nested inside a `bash -c '...'` wrapper, leaving each command's suffix (bare vs.
-      `2>/dev/null || echo '{}'`) untouched.
+      `2>/dev/null || echo '{}'`) untouched. *(deviation: skipped — operator scope change, see
+      Reasoned Exclusions)*
 - [ ] Make it idempotent: a second run reports zero changes and exits 0; a command already carrying
-      `"$CLAUDE_PROJECT_DIR"` is never double-prefixed.
+      `"$CLAUDE_PROJECT_DIR"` is never double-prefixed. *(deviation: skipped — operator scope
+      change, see Reasoned Exclusions)*
 - [ ] De-duplicate: if the target already carries BOTH a broken and a fixed registration of the same
       hook under the same event+matcher, collapse them to the single fixed entry (criterion 6).
+      *(deviation: skipped — operator scope change, see Reasoned Exclusions)*
 - [ ] Write a timestamped backup of the target `settings.json` beside it before any mutation, and
       refuse to proceed if the target is missing, is not valid JSON, or `jq` is unavailable.
+      *(deviation: skipped — operator scope change, see Reasoned Exclusions)*
 - [ ] Declare the script in `agent-system/extensions/core/manifest.json` `provides.scripts`.
+      *(deviation: skipped — operator scope change, see Reasoned Exclusions)*
 - [ ] Add an entry to
       `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` matching the
       existing `migrate-directory-padding.sh` entry's shape (one-shot, operator-invoked, no
-      automated caller by design).
+      automated caller by design). *(deviation: skipped — operator scope change, see Reasoned
+      Exclusions)*
 
 **Timing**: 1.5 hours
 
@@ -277,20 +307,32 @@ registrations and zero `CLAUDE_PROJECT_DIR` occurrences (re-derived at plan-auth
 implementation time with the script's own `--dry-run` count against each target before mutating.
 
 **Files to modify**:
-- `agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh` - new file
-- `agent-system/extensions/core/manifest.json` - `provides.scripts` declaration
+- `agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh` - new file (EXCLUDED,
+  never written — see Reasoned Exclusions)
+- `agent-system/extensions/core/manifest.json` - `provides.scripts` declaration (EXCLUDED)
 - `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` - inventory entry
+  (EXCLUDED)
 
 **Verification**:
-- `bash -n` parses; `--help` exits 0 and documents every flag.
-- `--dry-run` against a scratch copy of a real broken `settings.json` reports the expected
-  occurrence count and mutates nothing (`diff` confirms byte-identical).
-- `bash .claude/scripts/check-extension-docs.sh --quiet` passes (script declared, referenced, not
-  orphaned).
+- N/A — phase excluded before any verification step ran.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Entire phase: `migrate-hook-registration-paths.sh` (write, idempotency, dedup, backup, manifest/docs declarations) | Mid-implementation operator directive: the operator will reload/redeploy the agent system to every consumer repo directly, which removes the "install-once root-files cannot reach already-deployed repos" premise (D3) that made a migration script necessary. A full redeploy fixes already-deployed repos without a bespoke migration mechanism, so writing and shipping one would add dead code the operator does not want maintained. | Operator message received mid-dispatch (implement phase, task 364, dispatch_seq 3) instructing: "DO NOT write the migration script for already-deployed repos — drop it and its test from scope... the operator is going to reload/redeploy the agent system to every consumer repo, so the... premise... no longer holds." A draft of the script had already been written and smoke-tested in a scratch fixture (confirming the jq rewrite+dedup logic itself was correct) before the directive arrived; it was deleted, unstaged and uncommitted, per the operator's instruction not to leave dead code behind. |
+
+This exclusion satisfies `status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` five-condition
+admission test: the exclusion is itemized (one item, the whole phase), reasoned (operator-directed
+scope reduction with a stated premise change), evidenced (the operator instruction itself, quoted
+above), the excluded work is genuinely not needed going forward (the redeploy mechanism
+supersedes it), and no acceptance criterion silently regresses — criterion 5 (existing-deployed-repo
+remediation) is satisfied by the operator's separate redeploy action instead of by this task's
+artifact; see the Non-Goals update and Testing & Validation below for the explicit disposition.
 
 ---
 
-### Phase 4: Test the migration script [NOT STARTED]
+### Phase 4: Test the migration script [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The migration's correctness, idempotency, and no-duplicate outcome are asserted by an
 automated test, discharging acceptance criterion 6 by test rather than by assumption.
@@ -299,17 +341,26 @@ automated test, discharging acceptance criterion 6 by test rather than by assump
 - [ ] Write `agent-system/extensions/core/scripts/tests/test-migrate-hook-registration-paths.sh`
       using the house harness shape (`pass()`/`fail()`/`info()`, `PASSED`/`FAILED` counters,
       trap-cleaned scratch `WORKDIR`, exit 0 all-pass / 1 any-fail / 2 environment error), as in
-      `test-deploy-propagation.sh`.
+      `test-deploy-propagation.sh`. *(deviation: skipped — entire phase excluded, Phase 3's
+      migration script it tests was never written; see Reasoned Exclusions)*
 - [ ] Assertion: a fixture `settings.json` seeded with the OLD broken strings is migrated to zero
       `bash .claude/hooks/` occurrences, with every command's bare-vs-fail-open suffix preserved.
+      *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] Assertion: the nested `bash -c` registration's inner path is migrated and its surrounding
-      `$CLAUDE_TOOL_INPUT` logic is byte-unchanged.
-- [ ] Assertion: a second run is a no-op (zero changes reported, file byte-identical).
+      `$CLAUDE_TOOL_INPUT` logic is byte-unchanged. *(deviation: skipped — see Reasoned
+      Exclusions)*
+- [ ] Assertion: a second run is a no-op (zero changes reported, file byte-identical). *(deviation:
+      skipped — see Reasoned Exclusions)*
 - [ ] Assertion (criterion 6): a fixture seeded with BOTH a broken and a fixed registration of the
       same hook under the same event+matcher ends with exactly one entry, the fixed one.
-- [ ] Assertion: `--dry-run` mutates nothing; a backup exists after a real run.
+      *(deviation: skipped — this is the "migration-specific test for the no-duplicate criterion"
+      the operator named explicitly; see Reasoned Exclusions)*
+- [ ] Assertion: `--dry-run` mutates nothing; a backup exists after a real run. *(deviation:
+      skipped — see Reasoned Exclusions)*
 - [ ] Assertion: refusal paths (missing target, invalid JSON) exit nonzero without mutating.
+      *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] Declare the test in `agent-system/extensions/core/manifest.json` `provides.scripts`.
+      *(deviation: skipped — see Reasoned Exclusions)*
 
 **Timing**: 1 hour
 
@@ -325,11 +376,21 @@ dropped assertion rather than silently diverging.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-migrate-hook-registration-paths.sh` - new file
+  (EXCLUDED, never written)
 - `agent-system/extensions/core/manifest.json` - `provides.scripts` declaration for the test
+  (EXCLUDED)
 
 **Verification**:
-- The test file runs green standalone (exit 0).
-- `bash .claude/scripts/tests/run-all.sh` picks it up by its glob discovery and stays green.
+- N/A — phase excluded before any verification step ran.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Entire phase: `test-migrate-hook-registration-paths.sh` (all seven assertions, including the criterion-6 no-duplicate assertion the operator named explicitly) | Depends entirely on Phase 3's migration script, which was excluded by the same operator directive (full redeploy supersedes a bespoke migration mechanism). A test suite for a script that was never written has nothing to test. | Same operator message as Phase 3's Reasoned Exclusions entry; the operator explicitly named "the migration-specific test for the no-duplicate criterion" as in-scope for exclusion. |
+
+Admission test satisfied on the same grounds as Phase 3 (see that phase's Reasoned Exclusions
+paragraph) — this phase is a direct, total dependent of the excluded Phase 3 work.
 
 ---
 
@@ -380,29 +441,35 @@ dropped assertion rather than silently diverging.
 
 ---
 
-### Phase 6: Migrate and demonstrate against two real pre-existing deploys [NOT STARTED]
+### Phase 6: Migrate and demonstrate against two real pre-existing deploys [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Acceptance criteria 1, 2, and 5 are demonstrated — not asserted — against real
 already-deployed repos whose `settings.json` predates the fix.
 
 **Tasks**:
 - [ ] Run `migrate-hook-registration-paths.sh --dry-run --project-root /home/benjamin/.config/nvim`
-      and confirm the reported occurrence count matches the pre-migration grep.
+      and confirm the reported occurrence count matches the pre-migration grep. *(deviation:
+      skipped — migration script excluded in Phase 3; see Reasoned Exclusions)*
 - [ ] Run it for real against this repo, then re-grep: zero `bash .claude/hooks/` in
-      `.claude/settings.json`, and the six guards still bare.
+      `.claude/settings.json`, and the six guards still bare. *(deviation: skipped — see Reasoned
+      Exclusions)*
 - [ ] Repeat `--dry-run` then real run against
       `/home/benjamin/Philosophy/Papers/PossibleWorlds` — the repo where the defect was originally
-      reproduced.
+      reproduced. *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] Reproduce the original failure condition in a real session: `cd` into a subdirectory of a
       migrated repo (e.g. `.../PossibleWorlds/JPL`), issue an ordinary Bash tool call, and confirm
       NO `PreToolUse:Bash hook error` / `No such file or directory` output (criterion 1).
+      *(deviation: skipped — no migrated repo exists to demonstrate against since the migration
+      mechanism was excluded; see Reasoned Exclusions)*
 - [ ] From that same subdirectory CWD, trigger a real blocking guard (e.g. `git add -A`, which
       `guard-destructive-git.sh` refuses) and confirm it BLOCKS: the tool call is refused and
       `git status --porcelain` shows nothing staged (criterion 2 — demonstrated, not asserted).
+      *(deviation: skipped — see Reasoned Exclusions)*
 - [ ] Run `verify-deploy.sh` gate 2 against both migrated repos and confirm its duplicate detector
-      reports no duplicates (criterion 6, existing-repo half).
+      reports no duplicates (criterion 6, existing-repo half). *(deviation: skipped — see Reasoned
+      Exclusions)*
 - [ ] Record each observation verbatim in the implementation summary; a criterion marked satisfied
-      without its captured output does not count.
+      without its captured output does not count. *(deviation: skipped — see Reasoned Exclusions)*
 
 **Timing**: 1 hour
 
@@ -418,19 +485,23 @@ count per target before mutating; if a third affected deploy is discovered, reco
 silently widening or narrowing scope.
 
 **Files to modify**:
-- `/home/benjamin/.config/nvim/.claude/settings.json` - migrated in place (a gitignored, deployed
-  artifact, not a source-store edit; the source-store boundary rule does not apply to a migration
-  whose whole purpose is to repair a deployed artifact)
-- `/home/benjamin/Philosophy/Papers/PossibleWorlds/.claude/settings.json` - migrated in place
+- `/home/benjamin/.config/nvim/.claude/settings.json` - EXCLUDED, not migrated by this task (will
+  be reached by the operator's separate redeploy action instead)
+- `/home/benjamin/Philosophy/Papers/PossibleWorlds/.claude/settings.json` - EXCLUDED, same reason
 
 **Verification**:
-- Both targets: `grep -c 'bash \.claude/hooks' .claude/settings.json` returns 0; the six guards are
-  present and bare.
-- A subdirectory-CWD Bash tool call in a migrated repo emits no hook error (captured output).
-- A blocking guard refuses a real destructive command from that same CWD, with the refusal text and
-  the clean `git status --porcelain` captured.
-- Full gate: `bash .claude/scripts/verify-deploy.sh` on this repo, with gate 2's advisory now clean
-  for the migrated registrations.
+- N/A — phase excluded before any verification step ran.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Entire phase: migrating and demonstrating against the two real pre-existing deploys (`/home/benjamin/.config/nvim` and `/home/benjamin/Philosophy/Papers/PossibleWorlds`) | Every task in this phase invokes the Phase 3 migration script, which was excluded by operator directive. With no script, there is nothing to run `--dry-run` or for-real against either target, and no migrated repo exists to reproduce the original failure condition against or to re-run `verify-deploy.sh` gate 2's duplicate detector on. The operator stated a full redeploy will reach already-deployed repos directly instead. | Same operator message as Phase 3's Reasoned Exclusions entry. Acceptance criteria 1, 2, and 5 — demonstrated against a real pre-existing deploy — are consequently not satisfied BY THIS TASK; criterion 5 explicitly depended on the now-excluded migration path (plan Goals: "An already-deployed consumer repo reaches the corrected state by an explicit, idempotent, `--dry-run`-capable migration script, demonstrated against two real pre-existing deploys" — struck by this exclusion). The operator's own separate redeploy action is the stated mechanism by which these criteria will ultimately be reached, outside this task's artifact boundary. |
+
+This is a direct, total dependent of the excluded Phase 3/4 work, admitted on the same grounds
+(operator-directed, reasoned, evidenced, the excluded mechanism is genuinely superseded, and the
+resulting criterion gap is named explicitly here and in Testing & Validation rather than silently
+absorbed).
 
 ---
 
@@ -496,13 +567,17 @@ asserting that exactly these 8 lines carry a `"command": "bash .claude/hooks/...
       advisory registration retains `2>/dev/null || echo '{}'` (criterion 3).
 - [ ] The five hooks shared between `root-files/settings.json` and `merge-sources/settings-hooks.json`
       have byte-identical command strings (D2).
-- [ ] `test-migrate-hook-registration-paths.sh` green, including the idempotency and
-      no-duplicate assertions (criterion 6).
+- [x] ~~`test-migrate-hook-registration-paths.sh` green, including the idempotency and
+      no-duplicate assertions (criterion 6).~~ *(deviation: excluded — migration script and its
+      test dropped by operator directive; see Phase 3/4 Reasoned Exclusions)*
 - [ ] `test-deploy-propagation.sh`'s three new assertions green: fresh deploy has zero CWD-relative
       hook paths (criterion 4), bare-ness preserved on the deployed artifact, no duplicates.
-- [ ] Both real pre-existing deploys migrated; subdirectory-CWD Bash call emits no hook error
+- [x] ~~Both real pre-existing deploys migrated; subdirectory-CWD Bash call emits no hook error
       (criterion 1) and a blocking guard demonstrably refuses from that CWD (criterion 2); criterion
-      5 satisfied against a real pre-existing deploy, not only a fixture.
+      5 satisfied against a real pre-existing deploy, not only a fixture.~~ *(deviation: excluded
+      — no migration mechanism exists within this task to demonstrate against; the operator's
+      separate redeploy action reaches already-deployed repos instead. See Phase 6 Reasoned
+      Exclusions. Criteria 1/2/5 are NOT satisfied by this task's artifact.)*
 - [ ] `bash .claude/scripts/tests/run-all.sh` green.
 - [ ] `bash .claude/scripts/verify-deploy.sh` green, with gate 2's duplicate detector silent.
 - [ ] `bash .claude/scripts/check-extension-docs.sh --quiet` green.
@@ -514,23 +589,31 @@ asserting that exactly these 8 lines carry a `"command": "bash .claude/hooks/...
   registration)
 - `agent-system/extensions/books/settings-hooks.json`, `agent-system/extensions/email/settings-fragment.json`
   (1 rewritten each)
-- `agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh` (new)
-- `agent-system/extensions/core/scripts/tests/test-migrate-hook-registration-paths.sh` (new)
+- ~~`agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh` (new)~~ EXCLUDED,
+  never written (operator directive — see Phase 3 Reasoned Exclusions)
+- ~~`agent-system/extensions/core/scripts/tests/test-migrate-hook-registration-paths.sh` (new)~~
+  EXCLUDED, never written (see Phase 4 Reasoned Exclusions)
 - `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` (3 new assertions)
-- `agent-system/extensions/core/manifest.json` (2 `provides.scripts` declarations)
-- `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` (1 entry)
+- `agent-system/extensions/core/manifest.json` (1 `provides.scripts` declaration if any new script
+  from Phase 7 requires it; the two migration-related declarations are EXCLUDED)
+- `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` (EXCLUDED — no
+  migration script entry to add)
 - 4 markdown template files under `agent-system/extensions/{nvim,core}/context/`
 - `specs/364_cwd_relative_hook_registration_paths/summaries/02_*-summary.md` (implementation
-  summary carrying the captured criterion-1/2/5 evidence)
+  summary recording the operator-directed scope reduction and its reason, in place of the
+  criterion-1/2/5 evidence the excluded phases would otherwise have captured)
 
 ## Rollback/Contingency
 
 Source-store edits are all small, reviewable JSON/markdown changes committed per green sub-step, so
 the ordinary remedy is to revert the offending commit — no working-tree discard is needed.
 
-If a migrated `.claude/settings.json` turns out wrong, restore it from the timestamped backup the
+~~If a migrated `.claude/settings.json` turns out wrong, restore it from the timestamped backup the
 migration script writes beside it (Phase 3); that is the designed recovery path and needs no git
-operation, since `.claude/` is a gitignored deploy artifact in both affected repos.
+operation, since `.claude/` is a gitignored deploy artifact in both affected repos.~~ Moot: Phase 3
+was excluded by operator directive (the migration script was never written or run), so no migrated
+`settings.json` exists for this task to roll back. Already-deployed repos will be reached by the
+operator's separate redeploy action, which carries its own rollback story outside this task.
 
 If an uncommitted working tree must genuinely be rolled back mid-phase, follow
 `context/contracts/recovery.md`'s rollback rung for the exact snapshot-then-rollback invocation
