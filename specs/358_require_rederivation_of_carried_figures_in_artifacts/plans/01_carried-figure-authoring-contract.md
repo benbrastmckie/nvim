@@ -298,16 +298,17 @@ and the record of the rejected placement options.
 
 ---
 
-### Phase 3: Point plan-format.md at the Contract from Counts-are-hypotheses [NOT STARTED]
+### Phase 3: Point plan-format.md at the Contract from Counts-are-hypotheses [COMPLETED]
 
 **Goal**: Extend `plan-format.md`'s existing `### Counts-are-hypotheses obligation` subsection
 with a short pointing paragraph that rules on plan-side strictness and names the
 `Scope Hypothesis` discharge path, without restating the contract.
 
 **Tasks**:
-- [ ] Re-read the `### Counts-are-hypotheses obligation` subsection immediately before editing,
-      and re-confirm its measured line number from Phase 1.
-- [ ] Append one paragraph to that subsection (before the `**`Scope Hypothesis`:` is deliberately
+- [x] Re-read the `### Counts-are-hypotheses obligation` subsection immediately before editing,
+      and re-confirm its measured line number from Phase 1. *(completed: confirmed at line 299,
+      unchanged from Phase 1's measurement)*
+- [x] Append one paragraph to that subsection (before the `**`Scope Hypothesis`:` is deliberately
       not a harvest source...**` paragraph, so the existing harvest note stays adjacent to the
       field it qualifies) stating:
       - A count, citation, command output, or mechanical claim *carried into this plan from
@@ -326,10 +327,12 @@ with a short pointing paragraph that rules on plan-side strictness and names the
       - The strictness ruling, stated explicitly: a plan is held at least as strictly as a
         report, because a plan's figures drive execution -- a stale carried figure in a plan
         becomes a wrong action, not only a wrong belief.
-- [ ] Confirm additive-only:
+      *(completed: paragraph inserted at line 308, before the harvest-note paragraph, all four
+      elements present)*
+- [x] Confirm additive-only:
       `git diff -- agent-system/extensions/core/context/formats/plan-format.md | grep -c '^-[^-]'`
-      must print `0`.
-- [ ] Commit this phase's single file with a scoped commit.
+      must print `0`. *(completed: measured 0)*
+- [x] Commit this phase's single file with a scoped commit. *(completed)*
 
 **Timing**: 0.5 hours
 

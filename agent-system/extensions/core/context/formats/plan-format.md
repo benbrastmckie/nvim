@@ -305,6 +305,21 @@ The implementation-side gate that consumes this obligation (i.e., that mechanica
 confirmation happened) is a separate, out-of-scope concern for this document — this section
 defines the planner-side carrier field only.
 
+**Carried figures are a different object from this obligation, and are at least as strict.** A
+count, citation, command output, or mechanical claim *carried into this plan from another
+record* (a research report, a prior plan version, another task's artifact, the task
+description) is not the forward-looking estimate governed above — it is subject to the Carried-
+Figure Discipline in `context/formats/report-format.md`: re-derive at authoring time, or mark
+`CARRIED-UNVERIFIED` with the source named. The two obligations are complementary, not
+alternatives: `**Scope Hypothesis**:` governs a claim this plan makes about future
+implementation-time state; carried-figure discipline governs a claim this plan repeats from an
+already-written record. A plan MAY discharge the re-derivation half through its own
+`**Scope Hypothesis**:` line when re-deriving at plan-authoring time is genuinely not cheap,
+provided that line names both the carried figure and the record it came from; a Scope Hypothesis
+naming neither does not discharge it. The strictness ruling, stated explicitly: a plan is held
+at least as strictly as a report, because a plan's figures drive execution — a stale carried
+figure in a plan becomes a wrong action, not only a wrong belief.
+
 **`**Scope Hypothesis**:` is deliberately not a harvest source for `file_scope`.** It is free-form
 prose about a claim to confirm, not a structured file enumeration; the structured carrier for a
 phase's file list is `Files to modify` (see "Consumers of this field" above), and
