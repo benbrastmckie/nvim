@@ -244,23 +244,28 @@ file, and record the item 1/3/4 rulings in writing — including the rejected ca
 
 ---
 
-### Phase 3: Propagate the Bullet Pair to All 14 Agent Definitions [NOT STARTED]
+### Phase 3: Propagate the Bullet Pair to All 14 Agent Definitions [COMPLETED]
 
 **Goal**: Place the literal bullet pair in every implementation-agent definition measured as
 missing it, without touching any surrounding text.
 
 **Tasks**:
-- [ ] For each of the 14 files below, in order: re-read the file's `## Critical Requirements`
+- [x] For each of the 14 files below, in order: re-read the file's `## Critical Requirements`
       section immediately before editing, then append the MUST bullet as the next sequential item
       of the `**MUST**` list (or, where only a `**MUST NOT**` list exists, add a `**MUST**:`
       heading in the same section shape) and the MUST NOT bullet as the next sequential item of
       the `**MUST NOT**` list. Do not renumber or reword any surrounding bullet.
-- [ ] Copy the bullet text from the Phase 2 fragment **character for character**. The only
+      *(completed: all 14 files carry both bullets; every existing agent had a MUST or MUST DO
+      list to append to, no new heading needed)*
+- [x] Copy the bullet text from the Phase 2 fragment **character for character**. The only
       permitted adaptation is the list's own numbering prefix.
-- [ ] Commit each file (or each small group of files within one extension) as its own scoped
+      *(completed: verified by grep -qF anchor check across all 14)*
+- [x] Commit each file (or each small group of files within one extension) as its own scoped
       green sub-step, with an explicit file list — never a directory or glob pathspec.
-- [ ] After all 14, re-run the Phase 1 reproduce command and confirm all 17 files now report
+      *(completed: committed in three groups of 5/7/2 files)*
+- [x] After all 14, re-run the Phase 1 reproduce command and confirm all 17 files now report
       nonzero counts in both columns.
+      *(completed: all 17 nonzero in both columns)*
 
 The 14 files, verbatim from the measured list:
 - `books/agents/books-implementation-agent.md`

@@ -1,0 +1,31 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate the Bullet Pair to All 14 Agent Definitions",
+  "started_at": "2026-10-07T09:35:00Z",
+  "last_updated": "2026-10-07T10:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append MUST and MUST NOT bullets to all 14 in-scope agent definitions", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-implementation-agent.md",
+      "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
+      "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+      "agent-system/extensions/email/agents/email-implementation-agent.md",
+      "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+      "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+      "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+      "agent-system/extensions/python/agents/python-implementation-agent.md",
+      "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+      "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+      "agent-system/extensions/web/agents/web-implementation-agent.md",
+      "agent-system/extensions/z3/agents/z3-implementation-agent.md"
+    ]},
+    {"id": 2, "description": "Verify exact-text match across all 14 via grep -qF", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Commit in three scoped groups", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-run reproduce command, confirm all 17 nonzero", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
