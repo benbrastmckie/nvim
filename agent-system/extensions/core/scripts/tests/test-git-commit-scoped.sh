@@ -758,6 +758,130 @@ fi
 # task-ref-ok:end
 
 # =====================================================================
+# W1-W4: the fully-staged-deletion acceptance in the V7 verification loop.
+#
+# Defect these pin: V7 verified every positive pathspec by requiring it PRESENT in `git ls-files`
+# after the add. That is wrong for a pathspec whose every tracked file `git add` just staged as
+# DELETED -- absence from the index is the CORRECT post-add state there. The source half of a
+# directory move (an archival pass that `mv`s a directory and names both old and new paths in one
+# call) hit this on every run: `git add` staged the rename perfectly, `git status` showed
+# `R old -> new`, and the script then refused the commit anyway with "not present in the index at
+# all". A pure directory deletion (naming only the vacated path) was refused identically.
+#
+# Every assertion below checks the COMMIT actually landed (or actually did not) via git log/git
+# show, never exit code alone -- an exit-code-only assertion on W1 would pass against a script
+# that committed nothing at all.
+# =====================================================================
+
+# --- build_repo_movable -- a repo whose tracked fixture lives in a directory that can be moved
+# wholesale, with a nested subdirectory so the rename covers more than one file. ---
+build_repo_movable() {
+  local repo
+  repo="$(mktemp -d -p "$TOP_WORKDIR")"
+
+  git -C "$repo" init -q
+  git -C "$repo" config user.email "test@example.com"
+  git -C "$repo" config user.name "Test Suite"
+
+  mkdir -p "$repo/.claude/scripts/lib"
+  local f
+  for f in "${REQUIRED_SCRIPTS[@]}"; do
+    cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+  done
+
+  mkdir -p "$repo/specs/999_probe/reports"
+  mkdir -p "$repo/specs/998_sibling"
+  echo "plan" > "$repo/specs/999_probe/plan.md"
+  echo "report" > "$repo/specs/999_probe/reports/01_probe.md"
+  # An out-of-scope sibling, tracked but never named in any W-case pathspec: lets W1 prove the
+  # acceptance did not widen the commit beyond the paths the caller asked for.
+  echo "sibling" > "$repo/specs/998_sibling/file.txt"
+  git -C "$repo" add -- specs/999_probe/plan.md specs/999_probe/reports/01_probe.md \
+    specs/998_sibling/file.txt
+  git -C "$repo" commit -q -m "initial"
+
+  echo "$repo"
+}
+
+# --- W1: the headline regression -- a directory-move pathspec pair (vacated source + populated
+# destination) commits, the commit records the move as renames, and an out-of-scope modified
+# sibling is NOT swept in (the acceptance must not widen the commit's scope). ---
+
+repo_w1="$(build_repo_movable)"
+mkdir -p "$repo_w1/specs/archive"
+mv "$repo_w1/specs/999_probe" "$repo_w1/specs/archive/999_probe"
+echo "touched out of scope" >> "$repo_w1/specs/998_sibling/file.txt"
+before_w1=$(git -C "$repo_w1" rev-list --count HEAD)
+out_w1="$(run_commit "$repo_w1" --message "W1 archive move" --session "sess_w1" \
+  -- "specs/999_probe" "specs/archive/999_probe" 2>&1)"
+rc_w1=$?
+after_w1=$(git -C "$repo_w1" rev-list --count HEAD 2>/dev/null || echo "$before_w1")
+show_w1="$(git -C "$repo_w1" show --name-status --format="" HEAD 2>/dev/null)"
+renames_w1=$(echo "$show_w1" | grep -c '^R' || true)
+sibling_still_dirty_w1=$(git -C "$repo_w1" status --porcelain -- specs/998_sibling/file.txt | wc -l)
+
+if [ "$rc_w1" -eq 0 ] && [ "$after_w1" -eq $((before_w1 + 1)) ] \
+  && [ "$renames_w1" -eq 2 ] \
+  && ! echo "$show_w1" | grep -qF "specs/998_sibling/file.txt" \
+  && [ "$sibling_still_dirty_w1" -eq 1 ]; then
+  pass "W1: a directory-move pathspec pair commits -- HEAD advanced, both files recorded as renames, out-of-scope modified sibling left uncommitted (verified via git log/git show, not exit code)"
+else
+  fail "W1: expected rc=0, HEAD+1, 2 renames in HEAD, sibling absent from the commit and still dirty; got rc=$rc_w1 before=$before_w1 after=$after_w1 renames=$renames_w1 sibling_dirty=$sibling_still_dirty_w1 show=$show_w1 output=$out_w1"
+fi
+
+# --- W2: the acceptance is never silent -- it names the accepted pathspec on stderr, matching the
+# discipline the sibling tolerated-advisory NOTE already follows. Reuses W1's captured output. ---
+
+if echo "$out_w1" | grep -q "NOTE:.*fully-staged deletion" \
+  && echo "$out_w1" | grep -qF "specs/999_probe"; then
+  pass "W2: the fully-staged-deletion acceptance emits a stderr NOTE naming the accepted pathspec, not silent"
+else
+  fail "W2: expected a stderr NOTE naming the accepted fully-staged-deletion pathspec; got output=$out_w1"
+fi
+
+# --- W3: the same acceptance covers a PURE deletion -- the vacated path named with no destination
+# in the pathspec list at all (a directory removed outright, not moved). Refused identically
+# before the fix, for the identical reason. ---
+
+repo_w3="$(build_repo_movable)"
+rm -rf "$repo_w3/specs/999_probe"
+before_w3=$(git -C "$repo_w3" rev-list --count HEAD)
+out_w3="$(run_commit "$repo_w3" --message "W3 pure deletion" --session "sess_w3" \
+  -- "specs/999_probe" 2>&1)"
+rc_w3=$?
+after_w3=$(git -C "$repo_w3" rev-list --count HEAD 2>/dev/null || echo "$before_w3")
+dels_w3=$(git -C "$repo_w3" show --name-status --format="" HEAD 2>/dev/null | grep -c '^D' || true)
+
+if [ "$rc_w3" -eq 0 ] && [ "$after_w3" -eq $((before_w3 + 1)) ] && [ "$dels_w3" -eq 2 ]; then
+  pass "W3: a pure directory deletion (vacated pathspec, no destination) commits -- HEAD advanced, both files recorded as deletions"
+else
+  fail "W3: expected rc=0, HEAD+1, 2 deletions in HEAD; got rc=$rc_w3 before=$before_w3 after=$after_w3 dels=$dels_w3 output=$out_w3"
+fi
+
+# --- W4: THE SAFETY CASE -- a genuine add failure sharing the pathspec list with a legitimate
+# directory move still refuses. `git add` is one all-or-nothing call, so the out-of-repo entry
+# aborts staging for the move as well; the acceptance must NOT mask that, because the vacated
+# source then still holds its index entries and is genuinely unstaged. Proves the new branch is
+# unreachable whenever the deletion was not actually staged. ---
+
+repo_w4="$(build_repo_movable)"
+mkdir -p "$repo_w4/specs/archive"
+mv "$repo_w4/specs/999_probe" "$repo_w4/specs/archive/999_probe"
+before_w4=$(git -C "$repo_w4" rev-list --count HEAD)
+out_w4="$(run_commit "$repo_w4" --message "W4 mixed failure" --session "sess_w4" \
+  -- "specs/999_probe" "specs/archive/999_probe" "/etc/passwd" 2>&1)"
+rc_w4=$?
+after_w4=$(git -C "$repo_w4" rev-list --count HEAD 2>/dev/null || echo "$before_w4")
+
+if [ "$rc_w4" -eq 2 ] && [ "$after_w4" -eq "$before_w4" ] \
+  && echo "$out_w4" | grep -q "ERROR:.*genuinely unstaged"; then
+  pass "W4: a genuine add failure batched with a legitimate directory move still refuses -- exit 2, no commit (the fully-staged-deletion acceptance does not mask an unstaged path)"
+else
+  fail "W4: expected rc=2 and no new commit; got rc=$rc_w4 before=$before_w4 after=$after_w4 output=$out_w4"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

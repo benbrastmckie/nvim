@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 809,
+      "line_count": 819,
       "keywords": [
         "format",
         "metadata",
@@ -1057,7 +1057,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, dedup rule, and the live-cycle acceptance-criterion decision",
-      "line_count": 555,
+      "line_count": 574,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -2523,7 +2523,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H9 wrap-up and handoff contract: orchestrator handoff JSON schema, continuation markdown, incremental commit discipline",
-      "line_count": 240,
+      "line_count": 244,
       "keywords": [
         "wrap-up",
         "handoff",
@@ -3039,7 +3039,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 433,
+      "line_count": 533,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -3063,7 +3063,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 552,
+      "line_count": 556,
       "keywords": [
         "runtime-files",
         "cleanup",

@@ -118,7 +118,21 @@
 #        either check is genuinely unstaged (e.g. the sibling out-of-repo-pathspec hard failure,
 #        which stages nothing and must keep refusing) and aborts the commit exactly as before; a
 #        path that passes both checks is accepted even if `git add` exited nonzero, with a stderr
-#        NOTE naming the tolerated case so it is never silent. Residual blind spot, deliberate and
+#        NOTE naming the tolerated case so it is never silent.
+#        SECOND ACCEPTED SHAPE -- the fully-staged deletion: the index-presence half of that
+#        verification is NOT universal, because a positive pathspec whose every tracked file
+#        `git add` just staged as DELETED is correctly absent from `git ls-files` afterwards. The
+#        source half of a directory move has exactly this shape (an archival pass that `mv`s a
+#        task directory and names both the old and the new path in one call), and the index it
+#        produces is already exactly right -- `git status` shows the rename staged -- so refusing
+#        it rejected a correct commit. Such a pathspec is therefore accepted, under a predicate
+#        narrow enough that no genuine failure slips through: absent from the working tree, HEAD
+#        resolvable, and `git diff --cached HEAD -- <path>` exiting EXACTLY 1 (a staged change
+#        exists). Exit 0 (nothing staged there -- a genuine drop) and any code above 1 (git
+#        errors, notably the 128 of an out-of-repo pathspec) both keep refusing. This acceptance
+#        can only ever convert a false refusal into a commit: it is unreachable whenever the
+#        index still holds an entry for the pathspec, which is the only state in which a real
+#        add failure leaves a path behind. Residual blind spot, deliberate and
 #        unchanged from pre-existing behavior: a single newly-created, ignore-matched file swept
 #        up IMPLICITLY inside a directory pathspec that also covers other already-tracked files is
 #        not independently verified by this per-positive-pathspec loop (the directory entry itself
@@ -436,8 +450,30 @@ if has_positive_pathspec "${add_pathspecs[@]}"; then
   fi
 
   genuinely_failed_adds=()
+  staged_deletion_adds=()
   for p in "${add_positive_pathspecs[@]}"; do
     if ! git ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
+      # Absence from the index is the CORRECT post-add state for a pathspec whose every tracked
+      # file `git add` just staged as deleted -- the source half of a directory move (the common
+      # shape: an archival pass that `mv`s a task directory and names both old and new paths in
+      # one call). Treating that as a failure refuses a commit whose index is already exactly
+      # right, which is why this branch exists: verify the fully-staged-deletion shape before
+      # falling through to the refusal.
+      #
+      # The exit code of `git diff --cached HEAD` is read EXACTLY, never as a boolean: 1 means
+      # "a staged change exists for this pathspec" (for a path absent from both index and disk
+      # that can only be the deletion), 0 means "nothing staged here" (never tracked -- a
+      # genuine drop), and anything above 1 (notably 128) is a git error such as an out-of-repo
+      # pathspec. Only 1 is accepted, so the out-of-repo hard failure keeps refusing exactly as
+      # before; a `! git diff ...` boolean test would wrongly accept the 128 case.
+      staged_deletion_rc=0
+      git diff --cached --quiet HEAD -- "$p" >/dev/null 2>&1 || staged_deletion_rc=$?
+      if [ ! -e "$p" ] \
+         && [ "$staged_deletion_rc" -eq 1 ] \
+         && git rev-parse --verify -q HEAD >/dev/null 2>&1; then
+        staged_deletion_adds+=("$p")
+        continue
+      fi
       genuinely_failed_adds+=("${p} (not present in the index at all)")
       continue
     fi
@@ -454,6 +490,10 @@ if has_positive_pathspec "${add_pathspecs[@]}"; then
     echo "$add_output" >&2
     echo "ERROR: git-commit-scoped.sh refuses to commit — git add left one or more staged paths genuinely unstaged, verified against actual index state rather than inferred from git add's exit code (Verified Finding V7). Failing path(s): ${genuinely_failed_adds[*]}" >&2
     exit 2
+  fi
+
+  if [ "${#staged_deletion_adds[@]}" -gt 0 ]; then
+    echo "NOTE: git-commit-scoped.sh accepted ${#staged_deletion_adds[@]} positive pathspec(s) as fully-staged deletions — absent from the index because git add staged every tracked file under them as deleted, which is the correct post-add state for the source half of a directory move, not an unstaged path (Verified Finding V7). Path(s): ${staged_deletion_adds[*]}" >&2
   fi
 
   if [ "$add_exit" -ne 0 ]; then

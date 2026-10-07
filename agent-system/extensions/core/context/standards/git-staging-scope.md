@@ -79,6 +79,20 @@ positive pathspec (`git ls-files --error-unmatch` plus a `git diff --quiet` resi
 tolerating the advisory false negative while still refusing a genuine failure (e.g. the
 out-of-repo-pathspec hard failure, which stages nothing and must keep refusing).
 
+**Index presence is NOT the universal success signal, and the gate does not treat it as one.**
+A positive pathspec whose every tracked file `git add` just staged as DELETED is correctly ABSENT
+from `git ls-files` afterwards, so an index-presence requirement alone would refuse a commit whose
+index is already exactly right. The vacated source half of a directory move has precisely this
+shape — which is why requiring presence unconditionally made the gate refuse the very
+both-endpoints pattern "Rename and Directory-Move Staging" below mandates, and refuse a pure
+directory deletion identically. The gate therefore also accepts a pathspec that is absent from the
+working tree, resolvable against HEAD, and reported by `git diff --cached HEAD -- <path>` as
+exiting EXACTLY 1 (a staged change exists). Reading that exit code exactly is load-bearing: exit 0
+means nothing was staged there (a genuine drop) and anything above 1 is a git error — notably the
+128 of an out-of-repo pathspec — so both keep refusing, and a boolean `! git diff ...` test would
+wrongly accept the error case. Callers need do nothing to opt in; the correct staging pattern is
+simply no longer refused.
+
 **Tracked-vs-moved distinction, by mechanism**: this hazard applies only to a path that is
 ALREADY TRACKED when the ignore rule first matches it. A file relocated by a plain `mv` into an
 ignore-matched destination is, at that destination, a BRAND-NEW UNTRACKED path — `git add`
