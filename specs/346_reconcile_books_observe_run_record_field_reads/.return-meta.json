@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1791337167_c5588f_346",
+  "dispatch_seq": 13,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/346_reconcile_books_observe_run_record_field_reads/reports/01_reconcile-run-field-reads.md",
+      "summary": "Confirms all six books-observe.sh RUN-log field-name/type mismatches against the live schema and 149-line consumer-repo log, diagnoses the existing test fixture as encoding the bug rather than the schema, and rules on a two-part fail-loud mechanism (unrecognized-schema check + permissive-vs-strict match-count divergence check) retroactively verified against mismatch 1."
+    }
+  ],
+  "next_steps": "Run /plan 346 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "When a reader script's test fixture is built to match the reader's own (possibly wrong) field expectations rather than the normative schema document, the fixture launders the bug: it passes because it exercises the bug's own logic, not the schema. Diagnosis technique: always build/verify a reader's test fixtures directly against the schema document's Fields table, never against the reader's current parsing code, especially when auditing a reader for field-name drift.",
+      "category": "PATTERN",
+      "source_artifact": "specs/346_reconcile_books_observe_run_record_field_reads/reports/01_reconcile-run-field-reads.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-fixture", "schema-drift", "silent-degradation", "reader-defect", "jq"]
+    },
+    {
+      "content": "To retroactively validate a proposed fail-loud detection mechanism for a silent-degradation bug, replay the ORIGINAL buggy logic against the mechanism and confirm it would have fired. A schema-version-field check alone does not catch a type-mismatch filter bug (the schema value itself is unaffected); pair it with a permissive-vs-strict match-count divergence check (normalize both sides with tostring for the permissive count, compare against the schema-faithful strict count) to catch exactly that class of defect without weakening the production filter itself.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/346_reconcile_books_observe_run_record_field_reads/reports/01_reconcile-run-field-reads.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["fail-loud", "silent-degradation", "jq-filter", "type-mismatch", "diagnostic-check"]
+    }
+  ]
+}
