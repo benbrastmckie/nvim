@@ -1,0 +1,23 @@
+{
+  "status": "planned",
+  "task_number": 358,
+  "phase": "plan",
+  "dispatch_seq": 6,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Authored a six-phase plan for the carried-figure authoring contract. Phase 1 re-derives every figure the plan carries from the research report (dogfooding the contract with inline CARRIED-UNVERIFIED marks); Phases 2-3 amend report-format.md with the full contract and point plan-format.md at it from Counts-are-hypotheses; Phase 4 is a measured decision gate (recall/precision/boundedness) on the narrow impossible-assertion detector, with Phase 5 conditional and its reasoned-exclusion contingency pre-written; Phase 6 is the acceptance sweep. Net format-document count stays at the measured pre-change value and both amendments are additive-only.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/plans/01_carried-figure-authoring-contract.md",
+      "summary": "Six-phase, 4.25-hour plan amending report-format.md and plan-format.md with the carried-figure re-derive-or-mark contract, with a measured decision gate on the narrow internal-consistency detector."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791361777_314fa0_358",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}
