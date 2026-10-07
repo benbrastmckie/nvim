@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/300_askuserquestion_unreachable_in_subagents/reports/01_askuserquestion-subagent-reachability.md",
+      "summary": "Measures AskUserQuestion reachability across five dispatched-subagent configurations including a live fork probe (categorically unreachable regardless of frontmatter or fork-vs-plain dispatch), identifies skill-slide-planning/skill-slide-critic as an already-working reference pattern for the rehome fix, settles the isolation-row probes B/C and records the decisive question as unverifiable within this session, and corrects the standard's two false claims."
+    }
+  ],
+  "next_steps": "Run /plan 300 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791337167_c5588f_300",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "On this harness, AskUserQuestion is categorically withheld from every Agent-tool dispatch, plain or forked: a no-tools:-line dispatch, an explicit tools: allowlist that names AskUserQuestion verbatim, a subagent_type registered as 'All tools', and subagent_type:\"fork\" all show the identical result (ToolSearch select:AskUserQuestion -> 'No matching deferred tools found', and in the explicit-allowlist case the agent's own top-level tool list silently drops the tool too). The withholding looks like a harness-level policy on this specific native user-interaction tool, not something mediated by the tools:/disallowedTools: frontmatter mechanism or by fork-vs-plain dispatch. Verify with a fresh probe before relying on this across harness versions.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/300_askuserquestion_unreachable_in_subagents/reports/01_askuserquestion-subagent-reachability.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["AskUserQuestion", "subagent", "tool-withholding", "Agent-tool", "frontmatter"]
+    },
+    {
+      "content": "Working pattern for a skill that needs both interactive user choices and a dispatched subagent: put every AskUserQuestion call in the skill's OWN pre-delegation stages (executed in whatever context invoked the skill, which is not tool-restricted the way a named subagent dispatch is), and delegate to the named agent only for the final non-interactive write/analysis step. core/skills/skill-slide-planning/SKILL.md and skill-slide-critic/SKILL.md already implement this (Stages 0-6 interactive, Stage 7 Agent-tool delegation to slide-planner-agent/slide-critic-agent respectively) and are proven working references for any future skill facing the same AskUserQuestion-unreachable-in-subagent constraint.",
+      "category": "PATTERN",
+      "source_artifact": "specs/300_askuserquestion_unreachable_in_subagents/reports/01_askuserquestion-subagent-reachability.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["AskUserQuestion", "skill-pattern", "interactive-interview", "context-fork", "delegation"]
+    },
+    {
+      "content": "core/docs/fork-patterns.md documents two completely independent 'fork' mechanisms that are easy to conflate: SKILL.md's context: fork field (a context-LOADING optimization only -- skips eager CLAUDE.md loading, does not change tool-access semantics of the skill body) versus the Agent tool's subagent_type: \"fork\" parameter (a genuine continuation of the calling agent's context and prompt cache). Explicitly documented: 'context: fork != FORK_SUBAGENT -- these are independent mechanisms; one does not imply the other.' Separately, a live hazard measured firsthand while probing this: because subagent_type:\"fork\" inherits the ENTIRE calling session's context (not just the forking turn's own instructions), a loosely-scoped fork prompt for a narrow diagnostic action risks the fork autonomously resuming/completing unrelated inherited work (e.g. a whole pending research deliverable) instead of the one action requested. A fork prompt needing to stay narrow requires explicit, forceful negative scoping (\"do not write files, do not dispatch further agents, stop after step N\"), not just a positive instruction.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/300_askuserquestion_unreachable_in_subagents/reports/01_askuserquestion-subagent-reachability.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["context-fork", "subagent_type-fork", "fork-patterns", "skill-frontmatter"]
+    }
+  ],
+  "findings_count": 8
+}
