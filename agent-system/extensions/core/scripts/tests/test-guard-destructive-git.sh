@@ -624,6 +624,23 @@ rm -rf "$grant_repo2"
 [ "$second_code" -eq 2 ] && pass "grant: second 'git reset --hard' with no remaining grant is blocked" \
   || fail "grant: expected exit=2 on second attempt, got $second_code"
 
+# --- stash_revert mirrors the reset_hard pair: a matching grant allows the bare git stash once,
+#     consumes it, and a second bare git stash (re-dirtied) blocks exactly as before ---
+stash_grant_repo="$(make_dirty_repo)"
+mint_destructive_grant_in "$stash_grant_repo" stash_revert
+stash_first_code="$(run_hook_in "$stash_grant_repo" "git stash")"
+stash_remaining="$(grant_count_in "$stash_grant_repo")"
+if [ "$stash_first_code" -eq 0 ] && [ "$stash_remaining" -eq 0 ]; then
+  pass "grant: stash_revert grant allows 'git stash' once and is consumed"
+else
+  fail "grant: expected exit=0 and grant consumed for stash_revert, got exit=$stash_first_code remaining=$stash_remaining"
+fi
+echo "more dirt" >> "$stash_grant_repo/tracked.txt"
+stash_second_code="$(run_hook_in "$stash_grant_repo" "git stash")"
+rm -rf "$stash_grant_repo"
+[ "$stash_second_code" -eq 2 ] && pass "grant: second 'git stash' with no remaining stash_revert grant is blocked" \
+  || fail "grant: expected exit=2 on second stash_revert attempt, got $stash_second_code"
+
 # --- No-grant behaviour is byte-identical to before: a representative blocked case still
 #     blocks the same way with PUSH_GRANT_* exported but no grant file present ---
 noregress_repo="$(make_dirty_repo)"

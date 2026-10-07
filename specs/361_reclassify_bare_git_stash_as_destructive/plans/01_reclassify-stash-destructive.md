@@ -454,7 +454,7 @@ that nothing outside the declared set was touched.
 
 ---
 
-### Phase 5: Complete the Escape-Hatch Wiring — `/please` Mint Grammar [NOT STARTED]
+### Phase 5: Complete the Escape-Hatch Wiring — `/please` Mint Grammar [COMPLETED]
 
 **Goal**: Make the existing grant route as usable for `stash_revert` as for the other five
 destructive classes, closing the split-registry asymmetry rather than leaving the class
@@ -462,31 +462,33 @@ reachable only via the snapshot-marker route. No second mechanism is added — t
 new class into the one that exists.
 
 **Tasks**:
-- [ ] Add an arm to `hooks/please-grant.sh`'s destructive-class `case "$TEXT"` block (carried as
+- [x] Add an arm to `hooks/please-grant.sh`'s destructive-class `case "$TEXT"` block (carried as
       lines 144-168) recognizing a stash-grant request (`git stash`, `stash`, `git stash push`,
       `stash push` and the obvious variants), setting `DESTRUCTIVE_MATCHED=1` and
       `ACTION_CLASS="stash_revert"`, and using the same fixed sentinel pattern the other
       destructive arms use (`REMOTE="local"`, `REF=<current branch or HEAD>`, `FORCE="0"`) — do
-      not invent a second grant schema.
-- [ ] Extend the user-facing accepted-forms error text (carried as line 175) so it names the new
+      not invent a second grant schema. *(completed)*
+- [x] Extend the user-facing accepted-forms error text (carried as line 175) so it names the new
       form; without this, an operator attempting the grant gets "could not parse" with no clue
-      that the class exists.
-- [ ] Add reciprocal one-line cross-reference comments: in `scripts/lib/push-grant-lib.sh` near
+      that the class exists. *(completed)*
+- [x] Add reciprocal one-line cross-reference comments: in `scripts/lib/push-grant-lib.sh` near
       `PG_ACTION_CLASSES` (whose header currently claims to be "the single place that list is
       defined" — true for *validation*, not for *mintability*), point at `hooks/please-grant.sh`'s
       `case` grammar as the second place a new class must be registered; and in
       `hooks/please-grant.sh` near the `case` block, point back at `PG_ACTION_CLASSES`. A future
-      sixth class should find both wiring points from either file.
-- [ ] Add a grant-check test pair for the new class to
+      sixth class should find both wiring points from either file. *(completed)*
+- [x] Add a grant-check test pair for the new class to
       `scripts/tests/test-guard-destructive-git.sh`, mirroring the existing `reset_hard` pair
       (carried as lines 583-603): `mint_destructive_grant_in <repo> stash_revert`, confirm
       `git stash` is allowed once and `grant_count_in` drops to 0, then re-dirty the tree and
-      confirm a second bare `git stash` is blocked exactly as before.
-- [ ] Confirm the asymmetry the suite already protects still holds: a `stash_revert` grant must
+      confirm a second bare `git stash` is blocked exactly as before. *(completed)*
+- [x] Confirm the asymmetry the suite already protects still holds: a `stash_revert` grant must
       **not** exempt over-staging (the over-staging detectors exit 2 before the grant check is
       reachable). Re-run the existing over-staging-with-grant case to confirm no regression.
-- [ ] Re-run the full guard test suite; green.
-- [ ] Confirm no task-number reference was introduced in any edited file.
+      *(completed: unchanged case still passes)*
+- [x] Re-run the full guard test suite; green. *(completed: 91 passed, 0 failed)*
+- [x] Confirm no task-number reference was introduced in any edited file. *(completed: clean on
+      all 3 edited files)*
 
 **Timing**: 0.75 hours
 
@@ -505,14 +507,19 @@ new class into the one that exists.
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh` green, including
   the new grant pair and the unchanged over-staging-with-grant asymmetry case.
-- `bash -n` plus `shellcheck` clean on both edited shell files.
+- `bash -n` plus `shellcheck` clean on both edited shell files. *(verified: `bash -n` clean on
+  both; `shellcheck` unavailable in this environment, same recorded gap as Phase 4)*
 - A direct `pg_grant_mint stash_revert local <ref> 0 <sha> ...` call succeeds (proving the
-  `PG_ACTION_CLASSES` registration from Phase 4 took effect) and a mint for an unregistered
-  sentinel name still fails closed.
+  `PG_ACTION_CLASSES` registration from Phase 4 took effect). *(verified; refinement recorded
+  during execution: `pg_grant_mint` itself does not validate `PG_ACTION_CLASSES` membership for
+  ANY class name, registered or not — it is `pg_grant_consume`/`pg_grant_verify`, the function
+  the guard hook actually calls, that fails closed on an unregistered sentinel (confirmed:
+  `stash_revert` consume rc=0, an unregistered-name consume rc=1). End-to-end behavior is
+  correctly fail-closed at the point that matters.)*
 - `grep -n "stash_revert" ` across the source store shows the class present in exactly the
   expected places: the guard detector, `PG_ACTION_CLASSES`, the `please-grant.sh` arm, and the
-  tests — no stray occurrence.
-- No task-number reference in any edited file.
+  tests — no stray occurrence. *(verified: 5 files, all expected)*
+- No task-number reference in any edited file. *(verified: clean)*
 
 ---
 

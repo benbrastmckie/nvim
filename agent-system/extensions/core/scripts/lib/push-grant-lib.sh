@@ -37,9 +37,14 @@
 #
 # ACTION_CLASS vocabulary (PG_ACTION_CLASSES below) starts at push_branch|push_tag (Phase 2) and
 # is extended by Phase 5 to add the destructive-guard classes (reset_hard, clean_fd,
-# checkout_discard, restore_discard, stash_drop) -- this is the single place that list is
-# defined; please-grant.sh's grammar and guard-destructive-git.sh's grant check both read it
-# from here rather than re-declaring it.
+# checkout_discard, restore_discard, stash_drop, stash_revert) -- this is the single place that
+# list is defined for VALIDATION: guard-destructive-git.sh's grant check reads it from here, and
+# pg_grant_mint/verify fail closed on any name not in it. It is NOT the single place for
+# MINTABILITY, though: a class also needs its own recognition arm in please-grant.sh's
+# `case "$TEXT"` grammar (and its accepted-forms error text) before a user can actually mint a
+# grant for it via /please -- see that file's own cross-reference comment near its `case` block.
+# A new class is registered at BOTH places, or the grant route silently can't produce it even
+# though the snapshot-marker route still works.
 #
 # Key storage: ${XDG_STATE_HOME:-$HOME/.local/state}/claude-agent-system/push-grant.key, mode
 # 0600, OUTSIDE the repo -- because .claude/ is wipe-and-regenerate disposable (see

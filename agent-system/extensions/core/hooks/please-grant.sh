@@ -133,13 +133,19 @@ if [ "$MINT_SOURCE" = "please" ]; then
     [ -n "${BASH_REMATCH[3]:-}" ] && IS_LEASE=1
   fi
 
-  # Destructive-action forms (the five classes guard-destructive-git.sh's grant check
+  # Destructive-action forms (the six classes guard-destructive-git.sh's grant check
   # recognises; see push-grant-lib.sh's PG_ACTION_CLASSES). These have no remote/force concept
   # -- REMOTE/REF/FORCE are the fixed sentinels guard-destructive-git.sh's own grant check uses
   # (REMOTE="local", REF=current branch or "HEAD" if detached, FORCE="0"), so minting here
   # produces a grant that check can actually match. The bare "force" prefix strip above does not
   # apply to this family (there is no --force-with-lease analogue for a local destructive
   # action), so IS_BARE_FORCE/IS_LEASE are simply left at 0 for this branch.
+  #
+  # THIS case block is the second of the two places a new destructive class must be registered
+  # -- PG_ACTION_CLASSES in push-grant-lib.sh is the first (VALIDATION: pg_grant_mint/verify fail
+  # closed on an unregistered name); this block (plus the accepted-forms error text just below)
+  # is what makes a class actually MINTABLE via /please. See push-grant-lib.sh's own
+  # cross-reference comment near PG_ACTION_CLASSES for the reverse pointer.
   DESTRUCTIVE_MATCHED=0
   if [ "$MATCHED" -ne 1 ]; then
     case "$TEXT" in
@@ -149,6 +155,11 @@ if [ "$MINT_SOURCE" = "please" ]; then
         DESTRUCTIVE_MATCHED=1; ACTION_CLASS="clean_fd" ;;
       "git stash drop"|"stash drop"|"git stash clear"|"stash clear")
         DESTRUCTIVE_MATCHED=1; ACTION_CLASS="stash_drop" ;;
+      "git stash"|"stash"|"git stash push"|"stash push")
+        # stash_revert: see guard-destructive-git.sh's own stash_revert detector and
+        # PG_ACTION_CLASSES above -- a new class must be registered at BOTH wiring points,
+        # not just here. Mirrors stash_drop's mint shape exactly (no remote/force concept).
+        DESTRUCTIVE_MATCHED=1; ACTION_CLASS="stash_revert" ;;
       *)
         if [[ "$TEXT" =~ ^(git[[:space:]]+)?checkout[[:space:]]+--[[:space:]]+(.+)$ ]] \
           || [[ "$TEXT" =~ ^(git[[:space:]]+)?(checkout|switch)[[:space:]]+-f(orce)?$ ]]; then
@@ -172,7 +183,8 @@ if [ "$MINT_SOURCE" = "please" ]; then
       "'push <remote> <branch>', 'push <branch> to <remote>', 'push tag <name> to <remote>'" \
       "(each with an optional trailing --force-with-lease). Accepted destructive forms:" \
       "'git reset --hard', 'git clean -fd', 'git checkout -- <path>', 'git restore <path>'," \
-      "'git stash drop', 'git stash clear', 'git checkout -f'/'git switch -f'. No grant minted."
+      "'git stash drop', 'git stash clear', 'git stash'/'git stash push' (stash_revert)," \
+      "'git checkout -f'/'git switch -f'. No grant minted."
     exit_ok
   fi
 
