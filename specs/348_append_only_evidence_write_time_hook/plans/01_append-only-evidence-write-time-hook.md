@@ -1,7 +1,7 @@
 # Implementation Plan: Task #348
 
 - **Task**: 348 - Write-time PreToolUse Write|Edit hook enforcing append-only evidence files, the books extension first hook and its registration path
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/348_append_only_evidence_write_time_hook/reports/01_append-only-evidence-write-time-guard.md
@@ -160,46 +160,46 @@ failing OPEN with exit 0". Each guard gets its own `if`, its own message, and it
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the Hook Script [NOT STARTED]
+### Phase 1: Author the Hook Script [COMPLETED]
 
 **Goal**: `agent-system/extensions/books/hooks/validate-evidence-append-only.sh` exists, is
 executable, is shellcheck-clean, and implements the scope match, the Ruling 2 predicate, the
 rejection message, and the Ruling 3 fail-open guards.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/books/hooks/` and author the script with
+- [x] Create `agent-system/extensions/books/hooks/` and author the script with *(completed)*
       `#!/usr/bin/env bash` and `set -euo pipefail`, resolving its own location via
       `HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"` so nothing depends on the tool's
       cwd (inherited contract 3).
-- [ ] Write the header comment: what the hook blocks, that it blocks via exit code 2 + stderr and
+- [x] Write the header comment: what the hook blocks, that it blocks via exit code 2 + stderr and *(completed)*
       never `permissionDecision: deny`, that it MUST be registered bare and why the
       `2>/dev/null || echo '{}'` wrapper silently disables the block, that it fails open on an
       internal error, Ruling 2 and its fallback in one or two lines, and one line naming
       `check-evidence-append-only.sh` as the companion commit-time gate. Cite by filename and
       concept only — no task numbers anywhere in this file.
-- [ ] Add fail-open guard 1 (presence): if `command -v jq` fails, print a `WARNING:` line naming
+- [x] Add fail-open guard 1 (presence): if `command -v jq` fails, print a `WARNING:` line naming *(completed)*
       this hook and `jq`, then `exit 0`.
-- [ ] Parse the payload: read stdin (with the precedent's `[ -t 0 ]` / `CLAUDE_TOOL_INPUT` env
+- [x] Parse the payload: read stdin (with the precedent's `[ -t 0 ]` / `CLAUDE_TOOL_INPUT` env *(completed)*
       fallback), then extract `.tool_name`, `.cwd`, `.tool_input.file_path`,
       `.tool_input.content`, `.tool_input.old_string`, `.tool_input.new_string`,
       `.tool_input.replace_all`. Add fail-open guard 2 (usability) as its own separate `if`: if the
       captured stdin does not parse as JSON, print a distinct `WARNING:` line naming guard 2 and
       `exit 0`.
-- [ ] Early exits, all `exit 0` and silent: no `file_path` resolved; no content captured.
-- [ ] Resolve the absolute path: if `file_path` is not already absolute, join it onto `.cwd`.
+- [x] Early exits, all `exit 0` and silent: no `file_path` resolved; no content captured. *(completed)*
+- [x] Resolve the absolute path: if `file_path` is not already absolute, join it onto `.cwd`. *(completed)*
       Normalize without requiring the file to exist.
-- [ ] Scope match on the resolved absolute path, performed **before** any subprocess: the path must
+- [x] Scope match on the resolved absolute path, performed **before** any subprocess: the path must *(completed)*
       end in `books/book-convention-evidence/<two digits>-<anything>.md`, and a basename of exactly
       `README.md` is excluded. Any non-match exits 0 silently, so the hook is inert in every repo
       that lacks the directory.
-- [ ] A path that does not yet exist on disk is a creation: `exit 0` (creation of a new `NN-*.md`
+- [x] A path that does not yet exist on disk is a creation: `exit 0` (creation of a new `NN-*.md` *(completed)*
       is allowed).
-- [ ] Compute the immutable baseline per Ruling 2: derive the repo root from the resolved path
+- [x] Compute the immutable baseline per Ruling 2: derive the repo root from the resolved path *(completed)*
       (`git -C "$(dirname "$ABS_FILE")" rev-parse --show-toplevel`), compute the path relative to
       that root, and capture `git show HEAD:<relpath>`. On any failure of that chain, fall back to
       the current on-disk content and record in a comment that this fallback is stricter and is not
       fail-open.
-- [ ] Implement the predicate as **byte-string tests only** — no `diff`, no newline splitting, no
+- [x] Implement the predicate as **byte-string tests only** — no `diff`, no newline splitting, no *(completed)*
       per-line arrays:
       - `tool_name == "Write"`: allowed only if the baseline is a byte-exact **prefix** of
         `.tool_input.content`.
@@ -209,11 +209,11 @@ rejection message, and the Ruling 3 fail-open guards.
         `replace_all` uniqueness, and it is stricter than necessary in a few edge cases rather than
         looser in any.
       - Any other `tool_name`: `exit 0`.
-- [ ] On refusal, emit the multi-line stderr message carrying all three facts **inline** — the file
+- [x] On refusal, emit the multi-line stderr message carrying all three facts **inline** — the file *(completed)*
       is append-only; the commit-time counter is monotonic, so a later restore cannot undo a
       committed deletion and the only remedy is a history rewrite; append a dated entry instead —
       plus one line naming `check-evidence-append-only.sh` as the companion gate. Then `exit 2`.
-- [ ] `chmod +x` the script.
+- [x] `chmod +x` the script. *(completed)*
 
 **Timing**: 1.5 hours
 

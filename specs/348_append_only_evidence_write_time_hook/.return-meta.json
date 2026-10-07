@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "artifacts": [
     {
       "type": "plan",
@@ -7,16 +7,13 @@
       "summary": "5-phase plan (5.25h) for the books extension's first hook: an append-only evidence-file PreToolUse Write|Edit guard, its forgery-probed fixture suite, its manifest and settings-fragment registration path, and deploy verification in the live consumer repo."
     }
   ],
-  "next_steps": "Run /implement 348 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 5.25,
-  "dependency_waves": [[1], [2, 4], [3], [5]],
+  "next_steps": "Implementation in progress",
   "memory_candidates": [],
   "metadata": {
-    "session_id": "sess_1791330710_42a2e1_348",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791330710_42a2e1",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }

@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "Author the Hook Script",
+  "started_at": "2026-10-06T00:00:00Z",
+  "last_updated": "2026-10-06T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create hooks/ dir and author validate-evidence-append-only.sh skeleton (shebang, set -euo pipefail, BASH_SOURCE resolution)", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 2, "description": "Header comment with all required facts and rulings", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 3, "description": "Fail-open guard 1 (jq presence)", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 4, "description": "Parse stdin payload; fail-open guard 2 (JSON usability)", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 5, "description": "Early exits (no file_path, no content)", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 6, "description": "Resolve absolute path via cwd join", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 7, "description": "Scope match on books/book-convention-evidence/NN-*.md excluding README.md", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 8, "description": "Creation case (file not on disk) exit 0", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 9, "description": "Compute HEAD baseline (Ruling 2) with on-disk fallback", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 10, "description": "Predicate: byte-string prefix/suffix tests for Write/Edit", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]},
+    {"id": 11, "description": "Rejection message with 3 facts + companion gate name; exit 2; chmod +x", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
