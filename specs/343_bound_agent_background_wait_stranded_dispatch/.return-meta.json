@@ -1,36 +1,37 @@
 {
-  "status": "tasks_created",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task 343 entry added to TODO.md (wave 1, Orchestrator topic group) by generate-todo.sh regeneration."
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task 343 appended to active_projects with task_type meta, topic orchestrator, no dependencies, and a four-entry source-store file_scope."
+      "type": "plan",
+      "path": "specs/343_bound_agent_background_wait_stranded_dispatch/plans/01_bound-background-wait-stranded-dispatch.md",
+      "summary": "5-phase, 5-hour plan ruling on all three scope items: a mechanism-mandating background-wait contract, the explicit deadline exclusion-vs-partial fork, a Move 3 consumer plus loop-level re-prompt relay for the already-computed stall_suspected signal, four contract rulings, and a producer/consumer regression test behind the full gate."
     }
   ],
-  "next_steps": "Run /research 343 to begin research on the bounded-wait and stranded-dispatch-detection rulings",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1791238164_f2ae82",
-    "agent_type": "meta-builder-agent",
+    "session_id": "sess_1791337167_c5588f_343",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 5,
+    "dependency_waves": 3
   },
-  "modified_files": [
-    "specs/TODO.md",
-    "specs/state.json"
+  "memory_candidates": [
+    {
+      "content": "A fully computed, emitted, unit-tested and architecturally-documented signal can still be dead if no consumer reads it. In this codebase orchestrate-cycle-postflight.sh computed stall_suspected, emitted it in both JSON output arms, had four passing assertions for it, and had its 'loop obligation' written in orchestrate-state-machine.md -- yet skill-orchestrate/SKILL.md's Move 3 never read the field, so the obligation was only ever performed by a reasoning agent improvising. Verification rule: when auditing whether a documented obligation is wired, grep the actual EXECUTABLE consumer (the SKILL/procedure file), never just the architecture doc or the producer's tests. Corollary for fixes: pair the new consumer with a grep-based producer/consumer consistency test, because every existing test exercises the producer and no producer test can catch a missing consumer.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/343_bound_agent_background_wait_stranded_dispatch/plans/01_bound-background-wait-stranded-dispatch.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["dead-signal", "producer-consumer", "wiring-audit", "stall_suspected", "postflight", "consistency-test"]
+    },
+    {
+      "content": "When a per-dispatch postflight computes an advisory signal whose remedy is to re-dispatch, the remedy CANNOT be sited in the postflight body: the Postflight Boundary limits it to reading the handoff, driving the state transition, and cleanup, and the dispatch move's 'never interleaved with dispatch' rule forbids an Agent call there. The correct shape is accumulate-then-relay: the per-task postflight step appends to a pending_* array in the loop's runtime state file and emits a stderr notice; a loop-LEVEL branch move, running after every task's postflight for the cycle, drains the array and issues the dispatch. skill-orchestrate's batched AskUserQuestion relay is the existing precedent for this exact shape, including the per-key idempotency guard that bounds the remedy to one attempt.",
+      "category": "PATTERN",
+      "source_artifact": "specs/343_bound_agent_background_wait_stranded_dispatch/plans/01_bound-background-wait-stranded-dispatch.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["postflight-boundary", "accumulate-then-relay", "branch-move", "pending-array", "re-dispatch", "idempotency-key"]
+    }
   ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/agents/general-implementation-agent.md",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
-    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
-    "agent-system/extensions/core/docs/architecture/handoff-schema.md"
-  ]
+  "next_steps": "Run /implement 343 to execute the plan"
 }

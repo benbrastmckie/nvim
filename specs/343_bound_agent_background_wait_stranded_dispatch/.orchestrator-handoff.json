@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a 5-phase plan ruling on all three scope items. Backgrounding a local gate stays permitted but only via bounded-build-waiter.md's single foreground-blocking call; the harness-async detach-then-notify path is forbidden. A bounded-wait deadline reached with no result is not an admissible exclusion by itself. Detection already exists in orchestrate-cycle-postflight.sh as stall_suspected and respects both named constraints; the real gap is that skill-orchestrate/SKILL.md never reads it, so the plan wires a Move 3 consumer plus a loop-level re-prompt relay at the branch move.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/343_bound_agent_background_wait_stranded_dispatch/plans/01_bound-background-wait-stranded-dispatch.md",
+      "summary": "5-phase plan: agent-contract mechanism mandate, deadline exclusion fork, stall_suspected consumer wiring, four contract rulings, regression test plus full gate."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "next_action_hint": "Dispatch implement for this task alone, or alongside tasks whose file_scope excludes the ten paths the plan harvests (notably skill-orchestrate/SKILL.md, orchestrate-cycle-postflight.sh, orchestrate-state-machine.md, handoff-schema.md).",
+  "dispatch_seq": 12
+}
