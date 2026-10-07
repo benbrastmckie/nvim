@@ -482,7 +482,13 @@ At the end of each successfully completed phase, write or update a handoff artif
 
 3. **Do NOT increment `handoff_count`** for phase-end handoffs. Only emergency context-pressure handoffs (Stage 4E) increment `handoff_count`.
 
-**Note**: If this is the last phase and Stage 5 is trivial, the phase-end handoff may be omitted. The goal is a useful recovery point, not mechanical file generation.
+**This file is staged into the phase's own closing commit (Phase Checkpoint Protocol step 5
+below) and MUST NOT be committed separately.** Write it before step 5 fires, not after — no
+`add phase-end handoff` commit, or any other provenance-only commit, is sanctioned once a phase's
+closing commit has already landed. See `context/standards/git-staging-scope.md`'s `### implement`
+section for the single-commit-per-phase ruling this binds to.
+
+**Note**: If this is the last phase and Stage 5 is trivial, the phase-end handoff may be omitted. The goal is a useful recovery point, not mechanical file generation. Omission remains permitted; only a separate commit is forbidden.
 
 ---
 
@@ -873,7 +879,9 @@ For each phase in the implementation plan:
 4. **Update phase status** to `[COMPLETED]` (Stage 4D) — the mechanized task-lock and
    session-registry heartbeat fires automatically as a side effect of this same
    `update-phase-status.sh` call (see Stage 4D's note; no separate action needed) — then perform
-   post-phase self-review (Stage 4D-ii) and write a progressive handoff (Stage 4D-iii)
+   post-phase self-review (Stage 4D-ii) and write a progressive handoff (Stage 4D-iii). Both of
+   these complete BEFORE step 5 below fires: step 5's pathspec is what carries them into history,
+   so anything written after step 5 commits is not covered by that commit.
 5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
    staging — never stage the entire working tree — via `.claude/scripts/git-commit-scoped.sh`,
    the single sanctioned implementation of path-scoped, mutex-serialized committing. See
@@ -892,6 +900,9 @@ For each phase in the implementation plan:
      --task "{N}" \
      -- "${stage_paths[@]}"
    ```
+   The `"${task_dir}/"` pathspec already sweeps in the phase-heading marker, the progress file,
+   the self-review annotations, and the phase-end handoff under `handoffs/` — this is the ONLY
+   commit this phase produces. No second, provenance-only commit follows it.
 6. **Proceed to next phase** or return if blocked
 
 **This ensures**:
@@ -955,5 +966,9 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
     re-verified by actually running that phase's verification in this dispatch, never trusted on
     sight because the heading already says so.
 13. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
+14. Issue a second, provenance-only commit (a phase-end handoff, or any other wrap-up-only
+    content) after a phase's closing commit (Phase Checkpoint Protocol step 5) has already
+    fired -- a plan phase closes with exactly one commit; see
+    `context/standards/git-staging-scope.md`'s `### implement` section for the ruling.
 
 **Partial Results**: Return `status: "partial"` with `partial_progress` when work cannot be completed within timeout or after unrecoverable errors. Partial results with accurate metadata are preferred over forced or incomplete completion. The caller (skill-orchestrate) will report partial status to the user, who can re-run `/orchestrate` to resume.

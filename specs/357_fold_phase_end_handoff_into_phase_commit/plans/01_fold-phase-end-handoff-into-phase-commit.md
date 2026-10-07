@@ -203,7 +203,7 @@ are stated in the designated contract home, so the next reader does not re-open 
 
 ---
 
-### Phase 2: Correct the sequencing prose at the production site [NOT STARTED]
+### Phase 2: Correct the sequencing prose at the production site [COMPLETED]
 
 **Goal**: The implementation agent that actually produces the two commits is reworded so the
 handoff write is bound to the phase-closing commit, with the instruction placed where it will be
@@ -211,27 +211,27 @@ read immediately before committing.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` immediately
+- [x] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` immediately
       before editing.
-- [ ] In `#### 4D-iii. Progressive Handoff Update` (currently ~lines 465-485), add a standalone,
+- [x] In `#### 4D-iii. Progressive Handoff Update` (currently ~lines 465-485), add a standalone,
       bolded sentence stating that this file is staged into the phase's own closing commit (the
       Phase Checkpoint Protocol step-5 commit below) and MUST NOT be committed separately; no
       `add phase-end handoff` commit, or any other provenance-only commit, is sanctioned after a
       phase commit has already fired. Point at the new `git-staging-scope.md` block.
-- [ ] Keep 4D-iii's existing "may be omitted on the last phase" note intact — omission remains
+- [x] Keep 4D-iii's existing "may be omitted on the last phase" note intact — omission remains
       permitted; only the separate commit is forbidden.
-- [ ] In `## Phase Checkpoint Protocol` step 4 (currently ~line 876), make the ordering explicit:
+- [x] In `## Phase Checkpoint Protocol` step 4 (currently ~line 876), make the ordering explicit:
       the self-review (4D-ii) and the handoff write (4D-iii) both complete *before* step 5 fires,
       because step 5's pathspec is what carries them into history.
-- [ ] In `## Phase Checkpoint Protocol` step 5, immediately adjacent to the
+- [x] In `## Phase Checkpoint Protocol` step 5, immediately adjacent to the
       `git-commit-scoped.sh` code block, add a one-line statement that the `"${task_dir}/"`
       pathspec already sweeps in the marker, progress file, self-review annotations, and handoff,
       so step 5 is the *only* commit this phase produces.
-- [ ] Add a matching entry to the file's `**MUST NOT**` list: do not issue a second,
+- [x] Add a matching entry to the file's `**MUST NOT**` list: do not issue a second,
       provenance-only commit after a phase's closing commit.
-- [ ] Verify no task-number reference was introduced (the file lives under `agent-system/**`;
+- [x] Verify no task-number reference was introduced (the file lives under `agent-system/**`;
       `{N}`/`{P}` placeholders are the convention and are fine, a literal number is not).
-- [ ] Stage and commit only this file, by explicit path.
+- [x] Stage and commit only this file, by explicit path.
 
 **Timing**: 1 hour
 
