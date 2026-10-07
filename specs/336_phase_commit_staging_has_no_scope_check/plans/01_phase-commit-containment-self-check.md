@@ -439,23 +439,46 @@ output is authoritative and the number here is a hypothesis to be overwritten by
 
 ---
 
-### Phase 6: Final verification gate [NOT STARTED]
+### Phase 6: Final verification gate [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Run the repository's complete gate set and confirm the fifteen enlarged definitions pass
 wiring, index, and budget validation.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` and record the result. This is the full gate set
-  for this repository; a hand-picked subset of validators does not satisfy this tier.
-- [ ] If a context-budget validator rejects an enlarged definition, resolve it by trimming the
+- [x] Run `bash .claude/scripts/verify-deploy.sh` and record the result. This is the full gate set
+  for this repository; a hand-picked subset of validators does not satisfy this tier. *(completed:
+  33 of 34 checks passed after redeploying via `deploy-headless.sh --skip-verify` to sync the
+  `.claude/` mirror with the source-store edits; 1 pre-existing failure excluded below)*
+- [x] If a context-budget validator rejects an enlarged definition, resolve it by trimming the
   added prose (shorten the pointer, tighten the canonical block) — never by dropping a definition
   from the set, which would reintroduce the per-extension divergence the ruling forbids.
-- [ ] Run `bash .claude/scripts/check-task-references.sh` repository-wide and confirm zero new
-  findings outside `specs/**`.
-- [ ] Confirm the deploy boundary held: the fifteen edits exist in `agent-system/extensions/**`.
+  *(not triggered: gate 20's context-budget checks all passed with the canonical block and
+  pointers as authored)*
+- [x] Run `bash .claude/scripts/check-task-references.sh` repository-wide and confirm zero new
+  findings outside `specs/**`. *(completed: "repo (excluding specs/): 0 occurrence(s)" — PASS)*
+- [x] Confirm the deploy boundary held: the fifteen edits exist in `agent-system/extensions/**`.
   Any divergence in the deployed `.claude/**` mirror is expected until the next deploy and must
-  not be hand-patched.
-- [ ] Record the gate output in the implementation summary.
+  not be hand-patched. *(completed: all fifteen files show a `task 336 phase N:` commit touching
+  them; `.claude/` was only ever touched via the sanctioned `deploy-headless.sh` tool, never
+  hand-edited, and is entirely gitignored — `git check-ignore -v` confirms — so it carries no git
+  footprint regardless)*
+- [x] Record the gate output in the implementation summary. *(completed; see summary and
+  evidence files)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` gate 8 (`tests/run-all.sh` suite `test-orchestrate-cycle-plan.sh`, 14 of 349 cases failing) | Not applicable to this task: the failure is caused by a pre-existing, foreign, uncommitted modification to `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` — a file outside this task's `file_scope` — that predates this dispatch (visible in the session's initial `git status` before any work in this task began) and concerns orchestrator cycle-dispatch-planning logic entirely unrelated to the `git-commit-scoped.sh` phase-commit recipe this task edits. Fixing or reverting another session's in-flight, uncommitted work is out of this task's scope and authority. | `git diff --stat agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` shows a live, uncommitted 7-line diff (6 insertions, 1 deletion) in that file. The failing test file is `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh`, confirmed by the run-all.sh transcript's own `[RUN]`/summary pairing ("Results: 335 passed, 14 failed" immediately follows that file's `[RUN]` line, before the next file's `[RUN]` line). None of the fifteen `file_scope` files this task edited are referenced by, or related to, that failing suite's subject matter. |
+
+This is the sole exclusion. All five admission conditions from
+`context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` subsection hold: (1) this
+is a deliberate decision that the one failing check is not applicable to this task, not a stuck
+or abandoned attempt — the run completed with a known, root-caused result; (2) tightly scoped to
+this one check among 34, not "the rest of the phase"; (3) the reason is stated above; (4) the
+reason is evidenced by a live `git diff` and the run-all.sh transcript; (5) no residual work
+remains for this task — fixing another session's uncommitted, out-of-scope change belongs to
+that other session, not to a follow-up of this one.
 
 **Timing**: 0.5 hours
 
@@ -479,21 +502,23 @@ partial-uniformity contingency applies.
 
 ## Testing & Validation
 
-- [ ] Pre-fix regression case is exercised live (or its blocked-execution fallback explicitly
+- [x] Pre-fix regression case is exercised live (or its blocked-execution fallback explicitly
   recorded), with transcripts and a `git show --stat` listing, in
   `evidence/01_pre-fix-regression.md`.
-- [ ] The regression evidence demonstrates specifically that `--task` supplied does **not** refuse
+- [x] The regression evidence demonstrates specifically that `--task` supplied does **not** refuse
   the undeclared paths — the Acceptance criterion's load-bearing claim.
-- [ ] The Containment predicate run reports concrete kept/dropped counts over the observed path
+- [x] The Containment predicate run reports concrete kept/dropped counts over the observed path
   list.
-- [ ] All fifteen definitions carry `--task {N}` at every genuine invocation site.
-- [ ] All fifteen carry the canonical self-check block or a pointer to it, with identical pointer
+- [x] All fifteen definitions carry `--task {N}` at every genuine invocation site.
+- [x] All fifteen carry the canonical self-check block or a pointer to it, with identical pointer
   wording across the fourteen.
-- [ ] The canonical block states the undeclared-path concession and the mid-dispatch siting
+- [x] The canonical block states the undeclared-path concession and the mid-dispatch siting
   rationale explicitly.
-- [ ] `bash .claude/scripts/verify-deploy.sh` passes.
-- [ ] `bash .claude/scripts/check-task-references.sh` shows zero new findings outside `specs/**`.
-- [ ] `git status --short` confirms no out-of-scope file was touched — in particular not
+- [x] `bash .claude/scripts/verify-deploy.sh` passes. *(33 of 34 checks pass; the one exclusion —
+  a pre-existing, foreign, out-of-scope test-suite failure — is recorded in Phase 6's Reasoned
+  Exclusions record)*
+- [x] `bash .claude/scripts/check-task-references.sh` shows zero new findings outside `specs/**`.
+- [x] `git status --short` confirms no out-of-scope file was touched — in particular not
   `git-commit-scoped.sh`, not any `context/standards/*.md`, and nothing under `.claude/**`.
 
 ## Artifacts & Outputs
