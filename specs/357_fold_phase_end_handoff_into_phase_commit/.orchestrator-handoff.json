@@ -2,22 +2,22 @@
   "status": "implemented",
   "task_number": 357,
   "phase": "implement",
-  "session_id": "sess_1791361777_314fa0",
-  "dispatch_seq": 8,
+  "session_id": "sess_1791392970_a0a292",
+  "dispatch_seq": 9,
   "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Delivered the FOLD outcome: re-confirmed at implementation time (three decisive greps) that no consumer depends on the per-phase handoff landing in a separate commit, recorded the single-commit-per-phase ruling with its crash-ordering rationale in git-staging-scope.md, bound the handoff write to the phase-closing commit at three sites in general-implementation-agent.md, and cross-referenced the ruling from git-workflow.md and phase-closure.md. This dispatch itself produced exactly one commit per phase, each carrying its own folded phase-end handoff. The (tracking update) commit-doubling shape was classified as related-but-distinct and left for a separate audit.",
+  "summary": "Re-dispatch (seq 9) of task 357's implement phase: confirmed all four plan phases were already [COMPLETED] and committed from the prior dispatch (seq 8) -- the single-commit-per-phase ruling in git-staging-scope.md, the sequencing fix in general-implementation-agent.md, and the cross-references in git-workflow.md and phase-closure.md. No new edits were made. Re-verified check-task-references.sh clean on all four files and confirmed the previously-uncommitted index-entries.json line_count fix had landed (commit 2f881794c, same session). Ran a fresh verify-deploy.sh: 3 of 33 checks fail, all attributable to deploy-staleness lag (Gates 3 and 5, outside this dispatch's control -- redeploy is handled by orchestrate-cycle-plan.sh's own checkpoint, not by an implementation dispatch) or to unrelated concurrent cycle activity (Gate 10, TODO.md/state.json are not in this task's file_scope). Added a small addendum to the execution summary recording this re-confirmation and resolving the one stale follow-up item.",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/357_fold_phase_end_handoff_into_phase_commit/summaries/01_fold-phase-end-handoff-into-phase-commit-summary.md",
-      "summary": "Execution summary with full verification triage, two recorded mid-implementation deviations (eager-context-budget trim; a 5th-file index-entries.json correction left uncommitted per the Containment Self-Check), and four recorded follow-up recommendations."
+      "summary": "Execution summary with full verification triage, now including a re-confirmation addendum from this seq-9 re-dispatch."
     },
     {
       "type": "plan",
       "path": "specs/357_fold_phase_end_handoff_into_phase_commit/plans/01_fold-phase-end-handoff-into-phase-commit.md",
-      "summary": "4-phase plan, all phases COMPLETED, with the Phase 4 Scope Hypothesis re-ruled in writing per its own instruction."
+      "summary": "4-phase plan, all phases COMPLETED, unchanged by this re-dispatch."
     }
   ]
 }
