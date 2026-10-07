@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Red Fixture - Flip and Extend the Guard Test Suite",
+  "started_at": "2026-10-07T18:00:00Z",
+  "last_updated": "2026-10-07T18:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture pre-change baseline test run", "status": "done", "files_touched": [], "note": "77 passed, 0 failed, pre-edit"},
+    {"id": 2, "description": "Flip bare-stash assertion to assert_blocked_dirty", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 3, "description": "Add new blocked and allowed cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"]},
+    {"id": 4, "description": "Re-run suite, demonstrate pre-change failure, record evidence", "status": "done", "files_touched": ["specs/361_reclassify_bare_git_stash_as_destructive/progress/phase3-red-run.log"], "note": "82 passed, 7 failed post-edit (pre-guard-change): the 7 new/flipped stash_revert block-expecting cases failed with 'expected exit 2, got exit=0' (git stash bare, push, -u, --include-untracked, push -u, push --include-untracked, push -- empty); all 6 new allow cases and all 77 baseline cases passed unchanged. This is the Item 6 red evidence."},
+    {"id": 5, "description": "Confirm no task-number references introduced", "status": "done", "files_touched": [], "note": "check-task-references.sh clean"}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

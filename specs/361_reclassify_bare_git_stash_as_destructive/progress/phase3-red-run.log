@@ -1,0 +1,91 @@
+[PASS] fixture self-check: make_dirty_repo produces a genuinely dirty tree
+[PASS] exemption: clean tree allows a destructive command: allowed (exit 0) in clean repo
+[PASS] exemption: empty command allowed (exit 0)
+[PASS] baseline: git add -A: blocked (exit 2) in dirty repo
+[PASS] baseline: git add --all: blocked (exit 2) in dirty repo
+[PASS] baseline: git add .: blocked (exit 2) in dirty repo
+[PASS] baseline: git commit -am (message): blocked (exit 2) in dirty repo
+[PASS] baseline: git commit -a: blocked (exit 2) in dirty repo
+[PASS] baseline: git commit -m mentions -a in quotes (single-line): allowed (exit 0) in dirty repo
+[PASS] baseline: git reset --hard: blocked (exit 2) in dirty repo
+[PASS] baseline: git checkout -- foo.txt: blocked (exit 2) in dirty repo
+[PASS] baseline: git restore foo.txt: blocked (exit 2) in dirty repo
+[PASS] baseline: git clean -fd: blocked (exit 2) in dirty repo
+[PASS] baseline: git stash drop: blocked (exit 2) in dirty repo
+[PASS] baseline: git stash clear: blocked (exit 2) in dirty repo
+[FAIL] stash_revert: git stash (bare, whole-tree): expected exit 2 in dirty repo, got exit=0
+[PASS] baseline: git switch -f other: blocked (exit 2) in dirty repo
+[FAIL] stash_revert: git stash push (whole-tree): expected exit 2 in dirty repo, got exit=0
+[FAIL] stash_revert: git stash -u (implicit push): expected exit 2 in dirty repo, got exit=0
+[FAIL] stash_revert: git stash --include-untracked: expected exit 2 in dirty repo, got exit=0
+[FAIL] stash_revert: git stash push -u (whole-tree): expected exit 2 in dirty repo, got exit=0
+[FAIL] stash_revert: git stash push --include-untracked: expected exit 2 in dirty repo, got exit=0
+[FAIL] stash_revert: git stash push -- (empty separator, no path token): expected exit 2 in dirty repo, got exit=0
+[PASS] stash_revert allow: git stash push -- foo.txt (pathspec-scoped): allowed (exit 0) in dirty repo
+[PASS] stash_revert allow: git stash push -u -- foo.txt bar.txt (pathspec-scoped, multi-file): allowed (exit 0) in dirty repo
+[PASS] stash_revert allow: git stash apply (recovery, not loss moment): allowed (exit 0) in dirty repo
+[PASS] stash_revert allow: git stash list (read-only): allowed (exit 0) in dirty repo
+[PASS] stash_revert allow: git stash show (read-only): allowed (exit 0) in dirty repo
+[PASS] stash_revert allow: git stash --help (help output touches nothing): allowed (exit 0) in dirty repo
+[PASS] baseline: git restore --staged foo.txt: allowed (exit 0) in dirty repo
+[PASS] baseline: git stash pop: allowed (exit 0) in dirty repo
+[PASS] baseline: git checkout other-branch (non-forced): allowed (exit 0) in dirty repo
+[PASS] baseline: plain git commit -m: allowed (exit 0) in dirty repo
+[PASS] defect: multi-line commit, essential-refactor in subject: allowed (exit 0) in dirty repo
+[PASS] defect control: single-line commit, essential-refactor in subject: allowed (exit 0) in dirty repo
+[PASS] defect: single-line, essential-refactor: allowed (exit 0) in dirty repo
+[PASS] defect: single-line, auto-repair: allowed (exit 0) in dirty repo
+[PASS] defect: single-line, multi-task: allowed (exit 0) in dirty repo
+[PASS] defect: multi-line, auto-repair: allowed (exit 0) in dirty repo
+[PASS] defect: multi-line, multi-task: allowed (exit 0) in dirty repo
+[PASS] control: single-line, un-edged: allowed (exit 0) in dirty repo
+[PASS] control: single-line, repo-wide: allowed (exit 0) in dirty repo
+[PASS] defect: message mentions git reset --hard after a semicolon: allowed (exit 0) in dirty repo
+[PASS] defect: message mentions git checkout -- after a semicolon: allowed (exit 0) in dirty repo
+[PASS] defect: message mentions git restore after a semicolon: allowed (exit 0) in dirty repo
+[PASS] defect: message mentions git clean -f -d after a semicolon: allowed (exit 0) in dirty repo
+[PASS] defect: message mentions forced switch after a semicolon: allowed (exit 0) in dirty repo
+[PASS] defect: multi-line message mentions git clean -f -d after a semicolon: allowed (exit 0) in dirty repo
+[PASS] defect: multi-line message mentions forced switch after a semicolon: allowed (exit 0) in dirty repo
+[PASS] no-bypass: quoted --staged does not exempt a real restore: blocked (exit 2) in dirty repo
+[PASS] defect: #-comment --staged does not exempt a real restore: blocked (exit 2) in dirty repo
+[PASS] no-bypass: unquoted # inside a real destructive command's path stays blocked: blocked (exit 2) in dirty repo
+[PASS] no-bypass: git commit -am with multi-line message stays blocked: blocked (exit 2) in dirty repo
+[PASS] no-bypass: git clean -fd stays blocked with multi-line message: blocked (exit 2) in dirty repo
+[PASS] no-bypass: real destructive command beside quoted text stays blocked: blocked (exit 2) in dirty repo
+[PASS] overstage: git add -- dir/ (trailing slash): blocked (exit 2) in dirty repo
+[PASS] overstage: git add dir/ (no -- separator): blocked (exit 2) in dirty repo
+[PASS] overstage: git add some_dir (no trailing slash, real on-disk dir): blocked (exit 2) in dirty repo
+[PASS] overstage: git add src/*.lean (glob pathspec): blocked (exit 2) in dirty repo
+[PASS] overstage allow: git add -- a.lean b.lean (explicit multi-file list): allowed (exit 0) in dirty repo
+[PASS] overstage allow: git add foo.txt (plain single file): allowed (exit 0) in dirty repo
+[PASS] overstage allow: commit message mentions some/dir/ (not a real git add): allowed (exit 0) in dirty repo
+[PASS] fixture self-check: concurrency fixture (live lock) keeps the tree clean
+[PASS] concurrency: git commit --amend under live lock: blocked (exit 2) in clean repo
+[PASS] concurrency: git commit --amend --no-edit under live lock: blocked (exit 2) in clean repo
+[PASS] concurrency: git reset --mixed <sha> under live lock: blocked (exit 2) in clean repo
+[PASS] concurrency: git reset <sha> (bare) under live lock: blocked (exit 2) in clean repo
+[PASS] concurrency: git reset --soft HEAD~1 under live lock: blocked (exit 2) in clean repo
+[PASS] concurrency: git reset HEAD~2 (bare) under live lock: blocked (exit 2) in clean repo
+[PASS] concurrency: git reset --hard <sha> under live lock: blocked (exit 2) in clean repo
+[PASS] concurrency: git commit --amend under live session: blocked (exit 2) in clean repo
+[PASS] concurrency: git reset --mixed <sha> under live session: blocked (exit 2) in clean repo
+[PASS] concurrency allow: git commit --amend with no concurrency record at all: allowed (exit 0) in clean repo
+[PASS] concurrency allow: git reset --hard <sha> with no concurrency record at all: allowed (exit 0) in clean repo
+[PASS] concurrency allow: git commit --amend with only a stale/dead lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: git reset <sha> with only a stale/dead lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: git-commit-scoped.sh invocation under live lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: single-line message mentions --amend, under live lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: multi-line message mentions --amend, under live lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: git reset (bare) under live lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: git reset -- foo.txt under live lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: git reset HEAD -- foo.txt under live lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: git reset HEAD (bare) under live lock: allowed (exit 0) in clean repo
+[PASS] concurrency allow: GUARD_ALLOW_HISTORY_REWRITE=1 override under live lock: allowed (exit 0) in clean repo
+[PASS] grant: reset_hard grant allows 'git reset --hard' once and is consumed
+[PASS] grant: second 'git reset --hard' with no remaining grant is blocked
+[PASS] grant: no-grant behaviour unchanged (git reset --hard still blocks)
+[PASS] grant: 'git add -A' still blocked with a live reset_hard grant present (over-staging immunity)
+[PASS] grant: history-rewrite predicate still fires under a live writer with an unrelated reset_hard grant present
+
+Results: 82 passed, 7 failed

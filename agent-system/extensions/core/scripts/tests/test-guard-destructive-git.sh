@@ -187,11 +187,33 @@ assert_blocked_dirty "baseline: git restore foo.txt"               "git restore 
 assert_blocked_dirty "baseline: git clean -fd"                     "git clean -fd"
 assert_blocked_dirty "baseline: git stash drop"                    "git stash drop"
 assert_blocked_dirty "baseline: git stash clear"                   "git stash clear"
+assert_blocked_dirty "stash_revert: git stash (bare, whole-tree)"  "git stash"
 assert_blocked_dirty "baseline: git switch -f other"               "git switch -f other"
+
+# --- stash_revert: bare/whole-tree git stash reverts the tree under concurrent writers ---
+# (see rules/git-workflow.md's "Forbidden on a dirty tree" list and
+# context/standards/git-workflow-narrative.md's "Bare git stash Incident and Full Detail")
+assert_blocked_dirty "stash_revert: git stash push (whole-tree)"        "git stash push"
+assert_blocked_dirty "stash_revert: git stash -u (implicit push)"       "git stash -u"
+assert_blocked_dirty "stash_revert: git stash --include-untracked"      "git stash --include-untracked"
+assert_blocked_dirty "stash_revert: git stash push -u (whole-tree)"     "git stash push -u"
+assert_blocked_dirty "stash_revert: git stash push --include-untracked" "git stash push --include-untracked"
+assert_blocked_dirty "stash_revert: git stash push -- (empty separator, no path token)" "git stash push --"
+
+# --- stash_revert exemptions: pathspec-scoped (Item 7) and read-only/help/pop/apply (Item 8) ---
+assert_allowed_dirty "stash_revert allow: git stash push -- foo.txt (pathspec-scoped)" \
+  "git stash push -- foo.txt"
+assert_allowed_dirty "stash_revert allow: git stash push -u -- foo.txt bar.txt (pathspec-scoped, multi-file)" \
+  "git stash push -u -- foo.txt bar.txt"
+assert_allowed_dirty "stash_revert allow: git stash apply (recovery, not loss moment)" \
+  "git stash apply"
+assert_allowed_dirty "stash_revert allow: git stash list (read-only)"  "git stash list"
+assert_allowed_dirty "stash_revert allow: git stash show (read-only)"  "git stash show"
+assert_allowed_dirty "stash_revert allow: git stash --help (help output touches nothing)" \
+  "git stash --help"
 
 # --- Safe-form allow cases ---
 assert_allowed_dirty "baseline: git restore --staged foo.txt"      "git restore --staged foo.txt"
-assert_allowed_dirty "baseline: git stash (bare)"                  "git stash"
 assert_allowed_dirty "baseline: git stash pop"                     "git stash pop"
 assert_allowed_dirty "baseline: git checkout other-branch (non-forced)" "git checkout other-branch"
 assert_allowed_dirty "baseline: plain git commit -m"                'git commit -m "msg"'

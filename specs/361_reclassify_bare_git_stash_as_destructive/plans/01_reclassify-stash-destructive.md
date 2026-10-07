@@ -285,36 +285,39 @@ and the story is recorded once in the place the rule already points to.
 
 ---
 
-### Phase 3: Red Fixture — Flip and Extend the Guard Test Suite [NOT STARTED]
+### Phase 3: Red Fixture — Flip and Extend the Guard Test Suite [COMPLETED]
 
 **Goal**: Land the Item 6 fixture and *demonstrate* it failing against the unmodified guard,
 rather than merely asserting it would. The suite is red at the end of this phase, by design.
 
 **Tasks**:
-- [ ] Capture a pre-change baseline: run
+- [x] Capture a pre-change baseline: run
       `bash agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh` and record
       the pass/fail tally, so the post-change comparison in Phase 4 is against a measured
-      baseline rather than an assumed one.
-- [ ] Flip the bare-stash assertion (carried as line 194) from
+      baseline rather than an assumed one. *(completed: 77 passed, 0 failed)*
+- [x] Flip the bare-stash assertion (carried as line 194) from
       `assert_allowed_dirty "baseline: git stash (bare)" "git stash"` to `assert_blocked_dirty`,
       and update its label so it no longer reads as a "safe-form allow case". Move it into the
       "one true positive per destructive detector" group alongside the existing
-      `git stash drop` / `git stash clear` cases.
-- [ ] Leave the `git stash pop` assertion (carried as line 195) as `assert_allowed_dirty`,
-      unchanged, per the Item 8 verdict.
-- [ ] Add new `assert_blocked_dirty` cases: `git stash push`, `git stash -u`,
+      `git stash drop` / `git stash clear` cases. *(completed)*
+- [x] Leave the `git stash pop` assertion (carried as line 195) as `assert_allowed_dirty`,
+      unchanged, per the Item 8 verdict. *(completed: unchanged)*
+- [x] Add new `assert_blocked_dirty` cases: `git stash push`, `git stash -u`,
       `git stash --include-untracked`, `git stash push -u`, `git stash push --include-untracked`,
       and `git stash push --` (separator with no trailing path token — must block, per the
-      over-permissive-exemption risk).
-- [ ] Add new `assert_allowed_dirty` cases: `git stash push -- foo.txt`,
+      over-permissive-exemption risk). *(completed)*
+- [x] Add new `assert_allowed_dirty` cases: `git stash push -- foo.txt`,
       `git stash push -u -- foo.txt bar.txt` (Item 7 exemption); `git stash apply` (parity with
       the existing `pop` case, currently untested); `git stash list`, `git stash show`, and
       `git stash --help` (read-only / help forms must not be caught by the new detector).
-- [ ] Re-run the suite and demonstrate the pre-change failure: the newly-flipped and newly-added
+      *(completed)*
+- [x] Re-run the suite and demonstrate the pre-change failure: the newly-flipped and newly-added
       block-expecting cases fail against the unmodified guard. Record the exact failing case
       names and the tally delta against the baseline — this recorded output is the evidence
-      Item 6 requires.
-- [ ] Confirm no task-number reference was introduced.
+      Item 6 requires. *(completed: 82 passed, 7 failed — all 7 failures are the new/flipped
+      stash_revert block-expecting cases ("expected exit 2, got exit=0"); full output archived at
+      specs/361_reclassify_bare_git_stash_as_destructive/progress/phase3-red-run.log)*
+- [x] Confirm no task-number reference was introduced. *(completed: clean)*
 
 **Timing**: 0.75 hours
 
