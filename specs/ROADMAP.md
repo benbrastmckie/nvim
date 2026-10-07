@@ -14,7 +14,7 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**47 open tasks**: 19 dispatchable, 3 in flight (356, 357, 358), 22 blocked by an in-repo edge,
+**47 open tasks**: 16 dispatchable, 3 in flight (356, 357, 358), 25 blocked by an in-repo edge,
 2 externally blocked (349, 350 — see Next), 1 held (342). If that stops matching `state.json`, this file has
 drifted — it is hand-derived until **306** makes it generated.
 
@@ -53,8 +53,9 @@ drifted — it is hand-derived until **306** makes it generated.
 
 ## Next
 
-The priority set is **361, 284, 272, 351, 345**, then **335** as soon as 284 lands, then the
-standing **280/311/344** group.
+Dispatchable right now: **284** and **351**. Everything else in the failure set waits on an edge —
+**335** behind 284, **272** behind 351, **361 → 363** behind in-flight 357, **345 → 354** behind
+in-flight 356. Then the standing **280/311/344** group.
 
 The first three are the measured-failure set from the 2026-10-07 Logos/Verification batch: a
 destructive-git gap that cost real work, a scope-excursion signal that is advisory when it should
@@ -76,19 +77,25 @@ to width 1 is a correct batch. The calls below are grouped by what belongs toget
 run concurrently — see Settled decision 17.
 
 ```
-/orchestrate 357, 361, 363   # three waves: [357] then [361] then [363]; failure-driven
 /orchestrate 284, 335        # two waves: [284] then [335]; the scope gate
-/orchestrate 272, 351        # one wave: liveness + the dead dispatch halt, disjoint scopes
+/orchestrate 272, 351        # two waves: [351] then [272]; edge added 2026-10-07
 /orchestrate 351, 355        # two waves: [351] then [355]
-/orchestrate 345, 354        # two waves; edge added 2026-10-07 on bounded-build-waiter.md
 /orchestrate 280, 311, 344   # two waves: [280, 311] then [344]
-/orchestrate 352, 353        # two waves; only after 351
+/orchestrate 351, 352, 353   # three waves; 351 MUST be in the call, not merely done first
+/orchestrate 361, 363        # two waves; only after in-flight 357 lands
+/orchestrate 345, 354        # two waves; only after in-flight 356 lands
 ```
 
-All seven verified with `--dry-run` on 2026-10-07: 0 deferred, 0 blocked. The first three were
-re-verified after **361 gained a `dependencies: [357]` edge** — 361 must amend
-`rules/git-workflow.md`, which in-flight 357 also declares, and without the edge a dry-run deferred
-361 outright. That edge is the decision-17 move: serialize the pair, do not separate them.
+The first five verified with `--dry-run` on 2026-10-07: 0 deferred, 0 blocked. The last two are
+**correctly blocked today** and will clear when 356 and 357 land — that is the edge working, not a
+defect. Three corrections came out of that pass, each worth keeping:
+
+- **361 gained `dependencies: [357]`.** 361 amends `rules/git-workflow.md`, which in-flight 357 also
+  declares; without the edge a dry-run deferred 361 outright.
+- **345 gained `dependencies: [356]`**, on `context/patterns/bounded-build-waiter.md`.
+- **`352, 353` blocked as written.** A dependency outside the batch cannot be advanced by any cycle
+  of the run, so "only after 351" is not enough — **351 must be in the call**. A prose note is not a
+  substitute for a batch member.
 
 Why this order, and what each one unblocks:
 - **351** — the orchestrator's own `IDENTICAL DISPATCH HALT` is implemented but never fires. 14 of
@@ -154,14 +161,13 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 **Orchestrator (17)**
 ```
 271 ready            parent_task edge: schema, validation, TODO rendering
-272 ready            honest session liveness for concurrent same-repo batches   <- priority
 299 ready            detect in-place plan revision concurrent with a live implement dispatch
 302 ready            pass --task at commit-staging sites to engage the contended-path lease   <- priority
 311 ready            measured co-scheduling signal replacing static build-heavy family membership
 319 ready            surface cross-task claim invalidation when research refutes a filed premise
-345 ready            bound the no-op spin to a contract with a single writer   <- priority
 347 ready            PreToolUse Bash hook blocking self-matching process-name waiters
 351 ready            IDENTICAL DISPATCH HALT implemented but never fires   <- priority
+272 blocked:351      honest session liveness for concurrent same-repo batches   <- priority
 273 blocked:271      three-channel conclusion stage with per-channel approval
 274 blocked:272,273,275,344  next-admissible-batch suggestion and alternatives-on-conflict
 275 blocked:272      per-repo orchestration queue, consumed by admission
@@ -169,6 +175,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 304 blocked:273,284,302  one out-of-repo pathspec aborts staging; callers sink nonzero exits
 312 blocked:282,344  backlog reconciliation as a required task-creation component
 344 blocked:280,311  carry the batching-by-default doctrine to the point of use   <- priority
+345 blocked:356      bound the no-op spin to a contract with a single writer   <- priority
 355 blocked:351      unregistered test script reaches COMPLETED; count-based gate comparison
 ```
 
@@ -183,7 +190,6 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 356 in flight        propagate the bounded-wait contract to 14 implementation agent definitions
 357 in flight        rule on whether the per-phase handoff needs its own commit
 358 in flight        re-derive a carried figure at authoring time, or mark it unverified
-361 ready            bare git stash reverts a shared tree, and the rule calls it safe   <- priority
 170 blocked:251      isolate shell test suites from ambient host state (memory, timing)
 281 blocked:280      repo-wide record-versioning lint, blocking/advisory split
 282 blocked:280,281  write-time PreToolUse hook blocking record-versioning language
@@ -194,6 +200,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 354 blocked:345      does the local-gate prohibition cover awaiting a dispatched subagent
 359 blocked:350,356  close the two agent-contract lint curated-array coverage gaps
 360 blocked:358      validate that every CARRIED-UNVERIFIED mark names a source
+361 blocked:357      bare git stash reverts a shared tree, and the rule calls it safe   <- priority
 362 blocked:356      teach the non-destructive history-read techniques at the point of use
 363 blocked:361      post-incident checklist: uncommitted pre-session state checked first
 ```
