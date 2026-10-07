@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Harden the normal resync path - identity-based hook dedupe + move the six root-files-only registrations",
+  "started_at": "2026-10-07T21:30:00Z",
+  "last_updated": "2026-10-07T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Identity-based dedupe: hook_identity + find_hook_match helpers", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 2, "description": "Rewrite normalize_hook_event_array to use find_hook_match", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 3, "description": "Rewrite merge_hook_event_array to use find_hook_match", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 4, "description": "Move six root-files-only registrations into merge-sources/settings-hooks.json", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json"]},
+    {"id": 5, "description": "Remove dead claude-ready-signal.sh registration", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 6, "description": "Sweep source store for other non-.claude/ relative-path hook commands", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "migration script (migrate-hook-registration-paths.sh)", "result": "superseded", "reason": "operator settled on hardening the normal resync path instead"},
+    {"approach": "manager.repair_settings picker action", "result": "superseded", "reason": "only fixes an ABSENT target file, not an already-present duplicated one; operator put on HOLD then settled on merge.lua hardening"}
+  ],
+  "handoff_count": 0
+}

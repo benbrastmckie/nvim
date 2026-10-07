@@ -26,13 +26,21 @@
         "hooks": [
           { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'" }
         ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-session.sh 2>/dev/null || echo '{}'" }
+        ]
       }
     ],
     "Stop": [
       {
         "matcher": "*",
         "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-command.sh 2>/dev/null || echo '{}'" },
           { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'" },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'" },
           { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'" }
         ]
       }
@@ -41,7 +49,16 @@
       {
         "matcher": "*",
         "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'", "timeout": 30000 },
           { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'" }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|elicitation_dialog",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'" }
         ]
       }
     ],
@@ -72,6 +89,7 @@
         "hooks": [
           { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-handoff-location.sh" },
           { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'" },
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'" },
           { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'" }
         ]
       },

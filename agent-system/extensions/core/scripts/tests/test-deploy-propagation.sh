@@ -144,6 +144,73 @@ else
 fi
 
 # =====================================================================
+# Assertion E (fresh-deploy hook-path hygiene): the deployed settings.json carries no
+# CWD-relative `.claude/` hook path (acceptance criterion 4), every previously-bare blocking
+# guard present in this scratch deploy is still registered bare (criterion 3's bare half), and
+# no (event,matcher,hook-script) triple is duplicated (the fresh-install half of criterion 6).
+# =====================================================================
+info "Assertion E: fresh-deploy settings.json hook-path hygiene"
+DEPLOYED_SETTINGS="$TARGET/.claude/settings.json"
+if [[ ! -f "$DEPLOYED_SETTINGS" ]]; then
+  fail "Assertion E: $DEPLOYED_SETTINGS missing after fresh deploy -- cannot check hook-path hygiene"
+else
+  stale_count=$(grep -c 'bash \.claude/hooks/' "$DEPLOYED_SETTINGS" 2>/dev/null || true)
+  stale_count=${stale_count:-0}
+  if [[ "$stale_count" -eq 0 ]]; then
+    pass "Assertion E: zero CWD-relative 'bash .claude/hooks/' paths in deployed settings.json"
+  else
+    fail "Assertion E: $stale_count CWD-relative 'bash .claude/hooks/' path(s) remain in deployed settings.json"
+  fi
+
+  # Six blocking guards are known to exist in the source store (core + books); a guard absent
+  # here only because its owning extension is not active in this scratch deploy is reported as
+  # informational, never as a failure.
+  bare_hooks=(guard-destructive-git.sh guard-git-push.sh please-grant.sh validate-no-task-references.sh validate-handoff-location.sh validate-evidence-append-only.sh)
+  bare_missing=0
+  for hook in "${bare_hooks[@]}"; do
+    match=$(jq -r --arg h "$hook" '
+      [.hooks | to_entries[] | .value[] | select(type=="object" and has("hooks")) | .hooks[] |
+        select(type=="object" and has("command")) | select(.command | contains($h))] | .[0].command // "MISSING"
+    ' "$DEPLOYED_SETTINGS")
+    if [[ "$match" == "MISSING" ]]; then
+      info "Assertion E: $hook not present in this scratch deploy's settings.json (owning extension likely not active here) -- not a failure"
+      continue
+    elif [[ "$match" == *"|| echo"* ]]; then
+      bare_missing=$((bare_missing + 1))
+      echo "    guard not bare (carries fail-open suffix): $hook -> $match"
+    fi
+  done
+  if [[ "$bare_missing" -eq 0 ]]; then
+    pass "Assertion E: every present blocking guard is registered bare (no fail-open suffix)"
+  else
+    fail "Assertion E: $bare_missing blocking guard(s) incorrectly carrying a fail-open suffix"
+  fi
+
+  dup_triples=$(jq -r '
+    [.hooks | to_entries[] as $e | $e.value[] as $block | $block.hooks[]? as $hook |
+      ($hook.command | capture(".*[.]claude/hooks/(?<name>[A-Za-z0-9_-]+[.]sh)"; "g")?.name // "NOMATCH") as $name |
+      select($name != "NOMATCH") | ($e.key + ":" + $block.matcher + ":" + $name)
+    ] | group_by(.) | map(select(length > 1)) | length
+  ' "$DEPLOYED_SETTINGS")
+  if [[ "$dup_triples" -eq 0 ]]; then
+    pass "Assertion E: no duplicate (event,matcher,hook) registrations in deployed settings.json"
+  else
+    fail "Assertion E: $dup_triples duplicate (event,matcher,hook) registration(s) in deployed settings.json"
+  fi
+fi
+
+# NOTE on "teeth" (plan verification requirement): a live re-break/re-run/restore cycle was
+# deliberately NOT performed here, because deploy-headless.sh always resolves extension SOURCE
+# content from the real `~/.config/nvim` checkout (see this file's header comment) -- there is
+# no source-override knob to point it at an isolated worktree copy instead, so demonstrating
+# "teeth" this way would require mutating the shared, live source-store file
+# (core/merge-sources/settings-hooks.json) for the duration of the re-run, under real risk of a
+# concurrent sibling task reading or writing that same file mid-mutation. Assertion E's negative
+# space is covered instead by merge_spec.lua's dedicated unit tests (Phase 4), which DO
+# demonstrate the identity-dedupe mechanism failing red against a pre-fix equivalent and passing
+# green against the fix, without touching shared state.
+
+# =====================================================================
 # Assertion B (resync): the same assertion holds after a second deploy against the
 # already-deployed tree. Expected RED at authorship time (manager.load's already-loaded abort /
 # load_all_globally's same allow-list bug on the resync path).

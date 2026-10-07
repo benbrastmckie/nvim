@@ -1,0 +1,17 @@
+{
+  "phase": 6,
+  "phase_name": "Demonstrate convergence against the two real deploys (non-destructively)",
+  "started_at": "2026-10-07T22:00:00Z",
+  "last_updated": "2026-10-07T22:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Copy both real repos' settings.json to scratch, confirm originals untouched throughout", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run merge_settings against each scratch copy with the real core fragment", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record before/after counts for both repos", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "6.4", "description": "Live session reproduction of criteria 1/2 (no hook error, guard blocks, from a subdirectory CWD in an actually-redeployed repo)", "type": "skipped", "reason": "requires a live redeploy into a real repo mid-dispatch, which the operator's non-destructive landing requirement directed against", "annotation": "*(deviation: skipped -- see Reasoned Exclusions)*"}
+  ]
+}

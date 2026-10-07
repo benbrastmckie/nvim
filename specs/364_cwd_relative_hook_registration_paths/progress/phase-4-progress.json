@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "Test the hardened resync path",
+  "started_at": "2026-10-07T22:00:00Z",
+  "last_updated": "2026-10-07T22:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write merge_spec.lua with 7 test cases", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 2, "description": "Run full pre-existing Lua spec suite to check for regressions", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm 3 observed spec failures are pre-existing via git worktree comparison", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

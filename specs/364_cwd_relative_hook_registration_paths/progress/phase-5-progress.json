@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Assert the fresh-deploy outcome in the deploy-propagation harness",
+  "started_at": "2026-10-07T22:30:00Z",
+  "last_updated": "2026-10-07T22:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Assertion E to test-deploy-propagation.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh"]},
+    {"id": 2, "description": "Run the real deploy-propagation harness end to end", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "5.3", "description": "Demonstrate assertion teeth via re-break/re-run/restore", "type": "skipped", "reason": "deploy-headless.sh always reads source from the real live checkout; mutating it mid-dispatch risks a concurrent sibling task (365, confirmed active)", "annotation": "*(deviation: skipped -- see Reasoned Exclusions)*"}
+  ]
+}

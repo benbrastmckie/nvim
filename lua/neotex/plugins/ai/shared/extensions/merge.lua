@@ -196,18 +196,77 @@ local function is_hook_event_array(arr)
   return true
 end
 
---- Normalize a hook-event array so each distinct `matcher` value appears
---- exactly once, with that matcher's `hooks` entries concatenated in
---- first-appearance order and individually deduplicated by vim.deep_equal on
---- the whole hook object (`{type, command}`). Matchers are compared by exact
---- string equality only -- never by substring or pattern. Idempotent:
---- normalizing an already-normalized array returns an equal array.
+--- Resolve a hook's registration IDENTITY: the invoked hook script's basename (`NAME.sh`)
+--- paired with the hook's own `type`, for a command recognizable as a `.claude/hooks/NAME.sh`
+--- invocation -- whether CWD-relative (`bash .claude/hooks/NAME.sh`, the stale form) or the
+--- fixed `$CLAUDE_PROJECT_DIR`-prefixed form (`bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/NAME.sh`),
+--- and whether that invocation is bare or nested inside a `bash -c '...'` wrapper (the pattern
+--- matches the substring anywhere in `command`, so nesting is transparent to it).
 ---
---- Normalization is deliberately NOT reversed by unmerge_settings(): it is
---- semantically neutral (Claude Code runs every matching block regardless of
---- how many blocks share a matcher), it is idempotent, and restoring the
---- pre-normalization block split on unload would reintroduce the exact
---- duplication hazard this function exists to close.
+--- Returns nil for any command NOT recognizable in this shape -- a hand-written custom hook
+--- (one that does not invoke a `.claude/hooks/*.sh` path at all) MUST NEVER be touched, moved,
+--- or deduped by identity; this carve-out is mandatory, not best-effort, and every caller below
+--- falls through to exact `vim.deep_equal` comparison whenever this returns nil.
+---
+--- WHY this exists: `vim.deep_equal(existing, hook)` on the whole `{type, command}` object is
+--- the defect this function fixes. When a command string changes (e.g. the CWD-relative stale
+--- form rewritten to the `$CLAUDE_PROJECT_DIR`-prefixed fixed form), the two objects no longer
+--- compare equal, so the "already present?" check below used to say no and the new entry was
+--- APPENDED BESIDE the stale one rather than replacing it -- confirmed in production: a real
+--- redeploy against an already-deployed repo left stale and fixed registrations of the same
+--- hook coexisting, both firing, the stale one still failing open. Identity (what hook script
+--- this registration invokes) is the stable thing across that kind of command-string edit; the
+--- exact command string is not.
+--- @param hook table Hook object (`{type=, command=, [timeout=]}`)
+--- @return string|nil identity `"<type>:<NAME.sh>"`, or nil when not identity-eligible
+local function hook_identity(hook)
+  if type(hook) ~= "table" or type(hook.command) ~= "string" or type(hook.type) ~= "string" then
+    return nil
+  end
+  local name = hook.command:match("%.claude/hooks/([%w_%-]+%.sh)")
+  if not name then
+    return nil
+  end
+  return hook.type .. ":" .. name
+end
+
+--- Locate `hook` within `hooks` (an array of hook objects): by `hook_identity()` when `hook` is
+--- identity-eligible (see that function's doc for the mandatory custom-hook carve-out), or by
+--- exact `vim.deep_equal` otherwise. This is the single lookup both `normalize_hook_event_array`
+--- and `merge_hook_event_array` use, so the two functions' "already present?" semantics can
+--- never drift apart.
+--- @param hooks table Array of hook objects to search
+--- @param hook table Hook object to locate
+--- @return integer|nil index 1-based index of the match in `hooks`, or nil if not found
+local function find_hook_match(hooks, hook)
+  local identity = hook_identity(hook)
+  for i, existing in ipairs(hooks) do
+    if identity ~= nil then
+      if hook_identity(existing) == identity then
+        return i
+      end
+    elseif vim.deep_equal(existing, hook) then
+      return i
+    end
+  end
+  return nil
+end
+
+--- Normalize a hook-event array so each distinct `matcher` value appears exactly once, with
+--- that matcher's `hooks` entries concatenated in first-appearance order and individually
+--- deduplicated via `find_hook_match` -- identity-based for a `.claude/hooks/*.sh` invocation
+--- (REPLACING an earlier same-identity entry's command with the later one's, so a stale+fixed
+--- pair already sitting in the same matcher block collapses to the later, presumably-corrected
+--- occurrence), exact `vim.deep_equal` otherwise (a true duplicate, or any hand-written custom
+--- hook -- never touched beyond the exact-duplicate check). Matchers are compared by exact
+--- string equality only -- never by substring or pattern. Idempotent: normalizing an
+--- already-normalized, already-converged array returns an equal array (every hook's match is
+--- itself, `vim.deep_equal`-identical, so the "replace" is a same-value no-op).
+---
+--- Normalization is deliberately NOT reversed by unmerge_settings(): it is semantically neutral
+--- (Claude Code runs every matching block regardless of how many blocks share a matcher), it is
+--- idempotent, and restoring the pre-normalization block split on unload would reintroduce the
+--- exact duplication hazard this function exists to close.
 --- @param arr table Hook-event array (expected to satisfy is_hook_event_array)
 --- @return table normalized New array, one block per distinct matcher, in
 ---   first-appearance order
@@ -222,27 +281,37 @@ local function normalize_hook_event_array(arr)
       index_by_matcher[block.matcher] = idx
     end
     for _, hook in ipairs(block.hooks) do
-      local exists = false
-      for _, existing in ipairs(normalized[idx].hooks) do
-        if vim.deep_equal(existing, hook) then
-          exists = true
-          break
-        end
-      end
-      if not exists then
+      local match_idx = find_hook_match(normalized[idx].hooks, hook)
+      if match_idx == nil then
         table.insert(normalized[idx].hooks, hook)
+      else
+        normalized[idx].hooks[match_idx] = hook
       end
     end
   end
   return normalized
 end
 
---- Merge a source hook-event array into a (pre-normalized) target hook-event
---- array by `matcher`, rather than by whole-item vim.deep_equal. For each
---- source block: if a target block with an equal `matcher` already exists,
---- append each of the source block's hook entries not already
---- vim.deep_equal-present in that target block's `hooks` array; otherwise
---- append the whole source block as a new matcher block.
+--- Merge a source hook-event array into a (pre-normalized) target hook-event array by
+--- `matcher`. For each source block: if a target block with an equal `matcher` already exists,
+--- resolve each of the source block's hook entries against that target block's `hooks` array via
+--- `find_hook_match` --
+---   * no match: APPEND the source hook as a new entry (tracked in `hook_items`, exactly as
+---     before).
+---   * identity match with a DIFFERENT command (or other field): REPLACE the target's entry with
+---     the source's IN PLACE, rather than appending beside it -- this is the fix for the
+---     production defect `hook_identity`'s doc describes: a changed command string no longer
+---     compared `vim.deep_equal`, so the stale entry was never recognized as "already present"
+---     and a duplicate accumulated instead of a replacement. The replacement is tracked into the
+---     SAME `hook_items` list, under the SAME `{matcher=, hook=<new hook>}` shape an append uses
+---     -- deliberately, so `unmerge_settings` needs no new branch: on unload, it already finds
+---     and removes a hook `vim.deep_equal` to the tracked (new) one, which is exactly "undo what
+---     this merge changed" for a replacement too. It never resurrects the stale command that was
+---     replaced; resurrecting it would reintroduce the very defect this closes.
+---   * identity match (or exact match) already `vim.deep_equal`: no-op, untracked -- fully
+---     idempotent, matching `normalize_hook_event_array`'s idempotency.
+--- Otherwise (no target block for this matcher at all): append the whole source block as a new
+--- matcher block, as before.
 --- @param target_arr table Target hook-event array, modified in place
 --- @param source_arr table Source hook-event array to merge in
 --- @return table tracked `{ items = {<whole blocks appended>}, hook_items =
@@ -259,15 +328,12 @@ local function merge_hook_event_array(target_arr, source_arr)
     end
     if target_block then
       for _, hook in ipairs(source_block.hooks) do
-        local exists = false
-        for _, existing in ipairs(target_block.hooks) do
-          if vim.deep_equal(existing, hook) then
-            exists = true
-            break
-          end
-        end
-        if not exists then
+        local match_idx = find_hook_match(target_block.hooks, hook)
+        if match_idx == nil then
           table.insert(target_block.hooks, hook)
+          table.insert(tracked.hook_items, { matcher = source_block.matcher, hook = hook })
+        elseif not vim.deep_equal(target_block.hooks[match_idx], hook) then
+          target_block.hooks[match_idx] = hook
           table.insert(tracked.hook_items, { matcher = source_block.matcher, hook = hook })
         end
       end

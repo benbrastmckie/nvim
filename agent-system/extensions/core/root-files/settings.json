@@ -112,10 +112,6 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
-          },
-          {
-            "type": "command",
-            "command": "bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"
           }
         ]
       }

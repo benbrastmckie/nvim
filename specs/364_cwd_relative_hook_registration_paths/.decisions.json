@@ -4,5 +4,17 @@
     "answer": "Swap for picker repair action: drop the migration script; add a 'repair settings' action to the <leader>al extension picker (snapshot -> delete deployed settings.json -> load), since install-once load recopies a fresh fixed settings.json when the target is absent.",
     "cycle": 3,
     "timestamp": "2026-10-07T21:00:36Z"
+  },
+  {
+    "question": "Which strategy should I send the agent for task 364?",
+    "answer": "Harden dedupe + move the 6: identity-based dedupe in merge_hook_event_array/normalize_hook_event_array (compare by resolved hooks/NAME.sh + type, replace in place instead of appending), plus move the 6 root-files-only registrations (log-session, memory-nudge, post-command, subagent-postflight, tts-notify, validate-plan-write) into core/merge-sources/settings-hooks.json so the fragment merge visits them. Makes plain Reload All self-healing; no migration script, no picker action, no per-repo rm.",
+    "cycle": 3,
+    "timestamp": "2026-10-07T21:06:39Z"
+  },
+  {
+    "question": "scripts/claude-ready-signal.sh is registered at SessionStart but exists nowhere. What should happen to it?",
+    "answer": "Remove the registration: delete the SessionStart claude-ready-signal.sh entry from core/root-files/settings.json (line 118). It invokes a script absent from both the source store and the deploy, silenced by its own 2>/dev/null || echo '{}', so it has been a silent no-op. Added to task 364's scope since that task already edits this file.",
+    "cycle": 3,
+    "timestamp": "2026-10-07T21:11:52Z"
   }
 ]

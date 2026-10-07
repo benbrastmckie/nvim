@@ -259,219 +259,272 @@ registrations belong in the merge source (D4).
 
 ---
 
-### Phase 3: Write the migration script for already-deployed repos [COMPLETED WITH EXCLUSIONS]
+### Phase 3: Harden the normal resync path — identity-based hook dedupe + move the six root-files-only registrations [COMPLETED]
 
-**Goal**: An operator can bring any already-deployed `.claude/settings.json` to the corrected
-state in place, idempotently, with a preview mode — the only mechanism that can reach an
-install-once-sourced deploy (D3).
+**SUPERSEDES the migration-script approach, PERMANENTLY (settled operator strategy)**: this
+phase's already-deployed-repo remediation mechanism went through four successive
+operator-directed reversals in one dispatch before landing here: (1) ship a migration script ->
+(2) drop it, a planned full redeploy would reach already-deployed repos directly -> (3) that
+redeploy was run for real against `/home/benjamin/Philosophy/Papers/PossibleWorlds` and left 21
+stale registrations coexisting with 15 newly-merged fixed ones (`deep_merge`'s append-only dedup
+cannot self-heal a changed command string), so the operator asked for the script to be restored
+with a strengthened dedup requirement -> (4) dropped again in favor of a `manager.repair_settings`
+picker action (snapshot -> delete -> resync, exploiting the install-once-copies-fresh-when-absent
+behavior) -> HOLD, because that alone cannot fix an ALREADY-PRESENT duplicated file, only an
+ABSENT one -> **SETTLED**: harden the normal resync path itself (`merge.lua`), so plain
+`<leader>al` "Reload All" / any ordinary resync repairs every repo, present-and-duplicated or not,
+with no new script and no new picker action. This is believed final; do not retry (a) a migration
+script, or (b) a picker repair action, absent new evidence overturning this strategy.
+
+**Goal**: `merge.lua`'s hook-event-array merge treats two registrations of the SAME underlying
+hook script as the same entry (REPLACING a stale command with a fixed one in place) rather than
+appending a duplicate beside it — and every hook registration that exists in the source store is
+visited by at least one fragment the normal resync path merges, so no registration is
+structurally unreachable by an ordinary resync.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh` following
-      `migrate-directory-padding.sh`'s convention: `--dry-run`, `--project-root DIR`, `--verbose`,
-      `--help`, `set -euo pipefail`, colorized pass/fail output. *(deviation: skipped — operator
-      scope change, see Reasoned Exclusions)*
-- [ ] Rewrite every `bash .claude/hooks/` occurrence inside `.hooks[*][*].hooks[*].command` of the
-      target `.claude/settings.json` to `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/`, including
-      occurrences nested inside a `bash -c '...'` wrapper, leaving each command's suffix (bare vs.
-      `2>/dev/null || echo '{}'`) untouched. *(deviation: skipped — operator scope change, see
-      Reasoned Exclusions)*
-- [ ] Make it idempotent: a second run reports zero changes and exits 0; a command already carrying
-      `"$CLAUDE_PROJECT_DIR"` is never double-prefixed. *(deviation: skipped — operator scope
-      change, see Reasoned Exclusions)*
-- [ ] De-duplicate: if the target already carries BOTH a broken and a fixed registration of the same
-      hook under the same event+matcher, collapse them to the single fixed entry (criterion 6).
-      *(deviation: skipped — operator scope change, see Reasoned Exclusions)*
-- [ ] Write a timestamped backup of the target `settings.json` beside it before any mutation, and
-      refuse to proceed if the target is missing, is not valid JSON, or `jq` is unavailable.
-      *(deviation: skipped — operator scope change, see Reasoned Exclusions)*
-- [ ] Declare the script in `agent-system/extensions/core/manifest.json` `provides.scripts`.
-      *(deviation: skipped — operator scope change, see Reasoned Exclusions)*
-- [ ] Add an entry to
-      `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` matching the
-      existing `migrate-directory-padding.sh` entry's shape (one-shot, operator-invoked, no
-      automated caller by design). *(deviation: skipped — operator scope change, see Reasoned
-      Exclusions)*
+- [x] **CHANGE 1 — identity-based dedupe.** Added `hook_identity(hook)` to
+      `lua/neotex/plugins/ai/shared/extensions/merge.lua`: resolves a hook's registration
+      identity as `"<type>:<NAME.sh>"` for any command recognizable as a `.claude/hooks/NAME.sh`
+      invocation (stale CWD-relative OR fixed `$CLAUDE_PROJECT_DIR`-prefixed form, bare or nested
+      inside a `bash -c '...'` wrapper), `nil` otherwise. Added `find_hook_match(hooks, hook)`:
+      the single shared lookup (identity-based when eligible, exact `vim.deep_equal` otherwise)
+      both `normalize_hook_event_array` and `merge_hook_event_array` now use, so their
+      "already present?" semantics cannot drift apart. *(completed)*
+- [x] Rewrote `normalize_hook_event_array` (collapses multiple blocks sharing one `matcher`
+      value) to use `find_hook_match`: an identity match REPLACES the earlier occurrence's
+      command with the later one's (collapsing a stale+fixed pair already sitting in the target),
+      an exact/non-identity match is a true no-op. *(completed)*
+- [x] Rewrote `merge_hook_event_array` to use `find_hook_match`: no match -> append (tracked in
+      `hook_items`, unchanged from before); identity match with a DIFFERENT command -> REPLACE in
+      place, tracked into the SAME `hook_items` list under the same `{matcher=, hook=<new>}`
+      shape an append uses (so `unmerge_settings` needs no new branch: it already finds and
+      removes a hook `vim.deep_equal` to the tracked new one, which is "undo what changed" for a
+      replacement too — it never resurrects the replaced stale command). Identity match already
+      `vim.deep_equal` -> no-op, untracked. *(completed)*
+- [x] Mandatory carve-out: a command NOT recognizable as a `.claude/hooks/*.sh` invocation (a
+      hand-written custom hook) returns `nil` from `hook_identity` and therefore ALWAYS falls
+      through to exact `vim.deep_equal` comparison — never touched, moved, or deduped by
+      identity. Verified by a dedicated regression test (Phase 4). *(completed)*
+- [x] **CHANGE 2 — move the six root-files-only registrations** into
+      `agent-system/extensions/core/merge-sources/settings-hooks.json`, preserving each one's
+      event, matcher, type, and (for `subagent-postflight.sh`) its `timeout: 30000` field exactly
+      byte-identical to `root-files/settings.json`: `log-session.sh` (`SessionStart`/`startup`,
+      new matcher block), `post-command.sh` + `memory-nudge.sh` (`Stop`/`*`, appended into the
+      existing block), `subagent-postflight.sh` (`SubagentStop`/`*`, appended),
+      `tts-notify.sh` (`Notification`/`permission_prompt|elicitation_dialog`, a brand-new
+      top-level event array merge-sources did not previously carry at all), `validate-plan-write.sh`
+      (`PostToolUse`/`Write|Edit`, appended). Verified byte-identical to `root-files/settings.json`
+      via `jq` extraction for all six. Kept in `root-files/settings.json` too (so a fresh install
+      still gets them before the first fragment merge), matching how the 11 already-shared hooks
+      work. *(completed)*
+- [x] **Dead-registration removal (operator-added scope)**: removed
+      `"command": "bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"` from
+      `root-files/settings.json`'s `SessionStart`/`startup` block entirely — `scripts/claude-ready-signal.sh`
+      exists nowhere in the source store or either real deployed repo (confirmed by `find`).
+      Not rewritten to the `$CLAUDE_PROJECT_DIR` form, since there is nothing for it to point at;
+      removed as dead weight, not as part of the path-shape fix. *(completed)*
+- [x] **Non-`.claude/`-relative-path sweep (operator-added scope)**: grepped every
+      `settings*.json`/`settings-fragment.json` in the source store (14 files across all loaded
+      extensions, not only the 4 originally in `file_scope`) for any `"command"` invoking a bare
+      relative path without a `.claude/` prefix. Found exactly one: the now-removed
+      `claude-ready-signal.sh` line above. The only other non-`.claude/`-prefixed `bash` commands
+      in the corpus are `root-files/settings.json`'s two inline `bash -c` permission-decision
+      helpers (lines 42 and 80ish), which invoke no external script path at all and are therefore
+      not members of this defect class. No other relative-path-without-`.claude/` hook
+      registration exists anywhere in the source store. *(completed)*
 
-**Timing**: 1.5 hours
+**Timing**: 1.5 hours (revised from the original migration-script estimate)
 
 **Depends on**: none
 
-**Verification Tier**: local
+**Verification Tier**: full
 
 **Commit Mode**: per-substep
 
-**Scope Hypothesis**: both known pre-existing deploys carry exactly 21 CWD-relative hook
-registrations and zero `CLAUDE_PROJECT_DIR` occurrences (re-derived at plan-authoring time by
-`grep -c` against `/home/benjamin/.config/nvim/.claude/settings.json` and
-`/home/benjamin/Philosophy/Papers/PossibleWorlds/.claude/settings.json`). Confirm at
-implementation time with the script's own `--dry-run` count against each target before mutating.
-
-**Files to modify**:
-- `agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh` - new file (EXCLUDED,
-  never written — see Reasoned Exclusions)
-- `agent-system/extensions/core/manifest.json` - `provides.scripts` declaration (EXCLUDED)
-- `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` - inventory entry
-  (EXCLUDED)
+**Files modified**:
+- `lua/neotex/plugins/ai/shared/extensions/merge.lua` — `hook_identity`, `find_hook_match` added;
+  `normalize_hook_event_array`, `merge_hook_event_array` rewritten to use them
+- `agent-system/extensions/core/merge-sources/settings-hooks.json` — six registrations added
+  (one new top-level `Notification` event array; the rest appended into existing matcher blocks)
+- `agent-system/extensions/core/root-files/settings.json` — dead `claude-ready-signal.sh`
+  registration removed
 
 **Verification**:
-- N/A — phase excluded before any verification step ran.
-
-#### Reasoned Exclusions
-
-| Item | Reason | Evidence |
-|------|--------|----------|
-| Entire phase: `migrate-hook-registration-paths.sh` (write, idempotency, dedup, backup, manifest/docs declarations) | Mid-implementation operator directive: the operator will reload/redeploy the agent system to every consumer repo directly, which removes the "install-once root-files cannot reach already-deployed repos" premise (D3) that made a migration script necessary. A full redeploy fixes already-deployed repos without a bespoke migration mechanism, so writing and shipping one would add dead code the operator does not want maintained. | Operator message received mid-dispatch (implement phase, task 364, dispatch_seq 3) instructing: "DO NOT write the migration script for already-deployed repos — drop it and its test from scope... the operator is going to reload/redeploy the agent system to every consumer repo, so the... premise... no longer holds." A draft of the script had already been written and smoke-tested in a scratch fixture (confirming the jq rewrite+dedup logic itself was correct) before the directive arrived; it was deleted, unstaged and uncommitted, per the operator's instruction not to leave dead code behind. |
-
-This exclusion satisfies `status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` five-condition
-admission test: the exclusion is itemized (one item, the whole phase), reasoned (operator-directed
-scope reduction with a stated premise change), evidenced (the operator instruction itself, quoted
-above), the excluded work is genuinely not needed going forward (the redeploy mechanism
-supersedes it), and no acceptance criterion silently regresses — criterion 5 (existing-deployed-repo
-remediation) is satisfied by the operator's separate redeploy action instead of by this task's
-artifact; see the Non-Goals update and Testing & Validation below for the explicit disposition.
+- `nvim --headless -c "lua require('neotex.plugins.ai.shared.extensions.merge')"` loads without
+  error.
+- All six moved registrations verified byte-identical to `root-files/settings.json` via `jq`
+  extraction (command string diff, empty).
+- `jq empty` passes on both edited JSON files; `grep -c 'bash \.claude/hooks/' ` on each remains
+  as expected (zero new CWD-relative strings introduced).
+- See Phase 4 for the full automated-test evidence and Phase 6 for the real-repo demonstration.
 
 ---
 
-### Phase 4: Test the migration script [COMPLETED WITH EXCLUSIONS]
+### Phase 4: Test the hardened resync path [COMPLETED]
 
-**Goal**: The migration's correctness, idempotency, and no-duplicate outcome are asserted by an
-automated test, discharging acceptance criterion 6 by test rather than by assumption.
+**Goal**: The identity dedupe's correctness, idempotency, and no-duplicate convergence — across
+the duplicated shape, the all-stale shape, the already-correct shape, and the mandatory
+custom-hook carve-out — are asserted by an automated test, discharging the no-duplicate criterion
+by test rather than by assumption. This supersedes the original migration-script test plan; the
+criterion it defended (no repo ends up with both a stale and a fixed registration of the same
+hook) still has to hold, now proven against the hardened merge path instead.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-migrate-hook-registration-paths.sh`
-      using the house harness shape (`pass()`/`fail()`/`info()`, `PASSED`/`FAILED` counters,
-      trap-cleaned scratch `WORKDIR`, exit 0 all-pass / 1 any-fail / 2 environment error), as in
-      `test-deploy-propagation.sh`. *(deviation: skipped — entire phase excluded, Phase 3's
-      migration script it tests was never written; see Reasoned Exclusions)*
-- [ ] Assertion: a fixture `settings.json` seeded with the OLD broken strings is migrated to zero
-      `bash .claude/hooks/` occurrences, with every command's bare-vs-fail-open suffix preserved.
-      *(deviation: skipped — see Reasoned Exclusions)*
-- [ ] Assertion: the nested `bash -c` registration's inner path is migrated and its surrounding
-      `$CLAUDE_TOOL_INPUT` logic is byte-unchanged. *(deviation: skipped — see Reasoned
-      Exclusions)*
-- [ ] Assertion: a second run is a no-op (zero changes reported, file byte-identical). *(deviation:
-      skipped — see Reasoned Exclusions)*
-- [ ] Assertion (criterion 6): a fixture seeded with BOTH a broken and a fixed registration of the
-      same hook under the same event+matcher ends with exactly one entry, the fixed one.
-      *(deviation: skipped — this is the "migration-specific test for the no-duplicate criterion"
-      the operator named explicitly; see Reasoned Exclusions)*
-- [ ] Assertion: `--dry-run` mutates nothing; a backup exists after a real run. *(deviation:
-      skipped — see Reasoned Exclusions)*
-- [ ] Assertion: refusal paths (missing target, invalid JSON) exit nonzero without mutating.
-      *(deviation: skipped — see Reasoned Exclusions)*
-- [ ] Declare the test in `agent-system/extensions/core/manifest.json` `provides.scripts`.
-      *(deviation: skipped — see Reasoned Exclusions)*
+- [x] Wrote `lua/neotex/plugins/ai/shared/extensions/merge_spec.lua` using the project's existing
+      plenary/busted convention (`describe`/`it`/`assert`, scratch `vim.fn.tempname()` dirs,
+      `before_each`/`after_each` cleanup), matching the sibling `manifest_spec.lua` in the same
+      directory. Run via `nvim --headless -c "PlenaryBustedFile %"`. *(completed)*
+- [x] Assertion: a target seeded with the exact observed duplicate shape (stale + fixed
+      registration of `guard-destructive-git.sh` under the same matcher) converges to exactly
+      one entry, the fixed one, via `M.merge_settings`. *(completed)*
+- [x] Assertion: an all-stale target (`guard-git-push.sh`) is REPLACED in place by the fixed
+      fragment entry, not appended beside it. *(completed)*
+- [x] Assertion: idempotency — merging the same already-correct fragment twice leaves the target
+      byte-identical after the first merge. *(completed)*
+- [x] Assertion: `normalize_hook_event_array`'s own dedup collapses a stale+fixed pair already
+      split across two separate blocks sharing one `matcher` value, independent of
+      `merge_hook_event_array`. *(completed)*
+- [x] Assertion (mandatory carve-out, operator-required regression test): a hand-written command
+      that does NOT invoke a `.claude/hooks/*.sh` path is NEVER touched, moved, or deduped by
+      identity — two distinct custom commands under the same matcher both survive untouched.
+      *(completed)*
+- [x] Assertion: the six hooks moved into `core/merge-sources/settings-hooks.json` by Phase 3 are
+      present there (read from the real, on-disk fragment file) and propagate into a target via
+      an ordinary `merge_settings` call, with zero CWD-relative survivors. *(completed)*
+- [x] Assertion: a reconstruction of the real observed production duplicate shape (both paired
+      hooks plus `events-log-lifecycle.sh` stale twice across `Stop`/`SubagentStop`) converges to
+      zero CWD-relative strings and zero duplicate `(event,matcher,hook)` triples via the REAL
+      core fragment file. **Caveat, recorded honestly**: this is a reconstruction from the
+      operator's own reported counts, not the genuine `settings.json.bak` — that file was
+      reported to exist at `/home/benjamin/Philosophy/Papers/PossibleWorlds/.claude/settings.json.bak`
+      but was confirmed ABSENT from disk at verification time (`ls`/`find` both negative); Phase 6
+      supplies the direct real-repo evidence this reconstruction stands in for. *(completed)*
+- [x] Ran the full pre-existing Lua spec suite under `lua/neotex/plugins/ai/` (8 files) to check
+      for regressions: `manifest_spec.lua` (both claude and shared variants), `sync_spec.lua`,
+      `scan_spec.lua`, `config_spec.lua`, `metadata_spec.lua`, `registry_spec.lua` — 3 files
+      (`metadata_spec.lua`: 1 fail; `registry_spec.lua`: 6 fails; `claude/extensions/manifest_spec.lua`:
+      1 fail) showed failures UNRELATED to this change (artifact-type parser/registry lookups,
+      manifest `merge_targets` type validation — none require or exercise `merge.lua`'s hook
+      functions). Confirmed pre-existing, not a regression, by running the SAME three spec files
+      against a disposable `git worktree add /tmp/nvim-head-check HEAD` checkout (i.e. this
+      repo's own last-committed state, before this phase's `merge.lua` edit) and observing
+      byte-identical fail counts (1, 6, 1) there too; worktree removed after comparison.
+      *(completed)*
 
 **Timing**: 1 hour
 
 **Depends on**: 3
 
-**Verification Tier**: local
+**Verification Tier**: full
 
 **Commit Mode**: per-substep
 
-**Scope Hypothesis**: seven assertions as enumerated. The count is an estimate; confirm at
-implementation time that each enumerated assertion exists and passes, and record any added or
-dropped assertion rather than silently diverging.
-
-**Files to modify**:
-- `agent-system/extensions/core/scripts/tests/test-migrate-hook-registration-paths.sh` - new file
-  (EXCLUDED, never written)
-- `agent-system/extensions/core/manifest.json` - `provides.scripts` declaration for the test
-  (EXCLUDED)
+**Files modified**:
+- `lua/neotex/plugins/ai/shared/extensions/merge_spec.lua` — new file, 7 `it(...)` cases
 
 **Verification**:
-- N/A — phase excluded before any verification step ran.
-
-#### Reasoned Exclusions
-
-| Item | Reason | Evidence |
-|------|--------|----------|
-| Entire phase: `test-migrate-hook-registration-paths.sh` (all seven assertions, including the criterion-6 no-duplicate assertion the operator named explicitly) | Depends entirely on Phase 3's migration script, which was excluded by the same operator directive (full redeploy supersedes a bespoke migration mechanism). A test suite for a script that was never written has nothing to test. | Same operator message as Phase 3's Reasoned Exclusions entry; the operator explicitly named "the migration-specific test for the no-duplicate criterion" as in-scope for exclusion. |
-
-Admission test satisfied on the same grounds as Phase 3 (see that phase's Reasoned Exclusions
-paragraph) — this phase is a direct, total dependent of the excluded Phase 3 work.
+- `nvim --headless -c "PlenaryBustedFile lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"`:
+  7 passed, 0 failed, 0 errors.
+- Full pre-existing suite re-run command and per-file pass/fail counts recorded above; the three
+  observed failures demonstrated pre-existing via the worktree comparison, not asserted.
 
 ---
 
-### Phase 5: Assert the fresh-deploy outcome in the deploy-propagation harness [NOT STARTED]
+### Phase 5: Assert the fresh-deploy outcome in the deploy-propagation harness [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Acceptance criterion 4 (a fresh deploy's `settings.json` carries no CWD-relative
 `.claude/` hook path) is asserted by the existing real-deploy harness, not by a one-time manual
 grep.
 
 **Tasks**:
-- [ ] Add an assertion to
+- [x] Added Assertion E to
       `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh`: after the existing
-      fresh-deploy step, `jq` every `.hooks[*][*].hooks[*].command` out of the scratch target's
-      deployed `.claude/settings.json` and assert zero match `bash \.claude/hooks/`.
-- [ ] Add a companion assertion: the six blocking guards are registered and still bare (no
-      `|| echo`), and every other registration still carries its fail-open suffix — criterion 3,
-      asserted on the deployed artifact per the existing house convention of verifying bare-ness in
-      the DEPLOYED tree.
-- [ ] Add a duplicate-registration assertion over the same deployed `settings.json`: no
-      event+command pair appears more than once (the fresh-install half of criterion 6, catching a
-      D2 cross-file divergence the moment it is introduced).
-- [ ] Do not modify `verify-deploy.sh` — see Non-Goals; the standing gate belongs to task 365.
+      fresh-deploy step, `jq` every hook command out of the scratch target's deployed
+      `.claude/settings.json` and assert zero match `bash \.claude/hooks/`. *(completed)*
+- [x] Added a companion sub-assertion: the six blocking guards present in this scratch deploy are
+      registered and still bare (no `|| echo`) — criterion 3's bare half, asserted on the
+      DEPLOYED artifact per the existing house convention; a guard absent only because its owning
+      extension is not active in this scratch deploy is informational, not a failure.
+      *(completed)*
+- [x] Added a duplicate-registration sub-assertion over the same deployed `settings.json`: no
+      (event,matcher,hook-script) triple appears more than once (the fresh-install half of
+      criterion 6). *(completed)*
+- [x] Did not modify `verify-deploy.sh` — see Non-Goals; the standing gate belongs to task 365.
+      *(completed)*
 
 **Timing**: 1 hour
 
 **Depends on**: 1, 3
 
-**Verification Tier**: interface
+**Verification Tier**: full
 
 **Commit Mode**: per-substep
 
-**Scope Hypothesis**: three new assertions (zero CWD-relative paths, bare-ness preserved,
-no duplicates) added to one existing harness file. The count is an estimate, not a fact; confirm
-at implementation time that each enumerated assertion exists and passes, and record any added or
-dropped assertion rather than silently diverging.
-
-**Files to modify**:
-- `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` - three new assertions
-  after the existing fresh-deploy step
+**Files modified**:
+- `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` - Assertion E (three
+  sub-checks) added after the existing Assertion A (fresh-deploy) step
 
 **Verification**:
-- `bash agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` runs; the three new
-  assertions PASS. The harness's documented expected-red baseline assertions are reported
-  unchanged — a pre-existing red there is not this phase's regression, and must be stated as such
-  rather than silently absorbed.
-- The new assertions are demonstrated to have teeth: temporarily re-break one command string in the
-  source, re-run, observe the assertion go RED, restore, re-run green.
+- `bash agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh`: ALL 7 assertions
+  PASS (the pre-existing A-D plus the new E), via a REAL `deploy-headless.sh` run (real headless
+  `nvim` subprocess, real manifest-driven copy+merge, real scratch git repo) — demonstrated, not
+  asserted. Full command output recorded in this agent's implementation summary.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| "Teeth" demonstration (temporarily re-break one command string in the source, re-run, observe RED, restore, re-run green) | `deploy-headless.sh` always resolves extension SOURCE content from the real, live `~/.config/nvim` checkout (no source-override knob exists to point it at an isolated worktree copy instead — confirmed by reading this harness file's own header comment). Demonstrating "teeth" this way would require mutating the shared, live source-store file (`core/merge-sources/settings-hooks.json`) for the duration of the re-run, under real risk of a concurrent sibling task (confirmed active in this same session: task 365) reading or writing that same file mid-mutation. | This agent's own reading of `test-deploy-propagation.sh`'s header comment ("Source resolution: deploy-headless.sh always reads extension SOURCE content from the real `~/.config/nvim` checkout"), plus direct observation of a concurrent sibling commit (`9a2814cca`, task 365) landing against `specs/` during this same dispatch, confirming the concurrency risk is not hypothetical. The negative space this would have covered (the identity-dedupe mechanism failing red pre-fix, passing green post-fix) is instead covered by `merge_spec.lua`'s dedicated unit tests (Phase 4), which exercise the exact same `merge.lua` functions without touching shared state. |
+
+Admission test: itemized (one specific verification step, not the whole phase), reasoned (a
+concrete, confirmed concurrency hazard against shared source-store state), evidenced (quoted
+above), the excluded step's coverage intent is genuinely met elsewhere (Phase 4's unit tests), and
+the gap is named here rather than silently absorbed — the phase's actual acceptance criterion
+(criterion 4, zero CWD-relative paths in a fresh deploy) is fully discharged by Assertion E
+itself, which ran for real and passed.
 
 ---
 
-### Phase 6: Migrate and demonstrate against two real pre-existing deploys [COMPLETED WITH EXCLUSIONS]
+### Phase 6: Demonstrate convergence against the two real deploys (non-destructively) [COMPLETED WITH EXCLUSIONS]
 
-**Goal**: Acceptance criteria 1, 2, and 5 are demonstrated — not asserted — against real
-already-deployed repos whose `settings.json` predates the fix.
+**Goal**: Prove the hardened resync path (Phase 3) actually converges the two real repos named
+throughout this task — `/home/benjamin/.config/nvim` itself and
+`/home/benjamin/Philosophy/Papers/PossibleWorlds` — without mutating either live file, per the
+operator's explicit landing requirement: "Do not leave either repo worse than you found it."
 
 **Tasks**:
-- [ ] Run `migrate-hook-registration-paths.sh --dry-run --project-root /home/benjamin/.config/nvim`
-      and confirm the reported occurrence count matches the pre-migration grep. *(deviation:
-      skipped — migration script excluded in Phase 3; see Reasoned Exclusions)*
-- [ ] Run it for real against this repo, then re-grep: zero `bash .claude/hooks/` in
-      `.claude/settings.json`, and the six guards still bare. *(deviation: skipped — see Reasoned
-      Exclusions)*
-- [ ] Repeat `--dry-run` then real run against
-      `/home/benjamin/Philosophy/Papers/PossibleWorlds` — the repo where the defect was originally
-      reproduced. *(deviation: skipped — see Reasoned Exclusions)*
-- [ ] Reproduce the original failure condition in a real session: `cd` into a subdirectory of a
-      migrated repo (e.g. `.../PossibleWorlds/JPL`), issue an ordinary Bash tool call, and confirm
-      NO `PreToolUse:Bash hook error` / `No such file or directory` output (criterion 1).
-      *(deviation: skipped — no migrated repo exists to demonstrate against since the migration
-      mechanism was excluded; see Reasoned Exclusions)*
-- [ ] From that same subdirectory CWD, trigger a real blocking guard (e.g. `git add -A`, which
-      `guard-destructive-git.sh` refuses) and confirm it BLOCKS: the tool call is refused and
-      `git status --porcelain` shows nothing staged (criterion 2 — demonstrated, not asserted).
-      *(deviation: skipped — see Reasoned Exclusions)*
-- [ ] Run `verify-deploy.sh` gate 2 against both migrated repos and confirm its duplicate detector
-      reports no duplicates (criterion 6, existing-repo half). *(deviation: skipped — see Reasoned
-      Exclusions)*
-- [ ] Record each observation verbatim in the implementation summary; a criterion marked satisfied
-      without its captured output does not count. *(deviation: skipped — see Reasoned Exclusions)*
+- [x] Copied both repos' live `.claude/settings.json` to a scratch workdir (never editing the
+      originals in place). Recorded `md5sum` of both originals before and after this phase;
+      confirmed byte-identical, i.e. untouched. *(completed)*
+- [x] Ran `merge.merge_settings(<scratch copy>, <real on-disk core fragment>)` directly (the exact
+      function/data `process_merge_targets` uses for the "core" extension on every real resync)
+      against each scratch copy via a one-shot `nvim --headless -c "luafile ..."` invocation.
+      *(completed)*
+- [x] **thisrepo** (`/home/benjamin/.config/nvim`, whose live `.claude/settings.json` was still
+      fully stale at verification time — it has not yet been redeployed with this task's
+      source-store changes): BEFORE 21 `bash .claude/hooks/` occurrences, 0
+      `$CLAUDE_PROJECT_DIR`-anchored; AFTER 0 stale, 21 fixed (every single stale entry REPLACED
+      in place, none appended-beside). Total hook-command count unchanged at 23 before and after
+      (no loss). `env.SLASH_COMMAND_TOOL_CHAR_BUDGET` and `permissions.allow` (23 entries) fully
+      preserved. Zero duplicate `(event,matcher,hook)` triples. Output is valid, `jq`-parseable
+      JSON. *(completed — demonstrated, not asserted; this is a real repo's genuinely-stale file,
+      not a synthetic fixture)*
+- [x] **possibleworlds** (`/home/benjamin/Philosophy/Papers/PossibleWorlds`, whose live
+      `.claude/settings.json` the operator reported was ALREADY reloaded/repaired by the time of
+      this phase — 23 registrations, 22 `$CLAUDE_PROJECT_DIR`-anchored, the one dead
+      `claude-ready-signal.sh` line still relative since it predates this task's removal of that
+      dead entry): BEFORE 0 stale/22 fixed, AFTER 0 stale/22 fixed — a true idempotent no-op,
+      `env`/`permissions` preserved, zero duplicates. Demonstrates the hardened path does not
+      perturb an already-correct file. *(completed)*
+- [ ] Reproduce the original failure condition in a real session (`cd` into a subdirectory of a
+      migrated repo, issue an ordinary Bash tool call, confirm no hook error — criterion 1) and
+      trigger a real blocking guard from that CWD to confirm it blocks (criterion 2). *(deviation:
+      skipped — see Reasoned Exclusions: this requires an actual live redeploy into a running
+      session against one of the two real repos, which this phase deliberately avoided per the
+      non-destructive landing requirement)*
 
-**Timing**: 1 hour
+**Timing**: 0.5 hours (revised; non-destructive demonstration, not a live migration)
 
 **Depends on**: 1, 3, 4
 
@@ -479,29 +532,39 @@ already-deployed repos whose `settings.json` predates the fix.
 
 **Commit Mode**: per-substep
 
-**Scope Hypothesis**: two real pre-existing deploys are in scope and both carry 21 CWD-relative
-registrations at plan-authoring time (re-derived by grep, see Phase 3). Confirm by `--dry-run`
-count per target before mutating; if a third affected deploy is discovered, record it rather than
-silently widening or narrowing scope.
-
-**Files to modify**:
-- `/home/benjamin/.config/nvim/.claude/settings.json` - EXCLUDED, not migrated by this task (will
-  be reached by the operator's separate redeploy action instead)
-- `/home/benjamin/Philosophy/Papers/PossibleWorlds/.claude/settings.json` - EXCLUDED, same reason
+**Files modified**: none (both real repos' live `.claude/settings.json` files were read-only
+inputs, copied to a scratch workdir outside the repository; neither was mutated — confirmed by
+matching `md5sum` before/after)
 
 **Verification**:
-- N/A — phase excluded before any verification step ran.
+- `md5sum` of both original files, before and after this phase: identical (command + output
+  recorded in this agent's implementation summary).
+- Scratch-copy before/after counts (stale/fixed/total/duplicates) recorded above for both repos.
+- `jq empty` passes on both post-merge scratch copies.
 
 #### Reasoned Exclusions
 
 | Item | Reason | Evidence |
 |------|--------|----------|
-| Entire phase: migrating and demonstrating against the two real pre-existing deploys (`/home/benjamin/.config/nvim` and `/home/benjamin/Philosophy/Papers/PossibleWorlds`) | Every task in this phase invokes the Phase 3 migration script, which was excluded by operator directive. With no script, there is nothing to run `--dry-run` or for-real against either target, and no migrated repo exists to reproduce the original failure condition against or to re-run `verify-deploy.sh` gate 2's duplicate detector on. The operator stated a full redeploy will reach already-deployed repos directly instead. | Same operator message as Phase 3's Reasoned Exclusions entry. Acceptance criteria 1, 2, and 5 — demonstrated against a real pre-existing deploy — are consequently not satisfied BY THIS TASK; criterion 5 explicitly depended on the now-excluded migration path (plan Goals: "An already-deployed consumer repo reaches the corrected state by an explicit, idempotent, `--dry-run`-capable migration script, demonstrated against two real pre-existing deploys" — struck by this exclusion). The operator's own separate redeploy action is the stated mechanism by which these criteria will ultimately be reached, outside this task's artifact boundary. |
+| Criteria 1 and 2 (reproduce the original failure condition and a real blocking-guard refusal, both from a live subdirectory-CWD session against an actually-redeployed repo) | Demonstrating these live requires actually redeploying this task's changes into one of the two real repos' `.claude/` trees and then issuing real Bash tool calls from within a session rooted at a subdirectory of that repo. The operator's explicit landing requirement for this dispatch was the opposite: "Verify the two real deploys are not left broken ... Do not modify or move PossibleWorlds/.claude/settings.json.bak" and "Do not leave either repo worse than you found it" — a live redeploy is exactly the kind of mutation that requirement was written to avoid mid-dispatch, with a separate operator-run redeploy already understood to be the actual mechanism that reaches these repos going forward. | Operator's own "Landing requirements for task 364" message (received mid-dispatch): item 3 ("Verify the two real deploys are not left broken ... If your changes touch what a resync produces, confirm a resync still yields a valid, parseable settings.json ... Do not leave either repo worse than you found it") and item 1's "no acceptable middle state" framing, read together as directing a non-destructive proof rather than a live mutation. The non-destructive scratch-copy demonstration above discharges criterion 5's substance (convergence against a real, already-corrupted deployed file) and criterion 4 (zero CWD-relative paths, zero duplicates) in full; only the SESSION-level reproduction of criteria 1/2 is excluded. |
 
-This is a direct, total dependent of the excluded Phase 3/4 work, admitted on the same grounds
-(operator-directed, reasoned, evidenced, the excluded mechanism is genuinely superseded, and the
-resulting criterion gap is named explicitly here and in Testing & Validation rather than silently
-absorbed).
+Admission test: itemized (exactly the two session-reproduction criteria, named explicitly, not
+the whole phase), reasoned (the operator's own non-destructive landing requirement), evidenced
+(quoted above), genuinely out of this phase's safe reach (a live redeploy mid-dispatch is the
+mutation risk the requirement exists to prevent), and the gap is stated here and in Testing &
+Validation rather than silently absorbed — criteria 1/2 remain open for a future, deliberate,
+operator-authorized live redeploy + session reproduction, not closed by this task.
+
+**Honesty note on the cited fixture**: the operator's message referenced
+`/home/benjamin/Philosophy/Papers/PossibleWorlds/.claude/settings.json.bak` (8193 bytes, 21 stale
++ 15 correct) as the intended fixture input for this phase. This agent confirmed via `ls`/`find`
+that no such file exists on disk at verification time — it was not present to copy. Phase 4's
+reconstruction test (built from the operator's own reported counts and paired examples) stands in
+for unit-level coverage of that exact shape; this phase's real evidence instead comes directly
+from the two repos' actual LIVE files, which is arguably stronger (no reconstruction fidelity
+question) for everything except the specific stale-then-fixed duplicate pairing the `.bak` would
+have shown for `possibleworlds` specifically (which had already been repaired by the time of this
+phase, per the operator's own report, so had nothing left to converge).
 
 ---
 
@@ -564,59 +627,78 @@ asserting that exactly these 8 lines carry a `"command": "bash .claude/hooks/...
 
 ## Testing & Validation
 
-- [ ] `jq empty` passes on all four edited settings JSON files.
-- [ ] `grep -rn 'bash \.claude/hooks' agent-system --include=*.json` returns zero matches.
-- [ ] Exactly 6 bare (no `|| echo`) blocking-guard registrations remain in the source store; every
+- [x] `jq empty` passes on all edited settings JSON files (root-files, merge-sources, books,
+      email).
+- [x] `grep -rn 'bash \.claude/hooks' agent-system --include=*.json` returns zero matches.
+- [x] Exactly 6 bare (no `|| echo`) blocking-guard registrations remain in the source store; every
       advisory registration retains `2>/dev/null || echo '{}'` (criterion 3).
-- [ ] The five hooks shared between `root-files/settings.json` and `merge-sources/settings-hooks.json`
-      have byte-identical command strings (D2).
-- [x] ~~`test-migrate-hook-registration-paths.sh` green, including the idempotency and
-      no-duplicate assertions (criterion 6).~~ *(deviation: excluded — migration script and its
-      test dropped by operator directive; see Phase 3/4 Reasoned Exclusions)*
-- [ ] `test-deploy-propagation.sh`'s three new assertions green: fresh deploy has zero CWD-relative
-      hook paths (criterion 4), bare-ness preserved on the deployed artifact, no duplicates.
-- [x] ~~Both real pre-existing deploys migrated; subdirectory-CWD Bash call emits no hook error
-      (criterion 1) and a blocking guard demonstrably refuses from that CWD (criterion 2); criterion
-      5 satisfied against a real pre-existing deploy, not only a fixture.~~ *(deviation: excluded
-      — no migration mechanism exists within this task to demonstrate against; the operator's
-      separate redeploy action reaches already-deployed repos instead. See Phase 6 Reasoned
-      Exclusions. Criteria 1/2/5 are NOT satisfied by this task's artifact.)*
-- [ ] `bash .claude/scripts/tests/run-all.sh` green.
-- [ ] `bash .claude/scripts/verify-deploy.sh` green, with gate 2's duplicate detector silent.
-- [ ] `bash .claude/scripts/check-extension-docs.sh --quiet` green.
+- [x] The now-11 hooks shared between `root-files/settings.json` and
+      `merge-sources/settings-hooks.json` have byte-identical command strings (D2; verified for
+      all 6 newly-moved hooks via `jq` extraction, and the original 5 from Phase 1).
+- [x] `merge_spec.lua` green (7/7): identity dedupe converges the duplicated shape, the all-stale
+      shape, and a normalize-only split-block duplicate; is idempotent; never touches a
+      hand-written custom hook; the six moved registrations propagate; a reconstruction of the
+      real observed production duplicate shape converges via the real core fragment.
+- [x] `test-deploy-propagation.sh`'s new Assertion E green: fresh deploy has zero CWD-relative
+      hook paths (criterion 4), bare-ness preserved on the deployed artifact, no duplicates — via
+      a REAL `deploy-headless.sh` run, not a synthetic check.
+- [x] Both real repos' LIVE `.claude/settings.json` files verified via non-destructive scratch
+      copies: `thisrepo` converges 21 stale -> 0 stale/21 fixed (23 total hooks unchanged,
+      `env`/`permissions` preserved, 0 duplicates); `possibleworlds` (already reloaded by the
+      operator) is a true idempotent no-op (0 stale before and after). Neither original file was
+      mutated (byte-identical `md5sum` before/after both recorded). Criteria 1/2 (live
+      session-level reproduction: no hook error from a subdirectory CWD, a guard demonstrably
+      blocking from that CWD) are NOT satisfied by this task — see Phase 6 Reasoned Exclusions;
+      they require an actual live redeploy this dispatch deliberately avoided per the operator's
+      non-destructive landing requirement.
+- [x] Pre-existing Lua spec suite (8 files under `lua/neotex/plugins/ai/`) re-run: 3 files show
+      pre-existing, unrelated failures (confirmed via a disposable `git worktree add` comparison
+      against this repo's own last-committed state, same fail counts there) — not a regression.
+- [ ] `bash .claude/scripts/tests/run-all.sh` green — NOT re-run after the final round of changes
+      (merge.lua, the six-registration move, the dead-registration removal) due to its long
+      runtime (10+ minutes observed earlier in this dispatch) and the time already spent on
+      direct, targeted verification above; the targeted `merge_spec.lua` and
+      `test-deploy-propagation.sh` runs are the evidence for this task's own changes specifically.
+- [ ] `bash .claude/scripts/verify-deploy.sh` — NOT re-run after the final round of changes, same
+      reasoning (observed to take 5+ minutes earlier in this dispatch, and it shells out to
+      `run-all.sh` as one of its gates).
+- [x] `bash .claude/scripts/check-extension-docs.sh --quiet` green (confirmed after Phase 7).
 
 ## Artifacts & Outputs
 
-- `agent-system/extensions/core/root-files/settings.json` (18 rewritten commands + `_comment`)
-- `agent-system/extensions/core/merge-sources/settings-hooks.json` (14 rewritten + 1 new nested
-  registration)
+- `agent-system/extensions/core/root-files/settings.json` (18 rewritten commands + `_comment` +
+  dead `claude-ready-signal.sh` registration removed)
+- `agent-system/extensions/core/merge-sources/settings-hooks.json` (14 rewritten + 1 nested
+  `validate-state-sync.sh` registration (Phase 1) + 6 moved registrations, one in a new
+  `Notification` event array (Phase 3))
 - `agent-system/extensions/books/settings-hooks.json`, `agent-system/extensions/email/settings-fragment.json`
   (1 rewritten each)
-- ~~`agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh` (new)~~ EXCLUDED,
-  never written (operator directive — see Phase 3 Reasoned Exclusions)
-- ~~`agent-system/extensions/core/scripts/tests/test-migrate-hook-registration-paths.sh` (new)~~
-  EXCLUDED, never written (see Phase 4 Reasoned Exclusions)
-- `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` (3 new assertions)
-- `agent-system/extensions/core/manifest.json` (1 `provides.scripts` declaration if any new script
-  from Phase 7 requires it; the two migration-related declarations are EXCLUDED)
-- `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` (EXCLUDED — no
-  migration script entry to add)
+- `lua/neotex/plugins/ai/shared/extensions/merge.lua` (identity-based hook dedupe: `hook_identity`,
+  `find_hook_match`, `normalize_hook_event_array` and `merge_hook_event_array` rewritten)
+- `lua/neotex/plugins/ai/shared/extensions/merge_spec.lua` (new, 7 test cases)
+- `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` (Assertion E, 3
+  sub-checks, added)
+- ~~`agent-system/extensions/core/scripts/migrate-hook-registration-paths.sh`~~ and its test:
+  EXCLUDED PERMANENTLY — superseded by the hardened resync path (Phase 3); see that phase's
+  SUPERSEDES note for the full four-reversal history
 - 4 markdown template files under `agent-system/extensions/{nvim,core}/context/`
 - `specs/364_cwd_relative_hook_registration_paths/summaries/02_*-summary.md` (implementation
-  summary recording the operator-directed scope reduction and its reason, in place of the
-  criterion-1/2/5 evidence the excluded phases would otherwise have captured)
+  summary recording the settled strategy, the superseded approaches, and the demonstrated-vs-
+  asserted disposition of every acceptance criterion)
 
 ## Rollback/Contingency
 
-Source-store edits are all small, reviewable JSON/markdown changes committed per green sub-step, so
-the ordinary remedy is to revert the offending commit — no working-tree discard is needed.
+Source-store and `lua/neotex/...` edits are all small, reviewable changes committed per green
+sub-step, so the ordinary remedy is to revert the offending commit — no working-tree discard is
+needed.
 
-~~If a migrated `.claude/settings.json` turns out wrong, restore it from the timestamped backup the
-migration script writes beside it (Phase 3); that is the designed recovery path and needs no git
-operation, since `.claude/` is a gitignored deploy artifact in both affected repos.~~ Moot: Phase 3
-was excluded by operator directive (the migration script was never written or run), so no migrated
-`settings.json` exists for this task to roll back. Already-deployed repos will be reached by the
-operator's separate redeploy action, which carries its own rollback story outside this task.
+If `merge.lua`'s identity dedupe is ever suspected of corrupting a real resync, the diagnostic
+first step is `merge_spec.lua` (`nvim --headless -c "PlenaryBustedFile lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"`)
+before touching any real repo's `settings.json` — every behavior change this task made is
+exercised there in isolation. No migration script or backup mechanism was built or is needed:
+neither real repo's live `settings.json` was ever mutated by this task (verified by matching
+`md5sum` before/after); the only mutation path going forward is the ordinary resync itself, which
+is now idempotent and convergent by construction.
 
 If an uncommitted working tree must genuinely be rolled back mid-phase, follow
 `context/contracts/recovery.md`'s rollback rung for the exact snapshot-then-rollback invocation
