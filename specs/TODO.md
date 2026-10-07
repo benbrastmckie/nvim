@@ -1,5 +1,5 @@
 ---
-next_project_number: 359
+next_project_number: 364
 ---
 
 # TODO
@@ -11,9 +11,9 @@ next_project_number: 359
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,356,357,358 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344,350,352,354,355 | 22,251,271,272,280,284,311,345,349,351 | core-agent-system, extensions, orchestrator |
-| 3 | 274,282,304,353 | 273,275,281,284,302,344,352 | core-agent-system, extensions, orchestrator |
+| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,356,357,358,361 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,273,275,281,303,335,344,350,352,354,355,360,362,363 | 22,251,271,272,280,284,311,345,349,351,356,358,361 | core-agent-system, extensions, orchestrator, ... |
+| 3 | 274,282,304,353,359 | 273,275,281,284,302,344,350,352,356 | core-agent-system, extensions, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -37,6 +37,8 @@ next_project_number: 359
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
+359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
+360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 
 ### Extensions
 
@@ -74,38 +76,362 @@ next_project_number: 359
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 351 [NOT STARTED] — Repair the IDENTICAL DISPATCH HALT mechanism in...
   └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
-359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
-360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
 
 ### Agent System
 
 356 [IMPLEMENTING] — Propagate the bounded-wait contract to the fourteen...
+  └─ 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 357 [IMPLEMENTING] — Rule on whether the per-phase handoff must land in its own...
 358 [IMPLEMENTING] — Require a figure or mechanical claim carried into a report or...
+361 [NOT STARTED] — Reclassify bare git stash as destructive on a shared tree:...
+  └─ 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
 
-### 359. Close the two measured curated-array coverage gaps in the agent-contract lint: normalize the books agents Check C/G bullets, and rule on bounded-wait scope for the twenty-three research agents
+### 363. Post-incident verification checklist for destructive git on a shared tree, naming uncommitted pre-session tree state as the first mandatory check
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: 350, 356
-- **Research**: Not started
-- **Plan**: Not started
-- **Summary**: Not started
+- **Topic**: agent-system
+- **Dependencies**: Task 361
 
-**Description**: See specs/state.json for the full description (measured 2026-10-07: books-implementation-agent.md and books-implementation-hard-agent.md are C=MISS G=MISS against the lint's own expected text; research agents measured covered=0 missing=23). Corrects a prior summary's claim that the books files already carry the Check C bullet -- they do not match the text the lint greps, so normalization must precede registration.
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
+
+GOAL. A one-page post-incident verification checklist for an agent that has just taken a destructive or tree-wide git action on a shared working tree, naming UNCOMMITTED PRE-SESSION TREE STATE as the FIRST mandatory check.
+
+=== THE FAILURE WAS VERIFICATION SCOPE, NOT CANDOUR -- WHICH IS WHY A CHECKLIST FIXES IT ===
+
+2026-10-07, Logos/Verification, one /orchestrate batch sharing one working tree. Two implementation agents each ran a bare whole-tree `git stash`; one stash spanned a long build and its `git stash pop` aborted, applying nothing.
+
+DISCLOSURE QUALITY IN BOTH INCIDENTS WAS GENUINELY HIGH. Both agents self-reported PROMPTLY and UNPROMPTED, with accurate accounts of what they had done. Nothing was concealed. The defect was entirely in WHAT THEY CHECKED:
+  - Both checked (i) sibling COMMITS and (ii) their own edits.
+  - Both found those intact.
+  - Both therefore concluded "no sibling content lost".
+  - THE ONLY ACTUAL LOSS sat in PRE-EXISTING UNCOMMITTED TREE STATE that neither thought to check -- roughly thirty files of the user's pre-session work, surviving only inside a 53-file stash entry.
+  - The orchestrator found it only by DIFFING THE WORKING TREE AGAINST THE STASH ENTRY.
+
+Because candour was already high, no amount of additional disclosure pressure would have caught this. A checklist that names the missing category will.
+
+=== THE MECHANISM THAT MAKES THIS DECEPTIVE (and the reason for the ordering below) ===
+
+A REVERTED FILE MATCHES HEAD. So it reads as CLEAN to `git status`, to `git diff`, and to every naive check. ABSENCE OF A MODIFICATION IS INDISTINGUISHABLE FROM ABSENCE OF A PROBLEM unless you compare against the stash entry or the reflog. This is why "I checked git status and it was clean" is not evidence of no loss, and why the checklist must say so explicitly rather than merely listing checks.
+
+RE-DERIVE THESE BEFORE RELYING ON THEM. The ~30 files, the 53-file stash entry, the two-agent count, and the aborted-pop mechanism are carried figures in this description. Re-confirm them and report any divergence.
+
+=== SCOPE ===
+
+ONE PAGE. A CHECKLIST, NOT A FRAMEWORK. It names, as MANDATORY checks IN THIS ORDER:
+
+  (1) PRE-SESSION UNCOMMITTED TRACKED MODIFICATIONS -- compared against THE STASH ENTRY and THE REFLOG, NOT merely against HEAD. State the concrete commands.
+  (2) UNTRACKED FILES.
+  (3) SIBLING COMMITS.
+  (4) THE AGENT'S OWN EDITS.
+
+UNCOMMITTED STATE GOES FIRST, and the checklist must say WHY: it is the ONLY category with NO OTHER RECOVERY PATH. A sibling commit survives in history; an agent's own edit can be redone; pre-session uncommitted work exists in exactly one place and, once reverted, reads as clean. Ordering by recoverability, not by convenience, is the substance of this deliverable -- a checklist with the same four items in a different order would reproduce the original failure.
+
+PAIR WITH THE STASH-RECLASSIFICATION TASK: that task's guard refusal message should be able to POINT AT this checklist. Add that cross-reference HERE, against the finished refusal text -- which is why this task is serialized behind it (dependencies: [361]) and declares the guard hook in its file_scope. Do not edit the guard's patterns, classes, or rule text; add the pointer only.
+
+Prefer a new one-page file under `context/standards/` (survey `git-safety.md`, `git-staging-scope.md`, and `git-workflow-narrative.md` first and record the rejected placements). If it fits as a section of an existing standards document without burying it, that is preferable to a new file -- but a checklist that must be findable UNDER INCIDENT CONDITIONS argues for its own named page; rule on this and say why.
+
+=== EXPLICIT NON-GOALS ===
+
+- Do NOT build an incident-management framework, a severity taxonomy, or a reporting template. One page, four ordered checks.
+- Do NOT add disclosure or candour requirements. Disclosure was already high; that is not the defect.
+- Do NOT change the guard's patterns, DESTRUCTIVE_ACTION_CLASS values, escape hatch, or the git-workflow rule text -- the stash-reclassification task owns all of those. Pointer only.
+- Do NOT retroactively audit past incidents in any repo. Forward-looking checklist only.
+- Do NOT propose worktree isolation; it is ruled out (specs/decisions/worktree-isolation-removal-reaffirmation.md).
+- Do NOT hand-edit any deployed `.claude/**` copy.
+
+=== FILE_SCOPE OVERLAPS WITH OPEN TASKS ===
+
+Declared overlap with the stash-reclassification task on `hooks/guard-destructive-git.sh`, resolved by the dependency edge: this task runs after, and touches only the refusal message's cross-reference line.
+
+=== ACCEPTANCE ===
+
+- A one-page checklist exists with the four checks in the stated order.
+- Check (1) names concrete stash-entry and reflog comparison commands, not just "check uncommitted state".
+- The checklist states explicitly that a reverted file matches HEAD and therefore reads as clean, so a clean `git status` is not evidence of no loss.
+- The ordering rationale (uncommitted state first because it has no other recovery path) is stated in the deliverable, not just in this description.
+- The guard's refusal message points at the checklist, and the guard's patterns/classes/escape hatch are otherwise unchanged.
+- Length is one page; placement decision and rejected alternatives recorded.
+- No task-number references in any deliverable outside specs/**.
+
+---
+
+### 362. Teach the non-destructive history-read techniques at the point of use, so an implementation agent inspecting past file state never reverts a shared working tree
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 356
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
+
+GOAL. Teach the non-destructive history-read techniques AT THE POINT OF USE, so an implementation agent that needs to inspect historical file state reaches for a read-only technique instead of reverting a shared working tree.
+
+=== WHY THIS IS A MISSING-INSTRUCTION SIGNAL, NOT TWO COINCIDENCES ===
+
+2026-10-07, Logos/Verification, one /orchestrate batch of four tasks sharing one working tree. TWO implementation agents INDEPENDENTLY reached for the same wrong tool (bare whole-tree `git stash`) for the same CORRECT need: isolating a pre-existing test failure from their own edit. Independent convergence on one wrong tool by two agents is a missing-instruction signal.
+
+THE RIGHT TECHNIQUES ALREADY EXIST AND WERE USED ELSEWHERE IN THE SAME BATCH -- which is what proves the gap is discoverability, not capability:
+  - One planner used a DETACHED WORKTREE for a read-only historical inspection, successfully.
+  - One implementation agent recovered its OWN lost edit safely, via a read-only `git show <stash-ref>:path` extraction.
+Nothing teaches either technique where an IMPLEMENTATION AGENT would look. The knowledge was in the system and still did not reach the two agents who needed it.
+
+RE-DERIVE THESE BEFORE RELYING ON THEM. The two-agent count, the detached-worktree planner instance, and the `git show <stash-ref>:path` recovery instance are carried figures in this description. Re-confirm them and report any divergence.
+
+=== DECIDED CONTEXT -- DO NOT REOPEN ===
+
+The user has ruled OUT per-agent worktree isolation for parallel dispatch, consistent with the existing decision record specs/decisions/worktree-isolation-removal-reaffirmation.md and the confirmed re-argued verdict recorded in the measured-co-scheduling-signal task's NON-GOALS. PARALLEL DISPATCHES WILL CONTINUE TO SHARE ONE WORKING TREE AS A DELIBERATE CHOICE.
+
+Therefore the only defences against cross-task interference are:
+  (a) declared file_scope disjointness at admission,
+  (b) dependencies[] edges for ordering,
+  (c) AGENT-SIDE DISCIPLINE about tree-wide operations.
+THIS TASK SUPPLIES (c). Do NOT propose, re-rule on, or defer a question about worktree isolation. A deliverable that reopens it is out of scope.
+
+=== SCOPE ===
+
+Author a SHORT shared-worktree discipline section stating:
+  - Read history with `git show HEAD:path` or `git show <ref>:path`; read differences with `git diff HEAD -- path`.
+  - Copy to a scratchpad for experiments that need a mutable file.
+  - NEVER `git stash`, `git checkout -- <path>`, or `git restore <path>` on a shared tree -- these revert the tree out from under concurrent writers.
+It must be REACHABLE FROM THE IMPLEMENTATION AGENT DEFINITIONS, not merely filed somewhere correct. A section nobody's context path reaches is the same failure this task exists to fix.
+
+DETACHED WORKTREE: it MAY be mentioned, but it MUST be explicitly labelled a READ-ONLY INSPECTION TECHNIQUE and never an isolation strategy, so no reader can take it as reopening the settled question above.
+
+KEEP IT SHORT. A section, not a framework. Prefer amending `context/standards/git-safety.md` (which already owns "git as the safety mechanism") over creating a new document; survey it and `context/standards/git-workflow-narrative.md` before deciding, and record the rejected placement.
+
+=== OVERLAP GUARD (MANDATORY) AND THE DEPENDENCY CHOICE MADE HERE ===
+
+STAY OFF the territory of two open tasks:
+  - The no-op-spin / single-writer-discipline task for shared fixture trees. Do not touch its wait-pattern documents or its no-op detection hook.
+  - The bounded-wait propagation task, which is CURRENTLY IMPLEMENTING and is propagating the bounded-wait contract to FOURTEEN implementation agent definitions -- the very files this task must add a pointer to.
+
+THE CHOICE: this task DECLARES A DEPENDENCY on the bounded-wait propagation task (dependencies: [356]) rather than confining itself to the shared standards file. Reasoning: the scope requires reachability FROM the implementation agent definitions, and the confine-only alternative would leave the new section orphaned, since the in-flight propagation pass cannot carry a pointer to a document that does not yet exist when it runs. Serializing behind it gets both the shared section AND a live pointer, with no concurrent edit to the fourteen definitions. The declared file_scope reflects this: it names the shared standards file plus the agent definitions, and the dependency edge is what makes that safe.
+
+=== EXPLICIT NON-GOALS ===
+
+- Do NOT propose, revisit, or defer per-agent worktree isolation (see DECIDED CONTEXT).
+- Do NOT modify the guard hook or the git-workflow rule -- that is the stash-reclassification task's territory.
+- Do NOT author the post-incident verification checklist -- separate task.
+- Do NOT edit the wait-pattern documents or no-op hook owned by the single-writer-discipline task.
+- Do NOT duplicate the bounded-wait contract text; this section covers tree-wide git operations only.
+- Do NOT hand-edit any deployed `.claude/**` copy.
+
+=== ACCEPTANCE ===
+
+- A shared-worktree discipline section exists, naming the read-only techniques and the three forbidden tree-reverting commands.
+- It is reachable from the implementation agent definitions via a live pointer, and that reachability is demonstrated (a cited path from an agent definition to the section), not merely asserted.
+- The detached-worktree mention, if present, is explicitly labelled read-only inspection and not isolation.
+- The deliverable is a section, not a new framework; net document count increase is zero or one, with the placement decision recorded.
+- No edits land on the no-op-spin task's files, and no edit to the fourteen agent definitions occurs before the bounded-wait propagation task completes.
+- Nothing in the deliverable proposes or defers worktree isolation.
+- No task-number references in any deliverable outside specs/**.
+
+---
+
+### 361. Reclassify bare `git stash` as destructive on a shared tree: correct the rule's solo-tree premise, then add the guard patterns that implement it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
+
+GOAL. Reclassify bare, whole-tree `git stash` as a DESTRUCTIVE operation on a shared working tree. Correct the wrong premise in the rule first, then add the guard patterns that implement the corrected rule.
+
+=== THE ROOT CAUSE IS A WRONG PREMISE IN A RULE, NOT A MISSING REGEX ===
+
+`rules/git-workflow.md` carries this allow-list in its "No Destructive Git on Uncommitted Work" section (measured at creation time at source-store line 142; re-derive the line number before editing):
+
+    **Not blocked** (do not discard uncommitted changes): `git stash` (push),
+    `git stash pop` / `git stash apply`, `git restore --staged <path>`, and
+    non-forced `git checkout` / `git switch` between branches.
+
+The parenthetical "(do not discard uncommitted changes)" IS THE DEFECT. It is TRUE for a solo tree -- a stash retains the changes -- and FALSE in the situation where it was applied. With CONCURRENT WRITERS, `git stash` reverts the working tree, and a later `git stash pop` can refuse ("local changes would be overwritten") because a sibling has since written the same path. At that moment the changes are no longer recoverable IN PLACE; they exist only inside a stash entry requiring path-by-path extraction.
+
+`hooks/guard-destructive-git.sh` FAITHFULLY IMPLEMENTS THE RULE AS WRITTEN. Measured at creation time at source-store line 427, it guards `git stash drop` / `git stash clear` -- protecting an EXISTING stash from being discarded -- under DESTRUCTIVE_ACTION_CLASS="stash_drop", and has NO pattern for the TREE-REVERTING form. THE GUARD PROTECTS THE STASH, NOT THE TREE. That asymmetry is the whole defect. Verified at creation time: the source-store guard and the deployed copy are byte-identical, so this is a genuine coverage gap, NOT deploy staleness. Re-confirm that byte-identity before concluding anything about deploy state.
+
+=== MEASURED EVIDENCE ===
+
+2026-10-07, the Logos/Verification consumer repo, one /orchestrate batch of four tasks sharing one working tree.
+
+TWO separate implementation agents INDEPENDENTLY ran bare whole-tree `git stash`, for the same legitimate purpose -- isolating a pre-existing test failure from their own edit -- and both passed the guard, CORRECTLY, per the rule as written. One stash spanned a roughly 375-second Lean build while siblings kept writing, so its `git stash pop` aborted and applied nothing.
+
+NET LOSS: roughly thirty files of the user's PRE-SESSION UNCOMMITTED work (a freshly-deployed `.claude/**` tree plus `.claude-extensions.json`) were reverted out of the working tree. No commit captured them. They survived only inside a 53-file stash entry. A second, 3-file stash entry came from the other agent.
+
+Sibling COMMITS were unharmed throughout, which is exactly why a commits-only verification pass cleared both incidents FALSELY. That verification-scope half is filed separately as the post-incident checklist task and is not this task's territory.
+
+RE-DERIVE THESE BEFORE RELYING ON THEM. Every figure above (the two agents, ~375s, ~30 files, 53-file and 3-file stash entries, line 142, line 427) is a carried figure in this description. Treat them as leads to re-confirm, not as established counts, and report any divergence rather than absorbing it silently.
+
+=== SCOPE TO SETTLE AND IMPLEMENT (rule on each; do not assume) ===
+
+ITEM 1 -- AMEND THE RULE FIRST. In `rules/git-workflow.md`, move bare `git stash` / `git stash push` OUT of the "Not blocked" list, and correct the parenthetical rationale so it states the CONCURRENT-WRITER hazard rather than the solo-tree truth. THE RULE IS THE CONTRACT; fix it before the enforcement, so the guard change is an implementation of a stated contract and not an undocumented divergence from one. If the full narrative belongs in `context/standards/git-workflow-narrative.md` (which the rule already points to for snapshot-mode detail), put it there and keep the rule terse -- survey the existing split before choosing.
+
+ITEM 2 -- ADD THE GUARD PATTERNS. Cover bare `git stash` and `git stash push`, INCLUDING the implicit-push spellings (`git stash` with no subcommand; `git stash -u`) and `-u` / `--include-untracked`. Follow the guard's existing per-segment scanning idiom (see the `clean -f -d` and forced-checkout blocks) rather than inventing a new one.
+
+ITEM 3 -- RESERVE A DESTRUCTIVE_ACTION_CLASS. A NEW class name alongside the existing `stash_drop`, not a reuse of it: the two hazards are different (discarding a stash vs. reverting a tree) and the grant/consume machinery keys on the class. Name it and say why.
+
+ITEM 4 -- REFUSAL MESSAGE MUST NAME THE ALTERNATIVES. The refusal text must name the non-destructive ways to achieve what both agents actually wanted: `git show HEAD:path`, `git diff HEAD -- path`, and a scratchpad copy. A refusal that blocks the only tool an agent knows, without naming a replacement, converts a data-loss failure into a stall.
+
+ITEM 5 -- REUSE THE EXISTING ESCAPE HATCH. The guard already has snapshot-marker and grant-consume machinery (`.git-snapshot-marker` freshness via `scripts/git-snapshot.sh`, plus `pg_grant_consume`). Wire the new class into THAT machinery. DO NOT invent a second escape hatch.
+
+ITEM 6 -- FIXTURE THAT FAILS WITHOUT THE PATTERN. Add a case to `scripts/tests/test-guard-destructive-git.sh` that FAILS against the current guard and PASSES after the change. Demonstrate the pre-change failure, do not merely assert it.
+
+ITEM 7 -- RULE EXPLICITLY ON PATHSPEC-SCOPED STASH. Decide whether `git stash push -- <path>` stays PERMITTED. A narrow, pathspec-scoped stash is materially less dangerous than a whole-tree one, and a blanket block may be too coarse -- it would deny agents the one safe stash form. DECIDE AND RECORD WHY. Either verdict is acceptable; leaving it unaddressed is not.
+
+ITEM 8 -- RE-EXAMINE `git stash pop` / `git stash apply`. They sit in the same allow-list, and an ABORTED POP is precisely how the partial-application damage occurred. RULE ON THEM EVEN IF THE VERDICT IS TO KEEP THEM PERMITTED, and record the reasoning either way.
+
+=== EXPLICIT NON-GOALS ===
+
+- Do NOT propose per-agent worktree isolation. The user has ruled it out; see specs/decisions/worktree-isolation-removal-reaffirmation.md. Parallel dispatches share one tree deliberately.
+- Do NOT build a second escape-hatch mechanism (item 5).
+- Do NOT touch the over-staging patterns, which exit 2 unconditionally with no snapshot exemption by design.
+- Do NOT author the agent-facing teaching material (the non-destructive history-read techniques) or the post-incident verification checklist -- both are separate tasks with their own territory.
+- Do NOT hand-edit any deployed `.claude/**` copy.
+
+=== FILE_SCOPE OVERLAPS WITH OPEN TASKS ===
+
+Measured at creation time: no non-terminal task declares `hooks/guard-destructive-git.sh`, `rules/git-workflow.md`, or `scripts/tests/test-guard-destructive-git.sh`. Clear territory, no inbound edges. The post-incident checklist task declares this guard and is serialized BEHIND this one so its refusal-message cross-reference lands on the finished text.
+
+=== ACCEPTANCE ===
+
+- The "Not blocked" list no longer contains bare `git stash` / `git stash push`, and its rationale states the concurrent-writer hazard.
+- The guard blocks bare `git stash`, `git stash push`, the implicit-push spellings, and the `-u` / `--include-untracked` forms, under a new DESTRUCTIVE_ACTION_CLASS.
+- The refusal message names `git show HEAD:path`, `git diff HEAD -- path`, and the scratchpad-copy alternative.
+- The new class is exempted by the EXISTING snapshot-marker / grant machinery, with no second mechanism added.
+- A fixture exists that is demonstrated to fail pre-change and pass post-change.
+- Items 7 and 8 are each answered with a recorded verdict and reasoning.
+- The byte-identity of source-store and deployed guard is re-confirmed (or a divergence reported) before the edit.
+- No task-number references in any deliverable outside specs/**.
+
+---
 
 ### 360. Validate that every CARRIED-UNVERIFIED mark names a source, as an advisory-only well-formedness check
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: 358
-- **Research**: Not started
-- **Plan**: Not started
-- **Summary**: Not started
+- **Dependencies**: Task 358
 
-**Description**: See specs/state.json for the full description. Builds ONLY the narrow source-naming well-formedness check named as a future item in report-format.md's Enforcement-level paragraph. Explicitly does NOT revisit the general contradiction detector, which failed its decision gate on all three criteria (recall, precision, boundedness) on measured evidence.
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
+
+GOAL. report-format.md's "## Carried-Figure Discipline" section now requires that a figure or mechanical claim carried from another record be re-derived at authoring time or marked inline as `{figure} [CARRIED-UNVERIFIED: {source path}]`, with the source MANDATORILY named. The mark is today a pure authoring-side obligation: nothing checks that a mark exists where one is owed, and nothing checks that a mark which does exist actually names a source. report-format.md's own "**Enforcement level**" paragraph records the source-naming validation as a named future item, deliberately not built. Build that narrow piece.
+
+=== SCOPE: THE NARROW CHECK ONLY ===
+
+Check exactly this: every `[CARRIED-UNVERIFIED:` occurrence in a report or plan artifact is followed by a non-empty source designator before the closing bracket. That is a well-formedness check on a fixed literal token the contract itself defines -- greppable, unambiguous, and with no natural-language judgment in it.
+
+=== DO NOT REBUILD THE DETECTOR THAT ALREADY FAILED ITS GATE ===
+
+This is the critical constraint. A DIFFERENT and much more ambitious check -- a general detector for carried-figure contradictions, specifically the assert-absence-of-a-mandated-literal shape -- was specified, measured, and REJECTED on evidence. Its decision gate failed all three pre-stated criteria (measured 2026-10-07, recorded in that task's progress/phase-4-progress.json):
+
+  RECALL:      the specified ERE missed the one known positive, because markdown bold (`**not**`) splits the trigger phrase "does not contain". It flagged an unrelated non-contradictory duplicate instead.
+  PRECISION:   0 of a 12-file hand-inspected sample of flagged files were genuine; all were ordinary prose quoting a short literal (a filename, a command name, a common word) more than once.
+  BOUNDEDNESS: 92 files flagged across a 2711-file corpus, against a 5-flag threshold -- "an advisory nobody can triage is noise, not a check".
+
+That rejection stands and is not this task's business to revisit. The reasoned-infeasibility finding plus the reviewer prompt already in report-format.md are the complete answer for the general case. This task builds ONLY the source-naming well-formedness check, which is a different shape entirely: a literal token's syntax, not a semantic contradiction.
+
+HEED THE RECALL FAILURE MODE ANYWAY. The reason that detector missed its known positive -- markdown inline formatting interrupting a matched phrase -- applies to this check too, because a mark may be written inside emphasis, inside a table cell, or wrapped across lines. Test those shapes deliberately rather than assuming a naive pattern holds.
+
+=== ALSO SETTLE ===
+
+- Whether the check belongs in validate-artifact.sh (which already has an advisory-first precedent in its Verification Tier check) or elsewhere. Follow the existing advisory-first convention: ship as log_warn-only, document the promotion criterion, and state explicitly that promotion to blocking is NOT part of this change.
+- Whether a mark whose named source does not RESOLVE (a path that does not exist) should warn too, or whether that over-reaches into the territory the failed gate occupied. Rule on it; do not silently pick one.
+- Whether the complementary obligation -- a mark is OWED where a figure was carried without re-derivation -- is detectable at all. The strong prior is NO, for the same reasons the general detector failed. If that is the conclusion, record it as a reasoned exclusion rather than leaving the question open, and say so in report-format.md's Enforcement-level paragraph.
+
+=== NON-GOALS ===
+
+- No general contradiction detection. No re-litigating the rejected gate.
+- No new documents: extend validate-artifact.sh and, if the Enforcement-level paragraph needs updating to describe what shipped, report-format.md.
+- Do not change the contract's substance in report-format.md -- the trigger classes, the mark syntax and the reviewer prompt are settled. Only the enforcement-level description may change, and only to match what actually ships.
+
+=== ACCEPTANCE ===
+
+- A mark missing its source designator produces a named advisory; a well-formed mark produces none.
+- Exit codes unchanged in default mode: an advisory must not fail an artifact.
+- Fixtures cover the plain shape, a mark inside markdown emphasis, a mark inside a table cell, and a line-wrapped mark -- the recall failure mode that sank the rejected detector is tested, not assumed away.
+- Run against the real corpus: report the flag count. If it exceeds a triageable handful, say so and treat that as a finding about the corpus rather than shipping an untriageable advisory.
+- The does-the-source-resolve question and the is-a-mark-owed question are each ruled on in writing.
+- validate-artifact.sh stays shellcheck clean per context/standards/shell-strict-mode.md. Redeployed.
+
+---
+
+### 359. Close the two measured curated-array coverage gaps in the agent-contract lint: normalize the books agents Check C/G bullets, and rule on bounded-wait scope for the twenty-three research agents
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 350, Task 356
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
+
+GOAL. lint-agent-contracts.sh asserts contract-bullet coverage against CURATED path arrays, one per check. Two gaps in those arrays are now measured, not suspected. Close both, and in doing so rule on whether the curated-array shape is the right mechanism at all or whether it structurally invites this drift.
+
+Both gaps are the same mechanism on the same two scripts (lint-agent-contracts.sh and its test file), which is why they are one task rather than two: splitting them would force a serializing dependency between two tasks editing the same two files, for no gain.
+
+=== GAP 1: THE BOOKS AGENTS ARE ABSENT FROM CHECK C AND CHECK G ===
+
+MEASURED 2026-10-07 by direct re-derivation against the lint's own expected text (the fragment lines it greps for), not carried from a prior record:
+
+  books/agents/books-implementation-agent.md       C=MISS G=MISS
+  books/agents/books-implementation-hard-agent.md  C=MISS G=MISS
+
+Neither file appears in Check C's IN_SCOPE_RELATIVE_PATHS (32 lines) nor Check G's OWNERSHIP_IN_SCOPE_RELATIVE_PATHS (16 lines). Both DO appear in the newly added Check H's BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS and both PASS it.
+
+A PRIOR RECORD STATES THIS GAP INCORRECTLY. The bounded-wait propagation task's summary records this as a pure curated-list omission, asserting both files "carry the no-task-references bullet (confirmed by direct grep)". That assertion does not survive re-derivation and the correction changes the fix:
+
+  - books-implementation-agent.md item 6 carries the canonical Check C wording but LINE-WRAPPED across two lines ("-- see\n   `.claude/rules/...`"). The lint greps a single line with grep -qF, so a wrapped bullet cannot match however correct its prose.
+  - books-implementation-hard-agent.md item 7 is an ABBREVIATED PARAPHRASE ("Reference task numbers in files outside `specs/**`") missing both the ("task N", "tasks N-M") parenthetical and the rule cross-reference.
+  - Check G's bullet is absent from both as a bullet. books-implementation-agent.md discusses `**Status**:` ownership in prose (around lines 100-101 and 126-127) but not as the canonical MUST-NOT line.
+
+CONSEQUENCE: adding the two paths to the C and G arrays WITHOUT first normalizing the bullet text makes the lint FAIL. Normalize first, then register. Do not trust the prior summary's framing; the measurement above is the baseline.
+
+RULE ON THE LINE-WRAP CASE SPECIFICALLY. A single-line grep -qF against a hand-wrapped markdown bullet is brittle by construction: a correct contract fails the check purely on line breaks. Decide whether the checks should normalize whitespace before comparing (making wrapped-but-correct bullets pass) or whether the fragment bullets must be held unwrapped by convention. Whichever is chosen, state it where a future bullet author will see it, and pin it with a fixture.
+
+=== GAP 2: ALL TWENTY-THREE RESEARCH AGENTS LACK THE BOUNDED-WAIT BULLET PAIR ===
+
+MEASURED 2026-10-07 across every *research*agent*.md in the source store, against the two canonical fragment lines Check H greps: covered=0, missing=23.
+
+  books/agents/books-research-agent.md, books/agents/books-research-hard-agent.md,
+  core/agents/general-research-agent.md, cslib/agents/cslib-research-agent.md,
+  cslib/agents/cslib-research-hard-agent.md, cslib/agents/pr-review-research-agent.md,
+  epidemiology/agents/epi-research-agent.md, formal/agents/formal-research-agent.md,
+  formal/agents/logic-research-agent.md, formal/agents/math-research-agent.md,
+  formal/agents/physics-research-agent.md, founder/agents/deck-research-agent.md,
+  latex/agents/latex-research-agent.md, lean/agents/lean-research-agent.md,
+  lean/agents/lean-research-hard-agent.md, nix/agents/nix-research-agent.md,
+  nvim/agents/neovim-research-agent.md, present/agents/slides-research-agent.md,
+  python/agents/python-research-agent.md, rust/agents/rust-research-agent.md,
+  typst/agents/typst-research-agent.md, web/agents/web-research-agent.md,
+  z3/agents/z3-research-agent.md
+
+The bounded-wait propagation task deliberately scoped research agents OUT, recording the reason in the fragment itself: its measured evidence and acceptance surface were implementation-agent-only. It recommended this follow-up reusing the identical mechanism. Two specifics it recorded and this task must honour or refute:
+
+  - general-research-agent.md already carries the REMOTE-wait half of the discipline but not the local-build half -- the same partial-coverage shape that motivated the original propagation.
+  - The Lean research agents' run_in_background hits are a SEPARATE SANCTIONED build-guard path, not instances of the defect. Do not count them as coverage and do not break them.
+
+DO NOT ASSUME ALL 23 ARE IN SCOPE. The bullet forbids backgrounding a LOCAL verification/gate/build/test process. A research agent with no Bash access, or one that never runs a local build, is not exposed and a bullet it cannot violate is noise. Determine which subset genuinely holds the exposure (frontmatter tool grants plus actual local-build invocation), and record the excluded files WITH THEIR REASON the way the implementation-agent fragment already records its own exclusions. An evidenced "fewer than 23 are in scope" is a complete and preferred outcome; a blanket 23-file propagation justified only by the file-name glob is not.
+
+=== ALSO SETTLE ===
+
+- Whether the curated-array mechanism should remain hand-maintained at all. Three checks now carry three independently drifting arrays, and this task exists because two of them drifted. Consider deriving the in-scope set from a frontmatter field or a declared capability, with the curated array reduced to an explicit exclusion list carrying per-file reasons. Weigh this against the established reason the arrays are curated: the three originally-covered implementation agents are legitimate differently-worded exclusions that a glob would false-fail. If curation must stay, add a check that FAILS when an agent file matching the shape is in none of in-scope, exclusions, or a recorded rationale -- so the next drift is caught rather than discovered.
+- Whether Check C's and Check G's arrays have further absentees beyond the two books files. Both gaps here were found incidentally; neither array has been swept deliberately. Sweep both and report the full result, even if the answer is "no others".
+
+=== NON-GOALS ===
+
+- Do not edit general-implementation-agent.md (its text is the canonical source, reused verbatim, and other open tasks claim it).
+- No new documents: extend the existing bounded-build-waiter.md fragment and the existing contract fragments.
+- No consumer-repo work.
+
+=== ACCEPTANCE ===
+
+- lint-agent-contracts.sh exits 0 with the books files registered in Check C and Check G, their bullets normalized to text the lint actually matches.
+- The line-wrap brittleness is ruled on explicitly, the ruling is recorded where a bullet author will see it, and a fixture pins it.
+- The in-scope research-agent subset is determined by measurement, every exclusion carries a recorded reason, and the Lean sanctioned build-guard path is confirmed unbroken.
+- A deliberate-removal demonstration on one real file of each newly covered class: lint FAILS by name, restoration returns it to exit 0.
+- Both curated arrays swept for further absentees, with the full result reported.
+- test-lint-agent-contracts.sh extended and green; shellcheck clean per context/standards/shell-strict-mode.md.
+- check-task-references.sh clean on every changed agent-system/** path. Redeployed.
+
+---
 
 ### 358. Require a figure or mechanical claim carried into a report or plan to be re-derived at authoring time, or explicitly marked as unverified-and-carried
 - **Status**: [IMPLEMENTING]
