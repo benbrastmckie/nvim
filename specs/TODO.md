@@ -11,8 +11,8 @@ next_project_number: 366
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,349,351,356,358,361,364 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,272,273,281,303,335,344,345,347,350,352,355,360,362,363,365 | 22,251,271,280,284,311,349,351,356,358,361,364 | core-agent-system, extensions, orchestrator, ... |
+| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,349,351,356,358,363,364 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,272,273,281,303,335,344,345,347,350,352,355,360,362,365 | 22,251,271,280,284,311,349,351,356,358,364 | core-agent-system, extensions, orchestrator, ... |
 | 3 | 275,282,304,353,354,359 | 272,273,281,284,302,345,350,352,356,364 | core-agent-system, extensions, orchestrator |
 | 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -85,8 +85,7 @@ next_project_number: 366
 356 [IMPLEMENTING] — Propagate the bounded-wait contract to the fourteen...
   └─ 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 358 [IMPLEMENTING] — Require a figure or mechanical claim carried into a report or...
-361 [IMPLEMENTING] — Reclassify bare git stash as destructive on a shared tree:...
-  └─ 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
+363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
 
@@ -503,12 +502,13 @@ THE CHOICE: this task DECLARES A DEPENDENCY on the bounded-wait propagation task
 ---
 
 ### 361. Reclassify bare `git stash` as destructive on a shared tree: correct the rule's solo-tree premise, then add the guard patterns that implement it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 357
 - **Research**: [361_reclassify_bare_git_stash_as_destructive/reports/01_reclassify-stash-destructive.md]
 - **Plan**: [361_reclassify_bare_git_stash_as_destructive/plans/01_reclassify-stash-destructive.md]
+- **Summary**: [361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #361
 
 - **Task**: 361 - Reclassify bare `git stash` as destructive on a shared working tree
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/361_reclassify_bare_git_stash_as_destructive/reports/01_reclassify-stash-destructive.md

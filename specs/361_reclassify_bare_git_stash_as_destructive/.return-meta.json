@@ -33,28 +33,53 @@
       "category": "PATTERN",
       "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["eager-context-budget", "orchestrator-context-budget", "gate20", "verify-deploy", "measure-eager-context", "rule-compression"]
+      "suggested_keywords": [
+        "eager-context-budget",
+        "orchestrator-context-budget",
+        "gate20",
+        "verify-deploy",
+        "measure-eager-context",
+        "rule-compression"
+      ]
     },
     {
       "content": "In push-grant-lib.sh's destructive-action-class machinery, pg_grant_mint does NOT validate PG_ACTION_CLASSES membership for any class name -- it will happily mint a grant for a bogus/unregistered class. It is pg_grant_consume/pg_grant_verify (the function guard-destructive-git.sh's grant check actually calls) that fails closed on an unregistered name. This matters when verifying a new class's wiring end-to-end: testing only 'does pg_grant_mint succeed' proves nothing about fail-closed behavior; test pg_grant_consume (or the full guard-hook round trip) instead.",
       "category": "INSIGHT",
       "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["push-grant-lib", "pg_grant_mint", "pg_grant_consume", "pg_grant_verify", "fail-closed", "destructive-action-class"]
+      "suggested_keywords": [
+        "push-grant-lib",
+        "pg_grant_mint",
+        "pg_grant_consume",
+        "pg_grant_verify",
+        "fail-closed",
+        "destructive-action-class"
+      ]
     },
     {
       "content": "During a multi-phase implementation task that is mid-flight (source store ahead of the deployed .claude/ tree, not yet redeployed), a full verify-deploy.sh / run-all.sh run will surface gate3/gate5 content-drift findings for every file the task has edited so far -- this is EXPECTED and resolves automatically once the task's final redeploy phase runs; it is not a regression. One specific downstream symptom: scripts/tests/test-verify-deploy-context-budget.sh's fixture rsync-copies the live agent-system/extensions/ tree (picking up the task's in-flight edits) while symlinking .claude/ to the real, not-yet-redeployed tree, so its own 'baseline fixture is clean' assumption breaks and run-all.sh classifies it as a 'NEW' failure (not in known-failures.txt) purely because of this timing artifact. Confirm by re-running after the task's redeploy: if it now passes, the 'NEW' classification was this artifact, not a real defect.",
       "category": "INSIGHT",
       "source_artifact": "specs/361_reclassify_bare_git_stash_as_destructive/summaries/01_reclassify-stash-destructive-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verify-deploy", "run-all.sh", "known-failures", "source-ahead-of-deploy", "test-verify-deploy-context-budget", "mid-implementation-drift"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "run-all.sh",
+        "known-failures",
+        "source-ahead-of-deploy",
+        "test-verify-deploy-context-budget",
+        "mid-implementation-drift"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791392970_a0a292",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }
