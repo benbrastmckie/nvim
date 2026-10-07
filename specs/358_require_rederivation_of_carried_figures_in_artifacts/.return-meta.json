@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/reports/01_carried-figure-authoring-contract.md",
+      "summary": "Re-confirms the four measured carried-figure failure sub-classes against the Logos/Verification consumer repo and rules on all four scope items: where the contract lives (report-format.md states fully, plan-format.md points), the carried-figure trigger definition, the CARRIED-UNVERIFIED mark, and internal-consistency check feasibility (narrow check feasible, general case infeasible with a reviewer prompt)."
+    }
+  ],
+  "dispatch_seq": 3,
+  "findings_count": 4,
+  "next_steps": "Run /plan 358 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791361777_314fa0_358",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "plan-format.md already has a 'Counts-are-hypotheses obligation' (Scope Hypothesis field) governing a plan's OWN forward-looking count/scope estimates, requiring implementation-time confirmation. This is a distinct concept from a figure COPIED from another already-written record into a new report/plan (carried-figure discipline) -- the two are complementary, not duplicates, and a new carried-figure contract should cross-reference rather than merge into Scope Hypothesis.",
+      "category": "PATTERN",
+      "source_artifact": "specs/358_require_rederivation_of_carried_figures_in_artifacts/reports/01_carried-figure-authoring-contract.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["plan-format", "scope-hypothesis", "carried-figure", "counts-are-hypotheses", "authoring-contract"]
+    },
+    {
+      "content": "context/contracts/adversarial-verification.md already establishes a bolded VERIFIED/UNVERIFIED and UNRESOLVED CONTRADICTION: marker style, but it is gated to hard-mode (H4) research agents only -- it is not part of the base report-format.md/plan-format.md. A new always-active marker convention (e.g. CARRIED-UNVERIFIED) should borrow this family's uppercase/bold/grep-friendly style without depending on hard-mode gating, since the defect it addresses was not hard-mode-specific.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/358_require_rederivation_of_carried_figures_in_artifacts/reports/01_carried-figure-authoring-contract.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["adversarial-verification", "hard-mode", "marker-convention", "UNVERIFIED", "report-format"]
+    }
+  ]
+}

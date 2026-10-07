@@ -79,15 +79,16 @@ next_project_number: 359
 
 356 [RESEARCHED] — Propagate the bounded-wait contract to the fourteen...
 357 [RESEARCHED] — Rule on whether the per-phase handoff must land in its own...
-358 [RESEARCHING] — Require a figure or mechanical claim carried into a report or...
+358 [RESEARCHED] — Require a figure or mechanical claim carried into a report or...
 
 ## Tasks
 
 ### 358. Require a figure or mechanical claim carried into a report or plan to be re-derived at authoring time, or explicitly marked as unverified-and-carried
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [358_require_rederivation_of_carried_figures_in_artifacts/reports/01_carried-figure-authoring-contract.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
