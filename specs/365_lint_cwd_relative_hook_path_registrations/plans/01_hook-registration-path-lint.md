@@ -475,7 +475,7 @@ silently asserting the wrong total.
 
 ---
 
-### Phase 6: Full-battery verification and criterion-5 fail-closed proof [NOT STARTED]
+### Phase 6: Full-battery verification and criterion-5 fail-closed proof [PARTIAL]
 
 **Goal**: Prove the complete gate set passes with the new gate present, and prove the fail-closed
 polarity directly rather than by inspection.
@@ -483,18 +483,29 @@ polarity directly rather than by inspection.
 **Tasks**:
 - [ ] Run the full `bash agent-system/extensions/core/scripts/verify-deploy.sh` battery (all 21
       gates) against this repo and confirm `PASS` with 0 failures, with gate 21 among the gates
-      reported.
-- [ ] Prove criterion 5 empirically: invoke the lint with its shared library made unreachable
+      reported. *(deviation: deferred -- see note below; gate 21 confirmed PASS standalone via
+      `--only-gate 21`, but the full un-skip-slow battery did not finish within this dispatch's
+      wait budget)*
+- [x] Prove criterion 5 empirically: invoke the lint with its shared library made unreachable
       (run a copy from a scratch directory whose `../lib/common.sh` does not exist) and confirm
       exit code **2** with the named `ERROR: shared library not found` message — never exit 0.
-      Confirm the gate-21 wrapper surfaces that as a `fail`, not a pass.
+      Confirm the gate-21 wrapper surfaces that as a `fail`, not a pass. *(completed: direct
+      invocation against a shadowed-library fixture exits 2 with the named error; the gate 21
+      wrapper against the same fixture reports `[FAIL]`, overall `verify-deploy` exit 1 -- never a
+      silent pass)*
 - [ ] Walk all twelve dispatch acceptance criteria against concrete evidence (a command run and
-      its observed output per criterion) and record any that cannot be demonstrated.
-- [ ] Confirm `bash agent-system/extensions/core/scripts/tests/run-all.sh` discovers and passes
+      its observed output per criterion) and record any that cannot be demonstrated. *(deviation:
+      partial -- 11 of 12 demonstrated; criterion 3's full-battery leg deferred, see handoff)*
+- [x] Confirm `bash agent-system/extensions/core/scripts/tests/run-all.sh` discovers and passes
       the new fixture suite (glob discovery — no runner edit should have been needed; if one was,
-      that is a finding).
+      that is a finding). *(completed: confirmed by construction against run-all.sh's own
+      discovery glob -- `scripts/tests/test-*.sh` -- plus a direct standalone run of
+      `test-lint-hook-registration-paths.sh` reporting 18 passed / 0 failed; the live run-all.sh
+      invocation nested inside the still-running full-battery gate 8 was not confirmed before the
+      wait budget was reached)*
 - [ ] Deploy the source store so the deployed `.claude/` copies exist, then re-run gate 21 to
-      confirm it behaves identically invoked from either copy.
+      confirm it behaves identically invoked from either copy. *(deviation: deferred -- not yet
+      attempted this dispatch; see handoff)*
 
 **Timing**: 1 hour
 
@@ -553,28 +564,48 @@ agent-system/extensions/core/manifest.json
 
 ## Testing & Validation
 
-- [ ] Criterion 1: the lint fails, naming file and line, on a CWD-relative `.claude/` registration
-      (both the direct and the `bash -c`-nested shape) — Phase 4 failing cases 1 and 2.
-- [ ] Criterion 2: the lint passes on the live corpus — Phases 1, 2, 3 verification.
+- [x] Criterion 1: the lint fails, naming file and line, on a CWD-relative `.claude/` registration
+      (both the direct and the `bash -c`-nested shape) — Phase 4 failing cases 1 and 2. *(verified)*
+- [x] Criterion 2: the lint passes on the live corpus — Phases 1, 2, 3 verification. *(verified:
+      exit 0, 12 settings surfaces, 923 markdown files, 50 accepted, 0 violations)*
 - [ ] Criterion 3: the lint runs as numbered gate 21 in `verify-deploy.sh` — Phase 5, Phase 6.
-- [ ] Criterion 4: the fixture test covers both the passing and the violating case — Phase 4.
-- [ ] Criterion 5: a deliberately absent or broken lint library causes a nonzero exit — Phase 6,
-      proven empirically by shadowing the library path, not by inspection.
-- [ ] Criterion 6: a defective registration template in a fenced JSON block in markdown fails,
-      naming file and line — Phase 4 failing case 4.
-- [ ] Criterion 7: the explicit-`cd` direct-invocation shape is a PASSING fixture case — Phase 4.
-- [ ] Criterion 8: a root-files-only registration fails, naming the hook script and the fragment
-      file it belongs in — Phase 4 failing case 5.
-- [ ] Criterion 9: both-surfaces and fragment-only are PASSING cases; root-files-only is FAILING
-      — Phase 4.
-- [ ] Criterion 10: the lint passes on the corpus given task 364's six moved registrations —
-      Phase 3 (root-files-only set is empty today).
-- [ ] Criterion 11: a relative hook command path containing no `.claude/` fails, with the
-      line-118 shape as a fixture FAILING case — Phase 4 failing case 3.
-- [ ] Criterion 12: a registration invoking a nonexistent source-store script fails, naming file
-      and line — Phase 4 failing case 6, Phase 3.
-- [ ] Full `verify-deploy.sh` battery passes with 0 failures — Phase 6.
-- [ ] `run-all.sh` discovers and passes the new fixture suite — Phase 6.
+      *(partially verified: `--only-gate 21 .` reports PASS standalone and gate 21's header/body
+      appear correctly; the full un-skip-slow battery run that would show gate 21 inline among
+      all 21 gates did not finish within this dispatch's wait budget -- see handoff)*
+- [x] Criterion 4: the fixture test covers both the passing and the violating case — Phase 4.
+      *(verified: 18 assertions, 6 failing + 9 passing shapes, 18 passed / 0 failed; inversion
+      sanity check confirms the suite is not vacuously green)*
+- [x] Criterion 5: a deliberately absent or broken lint library causes a nonzero exit — Phase 6,
+      proven empirically by shadowing the library path, not by inspection. *(verified: direct exit
+      2, gate-21 wrapper reports [FAIL], never a silent pass)*
+- [x] Criterion 6: a defective registration template in a fenced JSON block in markdown fails,
+      naming file and line — Phase 4 failing case 4. *(verified)*
+- [x] Criterion 7: the explicit-`cd` direct-invocation shape is a PASSING fixture case — Phase 4.
+      *(verified)*
+- [x] Criterion 8: a root-files-only registration fails, naming the hook script and the fragment
+      file it belongs in — Phase 4 failing case 5. *(verified, both hooks/-shaped and
+      scripts/-shaped)*
+- [x] Criterion 9: both-surfaces and fragment-only are PASSING cases; root-files-only is FAILING
+      — Phase 4. *(verified)*
+- [x] Criterion 10: the lint passes on the corpus given task 364's six moved registrations —
+      Phase 3 (root-files-only set is empty today). *(verified: live-corpus Check C root-files-only
+      identity count is 0)*
+- [x] Criterion 11: a relative hook command path containing no `.claude/` fails, with the
+      line-118 shape as a fixture FAILING case — Phase 4 failing case 3. *(verified)*
+- [x] Criterion 12: a registration invoking a nonexistent source-store script fails, naming file
+      and line — Phase 4 failing case 6, Phase 3. *(verified)*
+- [ ] Full `verify-deploy.sh` battery passes with 0 failures — Phase 6. *(deviation: deferred --
+      the full battery (no --skip-slow) did not complete within this dispatch's wait budget; a
+      partial run showed gates 1,2,4,6,7 PASS, gate 3 (doc-lint) and gate 5 (manifest-driven
+      verification) FAIL -- gate 5's failure includes this task's own two new files not yet
+      deployed (expected, resolved by the pending redeploy step) plus six findings against
+      OTHER, unrelated source-store files that are a different concurrently-running agent's
+      undeployed edits, not this task's. Gate 8 (run-all.sh) had not concluded when the wait
+      budget was reached. See handoff for the resume command.)*
+- [x] `run-all.sh` discovers and passes the new fixture suite — Phase 6. *(verified by
+      construction -- matches run-all.sh's own `scripts/tests/test-*.sh` discovery glob -- and by
+      a direct standalone run, 18 passed / 0 failed; not yet re-confirmed from inside a completed
+      live run-all.sh invocation)*
 - [ ] No file outside the five-entry `file_scope` is modified (`git status --short` review before
       each commit, per `context/standards/git-staging-scope.md`).
 
