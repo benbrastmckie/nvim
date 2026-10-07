@@ -14,159 +14,111 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**47 open tasks**: 16 dispatchable, 3 in flight (356, 357, 358), 25 blocked by an in-repo edge,
-2 externally blocked (349, 350 — see Next), 1 held (342). If that stops matching `state.json`, this file has
+**48 open tasks**: 22 dispatchable, 0 in flight, 24 blocked by an in-repo edge, 1 externally
+blocked (349, with 350 behind it), 1 held (342). If that stops matching `state.json`, this file has
 drifted — it is hand-derived until **306** makes it generated.
 
 ## Gate state
 
-- **Deploy gates are GREEN**: `verify-deploy.sh --skip-slow` returns PASS, 33 checks, 0 failures,
-  and `check-extension-docs.sh` exits 0 with 0 FAIL rows (both measured 2026-10-07 after resync).
-  `check-extension-docs.sh` was red twice the same day — twice from an unregistered
-  `scripts/tests/test-*.sh` missing its `provides.scripts` line, once from source/deploy drift after
-  a source-store commit without a resync. **355** owns the escape.
-- **The orchestrator context budget is tight but under.** Eager load 65628 B against a 65950 B
-  baseline (322 B of headroom), `commands/orchestrate.md` 20440 B / 21000 B, and
-  `skills/skill-orchestrate/SKILL.md` 21121 B / 21500 B — that last ceiling was raised from 20000 B
-  on 2026-10-07 after a necessary addition breached it, with compaction applied first. Expect the
-  next orchestrator-surface addition to need compaction rather than another ceiling move.
-- **`validate-state.sh --deep`**: 17 passed, 0 failed, **7** warnings — 328's missing `file_scope`
-  key, 349's empty array, the visibility summary reporting both, **three** glob-shaped entries on
-  342 and **one** on 357, none of which collision detection can see. Treat any *new* warning, and any failure, as real.
-- **Gate 8 (`tests/run-all.sh`) spans every extension and is slow but DOES conclude** under
-  `--jobs 4` inside a ~560 s budget (measured 2026-10-07). A sequential run does not. Earlier
-  roadmap text called it "not reliably runnable inside a dispatch"; the measured position is
-  narrower — pass `--jobs 4` and allow the budget, or expect the 4-5x sequential cost. Flakiness
-  and host coupling are owned by **170**, runtime by **328**.
+- **Deploy gates are GREEN**: `verify-deploy.sh --skip-slow` exits 0 — 32 PASS, 0 FAIL, 2m22s
+  (measured after 361's redeploy).
+- **The orchestrator eager-context budget has NO headroom left**: 65950 B against a 65950 B
+  baseline. 361 hit this ceiling mid-implementation and compressed to fit. The next
+  orchestrator-surface addition must compact first; there is no slack to spend.
+  `commands/orchestrate.md` 20440 B / 21000 B; `skills/skill-orchestrate/SKILL.md` 21121 B / 21500 B.
+- **`validate-state.sh --deep`**: 17 passed, 0 failed, **6** warnings — 328's missing `file_scope`
+  key, 349's empty array, the visibility summary reporting both, and three glob-shaped entries on
+  342 that collision detection cannot see. Treat any *new* warning, and any failure, as real.
+- **Gate 8 (`tests/run-all.sh`) is 92 suites and ~70% of a full `verify-deploy.sh` run.** It
+  concludes under `--jobs 4`; a sequential run on a loaded host does not finish in a sane budget
+  (14m1.5s sequential vs 6m47.4s at `--jobs auto`). **366** adds suite-level selection, **368**
+  stops plans from demanding the full battery at a non-final phase.
 - **Five suites are knowingly red**, all in `known-failures.txt` with reasons:
   `test-orchestrate-cycle-plan.sh` (**351**), `test-gate-out-repair-reporting.sh` (**352**),
   `test-lint-json-channel-discipline.sh` and `test-typst-element-lint.sh` (**353**), and
   `test-run-all-parallel.sh` (intermittent, accepted). Read the `EXPECTED`/`NEW` split, not the
   tally — a NEW failure is yours.
 - **`--skip-slow` hides doc-sync pin failures.** `test-runtime-file-tracking.sh` Case 3 only runs
-  under the full gate set. A `--skip-slow` pass is not evidence the pins hold; run
-  `tests/run-all.sh` before trusting a green on any task that edits a lib with a doc-sync pin.
-  This is the measured instance of Settled decision 15.
+  under the full gate set, so a `--skip-slow` pass is not evidence the pins hold. Measured instance
+  of Settled decision 15.
+- **Blocking hooks currently fail OPEN whenever session cwd leaves the repo root.** Every hook is
+  registered with a cwd-relative path, so an ordinary `cd` into a subdirectory silently disables
+  `guard-destructive-git.sh`, `guard-git-push.sh` and four others. Observed twice on 2026-10-07.
+  **364** fixes it, **365** gates it.
 - **Consumer repos were all 8 STALE at last measurement (2026-10-03).** If work touches a consumer,
   run `check-consumer-freshness.sh` here and `deploy-headless.sh` **there** first; this repo never
   pushes into a consumer.
 
 ## Next
 
-Dispatchable right now: **284** and **351**. Everything else in the failure set waits on an edge —
-**335** behind 284, **272** behind 351, **361 → 363** behind in-flight 357, **345 → 354** behind
-in-flight 356. Then the standing **280/311/344** group.
-
-The first three are the measured-failure set from the 2026-10-07 Logos/Verification batch: a
-destructive-git gap that cost real work, a scope-excursion signal that is advisory when it should
-gate, and a liveness probe that cannot fire. See *Why this order*.
-
-**349 and 350 are out of the near-term set**, despite 349 reading `ready` here. 349's own
-description records a cross-repository prerequisite: the approval mechanism it drives lives in
-Logos/Verification under the slug `owner_labeled_agent_assisted_approvals`, and "until that task
-lands there is no honest value for this command to write." That task was **`not_started` when
-checked on 2026-10-07**. 350 depends on 349, so both are externally blocked. **No dependency edge
-can express this** — task numbers do not carry across repositories — so the in-repo graph cannot
-see it. Check that slug's status in `~/Projects/Logos/Verification/specs/state.json` before
-dispatching either.
-
-**A batch may carry dependency edges between its own members, and should.** Wave dispatch
-re-derives eligibility every cycle from the batch's own `dependency_graph`, so an edge between two
-members sequences them inside one invocation instead of excluding either. A batch that serializes
-to width 1 is a correct batch. The calls below are grouped by what belongs together, not by what can
-run concurrently — see Settled decision 17.
+Highest value first. Each call is a single `/orchestrate` invocation; intra-batch edges sequence
+the members into waves (Settled decision 17), so a call that serializes to width 1 is correct.
 
 ```
-/orchestrate 284, 335        # two waves: [284] then [335]; the scope gate
-/orchestrate 272, 351        # two waves: [351] then [272]; edge added 2026-10-07
-/orchestrate 351, 355        # two waves: [351] then [355]
-/orchestrate 280, 311, 344   # two waves: [280, 311] then [344]
+/orchestrate 364, 365        # two waves; blocking guards fail open on a bare `cd`
+/orchestrate 363             # completes the shared-tree git-safety set
+/orchestrate 366, 368        # two waves; test-efficiency mechanism, then the planning guidance
+/orchestrate 367             # independent; why the existing auto-promotion does not fire
+/orchestrate 284, 335        # two waves; the file_scope excursion gate
+/orchestrate 272, 351        # two waves; 351 first
 /orchestrate 351, 352, 353   # three waves; 351 MUST be in the call, not merely done first
-/orchestrate 361, 363        # two waves; only after in-flight 357 lands
-/orchestrate 345, 354        # two waves; only after in-flight 356 lands
+/orchestrate 280, 311, 344   # two waves; 344's own dogfood constraint — never run it alone
+/orchestrate 345, 354        # two waves
 ```
 
-The first five verified with `--dry-run` on 2026-10-07: 0 deferred, 0 blocked. The last two are
-**correctly blocked today** and will clear when 356 and 357 land — that is the edge working, not a
-defect. Three corrections came out of that pass, each worth keeping:
+Why this order:
 
-- **361 gained `dependencies: [357]`.** 361 amends `rules/git-workflow.md`, which in-flight 357 also
-  declares; without the edge a dry-run deferred 361 outright.
-- **345 gained `dependencies: [356]`**, on `context/patterns/bounded-build-waiter.md`.
-- **`352, 353` blocked as written.** A dependency outside the batch cannot be advanced by any cycle
-  of the run, so "only after 351" is not enough — **351 must be in the call**. A prose note is not a
-  substitute for a batch member.
-
-Why this order, and what each one unblocks:
-- **351** — the orchestrator's own `IDENTICAL DISPATCH HALT` is implemented but never fires. 14 of
-  349 assertions fail; a repeat-identical dispatch is issued anyway, the dispatch file is not backed
-  out, the task lock stays held, and `dispatch_seq_counter`/`cycle_counts` still advance. The guard
-  against burning cycle budget on unchanged work is silently off. Gates **352** and **355**.
-- **355** — an unregistered test script can reach `COMPLETED` undetected, which happened. Its
-  larger finding is the gate shape: the redeploy checkpoint compares finding *counts*
-  (`pre=11 post=2 new=0`) and so passed a batch that introduced a brand-new hard failure, because
-  the count fell for unrelated reasons. A count cannot distinguish "fixed nine" from "introduced
-  one while fixing ten".
-- **361** (behind in-flight **357**, which declares the same rule file) — `rules/git-workflow.md` lists bare `git stash` under *"Not blocked (do not discard
-  uncommitted changes)"*. That premise is true for a solo tree and **false for a shared one**: a
-  stash reverts the tree, and when `pop` later refuses because a sibling wrote the same path, the
-  changes are no longer recoverable in place. The guard faithfully implements the rule — it covers
-  `stash drop`/`clear`, protecting the *stash*, never the *tree*. Two agents in one batch walked
-  through it and reverted ~30 files of uncommitted work. **Fix the rule's premise first, then the
-  guard.** Gates **363**.
+- **364 → 365** — a cwd-relative hook path makes six bare-registered blocking guards fail open,
+  the opposite of the property they are registered bare to guarantee. Reproduced twice on
+  2026-10-07 from ordinary navigation. Note two of 364's five scope entries are **install-once**
+  (`settings.json`, `settings.local.json` are copied once and never overwritten on resync), so the
+  fix cannot reach an existing deploy without the migration step the task now carries.
+- **363** — the post-incident checklist. 361 corrected the rule and the guard; this records what to
+  check after a destructive-git event on a shared tree, uncommitted pre-session state first.
+- **366 → 368, 367** — measured: the orchestrator's own checkpoints were fixed to stop re-running
+  the 92-suite battery, but *every dispatched implementation agent still re-runs it at its own
+  phase gates against the identical tree*. 366 adds selection, 368 stops plans demanding `full` at
+  a non-final phase, 367 removes the refused-completion round trip. Neither 366 nor 368 may weaken
+  the final gate.
+- **351** — the `IDENTICAL DISPATCH HALT` is implemented but never fires: a repeat-identical
+  dispatch is issued anyway, the dispatch file is not backed out, the task lock stays held, and the
+  counters still advance. Gates **272**, **352** and **355**.
 - **284 → 335** — 335 promotes the `file_scope` excursion advisory into a staging-time gate; 284
-  first exempts a task's own directory so the signal is visible rather than buried. 336 covered the
-  staging *surface* and completed, yet an out-of-scope write still went undetected across five
-  committed phases on 2026-10-07 — evidence that the advisory-vs-gate distinction, not the surface,
-  is what remains. Shortest high-value chain on the board.
-- **272** — the heartbeat never fires, now confirmed live: an implementation agent sat silent for
-  ~5h40m while the harness still reported it `running`. Worse than undetected, it is a **structural
-  deadlock**: `stall_suspected` is computed only in `orchestrate-cycle-postflight.sh`, strictly
-  *after* a dispatch returns, while Move 3 forbids postflight until every Move 2 Agent call
-  completes. The Move 3 precondition itself needs amending. Gates **275**, then **274**.
-- **345** — bound the no-op spin to a contract with a single writer. Unblocked by 343, whose work it
-  continues directly. Now gates **354**.
-- **302** — pass `--task` at commit-staging sites to engage the contended-path lease. Unblocked by
-  300. Gates **304**.
-- **344** — carries the batching-by-default doctrine to the point of use, and makes a territory
-  overlap produce a serializing edge rather than a separation. Its Item 6 mechanizes the
-  edge-backfill that is still a hand `state-write.sh` call. Gates **274**, **312**, **313**.
-  **Run it with 280 and 311 in one invocation** — that is its own dogfood constraint, not a
-  convenience: filing it to run alone would reproduce the defect it exists to fix.
-- **342** — held, and **not liftable by an agent**; see the hold note below.
+  first exempts a task's own directory so the signal is visible rather than buried.
+- **272** — the heartbeat never fires; an implementation agent sat silent for ~5h40m while the
+  harness still reported it `running`. It is a structural deadlock, not a missing probe:
+  `stall_suspected` is computed only *after* a dispatch returns, while Move 3 forbids postflight
+  until every Move 2 call completes. The Move 3 precondition itself needs amending.
+- **344** — carries batching-by-default to the point of use and mechanizes the edge backfill that
+  is still a hand `state-write.sh` call. **Run it with 280 and 311 in one invocation** — its own
+  dogfood constraint, not a convenience.
+- **342** — held, not liftable by an agent. See the hold note below.
 
-Scheduling notes:
-- **354 follows 345 by declared edge**, added 2026-10-07 after a dry-run showed the pair deferring
-  on `context/patterns/bounded-build-waiter.md` with no edge between them. 345 establishes the
-  single-writer contract; 354 then rules on its scope. This is the decision-17 move: add the edge,
-  do not separate the pair.
-- **352 → 353 chain on `known-failures.txt`**, and **355 follows 351** on
-  `orchestrate-cycle-plan.sh`. Both edges exist so the set is batchable rather than deferring.
-- **Nothing depends on 342**, so queuing it behind anything parks no other work. That check is the
-  decision-17 carve-out and must be made before adding an edge onto a held or owner-blocked task.
-- **An edge onto an archived task number is satisfied, not a block.** 14 edges across 9 open tasks
-  point at numbers absent from `state.json` (127, 165, 184, 206, 215, 250, 263, 265, 285, 322,
-  329); `orchestrate-predispatch-review.sh` resolves every one as *archived (satisfied)*. They do
-  not freeze work. The live hazard is that a hand-derived file like this one can miscount them as
-  blockers — **306** removes it.
+**349 and 350 are out of the near-term set** despite 349 reading `ready`. 349's description records
+a cross-repository prerequisite — the approval mechanism it drives lives in Logos/Verification under
+the slug `owner_labeled_agent_assisted_approvals`, `not_started` when checked 2026-10-07 — and 350
+depends on 349. No dependency edge can express this, since task numbers do not carry across repos.
+Check that slug before dispatching either.
 
-Then the unblocking plays, highest leverage first: **284** (frees 335 and feeds 304), **251**
-(frees 170, which frees 328), **271** (frees 273 and 303), **280** (frees 281, 282 and 344).
+**An edge onto an archived task number is satisfied, not a block.** 14 such edges across 9 open
+tasks resolve as *archived (satisfied)* in `orchestrate-predispatch-review.sh`. The live hazard is
+that a hand-derived file like this one miscounts them as blockers — **306** removes it.
 
 ## Open work
 
 One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 `EXT-BLOCKED` means a prerequisite in ANOTHER repository that no in-repo edge can express.
 
-**Orchestrator (17)**
+**Orchestrator (19)**
 ```
 271 ready            parent_task edge: schema, validation, TODO rendering
 299 ready            detect in-place plan revision concurrent with a live implement dispatch
-302 ready            pass --task at commit-staging sites to engage the contended-path lease   <- priority
+302 ready            pass --task at commit-staging sites to engage the contended-path lease
 311 ready            measured co-scheduling signal replacing static build-heavy family membership
 319 ready            surface cross-task claim invalidation when research refutes a filed premise
-347 ready            PreToolUse Bash hook blocking self-matching process-name waiters
+345 ready            bound the no-op spin to a contract with a single writer
 351 ready            IDENTICAL DISPATCH HALT implemented but never fires   <- priority
+367 ready            why the existing post-deploy auto-promotion does not fire   <- priority
 272 blocked:351      honest session liveness for concurrent same-repo batches   <- priority
 273 blocked:271      three-channel conclusion stage with per-channel approval
 274 blocked:272,273,275,344  next-admissible-batch suggestion and alternatives-on-conflict
@@ -175,11 +127,12 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 304 blocked:273,284,302  one out-of-repo pathspec aborts staging; callers sink nonzero exits
 312 blocked:282,344  backlog reconciliation as a required task-creation component
 344 blocked:280,311  carry the batching-by-default doctrine to the point of use   <- priority
-345 blocked:356      bound the no-op spin to a contract with a single writer   <- priority
+347 blocked:364      PreToolUse hook blocking self-matching process-name waiters
+354 blocked:345      does the local-gate prohibition cover awaiting a dispatched subagent
 355 blocked:351      unregistered test script reaches COMPLETED; count-based gate comparison
 ```
 
-**Core agent system (22)**
+**Core agent system (21)**
 ```
 251 ready            context-corpus reachability probe, then act on dead and overlapping files
 280 ready            forbid record-versioning language: rule, exemptions, pattern library
@@ -187,22 +140,21 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 306 ready            make ROADMAP.md a generated artifact
 318 ready            wire lint-directory-pathspec-boundary.sh in as a numbered gate
 338 ready            sweep task support files: tracked or ignored
-356 in flight        propagate the bounded-wait contract to 14 implementation agent definitions
-357 in flight        rule on whether the per-phase handoff needs its own commit
-358 in flight        re-derive a carried figure at authoring time, or mark it unverified
-170 blocked:251      isolate shell test suites from ambient host state (memory, timing)
+360 ready            validate that every CARRIED-UNVERIFIED mark names a source
+362 ready            teach non-destructive history-read techniques at the point of use
+363 ready            post-incident checklist: uncommitted pre-session state checked first   <- priority
+364 ready            cwd-relative hook paths make blocking guards fail open   <- priority
+366 ready            suite-level selection within Gate 8 (--filter/--only + touched-file map)   <- priority
+170 blocked:251,366  isolate shell test suites from ambient host state (memory, timing)
 281 blocked:280      repo-wide record-versioning lint, blocking/advisory split
-282 blocked:280,281  write-time PreToolUse hook blocking record-versioning language
+282 blocked:280,281,364  write-time PreToolUse hook blocking record-versioning language
 313 blocked:306,328,344  advisory lint for hand-authored batch proposals in ROADMAP blocks
-328 blocked:170,318,304,303  systematic script and test corpus efficiency
+328 blocked:170,303,304,318,366  systematic script and test corpus efficiency
 335 blocked:284      promote the file_scope excursion advisory into a staging-time gate   <- priority
 352 blocked:351      validate-artifact.sh fix counters neither accumulate nor reset
-354 blocked:345      does the local-gate prohibition cover awaiting a dispatched subagent
-359 blocked:350,356  close the two agent-contract lint curated-array coverage gaps
-360 blocked:358      validate that every CARRIED-UNVERIFIED mark names a source
-361 blocked:357      bare git stash reverts a shared tree, and the rule calls it safe   <- priority
-362 blocked:356      teach the non-destructive history-read techniques at the point of use
-363 blocked:361      post-incident checklist: uncommitted pre-session state checked first
+359 blocked:350      close two agent-contract lint curated-array coverage gaps
+365 blocked:364      lint forbidding CWD-relative .claude/ paths in hook registrations
+368 blocked:366      non-final-phase `full` verification tier must justify itself   <- priority
 ```
 
 **Neovim (3)**
@@ -217,18 +169,16 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 29  blocked:22       generate .mcp.json from extension manifests; register obsidian-memory
 350 blocked:349      offer the owner the review path when an approval is needed (also EXT-BLOCKED)
 353 blocked:352      typst: stderr-into-JSON corruption; presence-vs-density check overlap
-342 HOLD             books context corpus refactor - see below
+342 HOLD             books context corpus refactor — see below
 349 EXT-BLOCKED      /approve as one interactive question, not a terminal round-trip
 ```
 
-**342's hold**: every dependency is satisfied (340, 341 completed 2026-10-05; 346 completed
-2026-10-07). The hold stands on the version stamp alone, and that is a deliberate deferral rather
-than a pending formality: the consuming repository's `books/book-convention.md` line 4 reads
-`0.1.0-pre`, having been stamped `0.1.0`, bumped four more times in one day, then **reset to
-`0.1.0-pre` by the owner ruling of 2026-10-06** because the review it waited on had shipped
-prematurely. Lift when that line reads `0.1.0` — owner action, never an agent's, and never as a
-side effect of prioritising the task here. Dispatching it before the stamp lands would refactor the
-corpus against a premise the convention record contradicts.
+**342's hold**: every dependency is satisfied. The hold stands on the version stamp alone, and that
+is a deliberate deferral: the consuming repository's `books/book-convention.md` line 4 reads
+`0.1.0-pre`, having been stamped `0.1.0`, bumped four times in one day, then reset by owner ruling
+of 2026-10-06 because the review it waited on had shipped prematurely. Lift when that line reads
+`0.1.0` — owner action, never an agent's. Nothing depends on 342, so queuing it behind anything
+parks no other work.
 
 ## Checks before and after every call
 
@@ -236,25 +186,27 @@ corpus against a premise the convention record contradicts.
   Admits what you expect; `md5sum specs/state.json` unchanged. Research and plan dispatches are
   exempt from the self-modifying defer, so overlap only serializes at implement time.
 - `validate-state.sh --deep` — compare against the 6 known warnings above.
-- `tests/run-all.sh --jobs 4` — read the end-of-run failure roster and the `EXPECTED`/`NEW` split,
-  not the tally; read the exit code directly, never through `tail`/`head`. `--fail-on-new` makes it
-  a gate.
-- `verify-deploy.sh --skip-slow` — measure *before* your work as well as after, and compare. Do not
-  read a standing red as permission to ignore a new one. A self-modifying task is not finished until
+- `tests/run-all.sh --jobs 4` — read the failure roster and the `EXPECTED`/`NEW` split, not the
+  tally; read the exit code directly, never through `tail`/`head`. `--fail-on-new` makes it a gate.
+- `verify-deploy.sh --skip-slow` — measure *before* your work as well as after, and compare. A
+  standing red is not permission to ignore a new one. A self-modifying task is not finished until
   `.claude/` is resynced, and a resync whose verify is red is reported, not silently accepted.
-- **A source-store commit without a resync is itself a red gate.** `check-extension-docs.sh` reports
-  it as `deployed script content drift`. Observed 2026-10-07.
-- A completion postflight refused with **exit 6** needs no action: the Inter-Cycle Redeploy
-  Checkpoint promotes the task on the next cycle. For the genuinely stuck case,
-  `reconcile-task-status.sh <N> <session>`.
+- **A source-store commit without a resync is itself a red gate** — `check-extension-docs.sh`
+  reports it as `deployed script content drift`.
+- A completion postflight refused with **exit 6** should self-clear on the next cycle's redeploy
+  checkpoint. It did not, three times on 2026-10-07; **367** owns the diagnosis. Meanwhile
+  `reconcile-task-status.sh <N> <session>` promotes a stranded task by hand — but only once the
+  source store is actually fresh, and a *live* dispatch editing the source store keeps it stale.
 - **To tell a working dispatch from a stranded one, read artifact mtimes and live child processes.**
   Absence of `.orchestrator-handoff.json` is NOT a stall signal — the research phase never writes
-  one in any mode. Misreading it as one produced a false stranding diagnosis on 2026-10-07.
+  one in any mode.
+- **Never `cd` out of the repo root.** Hooks resolve relative to session cwd, so a `cd` into a
+  subdirectory silently disables every blocking guard until **364** lands. Use absolute paths.
 
 ## Settled decisions (do not re-litigate)
 
-1. **Batch of one.** One engine; single-task is a batch of one. Team mode is deleted. Hard mode is
-   kept in full, per-invocation.
+1. **Batch of one.** One engine; single-task is a batch of one. Team mode deleted. Hard mode kept
+   in full, per-invocation.
 2. **The orchestrator never asks and never decides.** Only an agent-surfaced `user_decision` reaches
    the user, once, at cycle end. A `blocking: false` decision proceeds on the agent's recommendation
    and is surfaced, not prompted.
@@ -264,17 +216,19 @@ corpus against a premise the convention record contradicts.
 6. **A linear chain of small tasks serializing on one file is one task with phases.** Apply at
    creation time.
 7. **`file_scope` warnings are live input, not noise.** In-batch collisions block; cross-batch ones
-   are advisory. The blocking half is right and is not weakened by decision 17: an *unordered*
-   overlapping pair would share a wave and write concurrently, so the refusal is correct. The
-   remedy is to order the pair with an edge, not to drop one from the batch.
+   are advisory. The blocking half is correct and is not weakened by decision 17 — an *unordered*
+   overlapping pair would share a wave and write concurrently. The remedy is to order the pair with
+   an edge, not to drop one from the batch.
 8. **Rule before mechanism** for the vimtex hazard. Re-file a mechanism task only if the rule proves
    insufficient.
 9. **Skeleton plans terminate through the completion-claim gate.** No `pr_ready` routing outside
    `type=pr`.
-10. **No third automated deploy-trigger site.** The sanctioned count stays at exactly two.
-11. **One grant mechanism.** A push or other blocked git action is authorized by one single-use token
-    bound to action, remote, branch and sha, minted only where the harness can prove the user typed
-    it. Nothing the model can write is a grant. PR/MR creation and `/merge` stay user-only.
+10. **No third automated deploy-trigger site.** The sanctioned count stays at exactly two. (The prose
+    in `regeneration-is-manual-only.md` and `test-lint-deploy-caller-wrap.sh` currently name
+    *different* pairs; the lint is the mechanical truth. **367** carries the correction.)
+11. **One grant mechanism.** A blocked git action is authorized by one single-use token bound to
+    action, remote, branch and sha, minted only where the harness can prove the user typed it.
+    Nothing the model can write is a grant. PR/MR creation and `/merge` stay user-only.
 12. **A grant may authorize a plain push of the default branch** (user ruling). Every force form on
     the default branch, bare `--force` anywhere, and all bulk or deletion refspecs stay categorically
     excluded, checked before any grant lookup.
@@ -288,36 +242,31 @@ corpus against a premise the convention record contradicts.
     Record: `specs/decisions/worktree-isolation-removal-verdict.md`.
 15. **Gate 8's deployed-tree coverage is knowingly reduced** (accepted on wall-clock grounds). The
     redeploy checkpoint runs `--skip-slow`, so the ~40 core suites resolving their subject from the
-    *deployed* tree are not verified against a fresh deploy. The narrower fix is in **328**'s scope.
+    *deployed* tree are not verified against a fresh deploy. Narrower fix is in **328**'s scope.
 16. **A systemic cost is filed as one standing task against a probe's output, not a stream of point
     defects.** Duplication, dead code and slow tests never break anything, so defect-driven intake
-    cannot see them. 328 is the standing consumer of `script-inventory.sh`; 307, 308 and 270 were
-    abandoned into it.
-17. **A batch may carry dependency edges between its own members, and an unordered territory
-    overlap is resolved by adding the edge, not by separating the pair** (owner ruling). Wave
-    dispatch re-derives eligibility every cycle from the batch's own `dependency_graph`, so an
-    intra-batch edge sequences its two members inside one invocation. Serializing to width 1 is a
-    correct outcome: the property defended is collision visibility and correct ordering, never
-    wall-clock. Binding consequences: a **"never with" note is not an acceptable rendering** of an
-    overlap — pick an order and record the edge; and a bare exclusion must never stand in for an
+    cannot see them. 328 is the standing consumer of `script-inventory.sh`.
+17. **A batch may carry dependency edges between its own members, and an unordered territory overlap
+    is resolved by adding the edge, not by separating the pair** (owner ruling). Serializing to
+    width 1 is a correct outcome: the property defended is collision visibility and correct ordering,
+    never wall-clock. Binding consequences: a **"never with" note is not an acceptable rendering** of
+    an overlap — pick an order and record the edge; and a bare exclusion must never stand in for an
     edge that was simply not added. **Two carve-outs.** (a) *Owner-blocked predecessor*: if the
     would-be predecessor cannot progress — held, owner-gated, or `PARTIAL` behind something no task
-    can unblock — separation is correct and the reason is stated, because an edge would park live
-    work behind a permanent stall. Check what depends on the target before edging onto it.
-    (b) *Breadth*: a coarse shared path (a manifest, a root gate script, a directory-root scope) can
-    make rule 1 demand a group larger than `MAX_TASKS=8`, which the cap then silently trims; there,
-    narrow the `file_scope` instead. **344 carries this to the point of use** and mechanizes the
-    edge backfill; until it lands, the edge is added by hand via `state-write.sh` and acyclicity
-    confirmed with `validate-state.sh --deep`.
+    can unblock — separation is correct and the reason is stated. Check what depends on the target
+    before edging onto it. (b) *Breadth*: a coarse shared path can make rule 1 demand a group larger
+    than `MAX_TASKS=8`, which the cap then silently trims; there, narrow the `file_scope` instead.
+    **344 carries this to the point of use**; until it lands the edge is added by hand via
+    `state-write.sh`, with acyclicity confirmed by `validate-state.sh --deep`.
 
 ## Standing rules
 
 1. **Agent-system defects get filed here.** A fix in a consuming repo's `.claude/` is wiped on reload.
 2. **`.claude/**` is a deploy artifact.** Edit the source store under `agent-system/extensions/**`,
-   then resync — see the gate note above.
-3. **`TODO.md` is generated from `state.json`.** Edit the `description` field via `state-write.sh`,
-   then `generate-todo.sh`. A hand edit to `TODO.md` is wiped by the next regeneration — observed
-   2026-10-05, losing three task revisions.
+   then resync. Note `settings.json` and `settings.local.json` are **install-once** — copied only
+   when absent, never overwritten by a resync — so a source edit to either reaches fresh deploys only.
+3. **`TODO.md` is generated from `state.json`.** Edit `description` via `state-write.sh`, then
+   `generate-todo.sh`. A hand edit to `TODO.md` is wiped by the next regeneration.
 4. **Propose, then apply, across repos.**
 5. **Verify by execution, not by reading.** Every number here was measured the day it was written;
    re-measure before acting on it.
@@ -326,35 +275,28 @@ corpus against a premise the convention record contradicts.
 
 ## Unfiled observations (none worth a task yet)
 
-- **Four open tasks carry no `title` key at all** (328, 338, 349, 350), so `TODO.md` and this file
-  describe them from `project_name` and `description`. `orchestrate-predispatch-review.sh` Class B
-  checks for a *literal null* and does not catch an absent key. Belongs with **306**.
-- **`TODO.md`'s tree view strips punctuation from titles**, so a backticked or underscored
-  identifier renders as `SKILLVALIDATEFIXES`. The per-task detail section renders correctly.
-  Cosmetic; belongs with **306**.
-- **A rendered `**Goal**:` line in `TODO.md` cannot survive regeneration and fails validation while
-  present.** `generate-task-order.sh --goal` writes it; `generate-todo.sh` drops it and never reads
-  `active_goal` from `state.json`. So `active_goal` is write-only and the displayed goal is
-  permanently blank. Belongs with **306**.
-- **Nothing represents a cross-repository prerequisite.** Task numbers do not carry across repos, so
-  a task gated on work in another repository reads `ready` in this graph and can only be caught by
-  reading its own description. 349 and 350 are the live instance. `validate-state.sh` cannot check
-  it and `orchestrate-predispatch-review.sh` cannot see it.
+- **Four open tasks carry no `title` key** (328, 338, 349, 350), so this file and `TODO.md` describe
+  them from `project_name`. `orchestrate-predispatch-review.sh` Class B checks only for a *literal
+  null* and misses an absent key. Belongs with **306**.
+- **`TODO.md`'s tree view strips punctuation from titles**, rendering a backticked identifier as
+  `SKILLVALIDATEFIXES`. The per-task detail section is correct. Cosmetic; belongs with **306**.
+- **A rendered `**Goal**:` line in `TODO.md` cannot survive regeneration** and fails validation while
+  present. `generate-task-order.sh --goal` writes it; `generate-todo.sh` drops it and never reads
+  `active_goal`, so the displayed goal is permanently blank. Belongs with **306**.
+- **Nothing represents a cross-repository prerequisite.** A task gated on another repo reads `ready`
+  here and can only be caught by reading its description. 349/350 are the live instance; neither
+  `validate-state.sh` nor `orchestrate-predispatch-review.sh` can see it.
 - **No mechanism prevents a vault operation from leaving edges pointing at renumbered tasks**, and
-  `validate-state.sh` does not check it. Today's 14 such edges all resolve as archived-satisfied, so
-  nothing is frozen — but the 2026-08-10 reset did freeze 4 tasks until cleared by hand 2026-10-05.
+  `validate-state.sh` does not check it. Today's 14 such edges all resolve archived-satisfied, but
+  the 2026-08-10 reset froze 4 tasks until cleared by hand.
 - **The probe's `inbound_callers` field cannot find dead code** — a script's own `manifest.json`
-  entry counts as a caller of its basename, so it reports zero zero-caller scripts across 197 files.
-  `has_test` is a filename-convention check and under-reports coverage. Both recorded inside **328**
-  so they are not mistaken for answers.
+  entry counts as a caller, so it reports zero zero-caller scripts across 197 files. `has_test` is a
+  filename-convention check and under-reports coverage. Both recorded inside **328**.
 - `plan-file-scope-harvest.sh` parses a `**Files to modify**:` field and finds nothing in a plan
-  using a Territory Contract table instead. At least one BimodalLogic plan is invisible to it.
+  using a Territory Contract table instead.
 - The write-time task-reference hook fires on files in the session scratchpad; its path filter could
   exempt `/tmp/**`.
-- The in-scope agent set for a contract rolled across implementation agents is **14** files, not the
-  13 a sweep by directory suggests — `founder-implement-agent.md` also edits phase-heading markers.
 - **A loosely-scoped `subagent_type: "fork"` inherits the parent's entire task mandate** and can
   autonomously complete unrelated inherited work rather than the narrow action requested — observed
-  2026-10-07, where a fork probe produced a whole research deliverable and a premature completion
-  message. Mitigation landed in `core/docs/fork-patterns.md`; recorded here because the failure mode
-  is easy to re-introduce.
+  2026-10-07. Mitigation landed in `core/docs/fork-patterns.md`; recorded because the failure mode is
+  easy to re-introduce.
