@@ -168,6 +168,25 @@ ADDITIONAL ACCEPTANCE CRITERIA:
      JSON block in source-store markdown.
   7. The fixture suite includes the explicit-cd direct-invocation shape as a PASSING case.
 
+--- REVISION (added after review): NARROWED FILE_SCOPE AND FIXED ARTIFACT PATHS ---
+
+The original file_scope declared two directory entries, agent-system/extensions/core/scripts/ and
+agent-system/extensions/core/scripts/tests/. validate-state.sh Check 8 measured those as
+overlapping 35 and 22 distinct non-terminal tasks respectively, which would collide this task
+against most of the open backlog at admission time for no benefit. Both directory entries are
+REPLACED by the exact files this task creates or edits.
+
+Artifact paths, fixed here so the implementation does not invent a divergent name and silently
+re-widen the scope (house convention, confirmed against the eleven existing lint scripts):
+  - lint script: agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh
+  - fixture test: agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh
+  - gate wiring:  agent-system/extensions/core/scripts/verify-deploy.sh
+  - registration: agent-system/extensions/core/manifest.json
+
+No on-disk fixtures directory is required: every existing lint fixture test builds its passing and
+violating trees in a `mktemp -d` workdir and tears them down, so the fixture suite for this lint
+must do the same rather than committing fixture files.
+
 ---
 
 ### 364. Resolve hook registration paths independently of session CWD so bare-registered blocking guards cannot fail open
