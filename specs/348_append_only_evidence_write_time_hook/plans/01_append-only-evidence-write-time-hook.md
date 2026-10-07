@@ -411,34 +411,34 @@ three regions.
 
 ---
 
-### Phase 5: Deploy, Prove Registration and Firing, Record the Residuals [NOT STARTED]
+### Phase 5: Deploy, Prove Registration and Firing, Record the Residuals [COMPLETED]
 
 **Goal**: the hook is live in the consumer repository — file copied with its execute bit,
 registration bare and joined to the existing matcher block, and the deployed copy proven to refuse
 a real modification of a real committed evidence file.
 
 **Tasks**:
-- [ ] Capture the before-state of the consumer repo's registration:
+- [x] Capture the before-state of the consumer repo's registration: *(completed)*
       `jq '.hooks.PreToolUse' /home/benjamin/Projects/Logos/Verification/.claude/settings.json` and
       `git -C /home/benjamin/Projects/Logos/Verification status --short .claude/settings.json`.
-- [ ] Deploy: `bash .claude/scripts/deploy-headless.sh /home/benjamin/Projects/Logos/Verification`
+- [x] Deploy: `bash .claude/scripts/deploy-headless.sh /home/benjamin/Projects/Logos/Verification` *(completed)*
       from this repo. If that invocation errors because this repo's own deployed core tree is stale,
       fall back to the source-store copy
       (`bash agent-system/extensions/core/scripts/deploy-headless.sh /home/benjamin/Projects/Logos/Verification`)
       or to the consumer repo's own deployed copy with no target argument, and record which
       invocation was used.
-- [ ] Verify the file copy: `/home/benjamin/Projects/Logos/Verification/.claude/hooks/validate-evidence-append-only.sh`
+- [x] Verify the file copy: `/home/benjamin/Projects/Logos/Verification/.claude/hooks/validate-evidence-append-only.sh` *(completed)*
       exists and is executable (`test -x`).
-- [ ] Verify the registration is **bare**: the deployed command string equals
+- [x] Verify the registration is **bare**: the deployed command string equals *(completed)*
       `bash .claude/hooks/validate-evidence-append-only.sh` exactly, with no `||` and no
       `2>/dev/null`.
-- [ ] Verify it **joined** the existing block rather than creating a second one: the deployed
+- [x] Verify it **joined** the existing block rather than creating a second one: the deployed *(completed)*
       `hooks.PreToolUse` contains exactly **one** entry whose matcher is `Write|Edit`, and that
       entry's `hooks` array contains both `validate-no-task-references.sh` and the new hook.
       (The file's pre-existing separate `"Write"` block is unrelated and must be left untouched.)
-- [ ] Prove idempotence: deploy a second time and assert the hook-object count inside the
+- [x] Prove idempotence: deploy a second time and assert the hook-object count inside the *(completed)*
       `Write|Edit` block is unchanged.
-- [ ] Prove the deployed hook **fires** against a real evidence file: pick a committed file under
+- [x] Prove the deployed hook **fires** against a real evidence file: pick a committed file under *(completed)*
       `/home/benjamin/Projects/Logos/Verification/books/book-convention-evidence/`, confirm it is
       clean in `git status`, and drive the **deployed** hook as the harness would — bare
       `bash .claude/hooks/validate-evidence-append-only.sh` with a PreToolUse JSON payload on stdin
@@ -446,13 +446,13 @@ a real modification of a real committed evidence file.
       Assert exit 2 and the three facts in stderr. Then drive the same hook with a pure-append
       payload for the same file and assert exit 0. Neither invocation writes to the file, so the
       evidence file is never modified by this verification.
-- [ ] Confirm the evidence files were not touched:
+- [x] Confirm the evidence files were not touched: *(completed)*
       `git -C /home/benjamin/Projects/Logos/Verification status --short books/book-convention-evidence/`
       is empty.
-- [ ] Re-run the companion gate:
+- [x] Re-run the companion gate: *(completed)*
       `bash /home/benjamin/Projects/Logos/Verification/books/scripts/check-evidence-append-only.sh`
       still reports 0 blocking findings.
-- [ ] Record the two residuals, each in one line, in the hook's own header comment (not a new
+- [x] Record the two residuals, each in one line, in the hook's own header comment (not a new *(completed)*
       document): (a) `verify-deploy.sh`'s registration gate checks only three hardcoded core
       event:script pairs, so this registration is not regression-protected by tooling — a generic
       "every `provides.hooks` entry is registered somewhere" check is a separate concern; (b) the
@@ -491,24 +491,24 @@ a real modification of a real committed evidence file.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh`
+- [x] `bash agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh` *(completed)*
       reports `0 failed`.
-- [ ] Every required case from the dispatch is present: committed-line modification refused;
+- [x] Every required case from the dispatch is present: committed-line modification refused; *(completed)*
       committed-line deletion refused; pure append via Write allowed; pure append via Edit allowed;
       new `NN-*.md` allowed; `README.md` allowed; out-of-scope path allowed; the Ruling 2 behavior
       asserted explicitly in both directions; a missing-dependency case failing open; and the
       buried-in-a-multi-thousand-character-line modification refused.
-- [ ] Forgery probes present, one per predicate, each with its complementary admit case where one
+- [x] Forgery probes present, one per predicate, each with its complementary admit case where one *(completed)*
       exists, per `context/project/books/standards/forgery-probe-discipline.md`.
-- [ ] `shellcheck` clean on both new shell files per `context/standards/shell-strict-mode.md`.
-- [ ] `jq -e .` clean on both JSON files.
-- [ ] The deployed registration is bare, in `.claude/settings.json`, joined to the single
+- [x] `shellcheck` clean on both new shell files per `context/standards/shell-strict-mode.md`. *(completed)*
+- [x] `jq -e .` clean on both JSON files. *(completed)*
+- [x] The deployed registration is bare, in `.claude/settings.json`, joined to the single *(completed)*
       `Write|Edit` block.
-- [ ] The deployed hook refuses a real modification of a real committed evidence file.
-- [ ] `check-evidence-append-only.sh` reports 0 blocking findings in the consumer repo afterwards.
-- [ ] Net pattern-document count does not increase: no file added under
+- [x] The deployed hook refuses a real modification of a real committed evidence file. *(completed)*
+- [x] `check-evidence-append-only.sh` reports 0 blocking findings in the consumer repo afterwards. *(completed)*
+- [x] Net pattern-document count does not increase: no file added under *(completed)*
       `agent-system/extensions/books/context/**` or `agent-system/extensions/books/rules/**`.
-- [ ] No task-number citation in any file under `agent-system/**`.
+- [x] No task-number citation in any file under `agent-system/**`. *(completed)*
 
 ## Artifacts & Outputs
 

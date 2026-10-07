@@ -49,6 +49,17 @@
 # README.md is excluded. Both absolute and repo-relative file_path are handled via the
 # PreToolUse payload's own `cwd` field. A non-matching path, or a repository lacking the
 # directory entirely, exits 0 silently.
+#
+# Known limitations (recorded, not fixed here):
+#   (a) The deploying repo's verify-deploy.sh registration gate checks only three hardcoded
+#       core event:script pairs, so this registration is NOT regression-protected by tooling. A
+#       generic "every provides.hooks entry is registered somewhere" check is a separate concern.
+#   (b) The harness's own PreToolUse dispatch of this hook can only be observed from an
+#       interactive session whose project directory is the deploying repo -- verification instead
+#       drives the deployed copy directly with a constructed payload. Reproduction recipe for an
+#       operator who wants the end-to-end observation: open a session in the deploying repo and
+#       attempt an in-place Edit of a line already committed in a books/book-convention-evidence/
+#       NN-*.md file.
 
 set -euo pipefail
 

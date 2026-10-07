@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy, Prove Registration and Firing, Record the Residuals",
+  "started_at": "2026-10-06T02:05:00Z",
+  "last_updated": "2026-10-06T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture before-state (settings.json, PreToolUse, git status) of consumer repo", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Deploy via deploy-headless.sh to consumer repo", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Verify file copy present + executable", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Verify registration bare and joined into the single Write|Edit block (not a second block)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Prove idempotence via second deploy, hook count unchanged", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Prove deployed hook fires against a real committed evidence file (refuses modify, allows append), file never written", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm evidence directory clean afterward; companion gate 0 blocking findings", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Record the two residuals + reproduction recipe in the hook's own header; re-deploy to sync; byte-identical confirmed", "status": "done", "files_touched": ["agent-system/extensions/books/hooks/validate-evidence-append-only.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Observed pre-existing, unrelated foreign work and one unrelated verify-deploy.sh gate failure (runtime-file tracking, specs/books-evidence/.runs.lock + .observations.lock not gitignored) in the consumer repo, confirmed pre-existing and unrelated to this task's hook; recorded via issue-record.sh per Observation Duty. All of this task's own Phase 5 acceptance criteria verified independently green."
+}
