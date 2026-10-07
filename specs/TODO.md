@@ -84,7 +84,7 @@ next_project_number: 366
 356 [IMPLEMENTING] — Propagate the bounded-wait contract to the fourteen...
   └─ 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 358 [IMPLEMENTING] — Require a figure or mechanical claim carried into a report or...
-361 [RESEARCHING] — Reclassify bare git stash as destructive on a shared tree:...
+361 [RESEARCHED] — Reclassify bare git stash as destructive on a shared tree:...
   └─ 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
@@ -391,10 +391,11 @@ THE CHOICE: this task DECLARES A DEPENDENCY on the bounded-wait propagation task
 ---
 
 ### 361. Reclassify bare `git stash` as destructive on a shared tree: correct the rule's solo-tree premise, then add the guard patterns that implement it
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 357
+- **Research**: [361_reclassify_bare_git_stash_as_destructive/reports/01_reclassify-stash-destructive.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
