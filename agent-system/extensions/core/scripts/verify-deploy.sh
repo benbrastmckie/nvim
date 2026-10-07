@@ -77,13 +77,13 @@
 #   narrative output and exit codes are byte-for-byte unchanged.
 #
 # Gate selection (--only-gate N[,M,...], additive-only):
-#   Runs only the named gate(s) (1-20) instead of the full battery. Absent this flag, GATES_FILTER
+#   Runs only the named gate(s) (1-21) instead of the full battery. Absent this flag, GATES_FILTER
 #   is empty and every gate runs -- byte-for-byte the same as before this flag existed. A caller
 #   that only needs to exercise one gate (e.g. a test suite targeting gate 20) can pay for that one
-#   gate instead of all twenty; see context/standards/shell-script-testing.md for the intended
+#   gate instead of all twenty-one; see context/standards/shell-script-testing.md for the intended
 #   test-fast-path use and the standing rule that at least one full-battery invocation must remain
 #   somewhere in the suite. gate0 (argument/target validation, before any gate runs) is never
-#   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-20) exits 2 and,
+#   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-21) exits 2 and,
 #   under --findings, emits a `FINDING gate0` line.
 
 set -uo pipefail
@@ -116,13 +116,13 @@ while [ $# -gt 0 ]; do
       for _only_gate_tok in "${_only_gate_tokens[@]}"; do
         case "$_only_gate_tok" in
           ''|*[!0-9]*)
-            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-20)" >&2
+            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-21)" >&2
             [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate invalid gate id '$_only_gate_tok'"
             exit 2
             ;;
         esac
-        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt 20 ]; then
-          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-20)" >&2
+        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt 21 ]; then
+          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-21)" >&2
           [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate gate id '$_only_gate_tok' out of range"
           exit 2
         fi
@@ -258,7 +258,7 @@ warn() {
 }
 
 # gate_selected N: returns 0 (selected) when GATES_FILTER is empty (default: all gates) or
-# contains N as one of its comma-separated tokens; returns 1 otherwise. Every one of the 20
+# contains N as one of its comma-separated tokens; returns 1 otherwise. Every one of the 21
 # guarded gate blocks below consults this single predicate -- gate0 itself is never guarded by it
 # (see the --only-gate header doc above).
 gate_selected() {
@@ -1121,6 +1121,35 @@ else
       say "    $rel_path: $actual_bytes B / ceiling $ceiling B ($marker)"
     fi
   done <<< "$budget_files"
+fi
+
+say ""
+fi
+# Gate 21: hook registration path lint (lint-hook-registration-paths.sh --verbose). Modeled
+# line-for-line on gate 12 (lint-state-writer-boundary.sh): same [SKIP] posture when the target is
+# a deploy consumer rather than the source store, same fail() on a missing lint script, same
+# FINDINGS_LIST accumulation over [VIOLATION] lines.
+if gate_selected 21; then
+say "21. Hook registration path lint (lint-hook-registration-paths.sh --verbose)"
+CURRENT_GATE="gate21"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- hook registration path lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh" ]; then
+  fail "lint-hook-registration-paths.sh not found in source store"
+else
+  hook_reg_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh" --verbose 2>&1)
+  hook_reg_lint_status=$?
+  if [ "$hook_reg_lint_status" -eq 0 ]; then
+    pass "hook registration path lint reports no CWD-relative, fragment-unreachable, or dead hook registrations"
+  else
+    fail "hook registration path lint reported one or more hook-registration violations" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r hook_reg_lint_line; do
+        FINDINGS_LIST+=("FINDING gate21 ${hook_reg_lint_line#*VIOLATION\] }")
+      done < <(printf '%s\n' "$hook_reg_lint_output" | grep -F '[VIOLATION]')
+    fi
+  fi
 fi
 
 say ""

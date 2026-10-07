@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Gate 21 wiring, gate-range widening, manifest registration",
+  "started_at": "2026-10-07T00:00:00Z",
+  "last_updated": "2026-10-07T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add gate 21 to verify-deploy.sh, widen --only-gate range to 1-21 at all sites, update test-verify-deploy-gate-selection.sh, register both scripts in manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

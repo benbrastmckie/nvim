@@ -408,13 +408,13 @@ criteria.
 
 ---
 
-### Phase 5: Gate 21 wiring, gate-range widening, manifest registration [NOT STARTED]
+### Phase 5: Gate 21 wiring, gate-range widening, manifest registration [COMPLETED]
 
 **Goal**: Make the lint run in the real `verify-deploy.sh` battery and be installed by deploy —
 criterion 3 requires an actual numbered gate, not mere manifest registration.
 
 **Tasks**:
-- [ ] Add gate 21 to `agent-system/extensions/core/scripts/verify-deploy.sh` immediately after
+- [x] Add gate 21 to `agent-system/extensions/core/scripts/verify-deploy.sh` immediately after *(completed)*
       gate 20, modeled line-for-line on gate 12 (`lint-state-writer-boundary.sh`): the
       `if gate_selected 21; then` guard, `say "21. Hook registration path lint
       (lint-hook-registration-paths.sh --verbose)"`, `CURRENT_GATE="gate21"`, the
@@ -423,21 +423,21 @@ criterion 3 requires an actual numbered gate, not mere manifest registration.
       `cd "$TARGET" && REPO_ROOT="$TARGET" bash … --verbose` capture, `pass`/`fail`, and the
       `FINDINGS_LIST+=("FINDING gate21 …")` `while read` loop over `grep -F '[VIOLATION]'`.
       Close with the trailing `say ""` and `fi`.
-- [ ] Widen the `--only-gate` range from 1-20 to 1-21 at **all four** sites in
+- [x] Widen the `--only-gate` range from 1-20 to 1-21 at **all four** sites in *(completed)*
       `verify-deploy.sh`: the two header-comment mentions (lines ~80 and ~86), the non-numeric
       error message, and the `-lt 1`/`-gt 20` bound check with its error string.
-- [ ] Update `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh`:
+- [x] Update `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh`: *(completed)*
       change case (b)'s `seq 1 20` to `seq 1 21`, case (d)'s `seq 1 20` to `seq 1 21`, replace
       `"21"` with `"22"` in `invalid_cases`, and update the three "all 20 gates"/"all 20 gate
       headers" strings and the header comment at line 26 to 21. **Without this, adding gate 21
       breaks a currently-green test three ways** — see File Scope Note.
-- [ ] Register both new scripts in `agent-system/extensions/core/manifest.json` at their
+- [x] Register both new scripts in `agent-system/extensions/core/manifest.json` at their *(completed)*
       alphabetically-correct positions: `"lint/lint-hook-registration-paths.sh"` after
       `"lint/lint-directory-pathspec-boundary.sh"` (line ~136) and before
       `"lint/lint-json-channel-discipline.sh"`; `"tests/test-lint-hook-registration-paths.sh"`
       after `"tests/test-lint-directory-pathspec-boundary.sh"` (line ~225) and before
       `"tests/test-lint-json-channel-discipline.sh"`.
-- [ ] Confirm `manifest.json` remains valid JSON (`jq empty`).
+- [x] Confirm `manifest.json` remains valid JSON (`jq empty`). *(completed)*
 
 **Timing**: 1 hour
 
