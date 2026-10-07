@@ -18,6 +18,11 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
 
 <task>Parse arguments, scan for archivable tasks (completed, abandoned, expanded), update states, generate CHANGE_LOG entries, suggest memory harvesting from completed task artifacts.</task>
 
+<!-- Stage ids 5 and 11 (ScanRoadmap, UpdateRoadmap) were retired along with the roadmap
+     integration consumer (see scripts/deprecated/README.md); their ids are deliberately left as
+     gaps rather than renumbered, since renumbering would touch every cross-stage reference in
+     this file for no behavioral benefit. -->
+
 <execution>
   <stage id="1" name="ParseArguments">
     <action>Parse command arguments</action>
@@ -296,34 +301,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          ```
     </process>
   </stage>
-  
-  <stage id="5" name="ScanRoadmap">
-    <action>Scan for roadmap references</action>
-    <process>
-      0. Do NOT auto-create `specs/ROADMAP.md` if it is absent. An absent roadmap is "no roadmap
-         tracked" — a supported state, not a repair trigger; `roadmap-integration.sh` itself
-         treats absence this way (exits 0, emits the `roadmap_absent` warning, does not recreate
-         the file) and step 3 below surfaces that warning. Re-creating the file here, ahead of
-         the script call, would silently defeat that contract and make any deliberate deletion of
-         the roadmap never stick.
-      1. Partition `archivable_tasks[]` into roadmap-excluded (meta tasks, and expanded tasks —
-         an expanded task has no `completion_summary` of its own by construction, since its
-         subtasks carry the deliverables; do not "fix" this by requiring one) and
-         roadmap-eligible tasks, exactly as `commands/todo.md`'s Step 3.5.1 does.
-      2. This stage performs no matching of its own. Invoke `roadmap-integration.sh` parse-only
-         (no `--annotate`) against `specs/ROADMAP.md`/`specs/state.json`, capturing
-         `roadmap_structure`, `warnings`, and `roadmap_matches` from the payload. Filter
-         `roadmap_matches` to only the roadmap-eligible tasks from step 1 before treating any
-         match as an annotation candidate — this filter is where meta/expanded exclusion is
-         enforced, since the script has no `task_type` filter of its own (see the script's header
-         "Caller contract").
-      3. **Error-handling contract** (identical to `commands/todo.md`'s Step 3.5 and
-         `commands/review.md`'s Step 2.5): a missing script, a non-zero exit, or empty output all
-         produce the same visible warning and the same fully-defined `parseable: false` fallback
-         — never silence.
-    </process>
-  </stage>
-  
+
   <stage id="6" name="ScanMetaSuggestions">
     <action>Scan meta tasks for README.md suggestions</action>
     <process>
@@ -394,15 +372,6 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
              upstream API decision)`
          - Orphaned directories count
          - Misplaced directories count
-         - Roadmap updates needed: same three-way branch as `commands/todo.md`'s dry-run output —
-           omit this line only when `roadmap_structure.parseable == true` and there are no
-           eligible matches (legitimately nothing to do); **always** print
-           `Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload`
-           when `parseable == false`, regardless of match count; print
-           `Warning: roadmap annotation no-op ({high_confidence_matches} high-confidence match(es), 0 applied) -- see skipped_reasons in the payload`
-           when `silent_noop == true`. Invariant: omission is permitted only when the roadmap
-           parsed successfully — an unparseable roadmap is never reportable as a successful
-           annotation pass.
          - README.md suggestions count
          - Memory candidates: tiered breakdown from `harvest_candidates`
            - Format: `Memory candidates: {T1} Tier 1, {T2} Tier 2, {T3} Tier 3 ({after_dedup} after dedup, {noop_count} NOOP excluded)`
@@ -624,7 +593,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
 
          **Decision Logic**:
          - If `vault_needed=true`: Proceed to sub-step 9.1 (VaultConfirmation)
-         - If `vault_needed=false`: Skip sub-steps 9.1-9.4, continue to Stage 11 (UpdateRoadmap)
+         - If `vault_needed=false`: Skip sub-steps 9.1-9.4, continue to Stage 12 (UpdateREADME)
 
       9.1. **VaultConfirmation** (if vault_needed=true)
 
@@ -684,7 +653,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            # Continue to sub-step 9.2
          else
            vault_approved=false
-           # Skip to Stage 11 (UpdateRoadmap)
+           # Skip to Stage 12 (UpdateREADME)
          fi
          ```
 
@@ -923,7 +892,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
            --argjson final "$next_num"
          ```
 
-         After sub-step 9.4 completes, continue to Stage 11 (UpdateRoadmap).
+         After sub-step 9.4 completes, continue to Stage 12 (UpdateREADME).
 
       <!-- CHECKPOINT: Stage 10 complete when vault_check output is present AND
            (vault_needed=false OR vault operations 9.1-9.4 completed) -->
@@ -931,39 +900,6 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
     <checkpoint>vault_check_complete output present; if vault_needed, sub-steps 9.1-9.4 executed</checkpoint>
   </stage>
 
-  <stage id="11" name="UpdateRoadmap">
-    <action>Update ROADMAP.md with completion annotations</action>
-    <process>
-      Split design: completed-task annotation is delegated to `roadmap-integration.sh
-      --annotate`; abandoned-task annotation stays this skill's own logic, since the script has
-      no abandoned-status code path at all (see the script's header "Caller contract").
-
-      1. **Build a filtered snapshot** from Stage 5's roadmap-eligible-task capture, taken
-         *before* Stage 10's archival mutated `active_projects` — reading the live
-         `specs/state.json` at this point (after Stage 10) would find none of the tasks being
-         archived. Create a scratch directory (`mktemp -d`), write
-         `{"active_projects": [<completed-status entries of Stage 5's roadmap-eligible tasks>]}`
-         as `<scratchdir>/state.json`, and remove the scratch directory via `trap` on exit.
-      2. **Snapshot safety rules**: the snapshot is a `--state` input only, never written back
-         over `specs/state.json`; because the script resolves its archive input as the sibling
-         `<scratchdir>/archive/state.json`, which does not exist, previously archived tasks are
-         deliberately excluded from this run's annotation — only this run's newly-completed
-         tasks are ever annotated.
-      3. **Apply completed-task annotations**: invoke
-         `roadmap-integration.sh --roadmap specs/ROADMAP.md --state <scratchdir>/state.json --annotate`
-         and read `annotation_summary` from the payload: `annotations_made`, `items_skipped`,
-         `skipped_reasons`, `high_confidence_matches`, `silent_noop`.
-      4. **Apply abandoned-task annotations** (this skill's own logic, gated on
-         `roadmap_structure.parseable` from Stage 5 — when `parseable` is false, do not attempt
-         the annotation and rely on Stage 8/16's warning instead of silently no-op'ing): for each
-         abandoned match, skip if already annotated, else `- [ ] item *(Task {N} abandoned: reason)*`
-         (checkbox stays unchecked).
-      5. Track changes: `completed_annotated` (from the script), `abandoned_annotated` (from step
-         4), `items_skipped`/`skipped_reasons`/`high_confidence_matches`/`silent_noop` (from the
-         script's `annotation_summary`)
-    </process>
-  </stage>
-  
   <stage id="12" name="UpdateREADME">
     <action>Apply README.md suggestions</action>
     <process>
@@ -1083,7 +1019,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          Stage 10 accumulated into `moved_paths[]` (both endpoints of every directory move this
          run performed — the enumerated destinations AND their vacated sources):
          `git add specs/TODO.md specs/state.json "${moved_paths[@]}"`, then conditionally add
-         `specs/CHANGE_LOG.md` (Stage 12), `specs/ROADMAP.md` (Stage 11 annotations), any
+         `specs/CHANGE_LOG.md` (Stage 12), any
          `README.md` files updated (Stage 13), and `.memory/` (Stage 14 memory harvest) — each
          only when that stage reports it made changes. Deliberately **do not** stage a bare
          `specs/archive/` directory token here: a directory token cannot reach the vacated
@@ -1094,7 +1030,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          so an empty `moved_paths[]` never degenerates into a bare, pathspec-less `git add`:
          when `moved_paths[]` is empty, omit `"${moved_paths[@]}"` from the invocation entirely
          rather than passing it unexpanded.
-      3. Commit: `todo: archive {N} tasks` with counts for completed, abandoned, expanded, roadmap, orphans, misplaced, readme, memories
+      3. Commit: `todo: archive {N} tasks` with counts for completed, abandoned, expanded, orphans, misplaced, readme, memories
     </process>
   </stage>
   
@@ -1109,15 +1045,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       - Runtime file reap: echo Stage 14.5's two reap calls' own summary lines verbatim (e.g.
         "reaped N of M session-scoped orchestration file(s)" and "reaped N of M stale session
         registry entries"), the same verbatim-echo convention as the lines above
-      - Updates applied (roadmap annotations/readme changes/changelog entries): same three-way
-        branch as Stage 8's dry-run line — omit the roadmap count only when
-        `roadmap_structure.parseable == true` and zero items were annotated; **always** print
-        `Warning: roadmap structure unrecognized (0 phases, 0 checkboxes, 0 table rows) -- see roadmap_structure in the payload`
-        when `parseable == false`; print
-        `Warning: roadmap annotation no-op ({high_confidence_matches} high-confidence match(es), 0 applied) -- see skipped_reasons in the payload`
-        when `silent_noop == true`. Invariant (stated once, applies to both Stage 8 and this
-        stage): omission is permitted only when the roadmap parsed successfully — an unparseable
-        roadmap is never reportable by `/todo` as a successful annotation pass.
+      - Updates applied (readme changes/changelog entries)
       - Memory harvest with tier breakdown:
         - Format: `Memory harvest: {created} created ({t1_created} Tier 1, {t2_created} Tier 2, {t3_created} Tier 3), {noop_skipped} skipped (NOOP), {user_skipped} declined`
         - If no memories created: `Memory harvest: none (no candidates)` or `Memory harvest: none (all skipped)`
