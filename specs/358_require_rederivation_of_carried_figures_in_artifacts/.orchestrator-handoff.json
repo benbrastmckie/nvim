@@ -1,23 +1,28 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 358,
-  "phase": "plan",
-  "dispatch_seq": 6,
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 9,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Authored a six-phase plan for the carried-figure authoring contract. Phase 1 re-derives every figure the plan carries from the research report (dogfooding the contract with inline CARRIED-UNVERIFIED marks); Phases 2-3 amend report-format.md with the full contract and point plan-format.md at it from Counts-are-hypotheses; Phase 4 is a measured decision gate (recall/precision/boundedness) on the narrow impossible-assertion detector, with Phase 5 conditional and its reasoned-exclusion contingency pre-written; Phase 6 is the acceptance sweep. Net format-document count stays at the measured pre-change value and both amendments are additive-only.",
+  "summary": "Landed the carried-figure authoring contract in report-format.md (full ## Carried-Figure Discipline section: six-class trigger, CARRIED-UNVERIFIED mark, reviewer prompt) and plan-format.md (a pointing paragraph inside Counts-are-hypotheses obligation). Phase 1 re-derived all four measured consumer-repo sub-classes from the task description with zero divergence. Phase 4's measured decision gate for the narrow impossible-assertion detector FAILED on all three pre-stated criteria (RECALL, PRECISION, BOUNDEDNESS -- 92 of 2711 files flagged, 0/12 sampled genuine, known positive missed due to markdown-bold interruption), so Phase 5 closed [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record and no script shipped, per the plan's own pre-written contingency. Phase 6's acceptance sweep confirmed net format-document count unchanged (16), zero removed lines, no task-number references, and attributed every verify-deploy.sh --findings finding (two self-caused, deploy-adjacent and left for the orchestrator's redeploy checkpoint; the rest attributable to concurrent sibling tasks 356/357 or pre-existing state).",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md",
+      "summary": "Full implementation summary with measured evidence, acceptance walk-through, and plan deviations."
+    },
+    {
       "type": "plan",
       "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/plans/01_carried-figure-authoring-contract.md",
-      "summary": "Six-phase, 4.25-hour plan amending report-format.md and plan-format.md with the carried-figure re-derive-or-mark contract, with a measured decision gate on the narrow internal-consistency detector."
+      "summary": "All six phases checked off and closed; Phase 5 closed COMPLETED WITH EXCLUSIONS."
     }
   ],
   "metadata": {
-    "session_id": "sess_1791361777_314fa0_358",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1791361777_314fa0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

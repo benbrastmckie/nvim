@@ -1,10 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md",
+      "summary": "All six phases completed. Landed the carried-figure authoring contract in report-format.md (full statement) and plan-format.md (pointing paragraph); Phase 4's measured decision gate FAILED on all three criteria (RECALL, PRECISION, BOUNDEDNESS), so Phase 5 closed COMPLETED WITH EXCLUSIONS with no script shipped, per the plan's own pre-written contingency."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a `## Carried-Figure Discipline` section to report-format.md (six-class trigger, CARRIED-UNVERIFIED mark, reviewer prompt) and a pointing paragraph to plan-format.md's Counts-are-hypotheses obligation; all four measured consumer-repo sub-classes were re-derived with zero divergence, and the narrow internal-consistency detector was measured infeasible (gate FAILED on recall/precision/boundedness) so no script was added, with the reasoned exclusion recorded instead."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/report-format.md",
+    "agent-system/extensions/core/context/formats/plan-format.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When measuring a candidate mechanical detector's feasibility before building it (a decision-gate phase), run the EXACT specified pattern unmodified against the one known positive first. A plausible-looking ERE can silently miss a known positive because markdown emphasis markers (e.g. **not**) split a trigger phrase mid-word, breaking a literal substring match -- this is a distinct, common failure mode from the detector being merely too broad or too narrow, and is worth checking explicitly before concluding recall failure means the semantic approach is wrong.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["decision-gate", "recall-test", "markdown-emphasis", "false-negative", "feasibility-measurement"]
+    },
+    {
+      "content": "For a two-site contract (same obligation potentially relevant to two format documents), ruling 'state fully in one, point from the other' avoids duplicated normative text drifting apart across future edits. Pick the site whose purpose most directly implicates the obligation (e.g. a report's purpose is producing freshly-derived facts, so carried-figure discipline belongs there) and have the other document's existing adjacent subsection point at it with a short paragraph naming the discharge path, rather than restating the rule.",
+      "category": "PATTERN",
+      "source_artifact": "specs/358_require_rederivation_of_carried_figures_in_artifacts/summaries/01_carried-figure-authoring-contract-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["contract-placement", "format-documents", "anti-duplication", "pointing-paragraph"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791361777_314fa0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
