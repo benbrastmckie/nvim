@@ -224,6 +224,7 @@ NO DEPENDENCY EDGES are created for any of these -- independent by decision. Exp
 - **Dependencies**: None
 - **Research**: [356_propagate_bounded_wait_contract_and_lint_coverage/reports/01_propagate-bounded-wait-contract.md]
 - **Plan**: [356_propagate_bounded_wait_contract_and_lint_coverage/plans/01_propagate-bounded-wait-contract.md]
+- **Summary**: [356_propagate_bounded_wait_contract_and_lint_coverage/summaries/01_propagate-bounded-wait-contract-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
