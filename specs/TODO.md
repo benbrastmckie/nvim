@@ -618,6 +618,93 @@ No on-disk fixtures directory is required: every existing lint fixture test buil
 violating trees in a `mktemp -d` workdir and tears them down, so the fixture suite for this lint
 must do the same rather than committing fixture files.
 
+--- REVISION (added after review): LINT FRAGMENT REGISTRATION, NOT JUST PATH SHAPE ---
+
+The scope above lints the path SHAPE of a hook registration. A second, independent defect class
+has the same silent-fail-open signature and the same blast radius: a registration that exists
+ONLY in install-once root-files/settings.json and in no fragment surface.
+
+WHY THIS MATTERS. root-files/settings.json is install-once (loader.lua's
+INSTALL_ONCE_ROOT_FILES): it is copied only when no project copy exists, and never overwritten
+on resync. Fragment surfaces (merge-sources/settings-hooks.json and each extension's
+settings-hooks.json / settings-fragment.json) are re-merged on EVERY resync. So a registration
+living only in root-files is unreachable by resync in every already-deployed repo -- any later
+correction to it, of any kind, cannot propagate. The path-shape fix made this concrete: six
+registrations (log-session.sh, memory-nudge.sh, post-command.sh, subagent-postflight.sh,
+tts-notify.sh, validate-plan-write.sh) were reachable by no resync at all and had to be moved
+into the fragment by the upstream path-shape task before its self-healing merge could see them.
+
+The upstream task moves those six and hardens merge.lua's hook dedupe to identity-based
+comparison so a resync converges each hook to one correct registration. That machinery is only
+as good as the set of registrations the fragment merge actually visits. Without a gate, the next
+hook added to root-files alone silently re-creates an unreachable registration, and the
+self-healing property is quietly lost for that hook with no visible symptom until a path or
+command change needs to propagate and cannot.
+
+SCOPE ADDITION:
+  - Extend the lint so every hook registration in root-files/settings.json must also appear in a
+    fragment surface, keyed by hook script identity (the hooks/NAME.sh the command invokes) plus
+    its event and type -- the same identity notion the upstream task's dedupe adopts, so the two
+    cannot disagree about what "the same registration" means.
+  - A registration present in BOTH root-files and a fragment is CORRECT and must pass: that is
+    the established pattern (eleven hooks already sit in both) and is what lets a fresh install
+    get hooks before its first fragment merge.
+  - A registration present in a fragment but not in root-files is also CORRECT and must pass.
+  - Only fragment-absent-while-root-files-present is a violation.
+  - Report the violation in the fragment's terms, naming the hook script and the fragment file it
+    should be added to, so the fix is obvious from the message alone.
+
+ADDITIONAL ACCEPTANCE CRITERIA:
+  8. The lint fails, naming the hook script and the fragment file it belongs in, on a
+     registration present in root-files/settings.json and absent from every fragment surface.
+  9. The fixture suite includes, as PASSING cases, both the both-surfaces shape and the
+     fragment-only shape; and as a FAILING case, the root-files-only shape.
+ 10. The lint passes on the corpus once the upstream task's six moved registrations have landed.
+
+
+--- REVISION (added after review): DO NOT ANCHOR THE LINT TO `.claude/` OR TO `hooks/` ---
+
+LIVE EVIDENCE. A repair of the PossibleWorlds deploy (settings.json moved aside, then reloaded,
+producing a fresh install-once copy) left 22 of 23 registrations in the correct
+"$CLAUDE_PROJECT_DIR"-prefixed form and exactly one still defective:
+
+  root-files/settings.json line 118, SessionStart:
+    "command": "bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"
+
+This single line evades BOTH of this task's detection rules as written above:
+  - Acceptance criterion 1 keys on "a CWD-relative `.claude/` path". This command contains no
+    `.claude/` at all -- it is relative to `scripts/`. The path-shape lint misses it.
+  - Criterion 8 keys the fragment-coverage check on "the hooks/NAME.sh the command invokes".
+    This command invokes no path under `hooks/`. The fragment-coverage lint misses it too.
+It is nonetheless the exact defect class this task exists to gate: a relative path in a hook
+command, resolved against the session's drifted shell cwd, failing silently.
+
+SCOPE CORRECTION:
+  - The path-shape check must flag ANY relative path in a hook command string, not only one
+    prefixed `.claude/`. The accept condition is that an invoked script path is absolute or
+    "$CLAUDE_PROJECT_DIR"-anchored; everything else is a violation regardless of which directory
+    it names. Treat `.claude/` as one instance of the defect, never as the defect's definition.
+  - The fragment-coverage check's identity notion must likewise cover any invoked script path,
+    not only paths under `hooks/`. Key it on the invoked script path as written, normalized for
+    the anchor prefix, so a registration naming `scripts/foo.sh` is compared as readily as one
+    naming `hooks/foo.sh`.
+  - Add the line-118 shape to the fixture suite as a FAILING case, so neither rule can regress to
+    a `.claude/`-anchored or `hooks/`-anchored pattern without a test going red.
+
+SEPARATE DEFECT FOUND IN THE SAME LINE, worth its own check: `scripts/claude-ready-signal.sh`
+exists nowhere -- not in the source store, not in the deployed consumer repo. The registration
+has been invoking a nonexistent script, silently, suppressed by its own
+`2>/dev/null || echo '{}'`. Add a check that every script path a hook registration invokes
+resolves to a file that exists in the source store, so a dead registration cannot sit unnoticed.
+Scope this check to source-store-resolvable paths only; a registration pointing at a
+user-supplied or externally-provided script must not be failed for being absent from this repo.
+
+ADDITIONAL ACCEPTANCE CRITERIA:
+ 11. The lint fails on a relative hook command path that does not contain `.claude/`, with the
+     line-118 shape above covered as a fixture FAILING case.
+ 12. The lint fails, naming file and line, on a hook registration invoking a source-store script
+     path that does not exist.
+
 ---
 
 ### 364. Resolve hook registration paths independently of session CWD so bare-registered blocking guards cannot fail open
