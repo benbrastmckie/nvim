@@ -1,7 +1,7 @@
 # Implementation Plan: Task #356
 
 - **Task**: 356 - Propagate bounded-wait contract and add lint coverage
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (no dependency edges; related tasks recorded by durable anchor only)
 - **Research Inputs**: specs/356_propagate_bounded_wait_contract_and_lint_coverage/reports/01_propagate-bounded-wait-contract.md
@@ -110,24 +110,28 @@ never a directory or glob pathspec); never run `git-snapshot.sh` in its revertin
 
 ---
 
-### Phase 1: Re-Confirm the Coverage Baseline [NOT STARTED]
+### Phase 1: Re-Confirm the Coverage Baseline [COMPLETED]
 
 **Goal**: Establish, by the stated command and before any edit, that the measured 3-covered /
 14-missing split still holds — and report any divergence explicitly rather than absorbing it.
 
 **Tasks**:
-- [ ] Run, from the repository root:
+- [x] Run, from the repository root:
       `cd agent-system/extensions && for f in $(find . -name '*implementation*agent.md' | sort); do echo "$(grep -c run_in_background "$f") $(grep -c bounded-build-waiter "$f") $f"; done`
-- [ ] Compare the output against the 17-line baseline recorded in the research report's "Codebase
+      *(completed: 17 files found, matches baseline)*
+- [x] Compare the output against the 17-line baseline recorded in the research report's "Codebase
       Patterns" section. Confirm exactly three files are nonzero
       (`core/agents/general-implementation-agent.md`, `lean/agents/lean-implementation-agent.md`,
       `lean/agents/lean-implementation-hard-agent.md`) and the other 14 are `0 0`.
-- [ ] If the file count is not 17, or any file's covered/missing state differs from the baseline,
+      *(completed: exact match, zero divergence)*
+- [x] If the file count is not 17, or any file's covered/missing state differs from the baseline,
       STOP and report the divergence in the handoff `summary` and (if it changes scope) as a
       blocker — do not silently widen or narrow the target list.
-- [ ] Confirm all 14 target files have a `## Critical Requirements` section and a `**MUST NOT**`
+      *(completed: no divergence found, nothing to report)*
+- [x] Confirm all 14 target files have a `## Critical Requirements` section and a `**MUST NOT**`
       list (the insertion site Phase 3 depends on):
       `for f in <14 paths>; do printf '%s crit=%s mustnot=%s\n' "$f" "$(grep -c '^## Critical Requirements' "$f")" "$(grep -c '^\*\*MUST NOT\*\*' "$f")"; done`
+      *(completed: all 14 show crit=1 mustnot=1)*
 
 **Timing**: 0.25 hours
 

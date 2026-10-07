@@ -77,14 +77,14 @@ next_project_number: 359
 
 ### Agent System
 
-356 [PLANNED] — Propagate the bounded-wait contract to the fourteen...
-357 [PLANNED] — Rule on whether the per-phase handoff must land in its own...
-358 [PLANNED] — Require a figure or mechanical claim carried into a report or...
+356 [IMPLEMENTING] — Propagate the bounded-wait contract to the fourteen...
+357 [IMPLEMENTING] — Rule on whether the per-phase handoff must land in its own...
+358 [IMPLEMENTING] — Require a figure or mechanical claim carried into a report or...
 
 ## Tasks
 
 ### 358. Require a figure or mechanical claim carried into a report or plan to be re-derived at authoring time, or explicitly marked as unverified-and-carried
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -146,7 +146,7 @@ Measured at creation time: NO non-terminal task declares core/context/formats/re
 ---
 
 ### 357. Rule on whether the per-phase handoff must land in its own commit, and fold it into that phase's work commit if it need not
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -218,7 +218,7 @@ NO DEPENDENCY EDGES are created for any of these -- independent by decision. Exp
 ---
 
 ### 356. Propagate the bounded-wait contract to the fourteen implementation agent definitions that lack it, and assert the coverage mechanically in the agent-contract lint
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

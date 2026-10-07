@@ -1,22 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/356_propagate_bounded_wait_contract_and_lint_coverage/plans/01_propagate-bounded-wait-contract.md",
-      "summary": "6-phase plan propagating the bounded-wait contract to 14 implementation-agent definitions via one canonical fragment, with lint Check H asserting the coverage."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1791361777_314fa0_356",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.5,
-    "dependency_waves": 6
-  },
-  "next_steps": "Run /implement 356 to execute the plan",
-  "dispatch_seq": 4
+    "session_id": "sess_1791361777_314fa0",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
