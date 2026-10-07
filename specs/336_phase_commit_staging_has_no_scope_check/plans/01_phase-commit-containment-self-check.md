@@ -307,19 +307,33 @@ the phase's progress notes.
 
 ---
 
-### Phase 4: Wire the ten single-site definitions [NOT STARTED]
+### Phase 4: Wire the ten single-site definitions [COMPLETED]
 
 **Goal**: Apply the identical edit to the remaining ten definitions, completing uniform coverage
 of all fifteen.
 
 **Tasks**:
-- [ ] For each file below: grep its `git-commit-scoped.sh` occurrence, confirm it is a genuine
+- [x] For each file below: grep its `git-commit-scoped.sh` occurrence, confirm it is a genuine
   invocation, and add `--task {N} \` preserving existing flags. Note that at least one of these
   already carries `--honest-index-rows {N}` — keep it and add `--task {N}` alongside, do not
-  replace it.
-- [ ] Add the same 2-4 line pointer to the canonical block before each invocation, with wording
-  identical across all ten so the set does not drift.
-- [ ] Confirm no file in this phase gained any task-number reference.
+  replace it. *(completed: 9 of 10 files had a literal bash invocation (confirmed `--honest-index-rows`
+  preserved in latex, nix, nvim, python, rust, typst, web, z3); `--task "{N}"` added at each.
+  `books-implementation-hard-agent.md` deviation — see note below.)*
+- [x] Add the same 2-4 line pointer to the canonical block before each invocation, with wording
+  identical across all ten so the set does not drift. *(completed, identical wording to Phase 3's
+  pointer)*
+- [x] Confirm no file in this phase gained any task-number reference. *(completed:
+  check-task-references.sh reports 0 occurrences for all ten files)*
+
+**Deviation**: `books-implementation-hard-agent.md` (file 2 of 10) carries NO literal bash
+invocation of `git-commit-scoped.sh` at all — only a one-line prose cross-reference ("through
+`git-commit-scoped.sh`, never a directory or glob `git add`"), consistent with this file's
+established style of deferring to the base agent for Stage 4A/4C/4D mechanics. The Scope
+Hypothesis assumed a literal bash block in every file; this one file does not have one. Edited
+the prose line itself to read `git-commit-scoped.sh --task "{N}"` and added the canonical-block
+pointer immediately after it, preserving the file's existing one-line prose convention rather
+than introducing a bash block that does not otherwise exist in this file. Recorded in the
+progress file's `deviations` array.
 
 **Timing**: 1.0 hours
 

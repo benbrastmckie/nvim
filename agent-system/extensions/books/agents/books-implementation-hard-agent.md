@@ -149,8 +149,10 @@ it verified.
 COMPLETED, review any unchecked plan items and annotate deviations inline.
 
 **E. Git Commit Phase** — targeted, work-scoped staging per
-`.claude/context/standards/git-staging-scope.md`, through `git-commit-scoped.sh`, never a
-directory or glob `git add`.
+`.claude/context/standards/git-staging-scope.md`, through `git-commit-scoped.sh --task "{N}"`,
+never a directory or glob `git add`. Before invoking, run the Phase-Commit Containment
+Self-Check (see `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+`#### Phase-Commit Containment Self-Check`) against the staged path list.
 
 ### Stage 5: Final Verification
 

@@ -465,7 +465,10 @@ For each phase in the implementation plan:
 4. **Update phase status** to `[COMPLETED]` (Step D), then perform post-phase self-review (Stage 4D-ii) and write a progressive handoff (Stage 4D-iii)
 5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
    staging — never stage the entire working tree. See
-   `.claude/context/standards/git-staging-scope.md` for the full commit-scope contract:
+   `.claude/context/standards/git-staging-scope.md` for the full commit-scope contract. Before
+   invoking, run the Phase-Commit Containment Self-Check (see
+   `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+   `#### Phase-Commit Containment Self-Check`) against the staged path list:
    ```bash
    task_dir="specs/{NNN}_{SLUG}"
    stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
@@ -477,6 +480,7 @@ For each phase in the implementation plan:
      --message "task {N} phase {P}: {phase_name}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
+     --task "{N}" \
      -- "${stage_paths[@]}"
    ```
 6. **Proceed to next phase** or return if blocked

@@ -1,0 +1,34 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the ten single-site definitions",
+  "started_at": "2026-10-07T06:42:00Z",
+  "last_updated": "2026-10-07T07:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --task {N} preserving existing flags at each file's invocation", "status": "done", "files_touched": [
+      "agent-system/extensions/books/agents/books-implementation-agent.md",
+      "agent-system/extensions/books/agents/books-implementation-hard-agent.md",
+      "agent-system/extensions/latex/agents/latex-implementation-agent.md",
+      "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+      "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+      "agent-system/extensions/python/agents/python-implementation-agent.md",
+      "agent-system/extensions/rust/agents/rust-implementation-agent.md",
+      "agent-system/extensions/typst/agents/typst-implementation-agent.md",
+      "agent-system/extensions/web/agents/web-implementation-agent.md",
+      "agent-system/extensions/z3/agents/z3-implementation-agent.md"
+    ]},
+    {"id": 2, "description": "Add identical canonical-block pointer before each invocation", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm no task-number references gained", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "books-implementation-hard-agent.md carries no literal bash invocation of git-commit-scoped.sh, only a one-line prose cross-reference",
+      "type": "altered",
+      "reason": "The file's established style defers to the base agent for commit mechanics via a one-line prose reference rather than a copied bash block; edited that prose line in place (added --task \"{N}\" and the canonical-block pointer) instead of introducing a new bash block the file does not otherwise have.",
+      "annotation": "*(deviation: altered — edited prose cross-reference line in place rather than a bash block)*"
+    }
+  ]
+}
