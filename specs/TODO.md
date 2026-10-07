@@ -1,5 +1,5 @@
 ---
-next_project_number: 364
+next_project_number: 366
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 364
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,347,349,351,356,358,361 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,272,273,281,303,335,344,345,350,352,355,360,362,363 | 22,251,271,280,284,311,349,351,356,358,361 | core-agent-system, extensions, orchestrator, ... |
+| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,347,349,351,356,358,361,364 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,272,273,281,303,335,344,345,350,352,355,360,362,363,365 | 22,251,271,280,284,311,349,351,356,358,361,364 | core-agent-system, extensions, orchestrator, ... |
 | 3 | 275,282,304,353,354,359 | 272,273,281,284,302,345,350,352,356 | core-agent-system, extensions, orchestrator |
 | 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -35,6 +35,8 @@ next_project_number: 364
 318 [NOT STARTED] — Wire lint-directory-pathspec-boundary.sh into...
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+364 [NOT STARTED] — Resolve hook registration paths independently of session CWD...
+  └─ 365 [NOT STARTED] — Lint forbidding CWD-relative .claude/ paths in hook...
 352 [NOT STARTED] — Fix validate-artifact.sh's SKILLVALIDATEFIXES counters, which...
 354 [NOT STARTED] — Rule on whether the local-gate backgrounding prohibition must...
 359 [NOT STARTED] — Close the two measured curated-array coverage gaps in the...
@@ -82,10 +84,170 @@ next_project_number: 364
 356 [IMPLEMENTING] — Propagate the bounded-wait contract to the fourteen...
   └─ 362 [NOT STARTED] — Teach the non-destructive history-read techniques at the...
 358 [IMPLEMENTING] — Require a figure or mechanical claim carried into a report or...
-361 [NOT STARTED] — Reclassify bare git stash as destructive on a shared tree:...
+361 [RESEARCHING] — Reclassify bare git stash as destructive on a shared tree:...
   └─ 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
+
+### 365. Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 364
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable
+deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. Add a lint that fails on any hook registration whose command references `.claude/` by a
+CWD-relative path, and wire it into verify-deploy.sh's gate suite so the defect fixed by the
+upstream dependency (cwd_relative_hook_registration_paths) cannot be reintroduced. This follows
+the established house pattern of pairing a defect fix with a verify-deploy gate (cf. the existing
+open task wire_directory_pathspec_lint_as_verify_deploy_gate).
+
+MOTIVATION is concrete and near-term: tasks 282 and 347 are both open and both ADD new hook
+registrations to core/merge-sources/settings-hooks.json. Without a gate, either one reintroduces
+the defect by copying the surrounding style.
+
+DEPENDENCY: this task is blocked on the upstream path-shape fix, because the lint encodes whatever
+path shape that task settles on ("$CLAUDE_PROJECT_DIR"-prefixed, deploy-time absolute
+substitution, or a self-locating dispatcher). Do not author the lint's accept-pattern before that
+decision is made.
+
+SCOPE:
+  - Lint every settings surface in the source store, not just core:
+    root-files/settings.json, merge-sources/settings-hooks.json, and every extension's
+    settings-hooks.json / settings-fragment.json. Extension-provided surfaces are where the defect
+    spread (email/settings-fragment.json, books/settings-hooks.json), so a core-only lint would
+    miss it.
+  - Detect BOTH syntactic shapes: a direct `"command": "bash .claude/hooks/x.sh"` registration AND
+    a CWD-relative path nested inside a `bash -c '...'` wrapper (core/root-files/settings.json
+    line 80 is the live instance of the second shape).
+  - Whether settings.local.json's permission matchers are covered follows the upstream task's
+    finding on whether permission matchers share the CWD-sensitivity.
+  - Fixture test with both a passing and a deliberately-violating fixture, per the house
+    convention for lint scripts in core/scripts/tests/.
+  - Must fail CLOSED on a missing or broken lint library -- a lint that exits 0 when absent
+    repeats the fail-open failure mode this very task exists to prevent. Note this is the OPPOSITE
+    polarity from the hook convention: a write-time hook fails OPEN so a broken guard cannot block
+    every write, whereas a deploy gate fails CLOSED so a broken gate cannot silently pass a bad
+    deploy. State that contrast explicitly in the script header so a later reader does not
+    "correct" one to match the other.
+
+ACCEPTANCE CRITERIA:
+  1. The lint fails, naming file and line, on a registration using a CWD-relative `.claude/` path.
+  2. The lint passes on the corpus after the upstream path-shape fix lands.
+  3. It is wired into verify-deploy.sh and runs in that suite.
+  4. Its fixture test covers both the passing and the violating case.
+  5. A deliberately absent or broken lint library causes a nonzero exit, not a silent pass.
+
+---
+
+### 364. Resolve hook registration paths independently of session CWD so bare-registered blocking guards cannot fail open
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Research**: [364_cwd_relative_hook_registration_paths/reports/01_cwd-relative-hook-paths.md]
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ (never .claude/**, a disposable deploy
+artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. Every PreToolUse/PostToolUse hook registration in the source store resolves
+`bash .claude/hooks/*.sh` against the session CWD rather than the project root. Whenever a
+session's shell cwd is a subdirectory of the repo, every hook fails to resolve and the harness
+reports a NON-BLOCKING failure -- so the hook silently fails OPEN.
+
+This defeats the design intent of the six BARE-registered blocking guards, whose whole point is
+that `exit 2` survives: guard-git-push.sh, guard-destructive-git.sh,
+validate-no-task-references.sh, please-grant.sh, validate-handoff-location.sh,
+validate-evidence-append-only.sh.
+
+LIVE REPRODUCTION (session sess_1791385200_b7e3f1, consumer repo
+/home/benjamin/Philosophy/Papers/PossibleWorlds): the session's first Bash tool call ran
+`cd /home/benjamin/Philosophy/Papers/PossibleWorlds/JPL && ...`. Bash-tool cwd persists across
+calls, so the session cwd moved into JPL/, where no .claude/ exists. Every subsequent Bash tool
+call then emitted:
+
+    PreToolUse:Bash hook error
+    Failed with non-blocking status code: bash: .claude/hooks/guard-destructive-git.sh: No such file or directory
+    PreToolUse:Bash hook error
+    Failed with non-blocking status code: bash: .claude/hooks/guard-git-push.sh: No such file or directory
+
+Both git guards were inert for the duration. The errors stopped the moment cwd returned to the
+repo root. The deployed .claude/settings.json in that repo carries 21 registrations matching
+`bash .claude/hooks/` and ZERO occurrences of CLAUDE_PROJECT_DIR.
+
+AFFECTED SOURCE-STORE SURFACES (under agent-system/extensions/):
+  - core/root-files/settings.json -- bare blocking registrations at lines 51
+    (guard-destructive-git.sh), 60 (validate-no-task-references.sh), 69 (guard-git-push.sh),
+    164 (please-grant.sh). Also note line 80, which nests a CWD-relative
+    `bash .claude/hooks/validate-state-sync.sh` inside a `bash -c` wrapper -- the same defect in a
+    second syntactic shape that a naive grep/fix pass can miss.
+  - core/merge-sources/settings-hooks.json -- bare blocking registrations at lines 7
+    (validate-no-task-references.sh), 13 (guard-destructive-git.sh), 19 (guard-git-push.sh),
+    59 (please-grant.sh), 67 (validate-handoff-location.sh).
+  - email/settings-fragment.json -- mail-guard.sh (line 7; advisory, carries the
+    `|| echo '{}'` suffix, but shares the path defect).
+  - books/settings-hooks.json -- validate-evidence-append-only.sh, bare blocking at line 7.
+  - core/root-files/settings.local.json -- carries CWD-relative
+    `Bash(bash .claude/scripts/...)` PERMISSION matchers at lines 15, 16, 18, 19, 43, 45.
+    SCOPE DECISION (user-confirmed): investigate whether permission matchers are CWD-sensitive the
+    way hook commands are, and include them in this task ONLY if they share the defect. Do not
+    assume either way.
+
+RESEARCH QUESTIONS (user-confirmed: the mechanism is deliberately left open for research to
+settle; do not pre-commit the plan to one):
+  1. GATING QUESTION, resolve first and empirically: does the Claude Code harness export
+     CLAUDE_PROJECT_DIR to hook commands? It appears NOWHERE in the agent-system (grep across all
+     extensions returns zero hits) and it is ABSENT from the Bash tool's own environment in the
+     reproducing session. Hook commands may receive a different env than the Bash tool. Verify by
+     direct experiment, not by documentation alone.
+  2. If it is available: adopt `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh`. Confirm quoting
+     survives JSON escaping and that deep_merge dedup still matches entries across
+     root-files/settings.json and merge-sources/settings-hooks.json.
+  3. If it is NOT reliably available, evaluate the fallbacks: (a) deploy-time absolute-path
+     substitution by the <leader>al loader -- harness-independent but bakes machine-specific paths
+     into a generated artifact; (b) a single self-locating dispatcher resolving the root via
+     `git rev-parse --show-toplevel` and exec'ing the named hook -- one indirection point, but adds
+     a process per invocation and a new failure mode outside a git repo.
+  4. Whichever shape is chosen, verify the result BY DEPLOYING into a consumer repo and grepping
+     the resulting .claude/settings.json, then reproducing the original failure (cd into a
+     subdirectory, run a Bash tool call) and confirming the guards now fire. The existing house
+     convention of verifying registration bare-ness in the DEPLOYED artifact applies here too.
+  5. Confirm that the fix preserves the bare-vs-`|| echo '{}'` distinction exactly: the six
+     blocking guards must stay bare so `exit 2` still blocks; the advisory hooks keep their
+     fail-open suffix.
+
+EXTERNAL DEPENDENCY NOTE (recorded, NOT a blocking edge): tasks 282 and 347 are both not_started
+and both ADD new hook registrations to core/merge-sources/settings-hooks.json, so both would
+inherit this defect verbatim. Task 347 in particular registers BARE specifically "so exit 2
+survives" -- the exact property this defect destroys. SEQUENCING CONSIDERATION: whichever of
+{this task, 282, 347} lands second must adopt the fixed path shape; do not let a later merge
+reintroduce the CWD-relative form by copying surrounding style.
+
+NOT COVERED BY EXISTING OPEN TASKS (verified against specs/TODO.md and specs/state.json):
+  - Task 303 (validate_state_cwd_relative_default_resolution, not_started) is a script-INTERNAL
+    default-argument bug, not the registration surface. TODO.md line 2823 already records the two
+    as "unrelated beyond both being path-resolution bugs."
+  - Tasks 282 and 347 ADD registrations rather than fixing the path shape; neither can be
+    naturally extended to cover this.
+
+ACCEPTANCE CRITERIA:
+  1. From a session whose cwd is a subdirectory of a deployed consumer repo, a Bash tool call
+     fires every registered hook successfully -- no `No such file or directory`, no non-blocking
+     hook error.
+  2. The six bare-registered blocking guards still block with `exit 2` from that same subdirectory
+     cwd (demonstrated, not asserted).
+  3. The advisory hooks retain their fail-open `2>/dev/null || echo '{}'` behavior.
+  4. A fresh deploy into a consumer repo produces a .claude/settings.json whose hook commands
+     contain no CWD-relative `.claude/` path.
+
+PRE-RESEARCH EVIDENCE: reports/01_cwd-relative-hook-paths.md captures the live reproduction, the
+affected-surface inventory with file and line numbers, the fail-open analysis, and the open
+CLAUDE_PROJECT_DIR question. It is a reporting-session evidence capture, not a completed research
+report.
+
+---
 
 ### 363. Post-incident verification checklist for destructive git on a shared tree, naming uncommitted pre-session tree state as the first mandatory check
 - **Status**: [NOT STARTED]
@@ -229,7 +391,7 @@ THE CHOICE: this task DECLARES A DEPENDENCY on the bounded-wait propagation task
 ---
 
 ### 361. Reclassify bare `git stash` as destructive on a shared tree: correct the rule's solo-tree premise, then add the guard patterns that implement it
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 357
