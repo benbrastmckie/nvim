@@ -1525,6 +1525,42 @@ Rule on which, record why, and only then change the assertion, the check, or the
 - Both known-failures.txt rows (test-lint-json-channel-discipline.sh, test-typst-element-lint.sh) are REMOVED once their suites are green.
 - Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.
 
+--- REVISION (added after review): CLOSE OUT THIS TASK'S OWN known-failures.txt ROW ---
+
+`agent-system/extensions/core/scripts/tests/known-failures.txt` is already in this task's
+file_scope, but nothing in the task said what to DO with it. State it explicitly, because the
+file's own header makes the current state a recorded gap: every real-defect row still carries
+`owner|needs-owner`, and that header says a `needs-owner` row "is a known gap, not an accepted
+steady state -- a follow-up task should be spawned to either fix or formally accept each one."
+These owners now exist; the rows were never updated to say so.
+
+Required, for THIS TASK'S OWN ROW(S) ONLY -- never another task's row:
+  - Rows owned: BOTH `test-lint-json-channel-discipline.sh` AND `test-typst-element-lint.sh`
+    (each category `real-defect`). Both must be closed out; closing one and leaving the other is
+    an incomplete task.
+  - Durable slug for the `owner` field: `typst_resolve_two_red_lint_suites`.
+  - Note the typst row specifically records that it "needs a deliberate ruling on which check owns
+    that shape before the assertion or the fixture is changed" -- so the formal-acceptance branch
+    above is a live possibility here, not a formality.
+
+  - ON FIX (the expected outcome): DELETE the row outright once the suite is green under
+    `tests/run-all.sh`. A fixed suite must not keep a known-failing exception; leaving the row is
+    how a stale exception silently masks a future regression of the same suite.
+  - ON FORMAL ACCEPTANCE instead (only if the ruling is that the behaviour is correct and the
+    assertion was wrong, and only with that reasoning recorded): KEEP the row but replace
+    `needs-owner` in the `owner` field with this task's durable slug, and update `category` from
+    `real-defect` to the category the ruling establishes.
+  - EITHER WAY, the `owner` field MUST be the durable slug, NEVER a bare task number. This file
+    lives under `agent-system/extensions/**`, not `specs/**`, so task-number references are
+    prohibited in it -- see `no-task-references-in-deliverables.md` and the file's own header.
+  - Do NOT duplicate this status in prose anywhere else. Settled decision 13 makes this file the
+    single source of truth for which suites are known-failing;
+    `context/standards/shell-script-testing.md` points here rather than keeping its own copy,
+    because a prose copy is exactly the drift mechanism that produced a stale list once already.
+
+ACCEPTANCE: after this task, no row it owns still reads `needs-owner` -- the row is either gone
+(fixed) or carries this task's durable slug with a corrected category (formally accepted).
+
 ---
 
 ### 352. Fix validate-artifact.sh's `SKILL_VALIDATE_FIXES` counters, which neither accumulate across multi-file aggregation nor reset between calls
@@ -1571,6 +1607,37 @@ Note the scope claim in the known-failures row is narrower than the suite name s
 - The report names whether the defect was confined to validate-artifact.sh or extended to skill-base.sh / command-gate-out.sh, with evidence.
 - known-failures.txt's test-gate-out-repair-reporting.sh row is REMOVED once the suite is green.
 - Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.
+
+--- REVISION (added after review): CLOSE OUT THIS TASK'S OWN known-failures.txt ROW ---
+
+`agent-system/extensions/core/scripts/tests/known-failures.txt` is already in this task's
+file_scope, but nothing in the task said what to DO with it. State it explicitly, because the
+file's own header makes the current state a recorded gap: every real-defect row still carries
+`owner|needs-owner`, and that header says a `needs-owner` row "is a known gap, not an accepted
+steady state -- a follow-up task should be spawned to either fix or formally accept each one."
+These owners now exist; the rows were never updated to say so.
+
+Required, for THIS TASK'S OWN ROW(S) ONLY -- never another task's row:
+  - Row owned: `test-gate-out-repair-reporting.sh` (category `real-defect`).
+  - Durable slug for the `owner` field: `validate_artifact_fixes_counters_do_not_accumulate`.
+
+  - ON FIX (the expected outcome): DELETE the row outright once the suite is green under
+    `tests/run-all.sh`. A fixed suite must not keep a known-failing exception; leaving the row is
+    how a stale exception silently masks a future regression of the same suite.
+  - ON FORMAL ACCEPTANCE instead (only if the ruling is that the behaviour is correct and the
+    assertion was wrong, and only with that reasoning recorded): KEEP the row but replace
+    `needs-owner` in the `owner` field with this task's durable slug, and update `category` from
+    `real-defect` to the category the ruling establishes.
+  - EITHER WAY, the `owner` field MUST be the durable slug, NEVER a bare task number. This file
+    lives under `agent-system/extensions/**`, not `specs/**`, so task-number references are
+    prohibited in it -- see `no-task-references-in-deliverables.md` and the file's own header.
+  - Do NOT duplicate this status in prose anywhere else. Settled decision 13 makes this file the
+    single source of truth for which suites are known-failing;
+    `context/standards/shell-script-testing.md` points here rather than keeping its own copy,
+    because a prose copy is exactly the drift mechanism that produced a stale list once already.
+
+ACCEPTANCE: after this task, no row it owns still reads `needs-owner` -- the row is either gone
+(fixed) or carries this task's durable slug with a corrected category (formally accepted).
 
 ---
 
@@ -1623,6 +1690,37 @@ The halt is the guard against an orchestrate run burning its cycle budget re-dis
 - A regression fixture pins the specific failure mode found, so the halt cannot silently go inert again.
 - known-failures.txt's test-orchestrate-cycle-plan.sh row is REMOVED if the suite goes green, or its reason and owner are updated if a reasoned exclusion remains.
 - Redeployed. Shellcheck clean per context/standards/shell-strict-mode.md.
+
+--- REVISION (added after review): CLOSE OUT THIS TASK'S OWN known-failures.txt ROW ---
+
+`agent-system/extensions/core/scripts/tests/known-failures.txt` is already in this task's
+file_scope, but nothing in the task said what to DO with it. State it explicitly, because the
+file's own header makes the current state a recorded gap: every real-defect row still carries
+`owner|needs-owner`, and that header says a `needs-owner` row "is a known gap, not an accepted
+steady state -- a follow-up task should be spawned to either fix or formally accept each one."
+These owners now exist; the rows were never updated to say so.
+
+Required, for THIS TASK'S OWN ROW(S) ONLY -- never another task's row:
+  - Row owned: `test-orchestrate-cycle-plan.sh` (category `real-defect`).
+  - Durable slug for the `owner` field: `identical_dispatch_halt_does_not_fire`.
+
+  - ON FIX (the expected outcome): DELETE the row outright once the suite is green under
+    `tests/run-all.sh`. A fixed suite must not keep a known-failing exception; leaving the row is
+    how a stale exception silently masks a future regression of the same suite.
+  - ON FORMAL ACCEPTANCE instead (only if the ruling is that the behaviour is correct and the
+    assertion was wrong, and only with that reasoning recorded): KEEP the row but replace
+    `needs-owner` in the `owner` field with this task's durable slug, and update `category` from
+    `real-defect` to the category the ruling establishes.
+  - EITHER WAY, the `owner` field MUST be the durable slug, NEVER a bare task number. This file
+    lives under `agent-system/extensions/**`, not `specs/**`, so task-number references are
+    prohibited in it -- see `no-task-references-in-deliverables.md` and the file's own header.
+  - Do NOT duplicate this status in prose anywhere else. Settled decision 13 makes this file the
+    single source of truth for which suites are known-failing;
+    `context/standards/shell-script-testing.md` points here rather than keeping its own copy,
+    because a prose copy is exactly the drift mechanism that produced a stale list once already.
+
+ACCEPTANCE: after this task, no row it owns still reads `needs-owner` -- the row is either gone
+(fixed) or carries this task's durable slug with a corrected category (formally accepted).
 
 ---
 
