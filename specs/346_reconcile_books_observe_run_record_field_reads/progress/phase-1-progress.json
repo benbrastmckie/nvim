@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Correct the six field reads, with its fixture, as one atomic batch",
+  "started_at": "2026-10-06T00:00:00Z",
+  "last_updated": "2026-10-06T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Correct all six jq field-read mismatches and the shell-side certifier_outcomes_json assembly in books-observe.sh, and rewrite the Case 7 fixture in test-books-observe.sh to be schema-conformant with populated-group assertions, as one atomic batch",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/scripts/books-observe.sh",
+        "agent-system/extensions/books/scripts/tests/test-books-observe.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

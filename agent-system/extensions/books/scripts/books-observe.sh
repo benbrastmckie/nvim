@@ -410,20 +410,20 @@ observe_run_core() {
   local verification_tiers_json="" certifier_outcomes_json="" vacuous_passes_json="\"absent\""
 
   if [ -f "$run_log" ] && has_jq; then
-    local run_agg mine_count tiers_json classes_json refusals_json warnings_json vac_json
-    run_agg="$(jq -c -s --argjson task "$task_number" '
+    local run_agg mine_count tiers_json classes_json refusal_total_json warning_total_json vac_json
+    run_agg="$(jq -c -s --arg task "$task_number" '
       [ .[] | select((.caller_context.task // null) == $task) ] as $mine
       | {
           count: ($mine | length),
           tiers: ( $mine | group_by(.tier) | map({
               key: (.[0].tier // "unknown"),
-              value: { count: length, outcomes: (group_by(.outcome) | map({key: (.[0].outcome // "unknown"), value: length}) | from_entries),
-                        total_seconds: ([ .[] | .duration_seconds ] | map(select(. != null)) | if length > 0 then add else null end) }
+              value: { count: length, outcomes: (group_by(.outcome_class) | map({key: (.[0].outcome_class // "unknown"), value: length}) | from_entries),
+                        total_seconds: ([ .[] | .wall_seconds ] | map(select(. != null)) | if length > 0 then add else null end) }
             }) | from_entries ),
-          certifier_outcome_classes: ( [ $mine[] | select(.tier == "certify") | .certifier_class ] | map(select(. != null)) | group_by(.) | map({key: .[0], value: length}) | from_entries ),
-          refusals: ( [ $mine[] | select(.tier == "certify" and (.refusal // null) != null) | .refusal ] ),
-          warnings: ( [ $mine[] | select((.warning // null) != null) | .warning ] ),
-          vacuous: ( [ $mine[] | select((.vacuous // false) == true or .outcome == "pass_vacuous")
+          certifier_outcome_classes: ( [ $mine[] | select(.tier == "certify") | .outcome_class ] | map(select(. != null)) | group_by(.) | map({key: .[0], value: length}) | from_entries ),
+          refusal_count_total: ( [ $mine[] | .refusal_count ] | map(select(. != null)) | if length > 0 then add else 0 end ),
+          warning_count_total: ( [ $mine[] | .warning_count ] | map(select(. != null)) | if length > 0 then add else 0 end ),
+          vacuous: ( [ $mine[] | select(.outcome_class == "vacuous-pass")
                        | {tier: (.tier // "unknown"), detail: (.detail // ""), source: "runs.jsonl"} ] )
         }
     ' "$run_log" 2>/dev/null)" || run_agg=""
@@ -437,9 +437,9 @@ observe_run_core() {
         fi
 
         classes_json="$(printf '%s' "$run_agg" | jq -c '.certifier_outcome_classes' 2>/dev/null)" || classes_json="{}"
-        refusals_json="$(printf '%s' "$run_agg" | jq -c '.refusals' 2>/dev/null)" || refusals_json="[]"
-        warnings_json="$(printf '%s' "$run_agg" | jq -c '.warnings' 2>/dev/null)" || warnings_json="[]"
-        certifier_outcomes_json="{\"outcome_classes\": ${classes_json}, \"refusals\": ${refusals_json}, \"warnings\": ${warnings_json}, \"source\": $(json_string "$source_marker")}"
+        refusal_total_json="$(printf '%s' "$run_agg" | jq -c '.refusal_count_total' 2>/dev/null)" || refusal_total_json="0"
+        warning_total_json="$(printf '%s' "$run_agg" | jq -c '.warning_count_total' 2>/dev/null)" || warning_total_json="0"
+        certifier_outcomes_json="{\"outcome_classes\": ${classes_json}, \"refusal_count_total\": ${refusal_total_json}, \"warning_count_total\": ${warning_total_json}, \"source\": $(json_string "$source_marker")}"
 
         vac_json="$(printf '%s' "$run_agg" | jq -c '.vacuous' 2>/dev/null)" || vac_json="[]"
         vacuous_passes_json="$vac_json"

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/346_reconcile_books_observe_run_record_field_reads/plans/01_reconcile-run-field-reads.md",
-      "summary": "5-phase plan correcting six RUN-log field-read mismatches in books-observe.sh, adding a two-check fail-loud diagnostic, rewriting the bug-encoding test fixture, amending observation-record.md, and redeploying with live consumer-repo verification."
-    }
-  ],
-  "next_steps": "Run /implement 346 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When fixing a reader that parses an externally-owned schema, audit whether the existing test fixture encodes the SCHEMA or the READER's expectations. A fixture built to satisfy a buggy reader launders the bug as a passing test: it is worse than no test, because it actively signals correctness. Symptom to grep for: fixture field names that match the reader's code but appear nowhere in the normative schema document. Corollary for fail-loud mechanisms: a candidate detection mechanism must be replayed retroactively against the specific defect it is meant to catch before being adopted. A plausible-sounding mechanism (e.g. checking each record's schema-version field) can fail this test outright when every real record already carries the correct version, which means the mechanism would never have fired on the actual defect. If the mechanism would not have caught the known instance, it is the wrong mechanism, however reasonable it reads in isolation.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/346_reconcile_books_observe_run_record_field_reads/plans/01_reconcile-run-field-reads.md",
-      "confidence": 0.82,
-      "suggested_keywords": ["test-fixture", "schema-conformance", "reader-bug", "fail-loud", "silent-degradation", "detection-admissibility"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 18,
   "metadata": {
-    "session_id": "sess_1791337167_c5588f_346",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 5,
-    "dependency_waves": [[1], [2], [3, 4], [5]]
-  },
-  "dispatch_seq": 16
+    "session_id": "sess_1791337167_c5588f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

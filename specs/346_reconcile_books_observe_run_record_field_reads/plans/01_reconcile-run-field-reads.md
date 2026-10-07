@@ -1,7 +1,7 @@
 # Implementation Plan: Reconcile books-observe.sh RUN record field reads
 
 - **Task**: 346 - Reconcile books-observe.sh RUN record field reads
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/346_reconcile_books_observe_run_record_field_reads/reports/01_reconcile-run-field-reads.md`
@@ -121,51 +121,51 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Correct the six field reads, with its fixture, as one atomic batch [NOT STARTED]
+### Phase 1: Correct the six field reads, with its fixture, as one atomic batch [COMPLETED]
 
 **Goal**: The `PROBE-DEPENDENT GROUPS` jq aggregation reads only fields that exist in
 `book-evidence-run-v1`, the task filter matches the schema's string type, and the Case 7 fixture
 feeds a schema-conformant line and asserts the RUN-derived groups are POPULATED.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/books/scripts/books-observe.sh` lines ~406-449 and
+- [x] Re-read `agent-system/extensions/books/scripts/books-observe.sh` lines ~406-449 and *(completed)*
       `tests/test-books-observe.sh` lines ~318-345 immediately before editing (sibling dispatches
       are live on this tree this cycle).
-- [ ] Mismatch 1: change `--argjson task "$task_number"` to `--arg task "$task_number"`, keeping
+- [x] Mismatch 1: change `--argjson task "$task_number"` to `--arg task "$task_number"`, keeping *(completed)*
       the filter as plain string equality `select((.caller_context.task // null) == $task)`. Do
       NOT add a dual-type or `tostring` comparison to the production filter (Decision 1).
-- [ ] Mismatch 2: replace both `.outcome` reads with `.outcome_class` — the per-tier
+- [x] Mismatch 2: replace both `.outcome` reads with `.outcome_class` — the per-tier *(completed)*
       `outcomes: (group_by(.outcome) | ...)` rollup and its `(.[0].outcome // "unknown")` key.
-- [ ] Mismatch 3: replace `.duration_seconds` with `.wall_seconds` in the per-tier
+- [x] Mismatch 3: replace `.duration_seconds` with `.wall_seconds` in the per-tier *(completed)*
       `total_seconds` sum.
-- [ ] Mismatch 4: `certifier_outcome_classes` reads
+- [x] Mismatch 4: `certifier_outcome_classes` reads *(completed)*
       `[ $mine[] | select(.tier == "certify") | .outcome_class ]`, replacing the nonexistent
       `.certifier_class`. Keep the `{value: count}` map shape (Decision 2).
-- [ ] Mismatch 5: replace the `refusals`/`warnings` per-item text arrays with integer sums over
+- [x] Mismatch 5: replace the `refusals`/`warnings` per-item text arrays with integer sums over *(completed)*
       the task's certify-tier entries: `refusal_count_total` and `warning_count_total`, each
       summing the schema's `refusal_count`/`warning_count` with nulls excluded (the schema states
       these are certify-tier only, null elsewhere). Decision 3.
-- [ ] Mismatch 6: replace
+- [x] Mismatch 6: replace *(completed)*
       `select((.vacuous // false) == true or .outcome == "pass_vacuous")` with
       `select(.outcome_class == "vacuous-pass")`. Keep the `{tier, detail, source}` entry shape
       and the `detail: (.detail // "")` fallback unchanged (Decision 4).
-- [ ] Update the shell-side assembly of `certifier_outcomes_json` to emit
+- [x] Update the shell-side assembly of `certifier_outcomes_json` to emit *(completed)*
       `{outcome_classes, refusal_count_total, warning_count_total, source}` rather than
       `{outcome_classes, refusals, warnings, source}`, reading the two new integers out of
       `run_agg` with the same `jq -c` + `||` fallback idiom the surrounding lines already use.
-- [ ] Rewrite the Case 7 fixture's first line to be fully schema-conformant: `schema`,
+- [x] Rewrite the Case 7 fixture's first line to be fully schema-conformant: `schema`, *(completed)*
       `timestamp`, `convention_version`, hyphenated `tier`, `caller_context.task` as a STRING,
       `outcome_class: "vacuous-pass"`, `wall_seconds`, and the four certify-tier counts where the
       tier is `certify`.
-- [ ] Rewrite the Case 7 fixture's second line (the task-48 "clean" case) with
+- [x] Rewrite the Case 7 fixture's second line (the task-48 "clean" case) with *(completed)*
       `caller_context.task` as the STRING form, so it still matches the filter and
       `vacuous_passes` still comes out `[]` rather than degrading to `"absent"` — preserving the
       existing assertion's original intent (see Risks).
-- [ ] Strengthen Case 7's assertions beyond exit-code 0: assert `verification_tiers.tiers` has at
+- [x] Strengthen Case 7's assertions beyond exit-code 0: assert `verification_tiers.tiers` has at *(completed)*
       least one key, that key is the hyphenated tier name, `certifier_outcomes.outcome_classes`
       is a non-empty object where a certify-tier line is present, and `vacuous_passes` is a
       populated array whose `[0].tier` is the hyphenated name.
-- [ ] Keep any new fixture git commit subject following the `task {N}:` convention inside a
+- [x] Keep any new fixture git commit subject following the `task {N}:` convention inside a *(completed)*
       `task-ref-ok:begin` block (the file already has one at line ~347).
 
 **Timing**: 1.5 hours

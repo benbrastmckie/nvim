@@ -324,18 +324,29 @@ mkdir -p "$repo7/specs/047_vacuous-task" "$repo7/specs/048_clean-task" "$repo7/s
 (cd "$repo7" && touch specs/.gitkeep && git add specs/.gitkeep && git commit -q -m "task 47: init")
 
 cat > "$repo7/specs/books-evidence/runs.jsonl" <<'EOF'
-{"tier":"layer_lint","outcome":"pass_vacuous","vacuous":true,"detail":"0 of 9 rules matched","caller_context":{"task":47},"duration_seconds":12}
-{"tier":"lake_build","outcome":"pass","caller_context":{"task":48},"duration_seconds":30}
+{"schema":"book-evidence-run-v1","timestamp":"2026-01-01T00:00:00Z","convention_version":"0.1.0","host_fingerprint":"deadbeef0000","tier":"layer-lint","target":"components/pt","wall_seconds":12,"peak_rss_bytes":null,"exit_status":0,"terminating_signal":null,"outcome_class":"vacuous-pass","export_count":null,"module_count":null,"refusal_count":null,"warning_count":null,"caller_context":{"task":"47","phase":"implement"}}
+{"schema":"book-evidence-run-v1","timestamp":"2026-01-01T00:02:00Z","convention_version":"0.1.0","host_fingerprint":"deadbeef0000","tier":"certify","target":"book-foo","wall_seconds":20,"peak_rss_bytes":111111,"exit_status":0,"terminating_signal":null,"outcome_class":"pass","export_count":5,"module_count":3,"refusal_count":0,"warning_count":1,"caller_context":{"task":"47","phase":"implement"}}
+{"schema":"book-evidence-run-v1","timestamp":"2026-01-01T00:05:00Z","convention_version":"0.1.0","host_fingerprint":"deadbeef0000","tier":"lake-build","target":"components/pt","wall_seconds":30,"peak_rss_bytes":222222,"exit_status":0,"terminating_signal":null,"outcome_class":"pass","export_count":null,"module_count":null,"refusal_count":null,"warning_count":null,"caller_context":{"task":"48","phase":"implement"}}
 EOF
 commit_files "$repo7" "task 47: write run log" specs/books-evidence/runs.jsonl
 
 record7a="$repo7/specs/047_vacuous-task/book.observation.json"
 (cd "$repo7" && bash "$OBS" 47 books books specs/047_vacuous-task sess_g completed) >/dev/null
 assert_exit "(7) VACUOUS PASS: exit code" 0 "$?"
-if jq -e '.vacuous_passes | type == "array" and length == 1 and .[0].tier == "layer_lint"' "$record7a" >/dev/null 2>&1; then
+if jq -e '.vacuous_passes | type == "array" and length == 1 and .[0].tier == "layer-lint"' "$record7a" >/dev/null 2>&1; then
   pass "(7) VACUOUS PASS: populated from the supplied RUN log entry, never inferred"
 else
   fail "(7) VACUOUS PASS: expected a populated vacuous_passes array sourced from runs.jsonl"
+fi
+if jq -e '.verification_tiers.tiers | type == "object" and (keys | length) >= 1 and has("layer-lint")' "$record7a" >/dev/null 2>&1; then
+  pass "(7) VACUOUS PASS: verification_tiers populated, keyed by the hyphenated tier name"
+else
+  fail "(7) VACUOUS PASS: expected verification_tiers.tiers to carry the hyphenated layer-lint key"
+fi
+if jq -e '.certifier_outcomes.outcome_classes | type == "object" and (keys | length) >= 1' "$record7a" >/dev/null 2>&1; then
+  pass "(7) VACUOUS PASS: certifier_outcomes populated from the certify-tier entry"
+else
+  fail "(7) VACUOUS PASS: expected certifier_outcomes.outcome_classes to be non-empty"
 fi
 
 record7b="$repo7/specs/048_clean-task/book.observation.json"
