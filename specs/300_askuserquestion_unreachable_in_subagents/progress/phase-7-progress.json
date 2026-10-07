@@ -1,0 +1,39 @@
+{
+  "phase": 7,
+  "phase_name": "Narrow file_scope, regenerate, and run the full gate set",
+  "started_at": "2026-10-06T22:55:00Z",
+  "last_updated": "2026-10-06T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Compose explicit 33-path file_scope replacement (union of Phases 1-6 Files-to-modify, minus coarse entries and skill-spawn/skill-fix-it)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Apply narrowing via state-write.sh --argjson-file", "status": "done", "files_touched": ["specs/state.json", "specs/TODO.md"]},
+    {"id": 3, "description": "validate-state.sh --deep: coarse-scope warning for 300 cleared, 6 unrelated pre-existing warnings unchanged", "status": "done", "files_touched": []},
+    {"id": 4, "description": "deploy-headless.sh: landed, verify red on 1 FAIL (check-extension-docs.sh: new test script not in manifest.json provides.scripts)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Fix: add tests/test-askuserquestion-rehome.sh to core manifest.json provides.scripts; add manifest.json to file_scope", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "specs/state.json"]},
+    {"id": 6, "description": "Re-run check-extension-docs.sh: own defect fixed; only foreign test-stall-reprompt-wiring.sh (task 343) FAIL remains", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Redeploy; run verify-deploy.sh WITHOUT --skip-slow (full gate, foreground, ~560s, concluded): 2 of 34 FAIL -- doc-lint foreign defect + Gate 8", "status": "done", "files_touched": []},
+    {"id": 8, "description": "run-all.sh direct run: 4 pre-existing failing suites, none overlapping task 300 file_scope (confirmed via SUT_SRC grep)", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Run 4 named Gate-8 substitutes: all green (14/26/9 passed, 0 occurrences)", "status": "done", "files_touched": []},
+    {"id": 10, "description": "check-task-references.sh: 0 occurrences", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Write Reasoned Exclusions record on Phase 7, mark [COMPLETED WITH EXCLUSIONS]", "status": "done", "files_touched": ["specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md"]},
+    {"id": 12, "description": "Record 2 foreign-defect-observed issues (test-stall-reprompt-wiring.sh registration gap; 4 Gate-8 suites)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 12,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "7.manifest-registration",
+      "description": "Files to modify was declared as 'None in the source store'",
+      "type": "altered",
+      "reason": "check-extension-docs.sh (part of the gate set) requires every scripts/tests/test-*.sh file to be individually registered in the owning extension's manifest.json provides.scripts array -- discovered only by running the gate, since no phase anticipated it (index-entries.json's wholesale-directory declaration convention does not apply to scripts). Fixed by adding one entry plus the corresponding file_scope addition.",
+      "annotation": "*(deviation: altered — manifest.json edit required, discovered by the gate itself; see Files to modify note)*"
+    },
+    {
+      "task_id": "7.gate8-foreign-failures",
+      "description": "Gate 8 (run-all.sh) was expected to either pass or not conclude within budget",
+      "type": "altered",
+      "reason": "Gate 8 concluded within budget but surfaced 4 pre-existing suite failures entirely outside task 300's file_scope (orchestrate-cycle-plan.sh, skill-base.sh/command-gate-out.sh/validate-artifact.sh, typst chapter-quality-check.sh, typst-element-lint.sh). Confirmed via SUT_SRC/resolve_candidate grep that none target a task-300 file. Treated as the pre-authorized Reasoned Exclusion case (named substitutes green) rather than a task-300 regression.",
+      "annotation": "*(deviation: altered — Gate 8 concluded but with foreign pre-existing failures, not a timeout; see Reasoned Exclusions table)*"
+    }
+  ],
+  "handoff_count": 0
+}
