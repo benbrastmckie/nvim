@@ -1,0 +1,20 @@
+{
+  "phase": 6,
+  "phase_name": "Land the structural regression fixture",
+  "started_at": "2026-10-06T22:30:00Z",
+  "last_updated": "2026-10-06T22:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-askuserquestion-rehome.sh following shell-script-testing.md/test-check-task-references.sh/test-status-vocabulary.sh conventions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh"]},
+    {"id": 2, "description": "Case 1: no agent file self-instructs; admits unavailability statements and literature-agent.md's architectural-description exemption", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Case 2-7: skill-meta allowed-tools, meta-interview.md exists+referenced, inheritance-claim qualification, isolation drop branch + mirrors, skill-spawn/skill-fix-it structural guard, removal-layer absence", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Header comment stating this is not a harness re-verification", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run fixture: 14 passed, 0 failed, exit 0", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Verify fixture passes unchanged against cslib-vet-agent.md; deliberate-regression spot check confirms detector is not vacuous", "status": "done", "files_touched": []},
+    {"id": 7, "description": "bash -n syntax check passes; confirm run-all.sh auto-discovers via glob, no registration needed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Generic NLP-style imperative detection across all 90 agent files", "result": "refined", "reason": "Initial run found 2 false positives: literature-agent.md's purely descriptive body (self-disclaims being spawnable) and the test script's own Case-7 grep pattern self-matching its own source. Fixed via a file-level exemption (grep for the file's own 'NOT a spawnable agent definition' disclaimer) and a --exclude on the test script's own filename."}
+  ],
+  "handoff_count": 0
+}

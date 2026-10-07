@@ -593,44 +593,44 @@ both the file set and the pre-delegation placement at implementation time.
 
 ---
 
-### Phase 6: Land the structural regression fixture [NOT STARTED]
+### Phase 6: Land the structural regression fixture [COMPLETED]
 
 **Goal**: a `core/scripts/tests/test-*.sh` fixture encodes the fix's postconditions, and the record
 states plainly that a shell fixture is not a harness re-verification.
 
 **Tasks**:
-- [ ] Write `core/scripts/tests/test-askuserquestion-rehome.sh` following
+- [x] Write `core/scripts/tests/test-askuserquestion-rehome.sh` following
       `context/standards/shell-script-testing.md`'s convention and the structural model of
       `test-check-task-references.sh` (grep-based assertions) crossed with
       `test-status-vocabulary.sh` (PASS/FAIL counters): `set -uo pipefail`,
       `SCRIPT_DIR`-relative resolution, `pass()`/`fail()`/`info()`, `PASSED`/`FAILED` counters,
       exit 0 on all-pass, 1 on any fail, 2 on environment error.
-- [ ] Assert: **no agent file under `agent-system/extensions/*/agents/**` instructs itself to call
+- [x] Assert: **no agent file under `agent-system/extensions/*/agents/**` instructs itself to call
       `AskUserQuestion`.** Match the instructing phrasings (an imperative "Use AskUserQuestion",
       a "via AskUserQuestion" directive, a tools-list entry) while admitting lines that state the
       tool is unavailable to a dispatched subagent — the `cslib-vet-agent.md` `MUST NOT` phrasing
       is the admitted form, and the fixture must pass against that file unchanged.
-- [ ] Assert: `skill-meta/SKILL.md`'s `allowed-tools:` line includes `AskUserQuestion`.
-- [ ] Assert: `core/context/workflows/meta-interview.md` exists and is referenced from
+- [x] Assert: `skill-meta/SKILL.md`'s `allowed-tools:` line includes `AskUserQuestion`.
+- [x] Assert: `core/context/workflows/meta-interview.md` exists and is referenced from
       `skill-meta/SKILL.md`.
-- [ ] Assert: no "inherit the full tool set" / "inherits the full" claim remains in
+- [x] Assert: no "inherit the full tool set" / "inherits the full" claim remains in
       `agent-frontmatter-standard.md` or `agent-template.md` without the measured exception within
       a bounded window of the same line.
-- [ ] Assert: the `isolation` branch chosen in Phase 1 holds — no `isolation` row in the Supported
+- [x] Assert: the `isolation` branch chosen in Phase 1 holds — no `isolation` row in the Supported
       Fields table, no `["isolation"]=1` in `lint-agent-contracts.sh`'s `SUPPORTED_KEYS`, and the
       justifying probe record present in the standard.
-- [ ] Assert, as a structural guard on the two confirmed-unaffected skills: `skill-spawn/SKILL.md`
+- [x] Assert, as a structural guard on the two confirmed-unaffected skills: `skill-spawn/SKILL.md`
       and `skill-fix-it/SKILL.md` still declare no `agent:` frontmatter field, so their
       `AskUserQuestion` calls keep running in the skill's own execution.
-- [ ] Assert the removal layer stays absent:
+- [x] Assert the removal layer stays absent:
       `grep -rln 'dispatch-worktree.sh\|task_selected_for_worktree_isolation' agent-system/`
       returns nothing.
-- [ ] Write a header comment stating explicitly that this fixture protects the **fix**, not the
+- [x] Write a header comment stating explicitly that this fixture protects the **fix**, not the
       harness fact: the reachability measurement can only be re-confirmed by a live dispatch probe
       (`ToolSearch` with `select:AskUserQuestion` inside a dispatched subagent), and a future
       reader must not mistake a green run here for a harness re-verification. Point at
       `agent-frontmatter-standard.md`'s corrected section.
-- [ ] No `run-all.sh` edit: it auto-discovers `scripts/tests/test-*.sh` by glob. No
+- [x] No `run-all.sh` edit: it auto-discovers `scripts/tests/test-*.sh` by glob. No
       `suite-cost-hints.txt` edit either: it is advisory-only and is a concurrent sibling's
       declared target. Confirm discovery with
       `timeout 600 bash agent-system/extensions/core/scripts/tests/run-all.sh --quiet --jobs 4`
