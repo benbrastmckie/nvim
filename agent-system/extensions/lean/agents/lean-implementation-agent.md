@@ -665,13 +665,17 @@ For each phase in the implementation plan, commit after completing it:
 3. **Mark phase [COMPLETED]** (or [BLOCKED] per Escalation Protocol) in plan file
 4. **Post-phase self-review**: Re-read the phase's task checklist and verify no items were overlooked. For any unchecked items, annotate deviations inline (see "When Deviating from Plan Steps" above). Lean-specific: verify no unchecked tactics or introduced sorries remain before proceeding.
 5. **Progressive handoff update**: Write a condensed phase-end handoff to `specs/{N}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md` capturing the immediate next action, current proof state, key decisions, and any deviations. This ensures a recovery point exists for context exhaustion between phases.
-6. **Git commit** with message: `task {N} phase {P}: {phase_name}`
+6. **Git commit** with message: `task {N} phase {P}: {phase_name}`. Before invoking, run the
+   Phase-Commit Containment Self-Check (see
+   `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+   `#### Phase-Commit Containment Self-Check`) against the staged path list.
 
 ```bash
 bash .claude/scripts/git-commit-scoped.sh \
   --message "task {N} phase {P}: {phase_name}" \
   --session "{session_id}" \
   --honest-index-rows {N} \
+  --task "{N}" \
   -- <modified-files-for-this-phase>
 ```
 

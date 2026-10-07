@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Wire the four multi-site and domain-heavy definitions",
+  "started_at": "2026-10-07T06:26:00Z",
+  "last_updated": "2026-10-07T06:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --task {N} at every invocation site across the four files", "status": "done", "files_touched": [
+      "agent-system/extensions/founder/agents/founder-implement-agent.md",
+      "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+      "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md"
+    ]},
+    {"id": 2, "description": "Add canonical-block pointer before each invocation, identical wording", "status": "done", "files_touched": [
+      "agent-system/extensions/founder/agents/founder-implement-agent.md",
+      "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+      "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+      "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md"
+    ]},
+    {"id": 3, "description": "Preserve existing flags (--honest-index-rows) and consistent flag position", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no task-number references gained", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

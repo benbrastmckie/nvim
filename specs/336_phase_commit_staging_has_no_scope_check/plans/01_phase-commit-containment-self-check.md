@@ -257,22 +257,28 @@ of the six occurrences in context before editing; edit only the lines that are a
 
 ---
 
-### Phase 3: Wire the four multi-site and domain-heavy definitions [NOT STARTED]
+### Phase 3: Wire the four multi-site and domain-heavy definitions [COMPLETED]
 
 **Goal**: Bring the four definitions carrying more than one invocation site, or a domain-specific
 recipe variant, into line with Phase 2's canonical block — uniformly, with no per-extension
 divergence in the mechanism.
 
 **Tasks**:
-- [ ] For each file below: grep its `git-commit-scoped.sh` occurrences, separate invocations from
-  prose, and add `--task {N} \` to every invocation, preserving existing flags.
-- [ ] Add a 2-4 line pointer immediately before each invocation, directing the reader to the
+- [x] For each file below: grep its `git-commit-scoped.sh` occurrences, separate invocations from
+  prose, and add `--task {N} \` to every invocation, preserving existing flags. *(completed: 9
+  invocation sites confirmed by fresh grep, matching the Scope Hypothesis exactly — founder 5,
+  lean hard-mode 2, lean 1, cslib hard-mode 1)*
+- [x] Add a 2-4 line pointer immediately before each invocation, directing the reader to the
   canonical self-check block by its heading name in the core definition — following the
   cross-reference convention these files already use for the core definition's other per-phase
-  protocols, rather than restating the predicate.
-- [ ] Where a file's recipe carries extra flags, keep them and place `--task {N}` consistently in
-  the same position relative to `--message` / `--session` across all sites.
-- [ ] Confirm no file in this phase gained any task-number reference.
+  protocols, rather than restating the predicate. *(completed, identical wording across all 9
+  sites)*
+- [x] Where a file's recipe carries extra flags, keep them and place `--task {N}` consistently in
+  the same position relative to `--message` / `--session` across all sites. *(completed:
+  `--honest-index-rows {N}` preserved everywhere it existed, with `--task "{N}"` placed
+  immediately after it at every site)*
+- [x] Confirm no file in this phase gained any task-number reference. *(completed:
+  check-task-references.sh reports 0 occurrences for all four files)*
 
 **Timing**: 1.25 hours
 

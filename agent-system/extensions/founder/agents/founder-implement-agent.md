@@ -252,12 +252,15 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    - new_string: `### Phase 1: {Phase Name} [COMPLETED]`
 
 7. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
-   repo-wide add):
+   repo-wide add). Before invoking, run the Phase-Commit Containment Self-Check (see
+   `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+   `#### Phase-Commit Containment Self-Check`) against the staged path list:
    ```bash
    bash .claude/scripts/git-commit-scoped.sh \
      --message "task {N} phase 1: {phase_name}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
+     --task "{N}" \
      -- "${task_dir}/" "specs/TODO.md" "specs/state.json"
    ```
 
@@ -283,12 +286,15 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    - new_string: `### Phase 2: {Phase Name} [COMPLETED]`
 
 6. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
-   repo-wide add):
+   repo-wide add). Before invoking, run the Phase-Commit Containment Self-Check (see
+   `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+   `#### Phase-Commit Containment Self-Check`) against the staged path list:
    ```bash
    bash .claude/scripts/git-commit-scoped.sh \
      --message "task {N} phase 2: {phase_name}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
+     --task "{N}" \
      -- "${task_dir}/" "specs/TODO.md" "specs/state.json"
    ```
 
@@ -313,12 +319,15 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
    - new_string: `### Phase 3: {Phase Name} [COMPLETED]`
 
 6. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
-   repo-wide add):
+   repo-wide add). Before invoking, run the Phase-Commit Containment Self-Check (see
+   `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+   `#### Phase-Commit Containment Self-Check`) against the staged path list:
    ```bash
    bash .claude/scripts/git-commit-scoped.sh \
      --message "task {N} phase 3: {phase_name}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
+     --task "{N}" \
      -- "${task_dir}/" "specs/TODO.md" "specs/state.json"
    ```
 
@@ -368,12 +377,16 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 
 6. Git commit — targeted staging per `.claude/context/standards/git-staging-scope.md` (never a
    repo-wide add). Phase 4 additionally writes outside the task directory (`founder/` and
-   `strategy/` or `output_dir`), so include those specific produced files:
+   `strategy/` or `output_dir`), so include those specific produced files. Before invoking, run
+   the Phase-Commit Containment Self-Check (see
+   `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+   `#### Phase-Commit Containment Self-Check`) against the staged path list:
    ```bash
    bash .claude/scripts/git-commit-scoped.sh \
      --message "task {N} phase 4: {phase_name}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
+     --task "{N}" \
      -- "${task_dir}/" "specs/TODO.md" "specs/state.json" "$typst_file" "$output_path"
    ```
 
@@ -427,12 +440,16 @@ Execute each phase starting from resume point. Use context from BOTH plan and re
 
 5. Git commit (if Phase 5 was not skipped) — targeted staging per
    `.claude/context/standards/git-staging-scope.md` (never a repo-wide add), including the
-   compiled PDF written outside the task directory:
+   compiled PDF written outside the task directory. Before invoking, run the Phase-Commit
+   Containment Self-Check (see
+   `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+   `#### Phase-Commit Containment Self-Check`) against the staged path list:
    ```bash
    bash .claude/scripts/git-commit-scoped.sh \
      --message "task {N} phase 5: {phase_name}" \
      --session "{session_id}" \
      --honest-index-rows {N} \
+     --task "{N}" \
      -- "${task_dir}/" "specs/TODO.md" "specs/state.json" "founder/${report_type}-${slug}.pdf"
    ```
 

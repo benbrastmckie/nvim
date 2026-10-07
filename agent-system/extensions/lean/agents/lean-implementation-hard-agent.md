@@ -265,12 +265,15 @@ Lean-specific: verify no unchecked tactics or unresolved sorries remain.
 - Key Decisions: tactic choices made in this phase
 - Sorry Inventory: current state of sorry_inventory (even if empty)
 
-**H. Git Commit**:
+**H. Git Commit**: Before invoking, run the Phase-Commit Containment Self-Check (see
+`agent-system/extensions/core/agents/general-implementation-agent.md`'s
+`#### Phase-Commit Containment Self-Check`) against the staged path list:
 ```bash
 bash .claude/scripts/git-commit-scoped.sh \
   --message "task {N} phase {P}: {phase_name}" \
   --session "{session_id}" \
   --honest-index-rows {N} \
+  --task "{N}" \
   -- <modified-files-for-this-phase>
 ```
 
@@ -374,7 +377,9 @@ will capture a concurrent sibling dispatch's in-flight edits.
 **Step 2: Final incremental commit**:
 
 Targeted, work-scoped staging per `.claude/context/standards/git-staging-scope.md` — never stage
-the entire working tree:
+the entire working tree. Before invoking, run the Phase-Commit Containment Self-Check (see
+`agent-system/extensions/core/agents/general-implementation-agent.md`'s
+`#### Phase-Commit Containment Self-Check`) against the staged path list:
 ```bash
 task_dir="specs/{NNN}_{SLUG}"
 stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
@@ -382,6 +387,7 @@ bash .claude/scripts/git-commit-scoped.sh \
   --message "task {N} phase {P}: complete" \
   --session "{session_id}" \
   --honest-index-rows {N} \
+  --task "{N}" \
   -- "${stage_paths[@]}"
 ```
 
