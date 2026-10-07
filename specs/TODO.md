@@ -152,6 +152,7 @@ Measured at creation time: NO non-terminal task declares core/context/formats/re
 - **Dependencies**: None
 - **Research**: [357_fold_phase_end_handoff_into_phase_commit/reports/01_fold_phase_end_handoff_into_phase_commit.md]
 - **Plan**: [357_fold_phase_end_handoff_into_phase_commit/plans/01_fold-phase-end-handoff-into-phase-commit.md]
+- **Summary**: [357_fold_phase_end_handoff_into_phase_commit/summaries/01_fold-phase-end-handoff-into-phase-commit-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 

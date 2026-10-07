@@ -23,29 +23,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/357_fold_phase_end_handoff_into_phase_commit/summaries/01_fold-phase-end-handoff-into-phase-commit-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["eager-context-budget", "gate-20", "compact-pointer-form", "git-workflow.md", "verify-deploy"]
+      "suggested_keywords": [
+        "eager-context-budget",
+        "gate-20",
+        "compact-pointer-form",
+        "git-workflow.md",
+        "verify-deploy"
+      ]
     },
     {
       "content": "Growing a context/standards or context/contracts markdown file's line count stales its `index-entries.json` `line_count` field and fails verify-deploy.sh's doc-lint Rule R. If the touched index-entries.json path is not in the task's declared file_scope, the Phase-Commit Containment Self-Check requires dropping it from the automated phase commit (recording a non-fatal scope-excursion issue) rather than force-staging it -- the fix is left correct-but-uncommitted in the working tree for a future dispatch or manual commit to land.",
       "category": "WORKFLOW",
       "source_artifact": "specs/357_fold_phase_end_handoff_into_phase_commit/summaries/01_fold-phase-end-handoff-into-phase-commit-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["index-entries.json", "line_count", "doc-lint", "containment-self-check", "scope-excursion"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "doc-lint",
+        "containment-self-check",
+        "scope-excursion"
+      ]
     },
     {
       "content": "During a multi-task /orchestrate cycle, verify-deploy.sh's Gate 5 (manifest-driven content-hash parity) and related doc-lint 'deployed content drift' findings are expected to FAIL for every source-store file any concurrently-dispatched task has edited, because .claude/** is gitignored and regenerated wholesale by a separate deploy-headless.sh step -- never per-phase by an implementation dispatch. Triage by checking whether the flagged files match this task's own four-or-fewer changed paths plus sibling territory from the dispatch's Territory block; if so, it is deploy-sync lag, not a regression.",
       "category": "INSIGHT",
       "source_artifact": "specs/357_fold_phase_end_handoff_into_phase_commit/summaries/01_fold-phase-end-handoff-into-phase-commit-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-staleness", "verify-deploy", "gate-5", "content-drift", "multi-task-orchestrate"]
+      "suggested_keywords": [
+        "deploy-staleness",
+        "verify-deploy",
+        "gate-5",
+        "content-drift",
+        "multi-task-orchestrate"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791361777_314fa0",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
