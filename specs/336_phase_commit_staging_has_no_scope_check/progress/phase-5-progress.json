@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Uniformity audit and follow-up record",
+  "started_at": "2026-10-07T07:05:00Z",
+  "last_updated": "2026-10-07T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run audit loop over all fifteen file_scope entries, capture output", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Assert audit invariant for all fifteen", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record per-file audit table in evidence/02_uniformity-audit.md", "status": "done", "files_touched": ["specs/336_phase_commit_staging_has_no_scope_check/evidence/02_uniformity-audit.md"]},
+    {"id": 4, "description": "Write follow-up specification to evidence/03_followup-mechanical-check.md", "status": "done", "files_touched": ["specs/336_phase_commit_staging_has_no_scope_check/evidence/03_followup-mechanical-check.md"]},
+    {"id": 5, "description": "State follow-up is unfiled specification", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm no out-of-scope file modified (git status check)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -368,23 +368,25 @@ be read in context before any edit, since the extra occurrence may be prose.
 
 ---
 
-### Phase 5: Uniformity audit and follow-up record [NOT STARTED]
+### Phase 5: Uniformity audit and follow-up record [COMPLETED]
 
 **Goal**: Prove mechanically that what landed is uniform across all fifteen definitions, and
 record the `git-commit-scoped.sh` mechanical chokepoint as a constrained follow-up with its
 coordination constraints — without touching that script.
 
 **Tasks**:
-- [ ] Run a single audit loop over all fifteen `file_scope` entries printing, per file: the count
+- [x] Run a single audit loop over all fifteen `file_scope` entries printing, per file: the count
   of `git-commit-scoped.sh` occurrences, the count of `--task` occurrences, and whether the
   canonical-block pointer (or, for the core definition, the block itself) is present. Capture the
-  output verbatim.
-- [ ] Assert the audit's invariant: for every file, `--task` count is at least its genuine
+  output verbatim. *(completed)*
+- [x] Assert the audit's invariant: for every file, `--task` count is at least its genuine
   invocation-site count, and the pointer-or-block check passes. Any file failing either is a
-  defect to fix in this phase, not a subset to justify — the ruling is uniform.
-- [ ] Record the per-file audit table in
+  defect to fix in this phase, not a subset to justify — the ruling is uniform. *(completed: all
+  15 files pass both checks, no fix needed)*
+- [x] Record the per-file audit table in
   `specs/336_phase_commit_staging_has_no_scope_check/evidence/02_uniformity-audit.md`.
-- [ ] Write the follow-up specification to
+  *(completed)*
+- [x] Write the follow-up specification to
   `specs/336_phase_commit_staging_has_no_scope_check/evidence/03_followup-mechanical-check.md`,
   stating: the mechanism (a Containment check inside `git-commit-scoped.sh`, reading the named
   task's own `file_scope` directly from `specs/state.json`, independent of the cycle contention
@@ -398,13 +400,18 @@ coordination constraints — without touching that script.
   lease contention) and the hard constraint that this must be coordinated with the task that owns
   that script's exit-code contract, whose description is to be read before any code is proposed;
   and the rider that the "Phase Commit (mid-dispatch)" subsection recommended for
-  `git-staging-scope.md` lands with that follow-up, not here.
-- [ ] State in the follow-up record that it is a specification awaiting filing via `/task`, and
+  `git-staging-scope.md` lands with that follow-up, not here. *(completed; coordination
+  constraint names task 304, out_of_repository_pathspec_aborts_whole_commit, which TODO.md
+  confirms owns git-commit-scoped.sh's exit-code contract)*
+- [x] State in the follow-up record that it is a specification awaiting filing via `/task`, and
   that this task does not file it — so a future reader does not assume a task number exists.
-- [ ] Re-read the Non-Goals list and confirm no phase of this plan modified
+  *(completed)*
+- [x] Re-read the Non-Goals list and confirm no phase of this plan modified
   `scripts/git-commit-scoped.sh`, its source-store original, any `context/standards/*.md` file, or
   anything under `.claude/**`: `git status --short` must show changes only under
-  `agent-system/extensions/**` (the fifteen files) and `specs/336_*/`.
+  `agent-system/extensions/**` (the fifteen files) and `specs/336_*/`. *(completed: confirmed —
+  the only other modified paths in the working tree are pre-existing, foreign modifications from
+  other concurrent sessions/tasks, untouched by this task)*
 
 **Timing**: 0.75 hours
 
