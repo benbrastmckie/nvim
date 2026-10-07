@@ -1,19 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/348_append_only_evidence_write_time_hook/plans/01_append-only-evidence-write-time-hook.md",
-      "summary": "5-phase plan (5.25h) for the books extension's first hook: an append-only evidence-file PreToolUse Write|Edit guard, its forgery-probed fixture suite, its manifest and settings-fragment registration path, and deploy verification in the live consumer repo."
+      "type": "summary",
+      "path": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+      "summary": "Books extension's first hook (validate-evidence-append-only.sh) plus its 29-assertion forgery-probed fixture suite, manifest/settings-fragment wiring, and a verified live deploy into the consumer repository."
     }
   ],
-  "next_steps": "Implementation in progress",
-  "memory_candidates": [],
+  "completion_data": {
+    "completion_summary": "Implemented the books extension's first PreToolUse Write|Edit hook, blocking any modification or deletion of a committed line in books/book-convention-evidence/NN-*.md while permitting pure appends; built its 29-assertion forgery-probed fixture suite, wired manifest.json and a new bare settings fragment, and verified the deploy against the live consumer repository (registration bare, joined to the existing matcher block, idempotent, and firing correctly against a real evidence file)."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/hooks/validate-evidence-append-only.sh",
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh",
+    "agent-system/extensions/books/settings-hooks.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a write-time PreToolUse guard enforcing 'append-only relative to git HEAD, free edits past that point', split the comparison into three values rather than one baseline: FLOOR (git show HEAD:<path>, the immutable floor), DISK (current on-disk content), and TAIL (DISK with the FLOOR prefix sliced off via ${DISK:${#FLOOR}}, bash substring-by-length, never a glob-based strip). Write-tool checks need only FLOOR-is-prefix-of-new-content. Edit-tool checks need TWO independent allow patterns: (a) old_string is a suffix of DISK and new_string begins with old_string (a pure append), or (b) old_string is a suffix of TAIL alone (a free edit confined to the uncommitted region, which by construction can never reach the floor). A single-pattern design using only 'old_string suffix of the HEAD baseline' looks sufficient but incorrectly refuses a legitimate in-place correction to an uncommitted trailing entry, since that text never appears in the HEAD baseline at all -- this gap only surfaces when a fixture specifically tests an in-place (non-append) edit to the uncommitted tail, not just append-style edits.",
+      "category": "PATTERN",
+      "source_artifact": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["append-only", "PreToolUse hook", "git HEAD baseline", "write-time guard", "Edit predicate"]
+    },
+    {
+      "content": "For a books-extension-style forgery probe against a shell script predicate (not a Lean/lake predicate), copy the real script into the test workdir, apply exactly ONE targeted sed substitution to disable or neutralize a single predicate (e.g. the terminal 'exit 2' line, a scope-match case arm, or a specific command-substitution baseline lookup), assert via `cmp -s` that the substitution actually changed the copy (so a probe can't silently pass by failing to stub anything), then drive the stubbed copy with the SAME payload a real behavioral case used and assert the real case's expectation now breaks (probe_expect_broken: actual != real). Always pair a refusal-predicate probe with a scope/admit-predicate probe (the admit half): a refusal-only probe suite cannot distinguish a correct refusal from a predicate that refuses everything.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["forgery probe", "shellcheck", "sed stub", "fixture testing", "PreToolUse hook"]
+    },
+    {
+      "content": "When constructing a 'jq missing from PATH' fail-open fixture for a hook script, do not set PATH to a nonexistent/empty directory -- the hook's own location-resolution preamble (e.g. `dirname \"${BASH_SOURCE[0]}\"`) needs basic coreutils and will crash before the intended guard ever runs. Instead, compute a coreutils-only PATH via `dirname \"$(command -v cat)\"` (or similar) that excludes only the directory containing the target dependency, with a graceful INFO-skip guard if the environment happens to co-locate that dependency with coreutils anyway (e.g. `PATH=\"$COREUTILS_DIR\" command -v jq` still succeeds).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["fail-open", "fixture testing", "PATH manipulation", "shell hook", "portability"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791330710_42a2e1",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 3
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }

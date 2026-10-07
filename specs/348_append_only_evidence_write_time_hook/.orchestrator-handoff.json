@@ -1,18 +1,30 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 348,
-  "phase": "plan",
-  "dispatch_seq": 2,
-  "session_id": "sess_1791330710_42a2e1_348",
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "session_id": "sess_1791330710_42a2e1",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan for the books extension's first hook: a bare-registered PreToolUse Write|Edit guard refusing any write that alters or deletes a line already committed in books/book-convention-evidence/NN-*.md. The plan settles the three required rulings in writing (registration into the tracked .claude/settings.json; Option B git-aware trailing-uncommitted-entry exception with an on-disk prefix-test fallback; the two-guard fail-open contract mapped onto the hook's real jq dependency surface since it sources no shared library). Phases: author hook, behavioral fixture cases, forgery probes plus fail-open plus the buried-7814-character-line case, manifest/fragment wiring, then a real deploy into the live consumer repo with independent proof of file copy, bare joined registration, and the deployed hook refusing a real evidence-file modification.",
+  "summary": "Implemented the books extension's first hook (validate-evidence-append-only.sh, a bare-registered PreToolUse Write|Edit guard) blocking any modification or deletion of a committed line in books/book-convention-evidence/NN-*.md while permitting pure appends. Built its 29-assertion forgery-probed fixture suite, wired manifest.json and a new settings-hooks.json fragment, and verified a real deploy into the consumer repository: registration bare and joined to the existing Write|Edit matcher block, idempotent across a second deploy, and the deployed hook proven to refuse a real modification and allow a real append against a real committed evidence file with the file itself never touched.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/348_append_only_evidence_write_time_hook/plans/01_append-only-evidence-write-time-hook.md",
-      "summary": "5-phase plan (5.25h) for the books append-only evidence write-time PreToolUse hook, its fixture suite with forgery probes, its manifest/settings-fragment registration path, and deploy verification in the consumer repo."
+      "type": "summary",
+      "path": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+      "summary": "Books extension's first hook plus fixture suite, manifest/settings-fragment wiring, and a verified live deploy."
+    },
+    {
+      "type": "hook",
+      "path": "agent-system/extensions/books/hooks/validate-evidence-append-only.sh",
+      "summary": "PreToolUse Write|Edit hook enforcing append-only evidence files via a FLOOR/DISK/TAIL byte-string predicate, two fail-open guards, and a three-fact rejection message."
+    },
+    {
+      "type": "test",
+      "path": "agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh",
+      "summary": "29-assertion fixture suite: 11 behavioral cases, 3 forgery probes, 2 fail-open cases, 2 buried-long-line cases."
     }
   ],
-  "blockers": []
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null
 }
