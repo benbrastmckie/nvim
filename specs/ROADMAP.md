@@ -20,19 +20,23 @@ this file has drifted — it is hand-derived until **306** makes it generated.
 
 ## Gate state
 
-- **Deploy gates are GREEN on the fast tier**: `verify-deploy.sh --skip-slow` exits 0, no `[FAIL]`
-  lines. The redeploy that landed 364 moved the standing baseline from **7 pre-existing findings to
-  1**, with 0 newly introduced (`pre=7 post=1 new=0`). **That surviving finding is not yet
-  identified** — it sits in the slow gates, so a `--skip-slow` pass cannot name it. Characterize it
-  with a full `verify-deploy.sh` run before treating the suite as clean.
+- **A full `verify-deploy.sh` run is 33 of 34 checks PASS, 1 FAIL** (measured today, ~10 min —
+  budget for it, a 540s cap gets SIGTERMed mid-run). The redeploy that landed 364 moved the
+  standing baseline from 7 pre-existing findings to this 1, with 0 newly introduced. The survivor
+  is **gate 8, `tests/run-all.sh` exit 1**, i.e. the five known-red shell suites owned by **351**,
+  **352** and **353** — nothing unowned is hiding behind it. Note the posture mismatch: gate 8
+  consumes the bare exit code, not the `EXPECTED`/`NEW` split, so **the deploy suite reads red
+  until those three land** no matter how well a suite is annotated. Consistent with Settled
+  decision 13, but it means "all gates green" is unreachable meanwhile. `--skip-slow` exits 0 and
+  cannot see this gate.
 - **Blocking hooks no longer fail open on a bare `cd`.** Every source-store hook registration now
   resolves `"$CLAUDE_PROJECT_DIR"/.claude/hooks/x.sh`, and the merge path is self-healing (Settled
   decision 18), so an ordinary resync repairs a stale deploy instead of duplicating it. Measured on
   this repo's own deploy: 21 CWD-relative registrations to 0, 21 correct, 23 total, no per-event
   duplicates, `env` and `permissions` byte-identical. **365** gates it against reintroduction.
 - **The orchestrator eager-context budget has NO headroom left**: 65950 B against a 65950 B
-  baseline (*carried from the 361 measurement, not re-measured today*). The next
-  orchestrator-surface addition must compact first; there is no slack to spend.
+  baseline — **re-measured today** by gate 20 of the full run, identical to the 361 figure. The
+  next orchestrator-surface addition must compact first; there is no slack to spend.
   `commands/orchestrate.md` 20440 B / 21000 B; `skills/skill-orchestrate/SKILL.md` 21121 B / 21500 B.
 - **`validate-state.sh --deep`**: 17 passed, 0 failed, **6** warnings — re-measured today,
   unchanged: 328's missing `file_scope` key, 349's empty array, the visibility summary reporting
