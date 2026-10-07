@@ -259,7 +259,7 @@ read immediately before committing.
 
 ---
 
-### Phase 3: Cross-reference from the two existing contract entry points [NOT STARTED]
+### Phase 3: Cross-reference from the two existing contract entry points [COMPLETED]
 
 **Goal**: A reader arriving at commit cadence from `rules/git-workflow.md`, or at phase closure
 from `phase-closure.md`, finds the ruling without having to already know it lives in
@@ -268,24 +268,24 @@ files.
 
 **Tasks**:
 
-- [ ] Re-read both target files immediately before editing.
-- [ ] In `agent-system/extensions/core/rules/git-workflow.md`, qualify the
+- [x] Re-read both target files immediately before editing.
+- [x] In `agent-system/extensions/core/rules/git-workflow.md`, qualify the
       `### Create Commits After` bullet "Each implementation phase completion" (currently line 43)
       so it reads as *exactly one* commit per phase completion, carrying that phase's wrap-up
       provenance, with a pointer to the new `git-staging-scope.md` block.
-- [ ] In the same file's `### Do Not Commit` list, add a bullet forbidding a trailing,
+- [x] In the same file's `### Do Not Commit` list, add a bullet forbidding a trailing,
       provenance-only commit issued after a phase's closing commit has already fired.
-- [ ] Leave the `## Commit Conventions` Standard Actions table untouched — `task {N} phase {P}:
+- [x] Leave the `## Commit Conventions` Standard Actions table untouched — `task {N} phase {P}:
       {phase_name}` already is the one sanctioned per-phase message and no new row is needed; the
       improvised `add phase-end handoff` subject is not being added as a convention, it is being
       retired by the ruling.
-- [ ] In `agent-system/extensions/core/context/contracts/phase-closure.md`, extend the
+- [x] In `agent-system/extensions/core/context/contracts/phase-closure.md`, extend the
       **Promotion-on-commit (the under-claim direction)** bullet (currently ~lines 153-161) with
       one sentence naming the phase-end handoff (and the progress file / self-review annotations)
       alongside the marker as same-commit content, under the identical "sequencing requirement,
       not a new staging requirement" framing the bullet already uses, pointing at the new
       `git-staging-scope.md` block.
-- [ ] Stage and commit both files together by explicit two-path list (one logical change), or as
+- [x] Stage and commit both files together by explicit two-path list (one logical change), or as
       two per-file commits — either satisfies the staging contract; never a directory pathspec.
 
 **Timing**: 45 minutes

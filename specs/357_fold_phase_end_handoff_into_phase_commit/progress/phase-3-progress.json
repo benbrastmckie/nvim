@@ -1,0 +1,24 @@
+{
+  "phase": 3,
+  "phase_name": "Cross-reference from the two existing contract entry points",
+  "started_at": "2026-10-07T09:06:00Z",
+  "last_updated": "2026-10-07T09:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read both target files immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Qualify git-workflow.md Create Commits After bullet (exactly one commit per phase, pointer to git-staging-scope.md)", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 3, "description": "Add Do Not Commit bullet forbidding trailing provenance-only commit", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 4, "description": "Leave Standard Actions table untouched", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Extend phase-closure.md promotion-on-commit bullet with handoff/progress-file sentence", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/phase-closure.md"]},
+    {"id": 6, "description": "Stage and commit both files", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "grep_phase_completion": "qualified bullet present in git-workflow.md",
+    "grep_handoff_phase_closure": "new sentence present in phase-closure.md",
+    "heading_counts": "git-workflow.md 19/19 unchanged; phase-closure.md 11/11 unchanged",
+    "check_task_references": "both files PASS: 0 unexempted occurrences"
+  }
+}

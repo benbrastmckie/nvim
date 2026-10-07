@@ -156,7 +156,11 @@ diverge silently. Both directions are requirements, not just one:
   `agents/general-implementation-agent.md`'s existing scoped-commit staging set already includes
   `{plan_path}` alongside the task directory, so satisfying this is a sequencing requirement
   (commit the marker promotion in the SAME commit as the phase's landing work), not a new
-  staging requirement. Failing this direction is what let sub-agent-committed phases sit at
+  staging requirement. The same sequencing requirement, not a new staging requirement, applies
+  to the phase's other wrap-up provenance too — its progress file, self-review annotations, and
+  phase-end handoff under `handoffs/` all ride in that identical commit; see
+  `context/standards/git-staging-scope.md`'s `### implement` section for the single-commit-per-
+  phase ruling. Failing this direction is what let sub-agent-committed phases sit at
   `[NOT STARTED]` against landed commits in the incident that motivated this section — a resume
   driven by markers alone would have redone already-completed work.
 - **No-promotion-without-evidence (the over-claim direction).** A marker is promoted only after
