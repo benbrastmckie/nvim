@@ -714,6 +714,7 @@ ADDITIONAL ACCEPTANCE CRITERIA:
 - **Dependencies**: None
 - **Research**: [364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md]
 - **Plan**: [364_cwd_relative_hook_registration_paths/plans/02_cwd-relative-hook-registration-paths.md]
+- **Summary**: [364_cwd_relative_hook_registration_paths/summaries/02_cwd-relative-hook-registration-paths-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ (never .claude/**, a disposable deploy
 artifact -- see rules/source-store-deploy-boundary.md).

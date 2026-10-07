@@ -30,22 +30,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/364_cwd_relative_hook_registration_paths/summaries/02_cwd-relative-hook-registration-paths-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["merge-dedup", "identity-based-equality", "deep-equal-pitfall", "idempotent-merge", "config-drift"]
+      "suggested_keywords": [
+        "merge-dedup",
+        "identity-based-equality",
+        "deep-equal-pitfall",
+        "idempotent-merge",
+        "config-drift"
+      ]
     },
     {
       "content": "When an install-once-copied config file (copied fresh only when absent, never overwritten by resync) needs an already-deployed-with-the-defect repo repaired, consider hardening the NORMAL resync/merge path itself before building a bespoke migration script or a destructive snapshot-delete-reload picker action. A migration script needs ongoing maintenance and a backup story; a delete-then-reload trick only fixes an ABSENT target, not one that already carries a duplicated/corrupted value (a redeploy that can only append, never replace, will leave stale and fixed entries coexisting). Hardening the merge function so it is idempotent and convergent by construction means the ordinary 'reload' action a user already runs becomes self-healing for every repo, with no new surface to maintain.",
       "category": "PATTERN",
       "source_artifact": "specs/364_cwd_relative_hook_registration_paths/summaries/02_cwd-relative-hook-registration-paths-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["install-once-config", "self-healing-resync", "migration-script-alternative", "idempotent-repair"]
+      "suggested_keywords": [
+        "install-once-config",
+        "self-healing-resync",
+        "migration-script-alternative",
+        "idempotent-repair"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1791403152_6152cc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

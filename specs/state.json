@@ -1383,6 +1383,11 @@
           "path": "specs/364_cwd_relative_hook_registration_paths/plans/02_cwd-relative-hook-registration-paths.md",
           "type": "plan",
           "summary": "7 phases, 6.5h, waves [[1,3,7],[2,4],[5],[6]]: source-store registration fix, install-once warning, migration script, migration test, deploy-harness assertions, real-deploy demonstration, markdown templates."
+        },
+        {
+          "path": "specs/364_cwd_relative_hook_registration_paths/summaries/02_cwd-relative-hook-registration-paths-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with demonstrated-vs-asserted disposition of every acceptance criterion and the five-reversal strategy history."
         }
       ],
       "next_artifact_number": 3,
@@ -1390,7 +1395,8 @@
       "last_updated": "2026-10-07T20:24:23Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791403152_6152cc"
+      "session_id": "sess_1791403152_6152cc",
+      "completion_summary": "Resolved CWD-relative hook registration paths across the source store (34 registrations, 4 doc templates, 1 dead registration removed) and hardened the normal extension resync path with identity-based hook deduplication in merge.lua plus a six-registration move into the merge source, so an ordinary resync -- not a migration script -- self-heals any already-deployed repo, demonstrated non-destructively against both real known-affected repos."
     },
     {
       "project_number": 365,
