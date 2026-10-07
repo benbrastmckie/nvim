@@ -1143,13 +1143,13 @@
         {
           "path": "specs/357_fold_phase_end_handoff_into_phase_commit/summaries/01_fold-phase-end-handoff-into-phase-commit-summary.md",
           "type": "summary",
-          "summary": "Execution summary with full verification triage, two recorded mid-implementation deviations (eager-context-budget trim; a 5th-file index-entries.json correction left uncommitted per the Containment Self-Check), and four recorded follow-up recommendations."
+          "summary": "Execution summary with full verification triage, now including a re-confirmation addendum from this seq-9 re-dispatch."
         }
       ],
       "last_updated": "2026-10-07T08:49:32Z",
       "session_id": "sess_1791361777_314fa0",
       "next_artifact_number": 2,
-      "completion_summary": "Folded the phase-end handoff into its phase's closing commit: recorded the single-commit-per-phase ruling with its evidence and crash-ordering rationale in git-staging-scope.md, bound the handoff write to the phase-closing commit at three sites in general-implementation-agent.md, and cross-referenced the ruling from git-workflow.md and phase-closure.md. This implementation dispatch itself produced one commit per phase (three phase commits plus this closing one), each carrying its own folded phase-end handoff."
+      "completion_summary": "Folded the phase-end handoff into its phase's closing commit: recorded the single-commit-per-phase ruling with its evidence and crash-ordering rationale in git-staging-scope.md, bound the handoff write to the phase-closing commit at three sites in general-implementation-agent.md, and cross-referenced the ruling from git-workflow.md and phase-closure.md. All four plan phases were already complete and committed prior to this re-dispatch; this dispatch re-verified the work and found nothing further to do."
     },
     {
       "project_number": 358,

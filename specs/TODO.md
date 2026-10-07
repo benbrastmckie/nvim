@@ -11,10 +11,10 @@ next_project_number: 364
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,356,357,358 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344,350,352,354,355,360,361,362 | 22,251,271,272,280,284,311,345,349,351,356,357,358 | core-agent-system, extensions, orchestrator, ... |
-| 3 | 274,282,304,353,359,363 | 273,275,281,284,302,344,350,352,356,361 | core-agent-system, extensions, orchestrator, ... |
-| 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
+| 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,347,349,351,356,357,358 | -- | core-agent-system, extensions, neovim, ... |
+| 2 | 29,170,272,273,281,303,335,344,345,350,352,355,360,361,362 | 22,251,271,280,284,311,349,351,356,357,358 | core-agent-system, extensions, orchestrator, ... |
+| 3 | 275,282,304,353,354,359,363 | 272,273,281,284,302,345,350,352,356,361 | core-agent-system, extensions, orchestrator, ... |
+| 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -61,9 +61,6 @@ next_project_number: 364
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
     └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting...
   └─ 303 [NOT STARTED] — Make validate-state.sh resolve its omitted-argument...
-272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
-  └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
-    └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
 299 [NOT STARTED] — Guarantee detection of in-place plan revision concurrent with...
 302 [NOT STARTED] — Pass --task at commit-staging sites to engage the...
   └─ 304 [NOT STARTED] — Stop one out-of-repository pathspec entry from aborting... (see above)
@@ -72,10 +69,13 @@ next_project_number: 364
     └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
     └─ 312 [NOT STARTED] — Backlog reconciliation as a required task-creation component:...
 319 [NOT STARTED] — Surface cross-task claim invalidation when a research...
-345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 347 [NOT STARTED] — PreToolUse Bash hook blocking self-matching process-name...
 351 [NOT STARTED] — Repair the IDENTICAL DISPATCH HALT mechanism in...
+  └─ 272 [NOT STARTED] — Honest session liveness for concurrent same-repo batches:...
+    └─ 275 [NOT STARTED] — Per-repo orchestration queue: registered, live, archived on...
+      └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and... (see above)
   └─ 355 [NOT STARTED] — Close the gap that lets a new test script reach COMPLETED...
+345 [NOT STARTED] — Make the no-op spin that two existing wait documents and an...
 
 ### Agent System
 
@@ -1524,7 +1524,7 @@ CONSEQUENCE THE NEXT READER MUST KNOW: if task 342's hold is lifted while this t
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 343
+- **Dependencies**: Task 343, Task 356
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
@@ -3858,7 +3858,7 @@ proposal from evidence is not approval to fire it.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 351
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
