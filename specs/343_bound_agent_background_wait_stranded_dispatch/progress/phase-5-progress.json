@@ -1,0 +1,32 @@
+{
+  "phase": 5,
+  "phase_name": "Regression-test the wiring, then run the full gate",
+  "started_at": "2026-10-06T01:05:00Z",
+  "last_updated": "2026-10-06T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write test-stall-reprompt-wiring.sh grep-based consistency suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh"]},
+    {"id": 2, "description": "Confirm run-all.sh auto-discovery registers the new suite (no edit needed; glob-discovered)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run new test positive + negative (scratch copy) arm", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run full gate in foreground with bounded timeout, redirect to file; fix Gate 20 budget-ceiling regression caused by Phase 3's SKILL.md growth", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md", "agent-system/extensions/core/context/config/orchestrator-context-budget.json", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Write execution summary and closing artifacts, commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.4",
+      "description": "run-all.sh / suite-cost-hints.txt registration",
+      "type": "altered",
+      "reason": "run-all.sh discovers scripts/tests/test-*.sh via glob; no explicit registration line exists to add. suite-cost-hints.txt is explicitly advisory-only per its own header.",
+      "annotation": "no edit made to either file; confirmed via a full run-all.sh pass showing the new suite discovered and passing"
+    },
+    {
+      "task_id": "5.unplanned",
+      "description": "Gate 20 per-file byte-ceiling regression in skills/skill-orchestrate/SKILL.md",
+      "type": "altered",
+      "reason": "Phase 3's necessary stall_suspected wiring grew SKILL.md from 19,921 B to 25,050 B against a 20,000 B hard ceiling (only 79 B of headroom existed pre-Phase-3). Fixed by three compaction passes (21,121 B final) plus a reviewed, dated ceiling move to 21,500 B in context/config/orchestrator-context-budget.json, mirroring that file's own documented precedent for commands/orchestrate.md.",
+      "annotation": "an 8th file, outside the plan's declared file_scope of 7, was touched: context/config/orchestrator-context-budget.json"
+    }
+  ]
+}

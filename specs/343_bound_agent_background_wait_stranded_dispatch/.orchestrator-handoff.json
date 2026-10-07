@@ -1,18 +1,35 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a 5-phase plan ruling on all three scope items. Backgrounding a local gate stays permitted but only via bounded-build-waiter.md's single foreground-blocking call; the harness-async detach-then-notify path is forbidden. A bounded-wait deadline reached with no result is not an admissible exclusion by itself. Detection already exists in orchestrate-cycle-postflight.sh as stall_suspected and respects both named constraints; the real gap is that skill-orchestrate/SKILL.md never reads it, so the plan wires a Move 3 consumer plus a loop-level re-prompt relay at the branch move.",
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "phase": "implement",
+  "summary": "Implemented all 5 plan phases: a mechanism-mandating agent contract forbidding the detach-then-await-notification local-wait path (with an explicit three-way deadline fork), a named status-markers.md non-admission ruling, a Move 3 consumer plus Move 4 batched re-prompt relay for the previously-dead stall_suspected signal, four documentation rulings, and a self-guarding grep-based regression test. A real Gate 20 byte-ceiling regression caused by the necessary SKILL.md growth was fixed via compaction plus a reviewed, dated ceiling move. Full gate run: 31/34 checks pass; the remaining 3 are enumerated, evidenced exclusions (expected source/deploy drift from source-only edits across 8 files; 3 unrelated pre-existing test failures), recorded in the plan's Phase 5 Reasoned Exclusions.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/343_bound_agent_background_wait_stranded_dispatch/plans/01_bound-background-wait-stranded-dispatch.md",
-      "summary": "5-phase plan: agent-contract mechanism mandate, deadline exclusion fork, stall_suspected consumer wiring, four contract rulings, regression test plus full gate."
+      "type": "summary",
+      "path": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
+      "summary": "Full implementation summary covering all 5 phases, decisions, deviations, and verification evidence."
+    },
+    {
+      "type": "test",
+      "path": "agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh",
+      "summary": "New grep-based producer/consumer consistency suite (10 assertions) for the stall_suspected signal and its relay; verified live against a scratch-copy negative control."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
   "plan_markers_verified": true,
-  "next_action_hint": "Dispatch implement for this task alone, or alongside tasks whose file_scope excludes the ten paths the plan harvests (notably skill-orchestrate/SKILL.md, orchestrate-cycle-postflight.sh, orchestrate-state-machine.md, handoff-schema.md).",
-  "dispatch_seq": 12
+  "next_action_hint": "Task complete. Optional follow-up (not this task's scope): a deliberate redeploy will clear the 8-file deployed-script-drift finding this task's source-only edits introduced.",
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/index-entries.json"
+  ]
 }

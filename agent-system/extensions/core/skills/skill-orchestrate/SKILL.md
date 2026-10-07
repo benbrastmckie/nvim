@@ -199,9 +199,6 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
   stall_suspected=$(echo "$postflight_json" | jq -r '.stall_suspected // false')
   echo "[orchestrate] Task #${t}: dispatch result: $dispatch_status (verdict=$verdict, persisted=$persisted_status)" >&2
 
-  # dispatch_seq_for_row is read unconditionally (not only inside the D4 branch below): the
-  # stall-reprompt accumulation further down needs it too, to key pending_stall_reprompt[] /
-  # stall_reprompted[] on {task, dispatch_seq} exactly like D4 keys its own capture file on it.
   dispatch_seq_for_row=$(jq -r --arg t "$t" '.dispatch_seq[$t] // empty' "$mt_state_file")
 
   # D4 message-findings recovery (research phase only; full rationale in "MUST NOT (Postflight
@@ -235,35 +232,19 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
         "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
     fi
   elif [ "$verdict" = "failed" ] && [ "$halt" != "true" ]; then
-    # stall_suspected guard: a suspected stall does NOT accept the failed verdict on its FIRST
-    # occurrence for this dispatch_seq — the committed work is intact and only the wrap-up is
-    # missing (see "Abandoned Wrap-Up" in orchestrate-state-machine.md). Accumulate instead and
-    # let Move 4's batched relay re-prompt once before this verdict is ever charged to
-    # failed_tasks. A SECOND no-outcome return on the SAME dispatch_seq (stall_reprompted[]
-    # already carries this {task, dispatch_seq} pair) takes this ordinary failed_tasks path —
-    # exactly one re-prompt is ever owed per dispatch.
-    already_stall_reprompted=$(jq -r --argjson tn "$t" --argjson ds "${dispatch_seq_for_row:-null}" \
-      '([.stall_reprompted // [] | .[] | select(.task == $tn and .dispatch_seq == $ds)] | length) > 0' \
-      "$mt_state_file" 2>/dev/null) || already_stall_reprompted=false
-    if [ "$stall_suspected" = "true" ] && [ "$already_stall_reprompted" != "true" ]; then
-      echo "[orchestrate] Task #${t}: STALL SUSPECTED — queued for a one-time foreground re-prompt (dispatch_seq=${dispatch_seq_for_row}, phase=${phase}); NOT charged to failed_tasks yet." >&2
-      jq --argjson tn "$t" --argjson ds "${dispatch_seq_for_row:-null}" --arg ph "$phase" \
-        --arg ag "$agent" --argjson c "${cycle_count:-0}" \
-        '.pending_stall_reprompt = ((.pending_stall_reprompt // []) + [{"task": $tn, "dispatch_seq": $ds, "phase": $ph, "agent": $ag, "cycle": $c}])
-         | .stall_ledger = ((.stall_ledger // []) + [{"task": $tn, "dispatch_seq": $ds, "phase": $ph, "cycle": $c}])' \
-        "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
-    else
-      jq --argjson tn "$t" '.failed_tasks = ((.failed_tasks // []) + [$tn] | unique)' \
-        "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
-    fi
+    # Abandoned-Wrap-Up guard (orchestrate-state-machine.md); no Agent call here -- Move 4's job.
+    [ "$stall_suspected" = "true" ] && echo "[orchestrate] #${t} STALL SUSPECTED (dispatch_seq=${dispatch_seq_for_row})." >&2
+    jq --argjson tn "$t" --argjson ds "${dispatch_seq_for_row:-null}" --arg ph "$phase" \
+      --arg ag "$agent" --argjson c "${cycle_count:-0}" --argjson susp "$stall_suspected" \
+      'def reprompted: .stall_reprompted // [] | any(.task == $tn and .dispatch_seq == $ds);
+       if $susp and (reprompted | not) then
+         {task: $tn, dispatch_seq: $ds, phase: $ph, agent: $ag, cycle: $c} as $e
+         | .pending_stall_reprompt += [$e] | .stall_ledger += [$e]
+       else .failed_tasks = ((.failed_tasks // []) + [$tn] | unique) end' \
+      "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
   fi
 done
 ```
-
-No Agent call is issued anywhere in this loop, including the stall-reprompt accumulation just
-added: Move 2's "never interleaved with dispatch" rule and the Postflight Boundary's enumeration
-both forbid it here. That is why the actual re-prompt is sited at Move 4's branch move below,
-not inside this per-task postflight loop.
 
 **`.status` vs. `.persisted_status`**: `.status` above is the dispatched agent's own
 self-report (diagnostic only — never used for loop-control); `.persisted_status` is
@@ -303,42 +284,11 @@ flags); never hand-author this file. Clear `pending_ask_user` for that task. A n
 is surfaced in the consolidated output. Unrelated to `detected_defects` (accumulate-and-render
 only, never prompted).
 
-**Batched stall re-prompt relay (same siting as the `AskUserQuestion` relay directly above —
-after every task's Move 3 has run this cycle, never mid-cycle, never once per task inside Move
-3's own loop)**: if `mt_state_file`'s `pending_stall_reprompt[]` is non-empty, for each entry
-issue exactly one Agent call, batched together with every other entry's call (and with the
-`AskUserQuestion` calls above, in one message):
-
-```bash
-echo "$(jq -c '.pending_stall_reprompt // []' "$mt_state_file")" | jq -c '.[]' | while IFS= read -r entry; do
-  t=$(jq -r .task <<<"$entry"); ds=$(jq -r .dispatch_seq <<<"$entry")
-  phase=$(jq -r .phase <<<"$entry"); agent=$(jq -r .agent <<<"$entry")
-  task_dir_abs="${SKILL_REPO_ROOT:-$(pwd)}/$(jq -r --arg t "$t" '.task_dirs[$t]' "$mt_state_file")"
-  # Agent tool: subagent_type: agent (the SAME agent this dispatch_seq already used — no new
-  # dispatch file is composed; Move 1 does not run for this task this cycle). Prompt: "You are
-  # being re-prompted by /orchestrate for task $t, phase $phase, dispatch_seq $ds. Your previous
-  # turn committed work but ended without writing your closing artifacts. (a) Re-run the
-  # verification you were waiting on in the FOREGROUND, with a bounded timeout, redirecting
-  # output to a file and grepping that file — never await a harness notification. (b) Attribute
-  # any failure to your own edits or to pre-existing breakage, with git log/git status overlap
-  # evidence. (c) Close every phase with an explicit verdict ([COMPLETED], or [COMPLETED WITH
-  # EXCLUSIONS] with a full Reasoned Exclusions record) — leave none open. (d) Write all three
-  # closing artifacts (summary, .return-meta.json, .orchestrator-handoff.json) and commit them."
-  # Context: { task_number: t, orchestrator_mode: true, session_id: session_id,
-  # task_dir: task_dir_abs, handoff_path: "${task_dir_abs}/.orchestrator-handoff.json",
-  # dispatch_seq: ds }
-done
-```
-
-After each relay Agent call returns, run `orchestrate-cycle-postflight.sh` once for that task
-with the same invocation shape Move 3 uses, and apply the ordinary verdict handling to its result
-— including the `failed_tasks` append, which is now reachable because this dispatch_seq's
-re-prompt has been spent. Then move the entry from `pending_stall_reprompt[]` to
-`stall_reprompted[]`, keyed on `{task, dispatch_seq}` (the same key Move 3's guard reads), so
-exactly one re-prompt is ever owed per dispatch — a second no-outcome return on the same
-`dispatch_seq` takes the ordinary `failed_tasks` path on its next Move 3 pass rather than
-re-queuing here. This relay, like the `AskUserQuestion` relay it sits beside, never runs
-mid-cycle and never runs once per task inside Move 3's loop.
+**Batched stall re-prompt relay** (same siting as `AskUserQuestion` above; full instructions in
+orchestrate-state-machine.md's "Abandoned Wrap-Up"): one Agent call per
+`pending_stall_reprompt[]` entry (`subagent_type` = its `agent`; same `dispatch_seq`), batched
+with the calls above. Afterward, re-run postflight for that task, apply ordinary verdict
+handling, and move the entry to `stall_reprompted[]` keyed on `{task, dispatch_seq}`.
 
 Then: emit the consolidated output (read `context/patterns/orchestrate-batch-results-template.md`
 and render exactly), run the residue check (`git status --porcelain -- specs/` — warn only,

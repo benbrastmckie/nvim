@@ -1842,7 +1842,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 236,
+      "line_count": 244,
       "keywords": [
         "standards",
         "postflight",
@@ -1911,7 +1911,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 552,
+      "line_count": 564,
       "keywords": [
         "standards",
         "status",

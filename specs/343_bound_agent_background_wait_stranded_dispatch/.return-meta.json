@@ -1,10 +1,57 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
+      "summary": "All 5 phases implemented: mechanism-mandating agent contract, deadline-fork exclusion ruling, stall_suspected Move 3/4 wiring, four documentation rulings, and a self-guarding producer/consumer regression test. Full gate run 31/34; the 3 remaining findings are enumerated, evidenced exclusions (source/deploy drift from source-only edits; unrelated pre-existing test failures)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the bound-agent-background-wait defect across all three scope items: the agent contract now mandates bounded-build-waiter.md's canonical idiom and forbids the detach-then-await-notification path for local gates with an explicit three-way deadline fork; skill-orchestrate/SKILL.md now has a Move 3 consumer and Move 4 batched re-prompt relay for the previously-dead stall_suspected signal; and a grep-based regression test guards the producer/consumer wiring against silently losing its consumer again."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A hard per-file byte-budget ceiling (e.g. verify-deploy.sh's Gate 20, ORCHESTRATOR_BUDGET_GATE_MODE=hard) can have only single-digit bytes of headroom before a necessary edit. Before landing substantive prose/code additions to a budget-gated file, measure `wc -c` against the configured ceiling early -- not only at final verification. If exceeded: first compact (dense, pointer-only prose matching the file's own established discipline -- e.g. collapsing two sequential jq invocations into one combined filter, replacing an inline bash code block with prose matching a sibling section's own style), then, only if the remaining content is genuinely necessary and non-duplicative, make a reviewed, DATED ceiling move in the budget config, following that file's own prior precedent (e.g. round up to the next 500 B) rather than silently stripping necessary content or skipping the gate.",
+      "category": "CONFIG",
+      "source_artifact": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["budget-ceiling", "verify-deploy", "gate20", "compaction", "ceiling-move", "ORCHESTRATOR_BUDGET_GATE_MODE"]
+    },
+    {
+      "content": "When closing a 'computed signal has no consumer' defect class in a Markdown procedure file (not itself directly executed by a test harness, e.g. an orchestration SKILL.md), the regression test for the fix is a grep-based static producer/consumer consistency check, not a sandboxed execution test. Verify the assertion is LIVE, not vacuously true, by copying the target file to a scratch path, sed-deleting the consumer lines, and confirming the suite now fails when pointed at the scratch copy (via an env-var override of the file path) -- never by reverting the real file. This is cheap (no sandbox, no fixture repo tree) and catches exactly the defect class every execution-based producer test misses.",
+      "category": "PATTERN",
+      "source_artifact": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dead-signal", "producer-consumer", "grep-based-test", "negative-control", "scratch-copy"]
+    },
+    {
+      "content": "A test fixture that rsync-copies the live repo tree and symlinks the live .claude/ directory (to exercise verify-deploy.sh's full gate battery in isolation) inherits that repo's AMBIENT source/deploy drift as a failure in its own 'baseline is clean' sanity assertion -- any task mid-cycle on the source store without a fresh deploy will trip it, independent of that task's actual correctness. Before treating such a failure as a regression, isolate-reproduce the fixture standalone (same rsync+symlink recipe, same gate invocation) and confirm WHICH specific sub-gate fires (doc-lint/manifest-content-hash drift vs. a genuine budget/logic finding) -- the former is expected and resolves at the next deliberate redeploy; only the latter is this task's own regression to fix.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/343_bound_agent_background_wait_stranded_dispatch/summaries/01_bound-background-wait-stranded-dispatch-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-drift", "fixture-isolation", "test-verify-deploy-context-budget", "source-store-boundary", "attribution"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1791337167_c5588f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
