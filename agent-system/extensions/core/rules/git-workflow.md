@@ -116,9 +116,7 @@ dirty and no fresh snapshot exists.
 - `git restore <path>` (without `--staged`; `--staged` only unstages and is safe)
 - `git clean -fd` (or any flag ordering/clustering that combines `-f` and `-d`)
 - `git stash drop` / `git stash clear`
-- Bare `git stash` / `git stash push` (including the implicit-push spellings — `git stash` with
-  no subcommand, `git stash -u` — and the `-u` / `--include-untracked` flag) — reverts the
-  working tree
+- Bare `git stash`/`git stash push` — reverts the tree under concurrency
 - Forced `git checkout` / `git switch` (`-f` / `--force`) — can silently overwrite
   local changes when switching branches
 
@@ -142,24 +140,8 @@ Snapshot Mode Detail" section for the full rollback-procedure walkthrough, the
 `file_scope`/`--allow-out-of-scope` refusal mechanics, and `context/patterns/checkpoint-before-overflow.md`
 for the `--no-revert` checkpoint pattern.
 
-**Not blocked** (blast radius is bounded to named paths, or git itself refuses rather than
-silently discarding): `git stash push -- <pathspec>` — bounded to the named paths, the same
-shape as the already-permitted `git restore --staged <path>` and non-forced
-`checkout`/`switch`; blocking it would deny agents the one stash form that is both safe and
-useful under a shared tree (Item 7 verdict: stays permitted). `git stash pop` / `git stash
-apply` — the data-loss moment is the *push* (the tree revert), not the recovery step; a pop or
-apply that would overwrite local changes is refused by git itself and leaves the stash intact or
-leaves conflict markers, never a silent discard — the same safe-failure shape that keeps
-non-forced `checkout`/`switch` permitted (Item 8 verdict: stays permitted). Also not blocked:
-`git restore --staged <path>`, and non-forced `git checkout` / `git switch` between branches.
-
-Bare, whole-tree `git stash` (push) is **forbidden on a dirty tree** (see the list above), not
-"not blocked": under a solo tree a stash retains the changes, but under CONCURRENT WRITERS
-sharing one tree it reverts the working tree, and a later `git stash pop` can be refused ("local
-changes would be overwritten") because a sibling has since written the same path — at that
-moment the changes are no longer recoverable in place and exist only inside a stash entry
-requiring path-by-path extraction. See `context/standards/git-workflow-narrative.md` for the
-full incident narrative and the extended Item 7/8 reasoning.
+**Not blocked**: `git stash push -- <pathspec>`, `git stash pop`/`git stash apply` (permitted),
+`git restore --staged <path>`, and non-forced `git checkout`/`git switch` between branches.
 
 ### No History Rewrites While Another Writer Is Live
 

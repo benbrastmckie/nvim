@@ -349,23 +349,24 @@ line numbers are leads, not facts.
 
 ---
 
-### Phase 4: Guard Detector, New Action Class, and Refusal Message [NOT STARTED]
+### Phase 4: Guard Detector, New Action Class, and Refusal Message [COMPLETED]
 
 **Goal**: Implement the corrected rule in `hooks/guard-destructive-git.sh` under a new
 `DESTRUCTIVE_ACTION_CLASS="stash_revert"`, register the class for grant validation, and make the
 refusal name the non-destructive alternatives. The Phase 3 fixture turns green here.
 
 **Tasks**:
-- [ ] Add a `stash_revert` detector to the existing `MATCHED=0` chain (anywhere among the
+- [x] Add a `stash_revert` detector to the existing `MATCHED=0` chain (anywhere among the
       detectors; order among mutually-exclusive detectors does not matter). Follow the per-segment
       idiom already used by the `clean -f -d` and forced-`checkout`/`switch` blocks for segment
       extraction, and the directory/glob `git add` detector's `read -ra` token-walk for the
       token-level tests — do not invent a new style and do not write a full tokenizer.
-- [ ] Extract same-command segments with the established pattern
+      *(completed)*
+- [x] Extract same-command segments with the established pattern
       `grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+stash[^;&|]*'` against `$COMMAND_SCAN`
       (already quote/comment-stripped up front, so free-text commit messages cannot
-      false-positive).
-- [ ] Per segment, strip the leading separator and `git stash`, then walk tokens with `read -ra`:
+      false-positive). *(completed)*
+- [x] Per segment, strip the leading separator and `git stash`, then walk tokens with `read -ra`:
       skip flag tokens (leading `-`), and decide on the first non-flag token —
       - absent (bare, including the `-u` / `--include-untracked` / `-k` / `-m <msg>` flag-only
         forms) -> **block**;
@@ -374,33 +375,49 @@ refusal name the non-destructive alternatives. The Phase 3 fixture turns green h
       - any of `list show pop apply branch drop clear create store` -> fall through (not this
         detector's business; `drop`/`clear` remain the existing `stash_drop` detector's);
       - `-h` / `--help` anywhere in the segment -> fall through (help output touches nothing).
-- [ ] On a block, set `MATCHED=1`, `DESTRUCTIVE_ACTION_CLASS="stash_revert"`, and a `REASON`
+      *(completed: additionally treats `-m`/`--message` as a value-taking flag so its message
+      argument is never mistaken for a subcommand or post-`--` pathspec token)*
+- [x] On a block, set `MATCHED=1`, `DESTRUCTIVE_ACTION_CLASS="stash_revert"`, and a `REASON`
       naming the effect, e.g. "bare/whole-tree `git stash` reverts the working tree; under
       concurrent writers a later `git stash pop` can be refused, stranding the changes inside a
-      stash entry".
-- [ ] Register the class: append `stash_revert` to `PG_ACTION_CLASSES` in
+      stash entry". *(completed)*
+- [x] Register the class: append `stash_revert` to `PG_ACTION_CLASSES` in
       `scripts/lib/push-grant-lib.sh` (carried as line 73). Without this, `pg_grant_consume`
-      fails closed for the new class even if a grant is minted.
-- [ ] Add a class-conditional block to the refusal output (the `echo ... >&2` block at the end of
+      fails closed for the new class even if a grant is minted. *(completed)*
+- [x] Add a class-conditional block to the refusal output (the `echo ... >&2` block at the end of
       the hook, carried as lines 505-513), fired when `DESTRUCTIVE_ACTION_CLASS="stash_revert"`,
       naming all three alternatives verbatim: `git show HEAD:<path>` (read the committed version
       without touching the tree), `git diff HEAD -- <path>` (read the uncommitted diff without
       touching the tree), and copying the file(s) of interest to a scratchpad location before
       proceeding. Keep the existing shared `git-snapshot.sh` / `/please` guidance intact for all
-      classes.
-- [ ] Update the hook's own header comment list of guarded commands (carried around line 38,
+      classes. *(completed: manually confirmed the refusal text contains all three alternatives
+      verbatim)*
+- [x] Update the hook's own header comment list of guarded commands (carried around line 38,
       which currently names `git stash drop / git stash clear`) and the class enumerations in the
       comments around lines 25 and 460 so `stash_revert` appears alongside the existing five
-      destructive classes.
-- [ ] Do **not** add any new exemption path: the existing grant check and snapshot-marker check
+      destructive classes. *(completed)*
+- [x] Do **not** add any new exemption path: the existing grant check and snapshot-marker check
       are already unconditional on the class value, so Item 5 needs no hook-side mechanism.
-- [ ] Re-run `bash scripts/tests/test-guard-destructive-git.sh`: the Phase 3 red cases now pass
+      *(confirmed: no new exemption path added)*
+- [x] Re-run `bash scripts/tests/test-guard-destructive-git.sh`: the Phase 3 red cases now pass
       and no previously-passing case regresses. Record the green tally against the Phase 3
-      baseline — this is the second half of the Item 6 evidence.
-- [ ] Sanity-check the detector against the guarded-forms list by hand on a scratch dirty repo:
+      baseline — this is the second half of the Item 6 evidence. *(completed: 89 passed, 0
+      failed — all 7 Phase 3 red cases now pass, no regression)*
+- [x] Sanity-check the detector against the guarded-forms list by hand on a scratch dirty repo:
       `git stash`, `git stash -u`, `git stash push`, `git stash push -- one.txt`,
-      `git stash list`, `git stash pop`.
-- [ ] Confirm no task-number reference was introduced in any edited file.
+      `git stash list`, `git stash pop`. *(completed: all six forms behaved exactly as
+      specified — exit 2/2/2/0/0/0 respectively)*
+- [x] Confirm no task-number reference was introduced in any edited file. *(completed: clean
+      on both edited files)*
+
+**Follow-up discovered during this phase's full `verify-deploy.sh` run (not a plan task, recorded
+for completeness)**: Phase 1's rule-text addition to the eager-loaded `rules/git-workflow.md`
+initially pushed the orchestrator eager-context budget (Gate 20) over its fixed baseline. Resolved
+by compressing that text (moving extended reasoning into the Phase 2 narrative, which is not
+eager-loaded) until the measured total landed at exactly the baseline. See the Phase 1 progress
+file's `deviations` entry and this phase's `additional_verification` block in its progress file
+for full detail, including the demonstrated-pre-existing evidence for the other `run-all.sh`
+findings surfaced by the same full-gate-set run.
 
 **Timing**: 1.25 hours
 

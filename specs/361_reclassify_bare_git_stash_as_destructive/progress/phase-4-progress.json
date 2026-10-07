@@ -1,0 +1,43 @@
+{
+  "phase": 4,
+  "phase_name": "Guard Detector, New Action Class, and Refusal Message",
+  "started_at": "2026-10-07T18:00:30Z",
+  "last_updated": "2026-10-07T18:00:30Z",
+  "objectives": [
+    {"id": 1, "description": "Add stash_revert detector to the MATCHED chain", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 2, "description": "Register stash_revert in PG_ACTION_CLASSES", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/push-grant-lib.sh"]},
+    {"id": 3, "description": "Add class-conditional refusal naming the three alternatives", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 4, "description": "Update header comments and class enumerations", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/guard-destructive-git.sh"]},
+    {"id": 5, "description": "Re-run suite, confirm green against Phase 3 baseline", "status": "done", "files_touched": ["specs/361_reclassify_bare_git_stash_as_destructive/progress/phase4-green-run.log"], "note": "89 passed, 0 failed - all 7 Phase 3 red cases now pass, no regression"},
+    {"id": 6, "description": "Manual scratch-repo spot-check of six representative forms", "status": "done", "files_touched": [], "note": "git stash/exit2, git stash -u/exit2, git stash push/exit2, git stash push -- one.txt/exit0, git stash list/exit0, git stash pop/exit0 - all as specified. Also confirmed refusal text names git show HEAD:, git diff HEAD --, and scratchpad-copy alternatives verbatim"},
+    {"id": 7, "description": "Confirm no task-number references introduced", "status": "done", "files_touched": [], "note": "check-task-references.sh clean on both edited files. shellcheck unavailable in this environment (broken nix path) - bash -n passed; recorded as non-fatal environment-gap issue via issue-record.sh"}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Initial Phase 1 'Not blocked'/forbidden-list prose", "result": "failed", "reason": "Pushed eager-load context budget (Gate 20) from 65927 B to 67433 B against a fixed baseline of 65950 B. Required compression during Phase 4, documented as a Phase 1 deviation."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "additional_verification": {
+    "full_verify_deploy_run": {
+      "log": "specs/361_reclassify_bare_git_stash_as_destructive/progress/verify-deploy-phase4-full.log",
+      "result": "3 of 34 checks failed",
+      "findings": [
+        {"gate": "doc-lint (gate3)", "status": "EXPECTED", "reason": "source-ahead-of-deploy content drift on our 5 edited files; resolves at Phase 6 redeploy"},
+        {"gate": "manifest-driven verification (gate5)", "status": "EXPECTED", "reason": "same 5-file content drift as gate3; resolves at Phase 6 redeploy"},
+        {"gate": "orchestrator context budget (gate20)", "status": "PASS", "reason": "eager-load total 65950 B == baseline 65950 B after Phase 1 text compression (see deviation note in Phase 1 progress file)"}
+      ]
+    },
+    "full_run_all_sh": {
+      "log": "specs/361_reclassify_bare_git_stash_as_destructive/progress/run-all-phase4.log",
+      "result": "113 passed, 5 failed (4 expected, 1 new), 2 skipped, 120 total",
+      "findings": [
+        {"suite": "test-gate-out-repair-reporting.sh", "status": "PRE-EXISTING", "reason": "run-all.sh's own known-failures.txt allowlist already classifies this EXPECTED; unrelated to any file this phase touches (command-gate-out.sh/phase-check logic)"},
+        {"suite": "test-lint-json-channel-discipline.sh", "status": "PRE-EXISTING", "reason": "known-failures.txt EXPECTED; failure is in agent-system/extensions/typst/scripts/chapter-quality-check.sh, unrelated"},
+        {"suite": "test-orchestrate-cycle-plan.sh", "status": "PRE-EXISTING", "reason": "known-failures.txt EXPECTED; tests orchestrate-cycle-plan.sh, which was ALREADY modified/uncommitted in git status before this session started (a sibling task's in-flight work)"},
+        {"suite": "test-typst-element-lint.sh", "status": "PRE-EXISTING", "reason": "known-failures.txt EXPECTED; unrelated typst advisory-WARN wording case"},
+        {"suite": "test-verify-deploy-context-budget.sh", "status": "ATTRIBUTABLE-BUT-EXPECTED", "reason": "classified NEW by run-all.sh (not in known-failures.txt) but directly reproduced and confirmed: its fixture rsync-copies the CURRENT agent-system/extensions tree (including our 5 edited files) while symlinking .claude/ to the UN-redeployed real tree, so its own 'baseline fixture is clean' assumption breaks on the exact same gate3/gate5 content-drift findings already expected above. Reproduced standalone with an isolated fixture: confirmed rc=1 comes from gate3/gate5 drift findings only, zero gate20 findings. Resolves automatically at Phase 6 redeploy; not a Gate 20 regression or a defect in this phase's code."}
+      ]
+    }
+  }
+}

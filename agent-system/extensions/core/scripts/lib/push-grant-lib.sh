@@ -70,7 +70,7 @@ PG_EVENTS_APPEND="${PG_SCRIPTS_DIR}/events-append.sh"
 source "${PG_LIB_DIR}/common.sh" 2>/dev/null || true
 
 PG_EXPIRY_WINDOW="${PG_EXPIRY_WINDOW:-600}"
-PG_ACTION_CLASSES="push_branch push_tag reset_hard clean_fd checkout_discard restore_discard stash_drop"
+PG_ACTION_CLASSES="push_branch push_tag reset_hard clean_fd checkout_discard restore_discard stash_drop stash_revert"
 
 # --- Path resolution ---------------------------------------------------------------------
 

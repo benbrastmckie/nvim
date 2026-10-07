@@ -12,5 +12,13 @@
   "current_objective": 4,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [
+    {
+      "task_id": "1.3-followup",
+      "description": "rules/git-workflow.md stash prose, as first written in Phase 1",
+      "type": "altered",
+      "reason": "Phase 4's verify-deploy.sh run surfaced Gate 20 (eager-context budget lock): the Phase 1 prose pushed the measured eager-load total over orchestrator-context-budget.json's fixed baseline_bytes=65950. Re-compressed during Phase 4 (same file, same section) until the measured total landed at exactly 65950 B -- moving extended reasoning into the already-written non-eager narrative file and trimming per-item verdict annotations to the minimum the dispatch's Item 8 'explicit rather than implicit' instruction requires. No semantic content was lost: the forbidden-list bullet still states the concurrent-writer hazard, and Not-blocked still retains the Item 7/8 permitted forms with Item 8 explicitly marked.",
+      "annotation": "*(deviation: altered post-hoc in Phase 4 -- see Phase 4 progress file and issue log for the budget-gate collision)*"
+    }
+  ]
 }

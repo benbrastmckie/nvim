@@ -22,9 +22,9 @@
 # check -- after the clean-tree early exit and after hazard class 2's concurrency-gated
 # history-rewrite predicate (both unchanged by this note). A matching grant authorizes the one
 # already-matched destructive action (reset_hard/clean_fd/checkout_discard/restore_discard/
-# stash_drop) and is consumed on use; it has NO bearing on the over-staging detectors below,
-# which exit 2 unconditionally before this point is ever reached, so a destructive grant can
-# never exempt over-staging by construction, not merely by convention.
+# stash_drop/stash_revert) and is consumed on use; it has NO bearing on the over-staging
+# detectors below, which exit 2 unconditionally before this point is ever reached, so a
+# destructive grant can never exempt over-staging by construction, not merely by convention.
 #
 # Blocks via exit code 2 + a stderr message (NOT permissionDecision: deny, which is
 # documented-buggy for allow-listed Bash(git:*) commands -- see the rationale two sections below
@@ -36,6 +36,9 @@
 #   - git restore <path>                (without --staged; --staged only unstages, safe)
 #   - git clean  -f -d (any flag order/clustering, e.g. -fd, -df, -f -d, -xfd)
 #   - git stash drop / git stash clear
+#   - bare/whole-tree git stash, git stash push (incl. implicit-push spellings and
+#     -u/--include-untracked) -- reverts the working tree; a pathspec-scoped
+#     `git stash push -- <path>` stays permitted (DESTRUCTIVE_ACTION_CLASS="stash_revert")
 #   - forced git checkout / git switch  (-f / --force; can silently overwrite changes)
 #
 # Exemptions (never blocked):
@@ -430,6 +433,100 @@ if [ "$MATCHED" = "0" ] && echo "$COMMAND_SCAN" | grep -qE '(^|[;&|][[:space:]]*
   DESTRUCTIVE_ACTION_CLASS="stash_drop"
 fi
 
+# bare git stash / git stash push (whole-tree, no pathspec) -- reverts the working tree. Under
+# a solo tree this is reversible (a later `git stash pop` restores it); under CONCURRENT WRITERS
+# sharing one tree it is not reliably reversible, because a sibling can write the same path
+# while the stash is outstanding, causing the later `pop` to abort ("local changes would be
+# overwritten") and strand the changes inside the stash entry. See rules/git-workflow.md's
+# "Forbidden on a dirty tree" list and context/standards/git-workflow-narrative.md's "Bare git
+# stash Incident and Full Detail" section for the full rationale and the measured incident.
+#
+# A pathspec-scoped `git stash push -- <path>` stays PERMITTED (Item 7): its blast radius is
+# bounded to the named paths, the same shape as the already-permitted `git restore --staged
+# <path>` and non-forced checkout/switch. `git stash pop`/`apply`/`list`/`show`/`branch`/
+# `drop`/`clear`/`create`/`store` and `-h`/`--help` all fall through to another detector (drop/
+# clear) or out of this detector entirely (git itself refuses rather than silently discarding on
+# a conflicting pop/apply -- Item 8 -- and list/show/branch/create/store/help touch nothing).
+#
+# Per-segment extraction follows the established idiom used by every other detector in this
+# chain; per-token walk follows the directory/glob `git add` detector's `read -ra` approach
+# rather than a full tokenizer. `-m`/`--message` is treated as a value-taking flag so its
+# argument is never mistaken for a subcommand or for a pathspec-after-`--` token.
+if [ "$MATCHED" = "0" ]; then
+  STASH_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+stash[^;&|]*') || true
+  if [ -n "$STASH_SEGMENTS" ]; then
+    while IFS= read -r seg; do
+      [ -z "$seg" ] && continue || true
+      # -h/--help anywhere in the segment: help output touches nothing, fall through entirely.
+      if echo "$seg" | grep -qE -- '(^|[[:space:]])(-h|--help)([[:space:]]|$)'; then
+        continue
+      fi
+      seg_rest=$(echo "$seg" | sed -E 's/^[;&|]*[[:space:]]*git[[:space:]]+stash[[:space:]]*//')
+      read -ra STASH_TOKENS <<< "$seg_rest" || true
+      STASH_SUBCMD=""
+      stash_skip_next=0
+      for tok in "${STASH_TOKENS[@]:-}"; do
+        [ -z "$tok" ] && continue || true
+        if [ "$stash_skip_next" = "1" ]; then
+          stash_skip_next=0
+          continue
+        fi
+        case "$tok" in
+          -m|--message) stash_skip_next=1; continue ;;
+          -*) continue ;;
+        esac
+        STASH_SUBCMD="$tok"
+        break
+      done
+      case "$STASH_SUBCMD" in
+        list|show|pop|apply|branch|drop|clear|create|store)
+          # Not this detector's business: read-only/recovery/misc forms, or already handled
+          # above (drop/clear). Fall through to the next segment or detector.
+          continue
+          ;;
+        push)
+          # Inspect for a `--` separator followed by at least one non-flag token (a real
+          # pathspec). An empty separator (nothing after `--`) still blocks, per the
+          # over-permissive-exemption risk.
+          stash_has_path_after_sep=0
+          stash_seen_sep=0
+          for tok in "${STASH_TOKENS[@]:-}"; do
+            [ -z "$tok" ] && continue || true
+            if [ "$stash_seen_sep" = "0" ]; then
+              [ "$tok" = "--" ] && stash_seen_sep=1
+              continue
+            fi
+            case "$tok" in
+              -*) continue ;;
+              *) stash_has_path_after_sep=1; break ;;
+            esac
+          done
+          if [ "$stash_has_path_after_sep" = "1" ]; then
+            continue
+          fi
+          MATCHED=1
+          REASON="git stash push (whole-tree, no pathspec) reverts the working tree; under concurrent writers a later git stash pop can be refused, stranding the changes inside a stash entry"
+          DESTRUCTIVE_ACTION_CLASS="stash_revert"
+          break
+          ;;
+        "")
+          # Bare `git stash`, or flag-only forms (-u / --include-untracked / -k / -m <msg>):
+          # implicit push, whole-tree, no pathspec -- same hazard as the explicit push form.
+          MATCHED=1
+          REASON="bare/whole-tree git stash reverts the working tree; under concurrent writers a later git stash pop can be refused, stranding the changes inside a stash entry"
+          DESTRUCTIVE_ACTION_CLASS="stash_revert"
+          break
+          ;;
+        *)
+          # Unrecognized subcommand (e.g. the deprecated `save`) -- not this detector's
+          # business; fall through rather than guess.
+          continue
+          ;;
+      esac
+    done <<< "$STASH_SEGMENTS"
+  fi
+fi
+
 # forced git checkout / git switch (-f / --force) -- can silently overwrite local changes
 if [ "$MATCHED" = "0" ]; then
   FORCED_SEGMENTS=$(echo "$COMMAND_SCAN" | grep -oE '(^|[;&|][[:space:]]*)git[[:space:]]+(checkout|switch)[^;&|]*') || true
@@ -457,7 +554,8 @@ fi
 # freshness check below already occupies -- i.e. only once the hook has already decided this
 # command would otherwise be blocked. A matching, fresh, verifying grant authorizes exactly the
 # ONE already-matched destructive action (reset_hard | clean_fd | checkout_discard |
-# restore_discard | stash_drop, set alongside REASON/MATCHED above) and is consumed on use.
+# restore_discard | stash_drop | stash_revert, set alongside REASON/MATCHED above) and is
+# consumed on use.
 # Grant REMOTE/REF/FORCE have no meaning for a local destructive action (there is no remote);
 # the fixed sentinel REMOTE="local", REF=<current branch, or "HEAD" if detached>, FORCE="0" is
 # used uniformly so the grant KV format's required fields stay satisfied without inventing a
@@ -504,6 +602,17 @@ fi
 
 echo "BLOCKED: $REASON" >&2
 echo "The working tree has uncommitted changes and this command would discard them." >&2
+if [ "${DESTRUCTIVE_ACTION_CLASS:-}" = "stash_revert" ]; then
+  echo "A whole-tree git stash is refused on a shared tree: a sibling writer may land a" >&2
+  echo "commit on the same path while the stash is outstanding, so the eventual" >&2
+  echo "'git stash pop' can abort and strand your changes inside the stash entry." >&2
+  echo "Non-destructive alternatives that need no stash at all:" >&2
+  echo "  - git show HEAD:<path>        (read the committed version, tree untouched)" >&2
+  echo "  - git diff HEAD -- <path>     (read the uncommitted diff, tree untouched)" >&2
+  echo "  - copy the file(s) of interest to your scratchpad directory before proceeding" >&2
+  echo "A pathspec-scoped 'git stash push -- <path>' remains permitted if you specifically" >&2
+  echo "need to stash, bounded to the paths you name." >&2
+fi
 echo "Run 'bash .claude/scripts/git-snapshot.sh <task-number>' first to take a recoverable" >&2
 echo "snapshot (writes a .patch under the task directory + a stash backup), then retry." >&2
 echo "Pass the task number explicitly: the no-argument form only resolves when exactly one" >&2
