@@ -1,43 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1791361777_314fa0_356",
-  "dispatch_seq": 1,
-  "task_number": 356,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/356_propagate_bounded_wait_contract_and_lint_coverage/reports/01_propagate-bounded-wait-contract.md",
-      "summary": "Re-confirms the 3-covered/14-missing bounded-wait contract coverage gap; rules that no pre-existing universal pointer file exists (item 1), that the literal-copy-plus-lint-fragment pattern already used by lint-agent-contracts.sh Checks C/G (sourced from no-task-references-bullet.md / plan-status-ownership.md) is the correct mechanism -- appending a short canonical bullet to the existing bounded-build-waiter.md pattern file rather than creating a new document, with a template complement in agent-template.md; rules hard variants need independent propagation (item 3, no inheritance mechanism exists); and rules research agents are plausibly exposed but out of this task's acceptance scope, recommending a follow-up task (item 4)."
+      "type": "plan",
+      "path": "specs/356_propagate_bounded_wait_contract_and_lint_coverage/plans/01_propagate-bounded-wait-contract.md",
+      "summary": "6-phase plan propagating the bounded-wait contract to 14 implementation-agent definitions via one canonical fragment, with lint Check H asserting the coverage."
     }
   ],
-  "findings_count": 9,
-  "completion_data": {
-    "completion_summary": "Re-confirmed the measured 3-covered/14-missing bounded-wait contract gap with no divergence; ruled on all four scoped items (shared home via literal-copy-plus-lint-fragment appended to bounded-build-waiter.md, lint mechanism mirroring Checks C/G, hard-variant independent propagation, research-agent follow-up recommendation) with evidence for each."
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1791361777_314fa0_356",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 5.5,
+    "dependency_waves": 6
   },
-  "memory_candidates": [
-    {
-      "content": "Claude Code subagent `@`-references inside an agent definition file do NOT auto-resolve/inline at dispatch time -- proven empirically for this codebase (see agent-system/extensions/core/context/contracts/no-task-references-bullet.md's header). A short behavioral MUST/MUST-NOT bullet that must actually reach a dispatched subagent's own prompt needs a literal copy in the agent body, kept in sync with a canonical fragment file via a lint check (grep -qF extraction + curated in-scope list), not a bare pointer to another file. Longer reference material (schemas, full pattern docs) works fine via the existing 'Context References... always load path' convention, because the agent's OWN execution-flow instructions tell it to call Read() on that path -- that is a manual step the agent performs, not harness-level auto-resolution.",
-      "category": "PATTERN",
-      "source_artifact": "specs/356_propagate_bounded_wait_contract_and_lint_coverage/reports/01_propagate-bounded-wait-contract.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["agent-contract-propagation", "at-reference-resolution", "lint-fragment-pattern", "subagent-dispatch", "generated-copy-source"]
-    },
-    {
-      "content": "lint-agent-contracts.sh's Checks C and G establish a reusable shape for propagating a short behavioral bullet across many dispatchable agent files without creating N independent copies to maintain: one canonical 'generated-copy source' fragment file holding the exact text in a fenced/quoted block, a curated (hand-maintained, not mechanically-derived-by-glob) IN_SCOPE_RELATIVE_PATHS array naming which agents must carry it, and a grep -qF check per in-scope file against text extracted from the fragment at lint runtime. Hand-curation of scope is deliberate: some superficially-similar agents are legitimate, already-correctly-worded exclusions that a blanket glob-and-grep would false-positive on.",
-      "category": "PATTERN",
-      "source_artifact": "specs/356_propagate_bounded_wait_contract_and_lint_coverage/reports/01_propagate-bounded-wait-contract.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-agent-contracts", "fragment-file", "in-scope-curation", "agent-coverage-lint"]
-    },
-    {
-      "content": "Hard-mode agent variants (*-implementation-hard-agent.md) in this codebase are fully independent prose files with no @-reference or generation-pipeline link back to their non-hard sibling, despite self-describing as 'extends X with N behavioral additions'. A fix to the non-hard sibling never propagates to the hard variant; each must be edited and lint-covered independently. Confirmed directly by books-implementation-hard-agent.md and cslib-implementation-hard-agent.md both appearing on a measured-missing list for a contract their non-hard siblings also lacked.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/356_propagate_bounded_wait_contract_and_lint_coverage/reports/01_propagate-bounded-wait-contract.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["hard-mode-agents", "agent-inheritance", "no-inheritance-mechanism", "agent-variants"]
-    }
-  ],
-  "next_steps": "Run /plan 356 to create implementation plan"
+  "next_steps": "Run /implement 356 to execute the plan",
+  "dispatch_seq": 4
 }

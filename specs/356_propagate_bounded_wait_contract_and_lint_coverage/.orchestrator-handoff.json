@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Created a 6-phase implementation plan for propagating the bounded-wait contract to the 14 implementation-agent definitions measured as missing it, plus Check H in lint-agent-contracts.sh to assert the coverage mechanically. Re-confirmed the 3-covered/14-missing split by the stated reproduce command with zero divergence. Settled item 1 (one canonical generated-copy fragment appended to the existing context/patterns/bounded-build-waiter.md; option (a) rejected because no universally-included pointer exists, and a bare pointer cannot reach a spawned subagent), item 3 (hard variants do not inherit; each needs its own copy and its own lint entry), and item 4 (research agents ruled out of scope with the reason recorded, recommended as a follow-up reusing the same mechanism).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/356_propagate_bounded_wait_contract_and_lint_coverage/plans/01_propagate-bounded-wait-contract.md",
+      "summary": "6-phase plan: re-confirm coverage, author one canonical bullet fragment plus template complement, propagate to 14 agent definitions, add lint Check H, extend the fixture test suite, final gate with a deliberate-removal demonstration."
+    }
+  ],
+  "dispatch_seq": 4
+}

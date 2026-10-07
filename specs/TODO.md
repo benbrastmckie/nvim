@@ -77,14 +77,14 @@ next_project_number: 359
 
 ### Agent System
 
-356 [RESEARCHED] — Propagate the bounded-wait contract to the fourteen...
-357 [RESEARCHED] — Rule on whether the per-phase handoff must land in its own...
-358 [RESEARCHED] — Require a figure or mechanical claim carried into a report or...
+356 [PLANNED] — Propagate the bounded-wait contract to the fourteen...
+357 [PLANNING] — Rule on whether the per-phase handoff must land in its own...
+358 [PLANNING] — Require a figure or mechanical claim carried into a report or...
 
 ## Tasks
 
 ### 358. Require a figure or mechanical claim carried into a report or plan to be re-derived at authoring time, or explicitly marked as unverified-and-carried
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -145,7 +145,7 @@ Measured at creation time: NO non-terminal task declares core/context/formats/re
 ---
 
 ### 357. Rule on whether the per-phase handoff must land in its own commit, and fold it into that phase's work commit if it need not
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -216,11 +216,12 @@ NO DEPENDENCY EDGES are created for any of these -- independent by decision. Exp
 ---
 
 ### 356. Propagate the bounded-wait contract to the fourteen implementation agent definitions that lack it, and assert the coverage mechanically in the agent-contract lint
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [356_propagate_bounded_wait_contract_and_lint_coverage/reports/01_propagate-bounded-wait-contract.md]
+- **Plan**: [356_propagate_bounded_wait_contract_and_lint_coverage/plans/01_propagate-bounded-wait-contract.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md): cite by filename, command or concept. Task numbers are permitted in this description and elsewhere in specs/**.
 
