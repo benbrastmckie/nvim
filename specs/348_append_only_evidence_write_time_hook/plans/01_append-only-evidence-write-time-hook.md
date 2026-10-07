@@ -237,43 +237,43 @@ rejection message, and the Ruling 3 fail-open guards.
 
 ---
 
-### Phase 2: Fixture Suite, Behavioral Cases [NOT STARTED]
+### Phase 2: Fixture Suite, Behavioral Cases [COMPLETED]
 
 **Goal**: `agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh`
 exists with the books harness shape and every required behavioral case green.
 
 **Tasks**:
-- [ ] Author the suite modeled on `scripts/tests/test-books-gate.sh`: `set -uo pipefail` (Class B —
+- [x] Author the suite modeled on `scripts/tests/test-books-gate.sh`: `set -uo pipefail` (Class B — *(completed)*
       report every case, never abort on the first failure), `SCRIPT_DIR` via `BASH_SOURCE`, a
       `HOOK="${SCRIPT_DIR}/../../hooks/validate-evidence-append-only.sh"` target, `PASSED`/`FAILED`
       counters with `pass`/`fail`/`info`, a prerequisite check that the hook is executable, a `jq`
       prerequisite check, a `WORKDIR="$(mktemp -d)"` with `trap 'rm -rf "$WORKDIR"' EXIT`, and the
       closing `echo "$PASSED passed, $FAILED failed"` / `[[ "$FAILED" -eq 0 ]] || exit 1`.
-- [ ] Add a header comment stating the suite's discipline: it drives the real hook as a subprocess
+- [x] Add a header comment stating the suite's discipline: it drives the real hook as a subprocess *(completed)*
       with a constructed PreToolUse JSON payload on stdin, never sources it to call internals, and
       carries forgery probes per the books extension's forgery-probe discipline.
-- [ ] Add fixture builders: `make_repo DIR` (a `git init -q` repo with a committed
+- [x] Add fixture builders: `make_repo DIR` (a `git init -q` repo with a committed *(completed)*
       `books/book-convention-evidence/01-decision.md` and `README.md`, author identity set locally
       so the commit succeeds in any environment) and `payload TOOL FILE ...` emitting the JSON
       shape (`tool_name`, `cwd`, `tool_input`) via `jq -n` so quoting is never hand-rolled.
-- [ ] Case: in-place modification of an existing committed line via Edit — exit 2.
-- [ ] Case: the same refusal's stderr carries all three facts — assert on the message, not only the
+- [x] Case: in-place modification of an existing committed line via Edit — exit 2. *(completed)*
+- [x] Case: the same refusal's stderr carries all three facts — assert on the message, not only the *(completed)*
       exit code: append-only, the monotonic/history-rewrite fact, and the append-a-dated-entry
       instruction, plus the companion gate's filename.
-- [ ] Case: deletion of an existing committed line via Write (content with a line removed) —
+- [x] Case: deletion of an existing committed line via Write (content with a line removed) — *(completed)*
       exit 2.
-- [ ] Case: pure append via Write (committed content, byte-exact, plus a new trailing entry) —
+- [x] Case: pure append via Write (committed content, byte-exact, plus a new trailing entry) — *(completed)*
       exit 0.
-- [ ] Case: pure append via Edit (`old_string` = the file's trailing text, `new_string` = that
+- [x] Case: pure append via Edit (`old_string` = the file's trailing text, `new_string` = that *(completed)*
       text plus a new entry) — exit 0.
-- [ ] Case: creation of a new `NN-*.md` that does not exist on disk — exit 0.
-- [ ] Case: Edit to `README.md` in the same directory, modifying an existing line — exit 0.
-- [ ] Case: a path outside the evidence directory, modifying an existing line — exit 0.
-- [ ] Case: Ruling 2 asserted explicitly — an in-place edit to the file's own trailing,
+- [x] Case: creation of a new `NN-*.md` that does not exist on disk — exit 0. *(completed)*
+- [x] Case: Edit to `README.md` in the same directory, modifying an existing line — exit 0. *(completed)*
+- [x] Case: a path outside the evidence directory, modifying an existing line — exit 0. *(completed)*
+- [x] Case: Ruling 2 asserted explicitly — an in-place edit to the file's own trailing, *(completed)*
       **not-yet-committed** appended entry is ALLOWED (exit 0); and its companion, that the same
       edit reaching back into a **committed** line in the same file is still refused (exit 2), so
       the case binds the HEAD baseline rather than the on-disk one.
-- [ ] Case: the Ruling 2 fallback — the same in-place modification in a directory that is **not**
+- [x] Case: the Ruling 2 fallback — the same in-place modification in a directory that is **not** *(completed)*
       a git checkout is refused (exit 2) by the on-disk prefix test, proving the fallback is
       stricter and not fail-open.
 

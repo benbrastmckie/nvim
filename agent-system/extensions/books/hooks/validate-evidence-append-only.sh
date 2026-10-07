@@ -27,13 +27,18 @@
 #   2. usability -- `jq` is present but the captured stdin does not parse as JSON.
 # A broken guard must never block every write in the repo.
 #
-# Ruling 2 (trailing-uncommitted-entry): only lines present in `git show HEAD:<path>` are
-# immutable; the uncommitted tail of the same file may be edited freely, because that is exactly
-# the boundary the companion gate can and cannot punish -- an uncommitted deletion is cheaply
-# remediable and never needs a history rewrite. Fallback: when the HEAD lookup cannot produce a
-# version (no git checkout, new file, shallow/detached state), compare against the current
-# on-disk content instead -- a strictly STRICTER prefix test, and NOT the fail-open case above;
-# the two must not be conflated.
+# Ruling 2 (trailing-uncommitted-entry): only lines present in `git show HEAD:<path>` (the
+# FLOOR) are immutable; the uncommitted tail of the same file (DISK minus the FLOOR prefix) may
+# be edited freely -- including a genuine in-place correction within that tail, not merely an
+# append -- because that is exactly the boundary the companion gate can and cannot punish: an
+# uncommitted deletion is cheaply remediable and never needs a history rewrite. For Edit, this is
+# two independent allow patterns: (a) old_string is a suffix of the CURRENT on-disk content and
+# new_string begins with old_string (a pure append, from either the floor or an existing tail);
+# or (b) old_string is a suffix of the TAIL alone (a free edit confined entirely to the
+# uncommitted region, which by construction can never reach back into the floor). Fallback: when
+# the HEAD lookup cannot produce a version (no git checkout, new file, shallow/detached state),
+# the floor and the on-disk content collapse to the same value and the tail is empty -- a
+# strictly STRICTER prefix test, and NOT the fail-open case above; the two must not be conflated.
 #
 # The predicate is deliberately byte-string tests only (prefix/suffix), never line-oriented
 # (`diff`, newline-splitting, per-line arrays): the measured incident this hook exists to prevent
@@ -114,7 +119,7 @@ if [ ! -e "$ABS_FILE" ]; then
   exit 0
 fi
 
-# ─── Compute the immutable baseline (Ruling 2) ───────────────────────────────────────────────
+# ─── Compute the immutable floor, the current disk content, and the mutable tail (Ruling 2) ──
 REPO_ROOT=""
 if REPO_ROOT="$(git -C "$(dirname "$ABS_FILE")" rev-parse --show-toplevel 2>/dev/null)"; then
   :
@@ -122,7 +127,9 @@ else
   REPO_ROOT=""
 fi
 
-BASELINE=""
+FLOOR=""
+DISK=""
+HAVE_HEAD=0
 RELPATH=""
 if [ -n "$REPO_ROOT" ]; then
   case "$ABS_FILE" in
@@ -130,28 +137,47 @@ if [ -n "$REPO_ROOT" ]; then
     *) RELPATH="" ;;
   esac
 fi
-if [ -n "$RELPATH" ] && BASELINE="$(git -C "$REPO_ROOT" show "HEAD:$RELPATH" 2>/dev/null)"; then
-  :
+if [ -n "$RELPATH" ] && FLOOR="$(git -C "$REPO_ROOT" show "HEAD:$RELPATH" 2>/dev/null)"; then
+  HAVE_HEAD=1
+  DISK="$(cat "$ABS_FILE" 2>/dev/null)" || DISK=""
 else
   # Fallback: not a checkout at HEAD for this path (no git, new file not yet committed, shallow
-  # or detached state). Strictly STRICTER on-disk prefix test -- NOT the fail-open case above.
-  BASELINE="$(cat "$ABS_FILE" 2>/dev/null)" || BASELINE=""
+  # or detached state). Floor and disk collapse to the same value -- strictly STRICTER on-disk
+  # prefix test, NOT the fail-open case above.
+  FLOOR="$(cat "$ABS_FILE" 2>/dev/null)" || FLOOR=""
+  DISK="$FLOOR"
+fi
+
+TAIL=""
+if [ "$HAVE_HEAD" -eq 1 ] && [[ "$DISK" == "$FLOOR"* ]]; then
+  TAIL="${DISK:${#FLOOR}}"
 fi
 
 # ─── The predicate: byte-string tests only, no line splitting ───────────────────────────────
 case "$TOOL_NAME" in
   Write)
-    if [[ "$CONTENT" == "$BASELINE"* ]]; then
+    # The floor must survive as a byte-exact prefix of the new content; anything after it --
+    # the old tail, a corrected tail, or nothing at all -- is free (Ruling 2).
+    if [[ "$CONTENT" == "$FLOOR"* ]]; then
       exit 0
     fi
     ;;
   Edit)
     # Conservative on purpose: needs no simulation of Edit semantics and no reasoning about
-    # replace_all uniqueness. old_string must be non-empty and a suffix of the baseline, and
-    # new_string must begin with old_string -- stricter than necessary in a few edge cases,
-    # never looser.
-    if [ -n "$OLD_STRING" ] && [[ "$BASELINE" == *"$OLD_STRING" ]] && [[ "$NEW_STRING" == "$OLD_STRING"* ]]; then
-      exit 0
+    # replace_all uniqueness.
+    if [ -n "$OLD_STRING" ]; then
+      # Pattern (a): a pure append relative to the CURRENT on-disk content -- old_string is its
+      # suffix and new_string begins with old_string, so the floor (and any existing tail) is
+      # preserved byte-for-byte and only trailing content is added.
+      if [[ "$DISK" == *"$OLD_STRING" ]] && [[ "$NEW_STRING" == "$OLD_STRING"* ]]; then
+        exit 0
+      fi
+      # Pattern (b): a free edit confined entirely to the uncommitted tail -- old_string is a
+      # suffix of TAIL alone, which by construction (TAIL's length never exceeds DISK minus
+      # FLOOR) cannot reach back into the floor, so new_string may be anything.
+      if [ -n "$TAIL" ] && [[ "$TAIL" == *"$OLD_STRING" ]]; then
+        exit 0
+      fi
     fi
     ;;
   *)

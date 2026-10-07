@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture Suite, Behavioral Cases",
+  "started_at": "2026-10-06T00:35:00Z",
+  "last_updated": "2026-10-06T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Author suite skeleton (counters, prereqs, mktemp workdir, trap)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 2, "description": "Header comment on suite discipline (real subprocess, forgery probes)", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 3, "description": "Fixture builders: make_repo, write_payload/edit_payload via jq -n", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]},
+    {"id": 4, "description": "11 behavioral cases: modify/delete refused, write/edit append allowed, create/README/outside allowed, Ruling 2 (+companion) and its non-git fallback", "status": "done", "files_touched": ["agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Edit predicate using only suffix-of-HEAD-baseline (dispatch's literal suggested shape)", "result": "failed", "reason": "incorrectly refuses an in-place (non-append) correction to an uncommitted trailing entry, since that text never appears in the HEAD baseline -- fixed by splitting into FLOOR/DISK/TAIL in Phase 1's hook (amended during this phase's fixture design)"}
+  ],
+  "handoff_count": 0
+}
