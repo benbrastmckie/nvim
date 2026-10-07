@@ -44,9 +44,10 @@
       "books-observe.sh",
       "tests/test-books-certify.sh",
       "tests/test-books-gate.sh",
-      "tests/test-books-observe.sh"
+      "tests/test-books-observe.sh",
+      "tests/test-validate-evidence-append-only.sh"
     ],
-    "hooks": []
+    "hooks": ["validate-evidence-append-only.sh"]
   },
   "observers": {
     "books-observe": {
@@ -112,6 +113,11 @@
     "opencode_json": {
       "source": "opencode-agents.json",
       "target": "opencode.json"
+    },
+    "settings": {
+      "_comment": "Registers the append-only evidence-file guard (validate-evidence-append-only.sh) into the committed .claude/settings.json, NOT settings.local.json, since a guard over a tracked, shared archival record is required functionality rather than personal MCP/permission preference (same test core's own merge_targets.settings _comment applies to the WezTerm lifecycle hooks) -- settings.local.json is gitignored in a consumer repo and invisible to verify-deploy.sh's registration gate besides. The registration MUST stay bare (no `2>/dev/null || echo '{}'` wrapper): that wrapper converts the hook's exit 2 into exit 0 and silently disables the block. The fragment's matcher string MUST remain byte-identical to core's own \"Write|Edit\" block (merge-sources/settings-hooks.json): deep_merge joins per EXACT-STRING matcher, so any other spelling creates a second, permanently undeletable registration block rather than joining the existing one (the merge is add-only). The same add-only property means a future rename of this hook script would leave a stale registration in already-synced repos -- there is no self-healing mechanism for a drifted command path.",
+      "source": "settings-hooks.json",
+      "target": ".claude/settings.json"
     }
   }
 }

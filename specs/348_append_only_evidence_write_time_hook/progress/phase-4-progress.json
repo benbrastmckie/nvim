@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Manifest Wiring and the Settings Fragment",
+  "started_at": "2026-10-06T01:05:00Z",
+  "last_updated": "2026-10-06T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create settings-hooks.json with bare PreToolUse Write|Edit registration, matcher byte-identical to core's", "status": "done", "files_touched": ["agent-system/extensions/books/settings-hooks.json"]},
+    {"id": 2, "description": "manifest.json: provides.hooks [] -> [validate-evidence-append-only.sh]", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 3, "description": "manifest.json: append test entry to provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]},
+    {"id": 4, "description": "manifest.json: add merge_targets.settings block with Ruling-1 _comment", "status": "done", "files_touched": ["agent-system/extensions/books/manifest.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -357,28 +357,28 @@ distinct predicates needs four probes); correct this line rather than under-prob
 
 ---
 
-### Phase 4: Manifest Wiring and the Settings Fragment [NOT STARTED]
+### Phase 4: Manifest Wiring and the Settings Fragment [COMPLETED]
 
 **Goal**: the books extension declares the hook, the test, and a durable registration surface.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/books/settings-hooks.json` carrying **only** the PreToolUse
+- [x] Create `agent-system/extensions/books/settings-hooks.json` carrying **only** the PreToolUse *(completed)*
       registration: one `hooks.PreToolUse` array entry whose `matcher` is the literal string copied
       from `agent-system/extensions/core/merge-sources/settings-hooks.json`, with a single hook
       object `{"type": "command", "command": "bash .claude/hooks/validate-evidence-append-only.sh"}`
       — bare, with no `2>/dev/null || echo '{}'`.
-- [ ] `agent-system/extensions/books/manifest.json`: change `provides.hooks` from `[]` to
+- [x] `agent-system/extensions/books/manifest.json`: change `provides.hooks` from `[]` to *(completed)*
       `["validate-evidence-append-only.sh"]`.
-- [ ] `agent-system/extensions/books/manifest.json`: append
+- [x] `agent-system/extensions/books/manifest.json`: append *(completed)*
       `"tests/test-validate-evidence-append-only.sh"` to the existing `provides.scripts` array,
       matching the flat spelling its sibling test entries already use.
-- [ ] `agent-system/extensions/books/manifest.json`: add a `merge_targets.settings` block with
+- [x] `agent-system/extensions/books/manifest.json`: add a `merge_targets.settings` block with *(completed)*
       `"source": "settings-hooks.json"`, `"target": ".claude/settings.json"`, and a `_comment`
       recording Ruling 1 in the style core's own `_comment` uses on that same key — why the tracked
       file rather than `settings.local.json`, that the registration must stay bare, that the matcher
       string must remain byte-identical to core's or a second block appears, and that the merge is
       add-only so renaming this script would leave a stale registration in already-synced repos.
-- [ ] Confirm no other manifest key needs touching (no new `data`, `root_files`, or `index` entry;
+- [x] Confirm no other manifest key needs touching (no new `data`, `root_files`, or `index` entry; *(completed)*
       the hook is a flat `provides.hooks` file copy with an execute bit and nothing else).
 
 **Timing**: 0.5 hours
