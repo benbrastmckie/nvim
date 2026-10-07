@@ -267,6 +267,14 @@ Store as `design_decisions.slide_feedback` (map of slide position string -> feed
 
 ### Stage 7: Delegate to slide-planner-agent
 
+**This placement is load-bearing**: every `AskUserQuestion` call in Stages 0-6 above runs
+*before* this point, in this skill's own execution — `context: fork` is a context-loading
+optimization only and grants no tool access on its own; `AskUserQuestion` works here because it
+runs before the dispatch, not because of `context: fork`. `AskUserQuestion` is measured
+categorically withheld from every `Agent`-tool dispatch of a named `subagent_type` — see
+`agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched Subagents" section. Do not
+move any `AskUserQuestion` call to after this stage.
+
 Assemble the complete delegation context:
 
 ```json

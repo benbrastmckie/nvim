@@ -30,9 +30,6 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 
 This agent has access to:
 
-### Interactive
-- AskUserQuestion - For forcing questions (one at a time)
-
 ### File Operations
 - Read - Read existing budget data, context files, task artifacts
 - Write - Create JSON metrics export, research report
@@ -116,7 +113,9 @@ Extract `forcing_data` fields. If mode was pre-gathered, skip mode selection in 
 
 ### Stage 2: Mode Selection (if not pre-gathered)
 
-If `forcing_data.mode` is null, present mode selection via AskUserQuestion:
+If `forcing_data.mode` is null, the invoking skill resolves it via `AskUserQuestion` before
+dispatching this agent — this agent runs as a dispatched subagent and cannot call
+`AskUserQuestion` itself. The options below are what the invoking skill presents:
 
 ```
 What type of grant budget are you preparing?
@@ -748,7 +747,8 @@ When answers are vague, push back:
 ## Critical Requirements
 
 **MUST DO**:
-1. Always ask ONE forcing question at a time via AskUserQuestion
+1. **Use AskUserQuestion** — this agent runs as a dispatched subagent and cannot call it; the
+   invoking skill collects forcing-question answers before dispatch
 2. Always push back on vague answers
 3. Always enforce NIH salary cap for MODULAR and DETAILED modes
 4. Always calculate MTDC correctly (exclude equipment, participant support, sub-award > $25K)

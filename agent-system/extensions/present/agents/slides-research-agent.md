@@ -330,7 +330,8 @@ minted for this cycle — see `context/patterns/dispatch-report-not-termination.
 **MUST NOT**:
 1. Return JSON to the console
 2. Skip Stage 0 early metadata creation
-3. Use AskUserQuestion (questions go in the report as content gaps)
+3. **Use AskUserQuestion** — this agent runs as a dispatched subagent and cannot call it;
+   questions go in the report as content gaps instead
 4. Create empty artifact files
 5. Write success status without creating the report artifact
 6. Use status value "completed" (triggers Claude stop behavior)

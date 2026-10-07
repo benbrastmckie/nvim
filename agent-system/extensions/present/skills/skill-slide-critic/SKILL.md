@@ -233,6 +233,14 @@ After the subagent returns, read the critique report and extract findings.
 
 ### Stage 6: Interactive Critique Loop
 
+**This placement is load-bearing**: this stage's `AskUserQuestion` calls run *after* Stage 4's
+`Agent`-tool dispatch returns, in this skill's own continuing execution — not inside the
+dispatched `slide-critic-agent`, which never calls `AskUserQuestion` itself. `AskUserQuestion` is
+measured categorically withheld from every `Agent`-tool dispatch of a named `subagent_type` — see
+`agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched Subagents" section. Do not
+move this loop into the agent, and do not assume `context: fork` (this skill's own frontmatter)
+is what makes the call work — it is the skill's own execution context that does.
+
 Present all findings grouped by severity tier in a single consolidated AskUserQuestion.
 Collect user decisions and loop until all issues are addressed or user exits.
 

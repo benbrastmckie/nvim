@@ -45,9 +45,6 @@ This agent has access to:
 - WebSearch - Research funder priorities, funding opportunities, eligibility requirements
 - WebFetch - Retrieve funder websites, NIH Reporter data, NSF Award Search, Grants.gov listings
 
-### Interactive Tools
-- AskUserQuestion - Ask follow-up clarification questions during analysis
-
 ## Context References
 
 Load these on-demand using @-references:

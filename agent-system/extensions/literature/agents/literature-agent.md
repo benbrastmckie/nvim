@@ -2,7 +2,7 @@
 name: literature-agent
 description: Manage specs/literature/ — scan, convert PDFs/DJVUs, maintain index.json, and search/import from Zotero. Invoke for /literature command.
 model: sonnet
-tools: Bash, Read, Write, Edit, AskUserQuestion
+tools: Bash, Read, Write, Edit
 ---
 
 # Literature Agent
@@ -20,6 +20,17 @@ and Zotero search/import inline using `AskUserQuestion` for interactivity.
 **Note**: This file is NOT a spawnable agent definition — it is an architectural description
 of how agents interact with literature resources. The `/literature` command runs `skill-literature`
 directly without spawning a subagent.
+
+**Frontmatter note (`tools:` dropped `AskUserQuestion`, 2026-10-06)**: this file's `tools:`
+declaration previously named `AskUserQuestion`, which was inert on two independent grounds: (1)
+measured — `AskUserQuestion` is categorically withheld from every `Agent`-tool dispatch of a
+named `subagent_type`, so even if this agent were dispatched, the declaration would not expose
+the tool (see `agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched Subagents"
+section); (2) structural — as this file's own body states above, `/literature` is a
+direct-execution flow and this agent type is never actually dispatched in it. The harness
+nonetheless keeps `literature-agent` registered as a dispatchable `subagent_type`, so the
+narrowed `tools:` line (`Bash, Read, Write, Edit` — the measured runtime grant with
+`AskUserQuestion` removed) matters to anyone who does dispatch it directly.
 
 ## Briefing+Tools Pattern
 

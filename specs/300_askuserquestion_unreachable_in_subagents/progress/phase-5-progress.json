@@ -1,0 +1,37 @@
+{
+  "phase": 5,
+  "phase_name": "Correct the present-extension agents, their two skills, and literature-agent",
+  "started_at": "2026-10-06T22:05:00Z",
+  "last_updated": "2026-10-06T22:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-enumerate present/agents set (7 files confirmed)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Fix 4 light files: funds, pptx-assembly, slide-critic, slidev-assembly", "status": "done", "files_touched": [
+      "agent-system/extensions/present/agents/funds-agent.md",
+      "agent-system/extensions/present/agents/pptx-assembly-agent.md",
+      "agent-system/extensions/present/agents/slide-critic-agent.md",
+      "agent-system/extensions/present/agents/slidev-assembly-agent.md"
+    ]},
+    {"id": 3, "description": "Fix slides-research-agent.md (1 of 2 occurrences already correct precedent)", "status": "done", "files_touched": ["agent-system/extensions/present/agents/slides-research-agent.md"]},
+    {"id": 4, "description": "Fix budget-agent.md (mode-selection template pattern, same as Phase 4 founder batch)", "status": "done", "files_touched": ["agent-system/extensions/present/agents/budget-agent.md"]},
+    {"id": 5, "description": "Fix heaviest present file timeline-agent.md (16 occurrences): architecture note + tools-list + error-handling reworded", "status": "done", "files_touched": ["agent-system/extensions/present/agents/timeline-agent.md"]},
+    {"id": 6, "description": "Add load-bearing-placement sentence to skill-slide-planning and skill-slide-critic SKILL.md", "status": "done", "files_touched": [
+      "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md",
+      "agent-system/extensions/present/skills/skill-slide-critic/SKILL.md"
+    ]},
+    {"id": 7, "description": "Re-verify literature-agent never-dispatched claim (confirmed: no agent:/context:/Agent-dispatch in skill-literature/SKILL.md)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Drop AskUserQuestion from literature-agent.md tools: line, add inertness note", "status": "done", "files_touched": ["agent-system/extensions/literature/agents/literature-agent.md"]},
+    {"id": 9, "description": "Run lint-agent-contracts.sh --verbose and test-lint-agent-contracts.sh: 0 warnings/failures", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.skill-slide-critic-ordering",
+      "description": "Plan assumed skill-slide-critic's AskUserQuestion calls sit before its Agent-tool dispatch, matching skill-slide-planning",
+      "type": "altered",
+      "reason": "Re-reading skill-slide-critic/SKILL.md found the opposite ordering: Stage 4 dispatches slide-critic-agent FIRST for non-interactive analysis; Stage 6's interactive critique loop runs AFTER the dispatch returns, in the skill's own continuing execution. Both orderings place the AskUserQuestion call in the skill, never the agent -- that is the property that actually matters for this task's fix. The load-bearing sentence added to skill-slide-critic states its own correct 'runs after the dispatch returns' placement rather than the 'before' framing the plan anticipated.",
+      "annotation": "*(deviation: altered — skill-slide-critic asks AFTER its dispatch returns, not before; see plan Verification section note)*"
+    }
+  ],
+  "handoff_count": 0
+}

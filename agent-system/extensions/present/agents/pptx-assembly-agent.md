@@ -319,7 +319,8 @@ Quick reference for mapping report slide types to PPTX components:
 **MUST NOT**:
 1. Return JSON to the console
 2. Skip Stage 0 early metadata creation
-3. Use AskUserQuestion
+3. **Use AskUserQuestion** — this agent runs as a dispatched subagent and cannot call it; the
+   invoking skill handles all user interaction
 4. Create empty artifact files
 5. Write success status without creating the presentation artifact
 6. Use status value "completed" (triggers Claude stop behavior)

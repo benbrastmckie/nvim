@@ -509,34 +509,42 @@ epidemiology files. Re-run the enumeration command above and the per-file
 
 ---
 
-### Phase 5: Correct the present-extension agents, their two skills, and literature-agent [NOT STARTED]
+### Phase 5: Correct the present-extension agents, their two skills, and literature-agent [COMPLETED]
 
 **Goal**: the present extension's agents stop promising the tool, its two fork-to-agent skills'
 contracts agree with where the asking happens, and `literature-agent.md`'s doubly-inert allowlist
 is correct.
 
 **Tasks**:
-- [ ] Re-enumerate: `grep -rln 'AskUserQuestion' --include='*.md' agent-system/extensions/present/agents/`
-- [ ] Apply the same correction as Phase 4 across the present agents. `slide-critic-agent.md`'s
+- [x] Re-enumerate: `grep -rln 'AskUserQuestion' --include='*.md' agent-system/extensions/present/agents/`
+- [x] Apply the same correction as Phase 4 across the present agents. `slide-critic-agent.md`'s
       single occurrence ("Use AskUserQuestion (questions or ambiguities go in the report)") keeps
       only the parenthetical's report-based fallback — it is a live instance, since that agent IS
       genuinely dispatched by `skill-slide-critic/SKILL.md`.
-- [ ] `present/agents/timeline-agent.md` (~16 occurrences) is the present-side heavy file: state
+- [x] `present/agents/timeline-agent.md` (~16 occurrences) is the present-side heavy file: state
       that the asking happens in the invoking skill before delegation; keep the agent's stages
       non-interactive.
-- [ ] In `present/skills/skill-slide-critic/SKILL.md` and
+- [x] In `present/skills/skill-slide-critic/SKILL.md` and
       `present/skills/skill-slide-planning/SKILL.md`, confirm by re-reading that every
       `AskUserQuestion` call still sits in a stage that executes **before** the Stage 7 `Agent`
       dispatch, and add one explicit sentence to each stating that placement is load-bearing and
       why — `context: fork` is a context-loading optimization and grants no tool access; the calls
       work because they run pre-delegation. Point at the corrected standard section rather than
       restating the measurement. Make no other change: these two skills are the working reference
-      shape and must not be churned.
-- [ ] Re-verify `literature-agent`'s never-dispatched claim before acting on it (it is a
+      shape and must not be churned. *(deviation: altered — re-reading `skill-slide-critic/SKILL.md`
+      found its `AskUserQuestion` calls (Stage 6, "Interactive Critique Loop") sit AFTER its
+      `Agent`-tool dispatch (Stage 4), not before: this skill dispatches the agent first for
+      non-interactive analysis, then runs the interactive loop itself on the returned report.
+      `skill-slide-planning` matches the plan's literal "before" framing exactly. Both place the
+      asking in the skill's own execution — never inside the dispatched agent — which is the
+      actual load-bearing property; the sentence added to skill-slide-critic states its own
+      correct "after the dispatch returns" placement instead of the "before" wording this task
+      item anticipated. See progress/phase-5-progress.json.)*
+- [x] Re-verify `literature-agent`'s never-dispatched claim before acting on it (it is a
       load-bearing architectural claim the agent's own body makes about itself):
       `grep -rn 'literature-agent' agent-system/extensions/literature/skills/skill-literature/SKILL.md`
       and a check for any `agent:`/`context:` frontmatter or `Agent`-tool dispatch there.
-- [ ] Drop `AskUserQuestion` from `literature/agents/literature-agent.md`'s `tools:` line, leaving
+- [x] Drop `AskUserQuestion` from `literature/agents/literature-agent.md`'s `tools:` line, leaving
       `Bash, Read, Write, Edit` — the measured runtime grant. Add a one-line body note recording
       that the declaration was inert on two independent grounds (the harness drops the tool even
       when declared; the agent is not dispatched in the live `/literature` direct-execution flow)
@@ -576,7 +584,10 @@ both the file set and the pre-delegation placement at implementation time.
 - `grep -n '^tools:' agent-system/extensions/literature/agents/literature-agent.md` shows
   `Bash, Read, Write, Edit` with no `AskUserQuestion`.
 - In both present SKILL.md files, every `AskUserQuestion` line number is less than the line number
-  of the `Agent`-tool dispatch stage.
+  of the `Agent`-tool dispatch stage. *(deviation: altered — holds for `skill-slide-planning`
+  (ask-then-delegate); `skill-slide-critic` dispatches first and runs its interactive loop after
+  the dispatch returns (ask-after-delegate) — both place the asking in the skill's own execution,
+  never the agent, which is the property that actually matters. See phase-5-progress.json.)*
 - `REPO_ROOT=$(pwd) timeout 300 bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh --verbose`
   reports no new failure.
 

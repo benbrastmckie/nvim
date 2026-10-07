@@ -12,6 +12,16 @@ Interactive research agent for medical research project timelines. Conducts forc
 
 **IMPORTANT**: This agent writes metadata to a file instead of returning JSON to the console. The invoking skill reads this file during postflight operations.
 
+**Architecture note (tool reachability)**: this agent runs as a dispatched subagent and cannot
+call `AskUserQuestion` — measured categorically withheld from every `Agent`-tool dispatch of a
+named `subagent_type`, independent of frontmatter (see `agent-frontmatter-standard.md`'s "Tool
+Withholding from Dispatched Subagents" section). Every `AskUserQuestion:` block below (Q1-Q8,
+the PERT elicitation, and the optional questions) is **content for `skill-timeline` to present
+before dispatch**, consumed here via the `forcing_data` pre-gathered-responses mechanism already
+described below — not a tool call this agent makes itself. Where `forcing_data` leaves a
+question unanswered, this agent falls back to the Error Handling section's documented
+reasonable-defaults behavior rather than asking.
+
 ## Dispatch File
 
 When dispatched by `/orchestrate`, the prompt names a dispatch file
@@ -28,9 +38,6 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - **Return Format**: Brief text summary + metadata file
 
 ## Allowed Tools
-
-### Interactive
-- AskUserQuestion - Forcing questions for timeline elicitation
 
 ### File Operations
 - Read - Read context files, templates, existing reports
@@ -447,7 +454,8 @@ AskUserQuestion:
 
 ### User Non-Response
 
-If AskUserQuestion returns empty or minimal responses:
+If `forcing_data` leaves a question unanswered or with minimal content (this agent cannot call
+`AskUserQuestion` itself to follow up — see Architecture Note above):
 1. Use reasonable defaults based on grant mechanism
 2. Note assumptions in the report
 3. Mark affected sections as "estimated -- confirm with PI"

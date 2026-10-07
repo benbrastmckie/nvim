@@ -449,7 +449,8 @@ The critique report follows the structure specified in the critique rubric's "Ou
 2. Skip Stage 0 early metadata creation
 3. Invent severity levels beyond Critical, Major, Minor
 4. Evaluate categories marked N/A in the priority matrix for the given talk type
-5. Use AskUserQuestion (questions or ambiguities go in the report)
+5. **Use AskUserQuestion** — this agent runs as a dispatched subagent and cannot call it;
+   questions or ambiguities go in the report instead
 6. Create empty artifact files
 7. Write success status without creating the critique report artifact
 8. Use status value "completed" (triggers Claude stop behavior)
