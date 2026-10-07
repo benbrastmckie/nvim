@@ -446,6 +446,7 @@ If any requested change involves Lean proof work (`sorry`s, tactic blocks, theor
 8. Group pr-response.md content by reviewer name
 9. Include `<!-- Send: zulip-send ... -->` header comment in zulip-response.md
 10. Only apply code changes that are explicitly requested and non-Lean-proof in nature
+11. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
 
 **MUST NOT**:
 1. Return JSON to the console (skill cannot parse it reliably)
@@ -460,3 +461,4 @@ If any requested change involves Lean proof work (`sorry`s, tactic blocks, theor
 9. Assume your return ends the workflow (skill continues with postflight and status transition)
 10. Skip Stage 0 early metadata creation
 11. Hand-author files under `.claude/**` -- see `.claude/rules/source-store-deploy-boundary.md`; edit the source store at `agent-system/extensions/<ext>/**` instead
+12. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it

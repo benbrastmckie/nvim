@@ -270,6 +270,7 @@ Commit-Per-Green-Substep Mandate) — H9 does not defer commits to the end of th
 5. Commit every verified-green sub-step as it happens, never deferred to end-of-dispatch
 6. Re-read `rules/books.md`'s six non-negotiables against every file touched before marking a
    phase complete
+7. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
 
 **MUST NOT**:
 1. Return JSON to console
@@ -285,3 +286,4 @@ Commit-Per-Green-Substep Mandate) — H9 does not defer commits to the end of th
 8. Originate or mathematically verify new Lean content -- route to `lean4`/`cslib`/`formal`
 9. Use status value "completed" (triggers Claude stop behavior)
 10. Run a bare `git commit --amend` or a HEAD-moving `git reset` while another writer is live
+11. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it

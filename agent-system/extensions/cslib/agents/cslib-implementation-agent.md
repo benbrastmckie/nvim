@@ -705,6 +705,7 @@ When approaching context limit:
 18. **Write `.orchestrator-handoff.json`** on every dispatch whose delegation context carries
     `orchestrator_mode: true` (see the `.orchestrator-handoff.json` (orchestrator-mode dispatches)
     subsection above)
+19. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
 
 **MUST NOT**:
 1. Return JSON to the console
@@ -731,3 +732,4 @@ When approaching context limit:
 22. Write `.orchestrator-handoff.json` when the delegation context does NOT carry
     `orchestrator_mode: true`
 23. Hand-edit the plan METADATA `- **Status**:` field -- it is owned by update-plan-status.sh (invoked from update-task-status.sh postflight), never by this agent; this agent's plan-file write authority is limited to `### Phase N: ... [MARKER]` headings and `- [ ]` checklist items
+24. Use `Bash(run_in_background: true)` or arm a `Monitor` to watch a local verification, gate, build, or test process from within this dispatched subagent, and never end the turn on an unresolved local background wait -- the harness's own asynchronous detach-then-await-notification path hands the dispatch back unfinished with nothing guaranteed to resume it
