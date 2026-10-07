@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 369,
+  "next_project_number": 370,
   "active_projects": [
     {
       "project_number": 349,
@@ -1401,7 +1401,7 @@
     {
       "project_number": 365,
       "project_name": "lint_cwd_relative_hook_path_registrations",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate",
@@ -1424,10 +1424,10 @@
       ],
       "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-07T22:21:42Z",
+      "last_updated": "2026-10-07T22:22:26Z",
       "effort": null,
       "priority": null,
-      "session_id": "sess_1791403152_6152cc"
+      "session_id": "sess_1791403152_6152cc_365"
     },
     {
       "project_number": 366,
@@ -1496,6 +1496,32 @@
       "next_artifact_number": 1,
       "created": null,
       "last_updated": "2026-10-07T12:00:00Z",
+      "effort": null,
+      "priority": null,
+      "session_id": null
+    },
+    {
+      "project_number": 369,
+      "project_name": "orphan_sweep_for_removed_merge_target_entries",
+      "status": "not_started",
+      "task_type": "meta",
+      "topic": "core-agent-system",
+      "title": "Orphan sweep for deployed entries removed from the source store: the deploy adds and changes but cannot delete",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ and lua/neotex/plugins/ai/ (never\n.claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).\n\nGOAL. The extension deploy can ADD and CHANGE but cannot DELETE. A merge-target entry removed\nfrom the source store survives indefinitely in every already-deployed repo, because the merge\npath only visits entries the fragments still provide and install-once files are never recopied.\nClose that gap for hook registrations, and state the invariant where a future editor will meet it.\n\nLIVE INSTANCE, observed 2026-10-07 in this repo's own deployed .claude/settings.json line 21:\n\n    \"command\": \"bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'\"\n\nThe source-store registration was deleted (root-files/settings.json is clean, verified). The\ndeployed copy still carries it, and no resync can remove it: the fragment merge only adds or\nreplaces entries it visits; install-once never recopies settings.json; and because the entry was\nnever in a fragment, unmerge_settings has no tracked record of it either. It is an orphan. It\ninvokes a script that exists nowhere, failing silently behind its own `2>/dev/null || echo '{}'`,\nwhich is why it went unnoticed. Severity is low -- a silent no-op, not a disabled guard -- but the\nCLASS is not low: the same mechanism would silently retain a registration that had become actively\nwrong.\n\nPRECEDENT TO EXTEND, not invent. merge.lua already solves exactly this shape for a different\nmerge target: `remove_orphaned_index_entries(index_path, valid_prefixes, context_dir)` at\nmerge.lua:755, documented at :746 and :689 as \"cleaning orphaned entries that bypass tracked\nappend/remove\". Hook registrations have no counterpart. Follow that function's structure and\ncall-siting rather than designing a new mechanism.\n\nSCOPE:\n  - An orphan sweep for hook registrations: on load/resync, remove a `.claude/hooks/*.sh` (or\n    other source-store-resolvable script) registration from the target settings file when no\n    loaded extension's fragment or root-files surface still provides it.\n  - Reconcile the identity notion with the lint's. The hook-path lint task's research recorded a\n    DOCUMENTED DIVERGENCE: that lint keys fragment-coverage on any invoked script path, while\n    merge.lua's hook_identity() recognizes only paths under `hooks/`. The divergence was accepted\n    in that task's scope, not resolved. Resolve it here, in ONE place both consume, so a later\n    reader cannot find two different answers to \"is this the same registration\".\n  - MUST NOT remove a hand-written hook. The existing custom-hook carve-out (a command not\n    recognizable as a source-store hook invocation is never matched, moved or deduped) governs the\n    sweep too: an unrecognized command is left strictly alone, never swept as an orphan. This is\n    the single most dangerous possible regression in this task -- a sweep that over-reaches\n    silently deletes a user's own hook registration.\n  - State the invariant in the source-store/deploy-boundary documentation: the deploy adds and\n    changes but does not delete, which merge targets now sweep orphans and which do not, and the\n    by-hand repair for a deploy predating a sweep (`rm .claude/settings.json` then reload --\n    install-once copies fresh only when the target is ABSENT; `deploy-headless.sh --wipe` restores\n    its own snapshot as the merge base and reintroduces the staleness).\n\nREGRESSION SAFETY is a first-class requirement, not a closing check:\n  - Measure the affected deploys BEFORE and AFTER: registration count, per-event duplicate count,\n    and that `env` and `permissions` survive byte-identical. A settings file is not \"fine\" because\n    it parses.\n  - Verify against a REAL stale deploy, never only a synthetic fixture. A fixture reconstructed\n    from memory cannot carry the shapes a field file actually has.\n  - Anchor detection on the `\"command\"` JSON key, not a text grep. A naive `.claude/hooks/` grep\n    matches root-files/settings.json's own `_comment` field -- a false-positive hazard already\n    found by the lint task's research.\n  - Run the pre-existing extension/merge specs, not only new ones, and treat a newly red\n    pre-existing test as a regression this task caused.\n\nNON-GOALS (owned elsewhere; do not absorb, and do not edit their files):\n  - Script and test corpus duplication, dead code and slow tests -- the standing probe-consumer\n    task owns these as one systemic item, per the settled decision that a systemic cost is filed\n    once against a probe's output rather than as a stream of point defects.\n  - Context-corpus reachability and dead/overlapping context files -- owned by the reachability\n    probe task.\n  - Neovim repo hygiene (stale init.lua.backup, project-overview.md regeneration, README link) --\n    owned by the repo-hygiene task.\n  - Task support files tracked-or-ignored -- owned by the support-file sweep task.\n  - Missing `desc` fields on keymap.set calls -- owned by the keymap documentation task.\n  Removal propagation is this task's only subject; the generic word \"cruft\" must not be used to\n  pull any of the above in.\n\nACCEPTANCE CRITERIA:\n  1. A registration present in the deployed target but provided by no loaded extension's fragment\n     or root-files surface is removed by an ordinary load/resync, demonstrated against the live\n     line-21 instance above (or a faithful copy of that file if it has since been repaired).\n  2. A hand-written hook command not recognizable as a source-store hook invocation survives a\n     sweep untouched, with a dedicated regression test.\n  3. The identity notion is defined in exactly one place, consumed by both the sweep and the\n     hook-path lint; a test asserts the two agree on a path outside `hooks/`.\n  4. Before/after measurements are reported for every affected deploy: registration count, zero\n     per-event duplicates, and `env`/`permissions` byte-identical.\n  5. The pre-existing extension/merge specs still pass; any newly red pre-existing test is treated\n     as caused by this task.\n  6. The source-store/deploy-boundary documentation states the add/change-but-not-delete invariant,\n     names which merge targets sweep orphans, and records the by-hand repair for an older deploy.\n",
+      "dependencies": [
+        29,
+        365
+      ],
+      "file_scope": [
+        "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+        "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua",
+        "lua/neotex/plugins/ai/shared/extensions/init.lua",
+        "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md"
+      ],
+      "artifacts": [],
+      "next_artifact_number": 1,
+      "created": "2026-10-07T21:40:00Z",
+      "last_updated": "2026-10-07T21:40:00Z",
       "effort": null,
       "priority": null,
       "session_id": null

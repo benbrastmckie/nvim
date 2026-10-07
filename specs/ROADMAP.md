@@ -14,7 +14,7 @@ genuinely the user's.
 `MAX_TASKS` is 8, enforced in `commands/orchestrate.md`. `orchestrate-cycle-plan.sh` itself accepts
 any count, so a dry-run over more than 8 is not evidence a call will run them.
 
-**47 open tasks**: 24 dispatchable (one of them, 365, in flight), 22 blocked by an in-repo edge,
+**48 open tasks**: 24 dispatchable (one of them, 365, in flight), 23 blocked by an in-repo edge,
 1 externally blocked (349, with 350 behind it), 1 held (342). If that stops matching `state.json`,
 this file has drifted — it is hand-derived until **306** makes it generated.
 
@@ -103,6 +103,16 @@ Why this order:
   first exempts a task's own directory so the signal is visible rather than buried. A live instance
   landed on 2026-10-07: 364 reported `merge.lua`/`merge_spec.lua` outside its declared scope, after
   the strategy changed mid-task. Advisory only, correctly no gate effect.
+- **369** — the deploy can add and change but cannot **delete**. A merge-target entry removed from
+  the source store survives in every deployed repo: the merge visits only what the fragments still
+  provide, install-once never recopies, and an entry that was never in a fragment has no tracked
+  record to unmerge. Live instance in this repo's own `.claude/settings.json` line 21 — a
+  `scripts/claude-ready-signal.sh` registration whose source entry 364 deleted, pointing at a
+  script that exists nowhere. Severity is low (a silent no-op) but the class is not. Extends
+  `merge.lua:755`'s existing `remove_orphaned_index_entries` pattern rather than inventing one,
+  and resolves the identity-notion divergence 365's research recorded as accepted-not-reconciled.
+  Edged behind 29 (hence 22) because all three write `merge.lua`/`init.lua` — Settled decision 17:
+  order the overlap, never separate it.
 - **272** — the heartbeat never fires; an implementation agent sat silent for ~5h40m while the
   harness still reported it `running`. It is a structural deadlock, not a missing probe:
   `stall_suspected` is computed only *after* a dispatch returns, while Move 3 forbids postflight
@@ -150,7 +160,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 355 blocked:351      unregistered test script reaches COMPLETED; count-based gate comparison
 ```
 
-**Core agent system (20)**
+**Core agent system (21)**
 ```
 251 ready            context-corpus reachability probe, then act on dead and overlapping files
 280 ready            forbid record-versioning language: rule, exemptions, pattern library
@@ -163,6 +173,7 @@ One line per task; detail in `TODO.md`. `blocked:N` means N is the open blocker.
 363 ready            post-incident checklist: uncommitted pre-session state checked first   <- priority
 366 ready            suite-level selection within Gate 8 (--filter/--only + touched-file map)   <- priority
 365 IN FLIGHT        lint forbidding relative paths in hook registrations (12 criteria)
+369 blocked:29,365   orphan sweep: the deploy adds and changes but cannot delete
 170 blocked:251,366  isolate shell test suites from ambient host state (memory, timing)
 281 blocked:280      repo-wide record-versioning lint, blocking/advisory split
 282 blocked:280,281  write-time PreToolUse hook blocking record-versioning language

@@ -1,5 +1,5 @@
 ---
-next_project_number: 369
+next_project_number: 370
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 369
 |------|-------|------------|--------|
 | 1 | 22,251,271,280,284,295,296,299,302,306,311,318,319,338,342,345,347,349,351,360,362,363,365,366,367 | -- | core-agent-system, extensions, neovim, ... |
 | 2 | 29,170,272,273,281,303,335,344,350,352,354,355,368 | 22,251,271,280,284,311,345,349,351,366 | core-agent-system, extensions, orchestrator |
-| 3 | 275,282,304,353,359 | 272,273,281,284,302,350,352 | core-agent-system, extensions, orchestrator |
+| 3 | 275,282,304,353,359,369 | 29,272,273,281,284,302,350,352,365 | core-agent-system, extensions, orchestrator |
 | 4 | 274,312,328 | 170,273,275,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
 
@@ -36,7 +36,8 @@ next_project_number: 369
   └─ 328 [NOT STARTED] — Systematic top-to-bottom efficiency refactor of the shell... (see above)
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Validate that every CARRIED-UNVERIFIED mark names a source,...
-365 [RESEARCHED] — Lint forbidding CWD-relative .claude/ paths in hook...
+365 [PLANNING] — Lint forbidding CWD-relative .claude/ paths in hook...
+  └─ 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 366 [NOT STARTED] — Suite-level selection within Gate 8: --filter/--only in...
   └─ 170 [NOT STARTED] — Audit and isolate shell test suites from ambient host state... (see above)
   └─ 368 [NOT STARTED] — Tier-selection discipline: make a non-final-phase full...
@@ -88,6 +89,101 @@ next_project_number: 369
 363 [NOT STARTED] — Post-incident verification checklist for destructive git on a...
 
 ## Tasks
+
+### 369. Orphan sweep for deployed entries removed from the source store: the deploy adds and changes but cannot delete
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 29, Task 365
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ and lua/neotex/plugins/ai/ (never
+.claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
+
+GOAL. The extension deploy can ADD and CHANGE but cannot DELETE. A merge-target entry removed
+from the source store survives indefinitely in every already-deployed repo, because the merge
+path only visits entries the fragments still provide and install-once files are never recopied.
+Close that gap for hook registrations, and state the invariant where a future editor will meet it.
+
+LIVE INSTANCE, observed 2026-10-07 in this repo's own deployed .claude/settings.json line 21:
+
+    "command": "bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"
+
+The source-store registration was deleted (root-files/settings.json is clean, verified). The
+deployed copy still carries it, and no resync can remove it: the fragment merge only adds or
+replaces entries it visits; install-once never recopies settings.json; and because the entry was
+never in a fragment, unmerge_settings has no tracked record of it either. It is an orphan. It
+invokes a script that exists nowhere, failing silently behind its own `2>/dev/null || echo '{}'`,
+which is why it went unnoticed. Severity is low -- a silent no-op, not a disabled guard -- but the
+CLASS is not low: the same mechanism would silently retain a registration that had become actively
+wrong.
+
+PRECEDENT TO EXTEND, not invent. merge.lua already solves exactly this shape for a different
+merge target: `remove_orphaned_index_entries(index_path, valid_prefixes, context_dir)` at
+merge.lua:755, documented at :746 and :689 as "cleaning orphaned entries that bypass tracked
+append/remove". Hook registrations have no counterpart. Follow that function's structure and
+call-siting rather than designing a new mechanism.
+
+SCOPE:
+  - An orphan sweep for hook registrations: on load/resync, remove a `.claude/hooks/*.sh` (or
+    other source-store-resolvable script) registration from the target settings file when no
+    loaded extension's fragment or root-files surface still provides it.
+  - Reconcile the identity notion with the lint's. The hook-path lint task's research recorded a
+    DOCUMENTED DIVERGENCE: that lint keys fragment-coverage on any invoked script path, while
+    merge.lua's hook_identity() recognizes only paths under `hooks/`. The divergence was accepted
+    in that task's scope, not resolved. Resolve it here, in ONE place both consume, so a later
+    reader cannot find two different answers to "is this the same registration".
+  - MUST NOT remove a hand-written hook. The existing custom-hook carve-out (a command not
+    recognizable as a source-store hook invocation is never matched, moved or deduped) governs the
+    sweep too: an unrecognized command is left strictly alone, never swept as an orphan. This is
+    the single most dangerous possible regression in this task -- a sweep that over-reaches
+    silently deletes a user's own hook registration.
+  - State the invariant in the source-store/deploy-boundary documentation: the deploy adds and
+    changes but does not delete, which merge targets now sweep orphans and which do not, and the
+    by-hand repair for a deploy predating a sweep (`rm .claude/settings.json` then reload --
+    install-once copies fresh only when the target is ABSENT; `deploy-headless.sh --wipe` restores
+    its own snapshot as the merge base and reintroduces the staleness).
+
+REGRESSION SAFETY is a first-class requirement, not a closing check:
+  - Measure the affected deploys BEFORE and AFTER: registration count, per-event duplicate count,
+    and that `env` and `permissions` survive byte-identical. A settings file is not "fine" because
+    it parses.
+  - Verify against a REAL stale deploy, never only a synthetic fixture. A fixture reconstructed
+    from memory cannot carry the shapes a field file actually has.
+  - Anchor detection on the `"command"` JSON key, not a text grep. A naive `.claude/hooks/` grep
+    matches root-files/settings.json's own `_comment` field -- a false-positive hazard already
+    found by the lint task's research.
+  - Run the pre-existing extension/merge specs, not only new ones, and treat a newly red
+    pre-existing test as a regression this task caused.
+
+NON-GOALS (owned elsewhere; do not absorb, and do not edit their files):
+  - Script and test corpus duplication, dead code and slow tests -- the standing probe-consumer
+    task owns these as one systemic item, per the settled decision that a systemic cost is filed
+    once against a probe's output rather than as a stream of point defects.
+  - Context-corpus reachability and dead/overlapping context files -- owned by the reachability
+    probe task.
+  - Neovim repo hygiene (stale init.lua.backup, project-overview.md regeneration, README link) --
+    owned by the repo-hygiene task.
+  - Task support files tracked-or-ignored -- owned by the support-file sweep task.
+  - Missing `desc` fields on keymap.set calls -- owned by the keymap documentation task.
+  Removal propagation is this task's only subject; the generic word "cruft" must not be used to
+  pull any of the above in.
+
+ACCEPTANCE CRITERIA:
+  1. A registration present in the deployed target but provided by no loaded extension's fragment
+     or root-files surface is removed by an ordinary load/resync, demonstrated against the live
+     line-21 instance above (or a faithful copy of that file if it has since been repaired).
+  2. A hand-written hook command not recognizable as a source-store hook invocation survives a
+     sweep untouched, with a dedicated regression test.
+  3. The identity notion is defined in exactly one place, consumed by both the sweep and the
+     hook-path lint; a test asserts the two agree on a path outside `hooks/`.
+  4. Before/after measurements are reported for every affected deploy: registration count, zero
+     per-event duplicates, and `env`/`permissions` byte-identical.
+  5. The pre-existing extension/merge specs still pass; any newly red pre-existing test is treated
+     as caused by this task.
+  6. The source-store/deploy-boundary documentation states the add/change-but-not-delete invariant,
+     names which merge targets sweep orphans, and records the by-hand repair for an older deploy.
+
+---
 
 ### 368. Tier-selection discipline: make a non-final-phase full verification tier justify itself
 - **Status**: [NOT STARTED]
@@ -520,7 +616,7 @@ DELIVERABLE RULE: no task-number references in deliverables outside specs/** -- 
 ---
 
 ### 365. Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 364
