@@ -1348,7 +1348,7 @@
     {
       "project_number": 364,
       "project_name": "cwd_relative_hook_registration_paths",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Resolve hook registration paths independently of session CWD so bare-registered blocking guards cannot fail open",
@@ -1367,17 +1367,17 @@
       ],
       "artifacts": [
         {
+          "path": "specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md",
           "type": "report",
-          "path": "specs/364_cwd_relative_hook_registration_paths/reports/01_cwd-relative-hook-paths.md",
-          "summary": "Pre-research evidence capture: live reproduction, affected-surface inventory, fail-open analysis"
+          "summary": "Empirically confirms $CLAUDE_PROJECT_DIR is exported to hook commands (both event types and the nested bash -c shape) and demonstrates the fixed form still blocks a real guard; maps the root-files/merge-sources dedup overlap, rules out the settings.local.json permission matchers as out of scope, and rules in favor of an explicit migration script for already-deployed repos."
         }
       ],
-      "next_artifact_number": 2,
+      "next_artifact_number": 3,
       "created": null,
-      "last_updated": "2026-10-07T12:00:00Z",
+      "last_updated": "2026-10-07T20:14:35Z",
       "effort": null,
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1791403152_6152cc"
     },
     {
       "project_number": 365,

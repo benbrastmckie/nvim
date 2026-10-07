@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md",
+      "summary": "Empirically confirms $CLAUDE_PROJECT_DIR is exported to hook commands (both event types and the nested bash -c shape) and demonstrates the fixed form still blocks a real guard; maps the root-files/merge-sources dedup overlap, rules out the settings.local.json permission matchers as out of scope, and rules in favor of an explicit migration script for already-deployed repos."
+    }
+  ],
+  "next_steps": "Run /plan 364 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1791403152_6152cc_364",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "dispatch_seq": 1,
+  "findings_count": 9,
+  "memory_candidates": [
+    {
+      "content": "Claude Code exports $CLAUDE_PROJECT_DIR into hook command environments (confirmed for PreToolUse:Bash and PostToolUse:Write, including inside a nested `bash -c '...'` wrapper) resolved to the true project/repo root, independent of the session's Bash-tool CWD. It is ABSENT from the Bash tool's own command execution environment -- only the hook-launching mechanism injects it. Use `bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/x.sh` for any hook registration instead of a bare `bash .claude/hooks/x.sh`, which silently fails open (exit 127, non-blocking) once the session cwd drifts into a subdirectory.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md",
+      "confidence": 0.95,
+      "suggested_keywords": ["CLAUDE_PROJECT_DIR", "hooks", "settings.json", "cwd", "PreToolUse", "PostToolUse"]
+    },
+    {
+      "content": "In this repo's extension deploy model, deep_merge dedup (merge.lua) matches hook entries by exact vim.deep_equal on the whole hook object including its command string. root-files/settings.json is install-once (copied only on first install, never overwritten by resync) while merge-sources/*.json propagate on every resync. When a hook's command string changes, any hook that exists identically in BOTH a merge-source and an already-deployed (install-once-sourced) settings.json must be rewritten identically in both places, or the next resync appends a duplicate entry under the same matcher rather than replacing the stale one -- deep_merge cannot self-heal a changed/renamed command string. This is pre-existing, documented behavior (core/manifest.json's merge_targets.settings _comment), not unique to one task.",
+      "category": "PATTERN",
+      "source_artifact": "specs/364_cwd_relative_hook_registration_paths/reports/02_cwd-relative-hook-paths-research.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deep_merge", "dedup", "install-once", "settings.json", "merge-sources", "migration-script"]
+    }
+  ]
+}
