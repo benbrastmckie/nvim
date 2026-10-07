@@ -1348,7 +1348,7 @@
     {
       "project_number": 364,
       "project_name": "cwd_relative_hook_registration_paths",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Resolve hook registration paths independently of session CWD so bare-registered blocking guards cannot fail open",
@@ -1392,7 +1392,7 @@
       ],
       "next_artifact_number": 3,
       "created": null,
-      "last_updated": "2026-10-07T20:24:23Z",
+      "last_updated": "2026-10-07T22:09:49Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1791403152_6152cc",
