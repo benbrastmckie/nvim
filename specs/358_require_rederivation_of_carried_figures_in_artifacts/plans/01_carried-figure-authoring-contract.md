@@ -202,16 +202,16 @@ finding to report, not an error to hide.
 
 ---
 
-### Phase 2: State the Carried-Figure Discipline in report-format.md [NOT STARTED]
+### Phase 2: State the Carried-Figure Discipline in report-format.md [COMPLETED]
 
 **Goal**: Add one new section to `report-format.md` carrying the full, authoritative contract:
 the trigger, the mark, the re-derivation obligation, the internal-consistency reviewer prompt,
 and the record of the rejected placement options.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/report-format.md` in full
-      immediately before editing (sibling concurrency).
-- [ ] Insert a new `## Carried-Figure Discipline` section immediately after `## Writing Guidance`
+- [x] Re-read `agent-system/extensions/core/context/formats/report-format.md` in full
+      immediately before editing (sibling concurrency). *(completed)*
+- [x] Insert a new `## Carried-Figure Discipline` section immediately after `## Writing Guidance`
       and immediately before `## Example Skeleton`, so the rule is read before the skeleton a
       reader is about to copy. Content, substantively as follows (wording may be tightened, but
       every numbered element below must survive):
@@ -267,13 +267,14 @@ and the record of the rejected placement options.
         document (rejected -- raises the net document count and adds a third place for the rule
         to drift) and stating the full rule in both format documents (rejected -- duplicated
         normative text drifts).
-- [ ] Add exactly one bullet to the existing `## Writing Guidance` list pointing at the new
+- [x] Add exactly one bullet to the existing `## Writing Guidance` list pointing at the new
       section (e.g. re-derive or mark every carried figure, see `## Carried-Figure Discipline`).
-      Add; do not reword or remove any existing bullet.
-- [ ] Confirm additive-only:
+      Add; do not reword or remove any existing bullet. *(completed: one bullet added at line 40,
+      no existing bullet reworded or removed)*
+- [x] Confirm additive-only:
       `git diff -- agent-system/extensions/core/context/formats/report-format.md | grep -c '^-[^-]'`
-      must print `0`.
-- [ ] Commit this phase's single file with a scoped commit.
+      must print `0`. *(completed: measured 0)*
+- [x] Commit this phase's single file with a scoped commit. *(completed)*
 
 **Timing**: 1.25 hours
 
