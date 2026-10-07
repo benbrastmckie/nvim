@@ -1,0 +1,28 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and Final Gate Set",
+  "started_at": "2026-10-07T19:01:00Z",
+  "last_updated": "2026-10-07T19:01:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to regenerate .claude/ from source store", "status": "done", "files_touched": [], "note": "RESULT=landed_verify_clean; verify-deploy.sh PASS -- 33 checks, 0 failures (deploy's own built-in verification)"},
+    {"id": 2, "description": "Confirm deployed copies match source store (diff + md5sum) for all edited files", "status": "done", "files_touched": [], "note": "6 of 7 files confirmed byte-identical via diff+md5sum (rules/git-workflow.md, context/standards/git-workflow-narrative.md, hooks/guard-destructive-git.sh, scripts/lib/push-grant-lib.sh, hooks/please-grant.sh, scripts/tests/test-guard-destructive-git.sh). index-entries.json has no direct deployed counterpart (merged into context/index.json); verified instead via Gate 13 orphan-detection and Gate 20 line-count budget, both PASS"},
+    {"id": 3, "description": "Run guard test suite from both deployed and source-store paths", "status": "done", "files_touched": [], "note": "91 passed, 0 failed on both agent-system/extensions/core/scripts/tests/ and .claude/scripts/tests/ paths"},
+    {"id": 4, "description": "Run full verify-deploy.sh, triage findings", "status": "done", "files_touched": ["specs/361_reclassify_bare_git_stash_as_destructive/progress/verify-deploy-phase6-full.log", "specs/361_reclassify_bare_git_stash_as_destructive/progress/run-all-phase6.log", "specs/361_reclassify_bare_git_stash_as_destructive/progress/deploy-headless-phase6.log"], "note": "1 of 34 checks failed (Gate 8/run-all.sh only). run-all.sh: 114 passed, 4 failed (4 EXPECTED per known-failures.txt, 0 NEW), 2 skipped. All 4 are pre-existing/unrelated. test-verify-deploy-context-budget.sh, the one 'NEW' finding during Phase 4's mid-implementation run, now PASSES post-redeploy."},
+    {"id": 5, "description": "Walk acceptance checklist with evidence", "status": "done", "files_touched": [], "note": "see acceptance_checklist block below"},
+    {"id": 6, "description": "Run repo-wide task-reference lint", "status": "done", "files_touched": [], "note": "rc=0, '0 unexempted task-reference occurrences' repo-wide"}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "acceptance_checklist": [
+    {"item": 1, "text": "'Not blocked' list no longer contains bare git stash/push; rationale states concurrent-writer hazard", "status": "met", "evidence": "rules/git-workflow.md forbidden-list bullet: 'Bare git stash/git stash push - reverts the tree under concurrency'; Not-blocked list retains only push -- <pathspec> and pop/apply"},
+    {"item": 2, "text": "Guard blocks bare, push, implicit-push, -u/--include-untracked forms under new class", "status": "met", "evidence": "guard-destructive-git.sh stash_revert detector; test suite 91/91 green including all block-expecting cases; manual scratch-repo spot-check confirmed exit 2 for all forms"},
+    {"item": 3, "text": "Refusal message names git show HEAD:path, git diff HEAD -- path, scratchpad-copy alternative", "status": "met", "evidence": "manually captured refusal output contains all three verbatim (Phase 4 verification)"},
+    {"item": 4, "text": "New class exempted by EXISTING snapshot-marker/grant machinery, no second mechanism added", "status": "met", "evidence": "no new exemption code path added to guard-destructive-git.sh; grant check and snapshot-marker check both unconditional on class value; stash_revert grant-pair test passes using the existing pg_grant_consume/snapshot-marker machinery"},
+    {"item": 5, "text": "Fixture demonstrated fail pre-change, pass post-change", "status": "met", "evidence": "Phase 3: 82 passed, 7 failed (red); Phase 4: 89 passed, 0 failed (green) -- same 7 cases flip"},
+    {"item": 6, "text": "Items 7 and 8 each answered with recorded verdict and reasoning", "status": "met", "evidence": "Item 7 (pathspec-scoped stash stays permitted) and Item 8 (pop/apply stays permitted, explicit via '(permitted)' annotation) recorded tersely in rules/git-workflow.md; full extended reasoning in context/standards/git-workflow-narrative.md's new section"},
+    {"item": 7, "text": "Byte-identity of source-store and deployed guard re-confirmed (or divergence reported) before the edit", "status": "met", "evidence": "Phase 1: diff empty, md5 15f8ba3275f18ea83fb071fa41a0101e both sides, confirmed before any edit"},
+    {"item": 8, "text": "No task-number references in any deliverable outside specs/**", "status": "met", "evidence": "repo-wide check-task-references.sh rc=0, 0 occurrences; also verified per-file at every phase"}
+  ]
+}

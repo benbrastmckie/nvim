@@ -1,0 +1,91 @@
+[deploy-headless] line_count auto-repair: 0 entry/entries corrected from wc -l (extensions: ).
+[deploy-headless] Deploying extension tree into /home/benjamin/.config/nvim/.claude ...
+[deploy-headless] deploy-lock: acquired (this invocation, pid 254915)
+[deploy-headless] Resynced 7 extension(s) into /home/benjamin/.config/nvim/.claude
+[deploy-headless] Verifying deploy (fast gates; shell test suite deferred) ...
+[verify-deploy] Target: /home/benjamin/.config/nvim
+
+1. Event-store and error-store files (ls .claude/{scripts,hooks,context}/...)
+  [PASS] scripts/events-append.sh
+  [PASS] scripts/events-query.sh
+  [PASS] hooks/events-log-artifact.sh
+  [PASS] hooks/events-log-lifecycle.sh
+  [PASS] context/schemas/events-schema.json
+  [PASS] context/formats/events-format.md
+  [PASS] scripts/errors-append.sh
+  [PASS] context/schemas/errors-schema.json
+  [PASS] context/formats/errors-format.md
+
+2. Hook registrations (jq '.hooks' .claude/settings.json)
+  [PASS] PostToolUse -> events-log-artifact.sh registered
+  [PASS] Stop -> events-log-lifecycle.sh registered
+  [PASS] SubagentStop -> events-log-lifecycle.sh registered
+
+3. Doc-lint (check-extension-docs.sh --quiet)
+  [PASS] doc-lint reports no failures
+  [PASS] STRICT_CORE_DEPLOY reports no undeployed event files
+
+4. Task-reference lint (check-task-references.sh --quiet)
+  [PASS] task-reference lint reports no findings
+5. Manifest-driven category parity + content-hash equality (verify.lua)
+  [PASS] declared-vs-deployed parity and content-hash equality (all loaded extensions)
+
+6. Agent contracts lint (lint-agent-contracts.sh --verbose)
+  [PASS] agent contracts lint reports no failures
+7. Routing wiring lint (lint-routing-wiring.sh --verbose)
+  [PASS] routing wiring lint reports no failures
+8. Shell test suite runner (tests/run-all.sh)
+  [SKIP] --skip-slow: shell test suite deferred (run without --skip-slow for the full gate)
+
+9. Postflight boundary lint (lint-postflight-boundary.sh, full corpus)
+  [PASS] postflight boundary lint reports no failures (full corpus)
+
+10. specs/state.json schema validation (validate-state.sh --deep)
+  [PASS] validate-state.sh --deep: specs/state.json passes (no FAIL-level finding)
+
+11. Contract compliance lint (lint-contract-compliance.sh --verbose)
+  [PASS] contract compliance lint reports no failures
+
+12. State-writer boundary lint (lint-state-writer-boundary.sh --verbose)
+  [PASS] state-writer boundary lint reports no hand-rolled writes
+
+13. Whole-tree orphan detection (find_orphans: deployed-but-undeclared files, ghost index rows)
+  [PASS] no deployed-but-undeclared files or ghost context/index.json rows
+
+14. Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)
+  [PASS] runtime-file tracking policy: all three checks passed
+
+15. Lifecycle status-variable lint (lint-lifecycle-status-var.sh --verbose)
+  [PASS] lifecycle status-variable lint reports no violations
+
+16. hard_contracts migration warning (routing_hard/routing_agents_hard)
+  [WARN] lean still declares routing_hard/routing_agents_hard
+         slated for outright removal once the dependent hard-mode work lands -- NOT a migration to hard_contracts, which is unrelated (it resolves injected contract files, not skill or agent names; see context/guides/manifest-routing-schema.md)
+
+17. Scoped-commit boundary lint (lint-scoped-commit-boundary.sh --verbose)
+  [PASS] scoped-commit boundary lint reports no hand-rolled bare git-commit call sites
+
+18. Task-lookup adoption lint (lint-task-lookup-adoption.sh --verbose)
+  [PASS] task-lookup adoption lint reports no hand-rolled full-record task-lookup shapes
+
+19. Branch-gated section threshold lint (lint-branch-gated-sections.sh --verbose)
+  [PASS] branch-gated section threshold lint reports no marked-but-unextracted sections over threshold
+
+20. Orchestrator context budget lock (measure-eager-context.sh --check + per-file ceilings)
+  [PASS] measure-eager-context.sh --check: no volatile-file hits
+  [PASS] eager-load total (65950 B) within baseline (65950 B)
+  [PASS] commands/orchestrate.md (20440 B) within ceiling (21000 B)
+  [PASS] skills/skill-orchestrate/SKILL.md (21121 B) within ceiling (21500 B)
+
+  orchestrator context budget (live):
+    eager load: 65950 B / baseline 65950 B (mode: hard for per-file ceilings)
+    commands/orchestrate.md: 20440 B / ceiling 21000 B (under)
+    skills/skill-orchestrate/SKILL.md: 21121 B / ceiling 21500 B (under)
+
+[verify-deploy] PASS -- 33 check(s), 0 failure(s)
+
+NOTE: this verifies DEPLOYMENT only. Confirming that events actually flow requires real
+command invocations afterwards -- inspect specs/events.jsonl for artifact_write,
+subagent_stop, and session_stop lines postdating the deploy.
+[deploy-headless] Verification passed.
+[deploy-headless] RESULT=landed_verify_clean

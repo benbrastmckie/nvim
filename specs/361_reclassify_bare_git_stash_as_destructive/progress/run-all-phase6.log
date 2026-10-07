@@ -1,0 +1,1195 @@
+[run-all] Mode: source-store (extensions root: /home/benjamin/.config/nvim/agent-system/extensions)
+[run-all] Discovered 120 suite(s).
+
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/tests/test-books-certify.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/tests/test-books-certify.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/tests/test-books-gate.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/tests/test-books-gate.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/tests/test-books-observe.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/tests/test-books-observe.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/tests/test-validate-evidence-append-only.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-census-count.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-census-count.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-check-task-references.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-check-task-references.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-common-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-common-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-ledger-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-ledger-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-verify-overlap.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-verify-overlap.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh
+[run-all] [SKIP] not executable (exec-bit regression?): /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-dispatch-metrics.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-double-loading-check.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-double-loading-check.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-errors-append.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-errors-append.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-force-phases.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh
+[FAIL] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh
+    [INFO] === Case 1: repaired direction (command-gate-out.sh end to end) ===
+    [PASS] Case 1: command-gate-out.sh exits 0 on a repaired artifact
+    [FAIL] Case 1: report line did not name a nonzero repaired-field count. Output:
+    [gate-out] Defensive correction: status is 'implementing', skill reports 'implemented'. Applying correction to 'completed'.
+    Error: [phase-check] refusing postflight implement for task 1: only 0/1 phases are closed (COMPLETED or COMPLETED WITH EXCLUSIONS) in /tmp/tmp.OuKZctgUXc/case1/specs/001_fixture_task/plans/01_test.md.
+           No state.json write and no plan-file status stamp occurred.
+           Finish the remaining phases, or correct the plan file's phase headings, and re-run.
+    [gate-out] Phase-accounting backstop refused the defensive correction for task 1 (plan file shows incomplete phases). Leaving status as 'implementing'.
+    Validating plan artifact: specs/001_fixture_task/plans/01_test.md
+    Validating plan: specs/001_fixture_task/plans/01_test.md
+      [ERROR] Missing metadata field: **Status**:
+      [FIXED] Inserted placeholder: - **Status**: TBD
+      [ERROR] plan-level Status line has no [STATUS] bracket pair (line 10)
+    [FIXED] 1 field(s) auto-repaired, 1 error(s), 0 warning(s) remaining
+    WARNING: plan artifact specs/001_fixture_task/plans/01_test.md has format issues (non-blocking): 1 fixed, 1 error(s), 0 warning(s). Review output above.
+    [gate-out] Artifact validation for task 1: 1 field(s) auto-repaired, 1 error(s), 0 warning(s) remaining.
+    [gate-out] Auto-repaired artifact(s): specs/001_fixture_task/plans/01_test.md
+    [PASS] Case 1: repaired-files line is present
+    [INFO] === Case 2: clean direction (command-gate-out.sh end to end) ===
+    [PASS] Case 2: command-gate-out.sh exits 0 on a clean artifact
+    [PASS] Case 2: report line is present and names zero (not omitted)
+    [PASS] Case 2: repaired-files line correctly absent when nothing was repaired
+    [INFO] === Case 3: multi-file aggregation (direct function call) ===
+    [PASS] Case 3: two repairable artifacts across the sweep sum to SKILL_VALIDATE_FIXES=2
+    [PASS] Case 3: SKILL_VALIDATE_FIXED_FILES names both repaired paths
+    [INFO] === Case 4: errors-remaining alongside fixes (direct function call) ===
+    [PASS] Case 4: fixes=1 AND errors=8 both nonzero in the same sweep
+    [INFO] === Case 5: validation could not run (exit 5, no silent zero) ===
+    [INFO] Case 5 setup confirmed: direct validate-artifact.sh call exits 5 as expected
+    [PASS] Case 5: validation-could-not-run (exit 5) reports a nonzero error count, never silent zero
+    [INFO] === Case 6: no stale globals across calls (direct function call) ===
+    [PASS] Case 6: a clean call after a repairing call reports all-zero globals (no stale carryover)
+    [INFO] === Case 7: summary-line format pinning ===
+    [PASS] Case 7: [FIXED] summary-line shape matches the pinned pattern
+    [PASS] Case 7: [PASS] summary-line shape matches the pinned pattern
+    [PASS] Case 7: [FAIL] summary-line shape matches the pinned pattern
+    [INFO] === Case 8: events.jsonl row (command-gate-out.sh end to end) ===
+    [PASS] Case 8: exactly one artifact_auto_repair events.jsonl row was appended
+    [PASS] Case 8: repaired direction's events row has category=deviation
+    [PASS] Case 8: events row's detail.fixes matches the nonzero repaired-field count
+    [PASS] Case 8: clean direction's events row has category=milestone
+    [INFO] === contamination guard ===
+    [PASS] real specs/ tree status is unchanged relative to this suite's pre-run baseline
+    
+    Results: 18 passed, 1 failed
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-generate-task-order.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-generate-task-order.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-git-snapshot.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-git-snapshot.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-guard-git-push.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-guard-git-push.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-init-specs.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-init-specs.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-issue-record.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-issue-record.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh
+[FAIL] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh
+    [INFO] INGEST case 1: known-bad jq pipe
+    [PASS] INGEST case 1: jq-pipe shape flagged, non-zero exit
+    [INFO] INGEST case 2: known-bad jq here-string
+    [PASS] INGEST case 2: jq here-string shape flagged, non-zero exit
+    [INFO] INGEST case 3: known-bad while-read NDJSON loop (direct here-string)
+    [PASS] INGEST case 3: while-read NDJSON shape flagged, non-zero exit
+    [INFO] INGEST negative control: filtered process-substitution while-read is not flagged
+    [PASS] INGEST negative control: filtered process-substitution while-read passes clean
+    [INFO] EMIT case 1 (structural): missing entry-point redirect is flagged
+    [PASS] EMIT case 1: missing structural redirect flagged, non-zero exit
+    [INFO] EMIT negative control (structural): redirect present passes clean despite bare echoes
+    [PASS] EMIT negative control (structural): passes clean with the redirect present
+    [INFO] EMIT case 2 (per-line): two unredirected writes flagged (contract promises exactly one)
+    [PASS] EMIT case 2: both unredirected writes flagged, non-zero exit
+    [INFO] EMIT negative control (per-line): exactly one unredirected write is the legitimate final emit
+    [PASS] EMIT negative control (per-line): exactly one unredirected write passes clean
+    [INFO] EMIT case 3 (per-line): a > "$var" file redirect is not a stdout write, one legitimate emit remains
+    [PASS] EMIT case 3: > "$var" file redirect excluded, remaining single emit passes clean
+    [INFO] Real corpus: auto-discovery across agent-system/extensions/ reports clean
+    [FAIL] real corpus: lint exited 1 -- unexpected finding(s): Checking JSON/NDJSON channel discipline (INGEST + EMIT)...
+    
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/books/hooks/validate-evidence-append-only.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/books/hooks/validate-evidence-append-only.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/books-certify.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/books-certify.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/books-gate.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/books-gate.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/books-observe.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/books/scripts/books-observe.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/claude-stop-notify.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/claude-stop-notify.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/detect-noop-bash.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/detect-noop-bash.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/events-log-artifact.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/events-log-artifact.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/events-log-lifecycle.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/events-log-lifecycle.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/guard-destructive-git.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/guard-destructive-git.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/guard-git-push.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/guard-git-push.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/log-session.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/log-session.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/memory-nudge.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/memory-nudge.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/please-grant.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/please-grant.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/post-command.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/post-command.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/subagent-postflight.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/subagent-postflight.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/tts-notify.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/tts-notify.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-handoff-location.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-handoff-location.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-meta-write.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-meta-write.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-no-task-references.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-no-task-references.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-plan-write.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-plan-write.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-state-sync.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/validate-state-sync.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-clear-task-number.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-clear-task-number.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-notify.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-notify.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-preflight-status.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-preflight-status.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-task-number.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-task-number.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-utils.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/hooks/wezterm-utils.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/assess-repo-health.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/assess-repo-health.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/audit-deletion-references.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/audit-deletion-references.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/backfill-file-scope.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/backfill-file-scope.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/census-count.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/census-count.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-consumer-freshness.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-consumer-freshness.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-deploy-freshness.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-deploy-freshness.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-extension-docs.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-extension-docs.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-runtime-file-tracking.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-runtime-file-tracking.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-task-references.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/check-task-references.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/claude-cleanup.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/claude-cleanup.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/claude-refresh.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/claude-refresh.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/command-gate-in.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/command-gate-in.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/command-gate-out.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/command-gate-out.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/command-route-agent.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/command-route-agent.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deploy-headless.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deploy-headless.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deploy-root-guard.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deploy-root-guard.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/archive-task.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/archive-task.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/check-vault-threshold.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/check-vault-threshold.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/claude-project-cleanup.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/claude-project-cleanup.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/literature-retrieve.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/literature-retrieve.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/orphan-detection.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/orphan-detection.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/rename-session.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/rename-session.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/roadmap-sync.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/roadmap-sync.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/validate-extension-index.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/validate-extension-index.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/vault-operation.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/deprecated/vault-operation.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/dispatch-metrics.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/dispatch-metrics.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/errors-append.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/errors-append.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/events-append.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/events-append.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/events-query.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/events-query.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/export-to-markdown.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/export-to-markdown.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/generate-context-line-counts.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/generate-context-line-counts.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/generate-task-order.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/generate-task-order.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/generate-todo.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/generate-todo.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/git-commit-scoped.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/git-commit-scoped.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/git-push-granted.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/git-push-granted.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/git-snapshot.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/git-snapshot.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/init-specs.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/init-specs.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/install-aliases.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/install-aliases.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/install-extension.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/install-extension.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/install-systemd-timer.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/install-systemd-timer.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/issue-grouping.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/issue-grouping.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/issue-record.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/issue-record.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lake-build-guard.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lake-build-guard.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/common.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/common.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/continuation-pointer-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/continuation-pointer-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/file-scope-overlap.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/file-scope-overlap.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/plan-status-line.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/plan-status-line.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/push-grant-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/push-grant-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/return-meta-artifacts-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/return-meta-artifacts-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/status-vocabulary.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/status-vocabulary.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/task-classification-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/task-classification-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/task-lookup-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/task-lookup-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/task-reference-patterns.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/task-reference-patterns.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/task-type-detect.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/task-type-detect.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/territory-contention-lib.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lib/territory-contention-lib.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lifecycle-notify.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lifecycle-notify.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-branch-gated-sections.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-contract-compliance.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-directory-pathspec-boundary.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-json-channel-discipline.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-lifecycle-status-var.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-scoped-commit-boundary.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/manage-topics.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/manage-topics.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/measure-eager-context.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/measure-eager-context.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/measure-eager-surface.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/measure-eager-surface.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/memory-harvest.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/memory-harvest.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/memory-retrieve.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/memory-retrieve.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/migrate-directory-padding.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/migrate-directory-padding.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/migrate-state-legacy-fields.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-batch-admit.sh
+      [OK] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-batch-admit.sh: exactly one unredirected write -- treated as the legitimate final emit: 990:printf '%s\n' "$verdicts"
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-batch-admit.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-churn.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-churn.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-loop-guard-init.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-record-decision.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-record-decision.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-recover-message-findings.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-recover-message-findings.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-stage5-gates.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-stage5-postflight.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-triage-classify.sh
+      [OK] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-triage-classify.sh: exactly one unredirected write -- treated as the legitimate final emit: 549:printf '%s\n' "$verdicts"
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-triage-classify.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-unwind-dispatch.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrator-postflight.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrator-postflight.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/parse-command-args.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/parse-command-args.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/plan-file-scope-harvest.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/plan-file-scope-harvest.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/reap-session-runtime-files.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/reap-session-runtime-files.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/reconcile-artifacts.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/reconcile-artifacts.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/reconcile-task-status.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/reconcile-task-status.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/roadmap-integration.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/roadmap-integration.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/run-task-observers.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/run-task-observers.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/script-inventory.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/script-inventory.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/skill-base.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/skill-base.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/state-write.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/state-write.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/system-defect-record.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/system-defect-record.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/task-lock.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/task-lock.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/run-all.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/run-all.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tier-selection.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tier-selection.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/uninstall-extension.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/uninstall-extension.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/update-phase-status.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/update-phase-status.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/update-plan-status.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/update-plan-status.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/update-task-status.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/update-task-status.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-artifact.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-artifact.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-context-budgets.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-context-budgets.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-context-index.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-context-index.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-handoff.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-handoff.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-index.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-index.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-return-meta.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-return-meta.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-state.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-state.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-wiring.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/validate-wiring.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/verify-deploy.sh
+      [ALLOWLIST] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/verify-deploy.sh: $doc_lint_output -- parses human-readable lint text ("[header]" / "  FAIL:" prefixes), not JSON -- merging stderr there is intentional, not a bug.
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/verify-deploy.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/email/hooks/mail-guard.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/email/hooks/mail-guard.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/email/scripts/email-preference-harvest.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/email/scripts/email-preference-harvest.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/hooks/lean-lsp-register-project.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/hooks/lean-lsp-register-project.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/install-lean-lsp-session-hook.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/install-lean-lsp-session-hook.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-comparator-landrun-shim.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-comparator-run.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-comparator-run.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-mcp-preflight-check.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-sorry-census.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-sorry-census.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-src-roots.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-src-roots.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/setup-lean-mcp.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/setup-lean-mcp.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/fixtures/comparator/fake-landrun.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/fixtures/comparator/fake-landrun.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/verify-lean-mcp.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/verify-lean-mcp.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/cite-extract.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/cite-extract.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/deprecated/zotero-index-add.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/deprecated/zotero-index-add.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/deprecated/zotero-index-remove.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/deprecated/zotero-index-remove.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-audit.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-audit.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-briefing-invoke.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-briefing-invoke.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-briefing.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-briefing.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-build-index.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-build-index.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-chunk.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-chunk.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-combining-audit.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-combining-audit.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-convert.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-convert.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-coverage-delta.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-coverage-delta.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-create-setup-task.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-create-setup-task.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-discover.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-discover.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-doc-key.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-doc-key.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-fidelity-audit.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-fidelity-audit.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-ingest-online.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-ingest-online.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-ingest.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-ingest.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-lit-flag-resolve.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-normalize-authors.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-normalize-authors.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-pyenv-provision.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-pyenv-provision.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-repair-combining.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-repair-combining.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-search.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-search.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-term-match.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/literature-term-match.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/curl-stub.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/curl-stub.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/generate-zotero-page-fixtures.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/generate-zotero-page-fixtures.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/generate-zotero-sqlite-fixture.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/generate-zotero-sqlite-fixture.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-attach-chunks.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-attach-chunks.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-chunk.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-chunk.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-export-freshness.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-export-freshness.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-export-status.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-export-status.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-generate-export.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-generate-export.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-read.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-read.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-resolve-pdf.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-resolve-pdf.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-resolve-sqlite-path.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-resolve-sqlite-path.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-search.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-search.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-setup.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-setup.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-write.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/zotero-write.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/memory/scripts/bootstrap-harvest-attribution.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/memory/scripts/bootstrap-harvest-attribution.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/memory/scripts/bootstrap-harvest-history.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/memory/scripts/bootstrap-harvest-history.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/memory/scripts/bootstrap-harvest.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/memory/scripts/bootstrap-harvest.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/memory/scripts/bootstrap-harvest-transcripts.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/memory/scripts/bootstrap-harvest-transcripts.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/nix/scripts/nix-context.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/nix/scripts/nix-context.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/nix/scripts/nix-preflight.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/nix/scripts/nix-preflight.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/nvim/scripts/nvim-context.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/nvim/scripts/nvim-context.sh
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/chapter-quality-check.sh
+    [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/chapter-quality-check.sh: $out captured with 2>&1, then consumed as JSON/NDJSON (here-string (jq or while-read NDJSON)) -- the collaborator's stderr can corrupt the payload
+    Checking: /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/typst-element-lint.sh
+    [0;32m[PASS][0m /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/typst-element-lint.sh
+    
+    ================================
+    JSON Channel Discipline Summary
+    ================================
+    Files checked: 210
+    Total violations: 1
+    [0;31mFound 1 violation(s). See above for details.[0m
+    [PASS] real corpus: the documented verify-deploy.sh allowlist entry is exercised
+    [FAIL] real corpus: unexpected VIOLATION line(s): [0;31m[VIOLATION][0m /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/chapter-quality-check.sh: $out captured with 2>&1, then consumed as JSON/NDJSON (here-string (jq or while-read NDJSON)) -- the collaborator's stderr can corrupt the payload
+    
+    Results: 10 passed, 2 failed
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-manage-topics-create-order.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh
+[FAIL] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh
+    [INFO] Group 1: eligibility (status-not-gated; failed-predecessor blocks)
+    [PASS] eligibility: SUT exits 0
+    [PASS] eligibility: candidate #103 in 'researching' status dispatches to research (status never gates)
+    [PASS] eligibility: candidate #102 with an abandoned predecessor is blocked
+    [PASS] eligibility: blocked candidate #102 is absent from dispatch and deferred
+    [INFO] Group 2: per-candidate forced phases (canonical ordering)
+    [PASS] forced-phases: canonical order wins over typed order (research dispatched first, not implement)
+    [PASS] forced-phases: dispatch row's force field is true for a task whose phase was popped off force_phases_remaining this cycle
+    [PASS] forced-phases: without --force-phases, classification stays ordinary status-derived (researched -> plan)
+    [PASS] forced-phases: dispatch row's force field is false for an ordinary status-derived dispatch
+    [INFO] Group 3: verdict relay (self-modifying tie-breaker; forbidden-literal negative assertion)
+    [PASS] verdict-relay: designated (lowest-numbered) self-modifying candidate dispatches, the other defers
+    [PASS] verdict-relay: deferred reason names the ORDERING CONSTRAINT text verbatim
+    [INFO] verdict-relay: candidate #301 was the admitted (not deferred) side this run; byte-identity checked via #302 instead
+    [PASS] verdict-relay: relayed reason is byte-identical to the admission script's own .reason (#302)
+    [PASS] verdict-relay: forbidden literals absent from orchestrate-cycle-plan.sh
+    [INFO] Group 4/5: lock refusal removes a candidate from the batch; bare-vs-suffixed session_id invariant
+    [PASS] live: SUT exits 0
+    [PASS] lock-refusal: locked candidate #403 is absent from dispatch, present in deferred, absent from blocked
+    [PASS] lock-refusal: sibling (unlocked) candidates still dispatch this cycle
+    [PASS] session-id invariant: plan dispatch uses the SUFFIXED session id for orchestrate-build-dispatch.sh
+    [PASS] session-id invariant: implement dispatch uses the BARE session id for orchestrate-build-dispatch.sh
+    [PASS] session-id invariant: skill_preflight_update receives the SUFFIXED session id for plan
+    [PASS] session-id invariant: skill_preflight_update receives the BARE session id for implement
+    [PASS] session-id invariant: dispatch_seq minted for both dispatched candidates in one mt_state_file
+    [INFO] Group 4/5 (continued): per-candidate forced-phase stop-after-last-named (LIVE)
+    [PASS] stop-after-last-named: cycle 1 forces the named phase (research) despite status implementing
+    [PASS] stop-after-last-named: cycle 1's dispatch row carries force=true (live path, not just --dry-run)
+    [PASS] stop-after-last-named: cycle 2 dispatches nothing once the forced queue this run seeded is exhausted (stop, not fall-through)
+    [PASS] stop-after-last-named: cycle 2 emits exactly one blocked[] row carrying the forced-round-complete reason
+    [PASS] stop-after-last-named: status unchanged across the exclusion cycle (implementing)
+    [PASS] stop-after-last-named: cycle_counts unchanged across the exclusion cycle (1)
+    [INFO] Group 6: dry-run mutates nothing
+    [PASS] dry-run: specs/ tree (state.json, mt_state_file, .lock/) is byte-identical before and after
+    [PASS] dry-run: no candidate directory created
+    [INFO] Group 7: dependency resolution spans the archive (archived predecessor is not 'in flight')
+    [PASS] archive-deps: SUT exits 0
+    [PASS] archive-deps: candidate #710 dispatches -- an archived COMPLETED predecessor is satisfied, not in-flight
+    [PASS] archive-deps: candidate #711 is blocked -- an archived ABANDONED predecessor still blocks
+    [PASS] archive-deps: candidate #712's dangling edge is reported in blocked[] and names the number
+    [PASS] archive-deps: candidate #713 dispatches -- an orphan_archived predecessor is terminal, not in-flight
+    [PASS] archive-deps: candidate #710 is accounted for in exactly one bucket (never silently dropped)
+    [PASS] archive-deps: candidate #711 is accounted for in exactly one bucket (never silently dropped)
+    [PASS] archive-deps: candidate #712 is accounted for in exactly one bucket (never silently dropped)
+    [PASS] archive-deps: candidate #713 is accounted for in exactly one bucket (never silently dropped)
+    [INFO] Group 8: per-RUN cycle budget
+    [PASS] budget: a fresh session dispatches normally despite the durable guard's cycle_count=5 (never seeded from it)
+    [PASS] budget: in-session cycle_counts[801] is 1 after one dispatch this run (not 6)
+    [PASS] budget: the durable guard's own cycle_count is left untouched (inert historical data, never flushed by this engine any more)
+    [PASS] budget: base mode (max_cycles=5) blocks a candidate already at cycle_counts=5 THIS run
+    [PASS] budget: hard mode (max_cycles=13) dispatches the SAME candidate at cycle_counts=5 THIS run
+    [PASS] budget: a batch-of-one whose only task is budget-exhausted THIS run stops with reason=max_cycles
+    [PASS] budget: exhausted batch-of-one dispatches nothing
+    [PASS] budget: the stop message names re-invoking /orchestrate, not the withdrawn --continue-budget flag
+    [PASS] budget: --continue-budget is withdrawn -- rejected as an unrecognized flag (exit 2)
+    [PASS] budget: mixed batch blocks only the exhausted sibling (#804), never the whole batch
+    [PASS] budget: mixed batch's fresh sibling (#805) still dispatches this cycle; no whole-batch stop
+    [PASS] budget: six forced runs in a row (separate sessions) on one task are never refused for budget
+    [PASS] budget: dispatch_seq_counter is durable and strictly increases across two separate runs on the same task (1 -> 2)
+    [INFO] Group 9: H1 hard-mode per-phase dispatch
+    [PASS] H1: a non-conforming heading blocks the candidate, never dispatches it
+    [PASS] H1: blocked reason names the true-next-phase-UNKNOWN text
+    [PASS] H1: a marker/handoff mismatch blocks the candidate, never dispatches it
+    [PASS] H1: blocked reason names MARKER/HANDOFF MISMATCH
+    [PASS] H1: the disputed phase heading is downgraded to [PARTIAL] in place
+    [PASS] H1: a well-formed open heading dispatches (not blocked)
+    [PASS] H1: orchestrate-build-dispatch.sh receives --phase-number 2 (the selected open phase)
+    [PASS] H1: orchestrate-build-dispatch.sh receives --territory for the hard-mode implement row
+    [PASS] H1: no open heading (not inconclusive) falls through to ordinary dispatch
+    [PASS] H1: fallthrough dispatch carries no --phase-number (ordinary status-derived dispatch)
+    [PASS] H1: --dry-run reports the SAME blocked verdict as the live path
+    [PASS] H1: --dry-run performs NO disputed-heading downgrade (mutates nothing)
+    [INFO] Group 10: aux_dispatch[] emission
+    [PASS] aux: blocker-research aux_pending produces exactly one row (agent=fork, orchestrator_mode=false)
+    [PASS] aux: blocker-research dispatch file exists and carries no memory/literature block
+    [PASS] aux: blocker-research clears aux_pending and increments blocker_escalation_count to 1
+    [PASS] aux: MAX_BLOCKER_ESCALATIONS cap suppresses a third blocker-research row
+    [PASS] aux: a capped-out aux_pending entry is still cleared (never re-evaluated next cycle)
+    [PASS] aux: drift-inspection aux_pending (base mode) produces one row, agent=fork
+    [PASS] aux: MAX_DRIFT_INSPECTIONS cap suppresses a second drift-inspection row
+    [PASS] aux: mutual exclusion -- a drift-inspection aux_pending under --hard emits no row
+    [PASS] aux: mutual exclusion -- a divergence-audit aux_pending in base mode emits no row
+    [PASS] aux: divergence-audit under --hard dispatches with the task's stored research_agents[t], never re-resolved
+    [PASS] aux: a completed .blocker-research.json chains to a plan-revision row (agent=reviser-agent, model=opus from frontmatter)
+    [PASS] aux: .blocker-research.json is consumed (removed) once chained into a plan-revision row
+    [PASS] aux: drift_pct <= 0.30 emits no row and logs 'Drift check passed'
+    [PASS] aux: .drift-inspection.json is consumed (removed) even when drift_pct is below threshold
+    [PASS] aux: --dry-run renders the SAME aux row (dispatch_file/model null)
+    [PASS] aux: --dry-run mutates nothing (chain marker file left in place)
+    [PASS] aux: fixture confirms the all-terminal short-circuit actually fires this cycle (failed_tasks pre-seeded)
+    [PASS] aux: REGRESSION -- an aux_dispatch[] row is still built even though this cycle stops for all_terminal
+    [INFO] Group 11: inter-cycle redeploy checkpoint (three-branch contract + durable ledger skip rules)
+    [PASS] checkpoint (a): deploy-headless.sh exit 1 defers the batch (deferred_deploy_checkpoint contains the task)
+    [PASS] checkpoint (a): no baseline notice recorded (branch (a) never consults the baseline)
+    [PASS] checkpoint (a): verify-deploy.sh called exactly once (pre-snapshot only; post-snapshot never taken)
+    [PASS] checkpoint (b): a NEW finding on exit 3 still defers the batch
+    [PASS] checkpoint (b): no baseline notice recorded (a genuinely new failure is not a tolerated pre-existing one)
+    [PASS] checkpoint (c): a pre-existing-only finding set on exit 3 does NOT defer the batch
+    [PASS] checkpoint (c): a verify_deploy_baseline_notices entry was recorded
+    [PASS] checkpoint (c): deployed_critical_paths records the matched critical path
+    [PASS] checkpoint (d): a flaky (non-reproducing) new finding does NOT defer the batch
+    [PASS] checkpoint (d): notice records the finding as flaky (filtered:true, flaky_count>=1)
+    [PASS] checkpoint (d): deployed_critical_paths still recorded when proceeding on a flaky finding
+    [PASS] checkpoint (e): a confirmed but unrelated new finding does NOT defer the batch
+    [PASS] checkpoint (e): notice records the finding as unrelated (filtered:true, unrelated_count>=1)
+    [PASS] checkpoint (f): a confirmed, attributable new finding still defers the batch
+    [PASS] checkpoint (g): defer stderr names the specific blocking finding
+    [PASS] checkpoint (g): defer_ledger[].detail names the specific blocking finding
+    [PASS] checkpoint (h): an identifier-free confirmed finding still defers (fail-safe attribution)
+    [PASS] checkpoint (i): a gate-8 finding present in BOTH pre and post is not treated as new
+    [PASS] checkpoint (i): takes the ORIGINAL branch (c) (filtered:false), not the new filtered sub-branch
+    [PASS] checkpoint (i): verify-deploy.sh called exactly twice (no confirmation call when new_findings is empty)
+    [PASS] checkpoint (j): branch (c) (no new findings) makes exactly two verify-deploy.sh calls
+    [PASS] checkpoint (k): still defers despite deploy-headless.sh's own fast verify passing
+    [PASS] checkpoint (k): stderr carries the explicit depth-disagreement note
+    [PASS] checkpoint (k): defer_ledger[].depth_disagreement records the depth disagreement
+    [PASS] checkpoint (l): skip_hash never invokes deploy-headless.sh
+    [PASS] checkpoint (l): the batch is not deferred on a hash skip
+    [PASS] checkpoint (l): redeploy_skip_notices records decision=skip_hash
+    [PASS] checkpoint (l): deployed_critical_paths is left unchanged (empty) on a skip
+    [PASS] checkpoint (m): skip_attributed never invokes deploy-headless.sh
+    [PASS] checkpoint (m): redeploy_skip_notices records decision=skip_attributed
+    [PASS] checkpoint (m): the skip notice attributes the skip to project #9101
+    [PASS] checkpoint (n): outside the recency window, the full pipeline runs (deploy-headless.sh called)
+    [PASS] checkpoint (n): a clean redeploy does not defer the batch
+    [PASS] checkpoint (n): the ledger is rewritten with the new aggregate and outcome clean
+    [PASS] checkpoint (o): a foreign changed critical path (not covered by cycle_modified_files) is not skipped
+    [PASS] checkpoint (p): a deploy_pending batch task forces run despite an otherwise-matching hash
+    [PASS] checkpoint (q): a branch (b) defer writes a negative 'blocking' ledger record
+    [PASS] checkpoint (q): a following run with unchanged content does NOT skip on a non-eligible (blocking) ledger record
+    [PASS] checkpoint (q): the ledger converges back to 'clean' once a clean deploy lands
+    [PASS] checkpoint (r): self-modifying-task acceptance -- total deploy count stays 1 across 3 invocations (the attributed skip closes the observed failure mode)
+    [PASS] checkpoint (r): counterfactual -- a hash-only rule (DEPLOY_LEDGER_RECENT_SEC=-1, recency window unsatisfiable) redeploys on every one of the 3 invocations, proving the attributed rule (not the hash rule) is what closes the failure mode
+    [PASS] checkpoint (s): the widened predicate reaches the deploy body when matched_count==0 but deploy_pending_any=true (a non-allowlisted agent-system/extensions/** path)
+    [PASS] checkpoint (s): the announcement names its own reason (deploy_pending marker naming the candidate), not a misleading 'touched 0 orchestrator-critical path(s)' line
+    [PASS] checkpoint (s): no misleading 'touched 0 orchestrator-critical path(s)' line
+    [PASS] checkpoint (s): cycle_modified_files is still reset to [] after the widened-path run (unconditional reset preserved)
+    [PASS] checkpoint (s): the widened path still routes through deploy_ledger_decide (durable ledger written with verify_outcome=clean), not a bypass
+    [PASS] checkpoint (t): SUT exits 0 despite the mid-run self-rewrite (deploy-landed branch)
+    [PASS] checkpoint (t): stdout is valid, non-empty JSON after the mid-run self-rewrite
+    [PASS] checkpoint (t): a real, non-empty dispatch row for the live candidate survives the mid-run self-rewrite
+    [PASS] checkpoint (t): stderr carries none of the incident's crash signatures
+    [PASS] checkpoint (t): deploy-headless.sh was called exactly once
+    [PASS] checkpoint (u): SUT exits 0 despite the mid-run self-rewrite (deploy-failure branch)
+    [PASS] checkpoint (u): stdout is valid, non-empty JSON after the mid-run self-rewrite
+    [PASS] checkpoint (u): stderr carries none of the incident's crash signatures
+    [PASS] checkpoint (u): both the terminal fixture task and the live candidate are deferred (deploy-failure defer not weakened by the rewrite)
+    [PASS] checkpoint (u): defer_ledger[].detail is intact (names the deploy-headless.sh exit code)
+    [PASS] checkpoint (u): deploy-headless.sh was called exactly once
+    [INFO] Group 12: --compare forwarding (implement-phase only, never research/plan)
+    [PASS] Group 12: SUT exits 0
+    [PASS] Group 12: --compare forwarded into build_args for the implement-phase candidate
+    [PASS] Group 12: --compare NOT forwarded into build_args for the plan-phase candidate
+    [PASS] Group 12: --compare --hard together both reach the implement dispatch (composition, not competition)
+    [INFO] Group 13: degraded-classifier fallback table (orchestrate-triage-classify.sh exit != 0)
+    [PASS] Group 13: SUT exits 0 despite the degraded classifier
+    [PASS] Group 13: degraded-classifier WARNING logged
+    [PASS] Group 13: fallback table routes not_started -> research (research-first default, no --fast, matching the live classifier)
+    [PASS] Group 13: fallback table keeps researching -> research (load-bearing for the needs_research return path)
+    [PASS] Group 13 (--fast): SUT exits 0 despite the degraded classifier
+    [PASS] Group 13 (--fast): fallback table routes not_started -> plan, matching the live classifier's --effort fast row
+    [PASS] Group 13 (--fast): fallback table keeps researching -> research even under --fast (planner-requested research never skipped)
+    [INFO] Group 14: research_questions --focus wiring at the research-dispatch build call
+    [PASS] Group 14: SUT exits 0
+    [PASS] Group 14: research_questions joined and forwarded as --focus for the needs_research-originated task
+    [PASS] Group 14: no research_questions -> no --focus flag passed (byte-for-byte no-op)
+    [INFO] Group 15: stdout stays pure JSON when collaborators write to stderr
+    [PASS] Group 15: SUT exits 0 with chatty collaborators
+    [PASS] Group 15: stdout parses as JSON despite collaborator stderr on all four call sites
+    [PASS] Group 15: dispatch_file parsed correctly from the stub payload (not corrupted by stderr)
+    [PASS] Group 15: all three collaborator diagnostics forwarded to stderr (nothing swallowed)
+    [INFO] Group 16: entry-point fd-3 redirect keeps plan JSON pure against an uncaptured, chatty collaborator
+    [PASS] Group 16: SUT exits 0 despite the chatty, uncaptured collaborator
+    [PASS] Group 16: stdout parses as a single JSON object
+    [PASS] Group 16: stdout is exactly one line (no prose preamble)
+    [PASS] Group 16: .dispatch[0] intact and correctly parsed
+    [PASS] Group 16: the chatty collaborator's prose landed on stderr, not the data channel
+    [INFO] Group 17: --session is optional under --dry-run, still required in live mode
+    [PASS] Group 17: --dry-run with no --session exits 0
+    [PASS] Group 17: --dry-run with no --session still prints parseable plan JSON on stdout
+    [PASS] Group 17: live mode with no --session still exits 2
+    [PASS] Group 17: live mode's no-session error message is preserved
+    [INFO] Group 18: in-session plan cache replay charges nothing; post-invalidation recompute charges normally
+    [PASS] Group 18: run 1 genuinely composes and dispatches
+    [PASS] Group 18: run 1's composition wrote plan_cache keyed at the resulting dispatch_seq_counter
+    [PASS] Group 18: run 2 (nothing consumed since run 1) replays byte-identical stdout
+    [PASS] Group 18: run 2 logs the PLAN CACHE REPLAY notice on stderr
+    [PASS] Group 18: run 2 leaves cycle_counts[1801] unchanged (no cycle charged for the replay)
+    [PASS] Group 18: the durable loop-guard file's dispatch_seq_counter is unchanged by the replay (no extra --flush-seq)
+    [PASS] Group 18: the durable loop-guard file's cycle_count is never written by this engine any more (per-run budget contract)
+    [PASS] Group 18: run 3 (post-invalidation) exits 0
+    [PASS] Group 18: run 3 does not replay (cache was invalidated)
+    [PASS] Group 18: run 3 charges exactly one additional cycle after cache invalidation
+    [PASS] Group 18: the no-dispatch fixture composition dispatches nothing (precondition for the next check)
+    [PASS] Group 18: a no-dispatch composition writes no plan_cache
+    [INFO] Group 19: durable pending_dispatch ledger -- matched+file-present replays, else charges
+    [PASS] Group 19 case 1: SUT exits 0
+    [PASS] Group 19 case 1: logs the UNCONSUMED DISPATCH REPLAY notice
+    [PASS] Group 19 case 1: the durable guard file's cycle_count is unchanged (never written by this engine any more)
+    [PASS] Group 19 case 1: the durable guard file's dispatch_seq_counter is unchanged by a replay (no extra --flush-seq) -- necessary but, on its own, NOT sufficient: see the ephemeral-counter assertion below for the leak this one cannot see
+    [PASS] Group 19 case 1: in-memory cycle_counts[1901] starts at 0 THIS run (per-run budget contract; NOT seeded from the durable cycle_count=2)
+    [PASS] Group 19 case 1: the recorded seq (3) is reused for dispatch_seq[1901], not a freshly minted one
+    [PASS] Group 19 case 1: Leg 1 -- composed dispatch file's Identity dispatch_seq is 3 (the replayed seq, not a freshly minted one)
+    [PASS] Group 19 case 1: Leg 1 and Leg 2 agree (3) -- the composed file and mt_json.dispatch_seq[1901] cannot drift silently
+    [PASS] Group 19 case 1: Leg 3 -- orchestrate-recover-outcome.sh recovers the fabricated .return-meta.json (recovered=true, reason=NONE)
+    [PASS] Group 19 case 1: Leg 4 -- handoff dispatch_seq (3) matches mt_json.dispatch_seq[1901] (3); postflight would CONSUME this handoff rather than discard it
+    [PASS] Group 19 case 1: ephemeral mt_json.dispatch_seq_counter stays at 3 (the replayed seq) after a replay, not bumped to 4 by a mint-then-discard
+    [PASS] Group 19 case 2: a phase mismatch does not replay
+    [PASS] Group 19 case 2: in-session cycle_counts[1901] charges normally (0 -> 1) on a phase mismatch
+    [PASS] Group 19 case 2: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge
+    [PASS] Group 19 case 2: the durable guard's cycle_count stays untouched (never written by this engine any more)
+    [PASS] Group 19 case 3: a missing dispatch_file does not replay
+    [PASS] Group 19 case 3: in-session cycle_counts[1901] charges normally (0 -> 1) when the dispatch_file is missing
+    [PASS] Group 19 case 3: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge
+    [PASS] Group 19 case 4: no pending_dispatch charges normally in-session (0 -> 1)
+    [PASS] Group 19 case 4: the durable guard's cycle_count stays untouched (never written by this engine any more)
+    [PASS] Group 19 case 4: a fresh pending_dispatch is recorded (seq=4, phase=plan) for a future invocation
+    [PASS] Group 19 case 4: the durable guard's dispatch_seq_counter durably advances (3 -> 4)
+    [INFO] Group 20: live classifier forwarding (not_started research-first default, --fast escape hatch)
+    [PASS] Group 20: SUT exits 0 (no --fast)
+    [PASS] Group 20: live classifier routes not_started -> research with no --fast (research-first default)
+    [PASS] Group 20: live classifier keeps researched -> plan with no --fast (never re-researches)
+    [PASS] Group 20 (--fast): SUT exits 0
+    [PASS] Group 20 (--fast): live classifier routes not_started -> plan (the pre-research-first escape hatch), proving --fast actually reaches --effort
+    [PASS] Group 20 (--fast): live classifier keeps researched -> plan under --fast too (never re-researches)
+    [INFO] Group 21: forced phase on terminal and archived tasks (Cases A-E)
+    [PASS] Case A: SUT exits 0
+    [PASS] Case A: active-terminal candidate #2101 dispatches with phase=research, force=true
+    [PASS] Case A: does NOT stop with all_terminal (the forced-phase exemption keeps all_done false)
+    [PASS] Case B: SUT exits 0 (LIVE)
+    [PASS] Case B: archived-terminal candidate #2102's dispatch_file lands under specs/archive/ (got: /tmp/tmp.1HC3SwQfQv/specs/archive/2102_g21b_archived_completed/.dispatch/1.md)
+    [PASS] Case B: the dispatch file was actually written to disk
+    [PASS] Case B: archive/state.json status is untouched (still completed; the archive read is read-only)
+    [PASS] Case C: unforced terminal candidate #2103 stops with all_terminal (Non-Goal regression guard)
+    [PASS] Case C: zero dispatch rows for the unforced terminal candidate
+    [PASS] Case D: LIVE forced round exits 0
+    [PASS] Case D: state.json status is 'completed' both before and after the LIVE forced round (no regression)
+    [PASS] Case D: the preflight clamp actually fired (named [monotonic-max] notice present on stderr)
+    [PASS] Case D: candidate #2105 still dispatches despite the clamp skipping the status write
+    [PASS] Case E: --force-phases implement on a completed task WITH a plan dispatches with phase=implement, force=true
+    [INFO] Group 22: --focus threading into the live dispatch file's User focus: block
+    [PASS] Group 22 Case A: SUT exits 0
+    [PASS] Group 22 Case A: dispatch file carries a User focus: block with the --focus text
+    [PASS] Group 22 Case A: the composed .dispatch[].focus row field matches
+    [PASS] Group 22 Case B: dispatch file carries BOTH labelled segments; neither replaced the other
+    [PASS] Group 22 Case C: no --focus -> bare research_questions line, no label (byte-for-byte unchanged)
+    [PASS] Group 22 Case C: neither label string appears anywhere in the dispatch file
+    [PASS] Group 22 Case D: a focus value with spaces and an embedded double quote survives intact
+    [PASS] Group 22 Case E: --dry-run emits a non-empty .dispatch[].focus carrying the --focus text
+    [INFO] Group 23: artifact-based admission for forced plan and implement
+    [PASS] Group 23 Case A: --implement on a RESEARCHED task WITH a plan dispatches implement
+    [PASS] Group 23 Case B: --implement with no plan yields exactly one blocked[] row with the named reason
+    [PASS] Group 23 Case B: no dispatch row for candidate #2302
+    [PASS] Group 23 Case B: no .dispatch/ directory or file was created
+    [PASS] Group 23 Case B: no task lock was taken
+    [PASS] Group 23 Case B: status unchanged (no status write) -- before='researched' after='researched'
+    [PASS] Group 23 Case C: --plan with an existing plan resolves reviser-agent
+    [PASS] Group 23 Case C: dispatch file carries existing_plan_path and revision_reason
+    [PASS] Group 23 Case D: --plan with no plan resolves planner-agent
+    [PASS] Group 23 Case E: terminal (completed) task with a plan still resolves reviser-agent when forced
+    [PASS] Group 23 Case E: terminal (abandoned) task with no plan still resolves planner-agent when forced
+    [INFO] Group 24: pending_dispatch pre-image capture (prior_* fields) and replay non-overwrite
+    [PASS] Group 24 case 1: LIVE forced plan round exits 0
+    [PASS] Group 24 case 1: pending_dispatch.prior_status captures the pre-dispatch status ('researched')
+    [PASS] Group 24 case 1: pending_dispatch.prior_last_updated captures the pre-dispatch last_updated
+    [PASS] Group 24 case 1: pending_dispatch.prior_session_id captures the pre-dispatch session_id
+    [PASS] Group 24 case 1: pending_dispatch.prior_dispatch_seq_counter captures the pre-charge durable counter (7)
+    [PASS] Group 24 case 1: the durable dispatch_seq_counter itself advances normally (7 -> 8) alongside the pre-image
+    [PASS] Group 24 case 1: state.json status actually changed away from the captured pre-image ('planning')
+    [PASS] Group 24 case 2: a same-phase, file-present re-dispatch replays instead of re-charging
+    [PASS] Group 24 case 2: the replay leaves the ENTIRE pending_dispatch record (pre-image included) byte-for-byte untouched
+    [PASS] Group 24 case 2: the durable dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)
+    [INFO] Group 25: base-mode sibling territory (mixed granularity, single-task regression, hard-mode merge)
+    [PASS] Group 25 (Cases A-C): SUT exits 0
+    [PASS] Group 25 (Cases A-C): all three siblings dispatch this cycle
+    [PASS] Case A: #2501 receives --territory
+    [PASS] Case A: #2501's territory names sibling #2502 as undeclared (scope_declared=false)
+    [PASS] Case A: #2501's concurrency_note cites context/contracts/territory.md
+    [PASS] Case B: #2502's territory names sibling #2501 with its exact file and granularity=file
+    [PASS] Case C: #2501's territory names sibling #2503 as coarse/directory
+    [PASS] Case C2: both candidates dispatch this cycle (2504 is the sole, hence designated, absent-scope candidate)
+    [PASS] Case C2: #2501's territory renders #2504's empty-array file_scope identically to absent (undeclared)
+    [PASS] Case D: a single-task cycle never receives --territory (no siblings scheduled)
+    [PASS] Case E: #2601 still receives --phase-number 2 (H1 unaffected by the sibling merge)
+    [PASS] Case E: #2601's --territory carries BOTH the H1 owned_files literal AND concurrent_siblings
+    [PASS] Case E: #2601's concurrent_siblings names sibling #2602
+    [INFO] Group 26: a partial+blockers task (status already written by postflight) is excluded from redispatch; an empty-blockers partial still dispatches
+    [PASS] Group 26: candidate #2701 (partial+blockers) lands in blocked[] -- visible, never a silent skip
+    [PASS] Group 26: candidate #2701's blocked[] reason names the unresolved-blocker/needs-human cause
+    [PASS] Group 26: candidate #2701 is absent from dispatch[] and deferred[] -- not routed back to implement
+    [PASS] Group 26 (negative): candidate #2702 (partial, no blockers) still dispatches to implement
+    [PASS] Group 26 (negative): candidate #2702 is absent from blocked[]
+    [INFO] Group 27: identical-dispatch content hashing and streak accounting (log-only)
+    [PASS] Group 27 Case A: cycle_plan_dispatch_hash() found in SUT source
+    [PASS] Group 27 Case A: identical digest for two files differing only in dispatch_seq/dispatch_start_ts
+    [PASS] Group 27 Case A: different digest when a non-varying line (Description) differs
+    [PASS] Group 27 Case B: cycle_plan_dispatch_hash returns 2 (degrade, not crash) when sha256sum is unavailable
+    [PASS] Group 27 Case C: cycle 1 dispatches candidate #2703 normally
+    [PASS] Group 27 Case C: streak recorded as 1 after the first dispatch
+    [PASS] Group 27 Case C: no IDENTICAL DISPATCH notice on a first-ever dispatch (streak=1)
+    [PASS] Group 27 Case D: a genuinely different dispatch still dispatches normally
+    [PASS] Group 27 Case D: streak stays at 1 when the dispatch content genuinely differs from the previous cycle
+    [PASS] Group 27 Case D: no IDENTICAL DISPATCH notice on a streak of 1
+    [PASS] Group 27 Case E: --dry-run still dispatches normally
+    [PASS] Group 27 Case E: --dry-run never persists a multi-state file (no accounting side effect)
+    [INFO] Group 28: identical-dispatch halt, inline back-out, and the halted-set exclusion
+    [PASS] Group 28: cycle 1 dispatches candidate #2801 normally
+    [PASS] Group 28: cycle 1's preflight write actually changed status to 'researching'
+    [FAIL] Group 28: cycle 2 unexpectedly dispatched (exit=0 stdout: {"cycle":2,"dispatch":[{"task":2801,"phase":"research","agent":"general-research-agent","model":null,"dispatch_file":"/tmp/tmp.1HC3SwQfQv/specs/2801_g28_halt/.dispatch/2.md","force":false,"focus":""}],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":null})
+    [FAIL] Group 28: expected candidate #2801 in blocked[] after the halt, got: {"cycle":2,"dispatch":[{"task":2801,"phase":"research","agent":"general-research-agent","model":null,"dispatch_file":"/tmp/tmp.1HC3SwQfQv/specs/2801_g28_halt/.dispatch/2.md","force":false,"focus":""}],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":null}
+    [FAIL] Group 28: blocked[] reason missing the expected text, got: ''
+    [FAIL] Group 28: expected the IDENTICAL DISPATCH HALT notice on stderr, got: OK: task 2801 state.json already at 'researching' (no-op); plan/phase updates re-applied
+    [skill-base] WARNING: events-append.sh helper missing or not executable at .claude/scripts/events-append.sh (non-blocking)
+    [route-agent] op=research task_type=general effort= resolved=general-research-agent via=default
+    [PASS] Group 28: state.json status/last_updated/session_id restored to cycle 1's exact post-write pre-image
+    [FAIL] Group 28: .dispatch/2.md unexpectedly still exists after the halt
+    [PASS] Group 28: cycle 1's own .dispatch/1.md file is untouched by cycle 2's back-out
+    [FAIL] Group 28: the task lock is still held after the halt back-out
+    [FAIL] Group 28: expected the durable dispatch_seq_counter to stay at 1, got 2
+    [FAIL] Group 28: expected cycle_counts unchanged at 1, got 2
+    [FAIL] Group 28: cycle 3 did not keep candidate #2801 excluded (stdout: {"cycle":3,"dispatch":[{"task":2801,"phase":"research","agent":"general-research-agent","model":null,"dispatch_file":"/tmp/tmp.1HC3SwQfQv/specs/2801_g28_halt/.dispatch/3.md","force":false,"focus":""}],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":null})
+    [PASS] Group 28: a non-repeating two-candidate composition dispatches both, with zero blocked[] rows
+    [INFO] Group 29: deploy_pending vs identical-dispatch guard composition (reproduction + regression)
+    [PASS] Arm A: the post-deploy reconcile line fires and reports 'promoted'
+    [PASS] Arm A: candidate #9201's state.json status becomes 'completed' within this single run
+    [PASS] Arm A: zero implement dispatch rows are emitted for candidate #9201
+    [PASS] Arm A: deploy_pending is cleared from .return-meta.json after the promotion
+    [PASS] Arm B: cycle 1 dispatches the non-deploy-pending candidate normally
+    [FAIL] Arm B: expected cycle 2 to halt candidate #9202, got: {"cycle":2,"dispatch":[{"task":9202,"phase":"implement","agent":"general-implementation-agent","model":null,"dispatch_file":"/tmp/tmp.1HC3SwQfQv/specs/9202_g29_arm_b/.dispatch/2.md","force":false,"focus":""}],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":null}
+    [FAIL] Arm B: expected the IDENTICAL DISPATCH HALT notice for candidate #9202, got: specs/9202_g29_arm_b/plans/01_fixture-plan.md
+    OK: task 9202 state.json already at 'implementing' (no-op); plan/phase updates re-applied
+    [skill-base] WARNING: events-append.sh helper missing or not executable at .claude/scripts/events-append.sh (non-blocking)
+    [route-agent] op=implement task_type=general effort= resolved=general-implementation-agent via=default
+    [PASS] Arm C: cycle 1 dispatches both candidates normally
+    [PASS] Arm C: cycle 2 still dispatches the deploy-pending candidate #9203 -- not halted by the freeze
+    [PASS] Arm C: candidate #9203's identical_dispatch_streak is unchanged by the second identical cycle (frozen at 1)
+    [FAIL] Arm C: expected the streak-freeze notice for candidate #9203, got: specs/9203_g29_arm_c_dp/plans/01_fixture-plan.md
+    OK: task 9203 state.json already at 'implementing' (no-op); plan/phase updates re-applied
+    [skill-base] WARNING: events-append.sh helper missing or not executable at .claude/scripts/events-append.sh (non-blocking)
+    [route-agent] op=implement task_type=general effort= resolved=general-implementation-agent via=default
+    specs/9204_g29_arm_c_plain/plans/01_fixture-plan.md
+    OK: task 9204 state.json already at 'implementing' (no-op); plan/phase updates re-applied
+    [route-agent] op=implement task_type=general effort= resolved=general-implementation-agent via=default
+    [FAIL] Arm C: expected candidate #9204 to halt on cycle 2 same as Arm B, got: {"cycle":2,"dispatch":[{"task":9203,"phase":"implement","agent":"general-implementation-agent","model":null,"dispatch_file":"/tmp/tmp.1HC3SwQfQv/specs/9203_g29_arm_c_dp/.dispatch/3.md","force":false,"focus":""},{"task":9204,"phase":"implement","agent":"general-implementation-agent","model":null,"dispatch_file":"/tmp/tmp.1HC3SwQfQv/specs/9204_g29_arm_c_plain/.dispatch/4.md","force":false,"focus":""}],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":null}
+    [FAIL] Arm D: expected candidate #9205 to halt on cycle 2 with no deploy_pending marker present, got: {"cycle":2,"dispatch":[{"task":9205,"phase":"implement","agent":"general-implementation-agent","model":null,"dispatch_file":"/tmp/tmp.1HC3SwQfQv/specs/9205_g29_arm_d/.dispatch/2.md","force":false,"focus":""}],"aux_dispatch":[],"deferred":[],"blocked":[],"stop":null}
+    [PASS] Arm E: no post-deploy reconcile line fires when the deploy itself did not land
+    [PASS] Arm E: candidate #9206's status is left unchanged (still implementing) when the deploy did not land
+    [PASS] Arm F: the post-deploy reconcile line fires and reports 'promoted' (baseline)
+    [PASS] Arm F: candidate #9207's state.json status becomes 'completed' within this single run (baseline)
+    [PASS] Arm F: candidate #9207 is appended to the batch's .completed_tasks ledger
+    [PASS] Arm F: the promotion's own scoped commit advances HEAD
+    [PASS] Arm F: no uncommitted residue in specs/state.json or specs/TODO.md after the promotion
+    [INFO] Group 31: contended-path manifest producer (build_contended_manifest)
+    [PASS] Case A: both candidates admit together (glob-vs-concrete is invisible to admission's Overlap predicate)
+    [PASS] Case A: manifest file written for the glob-vs-concrete cycle
+    [PASS] Case A: the glob entry (docs/glob/*.md) lists both tasks, granularity=glob
+    [PASS] Case A: the concrete file it matches also lists both tasks, granularity=file
+    [PASS] Case A: exactly two contended rows (the glob entry and the file entry), each exactly once
+    [PASS] Case B: both candidates admit together (glob-as-coarse-scope is also invisible to admission)
+    [PASS] Case B: the glob entry (lib/config/*) lists both tasks, granularity=glob
+    [PASS] Case B: the concrete file it covers also lists both tasks, granularity=file
+    [PASS] Case B: exactly two contended rows (the glob entry and the file entry), each exactly once
+    [PASS] Case C: disjoint file_scope entries produce no manifest file at all
+    [PASS] Case D: a single-task cycle writes no manifest file
+    [PASS] Case E: SUT exits 0 with the former build-heavy candidate and its sibling in the same cycle
+    [PASS] Case E: both candidates admit together (glob blind spot, same mechanism as Case A)
+    [PASS] Case E: the lean4 candidate's own concrete file_scope entry names BOTH tasks -- no longer excluded
+    [PASS] Case E: the sibling's glob entry also names both tasks
+    [PASS] Case F: --dry-run exits 0 for the would-contend fixture
+    [PASS] Case F: --dry-run writes no manifest file even though the same fixture would contend live
+    [PASS] Case G: _paths_contend() found in territory-contention-lib.sh
+    [PASS] Case G: a directory entry contends with a file beneath it (rc=0)
+    [PASS] Case G: an unrelated directory does not contend with a disjoint file (rc=1)
+    [INFO] Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heavy implement tasks per cycle)
+    [PASS] Case (i): two build-heavy implement candidates in one cycle -> 1 dispatch + 1 deferred
+    [PASS] Case (i): deferred row carries the new rule's own named reason
+    [PASS] Case (i): deferred reason is NOT the file_scope_collision string (confirms the new rule fired, not the pre-existing check)
+    [PASS] Case (ii): one build-heavy + one ordinary implement candidate -> both dispatch, unchanged
+    [PASS] Case (iii): two build-heavy candidates in different phases -> both dispatch (implement-phase scoping)
+    [PASS] Case (iv): both --dry-run and live dispatch exactly 1 of the 2 build-heavy candidates
+    [PASS] Case (iv): --dry-run and live report byte-for-byte identical deferred reasons
+    [INFO] Group 33: held tasks -> blocked[] row naming the hold, never dispatched
+    [PASS] Group 33: held candidate #3301 is excluded from dispatch and lands in blocked[]
+    [PASS] Group 33: the blocked[] reason names the hold's own hold_reason text
+    [PASS] Group 33b: --force-phases implement admits held candidate #3301 for exactly this dispatch
+    [INFO] Group 34: unrecognized defer_reason triggers the loud default arm, never silent exclusion
+    [PASS] Group 34: candidate #3401 is excluded from dispatch this cycle (deferred, not dispatched)
+    [PASS] Group 34: the loud default-arm warning fires on stderr
+    [INFO] Group 34: mt_state_file not persisted under --dry-run (expected no-mutation contract); re-asserting live
+    [PASS] Group 34 (live): an unrecognized_defer_reason_ledger entry is recorded for candidate #3401 -- never silent
+    [INFO] Group 35: --gate forwarding (implement-phase only, never research/plan)
+    [PASS] Group 35: SUT exits 0
+    [PASS] Group 35: --gate forwarded into build_args for the implement-phase candidate
+    [PASS] Group 35: --gate NOT forwarded into build_args for the plan-phase candidate
+    [PASS] Group 35: --gate NOT forwarded into build_args for the research-phase candidate
+    [PASS] Group 35: --gate --compare --hard together all reach the implement dispatch (composition, not competition)
+    
+    Results: 335 passed, 14 failed
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-recover-outcome.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-please-grant.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-please-grant.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-roadmap-argv-ceiling.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-roadmap-argv-ceiling.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-roadmap-items-producer.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-roadmap-items-producer.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-routing-resolution.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-routing-resolution.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-run-task-observers.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-run-task-observers.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh
+[run-all] [SKIP] not executable (exec-bit regression?): /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-script-inventory.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-task-type-detect.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-task-type-detect.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-update-plan-status.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-update-plan-status.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-update-task-status.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-update-task-status.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-artifact.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-artifact.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-handoff.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-handoff.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-state.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-state.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-wiring.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-validate-wiring.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-conflict-predicate.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-conflict-predicate.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-four-tier-conflict.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-four-tier-conflict.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-session-registry.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-session-registry.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-session-runtime-files.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-session-runtime-files.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-state-write-concurrency.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-state-write-concurrency.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-state-write-large-payload.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-state-write-large-payload.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-state-write-regen-timing.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-state-write-regen-timing.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-state-write-spill-names.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-state-write-spill-names.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-task-lock-reap.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/test-task-lock-reap.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-comparator-run.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-mcp-preflight-check.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-mcp-registration.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-mcp-registration.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-sorry-census.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-src-roots.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-src-roots.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-literature-build-index.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-literature-build-index.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-literature-convert.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-literature-convert.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-literature-discover-tier3.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-literature-discover-tier3.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-quality-gate-notation.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-title-sim-dedup.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-title-sim-dedup.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/tests/test-zotero-generate-export.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/test-lit-pipeline.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/literature/scripts/test-lit-pipeline.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/tests/test-chapter-quality-check.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh
+[FAIL] /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh
+    [PASS] case-a (prose before remark): exit code 0 (expected 0)
+    [PASS] case-a (prose before remark): output does NOT contain '[FAIL]'
+    [PASS] case-b (remark as chapter opener): exit code 1 (expected 1)
+    [PASS] case-b (remark as chapter opener): output contains '[FAIL]'
+    [PASS] case-b (remark as chapter opener): output contains '#remark'
+    [PASS] case-c (theorem as chapter opener): exit code 1 (expected 1)
+    [PASS] case-c (theorem as chapter opener): output contains '[FAIL]'
+    [PASS] case-c (theorem as chapter opener): output contains '#theorem'
+    [PASS] case-d (pre-heading macro block, compliant body): exit code 0 (expected 0)
+    [PASS] case-d (pre-heading macro block, compliant body): output does NOT contain '[FAIL]'
+    [PASS] case-e (heading, declarations, then element -- no real prose): exit code 1 (expected 1)
+    [PASS] case-e (heading, declarations, then element -- no real prose): output contains '[FAIL]'
+    [PASS] case-f (nested #items, 5 markers): exit code 0 (expected 0)
+    [PASS] case-f (nested #items, 5 markers): output does NOT contain '[FAIL]'
+    [PASS] case-f (nested #items, 5 markers): output contains '[WARN]'
+    [PASS] case-f (nested #items, 5 markers): output contains '5 enumerated items'
+    [PASS] case-g (remark with 2 markers, under threshold): exit code 0 (expected 0)
+    [PASS] case-g (remark with 2 markers, under threshold): output does NOT contain '[WARN]'
+    [PASS] case-g (remark with 2 markers, under threshold): output does NOT contain '[FAIL]'
+    [PASS] case-h1 (5 remarks / 1 theorem, density warns): exit code 0 (expected 0)
+    [PASS] case-h1 (5 remarks / 1 theorem, density warns): output contains '[WARN]'
+    [PASS] case-h1 (5 remarks / 1 theorem, density warns): output contains 'theorem-family'
+    [PASS] case-h2 (2 remarks / 0 theorems, floor holds): exit code 0 (expected 0)
+    [FAIL] case-h2 (2 remarks / 0 theorems, floor holds): output unexpectedly contains '[WARN]'
+    [INFO]   --- actual output ---
+    [INFO]   [1;33m[WARN][0m /tmp/tmp.GYkBXgJCEK/case-h2.typ: zero theorem-family elements (definition/theorem/lemma/corollary/example) in a file outside the introduction/appendix-/glossary exemption class. Placement (check 1) only polices elements that are present -- a chapter using none of the vocabulary is invisible to it. Advisory only; not necessarily wrong (a genuinely narrative file may legitimately have none), but confirm before leaving it this way.
+    [INFO]   
+    [INFO]   Summary
+    [INFO]   -------
+    [INFO]   Files checked: 1
+    [INFO]   Failures:      [0;31m0[0m
+    [INFO]   Warnings:      [1;33m1[0m
+    [INFO]   
+    [INFO]   [1;33mTYPST ELEMENT LINT PASSED WITH WARNINGS (1 advisory findings)[0m
+    [PASS] case-h2 (2 remarks / 0 theorems, floor holds): output does NOT contain '[FAIL]'
+    [PASS] case-i (bare-bracket #remark[ call form): exit code 1 (expected 1)
+    [PASS] case-i (bare-bracket #remark[ call form): output contains '[FAIL]'
+    [PASS] case-i (bare-bracket #remark[ call form): output contains '#remark'
+    [PASS] case-warnings-only (item-count and density warnings, no placement violation): exit code 0 (expected 0)
+    [PASS] case-warnings-only (item-count and density warnings, no placement violation): output does NOT contain '[FAIL]'
+    [PASS] case-warnings-only (item-count and density warnings, no placement violation): output contains '[WARN]'
+    [PASS] CLI: no PATH given: exit code 2 (expected 2)
+    [PASS] CLI: nonexistent PATH: exit code 2 (expected 2)
+    [PASS] CLI: --help: exit code 0 (expected 0)
+    [PASS] directory scan (one clean, one violating, nested): exit code 1 (expected 1)
+    [PASS] directory scan (one clean, one violating, nested): output contains '[FAIL]'
+    [PASS] directory scan (one clean, one violating, nested): output contains 'Files checked: 2'
+    
+    36 passed, 1 failed
+
+[run-all] Failing suites (4):
+    /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh (EXPECTED)
+    /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh (EXPECTED)
+    /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh (EXPECTED)
+    /home/benjamin/.config/nvim/agent-system/extensions/typst/scripts/tests/test-typst-element-lint.sh (EXPECTED)
+[run-all] 114 passed, 4 failed (4 expected, 0 NEW), 2 skipped, 120 total

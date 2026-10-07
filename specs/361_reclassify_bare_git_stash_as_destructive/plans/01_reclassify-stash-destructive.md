@@ -523,34 +523,52 @@ new class into the one that exists.
 
 ---
 
-### Phase 6: Redeploy and Final Gate Set [NOT STARTED]
+### Phase 6: Redeploy and Final Gate Set [COMPLETED]
 
 **Goal**: Regenerate the deploy from the source store (never a hand-edit of `.claude/**`) and
 leave the full gate set green, with every acceptance criterion checked off against evidence.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default non-destructive
-      resync mode; no `--wipe`) to regenerate `.claude/` from the source store.
-- [ ] Confirm the deployed copies now match the source store: `diff` plus `md5sum` on
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (default non-destructive
+      resync mode; no `--wipe`) to regenerate `.claude/` from the source store. *(completed:
+      RESULT=landed_verify_clean, verify-deploy.sh PASS -- 33 checks, 0 failures, as the deploy's
+      own built-in verification step)*
+- [x] Confirm the deployed copies now match the source store: `diff` plus `md5sum` on
       `hooks/guard-destructive-git.sh`, `hooks/please-grant.sh`, `scripts/lib/push-grant-lib.sh`,
       `rules/git-workflow.md`, `context/standards/git-workflow-narrative.md`, and
       `scripts/tests/test-guard-destructive-git.sh`, source-store side vs. `.claude/` side.
-- [ ] Run the guard test suite from the deployed path as well as the source-store path, confirming
-      both resolve the hook correctly and both pass.
-- [ ] Run `timeout 3000 bash .claude/scripts/verify-deploy.sh` in the foreground with output
+      *(completed: all six confirmed byte-identical via diff + md5sum; `index-entries.json` is
+      the seventh edited file and has no direct deployed-copy counterpart — it's merged into
+      `.claude/context/index.json`, whose correctness is instead verified by Gate 13's
+      orphan-row detection and Gate 20's line-count-driven budget check, both PASS)*
+- [x] Run the guard test suite from the deployed path as well as the source-store path, confirming
+      both resolve the hook correctly and both pass. *(completed: 91 passed, 0 failed on both
+      paths)*
+- [x] Run `timeout 3000 bash .claude/scripts/verify-deploy.sh` in the foreground with output
       captured to a log. Triage every finding into: fixed by this task, pre-existing and
       demonstrated so (last-touch evidence from `git log` for the implicated file), or
-      attributable to this task and therefore blocking.
-- [ ] Walk the acceptance list and record evidence for each item: the **Not blocked** list no
+      attributable to this task and therefore blocking. *(completed: 1 of 34 checks failed
+      (Gate 8, run-all.sh) — the doc-lint/manifest-drift findings from Phases 4-5's intermediate
+      runs are now gone, as expected post-redeploy. Gate 8's own run-all.sh output: 114 passed,
+      4 failed (4 expected via known-failures.txt, 0 NEW), 2 skipped. All 4 are pre-existing,
+      unrelated suites (command-gate-out.sh/phase-check logic, typst chapter-quality-check.sh,
+      a sibling task's already-uncommitted orchestrate-cycle-plan.sh, and an unrelated typst
+      advisory-WARN wording case) — none attributable to this task. Notably,
+      `test-verify-deploy-context-budget.sh`, which was the one "NEW" finding during Phase 4's
+      mid-implementation run, now PASSES — confirming it was exactly the source-ahead-of-deploy
+      artifact Phase 4's analysis predicted, resolved automatically by this redeploy.)*
+- [x] Walk the acceptance list and record evidence for each item: the **Not blocked** list no
       longer carries bare `git stash`/`push` and its rationale states the concurrent-writer
       hazard; the guard blocks bare, `push`, implicit-push, and `-u`/`--include-untracked` forms
       under `stash_revert`; the refusal names all three alternatives; the new class is exempted by
       the existing snapshot-marker and grant machinery with no second mechanism; the fixture was
       demonstrated red pre-change (Phase 3 output) and green post-change (Phase 4 output); Items
       7 and 8 each carry a recorded verdict and reasoning; the byte-identity re-confirmation from
-      Phase 1 is recorded.
-- [ ] Run the repo-wide task-reference lint (`bash .claude/scripts/check-task-references.sh`) and
-      confirm zero findings attributable to this task's files.
+      Phase 1 is recorded. *(completed — all eight items evidenced; see this phase's progress
+      file `acceptance_checklist` block for the item-by-item record)*
+- [x] Run the repo-wide task-reference lint (`bash .claude/scripts/check-task-references.sh`) and
+      confirm zero findings attributable to this task's files. *(completed: rc=0, "0
+      unexempted task-reference occurrences" across the whole repo excluding specs/)*
 
 **Timing**: 1 hour
 
@@ -561,6 +579,16 @@ leave the full gate set green, with every acceptance criterion checked off again
 **Scope Hypothesis**: This phase asserts six files were modified across Phases 1-5 and that the
 deploy-drift set is exactly those six. Confirm with `git status --short` and with the per-file
 `diff` list above; a seventh modified file means scope crept and must be explained, not absorbed.
+**Correction recorded, not absorbed**: the actual distinct file set across Phases 1-5 is
+**seven**, not six: `rules/git-workflow.md` (Phase 1), `context/standards/git-workflow-narrative.md`
+and `index-entries.json` (Phase 2), `scripts/tests/test-guard-destructive-git.sh` (Phase 3, also
+touched in Phase 5), `hooks/guard-destructive-git.sh` and `scripts/lib/push-grant-lib.sh`
+(Phase 4, `push-grant-lib.sh` also touched in Phase 5), and `hooks/please-grant.sh` (Phase 5).
+`git log --name-only` across this task's six phase commits confirms exactly these seven paths
+under `agent-system/`. This is not scope creep: `hooks/please-grant.sh` is the file Phase 5's own
+task list explicitly names as its edit target (the `/please` mint-grammar wiring); the plan's
+"six" figure here simply under-counted it when this phase's Scope Hypothesis was authored. No
+file outside the plan's own declared per-phase `Files to modify` lists was touched.
 
 **Files to modify**:
 - `.claude/**` - regenerated wholesale by `deploy-headless.sh`; never hand-edited
