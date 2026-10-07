@@ -1,5 +1,5 @@
 ---
-next_project_number: 350
+next_project_number: 351
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 350
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 22,251,271,272,280,284,295,296,299,302,306,311,318,319,336,338,342,345,347,349 | -- | core-agent-system, extensions, neovim, ... |
-| 2 | 29,170,273,275,281,303,335,344 | 22,251,271,272,280,284,311 | core-agent-system, extensions, orchestrator |
+| 2 | 29,170,273,275,281,303,335,344,350 | 22,251,271,272,280,284,311,349 | core-agent-system, extensions, orchestrator |
 | 3 | 274,282,304 | 273,275,281,284,302,344 | core-agent-system, orchestrator |
 | 4 | 312,328 | 170,282,303,304,318,344 | core-agent-system, orchestrator |
 | 5 | 313 | 306,328,344 | core-agent-system |
@@ -41,6 +41,7 @@ next_project_number: 350
 
 342 [HOLD] — Refactor the books extension's context corpus against the...
 349 [NOT STARTED] — Add an /approve command to the agent system so a...
+  └─ 350 [NOT STARTED] — Offer the owner the review path when a books task reaches a...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 
 ### Neovim
@@ -72,6 +73,123 @@ next_project_number: 350
 
 ## Tasks
 
+### 350. Offer owner review when approval needed
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 349
+
+**Description**: Offer the owner the review path when a books task reaches a point that needs an approval, instead of requiring the owner to know to run /approve
+
+--- WHY ---
+
+Today nothing detects that an approval is required, and nothing surfaces the option. The owner has
+to already know that an approval is outstanding and already know that /approve exists in order to
+reach it.
+
+On 2026-10-07 nineteen specifications needed re-approval after a namespace move. The agent prepared
+the entire review --- it had everything needed --- but the owner had to DISCOVER the need
+independently and then DRIVE the command by hand. The information was not missing; it was thrown
+away. The approval need is visible to the dispatched agent at the exact moment it hits the component
+gate's approvals stage, and at that moment it is discarded as a bare stage failure.
+
+This task closes that gap: at the moment the need becomes visible, offer the owner the review path.
+
+This task lives in the agent-system source store (agent-system/extensions/ in THIS repository),
+never in a consumer repository's .claude/ tree, which is a regenerated deploy artifact.
+
+--- THE DESIGN CONSTRAINT THAT BOUNDS THIS TASK (already measured --- do not redesign around it) ---
+
+skill-orchestrate ALREADY HAS THE NEEDED PLUMBING. The full path exists and is exercised:
+
+  - A dispatched agent returns `verdict: ask_user` carrying a `user_decision`.
+  - skill-orchestrate's Move 3 accumulates that `user_decision` into the multi-state file's
+    `pending_ask_user[]`.
+  - Move 4 relays every pending entry as a BATCHED AskUserQuestion in the ROOT SESSION --- which is
+    the only place AskUserQuestion is reachable --- and records the answer via
+    `orchestrate-record-decision.sh`.
+
+This path was exercised LIVE on 2026-10-07: a blocking `user_decision` about a foreign
+`OOMPolicy=continue` edit was raised by a dispatched agent, relayed through Move 4, answered by the
+owner, and discharged within a single orchestration run.
+
+Therefore this task MUST REUSE that relay and MUST NOT build parallel interaction machinery. There
+is no second prompting channel to invent, no new root-session escape hatch to design, no new state
+file. This is a DETECTION-AND-OFFER SURFACE over existing plumbing --- nothing more.
+
+--- SCOPE ---
+
+(1) DETECTION. How a books agent recognises that an approval is required, and emits a `user_decision`
+    rather than reporting a bare stage failure. The signal is the component gate's APPROVALS STAGE
+    FAILING ON ABSENT-OR-STALE RECORDS --- that specific failure mode, distinguished from other ways
+    the gate can go red, is what means "a person needs to approve something" rather than "something
+    is broken".
+
+    RULE on where this belongs: in the books AGENT DEFINITIONS (the agent recognises the condition
+    at the point it runs the gate and shapes its own return), in the POSTFLIGHT CLASSIFICATION (the
+    orchestrator recognises the condition from the returned stage results), or BOTH. Record the
+    ruling WITH ITS REASON --- the reason is the durable part; a later reader must be able to see why
+    the chosen seam was chosen and not merely which one it was.
+
+(2) THE OFFERED OPTIONS AND THEIR SEMANTICS. Three options: ENTER REVIEW NOW, DEFER, DECLINE.
+
+    DECLINING MUST NEVER silently self-approve and MUST NEVER downgrade the approval requirement.
+    Declining leaves the records absent-or-stale and leaves the gate leg RED. That is the HONEST
+    outcome and it is the required one: the owner chose not to approve right now, which is not the
+    same as the approval not being needed. Any implementation in which declining turns the leg green,
+    suppresses the requirement, weakens it to a warning, or marks it waived is wrong.
+
+    Defer's semantics must be stated too: the need survives the deferral and is raised again on a
+    later run rather than being consumed by the deferral.
+
+(3) THE NO-HUMAN CASE. An autonomous dispatch with NO HUMAN ATTACHED must STOP AND REPORT rather
+    than answer on the owner's behalf. It does not pick a default, does not auto-defer silently, and
+    does not auto-decline as a convenience.
+
+    This MIRRORS the refusal cases the /approve command task already owns (the no-human-attached
+    refusal among them), and it MUST BE CONSISTENT WITH THEM --- the same condition must produce the
+    same behaviour on both surfaces. Read that task's refusal cases and match them; do not write a
+    second, divergent rule for the same situation.
+
+(4) HAND-OFF TO /approve. What the ACCEPTED option actually does: it must REACH the /approve command
+    defined by the companion in-repository task `add_approve_command_owner_labeled_approvals`,
+    passing the COMPONENT and the SCOPE, and must NOT REIMPLEMENT ANY PART OF THE REVIEW. No diff
+    classification, no summary contract, no artifact writing, no recording --- all of that is
+    /approve's, reached by invocation and not by duplication.
+
+--- OUT OF SCOPE ---
+
+- The /approve command ITSELF, and its artifact path, summary contract and step-through approval
+  UX. The companion task `add_approve_command_owner_labeled_approvals` owns ALL of it. This task
+  calls that command; it does not shape it.
+- `approve.sh` and `check-approvals.sh`. The Logos/Verification task
+  `owner_labeled_agent_assisted_approvals` owns those (cited by slug, because task numbers do not
+  carry across repositories).
+- Any approval POLICY question about which specifications deserve scrutiny. This task decides when
+  to OFFER, never what is worth approving.
+
+--- KEEP IT MODEST ---
+
+This is DETECTION and an OFFER over existing plumbing. If the work appears to require new
+interaction machinery --- a new prompting channel, a new state file, a new root-session relay, a
+second AskUserQuestion path --- that is a SIGNAL THE DESIGN DRIFTED from the measured constraint
+above, not a signal that more machinery is needed. Stop and re-read the constraint section.
+
+--- ACCEPTANCE ---
+
+- A books dispatch that hits an absent-or-stale approvals leg emits a `user_decision` that reaches
+  Move 4's batched relay (demonstrated, not asserted).
+- The three options --- enter review now, defer, decline --- exist with the stated semantics, and
+  DECLINING IS SHOWN BY TEST to leave the approval requirement intact: records still absent-or-stale,
+  gate leg still red, nothing waived or downgraded.
+- The no-human path STOPS AND REPORTS, with a test, and never self-answers.
+- The accepted path INVOKES /approve with the component and the scope rather than duplicating any
+  review logic.
+- The ruling in (1) --- agent definitions, postflight classification, or both --- is recorded
+  together with its reason.
+
+---
+
 ### 349. Add approve command owner labeled approvals
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -100,12 +218,21 @@ The repository owner ruled 2026-10-07 that approvals are **agent-assisted but ow
 
 This command must record the OWNER as the approver and itself as the assistant. Until the companion task lands there is no honest value to write, because today's `by: agent` attributes the judgement to the wrong party. Do NOT ship this command recording itself as the approver.
 
---- IN-REPOSITORY PREREQUISITE: AskUserQuestion REACHABILITY ---
+--- SETTLED CONSTRAINT: AskUserQuestion IS NOT REACHABLE FROM A DISPATCHED SUBAGENT ---
 
-Task 300 records that `AskUserQuestion` is NOT reachable from a dispatched subagent on this harness.
-That decides this command's shape before anything else: it must be a direct-execution skill run in
-the root session, NOT a dispatched agent, or the prompt it exists to raise cannot be raised at all.
-Settle 300 first and build against its measured finding rather than assuming inheritance.
+This is no longer an open prerequisite. The in-repository investigation named
+`askuserquestion_unreachable_in_subagents` is COMPLETE and the finding is SETTLED: `AskUserQuestion`
+is NOT reachable from a dispatched subagent on this harness --- the tool is categorically withheld
+from every `Agent`-tool dispatch of a named `subagent_type`.
+
+Therefore, as a decided constraint rather than something to re-measure: **/approve MUST be a
+direct-execution skill run in the root session, never a dispatched agent.** If any part of this
+command's flow is delegated to a subagent, the prompt the command exists to raise cannot be raised
+at all. Build against this constraint; do not re-litigate it, and do not design around an assumed
+inheritance of the tool into subagents.
+
+The dependency on that investigation is retained in dependencies[] because it is SATISFIED, not
+because it is still pending.
 
 --- SCOPE ---
 
@@ -113,10 +240,59 @@ In scope.
 (1) Decide where the command lives and record the reason. The books extension already owns /certify and /book, which makes it the nearest existing home, but the books extension's own charter explicitly disclaims component certificates and owns the book metadata layer instead -- so a new small extension may be the correct answer rather than the convenient one. Rule on it before writing files.
 (2) The command itself, which records the owner as approver and never itself. Flow: run the component's approve.sh --review for the requested scope; read the generated review; classify its diff the way a reviewer needs rather than dumping it -- separate the mechanical churn (metadata attributes, licence headers, blank lines, pure requalification) from anything that changes a declaration, and check at declaration level whether any claim was added, removed or restated; present that summary through AskUserQuestion; mark the decisions block from the answer; record with the owner as approver and this command as `assisted_by`, putting the question and the answer verbatim into the review file's Notes (which the companion task makes a precondition of writing the record at all).
 (3) Per-item granularity. AskUserQuestion takes at most four options per question, so a nineteen-item cycle cannot be one option per item. Decide the shape: a single bulk approve/decline with an escape to per-item, or batching by module family. Record the choice; do not let the tool's option cap silently become a design.
-(4) The refusal cases. The command must refuse to record when the review is stale against the tree, when the classification found a declaration-level change the summary did not surface to the person, and when AskUserQuestion is unavailable --- whether because no human is attached, or because of the subagent-reachability limit task 300 records. An autonomous dispatch must never answer this prompt on the owner's behalf. That last one is the whole point of the command and needs a test, not a comment.
+(4) The refusal cases. The command must refuse to record when the review is stale against the tree, when the classification found a declaration-level change the summary did not surface to the person, and when AskUserQuestion is unavailable --- whether because no human is attached, or because of the settled subagent-reachability limit above. An autonomous dispatch must never answer this prompt on the owner's behalf. That last one is the whole point of the command and needs a test, not a comment.
 (5) Generalisation. The command should take the component as an argument rather than hardcoding framed_channel, since the approval mechanism is per-component and other components may grow one.
+(6) The review is a PERSISTED artifact, not a $TMPDIR throwaway. The generated review is a research-report-grade artifact the owner may reread, diff against a later cycle, or open while answering --- so it must live at a predictable, tracked path, not in a temp directory that vanishes with the shell. It lives under `specs/certificates/` in the CONSUMER repository (the repository being approved, e.g. Logos/Verification), because that is where the thing being approved lives. It must be keyed by BOTH task number AND instance number, because multiple approval cycles per task are expected and a later cycle must not overwrite the record of an earlier one.
+
+    This task must RULE on that naming convention, and the ruling MUST explicitly cover the NO-TASK
+    case. The live instance --- re-approving the nineteen stale framed_channel specifications --- has
+    no task in state.json at all, so a task-number-only scheme cannot express it. A scheme that
+    silently degrades (empty segment, literal "000", a collision between two taskless cycles) is not
+    an answer. Record the no-task key explicitly; the no-task case MUST NOT be settled by accident
+    as a side effect of whatever shape the task-keyed case happens to take.
+
+    Note also that `specs/.gitignore` in the consumer repository is a MANAGED BLOCK --- it is
+    regenerated, and broad patterns in it can swallow new subdirectories. `specs/certificates/`
+    must therefore be DELIBERATELY TRACKED (an explicit negation or an explicit tracked-path entry
+    in the managed block, decided and recorded), never left to be silently ignored.
+(7) A SUMMARY CONTRACT for what the owner actually sees. Scope item (2) says "classify the diff", which has no notion of a recommendation or of how sure the agent is --- that gap is what this item closes. The summary presented to the owner must carry:
+      - only the most essential points, not the full classified diff (the full artifact is at the
+        path from (6) for anyone who wants it);
+      - every discrepancy called out EXPLICITLY rather than averaged into a verdict --- if two
+        specifications disagree, or a record disagrees with the tree, the owner is told so by name;
+      - a RECOMMENDATION per item or per batch, and every recommendation carries a CONFIDENCE LEVEL.
+
+    Rule on the confidence vocabulary, and keep it MECHANICAL rather than impressionistic --- a
+    confidence level the agent assigns by feel is worse than none, because it launders a guess as a
+    measurement. This repository already draws exactly the distinction needed: the
+    measured-versus-INFERENCE evidence tiering used in books/lean/BookCert/Depends.lean and recorded
+    as Decision 9 of docs/book-convention.md. FOLLOW THAT EXISTING PRECEDENT --- derive the
+    confidence vocabulary from it and cite it --- rather than inventing a parallel scale that the
+    repository then has to keep reconciled with it.
+(8) STEP-THROUGH approval UX. The owner walks the items ONE AT A TIME rather than being handed a
+    wall of nineteen. At ANY point in that walk, two escapes are available:
+      - Escape 1: talk it over conversationally with the agent --- drop out of the structured prompt
+        into ordinary discussion of the item at hand, then resume the walk.
+      - Escape 2: open the artifact files DIRECTLY in the explorer and read them unmediated. This is
+        precisely WHY the artifact must be persisted at a predictable path per (6); a $TMPDIR review
+        makes this escape impossible.
+
+    This item MUST BE RECONCILED with scope item (3), which weighs bulk-approve against per-item
+    against AskUserQuestion's four-option cap. (3) and (8) are about the same interaction and MUST
+    NOT be left to contradict each other: the ruling must be one coherent design covering both the
+    option cap and the step-through walk with its escapes --- state how a step-through walk is
+    expressed within the four-option-per-question limit, and how each escape is offered without
+    consuming the options the decision itself needs.
 
 Out of scope. Changing approve.sh or check-approvals.sh, which the companion repository task owns. Any approval policy question about which specifications deserve scrutiny.
+
+CLOSED QUESTION --- do not reopen: the companion Verification task
+`owner_labeled_agent_assisted_approvals` needs NO CHANGE for any of items (6), (7) or (8). The
+review file's LOCATION is the CALLER's `--out` argument; it is not approve.sh's concern. The
+persisted-artifact path, its naming convention, the summary contract and the step-through UX are
+therefore entirely this task's business, decided on this side of the boundary and passed to
+approve.sh as an argument. A later dispatch must not go add a path, a naming scheme or a summary
+format to approve.sh on the theory that the companion task is implicated. It is not.
 
 --- WHAT MUST NOT BE BUILT ---
 
@@ -126,10 +302,15 @@ A path that lets an agent approve without a person answering. The command's reas
 
 - The placement ruling is recorded with its reason before any file is written.
 - /approve <component> [--core-only|--aeneas] runs the review, presents a classified summary, asks the owner, and records the approval OWNER-LABELED with the agent as `assisted_by` and the question and answer in Notes.
+- The command is implemented as a direct-execution skill in the root session; no part of the prompting flow is reached through a dispatched subagent.
 - No path exists by which this command records itself as the approver.
 - The per-item-granularity choice is recorded, and the AskUserQuestion option cap is handled deliberately rather than by truncation.
 - Each refusal case has a test: stale review, unsurfaced declaration-level change, and no human attached.
 - A dry-run or equivalent shows the full flow without recording.
+- The review artifact is written under `specs/certificates/` in the consumer repository at a path keyed by task number AND instance number; a second approval cycle for the same task does not overwrite the first; the naming ruling is recorded and states the NO-TASK key explicitly.
+- `specs/certificates/` is deliberately tracked against the managed `specs/.gitignore` block, and that decision is recorded.
+- The owner-facing summary shows only essential points, names every discrepancy explicitly, and attaches a recommendation with a confidence level to each item or batch; the confidence vocabulary is derived from and cites the measured-versus-INFERENCE precedent (BookCert/Depends.lean, book-convention Decision 9).
+- A single coherent interaction ruling covers BOTH the option cap of (3) and the step-through walk with both escapes of (8), with no contradiction between them; the conversational escape and the open-the-files escape are each reachable at any point in the walk.
 
 ---
 
