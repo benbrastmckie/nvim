@@ -1,37 +1,52 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
+  "status": "partial",
+  "dispatch_seq": 6,
+  "partial_progress": {
+    "stage": "phase_6_full_battery_wait_budget_reached",
+    "details": "Phases 1-5 complete and committed (lint script, fixture suite, gate 21 wiring, manifest registration, all verified). Phase 6 (full-battery verification) is PARTIAL: criterion 5 (fail-closed on a shadowed library) is fully proven empirically; the full un-skip-slow verify-deploy.sh battery did not complete within the dispatch's ~45-minute cumulative external-process wait cap (gate 8's run-all.sh nests a self-invocation of verify-deploy.sh whose own run-all.sh is forced to JOBS=1, making this run far slower than the ~10 min solo baseline -- not a hang, not a second battery started by this dispatch). A partial run showed gates 1,2,4,6,7 PASS and gates 3,5 FAIL (gate 5 includes two of this task's own not-yet-deployed files, expected; the other six findings belong to a different, concurrently-running agent's undeployed edits). Redeploy and final criterion-3 confirmation remain. See the phase-6 handoff for the exact resume command.",
+    "handoff_path": "specs/365_lint_cwd_relative_hook_path_registrations/handoffs/phase-6-handoff-20261007T232907Z.md",
+    "phases_completed": 5,
+    "phases_total": 6
+  },
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/365_lint_cwd_relative_hook_path_registrations/plans/01_hook-registration-path-lint.md",
-      "summary": "6-phase plan (5 dependency waves, ~6.5h) for lint-hook-registration-paths.sh implementing four checks, a both-polarity mktemp fixture suite, and verify-deploy gate 21."
+      "type": "handoff",
+      "path": "specs/365_lint_cwd_relative_hook_path_registrations/handoffs/phase-6-handoff-20261007T232907Z.md",
+      "summary": "Phase 6 partial handoff: resume command, root cause of the slow full battery, and the exact deferred steps (redeploy, re-walk criterion 3)."
     }
   ],
-  "phase_count": 6,
-  "estimated_hours": 6.5,
-  "dependency_waves": [[1], [2], [3], [4, 5], [6]],
-  "next_steps": "Run /implement 365 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1791403152_6152cc_365",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  "completion_data": {
+    "completion_summary": "Implemented lint-hook-registration-paths.sh (four checks: path shape in settings surfaces and markdown templates, fragment coverage, script existence), its 18-assertion fixture suite, and wired it as verify-deploy.sh gate 21 with the --only-gate range widened to 1-21. Phases 1-5 complete; Phase 6's full-battery confirmation is partial due to an external-process wait-budget limit, with a full handoff for the next dispatch."
   },
-  "proposed_file_scope": [
+  "modified_files": [
+    "agent-system/extensions/core/manifest.json",
     "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
     "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
     "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
-    "agent-system/extensions/core/scripts/verify-deploy.sh",
-    "agent-system/extensions/core/manifest.json"
+    "agent-system/extensions/core/scripts/verify-deploy.sh"
   ],
   "memory_candidates": [
     {
-      "content": "Adding a new numbered gate to agent-system/extensions/core/scripts/verify-deploy.sh is never a single-file change: verify-deploy.sh hardcodes the valid --only-gate range (1-20 as of gate 20) at four sites (two header-comment mentions, the non-numeric error string, and the -lt 1/-gt N bound check), and scripts/tests/test-verify-deploy-gate-selection.sh independently hardcodes the count at three assertion sites (case (b) 'seq 1 N', case (d) 'seq 1 N', and the literal N+1 in its invalid_cases list, which becomes a VALID id the moment the gate is added). A gate-adding change that edits only verify-deploy.sh turns a currently-green test red three ways. Audit both files together, and widen the file_scope by that exact test file rather than by a scripts/tests/ directory entry (which collides against most of the open backlog at admission time).",
-      "category": "PATTERN",
-      "source_artifact": "specs/365_lint_cwd_relative_hook_path_registrations/plans/01_hook-registration-path-lint.md",
+      "content": "verify-deploy.sh's gate 8 (tests/run-all.sh) is not safely wall-clock-predictable: at least one test fixture (the anti-recursion probe used by test-deploy-verify-wiring.sh / test-verify-deploy-gate-selection.sh) invokes verify-deploy.sh AGAIN from inside gate 8's own run-all.sh pass, and that nested invocation's own run-all.sh is forced to JOBS=1 by the RUN_ALL_NESTED guard. A single top-level `bash verify-deploy.sh .` (no --skip-slow) can therefore take several times longer than its documented ~10 minute solo baseline, with no visible symptom other than gate 8 appearing to hang. Before concluding a full-battery run has hung, check `ps -eo pid,ppid,cmd` for a child verify-deploy.sh process under the top-level one -- if present, this is the known nested-recursion slowdown, not a stuck process or a second battery someone else started.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/365_lint_cwd_relative_hook_path_registrations/handoffs/phase-6-handoff-20261007T232907Z.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "gate-wiring", "only-gate", "gate-selection-test", "file-scope-widening"]
+      "suggested_keywords": ["verify-deploy", "run-all.sh", "nested-invocation", "gate8", "wait-budget", "slow-battery"]
+    },
+    {
+      "content": "When extracting an invoked shell-script path from a JSON hook-registration command string with a bash word-split (`read -ra words <<< \"$text\"`), always strip trailing shell metacharacters (`;`, `)`, `,`, `}`) from the candidate token before testing its file-extension suffix (e.g. `.sh`). A realistic command string can abut a script path directly against punctuation with no intervening whitespace (`bash foo.sh; fi'`), and an extension-suffix test without this strip silently misses such tokens -- discovered via a fixture test case that initially omitted the trailing space the real corpus always happens to have.",
+      "category": "TECHNIQUE",
+      "source_artifact": "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash-parsing", "word-splitting", "shell-script-extraction", "lint-robustness"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1791403152_6152cc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 6
+  }
 }

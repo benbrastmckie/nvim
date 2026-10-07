@@ -1402,7 +1402,7 @@
     {
       "project_number": 365,
       "project_name": "lint_cwd_relative_hook_path_registrations",
-      "status": "implementing",
+      "status": "partial",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Lint forbidding CWD-relative .claude/ paths in hook registrations, wired as a verify-deploy gate",
@@ -1427,11 +1427,16 @@
           "path": "specs/365_lint_cwd_relative_hook_path_registrations/plans/01_hook-registration-path-lint.md",
           "type": "plan",
           "summary": "6-phase plan (5 waves) for lint-hook-registration-paths.sh, its fixture suite, and verify-deploy gate 21; ~6.5h estimated."
+        },
+        {
+          "path": "specs/365_lint_cwd_relative_hook_path_registrations/handoffs/phase-6-handoff-20261007T232907Z.md",
+          "type": "handoff",
+          "summary": "Phase 6 partial handoff with the exact resume command and the root cause of the slow full-battery run."
         }
       ],
       "next_artifact_number": 2,
       "created": null,
-      "last_updated": "2026-10-07T22:41:40Z",
+      "last_updated": "2026-10-07T23:32:11Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1791403152_6152cc"

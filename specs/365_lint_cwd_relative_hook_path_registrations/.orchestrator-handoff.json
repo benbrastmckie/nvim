@@ -1,16 +1,30 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 5,
-  "summary": "Created a 6-phase implementation plan for the hook-registration path + fragment-coverage lint, wired as verify-deploy gate 21. The plan decomposes the four distinct checks the dispatch's twelve acceptance criteria require (path shape in settings surfaces; path shape in markdown fenced-JSON registration templates; fragment coverage of install-once root-files registrations; existence of every source-store-resolvable invoked script) into serialized phases, followed by a both-polarity mktemp fixture suite, gate wiring, and a full-battery verification phase. Five explicit Decisions resolve the open questions research flagged (accepting '~/' as a third cwd-independent anchor, exempting it from the existence check, .sh files never scanned, the accepted merge.lua identity divergence, and the identity key shape). The plan adds one file beyond the dispatch's fixed four-entry file_scope, with its rationale documented in a dedicated File Scope Note.",
+  "status": "partial",
+  "phase": "implement",
+  "dispatch_seq": 6,
+  "summary": "Implemented lint-hook-registration-paths.sh (four checks: CWD-relative path shape in settings surfaces and in markdown registration templates, fragment coverage of install-once root-files registrations, existence of every source-store-resolvable invoked script), its 18-assertion both-polarity fixture suite, and wired it as verify-deploy.sh gate 21 (--only-gate range widened 1-20 -> 1-21 at all sites, gate-selection test updated, manifest.json registered). Phases 1-5 are complete and committed. Phase 6 (full-battery verification) is partial: criterion 5 (fail-closed on a shadowed library) is proven empirically, but the full un-skip-slow verify-deploy.sh battery did not finish within the dispatch's bounded external-process wait budget -- gate 8's run-all.sh nests a self-invocation of verify-deploy.sh whose own run-all.sh is forced to single-threaded mode, making the run far slower than its documented solo baseline. A full handoff names the exact resume steps (redeploy, re-confirm gate 21 from the deployed copy, finish the criterion-3 walk).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/365_lint_cwd_relative_hook_path_registrations/plans/01_hook-registration-path-lint.md",
-      "summary": "6-phase plan (5 waves) for lint-hook-registration-paths.sh, its fixture suite, and verify-deploy gate 21; ~6.5h estimated."
+      "type": "handoff",
+      "path": "specs/365_lint_cwd_relative_hook_path_registrations/handoffs/phase-6-handoff-20261007T232907Z.md",
+      "summary": "Phase 6 partial handoff with the exact resume command and the root cause of the slow full-battery run."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+      "summary": "New source-store lint implementing all four hook-registration checks; passes cleanly against the live corpus."
+    },
+    {
+      "type": "implementation",
+      "path": "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+      "summary": "Both-polarity fixture suite for the new lint; 18 assertions, 18 passed / 0 failed."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 6,
-  "blockers": []
+  "blockers": [
+    {
+      "description": "Phase 6's full verify-deploy.sh battery run (no --skip-slow) did not complete within this dispatch's bounded wait budget, due to a self-nesting verify-deploy.sh invocation inside gate 8's run-all.sh making the run far slower than its ~10 minute solo baseline. Not a code defect in this task's own changes -- gate 21 is independently confirmed PASS via --only-gate 21, and criterion 5 is independently proven. Resume with the full battery run (backgrounded, bounded kill-0 wait), then the deferred redeploy + criterion-3 confirmation. See the phase-6 handoff for the exact command and what NOT to try (do not start a second top-level battery; do not chase an unreachable all-green result, since gate 8's five known-red suites belong to other open tasks)."
+    }
+  ]
 }
