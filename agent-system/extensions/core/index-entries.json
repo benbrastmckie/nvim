@@ -2486,7 +2486,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Depth-first phase-closure contract: close one phase entirely before opening the next, order remaining phases cheapest-closure-first, stop at a closed phase boundary rather than opening a phase that cannot finish; applies in BOTH standard and hard mode",
-      "line_count": 192,
+      "line_count": 196,
       "keywords": [
         "depth-first",
         "phase-closure",
@@ -3062,7 +3062,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 533,
+      "line_count": 564,
       "keywords": [
         "git-staging",
         "commit-scope",
