@@ -222,7 +222,7 @@ mirroring the MUST NOT that already covers the remote/CI case directly above it.
 
 ---
 
-### Phase 2: State the deadline fork, and record the non-admission where the exclusion contract lives [NOT STARTED]
+### Phase 2: State the deadline fork, and record the non-admission where the exclusion contract lives [COMPLETED]
 
 **Goal**: Rule scope item (2). Reaching a bounded-wait deadline with no result is not by itself
 grounds for `[COMPLETED WITH EXCLUSIONS]`. State the three-way fork at the moment the deadline is
@@ -231,8 +231,8 @@ need not reconstruct it from two separate documents.
 
 **Tasks**:
 
-- [ ] Re-read the Local Long-Running Command Discipline subsection as Phase 1 left it.
-- [ ] Add an explicit three-branch fork at the deadline-reached point in
+- [x] Re-read the Local Long-Running Command Discipline subsection as Phase 1 left it. *(completed)*
+- [x] Add an explicit three-branch fork at the deadline-reached point in
       `general-implementation-agent.md`:
       1. **Writer still alive** at the deadline (`kill -0 "$pid"` succeeds) — the result a future
          dispatch still needs is genuinely outstanding, so condition 5 of the five-condition
@@ -246,17 +246,19 @@ need not reconstruct it from two separate documents.
          example a gate provably not applicable to this phase's changes, with evidence) —
          `[COMPLETED WITH EXCLUSIONS]` plus a full `#### Reasoned Exclusions` record, admitted by
          `context/standards/status-markers.md`'s five-condition test. Cross-reference that test;
-         do not restate it.
-- [ ] Re-read `agent-system/extensions/core/context/standards/status-markers.md`'s
+         do not restate it. *(completed)*
+- [x] Re-read `agent-system/extensions/core/context/standards/status-markers.md`'s
       `#### [COMPLETED WITH EXCLUSIONS]` section (verified at plan time: no other non-terminal
-      task declares this file).
-- [ ] Add a short named non-admission note to that section: a bounded-wait deadline reached with
+      task declares this file). *(completed)*
+- [x] Add a short named non-admission note to that section: a bounded-wait deadline reached with
       no result is not an admissible exclusion on its own — it fails condition 5 while the writer
       is still alive, and needs no exclusion once the writer is dead and the result is readable.
       Point at the agent contract's fork for the operational detail rather than duplicating it,
-      so the two files cannot drift.
-- [ ] Verify no task number appears in either file's added text, and that the measured incident is
+      so the two files cannot drift. *(completed)*
+- [x] Verify no task number appears in either file's added text, and that the measured incident is
       referred to by durable anchor (the agent contract, the waiter pattern) rather than by number.
+      *(completed: check-task-references.sh reports 0 occurrences; both files cite the agent
+      contract and bounded-build-waiter.md by durable anchor only)*
 
 **Timing**: 45 minutes
 

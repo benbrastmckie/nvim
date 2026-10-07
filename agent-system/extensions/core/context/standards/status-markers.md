@@ -320,6 +320,18 @@ status-marker enum and must not be used, including for the whole-phase case abov
 semantically-overlapping fourth marker would require re-touching every site
 `[COMPLETED WITH EXCLUSIONS]` already wired for no expressive gain.
 
+**A bounded-wait deadline reached with no result is not an admissible exclusion by itself.** An
+agent that backgrounds a local verification/gate process via
+`@.claude/context/patterns/bounded-build-waiter.md`'s canonical idiom and reaches its outer
+`timeout` with no result does not thereby earn `[COMPLETED WITH EXCLUSIONS]`. While the detached
+writer is still alive (`kill -0 "$pid"` still succeeds), the result is genuinely outstanding and
+condition 5 above ("no residual work") fails — the phase is `[PARTIAL]`, not exclusion-closed.
+Once the writer is dead and its log/exit status can be read directly, the result is simply known
+and used normally; no exclusion is needed at all, admissible or otherwise. See
+`agents/general-implementation-agent.md`'s "Local Long-Running Command Discipline" subsection for
+the operational three-way fork at the deadline — this note states only the admission ruling, the
+agent contract states the mechanism.
+
 ---
 
 #### `[EXPANDED]`

@@ -204,6 +204,27 @@ liveness ends) rather than waiting to be told. If the wait genuinely cannot be r
 this dispatch, write a handoff (Stage 4C) with the concrete resume command and return
 `status: "partial"` -- never a bare stop.
 
+**The three-way fork at the deadline** (`timeout N` has elapsed on the bounded waiter above):
+
+1. **Writer still alive** (`kill -0 "$pid"` succeeds at the deadline) -- the result a future
+   dispatch still needs is genuinely outstanding, so condition 5 of
+   `@.claude/context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` admission test
+   fails. Close the phase `[PARTIAL]`, write the handoff with the concrete foreground resume
+   command, and return `status: "partial"` -- this restates the MUST immediately above, it does
+   not replace it.
+2. **Writer dead with a conclusive result** (`kill -0` fails; the log and exit status are read
+   directly) -- this is not an exclusion case at all. The result is now known; use it normally,
+   taking `[COMPLETED]` or the ordinary failure-handling path.
+3. **A specific, enumerated verification requirement excluded on its own merits** (for example a
+   gate provably not applicable to this phase's changes, with evidence) -- `[COMPLETED WITH
+   EXCLUSIONS]` plus a full `#### Reasoned Exclusions` record, admitted by
+   `@.claude/context/standards/status-markers.md`'s five-condition test (see that file for the
+   conditions; they are not restated here).
+
+A bounded-wait deadline reached with no result is, by itself, neither case 2 nor case 3 -- it is
+case 1. See `@.claude/context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]`
+section for the named non-admission ruling.
+
 **Derive `project_name` and `task_number` before first use**: delegation context supplies
 `plan_path` (`specs/{NNN}_{SLUG}/plans/...`). Derive `project_name` as the `{SLUG}` portion of
 that path component (strip the zero-padded `{NNN}_` prefix), and `task_number` as `{NNN}` with
